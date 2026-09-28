@@ -30,10 +30,11 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     const id = this.host.id;
     try {
-      const user = await UserSecurityPageController.fetchUser(id);
+      const user = await UserSecurityPageController.fetchUser(id, this.host.isSelf);
       if (this.host.mounted) this.host.patch({ user });
-      const twoFactorStatus = await UserSecurityPageController.fetchTwoFactorStatus(id);
-      await this.fetchAuthActivity(String(user?.email || ''));
+      const twoFactorStatus = await UserSecurityPageController.fetchTwoFactorStatus(id, this.host.isSelf);
+      // The auth log is read from the system logs; without `system:logs` there is nothing to show.
+      if (this.host.canReadLogs) await this.fetchAuthActivity(String(user?.email || ''));
       if (!this.host.mounted) return;
       this.host.patch({
         twoFactorEnabled: Boolean(twoFactorStatus.enabled),
@@ -109,7 +110,7 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     if (!confirm('Are you sure you want to disable 2FA for this user? This will reduce account security.')) return;
     try {
-      await UserSecurityPageController.disableTwoFactor(this.host.id);
+      await UserSecurityPageController.disableTwoFactor(this.host.id, this.host.isSelf);
       if (this.host.mounted) {
         this.host.patch({
           twoFactorEnabled: false,
@@ -129,7 +130,7 @@ export class UserSecurityPageActions {
     const { addNotification } = this.host.notify;
     this.host.patch({ isEnabling: true });
     try {
-      const response = await UserSecurityPageController.setupTwoFactor(this.host.id);
+      const response = await UserSecurityPageController.setupTwoFactor(this.host.id, this.host.isSelf);
       if (this.host.mounted) this.host.patch({ qrCode: response.qrCode || null, secret: response.secret || null });
       addNotification({ title: 'Setup Started', message: 'Scan the QR code with your authenticator app', type: NotificationType.INFO });
     } catch (error: any) {
@@ -144,7 +145,7 @@ export class UserSecurityPageActions {
     if (!confirm('Regenerate recovery codes? Existing unused codes will stop working immediately.')) return;
     this.host.patch({ isRegeneratingCodes: true });
     try {
-      const codes = await UserSecurityPageController.regenerateRecoveryCodes(this.host.id);
+      const codes = await UserSecurityPageController.regenerateRecoveryCodes(this.host.id, this.host.isSelf);
       if (this.host.mounted) this.host.patch({ generatedRecoveryCodes: codes, recoveryCodesRemaining: codes.length });
       addNotification({ title: 'Recovery Codes Regenerated', message: 'Save the new codes now. Old codes are invalid.', type: NotificationType.SUCCESS });
     } catch (error: any) {
@@ -163,7 +164,7 @@ export class UserSecurityPageActions {
     }
     this.host.patch({ isVerifying: true });
     try {
-      const recoveryCodes = await UserSecurityPageController.verifyTwoFactor(this.host.id, verificationCode);
+      const recoveryCodes = await UserSecurityPageController.verifyTwoFactor(this.host.id, verificationCode, this.host.isSelf);
       if (this.host.mounted) {
         this.host.patch({
           twoFactorEnabled: true,

@@ -39,6 +39,8 @@ describe('AdminPageAccessService', () => {
   it('lets anyone open their own profile and the dashboard (which redirects them itself)', () => {
     expect(allowed('/users/4', staff)).toBe(true);
     expect(allowed('/users/4/security', staff)).toBe(true);
+    expect(allowed('/users/4/edit', staff)).toBe(true);
+    expect(allowed('/users/5/edit', staff)).toBe(false);
     expect(allowed('/users/5', staff)).toBe(false);
     expect(allowed('/', staff)).toBe(true);
   });

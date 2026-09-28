@@ -41,7 +41,7 @@ export class AdminPageAccessService {
     // The dashboard sends a user who cannot read it to their own first screen; it decides itself.
     if (path === AdminPageAccessService.trim(AdminConstants.ROUTES.ROOT)) return '';
     // Your own profile is yours to open, whatever your role.
-    if (user?.id && [AdminConstants.ROUTES.USERS.DETAIL(user.id), AdminConstants.ROUTES.USERS.SECURITY(user.id)]
+    if (user?.id && [AdminConstants.ROUTES.USERS.DETAIL(user.id), AdminConstants.ROUTES.USERS.EDIT(user.id), AdminConstants.ROUTES.USERS.SECURITY(user.id)]
       .some((own) => AdminPageAccessService.trim(own) === path)) return '';
 
     const plugin = AdminPageAccessService.pluginRequirement(path, menuItems);

@@ -13,6 +13,7 @@ import { UserProfileHeader } from '@/app/users/[id]/components/view/user-profile
 import { UserProfileSidebar } from '@/app/users/[id]/components/view/user-profile-sidebar.client';
 import { UserOwnershipCard } from '@/app/users/[id]/components/view/user-ownership-card.client';
 import { prop, state, bound } from '@fromcode119/react-class-components';
+import { SelfAccount } from '@/lib/self-account';
 
 export class UserProfilePage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -40,9 +41,14 @@ export class UserProfilePage extends AdminComponent {
     void this.fetchUser();
   }
 
+  /** Your own account, viewed without `users:view` — see {@link SelfAccount}. */
+  private get selfService(): boolean {
+    return SelfAccount.isSelfService(this.auth?.user, this.routeId, 'users:view');
+  }
+
   private async fetchUser(): Promise<void> {
     try {
-      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.routeId));
+      const data = this.selfService ? await this.fetchOwnAccount() : await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.routeId));
       if (this.mounted) this.user = data;
     } catch (err) {
       console.error('Failed to fetch user:', err);
@@ -51,9 +57,16 @@ export class UserProfilePage extends AdminComponent {
     }
   }
 
+  /** The same record, from the account's own endpoint. */
+  private async fetchOwnAccount(): Promise<any> {
+    const state = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.SECURITY);
+    return { ...state?.user, accountStatus: state?.account?.status, forcePasswordReset: Boolean(state?.account?.forcePasswordReset) };
+  }
+
   render(): ReactElement {
     const theme = this.theme;
     const id = this.routeId;
+    const selfService = this.selfService;
     const user = this.user;
     const loading = this.loading;
 
@@ -82,7 +95,7 @@ export class UserProfilePage extends AdminComponent {
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-700">
-        <UserProfileHeader theme={theme} user={user} userId={id} initials={initials} />
+        <UserProfileHeader theme={theme} user={user} userId={id} initials={initials} selfService={selfService} />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -126,6 +139,7 @@ export class UserProfilePage extends AdminComponent {
                       <p className="text-slate-500 font-bold text-sm italic py-4">No roles assigned to this account.</p>
                    )}
                  </div>
+                 {selfService ? null : (
                  <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
                     <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
                       <Button variant={ButtonVariant.GHOST} className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
@@ -133,11 +147,12 @@ export class UserProfilePage extends AdminComponent {
                       </Button>
                     </Link>
                  </div>
+                 )}
               </Card>
-              <UserOwnershipCard user={user} onTransferred={this.reload} />
+              {selfService ? null : <UserOwnershipCard user={user} onTransferred={this.reload} />}
             </div>
 
-            <UserProfileSidebar user={user} theme={theme} />
+            <UserProfileSidebar user={user} theme={theme} selfService={selfService} />
           </div>
         </div>
       </div>

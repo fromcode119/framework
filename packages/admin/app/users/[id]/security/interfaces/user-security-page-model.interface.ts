@@ -20,6 +20,8 @@ export interface IUserSecurityPageModel {
   isEnabling: boolean;
   isRegeneratingCodes: boolean;
   isSelf: boolean;
+  /** Whether the auth-activity card can be filled — see the host's `canReadLogs`. */
+  canReadLogs: boolean;
   isVerifying: boolean;
   loading: boolean;
   myApiTokens: IUserApiTokenRecord[];

@@ -9,6 +9,8 @@ import { FrameworkIcons } from '@fromcode119/react';
 export class UserProfileSidebar extends PureReactor {
   @prop declare user: any;
   @prop declare theme: ThemeMode;
+  /** Your own account without user management — the role-assignment advice is not for you. */
+  @prop declare selfService?: boolean;
 
   render(): ReactNode {
     const { user, theme } = this;
@@ -36,18 +38,23 @@ export class UserProfileSidebar extends PureReactor {
                   {user.forcePasswordReset ? 'Required on next login' : 'Not required'}
                 </span>
              </div>
+             {/* Only when known: the account's own endpoint does not carry the dates, and `new Date(undefined)` printed "Invalid Date". */}
+             {user.createdAt ? (
              <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Created</span>
                 <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
              </div>
+             ) : null}
+             {user.createdAt ? (
              <div className="flex items-center justify-between">
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">Last Modified</span>
                 <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : 'Never'}</span>
              </div>
+             ) : null}
           </div>
         </Card>
 
-        <div className={`p-5 rounded-xl border overflow-hidden relative ${
+        {this.selfService ? null : <div className={`p-5 rounded-xl border overflow-hidden relative ${
           theme === ThemeMode.DARK ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
         }`}>
            <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-2 uppercase">Security Notice</h4>
@@ -55,7 +62,7 @@ export class UserProfileSidebar extends PureReactor {
              Modifying user roles or permissions takes effect immediately. Ensure you follow the principle of least privilege when assigning administrative roles.
            </p>
            <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
-        </div>
+        </div>}
       </div>
     );
   }

@@ -17,12 +17,19 @@ export class UserSecurityPageController {
   private static readonly AUTH_ACTIVITY_LIMIT = 25;
   private static readonly VERIFICATION_CODE_LENGTH = 6;
 
-  static async fetchUser(id: string): Promise<ISecurityUserRecord> {
+  /**
+   * On your OWN page the account endpoints answer (`/auth/security`, `/auth/2fa/*`): they need no
+   * user-management permission, so a staff member can see and secure their own account. The admin
+   * endpoints are for managing someone else, and refused anyone without `users:view`/`users:manage`.
+   */
+  static async fetchUser(id: string, self: boolean): Promise<ISecurityUserRecord> {
+    if (self) return ((await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.SECURITY)) as { user: ISecurityUserRecord }).user;
     return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(id)) as Promise<ISecurityUserRecord>;
   }
 
-  static async fetchTwoFactorStatus(id: string): Promise<IUserTwoFactorStatusResponse> {
-    return AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_STATUS(id)) as Promise<IUserTwoFactorStatusResponse>;
+  static async fetchTwoFactorStatus(id: string, self: boolean): Promise<IUserTwoFactorStatusResponse> {
+    const url = self ? AdminConstants.ENDPOINTS.AUTH.TWO_FACTOR_STATUS : AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_STATUS(id);
+    return AdminApi.get(url) as Promise<IUserTwoFactorStatusResponse>;
   }
 
   /** Auth-relevant log lines for a user. An empty email has no activity by definition. */
@@ -74,25 +81,24 @@ export class UserSecurityPageController {
     return Boolean(response.revokedCurrent);
   }
 
-  static async disableTwoFactor(id: string): Promise<void> {
-    await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA(id));
+  static async disableTwoFactor(id: string, self: boolean): Promise<void> {
+    await AdminApi.delete(self ? AdminConstants.ENDPOINTS.AUTH.TWO_FACTOR_DISABLE : AdminConstants.ENDPOINTS.SYSTEM.USER_2FA(id));
   }
 
-  static async setupTwoFactor(id: string): Promise<IUserTwoFactorSetupResponse> {
-    return AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_SETUP(id), {}) as Promise<IUserTwoFactorSetupResponse>;
+  static async setupTwoFactor(id: string, self: boolean): Promise<IUserTwoFactorSetupResponse> {
+    const url = self ? AdminConstants.ENDPOINTS.AUTH.TWO_FACTOR_SETUP : AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_SETUP(id);
+    return AdminApi.post(url, {}) as Promise<IUserTwoFactorSetupResponse>;
   }
 
-  static async regenerateRecoveryCodes(id: string): Promise<string[]> {
-    const response = await AdminApi.post(
-      AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_RECOVERY_REGENERATE(id), {},
-    ) as IUserTwoFactorVerifyResponse;
+  static async regenerateRecoveryCodes(id: string, self: boolean): Promise<string[]> {
+    const url = self ? AdminConstants.ENDPOINTS.AUTH.TWO_FACTOR_RECOVERY_REGENERATE : AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_RECOVERY_REGENERATE(id);
+    const response = await AdminApi.post(url, {}) as IUserTwoFactorVerifyResponse;
     return Array.isArray(response.recoveryCodes) ? response.recoveryCodes : [];
   }
 
-  static async verifyTwoFactor(id: string, token: string): Promise<string[]> {
-    const response = await AdminApi.post(
-      AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_VERIFY(id), { token },
-    ) as IUserTwoFactorVerifyResponse;
+  static async verifyTwoFactor(id: string, token: string, self: boolean): Promise<string[]> {
+    const url = self ? AdminConstants.ENDPOINTS.AUTH.TWO_FACTOR_VERIFY : AdminConstants.ENDPOINTS.SYSTEM.USER_2FA_VERIFY(id);
+    const response = await AdminApi.post(url, { token }) as IUserTwoFactorVerifyResponse;
     return Array.isArray(response.recoveryCodes) ? response.recoveryCodes : [];
   }
 

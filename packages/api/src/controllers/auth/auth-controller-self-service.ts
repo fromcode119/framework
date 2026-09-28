@@ -56,6 +56,7 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
       user: InspectorAccess.presentToAdmin({
         id: userId,
         email: this.normalizeEmail(user.email),
+        username: user.username ?? null,
         firstName: this.readUserFirstName(user),
         lastName: this.readUserLastName(user),
         roles: scoped.roles,
