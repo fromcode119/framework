@@ -4,12 +4,11 @@ import { ExtensionBuildPipeline, ExtensionKind } from '@fromcode119/extension-bu
 
 import * as fs from 'fs';
 import { PackageArchiver } from '@sources/packaging/package-archiver';
-import { PackCleaner } from '@fromcode119/extension-builder';
 import { ArtifactDigestService } from '@sources/packaging/artifact-digest-service';
 import type { IPackageResult } from '@sources/packaging/interfaces/package-result.interface';
 
 /**
- * Builds and packages plugins/themes into distributable ZIP archives.
+ * Builds and packages plugins, themes and appearances into installable staged directories.
  *
  * Mirrors the framework CLI `plugin build` command:
  *  1. Compile backend `index.ts` → `index.js` via esbuild (CJS, node)
@@ -54,16 +53,12 @@ export class PackageBuilder {
   }
 
   /**
-   * Build and package a plugin or theme from its cloned source directory.
+   * Build and package a plugin, theme or appearance from its cloned source directory.
    */
   async build(sourceDir: string, type: ExtensionScope): Promise<IPackageResult> {
     if (type === ExtensionScope.CORE) {
       return this.buildCorePackage(sourceDir);
     }
-    if (type === ExtensionScope.APPEARANCE) {
-      return this.buildAppearancePackage(sourceDir);
-    }
-
     const manifest = this.readManifest(sourceDir, type);
     const slug = manifest.slug;
     const version = manifest.version;
@@ -91,7 +86,7 @@ export class PackageBuilder {
 
     const steps = await ExtensionBuildPipeline.run({
       sourceDir,
-      kind: type === ExtensionScope.THEME ? ExtensionKind.THEME : ExtensionKind.PLUGIN,
+      kind: PackageBuilder.kindFor(type),
       slug,
       pack: true,
       packDir: stagedDir,
@@ -200,29 +195,21 @@ export class PackageBuilder {
   }
 
   /**
-   * Read the manifest file from a source directory.
+   * The builder's kind for a Sources extension type.
+   *
+   * An appearance goes through the SAME pipeline as a plugin or theme. It used to be copied as-is on
+   * the assumption that its repository commits a pre-built `dist/` — none does, `dist/` is build
+   * output and every appearance repo ignores it — so Sources reported "success" and installed an
+   * appearance with no `bundle.js` and no stylesheet. The admin could not load it: a workspace domain
+   * fell back to the default sign-in, and past it the design was simply absent.
    */
-  private async buildAppearancePackage(sourceDir: string): Promise<IPackageResult> {
-    const manifest = this.readManifest(sourceDir, ExtensionScope.APPEARANCE);
-    const slug = manifest.slug;
-    const version = manifest.version;
-    if (!slug || !version) {
-      throw new Error(`Invalid appearance.json in ${sourceDir}: missing slug or version`);
-    }
-
-    // Appearances ship a pre-built dist/ (esbuild bundle + LESS-compiled CSS, produced in the
-    // source repo). Sources does NOT recompile them — it stages the source + dist/ and lets the
-    // cleaner strip what must not ship, exactly as for a plugin or theme. Staged rather than
-    // zipped for the same reason as the others: an install copies the directory.
-    const stagedDir = this.stagingDirFor(ExtensionScope.APPEARANCE, slug, version);
-    fs.rmSync(stagedDir, { recursive: true, force: true });
-    fs.mkdirSync(path.dirname(stagedDir), { recursive: true });
-    fs.cpSync(sourceDir, stagedDir, { recursive: true });
-    PackCleaner.clean(stagedDir);
-
-    return { stagedDir, version, slug, manifest };
+  private static kindFor(type: ExtensionScope): ExtensionKind {
+    if (type === ExtensionScope.THEME) return ExtensionKind.THEME;
+    if (type === ExtensionScope.APPEARANCE) return ExtensionKind.APPEARANCE;
+    return ExtensionKind.PLUGIN;
   }
 
+  /** Read the manifest file from a source directory. */
   private readManifest(sourceDir: string, type: ExtensionScope): Record<string, any> {
     const candidates = type === ExtensionScope.PLUGIN
       ? ['manifest.json', 'plugin.json']
