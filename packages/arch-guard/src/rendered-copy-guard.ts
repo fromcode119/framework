@@ -55,7 +55,12 @@ export class RenderedCopyGuard {
    */
   static isEnforced(file: string): boolean {
     const normalized = file.replace(/\\/g, '/');
-    if (RenderedCopyGuard.TRANSLATED.some((tree) => normalized.includes(`/${tree}/`))) return true;
+    return RenderedCopyGuard.TRANSLATED.some((tree) => normalized.includes(`/${tree}/`)) || RenderedCopyGuard.inTranslatedExtensionUi(normalized);
+  }
+
+  /** Under an extension's `src/ui` whose `src/ui/i18n/en.json` exists. */
+  static inTranslatedExtensionUi(file: string): boolean {
+    const normalized = file.replace(/\\/g, '/');
     const at = normalized.lastIndexOf('/src/ui/');
     return at >= 0 && existsSync(`${normalized.slice(0, at)}/src/ui/i18n/en.json`);
   }
@@ -99,7 +104,7 @@ export class RenderedCopyGuard {
    * every language. A string counts as copy only if at least one of its words is NOT such a token:
    * `e.g. laptop` and `/new-page or https://…` still count, because `laptop` and `or` are words.
    */
-  private static readonly CODE_TOKEN = /[/.@_:]|--|^-|-$|^[A-Z0-9]+(-[A-Z0-9]+)+$|^[A-Za-z]+=$/;
+  private static readonly CODE_TOKEN = /[/.@_:]|--|^-|-$|^[A-Z0-9]+(-[A-Z0-9]+)+$|^[A-Za-z]+=$|^[a-z]+-[0-9]+$|^[0-9.]+(px|rem|em|%|vh|vw)$/;
 
   /** A PEM armour line — `-----BEGIN PRIVATE KEY-----` — marks the whole string as a key's shape. */
   private static readonly PEM = /-----(BEGIN|END) /;
@@ -152,6 +157,9 @@ export class RenderedCopyGuard {
         if (!RenderedCopyGuard.SKIP_DIR.has(entry) && !RenderedCopyGuard.isBuildOutput(full)) RenderedCopyGuard.files(full, out);
       } else if (/\.tsx$/.test(entry) && !/\.test\.tsx$/.test(entry)) {
         out.push(full);
+      } else if (/\.ts$/.test(entry) && !/\.(test|spec|d)\.ts$/.test(entry) && RenderedCopyGuard.inTranslatedExtensionUi(full)) {
+        // Inside a translated extension UI a `.ts` option list or presenter shows its labels too.
+        out.push(full);
       }
     }
     return out;
@@ -162,7 +170,7 @@ export class RenderedCopyGuard {
     let source: string;
     try { source = readFileSync(file, 'utf8'); } catch { return []; }
 
-    const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX);
+    const sf = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, file.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS);
     const hits: string[] = [];
     const report = (node: ts.Node, text: string): void => {
       if (!RenderedCopyGuard.isCopy(text)) return;

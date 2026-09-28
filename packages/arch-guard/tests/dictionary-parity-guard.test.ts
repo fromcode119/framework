@@ -62,4 +62,16 @@ describe('RenderedCopyGuard.isEnforced', () => {
     expect(RenderedCopyGuard.isEnforced(path.join(root, 'blog/src/ui/pages/posts.tsx'))).toBe(false);
     expect(RenderedCopyGuard.isEnforced('/x/framework/packages/admin/app/page.tsx')).toBe(true);
   });
+
+  it('scans a .ts option list only inside a translated extension UI', () => {
+    root = mkdtempSync(path.join(tmpdir(), 'rendered-copy-ts-'));
+    for (const name of ['shop', 'blog']) {
+      mkdirSync(path.join(root, name, 'src/ui'), { recursive: true });
+      writeFileSync(path.join(root, name, 'src/ui/options.ts'), "export class Options { static readonly ALL = [{ label: 'Pending review', value: 'pending' }]; }");
+    }
+    mkdirSync(path.join(root, 'shop/src/ui/i18n'), { recursive: true });
+    writeFileSync(path.join(root, 'shop/src/ui/i18n/en.json'), '{}');
+    const { detail } = RenderedCopyGuard.scan([{ area: 'plugins', dir: root }]);
+    expect(detail.map(({ file }) => path.relative(root, file))).toEqual([path.join('shop', 'src/ui/options.ts')]);
+  });
 });

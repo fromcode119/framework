@@ -49,6 +49,10 @@ describe('RenderedCopyGuard', () => {
     expect(hits('export class A { render() { return <input placeholder="e.g. laptop" />; } }')).toEqual(['e.g. laptop']);
   });
 
+  it('does not count a CSS value offered as an example', () => {
+    expect(hits("export class A { render() { return <><input placeholder=\"gap-6\" /><input placeholder=\"40px\" /></>; } }")).toEqual([]);
+  });
+
   it('does not count a key= label in front of a value', () => {
     expect(hits('export class A { render() { return <span>id={this.id} type={this.type}</span>; } }')).toEqual([]);
   });
