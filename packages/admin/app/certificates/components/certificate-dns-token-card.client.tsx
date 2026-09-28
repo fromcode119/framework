@@ -88,9 +88,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
   private get provenance(): string {
     if (this.hasOwnToken) return AdminI18n.t('certificates.thisSiteUsesItsOwn');
     if (this.isInherited) {
-      return AdminI18n.t('certificates.thisSiteHasNoToken')
-        + AdminI18n.t('certificates.orderCertificatesForZonesIt')
-        + AdminI18n.t('certificates.cloudflareAccountSaveThisSite');
+      return AdminI18n.t('certificates.usingPlatformToken');
     }
     return AdminI18n.t('certificates.noCloudflareTokenAppliesTo');
   }

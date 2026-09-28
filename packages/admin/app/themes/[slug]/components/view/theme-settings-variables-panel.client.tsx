@@ -80,7 +80,7 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                               type="text"
                               value={value}
                               onChange={e => page.handleVariableChange(key, e.target.value)}
-                              placeholder={AdminI18n.t('themes.interSansSerif')}
+                              placeholder="Inter, sans-serif"
                               list={`fonts-${key}`}
                               className={`w-full bg-transparent border-0 p-0 text-sm font-semibold focus:ring-0 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
                             />

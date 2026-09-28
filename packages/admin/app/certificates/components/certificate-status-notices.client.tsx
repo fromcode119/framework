@@ -44,8 +44,7 @@ export class CertificateStatusNotices extends AdminComponent {
       return this.notice(CertificateNoticeTone.GOOD, AdminI18n.t('certificates.thisPlatformSGatewayIs', { count: String(this.edge.certificates ?? 0) }));
     }
     return this.notice(CertificateNoticeTone.WARN,
-      AdminI18n.t('certificates.thisDeploymentSGatewayIs')
-      + AdminI18n.t('certificates.somethingInFrontOfThe'));
+      AdminI18n.t('certificates.gatewayNotTerminating'));
   }
 
   /** Whether the platform can obtain certificates itself, and which half is missing when it cannot. */
@@ -58,8 +57,7 @@ export class CertificateStatusNotices extends AdminComponent {
     const authority = String(this.automation.directoryLabel || '');
     if (this.automation.isTestAuthority === true) {
       return this.notice(CertificateNoticeTone.WARN,
-        AdminI18n.t('certificates.automaticCertificatesComeFromCertificates', { authority: authority })
-        + AdminI18n.t('certificates.browsersUseItToTest'));
+        AdminI18n.t('certificates.stagingAuthorityWarning', { authority: authority }));
     }
     return this.notice(CertificateNoticeTone.MUTED, AdminI18n.t('certificates.automaticCertificatesComeFrom', { authority: authority }));
   }
