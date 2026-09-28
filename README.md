@@ -145,6 +145,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 👁️ **Private until you publish** — A new site is closed by default; **Preview** opens visibility to a site's own people without an account or a role.
 - 🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table; creating a site is live within a second.
 - 🔒 **TLS certificates in the admin** — A certificate is a record in the platform, with automatic expiry warnings.
+- 📇 **Contact details hidden from harvesters** — Email addresses and phone numbers (international numbers, and anything in a `tel:` link) leave the server encoded: in the page text, in `mailto:`/`tel:` links, and in the page data scripts carry. The browser puts them back just before hydration, so visitors see and click them as normal and the page still hydrates from its server render — unlike a CDN's email obfuscation, which rewrites the HTML after rendering and breaks hydration. Automatic for every theme and plugin, one switch per site (**Settings → Security → Contact Details**).
 - 🗑️ **Erasure is a kernel capability** — Every plugin declares its own personal-data datasets; "delete my account" reaches all of them.
 - 🎛️ **Admin appearances** — An installed appearance can replace the whole console for a product.
 - 🏗️ **Zero Architecture Lock-In** — Run as API only, API + Admin, or Full Stack; swap any provider without touching business logic.
