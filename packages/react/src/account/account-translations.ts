@@ -1,4 +1,5 @@
 import { ContextBridge } from '@react/context-bridge';
+import { FrameworkTranslations } from '@react/i18n/framework-translations';
 import EN from '@react/account/i18n/en.json';
 import BG from '@react/account/i18n/bg.json';
 
@@ -24,6 +25,9 @@ export class AccountTranslations {
 
   static register(): void {
     if (AccountTranslations.registered) return;
+    // The provider-free floor, synchronous on the server as in the browser: a surface that renders on
+    // the server (the standalone /unsubscribe panel) resolves its words from here in the document's locale.
+    FrameworkTranslations.registerAll({ en: EN as any, bg: BG as any });
     ContextBridge.registerTranslations({ en: EN, bg: BG });
     AccountTranslations.registered = true;
   }

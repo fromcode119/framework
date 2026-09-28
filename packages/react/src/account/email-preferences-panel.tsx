@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/react-class-components';
+import { prop, state } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { FrameworkTranslations } from '@react/i18n/framework-translations';
+import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 import { AccountTranslations } from '@react/account/account-translations';
 import { SdkClient } from '@fromcode119/core/client';
 
@@ -19,6 +21,13 @@ import { SdkClient } from '@fromcode119/core/client';
  * absent: offering a toggle that does nothing would be worse than offering none.
  */
 export class AccountEmailPreferencesPanel extends PluginComponent {
+  /**
+   * The document locale, passed by a route that renders this panel on the server (`/unsubscribe`). The
+   * server has no provider copy and no `<html lang>` to read, so without it the markup was English on a
+   * Bulgarian site.
+   */
+  @prop declare documentLocale?: string;
+
   @state loading: boolean = true;
   @state saving: string = '';
   /**
@@ -75,6 +84,22 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
    */
   protected describeError(error: any): string { // eslint-disable-line @typescript-eslint/no-explicit-any
     return String(error?.message || error);
+  }
+
+  /**
+   * The provider's translator first — a theme may override this copy — then the framework's own account
+   * pack in the document's locale, then the inline English default. The middle step is what gives the
+   * server render (where the provider holds no account copy) the same words the browser will render.
+   */
+  protected get t(): ITranslationContextValue['t'] {
+    const fromContext = super.t;
+    return (key: string, params?: Record<string, unknown>, defaultValue?: string) => {
+      const contextValue = fromContext(key, params, key);
+      if (contextValue && contextValue !== key) return contextValue;
+      const floor = FrameworkTranslations.t(key, params, this.documentLocale);
+      if (floor !== key) return floor;
+      return fromContext(key, params, defaultValue);
+    };
   }
 
   componentDidMount(): void {

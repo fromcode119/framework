@@ -2,6 +2,7 @@ import { connection } from 'next/server';
 import { TokenEmailPreferencesPanelImplementation } from '@fromcode119/react/account/token-email-preferences-panel-implementation.client';
 import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 
 /**
@@ -65,6 +66,9 @@ export class UnsubscribePageRoute {
       // fall through to the framework default
     }
 
-    return <TokenEmailPreferencesPanelImplementation />;
+    // The locale the layout puts on `<html lang>`, so the server paints the words the browser will.
+    const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
+    const documentLocale = await FrontendLocaleService.resolveDocumentLocale(routingConfig.strategy);
+    return <TokenEmailPreferencesPanelImplementation documentLocale={documentLocale} />;
   }
 }
