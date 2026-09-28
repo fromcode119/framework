@@ -35,6 +35,28 @@ describe('media URLs are built on the current site', () => {
     expect(response.json.mock.calls[0][0][0].url).toBe('http://core-demo.framework.local/uploads/hero.webp');
   });
 
+  it('answers one file by id with the same site-addressed url — what a picked-media preview reads', async () => {
+    vi.spyOn(SiteBaseUrl, 'forCurrentSite').mockResolvedValue('http://core-demo.framework.local');
+    const database = { ...db([row]), eq: vi.fn().mockReturnValue('id-filter') };
+    const response = res();
+
+    await new MediaController({ db: database } as any, manager).listFiles({ query: { id: '1', limit: '1' } } as any, response);
+
+    expect(database.eq).toHaveBeenCalledWith(expect.anything(), 1);
+    expect(database.find.mock.calls[0][1].where).toBe('id-filter');
+    expect(response.json.mock.calls[0][0][0].url).toBe('http://core-demo.framework.local/uploads/hero.webp');
+  });
+
+  it('answers an id that is not a record id with nothing, without querying', async () => {
+    const database = db([row]);
+    const response = res();
+
+    await new MediaController({ db: database } as any, manager).listFiles({ query: { id: 'abc' } } as any, response);
+
+    expect(database.find).not.toHaveBeenCalled();
+    expect(response.json).toHaveBeenCalledWith([]);
+  });
+
   it('falls back to the api origin when no site is bound', async () => {
     vi.spyOn(SiteBaseUrl, 'forCurrentSite').mockResolvedValue('');
     vi.spyOn(ApiUrlUtils, 'resolveApiPublicOrigin').mockReturnValue('http://api.framework.local');
