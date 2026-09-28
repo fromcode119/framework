@@ -1,6 +1,7 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The admin's client for `/system/admin/certificates`. Every call is a platform-admin call.
@@ -95,13 +96,13 @@ export class CertificatesClient {
   /** What an upload refusal means, in a sentence. Keyed by the reason code the api returns. */
   static reasonLabel(reason: string): string {
     const labels: Record<string, string> = {
-      certificate_unreadable: 'That is not a readable certificate. Paste the PEM text, including the BEGIN and END lines.',
-      private_key_unreadable: 'That is not a readable private key. A passphrase-protected key cannot be used — the platform would have to hold the passphrase too.',
-      key_mismatch: 'The key does not match the certificate. They are usually from different orders.',
-      already_expired: 'That certificate has already expired, so storing it would put a broken one live.',
-      host_not_covered: 'That certificate was not issued for this host, so browsers would reject it.',
-      encryption_unavailable: 'This installation cannot store a private key: no SECRET_KEY is configured on the server.',
+      certificate_unreadable: AdminI18n.t('lib.thatIsNotAReadable'),
+      private_key_unreadable: AdminI18n.t('lib.thatIsNotAReadable2'),
+      key_mismatch: AdminI18n.t('lib.theKeyDoesNotMatch'),
+      already_expired: AdminI18n.t('lib.thatCertificateHasAlreadyExpired'),
+      host_not_covered: AdminI18n.t('lib.thatCertificateWasNotIssued'),
+      encryption_unavailable: AdminI18n.t('lib.thisInstallationCannotStoreA'),
     };
-    return labels[reason] ?? 'The certificate was refused.';
+    return labels[reason] ?? AdminI18n.t('lib.theCertificateWasRefused');
   }
 }

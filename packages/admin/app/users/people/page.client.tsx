@@ -102,7 +102,7 @@ export class PeoplePage extends AdminComponent {
     const theme = this.theme;
     return [
       {
-        header: 'Person', id: 'person',
+        header: AdminI18n.t('users.person2'), id: 'person',
         accessor: (p: IPerson) => (
           <div>
             <div className={`font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{this.displayName(p)}</div>
@@ -119,7 +119,7 @@ export class PeoplePage extends AdminComponent {
           : <span className="font-bold text-slate-400 text-[11px] tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
       },
       {
-        header: 'Added', id: 'createdAt',
+        header: AdminI18n.t('users.added'), id: 'createdAt',
         accessor: (p: IPerson) => (
           <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">
             <FrameworkIcons.Calendar size={14} className="opacity-50" />

@@ -87,7 +87,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       this.sendingReset = false;
       this.notice = res?.emailSent === false
         ? AdminI18n.t('users.resetLinkGeneratedButThe')
-        : AdminI18n.t('users.passwordResetEmailSentTo', { value: res?.email || this.person?.email || 'the user' });
+        : AdminI18n.t('users.passwordResetEmailSentTo', { email: res?.email || this.person?.email || AdminI18n.t('users.theUser') });
     } catch (err: any) {
       this.sendingReset = false;
       this.error = String(err?.message || AdminI18n.t('users.failedToSendPasswordReset'));

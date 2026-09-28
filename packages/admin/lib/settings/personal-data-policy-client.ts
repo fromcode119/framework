@@ -3,6 +3,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IPersonalDataPolicyChoice } from '@/app/settings/personal-data/interfaces/personal-data-policy-choice.interface';
 import type { IPersonalDataChoiceMap } from '@/app/settings/personal-data/interfaces/personal-data-choice-map.interface';
 import type { IPersonalDataPolicyDataset } from '@/app/settings/personal-data/interfaces/personal-data-policy-dataset.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Reading the erasure policy, and shaping what the page stores back.
@@ -34,7 +35,7 @@ export class PersonalDataPolicyClient {
       // Phrased "the default declared by X", never "X default": the framework's own datasets are
       // addressed as `platform`, and "platform default — anonymise" sitting under a column headed
       // "Platform default" reads as the platform LAYER rather than as the declaring owner.
-      declaredProvenance: `the default declared by ${String(row?.pluginSlug ?? '')} — ${String(row?.defaultStrategy ?? '')}`,
+      declaredProvenance: AdminI18n.t('lib.theDefaultDeclaredBy', { plugin: String(row?.pluginSlug ?? ''), strategy: String(row?.defaultStrategy ?? '') }),
       problem: String(row?.problem ?? ''),
     }));
   }

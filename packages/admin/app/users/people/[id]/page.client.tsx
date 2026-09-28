@@ -78,7 +78,7 @@ export class PersonEditPage extends PersonEditPageActions {
           backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
           icon={<FrameworkIcons.Edit size={18} strokeWidth={2} />}
           title={AdminI18n.t('users.editPerson')}
-          subtitle={`${person.email || AdminI18n.t('users.iperson', { id: person.id })} · ${person.source || 'contact'} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
+          subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || 'contact'} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-10">
@@ -140,7 +140,7 @@ export class PersonEditPage extends PersonEditPageActions {
             onClose={() => { this.confirmDelete = false; }}
             onConfirm={() => this.remove()}
             title={AdminI18n.t('users.deleteThisPerson')}
-            description={AdminI18n.t('users.isRemovedFromPeoplePermanently', { value: person.displayName || [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || `Person #${person.id}`, value2: linked ? ' Their login account is kept.' : '' })}
+            description={AdminI18n.t(linked ? 'users.isRemovedFromPeopleKeepsLogin' : 'users.isRemovedFromPeoplePermanently', { name: person.displayName || [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || AdminI18n.t('users.person', { id: person.id }) })}
             confirmLabel={AdminI18n.t('users.deletePerson')}
             variant={ButtonVariant.DANGER}
             isLoading={deleting}

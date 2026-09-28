@@ -1,4 +1,5 @@
 import type { IPluginBatchSettleHost } from '@/lib/interfaces/plugin-batch-settle-host.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginBatchUpdateWaitService {
   /** A docker api boot with a full plugin set takes ~60s; the budget must outlive it with margin. */
@@ -28,11 +29,11 @@ export class PluginBatchUpdateWaitService {
           return true;
         }
         host.reportSettleProgress(sawApiDown
-          ? 'API is back — waiting for the catalog to show the new versions...'
-          : 'Waiting for the API restart...');
+          ? AdminI18n.t('lib.apiIsBackWaitingFor')
+          : AdminI18n.t('lib.waitingForTheApiRestart'));
       } catch {
         sawApiDown = true;
-        host.reportSettleProgress('The API is restarting — waiting for it to come back...');
+        host.reportSettleProgress(AdminI18n.t('lib.theApiIsRestartingWaiting'));
       }
 
       await new Promise((resolve) => setTimeout(resolve, this.SETTLE_POLL_INTERVAL_MS));

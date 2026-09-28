@@ -22,7 +22,7 @@ export class UsersColumns {
   static build(theme: ThemeMode): any[] {
     return [
       {
-        header: 'User',
+        header: AdminI18n.t('users.user'),
         id: 'user',
         accessor: (user: IUser) => (
           <div className="flex items-center gap-4">
@@ -39,7 +39,7 @@ export class UsersColumns {
         )
       },
       {
-        header: 'Roles',
+        header: AdminI18n.t('users.roles'),
         id: 'roles',
         accessor: (user: IUser) => (
           <div className="flex flex-wrap gap-1">
@@ -52,7 +52,7 @@ export class UsersColumns {
         )
       },
       {
-        header: 'Status',
+        header: AdminI18n.t('users.status'),
         id: 'status',
         accessor: (user: IUser) => (
           <div className="flex items-center gap-2">
@@ -74,7 +74,7 @@ export class UsersColumns {
         )
       },
       {
-        header: 'Joined',
+        header: AdminI18n.t('users.joined'),
         id: 'createdAt',
         accessor: (user: IUser) => (
           <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">

@@ -1,3 +1,4 @@
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * One entry in the tenant switcher.
  *
@@ -36,7 +37,7 @@ export class TenantOption {
 
   /** What "open as its appearance" means for this workspace, in words. */
   get appearanceLabel(): string {
-    return this.appearance || 'default console';
+    return this.appearance || AdminI18n.t('lib.defaultConsole');
   }
 
   get label(): string {
