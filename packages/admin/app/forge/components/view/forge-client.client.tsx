@@ -3,6 +3,7 @@ import { PureReactor } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class ForgeClient extends PureReactor {
   render(): React.ReactNode {
