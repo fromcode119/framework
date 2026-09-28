@@ -5,6 +5,7 @@ import { SystemControllerRuntime } from '@api/controllers/system/system-controll
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 import { FrontendMetadataCachePolicy } from '@api/services/system/frontend-metadata-cache-policy';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -37,7 +38,20 @@ export class SystemMetadataController {
       // Only declared, operator-visible settings may leave here; the raw table also holds every
       // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
       metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
-      metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
+      // Plugin collection names, field labels and menu entries in the console's language, from each
+      // plugin's own dictionary; whatever a plugin has not translated goes out as declared.
+      const adminLocale = String((settings || []).find((row: any) => row?.key === SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE)?.value ?? '');
+      const localizer = AdminSchemaLocalization.forLocale(this.runtime.manager, adminLocale);
+      metadata.plugins = (metadata.plugins || []).map((plugin: any) => ({
+        ...plugin,
+        admin: {
+          ...plugin.admin,
+          collections: (plugin.admin?.collections || []).map((collection: any) => localizer.collection(plugin.slug, collection)),
+        },
+      }));
+      const adminLabels = new Map<string, string>((metadata.plugins || []).map((plugin: any) => [plugin.slug, String(plugin.admin?.label || '')]));
+      metadata.menu = localizer.menu(metadata.menu || [], (slug) => adminLabels.get(slug) || '');
+      metadata.secondaryPanel = localizer.panel(metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel(), 'system');
       // Two filters, one place. Platform-only entries (Sites, Sources) never reach a tenant admin's
       // payload; site-only entries never reach an operator standing on no site, because with no
       // tenant bound their screens would answer zero rows and say nothing about why. Both are applied

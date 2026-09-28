@@ -9,6 +9,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { TenantSwitcher } from '@/app/components/view/tenant-switcher.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class ClientLayoutHeader extends AdminComponent {
   @prop declare onMenuClick: () => void;
 
@@ -69,13 +70,13 @@ export class ClientLayoutHeader extends AdminComponent {
           <div className="flex items-center gap-2">
             <div className={`h-1.5 w-1.5 rounded-full ${apiStatus === ApiStatus.ONLINE ? 'bg-emerald-500' : apiStatus === ApiStatus.OFFLINE ? 'bg-rose-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
             <span className={`text-[11px] font-medium ${apiStatus === ApiStatus.OFFLINE ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
-              {apiStatus === ApiStatus.ONLINE ? 'Online' : apiStatus === ApiStatus.OFFLINE ? 'Offline' : 'Connecting'}
+              {AdminI18n.t(apiStatus === ApiStatus.ONLINE ? 'shell.status.online' : apiStatus === ApiStatus.OFFLINE ? 'shell.status.offline' : 'shell.status.connecting')}
             </span>
           </div>
           {isMaintenance ? (
             <div className="hidden items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 md:flex">
               <FrameworkIcons.Zap size={12} className="animate-pulse text-amber-500" />
-              <span className="text-[10px] font-semibold tracking-wide text-amber-600">Maintenance Mode Active</span>
+              <span className="text-[10px] font-semibold tracking-wide text-amber-600">{AdminI18n.t('shell.status.maintenance')}</span>
             </div>
           ) : null}
         </div>
@@ -85,8 +86,8 @@ export class ClientLayoutHeader extends AdminComponent {
             <button
               onClick={() => this.router.push(AdminConstants.ROUTES.MINIMAL)}
               className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 text-slate-700 transition-colors hover:border-cyan-400/60 hover:text-cyan-500 dark:border-slate-700 dark:text-slate-200"
-              aria-label="Open Atlantis Intelligence"
-              title="Open Atlantis Intelligence"
+              aria-label={AdminI18n.t('shell.assistant')}
+              title={AdminI18n.t('shell.assistant')}
             >
               <FrameworkIcons.Zap size={14} />
             </button>

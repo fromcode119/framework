@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "You are signed in, but not here."
@@ -46,11 +47,11 @@ export class WorkspaceAccessDenied extends AdminComponent {
             <FrameworkIcons.Lock size={40} />
           </div>
           <div className="space-y-2">
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">No access to this workspace</h1>
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.noAccess')}</h1>
             <p className="text-[13px] font-medium leading-relaxed text-slate-500">
               {name
-                ? <>Your account is not a member of <span className="font-bold text-indigo-500">{name}</span>, so there is nothing here for it to administer.</>
-                : <>Your account is not a member of the workspace this domain serves, so there is nothing here for it to administer.</>}
+                ? <>{AdminI18n.t('shell.workspace.notMemberOf', { name })}</>
+                : <>{AdminI18n.t('shell.workspace.notMember')}</>}
               {' '}Someone who administers it can add you.
             </p>
           </div>
@@ -59,7 +60,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
             onClick={this.signOut}
             className="w-full cursor-pointer rounded-lg bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
           >
-            Sign out and use another account
+            {AdminI18n.t('shell.workspace.switchAccount')}
           </button>
         </div>
       </div>

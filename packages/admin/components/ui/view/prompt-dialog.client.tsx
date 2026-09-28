@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PromptDialog extends AdminComponent {
   @prop declare isOpen: boolean;
@@ -66,9 +67,9 @@ export class PromptDialog extends AdminComponent {
   }
 
   render(): ReactNode {
-    const placeholder = this.placeholder ?? 'Enter value...';
-    const confirmLabel = this.confirmLabel ?? 'Confirm';
-    const cancelLabel = this.cancelLabel ?? 'Cancel';
+    const placeholder = this.placeholder ?? AdminI18n.t('ui.prompt.placeholder');
+    const confirmLabel = this.confirmLabel ?? AdminI18n.t('common.confirm');
+    const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
     const isLoading = this.isLoading ?? false;
     // RESOLVED, never read straight off the prop. Callers pass the raw literal (`inputType="password"`),
     // and a string has no `.value` — so `type={inputType.value}` was `undefined`, React omitted the

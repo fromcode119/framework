@@ -8,6 +8,7 @@ import { SecondarySidebarMobile } from '@/app/components/view/secondary-sidebar-
 import { SecondarySidebarAccessibilityService } from '@/app/services/secondary-sidebar-accessibility-service';
 import type { ISecondaryPanelContext, ISecondaryPanelItem } from '@fromcode119/react';
 import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SecondarySidebar extends AdminComponent {
   private static readonly accessibilityService = new SecondarySidebarAccessibilityService();
@@ -44,7 +45,7 @@ export class SecondarySidebar extends AdminComponent {
   }
 
   private get liveMessage(): string {
-    return this.panelContext ? `Secondary navigation: ${this.panelContext.label}` : 'Secondary navigation updated';
+    return this.panelContext ? AdminI18n.t('shell.nav.secondaryNamed', { name: this.panelContext.label }) : AdminI18n.t('shell.nav.secondaryUpdated');
   }
 
   private get hasItems(): boolean {

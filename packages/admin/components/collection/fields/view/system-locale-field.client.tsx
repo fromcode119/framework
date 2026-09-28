@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SystemLocaleOptionsService } from '@/components/collection/fields/system-locale-options-service';
 import { ISystemLocaleOption } from '@/components/collection/fields/interfaces/system-locale-option.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Built-in, framework-owned locale picker. Renders a dropdown of the platform's configured
@@ -45,7 +46,7 @@ export class SystemLocaleField extends Reactor {
         <Select
           value=""
           onChange={() => undefined}
-          options={[{ label: 'Loading locales…', value: '' }]}
+          options={[{ label: AdminI18n.t('ui.locales.loading'), value: '' }]}
           disabled
           theme={theme}
         />
@@ -57,7 +58,7 @@ export class SystemLocaleField extends Reactor {
         value={value || options[0]?.value || ''}
         onChange={(next: string) => onChange?.(next)}
         options={options}
-        placeholder="Select locale…"
+        placeholder={AdminI18n.t('ui.locales.select')}
         disabled={readOnly}
         theme={theme}
       />

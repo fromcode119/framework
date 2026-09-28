@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import type { IOverrideTarget } from '@/components/collection/edit/interfaces/override-target.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class EditPageDialogs extends PureReactor {
   @prop declare readOnlyOverrideTarget: IOverrideTarget | null;
   @prop declare setReadOnlyOverrideTarget: (target: IOverrideTarget | null) => void;
@@ -23,10 +24,10 @@ export class EditPageDialogs extends PureReactor {
           isOpen={Boolean(this.readOnlyOverrideTarget)}
           onClose={() => this.setReadOnlyOverrideTarget(null)}
           onConfirm={this.openReadOnlyOverridePasswordPrompt}
-          title="Unlock recorded values?"
-          description={`"${this.readOnlyOverrideTarget?.label || 'This field'}" is read-only because it is recorded automatically. Confirming unlocks every read-only field on this record for editing.`}
-          confirmLabel="Continue"
-          cancelLabel="Cancel"
+          title={AdminI18n.t('collection.edit.unlockTitle')}
+          description={AdminI18n.t('collection.edit.unlockText', { label: this.readOnlyOverrideTarget?.label || AdminI18n.t('collection.edit.thisField') })}
+          confirmLabel={AdminI18n.t('common.continue')}
+          cancelLabel={AdminI18n.t('common.cancel')}
           variant="primary"
         />
 
@@ -35,11 +36,11 @@ export class EditPageDialogs extends PureReactor {
           onClose={() => this.setReadOnlyOverridePasswordTarget(null)}
           onConfirm={this.handleReadOnlyOverridePasswordConfirm}
           isLoading={this.readOnlyOverrideVerifying}
-          title="Confirm it is you"
-          description="Enter your account password to unlock this record's read-only fields. The password is exchanged for a short-lived unlock and is not stored."
-          placeholder="Current password"
-          confirmLabel="Unlock record"
-          cancelLabel="Cancel"
+          title={AdminI18n.t('collection.edit.passwordTitle')}
+          description={AdminI18n.t('collection.edit.passwordText')}
+          placeholder={AdminI18n.t('collection.edit.passwordPlaceholder')}
+          confirmLabel={AdminI18n.t('collection.edit.unlockConfirm')}
+          cancelLabel={AdminI18n.t('common.cancel')}
           inputType="password"
         />
 
@@ -48,9 +49,9 @@ export class EditPageDialogs extends PureReactor {
           onClose={() => this.setShowDeleteConfirm(false)}
           onConfirm={this.handleDelete}
           isLoading={this.deleting}
-          title="Delete Record"
-          description="Are you sure you want to delete this record? This action is permanent and cannot be undone."
-          confirmLabel="Delete Permanently"
+          title={AdminI18n.t('collection.list.deleteOneTitle')}
+          description={AdminI18n.t('collection.list.deleteOneText')}
+          confirmLabel={AdminI18n.t('collection.edit.deletePermanently')}
         />
       </>
     );

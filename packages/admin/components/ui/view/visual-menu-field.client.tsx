@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Visual Menu Builder Component.
@@ -25,7 +26,7 @@ export class VisualMenuField extends PureReactor {
   @bound
   handleAddItem(): void {
     const newItem: Record<string, any> = {
-      label: 'New Menu Item',
+      label: AdminI18n.t('ui.menuField.newItem'),
       type: 'url',
       url: '/',
       parent: null,
@@ -102,7 +103,7 @@ export class VisualMenuField extends PureReactor {
         this.handleUpdateItem(index, f.name, value);
       },
       theme: this.theme,
-      placeholder: `Enter ${f.label || f.name}...`,
+      placeholder: AdminI18n.t('ui.field.enter', { label: f.label || f.name }),
     };
 
     if (f.type === 'relationship') {
@@ -151,7 +152,7 @@ export class VisualMenuField extends PureReactor {
                 <FrameworkIcons.Layout size={14} />
             </div>
             <div>
-                <span className={`text-[10px] font-semibold tracking-wide ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Menu Structure</span>
+                <span className={`text-[10px] font-semibold tracking-wide ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('ui.menuField.structure')}</span>
             </div>
          </div>
       </div>
@@ -220,7 +221,7 @@ export class VisualMenuField extends PureReactor {
         }`}
       >
         <FrameworkIcons.Plus size={14} />
-        <span className="text-[10px] font-semibold tracking-wide">Add Menu Item</span>
+        <span className="text-[10px] font-semibold tracking-wide">{AdminI18n.t('ui.menuField.add')}</span>
       </button>
     </div>
     );

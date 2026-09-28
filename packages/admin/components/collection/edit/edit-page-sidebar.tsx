@@ -9,6 +9,7 @@ import { FieldRenderer } from '@/components/collection/view/field-renderer.clien
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { PageDesignCard } from '@/components/collection/edit/view/page-design-card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditPageSidebar extends PureReactor {
   @prop declare slug: string;
@@ -56,7 +57,7 @@ export class EditPageSidebar extends PureReactor {
         <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
         {showPermalink && (
-          <Card title="Preview & Permalink">
+          <Card title={AdminI18n.t('collection.edit.permalinkCard')}>
             <PermalinkInput
               value={formData.customPermalink}
               onChange={(val) => handleInputChange('customPermalink', val)}
@@ -78,11 +79,11 @@ export class EditPageSidebar extends PureReactor {
                 <div className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${Boolean(formData.disablePermalink) ? 'bg-rose-500' : theme === ThemeMode.DARK ? 'bg-slate-700' : 'bg-slate-200'}`}>
                   <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${Boolean(formData.disablePermalink) ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
                 </div>
-                Disable public URL
+                {AdminI18n.t('ui.permalink.disable')}
               </button>
             )}
             <p className="mt-3 text-[11px] text-slate-400 font-medium leading-relaxed">
-              Click the path component to override the automatically generated slug.
+              {AdminI18n.t('collection.edit.permalinkHint')}
             </p>
           </Card>
         )}
@@ -140,9 +141,9 @@ export class EditPageSidebar extends PureReactor {
         )}
 
         {!hasBuiltInSidebarContent && (
-          <Card title="Settings">
+          <Card title={AdminI18n.t('collection.edit.settings')}>
             <p className="text-sm text-slate-500 leading-relaxed">
-              No sidebar fields are configured for this collection yet.
+              {AdminI18n.t('collection.edit.noSidebarFields')}
             </p>
           </Card>
         )}

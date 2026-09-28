@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { TimeOfDayUtils } from '@/components/ui/date-time-picker/time-of-day-utils';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The popover for TIME granularity: an hour and a minute stepper and nothing else — no calendar,
@@ -60,17 +61,17 @@ export class DateTimePickerTimePopover extends PureReactor {
               }`}>
                 <FrameworkIcons.Clock size={15} />
               </div>
-              <span className={`text-[11px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>Time</span>
+              <span className={`text-[11px] font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('ui.date.time')}</span>
             </div>
 
             <div className="flex shrink-0 items-end gap-1.5">
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 text-center">Hour</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
               <span className={`pb-2 text-[15px] font-bold ${dark ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 text-center">Min</span>
+                <span className="text-[9px] font-bold uppercase tracking-wider text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />
               </div>
             </div>
@@ -86,7 +87,7 @@ export class DateTimePickerTimePopover extends PureReactor {
                   : 'bg-slate-100 text-slate-700 hover:bg-rose-50 hover:text-rose-600 active:scale-95 ring-1 ring-black/5'
               }`}
             >
-              Clear
+              {AdminI18n.t('ui.date.clear')}
             </button>
             <Button
               variant={ButtonVariant.PRIMARY}
@@ -94,7 +95,7 @@ export class DateTimePickerTimePopover extends PureReactor {
               className="w-full rounded-xl font-semibold text-[13px] tracking-tight shadow-lg active:scale-[0.98] transition-all duration-150"
               onClick={onClose}
             >
-              Done
+              {AdminI18n.t('ui.date.done')}
             </Button>
           </div>
         </div>

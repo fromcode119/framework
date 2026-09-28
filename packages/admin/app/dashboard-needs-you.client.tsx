@@ -6,6 +6,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
 import { DashboardAttentionRow } from '@/app/dashboard-attention-row.client';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What needs the operator, before anything that merely counts.
@@ -39,7 +40,7 @@ export class DashboardNeedsYou extends AdminComponent {
 
     return (
       <div className="space-y-2">
-        <DashboardSectionHeading label="Needs you" count={this.items.length} />
+        <DashboardSectionHeading label={AdminI18n.t('dashboard.needsYou')} count={this.items.length} />
         <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
           {this.items.map((item) => (
             <DashboardAttentionRow key={String(item.key)} item={item} />

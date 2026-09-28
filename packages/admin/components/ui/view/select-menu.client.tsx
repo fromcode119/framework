@@ -9,6 +9,7 @@ import { UiFieldUtils } from '@/lib/ui';
 import { SelectUtils } from '@/components/ui/select-utils';
 import type { IOption } from '@/components/ui/interfaces/option.interface';
 import type { ISelectOptionGroup } from '@/components/ui/interfaces/select-option-group.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SelectMenu extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -84,7 +85,7 @@ export class SelectMenu extends PureReactor {
                     <input
                       ref={searchInputRef}
                       type="text"
-                      placeholder="Search options..."
+                      placeholder={AdminI18n.t('ui.select.search')}
                       value={searchValue}
                       onChange={(e) => onSearchChange(e.target.value)}
                       className={UiFieldUtils.getFieldClasses(FieldSize.SM, `pl-8 ${searchInputThemeClasses}`)}
@@ -105,13 +106,13 @@ export class SelectMenu extends PureReactor {
                     }`}
                   >
                     <FrameworkIcons.Plus size={12} className="flex-shrink-0" />
-                    <span className="truncate">{this.createLabel ?? `Create "${searchValue.trim()}"`}</span>
+                    <span className="truncate">{this.createLabel ?? AdminI18n.t('ui.select.create', { value: searchValue.trim() })}</span>
                   </button>
                 )}
                 {filteredOptions.length === 0 ? (
                   canCreate ? null : (
                   <div className="px-4 py-8 text-center">
-                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">No results found</p>
+                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">{AdminI18n.t('ui.select.noResults')}</p>
                   </div>
                   )
                 ) : (
@@ -125,7 +126,7 @@ export class SelectMenu extends PureReactor {
                         <div className={`px-3.5 pt-2 pb-1 text-[10px] font-semibold tracking-wide ${
                           theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'
                         }`}>
-                          {group.name}
+                          {group.name === 'Options' ? AdminI18n.t('ui.select.options') : group.name}
                         </div>
                       )}
                       {sections.map((section) => (
@@ -158,7 +159,7 @@ export class SelectMenu extends PureReactor {
                           ) : this.onDelete && opt.deletable ? (
                             <span
                               role="button"
-                              aria-label="Remove option"
+                              aria-label={AdminI18n.t('ui.select.removeOption')}
                               onClick={(event) => {
                                 event.preventDefault();
                                 event.stopPropagation();

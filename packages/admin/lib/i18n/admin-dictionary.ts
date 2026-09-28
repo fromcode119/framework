@@ -50,13 +50,27 @@ export class AdminDictionary {
     return AdminDictionary.read(AdminDictionary.FALLBACK_LOCALE, key) || key;
   }
 
+  /**
+   * A non-string entry (a table such as `slug.transliteration`) for this locale, or null when the
+   * language ships none. No English fallback: a table belongs to one language's script.
+   */
+  static section(locale: string, key: string): Record<string, unknown> | null {
+    const value = AdminDictionary.walk(AdminDictionary.normalize(locale), key);
+    return value && typeof value === 'object' && !Array.isArray(value) ? value as Record<string, unknown> : null;
+  }
+
   private static read(locale: string, key: string): string {
+    const value = AdminDictionary.walk(locale, key);
+    return typeof value === 'string' ? value : '';
+  }
+
+  private static walk(locale: string, key: string): unknown {
     let cursor: unknown = AdminDictionary.DICTIONARIES[locale];
     for (const segment of key.split('.')) {
-      if (!cursor || typeof cursor !== 'object') return '';
+      if (!cursor || typeof cursor !== 'object') return undefined;
       cursor = (cursor as Record<string, unknown>)[segment];
     }
-    return typeof cursor === 'string' ? cursor : '';
+    return cursor;
   }
 
   private static normalize(locale: string): string {

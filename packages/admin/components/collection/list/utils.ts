@@ -1,5 +1,6 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { AdminServices } from '@/lib/admin-services';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Utility class for collection list view rendering operations.
@@ -55,7 +56,7 @@ export class CollectionListUtils {
   static resolveCollectionLabel(collection: any, fallbackSlug: string): string {
     const displayName = String(collection?.displayName || collection?.name || '').trim();
     if (displayName) return displayName;
-    return CollectionListUtils.prettifyColumnName(String(fallbackSlug || '').trim() || 'Records');
+    return CollectionListUtils.prettifyColumnName(String(fallbackSlug || '').trim() || AdminI18n.t('collection.list.records'));
   }
 
   static resolveCollectionSingularLabel(collection: any, fallbackSlug: string): string {
@@ -67,11 +68,13 @@ export class CollectionListUtils {
   }
 
   static resolveCollectionSearchPlaceholder(collection: any, fallbackSlug: string): string {
-    return `Search ${CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug).toLowerCase()}...`;
+    const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
+    return AdminI18n.t('collection.list.searchPlaceholder', { name: label.toLowerCase(), label });
   }
 
   static resolveCollectionDescription(collection: any, fallbackSlug: string): string {
-    return `Manage and organize ${CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug).toLowerCase()} records.`;
+    const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
+    return AdminI18n.t('collection.list.description', { name: label.toLowerCase(), label });
   }
 
   static resolveBooleanBadge(fieldName: string, fieldLabel: string, raw: unknown): null | { variant: BadgeVariant; label: string } {
@@ -80,19 +83,19 @@ export class CollectionListUtils {
 
     const normalizedField = String(fieldLabel || fieldName || '').trim().toLowerCase();
     if (normalizedField === 'active') {
-      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Active' : 'Inactive' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.active' : 'common.inactive') };
     }
     if (normalizedField === 'enabled') {
-      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Enabled' : 'Disabled' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.enabled' : 'common.disabled') };
     }
     if (normalizedField === 'verified') {
-      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Verified' : 'Unverified' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.verified' : 'common.unverified') };
     }
     if (normalizedField === 'published') {
-      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Published' : 'Draft' };
+      return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.published' : 'common.draft') };
     }
 
-    return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: value ? 'Yes' : 'No' };
+    return { variant: value ? BadgeVariant.SUCCESS : BadgeVariant.GRAY, label: AdminI18n.t(value ? 'common.yes' : 'common.no') };
   }
 
   static shouldRenderBooleanBadge(field: any, fieldName: string, fieldLabel: string, raw: unknown): boolean {

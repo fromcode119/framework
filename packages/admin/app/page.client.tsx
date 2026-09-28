@@ -27,6 +27,7 @@ import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { state } from '@fromcode119/react-class-components';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class AdminPage extends AdminComponent {
   private mounted = false;
@@ -204,7 +205,7 @@ export class AdminPage extends AdminComponent {
               {/* What you were working on, before what there is a lot of. */}
               <DashboardRecentEdits />
 
-              <DashboardSectionHeading label="Recent activity" />
+              <DashboardSectionHeading label={AdminI18n.t('dashboard.recentActivity')} />
 
               {/* Activity Section. "View All" used to open /plugins, which is not where these log
                   entries live — the Activity Log is the surface that lists them all. */}

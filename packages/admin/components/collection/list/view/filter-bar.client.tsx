@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Select } from '@/components/ui/view/select.client';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FilterBar extends PureReactor {
   @prop declare collection?: any;
@@ -66,7 +67,7 @@ export class FilterBar extends PureReactor {
             className="w-full"
             triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
             options={[
-              { label: 'All Statuses', value: 'all' },
+              { label: AdminI18n.t('collection.list.allStatuses'), value: 'all' },
               ...this.statusOptions.map((option) => ({
                 label: option.label || option.value,
                 value: option.value
@@ -87,7 +88,7 @@ export class FilterBar extends PureReactor {
           }`}
         >
           <FrameworkIcons.Layout size={14} />
-          <span className="hidden lg:inline">Columns</span>
+          <span className="hidden lg:inline">{AdminI18n.t('collection.list.columns')}</span>
           <FrameworkIcons.Down size={13} className={`${this.showColumnsMenu ? 'rotate-180' : ''} transition-transform`} />
         </button>
 
@@ -118,7 +119,7 @@ export class FilterBar extends PureReactor {
             className="w-full"
             triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
             options={[
-              { label: `All ${field.label || this.prettifyColumnName(field.name)}`, value: 'all' },
+              { label: AdminI18n.t('collection.list.allOf', { label: field.label || this.prettifyColumnName(field.name) }), value: 'all' },
               ...(field.options || []).map((option: any) => ({
                 label: String(option?.label || option?.value || ''),
                 value: String(option?.value || '')

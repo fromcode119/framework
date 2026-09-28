@@ -8,6 +8,7 @@ import { Copy } from 'lucide-react';
 
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -85,8 +86,8 @@ export class CollectionListRowActions extends PureReactor {
         href={duplicateHref}
         onClick={(event) => event.stopPropagation()}
         className={`p-2.5 rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400' : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'}`}
-        title="Duplicate record"
-        aria-label="Duplicate record"
+        title={AdminI18n.t('collection.list.duplicate')}
+        aria-label={AdminI18n.t('collection.list.duplicate')}
       >
         <Copy size={16} />
       </Link> : null}
@@ -101,7 +102,7 @@ export class CollectionListRowActions extends PureReactor {
               ? 'hover:bg-indigo-500/10 text-slate-500 hover:text-indigo-400'
               : 'hover:bg-indigo-50 text-slate-400 hover:text-indigo-600'
         }`}
-        title={quickEditExpandedId === String(row.id) ? 'Close quick edit' : 'Quick edit inline'}
+        title={AdminI18n.t(quickEditExpandedId === String(row.id) ? 'collection.list.quickEditClose' : 'collection.list.quickEditOpen')}
       >
         <FrameworkIcons.Down
           size={16}

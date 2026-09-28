@@ -14,6 +14,7 @@ import { HostInfoClient } from '@/lib/tenants/host-info-client';
 import { TenantOption } from '@/lib/tenants/tenant-option';
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-choice';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Loads the active external appearance's runtime bundle BEFORE rendering the admin tree, so the
@@ -138,16 +139,16 @@ export class AppearanceRuntimeLoader extends Reactor {
       return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50 p-6 dark:bg-[#020617]">
         <div className={`w-full max-w-md ${AdminClass.SURFACE} p-8 text-center`}>
-          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">Workspace unavailable</h1>
+          <h1 className="text-lg font-semibold text-slate-900 dark:text-white">{AdminI18n.t('shell.workspace.unavailable')}</h1>
           <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
-            The admin workspace couldn’t be loaded. This is usually temporary — reload to try again.
+            {AdminI18n.t('shell.workspace.unavailableText')}
           </p>
           <button
             type="button"
             onClick={this.reload}
             className="mt-6 inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200"
           >
-            Reload
+            {AdminI18n.t('common.reload')}
           </button>
         </div>
       </div>

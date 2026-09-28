@@ -336,6 +336,7 @@ export { RuntimeService } from '@core/plugin/services/runtime/runtime-service';
 export { LifecycleService } from '@core/plugin/services/runtime/lifecycle-service';
 export { MiddlewareManager } from '@core/plugin/services/runtime/middleware-manager';
 export { AdminMetadataService } from '@core/plugin/services/admin/admin-metadata-service';
+export { AdminSchemaLocalizer } from '@core/plugin/services/admin/admin-schema-localizer';
 export { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
 export { PluginInstalledVersionService } from '@core/plugin/services/health/plugin-installed-version-service';
 export type { IPluginHealthEntryInput } from '@core/plugin/services/interfaces/plugin-health-entry-input.interface';

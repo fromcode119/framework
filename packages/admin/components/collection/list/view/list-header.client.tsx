@@ -8,6 +8,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListHeader extends PureReactor {
   @prop declare collection: any;
@@ -42,11 +43,11 @@ export class CollectionListHeader extends PureReactor {
                     </div>
                     <div className="min-w-0">
                       <h1 className="text-xl font-bold tracking-tight leading-tight text-slate-900 dark:text-white">
-                        {collection.slug === 'users' ? 'User Management' : displayName}
+                        {collection.slug === 'users' ? AdminI18n.t('collection.list.usersTitle') : displayName}
                       </h1>
                       <p className="text-xs font-medium text-slate-500 tracking-tight truncate">
                         {collection.slug === 'users'
-                          ? 'Manage system users, roles and security permissions.'
+                          ? AdminI18n.t('collection.list.usersDescription')
                           : CollectionListUtils.resolveCollectionDescription(collection, slug)}
                       </p>
                     </div>
@@ -72,7 +73,7 @@ export class CollectionListHeader extends PureReactor {
               className="h-9 px-4 rounded-lg font-semibold tracking-wide text-xs text-white"
               icon={<FrameworkIcons.Plus size={15} />}
             >
-              {collection.slug === 'users' ? 'Create User' : `New ${singularDisplayName}`}
+              {collection.slug === 'users' ? AdminI18n.t('collection.list.createUser') : AdminI18n.t('collection.list.newRecord', { name: singularDisplayName, label: displayName })}
             </Button>
           )}
         </div>

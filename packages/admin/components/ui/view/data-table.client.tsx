@@ -7,6 +7,7 @@ import { DataTableHead } from '@/components/ui/view/data-table-head.client';
 import { DataTableRow } from '@/components/ui/view/data-table-row.client';
 import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 import { Column } from '@/components/ui/column';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends PureReactor {
@@ -123,7 +124,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
             <div className="w-14 h-14 rounded-xl flex items-center justify-center mb-4 bg-slate-50 border border-slate-100 dark:bg-slate-800 dark:border-transparent">
               <FrameworkIcons.Search size={22} className="text-slate-400" />
             </div>
-            <p className="font-semibold text-slate-400 tracking-wide text-[12px]">{this.emptyMessage ?? 'No records found'}</p>
+            <p className="font-semibold text-slate-400 tracking-wide text-[12px]">{this.emptyMessage ?? AdminI18n.t('ui.table.empty')}</p>
           </div>
         </td>
       </tr>

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class SidebarMiniToggle extends PureReactor {
   @prop declare isMini: boolean | undefined;
   @prop declare onMiniToggle: (() => void) | undefined;
@@ -19,7 +20,7 @@ export class SidebarMiniToggle extends PureReactor {
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-500 transition-colors uppercase">Collapse Sidebar</span>}
+          {!isMini && <span className="ml-3 text-[11px] font-bold tracking-tight text-slate-500 transition-colors uppercase">{AdminI18n.t('shell.nav.collapse')}</span>}
         </button>
       </div>
     );

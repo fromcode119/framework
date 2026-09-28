@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class LoginTwoFactorFields extends PureReactor {
   @prop declare twoFactorMethod: TwoFactorMethod;
@@ -38,7 +39,7 @@ export class LoginTwoFactorFields extends PureReactor {
             className="rounded-lg"
             onClick={() => onSelectMethod(TwoFactorMethod.TOTP)}
           >
-            Authenticator Code
+            {AdminI18n.t('login.authenticatorCode')}
           </Button>
           <Button
             type="button"
@@ -47,12 +48,12 @@ export class LoginTwoFactorFields extends PureReactor {
             className="rounded-lg"
             onClick={() => onSelectMethod(TwoFactorMethod.RECOVERY)}
           >
-            Recovery Code
+            {AdminI18n.t('login.recoveryCode')}
           </Button>
         </div>
         {twoFactorMethod === TwoFactorMethod.TOTP ? (
           <Input
-            label="2FA Code"
+            label={AdminI18n.t('login.twoFactorCode')}
             placeholder="123456"
             type="text"
             required
@@ -64,7 +65,7 @@ export class LoginTwoFactorFields extends PureReactor {
           />
         ) : (
           <Input
-            label="Recovery Code"
+            label={AdminI18n.t('login.recoveryCode')}
             placeholder="ABCDE-12345"
             type="text"
             required

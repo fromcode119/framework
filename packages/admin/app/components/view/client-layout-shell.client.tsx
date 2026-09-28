@@ -20,6 +20,7 @@ import { ClientLayoutSiteStateHooks } from '@/app/services/client-layout-site-st
 import { SiteChooser } from '@/app/components/view/site-chooser.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 import { ReadOnlyAccessNotice } from '@/app/components/view/read-only-access-notice.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientLayoutChildrenProps> {
   @prop declare children: ReactNode;
@@ -68,7 +69,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
               <FrameworkIcons.User size={40} />
             </div>
             <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">Your account</h1>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('shell.account.yours')}</h1>
               <p className="text-sm font-medium leading-relaxed text-slate-500">
                 You're signed in as <span className="font-bold text-indigo-500">{authState.user.email}</span>. This area is for staff — manage your own profile, security and activity from your account.
               </p>
@@ -77,7 +78,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
               onClick={() => { window.location.href = accountUrl; }}
               className="w-full rounded-lg bg-slate-900 py-4 text-[11px] font-semibold tracking-wide text-white shadow-lg transition-transform hover:scale-[1.02] dark:bg-white dark:text-slate-900"
             >
-              Go to my account
+              {AdminI18n.t('shell.account.goToMine')}
             </button>
             <button
               onClick={() => {
@@ -86,7 +87,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
               }}
               className="w-full text-[11px] font-semibold tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
             >
-              Sign out
+              {AdminI18n.t('shell.account.signOut')}
             </button>
           </div>
         </div>
@@ -94,7 +95,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Signing you in" /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
     }
 
     // Signed in, but this workspace domain refuses the account — say so. Ahead of the login forward
@@ -105,7 +106,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
     }
 
     if (!authState.user && !authState.isAuthPage) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Forwarding to Authentication..." /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
     }
 
     if (authState.isAuthPage) {

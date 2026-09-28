@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditHeader extends PureReactor {
   @prop declare collection: any;
@@ -102,7 +103,7 @@ export class EditHeader extends PureReactor {
           </Link>
           <span className="text-slate-300">/</span>
           <span className={`text-[10px] font-semibold ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-500'}`}>
-            {isNew ? 'New Entry' : [resolvedTitleValue, `#${id.length > 8 ? `${id.substring(0, 8)}…` : id}`].filter(Boolean).join(' · ')}
+            {isNew ? AdminI18n.t('collection.edit.newEntry') : [resolvedTitleValue, `#${id.length > 8 ? `${id.substring(0, 8)}…` : id}`].filter(Boolean).join(' · ')}
           </span>
         </div>
 
@@ -110,12 +111,12 @@ export class EditHeader extends PureReactor {
           <div className="min-w-0">
             <h1 className={`text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {isNew
-                ? `Create ${singularCollectionLabel}`
-                : (resolvedTitleValue || `Untitled ${singularCollectionLabel}`)
+                ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
+                : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
               }
             </h1>
             <p className="text-slate-500 font-medium text-xs tracking-tight mt-0.5">
-              {isNew ? `Define a new record for ${collectionLabel.toLowerCase()}` : `Modify existing ${resolvedTitleValue || singularCollectionLabel.toLowerCase()}`}
+              {isNew ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel }) : AdminI18n.t('collection.edit.editSubtitle', { name: resolvedTitleValue || singularCollectionLabel.toLowerCase() })}
             </p>
           </div>
 
@@ -123,7 +124,7 @@ export class EditHeader extends PureReactor {
             {!isNew && (
               <div className="hidden lg:block relative group">
                  <Input 
-                    placeholder="Commit summary (optional)"
+                    placeholder={AdminI18n.t('collection.edit.summary')}
                     value={changeSummary}
                     onChange={this.onSummaryChange}
                     className="w-48 xl:w-64"
@@ -149,7 +150,7 @@ export class EditHeader extends PureReactor {
                 }`}
               >
                 <FrameworkIcons.Eye size={14} />
-                Preview
+                {AdminI18n.t('collection.edit.preview')}
               </a>
             )}
             {statusOptions.length > 0 && (
@@ -187,7 +188,7 @@ export class EditHeader extends PureReactor {
                 isLoading={saving}
                 icon={<FrameworkIcons.Save size={14} />}
               >
-                {isNew ? 'Create' : 'Save'}
+                {AdminI18n.t(isNew ? 'common.create' : 'common.save')}
               </Button>
             )}
 

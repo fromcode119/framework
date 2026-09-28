@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop, bound } from '@fromcode119/react-class-components';
 import { CodeEditor } from '@/components/ui/view/code-editor.client';
 import { UiFieldUtils } from '@/lib/ui';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Generic, framework-owned HTML editor with a live preview: the stored HTML on one side, the rendered
@@ -39,9 +40,9 @@ export class HtmlEditorField extends Reactor {
           <CodeEditor value={html} onChange={this.onHtmlChange} language="html" height="480px" disabled={readOnly} />
         </div>
         <div className="flex min-w-0 flex-col gap-1">
-          <label className={UiFieldUtils.TEXT.LABEL}>Preview</label>
+          <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('collection.edit.preview')}</label>
           <iframe
-            title="Preview"
+            title={AdminI18n.t('collection.edit.preview')}
             sandbox=""
             srcDoc={html}
             className="h-[480px] w-full rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800"

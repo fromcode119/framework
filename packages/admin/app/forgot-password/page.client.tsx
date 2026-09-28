@@ -8,6 +8,7 @@ import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ForgotPasswordPage extends AdminComponent {
   @state email = '';
@@ -27,9 +28,9 @@ export class ForgotPasswordPage extends AdminComponent {
         { email: this.email, context: 'admin' },
         { headers: { 'X-Reset-Context': 'admin' } }
       );
-      this.message = data?.message || 'If an account exists, a reset link has been sent.';
+      this.message = data?.message || AdminI18n.t('login.forgot.sent');
     } catch (err: any) {
-      this.error = err?.message || 'Unable to request password reset.';
+      this.error = err?.message || AdminI18n.t('login.forgot.failed');
     } finally {
       this.isLoading = false;
     }
@@ -45,7 +46,7 @@ export class ForgotPasswordPage extends AdminComponent {
               <FrameworkIcons.Lock size={30} className="text-white" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-              Reset Access
+              {AdminI18n.t('login.forgot.title')}
             </h1>
             <p className="text-slate-500 font-medium">Recover your {AppEnv.APP_NAME} admin account</p>
           </div>
@@ -64,7 +65,7 @@ export class ForgotPasswordPage extends AdminComponent {
 
             <form onSubmit={(event) => this.handleSubmit(event)} className="space-y-6" noValidate>
               <Input
-                label="Email Address"
+                label={AdminI18n.t('login.email')}
                 placeholder="name@company.com"
                 type="email"
                 required
@@ -73,14 +74,14 @@ export class ForgotPasswordPage extends AdminComponent {
               />
 
               <Button type="submit" className="w-full py-4 text-base" isLoading={isLoading}>
-                Send Reset Link
+                {AdminI18n.t('login.forgot.send')}
               </Button>
             </form>
           </div>
 
           <div className="mt-5 flex items-center justify-between text-xs font-semibold">
             <button onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
-              Back to Login
+              {AdminI18n.t('login.backToLogin')}
             </button>
           </div>
         </div>

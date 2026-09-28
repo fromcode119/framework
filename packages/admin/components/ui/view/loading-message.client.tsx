@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import {PureReactor, prop, state, Platform} from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The line under a spinner, changed every few seconds so a wait does not look frozen.
@@ -17,10 +18,10 @@ export class LoadingMessage extends PureReactor {
   private static readonly INTERVAL_MS = 2600;
 
   private static readonly PHRASES = [
-    'Just a moment',
-    'Getting things ready',
-    'Still working',
-    'Putting the pieces together',
+    'ui.loading.moment',
+    'ui.loading.ready',
+    'ui.loading.working',
+    'ui.loading.pieces',
   ];
 
   @prop declare className?: string;
@@ -46,7 +47,7 @@ export class LoadingMessage extends PureReactor {
 
   render(): ReactNode {
     // Keyed on the phrase so React replaces the node and the fade-in plays on every change.
-    const phrase = LoadingMessage.PHRASES[this.index];
+    const phrase = AdminI18n.t(LoadingMessage.PHRASES[this.index]);
     return (
       <p
         key={phrase}

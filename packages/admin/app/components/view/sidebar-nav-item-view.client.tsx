@@ -4,6 +4,7 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { FrameworkIcons } from '@fromcode119/react';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';
+import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 export class NavItemView extends Reactor {
   private static readonly adminServices = AdminServices.getInstance();
 
@@ -213,7 +214,7 @@ export class NavItemView extends Reactor {
                   {isSubActive && (
                     <span className="absolute left-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
                   )}
-                  <span className="whitespace-nowrap tracking-[-0.01em]">{child.label}</span>
+                  <span className="whitespace-nowrap tracking-[-0.01em]">{AdminNavText.menuLabel(child)}</span>
                 </Link>
               );
             })}

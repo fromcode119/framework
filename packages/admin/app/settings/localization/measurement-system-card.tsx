@@ -53,7 +53,7 @@ export class MeasurementSystemCard extends PureReactor {
           <Select
             value={this.country}
             onChange={this.setCountry}
-            options={[{ value: '', label: 'From the frontend language' }, ...CountryCatalog.OPTIONS]}
+            options={[{ value: '', label: 'From the frontend language' }, ...CountryCatalog.options()]}
             placeholder="Select country"
             searchable
             theme={this.theme}

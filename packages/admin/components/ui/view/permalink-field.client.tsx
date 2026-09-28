@@ -3,6 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PermalinkField extends PureReactor {
   @prop declare value: IPermalinkValue | null | undefined;
@@ -78,7 +79,7 @@ export class PermalinkField extends PureReactor {
             }`}
           />
         </div>
-        Disable public URL
+        {AdminI18n.t('ui.permalink.disable')}
       </button>
     </div>
   );

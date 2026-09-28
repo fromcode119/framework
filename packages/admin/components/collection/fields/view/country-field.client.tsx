@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { CountryCatalog } from '@/components/collection/fields/country-catalog';
 import { PlatformCountryDescription } from '@/lib/settings/platform-country-description';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Built-in, framework-owned country picker. Renders the complete ISO 3166-1 catalog as a searchable
@@ -31,8 +32,8 @@ export class CountryField extends PureReactor {
     const inherits = Boolean(field?.admin?.inheritsPlatformCountry);
     const platform = PlatformCountryUtils.resolve(this.globalSettings);
     const options = inherits
-      ? [{ value: '', label: `Platform country — ${CountryCatalog.labelFor(platform.country) || 'none'}` }, ...CountryCatalog.OPTIONS]
-      : CountryCatalog.OPTIONS;
+      ? [{ value: '', label: AdminI18n.t('ui.country.platform', { country: CountryCatalog.labelFor(platform.country) || AdminI18n.t('ui.country.none') }) }, ...CountryCatalog.options()]
+      : CountryCatalog.options();
 
     return (
       <div>
@@ -40,15 +41,15 @@ export class CountryField extends PureReactor {
           value={value || ''}
           onChange={(next: string) => onChange?.(next)}
           options={options}
-          placeholder="Select country…"
+          placeholder={AdminI18n.t('ui.country.select')}
           searchable
           disabled={readOnly}
           theme={theme}
         />
         {inherits && !value && (
           <p className="mt-1.5 text-xs text-slate-500">
-            In effect: {PlatformCountryDescription.describe(platform)}.{' '}
-            <a className="underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>Settings → Localization</a>
+            {AdminI18n.t('ui.country.inEffect', { description: PlatformCountryDescription.describe(platform) })}{' '}
+            <a className="underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>{AdminI18n.t('ui.country.settingsLink')}</a>
           </p>
         )}
       </div>

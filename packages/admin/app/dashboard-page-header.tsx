@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DashboardPageHeader extends PureReactor {
   @prop declare user: any;
@@ -47,7 +48,7 @@ export class DashboardPageHeader extends PureReactor {
       <CompactPageHeader
         theme={theme}
         icon={<FrameworkIcons.Layout size={18} strokeWidth={2.5} />}
-        title={`Hello, ${user?.email?.split('@')[0] || 'Administrator'}`}
+        title={AdminI18n.t('dashboard.hello', { name: user?.email?.split('@')[0] || AdminI18n.t('dashboard.administrator') })}
         subtitle={
           <>
             {status ? <>{status} • </> : null}{user?.email}

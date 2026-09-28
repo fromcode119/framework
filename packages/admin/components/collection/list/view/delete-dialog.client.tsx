@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListDeleteDialog extends PureReactor {
   @prop declare deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null;
@@ -18,14 +19,14 @@ export class CollectionListDeleteDialog extends PureReactor {
         onClose={onClose}
         onConfirm={onConfirm}
         isLoading={deleteLoading}
-        title={deleteDialogState?.mode === 'bulk' ? `Delete ${deleteDialogState.ids.length} records` : 'Delete record'}
+        title={deleteDialogState?.mode === 'bulk' ? AdminI18n.t('collection.list.deleteManyTitle', { count: deleteDialogState.ids.length }) : AdminI18n.t('collection.list.deleteOneTitle')}
         description={
           deleteDialogState?.mode === 'bulk'
-            ? `Are you sure you want to delete ${deleteDialogState.ids.length} selected records? This action is permanent and cannot be undone.`
-            : 'Are you sure you want to delete this record? This action is permanent and cannot be undone.'
+            ? AdminI18n.t('collection.list.deleteManyText', { count: deleteDialogState.ids.length })
+            : AdminI18n.t('collection.list.deleteOneText')
         }
-        confirmLabel={deleteDialogState?.mode === 'bulk' ? 'Delete Records' : 'Delete Record'}
-        cancelLabel="Cancel"
+        confirmLabel={AdminI18n.t(deleteDialogState?.mode === 'bulk' ? 'collection.list.deleteManyConfirm' : 'collection.list.deleteOneConfirm')}
+        cancelLabel={AdminI18n.t('common.cancel')}
         variant={ButtonVariant.DANGER}
       />
     );

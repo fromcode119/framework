@@ -7,6 +7,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { ByteSizeFormatter } from '@/lib/byte-size-formatter';
 import { DashboardSystemMeter } from '@/app/dashboard-system-meter.client';
 import { DashboardScheduleList } from '@/app/dashboard-schedule-list.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the machine is doing, and what the scheduler will do next.
@@ -68,7 +69,7 @@ export class DashboardSystemPanel extends AdminComponent {
   private get processLine(): string {
     const rss = Number(this.host?.memory?.processResidentBytes || 0);
     const nodeVersion = String(this.host?.process?.nodeVersion || '');
-    return [rss ? `${ByteSizeFormatter.format(rss)} in this process` : '', nodeVersion ? `Node ${nodeVersion}` : '']
+    return [rss ? AdminI18n.t('dashboard.systemPanel.rss', { size: ByteSizeFormatter.format(rss) }) : '', nodeVersion ? `Node ${nodeVersion}` : '']
       .filter((part) => part !== '')
       .join(' · ');
   }
@@ -77,7 +78,7 @@ export class DashboardSystemPanel extends AdminComponent {
     if (this.failed) {
       return (
         <div className={`p-3 ${AdminClass.SURFACE}`}>
-          <p className="text-[11px] text-slate-500">System metrics could not be read.</p>
+          <p className="text-[11px] text-slate-500">{AdminI18n.t('dashboard.systemPanel.failed')}</p>
         </div>
       );
     }
@@ -90,18 +91,18 @@ export class DashboardSystemPanel extends AdminComponent {
       <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
         <div className="flex items-center justify-between gap-3 px-3 py-2">
           <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">
-            {String(this.host?.host?.hostname || 'This machine')}
+            {String(this.host?.host?.hostname || AdminI18n.t('dashboard.systemPanel.thisMachine'))}
           </span>
           <span className="text-[10px] text-slate-400">{this.processLine}</span>
         </div>
 
         <div className="px-3 py-2 space-y-2">
-          <DashboardSystemMeter label="Memory" used={this.memory?.used ?? null} total={this.memory?.total ?? null} />
-          <DashboardSystemMeter label="Disk" used={this.disk?.used ?? null} total={this.disk?.total ?? null} />
+          <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.memory')} used={this.memory?.used ?? null} total={this.memory?.total ?? null} />
+          <DashboardSystemMeter label={AdminI18n.t('dashboard.systemPanel.disk')} used={this.disk?.used ?? null} total={this.disk?.total ?? null} />
           <DashboardSystemMeter
             label={`CPU · ${Number(this.host?.cpu?.cores || 0)} cores`}
             ratio={this.cpuPressure}
-            caption={this.cpuPressure === null ? 'not reported' : `load ${this.host?.cpu?.load1}`}
+            caption={this.cpuPressure === null ? AdminI18n.t('dashboard.systemPanel.notReported') : AdminI18n.t('dashboard.systemPanel.load', { load: this.host?.cpu?.load1 })}
           />
         </div>
 

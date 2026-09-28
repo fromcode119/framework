@@ -5,6 +5,7 @@ import { SiteClock } from '@/lib/site-clock';
 import { IZonedDateParts } from '@/lib/interfaces/zoned-date-parts.interface';
 import { ITimezoneOption } from '@/lib/interfaces/timezone-option.interface';
 import { IDateLocaleFormatter } from '@/lib/interfaces/date-locale-formatter.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class TimezoneUtils {
   private static readonly DEFAULT_TIMEZONE = 'UTC';
@@ -69,6 +70,11 @@ export class TimezoneUtils {
       const explicit = String(preferred || '').trim();
       if (explicit) return explicit;
       if (!Platform.isBrowser) return TimezoneUtils.DEFAULT_LOCALE;
+
+      // The console's language (Settings → Localization → "Admin default locale"): a Bulgarian console
+      // writes 28.09.2026, not the browser's 9/28/2026.
+      const fromConsole = String(AdminI18n.locale || '').trim();
+      if (fromConsole) return fromConsole;
 
       const fromBridge = String(TimezoneUtils.runtimeBridge()?.locale || '').trim();
       if (fromBridge) return fromBridge;
@@ -294,7 +300,8 @@ export class TimezoneUtils {
 
     (Date.prototype as any)[method.value] = function patchedDateLocale(this: Date, locales?: string | string[], options?: Intl.DateTimeFormatOptions) {
       const normalized = TimezoneUtils.withTimezoneOption(options, timezone);
-      return originals[method.value].call(this, locales, normalized);
+      // A call that names no locale formats in the console's language, like every other date on screen.
+      return originals[method.value].call(this, locales ?? TimezoneUtils.resolveSystemLocale(), normalized);
     } as IDateLocaleFormatter;
   }
 }

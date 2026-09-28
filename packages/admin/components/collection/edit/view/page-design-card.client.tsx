@@ -4,6 +4,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { AdminApi } from '@/lib/api';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Names the plugin whose design fills this storefront page while its Content Blocks are empty.
@@ -46,21 +47,21 @@ export class PageDesignCard extends Reactor {
   render(): ReactNode {
     const design = this.design;
     if (!design) return null;
-    const page = design.title || 'This page';
+    const page = design.title || AdminI18n.t('collection.pageDesign.thisPage');
     const blank = PageDesignCard.isBlank(this.content);
     return (
-      <Card title="Page design">
+      <Card title={AdminI18n.t('collection.pageDesign.title')}>
         <p className="text-sm text-slate-500 leading-relaxed">
-          {page} is a default page of <span className="font-semibold text-slate-600 dark:text-slate-300">{design.pluginName}</span>.{' '}
+          {AdminI18n.t('collection.pageDesign.defaultOf', { page, plugin: design.pluginName })}{' '}
           {blank
-            ? `While Content Blocks is empty, the site shows ${design.pluginName}'s own design here. Add blocks to replace it.`
-            : `Your Content Blocks replace ${design.pluginName}'s design. Remove every block to show it again.`}
+            ? AdminI18n.t('collection.pageDesign.blank', { plugin: design.pluginName })
+            : AdminI18n.t('collection.pageDesign.replaced', { plugin: design.pluginName })}
         </p>
         <a
           href={AdminPathUtils.toAdminPath(`/plugins/${design.pluginSlug}`)}
           className="mt-3 inline-block text-[12px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
         >
-          Open {design.pluginName}
+          {AdminI18n.t('collection.pageDesign.open', { plugin: design.pluginName })}
         </a>
       </Card>
     );

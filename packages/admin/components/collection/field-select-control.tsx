@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FieldSelectControl extends PureReactor {
   @prop declare field: ICollectionField;
@@ -104,7 +105,7 @@ export class FieldSelectControl extends PureReactor {
             persistSelected([...selectedValues, selected]);
           }}
           disabled={isFieldReadOnly || availableOptions.length === 0}
-          placeholder={availableOptions.length ? 'Select an option...' : 'All options selected'}
+          placeholder={AdminI18n.t(availableOptions.length ? 'ui.select.placeholder' : 'ui.select.allSelected')}
           theme={theme}
         />
       </div>

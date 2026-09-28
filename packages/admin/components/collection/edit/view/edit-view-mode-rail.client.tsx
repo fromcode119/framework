@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Reactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The Form / JSON view switch.
@@ -47,14 +48,14 @@ export class EditViewModeRail extends Reactor {
       <div
         className="sticky top-32 z-10 flex shrink-0 flex-col gap-1 rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950"
         role="group"
-        aria-label="Record view mode"
+        aria-label={AdminI18n.t('collection.edit.viewMode')}
       >
         <button
           type="button"
           onClick={this.showForm}
           className={this.buttonClass(!advancedView)}
-          title="Form view"
-          aria-label="Form view"
+          title={AdminI18n.t('collection.edit.formView')}
+          aria-label={AdminI18n.t('collection.edit.formView')}
           aria-pressed={!advancedView}
         >
           <FrameworkIcons.List size={15} />
@@ -63,8 +64,8 @@ export class EditViewModeRail extends Reactor {
           type="button"
           onClick={this.showJson}
           className={this.buttonClass(advancedView)}
-          title="JSON view"
-          aria-label="JSON view"
+          title={AdminI18n.t('collection.edit.jsonView')}
+          aria-label={AdminI18n.t('collection.edit.jsonView')}
           aria-pressed={advancedView}
         >
           <FrameworkIcons.Code size={15} />

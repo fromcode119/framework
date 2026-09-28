@@ -8,6 +8,7 @@ import { StructuredReadOnlyBlock } from '@/components/collection/fields/view/str
 import { StructuredReadOnlyGroup } from '@/components/collection/fields/view/structured-read-only-group.client';
 import { StructuredReadOnlyTable } from '@/components/collection/fields/view/structured-read-only-table.client';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Framework-owned, read-only renderer for structured/JSON field values — the legible replacement for
@@ -84,7 +85,7 @@ export class StructuredReadOnlyField extends Reactor {
       <div className={`flex items-center gap-2 border-b px-3 py-2 ${barClass}`}>
         <FrameworkIcons.Lock size={12} className={`shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
         <p className={`flex-1 text-[10.5px] font-semibold leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Recorded automatically — not editable here.
+          {AdminI18n.t('ui.structured.auto')}
         </p>
         {showCopy ? (
           <button
@@ -93,7 +94,7 @@ export class StructuredReadOnlyField extends Reactor {
             className={`shrink-0 inline-flex h-[22px] items-center gap-1 rounded-lg border px-2 text-[9px] font-semibold tracking-wide transition-colors ${buttonClass}`}
           >
             <FrameworkIcons.Copy size={11} />
-            {this.copied ? 'Copied' : 'Copy JSON'}
+            {AdminI18n.t(this.copied ? 'ui.structured.copied' : 'ui.structured.copy')}
           </button>
         ) : null}
       </div>
@@ -106,7 +107,7 @@ export class StructuredReadOnlyField extends Reactor {
     const filterLower = isLarge ? this.filterText.trim().toLowerCase() : '';
 
     if (node.kind === StructuredNodeKind.EMPTY) {
-      return <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nothing recorded yet.</p>;
+      return <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('ui.structured.empty')}</p>;
     }
 
     if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
@@ -123,7 +124,7 @@ export class StructuredReadOnlyField extends Reactor {
           <Input
             value={this.filterText}
             onChange={(event: any) => this.handleFilterChange(event?.target?.value ?? '')}
-            placeholder="Filter by key…"
+            placeholder={AdminI18n.t('ui.structured.filter')}
             className="mb-3"
           />
         ) : null}

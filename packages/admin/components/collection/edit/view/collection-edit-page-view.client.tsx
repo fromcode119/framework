@@ -15,6 +15,7 @@ import { CollectionCreateDisabled } from '@/components/collection/edit/collectio
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionEditPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -143,7 +144,7 @@ export class CollectionEditPageView extends Reactor {
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
         {canSave ? null : (
           <div className="fc-scope-notice">
-            <span className="fc-scope-notice__text">You can view this record. Your role does not include changing it, so it cannot be saved.</span>
+            <span className="fc-scope-notice__text">{AdminI18n.t('collection.edit.viewOnly')}</span>
           </div>
         )}
         <EditHeader

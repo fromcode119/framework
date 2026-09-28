@@ -10,6 +10,7 @@ import { UiFieldUtils } from '@/lib/ui';
 import { PermalinkInputUtils } from '@/components/ui/permalink-input-utils';
 import type { IPermalinkComputed } from '@/components/ui/interfaces/permalink-computed.interface';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PermalinkInput extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -81,7 +82,7 @@ export class PermalinkInput extends AdminComponent {
              <div className="flex items-start gap-2 shrink-0 pt-0.5">
                 {isCustomMode && (
                    <div className="h-5 px-1.5 flex items-center bg-indigo-500/10 text-indigo-600 text-[10px] font-bold rounded-lg border border-indigo-500/20">
-                      {isAbsoluteOverride ? 'Absolute Path' : 'Custom Path'}
+                      {AdminI18n.t(isAbsoluteOverride ? 'ui.permalink.absolute' : 'ui.permalink.custom')}
                    </div>
                 )}
                 <div className="text-slate-400 group-hover:text-indigo-500 transition-colors">
@@ -96,7 +97,7 @@ export class PermalinkInput extends AdminComponent {
     return (
       <div className="space-y-3 animate-in fade-in zoom-in-95 duration-200">
         <div className="flex justify-between items-end px-1">
-          <label className={UiFieldUtils.TEXT.LABEL}>Edit Path Override</label>
+          <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('ui.permalink.edit')}</label>
           {isCustomMode && (
             <button
               type="button"
@@ -104,7 +105,7 @@ export class PermalinkInput extends AdminComponent {
               className="text-[10px] font-bold text-rose-500 hover:text-rose-600 flex items-center gap-1 transition-colors"
             >
               <FrameworkIcons.Refresh size={8} />
-              Revert
+              {AdminI18n.t('ui.permalink.revert')}
             </button>
           )}
         </div>
@@ -125,8 +126,8 @@ export class PermalinkInput extends AdminComponent {
           }`}
         >
           {useAbsolutePath
-            ? 'Absolute path override enabled: this record bypasses the global prefix.'
-            : 'Relative path mode: this record inherits the global collection prefix.'}
+            ? AdminI18n.t('ui.permalink.absoluteHint')
+            : AdminI18n.t('ui.permalink.relativeHint')}
         </button>
 
         <div className="flex flex-col gap-2">
@@ -153,14 +154,14 @@ export class PermalinkInput extends AdminComponent {
                 className="flex-1 font-bold text-[11px]"
                 onClick={() => this.isEditing = false}
              >
-                Save Override
+                {AdminI18n.t('ui.permalink.save')}
              </Button>
              <Button
                 variant={ButtonVariant.GHOST}
                 className="px-4 text-[11px] font-bold"
                 onClick={() => this.isEditing = false}
              >
-                Cancel
+                {AdminI18n.t('common.cancel')}
              </Button>
           </div>
         </div>

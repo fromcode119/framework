@@ -16,6 +16,7 @@ import { CollectionListPageViewModelBuilder } from '@/components/collection/list
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -105,7 +106,7 @@ export class CollectionListPageView extends Reactor {
       // Without this the table fell back to "No records found" — a positive claim that the collection
       // is empty, when in fact the request failed.
       console.error('Failed to fetch collection data:', error);
-      this.loadError = error?.message || 'The records could not be loaded.';
+      this.loadError = error?.message || AdminI18n.t('collection.list.loadFailed');
     } finally {
       this.updateState('loading', false);
     }
@@ -117,7 +118,7 @@ export class CollectionListPageView extends Reactor {
     try {
       await RecordOperations.exportRecords(resolvedSlug, format, ids);
     } catch (error: any) {
-      alert(`Export failed: ${error?.message || 'Unknown error'}`);
+      alert(AdminI18n.t('collection.list.exportFailed', { message: error?.message || AdminI18n.t('common.unknownError') }));
     }
   }
 

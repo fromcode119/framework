@@ -9,6 +9,7 @@ import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ResetPasswordPage extends AdminComponent {
   @state token = '';
@@ -35,28 +36,28 @@ export class ResetPasswordPage extends AdminComponent {
     const confirmPassword = this.confirmPassword;
 
     if (!token) {
-      this.error = 'Reset token is required.';
+      this.error = AdminI18n.t('login.reset.tokenRequired');
       this.isLoading = false;
       return;
     }
     if (!newPassword || newPassword.length < 8) {
-      this.error = 'Password must be at least 8 characters.';
+      this.error = AdminI18n.t('login.reset.tooShort');
       this.isLoading = false;
       return;
     }
     if (newPassword !== confirmPassword) {
-      this.error = 'Passwords do not match.';
+      this.error = AdminI18n.t('login.reset.mismatch');
       this.isLoading = false;
       return;
     }
 
     try {
       const data = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.RESET_PASSWORD, { token, newPassword });
-      this.message = data?.message || 'Password reset successful. You can sign in now.';
+      this.message = data?.message || AdminI18n.t('login.reset.done');
       this.newPassword = '';
       this.confirmPassword = '';
     } catch (err: any) {
-      this.error = err?.message || 'Unable to reset password.';
+      this.error = err?.message || AdminI18n.t('login.reset.failed');
     } finally {
       this.isLoading = false;
     }
@@ -77,7 +78,7 @@ export class ResetPasswordPage extends AdminComponent {
               <FrameworkIcons.ShieldCheck size={30} className="text-white" />
             </div>
             <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-              Set New Password
+              {AdminI18n.t('login.reset.title')}
             </h1>
             <p className="text-slate-500 font-medium">Update your {AppEnv.APP_NAME} credentials</p>
           </div>
@@ -96,15 +97,15 @@ export class ResetPasswordPage extends AdminComponent {
 
             <form onSubmit={(event) => this.handleSubmit(event)} className="space-y-6" noValidate>
               <Input
-                label="Reset Token"
-                placeholder="Paste reset token"
+                label={AdminI18n.t('login.reset.token')}
+                placeholder={AdminI18n.t('login.reset.tokenPlaceholder')}
                 type="text"
                 required
                 value={token}
                 onChange={(event) => { this.token = event.target.value; }}
               />
               <Input
-                label="New Password"
+                label={AdminI18n.t('login.reset.newPassword')}
                 placeholder="••••••••"
                 type="password"
                 required
@@ -112,7 +113,7 @@ export class ResetPasswordPage extends AdminComponent {
                 onChange={(event) => { this.newPassword = event.target.value; }}
               />
               <Input
-                label="Confirm Password"
+                label={AdminI18n.t('login.reset.confirmPassword')}
                 placeholder="••••••••"
                 type="password"
                 required
@@ -121,17 +122,17 @@ export class ResetPasswordPage extends AdminComponent {
               />
 
               <Button type="submit" className="w-full py-4 text-base" isLoading={isLoading}>
-                Update Password
+                {AdminI18n.t('login.reset.submit')}
               </Button>
             </form>
           </div>
 
           <div className="mt-5 flex items-center justify-between text-xs font-semibold">
             <button onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
-              Back to Login
+              {AdminI18n.t('login.backToLogin')}
             </button>
             <Link href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
-              Need new link?
+              {AdminI18n.t('login.reset.needLink')}
             </Link>
           </div>
         </div>

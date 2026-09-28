@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RevisionModal extends PureReactor {
   @prop declare selectedRevision: any;
@@ -47,15 +48,15 @@ export class RevisionModal extends PureReactor {
        <Card className="relative w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-300 shadow-2xl">
           <div className="flex justify-between items-center mb-6">
              <div>
-                <h2 className="text-xs font-bold uppercase tracking-wide text-indigo-500">Version V{selectedRevision.version} Comparison</h2>
-                <p className="text-[11px] text-slate-500 font-medium mt-1">{selectedRevision.date.toLocaleString()} by {selectedRevision.user}</p>
+                <h2 className="text-xs font-bold uppercase tracking-wide text-indigo-500">{AdminI18n.t('collection.revision.title', { version: selectedRevision.version })}</h2>
+                <p className="text-[11px] text-slate-500 font-medium mt-1">{AdminI18n.t('collection.revision.meta', { date: selectedRevision.date.toLocaleString(), user: selectedRevision.user })}</p>
              </div>
              <div className="flex items-center gap-4">
                 <button 
                   onClick={() => setShowOnlyChanges(!showOnlyChanges)}
                   className={`text-[10px] font-bold uppercase tracking-wide px-3 py-1.5 rounded-lg border transition-all ${showOnlyChanges ? 'bg-indigo-500 text-white border-indigo-500' : 'bg-slate-100 text-slate-500 border-slate-200'}`}
                 >
-                  {showOnlyChanges ? 'Showing Changes' : 'Showing All Fields'}
+                  {AdminI18n.t(showOnlyChanges ? 'collection.revision.onlyChanges' : 'collection.revision.allFields')}
                 </button>
                 <button onClick={() => setSelectedRevision(null)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                     <FrameworkIcons.Close size={20} />
@@ -65,8 +66,8 @@ export class RevisionModal extends PureReactor {
 
           <div className={`${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'} overflow-hidden`}>
              <div className="grid grid-cols-2 border-b border-slate-200 dark:border-slate-800 bg-slate-100/50 dark:bg-slate-900/50">
-                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">Current Values</div>
-                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-indigo-500">Version V{selectedRevision.version} Values</div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-slate-400">{AdminI18n.t('collection.revision.current')}</div>
+                <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-wide text-indigo-500">{AdminI18n.t('collection.revision.versionValues', { version: selectedRevision.version })}</div>
              </div>
              <div className="max-h-[50vh] overflow-y-auto custom-scrollbar">
                 {Object.entries(selectedRevision.changes)
@@ -88,13 +89,13 @@ export class RevisionModal extends PureReactor {
                          <div className="p-4 border-r border-slate-100 dark:border-slate-800">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">{key}</span>
                             <div className="text-[11px] font-semibold text-slate-500 line-clamp-3">
-                               {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">Empty</span> : String(curVal))}
+                               {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(curVal))}
                             </div>
                          </div>
                          <div className="p-4">
                             <span className="text-[10px] font-bold text-indigo-500 uppercase block mb-1">{key}</span>
                             <div className={`text-[11px] font-semibold line-clamp-3 ${hasChanged ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-500'}`}>
-                               {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">Empty</span> : String(val))}
+                               {typeof val === 'object' ? JSON.stringify(val) : (val === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(val))}
                             </div>
                          </div>
                       </div>
@@ -107,7 +108,7 @@ export class RevisionModal extends PureReactor {
                      return JSON.stringify(curVal) !== JSON.stringify(revVal);
                 }).length === 0 && (
                   <div className="p-12 text-center">
-                     <p className="text-xs text-slate-400 font-semibold italic">No changes detected between current state and this version.</p>
+                     <p className="text-xs text-slate-400 font-semibold italic">{AdminI18n.t('collection.revision.noChanges')}</p>
                   </div>
                 )}
              </div>
@@ -122,7 +123,7 @@ export class RevisionModal extends PureReactor {
                   onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
                 >
                    <FrameworkIcons.Left size={12} className="mr-2" />
-                   Older
+                   {AdminI18n.t('collection.revision.older')}
                 </Button>
                 <Button 
                   variant={ButtonVariant.GHOST} 
@@ -130,7 +131,7 @@ export class RevisionModal extends PureReactor {
                   disabled={currentRevIndex <= 0}
                   onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
                 >
-                   Newer
+                   {AdminI18n.t('collection.revision.newer')}
                    <FrameworkIcons.Right size={12} className="ml-2" />
                 </Button>
              </div>
@@ -142,10 +143,10 @@ export class RevisionModal extends PureReactor {
                       setFormData({ ...formData, ...selectedRevision.changes });
                       setActiveVersionId(selectedRevision.id);
                       setSelectedRevision(null);
-                      setStatus({ type: NotificationType.SUCCESS, message: 'Revision applied to form. Click "Save Changes" to persist.' });
+                      setStatus({ type: NotificationType.SUCCESS, message: AdminI18n.t('collection.revision.applied') });
                    }}
                 >
-                   Preview in Form
+                   {AdminI18n.t('collection.revision.previewInForm')}
                 </Button>
                 <Button 
                    className="px-8 text-[10px] font-bold uppercase tracking-wide shadow-lg shadow-indigo-500/30"
@@ -153,7 +154,7 @@ export class RevisionModal extends PureReactor {
                    onClick={() => handleHardRestore(selectedRevision.version)}
                    icon={<FrameworkIcons.Refresh size={14} />}
                 >
-                   Restore Permanently
+                   {AdminI18n.t('collection.revision.restorePermanently')}
                 </Button>
              </div>
           </div>

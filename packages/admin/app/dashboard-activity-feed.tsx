@@ -6,6 +6,7 @@ import { Slot } from '@fromcode119/react';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DashboardActivityFeed extends PureReactor {
   @prop declare activity: any[];
@@ -19,10 +20,10 @@ export class DashboardActivityFeed extends PureReactor {
       <Card noPadding className="overflow-hidden border-0 bg-white shadow-sm ring-1 ring-slate-100 dark:bg-transparent dark:shadow-none dark:ring-0">
         <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 dark:border-slate-800">
            <div>
-            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">System Events</h3>
+            <h3 className="font-semibold text-sm tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('dashboard.systemEvents')}</h3>
             {/* Not "Real-time lifecycle telemetry": this list is a slice of one system-logs fetch made
                 on dashboard load, with no stream and no polling. */}
-            <p className="text-[11px] text-slate-400 mt-0.5">Most recent system log entries</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">{AdminI18n.t('dashboard.systemEventsHint')}</p>
            </div>
            <Button
              variant={ButtonVariant.GHOST}
@@ -52,7 +53,7 @@ export class DashboardActivityFeed extends PureReactor {
                     {item.title}
                   </p>
                   <span className="text-[11px] text-indigo-500 dark:text-indigo-400">
-                    {item.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : 'System'}
+                    {item.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system')}
                   </span>
                 </div>
                 <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
@@ -67,7 +68,7 @@ export class DashboardActivityFeed extends PureReactor {
                <div className="w-12 h-12 rounded-full bg-slate-50 dark:bg-slate-900/50 flex items-center justify-center mb-3">
                  <FrameworkIcons.Search size={20} className="text-slate-300" />
                </div>
-               <p className="text-[11px] font-medium text-slate-500">No telemetry recorded yet</p>
+               <p className="text-[11px] font-medium text-slate-500">{AdminI18n.t('dashboard.noTelemetry')}</p>
             </div>
           )}
         </div>

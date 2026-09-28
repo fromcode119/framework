@@ -4,6 +4,7 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { SystemLocaleOptionsService } from '@/components/collection/fields/system-locale-options-service';
 import { ISystemLocaleOption } from '@/components/collection/fields/interfaces/system-locale-option.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Built-in, framework-owned picker for SEVERAL system locales, in a deliberate order.
@@ -82,7 +83,7 @@ export class SystemLocalesField extends Reactor {
     const selected = this.selected;
 
     if (!loaded) {
-      return <div className="text-xs text-slate-400 py-2">Loading locales…</div>;
+      return <div className="text-xs text-slate-400 py-2">{AdminI18n.t('ui.locales.loading')}</div>;
     }
 
     return (
@@ -110,7 +111,7 @@ export class SystemLocalesField extends Reactor {
                 <button
                   type="button"
                   onClick={() => this.moveEarlier(option.value)}
-                  title="Move earlier"
+                  title={AdminI18n.t('ui.locales.moveEarlier')}
                   className="ml-0.5 px-1 py-1 text-[11px] text-slate-400 hover:text-indigo-500 transition-colors"
                 >
                   ↑
@@ -119,7 +120,7 @@ export class SystemLocalesField extends Reactor {
             </span>
           );
         })}
-        {!options.length && <span className="text-xs text-slate-400">No locales configured.</span>}
+        {!options.length && <span className="text-xs text-slate-400">{AdminI18n.t('ui.locales.none')}</span>}
       </div>
     );
   }

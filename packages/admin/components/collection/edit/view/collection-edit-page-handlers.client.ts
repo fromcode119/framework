@@ -5,6 +5,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
 import { CollectionEditUtils } from '@/components/collection/collection-edit-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Imperative handlers for the collection edit page (submit, revisions, delete, read-only override),
@@ -77,7 +78,7 @@ export class CollectionEditPageHandlers {
         readOnlyOverrideFields: {},
         readOnlyOverrideGrant: '',
         ...(saved ? { formData: saved, pristineFormData: saved } : { pristineFormData: { ...self.state.formData } }),
-        status: { type: NotificationType.SUCCESS, message: `Entry ${isNew ? 'created' : 'updated'} successfully` },
+        status: { type: NotificationType.SUCCESS, message: AdminI18n.t(isNew ? 'collection.edit.created' : 'collection.edit.updated') },
       });
       if (!isNew) CollectionEditPageHandlers.fetchRevisions(self, 1);
       if (isNew) self.props.router.push(`/${self.props.pluginSlug}/${self.props.slug}/${result.id}`);
@@ -104,11 +105,11 @@ export class CollectionEditPageHandlers {
   }
 
   private static parseSubmitError(err: any): { message: string; perField: Record<string, string[]> } {
-    let message = 'Operation failed';
+    let message = AdminI18n.t('collection.edit.failed');
     if (err?.data?.errors) {
       if (Array.isArray(err.data.errors)) {
         const items = err.data.errors as any[];
-        message = items.map((e) => (typeof e === 'string' ? e : e.message || e.field || 'Validation error')).join(', ');
+        message = items.map((e) => (typeof e === 'string' ? e : e.message || e.field || AdminI18n.t('collection.edit.validationError'))).join(', ');
         const perField: Record<string, string[]> = {};
         for (const e of items) {
           if (e && typeof e === 'object' && e.field) {
@@ -124,7 +125,7 @@ export class CollectionEditPageHandlers {
         return { message: Object.values(fieldErrors).flat().join(', '), perField: fieldErrors };
       }
     }
-    message = err?.message || 'Operation failed';
+    message = err?.message || AdminI18n.t('collection.edit.failed');
     return { message, perField: { base: [message] } };
   }
 
@@ -181,15 +182,15 @@ export class CollectionEditPageHandlers {
 
   static async handleHardRestore(self: any, version: number): Promise<void> {
     const { collection, resolvedSlug } = CollectionEditPageHandlers.context(self);
-    if (!confirm(`Are you sure you want to PERMANENTLY restore the live record to version ${version}? This will update the database immediately.`)) return;
+    if (!confirm(AdminI18n.t('collection.edit.hardRestoreConfirm', { version }))) return;
     self.setState({ restoringPermanently: true });
     try {
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.VERSIONS.RESTORE(resolvedSlug, self.props.id, version), {});
-      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), status: { type: NotificationType.SUCCESS, message: `Record permanently restored to version ${version}` }, selectedRevision: null });
+      self.setState({ formData: AdminServices.getInstance().entityFormData.normalizeLoadedRecord(collection, response.data), status: { type: NotificationType.SUCCESS, message: AdminI18n.t('collection.edit.hardRestored', { version }) }, selectedRevision: null });
       CollectionEditPageHandlers.fetchRevisions(self, 1);
     } catch (err: any) {
       console.error('Hard restore failed:', err);
-      self.setState({ status: { type: NotificationType.ERROR, message: err.message || 'Failed to restore record' } });
+      self.setState({ status: { type: NotificationType.ERROR, message: err.message || AdminI18n.t('collection.edit.restoreFailed') } });
     } finally {
       self.setState({ restoringPermanently: false });
     }
@@ -267,11 +268,11 @@ export class CollectionEditPageHandlers {
       self.setState({
         readOnlyOverrideGrant: grant,
         readOnlyOverrideFields: unlocked,
-        status: { type: NotificationType.SUCCESS, message: count > 1 ? `${count} read-only fields unlocked on this record.` : `${target.label} unlocked for manual override.` },
+        status: { type: NotificationType.SUCCESS, message: count > 1 ? AdminI18n.t('collection.edit.unlockedMany', { count }) : AdminI18n.t('collection.edit.unlockedOne', { label: target.label }) },
         readOnlyOverridePasswordTarget: null,
       });
     } catch (err: any) {
-      self.setState({ status: { type: NotificationType.ERROR, message: err?.message || 'Password verification failed' } });
+      self.setState({ status: { type: NotificationType.ERROR, message: err?.message || AdminI18n.t('collection.edit.passwordFailed') } });
     } finally {
       self.setState({ readOnlyOverrideVerifying: false });
     }

@@ -6,6 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import type { TenantOption } from '@/lib/tenants/tenant-option';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "Which site are you working in?" — the step between signing in and the admin, for an account that
@@ -63,7 +64,7 @@ export class SiteChooser extends AdminComponent {
           <span className="block truncate text-[13px] font-semibold text-slate-900 dark:text-white">{site.label}</span>
           <span className="block truncate text-[11px] text-slate-500">{site.primaryHost}</span>
         </span>
-        {this.failed === site.id ? <span className="text-[11px] font-semibold text-rose-500">Not available</span> : null}
+        {this.failed === site.id ? <span className="text-[11px] font-semibold text-rose-500">{AdminI18n.t('shell.chooser.unavailable')}</span> : null}
         {busy ? null : <FrameworkIcons.ChevronRight size={14} className="shrink-0 text-slate-400" />}
       </button>
     );
@@ -80,13 +81,13 @@ export class SiteChooser extends AdminComponent {
         <div className="w-full max-w-md space-y-5">
           <div className="space-y-1.5">
             <h1 className="text-xl font-bold tracking-tight text-slate-900 dark:text-white">
-              {this.isEmpty ? 'No site access' : 'Choose a site'}
+              {AdminI18n.t(this.isEmpty ? 'shell.chooser.noAccess' : 'shell.site.choose')}
             </h1>
             <p className="text-[12px] leading-relaxed text-slate-500">
               You're signed in as <span className="font-semibold text-indigo-500">{this.auth.user?.email}</span>.{' '}
               {this.isEmpty
-                ? 'Your account is not a member of any site yet, so there is nothing here to administer. A platform admin can add you to one.'
-                : 'What you can do is decided per site, so pick the one you want to work in. You can switch at any time from the header.'}
+                ? AdminI18n.t('shell.chooser.emptyText')
+                : AdminI18n.t('shell.chooser.text')}
             </p>
           </div>
           <div className="space-y-2">{this.sites.map((site) => this.renderSite(site))}</div>
@@ -95,7 +96,7 @@ export class SiteChooser extends AdminComponent {
             onClick={this.signOut}
             className="w-full text-[11px] font-semibold tracking-wide text-slate-400 transition-colors hover:text-slate-600 dark:hover:text-slate-300"
           >
-            Sign out
+            {AdminI18n.t('shell.account.signOut')}
           </button>
         </div>
       </div>

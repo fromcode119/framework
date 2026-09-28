@@ -9,6 +9,7 @@ import { TagFieldChips } from '@/components/ui/tag-field/view/chips.client';
 import { TagFieldSuggestions } from '@/components/ui/tag-field/view/suggestions.client';
 import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option.interface';
 import type { ITagFieldProps } from '@/components/ui/tag-field/interfaces/tag-field-props.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class TagField extends Reactor {
   declare props: Pick<ITagFieldProps, keyof ITagFieldProps>;
@@ -140,8 +141,8 @@ export class TagField extends Reactor {
     const { inputValue, suggestions, showSuggestions, sourceUnavailableMessage, labels, isCreating } = this;
     const tags = this.getTags();
     const inferredFieldLabel = TagFieldUtils.inferFieldLabel(fieldName);
-    const effectivePlaceholder = this.placeholder || (sourceCollection ? `Search ${inferredFieldLabel}...` : `Add ${inferredFieldLabel} and press Enter...`);
-    const effectiveSuggestionsLabel = this.suggestionsLabel || `Existing ${inferredFieldLabel}`;
+    const effectivePlaceholder = this.placeholder || (sourceCollection ? AdminI18n.t('ui.tags.search', { label: inferredFieldLabel }) : AdminI18n.t('ui.tags.add', { label: inferredFieldLabel }));
+    const effectiveSuggestionsLabel = this.suggestionsLabel || AdminI18n.t('ui.tags.existing', { label: inferredFieldLabel });
 
     return (
     <div className="relative w-full" ref={this.containerRef}>

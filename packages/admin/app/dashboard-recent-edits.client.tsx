@@ -8,6 +8,7 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 import { AdminServices } from '@/lib/admin-services';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Where you left off: the documents THIS operator last edited, newest first, one row each.
@@ -46,7 +47,7 @@ export class DashboardRecentEdits extends AdminComponent {
 
     return (
       <div className="space-y-2">
-        <DashboardSectionHeading label="Where you left off" />
+        <DashboardSectionHeading label={AdminI18n.t('dashboard.leftOff')} />
         <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
           {this.edits.map((edit) => (
             <button

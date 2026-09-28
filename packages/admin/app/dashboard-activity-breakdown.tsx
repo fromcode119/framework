@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Aggregates the recent activity log by source (plugin/system) into a compact share bar list. */
 export class DashboardActivityBreakdown extends PureReactor {
@@ -11,7 +12,7 @@ export class DashboardActivityBreakdown extends PureReactor {
 
     const counts: Record<string, number> = {};
     for (const item of activity || []) {
-      const key = item?.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : 'System';
+      const key = item?.plugin ? (item.plugin.charAt(0).toUpperCase() + item.plugin.slice(1)) : AdminI18n.t('dashboard.system');
       counts[key] = (counts[key] || 0) + 1;
     }
     const rows = Object.entries(counts)
@@ -21,9 +22,9 @@ export class DashboardActivityBreakdown extends PureReactor {
     const max = rows.reduce((m, r) => Math.max(m, r.value), 0) || 1;
 
     return (
-      <Card title="Activity by source">
+      <Card title={AdminI18n.t('dashboard.activityBySource')}>
         {rows.length === 0 ? (
-          <p className="text-xs text-slate-400 py-2">No activity in this window.</p>
+          <p className="text-xs text-slate-400 py-2">{AdminI18n.t('dashboard.noActivityWindow')}</p>
         ) : (
           <div className="space-y-2">
             {rows.map((r) => (

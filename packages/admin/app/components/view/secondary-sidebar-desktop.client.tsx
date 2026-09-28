@@ -4,6 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { ISecondaryPanelItem } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SecondarySidebarPanelBody } from '@/app/components/view/secondary-sidebar-panel-body.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class SecondarySidebarDesktop extends PureReactor {
   @prop declare items: ISecondaryPanelItem[];
   @prop declare sourceLabel: string;
@@ -31,7 +32,7 @@ export class SecondarySidebarDesktop extends PureReactor {
   }
 
   private get collapsedLabel(): string {
-    return (this.sourceLabel || 'Menu').trim();
+    return (this.sourceLabel || AdminI18n.t('shell.nav.menu')).trim();
   }
 
   @bound
@@ -50,8 +51,8 @@ export class SecondarySidebarDesktop extends PureReactor {
           <button
             ref={this.triggerRef}
             type="button"
-            title={`Open ${collapsedLabel} navigation`}
-            aria-label={`Open ${collapsedLabel} navigation`}
+            title={AdminI18n.t('shell.nav.openNamed', { name: collapsedLabel })}
+            aria-label={AdminI18n.t('shell.nav.openNamed', { name: collapsedLabel })}
             aria-expanded="false"
             aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
             onClick={this.onOpen}
@@ -72,7 +73,7 @@ export class SecondarySidebarDesktop extends PureReactor {
         className={`${this.isOverlay
           ? `fixed top-16 ${this.overlayLeftClass || 'left-64'} z-40 h-[calc(100vh-4rem)] rounded-r-xl`
           : 'sticky top-0 z-30 ml-[-1px] h-screen shrink-0'} flex w-[var(--secondary-sidebar-width)] overflow-hidden border-r shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)] ${this.hasActiveItem ? 'border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98)_0%,rgba(244,246,255,0.60)_100%)] ring-1 ring-inset ring-indigo-100/20 dark:border-slate-800 dark:bg-[linear-gradient(180deg,rgba(30,41,59,0.96)_0%,rgba(37,99,235,0.05)_100%)] dark:ring-indigo-500/5' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-[#020617]'}`}
-        aria-label="Secondary navigation"
+        aria-label={AdminI18n.t('shell.nav.secondary')}
         onMouseEnter={this.onPanelMouseEnter}
         onMouseLeave={this.onPanelMouseLeave}
       >
@@ -80,7 +81,7 @@ export class SecondarySidebarDesktop extends PureReactor {
           type="button"
           onClick={this.onClose}
           className="absolute right-3 top-3 z-10 inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:text-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-          aria-label="Minimize secondary navigation"
+          aria-label={AdminI18n.t('shell.nav.minimize')}
         >
           <FrameworkIcons.Left size={14} />
         </button>
