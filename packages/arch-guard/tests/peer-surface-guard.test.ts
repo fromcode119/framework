@@ -50,7 +50,7 @@ ${extra}}
 
   /**
    * A map drawing on TWO classes. Only the last class was checked, so a method missing from the FIRST
-   * shipped — ecommerce's listDeliveredSales, which finance then could not call.
+   * shipped, and the peer that called it got "is not callable".
    */
   it('checks every class a map draws on, not only the last one', () => {
     const { root, restore } = tree();

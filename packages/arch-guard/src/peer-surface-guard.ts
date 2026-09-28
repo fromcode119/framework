@@ -51,8 +51,9 @@ export class PeerSurfaceGuard {
       checked++;
 
       // EVERY class the map draws on. Only the last one used to be checked, so a map listing two classes
-      // (ecommerce: its public API and its fulfilment API) never looked at the first — and a method added
-      // to it but not to the map shipped, and failed as "is not callable" when finance called it.
+      // (a plugin's public API and a second, feature-specific API class) never looked at the first — and
+      // a method added to it but not to the map shipped, and failed as "is not callable" when a peer
+      // called it.
       for (const [className, exposed] of map) {
         const source = PeerSurfaceGuard.classSource(path.join(pluginsDir, entry.name), className);
         if (!source) continue;
