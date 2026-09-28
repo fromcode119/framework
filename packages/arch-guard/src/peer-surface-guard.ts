@@ -48,14 +48,19 @@ export class PeerSurfaceGuard {
       const map = PeerSurfaceGuard.objectMap(index);
       // The class shape exposes everything; there is no second list to fall out of step with.
       if (!map) continue;
-
-      const source = PeerSurfaceGuard.classSource(path.join(pluginsDir, entry.name), map.className);
-      if (!source) continue;
       checked++;
 
-      for (const method of PeerSurfaceGuard.statics(source)) {
-        if (map.exposed.has(method) || PeerSurfaceGuard.NOT_PEER_CALLABLE.has(method)) continue;
-        findings.push(`plugins/${entry.name}: ${map.className}.${method} is not in the publicAPI map in index.ts`);
+      // EVERY class the map draws on. Only the last one used to be checked, so a map listing two classes
+      // (a plugin's public API and a second, feature-specific API class) never looked at the first — and
+      // a method added to it but not to the map shipped, and failed as "is not callable" when a peer
+      // called it.
+      for (const [className, exposed] of map) {
+        const source = PeerSurfaceGuard.classSource(path.join(pluginsDir, entry.name), className);
+        if (!source) continue;
+        for (const method of PeerSurfaceGuard.statics(source)) {
+          if (exposed.has(method) || PeerSurfaceGuard.NOT_PEER_CALLABLE.has(method)) continue;
+          findings.push(`plugins/${entry.name}: ${className}.${method} is not in the publicAPI map in index.ts`);
+        }
       }
     }
 
@@ -77,16 +82,19 @@ export class PeerSurfaceGuard {
     return 0;
   }
 
-  /** The `publicAPI = { key: Class.method }` shape, or null for the class shape / no publicAPI. */
-  private static objectMap(index: string): { className: string; exposed: Set<string> } | null {
+  /**
+   * The `publicAPI = { key: Class.method }` shape, as class -> the method names the map takes from it;
+   * null for the class shape / no publicAPI. A map may draw on several classes.
+   */
+  private static objectMap(index: string): Map<string, Set<string>> | null {
     if (!/publicAPI\s*=\s*\{/.test(index)) return null;
-    const exposed = new Set<string>();
-    let className = '';
-    for (const match of index.matchAll(/([A-Za-z0-9_]+)\s*:\s*([A-Za-z0-9_]+PublicApi|[A-Za-z0-9_]+PublicAPI)\s*\./g)) {
-      exposed.add(match[1]!);
-      className = match[2]!;
+    const classes = new Map<string, Set<string>>();
+    for (const match of index.matchAll(/([A-Za-z0-9_]+)\s*:\s*([A-Za-z0-9_]+PublicApi|[A-Za-z0-9_]+PublicAPI)\s*\.([A-Za-z0-9_]+)/g)) {
+      const exposed = classes.get(match[2]!) ?? new Set<string>();
+      exposed.add(match[3]!);
+      classes.set(match[2]!, exposed);
     }
-    return className ? { className, exposed } : null;
+    return classes.size ? classes : null;
   }
 
   private static classSource(pluginDir: string, className: string): string | null {
