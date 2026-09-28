@@ -276,6 +276,10 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'true', description: "Allow new customer self-registration.", group: "security" },
     },
+    [SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: 'true', description: "Keep email addresses and phone numbers out of the storefront's HTML so harvesters find none; visitors still see and use them.", group: "security" },
+    },
     [SystemConstants.META_KEY.EMAIL_NOTIFICATIONS]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'true', description: "Receive system alerts via email.", group: "Engagement" },

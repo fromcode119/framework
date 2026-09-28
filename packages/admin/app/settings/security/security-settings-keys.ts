@@ -17,6 +17,7 @@ import { SystemConstants } from '@fromcode119/core/client';
 export class SecuritySettingsKeys {
   static readonly ALL: readonly string[] = [
     SystemConstants.META_KEY.TWO_FACTOR_ENABLED,
+    SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION,
     SystemConstants.META_KEY.AUTH_SESSION_DURATION,
     SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS,
     SystemConstants.META_KEY.RATE_LIMIT_MAX,
