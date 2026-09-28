@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The things that are not configured and will silently not work — email being the sharp one, since
@@ -36,8 +37,8 @@ export class DashboardMissingConfig extends AdminComponent {
     return (
       <div className="space-y-2">
         <DashboardSectionHeading
-          label="Configuration"
-          count={this.outstanding > 0 ? `${this.outstanding} to do` : 'all set'}
+          label={AdminI18n.t('dashboard.configuration')}
+          count={this.outstanding > 0 ? AdminI18n.t('dashboard.toDo', { count: this.outstanding }) : AdminI18n.t('dashboard.allSet')}
         />
         <div className={`${AdminClass.SURFACE} divide-y divide-slate-200/70 dark:divide-slate-800/70`}>
           {this.items.map((item) => (

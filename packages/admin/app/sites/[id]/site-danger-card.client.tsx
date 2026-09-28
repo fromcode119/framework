@@ -9,6 +9,8 @@ import { PromptDialog } from '@/components/ui/view/prompt-dialog.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /** Delete. An export is written FIRST, every time; the typed slug is the confirmation. */
 export class SiteDangerCard extends AdminComponent {
@@ -29,7 +31,7 @@ export class SiteDangerCard extends AdminComponent {
   @bound
   async confirm(typed: string): Promise<void> {
     if (typed.trim() !== this.site.slug) {
-      this.runtime.notify.addNotification({ title: 'Not deleted', message: `Type "${this.site.slug}" exactly to confirm.`, type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notDeleted'), message: AdminI18n.t('sites.typeExactlyToConfirm', { slug: this.site.slug }), type: NotificationType.ERROR });
       return;
     }
     this.busy = true;
@@ -37,13 +39,13 @@ export class SiteDangerCard extends AdminComponent {
       const result = await SitesClient.remove(this.site.id, typed.trim());
       this.open = false;
       this.runtime.notify.addNotification({
-        title: 'Site deleted',
-        message: `Exported to ${result.archive} first; ${Object.values(result.deleted).reduce((a, b) => a + b, 0)} rows and ${result.files} files removed.`,
+        title: AdminI18n.t('sites.siteDeleted'),
+        message: AdminI18n.t('sites.exportedToFirstRowsAnd', { archive: result.archive, reduce: Object.values(result.deleted).reduce((a, b) => a + b, 0), files: result.files }),
         type: NotificationType.INFO,
       });
       this.onDeleted();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Delete failed', message: err?.message || 'Nothing was deleted.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.deleteFailed'), message: err?.message || AdminI18n.t('sites.nothingWasDeleted'), type: NotificationType.ERROR });
     } finally {
       this.busy = false;
     }
@@ -51,22 +53,21 @@ export class SiteDangerCard extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card title="Delete this site" icon={<FrameworkIcons.Warning size={16} />} className="fc-sites__danger">
+      <Card title={AdminI18n.t('sites.deleteThisSite')} icon={<FrameworkIcons.Warning size={16} />} className="fc-sites__danger">
         <p className="fc-sites__text">
-          Removes every row and file that belongs to <strong>{this.site.slug}</strong> and its memberships. Accounts are kept — a person may belong to
-          other sites. An export is written to Backups → Sites <em>before</em> anything is removed; it is the only way back.
+          <AdminRichText k="sites.deleteExplained" vars={{ slug: this.site.slug }} />
         </p>
         <div className="fc-sites__actions">
-          <Button variant={ButtonVariant.DANGER} onClick={this.ask} icon={<FrameworkIcons.Trash size={14} />}>Export and delete…</Button>
+          <Button variant={ButtonVariant.DANGER} onClick={this.ask} icon={<FrameworkIcons.Trash size={14} />}>{AdminI18n.t('sites.exportAndDelete2')}</Button>
         </div>
         <PromptDialog
           isOpen={this.open}
           onClose={this.close}
           onConfirm={this.confirm}
-          title={`Delete ${this.site.slug}?`}
-          description={`Type the slug "${this.site.slug}" to confirm. The export is written first.`}
+          title={AdminI18n.t('sites.delete', { slug: this.site.slug })}
+          description={AdminI18n.t('sites.typeTheSlugToConfirm', { slug: this.site.slug })}
           placeholder={this.site.slug}
-          confirmLabel="Export and delete"
+          confirmLabel={AdminI18n.t('sites.exportAndDelete')}
           isLoading={this.busy}
           icon={<FrameworkIcons.Trash size={16} />}
         />

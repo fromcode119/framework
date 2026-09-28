@@ -8,6 +8,7 @@ import { IntegrationSelectors } from '@/app/settings/integrations/integration-se
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Orchestrates data-mutation actions (load, save, toggle, remove, editor
@@ -61,8 +62,8 @@ export class IntegrationPageController {
     } catch (error: any) {
       this.host.notify({
         type: NotificationType.ERROR,
-        title: 'Failed to load integrations',
-        message: error?.message || 'Unable to read integration configuration.'
+        title: AdminI18n.t('settings.integrations.failedToLoadIntegrations'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToReadIntegrationConfiguration')
       });
     } finally {
       if (this.host.isMounted()) this.host.setState({ loading: false });
@@ -120,13 +121,13 @@ export class IntegrationPageController {
     if (!activeIntegration || !editor) return;
     const providerDefinition = activeIntegration.providers.find((provider) => provider.key === editor.providerKey);
     if (!providerDefinition) {
-      this.host.notify({ type: NotificationType.ERROR, title: 'Invalid provider', message: 'Selected provider is not available for this integration type.' });
+      this.host.notify({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.invalidProvider'), message: AdminI18n.t('settings.integrations.selectedProviderIsNotAvailable') });
       return;
     }
 
     const validationErrors = IntegrationProviderFormHelper.validate(providerDefinition.fields || [], editor);
     if (validationErrors.length) {
-      this.host.notify({ type: NotificationType.ERROR, title: 'Configuration invalid', message: validationErrors[0] });
+      this.host.notify({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.configurationInvalid'), message: validationErrors[0] });
       return;
     }
 
@@ -141,11 +142,11 @@ export class IntegrationPageController {
       this.host.setState({ selectedProviderId: nextProviderId, editor: null, removeCandidateId: null });
       this.host.notify({
         type: NotificationType.SUCCESS,
-        title: editor.isNew ? 'Provider added' : 'Provider updated',
-        message: `${providerDefinition.label} configuration saved.`
+        title: editor.isNew ? AdminI18n.t('settings.integrations.providerAdded') : AdminI18n.t('settings.integrations.providerUpdated'),
+        message: AdminI18n.t('settings.integrations.configurationSaved', { label: providerDefinition.label })
       });
     } catch (error: any) {
-      this.host.notify({ type: NotificationType.ERROR, title: 'Save failed', message: error?.message || 'Unable to save provider configuration.' });
+      this.host.notify({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.saveFailed'), message: error?.message || AdminI18n.t('settings.integrations.unableToSaveProviderConfiguration') });
     } finally {
       this.host.setState({ saving: false });
     }
@@ -164,11 +165,11 @@ export class IntegrationPageController {
       this.applyIntegrationUpdate(updatedIntegration);
       this.host.notify({
         type: NotificationType.SUCCESS,
-        title: 'Provider status updated',
+        title: AdminI18n.t('settings.integrations.providerStatusUpdated'),
         message: `${provider.name || provider.providerKey} is now ${provider.enabled === false ? 'enabled' : 'disabled'}.`
       });
     } catch (error: any) {
-      this.host.notify({ type: NotificationType.ERROR, title: 'Status update failed', message: error?.message || 'Unable to change provider status.' });
+      this.host.notify({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.statusUpdateFailed'), message: error?.message || AdminI18n.t('settings.integrations.unableToChangeProviderStatus') });
     } finally {
       this.host.setState({ changingProviderId: null });
     }
@@ -187,11 +188,11 @@ export class IntegrationPageController {
       this.host.setState({ selectedProviderId: nextSelected, editor: null, removeCandidateId: null });
       this.host.notify({
         type: NotificationType.SUCCESS,
-        title: 'Provider removed',
-        message: `${provider.name || provider.providerKey} has been removed.`
+        title: AdminI18n.t('settings.integrations.providerRemoved'),
+        message: AdminI18n.t('settings.integrations.hasBeenRemoved', { name: provider.name || provider.providerKey })
       });
     } catch (error: any) {
-      this.host.notify({ type: NotificationType.ERROR, title: 'Remove failed', message: error?.message || 'Unable to remove provider.' });
+      this.host.notify({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.removeFailed'), message: error?.message || AdminI18n.t('settings.integrations.unableToRemoveProvider') });
     } finally {
       this.host.setState({ changingProviderId: null });
     }

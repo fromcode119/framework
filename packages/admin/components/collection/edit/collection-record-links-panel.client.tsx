@@ -6,6 +6,7 @@ import type { IRecordsHubItem } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "What else relates to this record?" — the panel an order, a client or a subscription gets once its
@@ -52,8 +53,8 @@ export class CollectionRecordLinksPanel extends PureReactor {
       <div className="mt-6">
         <RecordsHub
           theme={this.theme}
-          title={declaration.title || 'Related records'}
-          emptyHint={declaration.emptyHint || 'No other plugin holds a record linked to this one yet.'}
+          title={declaration.title || AdminI18n.t('collection.edit.relatedRecords')}
+          emptyHint={declaration.emptyHint || AdminI18n.t('collection.edit.relatedEmpty')}
           reloadKey={`${declaration.kind}:${this.recordId}:${Object.values(keys).join('|')}`}
           load={() => AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.RECORD_LINKS(declaration.kind, this.recordId, keys))}
           onOpenItem={(item: IRecordsHubItem) => RecordsHubOpenItem.open(item, this.navigate)}

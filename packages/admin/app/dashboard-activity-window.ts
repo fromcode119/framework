@@ -25,7 +25,7 @@ export class DashboardActivityWindow {
       day.setDate(day.getDate() - offset);
       const key = day.toISOString().slice(0, 10);
       index[key] = buckets.length;
-      buckets.push({ key, label: day.toLocaleDateString([], { month: 'short', day: 'numeric' }), total: 0, errors: 0 });
+      buckets.push({ key, label: day.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }), total: 0, errors: 0 });
     }
 
     for (const entry of activity || []) {

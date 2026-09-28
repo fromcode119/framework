@@ -9,6 +9,7 @@ import { NewUserRolesCard } from '@/app/users/new/components/view/new-user-roles
 import { NewUserAccountFields } from '@/app/users/new/components/view/new-user-account-fields.client';
 import { NewUserAccessControls } from '@/app/users/new/components/view/new-user-access-controls.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewUserPage extends AdminComponent {
   private mounted = false;
@@ -46,7 +47,7 @@ export class NewUserPage extends AdminComponent {
     } catch (err) {
       if (!this.mounted) return;
       console.error('Failed to load roles:', err);
-      this.errors = { ...this.errors, roles: 'Failed to load roles' };
+      this.errors = { ...this.errors, roles: AdminI18n.t('users.failedToLoadRoles') };
     } finally {
       if (this.mounted) this.loadingRoles = false;
     }
@@ -77,13 +78,13 @@ export class NewUserPage extends AdminComponent {
     const { formData } = this;
 
     if (!formData.password) {
-      this.errors = { password: 'Password is required' };
+      this.errors = { password: AdminI18n.t('users.passwordIsRequired') };
       this.saving = false;
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      this.errors = { confirmPassword: 'Passwords do not match' };
+      this.errors = { confirmPassword: AdminI18n.t('users.passwordsDoNotMatch') };
       this.saving = false;
       return;
     }
@@ -93,7 +94,7 @@ export class NewUserPage extends AdminComponent {
       this.router.push('/users');
     } catch (err: any) {
       console.error('Failed to create user:', err);
-      this.errors = { global: err.message || 'Failed to create user' };
+      this.errors = { global: err.message || AdminI18n.t('users.failedToCreateUser') };
     } finally {
       this.saving = false;
     }

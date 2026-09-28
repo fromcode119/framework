@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One kind of record: what it is, how many, and whether it comes across.
@@ -50,30 +51,30 @@ export class ImportPlanRecordRow extends Reactor {
     return (
       <div className="fc-import-rec__techwrap">
         <button type="button" className="fc-import-rec__tech" onClick={this.toggleTechnical} aria-expanded={this.technical}>
-          Technical {this.technical ? '▴' : '▾'}
+          {AdminI18n.t('sites.importPlan.technical')} {this.technical ? '▴' : '▾'}
         </button>
         {this.technical ? (
           <div className="fc-import-rec__techbox">
             <dl className="fc-import-rec__dl">
-              <dt>Table</dt><dd className="fc-import-rec__mono">{table.name}</dd>
-              <dt>Ids</dt><dd>{record.idMechanics}</dd>
-              {table.pluginSlug ? <><dt>Owned by</dt><dd className="fc-import-rec__mono">{table.pluginSlug}</dd></> : null}
-              {record.excludedRows > 0 ? <><dt>Rows excluded</dt><dd>{record.excludedRows.toLocaleString()} — they belong to the platform, not to one site</dd></> : null}
+              <dt>{AdminI18n.t('sites.importPlan.table')}</dt><dd className="fc-import-rec__mono">{table.name}</dd>
+              <dt>{AdminI18n.t('sites.importPlan.ids2')}</dt><dd>{record.idMechanics}</dd>
+              {table.pluginSlug ? <><dt>{AdminI18n.t('sites.importPlan.ownedBy')}</dt><dd className="fc-import-rec__mono">{table.pluginSlug}</dd></> : null}
+              {record.excludedRows > 0 ? <><dt>{AdminI18n.t('sites.importPlan.rowsExcluded')}</dt><dd>{AdminI18n.t('sites.importPlan.rowsExcludedValue', { count: record.excludedRows.toLocaleString() })}</dd></> : null}
               {followed.length ? (
-                <><dt>Links followed</dt><dd className="fc-import-rec__mono"><ul>{followed.map((link) => <li key={link}>{link}</li>)}</ul></dd></>
+                <><dt>{AdminI18n.t('sites.importPlan.linksFollowed')}</dt><dd className="fc-import-rec__mono"><ul>{followed.map((link) => <li key={link}>{link}</li>)}</ul></dd></>
               ) : null}
               {/* Listed whatever the mode — the column IS un-followed either way. What changes with the
                   mode is whether that matters, which the label says rather than leaving the reader to infer. */}
               {table.opaqueJsonColumns.length ? (
                 <>
-                  <dt>{record.hasUnfollowedLinks ? 'Links not followed' : 'Links not followed (ids unchanged)'}</dt>
+                  <dt>{record.hasUnfollowedLinks ? AdminI18n.t('sites.importPlan.linksNotFollowed') : AdminI18n.t('sites.importPlan.linksNotFollowedIdsUnchanged')}</dt>
                   <dd className={`fc-import-rec__mono${record.hasUnfollowedLinks ? ' fc-import-rec__lost' : ''}`}>
                     <ul>{table.opaqueJsonColumns.map((c) => <li key={c}>{c}</li>)}</ul>
                   </dd>
                 </>
               ) : null}
               {table.droppedColumns.length ? (
-                <><dt>Columns dropped</dt><dd className="fc-import-rec__mono fc-import-rec__lost"><ul>{table.droppedColumns.map((c) => <li key={c}>{c}</li>)}</ul></dd></>
+                <><dt>{AdminI18n.t('sites.importPlan.columnsDropped')}</dt><dd className="fc-import-rec__mono fc-import-rec__lost"><ul>{table.droppedColumns.map((c) => <li key={c}>{c}</li>)}</ul></dd></>
               ) : null}
             </dl>
           </div>

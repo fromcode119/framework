@@ -15,6 +15,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PeoplePage extends AdminComponent {
   private mounted = false;
@@ -68,7 +69,7 @@ export class PeoplePage extends AdminComponent {
       await this.fetchPeople();
       this.grantConfirm = null;
     } catch (err: any) {
-      this.error = String(err?.message || 'Failed to create login account');
+      this.error = String(err?.message || AdminI18n.t('users.failedToCreateLoginAccount'));
     } finally {
       this.isGranting = false;
     }
@@ -76,7 +77,7 @@ export class PeoplePage extends AdminComponent {
 
   private displayName(person: IPerson): string {
     const name = [person.firstName, person.lastName].filter(Boolean).join(' ').trim();
-    return person.displayName || name || person.email || `Person #${person.id}`;
+    return person.displayName || name || person.email || AdminI18n.t('users.person', { id: person.id });
   }
 
   private static sourceLabel(p: IPerson): string {
@@ -101,7 +102,7 @@ export class PeoplePage extends AdminComponent {
     const theme = this.theme;
     return [
       {
-        header: 'Person', id: 'person',
+        header: AdminI18n.t('users.person2'), id: 'person',
         accessor: (p: IPerson) => (
           <div>
             <div className={`font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{this.displayName(p)}</div>
@@ -112,13 +113,13 @@ export class PeoplePage extends AdminComponent {
         ),
       },
       {
-        header: 'Login account', id: 'linked',
+        header: AdminI18n.t('users.loginAccount'), id: 'linked',
         accessor: (p: IPerson) => (p.userId != null && p.userId !== '')
-          ? <span className="font-bold text-emerald-500 text-[11px] tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> Linked (#{p.userId})</span>
-          : <span className="font-bold text-slate-400 text-[11px] tracking-tight">No account</span>,
+          ? <span className="font-bold text-emerald-500 text-[11px] tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
+          : <span className="font-bold text-slate-400 text-[11px] tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
       },
       {
-        header: 'Added', id: 'createdAt',
+        header: AdminI18n.t('users.added'), id: 'createdAt',
         accessor: (p: IPerson) => (
           <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">
             <FrameworkIcons.Calendar size={14} className="opacity-50" />
@@ -141,7 +142,7 @@ export class PeoplePage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Loading people…" />
+          <Loader label={AdminI18n.t('users.loadingPeople')} />
         </div>
       );
     }
@@ -151,15 +152,15 @@ export class PeoplePage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Users size={18} strokeWidth={2} />}
-          title="People"
-          subtitle="Everyone in the unified identity model — customers, subscribers and contacts."
+          title={AdminI18n.t('users.people')}
+          subtitle={AdminI18n.t('users.everyoneInTheUnifiedIdentity')}
         />
 
         <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard title="People" value={stats.total.toLocaleString()} icon={<FrameworkIcons.Users size={20} />} />
-            <StatCard title="With login account" value={stats.linked.toLocaleString()} icon={<FrameworkIcons.UserCheck size={20} />} />
-            <StatCard title="Contacts only" value={stats.unlinked.toLocaleString()} icon={<FrameworkIcons.Mail size={20} />} />
+            <StatCard title={AdminI18n.t('users.people')} value={stats.total.toLocaleString()} icon={<FrameworkIcons.Users size={20} />} />
+            <StatCard title={AdminI18n.t('users.withLoginAccount')} value={stats.linked.toLocaleString()} icon={<FrameworkIcons.UserCheck size={20} />} />
+            <StatCard title={AdminI18n.t('users.contactsOnly')} value={stats.unlinked.toLocaleString()} icon={<FrameworkIcons.Mail size={20} />} />
           </div>
 
           {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
@@ -167,7 +168,7 @@ export class PeoplePage extends AdminComponent {
           <div className="relative flex-1 group">
             <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><FrameworkIcons.Search size={18} /></div>
             <input
-              type="text" placeholder="Search people by name or email…" value={searchQuery}
+              type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
               onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
               className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
             />
@@ -183,7 +184,7 @@ export class PeoplePage extends AdminComponent {
               page={currentPage}
               onPageChange={(p) => { this.page = p; }}
               groupBy={(person: IPerson) => PeoplePage.sourceLabel(person)}
-              emptyMessage="No people match your query"
+              emptyMessage={AdminI18n.t('users.noPeopleMatchYourQuery')}
               actions={(person: IPerson) => (
                 <div className="flex items-center justify-end gap-2">
                   <Button
@@ -192,10 +193,10 @@ export class PeoplePage extends AdminComponent {
                     icon={<FrameworkIcons.Edit size={14} />}
                     onClick={() => this.router?.push(AdminConstants.ROUTES.PEOPLE.DETAIL(person.id))}
                   >
-                    Edit
+                    {AdminI18n.t('users.edit')}
                   </Button>
                   {(person.userId != null && person.userId !== '') ? (
-                    <span className="text-[11px] font-bold text-slate-400 pr-2">Linked</span>
+                    <span className="text-[11px] font-bold text-slate-400 pr-2">{AdminI18n.t('users.linked')}</span>
                   ) : (
                     <Button
                       variant={ButtonVariant.SECONDARY}
@@ -204,7 +205,7 @@ export class PeoplePage extends AdminComponent {
                       onClick={() => { this.grantConfirm = person; }}
                       disabled={!person.email}
                     >
-                      Create login account
+                      {AdminI18n.t('users.createLoginAccount')}
                     </Button>
                   )}
                 </div>
@@ -218,15 +219,15 @@ export class PeoplePage extends AdminComponent {
           onClose={() => { this.grantConfirm = null; }}
           onConfirm={() => this.grantLogin()}
           isLoading={isGranting}
-          title="Create login account?"
-          description={`This creates a login account for ${grantConfirm?.email} and links it to this person. They can set a password via password reset.`}
-          confirmLabel="Create account"
+          title={AdminI18n.t('users.createLoginAccount2')}
+          description={AdminI18n.t('users.thisCreatesALoginAccount', { email: grantConfirm?.email })}
+          confirmLabel={AdminI18n.t('users.createAccount')}
         />
 
         <AdminPageFooter
-          label="Unified Identity"
-          description="People are the canonical identity across all plugins; a login account is optional."
-          links={[{ label: 'Users', href: AdminConstants.ROUTES.USERS.ROOT }]}
+          label={AdminI18n.t('users.unifiedIdentity')}
+          description={AdminI18n.t('users.peopleAreTheCanonicalIdentity')}
+          links={[{ label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.ROOT }]}
         />
       </div>
     );

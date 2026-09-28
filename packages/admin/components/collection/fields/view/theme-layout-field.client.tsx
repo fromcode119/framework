@@ -7,6 +7,7 @@ import { ContextBridge } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { IThemeLayoutOption } from '@/components/collection/fields/interfaces/theme-layout-option.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Framework-owned, no-magic layout picker. Lists ONLY the layouts the active theme actually declares
@@ -72,7 +73,7 @@ export class ThemeLayoutField extends Reactor {
 
       this.runtimeDefaultLayout = inferredDefault;
       this.layoutInfoByValue = infoMap;
-      this.options = [{ label: `Auto (${autoLabel})`, value: '' }, ...layouts.map(({ label, value }) => ({ label, value }))];
+      this.options = [{ label: AdminI18n.t('ui.layout.autoWith', { layout: autoLabel }), value: '' }, ...layouts.map(({ label, value }) => ({ label, value }))];
     } catch (err) {
       console.error('[ThemeLayoutField] Failed to fetch theme layouts:', err);
     } finally {
@@ -104,11 +105,11 @@ export class ThemeLayoutField extends Reactor {
     const selectedLayoutMissing = !loading && !isAutoMode && !layoutInfoByValue[explicitValue];
 
     const effectiveValue = isAutoMode || selectedLayoutMissing ? runtimeDefaultLayout : explicitValue;
-    const effectiveLabel = layoutInfoByValue[effectiveValue]?.label || this.humanizeLayoutName(effectiveValue) || 'Default';
+    const effectiveLabel = layoutInfoByValue[effectiveValue]?.label || this.humanizeLayoutName(effectiveValue) || AdminI18n.t('ui.layout.default');
     const effectiveDescription = layoutInfoByValue[effectiveValue]?.description || '';
 
     const selectOptions = selectedLayoutMissing
-      ? [...options, { label: `⚠ ${explicitValue} (not in active theme)`, value: explicitValue }]
+      ? [...options, { label: AdminI18n.t('ui.layout.missingOption', { layout: explicitValue }), value: explicitValue }]
       : options;
 
     return (
@@ -119,28 +120,28 @@ export class ThemeLayoutField extends Reactor {
           options={selectOptions}
           disabled={readOnly || loading}
           theme={theme}
-          placeholder="Auto (site default)"
+          placeholder={AdminI18n.t('ui.layout.auto')}
         />
         <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          Pick a layout your active theme provides, or leave on Auto to use the site's default layout (Themes → Default Layout).
+          {AdminI18n.t('ui.layout.hint')}
         </p>
 
         {selectedLayoutMissing ? (
           <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-500/40 dark:bg-amber-500/10">
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">Layout not found in theme</p>
+            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">{AdminI18n.t('ui.layout.missingTitle')}</p>
             <p className="mt-1 text-[11px] font-semibold leading-relaxed text-amber-700 dark:text-amber-300">
-              The active theme has no layout named <b>{explicitValue}</b>, so the frontend renders <b>{effectiveLabel}</b> ({effectiveValue}) instead. Choose a layout the theme provides, or reset to Auto.
+              {AdminI18n.t('ui.layout.missingText', { layout: explicitValue, effective: `${effectiveLabel} (${effectiveValue})` })}
             </p>
             <div className="mt-2">
-              <Button type="button" size={FieldSize.SM} variant={ButtonVariant.SECONDARY} onClick={this.resetToAuto}>Reset to Auto (site default)</Button>
+              <Button type="button" size={FieldSize.SM} variant={ButtonVariant.SECONDARY} onClick={this.resetToAuto}>{AdminI18n.t('ui.layout.reset')}</Button>
             </div>
           </div>
         ) : (
           <div className={`rounded-xl border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
-            <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Frontend renders</p>
+            <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('ui.layout.renders')}</p>
             <p className={`mt-1 text-xs font-bold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{effectiveLabel} ({effectiveValue})</p>
             <p className={`mt-1 text-[11px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-              {isAutoMode ? 'Auto — this follows the active theme’s default layout.' : 'Explicitly uses this layout from the active theme.'}
+              {AdminI18n.t(isAutoMode ? 'ui.layout.autoMode' : 'ui.layout.explicitMode')}
             </p>
             {effectiveDescription ? <p className="mt-1 text-[11px] leading-relaxed text-slate-500">{effectiveDescription}</p> : null}
           </div>

@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class NewUserAccountFields extends PureReactor {
   @prop declare formData: INewUserFormData;
   @prop declare errors: Record<string, string>;
@@ -12,10 +13,10 @@ export class NewUserAccountFields extends PureReactor {
     const { formData, errors, onPatch } = this;
     return (
       <>
-        <Card title="Account Details">
+        <Card title={AdminI18n.t('users.accountDetails')}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">E-Mail Address</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.eMailAddress')}</label>
                  <Input
                     placeholder="name@company.com"
                     value={formData.email}
@@ -25,27 +26,27 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Username</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.username')}</label>
                  <Input
-                    placeholder="username"
+                    placeholder={AdminI18n.t('users.usernamePlaceholder')}
                     value={formData.username}
                     onChange={(e) => onPatch({ username: e.target.value })}
                     className="h-11 rounded-xl"
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">First Name</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.firstName')}</label>
                  <Input
-                    placeholder="First name"
+                    placeholder={AdminI18n.t('users.firstName2')}
                     value={formData.firstName}
                     onChange={(e) => onPatch({ firstName: e.target.value })}
                     className="h-11 rounded-xl"
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Last Name</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.lastName')}</label>
                  <Input
-                    placeholder="Last name"
+                    placeholder={AdminI18n.t('users.lastName2')}
                     value={formData.lastName}
                     onChange={(e) => onPatch({ lastName: e.target.value })}
                     className="h-11 rounded-xl"
@@ -54,10 +55,10 @@ export class NewUserAccountFields extends PureReactor {
            </div>
         </Card>
 
-        <Card title="Security Setup">
+        <Card title={AdminI18n.t('users.securitySetup')}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Initial Password</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.initialPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"
@@ -69,7 +70,7 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Confirm Password</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.confirmPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"

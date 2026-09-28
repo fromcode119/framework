@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AppEnv } from '@/lib/env';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DashboardFooter extends PureReactor {
   @prop declare platformName: string;
@@ -23,7 +24,7 @@ export class DashboardFooter extends PureReactor {
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                 <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
-                  {this.platformName} Infrastructure{this.build ? ` // ${this.build}` : ''}
+                  {AdminI18n.t('dashboard.infrastructure', { name: this.platformName })}{this.build ? ` // ${this.build}` : ''}
                 </span>
               </div>
               {/* No health/topology claim here: this footer fetches nothing, so any "all systems
@@ -32,7 +33,7 @@ export class DashboardFooter extends PureReactor {
             </div>
 
             <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
-              <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
+              <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
             </div>
           </div>
         </div>

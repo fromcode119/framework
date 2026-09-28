@@ -5,6 +5,7 @@ import { prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Hammer } from 'lucide-react';
 import { BuildSourceListItem } from '@/app/sources/build-source-list-item';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BuildOverviewHistory extends AdminComponent {
   declare props: {
@@ -25,15 +26,15 @@ export class BuildOverviewHistory extends AdminComponent {
     <Card>
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h3 className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">Build History</h3>
-          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">Each row shows the tracked branch, the last published version, and the generated package filename.</p>
+          <h3 className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('sources.buildHistory')}</h3>
+          <p className="mt-0.5 text-xs text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.eachRowShowsTheTracked')}</p>
         </div>
       </div>
 
       <div className="mt-4 space-y-2">
         {this.loading ? (
           <div className="rounded-xl border border-dashed border-slate-300 px-4 py-6 text-center text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-            Loading build status…
+            {AdminI18n.t('sources.loadingBuildStatus')}
           </div>
         ) : null}
 
@@ -42,8 +43,8 @@ export class BuildOverviewHistory extends AdminComponent {
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800">
               <Hammer size={18} />
             </div>
-            <h4 className="mt-3 text-sm font-semibold tracking-tight text-slate-900 dark:text-white">No Builds Yet</h4>
-            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Use “Add Source” to track a plugin, theme, or core repository, then build it from this page.</p>
+            <h4 className="mt-3 text-sm font-semibold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('sources.noBuildsYet')}</h4>
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.useAddSourceToTrack')}</p>
           </div>
         ) : null}
 

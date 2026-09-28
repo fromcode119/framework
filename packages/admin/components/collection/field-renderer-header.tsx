@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FieldRendererHeader extends PureReactor {
   @prop declare field: ICollectionField;
@@ -45,14 +46,14 @@ export class FieldRendererHeader extends PureReactor {
               }`}
             >
               <FrameworkIcons.Check size={10} />
-              Override unlocked
+              {AdminI18n.t('ui.field.overrideUnlocked')}
             </span>
           )}
           {isFieldReadOnly && (canRequestReadOnlyOverride ? (
             <button
               type="button"
               onClick={onRequestReadOnlyOverride}
-              title={`Unlock "${label}" to edit`}
+              title={AdminI18n.t('ui.field.unlockTitle', { label })}
               className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border transition-colors ${
                 theme === ThemeMode.DARK
                   ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/15'
@@ -60,7 +61,7 @@ export class FieldRendererHeader extends PureReactor {
               }`}
             >
               <FrameworkIcons.Lock size={10} />
-              Unlock edit
+              {AdminI18n.t('ui.field.unlock')}
             </button>
           ) : (
             <span
@@ -71,7 +72,7 @@ export class FieldRendererHeader extends PureReactor {
               }`}
             >
               <FrameworkIcons.Lock size={10} />
-              Read only
+              {AdminI18n.t('ui.field.readOnly')}
             </span>
           ))}
           {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher(false)}

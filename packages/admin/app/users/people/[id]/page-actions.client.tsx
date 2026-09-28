@@ -6,6 +6,7 @@ import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { bound } from '@fromcode119/react-class-components';
 import { PersonEditPageState } from '@/app/users/people/[id]/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What can be done to a person: save, grant them a login, send a reset, reassign their records, and
@@ -33,7 +34,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       // A 404 is an ANSWER — there is no such person here — not a failed load. Treated as one, it
       // offered "Retry" for a person who lives in another site, which no retry could ever find.
       if (err?.status === 404) this.notFound = true;
-      else this.loadError = err?.message || 'The person record could not be loaded.';
+      else this.loadError = err?.message || AdminI18n.t('users.thePersonRecordCouldNot');
     }
   }
 
@@ -52,7 +53,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       await AdminApi.patch(AdminConstants.ENDPOINTS.SYSTEM.PERSON_SAVE(this.routeId), this.fields);
       this.router?.push(AdminConstants.ROUTES.PEOPLE.ROOT);
     } catch (err: any) {
-      this.error = String(err?.message || 'Failed to save person');
+      this.error = String(err?.message || AdminI18n.t('users.failedToSavePerson'));
       this.saving = false;
     }
   }
@@ -68,7 +69,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       });
       await this.fetchPerson();
     } catch (err: any) {
-      this.error = String(err?.message || 'Failed to create login account');
+      this.error = String(err?.message || AdminI18n.t('users.failedToCreateLoginAccount'));
     } finally {
       this.granting = false;
     }
@@ -85,11 +86,11 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       const res: any = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.ADMIN_SEND_PASSWORD_RESET, { userId });
       this.sendingReset = false;
       this.notice = res?.emailSent === false
-        ? 'Reset link generated, but the email could not be sent — check SMTP settings.'
-        : `Password reset email sent to ${res?.email || this.person?.email || 'the user'}.`;
+        ? AdminI18n.t('users.resetLinkGeneratedButThe')
+        : AdminI18n.t('users.passwordResetEmailSentTo', { email: res?.email || this.person?.email || AdminI18n.t('users.theUser') });
     } catch (err: any) {
       this.sendingReset = false;
-      this.error = String(err?.message || 'Failed to send password reset email');
+      this.error = String(err?.message || AdminI18n.t('users.failedToSendPasswordReset'));
     }
   }
 
@@ -103,7 +104,7 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
     } catch (err: any) {
       this.deleting = false;
       this.confirmDelete = false;
-      this.error = String(err?.message || 'Failed to delete person');
+      this.error = String(err?.message || AdminI18n.t('users.failedToDeletePerson'));
     }
   }
 
@@ -117,11 +118,11 @@ export abstract class PersonEditPageActions extends PersonEditPageState {
       await AdminApi.post(`${AdminConstants.ENDPOINTS.SYSTEM.PERSON(this.routeId)}/link-user`, { userId });
       this.reassigning = false;
       this.reassignOpen = false;
-      this.notice = userId ? 'Login account reassigned.' : 'Login account unlinked.';
+      this.notice = userId ? AdminI18n.t('users.loginAccountReassigned') : AdminI18n.t('users.loginAccountUnlinked');
       await this.fetchPerson();
     } catch (err: any) {
       this.reassigning = false;
-      this.error = String(err?.message || 'Failed to reassign the login account');
+      this.error = String(err?.message || AdminI18n.t('users.failedToReassignTheLogin'));
     }
   }
 

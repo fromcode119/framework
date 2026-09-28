@@ -11,6 +11,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
 import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
 import { BackupCreateCardDropZone } from '@/components/settings/backups/view/backup-create-card-drop-zone.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Creating a backup, and restoring from one.
@@ -38,9 +39,9 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
       <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Create Backup</h2>
+            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.createBackup')}</h2>
             <p className="text-sm text-slate-500">
-              Pick exactly what goes into the archive before you create it. Full backup means core files, database, plugins, and themes together.
+              {AdminI18n.t('settings.components.pickExactlyWhatGoesInto')}
             </p>
           </div>
 
@@ -60,7 +61,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
               onClick={this.handleUploadClick}
               disabled={!capabilities.canManage || isCreating || isImporting}
             >
-              {isImporting ? 'Importing Backup...' : 'Import Backup'}
+              {isImporting ? AdminI18n.t('settings.components.importingBackup') : AdminI18n.t('settings.components.importBackup')}
             </Button>
             <Button
               className="rounded-xl px-5 uppercase tracking-[0.16em]"
@@ -68,7 +69,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
               onClick={() => void onCreate()}
               disabled={!capabilities.canManage || !createSections.length || isCreating || isImporting}
             >
-              {isCreating ? 'Creating Backup...' : 'Create Backup'}
+              {isCreating ? AdminI18n.t('settings.components.creatingBackup') : AdminI18n.t('settings.components.createBackup')}
             </Button>
           </div>
         </div>
@@ -77,16 +78,16 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
       <div className="space-y-6 px-8 py-8">
         <div className="flex flex-wrap gap-3">
           <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.FULL)}>
-            Full Backup
+            {AdminI18n.t('settings.components.fullBackup')}
           </Button>
           <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.CORE_DB)}>
-            Core + DB
+            {AdminI18n.t('settings.components.coreDb')}
           </Button>
           <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.PLUGINS_ONLY)}>
-            Plugins Only
+            {AdminI18n.t('settings.components.pluginsOnly')}
           </Button>
           <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.THEMES_ONLY)}>
-            Themes Only
+            {AdminI18n.t('settings.components.themesOnly')}
           </Button>
         </div>
 
@@ -112,10 +113,10 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
               <FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} />
               <div>
                 <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>
-                  Drag and drop a backup `.tar.gz`, `.sql`, or `.db` here, or click to browse.
+                  {AdminI18n.t('settings.components.dragAndDropABackup')}
                 </p>
                 <p className="mt-1 text-xs text-slate-500">
-                  Imported archives are indexed into managed backups and can then be restored from the existing workflow.
+                  {AdminI18n.t('settings.components.importedArchivesAreIndexedInto')}
                 </p>
               </div>
             </div>
@@ -129,7 +130,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
               className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
             >
               {isImporting ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Upload size={16} />}
-              <span>{isImporting ? 'Importing...' : 'Choose Backup'}</span>
+              <span>{isImporting ? AdminI18n.t('settings.components.importing') : AdminI18n.t('settings.components.chooseBackup')}</span>
             </button>
           </div>
         </div>
@@ -178,7 +179,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
                     <div className="flex items-center justify-between gap-4">
                       <h3 className={`text-sm font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{option.label}</h3>
                       <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
-                        {isSelected ? 'Included' : 'Optional'}
+                        {isSelected ? AdminI18n.t('settings.components.included') : AdminI18n.t('settings.components.optional')}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-500">{option.description}</p>
@@ -193,17 +194,17 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
         <div className={`rounded-lg border px-5 py-4 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Selected Scope</p>
+              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.selectedScope')}</p>
               <p className={`mt-2 text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {BackupSectionOptions.describeSections(createSections)}
               </p>
             </div>
             <p className="max-w-xl text-sm text-slate-500">
-              System backup is the archive you can download and later use for restore or transfer. The selection above decides whether it contains core files, database state, plugins, themes, or any combination of them.
+              {AdminI18n.t('settings.components.systemBackupIsTheArchive')}
             </p>
           </div>
           <p className="mt-4 text-xs text-slate-500">
-            Import accepts exported .tar.gz archives and database-only .sql or .db backups, then indexes them into managed backups for download or restore.
+            {AdminI18n.t('settings.components.importAcceptsExportedTarGz')}
           </p>
 
           {importProgress ? (

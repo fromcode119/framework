@@ -2,6 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceVerifiedCard extends PureReactor {
   @prop declare adminTheme: ThemeMode;
@@ -15,12 +16,12 @@ export class ThemeMarketplaceVerifiedCard extends PureReactor {
             <FrameworkIcons.Shield size={18} strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">Verified</div>
-            <div className={`text-xs font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Official UI Audit</div>
+            <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{AdminI18n.t('themes.verified')}</div>
+            <div className={`text-xs font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.officialUiAudit')}</div>
           </div>
         </div>
         <p className={`text-[11px] leading-relaxed font-semibold ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-          This theme has been manually audited for WCAG accessibility, performance benchmarks, and Fromcode core compatibility.
+          {AdminI18n.t('themes.thisThemeHasBeenManually')}
         </p>
       </div>
     );

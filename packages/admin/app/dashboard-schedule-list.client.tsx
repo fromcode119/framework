@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { RelativeTimeFormatter } from '@/lib/relative-time-formatter';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the scheduler will run next, in the order it will run it.
@@ -25,7 +26,7 @@ export class DashboardScheduleList extends PureReactor {
     if (!total) {
       return (
         <div className="px-3 py-2">
-          <p className="text-[11px] text-slate-500">No scheduled tasks registered.</p>
+          <p className="text-[11px] text-slate-500">{AdminI18n.t('dashboard.noSchedules')}</p>
         </div>
       );
     }
@@ -33,8 +34,8 @@ export class DashboardScheduleList extends PureReactor {
     return (
       <div className="px-3 py-2">
         <div className="flex items-baseline justify-between gap-3 mb-1.5">
-          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">Next scheduled</span>
-          <span className="text-[10px] text-slate-400">{total} tasks</span>
+          <span className="text-[11px] font-semibold text-slate-700 dark:text-slate-200">{AdminI18n.t('dashboard.nextScheduled')}</span>
+          <span className="text-[10px] text-slate-400">{AdminI18n.t('dashboard.tasksCount', { count: total })}</span>
         </div>
         <div className="space-y-1">
           {this.upcoming.map((task) => (
@@ -44,7 +45,7 @@ export class DashboardScheduleList extends PureReactor {
                 {task.pluginSlug ? <span className="text-slate-400"> · {String(task.pluginSlug)}</span> : null}
               </span>
               <span className="text-[10px] text-slate-400 whitespace-nowrap tabular-nums">
-                {task.isActive === false ? 'paused' : RelativeTimeFormatter.fromNow(task.nextRun)}
+                {task.isActive === false ? AdminI18n.t('dashboard.paused') : RelativeTimeFormatter.fromNow(task.nextRun)}
               </span>
             </div>
           ))}

@@ -10,6 +10,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class MoveDialog extends AdminComponent {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
@@ -57,7 +58,7 @@ export class MoveDialog extends AdminComponent {
 
   render(): ReactNode {
     const { isOpen, onClose, onConfirm } = this;
-    const title = this.title ?? 'Move to Folder';
+    const title = this.title ?? AdminI18n.t('ui.move.title');
     const isLoading = this.isLoading ?? false;
     const theme = this.theme;
     const { folders, currentParentId, loading, path } = this;
@@ -87,7 +88,7 @@ export class MoveDialog extends AdminComponent {
               onClick={() => this.openFolder(null)}
               className={`text-[10px] font-semibold tracking-wide ${currentParentId === null ? 'text-indigo-500' : 'text-slate-500 hover:text-slate-900'}`}
             >
-              Root
+              {AdminI18n.t('ui.move.root')}
             </button>
             {path.map((folder) => (
               <Fragment key={folder.id}>
@@ -109,7 +110,7 @@ export class MoveDialog extends AdminComponent {
               </div>
             ) : folders.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-24 text-slate-500 text-sm">
-                <p>No subfolders found</p>
+                <p>{AdminI18n.t('ui.move.empty')}</p>
               </div>
             ) : (
               folders.map((folder) => (
@@ -136,7 +137,7 @@ export class MoveDialog extends AdminComponent {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancel
+              {AdminI18n.t('common.cancel')}
             </Button>
             <Button
               className="flex-1 px-6 py-2.5 rounded-xl font-semibold tracking-wide text-[11px]"
@@ -144,7 +145,7 @@ export class MoveDialog extends AdminComponent {
               isLoading={isLoading}
               icon={<FrameworkIcons.Check size={18} />}
             >
-              Move Here
+              {AdminI18n.t('ui.move.confirm')}
             </Button>
           </div>
         </div>

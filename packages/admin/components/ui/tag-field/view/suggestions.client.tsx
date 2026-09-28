@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class TagFieldSuggestions extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -98,7 +99,7 @@ export class TagFieldSuggestions extends PureReactor {
                 </div>
                 <div className="flex-1">
                     <span className="font-semibold text-[10px] block leading-none">
-                      {allowCreate ? `Create ${createEntityLabel}` : `Use Custom ${createEntityLabel}`}
+                      {AdminI18n.t(allowCreate ? 'ui.tags.create' : 'ui.tags.useCustom', { label: createEntityLabel })}
                     </span>
                     <span className="font-semibold text-[13px] block mt-1">"{inputValue}"</span>
                 </div>

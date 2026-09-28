@@ -6,6 +6,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Shown instead of the create form when a collection declares `admin.disableCreate`.
@@ -28,13 +29,13 @@ export class CollectionCreateDisabled extends PureReactor {
           <FrameworkIcons.Lock size={40} className="text-indigo-500" strokeWidth={1.25} />
         </div>
         <h2 className={`text-xl font-semibold mb-3 ${dark ? 'text-white' : 'text-slate-900'}`}>
-          {this.title} are not created by hand
+          {AdminI18n.t('collection.notCreatedByHand', { title: this.title })}
         </h2>
         <p className="text-slate-500 text-center max-w-md leading-relaxed mb-8">
-          {this.description || 'Records in this collection are written by the runtime. Open the list to see the ones that exist.'}
+          {this.description || AdminI18n.t('collection.recordsInThisCollectionAre')}
         </p>
         <Button variant={ButtonVariant.PRIMARY} as={Link} href={this.listHref} icon={<FrameworkIcons.Layout size={16} />}>
-          Back to {this.title}
+          {AdminI18n.t('collection.backTo', { title: this.title })}
         </Button>
       </div>
     );

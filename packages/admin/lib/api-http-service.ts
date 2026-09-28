@@ -1,6 +1,7 @@
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { BrowserStateClient, CookieConstants } from '@fromcode119/core/client';
 import { AdminUrlUtils } from '@/lib/url-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class AdminApiHttpService {
   private static readonly browserState = new BrowserStateClient();
@@ -42,7 +43,7 @@ export class AdminApiHttpService {
     }
 
     // `message` first, as in `parseResponse`: a refusal's sentence, not its bare code (`policy`, `theme_rejected`).
-    const message = body?.message || body?.error || rawBody.trim() || `HTTP error! status: ${xhr.status}`;
+    const message = body?.message || body?.error || rawBody.trim() || AdminI18n.t('lib.httpErrorStatus', { status: xhr.status });
     const errObj = new Error(message) as any;
     errObj.status = xhr.status;
     errObj.data = body;
@@ -75,7 +76,7 @@ export class AdminApiHttpService {
       errorBody?.error ||
       rawBody.trim() ||
       response.statusText ||
-      `HTTP error! status: ${response.status}`;
+      AdminI18n.t('lib.httpErrorStatus', { status: response.status });
 
     const errObj = new Error(message) as any;
     errObj.status = response.status;

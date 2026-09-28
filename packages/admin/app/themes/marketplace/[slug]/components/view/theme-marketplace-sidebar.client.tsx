@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeMarketplaceDependencyCard } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-dependency-card.client';
 import { ThemeMarketplaceVerifiedCard } from '@/app/themes/marketplace/[slug]/components/view/theme-marketplace-verified-card.client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceSidebar extends PureReactor {
   @prop declare theme: IMarketplaceTheme;
@@ -34,9 +35,9 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                 <FrameworkIcons.Clock className="text-amber-600" size={18} />
               </div>
               <div>
-                <h4 className={`text-sm font-bold uppercase tracking-wider leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>Upgrade Available</h4>
+                <h4 className={`text-sm font-bold uppercase tracking-wider leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>{AdminI18n.t('themes.upgradeAvailable')}</h4>
                 <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-amber-500/70' : 'text-amber-700'}`}>
-                  v{theme.version} brings new design improvements and features.
+                  {AdminI18n.t('themes.versionBringsImprovements', { version: theme.version })}
                 </p>
               </div>
             </div>
@@ -54,12 +55,12 @@ export class ThemeMarketplaceSidebar extends PureReactor {
             </div>
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
-              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Installed Release</div>
-              <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : 'Not installed'}</div>
+              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.installedRelease')}</div>
+              <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : AdminI18n.t('themes.notInstalled')}</div>
             </div>
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
-              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Marketplace Release</div>
+              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.marketplaceRelease')}</div>
               <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
             </div>
 
@@ -69,7 +70,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                     <FrameworkIcons.User size={14} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Creator</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{AdminI18n.t('themes.creator')}</span>
                 </div>
                 <span className={`text-[10px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>{theme.author}</span>
               </div>
@@ -79,14 +80,14 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                     <FrameworkIcons.Layout size={14} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">Category</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{AdminI18n.t('themes.category')}</span>
                 </div>
-                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest rounded-lg">UI Framework</span>
+                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest rounded-lg">{AdminI18n.t('themes.uiFramework')}</span>
               </div>
 
               {theme.authorUrl && (
                 <a href={theme.authorUrl} target="_blank" className="flex justify-between items-center group pt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">Developer Portal</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">{AdminI18n.t('themes.developerPortal')}</span>
                   <FrameworkIcons.External size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                 </a>
               )}
@@ -108,17 +109,17 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               ) : installedTheme && !hasUpdate ? (
                 <>
                   <FrameworkIcons.Check size={18} strokeWidth={2.5} />
-                  {this.siteScope ? 'In this site' : 'Installed'}
+                  {this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')}
                 </>
               ) : hasUpdate ? (
                 <>
                   <FrameworkIcons.Clock size={18} strokeWidth={2.5} />
-                  Update Now
+                  {AdminI18n.t('themes.updateNow')}
                 </>
               ) : (
                 <>
                   <FrameworkIcons.Download size={18} strokeWidth={2.5} />
-                  {this.siteScope ? 'Add to this site' : 'Install Theme'}
+                  {this.siteScope ? AdminI18n.t('themes.addToThisSite') : AdminI18n.t('themes.installTheme2')}
                 </>
               )}
             </button>

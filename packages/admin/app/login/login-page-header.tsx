@@ -6,6 +6,7 @@ import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
 import { HostInfoClient } from '@/lib/tenants/host-info-client';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * On a WORKSPACE domain the login says whose console it is (the tenant, its appearance) instead of
@@ -19,7 +20,7 @@ export class LoginPageHeader extends Reactor {
   }
 
   private get title(): string {
-    return this.workspace ? `Sign in to ${this.workspace.slug}` : `Welcome to ${AppEnv.APP_NAME}`;
+    return this.workspace ? AdminI18n.t('login.signInTo', { name: this.workspace.slug }) : AdminI18n.t('login.welcome', { app: AppEnv.APP_NAME });
   }
 
   /**
@@ -37,8 +38,8 @@ export class LoginPageHeader extends Reactor {
   }
 
   private get subtitle(): string {
-    if (this.workspace) return `${this.workspace.slug} runs the ${this.workspace.appearance || 'default'} console on this domain.`;
-    return `Sign in to manage your ${AppEnv.APP_NAME} workspace powered by ${AppEnv.COMPANY_NAME}.`;
+    if (this.workspace) return AdminI18n.t('login.workspaceIntro', { name: this.workspace.slug, console: this.workspace.appearance || AdminI18n.t('login.defaultConsole') });
+    return AdminI18n.t('login.intro', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME });
   }
 
   render(): ReactNode {
@@ -48,12 +49,12 @@ export class LoginPageHeader extends Reactor {
           <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
             <img
               src={LoginPageConstants.BRAND_LOGO_LIGHT_PATH}
-              alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
+              alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
               className="h-auto w-[220px] dark:hidden"
             />
             <img
               src={LoginPageConstants.BRAND_LOGO_DARK_PATH}
-              alt={`${AppEnv.APP_NAME} by ${AppEnv.COMPANY_NAME} logo`}
+              alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
               className="hidden h-auto w-[220px] dark:block"
             />
           </div>

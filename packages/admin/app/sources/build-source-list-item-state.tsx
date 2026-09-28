@@ -1,5 +1,6 @@
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop, state } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One row's own state: which versions it has listed, what it is installing, what it is downloading.
@@ -53,11 +54,11 @@ export abstract class BuildSourceListItemState extends AdminComponent {
    * download somebody may never ask for.
    */
   get packageLabel(): string {
-    if (this.build.fileName) return `Archive: ${this.build.fileName}`;
+    if (this.build.fileName) return AdminI18n.t('sources.archive', { fileName: this.build.fileName });
     const version = String(this.build.version || '').trim();
     if (version && this.build.lastBuildStatus === 'success') {
-      return `Package: ${this.build.slug} ${version} — built and ready`;
+      return AdminI18n.t('sources.packageBuiltAndReady', { slug: this.build.slug, version: version });
     }
-    return 'Package: waiting for first successful build';
+    return AdminI18n.t('sources.packageWaitingForFirstSuccessful');
   }
 }

@@ -5,6 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { RoutingPageResolution } from '@/app/settings/routing/page-resolution.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Reading the routing settings and writing them back.
@@ -33,7 +34,7 @@ export abstract class RoutingPageActions extends RoutingPageResolution {
     } catch (err: any) {
       this.structure = null;
       this.homeTarget = null;
-      this.loadError = err?.message || 'The routing settings request failed.';
+      this.loadError = err?.message || AdminI18n.t('settings.routing.theRoutingSettingsRequestFailed');
     } finally {
       this.isLoading = false;
     }
@@ -66,14 +67,14 @@ export abstract class RoutingPageActions extends RoutingPageResolution {
       });
 
       addNotification({
-        title: 'Routing Updated',
-        message: 'Routing configuration has been synced.',
+        title: AdminI18n.t('settings.routing.routingUpdated'),
+        message: AdminI18n.t('settings.routing.routingConfigurationHasBeenSynced'),
         type: NotificationType.SUCCESS
       });
     } catch (err: any) {
       addNotification({
-        title: 'Update Failed',
-        message: err?.message || 'Failed to save routing settings.',
+        title: AdminI18n.t('settings.routing.updateFailed'),
+        message: err?.message || AdminI18n.t('settings.routing.failedToSaveRoutingSettings'),
         type: NotificationType.ERROR
       });
     } finally {

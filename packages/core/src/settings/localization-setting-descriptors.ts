@@ -23,8 +23,12 @@ export class LocalizationSettingDescriptors {
       seed: { value: 'en', description: "Default locale.", group: "Localization" },
     },
     [SystemConstants.META_KEY.FALLBACK_LOCALE]: { scope: SettingScope.SITE, writable: true, exposed: true },
+    // INHERITED: the console's language is also the PLATFORM's to choose — with no site selected the
+    // console still speaks some language, and a stored value no control could change is exactly the
+    // hidden setting this registry exists to prevent. Each site may choose its own; one that has not
+    // speaks the platform's.
     [SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.INHERITED, writable: true, exposed: true,
       seed: { value: 'en', description: "Default admin language.", group: "Localization" },
     },
     [SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE]: {

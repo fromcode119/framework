@@ -15,6 +15,7 @@ import { SiteMember } from '@/lib/tenants/site-member';
 import { SiteGrantDialog } from '@/app/sites/[id]/site-grant-dialog.client';
 import { ThemeMode } from '@fromcode119/core/client';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Who can enter this site, and as what. Grants go to EXISTING accounts by email — identity is
@@ -59,7 +60,7 @@ export class SiteMembersCard extends AdminComponent {
       this.members = page.members;
       this.total = page.total;
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Members unavailable', message: err?.message || 'The member list could not be loaded.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.membersUnavailable'), message: err?.message || AdminI18n.t('sites.theMemberListCouldNot'), type: NotificationType.ERROR });
     } finally {
       this.loading = false;
     }
@@ -98,7 +99,7 @@ export class SiteMembersCard extends AdminComponent {
       this.granting = false;
       await this.loadPage();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Not granted', message: err?.message || 'The membership could not be granted.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notGranted'), message: err?.message || AdminI18n.t('sites.theMembershipCouldNotBe'), type: NotificationType.ERROR });
     } finally {
       this.busy = false;
     }
@@ -110,7 +111,7 @@ export class SiteMembersCard extends AdminComponent {
       this.onChanged(await SitesClient.removeMember(this.site.id, userId));
       await this.loadPage();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Not revoked', message: err?.message || 'The membership could not be revoked.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notRevoked'), message: err?.message || AdminI18n.t('sites.theMembershipCouldNotBe2'), type: NotificationType.ERROR });
     } finally {
       this.busy = false;
     }
@@ -118,14 +119,14 @@ export class SiteMembersCard extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card title={`Members${this.total ? ` (${this.total})` : ''}`}>
+      <Card title={this.total ? AdminI18n.t('sites.membersCount', { count: this.total }) : AdminI18n.t('sites.members')}>
         {/* The action lives at the top, as an action. A permanent form under the list read as a third
             row of pagination and left an empty form open on a page nobody came to fill one in. */}
         <div className="fc-sites__card-action">
-          <Button size={FieldSize.SM} onClick={this.openGrant} icon={<FrameworkIcons.Plus size={13} />}>Grant access</Button>
+          <Button size={FieldSize.SM} onClick={this.openGrant} icon={<FrameworkIcons.Plus size={13} />}>{AdminI18n.t('sites.grantAccess')}</Button>
         </div>
         {this.total > SiteMembersCard.PAGE || this.search ? (
-          <Input value={this.search} onChange={this.onSearch} placeholder="search by email" />
+          <Input value={this.search} onChange={this.onSearch} placeholder={AdminI18n.t('sites.searchByEmail')} />
         ) : null}
         {/* Same row shape as the Access list and the Installed Plugins page: an avatar, the person,
             then their roles and the action. Bare lines of text with no divider read as a data dump.
@@ -134,9 +135,9 @@ export class SiteMembersCard extends AdminComponent {
             empty white rectangle framed inside another white rectangle. A list inside a card needs
             separators, not a frame of its own. */}
         <div className={`overflow-hidden divide-y mt-3 ${this.isDark ? 'divide-white/5' : 'divide-slate-100'}`}>
-          {this.loading ? <p className="fc-sites__none px-3 py-4">Loading members…</p> : null}
+          {this.loading ? <p className="fc-sites__none px-3 py-4">{AdminI18n.t('sites.loadingMembers')}</p> : null}
           {!this.loading && this.members.length === 0
-            ? <p className="fc-sites__none px-3 py-4">{this.search ? 'No member matches that email.' : 'Nobody can enter this site yet.'}</p>
+            ? <p className="fc-sites__none px-3 py-4">{this.search ? AdminI18n.t('sites.noMemberMatchesThatEmail') : AdminI18n.t('sites.nobodyCanEnterThisSite')}</p>
             : null}
           {this.members.map((member) => (
             <div key={member.userId} className={`group flex items-center gap-3 px-3 py-2 transition-colors ${this.isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
@@ -145,14 +146,14 @@ export class SiteMembersCard extends AdminComponent {
               </div>
               <div className="flex-1 min-w-0">
                 <span className={`text-[13px] font-semibold tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {member.email || <em className="font-normal text-slate-500">deleted account (id {member.userId})</em>}
+                  {member.email || <em className="font-normal text-slate-500">{AdminI18n.t('sites.deletedAccount', { id: member.userId })}</em>}
                 </span>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">
                 {member.roles.length
                   ? member.roles.map((role) => <Badge key={role} variant={role === 'admin' ? BadgeVariant.INFO : BadgeVariant.GRAY}>{role}</Badge>)
-                  : <Badge variant={BadgeVariant.GRAY}>member</Badge>}
-                <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={this.busy} onClick={() => this.revoke(member.userId)} icon={<FrameworkIcons.X size={13} />}>Revoke</Button>
+                  : <Badge variant={BadgeVariant.GRAY}>{AdminI18n.t('sites.member')}</Badge>}
+                <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} isLoading={this.busy} onClick={() => this.revoke(member.userId)} icon={<FrameworkIcons.X size={13} />}>{AdminI18n.t('sites.revoke')}</Button>
               </div>
             </div>
           ))}
@@ -163,10 +164,10 @@ export class SiteMembersCard extends AdminComponent {
         {this.total > SiteMembersCard.PAGE ? (
           <div className="fc-sites__paging">
             <span className="fc-sites__paging-label">
-              {this.offset + 1}–{Math.min(this.offset + SiteMembersCard.PAGE, this.total)} of {this.total}
+              {AdminI18n.t('sites.pageRange', { from: this.offset + 1, to: Math.min(this.offset + SiteMembersCard.PAGE, this.total), total: this.total })}
             </span>
-            <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset === 0} onClick={this.prevPage}>Previous</Button>
-            <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset + SiteMembersCard.PAGE >= this.total} onClick={this.nextPage}>Next</Button>
+            <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset === 0} onClick={this.prevPage}>{AdminI18n.t('sites.previous')}</Button>
+            <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} disabled={this.offset + SiteMembersCard.PAGE >= this.total} onClick={this.nextPage}>{AdminI18n.t('sites.next')}</Button>
           </div>
         ) : null}
         <SiteGrantDialog

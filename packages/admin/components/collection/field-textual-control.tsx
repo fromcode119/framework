@@ -5,6 +5,7 @@ import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FieldTextualControl extends PureReactor {
   /**
@@ -53,7 +54,7 @@ export class FieldTextualControl extends PureReactor {
             value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
             onChange={(e) => updateValue(e.target.value)}
             disabled={isFieldReadOnly}
-            placeholder={isFieldReadOnly ? 'Not set' : (this.field.placeholder || `Enter ${label}...`)}
+            placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (this.field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
             error={errors?.[0]}
             inputClassName={switcher ? 'pr-16' : ''}
           />

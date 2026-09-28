@@ -3,6 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionColumnsMenu extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -26,10 +27,10 @@ export class CollectionColumnsMenu extends PureReactor {
         }`}
       >
         <div className="px-2.5 py-2 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
-          Visible Columns
+          {AdminI18n.t('collection.list.visibleColumns')}
         </div>
         <div className="px-2.5 pb-2 text-[10px] leading-relaxed text-slate-400">
-          Pinned columns stay put while the table scrolls, and move to the left edge.
+          {AdminI18n.t('collection.list.pinnedHint')}
         </div>
         <div className="max-h-80 overflow-auto pr-1 space-y-0.5 custom-scrollbar">
           {visibleColumns.map((column: any, idx: number) => (
@@ -60,7 +61,7 @@ export class CollectionColumnsMenu extends PureReactor {
               <button
                 type="button"
                 onClick={() => toggleStickyColumn(column.id)}
-                title={stickyColumnIds.includes(column.id) ? 'Unpin column' : 'Pin column to the left'}
+                title={AdminI18n.t(stickyColumnIds.includes(column.id) ? 'collection.list.unpin' : 'collection.list.pin')}
                 aria-pressed={stickyColumnIds.includes(column.id)}
                 className={`p-1 rounded-lg shrink-0 transition-colors ${
                   stickyColumnIds.includes(column.id)
@@ -105,7 +106,7 @@ export class CollectionColumnsMenu extends PureReactor {
           {hiddenColumns.length > 0 && (
             <>
               <div className="px-2.5 py-2 mt-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
-                Hidden
+                {AdminI18n.t('collection.list.hidden')}
               </div>
               {hiddenColumns.map((column: any) => (
                 <button

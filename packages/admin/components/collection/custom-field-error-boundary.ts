@@ -2,6 +2,7 @@ import React from 'react';
 
 import type { ReactNode } from 'react';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CustomFieldErrorBoundary extends Reactor {
   @prop declare componentName?: string;
@@ -31,7 +32,7 @@ export class CustomFieldErrorBoundary extends Reactor {
         className:
           'p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2',
       },
-      React.createElement('span', null, `Component "${name}" failed to render.`)
+      React.createElement('span', null, AdminI18n.t('ui.field.componentFailed', { name }))
     );
   }
 }

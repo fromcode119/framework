@@ -44,7 +44,7 @@ export class DocumentView {
         <body>
           {/* FIRST in the body, ahead of the theme and ahead of any plugin injection, so nothing a
               theme renders can sit above it or paint over it. */}
-          <SiteBannersView.render bars={[SitePreviewBannerView.render({ visible: preview })]} />
+          <SiteBannersView.render bars={[SitePreviewBannerView.render({ visible: preview, locale: lang })]} />
           {bodyStartInjections}
           <div id={StorefrontDocumentContract.ROOT_ID} dangerouslySetInnerHTML={{ __html: markup?.bodyHtml || '' }} />
           <StructuredDataScriptsView.render schema={schema} />

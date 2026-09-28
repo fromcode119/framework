@@ -5,6 +5,7 @@ import type { Ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DomainAliasesInput extends Reactor {
   @prop declare value: string[];
@@ -76,7 +77,7 @@ export class DomainAliasesInput extends Reactor {
           icon={<FrameworkIcons.Plus size={13} strokeWidth={3} />}
           className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
         >
-          Add
+          {AdminI18n.t('settings.general.add')}
         </Button>
       </div>
       {value.length > 0 && (

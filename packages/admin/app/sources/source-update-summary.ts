@@ -1,4 +1,5 @@
 import type { ISourceUpdateCheck } from '@/app/sources/interfaces/source-update-check.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What "Check Updates" found, in words the operator can act on.
@@ -16,25 +17,25 @@ export class SourceUpdateSummary {
 
   get title(): string {
     const count = this.changed().length;
-    if (count === 0) return 'Everything is up to date';
-    return count === 1 ? '1 source has new commits' : `${count} sources have new commits`;
+    if (count === 0) return AdminI18n.t('sources.everythingIsUpToDate');
+    return count === 1 ? AdminI18n.t('sources.1SourceHasNewCommits') : AdminI18n.t('sources.sourcesHaveNewCommits', { count: count });
   }
 
   get message(): string {
     const changed = this.changed();
     if (changed.length === 0) {
       const total = this.check.updates.length;
-      return total === 1 ? 'The one source matches its tracked branch.' : `All ${total} sources match their tracked branch.`;
+      return total === 1 ? AdminI18n.t('sources.theOneSourceMatchesIts') : AdminI18n.t('sources.allSourcesMatchTheirTracked', { total: total });
     }
 
     const automatic = changed.filter((update) => this.buildOf(update)?.autoBuild);
     const manual = changed.filter((update) => !this.buildOf(update)?.autoBuild);
     const parts: string[] = [];
     if (automatic.length > 0) {
-      parts.push(`Built automatically on the next scheduled run: ${SourceUpdateSummary.names(automatic)}.`);
+      parts.push(AdminI18n.t('sources.builtAutomaticallyOnTheNext', { names: SourceUpdateSummary.names(automatic) }));
     }
     if (manual.length > 0) {
-      parts.push(`Not set to build automatically — press Build: ${SourceUpdateSummary.names(manual)}.`);
+      parts.push(AdminI18n.t('sources.notSetToBuildAutomatically', { names: SourceUpdateSummary.names(manual) }));
     }
     return parts.join(' ');
   }

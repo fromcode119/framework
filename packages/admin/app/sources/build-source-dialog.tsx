@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { X } from 'lucide-react';
 import type { IBuildSourceDialogProps } from '@/app/sources/interfaces/build-source-dialog-props.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Modal shell for the build-source forms. Escape closes; the body is portalled to `document.body`. */
 export class BuildSourceDialog extends AdminComponent {
@@ -26,7 +27,7 @@ export class BuildSourceDialog extends AdminComponent {
     const dialog = (
       <div className="fixed inset-0 z-[2147483000] flex items-center justify-center px-4 py-8">
         <button
-          aria-label="Close build source dialog"
+          aria-label={AdminI18n.t('sources.closeBuildSourceDialog')}
           className="absolute inset-0 bg-slate-950/45 backdrop-blur-sm"
           onClick={onClose}
           type="button"
@@ -39,7 +40,7 @@ export class BuildSourceDialog extends AdminComponent {
                 <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">{description}</p>
               </div>
               <Button icon={<X size={14} />} onClick={onClose} variant={ButtonVariant.GHOST}>
-                Close
+                {AdminI18n.t('sources.close')}
               </Button>
             </div>
             <div className="max-h-[75vh] overflow-y-auto px-6 py-6">

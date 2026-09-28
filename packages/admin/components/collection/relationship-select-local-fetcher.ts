@@ -3,6 +3,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { RelationshipSelectLocalUtils } from '@/components/collection/relationship-select-local-utils';
 import type { IRelationshipFetchContext } from '@/components/collection/interfaces/relationship-fetch-context.interface';
 import type { SelectOption } from '@/components/collection/select-option';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RelationshipSelectLocalFetcher {
   private ctx: IRelationshipFetchContext;
@@ -23,7 +24,7 @@ export class RelationshipSelectLocalFetcher {
     const id = String(rawValue ?? '').trim();
     // Plain words, not developer shorthand: this is read by whoever is looking at the record, and
     // "Missing #8" tells them nothing about what happened to it.
-    return id ? `Deleted item (${id})` : 'Deleted item';
+    return id ? AdminI18n.t('ui.tags.deletedWithId', { id }) : AdminI18n.t('ui.tags.deleted');
   }
 
   private resolveLookupField(sourceCollectionSlug: string): string {

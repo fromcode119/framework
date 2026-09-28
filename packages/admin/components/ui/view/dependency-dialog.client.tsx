@@ -9,6 +9,7 @@ import { RootFramework } from '@/components/ui/view/root-framework.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { IDependencyIssue } from '@/components/ui/interfaces/dependency-issue.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class DependencyDialog extends AdminComponent {
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
@@ -57,10 +58,10 @@ export class DependencyDialog extends AdminComponent {
     const onlyInactive = issues.every(i => String(i.type) === DependencyIssueType.INACTIVE.value);
 
     const primaryLabel = hasMissing
-      ? "Install & Enable All"
+      ? AdminI18n.t('ui.dependencies.installAll')
       : onlyInactive
-        ? "Enable Dependencies"
-        : "Resolve & Activate";
+        ? AdminI18n.t('ui.dependencies.enableAll')
+        : AdminI18n.t('ui.dependencies.resolve');
 
     return (
     <RootFramework>
@@ -77,10 +78,10 @@ export class DependencyDialog extends AdminComponent {
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                {hasMissing ? 'Missing Requirements Found' : 'Inactive Dependencies Detected'}
+                {AdminI18n.t(hasMissing ? 'ui.dependencies.missingTitle' : 'ui.dependencies.inactiveTitle')}
               </h3>
               <p className="mt-1.5 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-                To enable <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider">{pluginSlug}</span>, we need to handle the following:
+                {AdminI18n.t('ui.dependencies.intro', { plugin: pluginSlug })}
               </p>
             </div>
             <button
@@ -108,13 +109,13 @@ export class DependencyDialog extends AdminComponent {
                       String(issue.type) === DependencyIssueType.INACTIVE.value ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500' :
                       'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-500'
                     }`}>
-                      {String(issue.type) === DependencyIssueType.MISSING.value ? 'NOT INSTALLED' : issue.type.value.toUpperCase()}
+                      {String(issue.type) === DependencyIssueType.MISSING.value ? AdminI18n.t('ui.dependencies.notInstalled') : issue.type.value.toUpperCase()}
                     </span>
                   </div>
                   <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {String(issue.type) === DependencyIssueType.MISSING.value && `Requires version ${issue.expected}. We can download this from the marketplace.`}
-                    {String(issue.type) === DependencyIssueType.INACTIVE.value && `Already installed but needs to be activated (Version ${issue.expected}).`}
-                    {String(issue.type) === DependencyIssueType.INCOMPATIBLE.value && `Version mismatch: requires ${issue.expected}, found ${issue.actual}.`}
+                    {String(issue.type) === DependencyIssueType.MISSING.value && AdminI18n.t('ui.dependencies.requires', { version: issue.expected })}
+                    {String(issue.type) === DependencyIssueType.INACTIVE.value && AdminI18n.t('ui.dependencies.needsActivation', { version: issue.expected })}
+                    {String(issue.type) === DependencyIssueType.INCOMPATIBLE.value && AdminI18n.t('ui.dependencies.mismatch', { expected: issue.expected, actual: issue.actual })}
                   </p>
                 </div>
               </div>
@@ -136,7 +137,7 @@ export class DependencyDialog extends AdminComponent {
             )}
 
             <div className={`p-4 rounded-xl text-[10px] font-medium leading-tight ${theme === ThemeMode.DARK ? 'bg-slate-800/50 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
-              Activating without dependencies may cause the system to behave unexpectedly or crash if the plugin relies on them for core data.
+              {AdminI18n.t('ui.dependencies.forceWarning')}
             </div>
 
             <Button
@@ -145,7 +146,7 @@ export class DependencyDialog extends AdminComponent {
               onClick={this.confirmForce}
               disabled={isLoading}
             >
-              Force Activate Anyway
+              {AdminI18n.t('ui.dependencies.force')}
             </Button>
 
             <Button
@@ -154,7 +155,7 @@ export class DependencyDialog extends AdminComponent {
               onClick={onClose}
               disabled={isLoading}
             >
-              Cancel
+              {AdminI18n.t('common.cancel')}
             </Button>
           </div>
         </div>

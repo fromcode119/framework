@@ -7,14 +7,15 @@ import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemesLayout extends AdminComponent {
   @prop declare children: ReactNode;
 
   private get tabs(): Array<{ label: string; href: string; icon: ReactNode }> {
     return [
-      { label: 'Installed', href: AdminConstants.ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
-      { label: 'Marketplace', href: AdminConstants.ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
+      { label: AdminI18n.t('themes.installed'), href: AdminConstants.ROUTES.THEMES.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+      { label: AdminI18n.t('themes.marketplace'), href: AdminConstants.ROUTES.THEMES.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
     ];
   }
 
@@ -63,12 +64,12 @@ export class ThemesLayout extends AdminComponent {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-0.5">
                 <h1 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {isDetailPage ? 'Theme Detail' : activeTab.label}
+                  {isDetailPage ? AdminI18n.t('themes.themeDetail') : activeTab.label}
                 </h1>
                 <p className={`text-xs font-medium max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {isMarketplace
-                    ? 'Discover and install visual styles to transform your platform.'
-                    : 'Manage your existing installation, layout variables and configuration.'}
+                    ? AdminI18n.t('themes.discoverAndInstallVisualStyles')
+                    : AdminI18n.t('themes.manageYourExistingInstallationLayout')}
                 </p>
               </div>
 
@@ -120,15 +121,15 @@ export class ThemesLayout extends AdminComponent {
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                   <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                    Visual Architecture & Themes
+                    {AdminI18n.t('themes.visualArchitectureThemes')}
                   </span>
                 </div>
-                <p className="text-[9px] font-bold text-slate-400">Transform your platform interface with professional themes.</p>
+                <p className="text-[9px] font-bold text-slate-400">{AdminI18n.t('themes.transformYourPlatformInterfaceWith')}</p>
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                  {/* "Theme Documentation" pointed at docs.fromcode.com, which does not resolve. */}
-                 <Link href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">Marketplace Health</Link>
+                 <Link href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">{AdminI18n.t('themes.marketplaceHealth')}</Link>
               </div>
             </div>
           </div>

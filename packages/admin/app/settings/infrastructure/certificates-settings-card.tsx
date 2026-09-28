@@ -12,6 +12,8 @@ import { Input } from '@/components/ui/view/input.client';
 import { PlatformAddressSuggestion } from '@/app/settings/infrastructure/platform-address-suggestion.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * What the platform needs before it can obtain a certificate on its own.
@@ -68,9 +70,9 @@ export class CertificatesSettingsCard extends AdminComponent {
       const result = await CertificatesClient.setCloudflareToken(token);
       this.isCloudflareConfigured = result.isCloudflareConfigured;
       this.cloudflareTokenInput = '';
-      this.cloudflareTokenMessage = 'Saved. DNS-01/wildcard certificates can now be ordered.';
+      this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.savedDns01WildcardCertificates');
     } catch (err: any) {
-      this.cloudflareTokenMessage = err?.message || 'Could not save the Cloudflare token.';
+      this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
     }
@@ -84,16 +86,16 @@ export class CertificatesSettingsCard extends AdminComponent {
       const result = await CertificatesClient.setCloudflareToken('');
       this.isCloudflareConfigured = result.isCloudflareConfigured;
       this.cloudflareTokenInput = '';
-      this.cloudflareTokenMessage = 'Cleared. DNS-01/wildcard issuance is off until a token is saved again.';
+      this.cloudflareTokenMessage = AdminI18n.t('settings.infrastructure.clearedDns01WildcardIssuance');
     } catch (err: any) {
-      this.cloudflareTokenMessage = err?.message || 'Could not clear the Cloudflare token.';
+      this.cloudflareTokenMessage = err?.message || AdminI18n.t('settings.infrastructure.couldNotClearTheCloudflare');
     } finally {
       this.isSavingCloudflareToken = false;
     }
   }
 
   private get options(): Array<{ label: string; value: string }> {
-    return [{ value: '', label: 'Not set — automatic certificates are off' }, ...AcmeDirectory.options()];
+    return [{ value: '', label: AdminI18n.t('settings.infrastructure.notSetAutomaticCertificatesAre') }, ...AcmeDirectory.options()];
   }
 
   @bound private async save(): Promise<void> {
@@ -106,14 +108,14 @@ export class CertificatesSettingsCard extends AdminComponent {
         certificate_platform_addresses: this.addresses.trim(),
       });
       addNotification({
-        title: 'Saved',
+        title: AdminI18n.t('settings.infrastructure.saved'),
         message: this.directory.trim() && this.addresses.trim()
-          ? 'The platform can now obtain certificates for hosts set to Automatic.'
-          : 'Automatic certificates stay off until both an authority and a platform address are set.',
+          ? AdminI18n.t('settings.infrastructure.thePlatformCanNowObtain')
+          : AdminI18n.t('settings.infrastructure.automaticCertificatesStayOffUntil'),
         type: 'info' as any,
       });
     } catch (err: any) {
-      addNotification({ title: 'Error', message: err?.message || 'Could not save the certificate settings.', type: 'error' as any });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.couldNotSaveTheCertificate'), type: 'error' as any });
     } finally {
       this.isSaving = false;
     }
@@ -126,29 +128,28 @@ export class CertificatesSettingsCard extends AdminComponent {
     const help = `mt-1.5 text-[11px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`;
 
     return (
-      <Card title="Certificates">
+      <Card title={AdminI18n.t('settings.infrastructure.certificates')}>
         <p className={`text-sm mb-5 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Leave these blank and the platform never obtains a certificate itself — hosts keep whatever was uploaded.
+          {AdminI18n.t('settings.infrastructure.leaveTheseBlankAndThe')}
         </p>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
           <div>
-            <label className={label}>Certificate authority</label>
+            <label className={label}>{AdminI18n.t('settings.infrastructure.certificateAuthority')}</label>
             <Select value={this.directory} onChange={this.onDirectory} options={this.options} theme={this.theme} />
             <p className={help}>
-              Pick the staging authority to test the whole flow without spending a production rate limit.
-              Its certificates are not trusted by browsers.
+              {AdminI18n.t('settings.infrastructure.pickTheStagingAuthorityTo')}
             </p>
 
-            <label className={`${label} mt-5`}>Contact email for the authority</label>
+            <label className={`${label} mt-5`}>{AdminI18n.t('settings.infrastructure.contactEmailForTheAuthority')}</label>
             <Input value={this.contactEmail} onChange={this.onContact} placeholder="ssl@example.com" />
             <p className={help}>
-              Optional. Used for account notices only — expiry warnings come from this platform, not from the authority.
+              {AdminI18n.t('settings.infrastructure.optionalUsedForAccountNotices')}
             </p>
           </div>
 
           <div>
-            <label className={label}>Public addresses of this platform</label>
+            <label className={label}>{AdminI18n.t('settings.infrastructure.publicAddressesOfThisPlatform')}</label>
             <PlatformAddressSuggestion candidates={this.candidates} onUse={this.applyDetected} />
             <TextArea
               value={this.addresses}
@@ -157,39 +158,33 @@ export class CertificatesSettingsCard extends AdminComponent {
               inputClassName="h-24 font-mono text-[11px] resize-y"
             />
             <p className={help}>
-              One per line. These are printed as the DNS instructions a customer follows, and a domain is
-              checked against them before any certificate is ordered — so a wrong value here sends people to
-              the wrong machine. The record must point straight at these addresses, not through a proxy or
-              CDN; a proxied host can only use an uploaded certificate.
+              {AdminI18n.t('settings.infrastructure.onePerLineTheseAre')}
             </p>
           </div>
         </div>
 
         <div className="mt-5 flex justify-end">
-          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>Save</Button>
+          <Button onClick={this.save} isLoading={this.isSaving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('settings.infrastructure.save')}</Button>
         </div>
 
         <div className={`mt-6 pt-5 border-t ${dark ? 'border-white/10' : 'border-slate-200'}`}>
-          <label className={label}>Cloudflare API token (DNS-01 / wildcard)</label>
+          <label className={label}>{AdminI18n.t('settings.infrastructure.cloudflareApiTokenDns01')}</label>
           <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Needed only to order a WILDCARD certificate (<code>*.example.com</code>) — that can only be proven
-            through DNS, never HTTP. Leave it blank and every host keeps ordering the single-name HTTP-01
-            certificate above. The token needs Zone → DNS → Edit on the zone it will manage; it is stored
-            encrypted and is never shown again once saved.
+            <AdminRichText k="settings.infrastructure.dnsTokenHint" />
           </p>
           <div className="flex items-center gap-2 max-w-md">
             <Input
               value={this.cloudflareTokenInput}
               onChange={this.onCloudflareToken}
               type="password"
-              placeholder={this.isCloudflareConfigured ? 'Saved — leave blank to keep, or use Clear to remove' : 'Paste a Cloudflare API token'}
+              placeholder={this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.savedLeaveBlankToKeep') : AdminI18n.t('settings.infrastructure.pasteACloudflareApiToken')}
             />
             <Button onClick={this.saveCloudflareToken} isLoading={this.isSavingCloudflareToken} icon={<FrameworkIcons.Save size={14} />}>
-              Save
+              {AdminI18n.t('settings.infrastructure.save')}
             </Button>
             {this.isCloudflareConfigured ? (
               <Button variant={ButtonVariant.GHOST} onClick={this.clearCloudflareToken} isLoading={this.isSavingCloudflareToken}>
-                Clear
+                {AdminI18n.t('settings.infrastructure.clear')}
               </Button>
             ) : null}
           </div>
@@ -197,7 +192,7 @@ export class CertificatesSettingsCard extends AdminComponent {
             <p className={`mt-2 text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{this.cloudflareTokenMessage}</p>
           ) : (
             <p className={`mt-2 text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-              {this.isCloudflareConfigured ? 'A token is saved.' : 'No token is saved — wildcard issuance is off.'}
+              {this.isCloudflareConfigured ? AdminI18n.t('settings.infrastructure.aTokenIsSaved') : AdminI18n.t('settings.infrastructure.noTokenIsSavedWildcard')}
             </p>
           )}
         </div>

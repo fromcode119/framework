@@ -12,6 +12,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { AvatarSize } from '@/app/components/enums/avatar-size.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Who you are signed in as, at the foot of the sidebar — and the only place the account menu lives.
@@ -100,7 +101,7 @@ export class SidebarAccountCard extends AdminComponent {
     const single = switcher.length === 0 && this.storefrontHost
       ? [{
           label: this.storefrontHost,
-          detail: 'The site this deployment serves',
+          detail: AdminI18n.t('shell.account.singleSite'),
           selectable: true,
           selected: true,
           onClick: () => { /* Already here — the row states which site you are editing. */ },
@@ -112,13 +113,13 @@ export class SidebarAccountCard extends AdminComponent {
       // `scrolls` bounds the site list in its own box. It grows with the installation — nine sites
       // already pushed "Add a site" and "Sign out" below the fold of their own menu — and the two
       // rows after it must stay reachable however many sites exist.
-      ...rows.map((row, index) => ({ ...row, section: index === 0 ? 'Sites' : undefined, scrolls: index === 0 ? true : undefined })),
+      ...rows.map((row, index) => ({ ...row, section: index === 0 ? AdminI18n.t('shell.account.sites') : undefined, scrolls: index === 0 ? true : undefined })),
       // Adding a site is the platform's to do: the Sites screen and its API are platform-admin only, so
       // offering it to a site's staff was a door onto "this page is for administrators".
       ...(this.canAddSite ? [{
-        label: 'Add a site',
+        label: AdminI18n.t('shell.account.addSite'),
         icon: <FrameworkIcons.Plus size={16} />,
-        section: rows.length === 0 ? 'Sites' : undefined,
+        section: rows.length === 0 ? AdminI18n.t('shell.account.sites') : undefined,
         onClick: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
       }] : []),
     ];
@@ -128,24 +129,24 @@ export class SidebarAccountCard extends AdminComponent {
     const { user, logout } = this.auth;
     return [
       {
-        label: 'View profile',
+        label: AdminI18n.t('shell.account.profile'),
         icon: <FrameworkIcons.User size={16} />,
         onClick: () => user?.id && this.router.push(AdminConstants.ROUTES.USERS.DETAIL(user.id)),
       },
       ...(user?.roles?.includes('admin')
         ? [{
-            label: 'Certificates',
+            label: AdminI18n.t('shell.account.certificates'),
             icon: <FrameworkIcons.Lock size={16} />,
             onClick: () => this.router.push(AdminConstants.ROUTES.CERTIFICATES.ROOT),
           }, {
-            label: 'System settings',
+            label: AdminI18n.t('shell.account.systemSettings'),
             icon: <FrameworkIcons.Settings size={16} />,
             onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT),
           }]
         : []),
       ...this.siteItems,
       {
-        label: 'Sign out',
+        label: AdminI18n.t('shell.account.signOut'),
         icon: <FrameworkIcons.Logout size={16} />,
         onClick: logout,
         variant: DropdownItemVariant.DANGER,
@@ -184,7 +185,7 @@ export class SidebarAccountCard extends AdminComponent {
   private get trigger(): ReactElement {
     if (this.isMini) {
       return (
-        <span className="flex justify-center py-1" title={this.auth.user?.email || 'Account'}>
+        <span className="flex justify-center py-1" title={this.auth.user?.email || AdminI18n.t('shell.account.account')}>
           {this.avatar(AvatarSize.SMALL)}
         </span>
       );

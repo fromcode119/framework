@@ -9,6 +9,7 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { TenantSwitcherMenu } from '@/app/components/view/tenant-switcher-menu.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Which customer's site am I editing, and how do I move to another one?
@@ -103,13 +104,13 @@ export class TenantSwitcher extends AdminComponent {
   private static reasonFor(error: unknown): string {
     const code = String((error as { code?: unknown; error?: unknown } | null)?.code
       ?? (error as { error?: unknown } | null)?.error ?? '').trim();
-    if (code === 'tenant_access_denied') return 'You are not an administrator of that site.';
-    if (code === 'workspace_host_locks_tenant') return 'This console is fixed to one site. Use the shared console to switch.';
-    if (code === 'not_multi_tenant') return 'This deployment serves a single site, so there is nothing to switch to.';
-    if (code === 'tenantId_required') return 'No site was named in the request.';
+    if (code === 'tenant_access_denied') return AdminI18n.t('shell.site.notAdmin');
+    if (code === 'workspace_host_locks_tenant') return AdminI18n.t('shell.site.locked');
+    if (code === 'not_multi_tenant') return AdminI18n.t('shell.site.single');
+    if (code === 'tenantId_required') return AdminI18n.t('shell.site.noneNamed');
     const message = String((error as { message?: unknown } | null)?.message ?? '').trim();
-    if (code) return `Could not switch: ${code}`;
-    return message ? `Could not switch: ${message}` : 'Could not switch, and the server gave no reason.';
+    if (code) return AdminI18n.t('shell.site.switchFailed', { reason: code });
+    return message ? AdminI18n.t('shell.site.switchFailed', { reason: message }) : AdminI18n.t('shell.site.switchFailedNoReason');
   }
 
   private async select(tenantId: string, mode?: string): Promise<void> {
@@ -166,25 +167,25 @@ export class TenantSwitcher extends AdminComponent {
   /** The two ways a platform admin opens a workspace: as its own console, or the default console to configure it. */
   private renderModeChoice(tenant: TenantOption): ReactElement {
     return (
-      <div className="fc-site__menu" role="listbox" aria-label={`Open ${tenant.label}`}>
-        <div className="fc-site__menu-head">Open {tenant.label} as</div>
+      <div className="fc-site__menu" role="listbox" aria-label={AdminI18n.t('shell.site.open', { site: tenant.label })}>
+        <div className="fc-site__menu-head">{AdminI18n.t('shell.site.openAs', { site: tenant.label })}</div>
         <button type="button" role="option" className="fc-site__item" onClick={() => this.select(tenant.id, 'appearance')}>
           <span className="fc-site__item-mark" aria-hidden="true" />
           <span className="fc-site__item-text">
             <span className="fc-site__item-label">{tenant.appearanceLabel}</span>
-            <span className="fc-site__item-host">What this workspace's own admins see</span>
+            <span className="fc-site__item-host">{AdminI18n.t('shell.site.appearanceHint')}</span>
           </span>
         </button>
         <button type="button" role="option" className="fc-site__item" onClick={() => this.select(tenant.id, 'configure')}>
           <span className="fc-site__item-mark" aria-hidden="true" />
           <span className="fc-site__item-text">
-            <span className="fc-site__item-label">Configure</span>
-            <span className="fc-site__item-host">The default console with every setting</span>
+            <span className="fc-site__item-label">{AdminI18n.t('shell.site.configure')}</span>
+            <span className="fc-site__item-host">{AdminI18n.t('shell.site.configureHint')}</span>
           </span>
         </button>
         <button type="button" className="fc-site__item" onClick={() => { this.pending = null; }}>
           <span className="fc-site__item-mark" aria-hidden="true" />
-          <span className="fc-site__item-text"><span className="fc-site__item-host">Back</span></span>
+          <span className="fc-site__item-text"><span className="fc-site__item-host">{AdminI18n.t('common.back')}</span></span>
         </button>
       </div>
     );
@@ -214,7 +215,7 @@ export class TenantSwitcher extends AdminComponent {
     if (!this.canSwitch) {
       const only = this.tenants[0];
       return (
-        <span className="fc-site fc-site--static" title={`Editing ${only.primaryHost}`}>
+        <span className="fc-site fc-site--static" title={AdminI18n.t('shell.site.editing', { host: only.primaryHost })}>
           <FrameworkIcons.Globe size={13} className="fc-site__icon" />
           <span className="fc-site__name">{only.label}</span>
         </span>
@@ -231,14 +232,14 @@ export class TenantSwitcher extends AdminComponent {
           aria-haspopup="listbox"
           aria-expanded={this.open}
           title={selected
-            ? `Editing ${selected.primaryHost} — click to switch site`
-            : (this.canManageSites ? 'Platform scope — no site selected' : 'No site selected — choose one to start editing')}
+            ? AdminI18n.t('shell.site.editingSwitch', { host: selected.primaryHost })
+            : AdminI18n.t(this.canManageSites ? 'shell.site.platformScope' : 'shell.site.noneChoose')}
           onClick={this.toggle}
         >
           <FrameworkIcons.Globe size={13} className="fc-site__icon" />
           <span className="fc-site__text">
-            <span className="fc-site__eyebrow">{selected ? 'Site' : (this.canManageSites ? 'Platform' : 'No site selected')}</span>
-            <span className="fc-site__name">{selected ? selected.label : (this.canManageSites ? 'No site' : 'Choose a site')}</span>
+            <span className="fc-site__eyebrow">{AdminI18n.t(selected ? 'shell.site.site' : (this.canManageSites ? 'shell.site.platform' : 'shell.site.noneSelected'))}</span>
+            <span className="fc-site__name">{selected ? selected.label : AdminI18n.t(this.canManageSites ? 'shell.site.noSite' : 'shell.site.choose')}</span>
           </span>
           <FrameworkIcons.ChevronDown size={13} className={this.open ? 'fc-site__caret fc-site__caret--open' : 'fc-site__caret'} />
         </button>

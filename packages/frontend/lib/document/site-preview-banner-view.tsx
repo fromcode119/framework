@@ -1,3 +1,4 @@
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
 import type { ReactNode } from 'react';
 
 /**
@@ -15,13 +16,14 @@ import type { ReactNode } from 'react';
  * the theme produces, so no theme can be required to know about it or able to suppress it.
  */
 export class SitePreviewBannerView {
-  static render({ visible }: { visible: boolean }): ReactNode {
+  /** `locale` is the document's `<html lang>`: the bar is server-rendered, so it cannot read it. */
+  static render({ visible, locale }: { visible: boolean; locale?: string }): ReactNode {
     if (!visible) return null;
     return (
       <div className="fc-site-preview fc-site-preview--unpublished" role="status">
         <span className="fc-site-preview__dot" aria-hidden="true" />
-        <span>Not published — only you can see this.</span>
-        <span className="fc-site-preview__note">Visitors get a holding page.</span>
+        <span>{FrontendCopy.t(locale, 'frontend.siteBanner.previewTitle')}</span>
+        <span className="fc-site-preview__note">{FrontendCopy.t(locale, 'frontend.siteBanner.previewNote')}</span>
       </div>
     );
   }

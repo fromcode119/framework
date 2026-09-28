@@ -21,6 +21,7 @@ import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plu
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 import { PluginDetailPageService } from '@/app/plugins/[slug]/plugin-detail-page-service';
 import { PluginAssetLoaderService } from '@/app/services/plugin-asset-loader-service';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailPageController {
   static useModel(slug: string): IPluginDetailPageModel {
@@ -151,7 +152,7 @@ export class PluginDetailPageController {
       try {
         const result = await PluginDetailPageService.updatePlugin(plugin.manifest.slug);
         if (result.dependencies.length > 0) {
-          notify(NotificationType.INFO, 'Update Dependencies', `This update also requires: ${result.dependencies.join(', ')}`);
+          notify(NotificationType.INFO, AdminI18n.t('plugins.detail.updateDependencies'), AdminI18n.t('plugins.detail.thisUpdateAlsoRequires', { join: result.dependencies.join(', ') }));
         }
         await PluginInstallOperationService.waitForCompletion(result.operationId, setInstallOperation);
         const refreshedPlugin = marketplaceItem?.version
@@ -160,11 +161,11 @@ export class PluginDetailPageController {
         if (refreshedPlugin) {
           setPlugin(refreshedPlugin);
         }
-        notify(NotificationType.SUCCESS, 'Update Complete', `${plugin.manifest.name} has been updated to the latest version.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.updateComplete'), AdminI18n.t('plugins.detail.hasBeenUpdatedToThe', { name: plugin.manifest.name }));
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Update error:', error);
-        notify(NotificationType.ERROR, 'Update Failed', error.message || 'Update failed');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.updateFailed'), error.message || AdminI18n.t('plugins.detail.updateFailed2'));
       } finally {
         setInstallOperation(null);
         setIsUpdating(false);
@@ -182,11 +183,11 @@ export class PluginDetailPageController {
           state: status,
           approvedCapabilities: status === PluginState.ACTIVE ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities,
         });
-        notify(NotificationType.SUCCESS, 'Status Updated', `${plugin.manifest.name} is now ${status}.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.statusUpdated'), `${plugin.manifest.name} is now ${status}.`);
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Toggle error:', error);
-        notify(NotificationType.ERROR, 'Toggle Failed', error.message || 'Failed to update plugin state.');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.toggleFailed'), error.message || AdminI18n.t('plugins.detail.failedToUpdatePluginState'));
       }
     };
 
@@ -201,22 +202,22 @@ export class PluginDetailPageController {
         if (restartFailed) {
           // The row IS saved — do not call this a failure — but the live reload attempt killed the
           // guest and it did not come back up. Surface the reason; do not schedule a retry ourselves.
-          notify(NotificationType.ERROR, 'Restart Failed', `Sandbox limits for ${plugin.manifest.name} were saved, but its process failed to restart on them: ${reason || 'unknown error'}`);
+          notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.restartFailed'), AdminI18n.t('plugins.detail.sandboxLimitsForWereSaved', { name: plugin.manifest.name, value: reason || AdminI18n.t('common.unknownError') }));
         } else if (restartRequired) {
-          notify(NotificationType.INFO, 'Restart Required', `Sandbox settings for ${plugin.manifest.name} were saved, but an API restart is needed before they take effect.`);
+          notify(NotificationType.INFO, AdminI18n.t('plugins.detail.restartRequired'), AdminI18n.t('plugins.detail.sandboxSettingsForWereSaved', { name: plugin.manifest.name }));
         } else {
           notify(
             NotificationType.SUCCESS,
-            'Resources Updated',
+            AdminI18n.t('plugins.detail.resourcesUpdated'),
             sandboxSettings.enabled
-              ? `Sandbox limits for ${plugin.manifest.name} updated.`
-              : `Sandbox disabled for ${plugin.manifest.name}.`,
+              ? AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name: plugin.manifest.name })
+              : AdminI18n.t('plugins.detail.sandboxDisabledFor', { name: plugin.manifest.name }),
           );
         }
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Save sandbox error:', error);
-        notify(NotificationType.ERROR, 'Save Failed', error.message || 'Failed to update sandbox limits.');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.saveFailed'), error.message || AdminI18n.t('plugins.detail.failedToUpdateSandboxLimits'));
       } finally {
         setIsSaving(false);
       }
@@ -227,12 +228,12 @@ export class PluginDetailPageController {
       setIsDeleting(true);
       try {
         await PluginDetailPageService.deletePlugin(plugin.manifest.slug);
-        notify(NotificationType.SUCCESS, 'Uninstalled', `${plugin.manifest.name} removed from system.`);
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.uninstalled'), AdminI18n.t('plugins.detail.removedFromSystem', { name: plugin.manifest.name }));
         triggerRefresh();
         router.push('/plugins');
       } catch (error: any) {
         console.error('[PluginDetailPage] Delete error:', error);
-        notify(NotificationType.ERROR, 'Uninstall Failed', error.message || 'An error occurred while deleting the plugin.');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.uninstallFailed'), error.message || AdminI18n.t('plugins.detail.anErrorOccurredWhileDeleting'));
         setIsDeleting(false);
         setShowDeleteConfirm(false);
       }

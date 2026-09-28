@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanArrivals } from '@/app/sites/import/import-plan-arrivals.client';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The three questions an operator has before deciding: what shows up, what does not, what was
@@ -38,20 +39,20 @@ export class ImportPlanSummary extends PureReactor {
     const skipped = records.filter((record) => record.outcome === ImportPlanOutcome.NONE);
     const skippedRows = skipped.reduce((sum, record) => sum + record.table.rows, 0);
     if (skippedRows > 0) {
-      out.push(`${skippedRows.toLocaleString()} record(s) have nowhere to go until the add-on that owns them is installed here. Install it, then import again, and they come across too.`);
+      out.push(AdminI18n.t('sites.importPlan.skippedRows', { count: skippedRows.toLocaleString() }));
     }
     // Only where the ids actually moved: an un-followed id on a table whose numbering was kept still
     // points at the row it always did, so telling the operator to go and check it is homework for
     // nothing — see `ImportPlanRecord.hasUnfollowedLinks`.
     if (this.arriving.some((record) => record.hasUnfollowedLinks)) {
-      out.push('Some links stored inside page content and product descriptions still point at their old numbering. Worth a look at related products and page links afterwards.');
+      out.push(AdminI18n.t('sites.importPlan.someLinksOld'));
     }
     if (this.arriving.some((record) => record.table.droppedColumns.length > 0)) {
-      out.push('A few older fields have no home on this platform any more and are not carried. The records themselves arrive; open the detail below for exactly which fields.');
+      out.push(AdminI18n.t('sites.importPlan.someFieldsDropped'));
     }
     const excluded = (plan.metaRowsExcluded ?? 0) + (plan.pluginSettingsRowsExcluded ?? 0);
     if (excluded > 0) {
-      out.push('Settings that belong to a whole installation rather than to one shop stay as this platform has them.');
+      out.push(AdminI18n.t('sites.importPlan.installationSettingsStay'));
     }
     return out;
   }
@@ -70,8 +71,8 @@ export class ImportPlanSummary extends PureReactor {
 
   private get settingsSentence(): string {
     return this.settingsArrive
-      ? 'Your integrations arrive configured and working — nothing to enter again.'
-      : 'Your integrations arrive, but their passwords were locked to the installation they came from. Open Settings → Integrations afterwards to enter them again.';
+      ? AdminI18n.t('sites.importPlan.integrationsWork')
+      : AdminI18n.t('sites.importPlan.integrationsNeedPasswords');
   }
 
   private get alreadyHere(): string {
@@ -80,16 +81,16 @@ export class ImportPlanSummary extends PureReactor {
     const files = plan.files;
 
     const peopleParts: string[] = [];
-    if (users.existing > 0) peopleParts.push(`${users.existing.toLocaleString()} of the people in the archive already have an account here and will not be duplicated`);
-    if (users.toCreate > 0) peopleParts.push(`${users.toCreate.toLocaleString()} new account(s) will be created`);
+    if (users.existing > 0) peopleParts.push(AdminI18n.t('sites.importPlan.peopleExisting', { count: users.existing.toLocaleString() }));
+    if (users.toCreate > 0) peopleParts.push(AdminI18n.t('sites.importPlan.peopleToCreate', { count: users.toCreate.toLocaleString() }));
     const peopleClause = peopleParts.length ? `${peopleParts.join('; ')}. ` : '';
 
     let filesClause = '';
     if (files.count > 0 && files.colliding > 0) {
-      filesClause = ' Files whose name is already taken are saved alongside, never replacing what is here, and everything that pointed at them is updated to match.';
+      filesClause = ` ${AdminI18n.t('sites.importPlan.filesCollide')}`;
     }
 
-    return `${peopleClause}Nothing already on this platform is replaced.${filesClause}`;
+    return `${peopleClause}${AdminI18n.t('sites.importPlan.nothingReplaced')}${filesClause}`;
   }
 
   /**
@@ -128,16 +129,16 @@ export class ImportPlanSummary extends PureReactor {
           users={plan.users}
           files={plan.files}
         />
-        <span className="fc-site-form__label">Before you press it</span>
+        <span className="fc-site-form__label">{AdminI18n.t('sites.importPlan.beforeYouPress')}</span>
         <div className="fc-import-plan__notes">
-          {ImportPlanSummary.note(true, 'Nothing here is replaced', this.alreadyHere)}
+          {ImportPlanSummary.note(true, AdminI18n.t('sites.importPlan.nothingHereReplaced'), this.alreadyHere)}
           {ImportPlanSummary.note(
             this.settingsArrive,
-            this.settingsArrive ? 'Your settings come with it' : 'Your settings need a password',
+            this.settingsArrive ? AdminI18n.t('sites.importPlan.settingsComeWithIt') : AdminI18n.t('sites.importPlan.settingsNeedPassword'),
             this.settingsSentence,
           )}
           {worthKnowing.length > 0
-            ? ImportPlanSummary.note(false, 'Check after importing', worthKnowing[0], worthKnowing.slice(1))
+            ? ImportPlanSummary.note(false, AdminI18n.t('sites.importPlan.checkAfterImporting'), worthKnowing[0], worthKnowing.slice(1))
             : null}
         </div>
       </div>

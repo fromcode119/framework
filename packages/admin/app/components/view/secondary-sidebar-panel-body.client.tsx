@@ -4,6 +4,8 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Icon } from '@/components/view/icon.client';
 import { NavUtils } from '@/lib/nav-utils';
 import type { ISecondaryPanelItem } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 
 export class SecondarySidebarPanelBody extends PureReactor {
   @prop declare items: ISecondaryPanelItem[];
@@ -16,7 +18,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
   private getGrouped(): Array<[string, ISecondaryPanelItem[]]> {
     const groups: Record<string, ISecondaryPanelItem[]> = {};
     for (const item of this.items) {
-      const key = String(item.group || 'General').trim() || 'General';
+      const key = String(item.group || AdminI18n.t('shell.nav.general')).trim() || AdminI18n.t('shell.nav.general');
       if (!groups[key]) groups[key] = [];
       groups[key].push(item);
     }
@@ -30,11 +32,11 @@ export class SecondarySidebarPanelBody extends PureReactor {
     const allPaths = grouped.flatMap(([, items]) => items.map((i) => i.path)).filter(Boolean) as string[];
 
     return (
-    <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4" aria-label="Secondary navigation" onKeyDown={this.onListKeyDown} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
+    <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-4" aria-label={AdminI18n.t('shell.nav.secondary')} onKeyDown={this.onListKeyDown} onMouseEnter={this.onMouseEnter} onMouseLeave={this.onMouseLeave}>
       <div className="space-y-4">
         {grouped.map(([group, groupItems]) => (
           <section key={group} className="space-y-1">
-            <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{group}</h3>
+            <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{AdminNavText.group(group)}</h3>
             {groupItems.map((item) => {
               const isActive = NavUtils.isPathActive(this.pathname, item.path, allPaths);
               return (
@@ -50,7 +52,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
                     <Icon name={item.icon || 'Circle'} size={16} />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-[12px] font-semibold leading-tight">{item.label}</span>
+                    <span className="block text-[12px] font-semibold leading-tight">{AdminNavText.panelLabel(item)}</span>
                     {item.description && (
                       <span className={`mt-0.5 block text-[10px] ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>{item.description}</span>
                     )}

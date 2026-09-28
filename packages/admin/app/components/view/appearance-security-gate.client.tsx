@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { Bridge } from '@fromcode119/react-class-components';
 import type { IAppearanceSecurityGateProps } from '@/lib/appearance/interfaces/appearance-security-gate-props.interface';
 import type { IAppearanceSecurityGateValues } from '@/lib/appearance/interfaces/appearance-security-gate-values.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Shared AUTH gate for appearance shells (authentication only — NOT authorization). Runs the same auth
@@ -24,7 +25,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
   protected present({ authState }: IAppearanceSecurityGateValues): ReactNode {
     const { Shell, nav, user, children } = this.props;
     if (authState.isInitialized === null || (authState.isAuthLoading && !authState.isAuthPage)) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Signing you in" /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.signingIn')} /></div>;
     }
 
     // A WORKSPACE domain reaches the console through THIS gate, not `ClientLayoutShell` — its tenant
@@ -36,7 +37,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     }
 
     if (!authState.user && !authState.isAuthPage) {
-      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label="Forwarding to Authentication..." /></div>;
+      return <div className="flex min-h-screen items-center justify-center bg-slate-50 transition-colors duration-500 dark:bg-[#020617]"><Loader label={AdminI18n.t('shell.auth.forwarding')} /></div>;
     }
 
     // Reached only after every branch above, so a visitor with a session, one this workspace refuses,

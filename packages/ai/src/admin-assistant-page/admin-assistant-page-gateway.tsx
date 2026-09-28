@@ -5,6 +5,7 @@ import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistan
 import { AdminAssistantPageGatewayService } from '@ai/admin-assistant-page/admin-assistant-page-gateway-service';
 import { AdminAssistantPageLayout } from '@ai/admin-assistant-page/admin-assistant-page-layout';
 import { AdminAssistantPageState } from '@ai/admin-assistant-page/admin-assistant-page-state';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * The model gateway: which provider, which model, and the credential that reaches it.
@@ -121,7 +122,7 @@ export class AdminAssistantPageGateway extends AdminAssistantPageLayout {
     } catch (error) {
       if (!this.cancelled) {
         if (AdminAssistantPageGatewayService.isTransientBootstrapError(error)) return;
-        this.skills = [{ id: 'general', label: 'General' }];
+        this.skills = [{ id: 'general', label: AiText.t('ai.general') }];
         this.skillId = this.skillId || 'general';
       }
     }

@@ -3,6 +3,8 @@ import { bound } from '@fromcode119/react-class-components';
 import { ContextBridge } from '@fromcode119/react';
 import { LocalizationSettingsIo } from '@/app/settings/localization/localization-settings-io';
 import { LocalizationSettingsPageState } from '@/app/settings/localization/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 
 /**
  * Reading the localization settings and writing them back.
@@ -21,7 +23,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
       this.country = loaded.country;
     } catch (err: any) {
       this.locales = null;
-      this.loadError = err?.message || 'The localization settings request failed.';
+      this.loadError = err?.message || AdminI18n.t('settings.localization.theLocalizationSettingsRequestFailed');
     } finally {
       this.isLoading = false;
     }
@@ -39,6 +41,40 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
     await this.loadLocalization();
   }
 
+  /** The platform scope's one control: the console language, written to the platform's row. */
+  @bound
+  async handleSaveConsoleLanguage(): Promise<void> {
+    const addNotification = this.runtime.notify.addNotification;
+    this.isSaving = true;
+    try {
+      await AdminSystemSettingsClient.update({ admin_default_locale: this.adminDefaultLocale });
+      LocalizationSettingsPageActions.followConsoleLanguage(this.adminDefaultLocale);
+      addNotification({
+        title: AdminI18n.t('settings.localization.localizationUpdated'),
+        message: AdminI18n.t('settings.localization.consoleLanguageSaved'),
+        type: NotificationType.SUCCESS
+      });
+    } catch (error: any) {
+      addNotification({
+        title: AdminI18n.t('settings.localization.saveFailed'),
+        message: error?.message || AdminI18n.t('settings.localization.failedToSaveLocalizationSettings'),
+        type: NotificationType.ERROR
+      });
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  /**
+   * Switch to a newly saved console language right away. A reload, because the plugins' screens are
+   * put into the console's language by the api when the admin loads, not by this page.
+   */
+  private static followConsoleLanguage(locale: string): void {
+    if (!locale || locale === AdminI18n.locale) return;
+    AdminI18n.setLocale(locale);
+    window.location.reload();
+  }
+
   @bound
   async handleSave(): Promise<void> {
     const addNotification = this.runtime.notify.addNotification;
@@ -52,8 +88,8 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
 
       if (!cleaned.length) {
         addNotification({
-          title: 'Invalid Locale List',
-          message: 'Add at least one locale with a valid ISO code.',
+          title: AdminI18n.t('settings.localization.invalidLocaleList'),
+          message: AdminI18n.t('settings.localization.addAtLeastOneLocale'),
           type: NotificationType.ERROR
         });
         return;
@@ -91,14 +127,15 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
       });
 
       addNotification({
-        title: 'Localization Updated',
-        message: 'Locale registry and defaults have been saved.',
+        title: AdminI18n.t('settings.localization.localizationUpdated'),
+        message: AdminI18n.t('settings.localization.localeRegistryAndDefaultsHave'),
         type: NotificationType.SUCCESS
       });
+      LocalizationSettingsPageActions.followConsoleLanguage(saved.adminDefaultLocale);
     } catch (error: any) {
       addNotification({
-        title: 'Save Failed',
-        message: error?.message || 'Failed to save localization settings.',
+        title: AdminI18n.t('settings.localization.saveFailed'),
+        message: error?.message || AdminI18n.t('settings.localization.failedToSaveLocalizationSettings'),
         type: NotificationType.ERROR
       });
     } finally {

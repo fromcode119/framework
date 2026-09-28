@@ -9,6 +9,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaControls extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -83,13 +84,13 @@ export class MediaControls extends PureReactor {
             </div>
             <div className="text-sm">
               <div className={`font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {isDragOver ? 'Drop files to upload' : 'Drag files here'}
+                {isDragOver ? AdminI18n.t('media.dropFilesToUpload') : AdminI18n.t('media.dragFilesHere')}
               </div>
-              <div className="text-xs text-slate-500">Upload images, videos, or documents to the current folder.</div>
+              <div className="text-xs text-slate-500">{AdminI18n.t('media.uploadImagesVideosOrDocuments')}</div>
             </div>
           </div>
           <Button size={FieldSize.SM} onClick={this.browseFiles} disabled={uploading}>
-            {uploading ? 'Uploading...' : 'Browse Files'}
+            {uploading ? AdminI18n.t('media.uploading') : AdminI18n.t('media.browseFiles')}
           </Button>
         </div>
 
@@ -107,7 +108,7 @@ export class MediaControls extends PureReactor {
           <div className={`flex items-center border rounded-xl p-0.5 flex-shrink-0 ${
             theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100/80 border-slate-200/60'
           }`}>
-            {[{ key: 'files', label: 'Files' }, { key: 'shares', label: 'Shared' }, { key: 'activity', label: 'Activity' }].map((tab) => (
+            {[{ key: 'files', label: AdminI18n.t('media.files') }, { key: 'shares', label: AdminI18n.t('media.shared') }, { key: 'activity', label: AdminI18n.t('media.activity') }].map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => this.setActiveView(tab.key)}
@@ -124,7 +125,7 @@ export class MediaControls extends PureReactor {
             <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
             <input
               type="text"
-              placeholder="Search media..."
+              placeholder={AdminI18n.t('media.searchMedia')}
               value={searchQuery}
               onChange={this.onSearchChange}
               className={`w-full ${AdminClass.SURFACE} py-2 pl-12 pr-4 text-[13px] outline-none border transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
@@ -136,9 +137,9 @@ export class MediaControls extends PureReactor {
                 value={this.source}
                 onChange={this.setSource}
                 options={[
-                  { value: '', label: 'All files' },
-                  { value: 'uploads', label: 'Uploads' },
-                  { value: 'theme', label: 'Theme assets' },
+                  { value: '', label: AdminI18n.t('media.allFiles') },
+                  { value: 'uploads', label: AdminI18n.t('media.uploads') },
+                  { value: 'theme', label: AdminI18n.t('media.themeAssets') },
                 ]}
               />
             </div>

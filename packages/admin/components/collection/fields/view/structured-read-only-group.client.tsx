@@ -6,6 +6,7 @@ import { StructuredReadOnlyTable } from '@/components/collection/fields/view/str
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One level of the value tree: this level's leaves in a grid, then each nested object/array below it
@@ -85,7 +86,7 @@ export class StructuredReadOnlyGroup extends PureReactor {
     const children = visible.filter((entry) => !StructuredReadOnlyGroup.isLeaf(entry.node));
 
     if (!visible.length) {
-      return <p className={`text-[12px] font-medium ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>Nothing matches that filter.</p>;
+      return <p className={`text-[12px] font-medium ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('ui.structured.noMatch')}</p>;
     }
 
     return (

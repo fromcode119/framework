@@ -9,6 +9,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
 import { MarketplaceCardActions } from '@/app/plugins/marketplace/components/view/marketplace-card-actions.client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplacePluginCard extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -64,18 +65,18 @@ export class MarketplacePluginCard extends PureReactor {
               {isBuiltHere && (
                 <Badge
                   variant={BadgeVariant.AMBER}
-                  title="Built on this server from a source you control — not offered by a marketplace."
+                  title={AdminI18n.t('plugins.list.builtOnThisServerFrom')}
                 >
-                  Built here
+                  {AdminI18n.t('plugins.list.builtHere')}
                 </Badge>
               )}
               {isFeatured && (
                 <Badge variant={BadgeVariant.BLUE} className="bg-indigo-500/10 text-indigo-500 border-indigo-500/20">
-                  Featured
+                  {AdminI18n.t('plugins.list.featured')}
                 </Badge>
               )}
               <Badge variant={installed ? "success" : "blue"} className="flex-shrink-0 font-semibold">
-                {installed ? "Installed" : (plugin.category || "Available")}
+                {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.available'))}
               </Badge>
             </div>
           </div>
@@ -86,7 +87,7 @@ export class MarketplacePluginCard extends PureReactor {
                 {plugin.name}
               </h3>
               {isVerified && (
-                <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-500" title="Verified Publisher">
+                <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-500" title={AdminI18n.t('plugins.list.verifiedPublisher')}>
                   <FrameworkIcons.Shield size={14} fill="currentColor" className="opacity-80" />
                 </div>
               )}
@@ -100,24 +101,24 @@ export class MarketplacePluginCard extends PureReactor {
             {installed ? (
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
-                Installed {installedVersion}
+                {AdminI18n.t('plugins.detail.installedVersion', { version: installedVersion })}
               </div>
             ) : (
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-                Available
+                {AdminI18n.t('plugins.list.available')}
               </div>
             )}
             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             <div className="flex items-center gap-1.5 flex-shrink-0">
               <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-              Marketplace {plugin.version}
+              {AdminI18n.t('plugins.detail.marketplaceVersion', { version: plugin.version })}
             </div>
             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             <div className="flex items-center gap-1.5 min-w-0">
               <FrameworkIcons.User size={12} className="text-indigo-500/70" />
               <span className="truncate flex items-center gap-1">
-                {plugin.author || 'Official Developer'}
+                {plugin.author || AdminI18n.t('plugins.list.officialDeveloper')}
                 {isVerified && (
                   <FrameworkIcons.Check size={10} className="text-emerald-500" strokeWidth={3} />
                 )}
@@ -128,7 +129,7 @@ export class MarketplacePluginCard extends PureReactor {
                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                 <div className="flex items-center gap-1.5 text-rose-500">
                   <FrameworkIcons.Loader size={10} className="animate-spin" />
-                  Trending
+                  {AdminI18n.t('plugins.list.trending')}
                 </div>
               </>
             )}

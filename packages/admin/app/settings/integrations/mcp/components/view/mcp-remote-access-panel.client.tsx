@@ -13,6 +13,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The hosted MCP transport toggle — the operator-visible switch behind `mcp_remote_enabled`.
@@ -47,7 +48,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
       this.enabled = String(settings?.[SystemConstants.META_KEY.MCP_REMOTE_ENABLED] ?? '') === 'true' || settings?.[SystemConstants.META_KEY.MCP_REMOTE_ENABLED] === true;
       this.maxMediaMb = Number(settings?.[SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB] || 0) || '';
     } catch (error: any) {
-      this.notifyError('Failed to load the remote access setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadTheRemote'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -63,8 +64,8 @@ export class McpRemoteAccessPanel extends AdminComponent {
     if (!Number.isFinite(limit) || limit <= 0) {
       this.runtime.notify.addNotification({
         type: NotificationType.ERROR,
-        title: 'Invalid media limit',
-        message: 'Enter a value greater than zero megabytes.',
+        title: AdminI18n.t('settings.integrations.invalidMediaLimit'),
+        message: AdminI18n.t('settings.integrations.enterAValueGreaterThan'),
       });
       return;
     }
@@ -72,7 +73,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
     try {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [SystemConstants.META_KEY.MCP_REMOTE_MEDIA_MAX_MB]: limit });
     } catch (error: any) {
-      this.notifyError('Failed to save the MCP media limit', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveTheMcp'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }
@@ -90,7 +91,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [SystemConstants.META_KEY.MCP_REMOTE_ENABLED]: next });
     } catch (error: any) {
       this.enabled = previous;
-      this.notifyError('Failed to save the remote access setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveTheRemote'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }
@@ -100,40 +101,39 @@ export class McpRemoteAccessPanel extends AdminComponent {
     this.runtime.notify.addNotification({
       type: NotificationType.ERROR,
       title,
-      message: error?.message || 'Unexpected error.',
+      message: error?.message || AdminI18n.t('settings.integrations.unexpectedError'),
     });
   }
 
   render(): ReactNode {
     return (
-      <Card title="Remote access">
+      <Card title={AdminI18n.t('settings.integrations.remoteAccess')}>
         <p className="mb-3 text-xs text-slate-500">
-          Let remote MCP clients (Claude web or desktop) connect over Streamable HTTP. Every request still requires an access token from below.
+          {AdminI18n.t('settings.integrations.letRemoteMcpClientsClaude')}
         </p>
         {this.loading ? (
           <Loader />
         ) : this.outOfScope ? (
           <p className="text-xs text-slate-500">
-            Remote access is configured per site. Choose a site from the site menu to turn the hosted
-            MCP endpoint on and set its media limit.
+            {AdminI18n.t('settings.integrations.remoteAccessIsConfiguredPer')}
           </p>
         ) : (
           <div className="space-y-5">
             <Switch
               checked={this.enabled}
               disabled={this.saving}
-              label="Hosted MCP endpoint"
-              description={this.enabled ? 'Remote clients may connect to POST /api/v1/mcp with a token.' : 'Disabled — the endpoint answers 403 to everyone.'}
+              label={AdminI18n.t('settings.integrations.hostedMcpEndpoint')}
+              description={this.enabled ? AdminI18n.t('settings.integrations.remoteClientsMayConnectTo') : AdminI18n.t('settings.integrations.disabledTheEndpointAnswers403')}
               onChange={(next: boolean) => { void this.setEnabled(next); }}
             />
             <div className="space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700">
-              <label className="block text-sm font-medium text-slate-900 dark:text-white">Media payload limit (MB)</label>
-              <p className="text-xs text-slate-500">Maximum decoded upload or remote download accepted by MCP media tools.</p>
+              <label className="block text-sm font-medium text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.mediaPayloadLimitMb')}</label>
+              <p className="text-xs text-slate-500">{AdminI18n.t('settings.integrations.maximumDecodedUploadOrRemote')}</p>
               <div className="flex items-start gap-2">
                 <div className="w-36">
                   <NumberStepper min={1} value={this.maxMediaMb} onChange={(value) => { this.maxMediaMb = value; }} />
                 </div>
-                <Button variant={ButtonVariant.SECONDARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.saveMediaLimit()}>Save limit</Button>
+                <Button variant={ButtonVariant.SECONDARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.saveMediaLimit()}>{AdminI18n.t('settings.integrations.saveLimit')}</Button>
               </div>
             </div>
           </div>

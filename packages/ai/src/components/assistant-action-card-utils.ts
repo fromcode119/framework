@@ -1,4 +1,5 @@
 import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantActionCardUtils {
   static summarize(action: IAssistantAction): { title: string; detail: string } {
@@ -18,7 +19,7 @@ export class AssistantActionCardUtils {
             ? `File: ${filePath}${target ? ` • ${target}` : ''}`
             : target
               ? `Target: ${target}`
-              : String(action.reason || 'Prepared file change').trim() || 'Prepared file change',
+              : String(action.reason || 'Prepared file change').trim() || AiText.t('ai.preparedFileChange'),
         };
       }
 
@@ -27,14 +28,14 @@ export class AssistantActionCardUtils {
           title: tool,
           detail: collection
             ? `Record: ${collection}${idOrSlug ? ` #${idOrSlug}` : ''}`
-            : String(action.reason || 'Prepared record update').trim() || 'Prepared record update',
+            : String(action.reason || 'Prepared record update').trim() || AiText.t('ai.preparedRecordUpdate'),
         };
       }
 
       const target = String((input as any).collectionSlug || (input as any).slug || (input as any).id || '').trim();
       return {
         title: tool,
-        detail: target ? `Target: ${target}` : String(action.reason || 'Prepared change').trim() || 'Prepared change',
+        detail: target ? `Target: ${target}` : String(action.reason || 'Prepared change').trim() || AiText.t('ai.preparedChange'),
       };
     }
     if (action.type === 'update_setting') {
@@ -45,7 +46,7 @@ export class AssistantActionCardUtils {
     }
     return {
       title: String(action.type || 'action').trim() || 'action',
-      detail: String(action.reason || 'Prepared change').trim() || 'Prepared change',
+      detail: String(action.reason || 'Prepared change').trim() || AiText.t('ai.preparedChange'),
     };
   }
 }

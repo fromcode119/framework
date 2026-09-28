@@ -57,6 +57,14 @@ export class FieldProvenance {
     return CoercionUtils.toString(field?.label) || settingKey;
   }
 
+  /** The value as the setting's own control names it — the option label, not the stored value. */
+  private static valueLabelFor(settingKey: string, value: unknown, schema: Record<string, any> | undefined): string {
+    const field = (schema?.fields || []).find((entry: any) => entry?.name === settingKey);
+    const stored = CoercionUtils.toString(value);
+    const option = (Array.isArray(field?.options) ? field.options : []).find((entry: any) => CoercionUtils.toString(entry?.value) === stored);
+    return CoercionUtils.toString(option?.label) || stored;
+  }
+
   /** The tab that setting sits on, by its DISPLAY name — again from the schema, not repeated in a rule. */
   private static tabFor(settingKey: string, schema: Record<string, any> | undefined): string {
     const field = (schema?.fields || []).find((entry: any) => entry?.name === settingKey);
@@ -96,7 +104,7 @@ export class FieldProvenance {
       }
       return new FieldProvenance({
         kind: FieldProvenanceKind.INHERITED,
-        effectiveValue: CoercionUtils.toString(inherited),
+        effectiveValue: FieldProvenance.valueLabelFor(rule.settingKey, inherited, schema),
         settingLabel: FieldProvenance.labelFor(rule.settingKey, schema),
         settingsTab: FieldProvenance.tabFor(rule.settingKey, schema),
         settingsHref,

@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import Link from 'next/link';
 import { PluginUnavailableReason } from '@/components/plugins/view/plugin-unavailable-reason.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginNotFound extends PureReactor {
   @prop declare pluginSlug: string;
@@ -18,10 +19,10 @@ export class PluginNotFound extends PureReactor {
         <FrameworkIcons.Zap size={64} className="text-rose-500 relative z-10 animate-pulse" strokeWidth={1} />
       </div>
 
-      <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">Module Not Found</h1>
+      <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('plugins.list.moduleNotFound')}</h1>
 
       <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-4 px-6">
-        Nothing is serving <span className="text-rose-500 font-bold px-2 py-0.5 bg-rose-50 dark:bg-rose-500/10 rounded-lg">/{pluginSlug}</span>.
+        {AdminI18n.t('plugins.list.nothingServing', { path: `/${pluginSlug}` })}
       </p>
 
       {/* When the extension exists but is not running, its STATE is the answer — see the component. */}
@@ -34,7 +35,7 @@ export class PluginNotFound extends PureReactor {
             className="rounded-xl px-10 py-5 font-bold tracking-tight text-[13px] shadow-2xl shadow-rose-500/20 bg-rose-500 hover:bg-rose-600 border-none transition-all hover:scale-105 active:scale-95"
             icon={<FrameworkIcons.Plugins size={18} />}
           >
-            Manage Plugins
+            {AdminI18n.t('plugins.list.managePlugins')}
           </Button>
         </Link>
         <Button
@@ -43,7 +44,7 @@ export class PluginNotFound extends PureReactor {
           className="rounded-xl px-8 font-bold tracking-tight text-[13px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-all"
           icon={<FrameworkIcons.Left size={16} />}
         >
-          Go Back
+          {AdminI18n.t('plugins.list.goBack')}
         </Button>
       </div>
     </div>

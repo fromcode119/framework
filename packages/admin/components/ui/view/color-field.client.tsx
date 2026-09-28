@@ -6,6 +6,7 @@ import { HexColorPicker } from 'react-colorful';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 // A compact palette of real colours (hex) — shown INSIDE the popover, never sprawled across the form.
 
@@ -125,14 +126,14 @@ export class ColorField extends AdminComponent {
           type="button"
           disabled={disabled}
           onClick={this.toggle}
-          aria-label="Choose colour"
+          aria-label={AdminI18n.t('ui.color.choose')}
           className={`inline-flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-lg border bg-white dark:bg-slate-900 transition-colors disabled:opacity-50 ${open ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
         >
           <span
             className="h-7 w-7 rounded-lg ring-1 ring-black/10 dark:ring-white/15 shrink-0"
             style={current ? { backgroundColor: current } : { background: 'conic-gradient(from 0deg, #ef4444, #eab308, #22c55e, #06b6d4, #3b82f6, #a855f7, #ef4444)' }}
           />
-          <span className="text-[13px] font-medium text-slate-500 dark:text-slate-400">{current ? 'Colour' : 'Pick a colour'}</span>
+          <span className="text-[13px] font-medium text-slate-500 dark:text-slate-400">{AdminI18n.t(current ? 'ui.color.colour' : 'ui.color.pick')}</span>
           <FrameworkIcons.ChevronDown size={14} className={`text-slate-400 transition-transform ${open ? 'rotate-180' : ''}`} />
         </button>
 

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionQuickEditCard extends PureReactor {
   @prop declare row: any;
@@ -45,7 +46,7 @@ export class CollectionQuickEditCard extends PureReactor {
       <Card className={`${theme === ThemeMode.DARK ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}`}>
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
           <div>
-            <h3 className={`text-base font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Quick Edit</h3>
+            <h3 className={`text-base font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('collection.quickEdit.title')}</h3>
             <p className="text-[11px] font-semibold tracking-wide text-slate-400">
               {collection?.name || resolvedSlug} · #{rowId}
             </p>
@@ -73,7 +74,7 @@ export class CollectionQuickEditCard extends PureReactor {
           )}
 
           {isLoadingRow ? (
-            <div className="py-12 text-center text-sm font-semibold text-slate-500">Loading record...</div>
+            <div className="py-12 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {quickEditFields.map((field: any) => (
@@ -99,7 +100,7 @@ export class CollectionQuickEditCard extends PureReactor {
 
         <div className="px-5 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
           <Button variant={ButtonVariant.GHOST} onClick={onClose}>
-            Close
+            {AdminI18n.t('common.close')}
           </Button>
           <Button
             onClick={onSave}
@@ -107,7 +108,7 @@ export class CollectionQuickEditCard extends PureReactor {
             icon={<FrameworkIcons.Save size={14} />}
             className="px-5"
           >
-            Save
+            {AdminI18n.t('common.save')}
           </Button>
         </div>
       </Card>

@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Platform scope: whether sites may switch this plugin on for themselves. Offering it is the platform's
@@ -21,7 +22,7 @@ export class PluginSiteOfferSwitch extends AdminComponent {
       const answer = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.OFFERED);
       this.offered = (answer?.offered ?? []).includes(this.slug);
     } catch (err: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Offer Unavailable', err?.message || 'Whether this plugin is offered to sites could not be read.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.offerUnavailable'), err?.message || AdminI18n.t('plugins.detail.whetherThisPluginIsOffered'));
     }
   }
 
@@ -32,7 +33,7 @@ export class PluginSiteOfferSwitch extends AdminComponent {
       const answer = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.OFFER(this.slug), { offered });
       this.offered = Boolean(answer?.offered);
     } catch (err: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Not Saved', err?.message || 'The offer could not be changed.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.notSaved'), err?.message || AdminI18n.t('plugins.detail.theOfferCouldNotBe'));
     } finally {
       this.saving = false;
     }
@@ -46,8 +47,8 @@ export class PluginSiteOfferSwitch extends AdminComponent {
           checked={this.offered === true}
           disabled={this.offered === null || this.saving}
           onChange={this.toggle}
-          label="Offered to sites"
-          description="Each site's admin may switch it on or off for their own site (Plugins → Available to this site). Turning this off stops sites adding it; a site that has it keeps it until switched off there or in Sites."
+          label={AdminI18n.t('plugins.detail.offeredToSites')}
+          description={AdminI18n.t('plugins.detail.eachSiteSAdminMay')}
         />
       </div>
     );

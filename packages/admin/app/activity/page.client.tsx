@@ -11,6 +11,7 @@ import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { ActivityColumnsFactory } from '@/app/activity/activity-columns';
 import { ActivityPageHeader } from '@/app/activity/activity-page-header';
 import { ActivityDetailModal } from '@/app/activity/activity-detail-modal';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ActivityPage extends AdminComponent {
   private readonly limit = 50;
@@ -133,7 +134,7 @@ export class ActivityPage extends AdminComponent {
               page={this.page}
               onPageChange={this.handlePageChange}
               onRowClick={this.handleRowClick}
-              emptyMessage={this.loading ? "Decrypting audit ledger..." : "No audit records documented"}
+              emptyMessage={this.loading ? AdminI18n.t('activity.decryptingAuditLedger') : AdminI18n.t('activity.noAuditRecordsDocumented')}
             />
           </div>
         </div>
@@ -149,13 +150,13 @@ export class ActivityPage extends AdminComponent {
         )}
 
         <AdminPageFooter
-          label="System Activity Log"
-          description="Global ledger of administrative actions and system events."
+          label={AdminI18n.t('activity.systemActivityLog')}
+          description={AdminI18n.t('activity.globalLedgerOfAdministrativeActions2')}
           accent="emerald"
           links={[
-            { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
-            { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
+            { label: AdminI18n.t('activity.users'), href: AdminConstants.ROUTES.USERS.LIST },
+            { label: AdminI18n.t('activity.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+            { label: AdminI18n.t('activity.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
           ]}
         />
       </div>

@@ -15,6 +15,7 @@ import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permi
 import { NewRoleSummarySidebar } from '@/app/users/roles/new/components/view/new-role-summary-sidebar.client';
 import type { INewRoleFormData } from '@/app/users/roles/new/interfaces/new-role-form-data.interface';
 import { state } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewRolePage extends AdminComponent {
   private mounted = false;
@@ -47,7 +48,7 @@ export class NewRolePage extends AdminComponent {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERMISSIONS);
       if (this.mounted) this.catalog = Array.isArray(data) ? data : [];
     } catch (e: any) {
-      if (this.mounted) this.catalogError = e?.message || 'The permissions could not be loaded.';
+      if (this.mounted) this.catalogError = e?.message || AdminI18n.t('users.thePermissionsCouldNotBe');
     }
   }
 
@@ -69,10 +70,10 @@ export class NewRolePage extends AdminComponent {
     this.loading = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.ROLES, this.formData);
-      this.runtime.notify.notify(NotificationType.SUCCESS, 'Role created', `"${this.formData.name}" was created.`);
+      this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('users.roleCreated'), AdminI18n.t('users.wasCreated', { name: this.formData.name }));
       this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } catch (e: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Could not create role', e?.message || 'Failed to save role.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('users.couldNotCreateRole'), e?.message || AdminI18n.t('users.failedToSaveRole'));
     } finally {
       this.loading = false;
     }
@@ -86,27 +87,27 @@ export class NewRolePage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           onBack={() => this.router.back()}
-          title="Create new role"
-          subtitle="Define a set of permissions to assign to users."
+          title={AdminI18n.t('users.createNewRole')}
+          subtitle={AdminI18n.t('users.defineASetOfPermissions')}
         />
 
         <div className="flex-1 w-full px-6 lg:px-8 py-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
-              <Card title="Role Details">
+              <Card title={AdminI18n.t('users.roleDetails')}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                      label="Name"
-                      placeholder="e.g. Editor"
+                      label={AdminI18n.t('users.name')}
+                      placeholder={AdminI18n.t('users.eGEditor')}
                       value={formData.name}
                       onChange={(e) => this.handleNameChange(e.target.value)}
                       required
                       size={FieldSize.SM}
                     />
                     <Input
-                      label="Slug (System ID)"
-                      placeholder="e.g. editor"
+                      label={AdminI18n.t('users.slugSystemId')}
+                      placeholder={AdminI18n.t('users.roleSlugExample')}
                       value={formData.slug}
                       onChange={(e) => this.patchForm({ slug: e.target.value })}
                       required
@@ -114,12 +115,12 @@ export class NewRolePage extends AdminComponent {
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">Description</label>
+                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">{AdminI18n.t('users.description')}</label>
                     <textarea
                       className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
                         theme === ThemeMode.DARK ? 'bg-slate-950/50 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                       }`}
-                      placeholder="Optional description of what this role allows..."
+                      placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
                       onChange={(e) => this.patchForm({ description: e.target.value })}
                     />

@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Pagination footer for {@link DataTable}. Renders nothing unless there is more than one page. */
 export class DataTablePagination extends PureReactor {
@@ -28,7 +29,7 @@ export class DataTablePagination extends PureReactor {
     return (
         <div className="flex items-center justify-between px-8 py-5 border-t transition-all bg-slate-50/50 border-slate-100 dark:bg-slate-950/40 dark:border-slate-800/50">
           <p className="text-[12px] font-semibold text-slate-400 tracking-wide">
-            Showing <span className="text-slate-900 dark:text-white">{startRecord}-{endRecord}</span> of <span className="text-slate-900 dark:text-white">{totalDocs}</span> records
+            {AdminI18n.t('ui.table.showing', { from: startRecord, to: endRecord, total: totalDocs })}
           </p>
           <div className="flex items-center gap-2">
             <button disabled={page === 1} onClick={() => onPageChange?.(page - 1)} className="p-2 rounded-lg transition-all border bg-white border-slate-200 text-slate-600 disabled:opacity-50 shadow-sm dark:bg-slate-800 dark:border-slate-700 dark:text-slate-400 dark:disabled:opacity-20">

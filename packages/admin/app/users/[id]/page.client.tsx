@@ -14,6 +14,7 @@ import { UserProfileSidebar } from '@/app/users/[id]/components/view/user-profil
 import { UserOwnershipCard } from '@/app/users/[id]/components/view/user-ownership-card.client';
 import { prop, state, bound } from '@fromcode119/react-class-components';
 import { SelfAccount } from '@/lib/self-account';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserProfilePage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -73,7 +74,7 @@ export class UserProfilePage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Synchronizing Identity..." />
+          <Loader label={AdminI18n.t('users.synchronizingIdentity')} />
         </div>
       );
     }
@@ -81,9 +82,9 @@ export class UserProfilePage extends AdminComponent {
     if (!user) {
       return (
         <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4">
-          <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">User Not Found</h1>
+          <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
           <Link href={AdminConstants.ROUTES.USERS.LIST}>
-            <Button variant={ButtonVariant.GHOST}>Return to Database</Button>
+            <Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToDatabase')}</Button>
           </Link>
         </div>
       );
@@ -100,28 +101,28 @@ export class UserProfilePage extends AdminComponent {
         <div className="flex-1 w-full px-6 lg:px-12 py-12">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             <div className="lg:col-span-2 space-y-8">
-              <Card title="Account Information">
+              <Card title={AdminI18n.t('users.accountInformation')}>
                 <div className="grid grid-cols-2 gap-8 py-4">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">First Name</span>
-                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || 'Not Set'}</p>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">{AdminI18n.t('users.firstName')}</span>
+                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.firstName || AdminI18n.t('users.notSet')}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Last Name</span>
-                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || 'Not Set'}</p>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">{AdminI18n.t('users.lastName')}</span>
+                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.lastName || AdminI18n.t('users.notSet')}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">E-Mail Address</span>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">{AdminI18n.t('users.eMailAddress')}</span>
                     <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.email}</p>
                   </div>
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">Username</span>
-                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || 'Not Set'}</p>
+                    <span className="text-[10px] font-bold tracking-tight text-slate-400 uppercase">{AdminI18n.t('users.username')}</span>
+                    <p className={`font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{user.username || AdminI18n.t('users.notSet')}</p>
                   </div>
                 </div>
               </Card>
 
-              <Card title="Assigned Security Roles" icon={<FrameworkIcons.Shield size={18} className="text-indigo-500" />}>
+              <Card title={AdminI18n.t('users.assignedSecurityRoles')} icon={<FrameworkIcons.Shield size={18} className="text-indigo-500" />}>
                  <div className="flex flex-wrap gap-3 py-2">
                    {user.roles && user.roles.length > 0 ? (
                       user.roles.map((role: string) => (
@@ -131,19 +132,19 @@ export class UserProfilePage extends AdminComponent {
                            <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.6)]" />
                            <div>
                               <span className={`text-[11px] font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{role}</span>
-                              <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-tight">Custom Security Definition</p>
+                              <p className="text-[10px] font-bold text-slate-500 mt-0.5 uppercase tracking-tight">{AdminI18n.t('users.customSecurityDefinition')}</p>
                            </div>
                         </div>
                       ))
                    ) : (
-                      <p className="text-slate-500 font-bold text-sm italic py-4">No roles assigned to this account.</p>
+                      <p className="text-slate-500 font-bold text-sm italic py-4">{AdminI18n.t('users.noRolesAssignedToThis')}</p>
                    )}
                  </div>
                  {selfService ? null : (
                  <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
                     <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
                       <Button variant={ButtonVariant.GHOST} className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
-                        Manage Assignments
+                        {AdminI18n.t('users.manageAssignments')}
                       </Button>
                     </Link>
                  </div>

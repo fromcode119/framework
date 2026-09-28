@@ -4,6 +4,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { TagFieldUtils } from '@/components/ui/tag-field/utils';
 import type { ITagFieldProps } from '@/components/ui/tag-field/interfaces/tag-field-props.interface';
 import type { ITagOption } from '@/components/ui/tag-field/interfaces/tag-option.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Encapsulates the network/data logic for {@link TagField}: parsing the stored value
@@ -33,7 +34,7 @@ export class TagFieldDataService {
   /** What the operator reads: plain words, with the id that is all the record left behind. */
   static describeUnresolved(label: string): string {
     const id = label.slice(TagFieldDataService.UNRESOLVED_MARKER.length).trim();
-    return id ? `Deleted item (${id})` : 'Deleted item';
+    return id ? AdminI18n.t('ui.tags.deletedWithId', { id }) : AdminI18n.t('ui.tags.deleted');
   }
 
   // `value` is a raw stored record field: despite the caller's `string[] | string` prop type,
@@ -229,7 +230,7 @@ export class TagFieldDataService {
             }
 
             const value = String(rawValue || '').trim();
-            const label = String(AdminServices.getInstance().localization.resolveLabelText(item) || value || 'Unknown').trim();
+            const label = String(AdminServices.getInstance().localization.resolveLabelText(item) || value || AdminI18n.t('common.unknown')).trim();
 
             return { label, value: value || label };
           }

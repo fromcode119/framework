@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * A field the operator may not edit, shown as a VALUE on the recessed surface — not as an input.
@@ -40,7 +41,7 @@ export class ReadOnlyFieldValue extends PureReactor {
 
     if (type === 'boolean' || type === 'checkbox') {
       const truthy = value === true || value === 'true' || value === 1 || value === '1';
-      return truthy ? 'Yes' : 'No';
+      return AdminI18n.t(truthy ? 'common.yes' : 'common.no');
     }
 
     if (type === 'date' || type === 'datetime') {
@@ -82,7 +83,7 @@ export class ReadOnlyFieldValue extends PureReactor {
     if (!provenance) {
       return (
         <div className="min-h-[34px] rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-700 dark:bg-slate-950/40">
-          <span className={valueClass}>{empty ? (this.emptyLabel || 'Not set') : text}</span>
+          <span className={valueClass}>{empty ? (this.emptyLabel || AdminI18n.t('ui.field.notSet')) : text}</span>
         </div>
       );
     }
@@ -94,7 +95,7 @@ export class ReadOnlyFieldValue extends PureReactor {
           <p className="text-[10px] font-semibold leading-relaxed text-slate-500 dark:text-slate-400">{provenance}</p>
         </div>
         <div className="min-h-[34px] bg-slate-50 px-3 py-2 dark:bg-slate-950/40">
-          <span className={valueClass}>{empty ? (this.emptyLabel || 'Not set') : text}</span>
+          <span className={valueClass}>{empty ? (this.emptyLabel || AdminI18n.t('ui.field.notSet')) : text}</span>
         </div>
       </div>
     );

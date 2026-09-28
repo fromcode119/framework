@@ -2,6 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
+    // The shared admin components it re-exports read the console's bundled dictionaries (admin/i18n/*.json).
+    "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": "./src",
     "baseUrl": ".",

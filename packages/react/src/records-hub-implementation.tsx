@@ -8,6 +8,7 @@ import type { IRecordsHubGroup } from '@react/interfaces/records-hub-group.inter
 import type { IRecordsHubResult } from '@react/interfaces/records-hub-result.interface';
 import { RecordsHub } from '@react/records-hub';
 import { RecordsHubGroupSection } from '@react/records-hub-group-section';
+import { ViewTranslations } from '@react/view/view-translations';
 
 /**
  * The surface `RecordsHub` renders inside its boundary: a grouped, newest-first timeline of every record
@@ -67,7 +68,7 @@ export class RecordsHubImplementation extends Reactor {
       this.loading = false;
     } catch (err: any) {
       if (!this.alive) return;
-      this.error = String(err?.message || 'Failed to load records');
+      this.error = String(err?.message || ViewTranslations.t('view.recordsHub.loadFailed'));
       this.loading = false;
     }
   }
@@ -136,14 +137,14 @@ export class RecordsHubImplementation extends Reactor {
 
         {loading ? (
           <div className="py-10 flex items-center justify-center gap-2 text-slate-400 text-[12px] font-bold">
-            <IconLoader size={16} className="animate-spin" /> Loading records…
+            <IconLoader size={16} className="animate-spin" /> {ViewTranslations.t('view.recordsHub.loading')}
           </div>
         ) : error ? (
           <div className="rounded-2xl bg-rose-50 text-rose-700 px-4 py-3 text-[12px] font-bold dark:bg-rose-500/10">{error}</div>
         ) : total === 0 ? (
           <div className="py-10 flex flex-col items-center justify-center gap-2 text-center">
             <IconInbox size={28} className="text-slate-300" />
-            <p className="text-[12px] font-bold text-slate-400">{this.emptyHint || 'No records yet for this person.'}</p>
+            <p className="text-[12px] font-bold text-slate-400">{this.emptyHint || ViewTranslations.t('view.recordsHub.empty')}</p>
           </div>
         ) : (
           <div className="space-y-5">{visible.map((group) => <RecordsHubGroupSection key={group.group} group={group} dark={dark} onOpenItem={this.onOpenItem} onDownloadItem={this.onDownloadItem} />)}</div>
@@ -152,7 +153,7 @@ export class RecordsHubImplementation extends Reactor {
         {errors.length ? (
           <div className="mt-4 flex items-start gap-2 rounded-xl bg-amber-50 px-3 py-2 text-[11px] font-semibold text-amber-700 dark:bg-amber-500/10">
             <IconAlertTriangle size={13} className="mt-0.5 shrink-0" />
-            <span>Some sources could not be loaded: {errors.map((e) => e.provider).join(', ')}</span>
+            <span>{ViewTranslations.t('view.recordsHub.partial', undefined, { providers: errors.map((e) => e.provider).join(', ') })}</span>
           </div>
         ) : null}
       </div>

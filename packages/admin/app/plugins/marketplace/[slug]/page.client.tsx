@@ -20,6 +20,7 @@ import { MarketplaceDetailSidebar } from '@/app/plugins/marketplace/[slug]/compo
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceDetailPage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;
@@ -74,7 +75,7 @@ export class MarketplaceDetailPage extends AdminComponent {
 
       const versions = (marketData.plugins || []).filter((p: any) => p.slug === slug);
       if (versions.length === 0) {
-        if (this.mounted) this.error = 'Plugin not found in marketplace.';
+        if (this.mounted) this.error = AdminI18n.t('plugins.list.pluginNotFoundInMarketplace');
       } else {
         // Sort descending
         versions.sort((a: any, b: any) => VersionComparisonService.isGreater(a.version, b.version) ? -1 : (VersionComparisonService.isSame(a.version, b.version) ? 0 : 1));
@@ -94,7 +95,7 @@ export class MarketplaceDetailPage extends AdminComponent {
       }
     } catch (err) {
       console.error('Failed to load plugin details', err);
-      if (this.mounted) this.error = 'Failed to connect to the marketplace.';
+      if (this.mounted) this.error = AdminI18n.t('plugins.list.failedToConnectToThe');
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -109,7 +110,7 @@ export class MarketplaceDetailPage extends AdminComponent {
     try {
       this.installing = true;
       const isUpdate = Boolean(installedPlugin);
-      notify(NotificationType.INFO, isUpdate ? 'Update Started' : 'Installation Started', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${pluginSlug} v${plugin.version}...`);
+      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updateStarted') : AdminI18n.t('plugins.list.installationStarted'), `${isUpdate ? 'Updating' : 'Downloading and staging'} ${pluginSlug} v${plugin.version}...`);
       const result = await PluginInstallOperationService.startMarketplaceInstall(pluginSlug, plugin.version);
       await PluginInstallOperationService.waitForCompletion(result.operationId, (op: IPluginInstallOperation | null) => { this.installOperation = op; });
       const refreshedPlugin = await PluginVersionWaitService.waitForInstalledVersion(pluginSlug, plugin.version);
@@ -118,9 +119,9 @@ export class MarketplaceDetailPage extends AdminComponent {
         await Promise.resolve(triggerRefresh());
       }
       await this.fetchData();
-      notify(NotificationType.SUCCESS, isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${pluginSlug}" v${plugin.version} is installed and active.`);
+      notify(NotificationType.SUCCESS, isUpdate ? AdminI18n.t('plugins.list.updateComplete') : AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t('plugins.list.pluginVIsInstalledAnd', { pluginSlug: pluginSlug, version: plugin.version }));
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Installation Failed', err.message || 'Failed to install plugin.');
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.installationFailed'), err.message || AdminI18n.t('plugins.list.failedToInstallPlugin'));
     }
     finally {
       this.installOperation = null;
@@ -164,7 +165,7 @@ export class MarketplaceDetailPage extends AdminComponent {
           className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-semibold transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}
         >
           <FrameworkIcons.Left size={16} />
-          Back to Marketplace
+          {AdminI18n.t('plugins.list.backToMarketplace')}
         </button>
 
         <div className="flex flex-col lg:flex-row gap-5 items-start">

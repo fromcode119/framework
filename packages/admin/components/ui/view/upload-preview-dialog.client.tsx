@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UploadPreviewDialog extends PureReactor {
   @prop declare isOpen: boolean;
@@ -37,8 +38,8 @@ export class UploadPreviewDialog extends PureReactor {
 
   render(): ReactNode {
     const { title, description, sections, onClose, onConfirm } = this;
-    const confirmLabel = this.confirmLabel ?? 'Install';
-    const cancelLabel = this.cancelLabel ?? 'Cancel';
+    const confirmLabel = this.confirmLabel ?? AdminI18n.t('ui.upload.install');
+    const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
     const isLoading = this.isLoading ?? false;
 
     if (!this.isOpen) return null;
@@ -85,7 +86,7 @@ export class UploadPreviewDialog extends PureReactor {
                 </h4>
                 <ul className="mt-2 space-y-1.5">
                   {section.items.length === 0 ? (
-                    <li className="text-sm text-slate-500 dark:text-slate-400">None</li>
+                    <li className="text-sm text-slate-500 dark:text-slate-400">{AdminI18n.t('common.none')}</li>
                   ) : (
                     section.items.map((item, index) => (
                       <li key={`${section.title}-${index}`} className="text-sm text-slate-700 dark:text-slate-200">

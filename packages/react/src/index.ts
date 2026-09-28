@@ -86,6 +86,7 @@ export { PluginStateContext } from '@react/context/plugin-state-context';
 export { SlotsContext } from '@react/context/slots-context';
 export { OverridesContext } from '@react/context/overrides-context';
 export { FrontendI18nService } from '@react/context/frontend-i18n-service';
+export { FrameworkTranslations } from '@react/i18n/framework-translations';
 export { PageStyleHooks } from '@react/page-style-hooks';
 export type { IPageStyleContextValue } from '@react/interfaces/page-style-context-value.interface';
 export { ThemeOverrideRegistrar } from '@react/theme-override-registrar';

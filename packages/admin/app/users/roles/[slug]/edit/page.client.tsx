@@ -16,6 +16,7 @@ import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permi
 import { EditRoleSummarySidebar } from '@/app/users/roles/[slug]/edit/components/view/edit-role-summary-sidebar.client';
 import type { IEditRoleFormData } from '@/app/users/roles/[slug]/edit/interfaces/edit-role-form-data.interface';
 import { prop, state } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditRolePage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;
@@ -68,7 +69,7 @@ export class EditRolePage extends AdminComponent {
       }
     } catch (e) {
       console.error("Failed to load role data", e);
-      notify(NotificationType.ERROR, 'Load Failed', 'Could not retrieve role details.');
+      notify(NotificationType.ERROR, AdminI18n.t('users.loadFailed'), AdminI18n.t('users.couldNotRetrieveRoleDetails'));
       this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } finally {
       if (this.mounted) this.fetching = false;
@@ -85,11 +86,11 @@ export class EditRolePage extends AdminComponent {
     this.loading = true;
     try {
       await AdminApi.put(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${this.roleSlug}`, this.formData);
-      notify(NotificationType.SUCCESS, 'Role updated', `"${this.formData.name}" was saved.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('users.roleUpdated'), AdminI18n.t('users.wasSaved', { name: this.formData.name }));
       this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST);
     } catch (e: any) {
       console.error("Failed to update role", e);
-      notify(NotificationType.ERROR, 'Update Failed', e.message || "An error occurred while saving.");
+      notify(NotificationType.ERROR, AdminI18n.t('users.updateFailed'), e.message || AdminI18n.t('users.anErrorOccurredWhileSaving'));
     } finally {
       this.loading = false;
     }
@@ -102,7 +103,7 @@ export class EditRolePage extends AdminComponent {
     if (fetching) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Loading role..." />
+          <Loader label={AdminI18n.t('users.loadingRole')} />
         </div>
       );
     }
@@ -112,27 +113,27 @@ export class EditRolePage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           onBack={() => this.router.back()}
-          title={`Edit role: ${formData.name}`}
-          subtitle="Modify permission sets and metadata."
+          title={AdminI18n.t('users.editRole', { name: formData.name })}
+          subtitle={AdminI18n.t('users.modifyPermissionSetsAndMetadata')}
         />
 
         <div className="flex-1 w-full px-6 lg:px-8 py-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
-              <Card title="Role Details">
+              <Card title={AdminI18n.t('users.roleDetails')}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <Input
-                      label="Name"
-                      placeholder="e.g. Editor"
+                      label={AdminI18n.t('users.name')}
+                      placeholder={AdminI18n.t('users.eGEditor')}
                       value={formData.name}
                       onChange={(e) => this.updateForm({ name: e.target.value })}
                       required
                       size={FieldSize.SM}
                     />
                     <Input
-                      label="Slug (System ID)"
-                      placeholder="e.g. editor"
+                      label={AdminI18n.t('users.slugSystemId')}
+                      placeholder={AdminI18n.t('users.roleSlugExample')}
                       value={formData.slug}
                       disabled
                       size={FieldSize.SM}
@@ -140,12 +141,12 @@ export class EditRolePage extends AdminComponent {
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">Description</label>
+                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">{AdminI18n.t('users.description')}</label>
                     <textarea
                       className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
                         theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
                       }`}
-                      placeholder="Optional description of what this role allows..."
+                      placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
                       onChange={(e) => this.updateForm({ description: e.target.value })}
                     />

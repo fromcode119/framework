@@ -79,6 +79,17 @@ export class AcmeSettings {
     return '';
   }
 
+  /**
+   * The same answer as {@link missingReason}, as a stable code, so the admin can say it in the
+   * console's language rather than print this sentence in English.
+   */
+  get missingCode(): string {
+    if (!this.directoryUrl && !this.platformAddresses.length) return 'noAuthorityNoAddress';
+    if (!this.directoryUrl) return 'noAuthority';
+    if (!this.platformAddresses.length) return 'noAddress';
+    return '';
+  }
+
   /** The authority by name where it is one we know, otherwise the URL as entered. */
   get directoryLabel(): string {
     return AcmeDirectory.describe(this.directoryUrl);

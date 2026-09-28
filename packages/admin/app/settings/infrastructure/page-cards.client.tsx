@@ -12,6 +12,8 @@ import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { PluginIsolationMode } from '@fromcode119/core/client';
 import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * The four cards this screen is made of.
@@ -36,12 +38,12 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
     if (this.maintenance === null) return null;
     const theme = this.theme;
     return (
-          <Card title="Maintenance">
+          <Card title={AdminI18n.t('settings.infrastructure.maintenance')}>
             <SettingRow
               theme={theme}
               icon={FrameworkIcons.Activity}
-              title="Maintenance Mode"
-              description="Restricts frontend access while you work on the instance."
+              title={AdminI18n.t('settings.infrastructure.maintenanceMode')}
+              description={AdminI18n.t('settings.infrastructure.restrictsFrontendAccessWhileYou')}
             >
               <Switch checked={this.maintenance} onChange={this.toggleMaintenance} />
             </SettingRow>
@@ -63,13 +65,13 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
   protected serverRenderingCard(): ReactNode {
     const theme = this.theme;
     return (
-        <Card title="Server Rendering">
+        <Card title={AdminI18n.t('settings.infrastructure.serverRendering')}>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Layers}
-            title="Resident theme worlds"
+            title={AdminI18n.t('settings.infrastructure.residentThemeWorlds')}
             stacked
-            description="How many distinct theme + plugin sets the storefront keeps loaded at once, each in its own render process; sites on the same set share one. Beyond this, the least recently used is stopped and rebuilt on demand."
+            description={AdminI18n.t('settings.infrastructure.howManyDistinctThemePlugin')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
@@ -78,7 +80,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   step={1}
                   value={this.ssrGenerationCap}
                   onChange={this.onSsrCapChange}
-                  placeholder={`Default ${SystemConstants.SSR_GENERATION_CAP_DEFAULT}`}
+                  placeholder={AdminI18n.t('settings.infrastructure.default5', { SSR_GENERATION_CAP_DEFAULT: SystemConstants.SSR_GENERATION_CAP_DEFAULT })}
                 />
               </div>
             </div>
@@ -88,26 +90,26 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Database}
-            title="Memory ceiling per render process (MB)"
+            title={AdminI18n.t('settings.infrastructure.memoryCeilingPerRenderProcess')}
             stacked
-            description="A theme world that allocates past this is killed; the storefront answers that request without server rendering and starts a fresh process on the next one."
+            description={AdminI18n.t('settings.infrastructure.aThemeWorldThatAllocates')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
-                <NumberStepper min={128} step={64} value={this.ssrRenderMemoryMb} onChange={this.onSsrRenderMemory} placeholder={`Default ${SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT}`} />
+                <NumberStepper min={128} step={64} value={this.ssrRenderMemoryMb} onChange={this.onSsrRenderMemory} placeholder={AdminI18n.t('settings.infrastructure.default6', { SSR_RENDER_MEMORY_MB_DEFAULT: SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT })} />
               </div>
             </div>
           </SettingRow>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Clock}
-            title="Deadline per render (ms)"
+            title={AdminI18n.t('settings.infrastructure.deadlinePerRenderMs')}
             stacked
-            description="A page render that does not finish within this is abandoned and its process restarted; the page is served for client-side rendering instead."
+            description={AdminI18n.t('settings.infrastructure.aPageRenderThatDoes')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
-                <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={`Default ${SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT}`} />
+                <NumberStepper min={1000} step={1000} value={this.ssrRenderTimeoutMs} onChange={this.onSsrRenderTimeout} placeholder={AdminI18n.t('settings.infrastructure.default7', { SSR_RENDER_TIMEOUT_MS_DEFAULT: SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT })} />
               </div>
               <Button
                 onClick={this.saveSsrCap}
@@ -115,7 +117,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 icon={<FrameworkIcons.Save size={13} />}
                 className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
               >
-                Save
+                {AdminI18n.t('settings.infrastructure.save')}
               </Button>
             </div>
           </SettingRow>
@@ -134,55 +136,55 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
   protected pluginIsolationCard(): ReactNode {
     const theme = this.theme;
     return (
-        <Card title="Plugin Isolation">
+        <Card title={AdminI18n.t('settings.infrastructure.pluginIsolation')}>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Shield}
-            title="Where plugins run"
+            title={AdminI18n.t('settings.infrastructure.wherePluginsRun')}
             stacked
-            description="Isolated: each active plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. Shared: inside the API process. Plugins that declare sandbox: false stay shared either way. A plugin installed from now on follows this at once; plugins already loaded move when the API restarts."
+            description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}
           >
             <Select
               theme={theme}
               value={this.isolationDefault}
               onChange={this.onIsolationDefault}
-              placeholder="Default: isolated"
+              placeholder={AdminI18n.t('settings.infrastructure.defaultIsolated')}
               clearable
-              options={[{ value: String(PluginIsolationMode.ISOLATED.value), label: 'Isolated — own process per plugin' }, { value: String(PluginIsolationMode.SHARED.value), label: 'Shared — inside the API process' }]}
+              options={[{ value: String(PluginIsolationMode.ISOLATED.value), label: AdminI18n.t('settings.infrastructure.isolatedOwnProcessPerPlugin') }, { value: String(PluginIsolationMode.SHARED.value), label: AdminI18n.t('settings.infrastructure.sharedInsideTheApiProcess') }]}
             />
             {this.isolationModeRestartPending ? (
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <span className="text-xs text-slate-500">Saved. Plugins already loaded still run where they were until the API restarts.</span>
-                <RestartApiAction label="Restart the API to move them" />
+                <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.savedPluginsAlreadyLoadedStill')}</span>
+                <RestartApiAction label={AdminI18n.t('settings.infrastructure.restartTheApiToMove')} />
               </div>
             ) : null}
           </SettingRow>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Database}
-            title="Memory ceiling per plugin process (MB)"
+            title={AdminI18n.t('settings.infrastructure.memoryCeilingPerPluginProcess')}
             stacked
-            description="A plugin that allocates past this is killed and restarted; the API and every other plugin are untouched. Saving restarts each running plugin's own process on the new ceiling. A plugin manifest's sandbox.memoryLimit overrides it for that plugin."
+            description={AdminI18n.t('settings.infrastructure.aPluginThatAllocatesPast')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
-                <NumberStepper min={64} step={64} value={this.isolationMemoryMb} onChange={this.onIsolationMemory} placeholder={`Default ${SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT}`} />
+                <NumberStepper min={64} step={64} value={this.isolationMemoryMb} onChange={this.onIsolationMemory} placeholder={AdminI18n.t('settings.infrastructure.default8', { PLUGIN_ISOLATION_MEMORY_MB_DEFAULT: SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT })} />
               </div>
             </div>
           </SettingRow>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Clock}
-            title="Deadline per request (ms)"
+            title={AdminI18n.t('settings.infrastructure.deadlinePerRequestMs')}
             stacked
-            description="A plugin route or hook that does not answer within this is failed (504) and its process restarted. Applies to the next call once saved. A manifest's sandbox.timeout overrides it for that plugin."
+            description={AdminI18n.t('settings.infrastructure.aPluginRouteOrHook')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
-                <NumberStepper min={1000} step={1000} value={this.isolationTimeoutMs} onChange={this.onIsolationTimeout} placeholder={`Default ${SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT}`} />
+                <NumberStepper min={1000} step={1000} value={this.isolationTimeoutMs} onChange={this.onIsolationTimeout} placeholder={AdminI18n.t('settings.infrastructure.default9', { PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT: SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT })} />
               </div>
               <Button onClick={this.saveIsolation} isLoading={this.isSavingIsolation} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
-                Save
+                {AdminI18n.t('settings.infrastructure.save')}
               </Button>
             </div>
           </SettingRow>
@@ -201,13 +203,13 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
   protected retentionCard(): ReactNode {
     const theme = this.theme;
     return (
-        <Card title="Retention">
+        <Card title={AdminI18n.t('settings.infrastructure.retention')}>
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Database}
-            title="Log Retention"
+            title={AdminI18n.t('settings.infrastructure.logRetention')}
             stacked
-            description="Days of system-log history to keep across the whole deployment, swept daily. Blank keeps every entry forever."
+            description={AdminI18n.t('settings.infrastructure.daysOfSystemLogHistory')}
           >
             <div className="flex items-center gap-3">
               <div className="w-full md:w-40">
@@ -216,7 +218,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   step={1}
                   value={this.logRetentionDays}
                   onChange={this.onRetentionChange}
-                  placeholder="Keep forever"
+                  placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
               <Button
@@ -225,7 +227,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 icon={<FrameworkIcons.Save size={13} />}
                 className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
               >
-                Save
+                {AdminI18n.t('settings.infrastructure.save')}
               </Button>
             </div>
           </SettingRow>
@@ -233,21 +235,18 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Shield}
-            title="Audit Retention"
+            title={AdminI18n.t('settings.infrastructure.auditRetention')}
             stacked
-            description="Days of audit history to keep across the whole deployment, swept daily. Blank keeps every entry forever."
+            description={AdminI18n.t('settings.infrastructure.daysOfAuditHistoryTo')}
             explanation={(
               <Explanation>
                 <p>
-                  This is not the log above. It removes the <strong>audit trail</strong> — security denials,
-                  settings changes, MCP tool calls and AI invocations — for every site on this platform.
+                  <AdminRichText k="settings.infrastructure.auditTrailNotLog" />
                 </p>
                 <p>
-                  <strong>Minimum 180 days.</strong> This journal is this platform&rsquo;s EU AI Act Art. 12
-                  record, which is expected to survive six months; a shorter window is refused rather than
-                  quietly shortened. Blank — keep forever — is always allowed.
+                  <AdminRichText k="settings.infrastructure.auditMinimum" />
                 </p>
-                <p>Each prune is itself written to the audit trail, with how many rows went and whose.</p>
+                <p>{AdminI18n.t('settings.infrastructure.eachPruneIsItselfWritten')}</p>
               </Explanation>
             )}
           >
@@ -258,7 +257,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                   step={1}
                   value={this.auditRetentionDays}
                   onChange={this.onAuditRetentionChange}
-                  placeholder="Keep forever"
+                  placeholder={AdminI18n.t('settings.infrastructure.keepForever')}
                 />
               </div>
               <Button
@@ -267,7 +266,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 icon={<FrameworkIcons.Save size={13} />}
                 className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
               >
-                Save
+                {AdminI18n.t('settings.infrastructure.save')}
               </Button>
             </div>
           </SettingRow>

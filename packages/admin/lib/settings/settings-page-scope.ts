@@ -1,5 +1,6 @@
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsScope } from '@/lib/settings/enums/settings-scope.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * How ONE settings page's own key set fares in the current scope.
@@ -78,14 +79,14 @@ export class SettingsPageScope {
   notice(options: { canManagePlatform: boolean; describeHidden?: string }): string {
     const belongsTo = this.hiddenBelongTo;
     if (!belongsTo) return '';
-    const what = options.describeHidden ? `Site settings (${options.describeHidden})` : 'These settings';
-
     if (belongsTo === SettingsScope.SITE) {
-      return `${what} are set inside each site — choose one from the site menu.`;
+      return options.describeHidden
+        ? AdminI18n.t('scope.siteSettingsNamedInsideEachSite', { what: options.describeHidden })
+        : AdminI18n.t('scope.settingsInsideEachSite');
     }
-    const platformWhat = options.describeHidden ? `Platform settings (${options.describeHidden})` : 'Platform settings on this page';
-    return options.canManagePlatform
-      ? `${platformWhat} live in Platform scope.`
-      : `${platformWhat} live in Platform scope and are managed by a platform administrator.`;
+    const key = options.canManagePlatform ? 'scope.platformSettingsLive' : 'scope.platformSettingsLiveManaged';
+    return options.describeHidden
+      ? AdminI18n.t(`${key}Named`, { what: options.describeHidden })
+      : AdminI18n.t(key);
   }
 }

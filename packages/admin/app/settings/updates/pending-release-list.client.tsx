@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Every version between this installation and the newest one, with what each changed.
@@ -20,7 +21,9 @@ export class PendingReleaseList extends PureReactor {
     return (
       <div className="mt-4 space-y-3">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
-          {this.releases.length === 1 ? '1 release' : `${this.releases.length} releases`} since this one
+          {this.releases.length === 1
+            ? AdminI18n.t('settings.updates.releasesSinceOne')
+            : AdminI18n.t('settings.updates.releasesSinceMany', { count: this.releases.length })}
         </p>
         <ol className="space-y-3">
           {this.releases.map((release) => (
@@ -33,7 +36,7 @@ export class PendingReleaseList extends PureReactor {
                   {release.notes}
                 </p>
               ) : (
-                <p className="mt-1 text-[11.5px] italic text-slate-400">No notes were written for this release.</p>
+                <p className="mt-1 text-[11.5px] italic text-slate-400">{AdminI18n.t('settings.updates.noNotesWereWrittenFor')}</p>
               )}
             </li>
           ))}

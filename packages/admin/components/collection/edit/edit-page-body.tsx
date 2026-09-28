@@ -13,6 +13,7 @@ import { RecordJsonView } from '@/components/collection/edit/view/record-json-vi
 import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
@@ -50,7 +51,7 @@ export class EditPageBody extends PureReactor {
               {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={20} /> : <FrameworkIcons.Alert size={20} />}
             </div>
             <div className="flex-1">
-              <p className="font-semibold text-sm">{status.type === NotificationType.SUCCESS ? 'Success' : 'Error'}</p>
+              <p className="font-semibold text-sm">{AdminI18n.t(status.type === NotificationType.SUCCESS ? 'common.success' : 'common.error')}</p>
               <p className="text-sm opacity-90">{status.message}</p>
             </div>
             <button onClick={() => setStatus(null)} className="text-slate-400 hover:text-slate-600 transition-colors">
@@ -110,6 +111,7 @@ export class EditPageBody extends PureReactor {
               resolvedSlug={resolvedSlug}
               formData={formData}
               pluginSettings={pluginSettings}
+              pluginSettingsSchema={pluginSettingsSchema}
               fieldErrors={fieldErrors}
               saving={saving}
               isNew={isNew}
@@ -146,6 +148,7 @@ export class EditPageBody extends PureReactor {
               handleSubmit={handleSubmit}
               saving={saving}
               pluginSettings={pluginSettings}
+              pluginSettingsSchema={pluginSettingsSchema}
               fieldErrors={fieldErrors}
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}

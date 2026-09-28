@@ -1,6 +1,7 @@
 import type React from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginTrendSeries } from '@/components/plugin-dashboard/interfaces/plugin-trend-series.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Compact, dependency-free SVG area/line trend chart for plugin dashboards. Plots one or more series
@@ -78,7 +79,7 @@ export class PluginTrendChart extends PureReactor {
           </svg>
           {empty && (
             <div className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-slate-600">
-              No data for this range
+              {AdminI18n.t('ui.noDataForThisRange')}
             </div>
           )}
         </div>
@@ -92,7 +93,7 @@ export class PluginTrendChart extends PureReactor {
                 <span key={i} className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
                   {s.label}
-                  <span className="text-slate-400 normal-case font-medium">· peak {formatValue(peak)}</span>
+                  <span className="text-slate-400 normal-case font-medium">{AdminI18n.t('ui.peak', { value: formatValue(peak) })}</span>
                 </span>
               );
             })}

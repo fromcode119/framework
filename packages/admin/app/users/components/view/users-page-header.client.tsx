@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import Link from 'next/link';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UsersPageHeader extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -17,8 +18,8 @@ export class UsersPageHeader extends PureReactor {
       <CompactPageHeader
         theme={this.theme}
         icon={<FrameworkIcons.Users size={18} strokeWidth={2} />}
-        title="Users"
-        subtitle="Manage your users and their assigned roles."
+        title={AdminI18n.t('users.users')}
+        subtitle={AdminI18n.t('users.manageYourUsersAndTheir')}
         actions={
           <>
             <Slot name="admin.users.list.header.actions" />
@@ -28,7 +29,7 @@ export class UsersPageHeader extends PureReactor {
                 className="h-9 px-4 rounded-lg font-semibold tracking-tight text-xs border-slate-200 dark:border-slate-800"
                 icon={<FrameworkIcons.Plus size={15} />}
               >
-                Create User
+                {AdminI18n.t('users.createUser')}
               </Button>
             </Link>
             <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>
@@ -36,7 +37,7 @@ export class UsersPageHeader extends PureReactor {
                 className="h-9 px-4 rounded-lg font-semibold tracking-tight text-xs text-white"
                 icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
               >
-                Manage Roles
+                {AdminI18n.t('users.manageRoles')}
               </Button>
             </Link>
           </>

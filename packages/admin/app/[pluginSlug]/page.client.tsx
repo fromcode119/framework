@@ -10,6 +10,7 @@ import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-f
 import { prop, state } from '@fromcode119/react-class-components';
 import { PluginRouteResolver } from '@/lib/plugin-route-resolver';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Root route for a plugin.
@@ -61,7 +62,7 @@ export class PluginRootRoute extends AdminComponent {
     if (!this.resolved || !isReady) {
       return (
         <div className="flex-1 flex items-center justify-center">
-          <Loader label="Synchronizing Module Context..." />
+          <Loader label={AdminI18n.t('plugins.list.synchronizingModuleContext')} />
         </div>
       );
     }

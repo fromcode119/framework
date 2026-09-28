@@ -21,6 +21,7 @@ import type { NotificationType } from '@/components/enums/notification-type.enum
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminClass } from '@/lib/admin-class';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsPageView, IThemeSettingsPageHost {
   @prop declare params: Promise<{ slug: string }>;
@@ -160,8 +161,8 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     // `ThemeSettingsTab`, so no tab ever highlighted and clicking "Theme Builder" stored a bare string
     // that matched neither panel — the column rendered empty.
     const tabs = [
-      { id: ThemeSettingsTab.OVERVIEW, label: 'Overview', icon: FrameworkIcons.Palette },
-      { id: ThemeSettingsTab.SETTINGS, label: 'Theme Builder', icon: FrameworkIcons.Box }
+      { id: ThemeSettingsTab.OVERVIEW, label: AdminI18n.t('themes.overview'), icon: FrameworkIcons.Palette },
+      { id: ThemeSettingsTab.SETTINGS, label: AdminI18n.t('themes.themeBuilder'), icon: FrameworkIcons.Box }
     ];
 
     return (

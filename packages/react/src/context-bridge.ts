@@ -114,8 +114,14 @@ export class ContextBridge {
     return ContextBridge._args?.on?.(...args);
   }
 
-  static t(...args: any[]): any {
-    return ContextBridge._args?.stableT?.(...args);
+  /**
+   * The provider's translator. The bridge is installed from an effect, so it is empty during server
+   * rendering and the first client render; until then this answers the caller's default text (then the
+   * key) instead of `undefined`, which rendered the copy as nothing.
+   */
+  static t(key: string, params?: Record<string, unknown>, defaultValue?: string): string {
+    const translate = ContextBridge._args?.stableT;
+    return translate ? translate(key, params, defaultValue) : (defaultValue || key);
   }
 
   static locale(): string | undefined {

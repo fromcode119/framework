@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminClass } from '@/lib/admin-class';
 import { Switch } from '@/components/ui/view/switch.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Elevation (shadow) switch for the whole admin.
@@ -18,9 +19,9 @@ export class AppearanceElevationCard extends PureReactor {
     return (
       <div className={`${AdminClass.SURFACE} flex items-center justify-between gap-6 p-4`}>
         <div className="min-w-0">
-          <h3 className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">Surface shadows</h3>
+          <h3 className="text-[13px] font-semibold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.surfaceShadows')}</h3>
           <p className="mt-0.5 text-[12px] font-medium leading-relaxed text-slate-500 dark:text-slate-400">
-            Depth on panels, dialogs and buttons. Turn this off for a flat admin — borders and corners stay exactly as they are.
+            {AdminI18n.t('settings.appearance.depthOnPanelsDialogsAnd')}
           </p>
         </div>
         <Switch

@@ -10,6 +10,7 @@ import { MediaActivityLabels } from '@/app/media/media-activity-labels';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { MediaActivityPanelActions } from '@/app/media/components/view/media-activity-panel-actions.client';
 import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The sections this panel is built from, one method each.
@@ -35,10 +36,10 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
             onChange={(value: string) => void this.handleRangeMode(value)}
             size={FieldSize.SM}
             options={[
-              { value: '7', label: 'Last 7 days' },
-              { value: '30', label: 'Last 30 days' },
-              { value: '90', label: 'Last 90 days' },
-              { value: 'custom', label: 'Custom range…' },
+              { value: '7', label: AdminI18n.t('media.last7Days') },
+              { value: '30', label: AdminI18n.t('media.last30Days') },
+              { value: '90', label: AdminI18n.t('media.last90Days') },
+              { value: 'custom', label: AdminI18n.t('media.customRange') },
             ]}
           />
         </div>
@@ -49,7 +50,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
                 value={this.fromIso || undefined}
                 showTime={false}
                 size={FieldSize.SM}
-                placeholder="From"
+                placeholder={AdminI18n.t('media.from')}
                 onChange={(value: string | null) => this.patch({ fromIso: value || '' })}
               />
             </div>
@@ -59,7 +60,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
                 value={this.toIso || undefined}
                 showTime={false}
                 size={FieldSize.SM}
-                placeholder="To"
+                placeholder={AdminI18n.t('media.to')}
                 onChange={(value: string | null) => this.patch({ toIso: value || '' })}
               />
             </div>
@@ -69,7 +70,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
               onClick={() => void this.load()}
               className="rounded-lg px-3 py-1.5 text-[11px] font-semibold transition-all disabled:opacity-40 bg-indigo-600 text-white"
             >
-              Apply
+              {AdminI18n.t('media.apply')}
             </button>
           </>
         ) : null}
@@ -80,11 +81,11 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
   protected renderTotals(): ReactNode {
     const totals = this.data?.totals || {};
     const cells: Array<[string, number]> = [
-      ['Shares sent', Number(totals.sharesSent || 0)],
-      ['Recipients', Number(totals.recipients || 0)],
-      ['Page opens', Number(totals.views || 0)],
-      ['Downloads', Number(totals.downloads || 0)],
-      ['Refused', Number(totals.refused || 0)],
+      [AdminI18n.t('media.sharesSent'), Number(totals.sharesSent || 0)],
+      [AdminI18n.t('media.recipients'), Number(totals.recipients || 0)],
+      [AdminI18n.t('media.pageOpens'), Number(totals.views || 0)],
+      [AdminI18n.t('media.downloads'), Number(totals.downloads || 0)],
+      [AdminI18n.t('media.refused'), Number(totals.refused || 0)],
     ];
 
     return (
@@ -116,16 +117,16 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`px-4 py-3 ${AdminClass.SURFACE}`}>
         <div className="mb-2 flex items-center gap-4">
-          <p className="text-[13px] font-semibold flex-1">Opens and downloads per day</p>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> Opens</span>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> Downloads</span>
+          <p className="text-[13px] font-semibold flex-1">{AdminI18n.t('media.opensAndDownloadsPerDay')}</p>
+          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> {AdminI18n.t('media.opens')}</span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> {AdminI18n.t('media.downloads')}</span>
         </div>
         <PluginTrendChart
           xLabels={ticks}
           height={150}
           series={[
-            { label: 'Opens', data: series.views, color: '#6366f1' },
-            { label: 'Downloads', data: series.downloads, color: '#10b981' },
+            { label: AdminI18n.t('media.opens'), data: series.views, color: '#6366f1' },
+            { label: AdminI18n.t('media.downloads'), data: series.downloads, color: '#10b981' },
           ]}
         />
       </Card>
@@ -139,23 +140,23 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">Not opened yet</p>
-          <p className="mt-0.5 text-[10px] opacity-55">Live links nobody has opened. Not limited to the date range.</p>
+          <p className="text-[13px] font-semibold">{AdminI18n.t('media.notOpenedYet')}</p>
+          <p className="mt-0.5 text-[10px] opacity-55">{AdminI18n.t('media.liveLinksNobodyHasOpened')}</p>
         </div>
         {!rows.length ? (
-          <p className="px-4 py-4 text-[11px] opacity-55">Everyone has opened what you sent them.</p>
+          <p className="px-4 py-4 text-[11px] opacity-55">{AdminI18n.t('media.everyoneHasOpenedWhatYou')}</p>
         ) : rows.map((row: any, index: number) => (
           <div key={`${row.email}-${row.shareId}-${index}`} className={`flex items-center justify-between gap-3 px-4 py-2.5 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
             <div className="min-w-0">
               <p className="text-[12px] font-medium truncate">{row.email}</p>
               <p className="text-[10px] opacity-55 truncate">
                 {this.shareLink(row.shareId, row.shareTitle)}
-                {this.formatWhen(row.sentAt) ? ` · sent ${this.formatWhen(row.sentAt)}` : ''}
+                {this.formatWhen(row.sentAt) ? ` · ${AdminI18n.t('media.sentAt', { when: this.formatWhen(row.sentAt) })}` : ''}
               </p>
             </div>
             {row.expiresAt ? (
               <Badge variant={BadgeVariant.WARNING} className="text-[10px] flex-shrink-0">
-                expires {this.formatWhen(row.expiresAt)}
+                {AdminI18n.t('media.expiresAt', { when: this.formatWhen(row.expiresAt) })}
               </Badge>
             ) : null}
           </div>
@@ -171,7 +172,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">Most downloaded</p>
+          <p className="text-[13px] font-semibold">{AdminI18n.t('media.mostDownloaded')}</p>
         </div>
         {rows.map((row: any) => (
           <div key={row.mediaId} className="flex items-center justify-between gap-3 px-4 py-2">
@@ -190,7 +191,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">Refused</p>
+          <p className="text-[13px] font-semibold">{AdminI18n.t('media.refused')}</p>
           <p className="mt-0.5 text-[10px] opacity-55">{MediaActivityLabels.REFUSAL_NOTE}</p>
         </div>
         {rows.map((row: any) => (
@@ -209,15 +210,15 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
     return (
       <Card className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
         <div className={`px-4 py-3 border-b ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <p className="text-[13px] font-semibold">Recent activity</p>
+          <p className="text-[13px] font-semibold">{AdminI18n.t('media.recentActivity')}</p>
         </div>
         {!rows.length ? (
-          <p className="px-4 py-4 text-[11px] opacity-55">Nothing recorded in this range.</p>
+          <p className="px-4 py-4 text-[11px] opacity-55">{AdminI18n.t('media.nothingRecordedInThisRange')}</p>
         ) : rows.map((row: any) => (
           <div key={row.id} className={`flex items-center justify-between gap-3 px-4 py-2 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <div className="min-w-0">
               <p className="text-[12px] truncate">
-                <span className="opacity-80">{row.email || 'Unknown recipient'}</span>
+                <span className="opacity-80">{row.email || AdminI18n.t('media.unknownRecipient')}</span>
                 <span className="opacity-50"> · {MediaActivityLabels.action(row)}</span>
               </p>
               <p className="text-[10px] opacity-45 truncate">{row.shareId ? this.shareLink(row.shareId, row.shareTitle) : null}</p>
@@ -229,7 +230,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
           <div className={`flex justify-center px-4 py-2.5 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <button type="button" disabled={this.loadingMore} onClick={this.handleMoreEvents}
               className="text-[11px] font-semibold text-indigo-500 hover:underline disabled:opacity-50">
-              {this.loadingMore ? 'Loading…' : 'Load more'}
+              {this.loadingMore ? AdminI18n.t('media.loading') : AdminI18n.t('media.loadMore')}
             </button>
           </div>
         ) : null}

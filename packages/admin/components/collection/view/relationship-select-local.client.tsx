@@ -7,6 +7,7 @@ import { CollectionKeyUtils } from '@/components/collection/collection-key-utils
 import { RelationshipSelectLocalUtils } from '@/components/collection/relationship-select-local-utils';
 import { RelationshipSelectLocalFetcher } from '@/components/collection/relationship-select-local-fetcher';
 import type { SelectOption } from '@/components/collection/select-option';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RelationshipSelectLocal extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -132,7 +133,7 @@ export class RelationshipSelectLocal extends AdminComponent {
           onChange(RelationshipSelectLocalUtils.buildTaggedValue(parsed.scalar, parsed.relationTo));
         }}
         options={options}
-        placeholder={`Select ${field.label || field.name || 'record'}...`}
+        placeholder={AdminI18n.t('ui.field.selectRelated', { label: field.label || field.name || AdminI18n.t('ui.field.record') })}
         searchable
         onSearchChange={(v: string) => { this.search = v; }}
         theme={themeMode}

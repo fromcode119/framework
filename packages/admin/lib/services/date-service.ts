@@ -1,4 +1,5 @@
 import { BaseService } from '@/lib/services/base-service';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Service for date manipulation and relative formatting utilities.
@@ -8,7 +9,7 @@ import { BaseService } from '@/lib/services/base-service';
  * const services = AdminServices.getInstance();
  * const d       = services.date.parseDate('2024-01-15');     // Date | null
  * const future  = services.date.addDays(new Date(), 7);      // 7 days from now
- * const rel     = services.date.formatRelative(new Date());  // 'Just now'
+ * const rel     = services.date.formatRelative(new Date());  // 'now'
  * const expired = services.date.isExpired('2023-01-01');     // true
  * ```
  */
@@ -33,21 +34,21 @@ export class DateService extends BaseService {
   }
 
   /**
-   * Returns a human-readable relative time string (e.g. '2 hours ago').
+   * Returns a human-readable relative time string in the console's language (e.g. '2 hours ago').
    */
   formatRelative(value: unknown): string {
     const date = this.parseDate(value);
     if (!date) return '-';
-    const diff = Date.now() - date.getTime();
+    const diff = date.getTime() - Date.now();
     const abs = Math.abs(diff);
-    const future = diff < 0;
-    const label = (n: number, unit: string) => `${n} ${unit}${n !== 1 ? 's' : ''} ${future ? 'from now' : 'ago'}`;
-    if (abs < 60_000) return 'Just now';
-    if (abs < 3_600_000) return label(Math.floor(abs / 60_000), 'minute');
-    if (abs < 86_400_000) return label(Math.floor(abs / 3_600_000), 'hour');
-    if (abs < 2_592_000_000) return label(Math.floor(abs / 86_400_000), 'day');
-    if (abs < 31_536_000_000) return label(Math.floor(abs / 2_592_000_000), 'month');
-    return label(Math.floor(abs / 31_536_000_000), 'year');
+    const sign = diff < 0 ? -1 : 1;
+    const format = new Intl.RelativeTimeFormat(AdminI18n.locale, { numeric: 'auto' });
+    if (abs < 60_000) return format.format(0, 'second');
+    if (abs < 3_600_000) return format.format(sign * Math.floor(abs / 60_000), 'minute');
+    if (abs < 86_400_000) return format.format(sign * Math.floor(abs / 3_600_000), 'hour');
+    if (abs < 2_592_000_000) return format.format(sign * Math.floor(abs / 86_400_000), 'day');
+    if (abs < 31_536_000_000) return format.format(sign * Math.floor(abs / 2_592_000_000), 'month');
+    return format.format(sign * Math.floor(abs / 31_536_000_000), 'year');
   }
 
   /**

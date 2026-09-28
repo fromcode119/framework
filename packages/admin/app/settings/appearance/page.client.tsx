@@ -22,6 +22,8 @@ import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class AppearanceSettingsPage extends AdminComponent {
   /**
@@ -79,7 +81,7 @@ export class AppearanceSettingsPage extends AdminComponent {
   }
 
   private notify(type: NotificationType, message: string): void {
-    this.runtime.notify.addNotification({ type, title: 'Appearance', message });
+    this.runtime.notify.addNotification({ type, title: AdminI18n.t('settings.appearance.appearance'), message });
   }
 
   private async load(): Promise<void> {
@@ -95,7 +97,7 @@ export class AppearanceSettingsPage extends AdminComponent {
       this.active = String((settings as any)?.admin_appearance || 'default').trim() || 'default';
       this.shadows = SurfaceElevationService.isEnabled(settings as Record<string, unknown>);
     } catch (e: any) {
-      this.notify(NotificationType.ERROR, e?.message || 'Failed to load appearances');
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToLoadAppearances'));
     } finally {
       this.loading = false;
     }
@@ -112,7 +114,7 @@ export class AppearanceSettingsPage extends AdminComponent {
     } catch (e: any) {
       this.shadows = !next;
       SurfaceElevationService.apply(!next);
-      this.notify(NotificationType.ERROR, e?.message || 'Failed to save shadow setting');
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToSaveShadowSetting'));
     } finally {
       this.busy = false;
     }
@@ -124,10 +126,10 @@ export class AppearanceSettingsPage extends AdminComponent {
     try {
       await AdminSystemSettingsClient.update({ admin_appearance: slug === 'default' ? '' : slug });
       ActiveAdminAppearanceService.rememberHint(slug);
-      this.notify(NotificationType.SUCCESS, `Switched to "${slug}". Reloading…`);
+      this.notify(NotificationType.SUCCESS, AdminI18n.t('settings.appearance.switchedToReloading', { slug: slug }));
       setTimeout(() => window.location.reload(), 600);
     } catch (e: any) {
-      this.notify(NotificationType.ERROR, e?.message || 'Failed to switch appearance');
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.failedToSwitchAppearance'));
       this.busy = false;
     }
   }
@@ -140,7 +142,7 @@ export class AppearanceSettingsPage extends AdminComponent {
       if (payload.url) this.url = '';
       await this.load();
     } catch (e: any) {
-      this.notify(NotificationType.ERROR, e?.message || 'Install failed');
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.installFailed'));
     } finally {
       this.busy = false;
     }
@@ -149,10 +151,10 @@ export class AppearanceSettingsPage extends AdminComponent {
   @bound
   updateInstalled(item: AppearanceItem): void {
     if (this.catalogBySlug[item.slug]?.updateAvailable) {
-      void this.install({ slug: item.slug }, `Updated "${item.slug}".`);
+      void this.install({ slug: item.slug }, AdminI18n.t('settings.appearance.updated', { slug: item.slug }));
       return;
     }
-    if (item.sourceUrl) void this.install({ url: item.sourceUrl }, `Re-installed "${item.slug}".`);
+    if (item.sourceUrl) void this.install({ url: item.sourceUrl }, AdminI18n.t('settings.appearance.reInstalled', { slug: item.slug }));
   }
 
   @bound
@@ -160,10 +162,10 @@ export class AppearanceSettingsPage extends AdminComponent {
     this.busy = true;
     try {
       await AdminApi.delete(`${AppearanceSettingsPage.APPEARANCES_BASE}/${encodeURIComponent(slug)}`);
-      this.notify(NotificationType.SUCCESS, `Removed "${slug}".`);
+      this.notify(NotificationType.SUCCESS, AdminI18n.t('settings.appearance.removed', { slug: slug }));
       await this.load();
     } catch (e: any) {
-      this.notify(NotificationType.ERROR, e?.message || 'Remove failed');
+      this.notify(NotificationType.ERROR, e?.message || AdminI18n.t('settings.appearance.removeFailed'));
     } finally {
       this.busy = false;
     }
@@ -171,12 +173,12 @@ export class AppearanceSettingsPage extends AdminComponent {
 
   @bound
   installFromCatalog(slug: string): void {
-    void this.install({ slug }, `Installed "${slug}".`);
+    void this.install({ slug }, AdminI18n.t('settings.appearance.installed2', { slug: slug }));
   }
 
   @bound
   installFromUrl(): void {
-    void this.install({ url: this.url }, 'Appearance installed.');
+    void this.install({ url: this.url }, AdminI18n.t('settings.appearance.appearanceInstalled'));
   }
 
   @bound
@@ -185,15 +187,14 @@ export class AppearanceSettingsPage extends AdminComponent {
   }
 
   render(): ReactNode {
-    if (this.loading) return <div className="p-12"><Loader label="Loading appearances…" /></div>;
+    if (this.loading) return <div className="p-12"><Loader label={AdminI18n.t('settings.appearance.loadingAppearances')} /></div>;
     if (WorkspaceAppearanceLock.locked) {
       return (
         <div className="p-12">
           <Card className="p-6 max-w-2xl">
-            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Locked by this workspace's kind</h2>
+            <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.appearance.lockedByThisWorkspaceS')}</h2>
             <p className="text-sm text-slate-500 mt-2">
-              <span className="font-semibold">{WorkspaceAppearanceLock.slug}</span> is a workspace: its console is <span className="font-semibold">{WorkspaceAppearanceLock.appearance}</span>,
-              decided when the workspace was created. There is no appearance setting here to change. The platform admin can open this workspace in the default console from the platform's own admin host.
+              <AdminRichText k="settings.appearance.workspaceLocked" vars={{ slug: WorkspaceAppearanceLock.slug, appearance: WorkspaceAppearanceLock.appearance }} />
             </p>
           </Card>
         </div>
@@ -205,16 +206,15 @@ export class AppearanceSettingsPage extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Palette size={18} strokeWidth={2} />}
-          title="Appearance"
-          subtitle="Admin look & feel — separate from plugins & themes"
+          title={AdminI18n.t('settings.appearance.appearance')}
+          subtitle={AdminI18n.t('settings.appearance.adminLookFeelSeparateFrom')}
         />
 
         <div className="p-6 w-full space-y-8">
           {this.outOfScope && (
             <p className="fc-scope-notice">
               <span className="fc-scope-notice__text">
-                The console's appearance and elevation are stored per site — choose a site from the site
-                menu to change them. Installing and removing appearance packages is platform work and stays here.
+                {AdminI18n.t('settings.appearance.theConsoleSAppearanceAnd')}
               </span>
             </p>
           )}

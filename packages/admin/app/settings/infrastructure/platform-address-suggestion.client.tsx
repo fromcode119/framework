@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What this platform's own hostnames currently resolve to, offered for the addresses field.
@@ -42,21 +43,20 @@ export class PlatformAddressSuggestion extends AdminComponent {
     return (
       <div className={`rounded-lg border px-3 py-2.5 mb-2 ${dark ? 'border-white/10 bg-slate-800/40' : 'border-slate-200 bg-slate-50'}`}>
         <p className={`text-[11px] font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-          Resolved from this platform’s own hostnames, just now
+          {AdminI18n.t('settings.infrastructure.resolvedFromThisPlatformS')}
         </p>
         {this.candidates.map((candidate) => (
           <p key={candidate.host} className={`text-[11px] font-mono leading-snug ${muted}`}>
             {candidate.host} → {candidate.ipv4.join(', ') || '—'}
-            {candidate.ipv6.length ? ` · IPv6 ${candidate.ipv6.join(', ')}` : ''}
+            {candidate.ipv6.length ? AdminI18n.t('settings.infrastructure.ipv6', { join: candidate.ipv6.join(', ') }) : ''}
           </p>
         ))}
         <div className="mt-2 flex items-center justify-between gap-3">
           <p className={`text-[11px] leading-snug ${muted}`}>
-            If those hostnames sit behind a proxy or CDN this is the proxy’s address, not this machine’s.
-            Check before using it.
+            {AdminI18n.t('settings.infrastructure.ifThoseHostnamesSitBehind')}
           </p>
           <Button variant={ButtonVariant.OUTLINE} size={FieldSize.SM} onClick={this.use}>
-            Use {this.addresses.join(', ')}
+            {AdminI18n.t('settings.infrastructure.useAddresses', { addresses: this.addresses.join(', ') })}
           </Button>
         </div>
       </div>

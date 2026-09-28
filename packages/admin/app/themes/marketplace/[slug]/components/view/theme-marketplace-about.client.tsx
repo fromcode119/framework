@@ -6,6 +6,7 @@ import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeMarketplaceAbout extends PureReactor {
   @prop declare theme: IMarketplaceTheme;
@@ -17,7 +18,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
       <>
         <div className="space-y-3">
           <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
-            About {theme.name}
+            {AdminI18n.t('themes.aboutName', { name: theme.name })}
           </h3>
           <p className={`text-base font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
             {theme.description}
@@ -28,7 +29,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
           <div className="space-y-4 mt-6">
             <div className="flex items-center gap-3">
               <div className={`h-6 w-1.5 rounded-full ${adminTheme === ThemeMode.DARK ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
-              <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>Technical Changelog</h3>
+              <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>{AdminI18n.t('themes.technicalChangelog')}</h3>
               <div className={`h-px flex-1 ${adminTheme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
             </div>
 
@@ -37,7 +38,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
                 <div key={idx} className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[9px] font-semibold rounded-lg uppercase tracking-wide">v{log.version}</Badge>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Released {log.date}</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.releasedOn', { date: log.date })}</span>
                   </div>
                   <div className={`${AdminClass.SURFACE} overflow-hidden`}>
                     <ul className={`divide-y ${adminTheme === ThemeMode.DARK ? 'divide-slate-800/50' : 'divide-slate-50'}`}>

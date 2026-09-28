@@ -11,6 +11,8 @@ import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -92,19 +94,19 @@ export class GeneralBrandCard extends PureReactor {
     const theme = this.theme;
     const settings = this.settings;
     return (
-      <Card title="Brand & Identity">
+      <Card title={AdminI18n.t('settings.general.brandIdentity')}>
         {this.shown('platform_name') && (
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Zap}
-            title="Platform Name"
-            description={'The public identifier for your portal and administrative interface.'}
+            title={AdminI18n.t('settings.general.platformName')}
+            description={AdminI18n.t('settings.general.thePublicIdentifierForYour')}
           >
             <Input
               value={settings.platform_name}
               onChange={this.onPlatformNameChange}
               className="w-full md:w-64 font-bold"
-              placeholder="e.g. My Website"
+              placeholder={AdminI18n.t('settings.general.eGMyWebsite')}
             />
           </SettingRow>
         )}
@@ -113,20 +115,14 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Globe}
-            title="Frontend URL"
-            description={"This deployment's own frontend address — used by the gateway and for its certificate."}
+            title={AdminI18n.t('settings.general.frontendUrl')}
+            description={AdminI18n.t('settings.general.thisDeploymentSOwnFrontend')}
             explanation={(
               <Explanation>
                 <p>
-                  It is also the base for sitemaps, sign-in and password-reset emails, plugin links and the
-                  admin&rsquo;s &ldquo;view on site&rdquo; links.
+                  {AdminI18n.t('settings.general.itIsAlsoTheBase')}
                 </p>
-                <p>
-                  <strong>On a multi-site platform, leave it blank.</strong> A value here is read before the
-                  request is, so it replaces <em>every</em> site&rsquo;s own domain everywhere in that list.
-                  Blank falls back to <code>FRONTEND_URL</code> in the environment, then to the host that made
-                  the request — which is how each site gets its own address.
-                </p>
+                <p><AdminRichText k="settings.general.frontendUrlMultiSite" /></p>
               </Explanation>
             )}
           >
@@ -143,18 +139,14 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Globe}
-            title="Admin URL"
-            description={"This deployment's admin console address — one console serves every site."}
+            title={AdminI18n.t('settings.general.adminUrl')}
+            description={AdminI18n.t('settings.general.thisDeploymentSAdminConsole')}
             explanation={(
               <Explanation>
                 <p>
-                  Used by the gateway and for the console&rsquo;s certificate, by the setup gate, and as the
-                  base for admin password-reset links.
+                  {AdminI18n.t('settings.general.usedByTheGatewayAnd')}
                 </p>
-                <p>
-                  Blank falls back to <code>ADMIN_URL</code> in the environment, then to the host that made the
-                  request. Unlike the two above, this one is the platform&rsquo;s however many sites it serves.
-                </p>
+                <p><AdminRichText k="settings.general.adminUrlFallback" /></p>
               </Explanation>
             )}
           >
@@ -171,15 +163,14 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Globe}
-            title="Site URL"
-            description="A fallback for Frontend URL — it has no readers of its own."
+            title={AdminI18n.t('settings.general.siteUrl')}
+            description={AdminI18n.t('settings.general.aFallbackForFrontendUrl')}
             explanation={(
               <Explanation>
                 <p>
-                  Used only when Frontend URL above is blank, and then it means exactly the same thing. It is
-                  also allowed through CORS.
+                  {AdminI18n.t('settings.general.usedOnlyWhenFrontendUrl')}
                 </p>
-                <p><strong>On a multi-site platform, leave it blank</strong>, for the same reason as Frontend URL.</p>
+                <p><AdminRichText k="settings.general.siteUrlMultiSite" /></p>
               </Explanation>
             )}
           >
@@ -196,10 +187,10 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Globe}
-            title="Marketplace URL"
+            title={AdminI18n.t('settings.general.marketplaceUrl')}
             description={this.platformLocks.isSiteScope()
-              ? <>Where THIS site browses for plugins and themes. Blank uses the platform&apos;s marketplace; <code>off</code> turns this site&apos;s marketplace off. A catalogue that cannot be reached shows an empty marketplace rather than an error.</>
-              : <>Where the platform browses for plugins, themes and appearances, and checks for updates, and what every site that has not set its own uses. Blank uses the default marketplace; <code>off</code> turns the marketplace off.</>}
+              ? <AdminRichText k="settings.general.marketplaceUrlSite" />
+              : <AdminRichText k="settings.general.marketplaceUrlPlatform" />}
           >
             <Input
               value={settings.marketplace_url}
@@ -214,8 +205,8 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Package}
-            title="Framework Repository"
-            description={<>Checked for new framework releases when no marketplace answers. <code>owner/repo</code> on GitHub — point it at your own fork if you run one. Blank uses <code>{FrameworkReleaseDefaults.REPOSITORY}</code>.</>}
+            title={AdminI18n.t('settings.general.frameworkRepository')}
+            description={<AdminRichText k="settings.general.frameworkRepositoryDescription" vars={{ repository: FrameworkReleaseDefaults.REPOSITORY }} />}
           >
             <Input
               value={settings.framework_repository}
@@ -230,8 +221,8 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Folder}
-            title="Sources Workspace"
-            description={<>Where Sources clones repositories and writes the packages it builds. Blank uses <code>data/sources</code> beside the platform. Never point it at the plugins or themes directories — that is where the sources being built are mounted from.</>}
+            title={AdminI18n.t('settings.general.sourcesWorkspace')}
+            description={<AdminRichText k="settings.general.sourcesWorkspaceDescription" />}
           >
             <Input
               value={settings.sources_workspace_root}
@@ -246,8 +237,8 @@ export class GeneralBrandCard extends PureReactor {
           <SettingRow
             theme={theme}
             icon={FrameworkIcons.Globe}
-            title="Domain Aliases"
-            description={'Additional hostnames that serve your frontend. Allowed through CORS and used for multi-domain deployments.'}
+            title={AdminI18n.t('settings.general.domainAliases')}
+            description={AdminI18n.t('settings.general.additionalHostnamesThatServeYour')}
           >
             <DomainAliasesInput
               value={this.domainAliases}
@@ -260,15 +251,15 @@ export class GeneralBrandCard extends PureReactor {
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Palette}
-          title="Visual Core"
-          description="Choose the visual style of your administration panel."
+          title={AdminI18n.t('settings.general.visualCore')}
+          description={AdminI18n.t('settings.general.chooseTheVisualStyleOf')}
         >
           <div className={`flex p-1 ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800 shadow-inner' : 'bg-slate-100/80 border border-slate-100 shadow-inner'}`}>
             <button onClick={this.selectLight} className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-tight ${AdminClass.SURFACE} transition-all ${theme === ThemeMode.LIGHT ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-300'}`}>
-              <FrameworkIcons.Sun size={14} /> Light
+              <FrameworkIcons.Sun size={14} /> {AdminI18n.t('settings.general.light')}
             </button>
             <button onClick={this.selectDark} className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-tight rounded-xl transition-all ${theme === ThemeMode.DARK ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-indigo-600'}`}>
-              <FrameworkIcons.Moon size={14} /> Dark
+              <FrameworkIcons.Moon size={14} /> {AdminI18n.t('settings.general.dark')}
             </button>
           </div>
         </SettingRow>

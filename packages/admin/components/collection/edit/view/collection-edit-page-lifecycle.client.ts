@@ -1,6 +1,5 @@
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { StringUtils } from '@fromcode119/core/client';
 
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -8,8 +7,10 @@ import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
 import { CollectionEditUtils } from '@/components/collection/collection-edit-utils';
+import { AdminSlug } from '@/lib/i18n/admin-slug';
 import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
 import { CollectionEditPageHandlers } from '@/components/collection/edit/view/collection-edit-page-handlers.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Effect/lifecycle logic for the collection edit page, extracted from the former
@@ -86,9 +87,9 @@ export class CollectionEditPageLifecycle {
         AdminApi.get(`${base}/${resolvedSlug}/${duplicateFromId}?locale_mode=raw`)
           .then((entryData: any) => {
             if (!fresh()) return;
-            self.setState({ formData: services.entityFormData.normalizeLoadedRecord(collection, CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || [])), status: { type: NotificationType.SUCCESS, message: 'Duplicate loaded. Review the values and save to create a new record.' }, loading: false });
+            self.setState({ formData: services.entityFormData.normalizeLoadedRecord(collection, CollectionEditUtils.buildDuplicateFormData(entryData, collection?.fields || [])), status: { type: NotificationType.SUCCESS, message: AdminI18n.t('collection.edit.duplicateLoaded') }, loading: false });
           })
-          .catch((err: any) => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: err?.message || 'Failed to load duplicate source' }, loading: false }); });
+          .catch((err: any) => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: err?.message || AdminI18n.t('collection.edit.duplicateFailed') }, loading: false }); });
         return;
       }
       AdminApi.get(`${base}/${resolvedSlug}/${self.props.id}?locale_mode=raw`)
@@ -102,15 +103,15 @@ export class CollectionEditPageLifecycle {
           CollectionEditPageHandlers.fetchRevisions(self, 1);
           self.updateState('loading', false);
         })
-        .catch(() => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: 'Failed to load entry' }, loading: false }); });
+        .catch(() => { if (fresh()) self.setState({ status: { type: NotificationType.ERROR, message: AdminI18n.t('collection.edit.loadFailed') }, loading: false }); });
     });
   }
 
   private static runSlugGeneration(self: any, isNew: boolean): void {
-    const sourceValue = CollectionEditDerivations.build(self).sourceValue || '';
+    const { sourceValue = '', preferredLocale } = CollectionEditDerivations.build(self);
     CollectionEditPageLifecycle.guard(self, 'slugSource', String(sourceValue), () => {
       if (isNew && !self.state.slugManuallyEdited && sourceValue) {
-        CollectionEditPageHandlers.onSlugGenerate(self, StringUtils.slugify(sourceValue));
+        CollectionEditPageHandlers.onSlugGenerate(self, AdminSlug.fromTitle(String(sourceValue), preferredLocale));
       }
     });
   }
@@ -127,7 +128,7 @@ export class CollectionEditPageLifecycle {
           const results = response.docs || [];
           if (Array.isArray(results) && results.length > 0) {
             const duplicate = results.find((item: any) => isNew || String(item.id) !== String(self.props.id));
-            self.updateState('slugWarning', duplicate ? `This slug is already taken by "${duplicate.name || duplicate.title || duplicate.id}".` : null);
+            self.updateState('slugWarning', duplicate ? AdminI18n.t('collection.edit.slugTaken', { name: duplicate.name || duplicate.title || duplicate.id }) : null);
           } else {
             self.updateState('slugWarning', null);
           }

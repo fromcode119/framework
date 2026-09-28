@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 import { TagFieldDataService } from '@/components/ui/tag-field/data-service';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class TagFieldChips extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -62,7 +63,7 @@ export class TagFieldChips extends PureReactor {
             <span
               key={tag}
               className={chipClass}
-              title={unresolved ? `This reference points at a record that no longer exists (id ${tag}).` : undefined}
+              title={unresolved ? AdminI18n.t('ui.tags.missingRecord', { id: tag }) : undefined}
             >
               <div className="flex flex-col leading-tight">
                  <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>

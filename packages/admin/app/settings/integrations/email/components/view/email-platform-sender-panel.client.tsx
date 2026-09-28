@@ -8,6 +8,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The switch behind `email_platform_fallback`: may a site with no mail provider of its own send
@@ -41,7 +42,7 @@ export class EmailPlatformSenderPanel extends AdminComponent {
       this.enabled = value === true || String(value ?? '') === 'true';
       this.locks = locks;
     } catch (error: any) {
-      this.notifyError('Failed to load the platform mail setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadThePlatform'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -59,21 +60,21 @@ export class EmailPlatformSenderPanel extends AdminComponent {
       await AdminApi.post(SystemConstants.API_PATH.SYSTEM.ADMIN_SETTINGS, { [EmailPlatformSenderPanel.KEY]: next });
     } catch (error: any) {
       this.enabled = previous;
-      this.notifyError('Failed to save the platform mail setting', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToSaveThePlatform'), error);
     } finally {
       if (this.mounted) this.saving = false;
     }
   }
 
   private notifyError(title: string, error: any): void {
-    this.runtime.notify.addNotification({ type: NotificationType.ERROR, title, message: error?.message || 'Unexpected error.' });
+    this.runtime.notify.addNotification({ type: NotificationType.ERROR, title, message: error?.message || AdminI18n.t('settings.integrations.unexpectedError') });
   }
 
   private renderBody(locks: PlatformSettingLocks): ReactNode {
     if (locks.isPlatformScope()) {
       return (
         <p className="text-xs text-slate-500">
-          This is decided per site. Choose a site from the site menu to let it send through the platform&apos;s mail server.
+          {AdminI18n.t('settings.integrations.thisIsDecidedPerSite')}
         </p>
       );
     }
@@ -82,12 +83,12 @@ export class EmailPlatformSenderPanel extends AdminComponent {
       <Switch
         checked={this.enabled}
         disabled={this.saving || locked}
-        label="Send through the platform's mail server"
+        label={AdminI18n.t('settings.integrations.sendThroughThePlatformS')}
         description={locked
-          ? `${this.enabled ? 'On' : 'Off'} — only a platform administrator can change this, because it uses the platform's own mail server.`
+          ? (this.enabled ? AdminI18n.t('settings.integrations.platformSenderOnLocked') : AdminI18n.t('settings.integrations.platformSenderOffLocked'))
           : this.enabled
-            ? 'On — while this site has no mail provider of its own, its messages leave through the platform\'s server, under the platform\'s SPF and DKIM.'
-            : 'Off — while this site has no mail provider of its own, its messages are refused rather than sent.'}
+            ? AdminI18n.t('settings.integrations.onWhileThisSiteHas')
+            : AdminI18n.t('settings.integrations.offWhileThisSiteHas')}
         onChange={(next: boolean) => { void this.setEnabled(next); }}
       />
     );
@@ -97,9 +98,9 @@ export class EmailPlatformSenderPanel extends AdminComponent {
     // A single-site deployment has no platform to borrow from: its own mail provider above is the only one.
     if (!this.loading && this.locks && !this.locks.isSiteScope() && !this.locks.isPlatformScope()) return null;
     return (
-      <Card title="Platform mail fallback">
+      <Card title={AdminI18n.t('settings.integrations.platformMailFallback')}>
         <p className="mb-3 text-xs text-slate-500">
-          Used only while this site has no mail provider configured above. A provider of its own always wins.
+          {AdminI18n.t('settings.integrations.usedOnlyWhileThisSite')}
         </p>
         {this.loading || !this.locks ? <Loader /> : this.renderBody(this.locks)}
       </Card>

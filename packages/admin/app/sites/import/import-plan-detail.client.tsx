@@ -4,6 +4,7 @@ import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanRecords } from '@/app/sites/import/import-plan-records.client';
 import { ImportPlanInventory } from '@/app/sites/import/import-plan-inventory.client';
 import { ImportPlanDetailTab } from '@/app/sites/import/enums/import-plan-detail-tab.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The four things a reader might want to check, as one row of chips with one panel open at a time.
@@ -79,13 +80,13 @@ export class ImportPlanDetail extends Reactor {
     }
     if (tab === ImportPlanDetailTab.WARNINGS) {
       return ImportPlanDetail.notes(
-        'Things this import noticed while planning. None of them stops it — anything that would is shown at the top of this card as a blocker.',
+        AdminI18n.t('sites.importPlan.thingsThisImportNoticedWhile'),
         this.warnings, '!', 'fc-import-detail__note-mark--warn',
       );
     }
     if (tab === ImportPlanDetailTab.EXPORT) {
       return ImportPlanDetail.notes(
-        'Written into the archive when it was exported. They describe what the archive holds, not what this import decides; everything this import will do is stated above.',
+        AdminI18n.t('sites.importPlan.exportNotesIntro'),
         this.exportWarnings, 'i', 'fc-import-detail__note-mark--info',
       );
     }
@@ -98,14 +99,14 @@ export class ImportPlanDetail extends Reactor {
     return (
       <div className="fc-import-detail">
         <div className="fc-import-detail__head">
-          <h4 className="fc-import-detail__title">Full detail</h4>
-          <span className="fc-import-detail__hint">nothing is hidden — open any of these</span>
+          <h4 className="fc-import-detail__title">{AdminI18n.t('sites.importPlan.fullDetail')}</h4>
+          <span className="fc-import-detail__hint">{AdminI18n.t('sites.importPlan.nothingIsHiddenOpenAny')}</span>
         </div>
         <div className="fc-import-detail__chips">
-          {this.chip(ImportPlanDetailTab.RECORDS, 'Everything in the archive', kinds.toLocaleString())}
-          {this.chip(ImportPlanDetailTab.EXTENSIONS, 'Plugins & theme', extensions)}
-          {this.warnings.length ? this.chip(ImportPlanDetailTab.WARNINGS, 'Warnings', this.warnings.length.toLocaleString(), true) : null}
-          {this.exportWarnings.length ? this.chip(ImportPlanDetailTab.EXPORT, 'Notes from the export', this.exportWarnings.length.toLocaleString()) : null}
+          {this.chip(ImportPlanDetailTab.RECORDS, AdminI18n.t('sites.importPlan.everythingInTheArchive'), kinds.toLocaleString())}
+          {this.chip(ImportPlanDetailTab.EXTENSIONS, AdminI18n.t('sites.importPlan.pluginsAndTheme'), extensions)}
+          {this.warnings.length ? this.chip(ImportPlanDetailTab.WARNINGS, AdminI18n.t('sites.importPlan.warnings'), this.warnings.length.toLocaleString(), true) : null}
+          {this.exportWarnings.length ? this.chip(ImportPlanDetailTab.EXPORT, AdminI18n.t('sites.importPlan.notesFromTheExport'), this.exportWarnings.length.toLocaleString()) : null}
         </div>
         {this.renderPanel()}
       </div>

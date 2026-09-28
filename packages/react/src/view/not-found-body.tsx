@@ -1,5 +1,6 @@
 import type { CSSProperties, ComponentType, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { ViewTranslations } from '@react/view/view-translations';
 
 /**
  * The framework's own 404 body — Next-free, so the SAME component renders in the App Router page
@@ -12,6 +13,8 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 export class NotFoundBody extends PureReactor {
   /** The link element for the home action — `next/link` under the App Router, a plain anchor elsewhere. */
   @prop declare linkComponent?: ComponentType<any> | string;
+  /** The document's locale. A server render must pass it; in the browser it defaults to `<html lang>`. */
+  @prop declare locale?: string;
 
   private static readonly OUTER: CSSProperties = { minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem 1rem' };
 
@@ -37,10 +40,10 @@ export class NotFoundBody extends PureReactor {
     return (
       <div style={NotFoundBody.OUTER}>
         <div style={NotFoundBody.CARD}>
-          <div style={NotFoundBody.EYEBROW}>Error 404</div>
-          <h1 style={NotFoundBody.HEADING}>Page not found</h1>
-          <p style={NotFoundBody.BODY}>The URL you opened does not match any published route.</p>
-          <Action href="/" style={NotFoundBody.ACTION}>Return Home</Action>
+          <div style={NotFoundBody.EYEBROW}>{ViewTranslations.t('view.notFound.eyebrow', this.locale)}</div>
+          <h1 style={NotFoundBody.HEADING}>{ViewTranslations.t('view.notFound.title', this.locale)}</h1>
+          <p style={NotFoundBody.BODY}>{ViewTranslations.t('view.notFound.body', this.locale)}</p>
+          <Action href="/" style={NotFoundBody.ACTION}>{ViewTranslations.t('view.notFound.home', this.locale)}</Action>
         </div>
       </div>
     );

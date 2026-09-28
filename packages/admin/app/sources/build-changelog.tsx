@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What changed in the version this source last built.
@@ -37,7 +38,7 @@ export class BuildChangelog extends AdminComponent {
     return (
       <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 dark:border-slate-800 dark:bg-slate-900/60">
         <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-600 dark:text-slate-400">
-          {this.version ? `What changed in v${this.version}` : 'What changed'}
+          {this.version ? AdminI18n.t('sources.whatChangedInV', { version: this.version }) : AdminI18n.t('sources.whatChanged')}
         </p>
         <ul className="mt-1 space-y-0.5">
           {shown.map((line) => (
@@ -47,7 +48,7 @@ export class BuildChangelog extends AdminComponent {
           ))}
         </ul>
         {remaining > 0 ? (
-          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">and {remaining} more</p>
+          <p className="mt-1 text-[11px] text-slate-600 dark:text-slate-400">{AdminI18n.t('sources.andMore', { count: remaining })}</p>
         ) : null}
       </div>
     );

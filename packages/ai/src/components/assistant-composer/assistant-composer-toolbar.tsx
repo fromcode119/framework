@@ -5,6 +5,7 @@ import { ConversationMode } from '@ai/enums/conversation-mode.enum';
 import { Select } from '@ai/ui/select';
 import { SelectOption } from '@ai/ui/select-option';
 import { AssistantMode } from '@ai/components/enums/assistant-mode.enum';
+import { AiText } from '@ai/i18n/ai-text';
 
 /**
  * Composer footer: attach, tools toggle, mode select and send. Presentational → `PureReactor`; the tools
@@ -43,8 +44,8 @@ export class AssistantComposerToolbar extends PureReactor {
         type="button"
         onClick={this.onToggleTools}
         className={`inline-flex h-7 w-7 items-center justify-center rounded-md border transition ${tone}`}
-        title={`Tools (${this.activeTools}/${this.totalTools})`}
-        aria-label={`Tools (${this.activeTools}/${this.totalTools})`}
+        title={AiText.t('ai.tools', { activeTools: this.activeTools, totalTools: this.totalTools })}
+        aria-label={AiText.t('ai.tools', { activeTools: this.activeTools, totalTools: this.totalTools })}
       >
         <FrameworkIcons.Wrench size={11} />
       </button>
@@ -60,8 +61,8 @@ export class AssistantComposerToolbar extends PureReactor {
             onClick={this.openFilePicker}
             disabled={this.uploadingAttachments}
             className="inline-flex h-7 w-7 items-center justify-center rounded border border-[var(--border)] bg-[var(--text-main)] text-[var(--bg)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
-            title="Attach file"
-            aria-label="Attach file"
+            title={AiText.t('ai.attachFile')}
+            aria-label={AiText.t('ai.attachFile')}
           >
             <FrameworkIcons.Plus size={12} />
           </button>
@@ -79,14 +80,14 @@ export class AssistantComposerToolbar extends PureReactor {
             />
           </div>
           <span className="hidden text-[10px] font-mono text-[var(--text-sub)] opacity-60 sm:inline">
-            Enter to send • Shift+Enter new line
+            {AiText.t('ai.enterToSendShiftEnter')}
           </span>
           <button
             type="button"
             onClick={this.sendPrompt}
             disabled={this.sendDisabled}
             className="inline-flex h-7 w-7 items-center justify-center rounded border border-[var(--border)] bg-[var(--text-main)] text-[var(--bg)] transition-colors hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-45"
-            title="Send"
+            title={AiText.t('ai.send')}
           >
             <FrameworkIcons.Send size={12} />
           </button>

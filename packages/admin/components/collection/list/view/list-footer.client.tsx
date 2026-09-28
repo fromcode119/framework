@@ -4,6 +4,7 @@ import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Collection list footer (record count + export/import/API links). Pure presentational class. */
 export class ListFooter extends PureReactor {
@@ -30,7 +31,7 @@ export class ListFooter extends PureReactor {
                 the same fabrication as the dashboard-footer "distributed cluster node" line. The
                 record count is real, so it stays; the invented infrastructure around it does not. */}
             <p className="text-xs font-semibold text-slate-400 tracking-wide text-center md:text-left">
-              {this.total} {this.total === 1 ? 'record' : 'records'}
+              {AdminI18n.t(this.total === 1 ? 'collection.list.countOne' : 'collection.list.countMany', { count: this.total })}
             </p>
 
             <div className="flex items-center gap-10 text-xs font-semibold tracking-wide text-slate-400">
@@ -38,12 +39,12 @@ export class ListFooter extends PureReactor {
                 onClick={() => this.handleExport(ExportFormat.JSON)}
                 className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
               >
-                Export JSON
+                {AdminI18n.t('collection.list.exportJson')}
               </button>
               {this.canCreate ? <>
                 <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                 <label className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">
-                  Bulk Import
+                  {AdminI18n.t('collection.list.bulkImport')}
                   <input type="file" className="hidden" accept=".json" onChange={this.handleImport} />
                 </label>
               </> : null}
@@ -53,7 +54,7 @@ export class ListFooter extends PureReactor {
                 target="_blank"
                 className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
               >
-                API Endpoint
+                {AdminI18n.t('collection.list.apiEndpoint')}
               </a>
             </div>
           </div>

@@ -2,6 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@react/icons/view/framework-icons.client';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
+import { ViewTranslations } from '@react/view/view-translations';
 import type { IRecordsHubItem } from '@react/interfaces/records-hub-item.interface';
 
 /**
@@ -82,12 +83,12 @@ export class RecordsHubItemRow extends PureReactor {
           {date ? <p className="text-[10px] font-bold text-slate-400 tabular-nums">{date}</p> : null}
         </div>
         {item.downloadUrl ? (
-          <button type="button" onClick={this.download} className={actionClass} aria-label={`Download ${item.title}`} title="Download">
+          <button type="button" onClick={this.download} className={actionClass} aria-label={ViewTranslations.t('view.recordsHub.downloadItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.download')}>
             <DownloadIcon size={15} />
           </button>
         ) : null}
         {item.href ? (
-          <button type="button" onClick={this.open} className={actionClass} aria-label={`Open ${item.title}`} title="Open">
+          <button type="button" onClick={this.open} className={actionClass} aria-label={ViewTranslations.t('view.recordsHub.openItem', undefined, { title: item.title })} title={ViewTranslations.t('view.recordsHub.open')}>
             <OpenIcon size={15} />
           </button>
         ) : null}

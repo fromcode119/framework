@@ -10,6 +10,7 @@ import { InstalledPluginsUploadService } from '@/app/plugins/installed/installed
 import type { IInstalledPluginMarketplaceItem } from '@/app/plugins/installed/interfaces/installed-plugin-marketplace-item.interface';
 import type { IInstalledPluginsArchiveInspection } from '@/app/plugins/installed/interfaces/installed-plugins-archive-inspection.interface';
 import type { IPluginReapprovalEntry } from '@/app/plugins/installed/interfaces/plugin-reapproval-entry.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Data access + business logic for the installed-plugins page. Hook-free by contract: the page-client
@@ -34,7 +35,7 @@ export class InstalledPluginsPageController {
     const result = await Promise.race([
       AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.MARKETPLACE),
       new Promise((_, reject) => setTimeout(
-        () => reject(new Error(`Marketplace timeout after ${InstalledPluginsPageController.MARKETPLACE_TIMEOUT_MS}ms`)),
+        () => reject(new Error(AdminI18n.t('plugins.list.marketplaceTimeout', { ms: InstalledPluginsPageController.MARKETPLACE_TIMEOUT_MS }))),
         InstalledPluginsPageController.MARKETPLACE_TIMEOUT_MS,
       )),
     ]);
@@ -62,8 +63,8 @@ export class InstalledPluginsPageController {
     return {
       supported: true,
       uploadId,
-      previewTitle: `Install plugin "${info.name || info.slug || 'package'}"?`,
-      previewDescription: 'Review package contents before continuing.',
+      previewTitle: AdminI18n.t('plugins.upload.installTitle', { name: info.name || info.slug || AdminI18n.t('plugins.upload.package') }),
+      previewDescription: AdminI18n.t('plugins.upload.review'),
       previewSections: InstalledPluginsUploadService.buildPreviewSections(info),
     };
   }
@@ -126,10 +127,10 @@ export class InstalledPluginsPageController {
 
   static deleteConfirmDescription(pluginToDelete: string | null, plugins: ILoadedPlugin[]): string {
     const isActive = plugins.find((plugin) => plugin.manifest.slug === pluginToDelete)?.state === PluginState.ACTIVE;
-    return `This will permanently remove ${pluginToDelete} and all its data.${isActive ? " Since it's currently active, we'll deactivate it first." : ''}`;
+    return AdminI18n.t(isActive ? 'plugins.list.removeActive' : 'plugins.list.thisWillPermanentlyRemoveAnd', { pluginToDelete });
   }
 
   static reapprovalFailureMessage(failed: IPluginReapprovalEntry[]): string {
-    return `${failed.length} plugin${failed.length === 1 ? '' : 's'} could not be re-approved.`;
+    return AdminI18n.t('plugins.list.pluginCouldNotBeRe', { length: failed.length });
   }
 }

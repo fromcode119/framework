@@ -8,6 +8,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
 import { CertificateStateBadge } from '@/app/certificates/components/certificate-state-badge.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { CertificateAttemptStatus } from '@/app/certificates/components/certificate-attempt-status.client';
 
 /**
@@ -69,7 +70,7 @@ export class CertificateHostTable extends AdminComponent {
     const dark = this.isDark;
     return (
       <p className={`mt-0.5 text-[11px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
-        Point {entry.host} at {addresses.join(' and ')}, then this is retried automatically.
+        {AdminI18n.t('certificates.pointHostAt', { host: entry.host, addresses: addresses.join(', ') })}
       </p>
     );
   }
@@ -88,7 +89,7 @@ export class CertificateHostTable extends AdminComponent {
       if (entry.coveredByHost) {
         return (
           <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Served by the wildcard on {entry.coveredByHost}{entry.coveredByExpiryDate ? ` · until ${entry.coveredByExpiryDate}` : ''}
+            {entry.coveredByExpiryDate ? AdminI18n.t('certificates.servedByWildcardUntil', { host: entry.coveredByHost, date: entry.coveredByExpiryDate }) : AdminI18n.t('certificates.servedByWildcard', { host: entry.coveredByHost })}
           </span>
         );
       }
@@ -96,15 +97,15 @@ export class CertificateHostTable extends AdminComponent {
       return (
         <span className={`text-[11px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
           {this.terminatesTls
-            ? 'Nothing stored — this host cannot be served over HTTPS by this platform.'
-            : 'Nothing stored here — TLS for this host is terminated before the platform, so its certificate lives there.'}
+            ? AdminI18n.t('certificates.nothingStoredThisHostCannot')
+            : AdminI18n.t('certificates.nothingStoredHereTlsFor')}
         </span>
       );
     }
     return (
       <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-        {entry.issuer ? `${entry.issuer} · ` : ''}until {entry.expiryDate}
-        {entry.isUploaded ? ' · uploaded, not renewed automatically' : ''}
+        {entry.issuer ? `${entry.issuer} · ` : ''}{AdminI18n.t('certificates.until', { date: entry.expiryDate })}
+        {entry.isUploaded ? AdminI18n.t('certificates.uploadedNotRenewedAutomatically') : ''}
         {/*
           Two independent claims about two different things — how the certificate was OBTAINED
           (isAutomaticDns01, the platform's ordering intent/method) vs what the STORED certificate
@@ -167,7 +168,7 @@ export class CertificateHostTable extends AdminComponent {
                 onClick={this.automate(entry.host)}
                 icon={<FrameworkIcons.Refresh size={13} />}
               >
-                {entry.isPlatformManaged ? 'Switch to plain (HTTP-01)' : 'Automatic'}
+                {entry.isPlatformManaged ? AdminI18n.t('certificates.switchToPlainHttp01') : AdminI18n.t('certificates.automatic')}
               </Button>
             ) : null}
             {this.canAutomateWildcard && !entry.isAutomaticDns01 ? (
@@ -177,7 +178,7 @@ export class CertificateHostTable extends AdminComponent {
                 onClick={this.automateWildcard(entry.host)}
                 icon={<FrameworkIcons.Refresh size={13} />}
               >
-                {entry.isPlatformManaged ? 'Switch to wildcard (DNS-01)' : 'Automatic (wildcard)'}
+                {entry.isPlatformManaged ? AdminI18n.t('certificates.switchToWildcardDns01') : AdminI18n.t('certificates.automaticWildcard')}
               </Button>
             ) : null}
             <Button
@@ -188,13 +189,13 @@ export class CertificateHostTable extends AdminComponent {
               disabled={!this.canUpload}
               icon={<FrameworkIcons.Upload size={13} />}
             >
-              {entry.hasCertificate ? 'Replace' : 'Upload'}
+              {entry.hasCertificate ? AdminI18n.t('certificates.replace') : AdminI18n.t('certificates.upload')}
             </Button>
             {entry.hasCertificate ? (
               <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} onClick={this.remove(entry.host)} icon={<FrameworkIcons.Trash size={13} />}>
                 {/* Icon-only by design — the row is already dense — but the action still needs a name
                     for anyone not reading it by sight. */}
-                <span className="sr-only">Remove certificate</span>
+                <span className="sr-only">{AdminI18n.t('certificates.removeCertificate')}</span>
               </Button>
             ) : null}
           </div>
@@ -206,7 +207,7 @@ export class CertificateHostTable extends AdminComponent {
   render(): ReactNode {
     const dark = this.isDark;
     if (!this.entries.length) {
-      return <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>No hosts are configured on this platform yet.</p>;
+      return <p className={`text-sm ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('certificates.noHostsAreConfiguredOn')}</p>;
     }
     return (
       <div className={`rounded-lg border overflow-hidden divide-y ${dark ? 'border-white/10 divide-white/5' : 'border-slate-200 divide-slate-100'}`}>

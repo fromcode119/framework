@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { RootFramework } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ConfirmDialog extends PureReactor {
   @prop declare isOpen: boolean;
@@ -35,8 +36,8 @@ export class ConfirmDialog extends PureReactor {
   }
 
   render(): ReactNode {
-    const confirmLabel = this.confirmLabel ?? 'Confirm';
-    const cancelLabel = this.cancelLabel ?? 'Cancel';
+    const confirmLabel = this.confirmLabel ?? AdminI18n.t('common.confirm');
+    const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
     const variant = this.variant ?? 'danger';
     const isLoading = this.isLoading ?? false;
 

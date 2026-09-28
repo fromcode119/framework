@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The password rules the API enforces on every registration, password change and password reset
@@ -22,15 +23,15 @@ export class PasswordPolicyCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="Password Policy">
+      <Card title={AdminI18n.t('settings.security.passwordPolicy')}>
         <SettingNumberRow
           theme={this.theme}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH}
           icon={FrameworkIcons.Lock}
-          title="Minimum Password Length"
-          description="Shorter passwords are rejected when an account is created, changed or reset. Existing passwords are not revoked."
+          title={AdminI18n.t('settings.security.minimumPasswordLength')}
+          description={AdminI18n.t('settings.security.shorterPasswordsAreRejectedWhen')}
           min={8}
           max={128}
         />
@@ -41,8 +42,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE}
           icon={FrameworkIcons.Text}
-          title="Require an Uppercase Letter"
-          description="A new password must contain at least one A-Z character."
+          title={AdminI18n.t('settings.security.requireAnUppercaseLetter')}
+          description={AdminI18n.t('settings.security.aNewPasswordMustContain')}
         />
 
         <SettingSwitchRow
@@ -51,8 +52,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE}
           icon={FrameworkIcons.Text}
-          title="Require a Lowercase Letter"
-          description="A new password must contain at least one a-z character."
+          title={AdminI18n.t('settings.security.requireALowercaseLetter')}
+          description={AdminI18n.t('settings.security.aNewPasswordMustContain2')}
         />
 
         <SettingSwitchRow
@@ -61,8 +62,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER}
           icon={FrameworkIcons.Activity}
-          title="Require a Number"
-          description="A new password must contain at least one digit."
+          title={AdminI18n.t('settings.security.requireANumber')}
+          description={AdminI18n.t('settings.security.aNewPasswordMustContain3')}
         />
 
         <SettingSwitchRow
@@ -71,8 +72,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL}
           icon={FrameworkIcons.Key}
-          title="Require a Symbol"
-          description="A new password must contain at least one character that is not a letter or a digit."
+          title={AdminI18n.t('settings.security.requireASymbol')}
+          description={AdminI18n.t('settings.security.aNewPasswordMustContain4')}
         />
 
         <SettingNumberRow
@@ -81,8 +82,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY}
           icon={FrameworkIcons.Layers}
-          title="Password History (reuse blocked)"
-          description="How many of a user's previous passwords are refused when they choose a new one. Set to 0 to allow reuse."
+          title={AdminI18n.t('settings.security.passwordHistoryReuseBlocked')}
+          description={AdminI18n.t('settings.security.howManyOfAUser')}
           min={0}
           max={20}
         />
@@ -93,8 +94,8 @@ export class PasswordPolicyCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK}
           icon={FrameworkIcons.ShieldAlert}
-          title="Check Against Known Breaches"
-          description='Ask a breach-check provider whether a chosen password appears in a public breach corpus. This calls the "auth:password:breach-check" hook. With no plugin answering it, nothing is rejected.'
+          title={AdminI18n.t('settings.security.checkAgainstKnownBreaches')}
+          description={AdminI18n.t('settings.security.askABreachCheckProvider')}
         />
       </Card>
     );

@@ -4,6 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { TenantOption } from '@/lib/tenants/tenant-option';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The list behind the site switcher: where you can go, and where you are.
@@ -42,8 +43,8 @@ export class TenantSwitcherMenu extends PureReactor {
           {isCurrent ? <FrameworkIcons.Check size={13} /> : null}
         </span>
         <span className="fc-site__item-text">
-          <span className="fc-site__item-label">Platform</span>
-          <span className="fc-site__item-host">No site — plugins, themes, sources, sites, platform settings</span>
+          <span className="fc-site__item-label">{AdminI18n.t('shell.site.platform')}</span>
+          <span className="fc-site__item-host">{AdminI18n.t('shell.site.platformHint')}</span>
         </span>
       </button>
     );
@@ -57,8 +58,8 @@ export class TenantSwitcherMenu extends PureReactor {
    */
   private static roleBadge(): ReactElement {
     return (
-      <span className="fc-site__platform" title="You reach this site through your platform-admin role — you are not a member of it">
-        via platform role
+      <span className="fc-site__platform" title={AdminI18n.t('shell.site.viaRoleHint')}>
+        {AdminI18n.t('shell.site.viaRole')}
       </span>
     );
   }
@@ -80,7 +81,7 @@ export class TenantSwitcherMenu extends PureReactor {
         <span className="fc-site__item-text">
           <span className="fc-site__item-label">
             {tenant.label}
-            {tenant.isWorkspace ? <span className="fc-site__platform" title="Workspace — its domain is the console">workspace</span> : null}
+            {tenant.isWorkspace ? <span className="fc-site__platform" title={AdminI18n.t('shell.site.workspaceHint')}>{AdminI18n.t('shell.site.workspace')}</span> : null}
             {tenant.platformAccess ? TenantSwitcherMenu.roleBadge() : null}
           </span>
           <span className="fc-site__item-host">{tenant.primaryHost}</span>
@@ -91,14 +92,14 @@ export class TenantSwitcherMenu extends PureReactor {
 
   render(): ReactElement {
     return (
-      <div className="fc-site__menu" role="listbox" aria-label="Switch site">
-        <div className="fc-site__menu-head">Switch site</div>
+      <div className="fc-site__menu" role="listbox" aria-label={AdminI18n.t('shell.site.switch')}>
+        <div className="fc-site__menu-head">{AdminI18n.t('shell.site.switch')}</div>
         {this.renderPlatformRow()}
         {this.tenants.map((tenant) => this.renderTenant(tenant))}
         {this.canManagePlatform ? (
           <a className="fc-site__manage" href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.SITES.ROOT)}>
             <FrameworkIcons.Settings size={12} />
-            <span>Manage sites</span>
+            <span>{AdminI18n.t('shell.site.manage')}</span>
           </a>
         ) : null}
       </div>

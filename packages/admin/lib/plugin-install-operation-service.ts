@@ -1,6 +1,7 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginInstallOperationService {
   private static readonly POLL_INTERVAL_MS = 800;
@@ -74,7 +75,7 @@ export class PluginInstallOperationService {
         }
 
         if (operation.status === 'failed') {
-          throw new Error(operation.error || operation.message || 'Plugin install failed.');
+          throw new Error(operation.error || operation.message || AdminI18n.t('lib.pluginInstallFailed'));
         }
       } catch (error) {
         if (this.shouldRecoverFromRestart(lastOperation)) {
@@ -107,7 +108,7 @@ export class PluginInstallOperationService {
           ...operation,
           status: 'completed',
           phase: 'completed',
-          message: `Plugin "${operation.pluginSlug}" is installed. The API restarted to load the new runtime.`,
+          message: AdminI18n.t('lib.pluginIsInstalledTheApi', { pluginSlug: operation.pluginSlug }),
           updatedAt: new Date().toISOString(),
         };
       } catch {

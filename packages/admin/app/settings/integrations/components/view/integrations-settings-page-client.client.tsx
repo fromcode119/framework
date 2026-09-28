@@ -9,6 +9,7 @@ import { IntegrationHeader } from '@/app/settings/integrations/integration-heade
 import { IntegrationEmptyState } from '@/app/settings/integrations/integration-empty-state';
 import { Platform } from '@fromcode119/react-class-components';
 import { IntegrationsSettingsPageActions } from '@/app/settings/integrations/components/view/integrations-settings-page-actions.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The integrations settings screen.
@@ -69,7 +70,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (loading) {
       return (
         <div className="p-12">
-          <Loader label="Loading integration providers..." />
+          <Loader label={AdminI18n.t('settings.integrations.loadingIntegrationProviders')} />
         </div>
       );
     }
@@ -94,10 +95,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
                 <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                  {activeIntegration?.label || 'Integration'}
+                  {activeIntegration?.label || AdminI18n.t('settings.integrations.integration')}
                 </h2>
                 <p className="text-sm text-slate-500 mt-1">
-                  {activeIntegration?.description || 'Configure provider instances for this integration.'}
+                  {activeIntegration?.description || AdminI18n.t('settings.integrations.configureProviderInstancesForThis')}
                 </p>
               </div>
             </div>

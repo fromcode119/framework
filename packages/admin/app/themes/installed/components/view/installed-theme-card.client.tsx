@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
 import { ThemeState } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class InstalledThemeCard extends PureReactor {
   @prop declare isDark: boolean;
@@ -40,31 +41,31 @@ export class InstalledThemeCard extends PureReactor {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</Link>
-            {updateVersion ? <Badge variant={BadgeVariant.WARNING} className="shrink-0">Update</Badge> : null}
-            {ownedBySite ? <Badge variant="gray" className="shrink-0">This site's</Badge> : null}
+            {updateVersion ? <Badge variant={BadgeVariant.WARNING} className="shrink-0">{AdminI18n.t('themes.update')}</Badge> : null}
+            {ownedBySite ? <Badge variant="gray" className="shrink-0">{AdminI18n.t('themes.thisSiteS')}</Badge> : null}
           </div>
-          <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || 'A clean and modern theme for your Fromcode frontend.'}</p>
+          <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || AdminI18n.t('themes.aCleanAndModernTheme')}</p>
         </div>
 
         <span className={`hidden lg:inline text-[11px] tabular-nums shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{theme.version}</span>
         {theme.author ? <span className={`hidden xl:inline text-[11px] truncate max-w-[120px] shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{theme.author}</span> : null}
-        <Badge variant={isActive ? 'blue' : 'gray'} className="shrink-0 w-[64px] justify-center">{isActive ? 'Active' : 'Installed'}</Badge>
+        <Badge variant={isActive ? 'blue' : 'gray'} className="shrink-0 w-[64px] justify-center">{isActive ? AdminI18n.t('themes.active') : AdminI18n.t('themes.installed')}</Badge>
 
         <div className="flex items-center gap-1 shrink-0">
           {updateVersion && canManage ? (
-            <button onClick={() => onUpdate(theme.slug)} title={`Upgrade to v${updateVersion}`} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />Upgrade</button>
+            <button onClick={() => onUpdate(theme.slug)} title={AdminI18n.t('themes.upgradeToV', { updateVersion: updateVersion })} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />{AdminI18n.t('themes.upgrade')}</button>
           ) : null}
           {isActive ? (
             <>
-              <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">Manage</Link>
-              <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title="Settings" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
-              <button onClick={() => onDisable(theme.slug)} title="Disable" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/20' : 'text-amber-600 hover:bg-amber-50'}`}><FrameworkIcons.Close size={15} /></button>
+              <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">{AdminI18n.t('themes.manage')}</Link>
+              <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title={AdminI18n.t('themes.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
+              <button onClick={() => onDisable(theme.slug)} title={AdminI18n.t('themes.disable')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/20' : 'text-amber-600 hover:bg-amber-50'}`}><FrameworkIcons.Close size={15} /></button>
             </>
           ) : (
-            <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">Activate</button>
+            <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">{AdminI18n.t('themes.activate')}</button>
           )}
-          {ownedBySite ? <button onClick={() => onDeleteMine(theme.slug, isActive)} title="Delete this site's theme" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
-          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title="Delete" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
+          {ownedBySite ? <button onClick={() => onDeleteMine(theme.slug, isActive)} title={AdminI18n.t('themes.deleteThisSiteSTheme')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
+          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title={AdminI18n.t('themes.delete')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
         </div>
       </div>
     );

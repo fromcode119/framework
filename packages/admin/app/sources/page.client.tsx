@@ -16,6 +16,7 @@ import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overvie
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
 import { SourceUpdateSummary } from '@/app/sources/source-update-summary';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BuildOverview extends AdminComponent {
   @state builds: any[] = [];
@@ -50,7 +51,7 @@ export class BuildOverview extends AdminComponent {
       this.builds = res?.builds || [];
       this.error = '';
     } catch (err: any) {
-      this.error = err?.message || 'Failed to load builds';
+      this.error = err?.message || AdminI18n.t('sources.failedToLoadBuilds');
     } finally {
       this.loading = false;
     }
@@ -74,7 +75,7 @@ export class BuildOverview extends AdminComponent {
         type: summary.hasUpdates ? NotificationType.INFO : NotificationType.SUCCESS,
       });
     } catch (err: any) {
-      this.error = err?.message || 'Update check failed';
+      this.error = err?.message || AdminI18n.t('sources.updateCheckFailed');
     } finally {
       this.checking = false;
     }
@@ -82,7 +83,7 @@ export class BuildOverview extends AdminComponent {
 
   async handleDelete(build: any): Promise<void> {
     const { type, slug } = BuildOverview.identify(build);
-    if (!window.confirm(`Are you sure you want to remove the ${type} "${slug}"? This stops tracking the repository but keeps existing packages.`)) {
+    if (!window.confirm(AdminI18n.t('sources.areYouSureYouWant', { type: type, slug: slug }))) {
       return;
     }
     this.deletingKey = `${type}/${slug}`;
@@ -91,7 +92,7 @@ export class BuildOverview extends AdminComponent {
       await this.loadBuilds();
       if (this.editingBuild?.slug === slug && this.editingBuild?.type === type) this.closeEditor();
     } catch (err: any) {
-      this.error = err?.message || `Failed to delete ${slug}`;
+      this.error = err?.message || AdminI18n.t('sources.failedToDelete', { slug: slug });
     } finally {
       this.deletingKey = null;
     }
@@ -113,7 +114,7 @@ export class BuildOverview extends AdminComponent {
       this.closeEditor();
       await this.loadBuilds();
     } catch (err: any) {
-      this.editorError = err?.message || 'Failed to save build source';
+      this.editorError = err?.message || AdminI18n.t('sources.failedToSaveBuildSource');
     } finally {
       this.savingSource = false;
     }
@@ -125,7 +126,7 @@ export class BuildOverview extends AdminComponent {
       await SourcesApi.buildAll();
       await this.loadBuilds();
     } catch (err: any) {
-      this.error = err?.message || 'Build trigger failed';
+      this.error = err?.message || AdminI18n.t('sources.buildTriggerFailed');
     } finally {
       this.triggering = false;
     }
@@ -138,7 +139,7 @@ export class BuildOverview extends AdminComponent {
       await SourcesApi.buildOne(type, slug);
       await this.loadBuilds();
     } catch (err: any) {
-      this.error = err?.message || `Build failed for ${slug}`;
+      this.error = err?.message || AdminI18n.t('sources.buildFailedFor', { slug: slug });
     } finally {
       this.triggerKey = null;
     }
@@ -151,13 +152,13 @@ export class BuildOverview extends AdminComponent {
 
   render(): ReactNode {
     const { builds, checking, deletingKey, editingBuild, editorMode, error, loading, savingSource, triggerKey, triggering } = this;
-    const editorTitle = editorMode === SourceEditorMode.EDIT ? `Edit ${editingBuild?.slug || 'source'}` : 'Add Build Source';
+    const editorTitle = editorMode === SourceEditorMode.EDIT ? AdminI18n.t('sources.edit2', { name: editingBuild?.slug || AdminI18n.t('sources.source') }) : AdminI18n.t('sources.addBuildSource');
     const editorDescription = editorMode === SourceEditorMode.EDIT
-      ? 'Update repository details here. Leave the token blank to keep the currently stored secret.'
-      : 'Track a plugin or theme repository in a focused dialog without disrupting the build list.';
+      ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave')
+      : AdminI18n.t('sources.trackAPluginOrTheme');
 
     return (
-      <PlatformScopeGate what="Sources">
+      <PlatformScopeGate what={AdminI18n.t('sources.sources')}>
       <>
         {/*
           * No padding on the ROOT. The sticky header is a direct child so it spans the full content
@@ -167,19 +168,19 @@ export class BuildOverview extends AdminComponent {
           */}
         <div className="w-full">
           <CompactPageHeader
-            title="Sources"
-            subtitle="The repositories this platform builds from — plugins, themes, and the framework itself."
+            title={AdminI18n.t('sources.sources')}
+            subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')}
             icon={<Hammer size={20} />}
             actions={(
               <div className="flex items-center gap-2">
                 <Button icon={<GitBranch size={14} />} onClick={() => { this.editorMode = SourceEditorMode.CREATE; this.editingBuild = null; }} variant={ButtonVariant.PRIMARY}>
-                  Add Source
+                  {AdminI18n.t('sources.addSource')}
                 </Button>
                 <Button disabled={checking} icon={<RefreshCw size={14} className={checking ? 'animate-spin' : ''} />} onClick={() => this.handleCheckUpdates()} variant={ButtonVariant.OUTLINE}>
-                  {checking ? 'Checking…' : 'Check Updates'}
+                  {checking ? AdminI18n.t('sources.checking') : AdminI18n.t('sources.checkUpdates')}
                 </Button>
                 <Button disabled={triggering} icon={<Play size={14} />} onClick={() => this.handleTriggerAll()} variant={ButtonVariant.SECONDARY}>
-                  {triggering ? 'Building…' : 'Build All'}
+                  {triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll')}
                 </Button>
               </div>
             )}

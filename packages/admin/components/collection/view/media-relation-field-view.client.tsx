@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { MediaPicker } from '@/components/media/view/media-picker.client';
 import type { IMediaRelationPreview } from '@/components/collection/interfaces/media-relation-preview.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaRelationFieldView extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -22,15 +23,15 @@ export class MediaRelationFieldView extends PureReactor {
     <div className="space-y-3">
       {preview?.url ? (
         <div className="relative w-full aspect-video rounded-[var(--radius)] overflow-hidden border border-slate-200 dark:border-slate-800">
-          <img src={preview.url} alt={preview.filename || 'Selected media'} className="w-full h-full object-cover" />
+          <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className="w-full h-full object-cover" />
         </div>
       ) : selectedIds.length > 0 ? (
         <div className={`px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-semibold ${theme === ThemeMode.DARK ? 'bg-slate-900/50 text-slate-200 border border-slate-800' : 'bg-slate-50 text-slate-600 border border-slate-200'}`}>
-          Selected media ID{hasMany && selectedIds.length > 1 ? 's' : ''}: {selectedLabel}
+          {AdminI18n.t(hasMany && selectedIds.length > 1 ? 'ui.media.selectedIds' : 'ui.media.selectedId', { ids: selectedLabel })}
         </div>
       ) : (
         <div className={`px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-semibold ${theme === ThemeMode.DARK ? 'bg-slate-900/30 text-slate-500 border border-dashed border-slate-800' : 'bg-slate-50 text-slate-400 border border-dashed border-slate-200'}`}>
-          No media selected
+          {AdminI18n.t('ui.media.none')}
         </div>
       )}
 
@@ -40,7 +41,7 @@ export class MediaRelationFieldView extends PureReactor {
         className="inline-flex items-center gap-2 px-4 h-10 rounded-[var(--radius)] bg-indigo-600 text-white text-[11px] font-semibold tracking-wide shadow-sm hover:shadow-md active:scale-[0.99] transition-all"
       >
         <FrameworkIcons.Image size={14} />
-        Select Media
+        {AdminI18n.t('ui.media.select')}
       </button>
 
       {open && (

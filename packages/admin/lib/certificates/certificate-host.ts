@@ -1,4 +1,5 @@
 import { CoercionUtils } from '@fromcode119/core';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One row of the certificates screen, as the admin holds it.
@@ -76,14 +77,14 @@ export class CertificateHost {
   /** What the badge says. Plain words, because "RENEWAL_DUE" is not a sentence. */
   get stateLabel(): string {
     const labels: Record<string, string> = {
-      no_certificate: 'No certificate',
-      waiting_for_dns: 'Waiting for DNS',
-      issuing: 'Issuing',
-      serving: 'Valid',
-      renewal_due: 'Renewal due',
-      failed: 'Failed',
-      expiring: 'Expiring',
-      expired: 'Expired',
+      no_certificate: AdminI18n.t('lib.noCertificate'),
+      waiting_for_dns: AdminI18n.t('lib.waitingForDns'),
+      issuing: AdminI18n.t('lib.certIssuing'),
+      serving: AdminI18n.t('lib.certValid'),
+      renewal_due: AdminI18n.t('lib.renewalDue'),
+      failed: AdminI18n.t('lib.certFailed'),
+      expiring: AdminI18n.t('lib.certExpiring'),
+      expired: AdminI18n.t('lib.certExpired'),
     };
     return labels[this.state] ?? this.state;
   }
@@ -91,12 +92,12 @@ export class CertificateHost {
   /** Which of these a human recognises: "Main address", "Admin console". */
   get roleLabel(): string {
     const labels: Record<string, string> = {
-      primary: 'Main address',
-      alias: 'Alias',
-      platform_admin: 'Admin console',
+      primary: AdminI18n.t('lib.mainAddress'),
+      alias: AdminI18n.t('lib.hostAlias'),
+      platform_admin: AdminI18n.t('lib.adminConsole'),
       platform_api: 'API',
-      platform_frontend: 'Platform storefront',
-      unrouted: 'Not served here',
+      platform_frontend: AdminI18n.t('lib.platformStorefront'),
+      unrouted: AdminI18n.t('lib.notServedHere'),
     };
     return labels[this.role] ?? this.role;
   }
@@ -109,10 +110,10 @@ export class CertificateHost {
    */
   get remainingLabel(): string {
     if (!this.hasCertificate || this.daysRemaining === null) return '';
-    if (this.daysRemaining < 0) return `Expired ${Math.abs(this.daysRemaining)}d ago`;
-    if (this.daysRemaining === 0) return 'Expires today';
-    if (this.daysRemaining === 1) return '1 day left';
-    return `${this.daysRemaining} days left`;
+    if (this.daysRemaining < 0) return AdminI18n.t('lib.expiredDAgo', { abs: Math.abs(this.daysRemaining) });
+    if (this.daysRemaining === 0) return AdminI18n.t('lib.expiresToday');
+    if (this.daysRemaining === 1) return AdminI18n.t('lib.1DayLeft');
+    return AdminI18n.t('lib.daysLeft', { daysRemaining: this.daysRemaining });
   }
 
   /** The date an operator reads, or '' when there is nothing to date. */

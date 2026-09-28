@@ -16,6 +16,7 @@ import { SecurityRecommendationsCard } from '@/app/users/[id]/security/component
 import { DeviceSessionsCard } from '@/app/users/[id]/security/components/view/device-sessions-card.client';
 import { UserApiTokensCard } from '@/app/users/[id]/security/components/view/user-api-tokens-card.client';
 import { AuthActivityCard } from '@/app/users/[id]/security/components/view/auth-activity-card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserSecurityView extends PureReactor {
   @prop declare model: IUserSecurityPageModel;
@@ -23,11 +24,11 @@ export class UserSecurityView extends PureReactor {
   render(): ReactNode {
     const model = this.model;
     if (model.loading) {
-    return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading Security Settings..." /></div>;
+    return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('users.loadingSecuritySettings')} /></div>;
   }
 
   if (!model.user) {
-    return <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">User Not Found</h1><Link href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>Return to Users</Button></Link></div>;
+    return <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1><Link href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToUsers')}</Button></Link></div>;
   }
 
   return (
@@ -39,7 +40,7 @@ export class UserSecurityView extends PureReactor {
         {model.isSelf ? <>
           <DeviceSessionsCard isDark={model.themeMode === ThemeMode.DARK} sessions={model.mySessions} sessionsLoading={model.sessionsLoading} onRevokeOtherSessions={model.revokeOtherSessions} onRevokeSession={model.revokeSession} />
           <UserApiTokensCard createdToken={model.createdToken} isDark={model.themeMode === ThemeMode.DARK} onCreateToken={model.createApiToken} onRevokeToken={model.revokeApiToken} setTokenDays={model.setTokenDays} setTokenName={model.setTokenName} tokenDays={model.tokenDays} tokenName={model.tokenName} tokens={model.myApiTokens} tokensLoading={model.tokensLoading} />
-        </> : <Card title="Self-Service Security Controls" icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}><div className="text-xs font-bold uppercase tracking-tight text-slate-400">Session/device controls and personal API tokens are available only when viewing your own user account.</div></Card>}
+        </> : <Card title={AdminI18n.t('users.selfServiceSecurityControls')} icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}><div className="text-xs font-bold uppercase tracking-tight text-slate-400">{AdminI18n.t('users.sessionDeviceControlsAndPersonal')}</div></Card>}
         {model.canReadLogs ? <AuthActivityCard activity={model.authActivity} activityLoading={model.authActivityLoading} email={String(model.user.email || '')} isDark={model.themeMode === ThemeMode.DARK} /> : null}
       </div>
     </div>

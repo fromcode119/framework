@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The single canonical date-range selector for every admin dashboard.
@@ -16,7 +17,7 @@ export class DayRangeToggle extends PureReactor {
     const value = this.value;
     const onChange = this.onChange;
     const options = this.options ?? [7, 14, 30];
-    const label = this.label ?? 'Range';
+    const label = this.label ?? AdminI18n.t('ui.range');
     return (
       <div className="inline-flex items-center gap-2">
         {label && (
@@ -41,7 +42,7 @@ export class DayRangeToggle extends PureReactor {
                     : 'text-slate-500 hover:text-slate-800 hover:bg-slate-100 dark:text-slate-400 dark:hover:text-slate-200 dark:hover:bg-slate-800'
                 }`}
               >
-                {days}d
+                {AdminI18n.t('ui.rangeDays', { days })}
               </button>
             );
           })}

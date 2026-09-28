@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Button } from '@/components/ui/view/button.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** The linked login-account facet of a person: login status, effective roles, and a link out to the
  * full user record. Surfaces the `partner`/`admin` etc. roles so the person's platform-wide identity
@@ -33,39 +34,39 @@ export class PersonAccountPanel extends PureReactor {
     if (!account) {
       return (
         <div className={card}>
-          <h3 className={heading}>Login account</h3>
-          <p className="text-[13px] font-bold text-slate-400 mb-4">No login account is linked to this person.</p>
+          <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
+          <p className="text-[13px] font-bold text-slate-400 mb-4">{AdminI18n.t('users.noLoginAccountIsLinked')}</p>
           <Button variant={ButtonVariant.SECONDARY} isLoading={granting} disabled={!person.email}
             icon={<FrameworkIcons.Plus size={14} />} onClick={onGrantLogin}
             className="h-9 px-4 rounded-xl font-bold tracking-tight text-[11px]">
-            Create login account
+            {AdminI18n.t('users.createLoginAccount')}
           </Button>
-          {!person.email ? <p className="text-[11px] text-slate-400 mt-2">An email is required to create an account.</p> : null}
+          {!person.email ? <p className="text-[11px] text-slate-400 mt-2">{AdminI18n.t('users.anEmailIsRequiredTo')}</p> : null}
         </div>
       );
     }
 
     return (
       <div className={card}>
-        <h3 className={heading}>Login account</h3>
+        <h3 className={heading}>{AdminI18n.t('users.loginAccount')}</h3>
         <div className="flex items-center gap-2 text-[13px] font-bold text-emerald-500 mb-3">
-          <FrameworkIcons.UserCheck size={16} /> Linked · user #{account.id}
+          <FrameworkIcons.UserCheck size={16} /> {AdminI18n.t('users.linkedUser', { id: account.id })}
         </div>
         <div className="space-y-1.5 mb-4">
           <div className="text-[12px] font-bold text-slate-500">{account.email}</div>
           {account.username ? <div className="text-[11px] text-slate-400">@{account.username}</div> : null}
         </div>
         <div className="mb-4">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">Roles</div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{AdminI18n.t('users.roles')}</div>
           <div className="flex flex-wrap gap-1.5">
             {account.roles.length
               ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)} className="font-bold tracking-tight">{r}</Badge>)
-              : <span className="text-[11px] text-slate-400">No roles</span>}
+              : <span className="text-[11px] text-slate-400">{AdminI18n.t('users.noRoles')}</span>}
           </div>
         </div>
         <Link href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}
           className="inline-flex items-center gap-1.5 text-[12px] font-bold text-indigo-600 hover:text-indigo-700">
-          Open user record <FrameworkIcons.Right size={14} />
+          {AdminI18n.t('users.openUserRecord')} <FrameworkIcons.Right size={14} />
         </Link>
       </div>
     );

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import type { IStructuredNode } from '@/components/collection/fields/interfaces/structured-node.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Renders one SCALAR (or empty) leaf value.
@@ -34,7 +35,7 @@ export class StructuredReadOnlyValue extends PureReactor {
     const no = this.isDark ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-500 border-slate-200';
     return (
       <span title={String(value)} className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${value ? yes : no}`}>
-        {value ? 'Yes' : 'No'}
+        {AdminI18n.t(value ? 'common.yes' : 'common.no')}
       </span>
     );
   }
@@ -67,13 +68,13 @@ export class StructuredReadOnlyValue extends PureReactor {
     const { node } = this;
 
     if (node.kind === StructuredNodeKind.EMPTY) {
-      return <span className={`text-[12px] ${this.absentClass}`}>Not recorded</span>;
+      return <span className={`text-[12px] ${this.absentClass}`}>{AdminI18n.t('ui.structured.notRecorded')}</span>;
     }
 
     const value = node.scalarValue;
 
     if (value === null || value === undefined) {
-      return <span className={`text-[12px] ${this.absentClass}`}>Not recorded</span>;
+      return <span className={`text-[12px] ${this.absentClass}`}>{AdminI18n.t('ui.structured.notRecorded')}</span>;
     }
 
     if (typeof value === 'boolean') return this.renderBoolean(value);
@@ -83,7 +84,7 @@ export class StructuredReadOnlyValue extends PureReactor {
     }
 
     const text = String(value);
-    if (!text) return <span className={`text-[12px] ${this.absentClass}`}>Not recorded</span>;
+    if (!text) return <span className={`text-[12px] ${this.absentClass}`}>{AdminI18n.t('ui.structured.notRecorded')}</span>;
 
     if (StructuredReadOnlyFieldService.isLink(text)) return this.renderLink(text);
 

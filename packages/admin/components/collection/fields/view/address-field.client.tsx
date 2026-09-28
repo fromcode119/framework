@@ -4,6 +4,7 @@ import { Reactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { CountryField } from '@/components/collection/fields/view/country-field.client';
 import { UiFieldUtils } from '@/lib/ui';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Generic, framework-owned postal address editor: recipient name, phone, two address lines,
@@ -48,15 +49,15 @@ export class AddressField extends Reactor {
 
     return (
       <div className="grid gap-3 md:grid-cols-2">
-        <Input label="Recipient name" value={asText(address.recipientName)} onChange={this.onRecipientNameChange} disabled={readOnly} />
-        <Input label="Phone" value={asText(address.phone)} onChange={this.onPhoneChange} disabled={readOnly} />
-        <Input className="md:col-span-2" label="Address line 1" value={asText(address.line1)} onChange={this.onLine1Change} disabled={readOnly} />
-        <Input className="md:col-span-2" label="Address line 2" value={asText(address.line2)} onChange={this.onLine2Change} disabled={readOnly} />
-        <Input label="City" value={asText(address.city)} onChange={this.onCityChange} disabled={readOnly} />
-        <Input label="Region / state" value={asText(address.region)} onChange={this.onRegionChange} disabled={readOnly} />
-        <Input label="Postal code" value={asText(address.postalCode)} onChange={this.onPostalCodeChange} disabled={readOnly} />
+        <Input label={AdminI18n.t('ui.address.recipient')} value={asText(address.recipientName)} onChange={this.onRecipientNameChange} disabled={readOnly} />
+        <Input label={AdminI18n.t('ui.address.phone')} value={asText(address.phone)} onChange={this.onPhoneChange} disabled={readOnly} />
+        <Input className="md:col-span-2" label={AdminI18n.t('ui.address.line1')} value={asText(address.line1)} onChange={this.onLine1Change} disabled={readOnly} />
+        <Input className="md:col-span-2" label={AdminI18n.t('ui.address.line2')} value={asText(address.line2)} onChange={this.onLine2Change} disabled={readOnly} />
+        <Input label={AdminI18n.t('ui.address.city')} value={asText(address.city)} onChange={this.onCityChange} disabled={readOnly} />
+        <Input label={AdminI18n.t('ui.address.region')} value={asText(address.region)} onChange={this.onRegionChange} disabled={readOnly} />
+        <Input label={AdminI18n.t('ui.address.postalCode')} value={asText(address.postalCode)} onChange={this.onPostalCodeChange} disabled={readOnly} />
         <div className="flex w-full flex-col gap-1">
-          <label className={UiFieldUtils.TEXT.LABEL}>Country</label>
+          <label className={UiFieldUtils.TEXT.LABEL}>{AdminI18n.t('ui.address.country')}</label>
           <CountryField value={asText(address.country)} onChange={this.onCountryChange} theme={theme} disabled={readOnly} />
         </div>
       </div>

@@ -7,6 +7,7 @@ import { ActivityMode } from '@/app/activity/enums/activity-mode.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ActivityPageHeader extends PureReactor {
   @prop declare mode: ActivityMode;
@@ -38,8 +39,8 @@ export class ActivityPageHeader extends PureReactor {
       <CompactPageHeader
         theme={theme}
         icon={<FrameworkIcons.Activity size={18} strokeWidth={2.5} />}
-        title={mode === ActivityMode.SYSTEM ? 'System Activity' : 'Security Audit'}
-        subtitle="Global ledger of administrative actions and security events."
+        title={mode === ActivityMode.SYSTEM ? AdminI18n.t('activity.systemActivity') : AdminI18n.t('activity.securityAudit')}
+        subtitle={AdminI18n.t('activity.globalLedgerOfAdministrativeActions')}
         actions={
           <>
             <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
@@ -51,7 +52,7 @@ export class ActivityPageHeader extends PureReactor {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                System Events
+                {AdminI18n.t('activity.systemEvents')}
               </button>
               <button
                 onClick={this.selectSecurityMode}
@@ -61,13 +62,13 @@ export class ActivityPageHeader extends PureReactor {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                Security Audit
+                {AdminI18n.t('activity.securityAudit')}
               </button>
             </div>
             <form onSubmit={this.onSearch} className="flex items-center gap-2">
               <input
                 type="text"
-                placeholder={`Search ${mode} logs...`}
+                placeholder={AdminI18n.t('activity.searchLogs', { mode: mode })}
                 value={this.searchQuery}
                 onChange={this.changeSearchQuery}
                 className={`px-3 h-9 rounded-lg border text-xs font-medium outline-none transition-all w-48 ${
@@ -82,7 +83,7 @@ export class ActivityPageHeader extends PureReactor {
                 className="px-4 h-9 rounded-lg font-semibold text-xs"
                 icon={<FrameworkIcons.Search size={15} />}
               >
-                Filter history
+                {AdminI18n.t('activity.filterHistory')}
               </Button>
             </form>
           </>

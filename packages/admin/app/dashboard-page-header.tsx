@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DashboardPageHeader extends PureReactor {
   @prop declare user: any;
@@ -21,10 +22,10 @@ export class DashboardPageHeader extends PureReactor {
     if (!health) return null;
 
     if (health.error > 0) {
-      return <span className="text-rose-500">{health.error} plugin{health.error === 1 ? '' : 's'} in error</span>;
+      return <span className="text-rose-500">{health.error === 1 ? AdminI18n.t('dashboard.pluginErrorOne') : AdminI18n.t('dashboard.pluginErrorMany', { count: health.error })}</span>;
     }
     if (health.held > 0) {
-      return <span className="text-amber-500">{health.held} plugin{health.held === 1 ? '' : 's'} held for re-approval</span>;
+      return <span className="text-amber-500">{health.held === 1 ? AdminI18n.t('dashboard.pluginHeldOne') : AdminI18n.t('dashboard.pluginHeldMany', { count: health.held })}</span>;
     }
     // Nothing is broken, but this screen is serving an older build than the one installed, and no
     // other surface says so. Production ran a whole release behind for over an hour with every
@@ -32,11 +33,13 @@ export class DashboardPageHeader extends PureReactor {
     if (health.restartPending > 0) {
       return (
         <span className="text-sky-500">
-          {health.restartPending} plugin{health.restartPending === 1 ? '' : 's'} not running the installed version — load it from Plugin Health
+          {health.restartPending === 1
+            ? AdminI18n.t('dashboard.restartPendingOne')
+            : AdminI18n.t('dashboard.restartPendingMany', { count: health.restartPending })}
         </span>
       );
     }
-    return <span className="text-emerald-500">{health.active} of {health.total} plugins active</span>;
+    return <span className="text-emerald-500">{AdminI18n.t('dashboard.pluginsActive', { active: health.active, total: health.total })}</span>;
   }
 
   render(): ReactNode {
@@ -47,7 +50,7 @@ export class DashboardPageHeader extends PureReactor {
       <CompactPageHeader
         theme={theme}
         icon={<FrameworkIcons.Layout size={18} strokeWidth={2.5} />}
-        title={`Hello, ${user?.email?.split('@')[0] || 'Administrator'}`}
+        title={AdminI18n.t('dashboard.hello', { name: user?.email?.split('@')[0] || AdminI18n.t('dashboard.administrator') })}
         subtitle={
           <>
             {status ? <>{status} • </> : null}{user?.email}
@@ -56,7 +59,7 @@ export class DashboardPageHeader extends PureReactor {
         actions={
           <div className="px-4 h-9 rounded-lg border flex items-center gap-2 text-xs font-semibold tracking-tight bg-white border-slate-100 text-slate-500 dark:bg-slate-900 dark:border-slate-800 dark:text-slate-300">
             <FrameworkIcons.Clock size={15} className="text-indigo-500" />
-            {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+            {new Date().toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
           </div>
         }
       />

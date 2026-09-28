@@ -1,3 +1,4 @@
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class AppEnv {
 	static readonly COMPANY_NAME = 'Fromcode';
 	static readonly APP_NAME = 'Atlantis';

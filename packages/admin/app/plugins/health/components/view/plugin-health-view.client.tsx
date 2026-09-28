@@ -10,6 +10,7 @@ import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { PluginRestartPendingList } from '@/app/plugins/health/components/view/plugin-restart-pending-list.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginHealthView extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -35,25 +36,25 @@ export class PluginHealthView extends PureReactor {
     const isDark = this.theme === ThemeMode.DARK;
 
     if (this.loading) {
-      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading platform health" /></div>;
+      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('plugins.list.loadingPlatformHealth')} /></div>;
     }
     if (!this.report) {
       return (
         <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
           <div className="w-16 h-16 bg-slate-100 dark:bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.Activity size={32} className="text-slate-300 dark:text-slate-700" /></div>
-          <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>Health report unavailable</h3>
-          <p className="text-slate-500 font-medium">Could not load the platform health report. Try refreshing.</p>
+          <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.healthReportUnavailable')}</h3>
+          <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.couldNotLoadThePlatform')}</p>
         </div>
       );
     }
 
     const counts = this.report.counts;
     const summaryStats: Array<{ label: string; value: number; tone: string }> = [
-      { label: 'Total', value: counts.total, tone: isDark ? 'text-white' : 'text-slate-900' },
-      { label: 'Active', value: counts.active, tone: 'text-emerald-500' },
-      { label: 'Held', value: counts.held, tone: counts.held > 0 ? 'text-amber-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
-      { label: 'Errors', value: counts.error, tone: counts.error > 0 ? 'text-rose-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
-      { label: 'Inactive', value: counts.inactive, tone: isDark ? 'text-slate-400' : 'text-slate-500' },
+      { label: AdminI18n.t('plugins.list.total'), value: counts.total, tone: isDark ? 'text-white' : 'text-slate-900' },
+      { label: AdminI18n.t('plugins.list.active'), value: counts.active, tone: 'text-emerald-500' },
+      { label: AdminI18n.t('plugins.list.held'), value: counts.held, tone: counts.held > 0 ? 'text-amber-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
+      { label: AdminI18n.t('plugins.list.errors'), value: counts.error, tone: counts.error > 0 ? 'text-rose-500' : (isDark ? 'text-slate-400' : 'text-slate-500') },
+      { label: AdminI18n.t('plugins.list.inactive'), value: counts.inactive, tone: isDark ? 'text-slate-400' : 'text-slate-500' },
     ];
     // A plugin serving an older build than the one installed counts: the report says "attention needed"
     // for it, and this screen used to answer "everything looks healthy" beside that badge.
@@ -70,7 +71,7 @@ export class PluginHealthView extends PureReactor {
           ))}
           <div className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 ${this.report.ok ? (isDark ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50') : (isDark ? 'border-rose-500/20 bg-rose-500/10' : 'border-rose-200 bg-rose-50')}`}>
             {this.report.ok ? <FrameworkIcons.CheckCircle size={13} className="text-emerald-500" /> : <FrameworkIcons.Alert size={13} className="text-rose-500" />}
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${this.report.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{this.report.ok ? 'All healthy' : 'Attention needed'}</span>
+            <span className={`text-[10px] font-semibold uppercase tracking-wider ${this.report.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{this.report.ok ? AdminI18n.t('plugins.list.allHealthy') : AdminI18n.t('plugins.list.attentionNeeded')}</span>
           </div>
         </div>
 
@@ -79,14 +80,14 @@ export class PluginHealthView extends PureReactor {
             <div className="flex items-start gap-3">
               <div className={`rounded-lg p-2 ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}><FrameworkIcons.Alert size={18} /></div>
               <div className="flex-1">
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">Capability Change Detected</h3>
+                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
                 <p className={`mt-1 text-sm font-medium leading-relaxed ${isDark ? 'text-amber-100/90' : 'text-amber-700'}`}>
-                  {counts.held} {counts.held === 1 ? 'plugin is' : 'plugins are'} held pending re-approval after their requested capabilities changed. They stay disabled until an admin re-approves them.
+                  {AdminI18n.t(counts.held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: counts.held })}
                 </p>
               </div>
               <button onClick={this.onReapproveAll} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                 {this.isBusy ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
-                <span>Re-approve all held</span>
+                <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
               </button>
             </div>
           </div>
@@ -94,7 +95,7 @@ export class PluginHealthView extends PureReactor {
 
         {needsAttention ? (
           <div className="space-y-3">
-            <h2 className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Needs attention</h2>
+            <h2 className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.needsAttention')}</h2>
 
             {this.report.held.length > 0 ? (
               <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
@@ -102,8 +103,8 @@ export class PluginHealthView extends PureReactor {
                   const drift = this.drift(entry);
                   // `entry` is API JSON, so `heldReason` is a raw string here — resolve before comparing.
                   const heldLabel = PluginHeldReason.resolve(entry.heldReason) === PluginHeldReason.CAPABILITY_DRIFT
-                    ? 'Needs re-approval'
-                    : 'Held';
+                    ? AdminI18n.t('plugins.list.needsReApproval')
+                    : AdminI18n.t('plugins.list.held');
                   return (
                     <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                       <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'}`}><FrameworkIcons.Shield size={18} strokeWidth={1.5} /></div>
@@ -111,13 +112,13 @@ export class PluginHealthView extends PureReactor {
                         <div className="flex items-center gap-2">
                           <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
                           <Badge variant={BadgeVariant.AMBER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
-                          {drift ? <span title={`Capability change since approval: ${drift}`} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{drift}</span> : null}
+                          {drift ? <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval', { drift: drift })} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{drift}</span> : null}
                         </div>
-                        <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Held pending re-approval of changed capabilities.</p>
+                        <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.heldPendingReApprovalOf')}</p>
                       </div>
                       <button onClick={() => this.onApproveEnable(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[10px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                         {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Shield size={12} />}
-                        <span>Approve &amp; enable</span>
+                        <span>{AdminI18n.t('plugins.list.approveEnable')}</span>
                       </button>
                     </div>
                   );
@@ -141,9 +142,9 @@ export class PluginHealthView extends PureReactor {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
-                        <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />Error</Badge>
+                        <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.list.error')}</Badge>
                       </div>
-                      <p className="text-xs leading-snug truncate text-rose-500 font-medium">{entry.error || 'Plugin failed to initialize.'}</p>
+                      <p className="text-xs leading-snug truncate text-rose-500 font-medium">{entry.error || AdminI18n.t('plugins.list.pluginFailedToInitialize')}</p>
                     </div>
                   </div>
                 ))}
@@ -153,8 +154,8 @@ export class PluginHealthView extends PureReactor {
         ) : (
           <div className="py-12 text-center rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800">
             <div className="w-16 h-16 bg-emerald-50 dark:bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4"><FrameworkIcons.CheckCircle size={32} className="text-emerald-500" /></div>
-            <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>Everything looks healthy</h3>
-            <p className="text-slate-500 font-medium">No held capability changes, no plugin boot failures, and every plugin runs the version installed.</p>
+            <h3 className={`text-lg font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.everythingLooksHealthy')}</h3>
+            <p className="text-slate-500 font-medium">{AdminI18n.t('plugins.list.noHeldCapabilityChangesNo')}</p>
           </div>
         )}
       </div>

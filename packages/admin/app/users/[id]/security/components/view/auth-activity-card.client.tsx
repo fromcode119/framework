@@ -10,6 +10,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { UserSecurityPageService } from '@/app/users/[id]/security/user-security-page-service';
 import type { IAuthActivityEntry } from '@/app/users/[id]/security/interfaces/auth-activity-entry.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class AuthActivityCard extends PureReactor {
   @prop declare activity: IAuthActivityEntry[];
@@ -21,10 +22,10 @@ export class AuthActivityCard extends PureReactor {
     const { activity, activityLoading, email, isDark } = this;
     return (
       <div id="auth-activity">
-        <Card title="Login & Session Activity" icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
+        <Card title={AdminI18n.t('users.loginSessionActivity')} icon={<FrameworkIcons.Activity size={18} className="text-indigo-500" />}>
           <div className="space-y-3">
-            {activityLoading ? <div className="py-4"><Loader label="Loading auth activity..." /></div> : activity.length === 0 ? <div className="text-xs font-bold uppercase tracking-tight text-slate-400 py-4">No recent login/session events for this user.</div> : activity.slice(0, 12).map((entry, index) => { const timestamp = entry.timestamp || entry.createdAt; const level = String(entry.level || '').toUpperCase(); return <div key={entry.id || `${index}-${timestamp || ''}`} className={`p-3 ${AdminClass.SURFACE} ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}><div className="flex items-start justify-between gap-3"><span className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-tight ${UserSecurityPageService.buildActivityLevelClass(level)}`}>{level || 'INFO'}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{timestamp ? new Date(timestamp).toLocaleString() : 'Unknown Time'}</span></div><p className="text-xs font-semibold text-slate-600 dark:text-slate-200 mt-2">{entry.message || 'Activity event'}</p></div>; })}
-            <div className="pt-2"><Link href={AdminConstants.ROUTES.ACTIVITY_FILTER({ mode: 'system', user: email })}><Button variant={ButtonVariant.GHOST} className="font-bold text-xs tracking-tight uppercase">Open Full Global Activity</Button></Link></div>
+            {activityLoading ? <div className="py-4"><Loader label={AdminI18n.t('users.loadingAuthActivity')} /></div> : activity.length === 0 ? <div className="text-xs font-bold uppercase tracking-tight text-slate-400 py-4">{AdminI18n.t('users.noRecentLoginSessionEvents')}</div> : activity.slice(0, 12).map((entry, index) => { const timestamp = entry.timestamp || entry.createdAt; const level = String(entry.level || '').toUpperCase(); return <div key={entry.id || `${index}-${timestamp || ''}`} className={`p-3 ${AdminClass.SURFACE} ${isDark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white'}`}><div className="flex items-start justify-between gap-3"><span className={`px-2 py-1 rounded-lg border text-[10px] font-bold uppercase tracking-tight ${UserSecurityPageService.buildActivityLevelClass(level)}`}>{level || 'INFO'}</span><span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{timestamp ? new Date(timestamp).toLocaleString() : AdminI18n.t('users.unknownTime')}</span></div><p className="text-xs font-semibold text-slate-600 dark:text-slate-200 mt-2">{entry.message || AdminI18n.t('users.activityEvent')}</p></div>; })}
+            <div className="pt-2"><Link href={AdminConstants.ROUTES.ACTIVITY_FILTER({ mode: 'system', user: email })}><Button variant={ButtonVariant.GHOST} className="font-bold text-xs tracking-tight uppercase">{AdminI18n.t('users.openFullGlobalActivity')}</Button></Link></div>
           </div>
         </Card>
       </div>

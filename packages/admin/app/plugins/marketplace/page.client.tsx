@@ -18,6 +18,7 @@ import { MarketplaceLoadingGrid } from '@/app/plugins/marketplace/components/vie
 import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view/marketplace-empty-state.client';
 import { state } from '@fromcode119/react-class-components';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
@@ -106,7 +107,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
     try {
       this.installing = slug;
-      notify(NotificationType.INFO, isUpdate ? 'Updating Plugin' : 'Installing Plugin', `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug} v${targetVersion}...`);
+      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updatingPlugin') : AdminI18n.t('plugins.list.installingPlugin'), `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug} v${targetVersion}...`);
 
       const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(slug, targetVersion);
       // Wait for the background operation to fully complete (handles restart recovery internally)
@@ -117,10 +118,10 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
         await Promise.resolve(triggerRefresh());
       }
       await this.fetchData(true);
-      notify(NotificationType.SUCCESS, isUpdate ? 'Update Complete' : 'Installation Complete', `Plugin "${slug}" v${targetVersion} was ${isUpdate ? 'updated' : 'installed'} successfully.`);
+      notify(NotificationType.SUCCESS, isUpdate ? AdminI18n.t('plugins.list.updateComplete') : AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t(isUpdate ? 'plugins.list.wasUpdated' : 'plugins.list.wasInstalled', { slug, targetVersion }));
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
-      notify(NotificationType.ERROR, isUpdate ? 'Update Failed' : 'Installation Failed', err.message || `Failed to ${isUpdate ? 'update' : 'install'} plugin`);
+      notify(NotificationType.ERROR, isUpdate ? AdminI18n.t('plugins.list.updateFailed') : AdminI18n.t('plugins.list.installationFailed'), err.message || AdminI18n.t(isUpdate ? 'plugins.list.failedToUpdate' : 'plugins.list.failedToInstall'));
     } finally {
       this.installing = null;
     }
@@ -140,9 +141,9 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     try {
       this.updatingAll = true;
-      this.updateAllProgress = `Starting ${updateCount} update${updateCount === 1 ? '' : 's'}...`;
+      this.updateAllProgress = AdminI18n.t('plugins.list.startingUpdates', { count: updateCount });
       const response = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.UPDATE_ALL);
-      if (!response?.operationId) throw new Error(response?.error || 'The batch update could not be started.');
+      if (!response?.operationId) throw new Error(response?.error || AdminI18n.t('plugins.list.batchNotStarted'));
       // The server leads each message with the remaining count ("6 updates remaining — ...") and
       // ends with "restarting the API" — shown verbatim so the operator watches it count down.
       await PluginInstallOperationService.waitForCompletion(response.operationId, (operation) => {
@@ -151,13 +152,13 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
       const settled = await PluginBatchUpdateWaitService.waitUntilSettled(this);
       if (triggerRefresh) await Promise.resolve(triggerRefresh());
       if (settled) {
-        notify(NotificationType.SUCCESS, 'Plugins Updated', 'Every available update is installed and the API is back up.');
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginsUpdated'), AdminI18n.t('plugins.list.everyAvailableUpdateIsInstalled'));
       } else if (this.mounted) {
-        notify(NotificationType.ERROR, 'Update Not Confirmed', 'The updates were applied, but the catalog still reports pending updates. Reload the page to re-check.');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.updateNotConfirmed'), AdminI18n.t('plugins.list.theUpdatesWereAppliedBut'));
       }
     } catch (err: any) {
       console.error('[Marketplace] Batch update failed:', err);
-      notify(NotificationType.ERROR, 'Update All Failed', err.message || 'The batch update did not complete.');
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.updateAllFailed'), err.message || AdminI18n.t('plugins.list.theBatchUpdateDidNot'));
     } finally {
       this.updatingAll = false;
       this.updateAllProgress = '';
@@ -194,13 +195,13 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   }
 
   render(): ReactElement {
-    return <PlatformScopeGate what="The marketplace">{this.renderMarketplace()}</PlatformScopeGate>;
+    return <PlatformScopeGate what={AdminI18n.t('plugins.list.theMarketplace')}>{this.renderMarketplace()}</PlatformScopeGate>;
   }
 
   private renderMarketplace(): ReactElement {
     if (!this.canManagePlatform) {
       return (
-        <PlatformOnlyPanel detail="The marketplace installs plugins and themes onto the container every site runs on, so only a platform admin can browse or install from it. The plugins your site already runs are under Plugins, with each one's own settings." />
+        <PlatformOnlyPanel detail={AdminI18n.t('plugins.list.theMarketplaceInstallsPluginsAnd')} />
       );
     }
 
@@ -212,9 +213,9 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
     const updateCount = filtered.filter((p) => this.hasPendingUpdateFor(p)).length;
     const isDark = theme === ThemeMode.DARK;
     const summary: Array<{ label: string; value: number; tone: string }> = [
-      { label: 'Available', value: filtered.length, tone: isDark ? 'text-white' : 'text-slate-900' },
-      { label: 'Installed', value: installedCount, tone: 'text-emerald-500' },
-      { label: 'Updates', value: updateCount, tone: 'text-amber-500' },
+      { label: AdminI18n.t('plugins.list.available'), value: filtered.length, tone: isDark ? 'text-white' : 'text-slate-900' },
+      { label: AdminI18n.t('plugins.list.installed'), value: installedCount, tone: 'text-emerald-500' },
+      { label: AdminI18n.t('plugins.list.updates'), value: updateCount, tone: 'text-amber-500' },
     ];
 
     return (
@@ -238,7 +239,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
                  messages counting down to the restart. */
               <div className={`flex items-center gap-2 rounded-lg border px-3 py-1.5 text-[11px] font-semibold ${isDark ? 'border-amber-500/30 bg-amber-500/10 text-amber-300' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
                 <span className="h-3 w-3 shrink-0 rounded-full border-2 border-current border-t-transparent animate-spin" />
-                <span className="normal-case tracking-normal">{this.updateAllProgress || 'Updating plugins...'}</span>
+                <span className="normal-case tracking-normal">{this.updateAllProgress || AdminI18n.t('plugins.list.updatingPlugins')}</span>
               </div>
             ) : updateCount > 0 ? (
               <button
@@ -247,7 +248,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
                 onClick={() => this.handleUpdateAll(updateCount)}
                 className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700"
               >
-                Update All ({updateCount})
+                {AdminI18n.t('plugins.list.updateAll', { count: updateCount })}
               </button>
             ) : null}
           </div>

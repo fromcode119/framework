@@ -4,6 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The four things you can do to a site from its own page, in the order you reach for them.
@@ -39,7 +40,7 @@ export class SiteActionBar extends PureReactor {
         isLoading={this.previewing}
         icon={<FrameworkIcons.ExternalLink size={14} />}
       >
-        {this.site.isPrivate ? 'Preview' : 'Visit'}
+        {this.site.isPrivate ? AdminI18n.t('sites.preview') : AdminI18n.t('sites.visit')}
       </Button>
     );
   }
@@ -47,10 +48,10 @@ export class SiteActionBar extends PureReactor {
   render(): ReactNode {
     return (
       <div className="fc-sites__actions">
-        <Button onClick={this.onEnter} isLoading={this.entering} icon={<FrameworkIcons.ArrowRight size={14} />}>Open this site</Button>
+        <Button onClick={this.onEnter} isLoading={this.entering} icon={<FrameworkIcons.ArrowRight size={14} />}>{AdminI18n.t('sites.openThisSite')}</Button>
         {this.renderStorefront()}
-        <Button variant={ButtonVariant.OUTLINE} onClick={this.onExport} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>Export</Button>
-        <Button onClick={this.onSave} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>Save</Button>
+        <Button variant={ButtonVariant.OUTLINE} onClick={this.onExport} isLoading={this.exporting} icon={<FrameworkIcons.Download size={14} />}>{AdminI18n.t('sites.export')}</Button>
+        <Button onClick={this.onSave} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('sites.save')}</Button>
       </div>
     );
   }

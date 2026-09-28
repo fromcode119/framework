@@ -1,9 +1,10 @@
 import { ThemeMode } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class ActivityColumnsFactory {
   static system(theme: ThemeMode) {
     return [
       {
-        header: 'Event',
+        header: AdminI18n.t('activity.event'),
         id: 'event',
         accessor: (row: any) => {
           const levelStyle = row.level === 'ERROR'
@@ -15,7 +16,7 @@ export class ActivityColumnsFactory {
           return (
             <div className="flex flex-col gap-1">
               <span className={`px-2.5 py-1 rounded-lg border text-[10px] font-mono font-semibold w-fit tracking-tighter ${levelStyle}`}>
-                 {row.level}
+                 {AdminI18n.optional(`activity.level.${String(row.level || '').toUpperCase()}`) || row.level}
               </span>
               <span className="text-[9px] font-semibold text-slate-400 tracking-wide pl-1">
                 {String(row.id).includes('-') ? row.id.split('-')[0] : `LOG-${row.id}`}
@@ -25,7 +26,7 @@ export class ActivityColumnsFactory {
         }
       },
       {
-        header: 'Actor',
+        header: AdminI18n.t('activity.actor'),
         id: 'actor',
         accessor: (row: any) => {
           const actor = row.actor_id || row.context?.email || (row.message && row.message.includes('for ') ? row.message.split('for ')[1] : 'SYSTEM');
@@ -39,7 +40,7 @@ export class ActivityColumnsFactory {
               <div className="flex flex-col">
                 <span className="text-[13px] font-semibold text-slate-600 dark:text-white tracking-tight leading-none">{actor}</span>
                 <span className="text-[10px] font-semibold text-slate-400 mt-1 tracking-tight">
-                  {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : 'INTERNAL')}
+                  {row.actor_id ? `ID: ${row.actor_id}` : (row.context?.userId ? `UID: ${row.context.userId}` : AdminI18n.t('activity.internal'))}
                 </span>
               </div>
             </div>
@@ -47,22 +48,22 @@ export class ActivityColumnsFactory {
         }
       },
       {
-        header: 'Resource',
+        header: AdminI18n.t('activity.resource'),
         id: 'target',
         accessor: (row: any) => (
           <div className="flex items-center gap-2">
             <div className="h-1.5 w-1.5 rounded-full bg-indigo-500/60 shadow-[0_0_8px_rgba(99,102,241,0.5)]" />
-            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : 'System'}</span>
+            <span className="font-semibold text-[11px] text-slate-500 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
       {
-        header: 'Timestamp',
+        header: AdminI18n.t('activity.timestamp'),
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">
             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-               {new Date(row.timestamp || row.createdAt).toLocaleTimeString()}
+               {new Date(row.timestamp || row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
             <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.timestamp || row.createdAt).toLocaleDateString()}
@@ -71,7 +72,7 @@ export class ActivityColumnsFactory {
         )
       },
       {
-        header: 'Activity',
+        header: AdminI18n.t('activity.activity'),
         id: 'details',
         accessor: (row: any) => (
           <span className="text-xs font-medium text-slate-500 leading-relaxed block max-w-sm">{row.message}</span>
@@ -83,7 +84,7 @@ export class ActivityColumnsFactory {
   static security(theme: ThemeMode) {
     return [
       {
-        header: 'Status',
+        header: AdminI18n.t('activity.status'),
         id: 'status',
         accessor: (row: any) => {
           const style = row.status === 'violation'
@@ -109,12 +110,12 @@ export class ActivityColumnsFactory {
             <div className="h-9 w-9 bg-indigo-500/10 rounded-xl flex items-center justify-center text-indigo-500 text-[10px] font-semibold">
                {row.pluginSlug ? row.pluginSlug[0].toUpperCase() : 'S'}
             </div>
-            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : 'System'}</span>
+            <span className="font-semibold text-[11px] text-slate-600 dark:text-slate-200 tracking-wide">{row.pluginSlug && row.pluginSlug !== 'system' ? (row.pluginSlug.charAt(0).toUpperCase() + row.pluginSlug.slice(1)) : AdminI18n.t('activity.system')}</span>
           </div>
         )
       },
       {
-        header: 'Action',
+        header: AdminI18n.t('activity.action'),
         id: 'action',
         accessor: (row: any) => (
           <div className="flex flex-col">
@@ -124,12 +125,12 @@ export class ActivityColumnsFactory {
         )
       },
       {
-        header: 'Time',
+        header: AdminI18n.t('activity.time'),
         id: 'timestamp',
         accessor: (row: any) => (
           <div className="flex flex-col">
             <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-300">
-               {new Date(row.createdAt).toLocaleTimeString()}
+               {new Date(row.createdAt).toLocaleTimeString(AdminI18n.locale)}
             </span>
             <span className="text-[8px] font-semibold text-slate-400 tracking-wide mt-0.5 italic">
                {new Date(row.createdAt).toLocaleDateString()}

@@ -3,6 +3,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop } from '@fromcode119/react-class-components';
 import type { ElementType } from 'react';
 import { CheckCircle, Clock, Loader2, XCircle } from 'lucide-react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BuildStatusBadge extends AdminComponent {
   declare props: { status: string };
@@ -13,25 +14,25 @@ export class BuildStatusBadge extends AdminComponent {
       building: {
         bg: 'bg-amber-100 dark:bg-amber-950/60',
         icon: Loader2,
-        label: 'Building',
+        label: AdminI18n.t('sources.building'),
         text: 'text-amber-700 dark:text-amber-300',
       },
       failed: {
         bg: 'bg-rose-100 dark:bg-rose-950/60',
         icon: XCircle,
-        label: 'Failed',
+        label: AdminI18n.t('sources.failed'),
         text: 'text-rose-700 dark:text-rose-300',
       },
       pending: {
         bg: 'bg-slate-100 dark:bg-slate-800',
         icon: Clock,
-        label: 'Pending',
+        label: AdminI18n.t('sources.pending'),
         text: 'text-slate-600 dark:text-slate-400',
       },
       success: {
         bg: 'bg-emerald-100 dark:bg-emerald-950/60',
         icon: CheckCircle,
-        label: 'Success',
+        label: AdminI18n.t('sources.success'),
         text: 'text-emerald-700 dark:text-emerald-300',
       },
     };

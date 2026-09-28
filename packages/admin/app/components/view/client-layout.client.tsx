@@ -1,9 +1,10 @@
 import type { ReactNode } from 'react';
 import { ClientType } from '@fromcode119/core/client';
-import { Reactor, prop } from '@fromcode119/react-class-components';
+import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import * as ReactorRuntime from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@fromcode119/react';
 import { AdminLocaleSync } from '@/app/components/view/admin-locale-sync.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { ThemeProvider } from '@/components/view/theme-context.client';
 import { AdminRuntimeProvider } from '@/components/view/admin-runtime-provider.client';
 import * as SharedComponents from '@/components';
@@ -31,6 +32,24 @@ export class ClientLayout extends Reactor {
   private static readonly installed = ClientLayout.install();
 
   @prop declare children: ReactNode;
+
+  /**
+   * The console's language. The tree below is keyed by it, so a change re-renders every screen in the
+   * new language. The first render matches the server's (English); the remembered language is applied
+   * right after mount, and `AdminLocaleSync` then confirms it against the setting.
+   */
+  @state private locale = AdminI18n.locale;
+  private unsubscribeLocale: (() => void) | null = null;
+
+  componentDidMount(): void {
+    this.unsubscribeLocale = AdminI18n.subscribe((locale) => { this.locale = locale; });
+    const remembered = AdminI18n.remembered();
+    if (remembered) AdminI18n.setLocale(remembered);
+  }
+
+  componentWillUnmount(): void {
+    this.unsubscribeLocale?.();
+  }
 
   private static install(): boolean {
     AdminIconRegistryBootstrapService.install();
@@ -68,7 +87,7 @@ export class ClientLayout extends Reactor {
           <ThemeProvider>
             <AdminRuntimeProvider>
               <AdminPluginRuntimeProvider>
-                <AppearanceShellHostShim>{this.children}</AppearanceShellHostShim>
+                <AppearanceShellHostShim key={this.locale}>{this.children}</AppearanceShellHostShim>
               </AdminPluginRuntimeProvider>
             </AdminRuntimeProvider>
           </ThemeProvider>

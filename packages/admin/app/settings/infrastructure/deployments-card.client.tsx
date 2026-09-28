@@ -10,6 +10,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { AdminDeployClient } from '@/lib/settings/admin-deploy-client';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * How a release replaces the running apps — and whether this box can do it without downtime.
@@ -37,7 +38,7 @@ export class DeploymentsCard extends AdminComponent {
       this.mode = DeployMode.resolve(answer.mode).value;
       this.capacity = { fits: answer.fits, summary: answer.summary };
     } catch (err: any) {
-      this.loadError = err?.message || 'The deploy capacity could not be read.';
+      this.loadError = err?.message || AdminI18n.t('settings.infrastructure.theDeployCapacityCouldNot');
     } finally {
       this.loading = false;
     }
@@ -52,9 +53,9 @@ export class DeploymentsCard extends AdminComponent {
     this.saving = true;
     try {
       await AdminSystemSettingsClient.update({ [SystemConstants.META_KEY.DEPLOY_MODE]: this.mode });
-      this.runtime.notify.addNotification({ title: 'Deploy mode saved', message: 'The next deploy uses it.', type: NotificationType.SUCCESS });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('settings.infrastructure.deployModeSaved'), message: AdminI18n.t('settings.infrastructure.theNextDeployUsesIt'), type: NotificationType.SUCCESS });
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Deploy mode not saved', message: err?.message || 'The setting could not be saved.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('settings.infrastructure.deployModeNotSaved'), message: err?.message || AdminI18n.t('settings.infrastructure.theSettingCouldNotBe'), type: NotificationType.ERROR });
     } finally {
       this.saving = false;
     }
@@ -66,15 +67,14 @@ export class DeploymentsCard extends AdminComponent {
     const rolling = this.mode === DeployMode.ROLLING.value;
     const tone = this.capacity.fits ? 'text-emerald-600 dark:text-emerald-400' : 'text-amber-600 dark:text-amber-400';
     const headline = this.capacity.fits
-      ? 'This server has room for a rolling deploy.'
-      : rolling ? 'Not enough memory for a rolling deploy right now — deploys will restart instead.' : 'Not enough memory for a rolling deploy right now.';
+      ? AdminI18n.t('settings.infrastructure.rollingFits')
+      : rolling ? AdminI18n.t('settings.infrastructure.rollingWillRestart') : AdminI18n.t('settings.infrastructure.rollingNoRoom');
     return (
       <div className="mt-3 space-y-1 text-xs">
         <p className={`font-semibold ${tone}`}>{headline}</p>
-        <p className="text-slate-500">Measured now: {this.capacity.summary}.</p>
+        <p className="text-slate-500">{AdminI18n.t('settings.infrastructure.measuredNow', { summary: this.capacity.summary })}</p>
         <p className="text-slate-500">
-          Either mode: a release with new database migrations always restarts (the old version cannot keep serving
-          a changed schema), and the gateway itself restarts for a second or two.
+          {AdminI18n.t('settings.infrastructure.eitherModeAReleaseWith')}
         </p>
       </div>
     );
@@ -82,13 +82,13 @@ export class DeploymentsCard extends AdminComponent {
 
   render(): ReactNode {
     return (
-      <Card title="Deployments">
+      <Card title={AdminI18n.t('settings.infrastructure.deployments')}>
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Refresh}
-          title="How a release replaces the running apps"
+          title={AdminI18n.t('settings.infrastructure.howAReleaseReplacesThe')}
           stacked
-          description="Restart: every app is recreated at once, and every site is down for about 45 seconds. Rolling: one app at a time, the new copy serving before the old one stops — no downtime, but it needs spare memory for a second copy of the largest app while it is swapped. Plugin processes run in the extension-host and carry over either way; a rolling deploy leaves the extension-host itself on its version, and it moves to a new one on the next restart deploy."
+          description={AdminI18n.t('settings.infrastructure.restartEveryAppIsRecreated')}
         >
           <div className="flex items-center gap-3">
             <div className="w-full md:w-72">
@@ -98,12 +98,12 @@ export class DeploymentsCard extends AdminComponent {
                 onChange={this.onMode}
                 disabled={this.loading}
                 options={[
-                  { value: DeployMode.RESTART.value, label: 'Restart — about 45 s of downtime' },
-                  { value: DeployMode.ROLLING.value, label: 'Rolling — no downtime' },
+                  { value: DeployMode.RESTART.value, label: AdminI18n.t('settings.infrastructure.restartAbout45SOf') },
+                  { value: DeployMode.ROLLING.value, label: AdminI18n.t('settings.infrastructure.rollingNoDowntime') },
                 ]}
               />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={this.loading} icon={<FrameworkIcons.Save size={13} />}>Save</Button>
+            <Button onClick={this.save} isLoading={this.saving} disabled={this.loading} icon={<FrameworkIcons.Save size={13} />}>{AdminI18n.t('settings.infrastructure.save')}</Button>
           </div>
           {this.verdict()}
         </SettingRow>

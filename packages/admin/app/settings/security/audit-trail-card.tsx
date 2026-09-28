@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/security/setting-row';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The audit trail's own controls. Every plugin database write is recorded in the audit log
@@ -28,12 +29,12 @@ export class AuditTrailCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="Audit Trail">
+      <Card title={AdminI18n.t('settings.security.auditTrail')}>
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Database}
-          title="Tables Excluded From Write Auditing"
-          description="Physical table names, comma separated. Plugin database writes to these tables are not recorded in the audit log — meant for high-volume telemetry tables whose per-row writes would drown the trail. Clear it and every plugin write is audited. Applies within a minute of saving."
+          title={AdminI18n.t('settings.security.tablesExcludedFromWriteAuditing')}
+          description={AdminI18n.t('settings.security.physicalTableNamesCommaSeparated')}
         >
           <Input
             className="w-80"

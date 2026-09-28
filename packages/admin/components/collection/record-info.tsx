@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RecordInfo extends PureReactor {
   @prop declare id: string;
@@ -10,21 +11,21 @@ export class RecordInfo extends PureReactor {
   render(): ReactNode {
     const { id, createdAt, updatedAt } = this;
   return (
-    <Card title="Record Info">
+    <Card title={AdminI18n.t('collection.info.title')}>
       <div className="space-y-4">
         <div className="flex justify-between items-center text-xs">
-          <span className="text-slate-400 font-semibold tracking-wide">Identifier</span>
+          <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.id')}</span>
           <span className="text-slate-500 font-medium tracking-tighter bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-lg">{id}</span>
         </div>
         {createdAt && (
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-400 font-semibold tracking-wide">Created</span>
+            <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.created')}</span>
             <span className="text-slate-500 font-medium">{new Date(createdAt).toLocaleString()}</span>
           </div>
         )}
         {updatedAt && (
           <div className="flex justify-between items-center text-xs">
-            <span className="text-slate-400 font-semibold tracking-wide">Last Update</span>
+            <span className="text-slate-400 font-semibold tracking-wide">{AdminI18n.t('collection.info.updated')}</span>
             <span className="text-slate-500 font-medium">{new Date(updatedAt).toLocaleString()}</span>
           </div>
         )}

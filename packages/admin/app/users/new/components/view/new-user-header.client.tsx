@@ -5,6 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewUserHeader extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -17,8 +18,8 @@ export class NewUserHeader extends PureReactor {
       <CompactPageHeader
         theme={this.theme}
         backHref="/users"
-        title="Create user"
-        subtitle="Create a user account and assign roles."
+        title={AdminI18n.t('users.createUser2')}
+        subtitle={AdminI18n.t('users.createAUserAccountAnd')}
         actions={
           <>
             <Button
@@ -26,7 +27,7 @@ export class NewUserHeader extends PureReactor {
               className="px-4 h-9 rounded-lg font-semibold text-xs"
               onClick={this.onCancel}
             >
-              Cancel
+              {AdminI18n.t('users.cancel')}
             </Button>
             <Button
               className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
@@ -34,7 +35,7 @@ export class NewUserHeader extends PureReactor {
               isLoading={this.saving}
               onClick={(e: FormEvent) => this.onSubmit(e)}
             >
-              Create user
+              {AdminI18n.t('users.createUser2')}
             </Button>
           </>
         }

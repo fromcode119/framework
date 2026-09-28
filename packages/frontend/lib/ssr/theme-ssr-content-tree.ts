@@ -25,13 +25,15 @@ export class ThemeSsrContentTree {
     style: Record<string, string> | null;
     /** A 404 document: the override chain around `NotFoundBody` instead of the content slots. */
     notFoundPath?: string;
+    /** The document's locale, so the server's 404 body speaks the language the browser will. */
+    locale?: string;
   }): unknown {
-    const { runtime, content, className, style, notFoundPath } = args;
+    const { runtime, content, className, style, notFoundPath, locale } = args;
     const { createElement } = runtime.react;
     const wrapper = { className, style: style ?? undefined };
     const entry = content as Record<string, unknown> | null;
 
-    if (notFoundPath !== undefined) return createElement('div', wrapper, ThemeSsrContentTree.buildNotFound(runtime, notFoundPath));
+    if (notFoundPath !== undefined) return createElement('div', wrapper, ThemeSsrContentTree.buildNotFound(runtime, notFoundPath, locale));
     if (entry?.recipe) return createElement('div', wrapper);
 
     const Slot = runtime.frameworkReact.Slot;
@@ -48,12 +50,12 @@ export class ThemeSsrContentTree {
   }
 
   /** `framework.page.404` → `frontend.page.404` → `NotFoundBody`, exactly as `StorefrontPageTree.renderNotFound`. */
-  private static buildNotFound(runtime: ThemeSsrRuntime, path: string): unknown {
+  private static buildNotFound(runtime: ThemeSsrRuntime, path: string, locale?: string): unknown {
     const { createElement } = runtime.react;
     const { Override, NotFoundBody } = runtime.frameworkReact;
     const props = { path };
     const [framework, theme] = StorefrontContentContract.NOT_FOUND_OVERRIDES;
-    return createElement(Override, { key: 'not-found', name: framework, props, fallback: createElement(Override, { name: theme, props, fallback: createElement(NotFoundBody, {}) }) });
+    return createElement(Override, { key: 'not-found', name: framework, props, fallback: createElement(Override, { name: theme, props, fallback: createElement(NotFoundBody, { locale }) }) });
   }
 
   /**

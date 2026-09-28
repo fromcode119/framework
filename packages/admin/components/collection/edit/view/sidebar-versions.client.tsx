@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SidebarVersions extends PureReactor {
   @prop declare revisions: any[];
@@ -27,10 +28,10 @@ export class SidebarVersions extends PureReactor {
   formData
 } = this;
   return (
-    <Card title="Version History">
+    <Card title={AdminI18n.t('collection.edit.versions')}>
       <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
           {revisions.length === 0 && !revisionsLoading && (
-            <p className="text-[10px] text-slate-400 font-semibold italic py-2">No versions recorded yet.</p>
+            <p className="text-[10px] text-slate-400 font-semibold italic py-2">{AdminI18n.t('collection.edit.noVersions')}</p>
           )}
           {revisions.map((v, i) => (
             <div
@@ -55,7 +56,7 @@ export class SidebarVersions extends PureReactor {
                           className="text-[11px] font-semibold text-indigo-500 opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1 shrink-0"
                       >
                           <FrameworkIcons.Refresh size={8} />
-                          Restore
+                          {AdminI18n.t('collection.edit.restore')}
                       </button>
                     )}
                   </div>
@@ -76,7 +77,7 @@ export class SidebarVersions extends PureReactor {
               onClick={loadMoreRevisions}
               className="w-full py-3 text-[10px] font-bold uppercase tracking-wide text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
             >
-              Load More History
+              {AdminI18n.t('collection.edit.loadMoreVersions')}
             </button>
           )}
       </div>
