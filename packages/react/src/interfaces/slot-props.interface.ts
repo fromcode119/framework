@@ -11,4 +11,10 @@ export interface ISlotProps {
    * body, so a crash is visible to the operator rather than a blank page.
    */
   errorFallback?: (identity: { pluginSlug?: string; componentName?: string }) => ReactNode;
+  /**
+   * Which contributions to render, by the plugin that registered each. Unset renders all. The admin
+   * uses it on its collection ACTION slots: an action a plugin adds there calls that plugin's own
+   * routes, so it is offered only to a user who may use them.
+   */
+  include?: (contribution: { pluginSlug: string }) => boolean;
 }

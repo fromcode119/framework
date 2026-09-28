@@ -12,7 +12,9 @@ export class Slot extends Reactor {
     return (
       <SlotsContext.Context.Consumer>
         {(slots) => {
-          const components = slots[this.props.name] || [];
+          const registered = slots[this.props.name] || [];
+          const include = this.props.include;
+          const components = include ? registered.filter((item) => include({ pluginSlug: String(item?.pluginSlug ?? '') })) : registered;
           if (components.length === 0) return <>{this.props.fallback}</>;
           return <>{components.map((item, index) => this.renderSlotComponent(item, index))}</>;
         }}
