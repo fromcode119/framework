@@ -10,6 +10,7 @@ import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Shown on a deployment with NO sites: this installation IS one site, and the operator can make it
@@ -49,16 +50,14 @@ export class AdoptSiteCard extends AdminComponent {
       return (
         <Card title={AdminI18n.t('sites.adoptedRestartRequired')} icon={<FrameworkIcons.CheckCircle size={16} />}>
           <p className="fc-sites__text">
-            This deployment is now site <strong>{this.outcome.tenant?.slug}</strong>: {stamped.reduce((sum, [, n]) => sum + n, 0)} rows across {stamped.length} tables
-            were stamped and {this.outcome.members} accounts became members. Tenancy is decided when the API starts, so until it
-            restarts this deployment keeps running as a single site.
+            <AdminRichText k="sites.adoptedOutcome" vars={{ slug: this.outcome.tenant?.slug, rows: stamped.reduce((sum, [, n]) => sum + n, 0), tables: stamped.length, members: this.outcome.members }} />
           </p>
           <div className="fc-sites__actions">
             <RestartApiAction label={AdminI18n.t('sites.restartTheApiToTurn')} />
           </div>
           {unassigned.length > 0 ? (
             <p className="fc-sites__text fc-sites__text--warn">
-              Rows still without an owner (they will be INVISIBLE once isolation is on): {unassigned.map(([table, n]) => `${table} (${n})`).join(', ')}.
+              {AdminI18n.t('sites.rowsWithoutOwner', { tables: unassigned.map(([table, n]) => `${table} (${n})`).join(', ') })}
             </p>
           ) : null}
         </Card>
@@ -67,9 +66,7 @@ export class AdoptSiteCard extends AdminComponent {
     return (
       <Card title={AdminI18n.t('sites.thisDeploymentIsNotMulti')} icon={<FrameworkIcons.Globe size={16} />}>
         <p className="fc-sites__text">
-          There are no sites because everything here belongs to ONE site — this one. Adopting turns it into the platform's first site in place:
-          every existing row is stamped with the new site's id, every account becomes a member with the roles it already has, and the active
-          plugins and theme become the site's. Nothing is copied or moved. <strong>{AdminI18n.t('sites.theApiMustBeRestarted')}</strong>
+          {AdminI18n.t('sites.adoptExplained')} <strong>{AdminI18n.t('sites.theApiMustBeRestarted')}</strong>
         </p>
         <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
         <div className="fc-sites__actions">

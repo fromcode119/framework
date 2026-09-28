@@ -55,7 +55,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
             <div className="flex items-center gap-3">
               <div className={`h-3 w-3 rounded-full ${themeDetail.state === ThemeState.ACTIVE ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 'bg-slate-500'}`} />
               <span className={`text-sm font-semibold uppercase tracking-tight ${themeDetail.state === ThemeState.ACTIVE ? 'text-green-500' : 'text-slate-500'}`}>
-                System {themeDetail.state.value}
+                {AdminI18n.t('themes.systemState', { state: themeDetail.state === ThemeState.ACTIVE ? AdminI18n.t('themes.stateActive') : themeDetail.state.value })}
               </span>
             </div>
           </div>

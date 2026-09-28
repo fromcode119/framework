@@ -37,7 +37,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               <div>
                 <h4 className={`text-sm font-bold uppercase tracking-wider leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>{AdminI18n.t('themes.upgradeAvailable')}</h4>
                 <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-amber-500/70' : 'text-amber-700'}`}>
-                  v{theme.version} brings new design improvements and features.
+                  {AdminI18n.t('themes.versionBringsImprovements', { version: theme.version })}
                 </p>
               </div>
             </div>
@@ -114,7 +114,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
               ) : hasUpdate ? (
                 <>
                   <FrameworkIcons.Clock size={18} strokeWidth={2.5} />
-                  Update Now
+                  {AdminI18n.t('themes.updateNow')}
                 </>
               ) : (
                 <>

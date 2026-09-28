@@ -114,14 +114,14 @@ export class MediaToolbar extends PureReactor {
                       variant={ButtonVariant.GHOST}
                       onClick={this.onClearSelection}
                     >
-                      Clear ({this.selectedCount})
+                      {AdminI18n.t('media.clearCount', { count: this.selectedCount })}
                     </Button>
                     <Button
                       className="px-4 h-9 rounded-lg font-semibold text-xs text-white whitespace-nowrap"
                       onClick={this.onShareSelected}
                       icon={<FrameworkIcons.Share size={15} strokeWidth={3} />}
                     >
-                      Share {this.selectedCount}
+                      {AdminI18n.t('media.shareCount', { count: this.selectedCount })}
                     </Button>
                   </>
                 ) : null}

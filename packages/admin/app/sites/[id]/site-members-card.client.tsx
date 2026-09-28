@@ -146,7 +146,7 @@ export class SiteMembersCard extends AdminComponent {
               </div>
               <div className="flex-1 min-w-0">
                 <span className={`text-[13px] font-semibold tracking-tight truncate ${this.isDark ? 'text-white' : 'text-slate-900'}`}>
-                  {member.email || <em className="font-normal text-slate-500">deleted account (id {member.userId})</em>}
+                  {member.email || <em className="font-normal text-slate-500">{AdminI18n.t('sites.deletedAccount', { id: member.userId })}</em>}
                 </span>
               </div>
               <div className="flex items-center gap-2.5 shrink-0">

@@ -40,7 +40,7 @@ export class MediaActivityPanel extends MediaActivityPanelSections {
             </span>
           ) : (
             <span className="inline-flex items-center gap-2 text-[11px] opacity-60">
-              <FrameworkIcons.Activity size={13} /> Everything sent, across all shares
+              <FrameworkIcons.Activity size={13} /> {AdminI18n.t('media.everythingSentAcrossAllShares')}
             </span>
           )}
           {this.renderRange(dark)}

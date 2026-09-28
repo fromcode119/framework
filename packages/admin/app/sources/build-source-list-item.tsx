@@ -114,15 +114,15 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                     */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span className="text-slate-500 dark:text-slate-400">
-                      Installed:{' '}
+                      {AdminI18n.t('sources.installedLabel')}{' '}
                       <strong className="font-semibold text-slate-900 dark:text-white">
                         {this.versions?.installed ? `v${this.versions.installed}` : AdminI18n.t('sources.notInstalled')}
                       </strong>
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                      Last built:{' '}
+                      {AdminI18n.t('sources.lastBuiltLabel')}{' '}
                       <strong className="font-semibold text-slate-900 dark:text-white">
-                        {this.versions?.built ? `v${this.versions.built}` : 'never'}
+                        {this.versions?.built ? `v${this.versions.built}` : AdminI18n.t('sources.never')}
                       </strong>
                     </span>
                     {this.versions?.installed && this.versions?.built && this.versions.installed !== this.versions.built ? (

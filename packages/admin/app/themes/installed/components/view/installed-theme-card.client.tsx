@@ -53,7 +53,7 @@ export class InstalledThemeCard extends PureReactor {
 
         <div className="flex items-center gap-1 shrink-0">
           {updateVersion && canManage ? (
-            <button onClick={() => onUpdate(theme.slug)} title={AdminI18n.t('themes.upgradeToV', { updateVersion: updateVersion })} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />Upgrade</button>
+            <button onClick={() => onUpdate(theme.slug)} title={AdminI18n.t('themes.upgradeToV', { updateVersion: updateVersion })} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />{AdminI18n.t('themes.upgrade')}</button>
           ) : null}
           {isActive ? (
             <>

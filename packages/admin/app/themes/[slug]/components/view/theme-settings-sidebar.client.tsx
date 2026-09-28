@@ -73,7 +73,7 @@ export class ThemeSettingsSidebar extends Reactor {
               className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide transition ${adminTheme === ThemeMode.DARK ? 'bg-white/10 text-slate-200 hover:bg-white/15' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'}`}
             >
               <FrameworkIcons.ExternalLink size={11} />
-              Open Site
+              {AdminI18n.t('themes.openSite')}
             </a>
           </div>
           {previewSwatches.length === 0 ? (

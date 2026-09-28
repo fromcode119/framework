@@ -67,7 +67,7 @@ export class CertificateHostTable extends AdminComponent {
     const dark = this.isDark;
     return (
       <p className={`mt-0.5 text-[11px] leading-snug ${dark ? 'text-amber-400' : 'text-amber-700'}`}>
-        Point {entry.host} at {addresses.join(' and ')}, then this is retried automatically.
+        {AdminI18n.t('certificates.pointHostAt', { host: entry.host, addresses: addresses.join(', ') })}
       </p>
     );
   }
@@ -86,7 +86,7 @@ export class CertificateHostTable extends AdminComponent {
       if (entry.coveredByHost) {
         return (
           <span className={`text-[11px] ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-            Served by the wildcard on {entry.coveredByHost}{entry.coveredByExpiryDate ? ` · until ${entry.coveredByExpiryDate}` : ''}
+            {entry.coveredByExpiryDate ? AdminI18n.t('certificates.servedByWildcardUntil', { host: entry.coveredByHost, date: entry.coveredByExpiryDate }) : AdminI18n.t('certificates.servedByWildcard', { host: entry.coveredByHost })}
           </span>
         );
       }

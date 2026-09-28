@@ -157,7 +157,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                         {installed && hasUpdate && (
                           <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
                               <div className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                              <span className={`text-[11px] font-bold uppercase tracking-wide leading-none ${theme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-700'}`}>Update Available v{t.version}</span>
+                              <span className={`text-[11px] font-bold uppercase tracking-wide leading-none ${theme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-700'}`}>{AdminI18n.t('themes.updateAvailableVersion', { version: t.version })}</span>
                           </div>
                         )}
 
@@ -168,7 +168,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border text-slate-400 hover:bg-slate-50 hover:text-indigo-600 shadow-sm'}`}
                             >
                               <FrameworkIcons.Check size={18} strokeWidth={3} />
-                              Manage Theme
+                              {AdminI18n.t('themes.manageTheme')}
                             </button>
                           ) : hasUpdate ? (
                             <button
@@ -176,7 +176,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Clock size={18} strokeWidth={3} />
-                              Upgrade Now
+                              {AdminI18n.t('themes.upgradeNow')}
                             </button>
                           ) : (
                             <button

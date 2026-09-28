@@ -118,8 +118,8 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
       <Card className={`px-4 py-3 ${AdminClass.SURFACE}`}>
         <div className="mb-2 flex items-center gap-4">
           <p className="text-[13px] font-semibold flex-1">{AdminI18n.t('media.opensAndDownloadsPerDay')}</p>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> Opens</span>
-          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> Downloads</span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#6366f1' }} /> {AdminI18n.t('media.opens')}</span>
+          <span className="inline-flex items-center gap-1.5 text-[10px] opacity-60"><span className="h-2 w-2 rounded-full" style={{ background: '#10b981' }} /> {AdminI18n.t('media.downloads')}</span>
         </div>
         <PluginTrendChart
           xLabels={ticks}

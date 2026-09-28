@@ -9,6 +9,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * This SITE's own Cloudflare API token, for DNS-01 and wildcard orders.
@@ -101,9 +102,7 @@ export class CertificateDnsTokenCard extends AdminComponent<{
     return (
       <Card title={AdminI18n.t('certificates.cloudflareApiToken')}>
         <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          Needed to order a certificate proved through DNS — the wildcard (<code>*.example.com</code>)
-          variant, and any domain behind a proxy or CDN. The token needs Zone → DNS → Edit on this
-          site&rsquo;s zone; it is stored encrypted and is never shown again once saved.
+          <AdminRichText k="certificates.dnsTokenHint" />
         </p>
 
         <label className={label}>{AdminI18n.t('certificates.thisSiteSToken')}</label>

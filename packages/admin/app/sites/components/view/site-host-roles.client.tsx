@@ -3,6 +3,7 @@ import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Select } from '@/components/ui/view/select.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * What each of this site's hosts answers with.
@@ -61,8 +62,7 @@ export class SiteHostRoles extends AdminComponent<{
       <div className="fc-site-form__block">
         <span className="fc-site-form__label">{AdminI18n.t('sites.whatEachHostServes')}</span>
         <p className="fc-site-form__hint">
-          Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves
-          {this.props.isWorkspace ? AdminI18n.t('sites.theAdminConsole') : AdminI18n.t('sites.theStorefront')} like any other unless you say otherwise.
+          <AdminRichText k={this.props.isWorkspace ? 'sites.hostRolesHintWorkspace' : 'sites.hostRolesHintSite'} />
         </p>
         {/* Its own full-width block, below the identity grid. As one grid cell it squeezed every
             hostname to a single letter and stretched the row, pushing State / Visible to /

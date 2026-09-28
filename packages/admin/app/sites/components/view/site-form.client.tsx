@@ -12,6 +12,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * The fields that identify a site and say what it runs. Shared by New and Detail.
@@ -198,8 +199,7 @@ export class SiteForm extends PureReactor {
           {values.isWorkspace ? (
             <Explanation>
               <p>
-                A workspace is a console, so it is never listed publicly. Search indexing for its domain
-                follows{' '}
+                {AdminI18n.t('sites.workspaceNeverListed')}{' '}
                 <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</Link>.
               </p>
             </Explanation>
@@ -242,7 +242,7 @@ export class SiteForm extends PureReactor {
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it
              cannot change without rewriting them all. Shown as the fact it is, rather than as a greyed
              out input that reads like something that ought to work. */
-          <p className="fc-site-form__meta">Site id <code>{values.id}</code> — fixed for the life of the site. Rename with the slug and hosts above.</p>
+          <p className="fc-site-form__meta"><AdminRichText k="sites.siteIdFixed" vars={{ id: values.id }} /></p>
         )}
         {/* No word here about "api." aliases: the name stopped choosing a host's role (TenantRecord.roleFor
             reads only the declared role), so that promise now contradicted the list right above it. */}
@@ -265,8 +265,8 @@ export class SiteForm extends PureReactor {
             )}
             <div className="fc-site-form__block">
               <span className="fc-site-form__label">
-                Plugins this site runs
-                <span className="fc-site-form__count">{values.plugins.length} of {inventory.plugins.length}</span>
+                {AdminI18n.t('sites.pluginsThisSiteRuns')}
+                <span className="fc-site-form__count">{AdminI18n.t('sites.countOf', { count: values.plugins.length, total: inventory.plugins.length })}</span>
               </span>
               {inventory.plugins.length === 0 ? <span className="fc-sites__none">{AdminI18n.t('sites.noPluginsAreInstalledOn')}</span> : null}
               {inventory.plugins.length > SiteForm.SEARCH_THRESHOLD ? (

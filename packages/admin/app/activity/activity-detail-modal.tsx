@@ -47,7 +47,7 @@ export class ActivityDetailModal extends PureReactor {
                       {AdminI18n.t('activity.eventDetails')}
                     </h3>
                     <p className="text-[10px] font-semibold text-slate-500 tracking-wide leading-none mt-1">
-                      Log Signature: {selectedLog.id}
+                      {AdminI18n.t('activity.logSignature', { id: selectedLog.id })}
                     </p>
                   </div>
                </div>

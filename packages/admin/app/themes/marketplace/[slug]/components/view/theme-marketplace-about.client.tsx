@@ -18,7 +18,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
       <>
         <div className="space-y-3">
           <h3 className={`text-[11px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
-            About {theme.name}
+            {AdminI18n.t('themes.aboutName', { name: theme.name })}
           </h3>
           <p className={`text-base font-medium leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
             {theme.description}
@@ -38,7 +38,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
                 <div key={idx} className="space-y-3">
                   <div className="flex items-center gap-3">
                     <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[9px] font-semibold rounded-lg uppercase tracking-wide">v{log.version}</Badge>
-                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Released {log.date}</span>
+                    <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.releasedOn', { date: log.date })}</span>
                   </div>
                   <div className={`${AdminClass.SURFACE} overflow-hidden`}>
                     <ul className={`divide-y ${adminTheme === ThemeMode.DARK ? 'divide-slate-800/50' : 'divide-slate-50'}`}>

@@ -59,7 +59,7 @@ export class ThemeSettingsLayoutsPanel extends PureReactor {
             ) : null}
             {isUnavailable ? (
               <p className="text-[11px] text-amber-600 mt-2">
-                This theme no longer provides &ldquo;{tempDefaultLayout}&rdquo;, so pages use the theme default until you choose another.
+                {AdminI18n.t('themes.layoutNoLongerProvided', { layout: tempDefaultLayout })}
               </p>
             ) : null}
             <p className="text-[11px] text-slate-500 mt-2">

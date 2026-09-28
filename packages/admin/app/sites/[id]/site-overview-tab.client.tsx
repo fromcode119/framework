@@ -12,6 +12,7 @@ import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { SiteStatStrip } from '@/app/sites/[id]/site-stat-strip.client';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Identity, domains and what the site amounts to — short enough to read without scrolling.
@@ -68,10 +69,9 @@ export class SiteOverviewTab extends AdminComponent {
       <Card title={AdminI18n.t('sites.pages')}>
         <p className="fc-sites__text">
           {site.pageCount
-            ? <>This site has <strong>{site.pageCount}</strong> page{site.pageCount === 1 ? '' : 's'}. </>
-            : <>This site has <strong>no pages</strong>, so every storefront route but the home page answers 404. </>}
-          Rebuilding runs the theme&apos;s initial content and the default pages its plugins declare. Existing
-          pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.
+            ? <><AdminRichText k={site.pageCount === 1 ? 'sites.hasOnePage' : 'sites.hasPages'} vars={{ count: site.pageCount }} />{' '}</>
+            : <><AdminRichText k="sites.hasNoPages" />{' '}</>}
+          {AdminI18n.t('sites.rebuildingRuns')}
         </p>
         <div className="fc-sites__actions">
           <Button onClick={this.seed} isLoading={this.seeding} icon={<FrameworkIcons.Refresh size={14} />}>{AdminI18n.t('sites.rebuildPages')}</Button>

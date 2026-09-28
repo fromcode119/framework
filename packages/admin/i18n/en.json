@@ -2481,15 +2481,12 @@
     "restoreFailed": "Restore failed",
     "nothingWasWrittenTheRestore": "Nothing was written — the restore is one transaction.",
     "restoredAdoptNext": "Restored — adopt next",
-    "adoptThisDeploymentBelow": "Adopt this deployment below",
     "restoreASiteFromAn": "Restore a site from an archive",
     "bringASiteExportedFrom": "Bring a site exported from another platform onto this installation. The rows arrive owned by nobody, which is what a deployment with no sites looks like — adopting afterwards gives them their owner. Nothing is written unless the whole archive fits: the restore is one transaction.",
     "transitPassphraseOnlyIfThe": "Transit passphrase — only if the export sealed its secrets",
     "adminConsole": "Admin console",
     "storefront": "Storefront",
     "whatEachHostServes": "What each host serves",
-    "theAdminConsole": "the admin console",
-    "theStorefront": "the storefront",
     "alias": "Alias",
     "preset": "Preset",
     "noPresetChooseTheAppearance": "No preset — choose the appearance and plugins yourself",
@@ -2517,7 +2514,24 @@
     "pageOnThisSiteOne": "1 page on this site.",
     "pageOnThisSiteMany": "{{pages}} pages on this site.",
     "defaultForThisWorkspace": "Default for this workspace — {{fallback}}",
-    "defaultForThisSite": "Default for this site — {{fallback}}"
+    "defaultForThisSite": "Default for this site — {{fallback}}",
+    "hasOnePage": "This site has <strong>1</strong> page.",
+    "hasPages": "This site has <strong>{{count}}</strong> pages.",
+    "hasNoPages": "This site has <strong>no pages</strong>, so every storefront route but the home page answers 404.",
+    "rebuildingRuns": "Rebuilding runs the theme’s initial content and the default pages its plugins declare. Existing pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.",
+    "deletedAccount": "deleted account (id {{id}})",
+    "deleteExplained": "Removes every row and file that belongs to <strong>{{slug}}</strong> and its memberships. Accounts are kept — a person may belong to other sites. An export is written to Backups → Sites <em>before</em> anything is removed; it is the only way back.",
+    "adoptedOutcome": "This deployment is now site <strong>{{slug}}</strong>: {{rows}} rows across {{tables}} tables were stamped and {{members}} accounts became members. Tenancy is decided when the API starts, so until it restarts this deployment keeps running as a single site.",
+    "rowsWithoutOwner": "Rows still without an owner (they will be INVISIBLE once isolation is on): {{tables}}.",
+    "adoptExplained": "There are no sites because everything here belongs to ONE site — this one. Adopting turns it into the platform’s first site in place: every existing row is stamped with the new site’s id, every account becomes a member with the roles it already has, and the active plugins and theme become the site’s. Nothing is copied or moved.",
+    "restoredOutcome": "{{rows}} rows across {{tables}} tables are here, with no owner yet — which is correct for a deployment with no sites. <strong>Adopt this deployment below</strong> to stamp them with the new site, then restart the API.",
+    "restoringProgress": "Restoring… {{progress}}%",
+    "hostRolesHintWorkspace": "Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the admin console like any other unless you say otherwise.",
+    "hostRolesHintSite": "Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the storefront like any other unless you say otherwise.",
+    "workspaceNeverListed": "A workspace is a console, so it is never listed publicly. Search indexing for its domain follows",
+    "siteIdFixed": "Site id <code>{{id}}</code> — fixed for the life of the site. Rename with the slug and hosts above.",
+    "pluginsThisSiteRuns": "Plugins this site runs",
+    "countOf": "{{count}} of {{total}}"
   },
   "themes": {
     "installed": "Installed",
@@ -2713,7 +2727,26 @@
     "integrationLinksAndAdditionalConfigurable": "Integration links and additional configurable settings.",
     "openIntegration": "Open Integration",
     "integrationValue": "Integration value",
-    "package": "package"
+    "package": "package",
+    "manageTheme": "Manage Theme",
+    "upgradeNow": "Upgrade Now",
+    "upgrade": "Upgrade",
+    "updateNow": "Update Now",
+    "dependencyGuard": "Dependency Guard",
+    "openSite": "Open Site",
+    "versionLabel": "Version {{version}}",
+    "applyArchitectureUpdate": "Apply Architecture Update",
+    "layoutNoLongerProvided": "This theme no longer provides “{{layout}}”, so pages use the theme default until you choose another.",
+    "systemState": "System {{state}}",
+    "stateActive": "active",
+    "groupProtocols": "{{group}} Protocols",
+    "configureGroupVariables": "Configure {{group}} design variables.",
+    "onlyThisSiteSeesIt": "Only this site sees it. It renders in the browser and may not contain server code.",
+    "aboutName": "About {{name}}",
+    "releasedOn": "Released {{date}}",
+    "requiresVersion": "Requires {{version}}",
+    "versionBringsImprovements": "v{{version}} brings new design improvements and features.",
+    "updateAvailableVersion": "Update Available v{{version}}"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",
@@ -2855,7 +2888,13 @@
     "saveDetails": "Save Details",
     "invited": "Invited: {{count}}",
     "themeAssetOne": "· 1 theme asset",
-    "themeAssetMany": "· {{count}} theme assets"
+    "themeAssetMany": "· {{count}} theme assets",
+    "everythingSentAcrossAllShares": "Everything sent, across all shares",
+    "sendingMovesToPrivate": "Sending will move them to private storage so the link becomes the only way in. Anyone who already has a current URL keeps whatever they downloaded.",
+    "sendLink": "Send link",
+    "sendLinks": "Send links",
+    "clearCount": "Clear ({{count}})",
+    "shareCount": "Share {{count}}"
   },
   "sources": {
     "whatChangedInV": "What changed in v{{version}}",
@@ -2957,7 +2996,10 @@
     "archive": "Archive: {{fileName}}",
     "packageBuiltAndReady": "Package: {{slug}} {{version}} — built and ready",
     "packageWaitingForFirstSuccessful": "Package: waiting for first successful build",
-    "source": "source"
+    "source": "source",
+    "installedLabel": "Installed:",
+    "lastBuiltLabel": "Last built:",
+    "never": "never"
   },
   "certificates": {
     "couldNotLoadCertificates": "Could not load certificates.",
@@ -3007,7 +3049,11 @@
     "replace": "Replace",
     "upload": "Upload",
     "removeCertificate": "Remove certificate",
-    "noHostsAreConfiguredOn": "No hosts are configured on this platform yet."
+    "noHostsAreConfiguredOn": "No hosts are configured on this platform yet.",
+    "dnsTokenHint": "Needed to order a certificate proved through DNS — the wildcard (<code>*.example.com</code>) variant, and any domain behind a proxy or CDN. The token needs Zone → DNS → Edit on this site’s zone; it is stored encrypted and is never shown again once saved.",
+    "pointHostAt": "Point {{host}} at {{addresses}}, then this is retried automatically.",
+    "servedByWildcard": "Served by the wildcard on {{host}}",
+    "servedByWildcardUntil": "Served by the wildcard on {{host}} · until {{date}}"
   },
   "activity": {
     "systemActivity": "System Activity",
@@ -3044,6 +3090,7 @@
     "activity": "Activity",
     "status": "Status",
     "action": "Action",
-    "time": "Time"
+    "time": "Time",
+    "logSignature": "Log Signature: {{id}}"
   }
 }

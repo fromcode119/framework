@@ -10,6 +10,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SiteRecord } from '@/lib/tenants/site-record';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /** Delete. An export is written FIRST, every time; the typed slug is the confirmation. */
 export class SiteDangerCard extends AdminComponent {
@@ -54,8 +55,7 @@ export class SiteDangerCard extends AdminComponent {
     return (
       <Card title={AdminI18n.t('sites.deleteThisSite')} icon={<FrameworkIcons.Warning size={16} />} className="fc-sites__danger">
         <p className="fc-sites__text">
-          Removes every row and file that belongs to <strong>{this.site.slug}</strong> and its memberships. Accounts are kept — a person may belong to
-          other sites. An export is written to Backups → Sites <em>before</em> anything is removed; it is the only way back.
+          <AdminRichText k="sites.deleteExplained" vars={{ slug: this.site.slug }} />
         </p>
         <div className="fc-sites__actions">
           <Button variant={ButtonVariant.DANGER} onClick={this.ask} icon={<FrameworkIcons.Trash size={14} />}>{AdminI18n.t('sites.exportAndDelete2')}</Button>

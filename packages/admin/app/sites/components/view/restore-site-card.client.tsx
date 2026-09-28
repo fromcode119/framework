@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Shown beside "adopt" on a deployment with NO sites: put a site's DATA here first.
@@ -60,9 +61,7 @@ export class RestoreSiteCard extends AdminComponent {
       return (
         <Card title={AdminI18n.t('sites.restoredAdoptNext')} icon={<FrameworkIcons.CheckCircle size={16} />}>
           <p className="fc-sites__text">
-            {this.outcome.rows.toLocaleString()} rows across {this.outcome.tables} tables are here, with no owner yet — which is
-            correct for a deployment with no sites. <strong>{AdminI18n.t('sites.adoptThisDeploymentBelow')}</strong> to stamp them with the new site,
-            then restart the API.
+            <AdminRichText k="sites.restoredOutcome" vars={{ rows: this.outcome.rows.toLocaleString(), tables: this.outcome.tables }} />
           </p>
           {this.outcome.warnings.map((warning) => (
             <p key={warning} className="fc-sites__text fc-sites__text--warn">{warning}</p>
@@ -88,7 +87,7 @@ export class RestoreSiteCard extends AdminComponent {
         />
         <div className="fc-sites__actions">
           <input type="file" accept=".tar.gz,.tgz" onChange={this.onFile} disabled={this.busy} />
-          {this.busy ? <Button isLoading disabled>Restoring… {this.progress}%</Button> : null}
+          {this.busy ? <Button isLoading disabled>{AdminI18n.t('sites.restoringProgress', { progress: this.progress })}</Button> : null}
         </div>
       </Card>
     );

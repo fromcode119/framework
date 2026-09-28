@@ -32,9 +32,9 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
               </div>
               <div>
                 <h3 className={`text-[11px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {group} Protocols
+                  {AdminI18n.t('themes.groupProtocols', { group })}
                 </h3>
-                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">Configure {group.toLowerCase()} design variables.</p>
+                <p className="text-[10px] text-slate-500 font-semibold uppercase tracking-tight mt-1">{AdminI18n.t('themes.configureGroupVariables', { group: group.toLowerCase() })}</p>
               </div>
             </div>
 

@@ -218,8 +218,7 @@ export class MediaShareDialog extends AdminComponent {
             {this.publicCount ? (
               <div className={`mb-6 rounded-xl border p-3 text-[11px] leading-relaxed ${dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
                 {this.publicCount === items.length ? AdminI18n.t('media.theseFilesArePublic') : AdminI18n.t('media.ofTheseFilesArePublic', { publicCount: this.publicCount })}
-                {' '}Sending will move them to private storage so the link becomes the only way in. Anyone
-                who already has a current URL keeps whatever they downloaded.
+                {' '}{AdminI18n.t('media.sendingMovesToPrivate')}
               </div>
             ) : null}
 
@@ -277,7 +276,7 @@ export class MediaShareDialog extends AdminComponent {
               <div className="flex flex-col sm:flex-row gap-3 pt-1">
                 <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button" disabled={this.busy}>{AdminI18n.t('media.close')}</Button>
                 <Button variant={ButtonVariant.PRIMARY} className="flex-1" type="submit" isLoading={this.busy} disabled={!MediaShareController.normalizeRecipients(this.recipients).length}>
-                  Send link{items.length > 1 ? 's' : ''}
+                  {items.length > 1 ? AdminI18n.t('media.sendLinks') : AdminI18n.t('media.sendLink')}
                 </Button>
               </div>
             </form>

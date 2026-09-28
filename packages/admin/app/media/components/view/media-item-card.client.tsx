@@ -61,7 +61,7 @@ export class MediaItemCard extends MediaItemCardState {
           {/* The badge, not a placeholder: the artwork is visible AND the file is marked protected. */}
           {this.isPrivate ? (
             <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
-              <FrameworkIcons.Lock size={10} /> Private
+              <FrameworkIcons.Lock size={10} /> {AdminI18n.t('media.private')}
             </span>
           ) : null}
 
