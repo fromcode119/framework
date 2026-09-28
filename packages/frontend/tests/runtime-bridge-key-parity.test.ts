@@ -12,6 +12,7 @@ import { BridgeObjectBuilder } from '@fromcode119/react/helpers/bridge-object-bu
 import { PreBootBridgeArgs } from '@fromcode119/react/helpers/pre-boot-bridge-args';
 import { ReactExportSourceBuilder } from '@fromcode119/react/helpers/react-export-source-builder';
 import type { IRuntimeBridgeInstallArgs } from '@fromcode119/react/interfaces/runtime-bridge-install-args.interface';
+import * as ReactPackage from '@fromcode119/react';
 
 /**
  * The import map is written ONCE, by the pre-boot install, and the browser ignores later changes to it.
@@ -93,5 +94,30 @@ describe('pre-boot and live bridge installs produce the same import-map key set'
     const undefinedLive = Object.keys(live).filter((key) => live[key] === undefined);
     expect(undefinedPreBoot).toEqual(undefinedLive);
     expect(undefinedPreBoot).toEqual([]);
+  });
+});
+
+/**
+ * A PLUGIN bundle reaches `@fromcode119/sdk/react` through the import map, whose module exports only
+ * `SDK_REACT_EXPORT_KEYS` — a hand-kept list. The SDK's typed surface is the whole `@fromcode119/react`
+ * package, so a component the bridge carries and the package exports, but the list omits, typechecks in
+ * a plugin and then fails that plugin's entire bundle at load ("does not provide an export named …").
+ * `TokenEmailPreferencesPanel` was that component. Theme bundles are unaffected: their build rewrites
+ * the import to the runtime global.
+ */
+describe('the sdk/react import-map module exports every public component the bridge carries', () => {
+  /** Carried on the bridge for the runtime's own use, and not part of the plugin-facing surface. */
+  const RUNTIME_ONLY = new Set(['React', 'ReactDOM', 'ReactDom', 'IconNames', 'IconRegistry']);
+
+  it('lists every bridge key that @fromcode119/react itself exports', () => {
+    const bridge = BridgeObjectBuilder.build(KeyParityFixture.preBootArgs());
+    // Core utilities also ride on the bridge, but a plugin imports those from `@fromcode119/sdk`.
+    const reactPackageExports = new Set(Object.keys(ReactPackage));
+    const source = ReactExportSourceBuilder.buildSdkReactExportSource('window.x');
+    const exported = new Set([...source.matchAll(/export const (\w+) =/g)].map((match) => match[1]));
+    const missing = Object.keys(bridge)
+      .filter((key) => reactPackageExports.has(key) && !RUNTIME_ONLY.has(key))
+      .filter((key) => !exported.has(key));
+    expect(missing).toEqual([]);
   });
 });
