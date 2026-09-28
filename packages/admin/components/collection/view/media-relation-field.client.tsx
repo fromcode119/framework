@@ -52,56 +52,17 @@ export class MediaRelationField extends Reactor {
       return;
     }
 
+    // The media API, not the generic collection record: only it addresses the file on the SITE's host.
+    // A site's uploads live in its own directory and are served per host, so a bare `path` resolved
+    // against the console's host 404s for every file uploaded since sites got their own directories.
     try {
-      const primaryResponse = await AdminApi.get(
-        `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/media/${encodeURIComponent(String(firstId))}`
-      );
+      const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?id=${encodeURIComponent(String(firstId))}&limit=1`);
       if (!isCurrent()) return;
-
-      const response = primaryResponse?.doc || primaryResponse?.data || primaryResponse;
-
-      const fallbackPathFromFilename = (() => {
-        const filename = String(response?.filename || '').trim();
-        if (!filename) return '';
-        if (filename.startsWith('/')) return filename;
-        return `/uploads/${filename}`;
-      })();
-
-      const pathOrUrl = String(response?.url || response?.path || fallbackPathFromFilename).trim();
-      const resolvedUrl = MediaRelationFieldUtils.resolvePreviewUrl(pathOrUrl);
-
-      if (resolvedUrl) {
-        this.preview = {
-          url: resolvedUrl,
-          filename: String(response?.filename || response?.originalName || `media-${firstId}`),
-        };
-        return;
-      }
-
-      throw new Error('No media url/path returned');
+      const docs = Array.isArray(response) ? response : Array.isArray(response?.docs) ? response.docs : [];
+      const doc = docs[0];
+      const url = doc?.url ? MediaRelationFieldUtils.resolvePreviewUrl(String(doc.url)) : '';
+      this.preview = url ? { url, filename: String(doc.filename || doc.originalName || `media-${firstId}`) } : null;
     } catch {
-      try {
-        const listResponse = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?limit=200`);
-        if (!isCurrent()) return;
-        const docs = Array.isArray(listResponse)
-          ? listResponse
-          : Array.isArray(listResponse?.docs)
-            ? listResponse.docs
-            : [];
-        const matched = docs.find((item: any) => String(item?.id ?? item?._id ?? '') === String(firstId));
-        const fallbackPath = String(matched?.url || matched?.path || '').trim();
-        if (matched && fallbackPath) {
-          const resolvedUrl = MediaRelationFieldUtils.resolvePreviewUrl(fallbackPath);
-          this.preview = {
-            url: resolvedUrl,
-            filename: String(matched?.filename || matched?.originalName || `media-${firstId}`),
-          };
-          return;
-        }
-      } catch {
-        // Fallback lookup failed; keep textual ID label.
-      }
-
       if (isCurrent()) this.preview = null;
     }
   }
