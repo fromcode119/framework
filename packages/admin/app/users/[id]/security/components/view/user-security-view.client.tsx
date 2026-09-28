@@ -40,7 +40,7 @@ export class UserSecurityView extends PureReactor {
           <DeviceSessionsCard isDark={model.themeMode === ThemeMode.DARK} sessions={model.mySessions} sessionsLoading={model.sessionsLoading} onRevokeOtherSessions={model.revokeOtherSessions} onRevokeSession={model.revokeSession} />
           <UserApiTokensCard createdToken={model.createdToken} isDark={model.themeMode === ThemeMode.DARK} onCreateToken={model.createApiToken} onRevokeToken={model.revokeApiToken} setTokenDays={model.setTokenDays} setTokenName={model.setTokenName} tokenDays={model.tokenDays} tokenName={model.tokenName} tokens={model.myApiTokens} tokensLoading={model.tokensLoading} />
         </> : <Card title="Self-Service Security Controls" icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}><div className="text-xs font-bold uppercase tracking-tight text-slate-400">Session/device controls and personal API tokens are available only when viewing your own user account.</div></Card>}
-        <AuthActivityCard activity={model.authActivity} activityLoading={model.authActivityLoading} email={String(model.user.email || '')} isDark={model.themeMode === ThemeMode.DARK} />
+        {model.canReadLogs ? <AuthActivityCard activity={model.authActivity} activityLoading={model.authActivityLoading} email={String(model.user.email || '')} isDark={model.themeMode === ThemeMode.DARK} /> : null}
       </div>
     </div>
   );

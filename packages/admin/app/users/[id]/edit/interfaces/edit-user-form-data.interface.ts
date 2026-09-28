@@ -6,5 +6,7 @@ export interface IEditUserFormData {
   accountStatus: string;
   forcePasswordReset: boolean;
   password: string;
+  /** Required when you change your OWN password in self-service mode. */
+  currentPassword?: string;
   confirmPassword: string;
 }

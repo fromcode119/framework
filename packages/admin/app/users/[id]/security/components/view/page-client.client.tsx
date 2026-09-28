@@ -1,3 +1,4 @@
+import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -52,6 +53,11 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
   get isSelf(): boolean {
     const authUser = this.auth?.user as IAuthUserRecord | undefined;
     return UserSecurityPageService.isSameUser(authUser?.id, this.id);
+  }
+
+  get canReadLogs(): boolean {
+    const user = this.auth?.user as { roles?: string[]; permissions?: string[] } | undefined;
+    return Boolean(user?.roles?.includes('admin')) || PermissionGrants.covers(user?.permissions ?? [], 'system:logs');
   }
 
   get notify(): INotificationContextType {
@@ -140,6 +146,7 @@ export class UserSecurityPageClient extends AdminComponent implements IUserSecur
       isEnabling,
       isRegeneratingCodes,
       isSelf: this.isSelf,
+      canReadLogs: this.canReadLogs,
       isVerifying,
       loading,
       myApiTokens,

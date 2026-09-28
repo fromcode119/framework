@@ -9,6 +9,7 @@ import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { AvatarSize } from '@/app/components/enums/avatar-size.enum';
 
@@ -82,6 +83,11 @@ export class SidebarAccountCard extends AdminComponent {
     }
   }
 
+  private get canAddSite(): boolean {
+    const user = this.auth.user;
+    return Boolean(user?.roles?.includes('admin')) && PlatformAccess.canManagePlatform(user);
+  }
+
   private get siteItems(): IDropdownItem[] {
     const switcher = this.sites.map((site) => ({
       label: String(site.name || site.slug || site.id),
@@ -107,12 +113,14 @@ export class SidebarAccountCard extends AdminComponent {
       // already pushed "Add a site" and "Sign out" below the fold of their own menu — and the two
       // rows after it must stay reachable however many sites exist.
       ...rows.map((row, index) => ({ ...row, section: index === 0 ? 'Sites' : undefined, scrolls: index === 0 ? true : undefined })),
-      {
+      // Adding a site is the platform's to do: the Sites screen and its API are platform-admin only, so
+      // offering it to a site's staff was a door onto "this page is for administrators".
+      ...(this.canAddSite ? [{
         label: 'Add a site',
         icon: <FrameworkIcons.Plus size={16} />,
         section: rows.length === 0 ? 'Sites' : undefined,
         onClick: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
-      },
+      }] : []),
     ];
   }
 

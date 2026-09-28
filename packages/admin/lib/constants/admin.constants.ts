@@ -70,6 +70,13 @@ export class AdminConstants {
     VERIFY_PASSWORD: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.VERIFY_PASSWORD),
     CHANGE_PASSWORD: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.CHANGE_PASSWORD),
     SECURITY: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.SECURITY),
+    /** The signed-in account's own name — no user-management permission needed. */
+    PROFILE: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.PROFILE),
+    TWO_FACTOR_STATUS: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_STATUS),
+    TWO_FACTOR_SETUP: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_SETUP),
+    TWO_FACTOR_VERIFY: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_VERIFY),
+    TWO_FACTOR_RECOVERY_REGENERATE: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_RECOVERY_REGENERATE),
+    TWO_FACTOR_DISABLE: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_DISABLE),
     EMAIL_CHANGE_REQUEST: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_REQUEST),
     EMAIL_CHANGE_CONFIRM: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_CONFIRM),
     SESSIONS: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.SESSIONS),

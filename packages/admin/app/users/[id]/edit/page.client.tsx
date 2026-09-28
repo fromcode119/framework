@@ -8,6 +8,7 @@ import { EditUserHeader } from '@/app/users/[id]/edit/components/view/edit-user-
 import { EditUserFormFields } from '@/app/users/[id]/edit/components/view/edit-user-form-fields.client';
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
+import { SelfAccount } from '@/lib/self-account';
 
 export class EditUserPage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -41,9 +42,16 @@ export class EditUserPage extends AdminComponent {
     this.mounted = false;
   }
 
+  /** Your own account without `users:manage` — see {@link SelfAccount}. */
+  private get selfService(): boolean {
+    return SelfAccount.isSelfService(this.auth?.user, this.routeId, 'users:manage');
+  }
+
   private async fetchUser(): Promise<void> {
     try {
-      const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.routeId));
+      const data = this.selfService
+        ? (await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.SECURITY))?.user
+        : await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.routeId));
       if (!this.mounted) return;
       this.formData = {
         email: data.email || '',
@@ -79,8 +87,21 @@ export class EditUserPage extends AdminComponent {
       return;
     }
 
+    if (this.selfService && formData.password && !formData.currentPassword) {
+      this.errors = { currentPassword: 'Enter your current password to set a new one' };
+      this.saving = false;
+      return;
+    }
+
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.USER(routeId), formData);
+      if (this.selfService) {
+        await AdminApi.patch(AdminConstants.ENDPOINTS.AUTH.PROFILE, { firstName: formData.firstName, lastName: formData.lastName });
+        if (formData.password) {
+          await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.CHANGE_PASSWORD, { currentPassword: formData.currentPassword, newPassword: formData.password });
+        }
+      } else {
+        await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.USER(routeId), formData);
+      }
       this.router.push(AdminConstants.ROUTES.USERS.DETAIL(routeId));
     } catch (err: any) {
       console.error('Failed to update user:', err);
@@ -119,6 +140,7 @@ export class EditUserPage extends AdminComponent {
                 formData={formData}
                 errors={errors}
                 onPatch={(patch) => this.updateForm(patch)}
+                selfService={this.selfService}
               />
 
               {errors.global && (

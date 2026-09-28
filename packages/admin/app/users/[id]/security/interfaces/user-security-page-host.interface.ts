@@ -22,6 +22,8 @@ export interface IUserSecurityPageHost {
   readonly id: string;
   /** True when the admin is viewing their own security page. */
   readonly isSelf: boolean;
+  /** Whether the viewer may read the system logs the auth-activity card is built from. */
+  readonly canReadLogs: boolean;
   /** Navigate away (used when the caller revokes its own session). */
   redirectToLogin(): void;
 }

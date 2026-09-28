@@ -11,10 +11,15 @@ import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-us
 
 export class EditUserFormFields extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<EditUserFormFields, 'formData' | 'errors' | 'onPatch'>;
+  declare props: Pick<EditUserFormFields, 'formData' | 'errors' | 'onPatch' | 'selfService'>;
 
   @prop declare formData: IEditUserFormData;
   @prop declare errors: Record<string, string>;
+  /**
+   * Your own account without `users:manage`: your name is yours to change, your password with your
+   * current one; email, username, status and forced reset stay with an administrator.
+   */
+  @prop declare selfService?: boolean;
   @prop declare onPatch: (patch: Partial<IEditUserFormData>) => void;
 
   render(): ReactNode {
@@ -29,6 +34,7 @@ export class EditUserFormFields extends PureReactor {
                     placeholder="user@example.com"
                     value={formData.email}
                     onChange={(e) => onPatch({ email: e.target.value })}
+                    disabled={this.selfService}
                     required
                  />
               </div>
@@ -38,6 +44,7 @@ export class EditUserFormFields extends PureReactor {
                     placeholder="username"
                     value={formData.username}
                     onChange={(e) => onPatch({ username: e.target.value })}
+                    disabled={this.selfService}
                  />
               </div>
               <div className="space-y-2">
@@ -64,6 +71,18 @@ export class EditUserFormFields extends PureReactor {
              Leave password fields blank if you do not wish to change the current password.
            </p>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
+              {this.selfService ? (
+              <div className="space-y-2 md:col-span-2">
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Current Password</label>
+                 <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.currentPassword ?? ''}
+                    onChange={(e) => onPatch({ currentPassword: e.target.value })}
+                    error={errors.currentPassword}
+                 />
+              </div>
+              ) : null}
               <div className="space-y-2">
                  <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">New Password</label>
                  <Input
@@ -86,6 +105,7 @@ export class EditUserFormFields extends PureReactor {
            </div>
         </Card>
 
+        {this.selfService ? null : (
         <Card title="Account Access Controls" icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
               <div className="space-y-2">
@@ -122,6 +142,7 @@ export class EditUserFormFields extends PureReactor {
               </div>
            </div>
         </Card>
+        )}
       </>
     );
   }
