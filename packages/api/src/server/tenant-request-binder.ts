@@ -12,6 +12,9 @@ import type { TenantRecord } from '@fromcode119/core';
  * integrations are warmed in the same step, for the same synchronous-caller reason.
  */
 export class TenantRequestBinder {
+  /** The surface a visitor's request on the site's own host arrives by (`ServerMiddlewareSetup`). */
+  static readonly STOREFRONT_SURFACE = 'storefront';
+
   constructor(
     private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
     private readonly logger: { error(message: string, error?: unknown): void },
@@ -46,7 +49,16 @@ export class TenantRequestBinder {
       this.db.withTenant(tenant.id, () => SiteLocaleAccess.warm(tenant.id)),
     ]);
     const siteLocale = SiteLocaleAccess.get(tenant.id) || undefined;
-    RequestContextUtils.storage.run({ locale, tenantId: tenant.id, siteLocale }, () => {
+    // A request that names no locale (no `?locale`, no locale cookie) speaks its SITE's default, not the
+    // platform's: resolved before the tenant was known, `locale` is the platform default, so every string
+    // the API translated for a Bulgarian site's visitor — the email categories on its preferences screen
+    // among them — came back English.
+    // Storefront traffic only: the admin console and api-key callers keep the locale they resolved.
+    const requestLocale = surface === TenantRequestBinder.STOREFRONT_SURFACE && !req.localeExplicit
+      ? (siteLocale || locale)
+      : locale;
+    req.locale = requestLocale;
+    RequestContextUtils.storage.run({ locale: requestLocale, tenantId: tenant.id, siteLocale }, () => {
       this.db.withTenant(tenant.id, () => new Promise<void>((resolve) => {
         res.on('finish', resolve);
         res.on('close', resolve);

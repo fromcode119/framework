@@ -6,15 +6,16 @@ export class RequestLocaleService {
   constructor(private readonly cookies: RequestCookieService = new RequestCookieService()) {}
 
   resolveRequestLocale(req: Request, fallbackLocale: string = 'en'): string {
-    const queryLocale = this.readQueryLocale(req);
-    const cookieLocale = this.cookies.readPrimaryCookieValue(req, CookieConstants.LOCALE);
-
-    return (
-      LocalizationUtils.normalizeLocaleCode(queryLocale)
-      || LocalizationUtils.normalizeLocaleCode(cookieLocale)
+    return this.explicitRequestLocale(req)
       || LocalizationUtils.normalizeLocaleCode(fallbackLocale)
-      || 'en'
-    );
+      || 'en';
+  }
+
+  /** The locale the request itself names (`?locale`, then the locale cookie), or '' when it names none. */
+  explicitRequestLocale(req: Request): string {
+    return LocalizationUtils.normalizeLocaleCode(this.readQueryLocale(req))
+      || LocalizationUtils.normalizeLocaleCode(this.cookies.readPrimaryCookieValue(req, CookieConstants.LOCALE))
+      || '';
   }
 
   private readQueryLocale(req: Request): string {
