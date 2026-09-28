@@ -55,4 +55,12 @@ describe('SiteBannersView', () => {
     expect(html).toContain('fc-site-preview--unpublished');
     expect(html).not.toContain('fc-site-preview--non-production');
   });
+
+  it('speaks the document locale it is given, not the server default', () => {
+    const html = markup([SitePreviewBannerView.render({ visible: true, locale: 'bg' }), SiteEnvironmentBannerView.render({ visible: true, locale: 'bg-BG' })]);
+
+    expect(html).toContain('Не е публикуван');
+    expect(html).toContain('Сайт извън производство');
+    expect(html).not.toContain('Not published');
+  });
 });

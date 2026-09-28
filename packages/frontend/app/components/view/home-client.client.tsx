@@ -34,7 +34,7 @@ export class HomeClient extends Reactor {
       : !!(rawContent && typeof rawContent === 'object' && Object.keys(rawContent).length > 0);
 
     if (!hasStringContent && !hasStructuredContent) {
-      return <StarterHero />;
+      return <StarterHero locale={this.locale} />;
     }
 
     return (
@@ -60,6 +60,8 @@ export class HomeClient extends Reactor {
   static contextType = PluginContextRegistry.Context;
   declare context: IPluginContextValue | null;
 
+  /** The document locale, so the starter page renders in the same language on the server and in the browser. */
+  @prop declare locale?: string;
   @prop declare initialContent: any | null;
   @prop declare forcedLayout: string | null;
 
@@ -133,6 +135,6 @@ export class HomeClient extends Reactor {
       );
     }
 
-    return <StarterHero />;
+    return <StarterHero locale={this.locale} />;
   }
 }

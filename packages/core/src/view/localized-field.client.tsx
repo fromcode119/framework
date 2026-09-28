@@ -33,6 +33,8 @@ export class LocalizedField extends Reactor {
    * at top-right of the input, matching the admin UI. 'label-row' renders the
    * locale dropdown on its own row above the input. */
   @prop declare variant?: FieldLabelLayout;
+  /** Tooltip for the locale chip, already translated by the caller. */
+  @prop declare switchLabel?: string;
 
   /** '' means "unset" — falls back to the resolved default via `currentLocale`. */
   @state private selectedLocale = '';
@@ -92,7 +94,7 @@ export class LocalizedField extends Reactor {
   }
 
   private switcher(activeLocale: string): ReactNode {
-    return <LocaleSwitcher registry={this.registry} active={activeLocale} onChange={this.onLocaleChange} />;
+    return <LocaleSwitcher registry={this.registry} active={activeLocale} onChange={this.onLocaleChange} title={this.switchLabel} />;
   }
 
   render(): ReactNode {

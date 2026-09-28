@@ -21,10 +21,12 @@ export class ResetPasswordPageRoute {
     // Prefer a themed content page (slug 'reset-password') so the active theme fully brands + translates
     // the reset flow; fall back to the framework default client when no themed page is seeded. The
     // themed page reads the `?token=` itself, so the token is preserved through this delegation.
+    // Resolved before the themed-page lookup so the framework fallback renders in the same language.
+    let locale: string | undefined;
     try {
       const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);
       const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
-      const locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, '', routingConfig.strategy);
+      locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, '', routingConfig.strategy);
       const content = await DynamicPageResolver.resolveDocWithPermalinkFallback('reset-password', resolvedSearchParams, locale, routingConfig.strategy);
       if (content) {
         return <DynamicContentClient content={content} />;
@@ -32,6 +34,6 @@ export class ResetPasswordPageRoute {
     } catch {
       // fall through to the framework default
     }
-    return <ResetPasswordClient />;
+    return <ResetPasswordClient locale={locale} />;
   }
 }

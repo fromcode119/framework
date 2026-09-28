@@ -25,6 +25,6 @@ export class RegisterPageRoute {
     return <DynamicContentClient content={content} />;
   }
 
-  return <RegisterClient />;
+  return <RegisterClient locale={locale} />;
 }
 }

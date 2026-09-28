@@ -1,10 +1,13 @@
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
 import { VerificationStatus } from '@/app/verify-email/enums/verification-status.enum';
-import { Reactor, state, bound } from '@fromcode119/react-class-components';
+import { Reactor, state, bound, prop } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
 
 export class VerifyEmailChangePage extends Reactor {
+  /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
+  @prop declare locale?: string;
   @state token = '';
   @state status: VerificationStatus = VerificationStatus.IDLE;
   @state message = '';
@@ -53,19 +56,19 @@ export class VerifyEmailChangePage extends Reactor {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <div className="mx-auto max-w-xl px-6 py-16">
-          <h1 className="text-3xl font-bold tracking-tight">Confirm Email Change</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.confirmEmailChange')}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Finalize your account email update.
+            {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.finalizeYourAccountEmailUpdate')}
           </p>
 
           <div className="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             <label className="block text-sm font-semibold">
-              Token
+              {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.token')}
               <input
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
                 value={this.token}
                 onChange={(event) => (this.token = event.target.value)}
-                placeholder="Paste email-change token"
+                placeholder={FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.pasteEmailChangeToken')}
               />
             </label>
 
@@ -75,7 +78,7 @@ export class VerifyEmailChangePage extends Reactor {
               disabled={this.status === VerificationStatus.VERIFYING}
               className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {this.status === VerificationStatus.VERIFYING ? 'Confirming...' : 'Confirm Email Change'}
+              {this.status === VerificationStatus.VERIFYING ? FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.confirming') : FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.confirmEmailChange')}
             </button>
 
             {this.message ? (
@@ -94,9 +97,9 @@ export class VerifyEmailChangePage extends Reactor {
           </div>
 
           <p className="mt-4 text-sm text-slate-600">
-            Need password help?{' '}
+            {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.needPasswordHelp')}{' '}
             <Link href="/forgot-password" className="font-semibold text-indigo-600 hover:underline">
-              Reset password
+              {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.resetPassword')}
             </Link>
           </p>
         </div>

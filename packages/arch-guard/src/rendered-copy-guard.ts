@@ -45,7 +45,7 @@ export class RenderedCopyGuard {
    * language in Settings → Localization changes every screen.
    * `packages/ai` — the assistant screen inside the console, in `packages/ai/src/i18n/<locale>.json`.
    */
-  static readonly TRANSLATED = ['packages/admin', 'packages/ai'];
+  static readonly TRANSLATED = ['packages/admin', 'packages/ai', 'packages/core', 'packages/frontend', 'packages/react', 'packages/sdk'];
 
   /**
    * Whether a rendered literal in `file` is a regression rather than backlog: the file sits in a

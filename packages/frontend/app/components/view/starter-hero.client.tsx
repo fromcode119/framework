@@ -1,10 +1,13 @@
-import { PureReactor } from '@fromcode119/react-class-components';
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { StarterHeroStyles } from '@/app/components/view/starter-hero-styles.client';
 import { StarterHeroPillars } from '@/app/components/view/starter-hero-pillars.client';
 
 
 export class StarterHero extends PureReactor {
+  /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
+  @prop declare locale?: string;
   private static readonly ADMIN_BASE_PATH = RouteConstants.SEGMENTS.ADMIN_BASE;
   render() {
     return (
@@ -29,23 +32,22 @@ export class StarterHero extends PureReactor {
           <div className="mb-14">
             <img
               src="/brand/atlantis-logo-white.png"
-              alt="Atlantis by Fromcode"
+              alt={FrontendCopy.t(this.locale, 'frontend.starterHero.atlantisByFromcode')}
               className="mx-auto h-auto w-full max-w-[180px] opacity-95 sm:max-w-[220px]"
             />
           </div>
 
           {/* Headline */}
           <h1 className="mx-auto max-w-4xl">
-            The framework that{' '}
+            {FrontendCopy.t(this.locale, 'frontend.starterHero.theFrameworkThat')}{' '}
             <span className="sh-grad bg-gradient-to-r from-indigo-400 via-indigo-300 to-cyan-400 bg-clip-text">
-              doesn&apos;t get in your&nbsp;way
+              {FrontendCopy.t(this.locale, 'frontend.starterHero.doesnTGetInYour')}
             </span>
             .
           </h1>
 
           <p className="mx-auto mt-7 max-w-xl">
-            Atlantis is the open-source full-stack platform by Fromcode for teams
-            who want to build production-grade applications — fast, composable, and on their own terms.
+            {FrontendCopy.t(this.locale, 'frontend.starterHero.atlantisIsTheOpenSource')}
           </p>
 
           {/* CTAs */}
@@ -54,20 +56,20 @@ export class StarterHero extends PureReactor {
               href={StarterHero.ADMIN_BASE_PATH}
               className="sh-btn-primary inline-flex min-w-[196px] items-center justify-center rounded-full bg-indigo-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_48px_rgba(99,102,241,0.4)] transition-all duration-300 hover:bg-indigo-500 hover:shadow-[0_0_64px_rgba(99,102,241,0.55)]"
             >
-              Open Admin →
+              {FrontendCopy.t(this.locale, 'frontend.starterHero.openAdmin')}
             </a>
           </div>
 
           {/* Feature pillars */}
-          <StarterHeroPillars />
+          <StarterHeroPillars locale={this.locale} />
 
           {/* Ambient footnote */}
           <p className="sh-muted sh-footnote mt-16">
-            Built by{' '}
+            {FrontendCopy.t(this.locale, 'frontend.starterHero.builtBy')}{' '}
             <a href="https://fromcode.com" className="underline decoration-slate-700 underline-offset-4 transition-colors hover:text-slate-400">
-              Fromcode
+              {FrontendCopy.t(this.locale, 'frontend.starterHero.fromcode')}
             </a>
-            {' '}— Publish homepage content from the Admin to replace this page.
+            {' '}{FrontendCopy.t(this.locale, 'frontend.starterHero.publishHomepageContent')}
           </p>
         </div>
       </div>

@@ -46,7 +46,16 @@ export class FrameworkTranslations {
    * for as long as nobody looks.
    */
   static t(key: string, vars?: Record<string, unknown>): string {
-    const value = FrameworkTranslations.lookup(FrameworkTranslations.locale, key)
+    return FrameworkTranslations.in(FrameworkTranslations.locale, key, vars);
+  }
+
+  /**
+   * {@link t} in a locale the caller already resolved. A server render has no `<html lang>` to read, so
+   * a view that renders on both sides passes the document's locale here, or the server paints English
+   * and the browser another language.
+   */
+  static in(locale: string, key: string, vars?: Record<string, unknown>): string {
+    const value = FrameworkTranslations.lookup(FrameworkTranslations.normalizeLocale(locale), key)
       ?? FrameworkTranslations.lookup('en', key);
     if (typeof value !== 'string') return key;
 

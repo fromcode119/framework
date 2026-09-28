@@ -20,10 +20,12 @@ export class ForgotPasswordPageRoute {
     }
     // Prefer a themed content page (slug 'forgot-password') so the active theme fully brands + translates
     // the reset flow; fall back to the framework default client when no themed page is seeded.
+    // Resolved before the themed-page lookup so the framework fallback renders in the same language.
+    let locale: string | undefined;
     try {
       const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);
       const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
-      const locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, '', routingConfig.strategy);
+      locale = await DynamicPageResolver.resolveLocale(resolvedSearchParams, '', routingConfig.strategy);
       const content = await DynamicPageResolver.resolveDocWithPermalinkFallback('forgot-password', resolvedSearchParams, locale, routingConfig.strategy);
       if (content) {
         return <DynamicContentClient content={content} />;
@@ -31,6 +33,6 @@ export class ForgotPasswordPageRoute {
     } catch {
       // fall through to the framework default
     }
-    return <ForgotPasswordClient />;
+    return <ForgotPasswordClient locale={locale} />;
   }
 }

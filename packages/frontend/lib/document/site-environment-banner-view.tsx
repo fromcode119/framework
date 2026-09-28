@@ -1,3 +1,4 @@
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
 import type { ReactNode } from 'react';
 
 /**
@@ -16,13 +17,14 @@ import type { ReactNode } from 'react';
  * page in the admin, beside everything else that governs it — never one click away from a storefront.
  */
 export class SiteEnvironmentBannerView {
-  static render({ visible }: { visible: boolean }): ReactNode {
+  /** `locale` is the document's `<html lang>`: the bar is server-rendered, so it cannot read it. */
+  static render({ visible, locale }: { visible: boolean; locale?: string }): ReactNode {
     if (!visible) return null;
     return (
       <div className="fc-site-preview fc-site-preview--non-production" role="status">
         <span className="fc-site-preview__dot" aria-hidden="true" />
-        <span>Non-production site — nothing leaves it.</span>
-        <span className="fc-site-preview__note">No email, payment, shipment or scheduled job will be sent.</span>
+        <span>{FrontendCopy.t(locale, 'frontend.siteBanner.nonProductionTitle')}</span>
+        <span className="fc-site-preview__note">{FrontendCopy.t(locale, 'frontend.siteBanner.nonProductionNote')}</span>
       </div>
     );
   }

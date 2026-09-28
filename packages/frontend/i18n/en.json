@@ -1,0 +1,110 @@
+{
+  "frontend": {
+    "forgotPasswordClient": {
+      "forgotPassword": "Forgot Password",
+      "enterYourEmailAndWe": "Enter your email and we will send a password reset link.",
+      "email": "Email",
+      "sending": "Sending...",
+      "sendResetLink": "Send Reset Link",
+      "verifyEmail": "Verify email",
+      "needAccountVerification": "Need account verification?"
+    },
+    "registerClient": {
+      "createAccount": "Create Account",
+      "registerToTrackPurchasesAnd": "Register to track purchases and manage customer access.",
+      "openVerificationLink": "Open verification link",
+      "firstName": "First Name",
+      "john": "John",
+      "lastName": "Last Name",
+      "doe": "Doe",
+      "email": "Email",
+      "password": "Password",
+      "min8Characters": "Min. 8 characters",
+      "confirmPassword": "Confirm Password",
+      "repeatPassword": "Repeat password",
+      "creatingAccount": "Creating account...",
+      "register": "Register",
+      "verifyEmail": "Verify email",
+      "alreadyRegistered": "Already registered?"
+    },
+    "resetPasswordClient": {
+      "resetPassword": "Reset Password",
+      "setANewPasswordFor": "Set a new password for your account.",
+      "resetToken": "Reset Token",
+      "pasteResetToken": "Paste reset token",
+      "newPassword": "New Password",
+      "newPassword2": "New password",
+      "confirmPassword": "Confirm Password",
+      "repeatPassword": "Repeat password",
+      "updating": "Updating...",
+      "requestResetLink": "Request reset link",
+      "needANewToken": "Need a new token?"
+    },
+    "verifyEmailChangeClient": {
+      "confirmEmailChange": "Confirm Email Change",
+      "finalizeYourAccountEmailUpdate": "Finalize your account email update.",
+      "token": "Token",
+      "pasteEmailChangeToken": "Paste email-change token",
+      "confirming": "Confirming...",
+      "resetPassword": "Reset password",
+      "needPasswordHelp": "Need password help?"
+    },
+    "overviewPanel": {
+      "accountSettings": "Account Settings",
+      "manageYourProfileSecurityAnd": "Manage your profile, security, and sessions."
+    },
+    "profileCard": {
+      "profile": "Profile",
+      "name": "Name:",
+      "email": "Email:"
+    },
+    "securityCard": {
+      "security": "Security",
+      "manageYourPasswordAndAccount": "Manage your password and account security."
+    },
+    "sessionCard": {
+      "activeSessions": "Active Sessions",
+      "unknownDevice": "Unknown device",
+      "noActiveSessions": "No active sessions."
+    },
+    "twoFactorCard": {
+      "twoFactorAuthentication": "Two-Factor Authentication",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "dashboard": {
+      "myAccount": "My Account"
+    },
+    "dashboardHero": {
+      "myAccount": "My Account"
+    },
+    "maintenanceScreen": {
+      "systemMaintenance": "System Maintenance",
+      "weAreCurrentlyPerformingScheduled": "We are currently performing scheduled maintenance to improve our services. The portal will be back online shortly."
+    },
+    "starterHero": {
+      "atlantisByFromcode": "Atlantis by Fromcode",
+      "doesnTGetInYour": "doesn’t get in your way",
+      "atlantisIsTheOpenSource": "Atlantis is the open-source full-stack platform by Fromcode for teams who want to build production-grade applications — fast, composable, and on their own terms.",
+      "openAdmin": "Open Admin →",
+      "fromcode": "Fromcode",
+      "theFrameworkThat": "The framework that",
+      "builtBy": "Built by",
+      "publishHomepageContent": "— Publish homepage content from the Admin to replace this page."
+    },
+    "starterHeroPillars": {
+      "fullStackInOneRepo": "Full-stack in one repo",
+      "adminPanelRestApiAnd": "Admin panel, REST API, and frontend ship together. No glue code, no ceremony — just your product.",
+      "isolatedPluginSystem": "Isolated plugin system",
+      "everyPluginIsASealed": "Every plugin is a sealed module. They communicate through a typed event bus without touching each other.",
+      "themeSwappableUi": "Theme-swappable UI",
+      "replaceTheEntireVisualLayer": "Replace the entire visual layer at runtime. Layouts, styles, and components — all owned by the theme."
+    },
+    "siteBanner": {
+      "previewTitle": "Not published — only you can see this.",
+      "previewNote": "Visitors get a holding page.",
+      "nonProductionTitle": "Non-production site — nothing leaves it.",
+      "nonProductionNote": "No email, payment, shipment or scheduled job will be sent."
+    }
+  }
+}

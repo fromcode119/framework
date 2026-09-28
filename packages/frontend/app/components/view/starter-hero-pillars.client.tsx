@@ -1,6 +1,9 @@
-import { PureReactor } from '@fromcode119/react-class-components';
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class StarterHeroPillars extends PureReactor {
+  /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
+  @prop declare locale?: string;
   get pillars() {
     return [
       {
@@ -12,8 +15,8 @@ export class StarterHeroPillars extends PureReactor {
             <path d="M2 17l10 5 10-5"/>
           </svg>
         ),
-        title: 'Full-stack in one repo',
-        body: 'Admin panel, REST API, and frontend ship together. No glue code, no ceremony — just your product.',
+        title: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.fullStackInOneRepo'),
+        body: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.adminPanelRestApiAnd'),
       },
       {
         color: '#22d3ee',
@@ -24,8 +27,8 @@ export class StarterHeroPillars extends PureReactor {
             <line x1="12" y1="22.08" x2="12" y2="12"/>
           </svg>
         ),
-        title: 'Isolated plugin system',
-        body: 'Every plugin is a sealed module. They communicate through a typed event bus without touching each other.',
+        title: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.isolatedPluginSystem'),
+        body: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.everyPluginIsASealed'),
       },
       {
         color: '#a78bfa',
@@ -35,8 +38,8 @@ export class StarterHeroPillars extends PureReactor {
             <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
         ),
-        title: 'Theme-swappable UI',
-        body: 'Replace the entire visual layer at runtime. Layouts, styles, and components — all owned by the theme.',
+        title: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.themeSwappableUi'),
+        body: FrontendCopy.t(this.locale, 'frontend.starterHeroPillars.replaceTheEntireVisualLayer'),
       },
     ];
   }
