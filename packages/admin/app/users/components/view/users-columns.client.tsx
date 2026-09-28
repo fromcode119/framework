@@ -2,6 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IUser } from '@/app/users/interfaces/user.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UsersColumns {
   private static getInitials(user: IUser): string {
@@ -58,16 +59,16 @@ export class UsersColumns {
             {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? (
               <>
                 <div className="h-2 w-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.4)]" />
-                <span className="font-bold text-rose-500 text-[11px] tracking-tight">Suspended</span>
+                <span className="font-bold text-rose-500 text-[11px] tracking-tight">{AdminI18n.t('users.suspended')}</span>
               </>
             ) : (
               <>
                 <div className="h-2 w-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]" />
-                <span className="font-bold text-emerald-500 text-[11px] tracking-tight">Active</span>
+                <span className="font-bold text-emerald-500 text-[11px] tracking-tight">{AdminI18n.t('users.active')}</span>
               </>
             )}
             {user.forcePasswordReset ? (
-              <span className="font-bold text-amber-500 text-[10px] tracking-tight uppercase">Reset Required</span>
+              <span className="font-bold text-amber-500 text-[10px] tracking-tight uppercase">{AdminI18n.t('users.resetRequired')}</span>
             ) : null}
           </div>
         )
@@ -78,7 +79,7 @@ export class UsersColumns {
         accessor: (user: IUser) => (
           <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">
             <FrameworkIcons.Calendar size={14} className="opacity-50" />
-            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Initial'}
+            {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : AdminI18n.t('users.initial')}
           </div>
         )
       }

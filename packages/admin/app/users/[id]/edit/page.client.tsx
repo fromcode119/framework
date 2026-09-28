@@ -9,6 +9,7 @@ import { EditUserFormFields } from '@/app/users/[id]/edit/components/view/edit-u
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { SelfAccount } from '@/lib/self-account';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditUserPage extends AdminComponent {
   @prop declare params: Promise<{ id: string }>;
@@ -82,13 +83,13 @@ export class EditUserPage extends AdminComponent {
     const formData = this.formData;
     const routeId = this.routeId;
     if (formData.password && formData.password !== formData.confirmPassword) {
-      this.errors = { confirmPassword: 'Passwords do not match' };
+      this.errors = { confirmPassword: AdminI18n.t('users.passwordsDoNotMatch') };
       this.saving = false;
       return;
     }
 
     if (this.selfService && formData.password && !formData.currentPassword) {
-      this.errors = { currentPassword: 'Enter your current password to set a new one' };
+      this.errors = { currentPassword: AdminI18n.t('users.enterYourCurrentPasswordTo') };
       this.saving = false;
       return;
     }
@@ -105,7 +106,7 @@ export class EditUserPage extends AdminComponent {
       this.router.push(AdminConstants.ROUTES.USERS.DETAIL(routeId));
     } catch (err: any) {
       console.error('Failed to update user:', err);
-      this.errors = { global: err.message || 'Failed to update user' };
+      this.errors = { global: err.message || AdminI18n.t('users.failedToUpdateUser') };
     } finally {
       this.saving = false;
     }
@@ -119,7 +120,7 @@ export class EditUserPage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Synchronizing Identity Details..." />
+          <Loader label={AdminI18n.t('users.synchronizingIdentityDetails')} />
         </div>
       );
     }

@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/view/button.client';
 import { RolePermissionGroup } from '@/app/users/roles/components/view/role-permission-group.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * The permission picker the create and edit role screens share: the framework's permissions, then
@@ -26,15 +28,14 @@ export class RolePermissionsEditor extends PureReactor {
     return (
       <div className="fc-scope-notice">
         <span className="fc-scope-notice__text">
-          This role also lists {unknown.map((name, index) => <span key={name}>{index > 0 ? ', ' : ''}<code>{name}</code></span>)}.
-          Nothing on this site checks {unknown.length === 1 ? 'it' : 'them'}, so {unknown.length === 1 ? 'it grants' : 'they grant'} nothing here.
+          <AdminRichText k={unknown.length === 1 ? 'users.unknownPermissionOne' : 'users.unknownPermissionMany'} vars={{ names: unknown.map((name) => `<code>${name}</code>`).join(', ') }} />
         </span>
         <Button
           type="button"
           onClick={() => this.onChange(this.selected.filter((name) => !unknown.includes(name)))}
           className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
         >
-          Remove
+          {AdminI18n.t('users.remove')}
         </Button>
       </div>
     );
@@ -44,16 +45,15 @@ export class RolePermissionsEditor extends PureReactor {
     const { groups, selected, loadError } = this;
     const everything = selected.includes('*');
     return (
-      <Card title="Permissions">
+      <Card title={AdminI18n.t('users.permissions')}>
         <div className="flex flex-col gap-3">
           <p className="text-[11px] text-slate-500">
-            A user sees a screen in the console only when their role opens it. A collection&apos;s list needs <strong>Read</strong>;
-            adding, editing and removing its records need <strong>Create</strong>, <strong>Update</strong> and <strong>Delete</strong>.
+            <AdminRichText k="users.permissionsExplained" />
           </p>
           {loadError ? <div className="fc-scope-notice"><span className="fc-scope-notice__text">{loadError}</span></div> : null}
           {everything ? (
             <div className="fc-scope-notice">
-              <span className="fc-scope-notice__text">This role holds <strong>Everything</strong>, so every permission below is already included.</span>
+              <span className="fc-scope-notice__text"><AdminRichText k="users.roleHoldsEverything" /></span>
             </div>
           ) : null}
           {this.renderUnrecognised()}

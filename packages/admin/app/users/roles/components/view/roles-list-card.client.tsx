@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import Link from 'next/link';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RolesListCard extends PureReactor {
   @prop declare roles: any[];
@@ -17,7 +18,7 @@ export class RolesListCard extends PureReactor {
   render(): ReactNode {
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title="System Roles & Security Groups">
+      <Card title={AdminI18n.t('users.systemRolesSecurityGroups')}>
         <div className="space-y-2">
           {this.roles.map((role) => {
             const isSystem = role.type === 'system';
@@ -36,7 +37,7 @@ export class RolesListCard extends PureReactor {
                       <h3 className={`text-sm font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{role.name}</h3>
                       <code className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
                     </div>
-                    <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || 'No description'}</p>
+                    <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || AdminI18n.t('users.noDescription')}</p>
                   </div>
                 </div>
 
@@ -48,7 +49,7 @@ export class RolesListCard extends PureReactor {
                   {isSystem ? (
                     <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500">
                       <FrameworkIcons.Lock size={11} strokeWidth={2} />
-                      <span className="font-semibold uppercase tracking-tight text-[10px]">Locked</span>
+                      <span className="font-semibold uppercase tracking-tight text-[10px]">{AdminI18n.t('users.locked')}</span>
                     </span>
                   ) : (
                     <div className="flex items-center gap-1.5">

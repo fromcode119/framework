@@ -16,6 +16,7 @@ import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/pers
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { PersonEditPageActions } from '@/app/users/people/[id]/page-actions.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One person — the record behind a customer or a colleague.
@@ -41,13 +42,13 @@ export class PersonEditPage extends PersonEditPageActions {
     const { person, loading, saving, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
 
     if (loading) {
-      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label="Loading person…" /></div>;
+      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('users.loadingPerson')} /></div>;
     }
 
     if (loadError) {
       return (
         <LoadErrorPanel
-          title="This person could not be loaded"
+          title={AdminI18n.t('users.thisPersonCouldNotBe')}
           message={loadError}
           onRetry={this.retryLoad}
           isRetrying={loading}
@@ -59,10 +60,10 @@ export class PersonEditPage extends PersonEditPageActions {
       // People belong to a site. With no site selected, "not found" usually means "in a site": say so,
       // as the plugin pages do, instead of implying the person does not exist.
       return (
-        <SiteScopeGate what={`People #${this.routeId}`}>
+        <SiteScopeGate what={AdminI18n.t('users.people2', { routeId: this.routeId })}>
           <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4">
-            <p className="font-bold text-slate-400">This person could not be found.</p>
-            <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">← Back to People</Link>
+            <p className="font-bold text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
+            <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">{AdminI18n.t('users.backToPeople')}</Link>
           </div>
         </SiteScopeGate>
       );
@@ -76,60 +77,60 @@ export class PersonEditPage extends PersonEditPageActions {
           theme={theme.value}
           backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
           icon={<FrameworkIcons.Edit size={18} strokeWidth={2} />}
-          title="Edit person"
-          subtitle={`${person.email || `IPerson #${person.id}`} · ${person.source || 'contact'} · ${linked ? `Linked (#${person.userId})` : 'No login account'}`}
+          title={AdminI18n.t('users.editPerson')}
+          subtitle={`${person.email || AdminI18n.t('users.iperson', { id: person.id })} · ${person.source || 'contact'} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
         <div className="flex-1 w-full px-6 lg:px-12 py-10">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
             <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-              <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>Identity</h3>
+              <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
               {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
               {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-bold dark:bg-emerald-500/10">{notice}</div> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {this.field('First name', 'firstName')}
-                {this.field('Last name', 'lastName')}
+                {this.field(AdminI18n.t('users.firstName2'), 'firstName')}
+                {this.field(AdminI18n.t('users.lastName2'), 'lastName')}
               </div>
-              {this.field('Display name', 'displayName')}
+              {this.field(AdminI18n.t('users.displayName'), 'displayName')}
               {this.field('Email', 'email', 'email', linked)}
-              {linked ? <p className="-mt-3 text-[11px] text-slate-400">This person has a login account; its email is changed on the account.</p> : null}
+              {linked ? <p className="-mt-3 text-[11px] text-slate-400">{AdminI18n.t('users.thisPersonHasALogin')}</p> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                 {this.field('Phone', 'phone', 'tel')}
-                {this.field('Birth date', 'birthDate', 'date')}
+                {this.field(AdminI18n.t('users.birthDate'), 'birthDate', 'date')}
               </div>
               <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">Save changes</Button>
+                <Button variant={ButtonVariant.PRIMARY} type="submit" isLoading={saving} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">{AdminI18n.t('users.saveChanges')}</Button>
                 {linked ? (
                   <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}
-                    className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">Send password reset email</Button>
+                    className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
                 ) : null}
-                <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">Cancel</Link>
+                <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</Link>
               </div>
             </form>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />
           </div>
 
           <div className={`mt-6 ${AdminClass.SURFACE} p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-            <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>Account management</h3>
+            <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>{AdminI18n.t('users.accountManagement')}</h3>
             <div className="flex flex-wrap items-center gap-3">
               {reassignOpen ? (
                 <>
                   <select value={reassignTo} onChange={(e) => { this.reassignTo = e.target.value; }}
                     className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-[12px] font-bold">
-                    <option value="__none__">— No login account (unlink) —</option>
+                    <option value="__none__">{AdminI18n.t('users.noLoginAccountUnlink')}</option>
                     {users.map((u) => <option key={u.id} value={String(u.id)}>{u.email || u.username || `user #${u.id}`} · #{u.id}</option>)}
                   </select>
-                  <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">Apply</Button>
-                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">Cancel</Button>
+                  <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.apply')}</Button>
+                  <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.cancel')}</Button>
                 </>
               ) : (
                 <Button variant={ButtonVariant.SECONDARY} type="button" icon={<FrameworkIcons.UserCheck size={14} />}
                   onClick={() => { this.reassignOpen = true; this.reassignTo = linked ? String(person.userId) : '__none__'; }}
-                  className="h-10 px-5 rounded-xl font-bold text-[12px]">Reassign / unlink login</Button>
+                  className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.reassignUnlinkLogin')}</Button>
               )}
-              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">Delete person</Button>
+              <Button variant={ButtonVariant.DANGER} type="button" icon={<FrameworkIcons.Trash size={14} />} onClick={() => { this.confirmDelete = true; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.deletePerson')}</Button>
             </div>
-            <p className="text-[11px] text-slate-400 mt-3">Deleting removes the person record permanently; the linked login account is kept.</p>
+            <p className="text-[11px] text-slate-400 mt-3">{AdminI18n.t('users.deletingRemovesThePersonRecord')}</p>
           </div>
 
           {/* The admin's own confirmation, as every other destructive action uses — not a second pair of
@@ -138,9 +139,9 @@ export class PersonEditPage extends PersonEditPageActions {
             isOpen={confirmDelete}
             onClose={() => { this.confirmDelete = false; }}
             onConfirm={() => this.remove()}
-            title="Delete this person?"
-            description={`${person.displayName || [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || `Person #${person.id}`} is removed from People permanently.${linked ? ' Their login account is kept.' : ''}`}
-            confirmLabel="Delete person"
+            title={AdminI18n.t('users.deleteThisPerson')}
+            description={AdminI18n.t('users.isRemovedFromPeoplePermanently', { value: person.displayName || [person.firstName, person.lastName].filter(Boolean).join(' ') || person.email || `Person #${person.id}`, value2: linked ? ' Their login account is kept.' : '' })}
+            confirmLabel={AdminI18n.t('users.deletePerson')}
             variant={ButtonVariant.DANGER}
             isLoading={deleting}
           />
@@ -148,8 +149,8 @@ export class PersonEditPage extends PersonEditPageActions {
           <div className="mt-6">
             <RecordsHub
               theme={theme.value}
-              title="Documents & records"
-              emptyHint="No documents or records linked to this person yet."
+              title={AdminI18n.t('users.documentsRecords')}
+              emptyHint={AdminI18n.t('users.noDocumentsOrRecordsLinked')}
               reloadKey={person.id}
               load={() => AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PERSON_RECORDS(this.routeId))}
               onOpenItem={(item: IRecordsHubItem) => this.openRecord(item)}

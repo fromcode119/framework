@@ -15,6 +15,7 @@ import { UsersColumns } from '@/app/users/components/view/users-columns.client';
 import { UsersRowActions } from '@/app/users/components/view/users-row-actions.client';
 import { UsersPageHeader } from '@/app/users/components/view/users-page-header.client';
 import type { IUser } from '@/app/users/interfaces/user.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UsersPage extends AdminComponent {
   private mounted = false;
@@ -60,7 +61,7 @@ export class UsersPage extends AdminComponent {
       console.error('Failed to fetch users:', err);
       // Without this the table fell back to "No user records match your query" — a positive claim
       // that the account list is empty, when in fact the request failed.
-      if (this.mounted) this.loadError = err instanceof Error && err.message ? err.message : 'The user list could not be loaded.';
+      if (this.mounted) this.loadError = err instanceof Error && err.message ? err.message : AdminI18n.t('users.theUserListCouldNot');
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -119,7 +120,7 @@ export class UsersPage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Decrypting User Database..." />
+          <Loader label={AdminI18n.t('users.decryptingUserDatabase')} />
         </div>
       );
     }
@@ -131,17 +132,17 @@ export class UsersPage extends AdminComponent {
         <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <StatCard
-              title="User Base"
+              title={AdminI18n.t('users.userBase')}
               value={stats.total.toLocaleString()}
               icon={<FrameworkIcons.Users size={20} />}
             />
             <StatCard
-              title="Active Now"
+              title={AdminI18n.t('users.activeNow')}
               value={stats.active.toLocaleString()}
               icon={<FrameworkIcons.UserCheck size={20} />}
             />
             <StatCard
-              title="Access Levels"
+              title={AdminI18n.t('users.accessLevels')}
               value={stats.roles.toLocaleString()}
               icon={<FrameworkIcons.Shield size={20} />}
             />
@@ -154,7 +155,7 @@ export class UsersPage extends AdminComponent {
               </div>
               <input
                 type="text"
-                placeholder="Search user base by name or email..."
+                placeholder={AdminI18n.t('users.searchUserBaseByName')}
                 value={searchQuery}
                 onChange={(e) => { this.searchQuery = e.target.value; }}
                 className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border transition-colors text-[13px] font-medium tracking-tight ${
@@ -177,7 +178,7 @@ export class UsersPage extends AdminComponent {
               limit={this.pageSize}
               page={this.currentPage}
               onPageChange={(p) => { this.page = p; }}
-              emptyMessage={this.loadError || 'No user records match your query'}
+              emptyMessage={this.loadError || AdminI18n.t('users.noUserRecordsMatchYour')}
               actions={(user) => (
                 <UsersRowActions
                   user={user}
@@ -197,18 +198,18 @@ export class UsersPage extends AdminComponent {
           onClose={() => { this.deleteConfirm = null; }}
           onConfirm={() => this.handleDelete()}
           isLoading={isDeleting}
-          title="Revoke Access?"
-          description={`This will permanently delete ${deleteConfirm?.email}'s account and revoke all system access. This action cannot be undone.`}
-          confirmLabel="Deactivate User"
+          title={AdminI18n.t('users.revokeAccess')}
+          description={AdminI18n.t('users.thisWillPermanentlyDeleteS', { email: deleteConfirm?.email })}
+          confirmLabel={AdminI18n.t('users.deactivateUser')}
         />
 
         <AdminPageFooter
-          label="User Management Infrastructure"
-          description="Manage user accounts and security roles."
+          label={AdminI18n.t('users.userManagementInfrastructure')}
+          description={AdminI18n.t('users.manageUserAccountsAndSecurity')}
           links={[
-            { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
-            { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
+            { label: AdminI18n.t('users.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+            { label: AdminI18n.t('users.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
+            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
           ]}
         />
       </div>

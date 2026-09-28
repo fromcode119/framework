@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import Link from 'next/link';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserProfileHeader extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -33,7 +34,7 @@ export class UserProfileHeader extends PureReactor {
                 className="px-4 h-9 rounded-lg font-semibold text-xs"
                 icon={<FrameworkIcons.Settings size={15} />}
               >
-                Edit profile
+                {AdminI18n.t('users.editProfile')}
               </Button>
             </Link>
             {this.selfService ? (
@@ -42,7 +43,7 @@ export class UserProfileHeader extends PureReactor {
                   className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
-                  Security
+                  {AdminI18n.t('users.security')}
                 </Button>
               </Link>
             ) : (
@@ -51,7 +52,7 @@ export class UserProfileHeader extends PureReactor {
                   className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
-                  Configure RBAC
+                  {AdminI18n.t('users.configureRbac')}
                 </Button>
               </Link>
             )}

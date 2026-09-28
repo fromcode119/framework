@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserRolesPage extends AdminComponent {
   private mounted = false;
@@ -62,10 +63,10 @@ export class UserRolesPage extends AdminComponent {
         userId: this.routeId,
         roles: this.selectedRoles
       });
-      this.runtime.notify.notify(NotificationType.SUCCESS, 'Roles updated', 'The user\'s roles were saved.');
+      this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('users.rolesUpdated'), AdminI18n.t('users.theUserSRolesWere'));
       this.router.push('/users');
     } catch (err: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Save failed', err?.message || 'Failed to save roles.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('users.saveFailed'), err?.message || AdminI18n.t('users.failedToSaveRoles'));
     } finally {
       this.saving = false;
     }
@@ -82,15 +83,15 @@ export class UserRolesPage extends AdminComponent {
     const { user, roles, selectedRoles, loading, saving } = this;
 
     const dark = theme === ThemeMode.DARK;
-    if (loading) return <Loader label="Loading roles" className="py-20" />;
-    if (!user) return <div className="p-8 text-center font-semibold text-red-500">User not found</div>;
+    if (loading) return <Loader label={AdminI18n.t('users.loadingRoles')} className="py-20" />;
+    if (!user) return <div className="p-8 text-center font-semibold text-red-500">{AdminI18n.t('users.userNotFound2')}</div>;
 
     return (
       <div className="w-full flex flex-col animate-in fade-in duration-300">
         <CompactPageHeader
           theme={theme}
           backHref="/users"
-          title="Manage roles"
+          title={AdminI18n.t('users.manageRoles2')}
           subtitle={user.email}
           actions={
             <Button
@@ -99,7 +100,7 @@ export class UserRolesPage extends AdminComponent {
               onClick={() => void this.handleSave()}
               icon={<FrameworkIcons.Save size={14} strokeWidth={2} />}
             >
-              Save
+              {AdminI18n.t('users.save')}
             </Button>
           }
         />
@@ -128,7 +129,7 @@ export class UserRolesPage extends AdminComponent {
                   <span className="flex-1 min-w-0">
                     <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-100' : 'text-slate-900'}`}>{role.name}</span>
                     <span className="block text-xs font-medium text-slate-500 truncate">
-                      {role.description || 'No description'}{permCount ? ` · ${permCount} permission${permCount === 1 ? '' : 's'}` : ''}
+                      {role.description || AdminI18n.t('users.noDescription')}{permCount ? ` · ${permCount} permission${permCount === 1 ? '' : 's'}` : ''}
                     </span>
                   </span>
                   <span className={`h-5 w-5 shrink-0 rounded-full border flex items-center justify-center transition-colors ${

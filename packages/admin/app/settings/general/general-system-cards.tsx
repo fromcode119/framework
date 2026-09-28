@@ -39,13 +39,13 @@ export class GeneralSystemCards extends PureReactor {
   /** The three clocks, with "follow the language" saying which one it currently resolves to. */
   private get timeFormatOptions(): { label: string; value: string }[] {
     const language = SiteClock.siteLanguage();
-    const followed = TimeFormatUtils.languageUses12Hour(language) ? '12-hour' : '24-hour';
+    const followed = TimeFormatUtils.languageUses12Hour(language) ? AdminI18n.t('settings.general.clock12') : AdminI18n.t('settings.general.clock24');
     return [
       { value: TimeFormat.LOCALE.value, label: language
         ? AdminI18n.t('settings.general.followTheSiteLanguageNamed', { language, followed })
         : AdminI18n.t('settings.general.followTheSiteLanguage', { followed }) },
-      { value: TimeFormat.H24.value, label: '24-hour (16:02)' },
-      { value: TimeFormat.H12.value, label: '12-hour (4:02 PM)' },
+      { value: TimeFormat.H24.value, label: `${AdminI18n.t('settings.general.clock24')} (16:02)` },
+      { value: TimeFormat.H12.value, label: `${AdminI18n.t('settings.general.clock12')} (4:02 PM)` },
     ];
   }
 
