@@ -278,6 +278,12 @@ export class ThemeManager extends ThemeLifecycle {
   }
 
   protected resolveThemeDirectory(slug: string): string {
+    const ownerTenantId = String(this.themes.get(slug)?.ownerTenantId ?? '').trim();
+    if (ownerTenantId) {
+      const tenantPath = path.join(ProjectPaths.tenantArtifactsRoot(this.themesRoot), ownerTenantId, slug);
+      if (fs.existsSync(tenantPath)) return tenantPath;
+      throw new Error(`Theme directory for site-owned theme "${slug}" was not found at ${tenantPath}`);
+    }
     const directPath = path.join(this.themesRoot, slug);
     if (fs.existsSync(directPath)) return directPath;
     if (!fs.existsSync(this.themesRoot)) throw new Error(`Themes root not found: ${this.themesRoot}`);

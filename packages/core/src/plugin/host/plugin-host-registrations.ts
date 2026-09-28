@@ -13,6 +13,7 @@ import type { IRequestStore } from '@core/context/interfaces/request-store.inter
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
+import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
 
 /**
  * The host's stand-ins for what the guest registered: each one is registered on the REAL context
@@ -49,6 +50,7 @@ export class PluginHostRegistrations {
    */
   /** `invoke` defaults to the current process; a per-site run started while a replacement initialises goes to THAT one. */
   apply(context: PluginContext, registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown> = this.invoke): void | Promise<number | undefined> {
+    TenantPluginRuntimePolicy.assertRegistration(this.slug, registration);
     switch (registration.kind) {
       case String(PluginGuestRegistrationKind.ROUTE.value): return this.route(context, registration);
       case String(PluginGuestRegistrationKind.USE.value): return this.use(context, registration);

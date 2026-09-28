@@ -95,6 +95,17 @@ describe('what a site may upload as a theme', () => {
     expect(TenantThemePackagePolicy.violations(dir, manifest())[0]).toMatch(/native binary/i);
   });
 
+  it('refuses executable source outside the two browser asset directories', () => {
+    const withRootServer = packageDir((root) => fs.writeFileSync(path.join(root, 'server.mjs'), 'export default process.env;'));
+    const withSource = packageDir((root) => {
+      fs.mkdirSync(path.join(root, 'src'));
+      fs.writeFileSync(path.join(root, 'src', 'on-install.js'), 'module.exports = process;');
+    });
+
+    expect(TenantThemePackagePolicy.violations(withRootServer, manifest())[0]).toMatch(/theme\.json, ui\/ and public\//);
+    expect(TenantThemePackagePolicy.violations(withSource, manifest())[0]).toMatch(/theme\.json, ui\/ and public\//);
+  });
+
   it('reports EVERY reason at once, so an uploader does not find them one upload at a time', () => {
     const dir = packageDir((root) => {
       fs.mkdirSync(path.join(root, 'ui-ssr'));
