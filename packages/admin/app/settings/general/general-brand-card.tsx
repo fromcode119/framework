@@ -14,6 +14,8 @@ import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { MediaRelationField } from '@/components/collection/view/media-relation-field.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -46,6 +48,11 @@ export class GeneralBrandCard extends PureReactor {
   @bound
   protected onEmailLogoChange(value: unknown): void {
     this.patchSetting('email_logo', value ? String(value) : '');
+  }
+
+  @bound
+  protected onEmailLogoRemove(): void {
+    this.patchSetting('email_logo', '');
   }
 
   @bound
@@ -126,7 +133,15 @@ export class GeneralBrandCard extends PureReactor {
             description={AdminI18n.t('settings.general.emailLogoDescription')}
             stacked
           >
-            <MediaRelationField value={settings.email_logo || ''} onChange={this.onEmailLogoChange} theme={theme} />
+            {/* A logo, not a banner: the picker's preview fills its container, so the row sets the size. */}
+            <div className="max-w-xs space-y-2">
+              <MediaRelationField value={settings.email_logo || ''} onChange={this.onEmailLogoChange} theme={theme} />
+              {settings.email_logo && (
+                <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={this.onEmailLogoRemove}>
+                  {AdminI18n.t('settings.general.removeEmailLogo')}
+                </Button>
+              )}
+            </div>
           </SettingRow>
         )}
 
