@@ -13,6 +13,8 @@ import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { SiteClock } from '@/lib/site-clock';
 import { TimeFormat, TimeFormatUtils } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class GeneralSystemCards extends PureReactor {
   /** Which of these belong to the PLATFORM — asked of the server, never listed here. */
@@ -39,7 +41,9 @@ export class GeneralSystemCards extends PureReactor {
     const language = SiteClock.siteLanguage();
     const followed = TimeFormatUtils.languageUses12Hour(language) ? '12-hour' : '24-hour';
     return [
-      { value: TimeFormat.LOCALE.value, label: `Follow the site language${language ? ` (${language}: ${followed})` : ` (${followed})`}` },
+      { value: TimeFormat.LOCALE.value, label: language
+        ? AdminI18n.t('settings.general.followTheSiteLanguageNamed', { language, followed })
+        : AdminI18n.t('settings.general.followTheSiteLanguage', { followed }) },
       { value: TimeFormat.H24.value, label: '24-hour (16:02)' },
       { value: TimeFormat.H12.value, label: '12-hour (4:02 PM)' },
     ];
@@ -96,18 +100,18 @@ export class GeneralSystemCards extends PureReactor {
     return (
       <>
         {this.shown('timezone') && (
-          <Card title="Regional Defaults">
+          <Card title={AdminI18n.t('settings.general.regionalDefaults')}>
             <SettingRow
               theme={theme}
               icon={FrameworkIcons.Clock}
-              title="System Timezone"
-              description={'The default timezone for content scheduling and logging.'}
+              title={AdminI18n.t('settings.general.systemTimezone')}
+              description={AdminI18n.t('settings.general.theDefaultTimezoneForContent')}
             >
               <Select
                 value={settings.timezone}
                 onChange={this.changeTimezone}
                 options={this.timezoneOptions}
-                placeholder="Select system timezone"
+                placeholder={AdminI18n.t('settings.general.selectSystemTimezone')}
                 searchable
                 theme={theme}
                 className="w-full md:w-80"
@@ -118,8 +122,8 @@ export class GeneralSystemCards extends PureReactor {
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Clock}
-                title="Time format"
-                description={'12- or 24-hour clock for times across the admin. Unset follows the site language.'}
+                title={AdminI18n.t('settings.general.timeFormat')}
+                description={AdminI18n.t('settings.general.12Or24HourClock')}
               >
                 <Select
                   value={TimeFormat.resolve(settings.time_format).value}
@@ -135,13 +139,13 @@ export class GeneralSystemCards extends PureReactor {
         )}
 
         {this.anyShown('notification_email', 'notification_email_cc', 'email_notifications') && (
-          <Card title="Notifications">
+          <Card title={AdminI18n.t('settings.general.notifications')}>
             {this.shown('notification_email') && (
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Mail}
-                title="Notification Email"
-                description={'Single system-wide destination for internal form and platform notifications.'}
+                title={AdminI18n.t('settings.general.notificationEmail')}
+                description={AdminI18n.t('settings.general.singleSystemWideDestinationFor')}
               >
                 <Input
                   value={settings.notification_email}
@@ -156,8 +160,8 @@ export class GeneralSystemCards extends PureReactor {
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Users}
-                title="Notification CC Emails"
-                description={'Optional global CC recipients. Separate multiple emails with commas.'}
+                title={AdminI18n.t('settings.general.notificationCcEmails')}
+                description={AdminI18n.t('settings.general.optionalGlobalCcRecipientsSeparate')}
               >
                 <Input
                   value={settings.notification_email_cc}
@@ -172,8 +176,8 @@ export class GeneralSystemCards extends PureReactor {
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Mail}
-                title="Email Telemetry"
-                description={'Receive critical system alerts and weekly summaries via email. Telemetry uses the Notification Email and Notification CC Emails above.'}
+                title={AdminI18n.t('settings.general.emailTelemetry')}
+                description={AdminI18n.t('settings.general.receiveCriticalSystemAlertsAnd')}
               >
                 <div className="flex items-center gap-3">
                   <Switch
@@ -186,7 +190,7 @@ export class GeneralSystemCards extends PureReactor {
                     icon={<FrameworkIcons.Mail size={13} />}
                     className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
                   >
-                    Send Test
+                    {AdminI18n.t('settings.general.sendTest')}
                   </Button>
                 </div>
               </SettingRow>
@@ -195,24 +199,18 @@ export class GeneralSystemCards extends PureReactor {
         )}
 
         {this.shown('admin_search_indexing') && (
-          <Card title="Search Engines">
+          <Card title={AdminI18n.t('settings.general.searchEngines')}>
             <SettingRow
               theme={theme}
               icon={FrameworkIcons.Lock}
-              title="Index Platform Hosts"
-              description={<>Let search engines index this admin console, every workspace console, and every <code>api.</code> host.</>}
+              title={AdminI18n.t('settings.general.indexPlatformHosts')}
+              description={<AdminRichText k="settings.general.indexPlatformHostsDescription" />}
               explanation={(
                 <Explanation>
-                  <p>
-                    <strong>Does not apply to</strong> the storefront sites you host — each follows its own
-                    {' '}&ldquo;Visible to&rdquo; setting under Sites, and nothing here changes it.
-                  </p>
-                  <p>
-                    <strong>Off</strong> — those hosts answer <code>robots.txt</code> with <code>Disallow: /</code>,
-                    and every response carries <code>X-Robots-Tag: noindex, nofollow, noarchive</code>.
-                  </p>
-                  <p><strong>On</strong> — they answer <code>Allow: /</code> and send no such header.</p>
-                  <p>Off by default: the login page names the platform and the customer, and the URLs describe the installation.</p>
+                  <p><AdminRichText k="settings.general.indexNotStorefronts" /></p>
+                  <p><AdminRichText k="settings.general.indexOff" /></p>
+                  <p><AdminRichText k="settings.general.indexOn" /></p>
+                  <p>{AdminI18n.t('settings.general.offByDefaultTheLogin')}</p>
                 </Explanation>
               )}
             >
@@ -225,13 +223,13 @@ export class GeneralSystemCards extends PureReactor {
         )}
 
         {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled') && (
-          <Card title="Frontend Auth">
+          <Card title={AdminI18n.t('settings.general.frontendAuth')}>
             {this.shown('frontend_auth_enabled') && (
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Lock}
-                title="Frontend Authentication"
-                description={'Enable public customer authentication routes such as register, verify email, forgot password and reset password.'}
+                title={AdminI18n.t('settings.general.frontendAuthentication')}
+                description={AdminI18n.t('settings.general.enablePublicCustomerAuthenticationRoutes')}
               >
                 <Switch
                   checked={settings.frontend_auth_enabled}
@@ -244,8 +242,8 @@ export class GeneralSystemCards extends PureReactor {
               <SettingRow
                 theme={theme}
                 icon={FrameworkIcons.Users}
-                title="Frontend Registration"
-                description={'Allow new customer self-registration at /register.'}
+                title={AdminI18n.t('settings.general.frontendRegistration')}
+                description={AdminI18n.t('settings.general.allowNewCustomerSelfRegistration')}
               >
                 <Switch
                   checked={settings.frontend_registration_enabled}

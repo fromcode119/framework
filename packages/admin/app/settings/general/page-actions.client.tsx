@@ -6,6 +6,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { GeneralSettingsPageState } from '@/app/settings/general/page-state.client';
 import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Reading the general settings, writing them back, and proving the telemetry address works.
@@ -21,7 +22,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       this.settings = GeneralSettingsPageActions.mapResponse(response);
     } catch (err: any) {
       this.settings = null;
-      this.loadError = err?.message || 'The system settings request failed.';
+      this.loadError = err?.message || AdminI18n.t('settings.general.theSystemSettingsRequestFailed');
     } finally {
       this.isLoading = false;
     }
@@ -110,8 +111,8 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
 
     if (Object.keys(sendable).length === 0) {
       addNotification({
-        title: 'Nothing To Save',
-        message: 'Nothing on this page can be changed in the current scope.',
+        title: AdminI18n.t('settings.general.nothingToSave'),
+        message: AdminI18n.t('settings.general.nothingOnThisPageCan'),
         type: NotificationType.ERROR
       });
       return;
@@ -127,15 +128,15 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       this.registerSettings(settings);
 
       addNotification({
-        title: 'Settings Saved',
-        message: 'Configuration updated successfully.',
+        title: AdminI18n.t('settings.general.settingsSaved'),
+        message: AdminI18n.t('settings.general.configurationUpdatedSuccessfully'),
         type: NotificationType.SUCCESS
       });
     } catch (err: any) {
       // Was a single opaque sentence for every failure, so a 403 was indistinguishable from a bad URL.
       addNotification({
-        title: 'Save Failed',
-        message: err?.message || 'Could not save settings.',
+        title: AdminI18n.t('settings.general.saveFailed'),
+        message: err?.message || AdminI18n.t('settings.general.couldNotSaveSettings'),
         type: NotificationType.ERROR
       });
     } finally {
@@ -151,16 +152,18 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       const result = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.EMAIL_TELEMETRY_TEST, {});
       const recipientsCount = Number(result?.recipientsCount || 0);
       addNotification({
-        title: 'Telemetry Test Sent',
+        title: AdminI18n.t('settings.general.telemetryTestSent'),
         message: recipientsCount > 0
-          ? `Test email dispatched to ${recipientsCount} recipient${recipientsCount === 1 ? '' : 's'}.`
-          : 'Test email dispatched.',
+          ? (recipientsCount === 1
+            ? AdminI18n.t('settings.general.testEmailDispatchedOne')
+            : AdminI18n.t('settings.general.testEmailDispatchedMany', { count: recipientsCount }))
+          : AdminI18n.t('settings.general.testEmailDispatched'),
         type: NotificationType.SUCCESS
       });
     } catch (err: any) {
       addNotification({
-        title: 'Test Failed',
-        message: err?.message || 'Failed to send telemetry test email.',
+        title: AdminI18n.t('settings.general.testFailed'),
+        message: err?.message || AdminI18n.t('settings.general.failedToSendTelemetryTest'),
         type: NotificationType.ERROR
       });
     } finally {
