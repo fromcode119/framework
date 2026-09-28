@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.244] - 2026-09-28
+
+### Fixed
+
+- **frontend**: a site without its own favicon gets the framework mark, not an empty 204 ([#497](https://github.com/fromcode119/framework/pull/497))
+
 ## [0.2.243] - 2026-09-28
 
 ### Added
