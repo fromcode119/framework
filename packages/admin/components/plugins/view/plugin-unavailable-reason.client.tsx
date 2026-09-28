@@ -3,6 +3,7 @@ import { state, prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Why a screen is missing, when the extension behind it exists but is not running.
@@ -43,16 +44,16 @@ export class PluginUnavailableReason extends AdminComponent {
   /** The state in the words an operator can act on, never the enum value on its own. */
   private static describe(state: string, entry: Record<string, any>): string {
     if (state === 'error') {
-      return 'It is installed, but stopped after an error. The Plugin Health screen has the details.';
+      return AdminI18n.t('plugins.list.itIsInstalledButStopped');
     }
     if (state === 'held') {
       const added = (entry.addedCapabilities || []).join(', ');
       return added
-        ? `It is held for review because it now asks for: ${added}. Approve it on the Plugin Health screen.`
-        : 'It is held for review. The Plugin Health screen has the details.';
+        ? AdminI18n.t('plugins.list.itIsHeldForReview', { added: added })
+        : AdminI18n.t('plugins.list.itIsHeldForReview2');
     }
     if (state === 'inactive') {
-      return 'It is installed but disabled.';
+      return AdminI18n.t('plugins.list.itIsInstalledButDisabled');
     }
     return '';
   }

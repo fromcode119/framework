@@ -4,6 +4,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Nested entity page — e.g. /<plugin>/<collection>/3/<sub-collection>.
@@ -77,7 +78,7 @@ export class NestedEntityRoute extends AdminComponent {
       return (
         <div className="p-8">
           <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 px-5 py-4 text-sm">
-            No slot registered for <code className="font-mono">{slotName}</code>.
+            {AdminI18n.t('plugins.list.noSlot', { slot: slotName })}
           </div>
         </div>
       );

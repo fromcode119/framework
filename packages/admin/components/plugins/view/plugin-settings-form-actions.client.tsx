@@ -4,6 +4,7 @@ import { bound } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginSettingsFormState } from '@/components/plugins/view/plugin-settings-form-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Loading, saving, resetting, exporting and importing a plugin's settings.
@@ -47,7 +48,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
       if (err.status === 404) {
         this.schema = { fields: [] };
       } else {
-        this.status = { type: NotificationType.ERROR, message: 'Failed to load plugin settings.' };
+        this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.failedToLoadPluginSettings') };
       }
     } finally {
       this.loading = false;
@@ -63,15 +64,15 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
     try {
       await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(this.pluginSlug), this.settings);
       this.isDirty = false;
-      this.status = { type: NotificationType.SUCCESS, message: 'Settings saved successfully!' };
+      this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsSavedSuccessfully') };
       this.triggerRefresh();
     } catch (err: any) {
       console.error('Save error:', err);
       if (err.data?.errors) {
         this.errors = err.data.errors;
-        this.status = { type: NotificationType.ERROR, message: 'Validation failed. Please check the fields below.' };
+        this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.validationFailedPleaseCheckThe') };
       } else {
-        this.status = { type: NotificationType.ERROR, message: err.message || 'Failed to save settings.' };
+        this.status = { type: NotificationType.ERROR, message: err.message || AdminI18n.t('plugins.list.failedToSaveSettings') };
       }
     } finally {
       this.saving = false;
@@ -80,7 +81,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
 
   @bound
   async resetSettings(): Promise<void> {
-    if (!confirm('Reset all settings to defaults? This cannot be undone.')) {
+    if (!confirm(AdminI18n.t('plugins.list.resetAllSettingsToDefaults'))) {
       return;
     }
 
@@ -89,10 +90,10 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
       const nextSettings = res.settings || {};
       this.settings = nextSettings;
       this.isDirty = false;
-      this.status = { type: NotificationType.SUCCESS, message: 'Settings reset to defaults.' };
+      this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsResetToDefaults') };
       this.triggerRefresh();
     } catch (err: any) {
-      this.status = { type: NotificationType.ERROR, message: 'Failed to reset: ' + err.message };
+      this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.resetFailed', { reason: err.message }) };
     }
   }
 
@@ -121,9 +122,9 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
         await this.loadSettings();
         this.isDirty = false;
         this.triggerRefresh();
-        this.status = { type: NotificationType.SUCCESS, message: 'Settings imported successfully.' };
+        this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsImportedSuccessfully') };
       } catch (error: any) {
-        this.status = { type: NotificationType.ERROR, message: 'Import failed: ' + error.message };
+        this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.importFailed', { reason: error.message }) };
       }
     };
     reader.readAsText(file);

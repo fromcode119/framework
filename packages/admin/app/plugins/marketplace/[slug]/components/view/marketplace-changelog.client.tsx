@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceChangelog extends PureReactor {
   @prop declare plugin: IPluginEntry;
@@ -17,7 +18,7 @@ export class MarketplaceChangelog extends PureReactor {
       <div className="space-y-4">
          <div className="flex items-center gap-4">
             <div className={`h-8 w-1.5 rounded-full ${theme === ThemeMode.DARK ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
-            <h3 className={`text-[11px] font-bold uppercase tracking-widest ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>Technical Changelog</h3>
+            <h3 className={`text-[11px] font-bold uppercase tracking-widest ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>{AdminI18n.t('plugins.list.technicalChangelog')}</h3>
             <div className={`h-px flex-1 ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
          </div>
 

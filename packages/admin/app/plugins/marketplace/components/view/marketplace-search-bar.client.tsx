@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceSearchBar extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -19,7 +20,7 @@ export class MarketplaceSearchBar extends PureReactor {
         <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
         <input
           type="text"
-          placeholder="Search global marketplace..."
+          placeholder={AdminI18n.t('plugins.list.searchGlobalMarketplace')}
           value={searchQuery}
           onChange={(e) => onChange(e.target.value)}
           className={`w-full h-9 ${AdminClass.SURFACE} pl-11 pr-4 outline-none border-0 font-bold transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-sm' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-sm'}`}

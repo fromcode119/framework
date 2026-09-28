@@ -7,6 +7,7 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PluginHealthView } from '@/app/plugins/health/components/view/plugin-health-view.client';
 import { PluginHealthPageController } from '@/app/plugins/health/plugin-health-page-controller';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginHealthPageClient extends AdminComponent {
   private mounted = false;
@@ -64,11 +65,11 @@ export class PluginHealthPageClient extends AdminComponent {
     this.busySlug = slug;
     try {
       await PluginHealthPageController.approveEnable(slug);
-      notify(NotificationType.SUCCESS, 'Plugin Approved', `${slug} has been re-approved and enabled.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginApproved'), AdminI18n.t('plugins.list.hasBeenReApprovedAnd', { slug: slug }));
       await this.fetchReport();
       triggerRefresh?.();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Approval Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.approvalFailed'), error.message);
     } finally {
       if (this.mounted) {
         this.isBusy = false;
@@ -84,14 +85,14 @@ export class PluginHealthPageClient extends AdminComponent {
     try {
       const outcome = await PluginHealthPageController.loadInstalled(slug);
       if (outcome.restartScheduled) {
-        notify(NotificationType.INFO, 'API restarting', `${slug} runs inside the API, so the API is restarting to load the installed version. The admin is unavailable for a few seconds.`);
+        notify(NotificationType.INFO, 'API restarting', AdminI18n.t('plugins.list.runsInsideTheApiSo', { slug: slug }));
         return;
       }
-      notify(NotificationType.SUCCESS, 'Installed version loaded', `${slug}'s process was replaced on the installed version. Nothing else was restarted.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.installedVersionLoaded'), AdminI18n.t('plugins.list.sProcessWasReplacedOn', { slug: slug }));
       await this.fetchReport();
       this.runtime.plugins?.triggerRefresh?.();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Could not load the installed version', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.couldNotLoadTheInstalled'), error.message);
     } finally {
       if (this.mounted) {
         this.isBusy = false;
@@ -107,14 +108,14 @@ export class PluginHealthPageClient extends AdminComponent {
     try {
       const failed = await PluginHealthPageController.reapproveAll();
       if (failed.length > 0) {
-        notify(NotificationType.ERROR, 'Re-approval Incomplete', PluginHealthPageController.reapprovalFailureMessage(failed));
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalIncomplete'), PluginHealthPageController.reapprovalFailureMessage(failed));
       } else {
-        notify(NotificationType.SUCCESS, 'Plugins Re-approved', 'All held plugins have been re-approved and enabled.');
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginsReApproved'), AdminI18n.t('plugins.list.allHeldPluginsHaveBeen'));
       }
       await this.fetchReport();
       triggerRefresh?.();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Re-approval Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalFailed'), error.message);
     } finally {
       if (this.mounted) this.isBusy = false;
     }
@@ -123,7 +124,7 @@ export class PluginHealthPageClient extends AdminComponent {
   render(): ReactNode {
     if (!this.canManagePlatform) {
       return (
-        <PlatformOnlyPanel detail="Plugin health reports the registry of the container every site runs on — which plugins are active, held or failing for the whole platform. Only a platform admin can see or act on it. Your own site's plugins, and each one's settings, are under Plugins." />
+        <PlatformOnlyPanel detail={AdminI18n.t('plugins.list.pluginHealthReportsTheRegistry')} />
       );
     }
 

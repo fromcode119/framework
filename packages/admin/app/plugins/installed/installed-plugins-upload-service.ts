@@ -1,6 +1,7 @@
 import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview-section.interface';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class InstalledPluginsUploadService {
   private static readonly MAX_CHUNK_RETRIES = 3;
@@ -28,15 +29,15 @@ export class InstalledPluginsUploadService {
   static buildUploadProgressLabel(loadedBytes: number, totalBytes: number, percent: number, stalled = false): string {
     const bytesLabel = `${InstalledPluginsUploadService.formatBytes(loadedBytes)} of ${InstalledPluginsUploadService.formatBytes(totalBytes)}`;
     if (loadedBytes <= 0) {
-      return `Preparing plugin upload... ${bytesLabel}`;
+      return AdminI18n.t('plugins.list.preparingPluginUpload', { bytesLabel: bytesLabel });
     }
     if (percent >= 99) {
-      return `Upload finished. Inspecting plugin package... ${bytesLabel}`;
+      return AdminI18n.t('plugins.list.uploadFinishedInspectingPluginPackage', { bytesLabel: bytesLabel });
     }
     if (stalled) {
-      return `Uploading plugin package... ${bytesLabel}. Progress updates may pause for large files.`;
+      return AdminI18n.t('plugins.list.uploadingPluginPackageProgressUpdates', { bytesLabel: bytesLabel });
     }
-    return `Uploading plugin package... ${bytesLabel}`;
+    return AdminI18n.t('plugins.list.uploadingPluginPackage', { bytesLabel: bytesLabel });
   }
 
   static normalizeUploadPercent(loadedBytes: number, totalBytes: number): number {
@@ -77,32 +78,32 @@ export class InstalledPluginsUploadService {
 
     return [
       {
-        title: 'Summary',
+        title: AdminI18n.t('plugins.list.summary'),
         items: [
-          `Name: ${info?.name || 'Unknown'}`,
-          `Slug: ${info?.slug || 'Unknown'}`,
-          `Version: ${info?.version || 'Unknown'}`,
-          `Files: ${info?.files ?? 'Unknown'}`,
-          `UI bundle: ${info?.hasUiBundle ? 'Yes' : 'No'}`,
+          AdminI18n.t('plugins.upload.name', { value: info?.name || AdminI18n.t('common.unknown') }),
+          AdminI18n.t('plugins.upload.slug', { value: info?.slug || AdminI18n.t('common.unknown') }),
+          AdminI18n.t('plugins.upload.version', { value: info?.version || AdminI18n.t('common.unknown') }),
+          AdminI18n.t('plugins.upload.files', { value: info?.files ?? AdminI18n.t('common.unknown') }),
+          AdminI18n.t('plugins.upload.uiBundle', { value: AdminI18n.t(info?.hasUiBundle ? 'common.yes' : 'common.no') }),
         ],
       },
       {
-        title: 'Dependencies',
-        items: dependencies.length ? dependencies : ['No required plugin dependencies'],
+        title: AdminI18n.t('plugins.list.dependencies'),
+        items: dependencies.length ? dependencies : [AdminI18n.t('plugins.upload.noDependencies')],
       },
       {
-        title: 'Peer Dependencies',
-        items: peerDependencies.length ? peerDependencies : ['No peer dependencies'],
+        title: AdminI18n.t('plugins.list.peerDependencies'),
+        items: peerDependencies.length ? peerDependencies : [AdminI18n.t('plugins.upload.noPeerDependencies')],
       },
       {
-        title: 'Install Impact',
+        title: AdminI18n.t('plugins.list.installImpact'),
         items: existing.installed
           ? [
-            `This will replace installed plugin "${info?.slug}".`,
-            `Current version: ${existing.version || 'Unknown'} (${existing.state || 'unknown'})`,
-            `Incoming version: ${info?.version || 'Unknown'}`,
+            AdminI18n.t('plugins.upload.replaces', { slug: info?.slug }),
+            AdminI18n.t('plugins.upload.currentVersion', { version: existing.version || AdminI18n.t('common.unknown'), state: existing.state || AdminI18n.t('common.unknown') }),
+            AdminI18n.t('plugins.upload.incomingVersion', { version: info?.version || AdminI18n.t('common.unknown') }),
           ]
-          : ['This plugin is not currently installed.'],
+          : [AdminI18n.t('plugins.upload.notInstalled')],
       },
     ];
   }
@@ -184,7 +185,7 @@ export class InstalledPluginsUploadService {
             }
 
             options.onProgress(
-              `Retrying chunk ${chunkIndex + 1} of ${totalChunks} after ${InstalledPluginsUploadService.toErrorMessage(error)}`,
+              AdminI18n.t('plugins.upload.retrying', { chunk: chunkIndex + 1, total: totalChunks, reason: InstalledPluginsUploadService.toErrorMessage(error) }),
               InstalledPluginsUploadService.normalizeUploadPercent(uploadedBytes, file.size),
             );
             await InstalledPluginsUploadService.waitBeforeRetry(attempt);
@@ -207,7 +208,7 @@ export class InstalledPluginsUploadService {
       return error.message;
     }
 
-    return String(error || 'Upload failed.');
+    return String(error || AdminI18n.t('plugins.upload.failed'));
   }
 
   private static readStatus(error: unknown): number {

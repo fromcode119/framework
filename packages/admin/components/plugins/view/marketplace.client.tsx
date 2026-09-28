@@ -12,6 +12,7 @@ import { Icon } from '@/components/view/icon.client';
 import { VersionComparisonService } from '@fromcode119/core/client';
 
 import type { IPluginEntry } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class Marketplace extends AdminComponent {
   private mounted = false;
@@ -45,7 +46,7 @@ export class Marketplace extends AdminComponent {
       this.installedPlugins = Array.isArray(instData) ? instData : [];
     } catch (err) {
       console.error('Failed to load marketplace data', err);
-      if (this.mounted) this.error = 'Failed to connect to the marketplace.';
+      if (this.mounted) this.error = AdminI18n.t('plugins.list.failedToConnectToThe');
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -55,13 +56,13 @@ export class Marketplace extends AdminComponent {
     const { notify } = this.runtime.notify;
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     try {
-      notify(NotificationType.INFO, 'Installation Started', `Downloading and staging ${slug}...`);
+      notify(NotificationType.INFO, AdminI18n.t('plugins.list.installationStarted'), AdminI18n.t('plugins.list.downloadingAndStaging', { slug: slug }));
       await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.INSTALL(slug), {});
-      notify(NotificationType.SUCCESS, 'Installation Complete', `Plugin "${slug}" installed successfully.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t('plugins.list.pluginInstalledSuccessfully', { slug: slug }));
       triggerRefresh?.();
       this.fetchData();
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Network Error', err.message || 'Failed to connect to server');
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.networkError'), err.message || AdminI18n.t('plugins.list.failedToConnectToServer'));
     }
   }
 
@@ -79,7 +80,7 @@ export class Marketplace extends AdminComponent {
         <div className="flex flex-col items-center justify-center h-96 gap-4">
           <FrameworkIcons.Loader className="h-10 w-10 animate-spin text-indigo-600" />
           <p className={`text-sm font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-            Connecting to Global Marketplace...
+            {AdminI18n.t('plugins.list.connectingToGlobalMarketplace')}
           </p>
         </div>
       );
@@ -91,16 +92,16 @@ export class Marketplace extends AdminComponent {
           <div className="mx-auto w-16 h-16 rounded-full bg-red-500/10 flex items-center justify-center mb-4">
              <FrameworkIcons.Alert size={40} className="text-red-500" />
           </div>
-          <h3 className={`text-lg font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Connection Error</h3>
+          <h3 className={`text-lg font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.list.connectionError')}</h3>
           <p className={`text-sm text-center max-w-sm mt-2 mb-6 ${theme === ThemeMode.DARK ? 'text-red-200/60' : 'text-red-700/70'}`}>
-            {this.error} Please check your internet connection or API server status.
+            {this.error} {AdminI18n.t('plugins.list.checkConnection')}
           </p>
           <button
             onClick={this.fetchData}
             className="flex items-center gap-2 px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold transition-all"
           >
             <FrameworkIcons.Refresh size={18} />
-            Retry Connection
+            {AdminI18n.t('plugins.list.retryConnection')}
           </button>
         </div>
       );
@@ -142,7 +143,7 @@ export class Marketplace extends AdminComponent {
                     </div>
                     <div className="flex-1 min-w-0">
                       <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-4 py-1.5 text-[10px] rounded-xl mb-3 inline-flex shadow-sm bg-indigo-600 text-white border-0">
-                        {installed ? "Installed" : (plugin.category || "Available Plugin")}
+                        {installed ? AdminI18n.t('plugins.list.installed') : (plugin.category || AdminI18n.t('plugins.list.availablePlugin'))}
                       </Badge>
                       <h3 className={`text-3xl font-semibold tracking-tight transition-colors duration-300 group-hover:text-indigo-500 truncate ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                         {plugin.name}
@@ -179,7 +180,7 @@ export class Marketplace extends AdminComponent {
                        </div>
                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border border-white/5 truncate max-w-[150px]">
                          <FrameworkIcons.User size={12} className="text-indigo-500" />
-                         {plugin.author || 'Official'}
+                         {plugin.author || AdminI18n.t('plugins.list.official')}
                        </div>
                     </div>
                   </div>
@@ -190,7 +191,7 @@ export class Marketplace extends AdminComponent {
                     <div className="flex items-center gap-4 p-5 bg-amber-500 text-white rounded-xl shadow-xl shadow-amber-500/20 animate-pulse">
                        <FrameworkIcons.Loader size={20} className="animate-spin" />
                        <div className="flex flex-col">
-                          <span className="text-[11px] font-semibold tracking-wide leading-none">New Version Available</span>
+                          <span className="text-[11px] font-semibold tracking-wide leading-none">{AdminI18n.t('plugins.list.newVersionAvailable')}</span>
                           <span className="text-[10px] font-semibold tracking-wide opacity-80">v{plugin.version} is ready</span>
                        </div>
                     </div>
@@ -203,7 +204,7 @@ export class Marketplace extends AdminComponent {
                         className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-lg text-[12px] font-semibold tracking-wide transition-all shadow-xl ${theme === ThemeMode.DARK ? 'bg-indigo-600/10 text-indigo-400 hover:bg-indigo-600/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
                       >
                         <FrameworkIcons.Plugins size={18} />
-                        <span>Manage Plugin</span>
+                        <span>{AdminI18n.t('plugins.list.managePlugin')}</span>
                       </button>
                     ) : (
                       <button
@@ -211,7 +212,7 @@ export class Marketplace extends AdminComponent {
                         className={`w-full flex-1 flex items-center justify-center gap-3 h-16 rounded-lg text-[12px] font-semibold tracking-wide transition-all shadow-2xl active:scale-[0.97] ${theme === ThemeMode.DARK ? 'bg-indigo-600 text-white hover:bg-indigo-500 shadow-indigo-600/30' : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-indigo-600/20'}`}
                        >
                          <FrameworkIcons.Download size={20} />
-                         <span>Install Plugin</span>
+                         <span>{AdminI18n.t('plugins.list.installPlugin')}</span>
                        </button>
                     )}
 

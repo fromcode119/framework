@@ -2,6 +2,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import type { IPluginReapprovalEntry } from '@/app/plugins/health/interfaces/plugin-reapproval-entry.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Data access + business logic for the plugin health page. Hook-free by contract: the page-client
  * class owns React state, lifecycle and notifications; this controller owns "how to fetch/do it".
@@ -37,6 +38,6 @@ export class PluginHealthPageController {
 
   /** Human-readable summary of a partial re-approval failure. */
   static reapprovalFailureMessage(failed: IPluginReapprovalEntry[]): string {
-    return `${failed.length} plugin${failed.length === 1 ? '' : 's'} could not be re-approved.`;
+    return AdminI18n.t('plugins.list.pluginCouldNotBeRe', { length: failed.length });
   }
 }

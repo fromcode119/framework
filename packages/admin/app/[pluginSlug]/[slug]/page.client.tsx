@@ -11,6 +11,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { prop, state } from '@fromcode119/react-class-components';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListRoute extends AdminComponent {
   @prop declare params: Promise<{ pluginSlug: string; slug: string }>;
@@ -102,7 +103,7 @@ export class CollectionListRoute extends AdminComponent {
     if (!this.resolved || !isReady) {
       return (
         <div className="flex-1 flex items-center justify-center">
-          <Loader label="Synchronizing Module Context..." />
+          <Loader label={AdminI18n.t('plugins.list.synchronizingModuleContext')} />
         </div>
       );
     }
