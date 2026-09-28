@@ -22,7 +22,7 @@ describe('AdminSchemaLocalizer', () => {
 
   it('translates a collection, its fields, options, sub-fields and tabs', () => {
     const out = localizer.collection('shop', {
-      slug: 'ecommerce-products',
+      slug: 'shop-products',
       shortSlug: 'catalog',
       displayName: 'Product Catalog',
       admin: { tabs: [{ name: 'pricing', label: 'Pricing' }, { name: 'seo', label: 'SEO' }] },
@@ -81,7 +81,7 @@ describe('AdminSchemaLocalizer', () => {
 
   it('translates what an empty field means, per fallback rule', () => {
     const out = localizer.collection('shop', {
-      slug: 'ecommerce-products', shortSlug: 'catalog',
+      slug: 'shop-products', shortSlug: 'catalog',
       fields: [{ name: 'leadMin', admin: { fallback: [{ settingKey: 'standardDispatchMinDays', emptyMeans: 'no delivery window is shown.' }, { settingKey: 'other', emptyMeans: 'kept.' }] } }],
     });
     expect(out.fields[0].admin.fallback.map((rule: any) => rule.emptyMeans)).toEqual(['не се показва срок за доставка.', 'kept.']);

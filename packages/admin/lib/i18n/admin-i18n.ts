@@ -1,4 +1,5 @@
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
+import { Platform } from '@fromcode119/react-class-components';
 
 /**
  * The language the console speaks, and its words.
@@ -49,7 +50,7 @@ export class AdminI18n {
     }
     if (next === AdminI18n.current) return;
     AdminI18n.current = next;
-    if (typeof document !== 'undefined') document.documentElement.lang = next;
+    if (Platform.isBrowser) document.documentElement.lang = next;
     for (const listener of Array.from(AdminI18n.listeners)) listener(next);
   }
 

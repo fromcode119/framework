@@ -177,7 +177,8 @@ export class AdminSchemaLocalizer {
 
   /** The translation, else the declared text untouched — including `undefined`, so no key is added. */
   private text<T>(pluginSlug: string, key: string, declared: T): T | string {
-    if (typeof declared !== 'string' || !declared) return declared;
+    // Only a plain string is translated: a locale map, a number or nothing is left exactly as declared.
+    if (!declared || declared !== String(declared)) return declared;
     return this.lookup(pluginSlug, key) || declared;
   }
 

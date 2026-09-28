@@ -205,11 +205,7 @@ export class SystemBackupHooks {
       let latestLoadedBytes = 0;
       let latestTotalBytes: number | null = null;
       setDownloadProgress({
-        activeId: id,
-        percent: 0,
-        label: AdminI18n.t('settings.components.startingDownload'),
-        loadedBytes: 0,
-        totalBytes: null,
+        activeId: id, percent: 0, label: AdminI18n.t('settings.components.startingDownload'), loadedBytes: 0, totalBytes: null,
       });
       try {
         const filename = await SystemBackupPageUtils.downloadBackup(id, (state) => {

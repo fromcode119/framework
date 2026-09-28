@@ -1,4 +1,3 @@
-import React from 'react';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -27,8 +26,8 @@ export class AdminRichText extends PureReactor {
     for (const match of text.matchAll(AdminRichText.PATTERN)) {
       const at = match.index ?? 0;
       if (at > last) out.push(text.slice(last, at));
-      const tag = AdminRichText.TAGS[match[1]];
-      out.push(React.createElement(tag, { key: out.length, className: classes[tag] }, match[2]));
+      const Tag = AdminRichText.TAGS[match[1]] as 'code' | 'strong' | 'em';
+      out.push(<Tag key={out.length} className={classes[Tag]}>{match[2]}</Tag>);
       last = at + match[0].length;
     }
     if (last < text.length) out.push(text.slice(last));

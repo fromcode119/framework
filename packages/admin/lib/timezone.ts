@@ -270,15 +270,7 @@ export class TimezoneUtils {
 
 
   private static toUtcMsFromParts(parts: IZonedDateParts): number {
-    return Date.UTC(
-      parts.year,
-      parts.month - 1,
-      parts.day,
-      parts.hour,
-      parts.minute,
-      parts.second || 0,
-      0
-    );
+    return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second || 0, 0);
   }
 
   private static patchLocaleMethod(method: DateLocaleMethod, timezone: string) {
