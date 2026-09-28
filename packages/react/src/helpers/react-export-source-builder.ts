@@ -33,6 +33,10 @@ export class ReactExportSourceBuilder {
     'AccountClass',
     'AuthMode',
     'AuthShell',
+    // The site's email-preferences panel. A plugin's own unsubscribe page falls back to it for a
+    // link that is not the plugin's; without the name here that plugin's whole bundle fails at load.
+    'TokenEmailPreferencesPanel',
+    'ThemeOverrideRegistrar',
     'RecordsHub',
     'RootFramework',
     'CollectionQueryUtils',

@@ -6,6 +6,41 @@ import { SecretService } from '@core/security/secret-service';
 import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
 
 export class SettingsContextProxy {
+  /**
+   * The fields whose values are sealed at rest: every `password` field, and any field whose NAME says
+   * it holds a credential. `update()` encrypts exactly these and `get()` opens exactly these, so the
+   * two can never disagree about which values are ciphertext. The separator is optional because plugin
+   * settings are camelCase (`accessToken`); a pattern that required `access_token` never matched one.
+   */
+  private static readonly SENSITIVE_FIELD_RE = /secret|password|api_?key|private_?key|access_?token|auth_?token|refresh_?token|bearer_?token|credential|passphrase/i;
+
+  private static isSecretField(field: any): boolean {
+    return field?.type === 'password' || SettingsContextProxy.SENSITIVE_FIELD_RE.test(String(field?.name || ''));
+  }
+
+  /**
+   * Opens every sealed value, so a plugin reads the credential its operator typed.
+   *
+   * The admin settings form encrypts secret fields on save, and `get()` used to return them as stored:
+   * every plugin reading a secret setting received `enc:v1:…` and used THAT as the credential — a
+   * reCAPTCHA secret that never verified, a webhook signed with ciphertext. A value that cannot be
+   * opened (no key on this server, or sealed under another one) comes back empty, never as ciphertext
+   * the plugin would mistake for the secret.
+   */
+  private static openSecrets(settings: Record<string, any>, schema: any): Record<string, any> {
+    if (!schema?.fields) return settings;
+    const opened = { ...settings };
+    for (const field of schema.fields) {
+      if (!SettingsContextProxy.isSecretField(field) || !SecretService.isEncryptedValue(opened[field.name])) continue;
+      try {
+        opened[field.name] = SecretService.decrypt(opened[field.name]);
+      } catch {
+        opened[field.name] = '';
+      }
+    }
+    return opened;
+  }
+
   static createSettingsProxy(
   plugin: ILoadedPlugin,
   manager: IPluginManagerInterface
@@ -32,7 +67,7 @@ export class SettingsContextProxy {
                 defaults[field.name] = field.defaultValue;
               }
             });
-            return { ...defaults, ...storedSettings };
+            return SettingsContextProxy.openSecrets({ ...defaults, ...storedSettings }, schema);
           }
           return storedSettings;
         },
@@ -48,10 +83,9 @@ export class SettingsContextProxy {
           // The admin "save settings form" path uses savePluginConfig directly with the full
           // object, so clearing a field there is unaffected.
           const settingsToSave = { ...existingSettings, ...values };
-          const SENSITIVE_FIELD_RE = /secret|password|api_key|private_key|access_token|auth_token|refresh_token|bearer_token|credential|passphrase/i;
           if (schema?.fields) {
             for (const field of schema.fields) {
-              if (field.type !== 'password' && !SENSITIVE_FIELD_RE.test(String(field.name || ''))) continue;
+              if (!SettingsContextProxy.isSecretField(field)) continue;
               const incoming = settingsToSave[field.name];
               if (!incoming || SecretService.isSavedSecretMask(incoming)) {
                 settingsToSave[field.name] = existingSettings[field.name] ?? '';
