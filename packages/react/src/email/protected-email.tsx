@@ -30,6 +30,9 @@ export class ProtectedEmail extends Reactor {
 
   static readonly ATTRIBUTE = 'data-fc-email';
 
+  /** Where an address sits in running text — so a caller protecting prose finds addresses the way this does. */
+  static readonly ADDRESS_PATTERN = EmailAddressCipher.ADDRESS_PATTERN;
+
   @state private revealed = false;
 
   componentDidMount(): void {
