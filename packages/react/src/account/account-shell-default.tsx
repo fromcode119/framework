@@ -44,9 +44,9 @@ export class AccountShellDefault extends Reactor {
     this.state = { section: AccountShellDefault.readSectionFromUrl() };
   }
 
+  /** The requested section — the same answer on the server and in the browser (`RenderLocationUtils`). */
   static readSectionFromUrl(): string {
-    if (!Platform.isBrowser) return '';
-    return AccountRouteUtils.parseSection(window.location.pathname);
+    return AccountRouteUtils.currentSection();
   }
 
   componentDidMount(): void {

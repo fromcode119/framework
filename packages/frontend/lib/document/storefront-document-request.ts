@@ -9,15 +9,25 @@ export class StorefrontDocumentRequest {
     readonly pathname: string,
     readonly searchParams: Record<string, string | string[] | undefined>,
     readonly acceptEncoding: string,
+    /** The origin the visitor requested — what `window.location.origin` will say in the browser. */
+    readonly origin: string,
   ) {}
 
-  static from(segments: string[] | undefined, url: URL, acceptEncoding = ''): StorefrontDocumentRequest {
+  /** The public origin behind the proxy: forwarded host and scheme first, the request URL's otherwise. */
+  static originOf(headers: Headers, url: URL): string {
+    const host = String(headers.get('x-forwarded-host') || headers.get('host') || '').split(',')[0].trim();
+    if (!host) return '';
+    const scheme = String(headers.get('x-forwarded-proto') || '').split(',')[0].trim() || url.protocol.replace(/:$/, '');
+    return `${scheme}://${host}`;
+  }
+
+  static from(segments: string[] | undefined, url: URL, acceptEncoding = '', origin = ''): StorefrontDocumentRequest {
     const clean = (segments || []).map((part) => String(part || '').trim()).filter(Boolean);
     const searchParams: Record<string, string | string[]> = {};
     for (const key of new Set(url.searchParams.keys())) {
       const values = url.searchParams.getAll(key);
       searchParams[key] = values.length > 1 ? values : values[0];
     }
-    return new StorefrontDocumentRequest(clean, `/${clean.join('/')}`, searchParams, String(acceptEncoding || ''));
+    return new StorefrontDocumentRequest(clean, `/${clean.join('/')}`, searchParams, String(acceptEncoding || ''), origin);
   }
 }

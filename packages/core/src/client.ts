@@ -55,6 +55,7 @@ export { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 export { RouteConstants } from '@core/constants/route.constants';
 export { AccountRouteUtils } from '@core/utils/account-route-utils';
+export { RenderLocationUtils } from '@core/utils/render-location-utils';
 export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────

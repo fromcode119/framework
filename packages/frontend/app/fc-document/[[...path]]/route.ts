@@ -15,7 +15,12 @@ import { CookieConstants } from '@fromcode119/core/client';
 export class StorefrontDocumentRoute {
   static async GET(request: NextRequest, context: { params: Promise<{ path?: string[] }> }): Promise<Response> {
     const params = await context.params;
-    const documentRequest = StorefrontDocumentRequest.from(params?.path, request.nextUrl, request.headers.get('accept-encoding') || '');
+    const documentRequest = StorefrontDocumentRequest.from(
+      params?.path,
+      request.nextUrl,
+      request.headers.get('accept-encoding') || '',
+      StorefrontDocumentRequest.originOf(request.headers, request.nextUrl),
+    );
     const render = () => StorefrontDocumentRenderer.render(documentRequest);
     if (!StorefrontDocumentCache.cacheable(request.method, request.cookies.getAll().map((cookie) => cookie.name), request.nextUrl.searchParams)) {
       return StorefrontDocumentCache.bypass(await render());
