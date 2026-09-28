@@ -3,6 +3,7 @@ import { ExtendedExtendsCommand } from './extended-extends-command';
 import { DomainTransportFallbackCommand } from './domain-transport-fallback-command';
 import { ExtensionNameCommand } from './extension-name-command';
 import { FileSizeCommand } from './file-size-command';
+import { ChangelogCommand } from './changelog-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
 import { ComponentMigrationCommand } from './component-migration-command';
@@ -86,6 +87,7 @@ export class GuardRegistry {
     ['snake-translation-keys', SnakeTranslationKeyCommand],
     ['extended-extends', ExtendedExtendsCommand],
     ['file-size', FileSizeCommand],
+    ['changelog', ChangelogCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],
