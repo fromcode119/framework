@@ -7,6 +7,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { IMcpToken } from '@/app/settings/integrations/mcp/interfaces/mcp-token.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The issued tokens, one row each. The SITE column is what tells an operator which site a key can
@@ -21,11 +22,11 @@ export class McpTokensTable extends AdminComponent {
   @prop declare onRevoke: (token: IMcpToken) => void;
 
   private siteCell(token: IMcpToken): ReactNode {
-    if (token.site === null) return <Badge variant={BadgeVariant.WARNING}>all sites</Badge>;
+    if (token.site === null) return <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.integrations.allSites')}</Badge>;
     return (
       <span className="flex flex-wrap items-center gap-1">
         <Badge variant={BadgeVariant.GRAY}>{token.site}</Badge>
-        {token.legacy ? <span className="text-xs text-slate-500">issued before sites</span> : null}
+        {token.legacy ? <span className="text-xs text-slate-500">{AdminI18n.t('settings.integrations.issuedBeforeSites')}</span> : null}
       </span>
     );
   }
@@ -43,7 +44,7 @@ export class McpTokensTable extends AdminComponent {
     if (!this.tokens.length) {
       return (
         <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-          <p className="text-sm text-slate-500">No tokens yet.</p>
+          <p className="text-sm text-slate-500">{AdminI18n.t('settings.integrations.noTokensYet')}</p>
         </div>
       );
     }
@@ -52,11 +53,11 @@ export class McpTokensTable extends AdminComponent {
         <table className="w-full text-sm">
           <thead className="border-b border-slate-100 dark:border-slate-800 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="py-3 pr-4">Label</th>
-              {this.multiTenant ? <th className="py-3 pr-4">Site</th> : null}
-              <th className="py-3 pr-4">Scopes</th>
-              <th className="py-3 pr-4">Created</th>
-              <th className="py-3 pr-4">Last used</th>
+              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.label')}</th>
+              {this.multiTenant ? <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.site')}</th> : null}
+              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.scopes')}</th>
+              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.created')}</th>
+              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.lastUsed')}</th>
               <th className="py-3" />
             </tr>
           </thead>
@@ -70,7 +71,7 @@ export class McpTokensTable extends AdminComponent {
                 <td className="py-3 pr-4 text-slate-500">{token.lastUsedAt || 'never'}</td>
                 <td className="py-3 text-right">
                   <Button variant={ButtonVariant.DANGER} size={FieldSize.SM} onClick={() => this.onRevoke(token)}>
-                    Revoke
+                    {AdminI18n.t('settings.integrations.revoke')}
                   </Button>
                 </td>
               </tr>

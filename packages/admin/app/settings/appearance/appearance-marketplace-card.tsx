@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Marketplace appearances not yet installed — browse and install with one click. */
 export class AppearanceMarketplaceCard extends PureReactor {
@@ -17,7 +18,7 @@ export class AppearanceMarketplaceCard extends PureReactor {
     const dark = this.dark;
     if (!this.entries.length) return null;
     return (
-      <Card title="Available in the marketplace">
+      <Card title={AdminI18n.t('settings.appearance.availableInTheMarketplace')}>
         {this.entries.map((it) => (
           <div key={it.slug} className={`py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <div className="flex items-start gap-4">
@@ -29,7 +30,7 @@ export class AppearanceMarketplaceCard extends PureReactor {
                 <span className="block text-[13px] text-slate-500 max-w-md leading-relaxed">{it.description || it.author}</span>
               </div>
             </div>
-            <Button icon={<FrameworkIcons.Download size={14} />} onClick={() => this.onInstall(it.slug)} disabled={this.busy}>Install</Button>
+            <Button icon={<FrameworkIcons.Download size={14} />} onClick={() => this.onInstall(it.slug)} disabled={this.busy}>{AdminI18n.t('settings.appearance.install')}</Button>
           </div>
         ))}
       </Card>

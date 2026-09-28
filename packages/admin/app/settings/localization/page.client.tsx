@@ -12,6 +12,7 @@ import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 import { LocalizationSettingsPageActions } from '@/app/settings/localization/page-actions.client';
 import { LocalizationSettingsPageState } from '@/app/settings/localization/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Settings — Localization.
@@ -29,7 +30,7 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
     if (this.isLoading) {
       return (
         <div className="p-12">
-          <Loader label="Loading localization settings..." />
+          <Loader label={AdminI18n.t('settings.localization.loadingLocalizationSettings')} />
         </div>
       );
     }
@@ -43,12 +44,12 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
           <CompactPageHeader
             theme={theme}
             icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-            title="Localization"
-            subtitle="Locale registry & language defaults"
+            title={AdminI18n.t('settings.localization.localization')}
+            subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
           />
           <LoadErrorPanel
-            title="Localization settings could not be loaded"
-            message={this.loadError || 'The localization settings request failed.'}
+            title={AdminI18n.t('settings.localization.localizationSettingsCouldNotBe')}
+            message={this.loadError || AdminI18n.t('settings.localization.theLocalizationSettingsRequestFailed')}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}
           />
@@ -61,8 +62,8 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title="Localization"
-          subtitle="Locale registry & language defaults"
+          title={AdminI18n.t('settings.localization.localization')}
+          subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
           actions={
             this.outOfScope ? null : (
               <Button
@@ -71,14 +72,14 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
                 isLoading={this.isSaving}
                 className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
               >
-                Save Localization
+                {AdminI18n.t('settings.localization.saveLocalization')}
               </Button>
             )
           }
         />
 
         {this.outOfScope && (
-          <SiteScopePanel detail="Locales, language defaults and the measurement system are stored per site. Choose a site from the site menu to configure them." />
+          <SiteScopePanel detail={AdminI18n.t('settings.localization.localesLanguageDefaultsAndThe')} />
         )}
 
         {!this.outOfScope && (

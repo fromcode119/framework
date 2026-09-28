@@ -14,6 +14,7 @@ import { PersonalDataPolicyRow } from '@/app/settings/personal-data/personal-dat
 import type { IPersonalDataPolicyChoice } from '@/app/settings/personal-data/interfaces/personal-data-policy-choice.interface';
 import type { IPersonalDataChoiceMap } from '@/app/settings/personal-data/interfaces/personal-data-choice-map.interface';
 import type { IPersonalDataPolicyDataset } from '@/app/settings/personal-data/interfaces/personal-data-policy-dataset.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the platform does with a person's data when they ask to be forgotten.
@@ -77,7 +78,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
       // shown as read-only rather than offering an edit that cannot be saved.
       this.siteEditable = Boolean(platformKeys?.siteSelected);
     } catch (error: any) {
-      this.loadError = error?.message || 'Unknown error';
+      this.loadError = error?.message || AdminI18n.t('settings.personalData.unknownError');
     } finally {
       this.isLoading = false;
     }
@@ -113,11 +114,11 @@ export class PersonalDataSettingsPage extends AdminComponent {
       await AdminSystemSettingsClient.update(payload);
       await this.load();
       this.runtime.notify.addNotification({
-        title: 'Erasure policy saved', message: 'The new policy applies to every erasure from now on.', type: NotificationType.INFO,
+        title: AdminI18n.t('settings.personalData.erasurePolicySaved'), message: AdminI18n.t('settings.personalData.theNewPolicyAppliesTo'), type: NotificationType.INFO,
       });
     } catch (error: any) {
       this.runtime.notify.addNotification({
-        title: 'Error', message: error?.message || 'Could not save the erasure policy.', type: NotificationType.ERROR,
+        title: AdminI18n.t('settings.personalData.error'), message: error?.message || AdminI18n.t('settings.personalData.couldNotSaveTheErasure'), type: NotificationType.ERROR,
       });
     } finally {
       this.isSaving = false;
@@ -134,17 +135,16 @@ export class PersonalDataSettingsPage extends AdminComponent {
       <div className="p-6 animate-in fade-in duration-500 w-full">
         <div className="mb-6">
           <h1 className={`text-2xl font-bold tracking-tight mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            Personal data
+            {AdminI18n.t('settings.personalData.personalData')}
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed">
-            What happens to each dataset when somebody asks to be forgotten. A site answers for the data it
-            controls; the platform default applies wherever a site has said nothing.
+            {AdminI18n.t('settings.personalData.whatHappensToEachDataset')}
           </p>
         </div>
 
         {this.loadError && (
           <LoadErrorPanel
-            title="The erasure policy could not be loaded"
+            title={AdminI18n.t('settings.personalData.theErasurePolicyCouldNot')}
             message={this.loadError}
             onRetry={this.load}
             isRetrying={this.isLoading}
@@ -152,12 +152,12 @@ export class PersonalDataSettingsPage extends AdminComponent {
         )}
 
         {this.datasets && (
-          <Card title="Erasure strategy per dataset">
+          <Card title={AdminI18n.t('settings.personalData.erasureStrategyPerDataset')}>
             <div className={`hidden md:grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 pb-2 text-[12px] font-semibold uppercase tracking-wide ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-              <span>Dataset</span>
-              <span>Platform default</span>
-              <span>This site</span>
-              <span>In force now</span>
+              <span>{AdminI18n.t('settings.personalData.dataset')}</span>
+              <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
+              <span>{AdminI18n.t('settings.personalData.thisSite')}</span>
+              <span>{AdminI18n.t('settings.personalData.inForceNow')}</span>
             </div>
 
             {this.datasets.map((dataset) => (
@@ -176,11 +176,11 @@ export class PersonalDataSettingsPage extends AdminComponent {
 
             <div className="pt-4 flex items-center gap-3">
               <Button onClick={this.save} disabled={this.isSaving || (!this.siteEditable && !this.platformEditable)}>
-                {this.isSaving ? 'Saving…' : 'Save policy'}
+                {this.isSaving ? AdminI18n.t('settings.personalData.saving') : AdminI18n.t('settings.personalData.savePolicy')}
               </Button>
               {!this.platformEditable && (
                 <span className={`text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-                  The platform default is set by a platform administrator.
+                  {AdminI18n.t('settings.personalData.thePlatformDefaultIsSet')}
                 </span>
               )}
             </div>

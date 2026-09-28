@@ -14,6 +14,8 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { prop } from '@fromcode119/react-class-components';
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class BackupRestoreDialog extends AdminComponent {
   @prop declare isOpen: boolean;
@@ -63,11 +65,11 @@ export class BackupRestoreDialog extends AdminComponent {
                   <FrameworkIcons.Warning size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold tracking-tight">Preview Restore</h3>
-                  <p className="text-sm text-slate-500">Validate target scope, review warnings, then type the server-issued confirmation challenge.</p>
+                  <h3 className="text-xl font-bold tracking-tight">{AdminI18n.t('settings.components.previewRestore')}</h3>
+                  <p className="text-sm text-slate-500">{AdminI18n.t('settings.components.validateTargetScopeReviewWarnings')}</p>
                 </div>
               </div>
-              <Badge variant={BadgeVariant.WARNING}>Restore never runs directly from the table action.</Badge>
+              <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.components.restoreNeverRunsDirectlyFrom')}</Badge>
             </div>
 
             <button type="button" onClick={onClose} className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-900 dark:hover:text-white">
@@ -78,13 +80,13 @@ export class BackupRestoreDialog extends AdminComponent {
           <div className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
             <div className="space-y-5">
               <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Selected Backup</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.selectedBackup')}</div>
                 <div className="mt-3 text-base font-bold tracking-tight">{state.backup.displayName}</div>
                 <div className="mt-1 text-sm text-slate-500">{state.backup.filename}</div>
               </div>
 
               <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Restore Target</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.restoreTarget')}</div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-3">
                   {(RestoreTargetScope.values() as RestoreTargetScope[]).map((scope) => (
                     <button
@@ -93,21 +95,21 @@ export class BackupRestoreDialog extends AdminComponent {
                       onClick={() => onTargetScopeChange(scope)}
                       className={`rounded-xl border px-4 py-3 text-sm font-bold tracking-tight transition-all ${state.targetScope === scope ? 'border-indigo-500 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-300 hover:border-slate-700' : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300'}`}
                     >
-                      {scope === RestoreTargetScope.SYSTEM ? 'System Root' : scope === RestoreTargetScope.PLUGIN ? 'Plugin Slug' : 'Theme Slug'}
+                      {scope === RestoreTargetScope.SYSTEM ? AdminI18n.t('settings.components.systemRoot') : scope === RestoreTargetScope.PLUGIN ? AdminI18n.t('settings.components.pluginSlug') : AdminI18n.t('settings.components.themeSlug')}
                     </button>
                   ))}
                 </div>
                 {state.targetScope !== RestoreTargetScope.SYSTEM ? (
                   <div className="mt-4">
                     <Input
-                      label={state.targetScope === RestoreTargetScope.PLUGIN ? 'Plugin slug' : 'Theme slug'}
+                      label={state.targetScope === RestoreTargetScope.PLUGIN ? AdminI18n.t('settings.components.pluginSlug2') : AdminI18n.t('settings.components.themeSlug2')}
                       value={state.targetSlug}
                       onChange={(event) => onTargetSlugChange(event.target.value)}
                       placeholder={state.targetScope === RestoreTargetScope.PLUGIN ? 'example-plugin' : 'example-theme'}
                     />
                   </div>
                 ) : null}
-                <p className="mt-3 text-xs text-slate-500">The browser sends only approved target kinds: system, plugin:&lt;slug&gt;, or theme:&lt;slug&gt;.</p>
+                <p className="mt-3 text-xs text-slate-500">{AdminI18n.t('settings.components.theBrowserSendsOnlyApproved')}</p>
               </div>
             </div>
 
@@ -115,41 +117,41 @@ export class BackupRestoreDialog extends AdminComponent {
               <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
                 <div className="flex items-center justify-between gap-3">
                   <div>
-                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Server Preview</div>
-                    <p className="mt-2 text-sm text-slate-500">Preview revalidates the backup id and target before any extraction happens.</p>
+                    <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.serverPreview')}</div>
+                    <p className="mt-2 text-sm text-slate-500">{AdminI18n.t('settings.components.previewRevalidatesTheBackupId')}</p>
                   </div>
                   <Button size={FieldSize.SM} className="rounded-lg uppercase tracking-[0.16em]" isLoading={isPreviewing} onClick={() => void onPreview()}>
-                    Run Preview
+                    {AdminI18n.t('settings.components.runPreview')}
                   </Button>
                 </div>
 
                 {state.preview ? (
                   <div className="mt-5 space-y-4">
                     <div className="rounded-xl border border-emerald-200 bg-emerald-50/80 p-4 text-sm text-emerald-800 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-200">
-                      Target validated as <strong>{state.preview.targetLabel}</strong>. Safety snapshot type: <strong>{state.preview.snapshotType.value}</strong>.
+                      <AdminRichText k="settings.components.targetValidated" vars={{ target: state.preview.targetLabel, snapshot: state.preview.snapshotType.value }} />
                     </div>
                     <div>
-                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Confirmation Challenge</div>
+                      <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.confirmationChallenge')}</div>
                       <div className={`mt-2 ${AdminClass.SURFACE} px-4 py-3 font-mono text-xs ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950 text-slate-200' : 'border-slate-200 bg-white text-slate-700'}`}>
                         {state.preview.requiredConfirmationText}
                       </div>
                     </div>
                     <TextArea
-                      label="Type the confirmation text exactly"
+                      label={AdminI18n.t('settings.components.typeTheConfirmationTextExactly')}
                       value={state.confirmationText}
                       onChange={(event) => onConfirmationTextChange(event.target.value)}
-                      placeholder="Paste the confirmation challenge here"
+                      placeholder={AdminI18n.t('settings.components.pasteTheConfirmationChallengeHere')}
                     />
                   </div>
                 ) : (
                   <div className="mt-5 rounded-xl border border-dashed border-slate-300 px-4 py-5 text-sm text-slate-500 dark:border-slate-800">
-                    Preview the restore first to receive warnings and the confirmation challenge.
+                    {AdminI18n.t('settings.components.previewTheRestoreFirstTo')}
                   </div>
                 )}
               </div>
 
               <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/70' : 'border-slate-100 bg-slate-50/80'}`}>
-                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">Warnings</div>
+                <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.warnings')}</div>
                 {state.preview?.warnings?.length ? (
                   <ul className="mt-3 space-y-2 text-sm text-slate-500">
                     {state.preview.warnings.map((warning) => (
@@ -160,7 +162,7 @@ export class BackupRestoreDialog extends AdminComponent {
                     ))}
                   </ul>
                 ) : (
-                  <p className="mt-3 text-sm text-slate-500">Warnings will appear here after preview.</p>
+                  <p className="mt-3 text-sm text-slate-500">{AdminI18n.t('settings.components.warningsWillAppearHereAfter')}</p>
                 )}
                 {state.formError ? (
                   <div className="mt-4 rounded-xl border border-rose-200 bg-rose-50/80 px-4 py-3 text-sm text-rose-700 dark:border-rose-500/20 dark:bg-rose-500/10 dark:text-rose-300">
@@ -173,7 +175,7 @@ export class BackupRestoreDialog extends AdminComponent {
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-end">
             <Button variant={ButtonVariant.GHOST} className="rounded-xl uppercase tracking-[0.16em]" onClick={onClose} disabled={isPreviewing || isRestoring}>
-              Close
+              {AdminI18n.t('settings.components.close')}
             </Button>
             <Button
               variant={ButtonVariant.DANGER}
@@ -182,7 +184,7 @@ export class BackupRestoreDialog extends AdminComponent {
               onClick={() => void onExecute()}
               disabled={!state.preview}
             >
-              Execute Restore
+              {AdminI18n.t('settings.components.executeRestore')}
             </Button>
           </div>
         </div>

@@ -13,6 +13,7 @@ import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { IMcpToken } from '@/app/settings/integrations/mcp/interfaces/mcp-token.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Issues one token: a label, the scopes it may reach, and — on a multi-site platform — which SITE it
@@ -54,7 +55,7 @@ export class McpTokenCreateForm extends AdminComponent {
 
   private async createToken(): Promise<void> {
     if (!this.label.trim()) {
-      this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: 'A label is required', message: 'Name the token so it can be recognised later.' });
+      this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.aLabelIsRequired'), message: AdminI18n.t('settings.integrations.nameTheTokenSoIt') });
       return;
     }
     this.saving = true;
@@ -69,7 +70,7 @@ export class McpTokenCreateForm extends AdminComponent {
       this.site = '';
       this.onCreated(String(response?.rawKey || ''));
     } catch (error: any) {
-      this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: 'Failed to create token', message: error?.message || 'Unexpected error.' });
+      this.runtime.notify.addNotification({ type: NotificationType.ERROR, title: AdminI18n.t('settings.integrations.failedToCreateToken'), message: error?.message || AdminI18n.t('settings.integrations.unexpectedError') });
     } finally {
       this.saving = false;
     }
@@ -79,17 +80,17 @@ export class McpTokenCreateForm extends AdminComponent {
     if (!this.multiTenant) return null;
     const here = this.currentSite ? `This site (${this.currentSite})` : 'This site';
     if (!this.platformAdmin) {
-      return <Input label="Site" size={FieldSize.MD} value={here} disabled onChange={() => undefined} />;
+      return <Input label={AdminI18n.t('settings.integrations.site')} size={FieldSize.MD} value={here} disabled onChange={() => undefined} />;
     }
     return (
       <Select
-        label="Site"
+        label={AdminI18n.t('settings.integrations.site')}
         size={FieldSize.MD}
         value={this.site}
         onChange={(value: string) => { this.site = value; }}
         options={[
           { value: '', label: here },
-          { value: McpTokenCreateForm.ALL_SITES, label: 'All sites — the client picks a site per request (sites.select)' },
+          { value: McpTokenCreateForm.ALL_SITES, label: AdminI18n.t('settings.integrations.allSitesTheClientPicks') },
         ]}
       />
     );
@@ -100,7 +101,7 @@ export class McpTokenCreateForm extends AdminComponent {
     if (options.length === 0) {
       return (
         <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-          <p className="text-sm text-slate-500">No tools are registered yet, so there is nothing to scope. A token created now is unrestricted.</p>
+          <p className="text-sm text-slate-500">{AdminI18n.t('settings.integrations.noToolsAreRegisteredYet')}</p>
         </div>
       );
     }
@@ -114,7 +115,7 @@ export class McpTokenCreateForm extends AdminComponent {
               label={
                 <span className="flex items-center gap-2">
                   <code className="font-mono text-xs text-slate-700 dark:text-slate-200">{scope}</code>
-                  {scope.startsWith('deploy.') ? <Badge variant={BadgeVariant.DANGER}>restarts services</Badge> : null}
+                  {scope.startsWith('deploy.') ? <Badge variant={BadgeVariant.DANGER}>{AdminI18n.t('settings.integrations.restartsServices')}</Badge> : null}
                 </span>
               }
             />
@@ -128,23 +129,23 @@ export class McpTokenCreateForm extends AdminComponent {
     return (
       <Card className="p-5">
         <div className="mb-4">
-          <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">Create a token</h2>
-          <p className="text-sm text-slate-500 mt-1">Name the token, choose what it may reach, then copy the key once.</p>
+          <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.createAToken')}</h2>
+          <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.nameTheTokenChooseWhat')}</p>
         </div>
         <div className="flex flex-col gap-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input label="Label" placeholder="e.g. laptop" size={FieldSize.MD} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
+            <Input label={AdminI18n.t('settings.integrations.label')} placeholder="e.g. laptop" size={FieldSize.MD} value={this.label} onChange={(e: any) => { this.label = e?.target?.value ?? ''; }} />
             {this.renderSiteChoice()}
           </div>
           <div className="flex flex-col gap-3">
             <div>
-              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">Scopes</h3>
-              <p className="text-sm text-slate-500 mt-1">Scopes only narrow what this token may reach. They never grant more than the owning user already has.</p>
+              <h3 className="text-sm font-semibold text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.scopes')}</h3>
+              <p className="text-sm text-slate-500 mt-1">{AdminI18n.t('settings.integrations.scopesOnlyNarrowWhatThis')}</p>
             </div>
             {this.renderScopes()}
           </div>
           <div className="flex justify-end">
-            <Button variant={ButtonVariant.PRIMARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.createToken()}>Create token</Button>
+            <Button variant={ButtonVariant.PRIMARY} size={FieldSize.MD} isLoading={this.saving} onClick={() => this.createToken()}>{AdminI18n.t('settings.integrations.createToken')}</Button>
           </div>
         </div>
       </Card>

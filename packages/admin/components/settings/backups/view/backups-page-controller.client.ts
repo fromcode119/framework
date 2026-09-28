@@ -10,6 +10,7 @@ import type { IRestoreDialogState } from '@/components/settings/backups/interfac
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
 import { SystemBackupHooks } from '@/components/settings/backups/view/use-system-backups.client';
 import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BackupsPageControllerHooks {
   static useController(): IBackupsPageControllerState {
@@ -29,7 +30,7 @@ export class BackupsPageControllerHooks {
       } catch (error) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Refresh Failed',
+          title: AdminI18n.t('settings.components.refreshFailed'),
           message: SystemBackupPageUtils.toErrorMessage(error),
         });
       }
@@ -39,8 +40,8 @@ export class BackupsPageControllerHooks {
       if (!createSections.length) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Select Backup Scope',
-          message: 'Choose at least one backup section before creating an archive.',
+          title: AdminI18n.t('settings.components.selectBackupScope'),
+          message: AdminI18n.t('settings.components.chooseAtLeastOneBackup'),
         });
         return;
       }
@@ -49,20 +50,20 @@ export class BackupsPageControllerHooks {
         const response = await backupState.createSystemBackup({ sections: createSections });
         addNotification({
           type: NotificationType.SUCCESS,
-          title: 'Backup Created',
+          title: AdminI18n.t('settings.components.backupCreated'),
           message: `${response.backup.displayName} includes ${BackupSectionOptions.describeSections(response.selection.includedSections)}.`,
         });
         if (response.selection.warnings.length) {
           addNotification({
             type: NotificationType.ERROR,
-            title: 'Backup Completed With Warnings',
+            title: AdminI18n.t('settings.components.backupCompletedWithWarnings'),
             message: response.selection.warnings.join(' '),
           });
         }
       } catch (error) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Backup Failed',
+          title: AdminI18n.t('settings.components.backupFailed'),
           message: SystemBackupPageUtils.toErrorMessage(error),
         });
       }
@@ -73,13 +74,13 @@ export class BackupsPageControllerHooks {
         const response = await backupState.importBackup(file);
         addNotification({
           type: NotificationType.SUCCESS,
-          title: 'Backup Imported',
-          message: `${response.backup.displayName} is now available in managed backups.`,
+          title: AdminI18n.t('settings.components.backupImported'),
+          message: AdminI18n.t('settings.components.isNowAvailableInManaged', { displayName: response.backup.displayName }),
         });
       } catch (error) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Import Failed',
+          title: AdminI18n.t('settings.components.importFailed'),
           message: SystemBackupPageUtils.toErrorMessage(error),
         });
       }
@@ -104,14 +105,14 @@ export class BackupsPageControllerHooks {
         await backupState.deleteBackup(deleteCandidate.id);
         addNotification({
           type: NotificationType.SUCCESS,
-          title: 'Backup Deleted',
-          message: `${deleteCandidate.displayName} was removed from managed backups.`,
+          title: AdminI18n.t('settings.components.backupDeleted'),
+          message: AdminI18n.t('settings.components.wasRemovedFromManagedBackups', { displayName: deleteCandidate.displayName }),
         });
         closeDeleteDialog();
       } catch (error) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Delete Failed',
+          title: AdminI18n.t('settings.components.deleteFailed'),
           message: SystemBackupPageUtils.toErrorMessage(error),
         });
       }
@@ -122,13 +123,13 @@ export class BackupsPageControllerHooks {
         const filename = await backupState.downloadBackup(id);
         addNotification({
           type: NotificationType.SUCCESS,
-          title: 'Download Started',
-          message: `${filename} is being downloaded.`,
+          title: AdminI18n.t('settings.components.downloadStarted'),
+          message: AdminI18n.t('settings.components.isBeingDownloaded', { filename: filename }),
         });
       } catch (error) {
         addNotification({
           type: NotificationType.ERROR,
-          title: 'Download Failed',
+          title: AdminI18n.t('settings.components.downloadFailed'),
           message: SystemBackupPageUtils.toErrorMessage(error),
         });
       }
@@ -198,8 +199,8 @@ export class BackupsPageControllerHooks {
         );
         addNotification({
           type: NotificationType.SUCCESS,
-          title: 'Restore Started',
-          message: `Rollback snapshot created at ${result.rollbackSnapshotPath}. Reload the admin surface after the filesystem settles.`,
+          title: AdminI18n.t('settings.components.restoreStarted'),
+          message: AdminI18n.t('settings.components.rollbackSnapshotCreatedAtReload', { rollbackSnapshotPath: result.rollbackSnapshotPath }),
         });
         closeRestoreDialog();
       } catch (error) {

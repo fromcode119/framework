@@ -1,6 +1,7 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the "home page shows" dropdown offers, assembled from the theme's layouts, the site's
@@ -30,7 +31,7 @@ export class RoutingHomeOptions {
   }): Promise<{ label: string; value: string; group?: string; section?: string; sourceKind?: string }[]> {
     const query = input.searchTerm.trim().toLowerCase();
     const frontendMeta = input.frontendMeta;
-    const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: 'Auto detect', group: 'System', sourceKind: 'Auto' }];
+    const options: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [{ value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: 'System', sourceKind: 'Auto' }];
     const optionSet = new Set(options.map((o) => o.value));
     const availableCollectionSet = new Set(
       (input.availableCollections || [])
@@ -107,7 +108,7 @@ export class RoutingHomeOptions {
 
         const pluginSlug = collection.pluginSlug || 'System';
         const pluginLabel = pluginSlug.charAt(0).toUpperCase() + pluginSlug.slice(1);
-        const groupLabel = `Collection Records · ${pluginLabel}`;
+        const groupLabel = AdminI18n.t('settings.routing.collectionRecords', { pluginLabel: pluginLabel });
         const sourceTag = RoutingPageUtils.getCollectionSourceTag(pluginSlug, collectionLabel);
 
         optionSet.add(value);

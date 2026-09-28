@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/security/setting-row';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The request limiter's buckets and budgets, as the API resolves them
@@ -29,15 +30,15 @@ export class ApiFirewallCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="API Firewall">
+      <Card title={AdminI18n.t('settings.security.apiFirewall')}>
         <SettingNumberRow
           theme={this.theme}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.RATE_LIMIT_MAX}
           icon={FrameworkIcons.ShieldAlert}
-          title="Rate Limit (Max Requests)"
-          description="The maximum number of requests a single anonymous IP can make in one window."
+          title={AdminI18n.t('settings.security.rateLimitMaxRequests')}
+          description={AdminI18n.t('settings.security.theMaximumNumberOfRequests')}
           min={0}
           max={1000000}
         />
@@ -48,8 +49,8 @@ export class ApiFirewallCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED}
           icon={FrameworkIcons.ShieldCheck}
-          title="Rate Limit (Signed-in Requests)"
-          description="The maximum number of requests a signed-in session can make. Counted per IP plus token, so one busy admin session cannot starve another behind the same IP."
+          title={AdminI18n.t('settings.security.rateLimitSignedInRequests')}
+          description={AdminI18n.t('settings.security.theMaximumNumberOfRequests2')}
           min={0}
           max={1000000}
         />
@@ -60,8 +61,8 @@ export class ApiFirewallCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL}
           icon={FrameworkIcons.Server}
-          title="Rate Limit (Internal Service Requests)"
-          description="The maximum number of requests an internal service can make. Counted per calling service address, so the storefront renderer, which fetches this API several times per page view from a single container, does not spend the anonymous visitor budget."
+          title={AdminI18n.t('settings.security.rateLimitInternalServiceRequests')}
+          description={AdminI18n.t('settings.security.theMaximumNumberOfRequests3')}
           min={0}
           max={1000000}
         />
@@ -69,8 +70,8 @@ export class ApiFirewallCard extends PureReactor {
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Network}
-          title="Internal Service Clients"
-          description="Addresses or CIDR blocks your own services call this API from, comma separated (for example 172.16.0.0/12). A caller is internal only when both its network hop and its resolved address are listed, never because of a header it sent. Leave empty and nothing is internal: every anonymous caller falls back to the per-IP limit above."
+          title={AdminI18n.t('settings.security.internalServiceClients')}
+          description={AdminI18n.t('settings.security.addressesOrCidrBlocksYour')}
         >
           <Input
             className="w-80"
@@ -86,8 +87,8 @@ export class ApiFirewallCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.RATE_LIMIT_WINDOW}
           icon={FrameworkIcons.Clock}
-          title="Rate Limit Window (milliseconds)"
-          description="Every counter above resets after this window elapses. Example: 60000 is one minute. Fixed-window: a caller who trips a limit is locked out for up to this long, so keep it short. Changing it restarts the counters."
+          title={AdminI18n.t('settings.security.rateLimitWindowMilliseconds')}
+          description={AdminI18n.t('settings.security.everyCounterAboveResetsAfter')}
           min={1000}
           max={86400000}
         />

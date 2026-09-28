@@ -6,12 +6,13 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** The "add a rule" form of Settings → Redirects. Owns only its draft; submission is the page's. */
 export class RedirectCreateCard extends PureReactor {
   private static readonly TYPE_OPTIONS = [
-    { label: '301 Permanent', value: '301' },
-    { label: '302 Temporary', value: '302' },
+    { label: AdminI18n.t('settings.redirects.301Permanent'), value: '301' },
+    { label: AdminI18n.t('settings.redirects.302Temporary'), value: '302' },
   ];
 
   @prop declare theme: ThemeMode;
@@ -49,11 +50,11 @@ export class RedirectCreateCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="Add Redirect" icon={<FrameworkIcons.Plus size={16} />}>
+      <Card title={AdminI18n.t('settings.redirects.addRedirect')} icon={<FrameworkIcons.Plus size={16} />}>
         <div className="flex flex-col md:flex-row gap-3 md:items-end pt-1">
           <div className="flex-1">
             <Input
-              label="From path"
+              label={AdminI18n.t('settings.redirects.fromPath')}
               placeholder="/old-page"
               value={this.fromPath}
               onChange={(event: any) => { this.fromPath = String(event?.target?.value ?? ''); }}
@@ -61,7 +62,7 @@ export class RedirectCreateCard extends PureReactor {
           </div>
           <div className="flex-1">
             <Input
-              label="To path or URL"
+              label={AdminI18n.t('settings.redirects.toPathOrUrl')}
               placeholder="/new-page or https://…"
               value={this.toPath}
               onChange={(event: any) => { this.toPath = String(event?.target?.value ?? ''); }}
@@ -82,13 +83,13 @@ export class RedirectCreateCard extends PureReactor {
             disabled={!this.canSubmit}
             className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
           >
-            Add
+            {AdminI18n.t('settings.redirects.add')}
           </Button>
         </div>
         <div className="mt-3">
           <Input
-            label="Notes (optional)"
-            placeholder="Why this redirect exists"
+            label={AdminI18n.t('settings.redirects.notesOptional')}
+            placeholder={AdminI18n.t('settings.redirects.whyThisRedirectExists')}
             value={this.notes}
             onChange={(event: any) => { this.notes = String(event?.target?.value ?? ''); }}
           />

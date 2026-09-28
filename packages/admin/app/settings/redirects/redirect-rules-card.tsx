@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Switch } from '@/components/ui/view/switch.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The rule list of Settings → Redirects. Presentational: every mutation is a callback into the page.
@@ -44,12 +45,12 @@ export class RedirectRulesCard extends PureReactor {
         <FrameworkIcons.ArrowRight size={13} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
         <code className={`truncate flex-1 font-mono text-[12px] ${isDark ? 'text-slate-300' : 'text-slate-600'}`} title={redirect.toPath}>{redirect.toPath}</code>
         <Badge variant={redirect.type === '302' ? BadgeVariant.WARNING : BadgeVariant.DEFAULT}>{redirect.type}</Badge>
-        <span className={`w-14 text-right tabular-nums text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`} title="Times matched">
+        <span className={`w-14 text-right tabular-nums text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`} title={AdminI18n.t('settings.redirects.timesMatched')}>
           {Number(redirect.hitCount || 0)}×
         </span>
         <button
           type="button"
-          aria-label={`Delete redirect from ${redirect.fromPath}`}
+          aria-label={AdminI18n.t('settings.redirects.deleteRedirectFrom', { fromPath: redirect.fromPath })}
           disabled={busy}
           onClick={() => this.handleDelete(redirect)}
           className={`p-1.5 rounded-md transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-800' : 'text-slate-400 hover:text-rose-600 hover:bg-rose-50'}`}
@@ -63,11 +64,10 @@ export class RedirectRulesCard extends PureReactor {
   render(): ReactNode {
     const { redirects } = this;
     return (
-      <Card title="Rules" icon={<FrameworkIcons.CornerRightUp size={16} />}>
+      <Card title={AdminI18n.t('settings.redirects.rules')} icon={<FrameworkIcons.CornerRightUp size={16} />}>
         {redirects.length === 0 ? (
           <p className={`text-[13px] py-4 ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            No redirect rules yet. A rule catches a retired URL — one that no longer resolves to any
-            content — and sends visitors to its replacement.
+            {AdminI18n.t('settings.redirects.noRedirectRulesYetA')}
           </p>
         ) : (
           redirects.map((redirect) => this.renderRow(redirect))

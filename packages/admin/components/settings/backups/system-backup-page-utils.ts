@@ -11,6 +11,7 @@ import type { IBackupCatalogItemView } from '@/components/settings/backups/inter
 import type { IRestoreDialogState } from '@/components/settings/backups/interfaces/restore-dialog-state.interface';
 import type { ISystemBackupListResponseView } from '@/components/settings/backups/interfaces/system-backup-list-response-view.interface';
 import { BackupSectionOptions } from '@/components/settings/backups/backup-section-options';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SystemBackupPageUtils {
   static createEmptyListResponse(): ISystemBackupListResponseView {
@@ -120,7 +121,7 @@ export class SystemBackupPageUtils {
 
   static formatTimestamp(value: string): string {
     const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return 'Unknown';
+    if (Number.isNaN(date.getTime())) return AdminI18n.t('settings.components.unknown');
     return date.toLocaleString();
   }
 
@@ -143,21 +144,21 @@ export class SystemBackupPageUtils {
 
   static getGroupDescription(groupKey: IBackupCatalogGroupView['key']): string {
     const group = BackupCatalogGroupKey.resolve(groupKey);
-    if (group === BackupCatalogGroupKey.SYSTEM) return 'Framework snapshots for full-system rollback and safety checkpoints.';
-    if (group === BackupCatalogGroupKey.PLUGINS) return 'Plugin-specific archives created during installs, updates, or manual protection.';
-    if (group === BackupCatalogGroupKey.THEMES) return 'Theme snapshots captured before overwrite or restore operations.';
-    if (group === BackupCatalogGroupKey.DATABASE) return 'Database-only dumps retained separately from tarball snapshots.';
-    return 'Site-transfer bundles and related artifacts staged for migration workflows.';
+    if (group === BackupCatalogGroupKey.SYSTEM) return AdminI18n.t('settings.components.frameworkSnapshotsForFullSystem');
+    if (group === BackupCatalogGroupKey.PLUGINS) return AdminI18n.t('settings.components.pluginSpecificArchivesCreatedDuring');
+    if (group === BackupCatalogGroupKey.THEMES) return AdminI18n.t('settings.components.themeSnapshotsCapturedBeforeOverwrite');
+    if (group === BackupCatalogGroupKey.DATABASE) return AdminI18n.t('settings.components.databaseOnlyDumpsRetainedSeparately');
+    return AdminI18n.t('settings.components.siteTransferBundlesAndRelated');
   }
 
   static getScopeLabel(item: IBackupCatalogItemView): string {
     const group = this.groupOf(item);
-    if (group === BackupCatalogGroupKey.PLUGINS && item.scopeSlug) return `Plugin: ${item.scopeSlug}`;
-    if (group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return `Theme: ${item.scopeSlug}`;
-    if (group === BackupCatalogGroupKey.DATABASE) return 'Database';
-    if (group === BackupCatalogGroupKey.TRANSFER) return 'Site Transfer';
-    if (group === BackupCatalogGroupKey.TENANTS) return 'Sites';
-    return 'System';
+    if (group === BackupCatalogGroupKey.PLUGINS && item.scopeSlug) return AdminI18n.t('settings.components.plugin', { scopeSlug: item.scopeSlug });
+    if (group === BackupCatalogGroupKey.THEMES && item.scopeSlug) return AdminI18n.t('settings.components.theme', { scopeSlug: item.scopeSlug });
+    if (group === BackupCatalogGroupKey.DATABASE) return AdminI18n.t('settings.components.database');
+    if (group === BackupCatalogGroupKey.TRANSFER) return AdminI18n.t('settings.components.siteTransfer');
+    if (group === BackupCatalogGroupKey.TENANTS) return AdminI18n.t('settings.components.sites');
+    return AdminI18n.t('settings.components.system');
   }
 
   /** Badge colour for a catalog row's scope chip, keyed off the hydrated group. */
@@ -173,11 +174,11 @@ export class SystemBackupPageUtils {
   }
 
   static getCreateProgressLabel(percent: number): string {
-    if (percent < 20) return 'Validating backup scope...';
-    if (percent < 50) return 'Collecting selected workspace paths...';
-    if (percent < 85) return 'Compressing archive contents...';
-    if (percent < 100) return 'Refreshing backup inventory...';
-    return 'Backup archive ready.';
+    if (percent < 20) return AdminI18n.t('settings.components.validatingBackupScope');
+    if (percent < 50) return AdminI18n.t('settings.components.collectingSelectedWorkspacePaths');
+    if (percent < 85) return AdminI18n.t('settings.components.compressingArchiveContents');
+    if (percent < 100) return AdminI18n.t('settings.components.refreshingBackupInventory');
+    return AdminI18n.t('settings.components.backupArchiveReady');
   }
 
   static getNextCreateProgressPercent(currentPercent: number): number {
@@ -186,10 +187,10 @@ export class SystemBackupPageUtils {
   }
 
   static getImportProgressLabel(percent: number): string {
-    if (percent < 20) return 'Preparing archive upload...';
-    if (percent < 55) return 'Uploading backup archive...';
-    if (percent < 100) return 'Upload finished. Finalizing backup import...';
-    return 'Backup import complete.';
+    if (percent < 20) return AdminI18n.t('settings.components.preparingArchiveUpload');
+    if (percent < 55) return AdminI18n.t('settings.components.uploadingBackupArchive');
+    if (percent < 100) return AdminI18n.t('settings.components.uploadFinishedFinalizingBackupImport');
+    return AdminI18n.t('settings.components.backupImportComplete');
   }
 
   static getImportUploadLabel(
@@ -200,15 +201,15 @@ export class SystemBackupPageUtils {
   ): string {
     const bytesLabel = `${this.formatBytes(loadedBytes)} of ${this.formatBytes(totalBytes)}`;
     if (loadedBytes <= 0) {
-      return `Preparing archive upload... ${bytesLabel}`;
+      return AdminI18n.t('settings.components.preparingArchiveUpload2', { bytesLabel: bytesLabel });
     }
     if (percent >= 99) {
-      return `Upload finished. Finalizing backup import... ${bytesLabel}`;
+      return AdminI18n.t('settings.components.uploadFinishedFinalizingBackupImport2', { bytesLabel: bytesLabel });
     }
     if (stalled) {
-      return `Uploading backup archive... ${bytesLabel}. Progress updates may pause for large files.`;
+      return AdminI18n.t('settings.components.uploadingBackupArchiveProgressUpdates', { bytesLabel: bytesLabel });
     }
-    return `Uploading backup archive... ${bytesLabel}`;
+    return AdminI18n.t('settings.components.uploadingBackupArchive2', { bytesLabel: bytesLabel });
   }
 
   static normalizeUploadPercent(loadedBytes: number, totalBytes: number | null, rawPercent: number | null): number {
@@ -233,9 +234,9 @@ export class SystemBackupPageUtils {
 
   static getDownloadProgressLabel(progress: IBackupDownloadProgressView): string {
     if (progress.percent === null) {
-      return `Downloading ${this.formatBytes(progress.loadedBytes)}...`;
+      return AdminI18n.t('settings.components.downloading', { formatBytes: this.formatBytes(progress.loadedBytes) });
     }
-    return `Downloading ${progress.percent}%`;
+    return AdminI18n.t('settings.components.downloading2', { percent: progress.percent });
   }
 
   static getDownloadProgressDetail(progress: IBackupDownloadProgressView): string {
@@ -247,7 +248,7 @@ export class SystemBackupPageUtils {
 
   static toErrorMessage(error: unknown): string {
     if (error instanceof Error && error.message) return error.message;
-    return 'Unexpected backup operation failure.';
+    return AdminI18n.t('settings.components.unexpectedBackupOperationFailure');
   }
 
   static async downloadBackup(

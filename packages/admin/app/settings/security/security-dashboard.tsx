@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SecuritySettingsPageUtils } from '@/app/settings/security/security-settings-page-utils';
 import { SecurityDefenseCards } from '@/app/settings/security/security-defense-cards';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SecurityDashboard extends PureReactor {
   @prop declare stats: any;
@@ -34,52 +35,52 @@ export class SecurityDashboard extends PureReactor {
           {processesKnown ? (
             <Card className="p-6 relative overflow-hidden">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-semibold tracking-wide text-slate-500">Plugin Processes</span>
+                <span className="text-[10px] font-semibold tracking-wide text-slate-500">{AdminI18n.t('settings.security.pluginProcesses')}</span>
                 <FrameworkIcons.Box size={16} className="text-indigo-500" />
               </div>
               <div className="text-3xl font-bold">{processes.length}</div>
-              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Running under their own identity</div>
+              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">{AdminI18n.t('settings.security.runningUnderTheirOwnIdentity')}</div>
             </Card>
           ) : null}
           {hostMemoryKnown ? (
             <Card className="p-6 relative overflow-hidden">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[10px] font-semibold tracking-wide text-slate-500">Host Memory</span>
+                <span className="text-[10px] font-semibold tracking-wide text-slate-500">{AdminI18n.t('settings.security.hostMemory')}</span>
                 <FrameworkIcons.Zap size={16} className="text-amber-500" />
               </div>
               <div className="text-3xl font-bold">{hostRssMB} MB</div>
-              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Resident set of the api process</div>
+              <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">{AdminI18n.t('settings.security.residentSetOfTheApi')}</div>
               <div className="mt-3 text-[11px] text-slate-500">
-                Plugin processes are separate: each carries its own limit, listed below.
+                {AdminI18n.t('settings.security.pluginProcessesAreSeparateEach')}
               </div>
             </Card>
           ) : null}
           <Card className="p-6 relative overflow-hidden">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-[10px] font-semibold tracking-wide text-slate-500">Threat Alerts</span>
+              <span className="text-[10px] font-semibold tracking-wide text-slate-500">{AdminI18n.t('settings.security.threatAlerts')}</span>
               <FrameworkIcons.ShieldAlert size={16} className={stats.monitor?.violations24h > 0 ? 'text-red-500' : 'text-green-500'} />
             </div>
             <div className={`text-3xl font-bold ${stats.monitor?.violations24h > 0 ? 'text-red-500' : ''}`}>
               {stats.monitor?.violations24h || 0}
             </div>
-            <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">Policy Violations (24h)</div>
+            <div className="text-[10px] font-medium text-slate-400 mt-2 tracking-wide uppercase">{AdminI18n.t('settings.security.policyViolations24h')}</div>
           </Card>
         </div>
 
         {processesKnown ? (
-        <Card title="Plugin Processes">
+        <Card title={AdminI18n.t('settings.security.pluginProcesses')}>
           <div className="pt-2">
             {processes.length === 0 ? (
-              <p className="text-sm text-slate-500">No plugin is running in its own process right now.</p>
+              <p className="text-sm text-slate-500">{AdminI18n.t('settings.security.noPluginIsRunningIn')}</p>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[12px]">
                   <thead className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">
                     <tr>
-                      <th className="py-2 pr-4">Plugin</th>
+                      <th className="py-2 pr-4">{AdminI18n.t('settings.security.plugin')}</th>
                       <th className="py-2 pr-4">PID</th>
-                      <th className="py-2 pr-4">Memory limit</th>
-                      <th className="py-2">Call timeout</th>
+                      <th className="py-2 pr-4">{AdminI18n.t('settings.security.memoryLimit')}</th>
+                      <th className="py-2">{AdminI18n.t('settings.security.callTimeout')}</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -100,22 +101,22 @@ export class SecurityDashboard extends PureReactor {
         ) : null}
 
         {stats.pluginIsolation && (
-          <Card title="Plugin Isolation Coverage">
+          <Card title={AdminI18n.t('settings.security.pluginIsolationCoverage')}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4 pt-2">
               <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Total Plugins</p>
+                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{AdminI18n.t('settings.security.totalPlugins')}</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.totalPlugins}</p>
               </div>
               <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Active Plugins</p>
+                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{AdminI18n.t('settings.security.activePlugins')}</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.activePlugins}</p>
               </div>
               <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Active</p>
+                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{AdminI18n.t('settings.security.sandboxActive')}</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxActivePlugins}</p>
               </div>
               <div className={`p-4 ${AdminClass.SURFACE} bg-slate-50 dark:bg-slate-900/50`}>
-                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">Sandbox Runtime</p>
+                <p className="text-[10px] font-semibold tracking-wide text-slate-500 uppercase">{AdminI18n.t('settings.security.sandboxRuntime')}</p>
                 <p className="text-2xl font-bold mt-2">{stats.pluginIsolation.sandboxRuntimeActivePlugins ?? 0}</p>
               </div>
             </div>

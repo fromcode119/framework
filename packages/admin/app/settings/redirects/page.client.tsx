@@ -9,6 +9,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { RedirectsApiClient } from '@/app/settings/redirects/redirects-api-client';
 import { RedirectRulesCard } from '@/app/settings/redirects/redirect-rules-card';
 import { RedirectCreateCard } from '@/app/settings/redirects/redirect-create-card';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Settings → Redirects — the framework's ONE URL-redirect surface.
@@ -42,14 +43,14 @@ export class RedirectsSettingsPage extends AdminComponent {
       this.redirects = await RedirectsApiClient.list();
     } catch (error: any) {
       this.redirects = null;
-      this.loadError = error?.message || 'The redirects request failed.';
+      this.loadError = error?.message || AdminI18n.t('settings.redirects.theRedirectsRequestFailed');
     } finally {
       this.isLoading = false;
     }
   }
 
   private notify(message: string, type: NotificationType): void {
-    this.runtime?.notify?.addNotification?.({ title: 'Redirects', message, type });
+    this.runtime?.notify?.addNotification?.({ title: AdminI18n.t('settings.redirects.redirects'), message, type });
   }
 
   @bound
@@ -58,10 +59,10 @@ export class RedirectsSettingsPage extends AdminComponent {
     try {
       const created = await RedirectsApiClient.create(input);
       this.redirects = [created, ...(this.redirects || [])];
-      this.notify(`Redirect from ${created.fromPath} created.`, NotificationType.SUCCESS);
+      this.notify(AdminI18n.t('settings.redirects.redirectFromCreated', { fromPath: created.fromPath }), NotificationType.SUCCESS);
       return true;
     } catch (error: any) {
-      this.notify(error?.message || 'The redirect could not be created.', NotificationType.ERROR);
+      this.notify(error?.message || AdminI18n.t('settings.redirects.theRedirectCouldNotBe'), NotificationType.ERROR);
       return false;
     } finally {
       this.isCreating = false;
@@ -75,7 +76,7 @@ export class RedirectsSettingsPage extends AdminComponent {
       const updated = await RedirectsApiClient.update(Number(redirect.id), { enabled: !redirect.enabled });
       this.redirects = (this.redirects || []).map((row) => (row.id === updated.id ? updated : row));
     } catch (error: any) {
-      this.notify(error?.message || 'The redirect could not be updated.', NotificationType.ERROR);
+      this.notify(error?.message || AdminI18n.t('settings.redirects.theRedirectCouldNotBe2'), NotificationType.ERROR);
     } finally {
       this.busyId = 0;
     }
@@ -87,9 +88,9 @@ export class RedirectsSettingsPage extends AdminComponent {
     try {
       await RedirectsApiClient.remove(Number(redirect.id));
       this.redirects = (this.redirects || []).filter((row) => row.id !== redirect.id);
-      this.notify(`Redirect from ${redirect.fromPath} deleted.`, NotificationType.SUCCESS);
+      this.notify(AdminI18n.t('settings.redirects.redirectFromDeleted', { fromPath: redirect.fromPath }), NotificationType.SUCCESS);
     } catch (error: any) {
-      this.notify(error?.message || 'The redirect could not be deleted.', NotificationType.ERROR);
+      this.notify(error?.message || AdminI18n.t('settings.redirects.theRedirectCouldNotBe3'), NotificationType.ERROR);
     } finally {
       this.busyId = 0;
     }
@@ -98,15 +99,15 @@ export class RedirectsSettingsPage extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     if (this.isLoading) {
-      return <Loader label="Loading redirects…" />;
+      return <Loader label={AdminI18n.t('settings.redirects.loadingRedirects')} />;
     }
 
     if (this.redirects === null) {
       return (
         <div className="p-6">
           <LoadErrorPanel
-            title="Redirects could not be loaded"
-            message={this.loadError || 'The redirects request failed.'}
+            title={AdminI18n.t('settings.redirects.redirectsCouldNotBeLoaded')}
+            message={this.loadError || AdminI18n.t('settings.redirects.theRedirectsRequestFailed')}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}
           />
@@ -119,8 +120,8 @@ export class RedirectsSettingsPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.CornerRightUp size={18} strokeWidth={2} />}
-          title="Redirects"
-          subtitle="Send retired URLs to their replacements"
+          title={AdminI18n.t('settings.redirects.redirects')}
+          subtitle={AdminI18n.t('settings.redirects.sendRetiredUrlsToTheir')}
         />
         <div className="p-6 w-full space-y-6">
           <RedirectCreateCard theme={theme} isSubmitting={this.isCreating} onCreate={this.handleCreate} />

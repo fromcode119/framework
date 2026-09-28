@@ -14,6 +14,7 @@ import type { IBackupCatalogItemView } from '@/components/settings/backups/inter
 import type { IBackupDownloadProgressView } from '@/components/settings/backups/interfaces/backup-download-progress-view.interface';
 import type { ISystemBackupCapabilities } from '@/components/settings/backups/interfaces/system-backup-capabilities.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BackupListCard extends AdminComponent {
   @prop declare groups: IBackupCatalogGroupView[];
@@ -47,9 +48,9 @@ export class BackupListCard extends AdminComponent {
       <div className={`border-b px-8 py-6 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-white/80'}`}>
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>Managed Archives</h2>
+            <h2 className={`text-lg font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.managedArchives')}</h2>
             <p className="text-sm text-slate-500">
-              System restore always requires a preview, a typed confirmation challenge, and a fresh rollback snapshot.
+              {AdminI18n.t('settings.components.systemRestoreAlwaysRequiresA')}
             </p>
           </div>
 
@@ -60,7 +61,7 @@ export class BackupListCard extends AdminComponent {
               isLoading={isRefreshing}
               onClick={() => void onRefresh()}
             >
-              Refresh Inventory
+              {AdminI18n.t('settings.components.refreshInventory')}
             </Button>
           </div>
         </div>
@@ -88,9 +89,9 @@ export class BackupListCard extends AdminComponent {
           <div className={`mx-auto flex h-16 w-16 items-center justify-center rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
             <FrameworkIcons.Database size={28} />
           </div>
-          <h3 className={`mt-5 text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>No backups indexed yet</h3>
+          <h3 className={`mt-5 text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('settings.components.noBackupsIndexedYet')}</h3>
           <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-            Create a system backup to establish a rollback point before updates or restore operations.
+            {AdminI18n.t('settings.components.createASystemBackupTo2')}
           </p>
         </div>
       ) : (
@@ -111,12 +112,12 @@ export class BackupListCard extends AdminComponent {
                 <table className="min-w-full divide-y divide-slate-200/80 text-left dark:divide-slate-800">
                   <thead>
                     <tr className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
-                      <th className="px-5 py-4 font-bold">Backup</th>
-                      <th className="px-5 py-4 font-bold">Scope</th>
-                      <th className="px-5 py-4 font-bold">Modified</th>
-                      <th className="px-5 py-4 font-bold">Size</th>
-                      <th className="px-5 py-4 font-bold">Storage</th>
-                      <th className="px-5 py-4 font-bold text-right">Actions</th>
+                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.backup')}</th>
+                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.scope')}</th>
+                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.modified')}</th>
+                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.size')}</th>
+                      <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.storage')}</th>
+                      <th className="px-5 py-4 font-bold text-right">{AdminI18n.t('settings.components.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800">
@@ -147,7 +148,7 @@ export class BackupListCard extends AdminComponent {
                               disabled={downloadProgress?.activeId === item.id}
                               onClick={() => onDownload(item.id)}
                             >
-                              {downloadProgress?.activeId === item.id ? SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress) : 'Download'}
+                              {downloadProgress?.activeId === item.id ? SystemBackupPageUtils.getDownloadProgressLabel(downloadProgress) : AdminI18n.t('settings.components.download')}
                             </Button>
                             {capabilities.canRestore && SystemBackupPageUtils.canRestore(item) ? (
                               <Button
@@ -158,7 +159,7 @@ export class BackupListCard extends AdminComponent {
                                 isLoading={activePreviewId === item.id}
                                 onClick={() => onRequestRestore(item)}
                               >
-                                Restore
+                                {AdminI18n.t('settings.components.restore')}
                               </Button>
                             ) : null}
                             {capabilities.canManage && SystemBackupPageUtils.canDelete(item) ? (

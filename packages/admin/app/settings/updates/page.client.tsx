@@ -17,6 +17,8 @@ import { AppEnv } from '@/lib/env';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class UpdatesPage extends AdminComponent {
   @state status: any = null;
@@ -84,10 +86,10 @@ export class UpdatesPage extends AdminComponent {
       const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK);
       this.status = data;
     } catch (err: any) {
-      const message = err?.message || 'The framework registry could not be reached.';
+      const message = err?.message || AdminI18n.t('settings.updates.theFrameworkRegistryCouldNot');
       this.status = null;
       this.checkError = message;
-      this.notify(NotificationType.ERROR, 'Update Check Failed', message);
+      this.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.updateCheckFailed'), message);
     } finally {
       this.loading = false;
     }
@@ -97,9 +99,9 @@ export class UpdatesPage extends AdminComponent {
   async handleUpdate(): Promise<void> {
     this.updating = true;
     try {
-      this.notify(NotificationType.INFO, 'Update Started', 'Creating system backup and applying updates. This may take a minute.');
+      this.notify(NotificationType.INFO, AdminI18n.t('settings.updates.updateStarted'), AdminI18n.t('settings.updates.creatingSystemBackupAndApplying'));
       const data = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_APPLY);
-      this.notify(NotificationType.SUCCESS, 'Update Complete', `System updated to v${data.version}. The page will now refresh.`);
+      this.notify(NotificationType.SUCCESS, AdminI18n.t('settings.updates.updateComplete'), AdminI18n.t('settings.updates.systemUpdatedToVThe', { version: data.version }));
       this.showConfirm = false;
 
       // Wait a bit for the notify to be seen and for potential server restart
@@ -107,7 +109,7 @@ export class UpdatesPage extends AdminComponent {
         window.location.reload();
       }, 5000);
     } catch (err: any) {
-      this.notify(NotificationType.ERROR, 'Update Failed', err.message);
+      this.notify(NotificationType.ERROR, AdminI18n.t('settings.updates.updateFailed'), err.message);
       this.updating = false;
     }
   }
@@ -127,7 +129,7 @@ export class UpdatesPage extends AdminComponent {
     // every site runs on and restarts the box; offering that button from a console headed with one
     // customer's name says it is that customer's to press.
     return (
-      <PlatformScopeGate what="Updates">
+      <PlatformScopeGate what={AdminI18n.t('settings.updates.updates')}>
         {this.body()}
       </PlatformScopeGate>
     );
@@ -136,7 +138,7 @@ export class UpdatesPage extends AdminComponent {
   private body(): ReactNode {
     if (!this.canManagePlatform) {
       return (
-        <PlatformOnlyPanel detail="A system update replaces the framework every site on this platform runs on, so only a platform admin can check for or apply one. Nothing here is specific to your site." />
+        <PlatformOnlyPanel detail={AdminI18n.t('settings.updates.aSystemUpdateReplacesThe')} />
       );
     }
 
@@ -147,7 +149,7 @@ export class UpdatesPage extends AdminComponent {
 
     if (loading && !status) return (
       <div className="flex-1 flex items-center justify-center min-h-screen">
-         <Loader label="Checking the update registry..." />
+         <Loader label={AdminI18n.t('settings.updates.checkingTheUpdateRegistry')} />
       </div>
     );
 
@@ -161,8 +163,8 @@ export class UpdatesPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.System size={18} strokeWidth={2} />}
-          title="System Updates"
-          subtitle="Framework core & registry synchronization"
+          title={AdminI18n.t('settings.updates.systemUpdates')}
+          subtitle={AdminI18n.t('settings.updates.frameworkCoreRegistrySynchronization')}
           actions={
             <button
               onClick={this.fetchStatus}
@@ -174,7 +176,7 @@ export class UpdatesPage extends AdminComponent {
               }`}
             >
               <FrameworkIcons.Loader className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              {loading ? 'Verifying Registry...' : 'Check For Updates'}
+              {loading ? AdminI18n.t('settings.updates.verifyingRegistry') : AdminI18n.t('settings.updates.checkForUpdates')}
             </button>
           }
         />
@@ -197,32 +199,31 @@ export class UpdatesPage extends AdminComponent {
                       variant={hasUpdate ? 'warning' : latestVersionUnknown ? 'gray' : 'success'}
                       className="px-3 py-1 text-[10px] font-bold tracking-tight rounded-full"
                     >
-                      {hasUpdate ? 'Update Available' : latestVersionUnknown ? 'Update Check Failed' : 'Framework Up to Date'}
+                      {hasUpdate ? AdminI18n.t('settings.updates.updateAvailable') : latestVersionUnknown ? AdminI18n.t('settings.updates.updateCheckFailed') : AdminI18n.t('settings.updates.frameworkUpToDate')}
                     </Badge>
                   </div>
 
                   <p className={`text-sm leading-relaxed max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                    The core engine powers all API, Database, and Plugin infrastructure. Keeping it updated ensures
-                    the highest security, stability, and performance for your enterprise platform.
+                    {AdminI18n.t('settings.updates.theCoreEnginePowersAll')}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Installed Version</div>
+                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.installedVersion')}</div>
                     <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{installedVersion ? `v${installedVersion}` : '-'}</div>
                   </div>
                   <div className={`p-4 rounded-xl border ${theme === ThemeMode.DARK ? 'bg-slate-800/40 border-white/5' : 'bg-slate-50 border-slate-100/80'}`}>
-                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">Latest Registry Version</div>
+                    <div className="text-[10px] font-bold tracking-tight text-slate-400 mb-2">{AdminI18n.t('settings.updates.latestRegistryVersion')}</div>
                     {/* NEVER echo the installed version here. That is what made an unreachable
                         registry look like "you are current". */}
-                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? 'Unknown' : `v${latestVersion}`}</div>
+                    <div className={`font-mono font-bold text-2xl ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-700'}`}>{latestVersionUnknown ? AdminI18n.t('settings.updates.unknown') : `v${latestVersion}`}</div>
                   </div>
                 </div>
 
                 {latestVersionUnknown && (
                   <p className="text-[11px] font-medium leading-relaxed text-rose-500">
-                    {this.checkError || 'The registry did not report a latest version, so whether an update exists is unknown.'}
+                    {this.checkError || AdminI18n.t('settings.updates.theRegistryDidNotReport')}
                   </p>
                 )}
 
@@ -232,7 +233,7 @@ export class UpdatesPage extends AdminComponent {
                       <div className="p-1.5 bg-amber-500/10 rounded-lg">
                         <FrameworkIcons.Warning size={18} />
                       </div>
-                      <span>v{latestVersion} Recommended Update</span>
+                      <span>{AdminI18n.t('settings.updates.recommendedUpdate', { version: latestVersion })}</span>
                     </div>
                     {/* A hardcoded paragraph sat here — "cumulative improvements to the plugin
                         isolation layer and enhanced database driver stability" — shown verbatim as
@@ -255,12 +256,11 @@ export class UpdatesPage extends AdminComponent {
                         disabled={updating}
                         className="w-full sm:w-auto px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold tracking-tight text-xs transition-colors shadow-sm active:scale-95 disabled:opacity-50"
                       >
-                        {updating ? 'Applying Update...' : 'Install Core v' + latestVersion}
+                        {updating ? AdminI18n.t('settings.updates.applyingUpdate') : AdminI18n.t('settings.updates.installCore', { version: latestVersion })}
                       </button>
                     ) : (
                       <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-                        This installation runs from a published image, so it cannot update its own
-                        files — deploy <span className="font-mono font-semibold">v{latestVersion}</span> instead:
+                        <AdminRichText k="settings.updates.deployInstead" vars={{ version: latestVersion }} />
                         <span className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</span>
                       </p>
                     )}
@@ -272,7 +272,7 @@ export class UpdatesPage extends AdminComponent {
 
           {status?.lastUpdated && (
             <div className="text-center text-[10px] font-bold tracking-tight text-slate-500 opacity-40">
-              Last Registry Sync: {new Date(status.lastUpdated).toLocaleString()}
+              {AdminI18n.t('settings.updates.lastRegistrySync', { at: new Date(status.lastUpdated).toLocaleString() })}
             </div>
           )}
 
@@ -281,8 +281,8 @@ export class UpdatesPage extends AdminComponent {
             onClose={this.closeConfirm}
             onConfirm={this.handleUpdate}
             isLoading={updating}
-            title="Apply System Update?"
-            description={`You are about to update ${AppEnv.PRODUCT_NAME} from v${installedVersion} to v${latestVersion}. A complete system backup will be created automatically before proceeding. This process will overwrite system files and may cause a temporary service disruption while the server restarts.`}
+            title={AdminI18n.t('settings.updates.applySystemUpdate')}
+            description={AdminI18n.t('settings.updates.youAreAboutToUpdate', { PRODUCT_NAME: AppEnv.PRODUCT_NAME, installedVersion: installedVersion, latestVersion: latestVersion })}
           />
         </div>
       </div>

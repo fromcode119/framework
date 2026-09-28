@@ -1,4 +1,5 @@
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What each restart button actually does, spelled out for the operator.
@@ -27,24 +28,24 @@ export class RestartAppCopy {
     if (app === ApplicationUrlUtils.API_APP) {
       return new RestartAppCopy(
         'API',
-        'Exits the API process; the container supervisor starts it again. Reloads plugin code, manifests and settings from disk. Requests in flight are dropped.',
-        'The admin and the storefront both depend on the API, so both stop working until it is back.',
+        AdminI18n.t('settings.infrastructure.restart.apiDescription'),
+        AdminI18n.t('settings.infrastructure.restart.apiWarning'),
       );
     }
     if (app === ApplicationUrlUtils.ADMIN_APP) {
       return new RestartAppCopy(
-        'Admin',
-        'Exits the admin process; the container supervisor starts it again. Clears this app\'s server-side caches.',
-        'This is the app you are using right now. This page will stop responding until the admin is back — reload it then.',
+        AdminI18n.t('settings.infrastructure.restart.adminTitle'),
+        AdminI18n.t('settings.infrastructure.restart.adminDescription'),
+        AdminI18n.t('settings.infrastructure.restart.adminWarning'),
       );
     }
     if (app === ApplicationUrlUtils.FRONTEND_APP) {
       return new RestartAppCopy(
-        'Frontend',
-        'Exits the storefront process; the container supervisor starts it again. Clears its rendering caches and re-reads theme and plugin bundles.',
-        'Visitors will get an error until the storefront is back.',
+        AdminI18n.t('settings.infrastructure.restart.frontendTitle'),
+        AdminI18n.t('settings.infrastructure.restart.frontendDescription'),
+        AdminI18n.t('settings.infrastructure.restart.frontendWarning'),
       );
     }
-    return new RestartAppCopy(app, 'Exits the process; the container supervisor starts it again.', '');
+    return new RestartAppCopy(app, AdminI18n.t('settings.infrastructure.restart.otherDescription'), '');
   }
 }

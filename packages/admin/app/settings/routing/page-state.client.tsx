@@ -2,6 +2,7 @@ import { state, bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the routing screen knows: the permalink structure being edited, what the home page points at,
@@ -14,20 +15,20 @@ import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
  */
 export abstract class RoutingPageState extends AdminComponent {
   protected static readonly PLACEHOLDERS = [
-    { label: ':slug', description: 'The sanitized post title (recommended)', example: 'hello-world' },
-    { label: ':id', description: 'The unique numeric ID of the content', example: '123' },
-    { label: ':year', description: 'The 4-digit year of publication', example: '2026' },
-    { label: ':month', description: 'The 2-digit month of publication', example: '01' },
-    { label: ':day', description: 'The 2-digit day of publication', example: '31' },
-    { label: ':category', description: 'The primary category slug', example: 'news' },
-    { label: ':author', description: 'The author username', example: 'admin' },
+    { label: ':slug', description: AdminI18n.t('settings.routing.theSanitizedPostTitleRecommended'), example: 'hello-world' },
+    { label: ':id', description: AdminI18n.t('settings.routing.theUniqueNumericIdOf'), example: '123' },
+    { label: ':year', description: AdminI18n.t('settings.routing.the4DigitYearOf'), example: '2026' },
+    { label: ':month', description: AdminI18n.t('settings.routing.the2DigitMonthOf'), example: '01' },
+    { label: ':day', description: AdminI18n.t('settings.routing.the2DigitDayOf'), example: '31' },
+    { label: ':category', description: AdminI18n.t('settings.routing.thePrimaryCategorySlug'), example: 'news' },
+    { label: ':author', description: AdminI18n.t('settings.routing.theAuthorUsername'), example: 'admin' },
   ];
   protected static readonly PRESETS = [
-    { label: 'Plain', value: '/:slug' },
-    { label: 'Day and name', value: '/:year/:month/:day/:slug' },
-    { label: 'Month and name', value: '/:year/:month/:slug' },
-    { label: 'Numeric', value: '/:id' },
-    { label: 'Category and name', value: '/:category/:slug' },
+    { label: AdminI18n.t('settings.routing.plain'), value: '/:slug' },
+    { label: AdminI18n.t('settings.routing.dayAndName'), value: '/:year/:month/:day/:slug' },
+    { label: AdminI18n.t('settings.routing.monthAndName'), value: '/:year/:month/:slug' },
+    { label: AdminI18n.t('settings.routing.numeric'), value: '/:id' },
+    { label: AdminI18n.t('settings.routing.categoryAndName'), value: '/:category/:slug' },
   ];
   protected static readonly EMPTY_COLLECTIONS = [];
   @state isSaving = false;
@@ -67,7 +68,7 @@ export abstract class RoutingPageState extends AdminComponent {
     return Array.isArray(collections) ? collections : RoutingPageState.EMPTY_COLLECTIONS;
   }
   @state homeOptions: { label: string; value: string; group?: string; section?: string; sourceKind?: string }[] = [
-    { value: 'auto', label: 'Auto detect', group: 'System' }
+    { value: 'auto', label: AdminI18n.t('settings.routing.autoDetect'), group: 'System' }
   ];
 
   protected get outOfScope(): boolean {
@@ -103,6 +104,6 @@ export abstract class RoutingPageState extends AdminComponent {
       ? `${this.autoResolvedSource || 'Auto mode: checking "/" and "home"...'}${autoFallbackLayout ? ` Theme fallback: ${autoFallbackLayout}.` : ''}`
       : selectedHomeOption
         ? `${selectedHomeOption.sourceKind || selectedHomeOption.group || 'Source'} · ${selectedHomeOption.label}`
-        : `Custom target · ${this.homeTarget}`;
+        : AdminI18n.t('settings.routing.customTarget', { homeTarget: this.homeTarget });
   }
 }

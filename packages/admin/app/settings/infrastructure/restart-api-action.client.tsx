@@ -10,6 +10,7 @@ import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminDeployClient } from '@/lib/settings/admin-deploy-client';
 import { RestartAppCopy } from '@/app/settings/infrastructure/restart-app-copy';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "Restart the API", offered AT the control whose change needs it.
@@ -61,13 +62,13 @@ export class RestartApiAction extends AdminComponent {
     try {
       const outcome = await AdminDeployClient.restart(ApplicationUrlUtils.API_APP);
       this.runtime.notify.addNotification({
-        title: 'Restart requested',
-        message: `The API exits in ${outcome.exitInMs}ms and its supervisor starts it again. It is unavailable until then.`,
+        title: AdminI18n.t('settings.infrastructure.restartRequested'),
+        message: AdminI18n.t('settings.infrastructure.theApiExitsInMs', { exitInMs: outcome.exitInMs }),
         type: NotificationType.INFO,
       });
       this.confirming = false;
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Restart not started', message: err?.message || 'The API could not be restarted.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('settings.infrastructure.restartNotStarted'), message: err?.message || AdminI18n.t('settings.infrastructure.theApiCouldNotBe'), type: NotificationType.ERROR });
     } finally {
       this.restarting = false;
     }
@@ -80,16 +81,16 @@ export class RestartApiAction extends AdminComponent {
     return (
       <>
         <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} icon={<FrameworkIcons.Refresh size={14} />} onClick={this.open} isLoading={this.restarting}>
-          {this.props.label || 'Restart the API now'}
+          {this.props.label || AdminI18n.t('settings.infrastructure.restartTheApiNow')}
         </Button>
         <ConfirmDialog
           isOpen={this.confirming}
           onClose={this.close}
           onConfirm={this.confirm}
           isLoading={this.restarting}
-          title={`Restart the ${copy.title} app?`}
+          title={AdminI18n.t('settings.infrastructure.restartTheApp', { title: copy.title })}
           description={`${copy.description} ${copy.warning}`.trim()}
-          confirmLabel="Restart now"
+          confirmLabel={AdminI18n.t('settings.infrastructure.restartNow')}
         />
       </>
     );

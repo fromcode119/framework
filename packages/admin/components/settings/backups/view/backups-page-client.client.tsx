@@ -8,6 +8,7 @@ import { Bridge } from '@fromcode119/react-class-components';
 import { BackupsPageControllerHooks } from '@/components/settings/backups/view/backups-page-controller.client';
 import { BackupsPageClientView } from '@/components/settings/backups/view/backups-page-client-view.client';
 import type { IBackupsPageBridgeValues } from '@/components/settings/backups/interfaces/backups-page-bridge-values.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Hook→class bridge — reads the theme + controller hooks and hands their values to the
@@ -31,10 +32,10 @@ export class BackupsPageClient extends Bridge<IBackupsPageBridgeValues> {
     // other customer back, on a console headed with that one customer's name. The scope gate is the
     // WHERE half, and it wraps the WHO check rather than replacing it.
     return (
-      <PlatformScopeGate what="Backups">
+      <PlatformScopeGate what={AdminI18n.t('settings.components.backups')}>
         {canManagePlatform
           ? <BackupsPageClientView theme={theme} controller={controller} />
-          : <PlatformOnlyPanel detail="A system backup contains every site on this platform, and restoring one overwrites all of them, so only a platform admin can take or restore them. Your own site's content is exported from Sites." />}
+          : <PlatformOnlyPanel detail={AdminI18n.t('settings.components.aSystemBackupContainsEvery')} />}
       </PlatformScopeGate>
     );
   }
