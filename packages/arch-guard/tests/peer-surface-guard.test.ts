@@ -48,6 +48,37 @@ ${extra}}
     try { expect(PeerSurfaceGuard.run()).toBe(1); } finally { restore(); }
   });
 
+  /**
+   * A map drawing on TWO classes. Only the last class was checked, so a method missing from the FIRST
+   * shipped — ecommerce's listDeliveredSales, which finance then could not call.
+   */
+  it('checks every class a map draws on, not only the last one', () => {
+    const { root, restore } = tree();
+    fs.mkdirSync(path.join(root, 'plugins', 'shop', 'src'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'plugins', 'shop', 'index.ts'), `export class Shop {
+  static readonly publicAPI = {
+    listOrders: ShopPublicApi.listOrders,
+    registerProvider: ShopFulfillmentPublicApi.registerProvider,
+  };
+}
+`);
+    fs.writeFileSync(path.join(root, 'plugins', 'shop', 'src', 'public-api.ts'), `export class ShopPublicApi {
+  static async listOrders(): Promise<void> {}
+  static async listDeliveredSales(): Promise<void> {}
+}
+`);
+    fs.writeFileSync(path.join(root, 'plugins', 'shop', 'src', 'fulfillment-public-api.ts'), `export class ShopFulfillmentPublicApi {
+  static async registerProvider(): Promise<void> {}
+}
+`);
+    const errors: string[] = [];
+    const spy = vi.spyOn(console, 'error').mockImplementation((message: string) => { errors.push(String(message)); });
+    try {
+      expect(PeerSurfaceGuard.run()).toBe(1);
+      expect(errors.join('\n')).toContain('ShopPublicApi.listDeliveredSales is not in the publicAPI map');
+    } finally { spy.mockRestore(); restore(); }
+  });
+
   /** Assigning the CLASS exposes everything; there is no second list to drift from. */
   it('ignores the class shape entirely', () => {
     const { root, restore } = tree();
