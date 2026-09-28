@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
 import ts from 'typescript';
 
@@ -47,6 +47,19 @@ export class RenderedCopyGuard {
    */
   static readonly TRANSLATED = ['packages/admin', 'packages/ai'];
 
+  /**
+   * Whether a rendered literal in `file` is a regression rather than backlog: the file sits in a
+   * {@link TRANSLATED} tree, or in an extension's `src/ui` that ships its own `src/ui/i18n/en.json`.
+   * Shipping that dictionary is the extension saying its screens are translated, so from then on every
+   * word they show comes from it — a new literal would show English in every other language.
+   */
+  static isEnforced(file: string): boolean {
+    const normalized = file.replace(/\\/g, '/');
+    if (RenderedCopyGuard.TRANSLATED.some((tree) => normalized.includes(`/${tree}/`))) return true;
+    const at = normalized.lastIndexOf('/src/ui/');
+    return at >= 0 && existsSync(`${normalized.slice(0, at)}/src/ui/i18n/en.json`);
+  }
+
   /** Two consecutive Latin letters: enough to be a word, so separators and figures are skipped. */
   private static readonly HAS_WORD = /[A-Za-z]{2,}/;
 
@@ -86,7 +99,7 @@ export class RenderedCopyGuard {
    * every language. A string counts as copy only if at least one of its words is NOT such a token:
    * `e.g. laptop` and `/new-page or https://…` still count, because `laptop` and `or` are words.
    */
-  private static readonly CODE_TOKEN = /[/.@_:]|--|^-|-$|^[A-Z0-9]+(-[A-Z0-9]+)+$/;
+  private static readonly CODE_TOKEN = /[/.@_:]|--|^-|-$|^[A-Z0-9]+(-[A-Z0-9]+)+$|^[A-Za-z]+=$/;
 
   /** A PEM armour line — `-----BEGIN PRIVATE KEY-----` — marks the whole string as a key's shape. */
   private static readonly PEM = /-----(BEGIN|END) /;

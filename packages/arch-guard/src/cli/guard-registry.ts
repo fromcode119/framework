@@ -8,6 +8,8 @@ import { ClientViewMoveCommand } from './client-view-move-command';
 import { ComponentMigrationCommand } from './component-migration-command';
 import { ConventionGuardCommand } from './convention-guard-command';
 import { RenderedCopyCommand } from './rendered-copy-command';
+import { DictionaryParityCommand } from './dictionary-parity-command';
+import { UiKeyResolutionCommand } from './ui-key-resolution-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
@@ -75,6 +77,8 @@ export class GuardRegistry {
     ['domain-transport-fallback', DomainTransportFallbackCommand],
     ['extension-names', ExtensionNameCommand],
     ['i18n-keys', I18nKeyResolutionCommand],
+    ['i18n-parity', DictionaryParityCommand],
+    ['ui-key-resolution', UiKeyResolutionCommand],
     ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
     ['rendered-by-targets', RenderedByTargetCommand],

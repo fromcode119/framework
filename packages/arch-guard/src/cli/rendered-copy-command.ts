@@ -15,7 +15,8 @@ import { ExtensionTrees } from './extension-trees';
  * platform UI is translated, which is a project, not a fix.
  *
  * So it reports, loudly and exactly, and it FAILS only inside a tree that has reached zero — the
- * trees listed in {@link RenderedCopyGuard.TRANSLATED}. That is not an exemption for the rest: there
+ * trees listed in {@link RenderedCopyGuard.TRANSLATED}, and inside any extension whose `src/ui` ships an
+ * `i18n/en.json` (see {@link RenderedCopyGuard.isEnforced}). That is not an exemption for the rest: there
  * is no per-area number here to raise, the printed total is the real one, and a tree joins the list
  * the day its last literal moves into its dictionary. From then on its next literal is a regression.
  *
@@ -49,7 +50,7 @@ export class RenderedCopyCommand extends ArchorCommand {
       console.log('Extract them into the area\'s i18n dictionary.');
     }
 
-    const regressions = hits.filter(({ file }) => RenderedCopyGuard.TRANSLATED.some((tree) => file.replace(/\\/g, '/').includes(`/${tree}/`)));
+    const regressions = hits.filter(({ file }) => RenderedCopyGuard.isEnforced(file));
     if (regressions.length) {
       console.log('\nFAILED — these trees are fully translated, so copy rendered from code is a regression:');
       for (const { file, hits: lines } of regressions) {

@@ -49,6 +49,10 @@ describe('RenderedCopyGuard', () => {
     expect(hits('export class A { render() { return <input placeholder="e.g. laptop" />; } }')).toEqual(['e.g. laptop']);
   });
 
+  it('does not count a key= label in front of a value', () => {
+    expect(hits('export class A { render() { return <span>id={this.id} type={this.type}</span>; } }')).toEqual([]);
+  });
+
   it('does not count a command inside <code> or <pre>', () => {
     expect(hits('export class A { render() { return <pre>npm run bundle -- --label demo</pre>; } }')).toEqual([]);
   });
