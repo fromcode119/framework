@@ -2,11 +2,12 @@ import type { ReactNode } from 'react';
 import { Reactor } from '@fromcode119/react-class-components';
 import { TranslationContext } from '@fromcode119/react';
 import type { ITranslationContextValue } from '@fromcode119/react';
-import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { AdminConsoleLanguage } from '@/lib/i18n/admin-console-language';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * Makes the admin honor Settings → Localization → "Admin default locale".
+ * Makes the admin speak the reader's language: their own choice (account menu → Language), else
+ * Settings → Localization → "Admin default locale".
  *
  * The root layout hardcodes `<html lang="en">` (it is a static server shell with no settings access), and
  * the i18n provider seeds its locale from that attribute — so `admin_default_locale` was a control whose
@@ -22,8 +23,8 @@ export class AdminLocaleSync extends Reactor {
 
   async componentDidMount(): Promise<void> {
     try {
-      const settings = await AdminSystemSettingsClient.getAll();
-      const configured = String(settings?.admin_default_locale ?? '').trim().toLowerCase();
+      // The reader's own language first, then the site's default for anyone who has not chosen.
+      const configured = (await AdminConsoleLanguage.current()).consoleLocale;
       if (!configured) return;
       // The console's own copy (AdminI18n) and the plugins' (the translation context) follow the same setting.
       AdminI18n.setLocale(configured);

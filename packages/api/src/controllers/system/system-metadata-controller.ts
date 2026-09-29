@@ -40,9 +40,9 @@ export class SystemMetadataController {
       metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
       // Plugin collection names, field labels and menu entries in the console's language, from each
       // plugin's own dictionary; whatever a plugin has not translated goes out as declared.
-      // From the precedence-aware map: the key is INHERITED, so a site's own choice wins over the platform's.
-      const adminLocale = String(metadata.settings?.[SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE] ?? '');
-      const localizer = AdminSchemaLocalization.forLocale(this.runtime.manager, adminLocale);
+      // The person's own console language, else the site's default (AdminConsoleLocale). This payload
+      // is per caller and never cached, so a personal choice is safe here.
+      const localizer = await AdminSchemaLocalization.forRequest(this.runtime.manager, req);
       metadata.plugins = (metadata.plugins || []).map((plugin: any) => ({
         ...plugin,
         admin: {
@@ -158,7 +158,7 @@ export class SystemMetadataController {
         : null,
       // The admin's navigation, in the console's language — the admin reads its menu from this payload
       // too, so leaving it as declared put the plugins' entries back into English.
-      menu: (await AdminSchemaLocalization.forRequest(this.runtime.manager)).menu(
+      menu: (await AdminSchemaLocalization.forSite(this.runtime.manager)).menu(
         Array.isArray(adminMetadata?.menu)
           ? adminMetadata.menu
           : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),

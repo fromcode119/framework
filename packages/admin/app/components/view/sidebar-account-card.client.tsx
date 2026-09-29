@@ -13,6 +13,8 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { AvatarSize } from '@/app/components/enums/avatar-size.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminConsoleLanguage } from '@/lib/i18n/admin-console-language';
+import { SidebarLanguageItems } from '@/app/components/view/sidebar-language-items';
 
 /**
  * Who you are signed in as, at the foot of the sidebar — and the only place the account menu lives.
@@ -27,15 +29,23 @@ export class SidebarAccountCard extends AdminComponent {
   /** The sites this account may enter. Empty on a single-tenant deployment, which hides the group. */
   @state private sites: Array<Record<string, any>> = [];
   @state private currentSite = '';
+  /** The reader's own console language ('' = the site's default) and what the site offers. */
+  @state private personalLanguage = '';
 
   private mounted = false;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
+    void this.loadLanguage();
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
     if (!this.mounted || !response || response.multiTenant !== true) return;
     this.sites = Array.isArray(response.tenants) ? response.tenants : [];
     this.currentSite = String(response.current ?? '');
+  }
+
+  private async loadLanguage(): Promise<void> {
+    const { personal } = await AdminConsoleLanguage.current();
+    if (this.mounted) this.personalLanguage = personal;
   }
 
   componentWillUnmount(): void {
@@ -144,6 +154,7 @@ export class SidebarAccountCard extends AdminComponent {
             onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT),
           }]
         : []),
+      ...SidebarLanguageItems.build({ personal: this.personalLanguage, ...AdminConsoleLanguage.site(this.runtime?.globalSettings) }),
       ...this.siteItems,
       {
         label: AdminI18n.t('shell.account.signOut'),
