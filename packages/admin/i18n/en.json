@@ -553,7 +553,10 @@
       "account": "Account",
       "yours": "Your account",
       "goToMine": "Go to my account",
-      "signedInStaff": "You’re signed in as <strong>{{email}}</strong>. This area is for staff — manage your own profile, security and activity from your account."
+      "signedInStaff": "You’re signed in as <strong>{{email}}</strong>. This area is for staff — manage your own profile, security and activity from your account.",
+      "language": "Language",
+      "languageSiteDefault": "Site default ({{language}})",
+      "languageSiteDefaultNone": "Site default"
     },
     "nav": {
       "secondary": "Secondary navigation",
@@ -1651,7 +1654,7 @@
       "primaryLocaleUsedBySystem": "Primary locale used by system-level fallback logic.",
       "selectSystemLocale": "Select system locale",
       "adminDefaultLocale": "Admin Default Locale",
-      "defaultLanguageUsedByThe": "Default language used by the framework admin interface.",
+      "defaultLanguageUsedByThe": "The console language for people who have not chosen their own (account menu → Language).",
       "selectAdminLocale": "Select admin locale",
       "frontendDefaultLocale": "Frontend Default Locale",
       "defaultLanguageUsedByFrontend": "Default language used by frontend rendering/runtime fallback.",

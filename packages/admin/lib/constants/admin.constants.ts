@@ -70,6 +70,7 @@ export class AdminConstants {
     VERIFY_PASSWORD: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.VERIFY_PASSWORD),
     CHANGE_PASSWORD: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.CHANGE_PASSWORD),
     SECURITY: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.SECURITY),
+    ME_PERSON: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.ME_PERSON),
     /** The signed-in account's own name — no user-management permission needed. */
     PROFILE: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.PROFILE),
     TWO_FACTOR_STATUS: AdminApiPaths.v(SystemConstants.API_PATH.AUTH.TWO_FACTOR_STATUS),

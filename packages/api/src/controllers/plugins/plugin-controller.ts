@@ -67,7 +67,7 @@ export class PluginController extends BaseController {
       .filter((p) => !enabledSlugs || enabledSlugs.has(p.manifest.slug));
 
     // Name and description in the console's language, from each plugin's own dictionary.
-    const localizer = await AdminSchemaLocalization.forRequest(this.manager);
+    const localizer = await AdminSchemaLocalization.forRequest(this.manager, req);
     res.json(visible.map(p => ({
       manifest: localizer.manifest(p.manifest.slug, p.manifest),
       state: p.state,

@@ -3,11 +3,12 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { ContextBridge } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { IThemeLayoutOption } from '@/components/collection/fields/interfaces/theme-layout-option.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminApi } from '@/lib/api';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * Framework-owned, no-magic layout picker. Lists ONLY the layouts the active theme actually declares
@@ -50,7 +51,9 @@ export class ThemeLayoutField extends Reactor {
 
   private async fetchLayouts(): Promise<void> {
     try {
-      const metadata = await ContextBridge.getFrontendMetadata();
+      // Read directly, not through the context: loading the shared storefront payload into the provider
+      // would replace the console's per-reader menu with the site-language one it carries.
+      const metadata = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND) as Record<string, any> | null;
       const rawLayouts = metadata?.activeTheme?.layouts;
       const inferredDefault = String(metadata?.activeTheme?.defaultLayout || '').trim();
       if (!this.active) return;

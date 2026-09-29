@@ -113,7 +113,7 @@ export class PluginSettingsController {
     }
 
     // Labels, descriptions and tabs in the console's language, from the plugin's own dictionary.
-    res.json((await AdminSchemaLocalization.forRequest(this.manager)).settings(slug, schema));
+    res.json((await AdminSchemaLocalization.forRequest(this.manager, req)).settings(slug, schema));
   }
 
   async resetSettings(req: Request, res: Response) {
