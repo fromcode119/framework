@@ -743,7 +743,72 @@
     "eventsWord": "events",
     "cpuCores": "CPU · {{cores}} cores",
     "usedOfTotal": "{{used}} of {{total}}",
-    "paused": "paused"
+    "paused": "paused",
+    "widgets": {
+      "customize": "Customize dashboard",
+      "done": "Done",
+      "reset": "Reset to default",
+      "editHint": "Drag a widget by its bar, or use the arrows. Changes are saved as you make them.",
+      "dragHint": "Drag to move",
+      "moveEarlier": "Move {{label}} earlier",
+      "moveLater": "Move {{label}} later",
+      "remove": "Remove {{label}}",
+      "width": "Width",
+      "size": {
+        "small": "One column",
+        "medium": "Two columns",
+        "large": "Full width"
+      },
+      "sizeShort": {
+        "small": "S",
+        "medium": "M",
+        "large": "L"
+      },
+      "addTitle": "Add widget",
+      "allAdded": "Every widget on offer is already on your dashboard.",
+      "empty": "Your dashboard has no widgets. Choose Customize dashboard to add some.",
+      "saveFailed": "Your layout could not be saved. It will reset when you reload.",
+      "loading": "Loading widget…",
+      "unavailable": "This widget's plugin did not provide it. Update or re-enable the plugin, or remove the widget.",
+      "legacy": {
+        "label": "Plugin panel",
+        "description": "Content plugins place in the {{slot}} area."
+      },
+      "system": {
+        "needsYou": {
+          "label": "Needs you",
+          "description": "Things waiting for a decision. Shows only when there is something."
+        },
+        "sites": {
+          "label": "Sites",
+          "description": "The sites this platform serves."
+        },
+        "recentEdits": {
+          "label": "Where you left off",
+          "description": "The records you edited most recently."
+        },
+        "activityChart": {
+          "label": "Activity chart",
+          "description": "Logged events and errors over the last 14 days."
+        },
+        "activityFeed": {
+          "label": "System events",
+          "description": "The most recent system log entries."
+        },
+        "system": {
+          "label": "Server",
+          "description": "Memory, disk, CPU and the next scheduled tasks."
+        },
+        "activityBreakdown": {
+          "label": "Activity by source",
+          "description": "Which parts of the system logged the recent events."
+        },
+        "support": {
+          "label": "Support & docs",
+          "description": "Links to the developer guide and the project."
+        }
+      }
+    }
   },
   "notFound": {
     "title": "Page not found",

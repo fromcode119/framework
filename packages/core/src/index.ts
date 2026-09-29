@@ -428,6 +428,8 @@ export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
 export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
+export { DashboardWidgetSize } from '@core/enums/dashboard-widget-size.enum';
+export type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
 export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 export { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
 export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';

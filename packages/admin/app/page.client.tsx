@@ -1,7 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import type { ReactElement } from 'react';
-import { Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -11,22 +10,15 @@ import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { DashboardPageHeader } from '@/app/dashboard-page-header';
-import { DashboardActivityChart } from '@/app/dashboard-activity-chart';
-import { DashboardSystemPanel } from '@/app/dashboard-system-panel.client';
-import { DashboardNeedsYou } from '@/app/dashboard-needs-you.client';
-import { DashboardSitesPanel } from '@/app/dashboard-sites-panel.client';
-import { DashboardRecentEdits } from '@/app/dashboard-recent-edits.client';
 import { DashboardGettingStarted } from '@/app/dashboard-getting-started.client';
 import { DashboardMissingConfig } from '@/app/dashboard-missing-config.client';
-import { DashboardActivityBreakdown } from '@/app/dashboard-activity-breakdown';
 import { DashboardUpdateAlert } from '@/app/dashboard-update-alert';
-import { DashboardActivityFeed } from '@/app/dashboard-activity-feed';
-import { DashboardSupportCard } from '@/app/dashboard-support-card';
 import { DashboardFooter } from '@/app/dashboard-footer';
+import { DashboardWidgetBoard } from '@/app/dashboard-widget-board.client';
+import { DashboardSystemWidgets } from '@/app/dashboard-system-widgets';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { state } from '@fromcode119/react-class-components';
 import type { IPluginHealthCounts } from '@/app/plugins/health/interfaces/plugin-health-counts.interface';
-import { DashboardSectionHeading } from '@/app/dashboard-section-heading';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class AdminPage extends AdminComponent {
@@ -162,8 +154,6 @@ export class AdminPage extends AdminComponent {
 
     const platformName = PlatformBrandingService.resolvePlatformName(settings as Record<string, unknown> | null | undefined);
 
-    const hasMainContent = slots['admin.dashboard.main'] && slots['admin.dashboard.main'].length > 0;
-
 
     return (
       <div className="w-full pb-24 animate-in fade-in duration-500">
@@ -180,61 +170,25 @@ export class AdminPage extends AdminComponent {
             />
           )}
 
-          {/* Stats Grid */}
-          {/* What needs the operator comes before anything that merely counts. Both render nothing
-              when there is nothing to say. */}
-          {/* Two faces, one dashboard. An installation with no theme and no plugins has nothing to
-              report on, so it gets the steps that change that; everything else gets the working
-              board. Both read the same checklist. */}
+          {/* An installation with no theme and no plugins has nothing to report on yet, so it gets the
+              steps that change that above the widgets. */}
           {installation?.isFresh ? (
             <DashboardGettingStarted steps={installation.steps || []} mode={String(installation.mode || '')} storefront={String(installation.storefront || '')} scope={installation.scope} />
-          ) : (
-            <>
-              <DashboardNeedsYou />
-              <DashboardSitesPanel />
-            </>
-          )}
+          ) : null}
 
           {installation?.missing ? <DashboardMissingConfig items={installation.missing} /> : null}
 
-          {/* Main Content Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 space-y-6">
-              <Slot name="admin.dashboard.top" />
-
-              {/* What you were working on, before what there is a lot of. */}
-              <DashboardRecentEdits />
-
-              <DashboardSectionHeading label={AdminI18n.t('dashboard.recentActivity')} />
-
-              {/* Activity Section. "View All" used to open /plugins, which is not where these log
-                  entries live — the Activity Log is the surface that lists them all. */}
-              <DashboardActivityFeed
-                activity={activity}
-                loadingActivity={loadingActivity}
-                hasMainContent={!!hasMainContent}
-                onViewAll={() => this.router.push(AdminConstants.ROUTES.ACTIVITY)}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                 <Slot name="admin.dashboard.widgets" />
-              </div>
-            </div>
-
-            {/* Right Sidebar - Dynamic Content */}
-            <div className="space-y-6">
-              <DashboardActivityChart activity={activity} days={14} scope={installation?.scope} />
-
-              {/* What the machine is doing, measured — see HostResourceService. */}
-              <DashboardSystemPanel />
-
-              <DashboardActivityBreakdown activity={activity} />
-
-              <Slot name="admin.dashboard.sidebar" />
-
-              <DashboardSupportCard onNavigateFramework={() => this.router.push(AdminConstants.ROUTES.SETTINGS.FRAMEWORK)} />
-            </div>
-          </div>
+          {/* Every panel below is a widget each person arranges for themselves — see DashboardWidgetBoard. */}
+          <DashboardWidgetBoard
+            systemWidgets={DashboardSystemWidgets.definitions({
+              activity,
+              loadingActivity,
+              scope: installation?.scope,
+              slots,
+              onViewActivity: () => this.router.push(AdminConstants.ROUTES.ACTIVITY),
+              onNavigateFramework: () => this.router.push(AdminConstants.ROUTES.SETTINGS.FRAMEWORK),
+            })}
+          />
         </div>
 
         {/* Premium Footer */}

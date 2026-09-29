@@ -6,6 +6,7 @@ import { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IMenuItemManifest } from '@core/interfaces/menu-item-manifest.interface';
 import type { ISecondaryPanelManifest } from '@core/interfaces/secondary-panel-manifest.interface';
 import type { IPublicRouteManifest } from '@core/interfaces/public-route-manifest.interface';
+import type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
 
 export interface IPluginManifest {
   // Identity
@@ -58,6 +59,8 @@ export interface IPluginManifest {
     menu?: IMenuItemManifest[];
     secondaryPanel?: ISecondaryPanelManifest;
     slots?: { slot: string; component: string; priority?: number }[];
+    /** Widgets this plugin offers the dashboard — see `IDashboardWidgetManifest`. */
+    widgets?: IDashboardWidgetManifest[];
     collections?: ICollection[];
     management?: {
       component?: string;
