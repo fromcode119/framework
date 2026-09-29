@@ -47,7 +47,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
   protected async emailCommonData(to: string, firstName?: string): Promise<IAuthEmailCommonData> {
     return {
       appName: await this.resolveFrameworkAppName(),
-      logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO)),
+      logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO), AuthEmailThemeOverride.activeSlug),
       user: { firstName: String(firstName || '').trim(), email: String(to || '').trim() },
       theme: await AuthEmailThemeOverride.variables(),
       locale: await this.resolvePlatformEmailLocale(),

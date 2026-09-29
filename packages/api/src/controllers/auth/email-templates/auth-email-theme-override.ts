@@ -28,6 +28,11 @@ export class AuthEmailThemeOverride {
     return AuthEmailThemeOverride.themes.getActiveThemeVariables().catch(() => ({}));
   }
 
+  /** The slug of the theme the current request's site renders with, or null when none is active. */
+  static async activeSlug(): Promise<string | null> {
+    return String(AuthEmailThemeOverride.themes?.getActiveThemeManifest()?.slug || '').trim() || null;
+  }
+
   /** The active theme's email override folder, or null when no theme is active. */
   static root(): string | null {
     const slug = String(AuthEmailThemeOverride.themes?.getActiveThemeManifest()?.slug || '').trim();
