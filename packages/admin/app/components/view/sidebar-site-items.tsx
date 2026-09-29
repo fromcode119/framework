@@ -13,9 +13,14 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * records — the host being served, so "which site am I editing" is still answered.
  */
 export class SidebarSiteItems {
+  private static readonly APPEARANCE = 'appearance';
+  private static readonly CONFIGURE = 'configure';
+
   static build(input: {
     tenants: TenantOption[];
     current: string | null;
+    /** How the current workspace was opened: `appearance` or `configure` (the server's `mode`). */
+    mode: string;
     multiTenant: boolean;
     storefrontHost: string;
     canManagePlatform: boolean;
@@ -33,7 +38,7 @@ export class SidebarSiteItems {
         onClick: input.onLeave,
       });
     }
-    for (const tenant of input.tenants) rows.push(...SidebarSiteItems.tenantRows(tenant, input.current, input.onSelect));
+    for (const tenant of input.tenants) rows.push(...SidebarSiteItems.tenantRows(tenant, input.current, input.mode, input.onSelect));
     if (!input.multiTenant && input.storefrontHost) {
       rows.push({
         label: input.storefrontHost,
@@ -60,7 +65,7 @@ export class SidebarSiteItems {
   }
 
   /** A site is one row; a workspace is two — open it as its own console, or configure it. */
-  private static tenantRows(tenant: TenantOption, current: string | null, onSelect: (tenantId: string, mode?: string) => void): IDropdownItem[] {
+  private static tenantRows(tenant: TenantOption, current: string | null, mode: string, onSelect: (tenantId: string, mode?: string) => void): IDropdownItem[] {
     const viaRole = tenant.platformAccess ? ` · ${AdminI18n.t('shell.site.viaRole')}` : '';
     const selected = tenant.id === current;
     if (!tenant.isWorkspace) {
@@ -71,14 +76,15 @@ export class SidebarSiteItems {
         label: `${tenant.label} · ${tenant.appearanceLabel}`,
         detail: `${AdminI18n.t('shell.site.appearanceHint')}${viaRole}`,
         selectable: true,
-        selected,
-        onClick: () => onSelect(tenant.id, 'appearance'),
+        selected: selected && mode !== SidebarSiteItems.CONFIGURE,
+        onClick: () => onSelect(tenant.id, SidebarSiteItems.APPEARANCE),
       },
       {
         label: `${tenant.label} · ${AdminI18n.t('shell.site.configure')}`,
         detail: AdminI18n.t('shell.site.configureHint'),
         selectable: true,
-        onClick: () => onSelect(tenant.id, 'configure'),
+        selected: selected && mode === SidebarSiteItems.CONFIGURE,
+        onClick: () => onSelect(tenant.id, SidebarSiteItems.CONFIGURE),
       },
     ];
   }

@@ -38,6 +38,8 @@ export class SidebarAccountCard extends AdminComponent {
   @state private sites: TenantOption[] = [];
   @state private currentSite: string | null = null;
   @state private multiTenant = false;
+  /** How the current workspace was opened — marks the right one of its two rows. */
+  @state private mode = '';
   /** The reader's own console language ('' = the site's default) and what the site offers. */
   @state private personalLanguage = '';
 
@@ -51,6 +53,7 @@ export class SidebarAccountCard extends AdminComponent {
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE, { noDedupe: true }).catch(() => null);
     if (!this.mounted || !response) return;
     this.currentSite = response.current ?? null;
+    this.mode = String(response.mode ?? '');
     AdminSiteBinding.record(this.currentSite);
     if (response.multiTenant !== true) return;
     this.multiTenant = true;
@@ -134,6 +137,7 @@ export class SidebarAccountCard extends AdminComponent {
     return SidebarSiteItems.build({
       tenants: this.sites,
       current: this.currentSite,
+      mode: this.mode,
       multiTenant: this.multiTenant,
       storefrontHost: this.storefrontHost,
       canManagePlatform: this.canAddSite,
