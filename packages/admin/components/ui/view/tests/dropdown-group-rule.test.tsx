@@ -16,7 +16,7 @@ describe('Dropdown — group rule', () => {
     { label: 'Site default (English)', section: 'Language', selectable: true, selected: true, onClick: noop },
     { label: 'English', selectable: true, onClick: noop },
     { label: 'Български', selectable: true, onClick: noop },
-    { label: 'vselenskiportal88', section: 'Sites', selectable: true, selected: true, scrolls: true, onClick: noop },
+    { label: 'acme', section: 'Sites', selectable: true, selected: true, scrolls: true, onClick: noop },
     { label: 'Add a site', onClick: noop },
     { label: 'Sign out', variant: DropdownItemVariant.DANGER, onClick: noop },
   ];
@@ -32,7 +32,7 @@ describe('Dropdown — group rule', () => {
   it('keeps Add a site and Sign out outside the scrolling site list', () => {
     render(<Dropdown items={items} trigger={<span>Open</span>} />);
     fireEvent.click(screen.getByText('Open'));
-    const siteRow = document.querySelector('button[title="vselenskiportal88"]')!;
+    const siteRow = document.querySelector('button[title="acme"]')!;
     const box = siteRow.closest('.overflow-y-auto.overscroll-contain');
     expect(box).not.toBeNull();
     expect(box!.querySelector('button[title="Add a site"]')).toBeNull();
