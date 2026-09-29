@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/view/input.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ILocaleItem } from '@/app/settings/localization/interfaces/locale-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class LocaleRegistryCard extends PureReactor {
   @prop declare locales: ILocaleItem[];
@@ -19,17 +20,17 @@ export class LocaleRegistryCard extends PureReactor {
   render(): ReactNode {
     const { locales, theme, updateLocale, removeLocale } = this;
     return (
-      <Card title="Locale Registry">
+      <Card title={AdminI18n.t('settings.localization.localeRegistry')}>
         <div className="space-y-4 py-2">
           <p className="text-sm text-slate-500">
-            Define language name + ISO code, then enable or disable each locale.
+            {AdminI18n.t('settings.localization.defineLanguageNameIsoCode')}
           </p>
 
           {/* An empty registry says so. It used to be impossible to see: the page seeded a hardcoded
               English row, so "nothing configured" was indistinguishable from "English configured". */}
           {locales.length === 0 && (
             <p className="text-[11px] font-medium text-[var(--muted-foreground)]">
-              No locales configured. Add one below; nothing is stored until you save.
+              {AdminI18n.t('settings.localization.noLocalesConfiguredAddOne')}
             </p>
           )}
 
@@ -46,7 +47,7 @@ export class LocaleRegistryCard extends PureReactor {
                     <Input
                       value={locale.name}
                       onChange={(e) => updateLocale(locale.id, { name: e.target.value })}
-                      placeholder="Language name (e.g. English)"
+                      placeholder={AdminI18n.t('settings.localization.languageNameEGEnglish')}
                       className="font-semibold"
                     />
                   </div>
@@ -54,7 +55,7 @@ export class LocaleRegistryCard extends PureReactor {
                     <Input
                       value={locale.code}
                       onChange={(e) => updateLocale(locale.id, { code: e.target.value })}
-                      placeholder="ISO code (e.g. en, en-gb)"
+                      placeholder={AdminI18n.t('settings.localization.isoCodeExample')}
                       className="font-mono font-semibold"
                     />
                   </div>
@@ -63,7 +64,7 @@ export class LocaleRegistryCard extends PureReactor {
                       checked={locale.enabled}
                       onChange={(value) => updateLocale(locale.id, { enabled: value })}
                     />
-                    <span className="text-sm font-medium text-slate-500 tracking-wide">Enabled</span>
+                    <span className="text-sm font-medium text-slate-500 tracking-wide">{AdminI18n.t('settings.localization.enabled')}</span>
                   </div>
                   <div className="md:col-span-2 flex justify-end">
                     <button
@@ -78,7 +79,7 @@ export class LocaleRegistryCard extends PureReactor {
                             : 'bg-rose-50 text-rose-600 hover:bg-rose-100'
                       }`}
                     >
-                      Remove
+                      {AdminI18n.t('settings.localization.remove')}
                     </button>
                   </div>
                 </div>
@@ -92,7 +93,7 @@ export class LocaleRegistryCard extends PureReactor {
               onClick={this.addLocale}
               className="rounded-xl"
             >
-              Add Locale
+              {AdminI18n.t('settings.localization.addLocale')}
             </Button>
           </div>
         </div>

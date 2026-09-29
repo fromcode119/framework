@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IUser } from '@/app/users/interfaces/user.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UsersRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -29,32 +30,32 @@ export class UsersRowActions extends PureReactor {
           }
           items={[
             {
-              label: 'View Profile',
+              label: AdminI18n.t('users.viewProfile'),
               icon: <FrameworkIcons.Users size={16} />,
               onClick: () => onNavigate(AdminConstants.ROUTES.USERS.DETAIL(user.id))
             },
             {
-              label: 'Edit Account',
+              label: AdminI18n.t('users.editAccount'),
               icon: <FrameworkIcons.Settings size={16} />,
               onClick: () => onNavigate(AdminConstants.ROUTES.USERS.EDIT(user.id))
             },
             {
-              label: 'Manage Roles',
+              label: AdminI18n.t('users.manageRoles'),
               icon: <FrameworkIcons.Shield size={16} />,
               onClick: () => onNavigate(AdminConstants.ROUTES.USERS.ROLES(user.id))
             },
             {
-              label: 'Security & 2FA',
+              label: AdminI18n.t('users.security2fa'),
               icon: <FrameworkIcons.ShieldCheck size={16} />,
               onClick: () => onNavigate(AdminConstants.ROUTES.USERS.SECURITY(user.id))
             },
             {
-              label: 'Login History',
+              label: AdminI18n.t('users.loginHistory'),
               icon: <FrameworkIcons.Activity size={16} />,
               onClick: () => onNavigate(AdminConstants.ROUTES.USERS.AUTH_ACTIVITY(user.id))
             },
             {
-              label: 'Remove User',
+              label: AdminI18n.t('users.removeUser'),
               icon: <FrameworkIcons.Warning size={16} />,
               variant: 'danger',
               onClick: () => onRequestDelete(user)

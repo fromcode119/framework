@@ -96,7 +96,7 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     return (key: string, params?: Record<string, unknown>, defaultValue?: string) => {
       const contextValue = fromContext(key, params, key);
       if (contextValue && contextValue !== key) return contextValue;
-      const floor = FrameworkTranslations.t(key, params, this.documentLocale);
+      const floor = FrameworkTranslations.in(this.documentLocale || FrameworkTranslations.locale, key, params);
       if (floor !== key) return floor;
       return fromContext(key, params, defaultValue);
     };

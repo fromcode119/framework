@@ -3,6 +3,7 @@ import { MediaPageController } from '@/app/media/media-page-controller';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import type { IMediaPageClientState } from '@/app/media/interfaces/media-page-client-state.interface';
 import type { IMediaPageHost } from '@/app/media/interfaces/media-page-host.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Orchestration for the media library: binds {@link MediaPageController} I/O to the page-client's
  * state. Hook-free — it only ever touches React through the host.
@@ -81,7 +82,7 @@ export class MediaPageActions {
       void this.host.refresh();
     } catch (err: any) {
       console.error('Failed to create folder:', err);
-      this.host.patch({ error: err.message || 'Failed to create folder' });
+      this.host.patch({ error: err.message || AdminI18n.t('media.failedToCreateFolder') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -97,7 +98,7 @@ export class MediaPageActions {
       void this.host.refresh();
     } catch (err: any) {
       console.error('Failed to rename folder:', err);
-      this.host.patch({ error: err.message || 'Failed to rename folder' });
+      this.host.patch({ error: err.message || AdminI18n.t('media.failedToRenameFolder') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -113,7 +114,7 @@ export class MediaPageActions {
       void this.host.refresh();
     } catch (err: any) {
       console.error('Delete folder failed:', err);
-      this.host.patch({ error: err.message || 'Failed to delete folder' });
+      this.host.patch({ error: err.message || AdminI18n.t('media.failedToDeleteFolder') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -129,7 +130,7 @@ export class MediaPageActions {
       void this.host.refresh();
     } catch (err: any) {
       console.error('Failed to move item:', err);
-      this.host.patch({ error: err.message || 'Failed to move item' });
+      this.host.patch({ error: err.message || AdminI18n.t('media.failedToMoveItem') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -144,7 +145,7 @@ export class MediaPageActions {
       void this.host.refresh();
     } catch (err: any) {
       console.error('Upload failed:', err);
-      this.host.patch({ error: err?.message || 'Upload failed' });
+      this.host.patch({ error: err?.message || AdminI18n.t('media.uploadFailed') });
     } finally {
       if (this.host.mounted) this.host.patch({ uploading: false });
     }
@@ -202,7 +203,7 @@ export class MediaPageActions {
       // Every sibling action in this file surfaces `error`; only delete swallowed it, so a failed
       // delete left the confirm dialog sitting open with no message and the item still listed.
       console.error('Delete failed:', err);
-      this.host.patch({ error: err?.message || 'Failed to delete media item' });
+      this.host.patch({ error: err?.message || AdminI18n.t('media.failedToDeleteMediaItem') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -222,7 +223,7 @@ export class MediaPageActions {
       }));
     } catch (err: any) {
       console.error('Failed to update media details:', err);
-      this.host.patch({ error: err?.message || 'Failed to update media details' });
+      this.host.patch({ error: err?.message || AdminI18n.t('media.failedToUpdateMediaDetails') });
     } finally {
       if (this.host.mounted) this.host.patch({ isActionLoading: false });
     }
@@ -237,7 +238,7 @@ export class MediaPageActions {
       }));
     } catch (err: any) {
       console.error('Optimize failed:', err);
-      this.host.patch({ error: err?.message || 'Failed to optimize image' });
+      this.host.patch({ error: err?.message || AdminI18n.t('media.failedToOptimizeImage') });
     } finally {
       if (this.host.mounted) this.host.patch({ optimizingId: null });
     }

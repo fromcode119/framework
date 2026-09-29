@@ -3,11 +3,14 @@ import { ExtendedExtendsCommand } from './extended-extends-command';
 import { DomainTransportFallbackCommand } from './domain-transport-fallback-command';
 import { ExtensionNameCommand } from './extension-name-command';
 import { FileSizeCommand } from './file-size-command';
+import { ChangelogCommand } from './changelog-command';
 import { AppearanceBoundaryCommand } from './appearance-boundary-command';
 import { ClientViewMoveCommand } from './client-view-move-command';
 import { ComponentMigrationCommand } from './component-migration-command';
 import { ConventionGuardCommand } from './convention-guard-command';
 import { RenderedCopyCommand } from './rendered-copy-command';
+import { DictionaryParityCommand } from './dictionary-parity-command';
+import { UiKeyResolutionCommand } from './ui-key-resolution-command';
 import { CoreBoundaryCommand } from './core-boundary-command';
 import { FrameworkDomainCommand } from './framework-domain-command';
 import { BlockFieldConformanceCommand } from './block-field-conformance-command';
@@ -75,6 +78,8 @@ export class GuardRegistry {
     ['domain-transport-fallback', DomainTransportFallbackCommand],
     ['extension-names', ExtensionNameCommand],
     ['i18n-keys', I18nKeyResolutionCommand],
+    ['i18n-parity', DictionaryParityCommand],
+    ['ui-key-resolution', UiKeyResolutionCommand],
     ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
     ['rendered-by-targets', RenderedByTargetCommand],
@@ -86,6 +91,7 @@ export class GuardRegistry {
     ['snake-translation-keys', SnakeTranslationKeyCommand],
     ['extended-extends', ExtendedExtendsCommand],
     ['file-size', FileSizeCommand],
+    ['changelog', ChangelogCommand],
     ['framework-domain', FrameworkDomainCommand],
     ['block-field-conformance', BlockFieldConformanceCommand],
     ['imports', ImportsCommand],

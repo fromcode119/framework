@@ -4,10 +4,12 @@
     "composite": true,
     "outDir": "./dist",
     "rootDir": "./src",
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "resolveJsonModule": true
   },
   "include": [
-    "src/**/*"
+    "src/**/*",
+    "src/**/*.json"
   ],
   "references": [
     {

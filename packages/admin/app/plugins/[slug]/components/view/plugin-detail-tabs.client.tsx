@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailTabs extends PureReactor {
   private static readonly SITE_TABS: readonly PluginDetailTab[] = [PluginDetailTab.OVERVIEW, PluginDetailTab.SETTINGS];
@@ -17,10 +18,10 @@ export class PluginDetailTabs extends PureReactor {
   render(): ReactNode {
     const { activeTab, onTabChange, theme } = this;
     const tabs = [
-      { id: PluginDetailTab.OVERVIEW, label: 'Overview', icon: FrameworkIcons.Plugins },
-      { id: PluginDetailTab.SETTINGS, label: 'Configuration', icon: FrameworkIcons.Settings },
-      { id: PluginDetailTab.PERMISSIONS, label: 'Security', icon: FrameworkIcons.Shield },
-      { id: PluginDetailTab.RESOURCES, label: 'Resource Limits', icon: FrameworkIcons.Zap },
+      { id: PluginDetailTab.OVERVIEW, label: AdminI18n.t('plugins.detail.overview'), icon: FrameworkIcons.Plugins },
+      { id: PluginDetailTab.SETTINGS, label: AdminI18n.t('plugins.detail.configuration'), icon: FrameworkIcons.Settings },
+      { id: PluginDetailTab.PERMISSIONS, label: AdminI18n.t('plugins.detail.security'), icon: FrameworkIcons.Shield },
+      { id: PluginDetailTab.RESOURCES, label: AdminI18n.t('plugins.detail.resourceLimits'), icon: FrameworkIcons.Zap },
     ].filter((tab) => !this.siteScope || PluginDetailTabs.SITE_TABS.includes(tab.id));
 
     return (

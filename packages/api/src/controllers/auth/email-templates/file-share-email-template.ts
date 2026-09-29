@@ -7,6 +7,8 @@ import { AuthEmailTemplateRenderService } from '@api/controllers/auth/email-temp
 export class FileShareEmailTemplate {
   static build(options: {
     appName: string;
+    /** The site's email logo; `''` renders none. */
+    logoUrl: string;
     title: string;
     message: string;
     shareUrl: string;

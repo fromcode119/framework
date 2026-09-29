@@ -2,6 +2,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { ThemeState } from '@fromcode119/core/client';
 import { InstalledThemesPageController } from '@/app/themes/installed/installed-themes-page-controller';
 import type { IInstalledThemesPageHost } from '@/app/themes/installed/interfaces/installed-themes-page-host.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Orchestration for the installed-themes page: binds {@link InstalledThemesPageController} I/O to the
  * page-client's state and notifications. Hook-free — it only ever touches React through the host.
@@ -24,7 +25,7 @@ export class InstalledThemesPageActions {
       this.host.patch({ themes, marketplaceThemes, siteQuota });
     } catch (error) {
       console.error('[InstalledThemesPage] Failed to fetch themes:', error);
-      notify(NotificationType.ERROR, 'Fetch Failed', 'Could not load themes.');
+      notify(NotificationType.ERROR, AdminI18n.t('themes.fetchFailed'), AdminI18n.t('themes.couldNotLoadThemes'));
     } finally {
       if (this.host.mounted) this.host.patch({ loading: false });
     }
@@ -37,11 +38,11 @@ export class InstalledThemesPageActions {
     this.host.patch({ isUploading: true });
     try {
       await InstalledThemesPageController.completeUpload(uploadId);
-      notify(NotificationType.SUCCESS, 'Upload Successful', 'Theme uploaded successfully.');
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.uploadSuccessful'), AdminI18n.t('themes.themeUploadedSuccessfully'));
       await this.host.refresh();
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Upload Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.uploadFailed2'), error.message);
     } finally {
       if (this.host.mounted) this.host.patch({ isUploading: false });
       this.clearUploadProgress();
@@ -58,7 +59,7 @@ export class InstalledThemesPageActions {
         if (this.host.mounted) this.host.patch({ uploadProgressLabel: label, uploadProgressPercent: percent });
       });
       if (!inspection.supported) {
-        notify(NotificationType.ERROR, 'Upload Failed', 'Only .zip or .tar.gz theme packages are supported.');
+        notify(NotificationType.ERROR, AdminI18n.t('themes.uploadFailed2'), AdminI18n.t('themes.onlyZipOrTarGz'));
         return;
       }
       if (!this.host.mounted) return;
@@ -71,7 +72,7 @@ export class InstalledThemesPageActions {
       });
     } catch (error: any) {
       if (this.host.mounted) this.host.patch({ pendingUploadId: null });
-      notify(NotificationType.ERROR, 'Inspect Failed', error.message || 'Could not inspect theme package.');
+      notify(NotificationType.ERROR, AdminI18n.t('themes.inspectFailed'), error.message || AdminI18n.t('themes.couldNotInspectThemePackage'));
       this.clearUploadProgress();
     } finally {
       if (this.host.mounted) this.host.patch({ isInspectingUpload: false });
@@ -82,15 +83,15 @@ export class InstalledThemesPageActions {
   async uploadForSite(file?: File | null): Promise<void> {
     if (!file) return;
     const { notify } = this.host.notify;
-    this.host.patch({ isUploading: true, uploadProgressLabel: `Uploading ${file.name}…`, uploadProgressPercent: 0 });
+    this.host.patch({ isUploading: true, uploadProgressLabel: AdminI18n.t('themes.uploading', { name: file.name }), uploadProgressPercent: 0 });
     try {
       await InstalledThemesPageController.uploadForSite(file, (percent) => {
         if (this.host.mounted) this.host.patch({ uploadProgressPercent: percent });
       });
-      notify(NotificationType.SUCCESS, 'Theme Uploaded', `${file.name} is installed for this site. Activate it to use it.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeUploaded'), AdminI18n.t('themes.isInstalledForThisSite', { name: file.name }));
       await this.host.refresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Upload Refused', error.message || 'The theme could not be installed.');
+      notify(NotificationType.ERROR, AdminI18n.t('themes.uploadRefused'), error.message || AdminI18n.t('themes.theThemeCouldNotBe'));
     } finally {
       if (this.host.mounted) this.host.patch({ isUploading: false });
       this.clearUploadProgress();
@@ -102,10 +103,10 @@ export class InstalledThemesPageActions {
     if (!confirm(InstalledThemesPageController.deleteConfirmationMessage(slug, isActive))) return;
     try {
       await InstalledThemesPageController.deleteMine(slug);
-      notify(NotificationType.SUCCESS, 'Theme Deleted', `${slug} has been removed from this site.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeDeleted'), AdminI18n.t('themes.hasBeenRemovedFromThis', { slug: slug }));
       await this.host.refresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Deletion Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.deletionFailed'), error.message);
     }
   }
 
@@ -126,13 +127,13 @@ export class InstalledThemesPageActions {
     const { notify } = this.host.notify;
     try {
       await InstalledThemesPageController.activate(slug);
-      notify(NotificationType.SUCCESS, 'Theme Activated', `${slug} is now the active theme.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeActivated'), AdminI18n.t('themes.isNowTheActiveTheme', { slug: slug }));
       this.host.patchWith((value) => ({
         themes: value.themes.map((item) => ({ ...item, state: item.slug === slug ? ThemeState.ACTIVE : ThemeState.INACTIVE })),
       }));
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Activation Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.activationFailed'), error.message);
     }
   }
 
@@ -142,11 +143,11 @@ export class InstalledThemesPageActions {
 
     try {
       await InstalledThemesPageController.disable(slug);
-      notify(NotificationType.SUCCESS, 'Theme Disabled', `${slug} is no longer active.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeDisabled'), AdminI18n.t('themes.isNoLongerActive', { slug: slug }));
       this.host.patchWith((value) => ({ themes: value.themes.map((item) => ({ ...item, state: ThemeState.INACTIVE })) }));
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Disable Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.disableFailed'), error.message);
     }
   }
 
@@ -155,23 +156,23 @@ export class InstalledThemesPageActions {
     if (!confirm(InstalledThemesPageController.deleteConfirmationMessage(slug, isActive))) return;
     try {
       await InstalledThemesPageController.delete(slug);
-      notify(NotificationType.SUCCESS, 'Theme Deleted', `${slug} has been removed.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.themeDeleted'), AdminI18n.t('themes.hasBeenRemoved', { slug: slug }));
       await this.host.refresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Deletion Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.deletionFailed'), error.message);
     }
   }
 
   async update(slug: string): Promise<void> {
     const { notify } = this.host.notify;
     try {
-      notify(NotificationType.INFO, 'Updating...', `Downloading latest version of ${slug}...`);
+      notify(NotificationType.INFO, AdminI18n.t('themes.updating'), AdminI18n.t('themes.downloadingLatestVersionOf', { slug: slug }));
       await InstalledThemesPageController.update(slug);
-      notify(NotificationType.SUCCESS, 'Updated', `Theme ${slug} has been updated.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('themes.updated'), AdminI18n.t('themes.themeHasBeenUpdated', { slug: slug }));
       await this.host.refresh();
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Update Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('themes.updateFailed'), error.message);
     }
   }
 }

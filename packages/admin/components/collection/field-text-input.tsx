@@ -6,6 +6,7 @@ import { NumberStepper } from '@/components/ui/number-stepper';
 import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FieldTextInput extends PureReactor {
   @prop declare field: ICollectionField;
@@ -55,7 +56,7 @@ export class FieldTextInput extends PureReactor {
           onChange={updateValue}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
-          placeholder={isFieldReadOnly ? 'Not set' : (field.placeholder || `Enter ${label}...`)}
+          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
           step={admin.step ?? (field as any).step}
           min={admin.min ?? (field as any).min}
           max={admin.max ?? (field as any).max}
@@ -80,7 +81,7 @@ export class FieldTextInput extends PureReactor {
             }
             updateValue(e.target.value);
           }}
-          placeholder={isFieldReadOnly ? 'Not set' : (field.placeholder || `Enter ${label}...`)}
+          placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
           disabled={isFieldReadOnly}
           error={errors?.[0]}
           inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
@@ -97,7 +98,7 @@ export class FieldTextInput extends PureReactor {
         {field.name === 'slug' && !slugManuallyEdited && isNew && currentValue && (
           <div className="absolute top-1/2 -translate-y-1/2 right-4 flex items-center gap-1.5 px-2 py-1 bg-indigo-500/10 text-indigo-500 rounded-lg text-[10px] font-semibold tracking-wide animate-pulse border border-indigo-500/20 pointer-events-none">
             <FrameworkIcons.Refresh size={8} />
-            Auto
+            {AdminI18n.t('ui.field.auto')}
           </div>
         )}
       </div>

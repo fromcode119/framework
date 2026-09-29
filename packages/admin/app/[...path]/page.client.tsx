@@ -7,6 +7,8 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import Link from 'next/link';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class DynamicPluginPage extends AdminComponent {
   @prop declare params: Promise<{ path: string[] }>;
@@ -75,20 +77,20 @@ export class DynamicPluginPage extends AdminComponent {
              <div className="space-y-8">
                <div className="p-4 bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-xl flex items-center gap-3 text-xs text-indigo-600 dark:text-indigo-400 font-medium">
                  <FrameworkIcons.Package size={14} />
-                 Showing default workspace view for <strong>{pluginSlug}</strong>. Register a component for <code>{pageSlot}</code> to customize this page.
+                 <AdminRichText k="shell.pluginPage.defaultView" vars={{ plugin: pluginSlug, slot: pageSlot }} />
                </div>
 
                <Slot name={`admin.plugin.${pluginSlug}.content`} errorFallback={PluginMountErrorFallback.render} fallback={
                  <div className="min-h-[400px] flex flex-col items-center justify-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-xl p-12 text-center">
                     <FrameworkIcons.Info className="text-slate-300 dark:text-slate-700 mb-4" size={48} />
                     <h3 className={`text-lg font-bold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
-                       Workspace: {effectivePath[effectivePath.length - 1].replace(/-/g, ' ')}
+                       {AdminI18n.t('shell.pluginPage.workspace', { name: effectivePath[effectivePath.length - 1].replace(/-/g, ' ') })}
                     </h3>
                     <p className="text-slate-500 text-sm max-w-sm mt-2">
-                       Path <span className="text-indigo-500 font-mono">{pathname}</span> is active, but no specialized UI component was found in <span className="font-bold">{pluginSlug}</span>.
+                       <AdminRichText k="shell.pluginPage.noComponent" vars={{ path: pathname, plugin: pluginSlug }} classes={{ code: 'text-indigo-500 font-mono' }} />
                     </p>
                     <Link href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20">
-                       Back to Marketplace
+                       {AdminI18n.t('shell.pluginPage.backToMarketplace')}
                     </Link>
                  </div>
                }/>

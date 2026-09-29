@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { StatCard } from '@/components/ui/view/stat-card.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DashboardStatsGrid extends PureReactor {
   @prop declare userCount: string;
@@ -18,12 +19,12 @@ export class DashboardStatsGrid extends PureReactor {
               endpoint returns a historical series, so any percentage here would be invented. A trend chip
               may only return alongside a real prior-period figure from the API. */}
           <StatCard
-            title="Users"
+            title={AdminI18n.t('nav.items.users')}
             value={this.loadingStats ? "..." : this.userCount}
             icon={<FrameworkIcons.Users size={20} />}
           />
           <StatCard
-            title="Plugin Extensions"
+            title={AdminI18n.t('dashboard.pluginExtensions')}
             value={String(this.activePluginsCount)}
             icon={<FrameworkIcons.Plugins size={20} />}
           />

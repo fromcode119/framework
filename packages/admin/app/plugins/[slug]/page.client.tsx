@@ -5,6 +5,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { PluginDetailView } from '@/app/plugins/[slug]/components/view/plugin-detail-view.client';
 import { PluginDetailPageController } from '@/app/plugins/[slug]/plugin-detail-page-controller';
 import type { IPluginDetailPageValues } from '@/app/plugins/[slug]/interfaces/plugin-detail-page-values.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Hook→class bridge: reads the route param + page model, then renders the hook-free detail view. */
 export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
@@ -19,7 +20,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
     if (model.loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Synchronizing Plugin Manifest..." />
+          <Loader label={AdminI18n.t('plugins.detail.synchronizingPluginManifest')} />
         </div>
       );
     }

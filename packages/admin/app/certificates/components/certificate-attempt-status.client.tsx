@@ -3,6 +3,7 @@ import { prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CertificateHost } from '@/lib/certificates/certificate-host';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the platform last did for a host, and what it will do next.
@@ -20,18 +21,18 @@ export class CertificateAttemptStatus extends AdminComponent {
   @prop declare checkIntervalMinutes: number;
 
   private static time(date: Date): string {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString(AdminI18n.locale, { hour: '2-digit', minute: '2-digit' });
   }
 
   private get nextLine(): string {
     const entry = this.entry;
     if (!entry.isAwaitingPlatform) return '';
-    if (entry.isIssuing) return 'Ordering now — this usually takes under a minute.';
+    if (entry.isIssuing) return AdminI18n.t('certificates.attempt.orderingNow');
     const next = entry.nextAttemptDate;
-    if (next) return `Next attempt at ${CertificateAttemptStatus.time(next)}.`;
+    if (next) return AdminI18n.t('certificates.attempt.nextAt', { time: CertificateAttemptStatus.time(next) });
     return this.checkIntervalMinutes > 0
-      ? `Queued — tried on the next check (every ${this.checkIntervalMinutes} minutes).`
-      : 'Queued — tried on the next check.';
+      ? AdminI18n.t('certificates.attempt.queuedEvery', { minutes: this.checkIntervalMinutes })
+      : AdminI18n.t('certificates.attempt.queued');
   }
 
   render(): ReactNode {

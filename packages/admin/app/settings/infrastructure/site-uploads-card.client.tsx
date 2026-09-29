@@ -10,6 +10,7 @@ import { Switch } from '@/components/ui/view/switch.client';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What a SITE may upload itself: themes, and — only once the platform switches it on — plugins.
@@ -42,7 +43,7 @@ export class SiteUploadsCard extends AdminComponent {
       this.pluginMaxCount = String(settings?.[SystemConstants.META_KEY.TENANT_PLUGIN_MAX_COUNT] ?? '');
       this.loaded = true;
     } catch (err: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Site Upload Limits Unavailable', err?.message || 'The limits could not be read.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.siteUploadLimitsUnavailable'), err?.message || AdminI18n.t('settings.infrastructure.theLimitsCouldNotBe'));
     }
   }
 
@@ -73,9 +74,9 @@ export class SiteUploadsCard extends AdminComponent {
         [SystemConstants.META_KEY.TENANT_PLUGIN_MAX_BYTES]: SiteUploadsCard.toBytes(this.pluginMaxMb),
         [SystemConstants.META_KEY.TENANT_PLUGIN_MAX_COUNT]: this.pluginMaxCount,
       });
-      this.runtime.notify.notify(NotificationType.SUCCESS, 'Saved', 'The site upload limits apply to the next upload.');
+      this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('settings.infrastructure.saved'), AdminI18n.t('settings.infrastructure.theSiteUploadLimitsApply'));
     } catch (err: any) {
-      this.runtime.notify.notify(NotificationType.ERROR, 'Not Saved', err?.message || 'The limits could not be saved.');
+      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('settings.infrastructure.notSaved'), err?.message || AdminI18n.t('settings.infrastructure.theLimitsCouldNotBe2'));
     } finally {
       this.saving = false;
     }
@@ -84,62 +85,62 @@ export class SiteUploadsCard extends AdminComponent {
   render(): ReactNode {
     const theme = this.theme;
     return (
-      <Card title="Site Uploads">
+      <Card title={AdminI18n.t('settings.infrastructure.siteUploads')}>
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Database}
-          title="Space for a site's own themes (MB)"
+          title={AdminI18n.t('settings.infrastructure.spaceForASiteS')}
           stacked
-          description="The most one site may store in themes it uploaded itself, all of them together. Every site's uploads share one volume on this server, so this protects the other sites. A theme being replaced does not count twice."
+          description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay')}
         >
           <div className="w-full md:w-40">
-            <NumberStepper min={1} step={5} value={this.themeMaxMb} onChange={this.onThemeMaxMb} disabled={!this.loaded} placeholder={`Default ${SystemConstants.TENANT_THEME_MAX_MB_DEFAULT}`} />
+            <NumberStepper min={1} step={5} value={this.themeMaxMb} onChange={this.onThemeMaxMb} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default', { TENANT_THEME_MAX_MB_DEFAULT: SystemConstants.TENANT_THEME_MAX_MB_DEFAULT })} />
           </div>
         </SettingRow>
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Layers}
-          title="Themes per site"
+          title={AdminI18n.t('settings.infrastructure.themesPerSite')}
           stacked
-          description="How many of its own themes a site may keep. Themes the platform assigns to a site do not count."
+          description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn')}
         >
           <div className="w-full md:w-40">
-            <NumberStepper min={1} step={1} value={this.themeMaxCount} onChange={this.onThemeMaxCount} disabled={!this.loaded} placeholder={`Default ${SystemConstants.TENANT_THEME_MAX_COUNT_DEFAULT}`} />
+            <NumberStepper min={1} step={1} value={this.themeMaxCount} onChange={this.onThemeMaxCount} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default2', { TENANT_THEME_MAX_COUNT_DEFAULT: SystemConstants.TENANT_THEME_MAX_COUNT_DEFAULT })} />
           </div>
         </SettingRow>
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Shield}
-          title="Sites may upload their own plugins"
+          title={AdminI18n.t('settings.infrastructure.sitesMayUploadTheirOwn')}
           stacked
-          description="Off by default. When on, a site's admin can upload a plugin that runs only for that site, in its own process under its own user, with no database schema, network, admin screens or install step. The server must isolate plugin identity; where it cannot, sites are told uploads are unavailable."
+          description={AdminI18n.t('settings.infrastructure.offByDefaultWhenOn')}
         >
-          <Switch checked={this.pluginsEnabled} onChange={this.onPluginsEnabled} disabled={!this.loaded} label={this.pluginsEnabled ? 'On' : 'Off'} />
+          <Switch checked={this.pluginsEnabled} onChange={this.onPluginsEnabled} disabled={!this.loaded} label={this.pluginsEnabled ? AdminI18n.t('settings.infrastructure.on') : AdminI18n.t('settings.infrastructure.off')} />
         </SettingRow>
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Database}
-          title="Space for a site's own plugins (MB)"
+          title={AdminI18n.t('settings.infrastructure.spaceForASiteS2')}
           stacked
-          description="The most one site may store in plugins it uploaded, all of them together. An upload larger than this is refused while it streams."
+          description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay2')}
         >
           <div className="w-full md:w-40">
-            <NumberStepper min={1} step={5} value={this.pluginMaxMb} onChange={this.onPluginMaxMb} disabled={!this.loaded} placeholder={`Default ${SystemConstants.TENANT_PLUGIN_MAX_MB_DEFAULT}`} />
+            <NumberStepper min={1} step={5} value={this.pluginMaxMb} onChange={this.onPluginMaxMb} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default3', { TENANT_PLUGIN_MAX_MB_DEFAULT: SystemConstants.TENANT_PLUGIN_MAX_MB_DEFAULT })} />
           </div>
         </SettingRow>
         <SettingRow
           theme={theme}
           icon={FrameworkIcons.Layers}
-          title="Plugins per site"
+          title={AdminI18n.t('settings.infrastructure.pluginsPerSite')}
           stacked
-          description="How many of its own plugins a site may keep. Plugins the platform offers to sites do not count."
+          description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn2')}
         >
           <div className="flex items-center gap-3">
             <div className="w-full md:w-40">
-              <NumberStepper min={1} step={1} value={this.pluginMaxCount} onChange={this.onPluginMaxCount} disabled={!this.loaded} placeholder={`Default ${SystemConstants.TENANT_PLUGIN_MAX_COUNT_DEFAULT}`} />
+              <NumberStepper min={1} step={1} value={this.pluginMaxCount} onChange={this.onPluginMaxCount} disabled={!this.loaded} placeholder={AdminI18n.t('settings.infrastructure.default4', { TENANT_PLUGIN_MAX_COUNT_DEFAULT: SystemConstants.TENANT_PLUGIN_MAX_COUNT_DEFAULT })} />
             </div>
             <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
-              Save
+              {AdminI18n.t('settings.infrastructure.save')}
             </Button>
           </div>
         </SettingRow>

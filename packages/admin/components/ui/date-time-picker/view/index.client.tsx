@@ -11,6 +11,7 @@ import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enum
 import { DateTimePickerGranularPopover } from '@/components/ui/date-time-picker/view/granular-popover.client';
 import { DateTimePickerTimePopover } from '@/components/ui/date-time-picker/view/time-popover.client';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DateTimePicker extends AdminComponent {
   @prop declare value?: string;
@@ -216,7 +217,7 @@ export class DateTimePicker extends AdminComponent {
   render(): ReactNode {
     const showTime = this.showsTimeOfDay;
     const isTime = this.resolvedGranularity.isTimeOfDay;
-    const placeholder = this.placeholder ?? (isTime ? 'Select time...' : 'Select date...');
+    const placeholder = this.placeholder ?? AdminI18n.t(isTime ? 'ui.date.selectTime' : 'ui.date.selectDate');
     const className = this.className ?? '';
     const size = this.size ?? FieldSize.MD;
 

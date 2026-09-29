@@ -5,6 +5,7 @@ import { SystemControllerRuntime } from '@api/controllers/system/system-controll
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 import { FrontendMetadataCachePolicy } from '@api/services/system/frontend-metadata-cache-policy';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -37,7 +38,21 @@ export class SystemMetadataController {
       // Only declared, operator-visible settings may leave here; the raw table also holds every
       // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
       metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
-      metadata.secondaryPanel = metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel();
+      // Plugin collection names, field labels and menu entries in the console's language, from each
+      // plugin's own dictionary; whatever a plugin has not translated goes out as declared.
+      // The person's own console language, else the site's default (AdminConsoleLocale). This payload
+      // is per caller and never cached, so a personal choice is safe here.
+      const localizer = await AdminSchemaLocalization.forRequest(this.runtime.manager, req);
+      metadata.plugins = (metadata.plugins || []).map((plugin: any) => ({
+        ...plugin,
+        admin: {
+          ...plugin.admin,
+          collections: (plugin.admin?.collections || []).map((collection: any) => localizer.collection(plugin.slug, collection)),
+        },
+      }));
+      const adminLabels = new Map<string, string>((metadata.plugins || []).map((plugin: any) => [plugin.slug, String(plugin.admin?.label || '')]));
+      metadata.menu = localizer.menu(metadata.menu || [], (slug) => adminLabels.get(slug) || '');
+      metadata.secondaryPanel = localizer.panel(metadata.secondaryPanel || this.runtime.buildDefaultSecondaryPanel(), 'system');
       // Two filters, one place. Platform-only entries (Sites, Sources) never reach a tenant admin's
       // payload; site-only entries never reach an operator standing on no site, because with no
       // tenant bound their screens would answer zero rows and say nothing about why. Both are applied
@@ -141,9 +156,14 @@ export class SystemMetadataController {
           preview: site.isReadable ? false : await new SiteVisibilityGate(this.runtime.db).canPreview(site, req),
         }
         : null,
-      menu: Array.isArray(adminMetadata?.menu)
-        ? adminMetadata.menu
-        : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
+      // The admin's navigation, in the console's language — the admin reads its menu from this payload
+      // too, so leaving it as declared put the plugins' entries back into English.
+      menu: (await AdminSchemaLocalization.forSite(this.runtime.manager)).menu(
+        Array.isArray(adminMetadata?.menu)
+          ? adminMetadata.menu
+          : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
+        (slug) => String((adminMetadata?.plugins || []).find((plugin: any) => plugin?.slug === slug)?.admin?.label || ''),
+      ),
       plugins,
       publicSettings,
       settings: pluginPublicSettings,

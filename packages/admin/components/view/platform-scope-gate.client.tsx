@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * A screen that belongs to the PLATFORM, refusing to render inside a site.
@@ -53,7 +54,7 @@ export class PlatformScopeGate extends AdminComponent {
     return (
       <div className="fc-scope-notice">
         <span className="fc-scope-notice__text">
-          {this.what} belongs to the platform and is not part of this site. Switch to Platform scope to open it.
+          {AdminI18n.t('ui.scopeGate.text', { what: this.what })}
         </span>
         {this.canManagePlatform ? (
           <Button
@@ -61,7 +62,7 @@ export class PlatformScopeGate extends AdminComponent {
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
             className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
           >
-            Open Platform Scope
+            {AdminI18n.t('ui.scopeGate.open')}
           </Button>
         ) : null}
       </div>

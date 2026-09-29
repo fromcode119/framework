@@ -5,6 +5,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { Input } from '@/components/ui/view/input.client';
 import type { IPersonalDataPolicyChoice } from '@/app/settings/personal-data/interfaces/personal-data-policy-choice.interface';
 import type { IPersonalDataPolicyDataset } from '@/app/settings/personal-data/interfaces/personal-data-policy-dataset.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One dataset, and what happens to it when somebody asks to be forgotten.
@@ -31,7 +32,7 @@ export class PersonalDataPolicyRow extends PureReactor {
   /** Only what this dataset declared it can honour, plus the explicit "inherit" the blank value means. */
   private get options() {
     return [
-      { value: '', label: 'Use the layer below' },
+      { value: '', label: AdminI18n.t('settings.personalData.useTheLayerBelow') },
       ...this.dataset.strategies.map((strategy) => ({ value: strategy, label: strategy })),
     ];
   }
@@ -62,7 +63,7 @@ export class PersonalDataPolicyRow extends PureReactor {
           <Input
             value={String(choice?.reason ?? '')}
             disabled={!editable}
-            placeholder="Why the law requires these records to be kept"
+            placeholder={AdminI18n.t('settings.personalData.whyTheLawRequiresThese')}
             onChange={(event: any) => onChange(this.dataset.id, { strategy, reason: event?.target?.value ?? '' })}
           />
         )}
@@ -86,7 +87,7 @@ export class PersonalDataPolicyRow extends PureReactor {
         </div>
 
         {this.column(this.platform, this.platformEditable, `inherits: ${dataset.declaredProvenance}`, this.onPlatformChange)}
-        {this.column(this.site, this.siteEditable, 'inherits: the platform default', this.onSiteChange)}
+        {this.column(this.site, this.siteEditable, AdminI18n.t('settings.personalData.inheritsThePlatformDefault'), this.onSiteChange)}
 
         <div className="flex flex-col gap-1">
           <span className={`text-sm font-medium ${this.isDark ? 'text-slate-200' : 'text-slate-900'}`}>{dataset.strategy}</span>

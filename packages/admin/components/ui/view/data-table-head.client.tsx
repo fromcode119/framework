@@ -3,6 +3,7 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Column } from '@/components/ui/column';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The table's header row, and the row whose cell widths every pinned offset is measured from.
@@ -78,7 +79,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
             <th className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-right tracking-wide ${
               this.stickyActions ? 'sticky right-0 z-20 bg-slate-100 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700' : ''
             }`}>
-              Actions
+              {AdminI18n.t('ui.table.actions')}
             </th>
           )}
         </tr>

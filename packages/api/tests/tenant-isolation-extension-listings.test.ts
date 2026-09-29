@@ -38,6 +38,9 @@ describe("the plugin list is the site's assignment, never the platform catalogue
   const managerWith = (slugs: string[]) => ({
     getSortedPlugins: () => slugs.map((slug) => ({ manifest: { slug, name: slug }, state: 'active' })),
     discoverPlugins: vi.fn(),
+    // The list names each plugin in the console's language; no language set here, so names stay as declared.
+    db: { find: async () => [] },
+    i18n: { translateOrFallback: () => '' },
   } as any);
 
   it('hides a product this site does not run, with no regard for who is asking', async () => {

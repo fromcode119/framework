@@ -6,6 +6,7 @@ import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Plugins serving a different build than the one installed on disk, each with the action that fixes it.
@@ -35,15 +36,15 @@ export class PluginRestartPendingList extends PureReactor {
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <span className={`text-sm font-semibold tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>{entry.slug}</span>
-                <Badge variant={BadgeVariant.INFO} className="shrink-0">Not the installed version</Badge>
+                <Badge variant={BadgeVariant.INFO} className="shrink-0">{AdminI18n.t('plugins.list.notTheInstalledVersion')}</Badge>
               </div>
               <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                Running {entry.runningVersion || 'unknown'}; installed {entry.installedVersion || 'unknown'}.
+                {AdminI18n.t('plugins.list.runningVsInstalled', { running: entry.runningVersion || AdminI18n.t('common.unknown'), installed: entry.installedVersion || AdminI18n.t('common.unknown') })}
               </p>
             </div>
             <button onClick={() => this.onLoadInstalled(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[10px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
               {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Refresh size={12} />}
-              <span>Load {entry.installedVersion || 'installed version'}</span>
+              <span>{AdminI18n.t('plugins.list.loadVersion', { version: entry.installedVersion || AdminI18n.t('plugins.list.installedVersion') })}</span>
             </button>
           </div>
         ))}

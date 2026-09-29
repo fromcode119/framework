@@ -24,4 +24,11 @@ export interface IPluginDefaultPageContract {
    * needed to place the block.
    */
   defaultContent?: any[];
+  /**
+   * The owning plugin's public-API method that answers this site's values for the `{{name}}`
+   * placeholders in `defaultContent` — e.g. the company a site trades as. Called once, inside the site,
+   * when the page is created; `{{siteName}}` and `{{siteHost}}` are the framework's own and need no
+   * method. A placeholder with no value is left empty, never filled with another site's words.
+   */
+  contentValues?: string;
 }

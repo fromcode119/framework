@@ -3,6 +3,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { bound } from '@fromcode119/react-class-components';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { InfrastructureSettingsPageState } from '@/app/settings/infrastructure/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Reading and writing the platform settings this screen owns.
@@ -27,7 +28,7 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       this.isolationTimeoutMs = String(response?.plugin_isolation_timeout_ms ?? '');
     } catch (err: any) {
       this.maintenance = null;
-      this.loadError = err?.message || 'The system settings request failed.';
+      this.loadError = err?.message || AdminI18n.t('settings.infrastructure.theSystemSettingsRequestFailed');
     } finally {
       this.isLoading = false;
     }
@@ -47,11 +48,11 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
     this.maintenance = val;
     try {
       await AdminSystemSettingsClient.update({ maintenance_mode: val });
-      addNotification({ title: 'System Updated', message: `Maintenance mode is now ${val ? 'active' : 'inactive'}.`, type: NotificationType.INFO });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.systemUpdated'), message: (val ? AdminI18n.t('settings.infrastructure.maintenanceNowActive') : AdminI18n.t('settings.infrastructure.maintenanceNowInactive')), type: NotificationType.INFO });
     } catch (err: any) {
       // The switch must not keep showing the position the write failed to reach.
       this.maintenance = previous;
-      addNotification({ title: 'Error', message: err?.message || 'Failed to toggle maintenance mode.', type: NotificationType.ERROR });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToToggleMaintenanceMode'), type: NotificationType.ERROR });
     }
   }
 
@@ -68,14 +69,14 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       await AdminSystemSettingsClient.update({ audit_retention_days: this.auditRetentionDays });
       const days = Number(this.auditRetentionDays);
       addNotification({
-        title: 'System Updated',
+        title: AdminI18n.t('settings.infrastructure.systemUpdated'),
         message: days > 0
-          ? `Audit entries older than ${days} day(s) will be removed at the next daily sweep.`
-          : 'The audit trail is kept forever.',
+          ? AdminI18n.t('settings.infrastructure.auditEntriesOlderThanDay', { days: days })
+          : AdminI18n.t('settings.infrastructure.theAuditTrailIsKept'),
         type: NotificationType.INFO,
       });
     } catch (err: any) {
-      addNotification({ title: 'Error', message: err?.message || 'Failed to save audit retention.', type: NotificationType.ERROR });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToSaveAuditRetention'), type: NotificationType.ERROR });
     } finally {
       this.isSavingAuditRetention = false;
     }
@@ -89,12 +90,12 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       await AdminSystemSettingsClient.update({ log_retention_days: this.logRetentionDays });
       const days = Number(this.logRetentionDays);
       addNotification({
-        title: 'System Updated',
-        message: days > 0 ? `System logs older than ${days} day(s) will be removed.` : 'System logs are kept forever.',
+        title: AdminI18n.t('settings.infrastructure.systemUpdated'),
+        message: days > 0 ? AdminI18n.t('settings.infrastructure.systemLogsOlderThanDay', { days: days }) : AdminI18n.t('settings.infrastructure.systemLogsAreKeptForever'),
         type: NotificationType.INFO,
       });
     } catch (err: any) {
-      addNotification({ title: 'Error', message: err?.message || 'Failed to save log retention.', type: NotificationType.ERROR });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToSaveLogRetention'), type: NotificationType.ERROR });
     } finally {
       this.isSavingRetention = false;
     }
@@ -112,14 +113,14 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       });
       const cap = Number(this.ssrGenerationCap);
       addNotification({
-        title: 'System Updated',
+        title: AdminI18n.t('settings.infrastructure.systemUpdated'),
         message: cap >= 1
-          ? `The storefront keeps up to ${cap} theme world(s) resident. Memory and deadline apply to render hosts started from now on.`
-          : `The storefront uses its default of ${SystemConstants.SSR_GENERATION_CAP_DEFAULT} resident theme world(s). Memory and deadline apply to render hosts started from now on.`,
+          ? AdminI18n.t('settings.infrastructure.theStorefrontKeepsUpTo', { cap: cap })
+          : AdminI18n.t('settings.infrastructure.theStorefrontUsesItsDefault', { SSR_GENERATION_CAP_DEFAULT: SystemConstants.SSR_GENERATION_CAP_DEFAULT }),
         type: NotificationType.INFO,
       });
     } catch (err: any) {
-      addNotification({ title: 'Error', message: err?.message || 'Failed to save the server rendering cap.', type: NotificationType.ERROR });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToSaveTheServer'), type: NotificationType.ERROR });
     } finally {
       this.isSavingSsrCap = false;
     }
@@ -140,14 +141,14 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       const modeChanged = this.isolationDefault !== this.isolationDefaultInEffect;
       if (modeChanged) this.isolationModeRestartPending = true;
       addNotification({
-        title: 'System Updated',
+        title: AdminI18n.t('settings.infrastructure.systemUpdated'),
         message: modeChanged
-          ? 'Plugin isolation settings saved. The limits apply to every running plugin now. Where plugins run changes for plugins already loaded when the API restarts — use the button under "Where plugins run".'
-          : 'Plugin isolation settings saved and applied to every running plugin.',
+          ? AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedThe')
+          : AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedAnd'),
         type: NotificationType.INFO,
       });
     } catch (err: any) {
-      addNotification({ title: 'Error', message: err?.message || 'Failed to save the plugin isolation settings.', type: NotificationType.ERROR });
+      addNotification({ title: AdminI18n.t('settings.infrastructure.error'), message: err?.message || AdminI18n.t('settings.infrastructure.failedToSaveThePlugin'), type: NotificationType.ERROR });
     } finally {
       this.isSavingIsolation = false;
     }

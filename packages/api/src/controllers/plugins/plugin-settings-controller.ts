@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import type { ILoadedPlugin, PluginContext } from '@fromcode119/core';
 import { PluginSettingsSupport } from '@api/controllers/plugins/plugin-settings-support';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 import { CoercionUtils } from '@fromcode119/core';
 
 export class PluginSettingsController {
@@ -111,7 +112,8 @@ export class PluginSettingsController {
       return res.status(404).json({ error: 'Plugin has no settings registered' });
     }
 
-    res.json(schema);
+    // Labels, descriptions and tabs in the console's language, from the plugin's own dictionary.
+    res.json((await AdminSchemaLocalization.forRequest(this.manager, req)).settings(slug, schema));
   }
 
   async resetSettings(req: Request, res: Response) {

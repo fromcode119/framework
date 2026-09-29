@@ -10,6 +10,7 @@ import { AssistantExecutionCard } from '@ai/components/assistant-execution-card'
 import { AssistantMessageContent } from '@ai/components/assistant-message-content';
 import { AssistantTechnicalDetails } from '@ai/components/assistant-technical-details';
 import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantConversationMessage extends PureReactor {
   @prop declare entry: IAssistantMessage;
@@ -56,15 +57,15 @@ export class AssistantConversationMessage extends PureReactor {
               type="button"
               onClick={this.onFork}
               className="absolute -right-8 top-1/2 -translate-y-1/2 inline-flex h-6 w-6 items-center justify-center rounded-lg border border-slate-300 bg-white text-slate-500 shadow-sm opacity-0 transition-all group-hover:opacity-100 hover:border-slate-400 hover:bg-white hover:text-slate-700 dark:border-slate-600 dark:bg-slate-900 dark:text-slate-400 dark:hover:border-slate-500 dark:hover:bg-slate-800 dark:hover:text-slate-200"
-              title="Fork from this message"
-              aria-label="Fork from this message"
+              title={AiText.t('ai.forkFromThisMessage')}
+              aria-label={AiText.t('ai.forkFromThisMessage')}
             >
               <FrameworkIcons.ArrowLeftRight size={12} />
             </button>
           ) : null}
           {this.showMetaRow ? (
             <div className="mb-1 flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">{this.isSystem ? <p className="text-[10px] font-bold uppercase tracking-wider opacity-85">System</p> : null}</div>
+              <div className="flex items-center gap-1.5">{this.isSystem ? <p className="text-[10px] font-bold uppercase tracking-wider opacity-85">{AiText.t('ai.system')}</p> : null}</div>
               {this.entry.provider || this.entry.model ? <span className="text-[10px] opacity-70">{[this.entry.provider, this.entry.model].filter(Boolean).join(' • ')}</span> : null}
             </div>
           ) : null}

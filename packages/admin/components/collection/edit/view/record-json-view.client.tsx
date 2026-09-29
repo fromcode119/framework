@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The record as editable JSON — the "advanced" half of the form/JSON view switch.
@@ -55,13 +56,13 @@ export class RecordJsonView extends Reactor {
     try {
       const parsed = JSON.parse(next);
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        this.error = 'The record must be a JSON object.';
+        this.error = AdminI18n.t('collection.json.mustBeObject');
         return;
       }
       this.error = null;
       this.setFormData(parsed);
     } catch (parseError) {
-      this.error = parseError instanceof Error ? parseError.message : 'Invalid JSON';
+      this.error = parseError instanceof Error ? parseError.message : AdminI18n.t('collection.json.invalid');
     }
   }
 
@@ -69,7 +70,7 @@ export class RecordJsonView extends Reactor {
   @bound onReformat(): void {
     this.draft = RecordJsonView.serialise(this.formData);
     this.error = null;
-    this.notice = 'Reloaded from the form and reformatted.';
+    this.notice = AdminI18n.t('collection.json.reloaded');
   }
 
   @bound onExport(): void {
@@ -80,7 +81,7 @@ export class RecordJsonView extends Reactor {
     link.download = `${this.collectionSlug || 'record'}.json`;
     link.click();
     URL.revokeObjectURL(url);
-    this.notice = 'Exported.';
+    this.notice = AdminI18n.t('collection.json.exported');
   }
 
   @bound onImportClick(): void {
@@ -95,15 +96,15 @@ export class RecordJsonView extends Reactor {
     try {
       const parsed = JSON.parse(text);
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
-        this.error = 'Imported file must contain a JSON object.';
+        this.error = AdminI18n.t('collection.json.importMustBeObject');
         return;
       }
       this.draft = RecordJsonView.serialise(parsed);
       this.error = null;
       this.setFormData(parsed);
-      this.notice = `Imported ${file.name}. Review it, then Save to persist.`;
+      this.notice = AdminI18n.t('collection.json.imported', { file: file.name });
     } catch (parseError) {
-      this.error = `Could not parse ${file.name}: ${parseError instanceof Error ? parseError.message : 'invalid JSON'}`;
+      this.error = AdminI18n.t('collection.json.parseFailed', { file: file.name, reason: parseError instanceof Error ? parseError.message : AdminI18n.t('collection.json.invalid') });
     }
   }
 
@@ -150,15 +151,15 @@ export class RecordJsonView extends Reactor {
       <div className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">Record JSON</p>
+            <p className="text-sm font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('collection.json.title')}</p>
             <p className="mt-0.5 text-[12px] text-slate-500">
-              Edits apply to the form immediately. Nothing is written until you Save.
+              {AdminI18n.t('collection.json.hint')}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            <button type="button" onClick={this.onReformat} className={buttonClass}>Reload &amp; format</button>
-            <button type="button" onClick={this.onImportClick} className={buttonClass}>Import…</button>
-            <button type="button" onClick={this.onExport} className={buttonClass}>Export</button>
+            <button type="button" onClick={this.onReformat} className={buttonClass}>{AdminI18n.t('collection.json.reformat')}</button>
+            <button type="button" onClick={this.onImportClick} className={buttonClass}>{AdminI18n.t('collection.json.import')}</button>
+            <button type="button" onClick={this.onExport} className={buttonClass}>{AdminI18n.t('common.export')}</button>
             <input
               ref={this.fileInput}
               type="file"
@@ -172,10 +173,10 @@ export class RecordJsonView extends Reactor {
         {unsurfaced.length > 0 && (
           <div className="rounded-[var(--radius)] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/20 dark:bg-amber-500/10">
             <p className="text-[12px] font-semibold text-amber-700 dark:text-amber-400">
-              {unsurfaced.length} key{unsurfaced.length === 1 ? '' : 's'} the form has no control for
+              {AdminI18n.t(unsurfaced.length === 1 ? 'collection.json.unsurfacedOne' : 'collection.json.unsurfacedMany', { count: unsurfaced.length })}
             </p>
             <p className="mt-0.5 text-[12px] text-amber-700/80 dark:text-amber-400/80">
-              You can edit them here, but anything that matters deserves a real field.
+              {AdminI18n.t('collection.json.unsurfacedHint')}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {unsurfaced.map((key) => (
@@ -212,8 +213,8 @@ export class RecordJsonView extends Reactor {
 
         <div className="min-h-[20px]">
           {this.error
-            ? <p className="text-[12px] font-semibold text-rose-600">Invalid JSON — {this.error}. The form keeps the last valid version.</p>
-            : <p className="text-[12px] text-emerald-600">Valid JSON — the form is in sync.</p>}
+            ? <p className="text-[12px] font-semibold text-rose-600">{AdminI18n.t('collection.json.invalidState', { error: this.error })}</p>
+            : <p className="text-[12px] text-emerald-600">{AdminI18n.t('collection.json.validState')}</p>}
           {this.notice && !this.error && <p className="mt-0.5 text-[12px] text-slate-500">{this.notice}</p>}
         </div>
       </div>

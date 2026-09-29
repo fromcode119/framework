@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import Link from 'next/link';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RolesAuditSidebar extends PureReactor {
   @prop declare logs: any[];
@@ -19,13 +20,13 @@ export class RolesAuditSidebar extends PureReactor {
     const dark = theme === ThemeMode.DARK;
     return (
       <div className="lg:col-span-12 xl:col-span-4 space-y-4">
-        <Card title="Security Architecture">
+        <Card title={AdminI18n.t('users.securityArchitecture')}>
           <p className="text-xs font-medium text-slate-500 leading-relaxed">
-            Roles define the maximum privilege boundary for all associated identities. RBAC policies are enforced on every request.
+            {AdminI18n.t('users.rolesDefineTheMaximumPrivilege')}
           </p>
         </Card>
 
-        <Card title="Recent Activity">
+        <Card title={AdminI18n.t('users.recentActivity')}>
           <div className="space-y-0.5">
             {loading ? (
               [1, 2, 3].map(i => <div key={i} className="h-8 rounded-lg bg-slate-100 dark:bg-slate-800 animate-pulse" />)
@@ -39,24 +40,24 @@ export class RolesAuditSidebar extends PureReactor {
                     <div className="flex items-baseline justify-between gap-2">
                       <span className={`truncate text-xs font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{log.message}</span>
                       <span className="shrink-0 text-[10px] text-slate-400">
-                        {new Date(log.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        {new Date(log.timestamp).toLocaleTimeString(undefined, { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
                     <span className="text-[10px] text-slate-400">
-                      {(() => { const s = log.plugin_slug || 'System'; return s.charAt(0).toUpperCase() + s.slice(1); })()}
+                      {log.plugin_slug && log.plugin_slug !== 'system' ? log.plugin_slug.charAt(0).toUpperCase() + log.plugin_slug.slice(1) : AdminI18n.t('activity.system')}
                     </span>
                   </div>
                 </div>
               ))
             ) : (
-              <div className="py-6 text-center text-xs text-slate-400">No activity logged</div>
+              <div className="py-6 text-center text-xs text-slate-400">{AdminI18n.t('users.noActivityLogged')}</div>
             )}
           </div>
 
           <div className={`mt-3 flex items-center justify-between border-t pt-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-            <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ' · maintenance' : ''}</span>
+            <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ` · ${AdminI18n.t('users.maintenance')}` : ''}</span>
             <Link href={AdminConstants.ROUTES.ACTIVITY}>
-              <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[10px] text-slate-500">View logs</Button>
+              <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[10px] text-slate-500">{AdminI18n.t('users.viewLogs')}</Button>
             </Link>
           </div>
         </Card>

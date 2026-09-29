@@ -5,6 +5,7 @@ import { IField } from '@fromcode119/core/client';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Pure, render-time derivations for the collection edit page (field sections, resolved title, status
@@ -73,7 +74,7 @@ export class CollectionEditDerivations {
     const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(lockField));
     const standardMainFieldSections = mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
     const fullWidthMainFieldSections = mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
-    const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || 'Content' }));
+    const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || AdminI18n.t('collection.edit.content') }));
 
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
     // A read-only status is changed by the collection's own actions (a refund moves through the service
@@ -117,7 +118,7 @@ export class CollectionEditDerivations {
     const ordered: Array<{ title: string; fields: any[] }> = [];
     const indexByTitle = new Map<string, number>();
     sidebarFields.forEach((field: any) => {
-      const title = String(field?.admin?.section || 'Settings').trim() || 'Settings';
+      const title = String(field?.admin?.section || AdminI18n.t('collection.edit.settings')).trim() || AdminI18n.t('collection.edit.settings');
       const existing = indexByTitle.get(title);
       if (existing === undefined) { indexByTitle.set(title, ordered.length); ordered.push({ title, fields: [field] }); return; }
       ordered[existing].fields.push(field);

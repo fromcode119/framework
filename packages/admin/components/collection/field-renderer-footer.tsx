@@ -4,6 +4,7 @@ import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import type { FieldProvenance } from '@/lib/collection/field-provenance';
 import { FieldProvenanceKind } from '@/lib/collection/enums/field-provenance-kind.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FieldRendererFooter extends PureReactor {
   @prop declare field: ICollectionField;
@@ -19,7 +20,7 @@ export class FieldRendererFooter extends PureReactor {
     if (!fallback) return null;
     return (
       <p className={UiFieldUtils.TEXT.PROVENANCE}>
-        {`Empty in ${String(this.activeLocale || '').toUpperCase()} — the site shows the ${fallback.locale.toUpperCase()} value `}
+        {`${AdminI18n.t('ui.field.localeFallback', { locale: String(this.activeLocale || '').toUpperCase(), fallback: fallback.locale.toUpperCase() })} `}
         <span className={UiFieldUtils.TEXT.PROVENANCE_VALUE}>{fallback.text}</span>
         {'.'}
       </p>
@@ -36,16 +37,16 @@ export class FieldRendererFooter extends PureReactor {
     if (!p || p.kind === FieldProvenanceKind.OWN) return null;
 
     if (p.kind === FieldProvenanceKind.NONE) {
-      return p.emptyMeans ? <p className={UiFieldUtils.TEXT.PROVENANCE_NONE}>Empty — {p.emptyMeans}</p> : null;
+      return p.emptyMeans ? <p className={UiFieldUtils.TEXT.PROVENANCE_NONE}>{AdminI18n.t('ui.field.emptyMeans', { meaning: p.emptyMeans })}</p> : null;
     }
 
     return (
       <p className={UiFieldUtils.TEXT.PROVENANCE}>
-        {'Empty — the site uses '}
+        {`${AdminI18n.t('ui.field.emptyUses')} `}
         <span className={UiFieldUtils.TEXT.PROVENANCE_VALUE}>{p.effectiveValue}</span>
-        {' from '}
+        {` ${AdminI18n.t('ui.field.from')} `}
         <a className={UiFieldUtils.TEXT.PROVENANCE_LINK} href={p.settingsHref}>
-          {p.settingsTab ? `Plugin settings → ${p.settingsTab}` : 'Plugin settings'}
+          {p.settingsTab ? `${AdminI18n.t('ui.field.pluginSettings')} → ${p.settingsTab}` : AdminI18n.t('ui.field.pluginSettings')}
         </a>
         {` → “${p.settingLabel}”.`}
       </p>

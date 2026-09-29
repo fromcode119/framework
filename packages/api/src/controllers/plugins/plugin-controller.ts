@@ -4,6 +4,7 @@ import { BaseController, PluginManager, Logger, CoercionUtils, PluginHealthRepor
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import { PluginHealthSupport } from '@api/controllers/plugins/plugin-health-support';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 
 export class PluginController extends BaseController {
 
@@ -65,8 +66,10 @@ export class PluginController extends BaseController {
       .filter((p) => p.manifest?.bundled !== true)
       .filter((p) => !enabledSlugs || enabledSlugs.has(p.manifest.slug));
 
+    // Name and description in the console's language, from each plugin's own dictionary.
+    const localizer = await AdminSchemaLocalization.forRequest(this.manager, req);
     res.json(visible.map(p => ({
-      manifest: p.manifest,
+      manifest: localizer.manifest(p.manifest.slug, p.manifest),
       state: p.state,
       path: p.path,
       error: p.error,

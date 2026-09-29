@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { SiteRecord } from '@/lib/tenants/site-record';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What this site amounts to, at a glance.
@@ -24,15 +25,15 @@ export class SiteStatStrip extends PureReactor {
     const site = this.site;
 
     const stats: Array<{ label: string; value: string | number; tone: string }> = [
-      { label: 'State', value: site.isActive ? 'Active' : site.state, tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
-      { label: 'Members', value: site.memberCount, tone: strong },
-      { label: 'Plugins', value: site.plugins.length, tone: strong },
+      { label: AdminI18n.t('sites.state'), value: site.isActive ? AdminI18n.t('sites.active') : (AdminI18n.optional(`sites.stateValue.${site.state}`) || site.state), tone: site.isActive ? 'text-emerald-500' : 'text-amber-500' },
+      { label: AdminI18n.t('sites.members'), value: site.memberCount, tone: strong },
+      { label: AdminI18n.t('sites.plugins'), value: site.plugins.length, tone: strong },
     ];
     if (site.isWorkspace) {
-      stats.push({ label: 'Appearance', value: site.appearance || 'none', tone: site.appearance ? strong : muted });
+      stats.push({ label: AdminI18n.t('sites.appearance'), value: site.appearance || 'none', tone: site.appearance ? strong : muted });
     } else {
-      stats.push({ label: 'Theme', value: site.theme ?? 'none', tone: site.theme ? strong : 'text-amber-500' });
-      stats.push({ label: 'Pages', value: site.pageCount, tone: site.pageCount ? strong : 'text-amber-500' });
+      stats.push({ label: AdminI18n.t('sites.theme'), value: site.theme ?? 'none', tone: site.theme ? strong : 'text-amber-500' });
+      stats.push({ label: AdminI18n.t('sites.pages'), value: site.pageCount, tone: site.pageCount ? strong : 'text-amber-500' });
     }
     return stats;
   }

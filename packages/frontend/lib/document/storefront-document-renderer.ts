@@ -2,7 +2,7 @@ import { SiteVisibilityVerdict } from '@/lib/document/site-visibility-verdict';
 import { NextResponse } from 'next/server';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
-import { LocaleUrlStrategy, LocalizationUtils } from '@fromcode119/core/client';
+import { LocaleUrlStrategy, LocalizationUtils, SystemConstants } from '@fromcode119/core/client';
 import { HomePageResolver } from '@/app/home-page-resolver';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
 import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
@@ -14,6 +14,7 @@ import { FrontendRuntimeAssetManifest } from '@/lib/document/frontend-runtime-as
 import { StorefrontDocumentRequest } from '@/lib/document/storefront-document-request';
 import { ThemeHeadModel } from '@/lib/document/theme-head-model';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { DocumentContactProtection } from '@/lib/contact/document-contact-protection';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 import { FrontendTranslationsCache } from '@/lib/frontend-translations-cache';
@@ -179,7 +180,12 @@ export class StorefrontDocumentRenderer {
       layoutInlineCss: FrontendLayoutStylesheets.inlineCss(),
       status: args.status || 200,
     });
-    const encoded = DocumentCompression.encode(`<!DOCTYPE html>${html}`, args.acceptEncoding);
+    // The site's "Hide email addresses and phone numbers from harvesters" (Settings → Security). Only 'true'
+    // is on — the rule the admin's switch reads, so the storefront never protects what the admin shows off.
+    const publicSettings = ((frontend as Record<string, unknown> | null)?.publicSettings || {}) as Record<string, unknown>;
+    const protectContacts = String(publicSettings[SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION] ?? '').trim() === 'true';
+    const served = protectContacts ? DocumentContactProtection.protect(html) : html;
+    const encoded = DocumentCompression.encode(`<!DOCTYPE html>${served}`, args.acceptEncoding);
     return new NextResponse(encoded.body as unknown as BodyInit, { status: args.status || 200, headers: DocumentCompression.headers(encoded.encoding) });
   }
 }

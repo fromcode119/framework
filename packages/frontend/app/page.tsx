@@ -44,7 +44,7 @@ export class HomePageRoute {
         <StructuredDataScriptsView.render schema={schema} />
         {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
         <PageDocPrefetchView.render content={content} />
-        <HomeClient initialContent={content} forcedLayout={forcedLayout} ssrHtml={ssrMarkup?.bodyHtml || ''} ssrRendersContentSlot={Boolean(ssrMarkup?.rendersContentSlot)} />
+        <HomeClient locale={locale} initialContent={content} forcedLayout={forcedLayout} ssrHtml={ssrMarkup?.bodyHtml || ''} ssrRendersContentSlot={Boolean(ssrMarkup?.rendersContentSlot)} />
       </>
     );
   }

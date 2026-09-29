@@ -1,0 +1,20 @@
+{
+  "view": {
+    "notFound": {
+      "eyebrow": "Error 404",
+      "title": "Page not found",
+      "body": "The URL you opened does not match any published route.",
+      "home": "Return Home"
+    },
+    "recordsHub": {
+      "loading": "Loading records…",
+      "empty": "No records yet for this person.",
+      "loadFailed": "Failed to load records",
+      "partial": "Some sources could not be loaded: {{providers}}",
+      "download": "Download",
+      "downloadItem": "Download {{title}}",
+      "open": "Open",
+      "openItem": "Open {{title}}"
+    }
+  }
+}

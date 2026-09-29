@@ -9,6 +9,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PersonFieldPerson } from '@/components/collection/fields/person-field-person';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "Who is this?" — pick an existing person from People instead of retyping their name and email.
@@ -115,7 +116,7 @@ export class PersonField extends Reactor {
     if (!person) {
       return (
         <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[12.5px] text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
-          {this.personFailed ? `People #${this.personId} could not be read, so it is not shown here.` : 'Loading…'}
+          {this.personFailed ? AdminI18n.t('ui.person.readFailed', { id: this.personId }) : AdminI18n.t('common.loading')}
         </div>
       );
     }
@@ -124,16 +125,16 @@ export class PersonField extends Reactor {
         <div className="min-w-0">
           <div className="text-[13.5px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</div>
           <div className="text-[12px] text-slate-500 dark:text-slate-400">
-            {[person.email, person.phone].filter(Boolean).join(' · ') || 'No email or phone in People'}
+            {[person.email, person.phone].filter(Boolean).join(' · ') || AdminI18n.t('ui.person.noContact')}
             {' · '}
-            {person.hasLogin ? 'Has a login' : 'No login'}
+            {AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}
           </div>
-          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">Name, email and phone come from People #{person.id}; change them there.</div>
+          <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{AdminI18n.t('ui.person.source', { id: person.id })}</div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Link href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[11.5px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">Open in People</Link>
+          <Link href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[11.5px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</Link>
           {this.readOnly ? null : (
-            <Button type="button" size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.unlink}>Choose someone else</Button>
+            <Button type="button" size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.unlink}>{AdminI18n.t('ui.person.choose')}</Button>
           )}
         </div>
       </div>
@@ -141,10 +142,10 @@ export class PersonField extends Reactor {
   }
 
   private renderResults(): ReactNode {
-    if (this.searchFailed) return <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-400">People could not be searched just now.</p>;
+    if (this.searchFailed) return <p className="mt-2 text-[12px] text-amber-700 dark:text-amber-400">{AdminI18n.t('ui.person.searchFailed')}</p>;
     if (!this.searched) return null;
     if (this.results.length === 0) {
-      return <p className="mt-2 text-[12px] text-slate-500 dark:text-slate-400">No one in People matches. Enter their details below; saving adds them to People.</p>;
+      return <p className="mt-2 text-[12px] text-slate-500 dark:text-slate-400">{AdminI18n.t('ui.person.noMatch')}</p>;
     }
     return (
       <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
@@ -153,9 +154,9 @@ export class PersonField extends Reactor {
             <button type="button" onClick={() => this.pick(person)} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60">
               <span className="min-w-0">
                 <span className="block truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</span>
-                <span className="block truncate text-[11.5px] text-slate-500 dark:text-slate-400">{person.email || person.phone || `People #${person.id}`}</span>
+                <span className="block truncate text-[11.5px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>
               </span>
-              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-slate-400">{person.hasLogin ? 'Has a login' : 'No login'}</span>
+              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>
             </button>
           </li>
         ))}
@@ -165,10 +166,10 @@ export class PersonField extends Reactor {
 
   render(): ReactNode {
     if (this.personId) return this.renderLinked();
-    if (this.readOnly) return <p className="text-[12.5px] text-slate-500 dark:text-slate-400">Not linked to anyone in People.</p>;
+    if (this.readOnly) return <p className="text-[12.5px] text-slate-500 dark:text-slate-400">{AdminI18n.t('ui.person.notLinked')}</p>;
     return (
       <div>
-        <Input value={this.query} onChange={this.onQuery} placeholder="Search People by name, email or phone" />
+        <Input value={this.query} onChange={this.onQuery} placeholder={AdminI18n.t('ui.person.search')} />
         {this.renderResults()}
       </div>
     );

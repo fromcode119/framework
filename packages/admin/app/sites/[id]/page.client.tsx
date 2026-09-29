@@ -22,6 +22,7 @@ import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteDomainsCard } from '@/app/sites/[id]/site-domains-card.client';
 import { SiteMembersCard } from '@/app/sites/[id]/site-members-card.client';
 import { SiteDangerCard } from '@/app/sites/[id]/site-danger-card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** One site: identity and state, its members, its exports, and the one irreversible action. */
 export class SiteDetailPageClient extends AdminComponent {
@@ -58,8 +59,8 @@ export class SiteDetailPageClient extends AdminComponent {
       await SitePreviewLauncher.openPreview(this.id);
     } catch (err: any) {
       this.runtime.notify.addNotification({
-        title: 'Could not open a preview',
-        message: err?.message || 'This site could not be opened for preview.',
+        title: AdminI18n.t('sites.couldNotOpenAPreview'),
+        message: err?.message || AdminI18n.t('sites.thisSiteCouldNotBe'),
         type: NotificationType.ERROR,
       });
     } finally {
@@ -91,7 +92,7 @@ export class SiteDetailPageClient extends AdminComponent {
       this.inventory = listing.inventory;
       this.apply(site);
     } catch (err: any) {
-      this.error = err?.message || 'Could not load the site.';
+      this.error = err?.message || AdminI18n.t('sites.couldNotLoadTheSite');
     } finally {
       this.loading = false;
     }
@@ -106,7 +107,7 @@ export class SiteDetailPageClient extends AdminComponent {
     try {
       this.inventory = (await SitesClient.list()).inventory;
     } catch (err: any) {
-      this.error = err?.message || 'Could not reload the plugin list.';
+      this.error = err?.message || AdminI18n.t('sites.couldNotReloadThePlugin');
     }
   }
 
@@ -123,9 +124,9 @@ export class SiteDetailPageClient extends AdminComponent {
     this.saving = true;
     try {
       this.apply(await SitesClient.update(this.id, this.values.toUpdatePayload()));
-      this.runtime.notify.addNotification({ title: 'Site saved', message: 'Routing follows immediately — no restart.', type: NotificationType.INFO });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteSaved'), message: AdminI18n.t('sites.routingFollowsImmediatelyNoRestart'), type: NotificationType.INFO });
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Not saved', message: err?.message || 'The site could not be saved.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.notSaved'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe2'), type: NotificationType.ERROR });
     } finally {
       this.saving = false;
     }
@@ -135,10 +136,10 @@ export class SiteDetailPageClient extends AdminComponent {
     this.exporting = true;
     try {
       const result = await SitesClient.exportSite(this.id);
-      this.runtime.notify.addNotification({ title: 'Site exported', message: `${result.filename} (${result.rows} rows) is under Backups → Sites.`, type: NotificationType.INFO });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteExported'), message: AdminI18n.t('sites.rowsIsUnderBackupsSites', { filename: result.filename, rows: result.rows }), type: NotificationType.INFO });
       await this.load();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Export failed', message: err?.message || 'The export did not complete.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.exportFailed'), message: err?.message || AdminI18n.t('sites.theExportDidNotComplete'), type: NotificationType.ERROR });
     } finally {
       this.exporting = false;
     }
@@ -161,7 +162,7 @@ export class SiteDetailPageClient extends AdminComponent {
       window.location.assign(AdminConstants.ROUTES.ROOT);
     } catch (err: any) {
       this.entering = false;
-      this.runtime.notify.addNotification({ title: 'Could not open the site', message: err?.message || 'The site could not be selected.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.couldNotOpenTheSite'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe3'), type: NotificationType.ERROR });
     }
   }
 
@@ -176,7 +177,7 @@ export class SiteDetailPageClient extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title={site ? site.slug : 'Site'}
+          title={site ? site.slug : AdminI18n.t('sites.site')}
           subtitle={site ? site.primaryHost : ''}
           backHref={AdminConstants.ROUTES.SITES.ROOT}
           actions={site ? (
@@ -188,8 +189,8 @@ export class SiteDetailPageClient extends AdminComponent {
           ) : null}
         />
         <div className="fc-sites__body">
-        {this.loading ? <Loader label="Loading site…" /> : null}
-        {!this.loading && this.error ? <LoadErrorPanel title="Site unavailable" message={this.error} onRetry={this.load} /> : null}
+        {this.loading ? <Loader label={AdminI18n.t('sites.loadingSite')} /> : null}
+        {!this.loading && this.error ? <LoadErrorPanel title={AdminI18n.t('sites.siteUnavailable')} message={this.error} onRetry={this.load} /> : null}
         {site && !this.loading ? (
           <div className="fc-sites__stack">
             <SiteTabBar current={this.tab} onSelect={this.selectTab} />

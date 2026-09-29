@@ -8,6 +8,7 @@ import { AdminDeployClient } from '@/lib/settings/admin-deploy-client';
 import { AdminDeployApp } from '@/lib/settings/admin-deploy-app';
 import { RestartAppCopy } from '@/app/settings/infrastructure/restart-app-copy';
 import { RestartServiceRow } from '@/app/settings/infrastructure/restart-service-row';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One button per app of this deployment, each restarting that app by exiting its process so the
@@ -34,7 +35,7 @@ export class RestartServicesCard extends AdminComponent {
       this.secretConfigured = catalog.secretConfigured;
       this.secretEnvKey = catalog.secretEnvKey;
     } catch (err: any) {
-      this.loadError = err?.message || 'The restart targets could not be loaded.';
+      this.loadError = err?.message || AdminI18n.t('settings.infrastructure.theRestartTargetsCouldNot');
     }
   }
 
@@ -57,15 +58,15 @@ export class RestartServicesCard extends AdminComponent {
     try {
       const outcome = await AdminDeployClient.restart(app);
       addNotification({
-        title: 'Restart requested',
-        message: `The ${app} app exits in ${outcome.exitInMs}ms and its supervisor starts it again. It is unavailable until then.`,
+        title: AdminI18n.t('settings.infrastructure.restartRequested'),
+        message: AdminI18n.t('settings.infrastructure.theAppExitsInMs', { app: app, exitInMs: outcome.exitInMs }),
         type: NotificationType.INFO,
       });
       this.pendingApp = '';
     } catch (err: any) {
       addNotification({
-        title: 'Restart not started',
-        message: err?.message || `The ${app} app could not be restarted.`,
+        title: AdminI18n.t('settings.infrastructure.restartNotStarted'),
+        message: err?.message || AdminI18n.t('settings.infrastructure.theAppCouldNotBe', { app: app }),
         type: NotificationType.ERROR,
       });
     } finally {
@@ -77,9 +78,9 @@ export class RestartServicesCard extends AdminComponent {
   private blockedReason(entry: AdminDeployApp): string {
     if (entry.restartable) return '';
     if (!this.secretConfigured) {
-      return `Unavailable: set ${this.secretEnvKey} to the same value on the api, admin and frontend services.`;
+      return AdminI18n.t('settings.infrastructure.unavailableSetToTheSame', { secretEnvKey: this.secretEnvKey });
     }
-    return `Unavailable: this install has no URL configured for the ${entry.app} app.`;
+    return AdminI18n.t('settings.infrastructure.unavailableThisInstallHasNo', { app: entry.app });
   }
 
   private get pendingCopy(): RestartAppCopy | null {
@@ -89,7 +90,7 @@ export class RestartServicesCard extends AdminComponent {
   render(): ReactNode {
     if (this.loadError) {
       return (
-        <Card title="Restart Services">
+        <Card title={AdminI18n.t('settings.infrastructure.restartServices')}>
           <p className="text-[13px] text-[var(--destructive)]">{this.loadError}</p>
         </Card>
       );
@@ -98,7 +99,7 @@ export class RestartServicesCard extends AdminComponent {
 
     const copy = this.pendingCopy;
     return (
-      <Card title="Restart Services">
+      <Card title={AdminI18n.t('settings.infrastructure.restartServices')}>
         {this.apps.map((entry) => (
           <RestartServiceRow
             key={entry.app}
@@ -115,9 +116,9 @@ export class RestartServicesCard extends AdminComponent {
           onClose={this.closeConfirm}
           onConfirm={this.confirmRestart}
           isLoading={Boolean(this.restartingApp)}
-          title={`Restart the ${copy?.title || ''} app?`}
+          title={AdminI18n.t('settings.infrastructure.restartTheApp2', { app: copy?.title || '' })}
           description={`${copy?.description || ''} ${copy?.warning || ''}`.trim()}
-          confirmLabel="Restart now"
+          confirmLabel={AdminI18n.t('settings.infrastructure.restartNow')}
         />
       </Card>
     );

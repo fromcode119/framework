@@ -11,6 +11,8 @@ import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { SiteStatStrip } from '@/app/sites/[id]/site-stat-strip.client';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Identity, domains and what the site amounts to — short enough to read without scrolling.
@@ -44,16 +46,16 @@ export class SiteOverviewTab extends AdminComponent {
     this.seeding = true;
     try {
       const result = await SitesClient.materializePages(this.site.id);
-      const warnings = result.warnings.length ? ` Warnings: ${result.warnings.join('; ')}` : '';
+      const warnings = result.warnings.length ? AdminI18n.t('sites.warnings', { join: result.warnings.join('; ') }) : '';
       this.runtime.notify.addNotification({
-        title: 'Pages rebuilt',
-        message: `${result.pages} page${result.pages === 1 ? '' : 's'} on this site.`
-          + `${result.themeSeeded ? ' The theme\'s initial content was seeded.' : ''}${warnings}`,
+        title: AdminI18n.t('sites.pagesRebuilt'),
+        message: (result.pages === 1 ? AdminI18n.t('sites.pageOnThisSiteOne') : AdminI18n.t('sites.pageOnThisSiteMany', { pages: result.pages }))
+          + `${result.themeSeeded ? AdminI18n.t('sites.theThemeSInitialContent') : ''}${warnings}`,
         type: result.warnings.length ? NotificationType.ERROR : NotificationType.INFO,
       });
       this.onRebuilt();
     } catch (err: any) {
-      this.runtime.notify.addNotification({ title: 'Could not rebuild pages', message: err?.message || 'The rebuild did not complete.', type: NotificationType.ERROR });
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.couldNotRebuildPages'), message: err?.message || AdminI18n.t('sites.theRebuildDidNotComplete'), type: NotificationType.ERROR });
     } finally {
       this.seeding = false;
     }
@@ -64,16 +66,15 @@ export class SiteOverviewTab extends AdminComponent {
     const site = this.site;
     if (site.isWorkspace) return null;
     return (
-      <Card title="Pages">
+      <Card title={AdminI18n.t('sites.pages')}>
         <p className="fc-sites__text">
           {site.pageCount
-            ? <>This site has <strong>{site.pageCount}</strong> page{site.pageCount === 1 ? '' : 's'}. </>
-            : <>This site has <strong>no pages</strong>, so every storefront route but the home page answers 404. </>}
-          Rebuilding runs the theme&apos;s initial content and the default pages its plugins declare. Existing
-          pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.
+            ? <><AdminRichText k={site.pageCount === 1 ? 'sites.hasOnePage' : 'sites.hasPages'} vars={{ count: site.pageCount }} />{' '}</>
+            : <><AdminRichText k="sites.hasNoPages" />{' '}</>}
+          {AdminI18n.t('sites.rebuildingRuns')}
         </p>
         <div className="fc-sites__actions">
-          <Button onClick={this.seed} isLoading={this.seeding} icon={<FrameworkIcons.Refresh size={14} />}>Rebuild pages</Button>
+          <Button onClick={this.seed} isLoading={this.seeding} icon={<FrameworkIcons.Refresh size={14} />}>{AdminI18n.t('sites.rebuildPages')}</Button>
         </div>
       </Card>
     );
@@ -85,7 +86,7 @@ export class SiteOverviewTab extends AdminComponent {
       <>
         <SiteStatStrip site={this.site} theme={theme} />
         <div className="fc-sites__overview">
-          <Card title="Identity and hosts">
+          <Card title={AdminI18n.t('sites.identityAndHosts')}>
             <SiteForm theme={theme} values={this.values} onChange={this.onChange} isNew={false} />
           </Card>
           {this.renderPages()}

@@ -15,6 +15,7 @@ import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { IMcpToken } from '@/app/settings/integrations/mcp/interfaces/mcp-token.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * MCP access tokens — create, inspect and revoke.
@@ -72,7 +73,7 @@ export class McpTokensPanel extends AdminComponent {
       const tools = Array.isArray(toolResponse?.tools) ? toolResponse.tools : [];
       this.toolNames = tools.map((t: any) => String(t || '')).filter(Boolean);
     } catch (error: any) {
-      this.notifyError('Failed to load MCP tokens', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToLoadMcpTokens'), error);
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -82,7 +83,7 @@ export class McpTokensPanel extends AdminComponent {
     this.runtime.notify.addNotification({
       type: NotificationType.ERROR,
       title,
-      message: error?.message || 'Unexpected error.',
+      message: error?.message || AdminI18n.t('settings.integrations.unexpectedError'),
     });
   }
 
@@ -99,7 +100,7 @@ export class McpTokensPanel extends AdminComponent {
       this.revokeCandidate = null;
       await this.load();
     } catch (error: any) {
-      this.notifyError('Failed to revoke token', error);
+      this.notifyError(AdminI18n.t('settings.integrations.failedToRevokeToken'), error);
     }
   }
 
@@ -122,9 +123,9 @@ export class McpTokensPanel extends AdminComponent {
       <Card className="p-5 border-amber-300 dark:border-amber-500/40">
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <Badge variant={BadgeVariant.WARNING}>Shown once</Badge>
+            <Badge variant={BadgeVariant.WARNING}>{AdminI18n.t('settings.integrations.shownOnce')}</Badge>
             <span className="text-sm font-semibold text-slate-900 dark:text-white">
-              Copy this key now — it cannot be shown again.
+              {AdminI18n.t('settings.integrations.copyThisKeyNowIt')}
             </span>
           </div>
           <code className="block break-all rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-xs text-slate-700 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-200">
@@ -132,7 +133,7 @@ export class McpTokensPanel extends AdminComponent {
           </code>
           <div>
             <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={() => { this.newKey = null; }}>
-              Done
+              {AdminI18n.t('settings.integrations.done')}
             </Button>
           </div>
         </div>
@@ -142,8 +143,8 @@ export class McpTokensPanel extends AdminComponent {
 
   private renderTokens(): ReactNode {
     return this.section(
-      'Existing tokens',
-      this.multiTenant && !this.platformAdmin ? 'Tokens for this site. Revoking one takes effect immediately.' : 'Every token issued for this installation. Revoking one takes effect immediately.',
+      AdminI18n.t('settings.integrations.existingTokens'),
+      this.multiTenant && !this.platformAdmin ? AdminI18n.t('settings.integrations.tokensForThisSiteRevoking') : AdminI18n.t('settings.integrations.everyTokenIssuedForThis'),
       <McpTokensTable tokens={this.tokens} multiTenant={this.multiTenant} onRevoke={(token: IMcpToken) => { this.revokeCandidate = token; }} />,
     );
   }
@@ -168,9 +169,9 @@ export class McpTokensPanel extends AdminComponent {
           isOpen={!!this.revokeCandidate}
           onClose={() => { this.revokeCandidate = null; }}
           onConfirm={() => this.revokeToken()}
-          title="Revoke this token?"
-          description={`"${this.revokeCandidate?.label || ''}" stops working immediately, and any client using it loses access. This cannot be undone.`}
-          confirmLabel="Revoke"
+          title={AdminI18n.t('settings.integrations.revokeThisToken')}
+          description={AdminI18n.t('settings.integrations.stopsWorkingImmediatelyAndAny', { label: this.revokeCandidate?.label || '' })}
+          confirmLabel={AdminI18n.t('settings.integrations.revoke')}
           variant={ButtonVariant.DANGER}
         />
       </>

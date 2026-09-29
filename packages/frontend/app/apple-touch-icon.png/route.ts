@@ -7,7 +7,7 @@ import { ThemeIconRouteService } from '@/lib/theme/theme-icon-route-service';
  * like `/favicon.ico` does, with the same framework fallback.
  */
 export class AppleTouchIconRoute {
-  static async GET(request: Request) {
-    return ThemeIconRouteService.serve(await ThemeFaviconRouteResolver.resolveAppleTouchIcon(), request, 'image/png', 'apple-touch-icon');
+  static async GET() {
+    return ThemeIconRouteService.serve(await ThemeFaviconRouteResolver.resolveAppleTouchIcon(), 'image/png', 'apple-touch-icon');
   }
 }

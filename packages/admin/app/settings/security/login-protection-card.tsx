@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The failed-login throttle the API applies per email + IP
@@ -21,15 +22,15 @@ export class LoginProtectionCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="Login Protection">
+      <Card title={AdminI18n.t('settings.security.loginProtection')}>
         <SettingNumberRow
           theme={this.theme}
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_THRESHOLD}
           icon={FrameworkIcons.Lock}
-          title="Failed Logins Before Lockout"
-          description="How many failed sign-ins for the same email and IP lock that combination out."
+          title={AdminI18n.t('settings.security.failedLoginsBeforeLockout')}
+          description={AdminI18n.t('settings.security.howManyFailedSignIns')}
           min={1}
           max={50}
         />
@@ -40,8 +41,8 @@ export class LoginProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_WINDOW_MINUTES}
           icon={FrameworkIcons.Clock}
-          title="Failed Login Window (minutes)"
-          description="Failures more than this far apart do not add up; the counter restarts instead of reaching the threshold."
+          title={AdminI18n.t('settings.security.failedLoginWindowMinutes')}
+          description={AdminI18n.t('settings.security.failuresMoreThanThisFar')}
           min={1}
           max={1440}
         />
@@ -52,8 +53,8 @@ export class LoginProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES}
           icon={FrameworkIcons.Clock}
-          title="Lockout Duration (minutes)"
-          description="How long a locked email and IP combination is refused, even with the correct password."
+          title={AdminI18n.t('settings.security.lockoutDurationMinutes')}
+          description={AdminI18n.t('settings.security.howLongALockedEmail')}
           min={1}
           max={43200}
         />
@@ -64,8 +65,8 @@ export class LoginProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED}
           icon={FrameworkIcons.Fingerprint}
-          title="Require Captcha After Repeated Failures"
-          description="Once the captcha threshold below is reached, the sign-in request must carry a captcha answer before the password is even checked."
+          title={AdminI18n.t('settings.security.requireCaptchaAfterRepeatedFailures')}
+          description={AdminI18n.t('settings.security.onceTheCaptchaThresholdBelow')}
         />
 
         <SettingNumberRow
@@ -74,8 +75,8 @@ export class LoginProtectionCard extends PureReactor {
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD}
           icon={FrameworkIcons.Fingerprint}
-          title="Failed Logins Before Captcha"
-          description="Only used while the captcha requirement above is on. Keep it below the lockout threshold or the account locks first."
+          title={AdminI18n.t('settings.security.failedLoginsBeforeCaptcha')}
+          description={AdminI18n.t('settings.security.onlyUsedWhileTheCaptcha')}
           min={1}
           max={50}
         />

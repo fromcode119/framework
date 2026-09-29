@@ -9,6 +9,7 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginsLayout extends AdminComponent {
   @prop declare children: ReactNode;
@@ -27,9 +28,9 @@ export class PluginsLayout extends AdminComponent {
    */
   private get allTabs(): { label: string; href: string; icon: ReactNode }[] {
     return [
-      { label: 'Installed', href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
-      { label: 'Health', href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },
-      { label: 'Marketplace', href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
+      { label: AdminI18n.t('plugins.detail.installed'), href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
+      { label: AdminI18n.t('plugins.detail.health'), href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },
+      { label: AdminI18n.t('plugins.detail.marketplace'), href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
     ];
   }
 
@@ -89,14 +90,14 @@ export class PluginsLayout extends AdminComponent {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-0.5">
                 <h1 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {this.isPluginDetail ? 'Plugin Detail' : this.activeTab.label}
+                  {this.isPluginDetail ? AdminI18n.t('plugins.detail.pluginDetail') : this.activeTab.label}
                 </h1>
                 <p className={`text-xs font-medium max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {isMarketplace
-                    ? 'Discover and install power-ups to expand your platform capability.'
+                    ? AdminI18n.t('plugins.detail.discoverAndInstallPowerUps')
                     : isHealth
-                      ? 'Monitor plugin health, held capability changes and boot failures.'
-                      : 'Manage your existing installation, updates and configuration.'}
+                      ? AdminI18n.t('plugins.detail.monitorPluginHealthHeldCapability')
+                      : AdminI18n.t('plugins.detail.manageYourExistingInstallationUpdates')}
                 </p>
               </div>
 
@@ -148,15 +149,15 @@ export class PluginsLayout extends AdminComponent {
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
                   <span className="text-[10px] font-bold uppercase tracking-wide text-slate-500 dark:text-slate-400">
-                    Plugin Ecosystem
+                    {AdminI18n.t('plugins.detail.pluginEcosystem')}
                   </span>
                 </div>
-                <p className="text-[9px] font-semibold text-slate-400">Expand your system capabilities with official plugins.</p>
+                <p className="text-[9px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.expandYourSystemCapabilitiesWith')}</p>
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wide text-slate-400">
                  {/* The "Documentation" link pointed at docs.fromcode.com, which does not resolve. */}
-                 <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">Github</a>
+                 <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">{AdminI18n.t('plugins.detail.github')}</a>
               </div>
             </div>
           </div>

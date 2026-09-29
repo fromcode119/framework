@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BulkActions extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -45,7 +46,7 @@ export class BulkActions extends PureReactor {
         theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
       }`}>
         <div className="px-3 py-2 text-xs font-bold tracking-tight text-indigo-500 border-r border-slate-200 dark:border-slate-800 mr-1">
-          {selectedIds.length} Selected
+          {AdminI18n.t('collection.list.selected', { count: selectedIds.length })}
         </div>
 
         {access.canUpdate && statusOptions.length > 0 && (
@@ -59,7 +60,7 @@ export class BulkActions extends PureReactor {
                     theme === ThemeMode.DARK ? 'hover:bg-slate-800 text-slate-400 hover:text-white' : 'hover:bg-white text-slate-500 hover:text-indigo-600'
                   }`}
                 >
-                  Set {option.label || option.value}
+                  {AdminI18n.t('collection.list.setStatus', { status: option.label || option.value })}
                 </button>
               ))}
             </div>
@@ -75,7 +76,7 @@ export class BulkActions extends PureReactor {
           icon={<FrameworkIcons.Download size={14} />}
           onClick={() => handleExport(ExportFormat.JSON, selectedIds)}
         >
-          Export
+          {AdminI18n.t('common.export')}
         </Button>
         {access.canDelete ? (
           <Button
@@ -85,7 +86,7 @@ export class BulkActions extends PureReactor {
             icon={<FrameworkIcons.Trash size={14} />}
             onClick={handleBulkDelete}
           >
-            Delete
+            {AdminI18n.t('common.delete')}
           </Button>
         ) : null}
         {/* Plugin-contributed actions on the current selection (domain-agnostic — the owning plugin fills it). */}
@@ -94,7 +95,7 @@ export class BulkActions extends PureReactor {
         <button
           onClick={() => setSelectedIds([])}
           className="h-11 w-11 flex items-center justify-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-          title="Clear selection"
+          title={AdminI18n.t('collection.list.clearSelection')}
         >
           <FrameworkIcons.Close size={16} />
         </button>

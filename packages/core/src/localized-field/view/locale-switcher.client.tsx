@@ -15,6 +15,8 @@ export class LocaleSwitcher extends Reactor {
   @prop declare registry: ReadonlyArray<{ code: string; label: string }>;
   @prop declare active: string;
   @prop declare onChange: (next: string) => void;
+  /** The chip's tooltip, in the caller's language. Core has no dictionary, so without one there is no tooltip. */
+  @prop declare title?: string;
 
   @state open = false;
 
@@ -88,7 +90,7 @@ export class LocaleSwitcher extends Reactor {
   render(): ReactNode {
     return (
       <div ref={this.wrapperRef} style={LocaleSwitcher.WRAPPER_STYLE}>
-        <button type="button" onClick={this.onToggle} style={LocaleSwitcher.CHIP_STYLE} title="Switch locale">
+        <button type="button" onClick={this.onToggle} style={LocaleSwitcher.CHIP_STYLE} title={this.title}>
           <GlobeIcon size={11} />
           <span>{this.activeCode}</span>
           <ChevronIcon open={this.open} />

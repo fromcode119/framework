@@ -69,6 +69,7 @@ export class SystemApiPaths {
       PROFILE: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.PROFILE),
       CHANGE_PASSWORD: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.CHANGE_PASSWORD),
       SECURITY: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SECURITY),
+      ME_PERSON: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.ME_PERSON),
       EMAIL_CHANGE_REQUEST: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.EMAIL_CHANGE_REQUEST),
       EMAIL_CHANGE_CONFIRM: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.EMAIL_CHANGE_CONFIRM),
       TWO_FACTOR_STATUS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.TWO_FACTOR_STATUS),

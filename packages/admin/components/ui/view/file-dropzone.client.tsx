@@ -3,6 +3,7 @@ import { bound, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IFileDropzoneProps } from '@/components/ui/view/interfaces/file-dropzone-props.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Choose a file by DROPPING it, or by clicking — and see what is happening while it uploads.
@@ -97,13 +98,13 @@ export class FileDropzone extends AdminComponent<IFileDropzoneProps> {
           </span>
         ) : (
           <span className="fc-dropzone__file">
-            <span className="fc-dropzone__name">Drop a file here, or click to choose</span>
+            <span className="fc-dropzone__name">{AdminI18n.t('ui.dropzone.prompt')}</span>
             {hint ? <span className="fc-dropzone__meta">{hint}</span> : null}
           </span>
         )}
 
         {file && !this.transferring && !disabled ? (
-          <button type="button" className="fc-dropzone__clear" onClick={this.clear} aria-label="Remove the chosen file">
+          <button type="button" className="fc-dropzone__clear" onClick={this.clear} aria-label={AdminI18n.t('ui.dropzone.remove')}>
             <FrameworkIcons.Close size={14} />
           </button>
         ) : null}

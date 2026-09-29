@@ -7,6 +7,8 @@ import { Icon } from '@/components/view/icon.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
 import { NavItem } from '@/app/components/view/sidebar-nav-item.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 export class SidebarNavGroups extends PureReactor {
   @prop declare isAdmin?: boolean;
   @prop declare isMini?: boolean;
@@ -58,7 +60,7 @@ export class SidebarNavGroups extends PureReactor {
       <>
         {sortedGroups.map((group, groupIdx) => {
           const items = groupedMenu[group] || [];
-          const displayGroup = groupLabels[group] || NavUtils.getMenuGroupMeta(group).label;
+          const displayGroup = AdminNavText.group(groupLabels[group] || NavUtils.getMenuGroupMeta(group).label);
           const isCollapsed = collapsedGroups.includes(group);
 
           // If a group has only one item and that item is a group wrapper (dropdown),
@@ -82,7 +84,7 @@ export class SidebarNavGroups extends PureReactor {
                   <NavItem
                     key={`${item.pluginSlug || 'system'}-${item.path}-${idx}`}
                     icon={<Icon name={item.icon || 'Package'} size={18} />}
-                    label={item.label}
+                    label={AdminNavText.menuLabel(item)}
                     href={item.path}
                     persistenceKey={`${item.pluginSlug || 'system'}:${item.path}`}
                     active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(item.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
@@ -112,13 +114,13 @@ export class SidebarNavGroups extends PureReactor {
           <>
             {!isMini && (
               <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 mt-4">
-                Core
+                {AdminI18n.t('nav.groups.core')}
               </div>
             )}
             {(!collapsedGroups.includes('core-fallback') || isMini) && (
               <>
-                <NavItem icon={<Icon name="Dashboard" size={18} />} label="Dashboard" href={AdminConstants.ROUTES.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.ROOT}`} active={pathname === AdminConstants.ROUTES.ROOT} onClick={onClose} isMini={isMini} />
-                <NavItem icon={<Icon name="Package" size={18} />} label="Plugins" href={AdminConstants.ROUTES.PLUGINS.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.PLUGINS.ROOT}`} active={pathname === AdminConstants.ROUTES.PLUGINS.ROOT} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Dashboard" size={18} />} label={AdminI18n.t('nav.items.dashboard')} href={AdminConstants.ROUTES.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.ROOT}`} active={pathname === AdminConstants.ROUTES.ROOT} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<Icon name="Package" size={18} />} label={AdminI18n.t('nav.items.plugins')} href={AdminConstants.ROUTES.PLUGINS.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.PLUGINS.ROOT}`} active={pathname === AdminConstants.ROUTES.PLUGINS.ROOT} onClick={onClose} isMini={isMini} />
               </>
             )}
           </>
@@ -130,18 +132,18 @@ export class SidebarNavGroups extends PureReactor {
         <div className="mt-auto pt-4 space-y-1">
           {!isMini && (
             <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1">
-              System
+              {AdminI18n.t('nav.groups.system')}
             </div>
           )}
           {(!collapsedGroups.includes('system') || isMini) && (
             <>
               {isAdmin && (
-                <NavItem icon={<FrameworkIcons.Activity size={18}/>} label="Activity" href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
+                <NavItem icon={<FrameworkIcons.Activity size={18}/>} label={AdminI18n.t('nav.items.activity')} href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
               )}
               {footerSettingsItem && (
                 <NavItem
                   icon={<Icon name={footerSettingsItem.icon || 'Settings'} size={18} />}
-                  label={footerSettingsItem.label}
+                  label={AdminNavText.menuLabel(footerSettingsItem)}
                   href={footerSettingsItem.path}
                   persistenceKey={`${footerSettingsItem.pluginSlug || 'system'}:${footerSettingsItem.path}`}
                   active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(footerSettingsItem.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, footerSettingsItem.path, [footerSettingsItem.path])}

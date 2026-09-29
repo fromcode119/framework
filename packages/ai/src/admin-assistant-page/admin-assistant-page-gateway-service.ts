@@ -4,6 +4,7 @@ import { AssistantConstants } from '@ai/constants/assistant.constants';
 import { AdminAssistantPageUtils } from '@ai/admin-assistant-page/admin-assistant-page-utils';
 import type { IAssistantSkill } from '@ai/interfaces/assistant-skill.interface';
 import type { IAssistantToolOption } from '@ai/interfaces/assistant-tool-option.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AdminAssistantPageGatewayService {
   static async fetchIntegration(api: any): Promise<{
@@ -55,7 +56,7 @@ export class AdminAssistantPageGatewayService {
 
     if ((provider === 'openai' || provider === 'anthropic' || provider === 'gemini') && !apiKey && !hasSavedSecret) {
       const providerLabel = provider === 'openai' ? 'OpenAI' : provider === 'anthropic' ? 'Anthropic' : 'Gemini';
-      return { models: [], error: `Add a ${providerLabel} API key to load models.`, nextModel: currentModel };
+      return { models: [], error: AiText.t('ai.addAApiKeyTo', { providerLabel: providerLabel }), nextModel: currentModel };
     }
 
     if (provider === 'ollama' && /(^|:\/\/)(api\.)?openai\.com$/i.test(this.resolveHostname(baseUrl))) {
@@ -87,7 +88,7 @@ export class AdminAssistantPageGatewayService {
 
       return {
         models,
-        error: models.length === 0 ? 'No models returned by this provider.' : '',
+        error: models.length === 0 ? AiText.t('ai.noModelsReturnedByThis') : '',
         nextModel: this.resolvePreferredModel(provider, currentModel, models),
       };
     } catch (error: any) {
@@ -96,7 +97,7 @@ export class AdminAssistantPageGatewayService {
       if (provider === 'ollama' && (normalizedError.includes('fetch failed') || normalizedError.includes('failed to fetch'))) {
         return {
           models: [],
-          error: 'Could not reach Ollama. If API runs in Docker and Ollama runs on your host, set Base URL to http://host.docker.internal:11434.',
+          error: AiText.t('ai.couldNotReachOllamaIf'),
           nextModel: currentModel,
         };
       }
@@ -133,7 +134,7 @@ export class AdminAssistantPageGatewayService {
 
     return skills.some((entry: { id?: string }) => entry.id === 'general')
       ? skills
-      : [{ id: 'general', label: 'General' }, ...skills];
+      : [{ id: 'general', label: AiText.t('ai.general') }, ...skills];
   }
 
   static resolveProviderSwitch(
@@ -254,11 +255,11 @@ export class AdminAssistantPageGatewayService {
         candidatePath.startsWith(apiPrefix) ||
         candidatePath.startsWith(apiBasePrefix);
       if (pointsToForgeApi && (!currentHost || candidateHost === currentHost)) {
-        return `Base URL points to this app API (${baseUrl}). Set the provider endpoint instead (for example Ollama: http://host.docker.internal:11434).`;
+        return AiText.t('ai.baseUrlPointsToThis', { baseUrl: baseUrl });
       }
       return '';
     } catch {
-      return 'Base URL must be a full URL (for example: http://host.docker.internal:11434).';
+      return AiText.t('ai.baseUrlMustBeA');
     }
   }
 }

@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
+import { AiText } from '@ai/i18n/ai-text';
+import { AssistantConstants } from '@ai/constants/assistant.constants';
 
 export class AssistantSimpleTopBar extends PureReactor {
   @prop declare sessionTitle?: string;
@@ -14,7 +16,7 @@ export class AssistantSimpleTopBar extends PureReactor {
   @prop declare themeMode: ThemeMode;
 
   private get title(): string {
-    return this.sessionTitle ?? 'Atlantis Intelligence';
+    return this.sessionTitle ?? AssistantConstants.SURFACE_NAME;
   }
 
   private get count(): number {
@@ -29,8 +31,8 @@ export class AssistantSimpleTopBar extends PureReactor {
             type="button"
             onClick={this.onBackToAdmin}
             className={GlassMorphism.GLASS_ICON_BUTTON}
-            title="Back to admin"
-            aria-label="Back to admin"
+            title={AiText.t('ai.backToAdmin')}
+            aria-label={AiText.t('ai.backToAdmin')}
           >
             <FrameworkIcons.Home size={14} />
           </button>
@@ -38,8 +40,8 @@ export class AssistantSimpleTopBar extends PureReactor {
             type="button"
             onClick={this.onHistoryToggle}
             className={GlassMorphism.GLASS_ICON_BUTTON}
-            title="Toggle history"
-            aria-label="Toggle history"
+            title={AiText.t('ai.toggleHistory')}
+            aria-label={AiText.t('ai.toggleHistory')}
           >
             <FrameworkIcons.Menu size={14} />
           </button>
@@ -54,8 +56,8 @@ export class AssistantSimpleTopBar extends PureReactor {
             type="button"
             onClick={this.onSettingsOpen}
             className={GlassMorphism.GLASS_ICON_BUTTON}
-            title="Toggle settings"
-            aria-label="Toggle settings"
+            title={AiText.t('ai.toggleSettings')}
+            aria-label={AiText.t('ai.toggleSettings')}
           >
             <FrameworkIcons.More size={14} />
           </button>
@@ -63,8 +65,8 @@ export class AssistantSimpleTopBar extends PureReactor {
             type="button"
             onClick={this.onThemeToggle}
             className={GlassMorphism.GLASS_ICON_BUTTON}
-            title={`Switch to ${this.themeMode === ThemeMode.DARK ? ThemeMode.LIGHT : ThemeMode.DARK} mode`}
-            aria-label="Toggle theme"
+            title={(this.themeMode === ThemeMode.DARK ? AiText.t('ai.switchToLight') : AiText.t('ai.switchToDark'))}
+            aria-label={AiText.t('ai.toggleTheme')}
           >
             {this.themeMode === ThemeMode.DARK ? <FrameworkIcons.Sun size={13} /> : <FrameworkIcons.Moon size={13} />}
           </button>

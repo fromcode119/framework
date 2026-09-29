@@ -48,9 +48,6 @@ export { AccountClass } from '@react/account/account-class';
 // falls back to a chrome-less framework page.
 export { TokenEmailPreferencesPanel } from '@react/account/token-email-preferences-panel.client';
 export { TokenEmailPreferencesPanelImplementation } from '@react/account/token-email-preferences-panel-implementation.client';
-// Read by the server render (built package) to seed its translator with the framework's own copy — the
-// account shell's words included — so the server markup matches the browser's first render.
-export { FrameworkTranslations } from '@react/i18n/framework-translations';
 export { AuthShell } from '@react/auth/auth-shell';
 export { AuthShellImplementation } from '@react/auth/auth-shell-implementation';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';
@@ -89,6 +86,7 @@ export { PluginStateContext } from '@react/context/plugin-state-context';
 export { SlotsContext } from '@react/context/slots-context';
 export { OverridesContext } from '@react/context/overrides-context';
 export { FrontendI18nService } from '@react/context/frontend-i18n-service';
+export { FrameworkTranslations } from '@react/i18n/framework-translations';
 export { PageStyleHooks } from '@react/page-style-hooks';
 export type { IPageStyleContextValue } from '@react/interfaces/page-style-context-value.interface';
 export { ThemeOverrideRegistrar } from '@react/theme-override-registrar';

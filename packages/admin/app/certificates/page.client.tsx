@@ -12,6 +12,7 @@ import { CertificateHostTable } from '@/app/certificates/components/certificate-
 import { CertificateStatusNotices } from '@/app/certificates/components/certificate-status-notices.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { CertificateListPoller } from '@/lib/certificates/certificate-list-poller';
 
@@ -58,7 +59,7 @@ export class CertificatesPageClient extends AdminComponent {
       this.scope = AdminScope.resolve(result.scope);
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not load certificates.');
+      this.loadError = String(error?.message || AdminI18n.t('certificates.couldNotLoadCertificates'));
     } finally {
       this.isLoading = false;
       this.poller.schedule(this.entries.some((entry) => entry.isAwaitingPlatform));
@@ -107,14 +108,14 @@ export class CertificatesPageClient extends AdminComponent {
 
   /** Says what happens next rather than silently re-reading the list — the row then shows when. */
   private async switchToAutomatic(host: string, wildcard: boolean): Promise<void> {
-    const variant = wildcard ? 'automatic (wildcard)' : 'automatic';
+    const variant = AdminI18n.t(wildcard ? 'certificates.variantAutomaticWildcard' : 'certificates.variantAutomatic');
     try {
       await CertificatesClient.setSource(host, 'automatic', wildcard);
       this.loadError = '';
-      const message = `${host} is now ${variant}. The platform orders its certificate on the next check; the row below shows progress.`;
-      this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: 'Certificate queued', message });
+      const message = AdminI18n.t('certificates.queuedMessage', { host, variant });
+      this.runtime.notify.addNotification({ type: NotificationType.SUCCESS, title: AdminI18n.t('certificates.queuedTitle'), message });
     } catch (error: any) {
-      this.loadError = String(error?.message || `Could not switch this host to ${variant}.`);
+      this.loadError = String(error?.message || AdminI18n.t(wildcard ? 'certificates.couldNotSwitchThisHost2' : 'certificates.couldNotSwitchThisHost'));
     }
     await this.load();
   }
@@ -126,9 +127,9 @@ export class CertificatesPageClient extends AdminComponent {
    * response shape) stays neutral rather than asserting either.
    */
   private get subtitle(): string {
-    if (this.scope?.isSite) return "Every address this site answers for, and what it serves HTTPS with.";
-    if (this.scope?.isPlatform) return "Every address this platform answers for, and what it serves HTTPS with.";
-    return 'What this installation serves HTTPS with.';
+    if (this.scope?.isSite) return AdminI18n.t('certificates.everyAddressThisSiteAnswers');
+    if (this.scope?.isPlatform) return AdminI18n.t('certificates.everyAddressThisPlatformAnswers');
+    return AdminI18n.t('certificates.whatThisInstallationServesHttps');
   }
 
   render(): ReactNode {
@@ -140,7 +141,7 @@ export class CertificatesPageClient extends AdminComponent {
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
-          title="Certificates"
+          title={AdminI18n.t('certificates.certificates')}
           subtitle={this.subtitle}
         />
         <div className="fc-certificates__body">

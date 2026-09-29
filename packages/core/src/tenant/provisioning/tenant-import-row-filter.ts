@@ -1,5 +1,6 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { SigningSecretService } from '@core/security/signing-secret-service';
 import { SecretService } from '@core/security/secret-service';
@@ -24,7 +25,7 @@ export class TenantImportRowFilter {
     transitPassphrase?: string,
   ): (row: Record<string, unknown>) => boolean {
     if (table.name === SystemConstants.TABLE.META) {
-      const platform = new Set(TenantBespokePolicies.platformKeys());
+      const platform = TenantImportRowFilter.platformOnlyKeys();
       return (row) => platform.has(String(row.key ?? ''))
         || TenantImportRowFilter.isUnreadableSigningRoot(row, transitPassphrase);
     }
@@ -32,6 +33,18 @@ export class TenantImportRowFilter {
       return (row) => !installedPlugins.has(String(row.plugin_slug ?? ''));
     }
     return () => false;
+  }
+
+  /**
+   * Keys the destination keeps for itself: the platform's, minus the INHERITED ones.
+   *
+   * An INHERITED key has a site row as well as the platform's — the site's own choice, which is the
+   * site's to bring (its console language, its marketplace). Dropping it left an imported site on the
+   * destination platform's value with no sign that the archive had said otherwise.
+   */
+  static platformOnlyKeys(): Set<string> {
+    const inherited = new Set(SystemSettingRegistry.inheritedKeys());
+    return new Set(TenantBespokePolicies.platformKeys().filter((key) => !inherited.has(key)));
   }
 
   /**

@@ -238,6 +238,7 @@ export class SystemMetaKeys {
   ROUTING_HOME_TARGET: 'routing_home_target',
   FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
+  CONTACT_DETAIL_PROTECTION: 'contact_detail_protection',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
   NOTIFICATION_EMAIL_CC: 'notification_email_cc',
@@ -257,6 +258,12 @@ export class SystemMetaKeys {
   SIGNUP_EMAIL_IGNORE_MESSAGE: 'signup_email_ignore_message',
   SIGNUP_EMAIL_FOOTER_TEXT: 'signup_email_footer_text',
   SIGNUP_EMAIL_ACCENT_COLOR: 'signup_email_accent_color',
+  /**
+   * The media id of the logo at the top of every email a site sends — the framework's own (sign-up,
+   * password reset, security notices) and any plugin's that places `context.email.logoUrl()`. Blank:
+   * no logo. Per SITE, set in Settings → General.
+   */
+  EMAIL_LOGO: 'email_logo',
   /**
    * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api
    * host, both of which read this one switch. Off unless an operator turns it on. A tenant's

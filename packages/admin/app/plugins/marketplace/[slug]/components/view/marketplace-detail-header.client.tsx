@@ -7,6 +7,7 @@ import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceDetailHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -62,7 +63,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                           align="left"
                           trigger={
                             <div className={`flex items-center gap-3 pl-4 pr-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
-                              <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? '(Latest)' : ''}</span>
+                              <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('plugins.list.latest') : ''}</span>
                               <div className={`transition-colors ${theme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                                 <FrameworkIcons.Down size={14} strokeWidth={3} />
                               </div>
@@ -77,7 +78,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                       </div>
                     )}
                  </div>
-                 <Badge variant={installedPlugin ? "success" : "blue"} className="px-4 py-1 text-xs font-semibold uppercase tracking-wide">{plugin.category || 'General'}</Badge>
+                 <Badge variant={installedPlugin ? "success" : "blue"} className="px-4 py-1 text-xs font-semibold uppercase tracking-wide">{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>
               </div>
               <p className={`mt-2 text-sm leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                 {plugin.description}
@@ -89,8 +90,8 @@ export class MarketplaceDetailHeader extends PureReactor {
                        <FrameworkIcons.User size={16} />
                     </div>
                     <div>
-                       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Developer</div>
-                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author || 'Anonymous'}</div>
+                       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{AdminI18n.t('plugins.list.developer')}</div>
+                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author || AdminI18n.t('plugins.list.anonymous')}</div>
                     </div>
                  </div>
                  {plugin.homepage && (
@@ -99,8 +100,8 @@ export class MarketplaceDetailHeader extends PureReactor {
                          <FrameworkIcons.Globe size={16} />
                       </div>
                       <div>
-                         <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Official Site</div>
-                         <a href={plugin.homepage} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-indigo-500 hover:underline">Visit Homepage</a>
+                         <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{AdminI18n.t('plugins.list.officialSite')}</div>
+                         <a href={plugin.homepage} target="_blank" rel="noopener noreferrer" className="text-sm font-semibold text-indigo-500 hover:underline">{AdminI18n.t('plugins.list.visitHomepage')}</a>
                       </div>
                    </div>
                  )}
@@ -109,7 +110,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                        <FrameworkIcons.Code size={16} />
                     </div>
                     <div>
-                       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">Version</div>
+                       <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{AdminI18n.t('plugins.list.version')}</div>
                        <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>v{plugin.version}</div>
                     </div>
                  </div>

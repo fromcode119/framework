@@ -1,4 +1,5 @@
 import { CoreServices } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Utility class for tag field operations.
@@ -51,7 +52,7 @@ export class TagFieldUtils {
    */
   static inferFieldLabel(fieldName?: string): string {
     const normalized = String(fieldName || '').trim();
-    if (!normalized) return 'Value';
+    if (!normalized) return AdminI18n.t('ui.tags.value');
     return TagFieldUtils.toTitleCase(normalized);
   }
 }

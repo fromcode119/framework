@@ -6,6 +6,7 @@ import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 import { DateTimePickerConstants } from '@/components/ui/date-time-picker/constants/date-time-picker.constants';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The compact popover for MONTH/YEAR granularity: a year strip plus — for months — the 3×4 month
@@ -48,7 +49,7 @@ export class DateTimePickerGranularPopover extends PureReactor {
             ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
             : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
         }`}
-        aria-label={direction < 0 ? 'Previous' : 'Next'}
+        aria-label={AdminI18n.t(direction < 0 ? 'ui.date.previous' : 'ui.date.next')}
       >
         <Icon size={15} />
       </button>
@@ -98,7 +99,7 @@ export class DateTimePickerGranularPopover extends PureReactor {
                     {year}
                   </button>
                 ))
-              : DateTimePickerConstants.MONTH_LABELS.map((label, monthIndex) => (
+              : DateTimePickerConstants.monthLabels().map((label, monthIndex) => (
                   <button key={label} type="button" onClick={() => this.onPick(this.visibleYear, monthIndex)}
                     className={`rounded-xl px-3 py-2.5 text-[13px] font-semibold tracking-tight transition-all duration-150 ${this.cellClasses(this.visibleYear === this.selectedYear && monthIndex === this.selectedMonth)}`}>
                     {label.slice(0, 3)}

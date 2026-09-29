@@ -34,3 +34,10 @@ per-person signal available.
 `{{name}}` is substituted; `{{#if name}}…{{/if}}` includes a block only when the value is present. Keep
 the placeholder names exactly as they appear in `en/` — they are supplied by code, not by the
 translator.
+
+## The site's logo
+
+Every template receives `logoUrl` — the site's **Email logo** (Settings → General), already absolute
+on the site's own host — or an empty string when the site has none. Wrap it in `{{#if logoUrl}}` so a
+site without a logo sends no image rather than a broken one. A theme overriding a template gets the
+same value.

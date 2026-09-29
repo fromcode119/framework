@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class FrameworkSettingsPage extends AdminComponent {
   /**
@@ -14,25 +15,29 @@ export class FrameworkSettingsPage extends AdminComponent {
    * were removed rather than left as dead ends. The OpenAPI spec is served by this running instance,
    * and the GitHub org page is live.
    */
-  private static readonly resources = [
+  private static get resources() {
+    return [
   {
-    title: 'OpenAPI Spec',
-    description: 'Live API contract exposed by the running framework instance.',
+    title: AdminI18n.t('settings.framework.openapiSpec'),
+    description: AdminI18n.t('settings.framework.liveApiContractExposedBy'),
     href: AdminConstants.FRAMEWORK_RESOURCES.OPENAPI,
     external: false,
     icon: FrameworkIcons.Link,
   },
   {
-    title: 'Source & Issues',
-    description: 'Framework source, releases and issue tracker on GitHub.',
+    title: AdminI18n.t('settings.framework.sourceIssues'),
+    description: AdminI18n.t('settings.framework.frameworkSourceReleasesAndIssue'),
     href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB,
     external: true,
     icon: FrameworkIcons.Activity,
   },
 ];
-  private static readonly communities = [
-  { label: 'Github', href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB },
+  }
+  private static get communities() {
+    return [
+  { label: AdminI18n.t('settings.framework.github'), href: AdminConstants.FRAMEWORK_RESOURCES.GITHUB },
 ];
+  }
   render() {
     const theme = this.theme;
 
@@ -41,12 +46,12 @@ export class FrameworkSettingsPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title="Framework Resources"
-          subtitle="Admin-level docs, API and developer references"
+          title={AdminI18n.t('settings.framework.frameworkResources')}
+          subtitle={AdminI18n.t('settings.framework.adminLevelDocsApiAnd')}
         />
 
         <div className="p-6 w-full space-y-8">
-          <Card title="Core Resources">
+          <Card title={AdminI18n.t('settings.framework.coreResources')}>
             <div className="space-y-4">
               {FrameworkSettingsPage.resources.map((item) => {
                 const Icon = item.icon;
@@ -78,7 +83,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                       variant={ButtonVariant.SECONDARY}
                       className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
                     >
-                      Open
+                      {AdminI18n.t('settings.framework.open')}
                     </Button>
                   </div>
                 );
@@ -86,7 +91,7 @@ export class FrameworkSettingsPage extends AdminComponent {
             </div>
           </Card>
 
-          <Card title="Community">
+          <Card title={AdminI18n.t('settings.framework.community')}>
             <div className="flex flex-wrap gap-3">
               {FrameworkSettingsPage.communities.map((item) => (
                 <Button

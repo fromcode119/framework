@@ -1,0 +1,110 @@
+{
+  "frontend": {
+    "forgotPasswordClient": {
+      "forgotPassword": "Забравена парола",
+      "enterYourEmailAndWe": "Въведете имейла си и ще ви изпратим връзка за нова парола.",
+      "email": "Имейл",
+      "sending": "Изпращане...",
+      "sendResetLink": "Изпрати връзка",
+      "verifyEmail": "Потвърждаване на имейл",
+      "needAccountVerification": "Трябва да потвърдите профила си?"
+    },
+    "registerClient": {
+      "createAccount": "Създаване на профил",
+      "registerToTrackPurchasesAnd": "Регистрирайте се, за да следите покупките си и достъпа до профила.",
+      "openVerificationLink": "Отвори връзката за потвърждение",
+      "firstName": "Име",
+      "john": "Иван",
+      "lastName": "Фамилия",
+      "doe": "Иванов",
+      "email": "Имейл",
+      "password": "Парола",
+      "min8Characters": "Поне 8 знака",
+      "confirmPassword": "Потвърдете паролата",
+      "repeatPassword": "Повторете паролата",
+      "creatingAccount": "Създаване на профил...",
+      "register": "Регистрация",
+      "verifyEmail": "Потвърждаване на имейл",
+      "alreadyRegistered": "Вече имате профил?"
+    },
+    "resetPasswordClient": {
+      "resetPassword": "Нова парола",
+      "setANewPasswordFor": "Задайте нова парола за профила си.",
+      "resetToken": "Код за възстановяване",
+      "pasteResetToken": "Поставете кода за възстановяване",
+      "newPassword": "Нова парола",
+      "newPassword2": "Нова парола",
+      "confirmPassword": "Потвърдете паролата",
+      "repeatPassword": "Повторете паролата",
+      "updating": "Запазване...",
+      "requestResetLink": "Поискайте нова връзка",
+      "needANewToken": "Нужен ви е нов код?"
+    },
+    "verifyEmailChangeClient": {
+      "confirmEmailChange": "Потвърждаване на нов имейл",
+      "finalizeYourAccountEmailUpdate": "Завършете смяната на имейла на профила си.",
+      "token": "Код",
+      "pasteEmailChangeToken": "Поставете кода за смяна на имейла",
+      "confirming": "Потвърждаване...",
+      "resetPassword": "Нова парола",
+      "needPasswordHelp": "Проблем с паролата?"
+    },
+    "overviewPanel": {
+      "accountSettings": "Настройки на профила",
+      "manageYourProfileSecurityAnd": "Управлявайте профила, сигурността и сесиите си."
+    },
+    "profileCard": {
+      "profile": "Профил",
+      "name": "Име:",
+      "email": "Имейл:"
+    },
+    "securityCard": {
+      "security": "Сигурност",
+      "manageYourPasswordAndAccount": "Управлявайте паролата и сигурността на профила си."
+    },
+    "sessionCard": {
+      "activeSessions": "Активни сесии",
+      "unknownDevice": "Неизвестно устройство",
+      "noActiveSessions": "Няма активни сесии."
+    },
+    "twoFactorCard": {
+      "twoFactorAuthentication": "Двуфакторно удостоверяване",
+      "enabled": "Включено",
+      "disabled": "Изключено"
+    },
+    "dashboard": {
+      "myAccount": "Моят профил"
+    },
+    "dashboardHero": {
+      "myAccount": "Моят профил"
+    },
+    "maintenanceScreen": {
+      "systemMaintenance": "Техническа поддръжка",
+      "weAreCurrentlyPerformingScheduled": "В момента извършваме планирана поддръжка, за да подобрим услугите си. Порталът ще бъде отново достъпен скоро."
+    },
+    "starterHero": {
+      "atlantisByFromcode": "Atlantis от Fromcode",
+      "doesnTGetInYour": "не ви пречи",
+      "atlantisIsTheOpenSource": "Atlantis е платформа с отворен код от Fromcode за екипи, които искат да създават професионални приложения — бързо, гъвкаво и по свои правила.",
+      "openAdmin": "Към администрацията →",
+      "fromcode": "Fromcode",
+      "theFrameworkThat": "Платформата, която",
+      "builtBy": "Създадена от",
+      "publishHomepageContent": "— Публикувайте съдържание за началната страница от администрацията, за да замените тази страница."
+    },
+    "starterHeroPillars": {
+      "fullStackInOneRepo": "Всичко в едно хранилище",
+      "adminPanelRestApiAnd": "Администрация, REST API и сайт излизат заедно. Без свързващ код и без церемонии — само вашият продукт.",
+      "isolatedPluginSystem": "Изолирани разширения",
+      "everyPluginIsASealed": "Всяко разширение е затворен модул. Разширенията общуват през типизирана шина за събития, без да се докосват едно друго.",
+      "themeSwappableUi": "Сменяем дизайн",
+      "replaceTheEntireVisualLayer": "Сменете целия визуален слой в движение. Оформлението, стиловете и компонентите принадлежат на темата."
+    },
+    "siteBanner": {
+      "previewTitle": "Не е публикуван — виждате го само вие.",
+      "previewNote": "Посетителите виждат временна страница.",
+      "nonProductionTitle": "Сайт извън производство — нищо не излиза навън.",
+      "nonProductionNote": "Няма да бъдат изпратени имейли, плащания, пратки или планирани задачи."
+    }
+  }
+}

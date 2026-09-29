@@ -4,6 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One area of the role editor — the framework, or one plugin: its named permissions, then a
@@ -36,7 +37,7 @@ export class RolePermissionGroup extends PureReactor {
   private box(name: string): ReactNode {
     const included = RolePermissionSelection.isIncluded(this.selected, name) && !this.selected.includes(name);
     return (
-      <span title={included ? 'Included by a broader permission this role holds' : name}>
+      <span title={included ? AdminI18n.t('users.includedByABroaderPermission') : name}>
         <Checkbox
           checked={RolePermissionSelection.isOn(this.selected, name)}
           disabled={this.readOnly || included}
@@ -53,8 +54,8 @@ export class RolePermissionGroup extends PureReactor {
       <label className="flex items-start gap-3 rounded-lg border border-indigo-100 bg-indigo-50/60 px-3 py-2.5 dark:border-indigo-500/20 dark:bg-indigo-500/5">
         {this.box(group.all)}
         <span className="flex flex-col gap-0.5">
-          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">Everything in {group.label}</span>
-          <span className="text-[11px] text-slate-500">Every screen, action and collection below, including ones {group.label} adds later.</span>
+          <span className="text-xs font-semibold text-slate-800 dark:text-slate-100">{AdminI18n.t('users.everythingIn', { group: group.label })}</span>
+          <span className="text-[11px] text-slate-500">{AdminI18n.t('users.everythingInHint', { group: group.label })}</span>
         </span>
       </label>
     );
@@ -86,7 +87,7 @@ export class RolePermissionGroup extends PureReactor {
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
-              <th className="px-3 py-2 text-left">Collection</th>
+              <th className="px-3 py-2 text-left">{AdminI18n.t('users.collection')}</th>
               {RolePermissionSelection.ACTIONS.map((action) => (
                 <th key={action} className="w-16 px-2 py-2 text-center">{action}</th>
               ))}
@@ -112,7 +113,7 @@ export class RolePermissionGroup extends PureReactor {
                   {RolePermissionSelection.ACTIONS.map((action) => (
                     <td key={action} className="px-2 py-2">
                       <span className="flex justify-center">
-                        {collection.actions[action] ? this.box(collection.actions[action]) : <span className="text-slate-300" title={`${collection.label} does not allow ${action}`}>—</span>}
+                        {collection.actions[action] ? this.box(collection.actions[action]) : <span className="text-slate-300" title={AdminI18n.t('users.doesNotAllow', { label: collection.label, action: action })}>—</span>}
                       </span>
                     </td>
                   ))}
@@ -137,7 +138,7 @@ export class RolePermissionGroup extends PureReactor {
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.label}</span>
           </span>
           <span className={`text-[10px] font-bold uppercase tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
-            {count} of {total}
+            {AdminI18n.t('users.countOfTotal', { count, total })}
           </span>
         </button>
         {this.expanded ? (

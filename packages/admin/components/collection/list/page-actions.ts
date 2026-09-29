@@ -7,6 +7,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { CollectionListPageService } from '@/components/collection/list/page-service';
 import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 import { RecordOperations } from '@/components/collection/list/record-operations';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListPageActions {
   private static readonly adminServices = AdminServices.getInstance();
@@ -85,10 +86,10 @@ export class CollectionListPageActions {
     reader.onload = async (loadEvent) => {
       try {
         const result = await RecordOperations.importRecordsFromText(resolvedSlug, loadEvent.target?.result as string);
-        alert(`Imported ${result.success} records successfully. ${result.errors.length} errors.`);
+        alert(AdminI18n.t('collection.list.importDone', { count: result.success, errors: result.errors.length }));
         window.location.reload();
       } catch (error: any) {
-        alert(`Import failed: ${error.message}`);
+        alert(AdminI18n.t('collection.list.importFailed', { message: error.message }));
       }
     };
     reader.readAsText(file);
@@ -118,7 +119,7 @@ export class CollectionListPageActions {
       setSelectedIds([]);
       await fetchData(page);
     } catch {
-      alert('Error updating status');
+      alert(AdminI18n.t('collection.list.statusUpdateFailed'));
     } finally {
       setLoading(false);
     }
@@ -170,7 +171,7 @@ export class CollectionListPageActions {
       if (targetPage !== page) setPage(targetPage);
       await fetchData(targetPage);
     } catch {
-      alert(deleteDialogState.mode === 'single' ? 'Error deleting record' : 'Error performing bulk delete');
+      alert(AdminI18n.t(deleteDialogState.mode === 'single' ? 'collection.list.deleteFailed' : 'collection.list.bulkDeleteFailed'));
     } finally {
       setDeleteLoading(false);
       setDeleteDialogState(null);
@@ -213,7 +214,7 @@ export class CollectionListPageActions {
       setQuickEditData(record || {});
       setQuickEditInitialData(record || {});
     } catch (error: any) {
-      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || 'Failed to load record for quick edit.' });
+      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || AdminI18n.t('collection.list.quickEditLoadFailed') });
       setQuickEditData(row || {});
       setQuickEditInitialData(row || {});
     } finally {
@@ -248,15 +249,15 @@ export class CollectionListPageActions {
     try {
       const payload = RecordOperations.resolveQuickEditPayload(quickEditData, quickEditInitialData);
       if (!Object.keys(payload).length) {
-        setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'No changes to save.' });
+        setQuickEditStatus({ type: NotificationType.SUCCESS, message: AdminI18n.t('collection.list.noChanges') });
         return;
       }
       await RecordOperations.saveQuickEditRecord(resolvedSlug, quickEditExpandedId, payload);
-      setQuickEditStatus({ type: NotificationType.SUCCESS, message: 'Record updated successfully.' });
+      setQuickEditStatus({ type: NotificationType.SUCCESS, message: AdminI18n.t('collection.list.recordUpdated') });
       setQuickEditInitialData({ ...quickEditData });
       await fetchData(page);
     } catch (error: any) {
-      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || 'Failed to save quick edits.' });
+      setQuickEditStatus({ type: NotificationType.ERROR, message: error?.message || AdminI18n.t('collection.list.quickEditSaveFailed') });
     } finally {
       setQuickEditSavingId(null);
     }

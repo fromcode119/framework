@@ -10,6 +10,7 @@ import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.cl
 import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { RelationshipSelectLocal } from '@/components/collection/view/relationship-select-local.client';
 import { TagFieldLocal } from '@/components/collection/view/tag-field-local.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Resolves the correct admin control for a single array sub-field, mirroring the
@@ -73,7 +74,7 @@ export class ArrayFieldRowRenderer extends PureReactor {
         onUpdateItem(index, f.name, value);
       },
       theme,
-      placeholder: `Enter ${f.label || f.name}...`,
+      placeholder: AdminI18n.t('ui.field.enter', { label: f.label || f.name }),
     };
 
     const isTagComponent =

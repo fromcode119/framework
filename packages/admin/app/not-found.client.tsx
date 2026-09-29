@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NotFound extends AdminComponent {
   @bound
@@ -25,11 +26,11 @@ export class NotFound extends AdminComponent {
         </h1>
 
         <h2 className={`text-2xl font-semibold mb-4 ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-800'}`}>
-          Page not found
+          {AdminI18n.t('notFound.title')}
         </h2>
 
         <p className={`max-w-md mx-auto mb-10 leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-          We couldn't find the page you're looking for. It might have been moved, deleted, or never existed in the first place.
+          {AdminI18n.t('notFound.text')}
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
@@ -42,7 +43,7 @@ export class NotFound extends AdminComponent {
             }`}
           >
             <FrameworkIcons.Left size={18} />
-            <span>Go Back</span>
+            <span>{AdminI18n.t('common.goBack')}</span>
           </button>
 
           <Link
@@ -50,7 +51,7 @@ export class NotFound extends AdminComponent {
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/20"
           >
             <FrameworkIcons.Home size={18} />
-            <span>Dashboard</span>
+            <span>{AdminI18n.t('nav.items.dashboard')}</span>
           </Link>
         </div>
       </div>

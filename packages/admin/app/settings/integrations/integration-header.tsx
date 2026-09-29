@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class IntegrationHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -25,8 +26,8 @@ export class IntegrationHeader extends PureReactor {
       <CompactPageHeader
         theme={this.theme}
         icon={<FrameworkIcons.Plugins size={18} strokeWidth={2} />}
-        title="Integrations"
-        subtitle="Add providers, configure each instance, and enable or disable them individually."
+        title={AdminI18n.t('settings.integrations.integrations')}
+        subtitle={AdminI18n.t('settings.integrations.addProvidersConfigureEachInstance')}
         actions={
           <>
             <div className="w-full lg:w-[360px]">
@@ -34,7 +35,7 @@ export class IntegrationHeader extends PureReactor {
                 value={this.activeType}
                 onChange={this.onChangeType}
                 options={this.integrationOptions}
-                placeholder="Select integration..."
+                placeholder={AdminI18n.t('settings.integrations.selectIntegration')}
                 searchable={false}
                 size={FieldSize.MD}
               />
@@ -48,7 +49,7 @@ export class IntegrationHeader extends PureReactor {
               isLoading={this.resettingStaleJs}
               className="w-full lg:w-auto"
             >
-              Reset Stale JS
+              {AdminI18n.t('settings.integrations.resetStaleJs')}
             </Button>
           </>
         }

@@ -4,6 +4,7 @@ import type { ChangeEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The platform number field: a numeric input with explicit +/- stepper controls (and clamping to
@@ -87,11 +88,11 @@ export class NumberStepper extends PureReactor {
             cut visibly across the input's 12px curve. Height is pinned to the input's own height minus
             the two border pixels, so an error message rendering below never stretches or shifts it. */}
         <div className={`absolute right-px top-px flex flex-col rounded-r-[calc(var(--radius)_-_1px)] overflow-hidden border-l border-slate-200 dark:border-slate-700 ${sm ? 'h-[calc(2.25rem_-_2px)] w-5' : 'h-[calc(2.5rem_-_2px)] w-6'}`}>
-          <button type="button" tabIndex={-1} disabled={disabled} aria-label="Increment" onClick={this.increment} className={btn}>
+          <button type="button" tabIndex={-1} disabled={disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment} className={btn}>
             <FrameworkIcons.ChevronUp size={sm ? 10 : 12} strokeWidth={2.75} />
           </button>
           <div className="h-px bg-slate-200 dark:bg-slate-700" />
-          <button type="button" tabIndex={-1} disabled={disabled} aria-label="Decrement" onClick={this.decrement} className={btn}>
+          <button type="button" tabIndex={-1} disabled={disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement} className={btn}>
             <FrameworkIcons.ChevronDown size={sm ? 10 : 12} strokeWidth={2.75} />
           </button>
         </div>

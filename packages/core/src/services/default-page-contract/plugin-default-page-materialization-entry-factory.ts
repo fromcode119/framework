@@ -215,6 +215,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
       title: contract.effectiveTitle,
       themeLayout: contract.effectiveThemeLayout,
       defaultContent: Array.isArray(contract.defaultContent) ? contract.defaultContent : undefined,
+      contentValues: contract.contentValues,
     };
   }
 

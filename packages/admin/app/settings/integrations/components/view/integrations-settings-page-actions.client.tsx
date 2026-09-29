@@ -7,6 +7,7 @@ import { IntegrationStaleJsService } from '@/app/settings/integrations/integrati
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
 import { IntegrationsSettingsPageReconcile } from '@/app/settings/integrations/components/view/integrations-settings-page-reconcile.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the operator can DO here: load, add, save, enable, disable and remove a provider.
@@ -42,8 +43,8 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
     } catch (error: any) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Failed to load integrations',
-        message: error?.message || 'Unable to read integration configuration.'
+        title: AdminI18n.t('settings.integrations.failedToLoadIntegrations'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToReadIntegrationConfiguration')
       });
     } finally {
       if (this.mounted) this.loading = false;
@@ -59,8 +60,8 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
     } catch (error: any) {
       this.runtime.notify.addNotification({
         type: NotificationType.ERROR,
-        title: 'Stale JS reset failed',
-        message: error?.message || 'Unable to clear cached admin assets.'
+        title: AdminI18n.t('settings.integrations.staleJsResetFailed'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToClearCachedAdmin')
       });
       this.resettingStaleJs = false;
       return;
@@ -118,8 +119,8 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
     if (!providerDefinition) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Invalid provider',
-        message: 'Selected provider is not available for this integration type.'
+        title: AdminI18n.t('settings.integrations.invalidProvider'),
+        message: AdminI18n.t('settings.integrations.selectedProviderIsNotAvailable')
       });
       return;
     }
@@ -128,7 +129,7 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
     if (validationErrors.length) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Configuration invalid',
+        title: AdminI18n.t('settings.integrations.configurationInvalid'),
         message: validationErrors[0]
       });
       return;
@@ -147,14 +148,14 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       this.removeCandidateId = null;
       addNotification({
         type: NotificationType.SUCCESS,
-        title: editor.isNew ? 'Provider added' : 'Provider updated',
-        message: `${providerDefinition.label} configuration saved.`
+        title: editor.isNew ? AdminI18n.t('settings.integrations.providerAdded') : AdminI18n.t('settings.integrations.providerUpdated'),
+        message: AdminI18n.t('settings.integrations.configurationSaved', { label: providerDefinition.label })
       });
     } catch (error: any) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Save failed',
-        message: error?.message || 'Unable to save provider configuration.'
+        title: AdminI18n.t('settings.integrations.saveFailed'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToSaveProviderConfiguration')
       });
     } finally {
       this.saving = false;
@@ -175,14 +176,14 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       this.applyIntegrationUpdate(updatedIntegration);
       addNotification({
         type: NotificationType.SUCCESS,
-        title: 'Provider status updated',
+        title: AdminI18n.t('settings.integrations.providerStatusUpdated'),
         message: `${provider.name || provider.providerKey} is now ${provider.enabled === false ? 'enabled' : 'disabled'}.`
       });
     } catch (error: any) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Status update failed',
-        message: error?.message || 'Unable to change provider status.'
+        title: AdminI18n.t('settings.integrations.statusUpdateFailed'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToChangeProviderStatus')
       });
     } finally {
       this.changingProviderId = null;
@@ -206,14 +207,14 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       this.removeCandidateId = null;
       addNotification({
         type: NotificationType.SUCCESS,
-        title: 'Provider removed',
-        message: `${provider.name || provider.providerKey} has been removed.`
+        title: AdminI18n.t('settings.integrations.providerRemoved'),
+        message: AdminI18n.t('settings.integrations.hasBeenRemoved', { name: provider.name || provider.providerKey })
       });
     } catch (error: any) {
       addNotification({
         type: NotificationType.ERROR,
-        title: 'Remove failed',
-        message: error?.message || 'Unable to remove provider.'
+        title: AdminI18n.t('settings.integrations.removeFailed'),
+        message: error?.message || AdminI18n.t('settings.integrations.unableToRemoveProvider')
       });
     } finally {
       this.changingProviderId = null;

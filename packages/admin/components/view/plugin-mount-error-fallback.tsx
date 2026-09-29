@@ -1,3 +1,4 @@
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Visible failure state for a `Slot` that renders an entire plugin admin page body (the plugin's own
  * page component, or its page/edit/detail slot). Unlike the storefront — where `PluginMountErrorBoundary`
@@ -14,7 +15,7 @@ export class PluginMountErrorFallback {
 
     return (
       <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2">
-        <span>{`Component "${name}" failed to render.`}</span>
+        <span>{AdminI18n.t('ui.view.componentFailedToRender', { name: name })}</span>
       </div>
     );
   }

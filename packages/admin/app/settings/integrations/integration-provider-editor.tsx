@@ -16,6 +16,7 @@ import type { IIntegrationConfigField } from '@/app/settings/integrations/interf
 import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class IntegrationProviderEditor extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -96,9 +97,9 @@ export class IntegrationProviderEditor extends PureReactor {
     if (this.fields.length === 0) {
       return (
         <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-6 text-center">
-          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No fields required</p>
+          <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.noFieldsRequired')}</p>
           <p className="text-xs text-slate-500 mt-1">
-            This provider does not define custom configuration fields.
+            {AdminI18n.t('settings.integrations.thisProviderDoesNotDefine')}
           </p>
         </div>
       );
@@ -130,15 +131,15 @@ export class IntegrationProviderEditor extends PureReactor {
             value={editor.providerKey}
             onChange={this.handleProviderKeyChange}
             options={this.providerOptions}
-            label="Provider Type"
+            label={AdminI18n.t('settings.integrations.providerType')}
             searchable={false}
             size={FieldSize.MD}
           />
           <Input
             value={editor.providerName}
             onChange={this.handleProviderNameChange}
-            label="Display Name (Optional)"
-            placeholder="e.g. SMTP - Marketing"
+            label={AdminI18n.t('settings.integrations.displayNameOptional')}
+            placeholder={AdminI18n.t('settings.integrations.eGSmtpMarketing')}
             autoComplete="off"
             size={FieldSize.MD}
           />
@@ -148,8 +149,8 @@ export class IntegrationProviderEditor extends PureReactor {
           <Switch
             checked={editor.enabled}
             onChange={this.handleEnabledChange}
-            label="Enabled"
-            description="Enabled providers are available at runtime."
+            label={AdminI18n.t('settings.integrations.enabled')}
+            description={AdminI18n.t('settings.integrations.enabledProvidersAreAvailableAt')}
           />
         </div>
 
@@ -158,11 +159,11 @@ export class IntegrationProviderEditor extends PureReactor {
         <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
           {editor.isNew ? (
             <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.onCancel}>
-              Cancel
+              {AdminI18n.t('settings.integrations.cancel')}
             </Button>
           ) : (
             <Button type="button" variant={ButtonVariant.SECONDARY} onClick={this.onReset}>
-              Reset
+              {AdminI18n.t('settings.integrations.reset')}
             </Button>
           )}
           <Button
@@ -171,7 +172,7 @@ export class IntegrationProviderEditor extends PureReactor {
             icon={<FrameworkIcons.Save size={14} />}
             isLoading={this.saving}
           >
-            {editor.isNew ? 'Add Provider' : 'Save Provider'}
+            {editor.isNew ? AdminI18n.t('settings.integrations.addProvider') : AdminI18n.t('settings.integrations.saveProvider')}
           </Button>
         </div>
       </form>
@@ -185,18 +186,18 @@ export class IntegrationProviderEditor extends PureReactor {
       <Card className="xl:col-span-8" noPadding>
         <div className="p-5 border-b border-slate-100 dark:border-slate-800">
           <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">
-            {editor?.isNew ? 'Add Provider' : 'Provider Configuration'}
+            {editor?.isNew ? AdminI18n.t('settings.integrations.addProvider') : AdminI18n.t('settings.integrations.providerConfiguration')}
           </h3>
           <p className="text-xs text-slate-500 mt-1">
-            Configure credentials and behavior for this provider instance.
+            {AdminI18n.t('settings.integrations.configureCredentialsAndBehaviorFor')}
           </p>
         </div>
 
         {!editor ? (
           <div className="p-8 text-center">
-            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">Select a provider instance.</p>
+            <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.selectAProviderInstance')}</p>
             <p className="text-xs text-slate-500 mt-1">
-              Or add a new provider to create an additional configuration.
+              {AdminI18n.t('settings.integrations.orAddANewProvider')}
             </p>
           </div>
         ) : (

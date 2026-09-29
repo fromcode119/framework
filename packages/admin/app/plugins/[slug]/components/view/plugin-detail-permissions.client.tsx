@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailPermissions extends PureReactor {
   @prop declare plugin: ILoadedPlugin;
@@ -16,7 +17,7 @@ export class PluginDetailPermissions extends PureReactor {
     return (
       <Card className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
         <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-5 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
-          Security & Capabilities
+          {AdminI18n.t('plugins.detail.securityCapabilities')}
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
           {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
@@ -32,7 +33,7 @@ export class PluginDetailPermissions extends PureReactor {
                       {cap.split(':').map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                     </div>
                     <p className="text-[11px] text-slate-500 truncate">
-                      {isUnapproved ? 'Requires your approval' : `System ${cap.split(':')[0]} access`}
+                      {isUnapproved ? AdminI18n.t('plugins.detail.requiresYourApproval') : AdminI18n.t('plugins.detail.systemAccess', { value: cap.split(':')[0] })}
                     </p>
                   </div>
                   <Badge variant={isUnapproved ? 'warning' : 'success'} className={`shrink-0 ${isUnapproved ? 'animate-pulse' : ''}`}>
@@ -44,8 +45,8 @@ export class PluginDetailPermissions extends PureReactor {
           ) : (
             <div className="sm:col-span-2 py-10 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl">
               <FrameworkIcons.Shield className="text-slate-200 dark:text-slate-800 mb-3" size={40} />
-              <p className="text-slate-500 font-semibold text-sm">Standard Isolation</p>
-              <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider">Minimal system permissions</p>
+              <p className="text-slate-500 font-semibold text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
+              <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
             </div>
           )}
         </div>

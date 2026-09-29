@@ -126,7 +126,9 @@ export class BlockRegistryDriftGuard {
     for (const file of BlockRegistryDriftGuard.VE_SCHEMA_FILES) {
       let source = '';
       try { source = read(`visual-editor/${file}`); } catch { continue; }
-      for (const match of source.matchAll(/VisualEditorBlockSchema\s*=\s*\{\s*type:\s*'([^']+)'/g)) ids.add(match[1]!);
+      // A schema is a static property (`X: IVisualEditorBlockSchema = { type: … }`) or, once its labels are
+      // translated at render time, a static getter (`get X(): IVisualEditorBlockSchema { return { type: … } }`).
+      for (const match of source.matchAll(/VisualEditorBlockSchema\s*(?:=|\{\s*return)\s*\{\s*type:\s*'([^']+)'/g)) ids.add(match[1]!);
     }
     return ids;
   }

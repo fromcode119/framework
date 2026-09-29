@@ -2,6 +2,8 @@
 export interface IAuthEmailCommonData {
   /** The site's name as the platform signs its mail. */
   appName: string;
+  /** The site's email logo (Settings → General), absolute on its own host; `''` when it has none. */
+  logoUrl: string;
   /** The person the email is about. `firstName` is empty when unknown — the template decides the greeting. */
   user: { firstName: string; email: string };
   /** The active theme's variables for the site (contact email, social links, …). */

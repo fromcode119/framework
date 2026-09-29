@@ -9,6 +9,7 @@ import { Icon } from '@/components/view/icon.client';
 import { PluginHeldReason, PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class InstalledPluginCard extends PureReactor {
   @prop declare hasImageError: boolean;
@@ -25,7 +26,7 @@ export class InstalledPluginCard extends PureReactor {
     const { canManage, hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this;
     const hasRuntimeError = Boolean(plugin.error) || plugin.state === PluginState.ERROR;
     const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
-    const heldLabel = plugin.heldReason === PluginHeldReason.CAPABILITY_DRIFT ? 'Needs re-approval' : 'Held';
+    const heldLabel = plugin.heldReason === PluginHeldReason.CAPABILITY_DRIFT ? AdminI18n.t('plugins.list.needsReApproval') : AdminI18n.t('plugins.list.held');
     const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
     const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
     const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
@@ -45,20 +46,20 @@ export class InstalledPluginCard extends PureReactor {
     // is NOT the same as "inactive on the platform".
     const notOnThisSite = multiTenant && availableOnPlatform && !enabledForTenant;
 
-    const statusLabel = hasRuntimeError ? 'Error' : isHeld ? heldLabel
-      : notOnThisSite ? 'Off here'
-      : multiTenant ? (enabledForTenant ? 'Active' : 'Unavailable')
-      : (availableOnPlatform ? 'Active' : 'Inactive');
+    const statusLabel = hasRuntimeError ? AdminI18n.t('plugins.list.error') : isHeld ? heldLabel
+      : notOnThisSite ? AdminI18n.t('plugins.list.offHere')
+      : multiTenant ? AdminI18n.t(enabledForTenant ? 'plugins.list.statusActive' : 'plugins.list.statusUnavailable')
+      : AdminI18n.t(availableOnPlatform ? 'plugins.list.statusActive' : 'plugins.list.statusInactive');
     const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber'
       : notOnThisSite ? 'gray'
       : (switchedOn ? 'success' : 'gray');
     const isolated = (plugin as any).isolation === 'isolated';
     const isolationTitle = isolated
-      ? `Runs in its own process${(plugin as any).isolationPid ? ` (pid ${(plugin as any).isolationPid})` : ''} — no secrets, tenant-bound, memory and time limited`
-      : String((plugin as any).isolationReason || 'Runs inside the api process');
+      ? AdminI18n.t('plugins.list.runsInItsOwnProcess', { value: (plugin as any).isolationPid ? ` (pid ${(plugin as any).isolationPid})` : '' })
+      : String((plugin as any).isolationReason || AdminI18n.t('plugins.process.inApi'));
     const author = typeof plugin.manifest.author === 'object'
       ? (plugin.manifest.author as { name?: string }).name
-      : (plugin.manifest.author || 'Official');
+      : (plugin.manifest.author || AdminI18n.t('plugins.list.official'));
 
     return (
       <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
@@ -77,21 +78,21 @@ export class InstalledPluginCard extends PureReactor {
             </Link>
             {hasUpdate && (
               <Link href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[9px] font-bold uppercase tracking-wide leading-none">
-                <FrameworkIcons.Loader size={8} className="animate-spin" />Update
+                <FrameworkIcons.Loader size={8} className="animate-spin" />{AdminI18n.t('plugins.list.update')}
               </Link>
             )}
             {plugin.healthStatus === PluginRegistryHealth.ERROR && (
-              <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />Security</Badge>
+              <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.detail.security')}</Badge>
             )}
             {isHeld && plugin.healthStatus !== PluginRegistryHealth.ERROR && (
               <Badge variant={BadgeVariant.AMBER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
             )}
             {isHeld && driftSummary && (
-              <span title={`Capability change since approval: ${driftSummary}`} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{driftSummary}</span>
+              <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: driftSummary })} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{driftSummary}</span>
             )}
           </div>
           <p className={`text-xs leading-snug truncate ${plugin.error ? 'text-rose-500 font-medium' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
-            {plugin.error ? plugin.error : (plugin.manifest.description || `Manage and configure your ${plugin.manifest.name} tools.`)}
+            {plugin.error ? plugin.error : (plugin.manifest.description || AdminI18n.t('plugins.list.defaultDescription', { name: plugin.manifest.name }))}
           </p>
         </div>
 
@@ -109,7 +110,7 @@ export class InstalledPluginCard extends PureReactor {
             {(plugin as any).isolation ? (
               <span title={isolationTitle}>
                 <Badge variant={isolated ? BadgeVariant.INFO : BadgeVariant.GRAY} className="shrink-0 flex items-center gap-1">
-                  <FrameworkIcons.Shield size={9} />{isolated ? 'Isolated' : 'Shared'}
+                  <FrameworkIcons.Shield size={9} />{isolated ? AdminI18n.t('plugins.list.isolated') : AdminI18n.t('plugins.list.shared')}
                 </Badge>
               </span>
             ) : null}
@@ -120,8 +121,8 @@ export class InstalledPluginCard extends PureReactor {
                 control that would only ever 403 is a bug, not a hint. */}
             {canManage ? (
               <span title={multiTenant && !availableOnPlatform
-                ? 'Not available on this platform — a platform admin must enable it first'
-                : multiTenant ? 'Run this plugin on the current site' : undefined}>
+                ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
+                : multiTenant ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
                 <Switch
                   checked={switchedOn}
                   disabled={multiTenant && !availableOnPlatform}
@@ -133,9 +134,9 @@ export class InstalledPluginCard extends PureReactor {
           </div>
 
           <div className={`flex items-center gap-0.5 pl-3 border-l ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title="Open" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></Link>
-          <Link href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title="Settings" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
-          {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title="Remove" className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
+          <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.open')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></Link>
+          <Link href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
+          {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.remove')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
           </div>
         </div>
       </div>

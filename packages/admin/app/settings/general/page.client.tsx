@@ -10,6 +10,7 @@ import { GeneralSystemCards } from '@/app/settings/general/general-system-cards'
 import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { GeneralSettingsPageActions } from '@/app/settings/general/page-actions.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Settings — General.
@@ -43,7 +44,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
             className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
           >
-            Open Platform Scope
+            {AdminI18n.t('settings.general.openPlatformScope')}
           </Button>
         ) : null}
       </div>
@@ -51,7 +52,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
   }
 
   render(): ReactNode {
-    if (this.isLoading) return <div className="p-12"><Loader label="Loading general settings..." /></div>;
+    if (this.isLoading) return <div className="p-12"><Loader label={AdminI18n.t('settings.general.loadingGeneralSettings')} /></div>;
 
     const theme = this.theme;
     const settings = this.settings;
@@ -61,8 +62,8 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Settings size={18} strokeWidth={2} />}
-          title="General Configuration"
-          subtitle="Brand identity & system preferences"
+          title={AdminI18n.t('settings.general.generalConfiguration')}
+          subtitle={AdminI18n.t('settings.general.brandIdentitySystemPreferences')}
           actions={
             settings ? (
               <Button
@@ -71,7 +72,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
                 isLoading={this.isSaving}
                 className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
               >
-                Save Changes
+                {AdminI18n.t('settings.general.saveChanges')}
               </Button>
             ) : null
           }
@@ -81,7 +82,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
 
         {this.loadError && (
           <LoadErrorPanel
-            title="General settings could not be loaded"
+            title={AdminI18n.t('settings.general.generalSettingsCouldNotBe')}
             message={this.loadError}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}

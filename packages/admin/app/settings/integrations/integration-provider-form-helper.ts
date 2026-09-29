@@ -5,6 +5,7 @@ import type { IIntegrationProvider } from '@/app/settings/integrations/interface
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Pure helpers for the integrations provider editor: validation, payload
  * building, next-selection resolution, and editor-state construction.
@@ -16,10 +17,10 @@ export class IntegrationProviderFormHelper {
       const value = editor.config?.[field.name];
       const hasSavedSecret = field.type === IntegrationFieldType.PASSWORD && editor.preservedSecretFields?.[field.name] === true;
       if (field.required && IntegrationsPageUtils.isBlank(value) && !hasSavedSecret) {
-        errors.push(`${field.label} is required.`);
+        errors.push(AdminI18n.t('settings.integrations.isRequired', { label: field.label }));
       }
       if (field.type === IntegrationFieldType.NUMBER && !IntegrationsPageUtils.isBlank(value) && Number.isNaN(Number(value))) {
-        errors.push(`${field.label} must be a valid number.`);
+        errors.push(AdminI18n.t('settings.integrations.mustBeAValidNumber', { label: field.label }));
       }
     }
     return errors;

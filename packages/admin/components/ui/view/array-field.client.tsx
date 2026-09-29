@@ -4,6 +4,7 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { FrameworkIcons } from '@fromcode119/react';
 import { ArrayFieldRow } from '@/components/ui/view/array-field-row.client';
 import { ArrayFieldRowRenderer } from '@/components/ui/view/array-field-row-renderer.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ArrayField extends Reactor {
   @prop declare field: any;
@@ -136,7 +137,7 @@ export class ArrayField extends Reactor {
         }`}>
           <FrameworkIcons.Plus size={20} strokeWidth={3} />
         </div>
-        <span className="text-[10px] font-semibold tracking-widest">Add New {field.label || 'Item'}</span>
+        <span className="text-[10px] font-semibold tracking-widest">{AdminI18n.t('ui.array.addNew', { label: field.label || AdminI18n.t('ui.array.item') })}</span>
       </button>
     </div>
     );

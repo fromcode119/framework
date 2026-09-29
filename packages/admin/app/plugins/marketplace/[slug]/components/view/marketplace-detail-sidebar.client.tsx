@@ -9,6 +9,7 @@ import { PluginState } from '@fromcode119/core/client';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceDetailSidebar extends PureReactor {
   @prop declare plugin: IPluginEntry;
@@ -60,7 +61,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
                     }`}
                   >
                     <FrameworkIcons.Download size={20} strokeWidth={3} className="group-hover:translate-y-0.5 transition-transform" />
-                    <span className="uppercase tracking-widest text-xs">{installing ? 'Installing…' : 'Install Extension'}</span>
+                    <span className="uppercase tracking-widest text-xs">{installing ? AdminI18n.t('plugins.list.installing2') : AdminI18n.t('plugins.list.installExtension')}</span>
                   </button>
                 ) : hasUpdate ? (
                   <div className={`p-1 rounded-xl ${theme === ThemeMode.DARK ? 'bg-amber-500/10' : 'bg-amber-50'}`}>
@@ -68,15 +69,15 @@ export class MarketplaceDetailSidebar extends PureReactor {
                       <div className="h-9 w-9 rounded-lg bg-amber-500 text-white flex items-center justify-center shadow-sm shadow-amber-500/30 mb-3">
                          <FrameworkIcons.Refresh size={20} strokeWidth={3} />
                       </div>
-                      <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-1">Update Available</div>
-                      <div className={`text-base font-bold mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{plugin.version} is ready</div>
+                      <div className="text-[10px] font-semibold uppercase tracking-widest text-amber-600 mb-1">{AdminI18n.t('plugins.list.updateAvailable')}</div>
+                      <div className={`text-base font-bold mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.versionReady', { version: plugin.version })}</div>
 
                       <button
                         onClick={onInstall}
                         disabled={installing}
                         className="w-full py-3 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all shadow-sm shadow-amber-500/20 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed"
                       >
-                        {installing ? 'Updating…' : 'Apply Update Now'}
+                        {installing ? AdminI18n.t('plugins.list.updating2') : AdminI18n.t('plugins.list.applyUpdateNow')}
                       </button>
                       {installOperation?.message && (
                         <p className={`mt-3 text-[10px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'text-amber-300' : 'text-amber-700'}`}>
@@ -98,7 +99,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
                         <FrameworkIcons.Box size={24} strokeWidth={3.5} />
                       )}
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-widest">{isInstalledActive ? 'Fully Active' : 'Installed'}</span>
+                    <span className="text-[11px] font-bold uppercase tracking-widest">{isInstalledActive ? AdminI18n.t('plugins.list.fullyActive') : AdminI18n.t('plugins.list.installed')}</span>
                   </div>
                 )}
 
@@ -115,7 +116,7 @@ export class MarketplaceDetailSidebar extends PureReactor {
 
               <div className="space-y-4">
                  <div className="flex items-center justify-between">
-                   <h4 className={`text-[10px] font-bold uppercase tracking-widest ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Security Permissions</h4>
+                   <h4 className={`text-[10px] font-bold uppercase tracking-widest ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.securityPermissions')}</h4>
                    <FrameworkIcons.Shield size={14} className="text-slate-400" />
                  </div>
                  <div className="flex flex-wrap gap-2">
@@ -131,19 +132,19 @@ export class MarketplaceDetailSidebar extends PureReactor {
 
               <div className={`p-4 rounded-xl space-y-3 ${theme === ThemeMode.DARK ? 'bg-slate-950/40 border border-white/5' : 'bg-slate-50/50 border border-slate-100/50'}`}>
                  <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Namespace</span>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t('plugins.list.namespace')}</span>
                     <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>
                       {plugin.slug}
                     </span>
                  </div>
                   <div className="flex justify-between items-center">
-                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Current Ver</span>
+                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t('plugins.list.currentVer')}</span>
                      <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>
-                       {installedVersion ? `v${installedVersion}` : 'Not installed'}
+                       {installedVersion ? `v${installedVersion}` : AdminI18n.t('plugins.list.notInstalled')}
                      </span>
                   </div>
                   <div className="flex justify-between items-center">
-                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Marketplace Ver</span>
+                     <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t('plugins.list.marketplaceVer')}</span>
                      <span className={`text-[11px] font-semibold uppercase tracking-wide ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>
                        v{plugin.version}
                      </span>

@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { PluginTrendChart } from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 import { DashboardActivityWindow } from '@/app/dashboard-activity-window';
 import { DashboardActivityBars } from '@/app/dashboard-activity-bars.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Activity for the scope the console is in, in whichever of three forms the data can honestly
@@ -33,16 +34,16 @@ export class DashboardActivityChart extends PureReactor {
 
   private get subject(): string {
     const scope = this.scope_;
-    if (!scope) return 'Recent';
-    return scope.isSite ? 'Site' : 'Platform';
+    if (!scope) return AdminI18n.t('dashboard.recent');
+    return AdminI18n.t(scope.isSite ? 'shell.site.site' : 'shell.site.platform');
   }
 
   private get emptyCopy(): string {
     const scope = this.scope_;
-    if (!scope) return 'Nothing has happened yet.';
+    if (!scope) return AdminI18n.t('dashboard.nothingYet');
     return scope.isSite
-      ? 'Nothing has happened on this site yet.'
-      : 'Nothing has happened on this platform yet.';
+      ? AdminI18n.t('dashboard.nothingSite')
+      : AdminI18n.t('dashboard.nothingPlatform');
   }
 
   /** Days shown in the bar form — a week reads unlabelled; a fortnight of bars does not. */
@@ -58,7 +59,7 @@ export class DashboardActivityChart extends PureReactor {
 
   private errorSuffix(errors: number): ReactNode {
     if (!errors) return null;
-    return <span className="text-rose-500 font-semibold"> · {errors} {errors === 1 ? 'error' : 'errors'}</span>;
+    return <span className="text-rose-500 font-semibold"> · {errors === 1 ? AdminI18n.t('dashboard.errorOne') : AdminI18n.t('dashboard.errorMany', { count: errors })}</span>;
   }
 
   render(): ReactNode {
@@ -66,7 +67,7 @@ export class DashboardActivityChart extends PureReactor {
 
     if (window.isEmpty) {
       return (
-        <Card title={`${this.subject} Activity`}>
+        <Card title={AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
           <p className="text-[12px] text-slate-500">{this.emptyCopy}</p>
         </Card>
       );
@@ -74,11 +75,11 @@ export class DashboardActivityChart extends PureReactor {
 
     if (!window.hasShape) {
       return (
-        <Card title={`${this.subject} Activity${window.firstActiveLabel ? ` · since ${window.firstActiveLabel}` : ''}`}>
+        <Card title={window.firstActiveLabel ? AdminI18n.t('dashboard.activitySince', { subject: this.subject, since: window.firstActiveLabel }) : AdminI18n.t('dashboard.activityTitle', { subject: this.subject })}>
           <div className="flex items-baseline gap-2.5 mb-3">
             <span className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{window.totalEvents}</span>
             <span className="text-[12px] text-slate-500">
-              {window.totalEvents === 1 ? 'event' : 'events'}
+              {window.totalEvents === 1 ? AdminI18n.t('dashboard.eventWord') : AdminI18n.t('dashboard.eventsWord')}
               {this.errorSuffix(window.totalErrors)}
             </span>
           </div>
@@ -90,18 +91,18 @@ export class DashboardActivityChart extends PureReactor {
     }
 
     return (
-      <Card title={`${this.subject} Activity · last ${this.days_} days`}>
+      <Card title={AdminI18n.t('dashboard.activityDays', { subject: this.subject, days: this.days_ })}>
         <PluginTrendChart
           height={140}
           xLabels={window.buckets.map((bucket) => bucket.label)}
           series={[
-            { label: 'Events', data: window.buckets.map((bucket) => bucket.total), color: '#6366f1' },
-            { label: 'Errors', data: window.buckets.map((bucket) => bucket.errors), color: '#f43f5e' },
+            { label: AdminI18n.t('dashboard.events'), data: window.buckets.map((bucket) => bucket.total), color: '#6366f1' },
+            { label: AdminI18n.t('dashboard.errors'), data: window.buckets.map((bucket) => bucket.errors), color: '#f43f5e' },
           ]}
           formatValue={(value) => String(Math.round(value))}
         />
         <p className="mt-3 text-[11px] font-medium text-slate-400">
-          {window.totalEvents} logged events in this window
+          {AdminI18n.t('dashboard.loggedEventsInWindow', { count: window.totalEvents })}
         </p>
       </Card>
     );

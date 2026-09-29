@@ -12,6 +12,7 @@ import { MediaShareDialog } from '@/app/media/components/view/media-share-dialog
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
 import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class MediaDialogs extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare editingFolder: IMediaFolder | null;
@@ -121,10 +122,10 @@ export class MediaDialogs extends PureReactor {
           isOpen={this.isFolderPromptOpen}
           onClose={this.closeFolderPrompt}
           onConfirm={this.handleCreateFolder}
-          title="Create New Folder"
-          description="Enter a name for the new folder to keep your assets organized."
-          placeholder="Folder name"
-          confirmLabel="Create Folder"
+          title={AdminI18n.t('media.createNewFolder')}
+          description={AdminI18n.t('media.enterANameForThe')}
+          placeholder={AdminI18n.t('media.folderName')}
+          confirmLabel={AdminI18n.t('media.createFolder')}
           isLoading={this.isActionLoading}
           icon={<FrameworkIcons.FolderPlus size={24} />}
         />
@@ -133,11 +134,11 @@ export class MediaDialogs extends PureReactor {
           isOpen={this.isRenamePromptOpen}
           onClose={this.closeRenamePrompt}
           onConfirm={this.handleRenameFolder}
-          title="Rename Folder"
-          description="Enter a new name for this folder."
-          placeholder="Folder name"
+          title={AdminI18n.t('media.renameFolder')}
+          description={AdminI18n.t('media.enterANewNameFor')}
+          placeholder={AdminI18n.t('media.folderName')}
           defaultValue={this.editingFolder?.name}
-          confirmLabel="Rename Folder"
+          confirmLabel={AdminI18n.t('media.renameFolder')}
           isLoading={this.isActionLoading}
           icon={<FrameworkIcons.Edit size={24} />}
         />
@@ -146,9 +147,9 @@ export class MediaDialogs extends PureReactor {
           isOpen={this.isDeleteDialogOpen}
           onClose={this.closeDeleteDialog}
           onConfirm={this.handleDelete}
-          title="Delete Asset"
-          description="Are you sure you want to delete this asset? This action cannot be undone."
-          confirmLabel="Delete Asset"
+          title={AdminI18n.t('media.deleteAsset')}
+          description={AdminI18n.t('media.areYouSureYouWant')}
+          confirmLabel={AdminI18n.t('media.deleteAsset')}
           variant={ButtonVariant.DANGER}
           isLoading={this.isActionLoading}
         />
@@ -157,9 +158,9 @@ export class MediaDialogs extends PureReactor {
           isOpen={this.isFolderDeleteDialogOpen}
           onClose={this.closeFolderDeleteDialog}
           onConfirm={this.handleDeleteFolder}
-          title="Delete Folder"
-          description="Are you sure you want to delete this folder? Assets inside will be moved to the parent folder. This action cannot be undone."
-          confirmLabel="Delete Folder"
+          title={AdminI18n.t('media.deleteFolder')}
+          description={AdminI18n.t('media.areYouSureYouWant2')}
+          confirmLabel={AdminI18n.t('media.deleteFolder')}
           variant={ButtonVariant.DANGER}
           isLoading={this.isActionLoading}
         />

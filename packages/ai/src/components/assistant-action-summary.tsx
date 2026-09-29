@@ -12,6 +12,7 @@ import { AssistantPlanUtils } from '@ai/assistant-plan-utils';
 import { BatchState } from '@ai/components/enums/batch-state.enum';
 import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
 import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantActionSummary extends PureReactor {
   @prop declare entry: IAssistantMessage;
@@ -32,17 +33,17 @@ export class AssistantActionSummary extends PureReactor {
   private get planningTitle(): string {
     return this.needsClarification
       ? this.loopRecoveryMode === ClarifyMode.BEST_EFFORT
-        ? 'Draft ready, target needed'
-        : 'Need one detail to continue'
+        ? AiText.t('ai.draftReadyTargetNeeded')
+        : AiText.t('ai.needOneDetailToContinue')
       : this.loopRecoveryMode === ClarifyMode.BEST_EFFORT
-        ? 'Draft ready; confirm target to apply'
-        : 'Need one detail to finish';
+        ? AiText.t('ai.draftReadyConfirmTargetTo')
+        : AiText.t('ai.needOneDetailToFinish');
   }
 
   private get planningBody(): string {
     return this.needsClarification
-      ? String(this.entry.ui?.clarifyingQuestion || '').trim() || 'Share one missing detail to continue.'
-      : 'Share collection + record id/slug + field path + new value.';
+      ? String(this.entry.ui?.clarifyingQuestion || '').trim() || AiText.t('ai.shareOneMissingDetailTo')
+      : AiText.t('ai.shareCollectionRecordIdSlug');
   }
 
   private get showPlanCard(): boolean {
@@ -65,15 +66,15 @@ export class AssistantActionSummary extends PureReactor {
     return (
       <div className={`${GlassMorphism.GLASS_SUB_PANEL} mt-2 p-2.5`}>
         <div className="mb-2 flex flex-wrap items-center gap-2">
-          <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">{plan.previewReady ? 'Planning complete' : 'Planning in progress'}</p>
+          <p className="text-[11px] font-semibold text-slate-800 dark:text-slate-100">{plan.previewReady ? AiText.t('ai.planningComplete') : AiText.t('ai.planningInProgress')}</p>
           <span className="rounded-full border border-white/65 bg-white/72 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-600 dark:border-white/14 dark:bg-slate-900/50 dark:text-slate-300">{String(plan.status || 'draft').replace(/_/g, ' ')}</span>
-          <span className="rounded-full border border-white/65 bg-white/72 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-600 dark:border-white/14 dark:bg-slate-900/50 dark:text-slate-300">risk {(plan.risk ?? ComplexityTier.LOW).value}</span>
+          <span className="rounded-full border border-white/65 bg-white/72 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-slate-600 dark:border-white/14 dark:bg-slate-900/50 dark:text-slate-300">{AiText.t('ai.riskLevel', { level: AiText.t(`ai.risk.${(plan.risk ?? ComplexityTier.LOW).value}`) })}</span>
         </div>
         <div className="space-y-1.5 text-[11px] text-slate-700 dark:text-slate-200">
-          <p><span className="font-semibold text-slate-900 dark:text-slate-100">Goal:</span> {summary.goal}</p>
-          <p><span className="font-semibold text-slate-900 dark:text-slate-100">What I found:</span> {summary.found}</p>
-          <p><span className="font-semibold text-slate-900 dark:text-slate-100">What I propose:</span> {summary.propose}</p>
-          <p><span className="font-semibold text-slate-900 dark:text-slate-100">What needs your approval:</span> {summary.approval}</p>
+          <p><span className="font-semibold text-slate-900 dark:text-slate-100">{AiText.t('ai.goal')}</span> {summary.goal}</p>
+          <p><span className="font-semibold text-slate-900 dark:text-slate-100">{AiText.t('ai.whatIFound')}</span> {summary.found}</p>
+          <p><span className="font-semibold text-slate-900 dark:text-slate-100">{AiText.t('ai.whatIPropose')}</span> {summary.propose}</p>
+          <p><span className="font-semibold text-slate-900 dark:text-slate-100">{AiText.t('ai.whatNeedsYourApproval')}</span> {summary.approval}</p>
         </div>
       </div>
     );
@@ -82,12 +83,12 @@ export class AssistantActionSummary extends PureReactor {
   private renderPlanGuidance(): ReactNode {
     return (
       <div className={`${GlassMorphism.GLASS_SUB_PANEL} mt-2 p-2`}>
-        <p className="text-[11px] font-semibold">Ready to review these changes?</p>
-        <p className="mt-0.5 text-[10px] text-[var(--text-sub)]">Switch to Build mode and I will prepare clear changes for your approval.</p>
+        <p className="text-[11px] font-semibold">{AiText.t('ai.readyToReviewTheseChanges')}</p>
+        <p className="mt-0.5 text-[10px] text-[var(--text-sub)]">{AiText.t('ai.switchToBuildModeAnd')}</p>
         <div className="mt-1.5 flex items-center gap-1.5">
           <button type="button" onClick={this.onSwitchToBuild} className="inline-flex h-7 items-center gap-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2 text-[10px] font-semibold text-[var(--text-main)] transition hover:bg-[var(--surface-strong)]">
             <FrameworkIcons.ListChecks size={11} />
-            <span>Switch To Build</span>
+            <span>{AiText.t('ai.switchToBuild')}</span>
           </button>
         </div>
       </div>
@@ -108,7 +109,7 @@ export class AssistantActionSummary extends PureReactor {
     return (
       <div key={`action-readonly-${actionIndex}`} className={`${GlassMorphism.GLASS_SUB_PANEL} px-3 py-2`}>
         <p className="truncate text-[10px] font-semibold text-[var(--text-main)]">{preview.title}</p>
-        <p className="mt-0.5 text-[9px] text-[var(--text-sub)]">Target: {preview.target}</p>
+        <p className="mt-0.5 text-[9px] text-[var(--text-sub)]">{AiText.t('ai.targetLabel', { target: preview.target })}</p>
         <p className="mt-0.5 text-[9px] text-[var(--text-sub)]">{preview.summary}</p>
       </div>
     );
@@ -119,7 +120,7 @@ export class AssistantActionSummary extends PureReactor {
     return (
       <div className={`${GlassMorphism.GLASS_SUB_PANEL} mt-3 space-y-2 p-2`}>
         <div className="flex flex-wrap items-center justify-between gap-1.5">
-          <p className="text-[11px] font-semibold text-[var(--text-main)]">I found {actions.length} change{actions.length > 1 ? 's' : ''} ready for review.</p>
+          <p className="text-[11px] font-semibold text-[var(--text-main)]">{actions.length > 1 ? AiText.t('ai.foundChangesMany', { count: actions.length }) : AiText.t('ai.foundChangesOne')}</p>
           <span className="rounded-full border border-[var(--border)] bg-[var(--surface)] px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-[var(--text-sub)]">{(this.entry.actionBatch?.state ?? BatchState.STAGED).value}</span>
         </div>
         <div className="space-y-1.5">

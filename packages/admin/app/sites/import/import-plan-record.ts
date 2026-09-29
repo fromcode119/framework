@@ -2,6 +2,7 @@ import type { IImportPlanTable } from '@/app/sites/import/interfaces/import-plan
 import type { IImportPlanSentence } from '@/app/sites/import/interfaces/import-plan-sentence.interface';
 import { SystemConstants, TenantImportIdBasis, TenantImportIdMode } from '@fromcode119/core/client';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One kind of record in the archive, said in the words of someone who runs a shop.
@@ -82,13 +83,25 @@ export class ImportPlanRecord {
    * names the biggest and the disclosure carries the rest.
    */
   get answer(): string {
-    if (this.isSkipped) return this.table.pluginSlug ? `Needs the ${this.table.pluginSlug} add-on` : 'Nowhere to put these';
+    if (this.isSkipped) {
+      return this.table.pluginSlug
+        ? AdminI18n.t('sites.importPlan.needsAddon', { addon: this.table.pluginSlug })
+        : AdminI18n.t('sites.importPlan.nowhereToPut');
+    }
     const opaque = this.hasUnfollowedLinks ? this.table.opaqueJsonColumns.length : 0;
     const dropped = this.table.droppedColumns.length;
-    if (this.excludedRows > 0) return `${this.excludedRows.toLocaleString()} stay as they are here`;
-    if (opaque > 0) return `${opaque.toLocaleString()} link${opaque === 1 ? '' : 's'} to check`;
-    if (dropped > 0) return `${dropped.toLocaleString()} old field${dropped === 1 ? '' : 's'} dropped`;
-    return 'All of them';
+    if (this.excludedRows > 0) return AdminI18n.t('sites.importPlan.stayAsTheyAre', { count: this.excludedRows.toLocaleString() });
+    if (opaque > 0) {
+      return opaque === 1
+        ? AdminI18n.t('sites.importPlan.linkToCheckOne')
+        : AdminI18n.t('sites.importPlan.linksToCheck', { count: opaque.toLocaleString() });
+    }
+    if (dropped > 0) {
+      return dropped === 1
+        ? AdminI18n.t('sites.importPlan.oldFieldDroppedOne')
+        : AdminI18n.t('sites.importPlan.oldFieldsDropped', { count: dropped.toLocaleString() });
+    }
+    return AdminI18n.t('sites.importPlan.allOfThem');
   }
 
   /** What the row says when it is opened. Ordered good news first, then what to look at. */
@@ -100,13 +113,13 @@ export class ImportPlanRecord {
     const count = this.table.rows.toLocaleString();
     const slug = this.table.pluginSlug;
     const owner = slug
-      ? `The ${slug} add-on that knows what these are is not installed or not enabled on this platform, so there is nowhere to put them.`
-      : 'Nothing on this platform claims these records, so there is nowhere to put them.';
+      ? AdminI18n.t('sites.importPlan.addonMissing', { addon: slug })
+      : AdminI18n.t('sites.importPlan.nothingClaims');
     const recover = slug
-      ? `Install ${slug} and import this archive again — they come across then. Importing now loses nothing you cannot get back later.`
-      : 'Importing now loses nothing you cannot get back later: the archive keeps them.';
+      ? AdminI18n.t('sites.importPlan.installAndReimport', { addon: slug })
+      : AdminI18n.t('sites.importPlan.archiveKeepsThem');
     return [
-      { text: `Your ${count} ${this.name.toLowerCase()} stay in the archive. ${owner}`, warn: false },
+      { text: `${AdminI18n.t('sites.importPlan.stayInArchive', { count, noun: this.name.toLowerCase() })} ${owner}`, warn: false },
       { text: recover, warn: false },
     ];
   }
@@ -115,14 +128,13 @@ export class ImportPlanRecord {
     const arriving = this.arrivingRows.toLocaleString();
     const noun = this.name.toLowerCase();
     const opening = this.excludedRows > 0
-      ? `${arriving} of the ${this.table.rows.toLocaleString()} ${noun} in the archive belong to this site and come across.`
-      : `All ${arriving} ${noun} arrive.`;
+      ? AdminI18n.t('sites.importPlan.someArrive', { arriving, total: this.table.rows.toLocaleString(), noun })
+      : AdminI18n.t('sites.importPlan.allArrive', { arriving, noun });
     if (!this.isRemapped) return [{ text: opening, warn: false }];
     return [
       { text: opening, warn: false },
       {
-        text: 'They are given new numbers on this platform, because this platform already uses the numbers they had. '
-          + 'Everything that pointed at them follows automatically — you will not see a broken link.',
+        text: AdminI18n.t('sites.importPlan.renumbered'),
         warn: false,
       },
     ];
@@ -139,15 +151,15 @@ export class ImportPlanRecord {
 
     if (this.excludedRows > 0) {
       out.push({
-        text: `The other ${this.excludedRows.toLocaleString()} belong to a whole installation rather than to one site — things this platform `
-          + 'decides for every site it hosts. Those keep whatever this platform already has.',
+        text: AdminI18n.t('sites.importPlan.installationWide', { count: this.excludedRows.toLocaleString() }),
         warn: true,
       });
     }
     if (opaque > 0) {
       out.push({
-        text: `${opaque === 1 ? 'A link' : `${opaque.toLocaleString()} links`} written inside the records themselves still `
-          + `point at the old site's numbering. Open one or two afterwards and check ${opaque === 1 ? 'it goes' : 'they go'} where you expect.`,
+        text: opaque === 1
+          ? AdminI18n.t('sites.importPlan.unfollowedLinkOne')
+          : AdminI18n.t('sites.importPlan.unfollowedLinks', { count: opaque.toLocaleString() }),
         warn: true,
       });
     }
@@ -156,9 +168,9 @@ export class ImportPlanRecord {
         // These are COLUMNS of the records, not settings, and nothing on this platform stands in for them:
         // the value is simply not written. Saying "this platform's own setting applies instead" promised a
         // substitute no code provides. The Technical box below names each one.
-        text: `${dropped === 1 ? 'One field' : `${dropped.toLocaleString()} fields`} from an older version `
-          + `${dropped === 1 ? 'has' : 'have'} no place on this platform and ${dropped === 1 ? 'is' : 'are'} not carried. `
-          + `The records themselves arrive without ${dropped === 1 ? 'it' : 'them'} — Technical below lists which.`,
+        text: dropped === 1
+          ? AdminI18n.t('sites.importPlan.droppedFieldOne')
+          : AdminI18n.t('sites.importPlan.droppedFields', { count: dropped.toLocaleString() }),
         warn: true,
       });
     }
@@ -168,15 +180,15 @@ export class ImportPlanRecord {
   /** Exactly what the planner decided about this table's ids, for whoever is debugging an import. */
   get idMechanics(): string {
     const { minId, taken, basis } = this.table;
-    if (this.isSkipped) return 'Not planned — the table is skipped';
-    if (this.isRemapped) return `Re-numbered — the archive starts at ${minId?.toLocaleString()}, this platform has handed out ${taken?.toLocaleString()}`;
-    if (basis === String(TenantImportIdBasis.NATURAL_KEY.value)) return 'Kept — the table has no serial id; rows are keyed naturally';
-    if (basis === String(TenantImportIdBasis.EMPTY.value)) return 'Kept — no row here carries a numeric id to compare';
-    if (basis === String(TenantImportIdBasis.NO_TABLE.value)) return 'Kept — this platform has no such table to compare against';
-    if (basis === String(TenantImportIdBasis.PER_TENANT_KEY.value)) {
-      return 'Kept — this site has its own numbering here, so the archive’s ids cannot clash with another site’s';
-    }
-    return `Kept — every id in the archive is already above what this platform has handed out${taken === null ? '' : ` (${taken.toLocaleString()})`}`;
+    if (this.isSkipped) return AdminI18n.t('sites.importPlan.ids.skipped');
+    if (this.isRemapped) return AdminI18n.t('sites.importPlan.ids.renumbered', { min: minId?.toLocaleString(), taken: taken?.toLocaleString() });
+    if (basis === String(TenantImportIdBasis.NATURAL_KEY.value)) return AdminI18n.t('sites.importPlan.ids.naturalKey');
+    if (basis === String(TenantImportIdBasis.EMPTY.value)) return AdminI18n.t('sites.importPlan.ids.empty');
+    if (basis === String(TenantImportIdBasis.NO_TABLE.value)) return AdminI18n.t('sites.importPlan.ids.noTable');
+    if (basis === String(TenantImportIdBasis.PER_TENANT_KEY.value)) return AdminI18n.t('sites.importPlan.ids.perTenant');
+    return taken === null
+      ? AdminI18n.t('sites.importPlan.ids.above')
+      : AdminI18n.t('sites.importPlan.ids.aboveTaken', { taken: taken.toLocaleString() });
   }
 
   /** `column → table` for each reference the remap follows, in the planner's own terms. */

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the archive was running, and whether this platform has it.
@@ -42,8 +43,8 @@ export class ImportPlanInventory extends PureReactor {
 
   /** Same version, or a different one — stated rather than left for the reader to diff two numbers. */
   private static versionNote(archive: string, installed: string): string {
-    if (archive === installed) return 'same version';
-    return `archive ${archive}`;
+    if (archive === installed) return AdminI18n.t('sites.importPlan.sameVersion');
+    return AdminI18n.t('sites.importPlan.archiveVersion', { version: archive });
   }
 
   private static row(key: string, name: ReactNode, meta: string, badge: ReactNode): ReactNode {
@@ -65,44 +66,43 @@ export class ImportPlanInventory extends PureReactor {
     return (
       <div className="fc-import-inv">
         <p className="fc-import-detail__rule">
-          What the archive was running, and whether this platform has it. A plugin that is missing does not stop the
-          import — its records simply have nowhere to go until you install it.
+          {AdminI18n.t('sites.importPlan.whatTheArchiveWasRunning')}
         </p>
 
         {missing.length ? (
           <>
             <div className="fc-import-inv__group fc-import-inv__group--bad">
-              Not installed here{waiting > 0 ? ` — ${waiting.toLocaleString()} record(s) wait for these` : ''}
+              {waiting > 0 ? AdminI18n.t('sites.importPlan.notInstalledHereWaiting', { count: waiting.toLocaleString() }) : AdminI18n.t('sites.importPlan.notInstalledHere')}
             </div>
             {missing.map((plugin) => {
               const rows = this.rowsWaitingOn(String(plugin.slug));
               return ImportPlanInventory.row(
                 String(plugin.slug),
                 <><b>{plugin.slug}</b> <span className="fc-import-inv__ver">{plugin.archiveVersion}</span></>,
-                rows > 0 ? `${rows.toLocaleString()} record(s)` : 'no records of its own',
-                <span className="fc-import-inv__badge fc-import-inv__badge--no">not installed</span>,
+                rows > 0 ? AdminI18n.t('sites.importPlan.recordsCount', { count: rows.toLocaleString() }) : AdminI18n.t('sites.importPlan.noRecordsOfItsOwn'),
+                <span className="fc-import-inv__badge fc-import-inv__badge--no">{AdminI18n.t('sites.importPlan.notInstalled')}</span>,
               );
             })}
           </>
         ) : null}
 
         <div className="fc-import-inv__group">
-          {installed.length.toLocaleString()} installed here{theme ? ', and the theme' : ''}
+          {theme ? AdminI18n.t('sites.importPlan.installedHereAndTheme', { count: installed.length.toLocaleString() }) : AdminI18n.t('sites.importPlan.installedHere', { count: installed.length.toLocaleString() })}
         </div>
-        {installed.length === 0 && !theme ? <p className="fc-import-detail__rule">The archive names no plugin and no theme.</p> : null}
+        {installed.length === 0 && !theme ? <p className="fc-import-detail__rule">{AdminI18n.t('sites.importPlan.theArchiveNamesNoPlugin')}</p> : null}
         {installed.map((plugin) => ImportPlanInventory.row(
           String(plugin.slug),
           <><b>{plugin.slug}</b> <span className="fc-import-inv__ver">{plugin.installedVersion}</span></>,
           ImportPlanInventory.versionNote(String(plugin.archiveVersion), String(plugin.installedVersion)),
-          <span className="fc-import-inv__badge fc-import-inv__badge--ok">installed</span>,
+          <span className="fc-import-inv__badge fc-import-inv__badge--ok">{AdminI18n.t('sites.importPlan.installedBadge')}</span>,
         ))}
         {theme ? ImportPlanInventory.row(
           `theme:${theme.slug}`,
-          <><b>Theme — {theme.slug}</b> <span className="fc-import-inv__ver">{theme.archiveVersion}</span></>,
-          theme.installedVersion ? 'activated on import' : 'must be installed before the theme can be activated',
+          <><b>{AdminI18n.t('sites.importPlan.themeSlug', { slug: theme.slug })}</b> <span className="fc-import-inv__ver">{theme.archiveVersion}</span></>,
+          theme.installedVersion ? AdminI18n.t('sites.importPlan.activatedOnImport') : AdminI18n.t('sites.importPlan.mustBeInstalledBeforeThe'),
           theme.installedVersion
-            ? <span className="fc-import-inv__badge fc-import-inv__badge--ok">installed {theme.installedVersion}</span>
-            : <span className="fc-import-inv__badge fc-import-inv__badge--no">not installed</span>,
+            ? <span className="fc-import-inv__badge fc-import-inv__badge--ok">{AdminI18n.t('sites.importPlan.installedVersion', { version: theme.installedVersion })}</span>
+            : <span className="fc-import-inv__badge fc-import-inv__badge--no">{AdminI18n.t('sites.importPlan.notInstalled')}</span>,
         ) : null}
       </div>
     );

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
 import type { IMovingItem } from '@/app/media/interfaces/moving-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MediaFolderCard extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -59,7 +60,7 @@ export class MediaFolderCard extends PureReactor {
         </div>
         <div className={viewMode === ViewMode.GRID ? "mt-4" : ""}>
           <div className={`font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{folder.name}</div>
-          {viewMode === ViewMode.GRID && <div className="text-[10px] text-slate-500 tracking-wide font-semibold mt-1">Folder</div>}
+          {viewMode === ViewMode.GRID && <div className="text-[10px] text-slate-500 tracking-wide font-semibold mt-1">{AdminI18n.t('media.folder')}</div>}
         </div>
 
         <div className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === ViewMode.LIST ? 'static ml-auto opacity-100' : ''}`}>

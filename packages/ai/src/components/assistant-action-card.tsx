@@ -7,6 +7,7 @@ import { BatchState } from '@ai/components/enums/batch-state.enum';
 import type { IAssistantActionBatch } from '@ai/interfaces/assistant-action-batch.interface';
 import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface';
 import { ConversationMode } from '@ai/enums/conversation-mode.enum';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantActionCard extends PureReactor {
   @prop declare batch?: IAssistantActionBatch;
@@ -128,7 +129,7 @@ export class AssistantActionCard extends PureReactor {
     if (this.batchState === BatchState.APPLIED) {
       return (
         <div className={`${GlassMorphism.GLASS_SUB_PANEL} border-emerald-300/70 bg-emerald-50/90 px-2.5 py-2 text-[11px] text-emerald-900 dark:border-emerald-300/40 dark:bg-emerald-300/12 dark:text-emerald-100`}>
-          Applied. {this.executionSummary ? `${this.executionSummary.ok} ok • ${this.executionSummary.unchanged} unchanged • ${this.executionSummary.failed} failed` : 'Review execution details in the conversation.'}
+          {AiText.t('ai.applied')} {this.executionSummary ? AiText.t('ai.executionSummary', { ok: this.executionSummary.ok, unchanged: this.executionSummary.unchanged, failed: this.executionSummary.failed }) : AiText.t('ai.reviewExecutionDetailsInThe')}
         </div>
       );
     }
@@ -136,7 +137,7 @@ export class AssistantActionCard extends PureReactor {
     if (this.batchState === BatchState.STALE) {
       return (
         <div className={`${GlassMorphism.GLASS_SUB_PANEL} border-amber-300/70 bg-amber-50/90 px-2.5 py-2 text-[11px] text-amber-900 dark:border-amber-300/40 dark:bg-amber-300/12 dark:text-amber-100`}>
-          This batch is stale. Request a fresh batch before preview/apply.
+          {AiText.t('ai.thisBatchIsStaleRequest')}
         </div>
       );
     }
@@ -156,11 +157,11 @@ export class AssistantActionCard extends PureReactor {
         <div className={`${GlassMorphism.GLASS_FLOAT_CHROME} pointer-events-auto w-full max-w-3xl p-3`}>
           <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
             <div>
-              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">Changes ready for review</p>
+              <p className="text-xs font-semibold text-slate-900 dark:text-slate-100">{AiText.t('ai.changesReadyForReview')}</p>
               <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-slate-500 dark:text-slate-400">
-                <span className={GlassMorphism.GLASS_BADGE}>Batch {this.batch.id.slice(0, 12)}</span>
+                <span className={GlassMorphism.GLASS_BADGE}>{AiText.t('ai.batchId', { id: this.batch.id.slice(0, 12) })}</span>
                 <span className={GlassMorphism.GLASS_BADGE}>{this.batchState.value}</span>
-                {this.mode === ConversationMode.BUILD ? <span className={GlassMorphism.GLASS_BADGE}>Preview first</span> : null}
+                {this.mode === ConversationMode.BUILD ? <span className={GlassMorphism.GLASS_BADGE}>{AiText.t('ai.previewFirst')}</span> : null}
               </p>
             </div>
             <div className="flex items-center gap-1.5">
@@ -170,7 +171,7 @@ export class AssistantActionCard extends PureReactor {
                 disabled={this.isLocked}
                 className={`${GlassMorphism.GLASS_BUTTON} px-2 py-1 text-[10px] font-semibold`}
               >
-                {this.allSelected ? 'None' : 'All'}
+                {this.allSelected ? AiText.t('ai.none') : AiText.t('ai.all')}
               </button>
               {this.batchState === BatchState.STAGED ? (
                 <button
@@ -179,7 +180,7 @@ export class AssistantActionCard extends PureReactor {
                   disabled={!this.canPreview}
                   className={`${GlassMorphism.GLASS_BUTTON} gap-1 px-2.5 py-1.5 text-[11px] font-semibold`}
                 >
-                  <FrameworkIcons.Eye size={12} /> Preview
+                  <FrameworkIcons.Eye size={12} /> {AiText.t('ai.preview')}
                 </button>
               ) : null}
               {this.batchState === BatchState.PREVIEWED ? (
@@ -189,7 +190,7 @@ export class AssistantActionCard extends PureReactor {
                   disabled={!this.canApply}
                   className={`${GlassMorphism.GLASS_BUTTON_PRIMARY} gap-1 px-2.5 py-1.5 text-[11px]`}
                 >
-                  <FrameworkIcons.Check size={12} /> Apply
+                  <FrameworkIcons.Check size={12} /> {AiText.t('ai.apply')}
                 </button>
               ) : null}
             </div>

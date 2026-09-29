@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { DateTimePickerConstants } from '@/components/ui/date-time-picker/constants/date-time-picker.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DateTimePickerJumpView extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -25,12 +26,12 @@ export class DateTimePickerJumpView extends PureReactor {
                 ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                 : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
             }`}
-            aria-label="Previous year"
+            aria-label={AdminI18n.t('ui.date.previousYear')}
           >
             <FrameworkIcons.Left size={16} />
           </button>
           <div className="text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">Jump to month</p>
+            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{AdminI18n.t('ui.date.jumpToMonth')}</p>
             <p className={`mt-0.5 text-[17px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{currentVisibleYear}</p>
           </div>
           <button
@@ -41,13 +42,13 @@ export class DateTimePickerJumpView extends PureReactor {
                 ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                 : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
             }`}
-            aria-label="Next year"
+            aria-label={AdminI18n.t('ui.date.nextYear')}
           >
             <FrameworkIcons.Right size={16} />
           </button>
         </div>
         <div className="grid grid-cols-3 gap-2.5">
-          {DateTimePickerConstants.MONTH_LABELS.map((label, monthIndex) => {
+          {DateTimePickerConstants.monthLabels().map((label, monthIndex) => {
             const isActive = visibleMonth.getMonth() === monthIndex;
             return (
               <button

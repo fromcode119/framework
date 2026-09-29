@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class MarketplaceScreenshots extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -24,10 +25,10 @@ export class MarketplaceScreenshots extends PureReactor {
         <div className="flex items-center justify-between">
           <h3 className={`text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
             <FrameworkIcons.Image size={14} className="text-indigo-500" />
-            Product Screenshots
+            {AdminI18n.t('plugins.list.screenshots')}
           </h3>
           <span className={`text-[10px] font-semibold uppercase tracking-wide px-3 py-1 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
-            {plugin.screenshots.length} Images
+            {AdminI18n.t('plugins.list.imageCount', { count: plugin.screenshots.length })}
           </span>
         </div>
 
@@ -40,7 +41,7 @@ export class MarketplaceScreenshots extends PureReactor {
           >
               <img
                 src={Screenshot.from(plugin.screenshots[activeImageIndex]).url}
-                alt="Main Screenshot"
+                alt={AdminI18n.t('plugins.list.mainScreenshot')}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-1000"
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-500 flex items-center justify-center">
@@ -66,7 +67,7 @@ export class MarketplaceScreenshots extends PureReactor {
                   >
                     <img
                       src={src}
-                      alt={`Thumbnail ${idx + 1}`}
+                      alt={AdminI18n.t('plugins.list.thumbnail', { value: idx + 1 })}
                       className="w-full h-full object-cover"
                     />
                      {activeImageIndex === idx && (

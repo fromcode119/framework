@@ -8,6 +8,7 @@ import { Save } from 'lucide-react';
 import type { IBuildSourceFormProps } from '@/app/sources/interfaces/build-source-form-props.interface';
 import { BuildSourceFormRemote } from '@/app/sources/build-source-form-remote';
 import { BuildSourceFormState } from '@/app/sources/build-source-form-state';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The form for adding or editing a source.
@@ -43,17 +44,17 @@ export class BuildSourceForm extends BuildSourceFormRemote {
               source, and a field that only appears once there are two would make the first one a
               hidden assumption again. */}
           <Select
-            label="Provider"
+            label={AdminI18n.t('sources.provider')}
             className="md:col-span-2"
             value={this.state.provider}
             options={this.state.providers.map((entry) => ({ label: entry.label, value: entry.key }))}
-            placeholder={this.state.providers.length === 0 ? 'Reading providers…' : 'Select a provider'}
+            placeholder={this.state.providers.length === 0 ? AdminI18n.t('sources.readingProviders') : AdminI18n.t('sources.selectAProvider')}
             disabled={this.isEdit || this.state.providers.length <= 1}
             onChange={(value: string) => this.setState({ provider: value })}
           />
 
           <Input
-            label={this.providerDefinition?.locationLabel || 'Location'}
+            label={this.providerDefinition?.locationLabel || AdminI18n.t('sources.location')}
             className="md:col-span-2"
             value={this.state.gitUrl}
             onChange={(event: any) => this.setState({ gitUrl: event.target.value })}
@@ -62,7 +63,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
           />
 
           <Select
-            label={this.providerDefinition?.refLabel || 'Version'}
+            label={this.providerDefinition?.refLabel || AdminI18n.t('sources.version')}
             value={this.state.branch}
             options={this.branchOptions}
             placeholder={this.branchPlaceholder}
@@ -76,7 +77,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
             * question the repository has already answered.
             */}
           <Input
-            label="Slug"
+            label={AdminI18n.t('sources.slug')}
             value={this.state.slug}
             disabled
             placeholder={this.slugPlaceholder}
@@ -85,7 +86,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
           {/* Read from the repository's own manifest, never chosen here. `onChange` is required by
               the component even when disabled; there is nothing for it to do. */}
           <Select
-            label="Type"
+            label={AdminI18n.t('sources.type')}
             value={this.state.type}
             disabled
             onChange={() => undefined}
@@ -94,7 +95,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
 
           <div className="space-y-2">
             <Input
-              label="GitHub Token"
+              label={AdminI18n.t('sources.githubToken')}
               type="password"
               autoComplete="new-password"
               value={this.state.gitSecret}
@@ -118,14 +119,14 @@ export class BuildSourceForm extends BuildSourceFormRemote {
             <Switch
               checked={this.state.autoBuild}
               onChange={(checked: boolean) => this.setState({ autoBuild: checked })}
-              label="Build automatically"
-              description="Build this source whenever new commits appear on its branch."
+              label={AdminI18n.t('sources.buildAutomatically')}
+              description={AdminI18n.t('sources.buildThisSourceWheneverNew')}
             />
             <Switch
               checked={this.state.installAfterBuild}
               onChange={(checked: boolean) => this.setState({ installAfterBuild: checked })}
-              label="Install after build"
-              description="Put each successful build in place — whether you pressed Build or the schedule did. A theme is installed, not activated."
+              label={AdminI18n.t('sources.installAfterBuild')}
+              description={AdminI18n.t('sources.putEachSuccessfulBuildIn')}
             />
             {/* DEPENDENT on the switch above, because the code is: the installer is only reached
                 inside the `installAfterBuild` branch, so this flag is never consulted while that one
@@ -135,17 +136,17 @@ export class BuildSourceForm extends BuildSourceFormRemote {
               checked={this.state.autoUpdate}
               onChange={(checked: boolean) => this.setState({ autoUpdate: checked })}
               disabled={!this.state.installAfterBuild}
-              label="Update if already installed"
+              label={AdminI18n.t('sources.updateIfAlreadyInstalled')}
               description={this.state.installAfterBuild
-                ? 'Also replace the running version when this extension is already installed.'
-                : 'Needs "Install after build" above — nothing is replaced while builds are not installed.'}
+                ? AdminI18n.t('sources.alsoReplaceTheRunningVersion')
+                : AdminI18n.t('sources.needsInstallAfterBuildAbove')}
             />
           </div>
         </div>
 
         <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
           <Button onClick={this.props.onCancel} variant={ButtonVariant.OUTLINE}>
-            Cancel
+            {AdminI18n.t('sources.cancel')}
           </Button>
           <Button
             icon={<Save size={16} />}
@@ -163,7 +164,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
             })}
             variant={ButtonVariant.SECONDARY}
           >
-            {this.isEdit ? 'Save Source' : 'Create Source'}
+            {this.isEdit ? AdminI18n.t('sources.saveSource') : AdminI18n.t('sources.createSource')}
           </Button>
         </div>
       </div>

@@ -13,6 +13,7 @@ import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { RolesListCard } from '@/app/users/roles/components/view/roles-list-card.client';
 import { RolesAuditSidebar } from '@/app/users/roles/components/view/roles-audit-sidebar.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RolesPage extends AdminComponent {
   private mounted = false;
@@ -74,11 +75,11 @@ export class RolesPage extends AdminComponent {
     this.isDeleting = true;
     try {
       await AdminApi.delete(`${AdminConstants.ENDPOINTS.SYSTEM.ROLES}/${roleToDelete.slug}`);
-      notify(NotificationType.SUCCESS, 'Role Deleted', `${roleToDelete.name} has been removed.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('users.roleDeleted'), AdminI18n.t('users.hasBeenRemoved', { name: roleToDelete.name }));
       await this.fetchData();
       this.showDeleteConfirm = false;
     } catch (err: any) {
-      notify(NotificationType.ERROR, 'Deletion Failed', err.message);
+      notify(NotificationType.ERROR, AdminI18n.t('users.deletionFailed'), err.message);
     } finally {
       this.isDeleting = false;
     }
@@ -91,7 +92,7 @@ export class RolesPage extends AdminComponent {
     if (loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Hydrating Security Matrix..." />
+          <Loader label={AdminI18n.t('users.hydratingSecurityMatrix')} />
         </div>
       );
     }
@@ -101,12 +102,12 @@ export class RolesPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
-          title="Roles"
-          subtitle="Manage user roles and security permissions."
+          title={AdminI18n.t('users.roles')}
+          subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
           actions={
             <Link href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
               <Button className="px-4 h-9 rounded-lg font-semibold text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
-                Create Role
+                {AdminI18n.t('users.createRole')}
               </Button>
             </Link>
           }
@@ -129,12 +130,12 @@ export class RolesPage extends AdminComponent {
         </div>
 
         <AdminPageFooter
-          label="Roles Management"
-          description="Manage and customize system access roles."
+          label={AdminI18n.t('users.rolesManagement')}
+          description={AdminI18n.t('users.manageAndCustomizeSystemAccess')}
           links={[
-            { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
-            { label: 'Permissions', href: AdminConstants.ROUTES.USERS.PERMISSIONS },
-            { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
+            { label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.LIST },
+            { label: AdminI18n.t('users.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
+            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
           ]}
         />
 
@@ -143,9 +144,9 @@ export class RolesPage extends AdminComponent {
           onClose={this.closeDelete}
           onConfirm={this.handleDelete}
           isLoading={isDeleting}
-          title="Delete Role"
-          description={`Are you sure you want to remove the ${roleToDelete?.name} role? Users assigned to this role may lose access to critical system features.`}
-          confirmLabel="Destroy Role"
+          title={AdminI18n.t('users.deleteRole')}
+          description={AdminI18n.t('users.areYouSureYouWant', { name: roleToDelete?.name })}
+          confirmLabel={AdminI18n.t('users.destroyRole')}
         />
       </div>
     );

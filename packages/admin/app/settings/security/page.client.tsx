@@ -19,6 +19,7 @@ import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SecuritySettingsKeys } from '@/app/settings/security/security-settings-keys';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SecuritySettingsPage extends AdminComponent {
   @state isSaving = false;
@@ -35,6 +36,8 @@ export class SecuritySettingsPage extends AdminComponent {
    * Save control is not rendered at all.
    */
   @state settings: Record<string, string> | null = null;
+  /** What the server last returned — the baseline a save compares against, so it sends only changes. */
+  private loaded: Record<string, string> = {};
   @state loadError: string | null = null;
   /**
    * Whether this screen's settings belong to the scope the console is in.
@@ -86,14 +89,15 @@ export class SecuritySettingsPage extends AdminComponent {
       }
     } catch (err: any) {
       this.settings = null;
-      this.loadError = err?.message || 'The security settings request failed.';
+      this.loadError = err?.message || AdminI18n.t('settings.security.theSecuritySettingsRequestFailed');
     } finally {
       this.isLoading = false;
     }
   }
 
   private async fetchSettings(): Promise<void> {
-    this.settings = await SecuritySettingsIo.load();
+    this.loaded = await SecuritySettingsIo.load();
+    this.settings = { ...this.loaded };
   }
 
   private async fetchStats(): Promise<void> {
@@ -104,7 +108,7 @@ export class SecuritySettingsPage extends AdminComponent {
     } catch (e: any) {
       // A blank Dashboard tab reads as "nothing to report". Say what actually happened instead.
       this.stats = null;
-      this.statsError = e?.message || 'The security statistics request failed.';
+      this.statsError = e?.message || AdminI18n.t('settings.security.theSecurityStatisticsRequestFailed');
     }
   }
 
@@ -134,13 +138,13 @@ export class SecuritySettingsPage extends AdminComponent {
     if (!settings) return;
     this.isSaving = true;
     try {
-      await SecuritySettingsIo.save(settings);
+      await SecuritySettingsIo.save(settings, this.loaded);
       await this.fetchSettings();
-      addNotification({ title: 'Security Updated', message: 'API protection and account defense synced.', type: NotificationType.SUCCESS });
+      addNotification({ title: AdminI18n.t('settings.security.securityUpdated'), message: AdminI18n.t('settings.security.apiProtectionAndAccountDefense'), type: NotificationType.SUCCESS });
     } catch (err: any) {
       addNotification({
-        title: 'Update Failed',
-        message: err?.message || 'Failed to save security configuration.',
+        title: AdminI18n.t('settings.security.updateFailed'),
+        message: err?.message || AdminI18n.t('settings.security.failedToSaveSecurityConfiguration'),
         type: NotificationType.ERROR
       });
     } finally {
@@ -149,7 +153,7 @@ export class SecuritySettingsPage extends AdminComponent {
   }
 
   render(): ReactNode {
-    if (this.isLoading) return <div className="p-12"><Loader label="Loading security settings..." /></div>;
+    if (this.isLoading) return <div className="p-12"><Loader label={AdminI18n.t('settings.security.loadingSecuritySettings')} /></div>;
 
     const theme = this.theme;
     const activeTab = this.activeTab;
@@ -160,8 +164,8 @@ export class SecuritySettingsPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
-          title="Security & Defense"
-          subtitle="Runtime isolation and protection"
+          title={AdminI18n.t('settings.security.securityDefense')}
+          subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
             <>
               <div className={`flex gap-1 p-1 ${AdminClass.SURFACE} bg-slate-100 dark:bg-slate-900`}>
@@ -169,13 +173,13 @@ export class SecuritySettingsPage extends AdminComponent {
                   onClick={this.showDashboardTab}
                   className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
                 >
-                  Dashboard
+                  {AdminI18n.t('settings.security.dashboard')}
                 </button>}
                 <button
                   onClick={this.showSettingsTab}
                   className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
                 >
-                  Settings
+                  {AdminI18n.t('settings.security.settings')}
                 </button>
               </div>
               {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
@@ -185,7 +189,7 @@ export class SecuritySettingsPage extends AdminComponent {
                   isLoading={this.isSaving}
                   className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
                 >
-                  Update Security
+                  {AdminI18n.t('settings.security.updateSecurity')}
                 </Button>
               )}
             </>
@@ -194,7 +198,7 @@ export class SecuritySettingsPage extends AdminComponent {
 
         {this.loadError && (
           <LoadErrorPanel
-            title="Security settings could not be loaded"
+            title={AdminI18n.t('settings.security.securitySettingsCouldNotBe')}
             message={this.loadError}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}
@@ -204,7 +208,7 @@ export class SecuritySettingsPage extends AdminComponent {
         <div className="p-6 w-full space-y-8 pb-24">
           {activeTab === SecurityTab.DASHBOARD && this.statsError && !this.loadError && (
             <LoadErrorPanel
-              title="Security statistics could not be loaded"
+              title={AdminI18n.t('settings.security.securityStatisticsCouldNotBe')}
               message={this.statsError}
               onRetry={this.retryLoad}
               isRetrying={this.isLoading}
@@ -216,7 +220,7 @@ export class SecuritySettingsPage extends AdminComponent {
           )}
 
           {activeTab === SecurityTab.SETTINGS && this.settingsOutOfScope && (
-            <SiteScopePanel detail="Password policy, login protection, rate limits and the audit trail are stored per site. Choose a site from the site menu to configure its security." />
+            <SiteScopePanel detail={AdminI18n.t('settings.security.passwordPolicyLoginProtectionRate')} />
           )}
 
           {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (

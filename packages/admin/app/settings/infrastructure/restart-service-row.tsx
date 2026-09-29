@@ -7,6 +7,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { AdminDeployApp } from '@/lib/settings/admin-deploy-app';
 import { RestartAppCopy } from '@/app/settings/infrastructure/restart-app-copy';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One app's restart row: what the button does, and — when it cannot be pressed — why, stated in the
@@ -63,7 +64,7 @@ export class RestartServiceRow extends PureReactor {
           onClick={this.requestRestart}
           icon={<FrameworkIcons.Refresh size={13} />}
         >
-          Restart
+          {AdminI18n.t('settings.infrastructure.restart')}
         </Button>
       </SettingRow>
     );

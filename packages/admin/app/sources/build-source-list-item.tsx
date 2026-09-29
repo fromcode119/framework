@@ -8,6 +8,7 @@ import { Download, GitBranch, History, Pencil, Play, Trash2 } from 'lucide-react
 import { BuildStatusBadge } from '@/app/sources/build-status-badge';
 import { BuildChangelog } from '@/app/sources/build-changelog';
 import { BuildSourceListItemActions } from '@/app/sources/build-source-list-item-actions';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One source in the Sources list.
@@ -23,8 +24,8 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
     const canDownload = Boolean(String(this.build.version || '').trim())
       && this.build.lastBuildStatus === 'success';
     const tokenLabel = this.build.hasGitSecret
-      ? 'Per-source token stored'
-      : (this.build.usesEnvToken ? 'Using app-level GITHUB_TOKEN' : 'No token configured');
+      ? AdminI18n.t('sources.perSourceTokenStored')
+      : (this.build.usesEnvToken ? AdminI18n.t('sources.usingAppLevelGithubToken') : AdminI18n.t('sources.noTokenConfigured'));
     const repositoryLabel = String(this.build.gitUrl || '').trim();
 
     // The repository, without the ceremony. Every row said the same 30 characters of
@@ -50,8 +51,8 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 <span className="shrink-0 text-[10px] uppercase tracking-wide text-slate-600 dark:text-slate-400">{this.build.type}</span>
                 <span className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={this.packageLabel}>
                   {this.build.branch || 'main'}
-                  {this.build.version ? ` · v${this.build.version}` : ' · no build yet'}
-                  {this.build.autoBuild ? ' · auto' : ''}
+                  {this.build.version ? ` · v${this.build.version}` : AdminI18n.t('sources.noBuildYet')}
+                  {this.build.autoBuild ? ` · ${AdminI18n.t('sources.auto')}` : ''}
                 </span>
               </div>
               <p className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={`${repositoryLabel}\n${tokenLabel}`}>
@@ -67,7 +68,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                   icon={<Download size={12} />}
                   variant={ButtonVariant.GHOST}
                 >
-                  {this.downloading ? 'Packaging…' : 'Package'}
+                  {this.downloading ? AdminI18n.t('sources.packaging') : AdminI18n.t('sources.package')}
                 </Button>
               ) : null}
               <Button
@@ -75,7 +76,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 onClick={this.toggleVersions}
                 variant={ButtonVariant.GHOST}
               >
-                Versions
+                {AdminI18n.t('sources.versions')}
               </Button>
               <Button
                 icon={<Play size={12} className={this.triggerKey === this.identityKey ? 'animate-spin' : ''} />}
@@ -83,10 +84,10 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 disabled={this.triggerKey === this.identityKey || this.deletingKey === this.identityKey}
                 variant={ButtonVariant.OUTLINE}
               >
-                {this.triggerKey === this.identityKey ? 'Building' : 'Build'}
+                {this.triggerKey === this.identityKey ? AdminI18n.t('sources.building') : AdminI18n.t('sources.build')}
               </Button>
               <Button icon={<Pencil size={12} />} onClick={() => this.onEdit(this.build)} variant={ButtonVariant.GHOST}>
-                Edit
+                {AdminI18n.t('sources.edit')}
               </Button>
               <Button
                 className="text-slate-600 hover:text-rose-600 dark:text-slate-400"
@@ -95,7 +96,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                 onClick={() => this.onDelete(this.build)}
                 variant={ButtonVariant.GHOST}
               >
-                Remove
+                {AdminI18n.t('sources.remove')}
               </Button>
             </div>
           </div>
@@ -103,7 +104,7 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
           {this.versionsOpen ? (
             <div className="mt-2 rounded-xl border border-slate-200 bg-white px-3 py-2 text-[11px] dark:border-slate-800 dark:bg-slate-900/40">
               {this.loadingVersions ? (
-                <span className="text-slate-500">Reading versions…</span>
+                <span className="text-slate-500">{AdminI18n.t('sources.readingVersions')}</span>
               ) : (
                 <div className="flex flex-col gap-2">
                   {/*
@@ -113,20 +114,20 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                     */}
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
                     <span className="text-slate-500 dark:text-slate-400">
-                      Installed:{' '}
+                      {AdminI18n.t('sources.installedLabel')}{' '}
                       <strong className="font-semibold text-slate-900 dark:text-white">
-                        {this.versions?.installed ? `v${this.versions.installed}` : 'not installed'}
+                        {this.versions?.installed ? `v${this.versions.installed}` : AdminI18n.t('sources.notInstalled')}
                       </strong>
                     </span>
                     <span className="text-slate-500 dark:text-slate-400">
-                      Last built:{' '}
+                      {AdminI18n.t('sources.lastBuiltLabel')}{' '}
                       <strong className="font-semibold text-slate-900 dark:text-white">
-                        {this.versions?.built ? `v${this.versions.built}` : 'never'}
+                        {this.versions?.built ? `v${this.versions.built}` : AdminI18n.t('sources.never')}
                       </strong>
                     </span>
                     {this.versions?.installed && this.versions?.built && this.versions.installed !== this.versions.built ? (
                       <span className="rounded-full bg-amber-500/10 px-2 py-0.5 font-semibold text-amber-600">
-                        built version is not the one running
+                        {AdminI18n.t('sources.builtVersionIsNotThe')}
                       </span>
                     ) : null}
                   </div>
@@ -142,13 +143,13 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                     checked={this.autoUpdateEnabled}
                     onChange={this.toggleAutoUpdate}
                     disabled={this.savingAutoUpdate}
-                    label="Update automatically"
-                    description="Replace the running version whenever a new one is built from this repository."
+                    label={AdminI18n.t('sources.updateAutomatically')}
+                    description={AdminI18n.t('sources.replaceTheRunningVersionWhenever')}
                   />
 
                   {this.versions && this.versions.available.length > 0 ? (
                     <div className="flex flex-wrap items-center gap-2">
-                      <label className="text-slate-500 dark:text-slate-400">Install version</label>
+                      <label className="text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.installVersion')}</label>
                       {/*
                         * The admin's own Select, not a bare `<select>`. A native one renders in the
                         * operating system's styling — its own font, its own blue highlight, its own
@@ -176,15 +177,15 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
                         disabled={Boolean(this.installing) || !this.chosenVersion}
                         variant={ButtonVariant.OUTLINE}
                       >
-                        {this.installing ? `Installing v${this.installing}…` : 'Install'}
+                        {this.installing ? AdminI18n.t('sources.installingV', { installing: this.installing }) : AdminI18n.t('sources.install')}
                       </Button>
                       <span className="text-slate-600 dark:text-slate-400">
-                        Every version this installation still has staged. Installing an older one replaces the running code; it does not activate a theme.
+                        {AdminI18n.t('sources.everyVersionThisInstallationStill')}
                       </span>
                     </div>
                   ) : (
                     <span className="text-slate-600 dark:text-slate-400">
-                      No packages are staged for this source yet — build it once and its versions appear here.
+                      {AdminI18n.t('sources.noPackagesAreStagedFor')}
                     </span>
                   )}
 

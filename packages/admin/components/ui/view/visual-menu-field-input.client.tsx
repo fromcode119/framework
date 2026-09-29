@@ -4,6 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class VisualMenuFieldInput extends PureReactor {
   @prop declare field: any;
@@ -29,7 +30,7 @@ export class VisualMenuFieldInput extends PureReactor {
         onUpdateItem(index, f.name, value);
       },
       theme,
-      placeholder: `Enter ${f.label || f.name}...`,
+      placeholder: AdminI18n.t('ui.field.enter', { label: f.label || f.name }),
     };
 
     if (f.type === 'relationship') {

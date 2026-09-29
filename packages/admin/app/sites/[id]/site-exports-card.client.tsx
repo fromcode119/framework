@@ -8,6 +8,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ThemeMode } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * A site's export archives, as links that download.
@@ -34,13 +35,12 @@ export class SiteExportsCard extends PureReactor {
   render(): ReactNode {
     const exports = this.site.exports;
     return (
-      <Card title={`Exports${exports.length ? ` (${exports.length})` : ''}`}>
+      <Card title={exports.length ? AdminI18n.t('sites.exportsCount', { count: exports.length }) : AdminI18n.t('sites.exports')}>
         <p className="fc-sites__text">
-          A portable archive of this site — rows, files, members, plugin and theme choices. Use it to move
-          the site to another installation, or to keep a point-in-time copy.
+          {AdminI18n.t('sites.aPortableArchiveOfThis')}
         </p>
         {exports.length === 0 ? (
-          <p className="fc-sites__none">Never exported.</p>
+          <p className="fc-sites__none">{AdminI18n.t('sites.neverExported')}</p>
         ) : (
           /* A row per archive, with the download as a real button rather than the filename being the
              only clickable thing. It was one naked line of monospace text under a paragraph. */
@@ -61,7 +61,7 @@ export class SiteExportsCard extends PureReactor {
                     {SiteExportsCard.megabytes(entry.sizeBytes)}
                   </span>
                   <a href={AdminConstants.ENDPOINTS.SYSTEM.BACKUP_DOWNLOAD(entry.id)} download className="no-underline">
-                    <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} icon={<FrameworkIcons.Download size={13} />}>Download</Button>
+                    <Button size={FieldSize.SM} variant={ButtonVariant.OUTLINE} icon={<FrameworkIcons.Download size={13} />}>{AdminI18n.t('sites.download')}</Button>
                   </a>
                 </div>
               </div>

@@ -7,6 +7,7 @@ import { NumberStepper } from '@/components/ui/number-stepper';
 import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { MediaShareController } from '@/app/media/media-share-controller';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Changing the terms of a share that has ALREADY gone out.
@@ -50,13 +51,13 @@ export class MediaShareEditForm extends AdminComponent {
       const emails = MediaShareController.normalizeRecipients(this.recipients);
       if (emails.length) {
         const failed = await MediaShareController.addRecipients(this.shareId, emails, patch);
-        messages.push(failed.length ? `${emails.length - failed.length} sent, failed: ${failed.join(', ')}` : `${emails.length} invited`);
+        messages.push(failed.length ? AdminI18n.t('media.sentFailed', { sent: emails.length - failed.length, failed: failed.join(', ') }) : AdminI18n.t('media.invited', { count: emails.length }));
       }
 
       this.patch({ expiryDays: '', maxDownloads: '', recipients: [], notice: messages.join(' · ') });
       this.onChanged();
     } catch (error: any) {
-      this.notice = String(error?.message || 'That did not work.');
+      this.notice = String(error?.message || AdminI18n.t('media.thatDidNotWork'));
     } finally {
       this.busy = false;
     }
@@ -69,37 +70,37 @@ export class MediaShareEditForm extends AdminComponent {
       <div className="px-4 py-3 space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-[11px] font-medium opacity-70">Extend by (days)</label>
+            <label className="mb-1 block text-[11px] font-medium opacity-70">{AdminI18n.t('media.extendByDays')}</label>
             <NumberStepper value={this.expiryDays} min={0} onChange={(value) => this.patch({ expiryDays: value })} />
-            <p className="mt-1 text-[10px] opacity-50">Counted from today. 0 = stops expiring. Blank leaves it as it is.</p>
+            <p className="mt-1 text-[10px] opacity-50">{AdminI18n.t('media.countedFromToday0Stops')}</p>
           </div>
           <div>
-            <label className="mb-1 block text-[11px] font-medium opacity-70">Max downloads</label>
+            <label className="mb-1 block text-[11px] font-medium opacity-70">{AdminI18n.t('media.maxDownloads')}</label>
             <NumberStepper value={this.maxDownloads} min={0} onChange={(value) => this.patch({ maxDownloads: value })} />
-            <p className="mt-1 text-[10px] opacity-50">0 = unlimited. Blank leaves it as it is.</p>
+            <p className="mt-1 text-[10px] opacity-50">{AdminI18n.t('media.0UnlimitedBlankLeavesIt')}</p>
           </div>
         </div>
 
         <div>
-          <label className="mb-1 block text-[11px] font-medium opacity-70">Add people</label>
+          <label className="mb-1 block text-[11px] font-medium opacity-70">{AdminI18n.t('media.addPeople')}</label>
           {/* Same picker as the create dialog: suggests from `people` and still accepts a typed
               address, because sharing with someone who has no account is half the feature. */}
           <TagField
             value={this.recipients}
             onChange={(value: string[] | string) => this.patch({ recipients: Array.isArray(value) ? value : [String(value || '')] })}
-            placeholder="Type an email, or pick someone"
-            suggestionsLabel="People"
+            placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
+            suggestionsLabel={AdminI18n.t('media.people')}
             theme={this.theme}
             allowCreate
             apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}
           />
-          <p className="mt-1 text-[10px] opacity-50">Each new person gets their own link, by email — existing links are untouched.</p>
+          <p className="mt-1 text-[10px] opacity-50">{AdminI18n.t('media.eachNewPersonGetsTheir')}</p>
         </div>
 
         <div className="flex items-center justify-between gap-3">
           <span className="text-[11px] opacity-60">{this.notice}</span>
           <Button variant={ButtonVariant.SECONDARY} disabled={!canApply || this.busy} onClick={this.handleApply}>
-            {this.busy ? 'Applying…' : 'Apply changes'}
+            {this.busy ? AdminI18n.t('media.applying') : AdminI18n.t('media.applyChanges')}
           </Button>
         </div>
       </div>

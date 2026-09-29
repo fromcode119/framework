@@ -1,10 +1,13 @@
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
 import type { ChangeEvent, FormEvent, ReactNode } from 'react';
-import { Reactor, state, bound } from '@fromcode119/react-class-components';
+import { Reactor, state, bound, prop } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
 
 export class ResetPasswordPage extends Reactor {
+  /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
+  @prop declare locale?: string;
   @state token = '';
   @state newPassword = '';
   @state confirmPassword = '';
@@ -87,9 +90,9 @@ export class ResetPasswordPage extends Reactor {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <div className="mx-auto max-w-xl px-6 py-16">
-          <h1 className="text-3xl font-bold tracking-tight">Reset Password</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.resetPassword')}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Set a new password for your account.
+            {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.setANewPasswordFor')}
           </p>
 
           <form onSubmit={this.handleSubmit} className="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -101,36 +104,36 @@ export class ResetPasswordPage extends Reactor {
             ) : null}
 
             <label className="block text-sm font-semibold">
-              Reset Token
+              {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.resetToken')}
               <input
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
                 value={this.token}
                 onChange={this.onTokenChange}
-                placeholder="Paste reset token"
+                placeholder={FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.pasteResetToken')}
                 required
               />
             </label>
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <label className="text-sm font-semibold">
-                New Password
+                {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.newPassword')}
                 <input
                   type="password"
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
                   value={this.newPassword}
                   onChange={this.onNewPasswordChange}
-                  placeholder="New password"
+                  placeholder={FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.newPassword2')}
                   required
                 />
               </label>
               <label className="text-sm font-semibold">
-                Confirm Password
+                {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.confirmPassword')}
                 <input
                   type="password"
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
                   value={this.confirmPassword}
                   onChange={this.onConfirmPasswordChange}
-                  placeholder="Repeat password"
+                  placeholder={FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.repeatPassword')}
                   required
                 />
               </label>
@@ -141,14 +144,14 @@ export class ResetPasswordPage extends Reactor {
               disabled={this.isSubmitting}
               className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {this.isSubmitting ? 'Updating...' : 'Reset Password'}
+              {this.isSubmitting ? FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.updating') : FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.resetPassword')}
             </button>
           </form>
 
           <p className="mt-4 text-sm text-slate-600">
-            Need a new token?{' '}
+            {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.needANewToken')}{' '}
             <Link href="/forgot-password" className="font-semibold text-indigo-600 hover:underline">
-              Request reset link
+              {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.requestResetLink')}
             </Link>
           </p>
         </div>

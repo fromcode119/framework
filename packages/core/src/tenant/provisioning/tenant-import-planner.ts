@@ -7,7 +7,7 @@ import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import { SecretService } from '@core/security/secret-service';
 import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
-import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
+import { TenantImportRowFilter } from '@core/tenant/provisioning/tenant-import-row-filter';
 import { TenantArchiveReader } from '@core/tenant/provisioning/tenant-archive-reader';
 import { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 import { TenantImportIdBasis } from '@core/tenant/provisioning/enums/tenant-import-id-basis.enum';
@@ -142,7 +142,7 @@ export class TenantImportPlanner {
     // that the id-mode/column accounting above never sees, because the table itself is still
     // imported — only some of its rows are not. Both are knowable now, from the same inputs the
     // executor uses, so the preview's "left behind" summary can count them rather than miss them.
-    const platformKeys = new Set(TenantBespokePolicies.platformKeys());
+    const platformKeys = TenantImportRowFilter.platformOnlyKeys();
     const metaRowsExcluded = await TenantImportPlanner.countExcludedRows(
       reader, tables, SystemConstants.TABLE.META, (row) => platformKeys.has(String(row.key ?? '')),
     );

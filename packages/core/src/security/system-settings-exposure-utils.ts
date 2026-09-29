@@ -40,13 +40,32 @@ export class SystemSettingsExposureUtils {
    */
   static toExposableSettingsMap(rows: unknown, options: { parseJson?: boolean } = {}): Record<string, unknown> {
     const map: Record<string, unknown> = {};
-    for (const row of Array.isArray(rows) ? rows : []) {
+    for (const row of SystemSettingsExposureUtils.withPrecedence(rows)) {
       const key = String((row as any)?.key ?? '').trim();
       if (!SystemSettingsExposureUtils.isExposable(key)) continue;
       const value = (row as any)?.value;
       map[key] = options.parseJson ? SystemSettingsExposureUtils.parseStoredValue(value) : value;
     }
     return map;
+  }
+
+  /**
+   * One row per key, the site's own ahead of the platform's.
+   *
+   * A site sees its own `_system_meta` rows and the platform's row of each platform key. For an
+   * INHERITED key both can be visible at once, and the map used to keep whichever the database
+   * returned last — so a site's own choice lost to the platform's at random. The site's row is the
+   * answer when it exists; the platform's is what a site that chose nothing inherits.
+   */
+  static withPrecedence(rows: unknown): unknown[] {
+    const chosen = new Map<string, unknown>();
+    for (const row of Array.isArray(rows) ? rows : []) {
+      const key = String((row as any)?.key ?? '').trim();
+      const own = (row as any)?.tenant_id != null;
+      const current = chosen.get(key);
+      if (!current || (own && (current as any)?.tenant_id == null)) chosen.set(key, row);
+    }
+    return [...chosen.values()];
   }
 
   /** `_system_meta.value` is stored as text; JSON-shaped values are handed back parsed. */

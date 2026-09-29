@@ -10,6 +10,7 @@ import type { ISystemBackupHookState } from '@/components/settings/backups/inter
 import type { ISystemBackupListResponseView } from '@/components/settings/backups/interfaces/system-backup-list-response-view.interface';
 import type { ISystemBackupMutationResponseView } from '@/components/settings/backups/interfaces/system-backup-mutation-response-view.interface';
 import { SystemBackupPageUtils } from '@/components/settings/backups/system-backup-page-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SystemBackupHooks {
   private static readonly BACKUP_IMPORT_CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
@@ -166,9 +167,9 @@ export class SystemBackupHooks {
           uploadId: String(session.uploadId || ''),
         }) as ISystemBackupMutationResponseView;
         clearStallTimer();
-        setImportProgress({ percent: 96, label: 'Upload finished. Saving archive and refreshing inventory...' });
+        setImportProgress({ percent: 96, label: AdminI18n.t('settings.components.uploadFinishedSavingArchiveAnd') });
         await refreshBackups();
-        setImportProgress({ percent: 100, label: `${response.backup.displayName} imported successfully.` });
+        setImportProgress({ percent: 100, label: AdminI18n.t('settings.components.importedSuccessfully', { displayName: response.backup.displayName }) });
         window.setTimeout(() => setImportProgress(null), 1600);
         return response;
       } catch (error) {
@@ -176,7 +177,7 @@ export class SystemBackupHooks {
         if (lastLoadedBytes > 0) {
           setImportProgress({
             percent: 0,
-            label: `Upload stopped after ${SystemBackupPageUtils.formatBytes(lastLoadedBytes)}. ${SystemBackupPageUtils.toErrorMessage(error)}`,
+            label: AdminI18n.t('settings.components.uploadStoppedAfter', { formatBytes: SystemBackupPageUtils.formatBytes(lastLoadedBytes), toErrorMessage: SystemBackupPageUtils.toErrorMessage(error) }),
           });
           window.setTimeout(() => setImportProgress(null), 2600);
         } else {
@@ -204,11 +205,7 @@ export class SystemBackupHooks {
       let latestLoadedBytes = 0;
       let latestTotalBytes: number | null = null;
       setDownloadProgress({
-        activeId: id,
-        percent: 0,
-        label: 'Starting download...',
-        loadedBytes: 0,
-        totalBytes: null,
+        activeId: id, percent: 0, label: AdminI18n.t('settings.components.startingDownload'), loadedBytes: 0, totalBytes: null,
       });
       try {
         const filename = await SystemBackupPageUtils.downloadBackup(id, (state) => {
@@ -217,7 +214,7 @@ export class SystemBackupHooks {
           setDownloadProgress({
             activeId: id,
             percent: state.percent,
-            label: state.percent === 100 ? 'Finalizing download...' : state.percent === null ? 'Downloading archive...' : `Downloading ${state.percent}%`,
+            label: state.percent === 100 ? AdminI18n.t('settings.components.finalizingDownload') : state.percent === null ? AdminI18n.t('settings.components.downloadingArchive') : AdminI18n.t('settings.components.downloading2', { percent: state.percent }),
             loadedBytes: state.loadedBytes,
             totalBytes: state.totalBytes,
           });

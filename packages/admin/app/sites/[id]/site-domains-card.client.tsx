@@ -7,6 +7,7 @@ import { CertificateHost } from '@/lib/certificates/certificate-host';
 import { CertificateHostTable } from '@/app/certificates/components/certificate-host-table.client';
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * This site's addresses and what each one serves HTTPS with.
@@ -44,7 +45,7 @@ export class SiteDomainsCard extends AdminComponent {
       this.automation = result.automation;
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not load certificates.');
+      this.loadError = String(error?.message || AdminI18n.t('sites.couldNotLoadCertificates'));
     } finally {
       this.isLoading = false;
     }
@@ -56,7 +57,7 @@ export class SiteDomainsCard extends AdminComponent {
       await CertificatesClient.setSource(host, 'automatic');
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic.');
+      this.loadError = String(error?.message || AdminI18n.t('sites.couldNotSwitchThisHost'));
     }
     await this.load();
   }
@@ -67,7 +68,7 @@ export class SiteDomainsCard extends AdminComponent {
       await CertificatesClient.setSource(host, 'automatic', true);
       this.loadError = '';
     } catch (error: any) {
-      this.loadError = String(error?.message || 'Could not switch this host to automatic (wildcard).');
+      this.loadError = String(error?.message || AdminI18n.t('sites.couldNotSwitchThisHost2'));
     }
     await this.load();
   }
@@ -104,10 +105,9 @@ export class SiteDomainsCard extends AdminComponent {
     const dark = this.theme === ThemeMode.DARK;
 
     return (
-      <Card title="Domains">
+      <Card title={AdminI18n.t('sites.domains')}>
         <p className={`text-sm mb-3 ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-          The domains this site answers on. A certificate is what lets each one be served over HTTPS;
-          an uploaded certificate is never renewed automatically, so it has to be replaced before it expires.
+          {AdminI18n.t('sites.theDomainsThisSiteAnswers')}
         </p>
 
         {this.loadError ? (
@@ -115,7 +115,7 @@ export class SiteDomainsCard extends AdminComponent {
         ) : null}
 
         {this.isLoading ? (
-          <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>Loading…</p>
+          <p className={`text-sm ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('sites.loading')}</p>
         ) : (
           <CertificateHostTable
             entries={this.entries}

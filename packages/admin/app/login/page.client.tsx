@@ -15,6 +15,7 @@ import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { HostInfoClient } from '@/lib/tenants/host-info-client';
 import { AppEnv } from '@/lib/env';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class LoginPage extends AdminComponent {
   @prop declare searchParams?: Promise<Record<string, string | string[]>>;
@@ -69,7 +70,7 @@ export class LoginPage extends AdminComponent {
 
   private handleContactSupport(e: FormEvent): void {
     e.preventDefault();
-    this.runtime.notify.notify(NotificationType.INFO, 'Support Offline', 'Support portal is temporarily unavailable. Please try again later.');
+    this.runtime.notify.notify(NotificationType.INFO, AdminI18n.t('login.supportOfflineTitle'), AdminI18n.t('login.supportOffline'));
   }
 
   private resetTwoFactor(): void {
@@ -87,10 +88,10 @@ export class LoginPage extends AdminComponent {
     const { email, password, requiresTwoFactor, twoFactorMethod, totpToken, recoveryCode } = this;
     const newFieldErrors: ILoginFieldErrors = {};
 
-    if (!email) newFieldErrors.email = 'Required';
-    if (!password) newFieldErrors.password = 'Required';
-    if (requiresTwoFactor && twoFactorMethod === TwoFactorMethod.TOTP && !totpToken.trim()) newFieldErrors.totpToken = 'Required';
-    if (requiresTwoFactor && twoFactorMethod === TwoFactorMethod.RECOVERY && !recoveryCode.trim()) newFieldErrors.recoveryCode = 'Required';
+    if (!email) newFieldErrors.email = AdminI18n.t('common.required');
+    if (!password) newFieldErrors.password = AdminI18n.t('common.required');
+    if (requiresTwoFactor && twoFactorMethod === TwoFactorMethod.TOTP && !totpToken.trim()) newFieldErrors.totpToken = AdminI18n.t('common.required');
+    if (requiresTwoFactor && twoFactorMethod === TwoFactorMethod.RECOVERY && !recoveryCode.trim()) newFieldErrors.recoveryCode = AdminI18n.t('common.required');
 
     if (Object.keys(newFieldErrors).length > 0) {
       this.fieldErrors = newFieldErrors;
@@ -127,7 +128,7 @@ export class LoginPage extends AdminComponent {
       this.recoveryCode = '';
       this.auth.login(data.token, data.user);
     } catch (err: any) {
-      this.error = err.message || 'Login failed. Please check your credentials.';
+      this.error = err.message || AdminI18n.t('login.failed');
     } finally {
       this.isLoading = false;
     }
@@ -143,7 +144,7 @@ export class LoginPage extends AdminComponent {
       setPassword: (value: string) => { this.password = value; this.resetTwoFactor(); },
       submit: (event?: FormEvent) => { event?.preventDefault(); void this.handleSubmit(event ?? ({ preventDefault() {} } as unknown as FormEvent)); },
       forgotPassword: () => { this.router.push(AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD); },
-      contactSupport: () => { this.runtime.notify.notify(NotificationType.INFO, 'Support Offline', 'Support portal is temporarily unavailable. Please try again later.'); },
+      contactSupport: () => { this.runtime.notify.notify(NotificationType.INFO, AdminI18n.t('login.supportOfflineTitle'), AdminI18n.t('login.supportOffline')); },
       isLoading: this.isLoading,
       error: this.error,
       fieldErrors: this.fieldErrors,
@@ -155,10 +156,10 @@ export class LoginPage extends AdminComponent {
       setTotpToken: (value: string) => { this.totpToken = value; },
       setRecoveryCode: (value: string) => { this.recoveryCode = value; },
       workspace: workspace?.slug || '',
-      title: workspace ? `Sign in to ${workspace.slug}` : `Welcome to ${AppEnv.APP_NAME}`,
+      title: workspace ? AdminI18n.t('login.signInTo', { name: workspace.slug }) : AdminI18n.t('login.welcome', { app: AppEnv.APP_NAME }),
       subtitle: workspace
-        ? `${workspace.slug} runs the ${workspace.appearance || 'default'} console on this domain.`
-        : `Sign in to manage your ${AppEnv.APP_NAME} workspace powered by ${AppEnv.COMPANY_NAME}.`,
+        ? AdminI18n.t('login.workspaceIntro', { name: workspace.slug, console: workspace.appearance || AdminI18n.t('login.defaultConsole') })
+        : AdminI18n.t('login.intro', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME }),
     };
   }
 
@@ -222,7 +223,7 @@ export class LoginPage extends AdminComponent {
           />
 
           <p className="fc-login__foot text-center mt-8 text-sm text-slate-500">
-            Not part of the organization? <button onClick={(e) => this.handleContactSupport(e)} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">Contact Support</button>
+            {AdminI18n.t('login.notMember')} <button onClick={(e) => this.handleContactSupport(e)} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">{AdminI18n.t('login.contactSupport')}</button>
           </p>
         </div>
       </div>

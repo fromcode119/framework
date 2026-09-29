@@ -4,6 +4,8 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop } from '@fromcode119/react-class-components';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 import { AdminPageAccessService } from '@/app/services/admin-page-access-service';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Every admin page, refused to a user whose role does not open it.
@@ -35,9 +37,9 @@ export class PagePermissionGate extends AdminComponent {
       <div className="fc-scope-notice">
         <span className="fc-scope-notice__text">
           {required === '*'
-            ? 'This page is for administrators. Your role does not include it.'
-            : <>Your role does not include this page (it needs <code>{required}</code>).</>}{' '}
-          {home ? <Link href={home}>Open your own page instead.</Link> : null}
+            ? AdminI18n.t('ui.view.thisPageIsForAdministrators')
+            : <AdminRichText k="ui.view.roleLacksPage" vars={{ required: `<code>${required}</code>` }} />}{' '}
+          {home ? <Link href={home}>{AdminI18n.t('ui.view.openYourOwnPageInstead')}</Link> : null}
         </span>
       </div>
     );

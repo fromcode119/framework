@@ -9,6 +9,7 @@ import { RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { UiFieldUtils } from '@/lib/ui';
 import { ColorPickerUtils } from '@/components/ui/color-picker-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ColorPicker extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -112,7 +113,7 @@ export class ColorPicker extends AdminComponent {
 
             <div className="flex flex-col gap-4">
                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-semibold tracking-wide text-slate-400">Hex Code</span>
+                  <span className="text-[10px] font-semibold tracking-wide text-slate-400">{AdminI18n.t('ui.color.hex')}</span>
                   <div className="h-px flex-1 bg-slate-100 dark:bg-white/5" />
                </div>
                <input
@@ -132,7 +133,7 @@ export class ColorPicker extends AdminComponent {
                 onClick={() => (this.isOpen = false)}
                 className="w-full h-10 bg-indigo-600 text-white rounded-lg text-[10px] font-semibold tracking-wide hover:bg-indigo-700 shadow-lg shadow-indigo-600/10 transition-all active:scale-[0.98]"
                >
-                 Confirm Color
+                 {AdminI18n.t('ui.color.confirm')}
                </button>
             </div>
           </div>

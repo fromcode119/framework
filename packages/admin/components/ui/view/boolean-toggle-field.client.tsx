@@ -2,6 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Switch } from '@/components/ui/view/switch.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Standard presentation for a boolean collection field: a full-width bordered row that fills its
@@ -28,7 +29,7 @@ export class BooleanToggleField extends PureReactor {
         } ${disabled ? 'opacity-70' : ''}`}
       >
         <span className={`text-xs font-semibold ${checked ? 'text-indigo-500' : isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          {checked ? 'Yes' : 'No'}
+          {AdminI18n.t(checked ? 'common.yes' : 'common.no')}
         </span>
         <Switch checked={checked} onChange={onChange} disabled={disabled} />
       </div>

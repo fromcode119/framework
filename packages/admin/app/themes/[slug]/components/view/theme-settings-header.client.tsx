@@ -8,6 +8,7 @@ import { ThemeState } from '@fromcode119/core/client';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsHeader extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -45,7 +46,7 @@ export class ThemeSettingsHeader extends Reactor {
             <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-lg ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{themeDetail.slug}</span>
             <span className="text-slate-500 opacity-30">•</span>
             <span className={`text-[11px] font-semibold uppercase tracking-wide ${marketplaceVersion && marketplaceVersion !== themeDetail.version ? 'text-amber-500' : 'text-slate-400'}`}>
-              Version {themeDetail.version}
+              {AdminI18n.t('themes.versionLabel', { version: themeDetail.version })}
             </span>
             {marketplaceVersion && marketplaceVersion !== themeDetail.version && (
               <button
@@ -54,7 +55,7 @@ export class ThemeSettingsHeader extends Reactor {
                 className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
               >
                 {isUpdating ? <FrameworkIcons.Loader size={10} className="animate-spin" /> : <FrameworkIcons.Zap size={10} />}
-                {isUpdating ? 'Updating...' : 'Update Available'}
+                {isUpdating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
               </button>
             )}
           </div>
@@ -67,7 +68,7 @@ export class ThemeSettingsHeader extends Reactor {
             className={`h-9 px-4 rounded-lg flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 ${adminTheme === ThemeMode.DARK ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
           >
             {isSaving ? <FrameworkIcons.Loader size={16} className="animate-spin" /> : <FrameworkIcons.Zap size={16} />}
-            Apply Architecture Update
+            {AdminI18n.t('themes.applyArchitectureUpdate')}
           </button>
         )}
       </div>

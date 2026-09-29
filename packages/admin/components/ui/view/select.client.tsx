@@ -10,6 +10,7 @@ import { SelectMenu } from '@/components/ui/view/select-menu.client';
 import type { IOption } from '@/components/ui/interfaces/option.interface';
 import { ThemeContext } from '@/components/view/theme-context-store.client';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class Select extends Reactor {
   /**
@@ -148,7 +149,7 @@ export class Select extends Reactor {
 
   render(): ReactNode {
     const { value, onChange, options, label, onSearchChange } = this;
-    const placeholder = this.placeholder ?? 'Select an option...';
+    const placeholder = this.placeholder ?? AdminI18n.t('ui.select.placeholder');
     const isLoading = this.isLoading ?? false;
     // Loading is a form of disabled: there is nothing to pick yet, so the trigger must not open.
     const disabled = (this.disabled ?? false) || isLoading;
@@ -222,8 +223,8 @@ export class Select extends Reactor {
         {canClear ? (
           <button
             type="button"
-            aria-label="Clear selection"
-            title="Clear selection"
+            aria-label={AdminI18n.t('ui.select.clear')}
+            title={AdminI18n.t('ui.select.clear')}
             onClick={(event) => {
               event.preventDefault();
               event.stopPropagation();

@@ -7,6 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
 import { PluginSettingsFormActions } from '@/components/plugins/view/plugin-settings-form-actions.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * A plugin's settings, rendered from the schema the plugin itself declares.
@@ -39,9 +40,9 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     const status = this.status;
     if (!status || status.type !== NotificationType.ERROR) return '';
     const failed = Object.keys(this.errors || {});
-    if (!failed.length) return `Not saved: ${status.message}`;
+    if (!failed.length) return AdminI18n.t('plugins.list.notSaved', { message: status.message });
     const labels = failed.map((name) => (this.schema?.fields || []).find((field: any) => field.name === name)?.label || name);
-    return `Not saved — correct: ${labels.join(', ')}`;
+    return AdminI18n.t('plugins.list.notSavedCorrect', { join: labels.join(', ') });
   }
 
   render() {
@@ -66,7 +67,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         }`}>
           <FrameworkIcons.Settings size={48} className="mx-auto mb-4 text-slate-400" />
           <p className="text-slate-500 font-bold">
-            This plugin has no configurable settings.
+            {AdminI18n.t('plugins.list.thisPluginHasNoConfigurable')}
           </p>
         </div>
       );
@@ -128,7 +129,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
             {visibleFields.map((field: any) => {
               const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
               const resolvedField = hasSavedSecret
-                ? { ...field, admin: { ...(field.admin || {}), description: 'Saved securely — leave blank to keep the current secret.' } }
+                ? { ...field, admin: { ...(field.admin || {}), description: AdminI18n.t('plugins.list.savedSecurelyLeaveBlankTo') } }
                 : field;
               return (
                 <FieldRenderer
@@ -149,7 +150,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         <div className="flex items-center justify-between gap-4">
           <div className="flex flex-col gap-1">
             {this.isDirty && (
-              <span className="text-sm font-semibold text-amber-600">Unsaved changes</span>
+              <span className="text-sm font-semibold text-amber-600">{AdminI18n.t('plugins.list.unsavedChanges')}</span>
             )}
             {this.saveRefusal && (
               <span role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
@@ -159,13 +160,13 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
           </div>
           <div className="flex items-center gap-3">
             <Button type="button" variant={ButtonVariant.GHOST} onClick={this.exportSettings}>
-              Export
+              {AdminI18n.t('plugins.list.export')}
             </Button>
             <Button type="button" variant={ButtonVariant.GHOST} onClick={this.resetSettings}>
-              Reset
+              {AdminI18n.t('plugins.list.reset')}
             </Button>
             <Button type="submit" disabled={this.saving}>
-              {this.saving ? 'Saving…' : 'Save Settings'}
+              {this.saving ? AdminI18n.t('plugins.list.saving') : AdminI18n.t('plugins.list.saveSettings')}
             </Button>
           </div>
         </div>

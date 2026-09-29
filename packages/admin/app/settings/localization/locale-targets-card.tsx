@@ -7,6 +7,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/localization/setting-row';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class LocaleTargetsCard extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -27,18 +28,18 @@ export class LocaleTargetsCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <Card title="Default Locale Targets">
+      <Card title={AdminI18n.t('settings.localization.defaultLocaleTargets')}>
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Globe}
-          title="System Default Locale"
-          description="Primary locale used by system-level fallback logic."
+          title={AdminI18n.t('settings.localization.systemDefaultLocale')}
+          description={AdminI18n.t('settings.localization.primaryLocaleUsedBySystem')}
         >
           <Select
             value={this.defaultLocale}
             onChange={this.setDefaultLocale}
             options={this.localeSelectOptions}
-            placeholder="Select system locale"
+            placeholder={AdminI18n.t('settings.localization.selectSystemLocale')}
             searchable={false}
             theme={this.theme}
             className="w-full md:w-64"
@@ -48,14 +49,14 @@ export class LocaleTargetsCard extends PureReactor {
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Settings}
-          title="Admin Default Locale"
-          description="Default language used by the framework admin interface."
+          title={AdminI18n.t('settings.localization.adminDefaultLocale')}
+          description={AdminI18n.t('settings.localization.defaultLanguageUsedByThe')}
         >
           <Select
             value={this.adminDefaultLocale}
             onChange={this.setAdminDefaultLocale}
             options={this.localeSelectOptions}
-            placeholder="Select admin locale"
+            placeholder={AdminI18n.t('settings.localization.selectAdminLocale')}
             searchable={false}
             theme={this.theme}
             className="w-full md:w-64"
@@ -65,14 +66,14 @@ export class LocaleTargetsCard extends PureReactor {
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Layout}
-          title="Frontend Default Locale"
-          description="Default language used by frontend rendering/runtime fallback."
+          title={AdminI18n.t('settings.localization.frontendDefaultLocale')}
+          description={AdminI18n.t('settings.localization.defaultLanguageUsedByFrontend')}
         >
           <Select
             value={this.frontendDefaultLocale}
             onChange={this.setFrontendDefaultLocale}
             options={this.localeSelectOptions}
-            placeholder="Select frontend locale"
+            placeholder={AdminI18n.t('settings.localization.selectFrontendLocale')}
             searchable={false}
             theme={this.theme}
             className="w-full md:w-64"
@@ -82,18 +83,18 @@ export class LocaleTargetsCard extends PureReactor {
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Globe}
-          title="Locale URL Strategy"
-          description='Choose locale routing style: `?locale=bg`, `/bg/...`, or locale hidden in URL.'
+          title={AdminI18n.t('settings.localization.localeUrlStrategy')}
+          description={AdminI18n.t('settings.localization.chooseLocaleRoutingStyleLocale')}
         >
           <Select
             value={this.localeUrlStrategy.value}
             onChange={this.onLocaleUrlStrategyChange}
             options={[
-              { value: 'query', label: 'Query Parameter (?locale=bg)' },
-              { value: 'path', label: 'Path Prefix (/bg/...)' },
-              { value: 'none', label: 'No Locale in URL' }
+              { value: 'query', label: AdminI18n.t('settings.localization.queryParameterLocaleBg') },
+              { value: 'path', label: AdminI18n.t('settings.localization.pathPrefixBg') },
+              { value: 'none', label: AdminI18n.t('settings.localization.noLocaleInUrl') }
             ]}
-            placeholder="Select locale URL strategy"
+            placeholder={AdminI18n.t('settings.localization.selectLocaleUrlStrategy')}
             searchable={false}
             theme={this.theme}
             className="w-full md:w-64"

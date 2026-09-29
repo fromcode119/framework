@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewUserAccessControls extends PureReactor {
   @prop declare formData: INewUserFormData;
@@ -14,10 +15,10 @@ export class NewUserAccessControls extends PureReactor {
   render(): ReactNode {
     const { formData, onPatch } = this;
     return (
-      <Card title="Access Controls">
+      <Card title={AdminI18n.t('users.accessControls')}>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
             <div className="space-y-2">
-               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Account Status</label>
+               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.accountStatus')}</label>
                <div className="flex items-center gap-3">
                   <Button
                     type="button"
@@ -26,7 +27,7 @@ export class NewUserAccessControls extends PureReactor {
                     className="rounded-lg"
                     onClick={() => onPatch({ accountStatus: 'active' })}
                   >
-                    Active
+                    {AdminI18n.t('users.active')}
                   </Button>
                   <Button
                     type="button"
@@ -35,12 +36,12 @@ export class NewUserAccessControls extends PureReactor {
                     className="rounded-lg"
                     onClick={() => onPatch({ accountStatus: 'suspended' })}
                   >
-                    Suspended
+                    {AdminI18n.t('users.suspended')}
                   </Button>
                </div>
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">Force Password Reset</label>
+               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.forcePasswordReset')}</label>
                <div className="pt-2">
                  <Switch
                    checked={formData.forcePasswordReset ?? false}

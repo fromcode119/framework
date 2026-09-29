@@ -12,6 +12,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class IntegrationProviderList extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -36,9 +37,9 @@ export class IntegrationProviderList extends PureReactor {
       <Card className="xl:col-span-4" noPadding>
         <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3">
           <div>
-            <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">Provider Instances</h3>
+            <h3 className="text-sm font-bold tracking-tight text-slate-900 dark:text-white">{AdminI18n.t('settings.integrations.providerInstances')}</h3>
             <p className="text-xs text-slate-500 mt-1">
-              Multiple providers are supported, including duplicate provider types.
+              {AdminI18n.t('settings.integrations.multipleProvidersAreSupportedIncluding')}
             </p>
           </div>
           <Button
@@ -47,15 +48,15 @@ export class IntegrationProviderList extends PureReactor {
             icon={<FrameworkIcons.Plus size={14} />}
             onClick={this.onAddProvider}
           >
-            Add
+            {AdminI18n.t('settings.integrations.add')}
           </Button>
         </div>
 
         <div className="p-4 space-y-3">
           {this.activeProviders.length === 0 && (
             <div className="rounded-xl border border-dashed border-slate-200 dark:border-slate-800 px-4 py-8 text-center">
-              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">No providers configured.</p>
-              <p className="text-xs text-slate-500 mt-1">Add your first provider instance to continue.</p>
+              <p className="text-sm font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.noProvidersConfigured')}</p>
+              <p className="text-xs text-slate-500 mt-1">{AdminI18n.t('settings.integrations.addYourFirstProviderInstance')}</p>
             </div>
           )}
 
@@ -90,8 +91,8 @@ export class IntegrationProviderList extends PureReactor {
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5">
-                      {this.runtimeProviderId === provider.id && <Badge variant={BadgeVariant.INFO}>Runtime</Badge>}
-                      <Badge variant={enabled ? 'green' : 'gray'}>{enabled ? 'Enabled' : 'Disabled'}</Badge>
+                      {this.runtimeProviderId === provider.id && <Badge variant={BadgeVariant.INFO}>{AdminI18n.t('settings.integrations.runtime')}</Badge>}
+                      <Badge variant={enabled ? 'green' : 'gray'}>{enabled ? AdminI18n.t('settings.integrations.enabled') : AdminI18n.t('settings.integrations.disabled')}</Badge>
                     </div>
                   </div>
                 </button>
@@ -112,7 +113,7 @@ export class IntegrationProviderList extends PureReactor {
                       onClick={() => this.onRequestRemove(provider.id)}
                       className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-500/10"
                     >
-                      Remove
+                      {AdminI18n.t('settings.integrations.remove')}
                     </Button>
                   ) : (
                     <div className="flex items-center gap-2">
@@ -122,10 +123,10 @@ export class IntegrationProviderList extends PureReactor {
                         onClick={() => this.onConfirmRemove(provider)}
                         isLoading={isChanging}
                       >
-                        Confirm
+                        {AdminI18n.t('settings.integrations.confirm')}
                       </Button>
                       <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} onClick={this.onCancelRemove}>
-                        Cancel
+                        {AdminI18n.t('settings.integrations.cancel')}
                       </Button>
                     </div>
                   )}

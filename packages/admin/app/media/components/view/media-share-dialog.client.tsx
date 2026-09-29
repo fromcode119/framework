@@ -12,6 +12,7 @@ import { TagField } from '@/components/ui/tag-field/view/index.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { MediaShareController } from '@/app/media/media-share-controller';
 import type { IMediaItem } from '@/app/media/interfaces/media-item.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Share one or more files with named people, from the files themselves.
@@ -117,8 +118,8 @@ export class MediaShareDialog extends AdminComponent {
         publicCount: 0,
         composing: false,
         notice: result.failedRecipients.length
-          ? `Sent, except to: ${result.failedRecipients.join(', ')}`
-          : 'Links sent.',
+          ? AdminI18n.t('media.sentExceptTo', { join: result.failedRecipients.join(', ') })
+          : AdminI18n.t('media.linksSent'),
       });
       await this.loadGrants();
     } catch (error: any) {
@@ -148,10 +149,10 @@ export class MediaShareDialog extends AdminComponent {
   @bound private handleRequireAccount(checked: boolean): void { this.requireAccount = checked; }
 
   private grantStatus(grant: any): string {
-    if (grant.revokedAt) return 'Revoked';
-    if (grant.expiresAt && new Date(String(grant.expiresAt)).getTime() <= Date.now()) return 'Expired';
-    if (grant.maxDownloads > 0 && grant.downloadCount >= grant.maxDownloads) return 'Limit reached';
-    return grant.lastAccessAt ? `Opened · ${grant.downloadCount} download(s)` : 'Not opened yet';
+    if (grant.revokedAt) return AdminI18n.t('media.revoked');
+    if (grant.expiresAt && new Date(String(grant.expiresAt)).getTime() <= Date.now()) return AdminI18n.t('media.expired');
+    if (grant.maxDownloads > 0 && grant.downloadCount >= grant.maxDownloads) return AdminI18n.t('media.limitReached');
+    return grant.lastAccessAt ? AdminI18n.t('media.openedDownloadS', { downloadCount: grant.downloadCount }) : AdminI18n.t('media.notOpenedYet');
   }
 
   private renderAccess(dark: boolean, labelClass: string): ReactNode {
@@ -160,12 +161,12 @@ export class MediaShareDialog extends AdminComponent {
 
     return (
       <div className={`mt-6 pt-6 border-t ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-        <p className={labelClass}>Who has access</p>
+        <p className={labelClass}>{AdminI18n.t('media.whoHasAccess')}</p>
         {groups.map((group) => (
           <div key={group.shareId} className="mb-4 last:mb-0">
             <div className="flex items-center justify-between gap-3">
               <p className={`text-[11px] font-semibold truncate ${dark ? 'text-white' : 'text-slate-900'}`}>{group.shareTitle}</p>
-              <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeShare(group.shareId)}>Revoke all</Button>
+              <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeShare(group.shareId)}>{AdminI18n.t('media.revokeAll')}</Button>
             </div>
             {group.grants.map((grant: any) => (
               <div key={grant.id} className="flex items-center justify-between gap-3 py-1.5 pl-3">
@@ -174,7 +175,7 @@ export class MediaShareDialog extends AdminComponent {
                   <p className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{this.grantStatus(grant)}</p>
                 </div>
                 {grant.revokedAt ? null : (
-                  <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id)}>Revoke</Button>
+                  <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeGrant(grant.id)}>{AdminI18n.t('media.revoke')}</Button>
                 )}
               </div>
             ))}
@@ -191,7 +192,7 @@ export class MediaShareDialog extends AdminComponent {
     const dark = this.theme === ThemeMode.DARK;
     const labelClass = `block text-[10px] font-semibold uppercase tracking-widest mb-1.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`;
     const hintClass = `mt-1 text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`;
-    const subtitle = items.length === 1 ? String(items[0].originalName || items[0].filename || '') : `${items.length} files selected`;
+    const subtitle = items.length === 1 ? String(items[0].originalName || items[0].filename || '') : AdminI18n.t('media.filesSelected', { length: items.length });
 
     return (
       <RootFramework>
@@ -206,7 +207,7 @@ export class MediaShareDialog extends AdminComponent {
                 <FrameworkIcons.Share size={24} />
               </div>
               <div className="flex-1 min-w-0">
-                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>Share Files</h3>
+                <h3 className={`text-lg font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('media.shareFiles')}</h3>
                 <p className={`mt-1 text-sm leading-relaxed truncate ${dark ? 'text-slate-400' : 'text-slate-500'}`} title={subtitle}>{subtitle}</p>
               </div>
               <button onClick={this.onClose} className={`p-1 rounded-lg transition-colors ${dark ? 'hover:bg-slate-800 text-slate-500 hover:text-white' : 'hover:bg-slate-50 text-slate-400 hover:text-slate-900'}`}>
@@ -216,19 +217,18 @@ export class MediaShareDialog extends AdminComponent {
 
             {this.publicCount ? (
               <div className={`mb-6 rounded-xl border p-3 text-[11px] leading-relaxed ${dark ? 'border-amber-500/30 bg-amber-500/10 text-amber-200' : 'border-amber-200 bg-amber-50 text-amber-800'}`}>
-                {this.publicCount === items.length ? 'These files are public.' : `${this.publicCount} of these files are public.`}
-                {' '}Sending will move them to private storage so the link becomes the only way in. Anyone
-                who already has a current URL keeps whatever they downloaded.
+                {this.publicCount === items.length ? AdminI18n.t('media.theseFilesArePublic') : AdminI18n.t('media.ofTheseFilesArePublic', { publicCount: this.publicCount })}
+                {' '}{AdminI18n.t('media.sendingMovesToPrivate')}
               </div>
             ) : null}
 
             <form onSubmit={this.handleSubmit} className="space-y-4">
               <div>
-                <label className={labelClass}>Share name</label>
+                <label className={labelClass}>{AdminI18n.t('media.shareName')}</label>
                 <Input type="text" value={this.title} onChange={this.handleTitle} disabled={this.busy} className="w-full" />
               </div>
               <div>
-                <label className={labelClass}>Send to</label>
+                <label className={labelClass}>{AdminI18n.t('media.sendTo')}</label>
                 {/* Suggests from `people` — which already holds unregistered contacts, backfilled guest
                     customers and relatives — while still accepting a typed address. Both, deliberately:
                     a picker limited to known people would make sharing with a stranger impossible, and
@@ -236,36 +236,36 @@ export class MediaShareDialog extends AdminComponent {
                 <TagField
                   value={this.recipients}
                   onChange={this.handleRecipients}
-                  placeholder="Type an email, or pick someone"
-                  suggestionsLabel="People"
+                  placeholder={AdminI18n.t('media.typeAnEmailOrPick')}
+                  suggestionsLabel={AdminI18n.t('media.people')}
                   theme={this.theme}
                   allowCreate
                   apiOverrides={{ suggest: AdminConstants.ENDPOINTS.SYSTEM.PEOPLE_SUGGEST }}
                 />
               </div>
               <div>
-                <label className={labelClass}>Message</label>
-                <Input type="text" placeholder="Optional note shown in the email…" value={this.message} onChange={this.handleMessage} disabled={this.busy} className="w-full" />
+                <label className={labelClass}>{AdminI18n.t('media.message')}</label>
+                <Input type="text" placeholder={AdminI18n.t('media.optionalNoteShownInThe')} value={this.message} onChange={this.handleMessage} disabled={this.busy} className="w-full" />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className={labelClass}>Expires</label>
+                  <label className={labelClass}>{AdminI18n.t('media.expires')}</label>
                   <NumberStepper value={this.expiryDays} onChange={this.handleExpiry} disabled={this.busy} min={0} />
                   {/* 0 = never / unlimited is the one convention across this feature; as a hint under
                       the field it cannot push the two columns out of alignment. */}
-                  <p className={hintClass}>days · 0 = never</p>
+                  <p className={hintClass}>{AdminI18n.t('media.daysZeroNever')}</p>
                 </div>
                 <div>
-                  <label className={labelClass}>Max downloads</label>
+                  <label className={labelClass}>{AdminI18n.t('media.maxDownloads')}</label>
                   <NumberStepper value={this.maxDownloads} onChange={this.handleMaxDownloads} disabled={this.busy} min={0} />
-                  <p className={hintClass}>0 = unlimited</p>
+                  <p className={hintClass}>{AdminI18n.t('media.zeroUnlimited')}</p>
                 </div>
               </div>
 
               <Switch
-                label="Require a signed-in account"
-                description="The recipient must be signed in with the address this was sent to."
+                label={AdminI18n.t('media.requireASignedInAccount')}
+                description={AdminI18n.t('media.theRecipientMustBeSigned')}
                 checked={this.requireAccount}
                 onChange={this.handleRequireAccount}
                 disabled={this.busy}
@@ -274,9 +274,9 @@ export class MediaShareDialog extends AdminComponent {
               {this.notice ? <p className={`text-[11px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>{this.notice}</p> : null}
 
               <div className="flex flex-col sm:flex-row gap-3 pt-1">
-                <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button" disabled={this.busy}>Close</Button>
+                <Button variant={ButtonVariant.GHOST} className="flex-1" onClick={this.onClose} type="button" disabled={this.busy}>{AdminI18n.t('media.close')}</Button>
                 <Button variant={ButtonVariant.PRIMARY} className="flex-1" type="submit" isLoading={this.busy} disabled={!MediaShareController.normalizeRecipients(this.recipients).length}>
-                  Send link{items.length > 1 ? 's' : ''}
+                  {items.length > 1 ? AdminI18n.t('media.sendLinks') : AdminI18n.t('media.sendLink')}
                 </Button>
               </div>
             </form>

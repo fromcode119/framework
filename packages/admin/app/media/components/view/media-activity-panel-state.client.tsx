@@ -4,6 +4,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { TimezoneUtils } from '@/lib/timezone';
 import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Which window of media activity is being looked at, and what came back for it.
@@ -68,13 +69,13 @@ export abstract class MediaActivityPanelState extends AdminComponent {
    * screen is a way back to its controls, so "who is this about" is one click from "do something".
    */
   protected shareLink(shareId: unknown, title: string): ReactNode {
-    if (!shareId) return <span>{title || 'Untitled share'}</span>;
+    if (!shareId) return <span>{title || AdminI18n.t('media.untitledShare')}</span>;
     return (
       <a
         className="hover:underline text-indigo-500"
         href={AdminPathUtils.toAdminPath(`/media/shared?share=${Number(shareId)}`)}
       >
-        {title || 'Untitled share'}
+        {title || AdminI18n.t('media.untitledShare')}
       </a>
     );
   }

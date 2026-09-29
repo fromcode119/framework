@@ -8,6 +8,7 @@ import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
 import { MediaItemCardState } from '@/app/media/components/view/media-item-card-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One file in the media library, as a grid tile or a list row.
@@ -31,8 +32,8 @@ export class MediaItemCard extends MediaItemCardState {
         <button
           type="button"
           onClick={this.onEdit}
-          aria-label={`Open details for ${item.originalName}`}
-          title="Open details"
+          aria-label={AdminI18n.t('media.openDetailsFor', { originalName: item.originalName })}
+          title={AdminI18n.t('media.openDetails')}
           className="absolute inset-0 z-0 cursor-pointer"
         />
 
@@ -60,7 +61,7 @@ export class MediaItemCard extends MediaItemCardState {
           {/* The badge, not a placeholder: the artwork is visible AND the file is marked protected. */}
           {this.isPrivate ? (
             <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
-              <FrameworkIcons.Lock size={10} /> Private
+              <FrameworkIcons.Lock size={10} /> {AdminI18n.t('media.private')}
             </span>
           ) : null}
 
@@ -73,7 +74,7 @@ export class MediaItemCard extends MediaItemCardState {
                 <a
                   href={mediaUrl}
                   download
-                  title="Download"
+                  title={AdminI18n.t('media.download')}
                   className="pointer-events-auto p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -82,12 +83,12 @@ export class MediaItemCard extends MediaItemCardState {
                 </a>
               )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.Zap size={18} />, 'text-emerald-600', 'Ships with the theme — there is no media record to store an optimized copy on')
+                ? this.renderLockedAction(<FrameworkIcons.Zap size={18} />, 'text-emerald-600', AdminI18n.t('media.shipsWithTheThemeThere'))
                 : ['image/jpeg', 'image/jpg', 'image/png'].includes(item.mimeType) && (
                   <button
                     onClick={this.onOptimize}
                     disabled={optimizingId === item.id}
-                    title={item.optimizedUrl ? `Optimized · ${this.formatSize(item.optimizedSize ?? 0)}` : 'Convert to WebP'}
+                    title={item.optimizedUrl ? AdminI18n.t('media.optimized', { formatSize: this.formatSize(item.optimizedSize ?? 0) }) : AdminI18n.t('media.convertToWebp')}
                     className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60"
                   >
                     {optimizingId === item.id ? <FrameworkIcons.Loader size={18} className="animate-spin" /> : <FrameworkIcons.Zap size={18} />}
@@ -97,7 +98,7 @@ export class MediaItemCard extends MediaItemCardState {
               {this.isReadOnly ? (
                 <button
                   onClick={this.onEdit}
-                  title="Details"
+                  title={AdminI18n.t('media.details')}
                   className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
                 >
                   <FrameworkIcons.Info size={18} />
@@ -105,29 +106,29 @@ export class MediaItemCard extends MediaItemCardState {
               ) : (
                 <button
                   onClick={this.onEdit}
-                  title="Edit details (alt text, caption)"
+                  title={AdminI18n.t('media.editDetailsAltTextCaption')}
                   className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
                 >
                   <FrameworkIcons.Edit size={18} />
                 </button>
               )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.External size={18} />, 'text-indigo-600', 'Ships with the theme — it lives in the theme bundle, not in a media folder')
+                ? this.renderLockedAction(<FrameworkIcons.External size={18} />, 'text-indigo-600', AdminI18n.t('media.shipsWithTheThemeIt'))
                 : (
                   <button
                     onClick={this.onMove}
-                    title="Move to folder"
+                    title={AdminI18n.t('media.moveToFolder')}
                     className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
                   >
                     <FrameworkIcons.External size={18} />
                   </button>
                 )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.Trash size={18} />, 'text-red-600', 'Ships with the theme — remove it by changing the theme, not from the library')
+                ? this.renderLockedAction(<FrameworkIcons.Trash size={18} />, 'text-red-600', AdminI18n.t('media.shipsWithTheThemeRemove'))
                 : (
                   <button
                     onClick={this.onDelete}
-                    title="Delete"
+                    title={AdminI18n.t('media.delete')}
                     className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-red-600 hover:bg-red-50 transition-colors"
                   >
                     <FrameworkIcons.Trash size={18} />
@@ -145,7 +146,7 @@ export class MediaItemCard extends MediaItemCardState {
               {/* Why this card has no Edit/Move/Delete. Without it the operator sees controls missing
                   from some tiles and not others with nothing on screen accounting for the difference. */}
               {this.isReadOnly ? (
-                <Badge variant={BadgeVariant.GRAY} className="text-[10px]">Theme</Badge>
+                <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.theme')}</Badge>
               ) : null}
               {item.optimizedUrl && (
                 <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">WebP</Badge>
@@ -178,7 +179,7 @@ export class MediaItemCard extends MediaItemCardState {
             <button
               type="button"
               onClick={this.onEdit}
-              title="Open details"
+              title={AdminI18n.t('media.openDetails')}
               className={`block w-full cursor-pointer truncate text-left font-semibold text-sm hover:underline ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
             >
               {item.originalName}
@@ -191,9 +192,9 @@ export class MediaItemCard extends MediaItemCardState {
             {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
          </div>
          <div className="hidden lg:flex w-24 items-center gap-1 flex-shrink-0">
-            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY} className="text-[10px]">Theme</Badge> : null}
+            {this.isReadOnly ? <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.theme')}</Badge> : null}
             {String(item.visibility || 'public') === 'private' ? (
-              <Badge variant={BadgeVariant.WARNING} className="text-[10px]">Private</Badge>
+              <Badge variant={BadgeVariant.WARNING} className="text-[10px]">{AdminI18n.t('media.private')}</Badge>
             ) : null}
             {item.optimizedUrl ? <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">WebP</Badge> : null}
          </div>
@@ -202,7 +203,7 @@ export class MediaItemCard extends MediaItemCardState {
             {this.isReadOnly ? (
               <button
                 onClick={this.onEdit}
-                title="Details"
+                title={AdminI18n.t('media.details')}
                 className="cursor-pointer rounded-lg p-2 text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800"
               >
                 <FrameworkIcons.Info size={16} />
@@ -215,9 +216,9 @@ export class MediaItemCard extends MediaItemCardState {
                 reason — see `renderLockedAction`. The row keeps its full set of controls either way. */}
             {this.isReadOnly ? (
               <>
-                {this.renderLockedAction(<FrameworkIcons.Zap size={16} />, 'text-emerald-500', 'Ships with the theme — there is no media record to store an optimized copy on', 'bg-transparent')}
-                {this.renderLockedAction(<FrameworkIcons.External size={16} />, 'text-indigo-500', 'Ships with the theme — it lives in the theme bundle, not in a media folder', 'bg-transparent')}
-                {this.renderLockedAction(<FrameworkIcons.Trash size={16} />, 'text-red-500', 'Ships with the theme — remove it by changing the theme, not from the library', 'bg-transparent')}
+                {this.renderLockedAction(<FrameworkIcons.Zap size={16} />, 'text-emerald-500', AdminI18n.t('media.shipsWithTheThemeThere'), 'bg-transparent')}
+                {this.renderLockedAction(<FrameworkIcons.External size={16} />, 'text-indigo-500', AdminI18n.t('media.shipsWithTheThemeIt'), 'bg-transparent')}
+                {this.renderLockedAction(<FrameworkIcons.Trash size={16} />, 'text-red-500', AdminI18n.t('media.shipsWithTheThemeRemove'), 'bg-transparent')}
               </>
             ) : (
               <>
@@ -225,7 +226,7 @@ export class MediaItemCard extends MediaItemCardState {
                   <button
                     onClick={this.onOptimize}
                     disabled={optimizingId === item.id}
-                    title={item.optimizedUrl ? 'Re-optimize to WebP' : 'Convert to WebP'}
+                    title={item.optimizedUrl ? AdminI18n.t('media.reOptimizeToWebp') : AdminI18n.t('media.convertToWebp')}
                     className="p-2 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 rounded-lg text-emerald-500 disabled:opacity-60"
                   >
                     {optimizingId === item.id ? <FrameworkIcons.Loader size={16} className="animate-spin" /> : <FrameworkIcons.Zap size={16} />}
@@ -233,21 +234,21 @@ export class MediaItemCard extends MediaItemCardState {
                 )}
                 <button
                   onClick={this.onEdit}
-                  title="Edit details (alt text, caption)"
+                  title={AdminI18n.t('media.editDetailsAltTextCaption')}
                   className="p-2 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-slate-500"
                 >
                   <FrameworkIcons.Edit size={16} />
                 </button>
                 <button
                   onClick={this.onMove}
-                  title="Move to folder"
+                  title={AdminI18n.t('media.moveToFolder')}
                   className="p-2 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-lg text-indigo-500"
                 >
                   <FrameworkIcons.External size={16} />
                 </button>
                 <button
                   onClick={this.onDelete}
-                  title="Delete"
+                  title={AdminI18n.t('media.delete')}
                   className="p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg text-red-500"
                 >
                   <FrameworkIcons.Trash size={16} />

@@ -28,6 +28,6 @@ describe('AdminDictionary', () => {
   });
 
   it('names each language in that language, which is the only name its reader recognises', () => {
-    expect(AdminDictionary.label('bg').toLowerCase()).toContain('български');
+    expect(AdminDictionary.label('bg')).toBe('Български');
   });
 });

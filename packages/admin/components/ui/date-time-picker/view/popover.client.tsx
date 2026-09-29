@@ -12,6 +12,7 @@ import { DateTimePickerDayClassNames } from '@/components/ui/date-time-picker/da
 import { DateTimePickerJumpView } from '@/components/ui/date-time-picker/view/jump-view.client';
 import { DateTimePickerFooter } from '@/components/ui/date-time-picker/view/footer.client';
 import type { IDateTimePickerCoords } from '@/components/ui/date-time-picker/interfaces/date-time-picker-coords.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class DateTimePickerPopover extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -55,7 +56,7 @@ export class DateTimePickerPopover extends PureReactor {
           placeholder,
           timezone,
         )
-      : 'No date selected';
+      : AdminI18n.t('ui.date.none');
 
     return (
         <RootFramework>
@@ -85,7 +86,7 @@ export class DateTimePickerPopover extends PureReactor {
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
-                    Selected
+                    {AdminI18n.t('ui.date.selected')}
                   </p>
                   <p className={`truncate text-[13px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                     {selectedSummary}
@@ -100,7 +101,7 @@ export class DateTimePickerPopover extends PureReactor {
                       : 'text-indigo-600 hover:bg-indigo-50 hover:text-indigo-700 active:scale-95'
                   }`}
                 >
-                  {pickerDate ? 'Jump' : 'Today'}
+                  {AdminI18n.t(pickerDate ? 'ui.date.jump' : 'ui.date.today')}
                 </button>
               </div>
               <div className="grid grid-cols-[34px_minmax(0,1fr)_34px] items-center gap-2">
@@ -112,7 +113,7 @@ export class DateTimePickerPopover extends PureReactor {
                       ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                       : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
                   }`}
-                  aria-label="Previous month"
+                  aria-label={AdminI18n.t('ui.date.previousMonth')}
                 >
                   <FrameworkIcons.Left size={15} />
                 </button>
@@ -124,9 +125,9 @@ export class DateTimePickerPopover extends PureReactor {
                       ? 'bg-slate-700/40 text-white hover:bg-indigo-500/20 hover:text-indigo-100 active:scale-[0.98] ring-1 ring-white/5'
                       : 'bg-white text-slate-900 hover:bg-indigo-50 hover:text-indigo-700 active:scale-[0.98] shadow-sm ring-1 ring-black/5'
                   }`}
-                  aria-label="Choose month and year"
+                  aria-label={AdminI18n.t('ui.date.chooseMonth')}
                 >
-                  <span>{DateTimePickerConstants.MONTH_LABELS[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
+                  <span>{DateTimePickerConstants.monthLabels()[visibleMonth.getMonth()]} {visibleMonth.getFullYear()}</span>
                   <FrameworkIcons.Down size={14} className={`transition-transform duration-200 ${isJumpViewOpen ? 'rotate-180' : ''}`} />
                 </button>
                 <button
@@ -137,7 +138,7 @@ export class DateTimePickerPopover extends PureReactor {
                       ? 'bg-slate-700/40 text-slate-300 hover:bg-indigo-500/20 hover:text-indigo-200 active:scale-95 ring-1 ring-white/5'
                       : 'bg-white text-slate-600 hover:bg-indigo-50 hover:text-indigo-600 active:scale-95 shadow-sm ring-1 ring-black/5'
                   }`}
-                  aria-label="Next month"
+                  aria-label={AdminI18n.t('ui.date.nextMonth')}
                 >
                   <FrameworkIcons.Right size={15} />
                 </button>
@@ -160,6 +161,7 @@ export class DateTimePickerPopover extends PureReactor {
                 showOutsideDays={false}
                 className={`${theme === ThemeMode.DARK ? 'rdp-dark' : ''}`}
                 classNames={DateTimePickerDayClassNames.build(theme)}
+                formatters={{ formatWeekdayName: (weekday: Date) => DateTimePickerConstants.weekdayLabel(weekday) }}
               />
             )}
 

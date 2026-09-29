@@ -1,5 +1,5 @@
 import type { FrameworkEmailSender } from '@fromcode119/core';
-import { ApplicationUrlUtils, FrameworkEmailSenderService, LocalizationUtils, Logger, SystemConstants, SecretService } from '@fromcode119/core';
+import { ApplicationUrlUtils, EmailLogoUrl, FrameworkEmailSenderService, LocalizationUtils, Logger, SystemConstants, SecretService } from '@fromcode119/core';
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
@@ -105,6 +105,7 @@ export class TwoFactorRecoveryCodes {
       }
       const email = await SecurityNotificationEmailTemplate.build({
         appName: await this.resolveFrameworkAppName(),
+        logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO), AuthEmailThemeOverride.activeSlug),
         user: { firstName: String(user?.first_name || '').trim(), email: recipient },
         theme: await AuthEmailThemeOverride.variables(),
         locale: LocalizationUtils.normalizeLocaleCode(

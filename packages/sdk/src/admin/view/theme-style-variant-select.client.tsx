@@ -23,7 +23,7 @@ export class ThemeStyleVariantSelect extends Reactor {
   private get options(): Array<{ value: string; label: string }> {
     const themeStyleVariants = ((this.context as any)?.themeStyleVariants as Record<string, any>) ?? {};
     return [
-      ...(this.withAuto ? [{ value: 'auto', label: 'Auto' }] : []),
+      ...(this.withAuto ? [{ value: 'auto', label: this.context?.t('ui.field.auto', {}, 'Auto') ?? 'Auto' }] : []),
       ...Object.entries(themeStyleVariants).map(([key, v]) => ({ value: key, label: (v as any).label ?? key })),
     ];
   }

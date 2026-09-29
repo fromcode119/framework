@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@ai/ui/select';
 import type { SelectOption } from '@ai/ui/select-option';
 import { GlassMorphism } from '@ai/ui/glass-morphism';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantSettingsProviderSection extends PureReactor {
   private static readonly MATTE_SELECT_CLASS =
@@ -24,12 +25,12 @@ export class AssistantSettingsProviderSection extends PureReactor {
     return (
       <section className={`${GlassMorphism.GLASS_SUB_PANEL} p-4`}>
         <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.16em] text-[var(--text-sub)]">
-          Inference Engine
+          {AiText.t('ai.inferenceEngine')}
         </p>
         <div className="space-y-4">
           <div>
             <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
-              Provider
+              {AiText.t('ai.provider')}
             </label>
             <Select
               value={this.provider}
@@ -42,7 +43,7 @@ export class AssistantSettingsProviderSection extends PureReactor {
 
           <div>
             <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
-              Model
+              {AiText.t('ai.model')}
             </label>
             <Select
               value={this.model}
@@ -55,7 +56,7 @@ export class AssistantSettingsProviderSection extends PureReactor {
             {this.loadingModels ? (
               <div className="mt-1.5 flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--surface)] px-2.5 py-1.5">
                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-[var(--border)] border-t-[var(--text-main)]" />
-                <span className="text-xs font-medium text-[var(--text-sub)]">Loading models</span>
+                <span className="text-xs font-medium text-[var(--text-sub)]">{AiText.t('ai.loadingModels2')}</span>
               </div>
             ) : null}
             {this.modelsError ? <p className="mt-1.5 text-xs text-red-600 dark:text-red-400">{this.modelsError}</p> : null}
@@ -63,7 +64,7 @@ export class AssistantSettingsProviderSection extends PureReactor {
 
           <div>
             <label className="mb-1.5 block text-[10px] font-bold uppercase tracking-[0.12em] text-[var(--text-sub)]">
-              Role / Skill
+              {AiText.t('ai.roleSkill')}
             </label>
             <Select
               value={this.skillId}
@@ -72,7 +73,7 @@ export class AssistantSettingsProviderSection extends PureReactor {
               className={AssistantSettingsProviderSection.MATTE_SELECT_CLASS}
               searchable={false}
             />
-            <p className="mt-1.5 text-xs text-[var(--text-sub)]">Select the AI role for specialized responses</p>
+            <p className="mt-1.5 text-xs text-[var(--text-sub)]">{AiText.t('ai.selectTheAiRoleFor')}</p>
           </div>
         </div>
       </section>

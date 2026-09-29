@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditUserHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -22,12 +23,12 @@ export class EditUserHeader extends PureReactor {
       <CompactPageHeader
         theme={this.theme}
         backHref={AdminConstants.ROUTES.USERS.DETAIL(this.userId)}
-        title="Edit account"
-        subtitle="Update profile information and security credentials."
+        title={AdminI18n.t('users.editAccount2')}
+        subtitle={AdminI18n.t('users.updateProfileInformationAndSecurity')}
         actions={
           <>
             <Button variant={ButtonVariant.GHOST} className="px-4 h-9 rounded-lg font-semibold text-xs" onClick={this.onCancel}>
-              Cancel
+              {AdminI18n.t('users.cancel')}
             </Button>
             <Button
               className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
@@ -35,7 +36,7 @@ export class EditUserHeader extends PureReactor {
               isLoading={this.saving}
               onClick={(e: FormEvent) => this.onSubmit(e)}
             >
-              Save changes
+              {AdminI18n.t('users.saveChanges')}
             </Button>
           </>
         }

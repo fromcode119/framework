@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import {Reactor, prop, state, bound, Platform} from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class Lightbox extends Reactor {
   @prop declare images: string[];
@@ -98,13 +99,13 @@ export class Lightbox extends Reactor {
         <div className="relative flex flex-col items-center w-full max-w-7xl">
           <img
             src={images[currentIndex]}
-            alt={`Preview ${currentIndex + 1}`}
+            alt={AdminI18n.t('ui.lightbox.image', { number: currentIndex + 1 })}
             className="max-w-full max-h-[85vh] lg:max-h-[90vh] object-contain rounded-xl shadow-[0_80px_160px_-30px_rgba(0,0,0,0.7)] animate-in zoom-in-95 duration-700 ring-1 ring-white/20"
           />
 
           <div className="absolute -bottom-16 left-0 right-0 text-center space-y-1">
              <p className="text-white text-[11px] font-semibold tracking-widest drop-shadow-xl opacity-80">
-                {title || 'Platform Preview'}
+                {title || AdminI18n.t('ui.lightbox.title')}
              </p>
              {images.length > 1 && (
                <p className="text-white/30 text-[9px] font-medium tracking-widest">

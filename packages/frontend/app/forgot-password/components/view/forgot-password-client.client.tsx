@@ -1,9 +1,12 @@
-import { Reactor, state, bound } from '@fromcode119/react-class-components';
+import { FrontendCopy } from '@/lib/i18n/frontend-copy';
+import { Reactor, state, bound, prop } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
 
 export class ForgotPasswordPage extends Reactor {
+  /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
+  @prop declare locale?: string;
   @state email = '';
   @state isSubmitting = false;
   @state error = '';
@@ -43,9 +46,9 @@ export class ForgotPasswordPage extends Reactor {
     return (
       <main className="min-h-screen bg-slate-50 text-slate-900">
         <div className="mx-auto max-w-xl px-6 py-16">
-          <h1 className="text-3xl font-bold tracking-tight">Forgot Password</h1>
+          <h1 className="text-3xl font-bold tracking-tight">{FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.forgotPassword')}</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Enter your email and we will send a password reset link.
+            {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.enterYourEmailAndWe')}
           </p>
 
           <form onSubmit={this.handleSubmit} className="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -59,7 +62,7 @@ export class ForgotPasswordPage extends Reactor {
             ) : null}
 
             <label className="block text-sm font-semibold">
-              Email
+              {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.email')}
               <input
                 type="email"
                 className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
@@ -75,14 +78,14 @@ export class ForgotPasswordPage extends Reactor {
               disabled={this.isSubmitting}
               className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {this.isSubmitting ? 'Sending...' : 'Send Reset Link'}
+              {this.isSubmitting ? FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.sending') : FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.sendResetLink')}
             </button>
           </form>
 
           <p className="mt-4 text-sm text-slate-600">
-            Need account verification?{' '}
+            {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.needAccountVerification')}{' '}
             <Link href="/verify-email" className="font-semibold text-indigo-600 hover:underline">
-              Verify email
+              {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.verifyEmail')}
             </Link>
           </p>
         </div>

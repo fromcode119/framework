@@ -7,6 +7,7 @@ import { PureReactor, prop, Ref } from '@fromcode119/react-class-components';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailSidebar extends PureReactor {
   @prop declare activeTab: PluginDetailTab;
@@ -41,41 +42,41 @@ export class PluginDetailSidebar extends PureReactor {
       <div className="space-y-6">
         {activeTab === PluginDetailTab.SETTINGS && (
           <Card className={`border-0 p-4 ${AdminClass.SURFACE} animate-in fade-in duration-300 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-            <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-4 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Save Changes</h3>
+            <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-4 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.saveChanges')}</h3>
             {settingsDirty && (
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-2 w-2 rounded-full bg-amber-500 animate-pulse shrink-0" />
-                <span className="text-xs font-bold text-amber-500">Unsaved changes</span>
+                <span className="text-xs font-bold text-amber-500">{AdminI18n.t('plugins.detail.unsavedChanges')}</span>
               </div>
             )}
             <button type="submit" form="plugin-settings-form" disabled={settingsSaving || !settingsDirty} className={`w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[11px] font-semibold uppercase tracking-wider transition-all ${settingsSaving || !settingsDirty ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-600/20 active:scale-95'}`}>
-              {settingsSaving ? <><FrameworkIcons.Loader size={14} className="animate-spin" /> Saving...</> : <><FrameworkIcons.Check size={14} /> Save Settings</>}
+              {settingsSaving ? <><FrameworkIcons.Loader size={14} className="animate-spin" /> {AdminI18n.t('plugins.detail.saving')}</> : <><FrameworkIcons.Check size={14} /> {AdminI18n.t('plugins.detail.saveSettings')}</>}
             </button>
             <div className={`mt-4 pt-4 border-t flex gap-2 ${theme === ThemeMode.DARK ? 'border-slate-800' : 'border-slate-100'}`}>
-              <button type="button" onClick={() => settingsFormRef.current?.exportSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 ${AdminClass.SURFACE} text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'}`} title="Export settings as JSON"><FrameworkIcons.Download size={12} /> Export</button>
-              <button type="button" onClick={() => settingsFormRef.current?.importSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 ${AdminClass.SURFACE} text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'}`} title="Import settings from JSON"><FrameworkIcons.Upload size={12} /> Import</button>
-              <button type="button" onClick={() => settingsFormRef.current?.resetSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-rose-400 hover:text-rose-300 hover:border-rose-500/30' : 'bg-slate-50 border-slate-200 text-rose-500 hover:text-rose-700 hover:border-rose-200 shadow-sm'}`} title="Reset settings to defaults"><FrameworkIcons.Refresh size={12} /> Reset</button>
+              <button type="button" onClick={() => settingsFormRef.current?.exportSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 ${AdminClass.SURFACE} text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'}`} title={AdminI18n.t('plugins.detail.exportSettingsAsJson')}><FrameworkIcons.Download size={12} /> {AdminI18n.t('common.export')}</button>
+              <button type="button" onClick={() => settingsFormRef.current?.importSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 ${AdminClass.SURFACE} text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:bg-slate-700' : 'bg-slate-50 border-slate-200 text-slate-500 hover:text-slate-900 hover:bg-white shadow-sm'}`} title={AdminI18n.t('plugins.detail.importSettingsFromJson')}><FrameworkIcons.Upload size={12} /> {AdminI18n.t('common.import')}</button>
+              <button type="button" onClick={() => settingsFormRef.current?.resetSettings()} className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-xl border text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-rose-400 hover:text-rose-300 hover:border-rose-500/30' : 'bg-slate-50 border-slate-200 text-rose-500 hover:text-rose-700 hover:border-rose-200 shadow-sm'}`} title={AdminI18n.t('plugins.detail.resetSettingsToDefaults')}><FrameworkIcons.Refresh size={12} /> {AdminI18n.t('common.reset')}</button>
             </div>
           </Card>
         )}
         <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-          <h3 className={`text-[11px] font-semibold tracking-wider mb-4 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>Manifest Details</h3>
+          <h3 className={`text-[11px] font-semibold tracking-wider mb-4 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.detail.manifestDetails')}</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <span className="text-xs font-semibold tracking-wider text-slate-500">Capabilities</span>
+              <span className="text-xs font-semibold tracking-wider text-slate-500">{AdminI18n.t('plugins.detail.capabilities')}</span>
               {plugin.manifest.capabilities && plugin.manifest.capabilities.length > 0 ? (
                 <button onClick={() => onTabChange(PluginDetailTab.PERMISSIONS)} className={`flex items-center gap-1.5 text-[11px] font-bold transition-colors ${theme === ThemeMode.DARK ? 'text-indigo-400 hover:text-indigo-300' : 'text-indigo-600 hover:text-indigo-700'}`}>
                   <FrameworkIcons.Shield size={12} />
-                  {plugin.manifest.capabilities.length} declared
+                  {AdminI18n.t('plugins.detail.capabilitiesDeclared', { count: plugin.manifest.capabilities.length })}
                 </button>
               ) : (
-                <span className="text-[10px] font-semibold text-slate-400">None</span>
+                <span className="text-[10px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.none')}</span>
               )}
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-xs font-semibold tracking-wider text-slate-500">Author</span>
+              <span className="text-xs font-semibold tracking-wider text-slate-500">{AdminI18n.t('plugins.detail.author')}</span>
               <span className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                {typeof plugin.manifest.author === 'object' ? plugin.manifest.author.name : (plugin.manifest.author || 'Official Core')}
+                {typeof plugin.manifest.author === 'object' ? plugin.manifest.author.name : (plugin.manifest.author || AdminI18n.t('plugins.detail.officialCore'))}
               </span>
             </div>
           </div>
@@ -83,18 +84,18 @@ export class PluginDetailSidebar extends PureReactor {
           {this.canManage ? <div className={`mt-6 pt-4 border-t ${theme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>
             <button onClick={onOpenDefinition} className={`w-full flex items-center justify-center gap-3 px-4 py-2.5 rounded-lg border font-semibold uppercase tracking-wider text-[11px] transition-all ${theme === ThemeMode.DARK ? 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 shadow-sm'}`}>
               <FrameworkIcons.Code size={16} strokeWidth={2.5} />
-              View Definition
+              {AdminI18n.t('plugins.detail.viewDefinition')}
             </button>
           </div> : null}
         </Card>
 {this.canManage ? (
         <Card className={`border-0 p-4 rounded-xl ${theme === ThemeMode.DARK ? 'bg-red-500/10' : 'bg-red-50'} ring-1 ring-red-500/20`}>
-          <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-3">System Removal</h3>
+          <h3 className="text-[11px] font-semibold text-red-600 uppercase tracking-wider mb-3">{AdminI18n.t('plugins.detail.systemRemoval')}</h3>
           <p className="text-xs font-medium text-red-500/80 leading-relaxed mb-4">
-            Uninstalling will permanently remove all configuration, caches and local state associated with this plugin.
+            {AdminI18n.t('plugins.detail.uninstallingWillPermanentlyRemoveAll')}
           </p>
           <button onClick={onOpenDeleteConfirm} className="w-full py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-[11px] font-semibold uppercase tracking-wider transition-all shadow-sm shadow-red-600/20 active:scale-95">
-            Uninstall Plugin
+            {AdminI18n.t('plugins.detail.uninstallPlugin')}
           </button>
         </Card>
         ) : null}

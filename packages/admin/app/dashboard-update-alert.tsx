@@ -6,6 +6,8 @@ import { prop, PureReactor } from '@fromcode119/react-class-components';
 import { AppEnv } from '@/lib/env';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class DashboardUpdateAlert extends PureReactor {
   @prop declare updateAvailable: any;
@@ -22,10 +24,10 @@ export class DashboardUpdateAlert extends PureReactor {
             </div>
             <div>
               <h4 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white">
-                Framework Update Available
+                {AdminI18n.t('dashboard.update.title')}
               </h4>
               <p className="text-sm font-bold text-slate-500 tracking-tight">
-                A new version of {AppEnv.PRODUCT_NAME} <span className="font-bold text-amber-600">v{this.updateAvailable.latest}</span> is available.
+                <AdminRichText k="dashboard.update.newVersion" vars={{ product: AppEnv.PRODUCT_NAME, version: this.updateAvailable.latest }} classes={{ strong: 'font-bold text-amber-600' }} />
               </p>
             </div>
           </div>
@@ -36,7 +38,7 @@ export class DashboardUpdateAlert extends PureReactor {
               className="text-[11px] font-bold tracking-tight px-6 uppercase"
               onClick={this.onDismiss}
             >
-              Dismiss
+              {AdminI18n.t('dashboard.update.dismiss')}
             </Button>
             <Button
               variant={ButtonVariant.PRIMARY}
@@ -44,7 +46,7 @@ export class DashboardUpdateAlert extends PureReactor {
               className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
               onClick={this.onViewDetails}
             >
-              View Update Details
+              {AdminI18n.t('dashboard.update.details')}
             </Button>
           </div>
         </div>

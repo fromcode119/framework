@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionNotFound extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -25,11 +26,11 @@ export class CollectionNotFound extends PureReactor {
       </div>
       
       <h2 className={`text-4xl font-semibold tracking-tight mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-        Collection Not Found
+        {AdminI18n.t('collection.notFound.title')}
       </h2>
       
       <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-10 px-6">
-        The collection <span className="text-indigo-500">"{slug}"</span> doesn't seem to be part of the <span className="text-indigo-500 tracking-wide text-xs ml-1">{pluginSlug}</span> plugin manifest.
+        {AdminI18n.t('collection.notFound.text', { collection: slug, plugin: pluginSlug })}
       </p>
 
       <div className="flex items-center gap-4">
@@ -38,7 +39,7 @@ export class CollectionNotFound extends PureReactor {
           onClick={this.goBack}
           className="rounded-xl px-8 font-semibold tracking-wide text-xs text-slate-400"
         >
-          Go Back
+          {AdminI18n.t('common.goBack')}
         </Button>
         <Button 
           variant={ButtonVariant.PRIMARY} 
@@ -47,7 +48,7 @@ export class CollectionNotFound extends PureReactor {
           className="rounded-xl px-10 py-5 font-semibold tracking-wide text-xs shadow-2xl shadow-indigo-500/30"
           icon={<FrameworkIcons.Layout size={18} />}
         >
-          Return to Dashboard
+          {AdminI18n.t('common.toDashboard')}
         </Button>
       </div>
     </div>

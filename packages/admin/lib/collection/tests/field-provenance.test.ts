@@ -88,4 +88,11 @@ describe('FieldProvenance', () => {
     expect(p?.kind).toBe(FieldProvenanceKind.INHERITED);
     expect(p?.effectiveValue).toBe('10');
   });
+
+  it('names an inherited choice by its option label, not its stored value', () => {
+    const schema = { fields: [{ name: 'stickyBarDefaultAction', label: 'Sticky bar button', options: [{ label: 'Open order popup', value: 'popup' }] }] };
+    const p = FieldProvenance.resolve({ settingKey: 'stickyBarDefaultAction' }, '', {}, { stickyBarDefaultAction: 'popup' }, HREF, schema);
+    expect(p?.effectiveValue).toBe('Open order popup');
+    expect(p?.settingLabel).toBe('Sticky bar button');
+  });
 });

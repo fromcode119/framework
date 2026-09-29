@@ -4,6 +4,7 @@ import { PermissionGrants } from '@fromcode119/core/utils/permission-grants';
 import { Card } from '@/components/ui/view/card.client';
 import { RolePermissionSelection } from '@/app/users/roles/services/role-permission-selection';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * One area of the permission list — the framework or one plugin — and, for each permission in it,
@@ -18,7 +19,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
 
   private grantedBy(name: string): ReactNode {
     const holders = this.roles.filter((role) => PermissionGrants.covers(role.permissions, name));
-    if (holders.length === 0) return <span className="text-[11px] text-slate-400">No role</span>;
+    if (holders.length === 0) return <span className="text-[11px] text-slate-400">{AdminI18n.t('users.noRole')}</span>;
     return (
       <span className="flex flex-wrap gap-1">
         {holders.map((role) => (
@@ -31,7 +32,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
   render(): ReactNode {
     const { group } = this;
     const named = [
-      ...(group.all ? [{ name: group.all, label: `Everything in ${group.label}`, description: 'Every screen, action and collection of this area.' }] : []),
+      ...(group.all ? [{ name: group.all, label: AdminI18n.t('users.everythingIn', { label: group.label }), description: AdminI18n.t('users.everyScreenActionAndCollection') }] : []),
       ...group.permissions,
     ];
     return (
@@ -41,8 +42,8 @@ export class PermissionCatalogGroupCard extends PureReactor {
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-[10px] font-semibold uppercase tracking-tight text-slate-400">
-                  <th className="py-2 pr-4 text-left">Permission</th>
-                  <th className="py-2 text-left">Granted by</th>
+                  <th className="py-2 pr-4 text-left">{AdminI18n.t('users.permission')}</th>
+                  <th className="py-2 text-left">{AdminI18n.t('users.grantedBy')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -66,7 +67,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
-                    <th className="px-3 py-2 text-left">Collection</th>
+                    <th className="px-3 py-2 text-left">{AdminI18n.t('users.collection')}</th>
                     {RolePermissionSelection.ACTIONS.map((action) => <th key={action} className="px-3 py-2 text-left">{action}</th>)}
                   </tr>
                 </thead>

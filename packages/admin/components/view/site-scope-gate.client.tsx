@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop, state } from '@fromcode119/react-class-components';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * A "not found" answered in the PLATFORM scope, where the page may simply belong to a site.
@@ -37,7 +38,7 @@ export class SiteScopeGate extends AdminComponent {
     return (
       <div className="fc-scope-notice">
         <span className="fc-scope-notice__text">
-          {this.what} is not part of the platform. If it belongs to a site, choose that site from the site menu to open it.
+          {AdminI18n.t('ui.view.notPartOfPlatform', { what: this.what })}
         </span>
       </div>
     );

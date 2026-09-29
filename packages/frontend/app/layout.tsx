@@ -48,8 +48,8 @@ export class FrontendRootLayoutRoute {
         </head>
         <body>
           <SiteBannersView.render bars={[
-            SitePreviewBannerView.render({ visible: preview }),
-            SiteEnvironmentBannerView.render({ visible: nonProduction }),
+            SitePreviewBannerView.render({ visible: preview, locale: documentLocale }),
+            SiteEnvironmentBannerView.render({ visible: nonProduction, locale: documentLocale }),
           ]} />
           {bodyStartElements}
           {/* The plugin runtime (provider stack + loader) is code-split behind this gate and arrives

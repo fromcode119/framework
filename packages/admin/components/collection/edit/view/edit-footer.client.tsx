@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class EditFooter extends PureReactor {
   @prop declare collection: any;
@@ -85,13 +86,13 @@ export class EditFooter extends PureReactor {
               }`} />
               <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
                 {this.isDirty
-                  ? <>Unsaved changes to <strong className="font-bold">{this.collectionName}</strong></>
-                  : <>No unsaved changes &middot; <strong className="font-bold">{this.collectionName}</strong></>}
+                  ? <>{AdminI18n.t('collection.edit.unsavedIn')} <strong className="font-bold">{this.collectionName}</strong></>
+                  : <>{AdminI18n.t('collection.edit.noUnsaved')} &middot; <strong className="font-bold">{this.collectionName}</strong></>}
               </span>
             </div>
             {this.saveError && (
               <span role="alert" className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
-                Not saved: {this.saveError}
+                {AdminI18n.t('collection.edit.notSaved', { reason: this.saveError })}
               </span>
             )}
           </div>
@@ -102,7 +103,7 @@ export class EditFooter extends PureReactor {
               className="px-6 text-[10px] font-bold uppercase tracking-wide text-slate-400"
               onClick={this.onDiscard}
             >
-              Discard Changes
+              {AdminI18n.t('collection.edit.discard')}
             </Button>
             <Button
               className="px-8 shadow-lg shadow-indigo-600/20 text-[10px] font-bold uppercase tracking-wide"
@@ -110,7 +111,7 @@ export class EditFooter extends PureReactor {
               isLoading={this.saving}
               icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
             >
-              {this.isNew ? 'Create Entry' : 'Commit Changes'}
+              {AdminI18n.t(this.isNew ? 'collection.edit.createEntry' : 'collection.edit.commit')}
             </Button>
           </div>
         </div>

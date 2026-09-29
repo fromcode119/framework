@@ -5,6 +5,7 @@ import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operati
 import { InstalledPluginsPageController } from '@/app/plugins/installed/installed-plugins-page-controller';
 import type { IInstalledPluginsPageClientState } from '@/app/plugins/installed/interfaces/installed-plugins-page-client-state.interface';
 import type { IInstalledPluginsPageHost } from '@/app/plugins/installed/interfaces/installed-plugins-page-host.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Orchestration for the installed-plugins page: binds {@link InstalledPluginsPageController} I/O to
@@ -58,10 +59,10 @@ export class InstalledPluginsPageActions {
     this.host.patch({ isUploading: true });
     try {
       await InstalledPluginsPageController.installArchive(uploadId, (status) => this.setOperationStatus(status));
-      notify(NotificationType.SUCCESS, 'Upload Successful', 'Plugin uploaded successfully.');
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.uploadSuccessful'), AdminI18n.t('plugins.list.pluginUploadedSuccessfully'));
       await this.host.refresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Upload Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.uploadFailed'), error.message);
     } finally {
       if (this.host.mounted) this.host.patch({ operationStatus: null, isUploading: false });
       this.clearUploadProgress();
@@ -78,7 +79,7 @@ export class InstalledPluginsPageActions {
         if (this.host.mounted) this.host.patch({ uploadProgressLabel: label, uploadProgressPercent: percent });
       });
       if (!inspection.supported) {
-        notify(NotificationType.ERROR, 'Upload Failed', 'Only .zip or .tar.gz plugin packages are supported.');
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.uploadFailed'), AdminI18n.t('plugins.list.onlyZipOrTarGz'));
         return;
       }
       if (!this.host.mounted) return;
@@ -91,7 +92,7 @@ export class InstalledPluginsPageActions {
       });
     } catch (error: any) {
       if (this.host.mounted) this.host.patch({ pendingUploadId: null });
-      notify(NotificationType.ERROR, 'Inspect Failed', error.message || 'Could not inspect plugin package.');
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.inspectFailed'), error.message || AdminI18n.t('plugins.list.couldNotInspectPluginPackage'));
       this.clearUploadProgress();
     } finally {
       if (this.host.mounted) this.host.patch({ isInspectingUpload: false });
@@ -116,7 +117,7 @@ export class InstalledPluginsPageActions {
     try {
       if (!currentEnabled) this.host.patch({ isActivating: true });
       await InstalledPluginsPageController.toggle(slug, !currentEnabled, options);
-      notify(NotificationType.SUCCESS, 'Plugin Updated', `${slug} is now ${!currentEnabled ? 'active' : 'inactive'}.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginUpdated'), `${slug} is now ${!currentEnabled ? 'active' : 'inactive'}.`);
       this.host.patchWith((value: IInstalledPluginsPageClientState) => ({
         plugins: value.plugins.map((plugin) => plugin.manifest.slug === slug
           ? { ...plugin, state: !currentEnabled ? PluginState.ACTIVE : PluginState.INACTIVE }
@@ -136,7 +137,7 @@ export class InstalledPluginsPageActions {
           .map((issue: any) => ({ ...issue, type: DependencyIssueType.resolve(issue?.type) }));
         this.host.patch({ dependencyIssues: issues, targetPlugin: slug, showDependencyConfirm: true });
       } else {
-        notify(NotificationType.ERROR, 'Update Failed', error.message);
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.updateFailed'), error.message);
       }
     } finally {
       if (this.host.mounted) this.host.patch({ isActivating: false });
@@ -149,14 +150,14 @@ export class InstalledPluginsPageActions {
     try {
       const failed = await InstalledPluginsPageController.reapproveAll();
       if (failed.length > 0) {
-        notify(NotificationType.ERROR, 'Re-approval Incomplete', InstalledPluginsPageController.reapprovalFailureMessage(failed));
+        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalIncomplete'), InstalledPluginsPageController.reapprovalFailureMessage(failed));
       } else {
-        notify(NotificationType.SUCCESS, 'Plugins Re-approved', 'All held plugins have been re-approved and enabled.');
+        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginsReApproved'), AdminI18n.t('plugins.list.allHeldPluginsHaveBeen'));
       }
       await this.host.refresh();
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Re-approval Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalFailed'), error.message);
     } finally {
       if (this.host.mounted) this.host.patch({ isActivating: false });
     }
@@ -169,14 +170,14 @@ export class InstalledPluginsPageActions {
     this.host.patch({ isDeleting: true });
     try {
       await InstalledPluginsPageController.deletePlugin(pluginToDelete, plugins);
-      notify(NotificationType.SUCCESS, 'Deleted', `Plugin ${pluginToDelete} removed.`);
+      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.deleted'), AdminI18n.t('plugins.list.pluginRemoved', { pluginToDelete: pluginToDelete }));
       this.host.patchWith((value: IInstalledPluginsPageClientState) => ({
         plugins: value.plugins.filter((entry) => entry.manifest.slug !== pluginToDelete),
         showDeleteConfirm: false,
       }));
       this.host.triggerRefresh();
     } catch (error: any) {
-      notify(NotificationType.ERROR, 'Delete Failed', error.message);
+      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.deleteFailed'), error.message);
     } finally {
       if (this.host.mounted) this.host.patch({ isDeleting: false, pluginToDelete: null });
     }
@@ -190,11 +191,11 @@ export class InstalledPluginsPageActions {
     if (recursive) {
       const missing = dependencyIssues.filter((issue) => String(issue.type) === DependencyIssueType.MISSING.value);
       for (const issue of missing) {
-        notify(NotificationType.INFO, 'Dependency Install', `Downloading ${issue.slug} from marketplace...`);
+        notify(NotificationType.INFO, AdminI18n.t('plugins.list.dependencyInstall'), AdminI18n.t('plugins.list.downloadingFromMarketplace', { slug: issue.slug }));
         try {
           await InstalledPluginsPageController.installFromMarketplace(issue.slug, (status) => this.setOperationStatus(status));
         } catch (error: any) {
-          notify(NotificationType.ERROR, 'Auto-Install Failed', `Could not install ${issue.slug}: ${error.message}`);
+          notify(NotificationType.ERROR, AdminI18n.t('plugins.list.autoInstallFailed'), AdminI18n.t('plugins.list.couldNotInstall', { slug: issue.slug, message: error.message }));
           this.setOperationStatus(null);
           return;
         }

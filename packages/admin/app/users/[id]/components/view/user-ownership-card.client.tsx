@@ -9,6 +9,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Hands the platform owner seat to the account being viewed.
@@ -53,16 +54,16 @@ export class UserOwnershipCard extends AdminComponent {
       await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.USER_OWNERSHIP(this.user.id), {});
       this.runtime.notify.notify(
         NotificationType.SUCCESS,
-        'Ownership transferred',
-        `${this.targetName} now owns the platform. You remain an admin.`,
+        AdminI18n.t('users.ownershipTransferred'),
+        AdminI18n.t('users.nowOwnsThePlatformYou', { targetName: this.targetName }),
       );
       this.confirming = false;
       this.onTransferred?.();
     } catch (error: any) {
       this.runtime.notify.notify(
         NotificationType.ERROR,
-        'Transfer failed',
-        error?.message || 'Ownership could not be transferred.',
+        AdminI18n.t('users.transferFailed'),
+        error?.message || AdminI18n.t('users.ownershipCouldNotBeTransferred'),
       );
     } finally {
       this.transferring = false;
@@ -75,23 +76,22 @@ export class UserOwnershipCard extends AdminComponent {
 
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title="Platform Ownership" icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
         <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-          You own this platform. Handing ownership to {this.targetName} makes them the owner and leaves
-          you an admin — they can hand it back, and an owner can never be deleted.
+          {AdminI18n.t('users.handOwnership', { name: this.targetName })}
         </p>
         {this.confirming ? (
           <div className="flex items-center gap-3 pt-4">
             <Button variant={ButtonVariant.PRIMARY} onClick={this.transfer} disabled={this.transferring}>
-              {this.transferring ? 'Transferring…' : `Yes, make ${this.targetName} the owner`}
+              {this.transferring ? AdminI18n.t('users.transferring') : AdminI18n.t('users.yesMakeTheOwner', { targetName: this.targetName })}
             </Button>
             <Button variant={ButtonVariant.GHOST} onClick={this.cancel} disabled={this.transferring}>
-              Cancel
+              {AdminI18n.t('users.cancel')}
             </Button>
           </div>
         ) : (
           <div className="pt-4">
-            <Button variant={ButtonVariant.GHOST} onClick={this.startConfirm}>Transfer ownership</Button>
+            <Button variant={ButtonVariant.GHOST} onClick={this.startConfirm}>{AdminI18n.t('users.transferOwnership')}</Button>
           </div>
         )}
       </Card>
@@ -101,10 +101,9 @@ export class UserOwnershipCard extends AdminComponent {
   private renderCurrentOwner(): ReactElement {
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <Card title="Platform Ownership" icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
+      <Card title={AdminI18n.t('users.platformOwnership')} icon={<FrameworkIcons.Key size={18} className="text-amber-500" />}>
         <p className={`text-sm py-2 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
-          This account owns the platform. It cannot be deleted, and only it can hand ownership to
-          someone else.
+          {AdminI18n.t('users.thisAccountOwnsThePlatform')}
         </p>
       </Card>
     );

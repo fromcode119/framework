@@ -9,6 +9,7 @@ import { RestartServicesCard } from '@/app/settings/infrastructure/restart-servi
 import { DeploymentsCard } from '@/app/settings/infrastructure/deployments-card.client';
 import { InfrastructureSettingsPageCards } from '@/app/settings/infrastructure/page-cards.client';
 import { SiteUploadsCard } from '@/app/settings/infrastructure/site-uploads-card.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Infrastructure & Health.
@@ -33,7 +34,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     // header naming that one customer. The screen belongs to the platform scope, like Sites and
     // Sources.
     return (
-      <PlatformScopeGate what="Infrastructure & Health">
+      <PlatformScopeGate what={AdminI18n.t('settings.infrastructure.infrastructureHealth')}>
         {this.body()}
       </PlatformScopeGate>
     );
@@ -42,11 +43,11 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
   protected body(): ReactNode {
     const theme = this.theme;
 
-    if (this.isLoading) return <div className="p-12"><Loader label="Loading infrastructure settings..." /></div>;
+    if (this.isLoading) return <div className="p-12"><Loader label={AdminI18n.t('settings.infrastructure.loadingInfrastructureSettings')} /></div>;
 
     if (!this.canManagePlatform) {
       return (
-        <PlatformOnlyPanel detail="Maintenance mode, render capacity and plugin isolation are properties of the server every site on this platform runs on, so only a platform admin can change them. Your own site's settings are under Settings — General, Localization and each plugin's own configuration." />
+        <PlatformOnlyPanel detail={AdminI18n.t('settings.infrastructure.maintenanceModeRenderCapacityAnd')} />
       );
     }
 
@@ -54,16 +55,16 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
       <div className="p-6 animate-in fade-in duration-500 w-full">
          <div className="mb-6">
           <h1 className={`text-2xl font-bold tracking-tight mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-            Infrastructure & Health
+            {AdminI18n.t('settings.infrastructure.infrastructureHealth')}
           </h1>
           <p className="text-slate-500 text-sm leading-relaxed">
-            Administrative maintenance for this instance.
+            {AdminI18n.t('settings.infrastructure.administrativeMaintenanceForThisInstance')}
           </p>
         </div>
 
         {this.loadError && (
           <LoadErrorPanel
-            title="Infrastructure settings could not be loaded"
+            title={AdminI18n.t('settings.infrastructure.infrastructureSettingsCouldNotBe')}
             message={this.loadError}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}

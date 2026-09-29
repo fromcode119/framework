@@ -47,7 +47,7 @@ export class FileSharePanel extends PluginComponent {
   private text(key: string, vars?: Record<string, unknown>): string {
     const fromContext = this.t(key, vars as any);
     if (fromContext && fromContext !== key) return fromContext;
-    return FrameworkTranslations.t(key, vars, this.documentLocale);
+    return FrameworkTranslations.in(this.documentLocale || FrameworkTranslations.locale, key, vars);
   }
 
   private get token(): string {

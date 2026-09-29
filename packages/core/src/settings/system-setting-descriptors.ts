@@ -41,6 +41,9 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_DEFAULTS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.PERSONAL_DATA_ERASURE_STRATEGIES]: { scope: SettingScope.SITE, writable: true, exposed: true },
 
+    // No seed: blank means no logo, and the email says nothing it was not given.
+    [SystemConstants.META_KEY.EMAIL_LOGO]: { scope: SettingScope.SITE, writable: true, exposed: true },
+
     [SystemConstants.META_KEY.SETUP_COMPLETED]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemConstants.META_KEY.SITE_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
@@ -275,6 +278,10 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'true', description: "Allow new customer self-registration.", group: "security" },
+    },
+    [SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: 'true', description: "Keep email addresses and phone numbers out of the storefront's HTML so harvesters find none; visitors still see and use them.", group: "security" },
     },
     [SystemConstants.META_KEY.EMAIL_NOTIFICATIONS]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

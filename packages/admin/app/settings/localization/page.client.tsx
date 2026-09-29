@@ -6,12 +6,14 @@ import { LoadErrorPanel } from '@/components/ui/view/load-error-panel.client';
 import { LocaleRegistryCard } from '@/app/settings/localization/locale-registry-card';
 import { LocaleTargetsCard } from '@/app/settings/localization/locale-targets-card';
 import { MeasurementSystemCard } from '@/app/settings/localization/measurement-system-card';
+import { ConsoleLanguageCard } from '@/app/settings/localization/console-language-card';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 import { LocalizationSettingsPageActions } from '@/app/settings/localization/page-actions.client';
 import { LocalizationSettingsPageState } from '@/app/settings/localization/page-state.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Settings — Localization.
@@ -29,7 +31,7 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
     if (this.isLoading) {
       return (
         <div className="p-12">
-          <Loader label="Loading localization settings..." />
+          <Loader label={AdminI18n.t('settings.localization.loadingLocalizationSettings')} />
         </div>
       );
     }
@@ -43,12 +45,12 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
           <CompactPageHeader
             theme={theme}
             icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-            title="Localization"
-            subtitle="Locale registry & language defaults"
+            title={AdminI18n.t('settings.localization.localization')}
+            subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
           />
           <LoadErrorPanel
-            title="Localization settings could not be loaded"
-            message={this.loadError || 'The localization settings request failed.'}
+            title={AdminI18n.t('settings.localization.localizationSettingsCouldNotBe')}
+            message={this.loadError || AdminI18n.t('settings.localization.theLocalizationSettingsRequestFailed')}
             onRetry={this.retryLoad}
             isRetrying={this.isLoading}
           />
@@ -61,27 +63,33 @@ export class LocalizationSettingsPage extends LocalizationSettingsPageActions {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
-          title="Localization"
-          subtitle="Locale registry & language defaults"
+          title={AdminI18n.t('settings.localization.localization')}
+          subtitle={AdminI18n.t('settings.localization.localeRegistryLanguageDefaults')}
           actions={
             this.outOfScope ? null : (
               <Button
                 icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-                onClick={this.handleSave}
+                onClick={this.consoleLanguageOnly ? this.handleSaveConsoleLanguage : this.handleSave}
                 isLoading={this.isSaving}
                 className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
               >
-                Save Localization
+                {AdminI18n.t('settings.localization.saveLocalization')}
               </Button>
             )
           }
         />
 
         {this.outOfScope && (
-          <SiteScopePanel detail="Locales, language defaults and the measurement system are stored per site. Choose a site from the site menu to configure them." />
+          <SiteScopePanel detail={AdminI18n.t('settings.localization.localesLanguageDefaultsAndThe')} />
         )}
 
-        {!this.outOfScope && (
+        {this.consoleLanguageOnly && (
+          <div className="p-6 w-full space-y-8">
+            <ConsoleLanguageCard theme={theme} value={this.adminDefaultLocale} onChange={this.setAdminDefaultLocale} />
+          </div>
+        )}
+
+        {!this.outOfScope && !this.consoleLanguageOnly && (
         <div className="p-6 w-full space-y-8">
           <LocaleRegistryCard
             locales={locales}

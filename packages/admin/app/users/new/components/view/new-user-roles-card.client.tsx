@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class NewUserRolesCard extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -15,22 +16,22 @@ export class NewUserRolesCard extends PureReactor {
   render(): ReactNode {
     const { theme, roles, loadingRoles, selectedRoles, rolesError, onToggleRole } = this;
     return (
-      <Card title="Roles & Permissions">
+      <Card title={AdminI18n.t('users.rolesPermissions')}>
          <div className="space-y-4 py-2">
             <div className="flex items-center justify-between gap-4">
               <p className="text-sm text-slate-500 font-medium">
-                Permissions are inherited from roles. Assign roles now so the user has the correct access immediately.
+                {AdminI18n.t('users.permissionsAreInheritedFromRoles')}
               </p>
               <span className="text-[10px] font-bold uppercase tracking-tight text-indigo-500">
-                {selectedRoles.length} selected
+                {AdminI18n.t('users.selectedCount', { count: selectedRoles.length })}
               </span>
             </div>
 
             {loadingRoles ? (
-              <div className="text-sm text-slate-500 font-medium py-6">Loading roles...</div>
+              <div className="text-sm text-slate-500 font-medium py-6">{AdminI18n.t('users.loadingRoles2')}</div>
             ) : roles.length === 0 ? (
               <div className="text-sm text-slate-500 font-medium py-6">
-                No roles available. Create roles first in Users &gt; Roles.
+                {AdminI18n.t('users.noRolesAvailableCreateRoles')}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -57,7 +58,7 @@ export class NewUserRolesCard extends PureReactor {
                             {role.name || role.slug}
                           </p>
                           <p className="text-xs text-slate-500 mt-1">
-                            {role.description || 'No description'}
+                            {role.description || AdminI18n.t('users.noDescription')}
                           </p>
                         </div>
                         <div className={`mt-0.5 ${selected ? 'text-indigo-500' : 'text-slate-300'}`}>
@@ -66,7 +67,7 @@ export class NewUserRolesCard extends PureReactor {
                       </div>
                       <div className="mt-3 flex items-center justify-between text-[11px] font-semibold text-slate-500">
                         <span>{role.slug}</span>
-                        <span>{Array.isArray(role.permissions) ? role.permissions.length : 0} permissions</span>
+                        <span>{AdminI18n.t('users.permissionsCount', { count: Array.isArray(role.permissions) ? role.permissions.length : 0 })}</span>
                       </div>
                     </button>
                   );

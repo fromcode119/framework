@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Which settings on a screen belong to the PLATFORM rather than to the site being administered.
@@ -142,10 +143,10 @@ export class PlatformSettingLocks {
   hiddenScopeNotice(canManagePlatform: boolean): string {
     if (!this.tenantMode) return '';
     if (!this.siteSelected) {
-      return 'Site settings (name, domains, timezone, notifications, sign-in) are set inside each site — choose one from the site menu.';
+      return AdminI18n.t('scope.generalSiteSettingsInsideEachSite');
     }
     return canManagePlatform
-      ? 'Platform settings (URLs, marketplace, repository, indexing) live in Platform scope.'
-      : 'Platform settings (URLs, marketplace, repository, indexing) live in Platform scope and are managed by a platform administrator.';
+      ? AdminI18n.t('scope.generalPlatformSettingsLive')
+      : AdminI18n.t('scope.generalPlatformSettingsLiveManaged');
   }
 }

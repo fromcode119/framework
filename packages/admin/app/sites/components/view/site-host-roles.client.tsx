@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Select } from '@/components/ui/view/select.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * What each of this site's hosts answers with.
@@ -29,11 +31,11 @@ export class SiteHostRoles extends AdminComponent<{
 }> {
   /** The default is offered as a real choice, so picking it back is possible and says what it means. */
   private get options(): Array<{ value: string; label: string }> {
-    const fallback = this.props.isWorkspace ? 'Admin console' : 'Storefront';
+    const fallback = this.props.isWorkspace ? AdminI18n.t('sites.adminConsole') : AdminI18n.t('sites.storefront');
     return [
-      { value: '', label: `Default for this ${this.props.isWorkspace ? 'workspace' : 'site'} — ${fallback}` },
-      { value: 'storefront', label: 'Storefront' },
-      { value: 'admin', label: 'Admin console' },
+      { value: '', label: (this.props.isWorkspace ? AdminI18n.t('sites.defaultForThisWorkspace', { fallback }) : AdminI18n.t('sites.defaultForThisSite', { fallback })) },
+      { value: 'storefront', label: AdminI18n.t('sites.storefront') },
+      { value: 'admin', label: AdminI18n.t('sites.adminConsole') },
       { value: 'api', label: 'API' },
     ];
   }
@@ -58,10 +60,9 @@ export class SiteHostRoles extends AdminComponent<{
 
     return (
       <div className="fc-site-form__block">
-        <span className="fc-site-form__label">What each host serves</span>
+        <span className="fc-site-form__label">{AdminI18n.t('sites.whatEachHostServes')}</span>
         <p className="fc-site-form__hint">
-          Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves
-          {this.props.isWorkspace ? ' the admin console' : ' the storefront'} like any other unless you say otherwise.
+          <AdminRichText k={this.props.isWorkspace ? 'sites.hostRolesHintWorkspace' : 'sites.hostRolesHintSite'} />
         </p>
         {/* Its own full-width block, below the identity grid. As one grid cell it squeezed every
             hostname to a single letter and stretched the row, pushing State / Visible to /
@@ -72,7 +73,7 @@ export class SiteHostRoles extends AdminComponent<{
             <li key={host.toLowerCase()} className="fc-site-host-roles__row">
               <span className="fc-site-host-roles__host">
                 <span className="fc-site-host-roles__name">{host}</span>
-                <span className="fc-site-host-roles__kind">{host.toLowerCase() === primary ? 'Primary host' : 'Alias'}</span>
+                <span className="fc-site-host-roles__kind">{host.toLowerCase() === primary ? AdminI18n.t('sites.primaryHost') : AdminI18n.t('sites.alias')}</span>
               </span>
               <Select
                 theme={this.theme}

@@ -8,13 +8,15 @@ import { AuthProfileService } from '@api/services/auth-profile-service';
 import { UserManagementService } from '@api/services/user-management-service';
 import { PeopleSelfService } from '@api/services/people-self-service';
 import { CoercionUtils } from '@fromcode119/core';
+import { AdminConsoleLocale } from '@api/services/system/admin-console-locale';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
   async getMyPerson(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
     const person = await new PeopleSelfService(this.db).resolveSelf(req.user);
-    return res.json({ person });
+    // The language the console speaks to this person: their own choice, else the site's default.
+    return res.json({ person, consoleLocale: await AdminConsoleLocale.resolve(this.manager, req) });
   }
 
   async updateMyPerson(req: any, res: Response) {

@@ -12,6 +12,7 @@ import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-
 import type { IntegrationsFieldOptionsService } from '@/app/settings/integrations/integrations-field-options-service';
 import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class IntegrationFieldInput extends PureReactor {
   @prop declare field: IIntegrationConfigField;
@@ -86,11 +87,11 @@ export class IntegrationFieldInput extends PureReactor {
     const isDynamicFieldLoading = !!dynamicFieldLoading[fieldStateKey];
     const dynamicFieldError = dynamicFieldErrors[fieldStateKey];
     const helperText = isDynamicFieldLoading
-      ? 'Loading options...'
+      ? AdminI18n.t('settings.integrations.loadingOptions')
       : dynamicFieldError
         ? dynamicFieldError
         : !editor.providerId && hasDynamicOptions
-          ? 'Save this provider first to load the office list.'
+          ? AdminI18n.t('settings.integrations.saveThisProviderFirstTo')
           : field.description;
     return (
       <div>
@@ -102,7 +103,7 @@ export class IntegrationFieldInput extends PureReactor {
           searchable={field.searchable !== false}
           size={FieldSize.MD}
           disabled={isDynamicFieldLoading || (!editor.providerId && hasDynamicOptions)}
-          placeholder={isDynamicFieldLoading ? 'Loading options...' : undefined}
+          placeholder={isDynamicFieldLoading ? AdminI18n.t('settings.integrations.loadingOptions') : undefined}
         />
         {helperText && (
           <p className="mt-1 text-[11px] text-slate-500">{helperText}</p>
@@ -117,7 +118,7 @@ export class IntegrationFieldInput extends PureReactor {
       <div>
         <Input
           label={`${field.label}${field.required ? ' *' : ''}`}
-          placeholder={field.type === IntegrationFieldType.PASSWORD && !editor.isNew ? 'Leave blank to keep the saved secret' : field.placeholder}
+          placeholder={field.type === IntegrationFieldType.PASSWORD && !editor.isNew ? AdminI18n.t('settings.integrations.leaveBlankToKeepThe') : field.placeholder}
           value={String(this.value ?? '')}
           onChange={this.handleInputChange}
           type={field.type === IntegrationFieldType.PASSWORD ? 'password' : field.type === IntegrationFieldType.NUMBER ? 'number' : 'text'}
@@ -128,12 +129,12 @@ export class IntegrationFieldInput extends PureReactor {
         {field.type === IntegrationFieldType.PASSWORD && this.hasSavedSecret && (
           <div className="mt-2 flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400">
             <FrameworkIcons.CheckCircle size={12} />
-            <span>Saved securely. Leave this field blank to keep the current secret.</span>
+            <span>{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</span>
           </div>
         )}
         {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew)) && (
           <p className="mt-1 text-[11px] text-slate-500">
-            {field.description || 'Leave this field blank to keep the saved secret.'}
+            {field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}
           </p>
         )}
       </div>

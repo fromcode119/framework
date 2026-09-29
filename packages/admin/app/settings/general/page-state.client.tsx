@@ -20,6 +20,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
   /** The keys this screen owns. Was the key set of a seeded `@state settings` object — see `settings`. */
   protected static readonly TEXT_KEYS = [
     'platform_name',
+    'email_logo',
     'notification_email',
     'notification_email_cc',
     'frontend_url',

@@ -1,3 +1,4 @@
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Turns log values into words an operator can read.
  *
@@ -7,17 +8,21 @@
  */
 export class MediaActivityLabels {
   /** Why `unknown` is worth reading closely — it is the only refusal that suggests someone else. */
-  static readonly REFUSAL_NOTE = 'Expired and limit-reached are routine. "Unknown link" means a token matching no grant — what guessing at URLs looks like.';
+  static get REFUSAL_NOTE() {
+    return AdminI18n.t('media.expiredAndLimitReachedAre');
+  }
 
-  private static readonly OUTCOMES: Record<string, string> = {
-    granted: 'Opened',
-    unknown: 'Unknown link',
-    expired: 'Expired',
-    revoked: 'Revoked',
-    over_limit: 'Limit reached',
-    account_required: 'Sign-in needed',
-    confirmation_required: 'Confirmation needed',
+  private static get OUTCOMES(): Record<string, string> {
+    return {
+    granted: AdminI18n.t('media.opened'),
+    unknown: AdminI18n.t('media.unknownLink'),
+    expired: AdminI18n.t('media.expired'),
+    revoked: AdminI18n.t('media.revoked'),
+    over_limit: AdminI18n.t('media.limitReached'),
+    account_required: AdminI18n.t('media.signInNeeded'),
+    confirmation_required: AdminI18n.t('media.confirmationNeeded'),
   };
+  }
 
   static outcome(value: unknown): string {
     const key = String(value ?? '');
@@ -38,6 +43,6 @@ export class MediaActivityLabels {
       return name ? `downloaded ${name}` : 'downloaded a file';
     }
 
-    return 'opened the page';
+    return AdminI18n.t('media.openedThePage');
   }
 }

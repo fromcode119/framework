@@ -11,6 +11,7 @@ import type { IAssistantAction } from '@ai/interfaces/assistant-action.interface
 import type { IAssistantMessage } from '@ai/interfaces/assistant-message.interface';
 import type { IForgeHistorySession } from '@ai/interfaces/forge-history-session.interface';
 import { AssistantPlanStatus } from '@ai/admin-assistant-runtime/enums/assistant-plan-status.enum';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AdminAssistantMessageService {
   static getActiveBatchEntry(messages: IAssistantMessage[]) {
@@ -151,7 +152,7 @@ export class AdminAssistantMessageService {
 
     return {
       id,
-      title: String(item?.title || AssistantTextUtils.summarizeSessionTitle(messages)).trim() || 'Untitled session',
+      title: String(item?.title || AssistantTextUtils.summarizeSessionTitle(messages)).trim() || AiText.t('ai.untitledSession'),
       updatedAt: Number(item?.updatedAt || Date.now()) || Date.now(),
       provider: providerValue,
       model: String(item?.model || '').trim(),

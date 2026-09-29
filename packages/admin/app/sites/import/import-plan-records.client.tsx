@@ -4,6 +4,8 @@ import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanRecordRow } from '@/app/sites/import/import-plan-record-row.client';
 import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.enum';
 import { ImportPlanGrouping } from '@/app/sites/import/import-plan-groups';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 /**
  * Everything the archive holds, grouped by the ANSWER rather than by the mechanism.
@@ -65,7 +67,7 @@ export class ImportPlanRecords extends Reactor {
           <span className="fc-import-rec__group-mark" aria-hidden="true">{mark}</span>
           <b>{title}</b>
           <span className="fc-import-rec__group-count">
-            {records.length.toLocaleString()} kind(s) · {rows.toLocaleString()} record(s)
+            {AdminI18n.t('sites.importPlan.kindsAndRecords', { kinds: records.length.toLocaleString(), records: rows.toLocaleString() })}
           </span>
         </div>
         {records.map((record) => <ImportPlanRecordRow key={record.table.name} record={record} />)}
@@ -82,8 +84,8 @@ export class ImportPlanRecords extends Reactor {
       <>
         <div className="fc-import-rec__fold" onClick={this.toggleEmpty} role="button" tabIndex={0} aria-expanded={this.showEmpty}
           onKeyDown={(event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.toggleEmpty(); } }}>
-          <span><b>{empty.length.toLocaleString()} kind(s) are empty</b> in this archive — nothing to bring across</span>
-          <span className="fc-import-rec__fold-action">{this.showEmpty ? 'hide' : 'show'}</span>
+          <span><AdminRichText k="sites.importPlan.kindsEmpty" vars={{ count: empty.length.toLocaleString() }} /></span>
+          <span className="fc-import-rec__fold-action">{this.showEmpty ? AdminI18n.t('sites.importPlan.hide') : AdminI18n.t('sites.importPlan.show')}</span>
         </div>
         {this.showEmpty ? (
           <div className="fc-import-rec__foldbox">
@@ -107,8 +109,7 @@ export class ImportPlanRecords extends Reactor {
     return (
       <div className="fc-import-rec">
         <p className="fc-import-rec__intro">
-          Everything the archive holds, and whether it comes across. Anything that does not, or that arrives with
-          something missing, is at the top.
+          {AdminI18n.t('sites.importPlan.everythingTheArchiveHoldsAnd')}
         </p>
         <div className="fc-import-rec__bar">
           <input
@@ -116,14 +117,14 @@ export class ImportPlanRecords extends Reactor {
             type="search"
             value={this.query}
             onChange={this.onQuery}
-            placeholder="Find something — orders, pages, customers…"
-            aria-label="Filter the kinds of record"
+            placeholder={AdminI18n.t('sites.importPlan.findSomethingOrdersPagesCustomers')}
+            aria-label={AdminI18n.t('sites.importPlan.filterTheKindsOfRecord')}
           />
         </div>
-        {nothing ? <p className="fc-import-rec__intro">Nothing matches “{this.query}”.</p> : null}
-        {ImportPlanRecords.group('no', '✕', 'Does not come across', none)}
-        {ImportPlanRecords.group('part', '!', 'Comes across, with something missing', partial)}
-        {ImportPlanRecords.group('ok', '✓', 'Comes across in full', full)}
+        {nothing ? <p className="fc-import-rec__intro">{AdminI18n.t('sites.importPlan.nothingMatches', { query: this.query })}</p> : null}
+        {ImportPlanRecords.group('no', '✕', AdminI18n.t('sites.importPlan.doesNotComeAcross'), none)}
+        {ImportPlanRecords.group('part', '!', AdminI18n.t('sites.importPlan.comesAcrossWithSomethingMissing'), partial)}
+        {ImportPlanRecords.group('ok', '✓', AdminI18n.t('sites.importPlan.comesAcrossInFull'), full)}
         {this.renderEmpty()}
       </div>
     );

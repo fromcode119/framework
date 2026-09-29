@@ -3,6 +3,8 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import type { IEmailCategory } from '@core/email/interfaces/email-category.interface';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
+import { EmailLogoUrl } from '@core/email/email-logo-url';
+import { SystemConstants } from '@core/constants/system.constants';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { SigningSecretService } from '@core/security/signing-secret-service';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
@@ -22,7 +24,11 @@ export class EmailContextProxy {
   /** The framework-owned preferences page. Kept here so no plugin hardcodes the path. */
   private static readonly PREFERENCES_PATH = '/unsubscribe';
 
-  static createEmailProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface): any {
+  /**
+   * `activeThemeSlug` is the plugin's own `paths.resolveActiveThemeSlug` — the theme this request's
+   * site renders with, answered the same way wherever the plugin runs.
+   */
+  static createEmailProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface, activeThemeSlug: () => Promise<string | null>): any {
     const driver = (manager as any).integrations?.email;
     const slug = String(plugin?.manifest?.slug || '').trim();
 
@@ -68,6 +74,17 @@ export class EmailContextProxy {
           // than one carrying a link that cannot be verified.
           return '';
         }
+      },
+
+      /**
+       * The site's email logo (Settings → General → Email logo) as an absolute URL on the site's own
+       * host, for the top of the plugin's HTML template — or `''` when the site has none, in which case
+       * the template shows no logo. The same logo the framework's own emails carry, so a site's mail is
+       * branded once, not once per plugin.
+       */
+      logoUrl: async (): Promise<string> => {
+        const setting = await MetaContextProxy.createMetaProxy(manager).get(SystemConstants.META_KEY.EMAIL_LOGO);
+        return EmailLogoUrl.resolve(manager.db, setting, activeThemeSlug);
       },
     };
 

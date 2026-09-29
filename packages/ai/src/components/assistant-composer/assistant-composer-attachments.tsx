@@ -3,6 +3,7 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AssistantFormatUtils } from '@ai/assistant-format-utils';
 import type { IUploadedAttachment } from '@ai/interfaces/uploaded-attachment.interface';
+import { AiText } from '@ai/i18n/ai-text';
 
 export class AssistantComposerAttachments extends PureReactor {
   @prop declare attachments: IUploadedAttachment[];
@@ -29,7 +30,7 @@ export class AssistantComposerAttachments extends PureReactor {
           data-index={attachmentIndex}
           onClick={this.onRemove}
           className="inline-flex h-4 w-4 items-center justify-center rounded-full text-slate-500 transition hover:bg-slate-200 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
-          aria-label={`Remove ${item.name}`}
+          aria-label={AiText.t('ai.remove', { name: item.name })}
         >
           <FrameworkIcons.X size={10} />
         </button>

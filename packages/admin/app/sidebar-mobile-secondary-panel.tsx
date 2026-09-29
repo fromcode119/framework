@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 import { SecondarySidebarPanelBody } from '@/app/components/view/secondary-sidebar-panel-body.client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SidebarMobileSecondaryPanel extends PureReactor {
   @prop declare inlineSecondaryContext?: any;
@@ -15,7 +16,7 @@ export class SidebarMobileSecondaryPanel extends PureReactor {
       <div className="lg:hidden min-w-0 flex-1 flex flex-col bg-slate-50/90 dark:bg-[#0b1220]">
         <div className="px-5 py-4 border-b border-slate-200 dark:border-slate-800">
           <div className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-400">
-            More In {String(this.inlineSecondarySourceLabel || this.inlineSecondaryContext?.label || 'This Section').trim()}
+            {AdminI18n.t('shell.nav.moreIn', { section: String(this.inlineSecondarySourceLabel || this.inlineSecondaryContext?.label || AdminI18n.t('shell.nav.thisSection')).trim() })}
           </div>
         </div>
         <div className="min-h-0 flex-1 overflow-y-auto scrollbar-hide">

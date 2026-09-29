@@ -1,5 +1,6 @@
 import { BackupPreset } from '@/components/settings/backups/enums/backup-preset.enum';
 import { BackupSectionKey, BackupCatalogGroupKey, BackupCatalogRootKind } from '@fromcode119/core';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Which parts of a deployment a backup covers, and how those choices are presented.
@@ -41,33 +42,33 @@ export class BackupSectionOptions {
     return [
       {
         key: BackupSectionKey.CORE,
-        label: 'Core Files',
-        description: 'Packages, configs, scripts, docs, tests, and the rest of the framework workspace.',
-        helper: 'Use this for code and system configuration rollback.',
+        label: AdminI18n.t('settings.components.coreFiles'),
+        description: AdminI18n.t('settings.components.packagesConfigsScriptsDocsTests'),
+        helper: AdminI18n.t('settings.components.useThisForCodeAnd'),
       },
       {
         key: BackupSectionKey.DATABASE,
-        label: 'Database',
-        description: 'A PostgreSQL dump or SQLite copy when the active environment supports it.',
-        helper: 'Use this when you need content and settings state.',
+        label: AdminI18n.t('settings.components.database'),
+        description: AdminI18n.t('settings.components.aPostgresqlDumpOrSqlite'),
+        helper: AdminI18n.t('settings.components.useThisWhenYouNeed'),
       },
       {
         key: BackupSectionKey.PLUGINS,
-        label: 'Plugins',
-        description: 'The full plugins directory, including installed plugin code and assets.',
-        helper: 'Use this when plugin code changed or needs migration.',
+        label: AdminI18n.t('settings.components.plugins'),
+        description: AdminI18n.t('settings.components.theFullPluginsDirectoryIncluding'),
+        helper: AdminI18n.t('settings.components.useThisWhenPluginCode'),
       },
       {
         key: BackupSectionKey.THEMES,
-        label: 'Themes',
-        description: 'The full themes directory, including custom theme source and built assets.',
-        helper: 'Use this when frontend presentation changed.',
+        label: AdminI18n.t('settings.components.themes'),
+        description: AdminI18n.t('settings.components.theFullThemesDirectoryIncluding'),
+        helper: AdminI18n.t('settings.components.useThisWhenFrontendPresentation'),
       },
     ];
   }
 
   static describeSections(sections: BackupSectionKey[]): string {
-    if (!sections.length) return 'nothing selected';
+    if (!sections.length) return AdminI18n.t('settings.components.nothingSelected');
     return sections.map((section) => this.getSectionLabel(section)).join(', ');
   }
 
@@ -79,10 +80,10 @@ export class BackupSectionOptions {
    */
   static getSectionLabel(value: BackupSectionKey | string): string {
     const section = BackupSectionKey.resolve(value);
-    if (section === BackupSectionKey.CORE) return 'Core Files';
-    if (section === BackupSectionKey.DATABASE) return 'Database';
-    if (section === BackupSectionKey.PLUGINS) return 'Plugins';
-    if (section === BackupSectionKey.THEMES) return 'Themes';
+    if (section === BackupSectionKey.CORE) return AdminI18n.t('settings.components.coreFiles');
+    if (section === BackupSectionKey.DATABASE) return AdminI18n.t('settings.components.database');
+    if (section === BackupSectionKey.PLUGINS) return AdminI18n.t('settings.components.plugins');
+    if (section === BackupSectionKey.THEMES) return AdminI18n.t('settings.components.themes');
     return String(value ?? '');
   }
 

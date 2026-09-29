@@ -1,4 +1,4 @@
-import { ICollection, SystemConstants } from '@fromcode119/core';
+import { ICollection, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { LocalizationUtils } from '@fromcode119/core';
 
@@ -66,7 +66,7 @@ export class LocalizationService {
     try {
       const settingsRows = await this.db.find(SystemConstants.TABLE.META);
       if (Array.isArray(settingsRows)) {
-        settingsRows.forEach((row: any) => {
+        SystemSettingsExposureUtils.withPrecedence(settingsRows).forEach((row: any) => {
           if (row.key) settingsMap[row.key] = row.value;
         });
       }

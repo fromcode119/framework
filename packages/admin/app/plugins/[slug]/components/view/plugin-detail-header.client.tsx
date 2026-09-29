@@ -11,6 +11,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { VersionComparisonService } from '@fromcode119/core/client';
 import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plugin-marketplace-item.interface';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class PluginDetailHeader extends PureReactor {
   @prop declare activeTab: PluginDetailTab;
@@ -23,6 +24,19 @@ export class PluginDetailHeader extends PureReactor {
   @prop declare platformActions: boolean;
   @prop declare plugin: ILoadedPlugin;
   @prop declare theme: ThemeMode;
+
+  /**
+   * The state in the operator's words, never the raw `state` value. `plugin.state` is a reactor `Enum`
+   * after hydration and a plain string before it, so it is resolved first rather than rendered: a member
+   * as a React child throws "Objects are not valid as a React child" (#31).
+   */
+  private get stateLabel(): string {
+    const state = PluginState.resolve(this.plugin.state);
+    if (state === PluginState.ACTIVE) return AdminI18n.t('plugins.detail.stateActive');
+    if (state === PluginState.LOADING) return AdminI18n.t('plugins.detail.stateLoading');
+    if (state === PluginState.ERROR) return AdminI18n.t('plugins.detail.stateError');
+    return AdminI18n.t('plugins.detail.stateInactive');
+  }
 
   render(): ReactNode {
     const { activeTab, isSaving, isUpdating, marketplaceItem, onSaveSandbox, onUpdate, plugin, theme } = this;
@@ -42,22 +56,19 @@ export class PluginDetailHeader extends PureReactor {
             <h1 className={`text-xl font-bold tracking-tight truncate ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {plugin.manifest.name}
             </h1>
-            {/* `String(...)`, not the member. `plugin.state` is a reactor `Enum` after hydration, and rendering
-                a member as a React child throws "Objects are not valid as a React child" (#31) — which is
-                what took the whole plugin detail page down, on every tab. `Enum.toString()` returns `.value`. */}
-            <Badge variant={plugin.state === PluginState.ACTIVE ? 'success' : 'gray'}>{String(plugin.state)}</Badge>
+            <Badge variant={plugin.state === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
           </div>
           <div className="flex items-center gap-2 mt-2">
             <span className={`text-[11px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{plugin.manifest.slug}</span>
             <span className="text-slate-500 opacity-30">•</span>
             <span className={`text-[11px] font-semibold uppercase tracking-wider ${hasUpdate ? 'text-amber-500' : 'text-slate-400'}`}>
-              Installed {plugin.manifest.version}
+              {AdminI18n.t('plugins.detail.installedVersion', { version: plugin.manifest.version })}
             </span>
             {marketplaceVersion ? (
               <>
                 <span className="text-slate-500 opacity-30">•</span>
                 <span className={`text-[11px] font-semibold uppercase tracking-wider ${hasUpdate ? 'text-emerald-500' : 'text-slate-400'}`}>
-                  Marketplace {marketplaceVersion}
+                  {AdminI18n.t('plugins.detail.marketplaceVersion', { version: marketplaceVersion })}
                 </span>
               </>
             ) : null}
@@ -68,14 +79,14 @@ export class PluginDetailHeader extends PureReactor {
                 className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wider rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
               >
                 {isUpdating ? <FrameworkIcons.Loader size={10} className="animate-spin" /> : <FrameworkIcons.Zap size={10} />}
-                {isUpdating ? 'Updating...' : 'Update Available'}
+                {isUpdating ? AdminI18n.t('plugins.detail.updating') : AdminI18n.t('plugins.detail.updateAvailable')}
               </button>
             )}
           </div>
         </div>
         {activeTab === PluginDetailTab.RESOURCES && this.platformActions && (
           <Button onClick={onSaveSandbox} isLoading={isSaving} className="px-4 rounded-lg shadow-sm shadow-indigo-600/10">
-            Update Policy
+            {AdminI18n.t('plugins.detail.updatePolicy')}
           </Button>
         )}
       </div>

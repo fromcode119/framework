@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** The installed appearances (default + installed) with the active radio, update badge, and remove. */
 export class AppearanceActiveCard extends PureReactor {
@@ -27,14 +28,14 @@ export class AppearanceActiveCard extends PureReactor {
   @prop declare canChoose: boolean;
 
   private subtitle(item: AppearanceItem): string {
-    if (item.builtIn) return 'Built-in';
-    return item.version ? `v${item.version}` : 'Installed';
+    if (item.builtIn) return AdminI18n.t('settings.appearance.builtIn');
+    return item.version ? `v${item.version}` : AdminI18n.t('settings.appearance.installed');
   }
 
   render(): ReactNode {
     const { items, catalogBySlug, active, busy, dark, onSwitch, onUpdate, onRemove, canManagePackages, canChoose } = this;
     return (
-      <Card title="Active appearance">
+      <Card title={AdminI18n.t('settings.appearance.activeAppearance')}>
         {items.map((it) => {
           const catalog = catalogBySlug[it.slug];
           const canUpdate = !it.builtIn && (!!catalog?.updateAvailable || !!it.sourceUrl);
@@ -51,7 +52,7 @@ export class AppearanceActiveCard extends PureReactor {
                     <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
                     {catalog?.updateAvailable && (
                       <span className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
-                        Update · v{catalog.version}
+                        {AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}
                       </span>
                     )}
                   </span>
@@ -61,10 +62,10 @@ export class AppearanceActiveCard extends PureReactor {
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {canUpdate && (
                     <Button variant={catalog?.updateAvailable ? ButtonVariant.PRIMARY : ButtonVariant.GHOST} icon={<FrameworkIcons.Refresh size={14} />} onClick={() => onUpdate(it)} disabled={busy}>
-                      {catalog?.updateAvailable ? `Update to v${catalog.version}` : 'Re-install'}
+                      {catalog?.updateAvailable ? AdminI18n.t('settings.appearance.updateToV', { version: catalog.version }) : AdminI18n.t('settings.appearance.reInstall')}
                     </Button>
                   )}
-                  <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={() => onRemove(it.slug)} disabled={busy}>Remove</Button>
+                  <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={() => onRemove(it.slug)} disabled={busy}>{AdminI18n.t('settings.appearance.remove')}</Button>
                 </div>
               )}
             </div>

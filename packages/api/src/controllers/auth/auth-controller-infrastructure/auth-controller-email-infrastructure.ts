@@ -1,4 +1,4 @@
-import { FrameworkEmailSenderService, SystemConstants } from '@fromcode119/core';
+import { EmailLogoUrl, FrameworkEmailSenderService, SystemConstants } from '@fromcode119/core';
 import { EmailChangeVerificationTemplate } from '@api/controllers/auth/email-templates/email-change-verification-template';
 import { PasswordResetEmailTemplate } from '@api/controllers/auth/email-templates/password-reset-email-template';
 import { SecurityNotificationEmailTemplate } from '@api/controllers/auth/email-templates/security-notification-email-template';
@@ -16,6 +16,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
       verificationUrl: options.verificationUrl,
       firstName: common.user.firstName,
       brandName: common.appName,
+      logoUrl: common.logoUrl,
       theme: common.theme,
     });
     const email = brandedEmail || await VerifyEmailFallbackTemplate.build({ ...common, verificationUrl: options.verificationUrl });
@@ -46,6 +47,7 @@ export class AuthControllerEmailInfrastructure extends AuthControllerSignupEmail
   protected async emailCommonData(to: string, firstName?: string): Promise<IAuthEmailCommonData> {
     return {
       appName: await this.resolveFrameworkAppName(),
+      logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO), AuthEmailThemeOverride.activeSlug),
       user: { firstName: String(firstName || '').trim(), email: String(to || '').trim() },
       theme: await AuthEmailThemeOverride.variables(),
       locale: await this.resolvePlatformEmailLocale(),

@@ -6,6 +6,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CustomFieldErrorBoundary } from '@/components/collection/custom-field-error-boundary';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class FieldCustomComponent extends PureReactor {
   /**
    * Components that DISPLAY a value rather than offer an input for it. They draw their own locked
@@ -93,7 +94,7 @@ export class FieldCustomComponent extends PureReactor {
     return (
       <div className="p-4 rounded-xl bg-amber-50 border border-amber-100 text-amber-600 text-xs font-medium tracking-wide flex items-center gap-2">
         <FrameworkIcons.Alert size={12} />
-        Component "{componentName}" not registered by any plugin.
+        {AdminI18n.t('collection.componentNotRegistered', { name: componentName })}
       </div>
     );
   }

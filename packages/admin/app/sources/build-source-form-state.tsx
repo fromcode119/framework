@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IBuildSourceFormProps } from '@/app/sources/interfaces/build-source-form-props.interface';
 import type { IBuildSourceFormState } from '@/app/sources/interfaces/build-source-form-state.interface';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the add/edit source form holds, and what each field should say about itself.
@@ -75,14 +76,14 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
      * message belongs where the fix is.
      */
     if (this.state.branchFailure) return this.state.branchFailure;
-    if (!this.isEdit) return 'Optional. Private repositories need a token; public repositories can stay blank.';
+    if (!this.isEdit) return AdminI18n.t('sources.optionalPrivateRepositoriesNeedA');
     return this.hasStoredToken
-      ? 'A token is already stored securely. Paste a new token only if you want to replace it.'
-      : 'No token is stored for this source. Leave blank to use the server GITHUB_TOKEN.';
+      ? AdminI18n.t('sources.aTokenIsAlreadyStored')
+      : AdminI18n.t('sources.noTokenIsStoredFor');
   }
 
   protected get tokenPlaceholder(): string {
-    return this.isEdit ? 'Paste new token to replace stored token' : 'Optional personal access token';
+    return this.isEdit ? AdminI18n.t('sources.pasteNewTokenToReplace') : AdminI18n.t('sources.optionalPersonalAccessToken');
   }
 
   /** The chosen provider's definition, or null until the list arrives. */
@@ -92,9 +93,9 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
 
   /** What the identity fields can say before a repository has answered — never a guess. */
   protected get slugPlaceholder(): string {
-    if (this.state.inspecting) return 'Reading the repository…';
-    if (this.state.inspectFailed) return 'This repository declares no extension manifest';
-    return 'Read from the repository';
+    if (this.state.inspecting) return AdminI18n.t('sources.readingTheRepository');
+    if (this.state.inspectFailed) return AdminI18n.t('sources.thisRepositoryDeclaresNoExtension');
+    return AdminI18n.t('sources.readFromTheRepository');
   }
 
   protected get branchOptions(): Array<{ label: string; value: string }> {
@@ -103,11 +104,11 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
 
   /** What the branch field can say when it has nothing to offer — never a guessed name. */
   protected get branchPlaceholder(): string {
-    if (this.state.branchesLoading) return 'Reading branches…';
-    if (!this.state.gitUrl.trim()) return 'Enter a repository URL first';
+    if (this.state.branchesLoading) return AdminI18n.t('sources.readingBranches');
+    if (!this.state.gitUrl.trim()) return AdminI18n.t('sources.enterARepositoryUrlFirst');
     if (this.state.branchFailure) return this.state.branchFailure;
-    if (!this.state.branchesAttempted) return 'Reading branches…';
-    if (this.state.branches.length === 0) return 'No branches could be read';
-    return 'Select a branch';
+    if (!this.state.branchesAttempted) return AdminI18n.t('sources.readingBranches');
+    if (this.state.branches.length === 0) return AdminI18n.t('sources.noBranchesCouldBeRead');
+    return AdminI18n.t('sources.selectABranch');
   }
 }

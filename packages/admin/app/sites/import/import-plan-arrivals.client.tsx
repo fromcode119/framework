@@ -3,6 +3,7 @@ import type { IArrivalItem } from '@/app/sites/import/interfaces/arrival-item.in
 import { Reactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { ImportPlanRecord } from '@/app/sites/import/import-plan-record';
 import { ImportPlanGrouping } from '@/app/sites/import/import-plan-groups';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * "What arrives", as things an operator recognizes — not as rows in a schema.
@@ -52,8 +53,8 @@ export class ImportPlanArrivals extends Reactor {
     const items: IArrivalItem[] = this.labeled.map((record) => ({
       key: record.table.name, count: record.arrivingRows, label: record.table.label as string, isJournal: record.table.isJournal,
     }));
-    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: 'People', isJournal: false });
-    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: 'Files', isJournal: false });
+    if (this.users.total > 0) items.push({ key: '__people', count: this.users.total, label: AdminI18n.t('sites.importPlan.people'), isJournal: false });
+    if (this.files.count > 0) items.push({ key: '__files', count: this.files.count, label: AdminI18n.t('sites.importPlan.files'), isJournal: false });
     // Biggest first — the thing an operator should not have to scroll to find is the one most of the
     // archive actually is. A hand-picked order would be exactly the hardcoded extension list Rule
     // Zero forbids; this is derived from the counts the plan already produced.
@@ -106,10 +107,10 @@ export class ImportPlanArrivals extends Reactor {
     return (
       <div className="fc-import-plan__arrivals">
         <div className="fc-import-plan__arrivals-head">
-          <span className="fc-site-form__label">You get</span>
-          {this.arriving.length ? <span className="fc-import-plan__arrivals-total">{this.totalRows.toLocaleString()} records in total</span> : null}
+          <span className="fc-site-form__label">{AdminI18n.t('sites.importPlan.youGet')}</span>
+          {this.arriving.length ? <span className="fc-import-plan__arrivals-total">{AdminI18n.t('sites.importPlan.recordsInTotal', { count: this.totalRows.toLocaleString() })}</span> : null}
         </div>
-        {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">nothing</span> : null}
+        {items.length === 0 && platformRecords.length === 0 ? <span className="fc-sites__none">{AdminI18n.t('sites.importPlan.nothing')}</span> : null}
         <div className="fc-import-plan__tiles">
           {items.map((item) => (
             <div key={item.key} className="fc-import-plan__tile">
@@ -126,7 +127,7 @@ export class ImportPlanArrivals extends Reactor {
             >
               <span className="fc-import-plan__tile-count">+{platformTotal.toLocaleString()}</span>
               <span className="fc-import-plan__tile-label">
-                {this.showPlatform ? 'hide the list' : `platform records · ${platformRecords.length.toLocaleString()} kind(s)`}
+                {this.showPlatform ? AdminI18n.t('sites.importPlan.hideTheList') : AdminI18n.t('sites.importPlan.platformRecordsKindS', { count: platformRecords.length.toLocaleString() })}
               </span>
             </button>
           ) : null}

@@ -5,6 +5,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminClass } from '@/lib/admin-class';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The visible "this page never loaded" state.
@@ -31,7 +32,7 @@ export class LoadErrorPanel extends PureReactor {
             <h3 className="text-[13px] font-semibold tracking-tight text-rose-600 dark:text-rose-400">{this.title}</h3>
             <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted-foreground)] break-words">{this.message}</p>
             <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted-foreground)]">
-              Nothing on this screen reflects the stored configuration, so saving is disabled until the load succeeds.
+              {AdminI18n.t('ui.loadError.hint')}
             </p>
           </div>
           {this.onRetry && (
@@ -42,7 +43,7 @@ export class LoadErrorPanel extends PureReactor {
               onClick={this.onRetry}
               isLoading={this.isRetrying}
             >
-              Retry
+              {AdminI18n.t('common.retry')}
             </Button>
           )}
         </div>

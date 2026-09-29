@@ -115,6 +115,14 @@ export class MediaLibraryController {
         ));
       }
 
+      // One file by id — what a picked-media preview asks for, so it gets the same site-addressed `url`
+      // as the library grid instead of resolving a bare path against whatever host the admin is on.
+      const id = Number(req.query.id);
+      if (req.query.id !== undefined) {
+        if (!Number.isInteger(id) || id <= 0) return res.json([]);
+        conditions.push(eq(Schema.media.id, id));
+      }
+
       if (folderId !== undefined) {
         const targetFolder = folderId === 'null' ? null : Number(folderId);
         conditions.push(targetFolder === null ? isNull(Schema.media.folderId) : eq(Schema.media.folderId, targetFolder));

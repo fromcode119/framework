@@ -4,6 +4,7 @@ import { prop } from '@fromcode119/react-class-components';
 
 import { Card } from '@/components/ui/view/card.client';
 import { CheckCircle, Clock, Hammer, XCircle } from 'lucide-react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class BuildOverviewStats extends AdminComponent {
   declare props: { builds: any[]; loading: boolean };
@@ -16,10 +17,10 @@ export class BuildOverviewStats extends AdminComponent {
     const failedCount = builds.filter((build) => build.lastBuildStatus === 'failed').length;
     const pendingCount = builds.filter((build) => build.lastBuildStatus === 'pending' || build.lastBuildStatus === 'building').length;
     const indicators = [
-      { bg: 'bg-indigo-500/10', color: 'text-indigo-500', icon: Hammer, label: 'Total Packages', note: 'Plugins and themes tracked from their repositories.', value: String(builds.length) },
-      { bg: 'bg-emerald-500/10', color: 'text-emerald-500', icon: CheckCircle, label: 'Successful', note: 'Packages with a completed build and published archive.', value: String(successCount) },
-      { bg: 'bg-rose-500/10', color: 'text-rose-500', icon: XCircle, label: 'Failed', note: 'Packages whose last build encountered an error.', value: String(failedCount) },
-      { bg: 'bg-amber-500/10', color: 'text-amber-500', icon: Clock, label: 'Pending', note: 'Packages awaiting their first build or currently building.', value: String(pendingCount) },
+      { bg: 'bg-indigo-500/10', color: 'text-indigo-500', icon: Hammer, label: AdminI18n.t('sources.totalPackages'), note: AdminI18n.t('sources.pluginsAndThemesTrackedFrom'), value: String(builds.length) },
+      { bg: 'bg-emerald-500/10', color: 'text-emerald-500', icon: CheckCircle, label: AdminI18n.t('sources.successful'), note: AdminI18n.t('sources.packagesWithACompletedBuild'), value: String(successCount) },
+      { bg: 'bg-rose-500/10', color: 'text-rose-500', icon: XCircle, label: AdminI18n.t('sources.failed'), note: AdminI18n.t('sources.packagesWhoseLastBuildEncountered'), value: String(failedCount) },
+      { bg: 'bg-amber-500/10', color: 'text-amber-500', icon: Clock, label: AdminI18n.t('sources.pending'), note: AdminI18n.t('sources.packagesAwaitingTheirFirstBuild'), value: String(pendingCount) },
     ];
 
     return (

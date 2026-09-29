@@ -5,6 +5,7 @@ import { AdminScope } from '@fromcode119/core/client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The first screen of an installation nobody has started using yet.
@@ -58,12 +59,12 @@ export class DashboardGettingStarted extends AdminComponent {
     return (
       <div className={`${AdminClass.SURFACE} p-5`}>
         <h2 className="text-[15px] font-bold tracking-tight text-slate-900 dark:text-white">
-          {this.inSite ? 'Finish setting up this site' : 'Finish setting up your platform'}
+          {AdminI18n.t(this.inSite ? 'dashboard.setup.titleSite' : 'dashboard.setup.titlePlatform')}
         </h2>
         <p className="mt-1 mb-4 max-w-xl text-[12px] leading-relaxed text-slate-500">
           {this.inSite
-            ? 'What stands between this site and pages people can visit. Not in order — this is simply what is missing.'
-            : 'What stands between this installation and a site people can visit. Not in order — this is simply what is missing.'}
+            ? AdminI18n.t('dashboard.setup.textSite')
+            : AdminI18n.t('dashboard.setup.textPlatform')}
         </p>
 
         {/* Said plainly, because the alternative is an operator creating a site record they do not
@@ -71,14 +72,14 @@ export class DashboardGettingStarted extends AdminComponent {
             deployment serves the hosts in its own environment. */}
         {this.storefront ? (
           <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[11.5px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
-            <span className="font-semibold">{this.inSite ? 'This site' : (this.mode === 'multi-site' ? 'Multi-site' : 'Single site')}</span>
+            <span className="font-semibold">{AdminI18n.t(this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite'))}</span>
             <span className="text-slate-400">·</span>
             <span className="truncate">
               {this.inSite
-                ? <>Served at <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span></>
+                ? <>{AdminI18n.t('dashboard.setup.servedAt')} <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span></>
                 : this.mode === 'multi-site'
-                ? 'Each site has its own hostname, theme and content.'
-                : <>Serving <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span> — no site record needed until you host a second one.</>}
+                ? AdminI18n.t('dashboard.setup.multiHint')
+                : <>{AdminI18n.t('dashboard.setup.serving')} <span className="font-medium text-slate-700 dark:text-slate-200">{this.storefront}</span> — {AdminI18n.t('dashboard.setup.singleHint')}</>}
             </span>
           </div>
         ) : null}

@@ -5,6 +5,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { MediaShareController } from '@/app/media/media-share-controller';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What each RECIPIENT of a share has done with it.
@@ -61,7 +62,7 @@ export class MediaShareActivity extends AdminComponent {
     if (row.views > 0) parts.push(`${row.views} open${row.views === 1 ? '' : 's'}`);
     if (row.downloads > 0) parts.push(`${row.downloads} download${row.downloads === 1 ? '' : 's'}`);
     if (row.refused > 0) parts.push(`${row.refused} refused`);
-    const summary = parts.length ? parts.join(' · ') : 'Not opened yet';
+    const summary = parts.length ? parts.join(' · ') : AdminI18n.t('media.notOpenedYet');
 
     return (
       <div key={row.grantId} className={`flex items-center justify-between gap-3 px-4 py-2 ${index ? `border-t ${dark ? 'border-slate-800' : 'border-slate-100'}` : ''}`}>
@@ -70,16 +71,16 @@ export class MediaShareActivity extends AdminComponent {
           <p className="text-[10px] opacity-55">{summary}</p>
         </div>
         {row.lastAt ? (
-          <span className="text-[10px] opacity-45 flex-shrink-0">last {this.formatWhen(row.lastAt)}</span>
+          <span className="text-[10px] opacity-45 flex-shrink-0">{AdminI18n.t('media.lastAt', { when: this.formatWhen(row.lastAt) })}</span>
         ) : (
-          <Badge variant={BadgeVariant.GRAY} className="text-[10px] flex-shrink-0">no activity</Badge>
+          <Badge variant={BadgeVariant.GRAY} className="text-[10px] flex-shrink-0">{AdminI18n.t('media.noActivity')}</Badge>
         )}
       </div>
     );
   }
 
   render(): ReactNode {
-    if (this.loading) return <p className="px-4 py-3 text-[11px] opacity-60">Loading activity…</p>;
+    if (this.loading) return <p className="px-4 py-3 text-[11px] opacity-60">{AdminI18n.t('media.loadingActivity')}</p>;
 
     const dark = this.theme === ThemeMode.DARK;
     const recipients: any[] = Array.isArray(this.data?.recipients) ? this.data.recipients : [];
@@ -87,10 +88,10 @@ export class MediaShareActivity extends AdminComponent {
     return (
       <div className="px-4 py-3 space-y-3">
         <div className="grid grid-cols-4 gap-3">
-          {this.renderStat('Recipients', Number(this.data?.recipientCount || 0))}
-          {this.renderStat('Page opens', Number(this.data?.viewCount || 0))}
-          {this.renderStat('Downloads', Number(this.data?.downloadCount || 0))}
-          {this.renderStat('Refused', Number(this.data?.refusedCount || 0))}
+          {this.renderStat(AdminI18n.t('media.recipients'), Number(this.data?.recipientCount || 0))}
+          {this.renderStat(AdminI18n.t('media.pageOpens'), Number(this.data?.viewCount || 0))}
+          {this.renderStat(AdminI18n.t('media.downloads'), Number(this.data?.downloadCount || 0))}
+          {this.renderStat(AdminI18n.t('media.refused'), Number(this.data?.refusedCount || 0))}
         </div>
         {recipients.length ? (
           <div className={`rounded-xl border ${dark ? 'border-slate-800' : 'border-slate-100'}`}>

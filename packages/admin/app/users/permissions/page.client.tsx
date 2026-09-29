@@ -10,6 +10,7 @@ import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PermissionCatalogGroupCard } from '@/app/users/permissions/components/view/permission-catalog-group-card.client';
 import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permission-catalog-group.interface';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * Every permission a role can hold on this site, and which roles hold each one.
@@ -50,7 +51,7 @@ export class PermissionsPage extends AdminComponent {
         permissions: Array.isArray(role.permissions) ? role.permissions : [],
       }));
     } catch (error: any) {
-      if (this.mounted) this.loadError = error?.message || 'The permission list could not be loaded.';
+      if (this.mounted) this.loadError = error?.message || AdminI18n.t('users.thePermissionListCouldNot');
     } finally {
       if (this.mounted) this.loading = false;
     }
@@ -61,7 +62,7 @@ export class PermissionsPage extends AdminComponent {
     if (this.loading) {
       return (
         <div className="flex-1 flex items-center justify-center min-h-screen">
-          <Loader label="Loading permissions..." />
+          <Loader label={AdminI18n.t('users.loadingPermissions')} />
         </div>
       );
     }
@@ -74,8 +75,8 @@ export class PermissionsPage extends AdminComponent {
         <CompactPageHeader
           theme={theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}
-          title="Permissions"
-          subtitle="What a role can be given on this site, and which roles give it."
+          title={AdminI18n.t('users.permissions')}
+          subtitle={AdminI18n.t('users.whatARoleCanBe')}
         />
 
         <div className="flex-1 w-full px-6 lg:px-8 py-6">
@@ -85,9 +86,11 @@ export class PermissionsPage extends AdminComponent {
             ) : (
               <div className="fc-scope-notice">
                 <span className="fc-scope-notice__text">
-                  Each permission is checked by the screen or action it names; plugin permissions follow the plugins this site runs.
-                  {everything.length > 0 ? <> {everything.map((role) => role.name).join(', ')} {everything.length === 1 ? 'holds' : 'hold'} everything and {everything.length === 1 ? 'is' : 'are'} not repeated below.</> : null}
-                  {' '}To give permissions out, <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>edit a role</Link>.
+                  {AdminI18n.t('users.permissionsIntro')}
+                  {everything.length > 0 ? <> {everything.length === 1
+                    ? AdminI18n.t('users.holdsEverythingOne', { roles: everything.map((role) => role.name).join(', ') })
+                    : AdminI18n.t('users.holdsEverythingMany', { roles: everything.map((role) => role.name).join(', ') })}</> : null}
+                  {' '}{AdminI18n.t('users.toGivePermissionsOut')} <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>{AdminI18n.t('users.editARole')}</Link>.
                 </span>
               </div>
             )}
@@ -98,12 +101,12 @@ export class PermissionsPage extends AdminComponent {
         </div>
 
         <AdminPageFooter
-          label="Permissions"
-          description="Checked by the framework and by each plugin this site runs."
+          label={AdminI18n.t('users.permissions')}
+          description={AdminI18n.t('users.checkedByTheFrameworkAnd')}
           links={[
-            { label: 'Users', href: AdminConstants.ROUTES.USERS.LIST },
-            { label: 'Roles', href: AdminConstants.ROUTES.USERS.ROLE_LIST },
-            { label: 'Activity Log', href: AdminConstants.ROUTES.ACTIVITY },
+            { label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.LIST },
+            { label: AdminI18n.t('users.roles'), href: AdminConstants.ROUTES.USERS.ROLE_LIST },
+            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
           ]}
         />
       </div>
