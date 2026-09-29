@@ -3,6 +3,7 @@ import { WorkspaceHostService } from '@api/services/request/workspace-host-servi
 import { Request, Response } from 'express';
 import { ApplicationUrlUtils, NetworkAddressUtils, PlatformSettingsService, SiteBaseUrl, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { ApiUrlUtils } from '@api/utils/url';
+import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 
 /**
  * Which sites this account may enter, and re-issuing its session scoped to the one it picks.
@@ -142,7 +143,9 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
   /** The tenants this account may enter. Empty on a single-tenant deployment. */
   async availableTenants(req: Request, res: Response) {
     const user = (req as any).user;
-    if (!TenantMode.isEnabled()) return res.json({ multiTenant: false, tenants: [], current: null, locked: false, mode: null });
+    // `siteOwnedWrites`: whether this scope can hold media and people at all (SiteOwnedWrites). The
+    // admin says a site is needed on those screens instead of offering controls that cannot work.
+    if (!TenantMode.isEnabled()) return res.json({ multiTenant: false, tenants: [], current: null, locked: false, mode: null, siteOwnedWrites: SiteOwnedWrites.possible(req) });
     const all = await this.resolveAvailableTenants(String(user.id));
     const workspace = WorkspaceHostService.of(req);
     // On a workspace host there is exactly one tenant and no switching (T6 §3.2).
@@ -161,6 +164,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
       mode: String(user?.workspaceMode || '') || null,
       storefrontUrl,
       tenants,
+      siteOwnedWrites: SiteOwnedWrites.possible(req),
     });
   }
 

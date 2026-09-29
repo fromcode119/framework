@@ -516,7 +516,18 @@
       "openYourOwnPageInstead": "Open your own page instead.",
       "componentFailedToRender": "Component \"{{name}}\" failed to render.",
       "roleLacksPage": "Your role does not include this page (it needs {{required}}).",
-      "notPartOfPlatform": "{{what}} is not part of the platform. If it belongs to a site, choose that site from the site menu to open it."
+      "notPartOfPlatform": "{{what}} is not part of the platform. If it belongs to a site, choose that site from the site menu to open it.",
+      "siteRequired": {
+        "noSiteYet": {
+          "media": "Media belong to a site, and this installation has no site yet. Add your first site in Sites, then upload here.",
+          "people": "People belong to a site, and this installation has no site yet. Add your first site in Sites to keep people here."
+        },
+        "chooseSite": {
+          "media": "Media belong to a site. Choose a site from the site menu to see and upload its media.",
+          "people": "People belong to a site. Choose a site from the site menu to see its people."
+        },
+        "openSites": "Open Sites"
+      }
     },
     "relativeOverridesInheritTheCollection": "Relative overrides inherit the collection prefix. Enable absolute mode to bypass prefixes like `/shop`.",
     "range": "Range",

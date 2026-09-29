@@ -16,6 +16,7 @@ import { state } from '@fromcode119/react-class-components';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { SiteRequiredNotice } from '@/components/view/site-required-notice.client';
 
 export class PeoplePage extends AdminComponent {
   private mounted = false;
@@ -130,7 +131,12 @@ export class PeoplePage extends AdminComponent {
     ];
   }
 
+  /** People belong to a site: with none to hold them, the screen says so instead (SiteRequiredNotice). */
   render(): ReactElement {
+    return <SiteRequiredNotice subject="people">{this.renderPeople()}</SiteRequiredNotice>;
+  }
+
+  private renderPeople(): ReactElement {
     const theme = this.theme;
     const { searchQuery, page, loading, stats, grantConfirm, isGranting, error } = this;
     const limit = PeoplePage.PAGE_SIZE;
