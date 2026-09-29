@@ -17,7 +17,7 @@ describe('context.email.buildPreferencesUrl', () => {
   const manager: any = { integrations: { email: { send: async () => undefined } }, db: {} };
   const plugin: any = { manifest: { slug: 'epsilon' } };
 
-  const email = () => EmailContextProxy.createEmailProxy(plugin, manager);
+  const email = () => EmailContextProxy.createEmailProxy(plugin, manager, async () => null);
 
   beforeEach(() => {
     vi.restoreAllMocks();

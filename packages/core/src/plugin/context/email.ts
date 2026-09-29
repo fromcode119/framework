@@ -24,7 +24,11 @@ export class EmailContextProxy {
   /** The framework-owned preferences page. Kept here so no plugin hardcodes the path. */
   private static readonly PREFERENCES_PATH = '/unsubscribe';
 
-  static createEmailProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface): any {
+  /**
+   * `activeThemeSlug` is the plugin's own `paths.resolveActiveThemeSlug` — the theme this request's
+   * site renders with, answered the same way wherever the plugin runs.
+   */
+  static createEmailProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface, activeThemeSlug: () => Promise<string | null>): any {
     const driver = (manager as any).integrations?.email;
     const slug = String(plugin?.manifest?.slug || '').trim();
 
@@ -80,7 +84,7 @@ export class EmailContextProxy {
        */
       logoUrl: async (): Promise<string> => {
         const setting = await MetaContextProxy.createMetaProxy(manager).get(SystemConstants.META_KEY.EMAIL_LOGO);
-        return EmailLogoUrl.resolve(manager.db, setting);
+        return EmailLogoUrl.resolve(manager.db, setting, activeThemeSlug);
       },
     };
 

@@ -134,7 +134,7 @@ export class PluginContextFactory {
         },
         get email() {
           if (!security.hasCapability('email')) security.handleViolation('email');
-          return EmailContextProxy.createEmailProxy(plugin, manager);
+          return EmailContextProxy.createEmailProxy(plugin, manager, () => pathContext.resolveActiveThemeSlug());
         },
         get cache() {
           if (!security.hasCapability('cache')) security.handleViolation('cache');

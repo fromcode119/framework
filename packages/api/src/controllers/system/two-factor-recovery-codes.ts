@@ -105,7 +105,7 @@ export class TwoFactorRecoveryCodes {
       }
       const email = await SecurityNotificationEmailTemplate.build({
         appName: await this.resolveFrameworkAppName(),
-        logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO)),
+        logoUrl: await EmailLogoUrl.resolve(this.db, await this.getMetaValue(SystemConstants.META_KEY.EMAIL_LOGO), AuthEmailThemeOverride.activeSlug),
         user: { firstName: String(user?.first_name || '').trim(), email: recipient },
         theme: await AuthEmailThemeOverride.variables(),
         locale: LocalizationUtils.normalizeLocaleCode(

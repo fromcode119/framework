@@ -83,6 +83,6 @@ export class FileShareEmailService {
   private async resolveLogoUrl(): Promise<string> {
     const db = (this.manager as any).db;
     const row = await db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.EMAIL_LOGO });
-    return EmailLogoUrl.resolve(db, row?.value);
+    return EmailLogoUrl.resolve(db, row?.value, AuthEmailThemeOverride.activeSlug);
   }
 }
