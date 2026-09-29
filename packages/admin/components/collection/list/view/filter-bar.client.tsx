@@ -8,6 +8,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { CollectionColumnsMenu } from '@/components/collection/list/view/columns-menu.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Archive } from 'lucide-react';
 
 export class FilterBar extends PureReactor {
   @prop declare collection?: any;
@@ -81,21 +82,24 @@ export class FilterBar extends PureReactor {
       )}
 
       {this.archivable && (
-        <div className="w-full sm:w-44 shrink-0">
-          <Select
-            value={this.showArchived ? 'archived' : 'live'}
-            onChange={(value) => this.setShowArchived?.(value === 'archived')}
-            theme={this.theme}
-            searchable={false}
-            size={FieldSize.MD}
-            className="w-full"
-            triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
-            options={[
-              { label: AdminI18n.t('collection.list.viewLive'), value: 'live' },
-              { label: AdminI18n.t('collection.list.viewArchived'), value: 'archived' },
-            ]}
-          />
-        </div>
+        <button
+          type="button"
+          aria-pressed={Boolean(this.showArchived)}
+          onClick={() => this.setShowArchived?.(!this.showArchived)}
+          title={AdminI18n.t(this.showArchived ? 'collection.list.hideArchived' : 'collection.list.showArchived')}
+          className={`w-full sm:w-auto h-11 px-4 rounded-xl border text-sm font-semibold inline-flex items-center justify-center gap-2 leading-none shadow-sm transition-all shrink-0 ${
+            this.showArchived
+              ? this.theme === ThemeMode.DARK
+                ? 'bg-amber-500/15 border-amber-500/50 text-amber-300'
+                : 'bg-amber-50 border-amber-400 text-amber-700'
+              : this.theme === ThemeMode.DARK
+                ? 'bg-slate-900/60 border-slate-800 text-slate-200 hover:border-indigo-500/60'
+                : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-400'
+          }`}
+        >
+          <Archive size={14} />
+          <span>{AdminI18n.t('collection.list.viewArchived')}</span>
+        </button>
       )}
 
       <div className="w-full sm:w-auto relative shrink-0" ref={this.columnsMenuRef}>

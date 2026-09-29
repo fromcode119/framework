@@ -136,7 +136,6 @@
       "columnId": "ID",
       "columnCreatedAt": "Created",
       "columnUpdatedAt": "Updated",
-      "viewLive": "Active records",
       "viewArchived": "Archived",
       "archive": "Archive",
       "restore": "Restore",
@@ -147,7 +146,9 @@
       "archiveSkipped": "Not changed (no permission or failed): {{list}}",
       "archiveNothing": "Nothing else was linked to these records.",
       "archiveFailed": "Archiving failed: {{message}}",
-      "restoreFailed": "Restoring failed: {{message}}"
+      "restoreFailed": "Restoring failed: {{message}}",
+      "showArchived": "Show archived records",
+      "hideArchived": "Showing archived records — click to go back to active ones"
     },
     "edit": {
       "permalinkCard": "Preview & Permalink",

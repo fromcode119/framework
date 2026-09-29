@@ -173,7 +173,6 @@
       "columnId": "ID",
       "columnCreatedAt": "Създаден",
       "columnUpdatedAt": "Обновен",
-      "viewLive": "Активни записи",
       "viewArchived": "Архивирани",
       "archive": "Архивирай",
       "restore": "Възстанови",
@@ -184,7 +183,9 @@
       "archiveSkipped": "Непроменени (без права или грешка): {{list}}",
       "archiveNothing": "Няма други свързани записи.",
       "archiveFailed": "Архивирането не успя: {{message}}",
-      "restoreFailed": "Възстановяването не успя: {{message}}"
+      "restoreFailed": "Възстановяването не успя: {{message}}",
+      "showArchived": "Покажи архивираните записи",
+      "hideArchived": "Показани са архивираните записи — щракнете, за да се върнете към активните"
     },
     "edit": {
       "permalinkCard": "Преглед и адрес",
