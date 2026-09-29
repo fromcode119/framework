@@ -520,27 +520,15 @@
       "noneNamed": "No site was named in the request.",
       "switchFailed": "Could not switch: {{reason}}",
       "switchFailedNoReason": "Could not switch, and the server gave no reason.",
-      "open": "Open {{site}}",
-      "openAs": "Open {{site}} as",
       "appearanceHint": "What this workspace's own admins see",
       "configure": "Configure",
       "configureHint": "The default console with every setting",
-      "editing": "Editing {{host}}",
-      "editingSwitch": "Editing {{host}} — click to switch site",
-      "platformScope": "Platform scope — no site selected",
-      "noneChoose": "No site selected — choose one to start editing",
       "site": "Site",
       "platform": "Platform",
-      "noneSelected": "No site selected",
-      "noSite": "No site",
       "choose": "Choose a site",
       "platformHint": "No site — plugins, themes, sources, sites, platform settings",
-      "viaRoleHint": "You reach this site through your platform-admin role — you are not a member of it",
       "viaRole": "via platform role",
-      "workspaceHint": "Workspace — its domain is the console",
-      "workspace": "workspace",
-      "switch": "Switch site",
-      "manage": "Manage sites"
+      "switch": "Switch site"
     },
     "account": {
       "singleSite": "The site this deployment serves",
@@ -556,7 +544,9 @@
       "signedInStaff": "You’re signed in as <strong>{{email}}</strong>. This area is for staff — manage your own profile, security and activity from your account.",
       "language": "Language",
       "languageSiteDefault": "Site default ({{language}})",
-      "languageSiteDefaultNone": "Site default"
+      "languageSiteDefaultNone": "Site default",
+      "darkMode": "Dark mode",
+      "lightMode": "Light mode"
     },
     "nav": {
       "secondary": "Secondary navigation",
@@ -594,10 +584,8 @@
     },
     "readOnlyInspector": "Read-only inspector access: you can see everything here, but nothing can be changed.",
     "status": {
-      "online": "Online",
-      "offline": "Offline",
-      "connecting": "Connecting",
-      "maintenance": "Maintenance Mode Active"
+      "maintenance": "Maintenance Mode Active",
+      "offlineHint": "The console cannot reach the server. Changes will not be saved until it answers again."
     },
     "assistant": "Open Atlantis Intelligence",
     "pluginPage": {
@@ -618,7 +606,8 @@
     "brand": {
       "by": "by {{company}}",
       "markAlt": "{{name}} mark"
-    }
+    },
+    "openMenu": "Open menu"
   },
   "nav": {
     "items": {

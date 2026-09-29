@@ -15,20 +15,29 @@ import { AvatarSize } from '@/app/components/enums/avatar-size.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminConsoleLanguage } from '@/lib/i18n/admin-console-language';
 import { SidebarLanguageItems } from '@/app/components/view/sidebar-language-items';
+import { SidebarSiteItems } from '@/app/components/view/sidebar-site-items';
+import { TenantOption } from '@/lib/tenants/tenant-option';
+import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
+import { AdminSiteBinding } from '@/lib/admin-site-binding';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { AppEnv } from '@/lib/env';
+import { ThemeMode } from '@fromcode119/core/client';
 
 /**
- * Who you are signed in as, at the foot of the sidebar — and the only place the account menu lives.
+ * Who you are signed in as, at the foot of the sidebar — and the one menu of the console.
  *
- * It used to sit in the top-right header. Down here it is beside the navigation it belongs to, it
- * survives the sidebar collapsing, and the header keeps only what is about the SYSTEM rather than
- * about you: which site is being edited, whether the api answers, the theme toggle.
+ * Everything the top header used to hold lives here now: the site you are editing (named on the row
+ * itself, so it is visible on every screen without opening anything), switching sites or stepping out
+ * to the platform, the light/dark toggle and the assistant. The header is gone; only a phone keeps a
+ * bar, for the button that opens this sidebar.
  */
 export class SidebarAccountCard extends AdminComponent {
   @prop declare isMini?: boolean;
 
   /** The sites this account may enter. Empty on a single-tenant deployment, which hides the group. */
-  @state private sites: Array<Record<string, any>> = [];
-  @state private currentSite = '';
+  @state private sites: TenantOption[] = [];
+  @state private currentSite: string | null = null;
+  @state private multiTenant = false;
   /** The reader's own console language ('' = the site's default) and what the site offers. */
   @state private personalLanguage = '';
 
@@ -37,10 +46,15 @@ export class SidebarAccountCard extends AdminComponent {
   async componentDidMount(): Promise<void> {
     this.mounted = true;
     void this.loadLanguage();
-    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
-    if (!this.mounted || !response || response.multiTenant !== true) return;
-    this.sites = Array.isArray(response.tenants) ? response.tenants : [];
-    this.currentSite = String(response.current ?? '');
+    // `noDedupe`: WHICH SITE YOU ARE ON must never come from AdminApi's GET memo — it changes every time
+    // somebody switches or steps out, and a stale hit names a site the session has already left.
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE, { noDedupe: true }).catch(() => null);
+    if (!this.mounted || !response) return;
+    this.currentSite = response.current ?? null;
+    AdminSiteBinding.record(this.currentSite);
+    if (response.multiTenant !== true) return;
+    this.multiTenant = true;
+    this.sites = TenantOption.fromList(response.tenants);
   }
 
   private async loadLanguage(): Promise<void> {
@@ -54,14 +68,31 @@ export class SidebarAccountCard extends AdminComponent {
 
   /**
    * Switching reloads the whole page, deliberately: the previous site's data must not linger in
-   * memory behind a new tenant's chrome. Same call the header switcher makes.
+   * memory behind a new tenant's chrome. A refusal is said out loud, with the server's reason.
    */
-  private async enter(tenantId: string): Promise<void> {
-    if (!tenantId || tenantId === this.currentSite) return;
-    const ok = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId })
-      .then(() => true)
-      .catch(() => false);
-    if (ok) window.location.reload();
+  private async enter(tenantId: string, mode?: string): Promise<void> {
+    if (!tenantId || (tenantId === this.currentSite && !mode)) return;
+    const failure = await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, mode ? { tenantId, mode } : { tenantId })
+      .then(() => null)
+      .catch((error: unknown) => SidebarSiteItems.reasonFor(error));
+    if (!failure) {
+      window.location.reload();
+      return;
+    }
+    this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
+  }
+
+  /** Step out of every site into the platform scope. */
+  private async leave(): Promise<void> {
+    if (this.currentSite === null) return;
+    await TenantScopeClient.leaveAndReload();
+  }
+
+  /** The row's second line: the site being edited on a multi-site install, the role otherwise. */
+  private get subtitle(): string {
+    if (!this.multiTenant) return this.role;
+    if (this.currentSite === null) return AdminI18n.t('shell.site.platform');
+    return this.sites.find((site) => site.id === this.currentSite)?.label || this.role;
   }
 
   private get initial(): string {
@@ -100,37 +131,31 @@ export class SidebarAccountCard extends AdminComponent {
   }
 
   private get siteItems(): IDropdownItem[] {
-    const switcher = this.sites.map((site) => ({
-      label: String(site.name || site.slug || site.id),
-      detail: String(site.primaryHost || site.host || ''),
-      selectable: true,
-      selected: String(site.id) === this.currentSite,
-      onClick: () => { void this.enter(String(site.id)); },
-    }));
+    return SidebarSiteItems.build({
+      tenants: this.sites,
+      current: this.currentSite,
+      multiTenant: this.multiTenant,
+      storefrontHost: this.storefrontHost,
+      canManagePlatform: this.canAddSite,
+      onSelect: (tenantId, mode) => { void this.enter(tenantId, mode); },
+      onLeave: () => { void this.leave(); },
+      onAddSite: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
+    });
+  }
 
-    const single = switcher.length === 0 && this.storefrontHost
-      ? [{
-          label: this.storefrontHost,
-          detail: AdminI18n.t('shell.account.singleSite'),
-          selectable: true,
-          selected: true,
-          onClick: () => { /* Already here — the row states which site you are editing. */ },
-        }]
-      : [];
-
-    const rows = [...single, ...switcher];
+  /** Light/dark and the assistant: about how you work, so they sit with you rather than with a page. */
+  private get preferenceItems(): IDropdownItem[] {
+    const dark = this.theme === ThemeMode.DARK;
     return [
-      // `scrolls` bounds the site list in its own box. It grows with the installation — nine sites
-      // already pushed "Add a site" and "Sign out" below the fold of their own menu — and the two
-      // rows after it must stay reachable however many sites exist.
-      ...rows.map((row, index) => ({ ...row, section: index === 0 ? AdminI18n.t('shell.account.sites') : undefined, scrolls: index === 0 ? true : undefined })),
-      // Adding a site is the platform's to do: the Sites screen and its API are platform-admin only, so
-      // offering it to a site's staff was a door onto "this page is for administrators".
-      ...(this.canAddSite ? [{
-        label: AdminI18n.t('shell.account.addSite'),
-        icon: <FrameworkIcons.Plus size={16} />,
-        section: rows.length === 0 ? AdminI18n.t('shell.account.sites') : undefined,
-        onClick: () => this.router.push(AdminConstants.ROUTES.SITES.ROOT),
+      {
+        label: AdminI18n.t(dark ? 'shell.account.lightMode' : 'shell.account.darkMode'),
+        icon: dark ? <FrameworkIcons.Sun size={16} /> : <FrameworkIcons.Moon size={16} />,
+        onClick: this.runtime.toggleTheme,
+      },
+      ...(AppEnv.AI_ENABLED ? [{
+        label: AdminI18n.t('shell.assistant'),
+        icon: <FrameworkIcons.Zap size={16} />,
+        onClick: () => this.router.push(AdminConstants.ROUTES.MINIMAL),
       }] : []),
     ];
   }
@@ -154,6 +179,7 @@ export class SidebarAccountCard extends AdminComponent {
             onClick: () => this.router.push(AdminConstants.ROUTES.SETTINGS.ROOT),
           }]
         : []),
+      ...this.preferenceItems,
       ...SidebarLanguageItems.build({ personal: this.personalLanguage, ...AdminConsoleLanguage.site(this.runtime?.globalSettings) }),
       ...this.siteItems,
       {
@@ -209,8 +235,8 @@ export class SidebarAccountCard extends AdminComponent {
           <span className="truncate text-[12.5px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
             {this.displayName}
           </span>
-          {this.role ? (
-            <span className="truncate text-[10.5px] leading-tight text-slate-400 capitalize">{this.role}</span>
+          {this.subtitle ? (
+            <span className={`truncate text-[10.5px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
           ) : null}
         </span>
         {/*

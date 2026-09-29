@@ -1,15 +1,21 @@
 import { ApiStatus } from '@/app/enums/api-status.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
-import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { TenantSwitcher } from '@/app/components/view/tenant-switcher.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+
+/**
+ * What is left of the top header: nothing, while all is well.
+ *
+ * Its site switcher, theme toggle and assistant moved into the account menu at the foot of the
+ * sidebar, and a permanent "Online" label said nothing worth a row of the screen. What remains is:
+ * - on a phone or tablet, the bar with the button that opens the sidebar, which is otherwise off-screen;
+ * - anywhere, a warning strip while the api does not answer or maintenance mode is on — the two
+ *   states an operator must know about before they trust a save.
+ */
 export class ClientLayoutHeader extends AdminComponent {
   @prop declare onMenuClick: () => void;
 
@@ -42,61 +48,41 @@ export class ClientLayoutHeader extends AdminComponent {
     }
   }
 
-  render(): ReactElement {
-    const onMenuClick = this.onMenuClick;
-    const apiStatus = this.apiStatus;
-    const isMaintenance = this.isMaintenance;
-    const theme = this.theme;
-    const toggleTheme = this.runtime.toggleTheme;
+  private get warning(): ReactElement | null {
+    if (this.apiStatus === ApiStatus.OFFLINE) {
+      return (
+        <div role="alert" className="flex items-center gap-2 border-b border-rose-200 bg-rose-50 px-6 py-2 text-[12px] font-medium text-rose-700 dark:border-rose-500/30 dark:bg-rose-500/10 dark:text-rose-300 lg:px-12">
+          <FrameworkIcons.Alert size={14} />
+          {AdminI18n.t('shell.status.offlineHint')}
+        </div>
+      );
+    }
+    if (this.isMaintenance) {
+      return (
+        <div role="status" className="flex items-center gap-2 border-b border-amber-200 bg-amber-50 px-6 py-2 text-[12px] font-medium text-amber-700 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300 lg:px-12">
+          <FrameworkIcons.Zap size={14} />
+          {AdminI18n.t('shell.status.maintenance')}
+        </div>
+      );
+    }
+    return null;
+  }
 
+  render(): ReactElement {
     return (
-      // `backdrop-blur-md` makes this header its own stacking context, so a popover inside it
-      // (the tenant switcher) cannot escape via z-index alone. `relative z-50` lifts the whole
-      // header above page-level sticky bars (z-40) while staying under the sidebar (z-200).
-      <header className="relative z-50 flex h-16 items-center justify-between border-b bg-white/80 px-6 backdrop-blur-md transition-all duration-300 ease-in-out dark:border-slate-800 dark:bg-[#020617]/80 lg:px-12">
-        <div className="flex items-center gap-4">
-          {/* Which customer's site is being edited. Renders nothing on a single-tenant deployment;
-              on a multi-tenant one it is visible on EVERY screen, because editing content in the
-              wrong customer's site is the mistake this control exists to prevent. */}
-          <TenantSwitcher />
+      <>
+        <header className="flex h-14 items-center border-b bg-white px-4 dark:border-slate-800 dark:bg-[#020617] lg:hidden">
           <button
-            onClick={onMenuClick}
-            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            type="button"
+            onClick={this.onMenuClick}
+            aria-label={AdminI18n.t('shell.openMenu')}
+            className="rounded-lg p-2 text-slate-500 transition-colors hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <FrameworkIcons.Menu size={20} />
           </button>
-          {/* Plain status line, not a badge: when everything is fine this should read as a quiet label,
-              so only a degraded state carries colour. */}
-          <div className="flex items-center gap-2">
-            <div className={`h-1.5 w-1.5 rounded-full ${apiStatus === ApiStatus.ONLINE ? 'bg-emerald-500' : apiStatus === ApiStatus.OFFLINE ? 'bg-rose-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
-            <span className={`text-[11px] font-medium ${apiStatus === ApiStatus.OFFLINE ? 'text-rose-600 dark:text-rose-400' : 'text-slate-500 dark:text-slate-400'}`}>
-              {AdminI18n.t(apiStatus === ApiStatus.ONLINE ? 'shell.status.online' : apiStatus === ApiStatus.OFFLINE ? 'shell.status.offline' : 'shell.status.connecting')}
-            </span>
-          </div>
-          {isMaintenance ? (
-            <div className="hidden items-center gap-2 rounded-full border border-amber-500/20 bg-amber-500/10 px-3 py-1 md:flex">
-              <FrameworkIcons.Zap size={12} className="animate-pulse text-amber-500" />
-              <span className="text-[10px] font-semibold tracking-wide text-amber-600">{AdminI18n.t('shell.status.maintenance')}</span>
-            </div>
-          ) : null}
-        </div>
-        <div className="flex items-center gap-4">
-          <Slot name="admin.layout.header.right" />
-          {AppEnv.AI_ENABLED ? (
-            <button
-              onClick={() => this.router.push(AdminConstants.ROUTES.MINIMAL)}
-              className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 text-slate-700 transition-colors hover:border-cyan-400/60 hover:text-cyan-500 dark:border-slate-700 dark:text-slate-200"
-              aria-label={AdminI18n.t('shell.assistant')}
-              title={AdminI18n.t('shell.assistant')}
-            >
-              <FrameworkIcons.Zap size={14} />
-            </button>
-          ) : null}
-          <button onClick={toggleTheme} className="text-slate-500 transition-colors hover:text-indigo-500">
-            {theme === ThemeMode.DARK ? <FrameworkIcons.Sun size={18} /> : <FrameworkIcons.Moon size={18} />}
-          </button>
-        </div>
-      </header>
+        </header>
+        {this.warning}
+      </>
     );
   }
 }
