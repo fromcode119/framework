@@ -20,6 +20,7 @@ import { StringUtils } from '@core/utils/string-utils';
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.settings.tabs.<id>, admin.settings.fields.<field>.…           the settings form, same shape
+ *   admin.widgets.<id>.label | description                              a dashboard widget
  *
  * `lookup(pluginSlug, key)` answers the translation or '' — the caller binds it to one locale.
  */
@@ -65,6 +66,16 @@ export class AdminSchemaLocalizer {
         : schema.tabs,
       fields: this.fields(pluginSlug, 'admin.settings.fields', schema.fields, 'admin.settings.sections'),
     };
+  }
+
+  /** The dashboard widgets a plugin declares — `admin.widgets.<id>.label|description`. */
+  widgets(pluginSlug: string, widgets: any[] | undefined): any[] | undefined {
+    if (!Array.isArray(widgets)) return widgets;
+    return widgets.map((widget) => ({
+      ...widget,
+      label: this.text(pluginSlug, `admin.widgets.${widget?.id}.label`, widget?.label),
+      description: this.text(pluginSlug, `admin.widgets.${widget?.id}.description`, widget?.description),
+    }));
   }
 
   /** Menu entries and their groups; the framework's own entries (`pluginSlug: 'system'`) are the console's to translate. */

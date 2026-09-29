@@ -211,6 +211,8 @@ export { ClientType } from '@core/enums/client-type.enum';
 export { UiScope } from '@core/enums/ui-scope.enum';
 export { AdminScope } from '@core/enums/admin-scope.enum';
 export { ThemeMode } from '@core/enums/theme-mode.enum';
+export { DashboardWidgetSize } from '@core/enums/dashboard-widget-size.enum';
+export type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
 
 // Browser-safe: these carry only labels and identity, and depend on nothing but the Enum base.
 export { AcmeDirectory } from '@core/certificates/acme/enums/acme-directory.enum';

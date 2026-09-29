@@ -48,6 +48,7 @@ export class SystemMetadataController {
         admin: {
           ...plugin.admin,
           collections: (plugin.admin?.collections || []).map((collection: any) => localizer.collection(plugin.slug, collection)),
+          widgets: localizer.widgets(plugin.slug, plugin.admin?.widgets),
         },
       }));
       const adminLabels = new Map<string, string>((metadata.plugins || []).map((plugin: any) => [plugin.slug, String(plugin.admin?.label || '')]));
