@@ -78,10 +78,12 @@ export class PluginCollectionActivationService {
           return await (this.manager.themeManager as any)?.getActiveThemeDefaultPageContractOverrides?.() || [];
         },
       );
-      // Once per tenant when there is no request to borrow one from. Content pages are tenant-scoped, so
+      // Once per tenant when there is no SITE to borrow from. Content pages are tenant-scoped, so
       // materialising at boot wrote rows with a NULL `tenant_id` that row-level security refuses —
-      // every site's default pages silently failed to appear, thirty refusals per boot.
-      if (RequestContextUtils.storage.getStore()) {
+      // every site's default pages silently failed to appear, thirty refusals per boot. A platform
+      // request (a plugin switched on for the whole platform) has a request but no site, and failed the
+      // same way, so it runs per tenant too.
+      if (RequestContextUtils.storage.getStore() && RequestContextUtils.getTenantId()) {
         await service.materialize(ownerPluginSlug);
       } else {
         await PerTenantRun.forEach({
