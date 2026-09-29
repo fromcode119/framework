@@ -22,8 +22,8 @@ export class MediaItemCard extends MediaItemCardState {
     const mediaUrl = this.mediaUrl;
 
     return viewMode === ViewMode.GRID ? (
-      <Card key={item.id} className={`p-0 overflow-hidden group ${AdminClass.SURFACE}`}>
-        <div className={`aspect-square relative flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800/50' : 'bg-slate-700/5'}`}>
+      <Card key={item.id} noPadding className={`overflow-hidden group ${AdminClass.SURFACE}`}>
+        <div className={`aspect-square relative overflow-hidden flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800/50' : 'bg-slate-700/5'}`}>
         {/* The tile itself is the primary action, because a picture is what the operator clicks. Both
             kinds open details — an upload its editable record, a theme asset its facts — so the click
             answers the same question either way. Positioned BEHIND the tick and the action bar (z-0
@@ -65,33 +65,47 @@ export class MediaItemCard extends MediaItemCardState {
             </span>
           ) : null}
 
+          {/* Why this tile has no Edit/Move/Delete (a theme asset), and whether a WebP copy exists.
+              Without the Theme mark the operator sees controls missing from some tiles and not others
+              with nothing on screen accounting for the difference. */}
+          {this.isReadOnly || item.optimizedUrl ? (
+            <span className="absolute bottom-2 left-2 z-10 flex gap-1">
+              {this.isReadOnly ? (
+                <span className="rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">{AdminI18n.t('media.theme')}</span>
+              ) : null}
+              {item.optimizedUrl ? (
+                <span className="rounded-md bg-emerald-500/90 px-1.5 py-0.5 text-[10px] font-semibold text-white shadow-sm">WebP</span>
+              ) : null}
+            </span>
+          ) : null}
+
           {/* The card's own overlay: the tile dims and its actions sit in the MIDDLE as white pills.
               `pointer-events-none` on the container so the dim never swallows a click on the tile
               itself (which opens details); each control re-enables them for its own hit area. */}
-          <div className="absolute inset-0 z-10 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 pointer-events-none">
+          <div className="absolute inset-0 z-10 bg-slate-950/45 opacity-0 group-hover:opacity-100 transition-opacity flex flex-wrap content-center items-center justify-center gap-1.5 p-3 pointer-events-none">
               {/* Withheld for a private file: the public URL does not exist, so this would 404. */}
               {this.isPrivate ? null : (
                 <a
                   href={mediaUrl}
                   download
                   title={AdminI18n.t('media.download')}
-                  className="pointer-events-auto p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
+                  className="pointer-events-auto p-1.5 bg-white rounded-lg shadow-sm text-slate-900 hover:bg-slate-100 transition-colors"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <FrameworkIcons.Download size={18} />
+                  <FrameworkIcons.Download size={16} />
                 </a>
               )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.Zap size={18} />, 'text-emerald-600', AdminI18n.t('media.shipsWithTheThemeThere'))
+                ? this.renderLockedAction(<FrameworkIcons.Zap size={16} />, 'text-emerald-600', AdminI18n.t('media.shipsWithTheThemeThere'))
                 : ['image/jpeg', 'image/jpg', 'image/png'].includes(item.mimeType) && (
                   <button
                     onClick={this.onOptimize}
                     disabled={optimizingId === item.id}
                     title={item.optimizedUrl ? AdminI18n.t('media.optimized', { formatSize: this.formatSize(item.optimizedSize ?? 0) }) : AdminI18n.t('media.convertToWebp')}
-                    className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60"
+                    className="pointer-events-auto cursor-pointer p-1.5 bg-white rounded-lg shadow-sm text-emerald-600 hover:bg-emerald-50 transition-colors disabled:opacity-60"
                   >
-                    {optimizingId === item.id ? <FrameworkIcons.Loader size={18} className="animate-spin" /> : <FrameworkIcons.Zap size={18} />}
+                    {optimizingId === item.id ? <FrameworkIcons.Loader size={16} className="animate-spin" /> : <FrameworkIcons.Zap size={16} />}
                   </button>
                 )}
               {/* A theme asset has no record to edit, so this slot holds Details — the file's own facts. */}
@@ -99,62 +113,52 @@ export class MediaItemCard extends MediaItemCardState {
                 <button
                   onClick={this.onEdit}
                   title={AdminI18n.t('media.details')}
-                  className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
+                  className="pointer-events-auto cursor-pointer p-1.5 bg-white rounded-lg shadow-sm text-slate-900 hover:bg-slate-100 transition-colors"
                 >
-                  <FrameworkIcons.Info size={18} />
+                  <FrameworkIcons.Info size={16} />
                 </button>
               ) : (
                 <button
                   onClick={this.onEdit}
                   title={AdminI18n.t('media.editDetailsAltTextCaption')}
-                  className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-slate-900 hover:bg-slate-100 transition-colors"
+                  className="pointer-events-auto cursor-pointer p-1.5 bg-white rounded-lg shadow-sm text-slate-900 hover:bg-slate-100 transition-colors"
                 >
-                  <FrameworkIcons.Edit size={18} />
+                  <FrameworkIcons.Edit size={16} />
                 </button>
               )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.External size={18} />, 'text-indigo-600', AdminI18n.t('media.shipsWithTheThemeIt'))
+                ? this.renderLockedAction(<FrameworkIcons.External size={16} />, 'text-indigo-600', AdminI18n.t('media.shipsWithTheThemeIt'))
                 : (
                   <button
                     onClick={this.onMove}
                     title={AdminI18n.t('media.moveToFolder')}
-                    className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-indigo-600 hover:bg-indigo-50 transition-colors"
+                    className="pointer-events-auto cursor-pointer p-1.5 bg-white rounded-lg shadow-sm text-indigo-600 hover:bg-indigo-50 transition-colors"
                   >
-                    <FrameworkIcons.External size={18} />
+                    <FrameworkIcons.External size={16} />
                   </button>
                 )}
               {this.isReadOnly
-                ? this.renderLockedAction(<FrameworkIcons.Trash size={18} />, 'text-red-600', AdminI18n.t('media.shipsWithTheThemeRemove'))
+                ? this.renderLockedAction(<FrameworkIcons.Trash size={16} />, 'text-red-600', AdminI18n.t('media.shipsWithTheThemeRemove'))
                 : (
                   <button
                     onClick={this.onDelete}
                     title={AdminI18n.t('media.delete')}
-                    className="pointer-events-auto cursor-pointer p-2 bg-white rounded-lg text-red-600 hover:bg-red-50 transition-colors"
+                    className="pointer-events-auto cursor-pointer p-1.5 bg-white rounded-lg shadow-sm text-red-600 hover:bg-red-50 transition-colors"
                   >
-                    <FrameworkIcons.Trash size={18} />
+                    <FrameworkIcons.Trash size={16} />
                   </button>
                 )}
           </div>
         </div>
-        <div className="p-4">
-          <div className={`font-semibold text-sm truncate ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`} title={item.originalName}>
+        {/* Name, then one quiet line of facts. The type and size used to be pills beside the status
+            badges, which could not fit a tile this narrow: the size wrapped under its unit and the
+            type pill was cut in half. Status (theme asset, WebP copy) now reads off the image. */}
+        <div className="px-3 py-2.5">
+          <div className={`text-[13px] font-medium leading-snug truncate ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`} title={item.originalName}>
             {item.originalName}
           </div>
-          <div className="flex items-center justify-between mt-2">
-            <span className="text-[10px] text-slate-500 font-medium tracking-wide">{this.sizeLabel}</span>
-            <div className="flex items-center gap-1">
-              {/* Why this card has no Edit/Move/Delete. Without it the operator sees controls missing
-                  from some tiles and not others with nothing on screen accounting for the difference. */}
-              {this.isReadOnly ? (
-                <Badge variant={BadgeVariant.GRAY} className="text-[10px]">{AdminI18n.t('media.theme')}</Badge>
-              ) : null}
-              {item.optimizedUrl && (
-                <Badge variant={BadgeVariant.SUCCESS} className="text-[10px]">WebP</Badge>
-              )}
-              <Badge variant={BadgeVariant.GRAY} className="text-[10px]">
-                {item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'}
-              </Badge>
-            </div>
+          <div className="mt-0.5 truncate text-[11px] tabular-nums text-slate-500">
+            {[this.sizeLabel, item.mimeType.split('/')[1]?.toUpperCase() || 'FILE'].filter(Boolean).join(' · ')}
           </div>
         </div>
       </Card>

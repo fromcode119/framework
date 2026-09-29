@@ -131,7 +131,12 @@ export class Dropdown extends DropdownPositioning {
                         {item.section}
                       </div>
                     ) : null}
-                    {idx === group.items.length - 1 && groupIdx !== 0 && !item.section && (
+                    {/*
+                      * One rule, and only above the destructive action that closes a grouped menu
+                      * (Sign out). It used to fall on the last row of EVERY later group, so a
+                      * three-option language group was split between its second and third choice.
+                      */}
+                    {isDanger && groupIdx !== 0 && idx === group.items.length - 1 && !item.section && (
                       <div className="my-1 h-px bg-slate-100 dark:bg-slate-800" />
                     )}
                     <button

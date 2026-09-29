@@ -20,8 +20,9 @@ export class SidebarLanguageItems {
       onClick: () => { if (input.personal) void AdminConsoleLanguage.choose(''); },
     };
     const choices = input.locales.map((locale): IDropdownItem => ({
+      // The label is the language's own name; its code under it made these rows twice the height of
+      // the site-default row beside them, so one radio group read as two.
       label: locale.label || locale.code.toUpperCase(),
-      detail: locale.code,
       selectable: true,
       selected: input.personal === locale.code,
       onClick: () => { if (input.personal !== locale.code) void AdminConsoleLanguage.choose(locale.code); },
