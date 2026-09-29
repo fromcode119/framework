@@ -78,7 +78,7 @@ export class DashboardWidgetBoard extends AdminComponent {
         {this.loaded && layout.length === 0 ? (
           <p className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-[13px] text-slate-500 dark:border-slate-800">{AdminI18n.t('dashboard.widgets.empty')}</p>
         ) : null}
-        <div className="grid grid-flow-row-dense grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-flow-row-dense grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
           {this.loaded ? layout.map((entry, index) => this.renderWidget(entry, index, layout, byKey.get(entry.key)!)) : null}
         </div>
       </div>
