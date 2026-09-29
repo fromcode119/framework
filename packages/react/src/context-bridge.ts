@@ -1,4 +1,6 @@
 import { ApiPathUtils, ApiScopeClient } from '@fromcode119/core/client';
+import { Platform } from '@fromcode119/react-class-components';
+import { PreBootRegistrationSeed } from '@react/context/pre-boot-registration-seed';
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 
 export class ContextBridge {
@@ -61,9 +63,18 @@ export class ContextBridge {
    * `registerTranslations(payload)` — plugin copy. `registerTranslations(payload, 'theme')` — the
    * theme's, which is the override layer and wins over every plugin default regardless of which
    * bundle evaluated first. See `FrontendI18nService.resolveEffective`.
+   *
+   * Before any bridge is installed (a module evaluating ahead of the provider), the registration goes
+   * onto the pre-boot queue — the same one the stub bridge writes — which the provider's seed folds in
+   * or the live install flushes. It used to be dropped silently, so a caller that registers once at
+   * evaluation never reached the provider at all.
    */
   static registerTranslations(...args: any[]): any {
-    return ContextBridge._args?.registerTranslations?.(...args);
+    if (ContextBridge._args) return ContextBridge._args.registerTranslations?.(...args);
+    if (!Platform.isBrowser) return undefined;
+    const target = window as unknown as Record<string, any>;
+    (target[PreBootRegistrationSeed.QUEUE_KEY] ||= []).push({ type: 'translations', args });
+    return undefined;
   }
 
   static registerPluginApi(...args: any[]): any {

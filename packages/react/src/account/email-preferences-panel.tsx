@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/react-class-components';
+import { prop, state } from '@fromcode119/react-class-components';
 import { RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { FrameworkTranslations } from '@react/i18n/framework-translations';
+import type { ITranslationContextValue } from '@react/context/interfaces/translation-context-value.interface';
 import { AccountTranslations } from '@react/account/account-translations';
 import { SdkClient } from '@fromcode119/core/client';
 
@@ -19,6 +21,13 @@ import { SdkClient } from '@fromcode119/core/client';
  * absent: offering a toggle that does nothing would be worse than offering none.
  */
 export class AccountEmailPreferencesPanel extends PluginComponent {
+  /**
+   * The document locale, passed by a route that renders this panel on the server (`/unsubscribe`). The
+   * server has no provider copy and no `<html lang>` to read, so without it the markup was English on a
+   * Bulgarian site.
+   */
+  @prop declare documentLocale?: string;
+
   @state loading: boolean = true;
   @state saving: string = '';
   /**
@@ -77,6 +86,22 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     return String(error?.message || error);
   }
 
+  /**
+   * The provider's translator first — a theme may override this copy — then the framework's own account
+   * pack in the document's locale, then the inline English default. The middle step is what gives the
+   * server render (where the provider holds no account copy) the same words the browser will render.
+   */
+  protected get t(): ITranslationContextValue['t'] {
+    const fromContext = super.t;
+    return (key: string, params?: Record<string, unknown>, defaultValue?: string) => {
+      const contextValue = fromContext(key, params, key);
+      if (contextValue && contextValue !== key) return contextValue;
+      const floor = FrameworkTranslations.in(this.documentLocale || FrameworkTranslations.locale, key, params);
+      if (floor !== key) return floor;
+      return fromContext(key, params, defaultValue);
+    };
+  }
+
   componentDidMount(): void {
     this.mounted = true;
     AccountTranslations.register();
@@ -130,11 +155,10 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     // token twin standalone, with no shell above it. `AccountTranslations.register()` used to be called
     // only by AccountShell/AccountShellDefault/AccountAuthGate, so on that route the `account.*` copy was
     // never loaded and every `t()` below fell through to its inline English default — an all-English page
-    // on a Bulgarian site whose bg.json already held every one of these keys. Registering here follows
-    // the same rule the shell states for itself: the surface that renders the words owns loading them.
-    // In render() as well as componentDidMount() so it lands before the first paint; the call is idempotent.
-    AccountTranslations.register();
-
+    // on a Bulgarian site whose bg.json already held every one of these keys. This module importing
+    // AccountTranslations is what loads them: the class registers the copy when it is evaluated, ahead of
+    // this first render. It is NOT called from here — registering updates the context provider's state,
+    // and doing that during this render is a cross-component update React rejects.
     if (this.loading) {
       return <p className="fc-acct-loading">{this.t('account.emailPreferences.loading', {}, 'Loading…')}</p>;
     }

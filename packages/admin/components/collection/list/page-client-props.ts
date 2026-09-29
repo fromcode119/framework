@@ -12,6 +12,7 @@ export class CollectionListPageProps {
       router, settings, theme, columnsMenuRef, collection, resolvedSlug, slotSlug,
       data, pluginSettings, total, loading, loadError, search, setSearch, page, setPage, sort, handleSort,
       selectedIds, setSelectedIds, statusFilter, setStatusFilter, fieldFilters, setFieldFilters,
+      archivable, showArchived, setShowArchived, handleArchive,
       visibleColumnIds, setVisibleColumnIds, stickyColumnIds, setStickyColumnIds, showColumnsMenu, setShowColumnsMenu,
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
@@ -22,6 +23,7 @@ export class CollectionListPageProps {
     const toolbarProps = {
       filterBarProps: {
         collection, slug, theme, search, setSearch, statusFilter, setStatusFilter, statusOptions, setPage,
+        archivable, showArchived, setShowArchived,
         showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds, stickyColumnIds,
         toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
         reorderColumn: (columnId: string, direction: ReorderDirection) => CollectionListPageActions.reorderColumn({ columnId, direction, pluginSlug, resolvedSlug, setVisibleColumnIds }),
@@ -31,6 +33,8 @@ export class CollectionListPageProps {
       },
       bulkActionsProps: {
         selectedIds, statusOptions, collection, slotSlug, resolvedSlug, access,
+        archivable, showArchived,
+        handleBulkArchive: () => handleArchive([...selectedIds], !showArchived),
         handleBulkStatusChange: (newStatus: string) => CollectionListPageActions.handleBulkStatusChange({ resolvedSlug, selectedIds, newStatus, page, setLoading, setSelectedIds, fetchData }),
         handleExport,
         handleBulkDelete: () => selectedIds.length && setDeleteDialogState({ mode: 'bulk', ids: [...selectedIds] }),
@@ -41,6 +45,7 @@ export class CollectionListPageProps {
     const tableProps = {
       collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort, access,
       stickyColumnIds,
+      onArchive: archivable ? (id: string, archiving: boolean) => handleArchive([id], archiving) : undefined,
       onPageChange: setPage,
       onSort: handleSort,
       onRowClick: (row: any) => router.push(`/${pluginSlug}/${slug}/${row.id}`),

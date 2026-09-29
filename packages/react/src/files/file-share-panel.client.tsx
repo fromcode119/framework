@@ -1,6 +1,6 @@
 import { EnvUtils } from '@fromcode119/core/utils/env-utils';
 import type { ReactNode } from 'react';
-import { state, bound } from '@fromcode119/react-class-components';
+import { prop, state, bound } from '@fromcode119/react-class-components';
 import { ApiVersionUtils, ApplicationUrlUtils, FileRoutePaths } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { FrameworkTranslations } from '@react/i18n/framework-translations';
@@ -17,6 +17,13 @@ import { FileShareTranslations } from '@react/files/file-share-translations';
  * where `window` does not exist, and a field initialised then would be frozen empty into the markup.
  */
 export class FileSharePanel extends PluginComponent {
+  /**
+   * The document locale, passed by the route that renders this on the server. Without it the server
+   * painted the framework copy in English while the browser read `<html lang>`, so the first client
+   * render disagreed with the markup and React threw the page away to re-render it.
+   */
+  @prop declare documentLocale?: string;
+
   @state private loading = true;
   @state private title = '';
   @state private message = '';
@@ -40,7 +47,7 @@ export class FileSharePanel extends PluginComponent {
   private text(key: string, vars?: Record<string, unknown>): string {
     const fromContext = this.t(key, vars as any);
     if (fromContext && fromContext !== key) return fromContext;
-    return FrameworkTranslations.t(key, vars);
+    return FrameworkTranslations.in(this.documentLocale || FrameworkTranslations.locale, key, vars);
   }
 
   private get token(): string {
@@ -108,10 +115,9 @@ export class FileSharePanel extends PluginComponent {
   }
 
   render(): ReactNode {
-    // Registered in render as well: at mount the pack is set synchronously, but a server-rendered pass
-    // reaches render without ever running componentDidMount.
-    FileShareTranslations.register();
-
+    // No registration here: FileShareTranslations registers when its module is evaluated, so the pack is
+    // already set on a server-rendered pass (which never runs componentDidMount). Registering during
+    // render also updated the context provider's state mid-render, which React rejects.
     if (this.loading) {
       return (
         <div className="fc-file-share">

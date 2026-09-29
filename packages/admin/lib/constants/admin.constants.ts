@@ -251,6 +251,8 @@ export class AdminConstants {
     IMPORT: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.IMPORT, { slug })),
     BULK_UPDATE: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.BULK_UPDATE, { slug })),
     BULK_DELETE: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.BULK_DELETE, { slug })),
+    ARCHIVE: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.ARCHIVE, { slug })),
+    RESTORE: (slug: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.COLLECTIONS.RESTORE, { slug })),
   },
   MEDIA: {
     BASE: AdminApiPaths.v(SystemConstants.API_PATH.MEDIA.BASE),

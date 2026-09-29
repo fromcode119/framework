@@ -165,6 +165,7 @@ export class CollectionListPageLifecycle {
       prevState.page !== self.state.page ||
       prevState.sort !== self.state.sort ||
       prevState.statusFilter !== self.state.statusFilter ||
+      prevState.showArchived !== self.state.showArchived ||
       prevResolvedSlug !== CollectionListPageLifecycle.resolvedSlugOf(self) ||
       !CollectionListUtils.areStringRecordMapsEqual(prevState.fieldFilters, self.state.fieldFilters);
     if (changed) self.fetchData(self.state.page);

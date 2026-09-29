@@ -8,6 +8,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Archive, ArchiveRestore } from 'lucide-react';
 
 export class BulkActions extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -16,6 +17,10 @@ export class BulkActions extends PureReactor {
   @prop declare handleBulkStatusChange: (status: string) => void;
   @prop declare handleExport: (format: ExportFormat, ids?: string[]) => void;
   @prop declare handleBulkDelete: () => void;
+  @prop declare archivable?: boolean;
+  @prop declare showArchived?: boolean;
+  /** Archives the selection, or restores it in the Archived view. */
+  @prop declare handleBulkArchive?: () => void;
   @prop declare setSelectedIds: (ids: string[]) => void;
   // Domain-agnostic: a plugin can contribute its own action on the current selection (e.g. "create X from
   // selection") via a slot. The framework never knows what — it just forwards the selection + collection.
@@ -33,6 +38,9 @@ export class BulkActions extends PureReactor {
       handleBulkStatusChange,
       handleExport,
       handleBulkDelete,
+      archivable,
+      showArchived,
+      handleBulkArchive,
       setSelectedIds,
       collection,
       slotSlug,
@@ -78,6 +86,17 @@ export class BulkActions extends PureReactor {
         >
           {AdminI18n.t('common.export')}
         </Button>
+        {archivable && access.canUpdate && handleBulkArchive ? (
+          <Button
+            variant={ButtonVariant.SECONDARY}
+            size={FieldSize.SM}
+            className="rounded-xl h-11 px-4 text-[12px] font-bold tracking-tight"
+            icon={showArchived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
+            onClick={handleBulkArchive}
+          >
+            {AdminI18n.t(showArchived ? 'collection.list.restore' : 'collection.list.archive')}
+          </Button>
+        ) : null}
         {access.canDelete ? (
           <Button
             variant={ButtonVariant.SECONDARY}

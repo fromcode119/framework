@@ -4,7 +4,8 @@ import type { MouseEvent, ReactNode } from 'react';
 import Link from 'next/link';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
-import { Copy } from 'lucide-react';
+import { Archive, ArchiveRestore, Copy } from 'lucide-react';
+import { CollectionArchive } from '@fromcode119/core/client';
 
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
@@ -12,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'access'>;
+  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'onArchive' | 'access'>;
 
   @prop declare row: any;
   @prop declare collection: any;
@@ -27,6 +28,7 @@ export class CollectionListRowActions extends PureReactor {
   @prop declare quickEditExpandedId: string | null;
   @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
   @prop declare onDelete: (id: string, event: MouseEvent) => void;
+  @prop declare onArchive?: (id: string, archiving: boolean) => void;
   /** What the signed-in user may do to this record — decides which actions are offered. */
   @prop declare access: CollectionAccess;
 
@@ -109,6 +111,21 @@ export class CollectionListRowActions extends PureReactor {
           className={`${quickEditExpandedId === String(row.id) ? 'rotate-180' : ''} transition-transform`}
         />
       </button> : null}
+      {access.canUpdate && this.onArchive ? (() => {
+        const archived = CollectionArchive.isArchived(row);
+        const label = AdminI18n.t(archived ? 'collection.list.restore' : 'collection.list.archive');
+        return <button
+          onClick={(event) => {
+            event.stopPropagation();
+            this.onArchive?.(String(row.id), !archived);
+          }}
+          className={`p-2.5 rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-amber-500/10 text-slate-500 hover:text-amber-400' : 'hover:bg-amber-50 text-slate-400 hover:text-amber-600'}`}
+          title={label}
+          aria-label={label}
+        >
+          {archived ? <ArchiveRestore size={16} /> : <Archive size={16} />}
+        </button>;
+      })() : null}
       {access.canDelete ? <button
         onClick={(event) => onDelete(String(row.id), event)}
         className={`p-2.5 rounded-xl transition-all ${theme === ThemeMode.DARK ? 'hover:bg-rose-500/10 text-slate-500 hover:text-rose-400' : 'hover:bg-rose-50 text-slate-400 hover:text-rose-600'}`}

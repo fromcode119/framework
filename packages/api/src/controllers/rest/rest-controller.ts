@@ -9,6 +9,7 @@ import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-run
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
 import { RestWriteController } from '@api/controllers/rest/rest-write-controller';
 import { RestVersionController } from '@api/controllers/rest/rest-version-controller';
+import { RestArchiveController } from '@api/controllers/rest/rest-archive-controller';
 
 export class RESTController {
   private readonly runtime: RestControllerRuntime;
@@ -16,6 +17,7 @@ export class RESTController {
   private readonly writeController: RestWriteController;
   private readonly bulkController: RestBulkController;
   private readonly versionController: RestVersionController;
+  private readonly archiveController: RestArchiveController;
   private readonly audit?: IRestAuditSink;
 
   constructor(
@@ -30,6 +32,7 @@ export class RESTController {
     this.writeController = new RestWriteController(this.runtime);
     this.bulkController = new RestBulkController(this.runtime);
     this.versionController = new RestVersionController(this.runtime);
+    this.archiveController = new RestArchiveController(this.runtime);
     this.audit = audit;
   }
 
@@ -39,6 +42,11 @@ export class RESTController {
    */
   get versioning(): RestControllerRuntime['versioningService'] {
     return this.runtime.versioningService;
+  }
+
+  /** Archive / Restore, which needs every registered collection to find a leader's followers. */
+  get archiving(): RestArchiveController {
+    return this.archiveController;
   }
 
   /**
@@ -103,6 +111,16 @@ export class RESTController {
   async bulkDelete(collection: ICollection, req: any, res?: Response) {
     this.recordMutation('bulk-delete', collection, req);
     return this.asActor(req, () => this.bulkController.bulkDelete(collection, req, res));
+  }
+
+  async archive(collection: ICollection, req: any, res: Response) {
+    this.recordMutation('archive', collection, req);
+    return this.asActor(req, () => this.archiveController.archive(collection, req, res));
+  }
+
+  async restore(collection: ICollection, req: any, res: Response) {
+    this.recordMutation('restore', collection, req);
+    return this.asActor(req, () => this.archiveController.restore(collection, req, res));
   }
 
   async getGlobalActivity(collections: any[], req: Request, res: Response) {

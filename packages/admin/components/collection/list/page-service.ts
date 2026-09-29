@@ -1,3 +1,4 @@
+import { CollectionArchive } from '@fromcode119/core/client';
 import { Platform } from '@fromcode119/react-class-components';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import type { ReactNode } from 'react';
@@ -151,7 +152,8 @@ export class CollectionListPageService {
     search,
     sort,
     statusFilter,
-    fieldFilters
+    fieldFilters,
+    showArchived = false
   }: {
     targetPage: number;
     pageSize: number;
@@ -159,6 +161,7 @@ export class CollectionListPageService {
     sort: string;
     statusFilter: string;
     fieldFilters: Record<string, string>;
+    showArchived?: boolean;
   }): URLSearchParams {
     const queryParams = new URLSearchParams();
     queryParams.append('page', String(targetPage));
@@ -169,6 +172,7 @@ export class CollectionListPageService {
     Object.entries(fieldFilters).forEach(([key, value]) => {
       if (value && value !== 'all') queryParams.append(key, value);
     });
+    if (showArchived) queryParams.append(CollectionArchive.QUERY_PARAM, CollectionArchive.QUERY_ONLY);
     return queryParams;
   }
 

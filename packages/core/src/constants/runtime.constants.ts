@@ -8,6 +8,10 @@ export class RuntimeConstants {
     /** Window global carrying server-prefetched page data (nav menus, page-scoped products, …).
      *  The ONLY place this name is defined — framework injectors and theme readers both use it. */
     PAGE_PREFETCH: '__ATLANTIS_PAGE_PREFETCH__',
+    /** The request path and origin of the page being SERVER-rendered, set for the duration of that
+     *  synchronous render — the server's `window.location`. Read through `RenderLocationUtils` only. */
+    RENDER_PATH: '__ATLANTIS_RENDER_PATH__',
+    RENDER_ORIGIN: '__ATLANTIS_RENDER_ORIGIN__',
   } as const;
 
   static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;

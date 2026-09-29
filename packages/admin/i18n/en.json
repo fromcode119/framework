@@ -135,7 +135,20 @@
       "exportFailed": "Export failed: {{message}}",
       "columnId": "ID",
       "columnCreatedAt": "Created",
-      "columnUpdatedAt": "Updated"
+      "columnUpdatedAt": "Updated",
+      "viewArchived": "Archived",
+      "archive": "Archive",
+      "restore": "Restore",
+      "archived": "Archived {{count}} record(s)",
+      "restored": "Restored {{count}} record(s)",
+      "archiveAlso": "Also archived: {{list}}",
+      "restoreAlso": "Also restored: {{list}}",
+      "archiveSkipped": "Not changed (no permission or failed): {{list}}",
+      "archiveNothing": "Nothing else was linked to these records.",
+      "archiveFailed": "Archiving failed: {{message}}",
+      "restoreFailed": "Restoring failed: {{message}}",
+      "showArchived": "Show archived records",
+      "hideArchived": "Showing archived records — click to go back to active ones"
     },
     "edit": {
       "permalinkCard": "Preview & Permalink",

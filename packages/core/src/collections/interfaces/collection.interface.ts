@@ -1,6 +1,7 @@
 import { CollectionKind } from '@core/enums/collection-kind.enum';
 import type { IAccess } from '@core/interfaces/access.interface';
 import type { IField } from '@core/interfaces/field.interface';
+import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 
 export interface ICollection {
   slug: string;
@@ -28,6 +29,8 @@ export interface ICollection {
    * collection. The key is shared vocabulary owned by nobody, like `email`.
    */
   entity?: string;
+  /** Records can be archived and restored instead of deleted. See {@link ICollectionArchive}. */
+  archive?: ICollectionArchive;
   fields: IField[];
   indexes?: {
     name?: string;

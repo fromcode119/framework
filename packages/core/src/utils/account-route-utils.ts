@@ -1,4 +1,5 @@
 import { RouteConstants } from '@core/constants/route.constants';
+import { RenderLocationUtils } from '@core/utils/render-location-utils';
 
 /**
  * Single source of truth for the account section URL shape (`/account`, `/account/:section`).
@@ -24,6 +25,11 @@ export class AccountRouteUtils {
   }
 
   /** Build the path for a section (`orders` → `/account/orders`; empty → `/account`). */
+  /** The account section of the page being rendered — the same answer on the server and in the browser. */
+  static currentSection(): string {
+    return AccountRouteUtils.parseSection(RenderLocationUtils.pathname());
+  }
+
   static sectionPath(section?: string): string {
     const base = AccountRouteUtils.base().replace(/\/+$/, '');
     const slug = String(section || '').trim().toLowerCase();

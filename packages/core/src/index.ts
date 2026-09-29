@@ -99,6 +99,7 @@ export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 export { RouteConstants } from '@core/constants/route.constants';
 export { AccountRouteUtils } from '@core/utils/account-route-utils';
+export { RenderLocationUtils } from '@core/utils/render-location-utils';
 export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────
@@ -109,6 +110,8 @@ export { StringUtils } from '@core/utils/string-utils';
 export { PermissionGrants } from '@core/utils/permission-grants';
 export { PermissionNames } from '@core/utils/permission-names';
 export { CollectionLabelUtils } from '@core/collections/collection-label-utils';
+export { CollectionArchive } from '@core/collections/collection-archive';
+export type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 export { FrameworkPermissions } from '@core/constants/framework-permissions.constants';
 export type { IPermissionDefinition } from '@core/interfaces/permission-definition.interface';
 export { NumberUtils } from '@core/utils/number-utils';

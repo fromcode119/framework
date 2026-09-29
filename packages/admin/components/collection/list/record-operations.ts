@@ -25,7 +25,8 @@ export class RecordOperations {
     search,
     sort,
     statusFilter,
-    fieldFilters
+    fieldFilters,
+    showArchived
   }: {
     resolvedSlug: string;
     targetPage: number;
@@ -34,8 +35,9 @@ export class RecordOperations {
     sort: string;
     statusFilter: string;
     fieldFilters: Record<string, string>;
+    showArchived?: boolean;
   }): Promise<{ docs: any[]; totalDocs: number }> {
-    const queryParams = CollectionListPageService.buildFetchQuery({ targetPage, pageSize, search, sort, statusFilter, fieldFilters });
+    const queryParams = CollectionListPageService.buildFetchQuery({ targetPage, pageSize, search, sort, statusFilter, fieldFilters, showArchived });
     const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.COLLECTIONS.ITEM(resolvedSlug)}?${queryParams.toString()}`);
     return result?.docs ? { docs: result.docs, totalDocs: result.totalDocs } : { docs: [], totalDocs: 0 };
   }

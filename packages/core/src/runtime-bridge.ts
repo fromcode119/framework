@@ -3,6 +3,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { RuntimeConstants } from '@core/constants/runtime.constants';
 import type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
 import { EnvUtils } from '@core/utils/env-utils';
+import { RenderLocationUtils } from '@core/utils/render-location-utils';
 
 /**
  * Utilities for accessing the Fromcode framework's shared browser runtime.
@@ -37,9 +38,12 @@ export class RuntimeBridge {
     const fallbackBaseUrl = RuntimeBridge.normalizeApiBaseUrlCandidate(options.fallbackHost);
 
     if (EnvUtils.isServer()) {
-      return RuntimeBridge.normalizeApiBaseUrlCandidate(
-        ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
-      )
+      // The origin of the page being server-rendered first — the browser answers `location.origin`, so
+      // anything else here renders a different URL on each side of hydration. See `RenderLocationUtils`.
+      return ApplicationUrlUtils.normalizeBaseUrlCandidate(RenderLocationUtils.origin())
+        || RuntimeBridge.normalizeApiBaseUrlCandidate(
+          ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
+        )
         || fallbackBaseUrl;
     }
 

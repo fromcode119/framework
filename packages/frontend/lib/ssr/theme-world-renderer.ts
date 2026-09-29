@@ -25,7 +25,7 @@ import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render
  */
 export class ThemeWorldRenderer {
   static render(args: { runtime: ThemeSsrRuntime; signature: string; themeSlug: string } & IThemeRenderRequest): ThemeSsrMarkup | null {
-    const { runtime, signature, themeSlug, config, serverTranslations, prefetched, content, locale, contentClassName, contentStyle, notFoundPath } = args;
+    const { runtime, signature, themeSlug, config, serverTranslations, prefetched, content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin } = args;
     const layouts = ThemeServerRegistry.layoutsFor(signature, themeSlug);
     // The theme DECLARES its default layout (theme.json `defaultLayout`); the framework does not guess a
     // name. This used to fall back to a hardcoded 'DefaultLayout' that no theme declares — it only ever
@@ -35,7 +35,14 @@ export class ThemeWorldRenderer {
     const Layout = layouts[layoutName] || (declaredDefault ? layouts[declaredDefault] : undefined);
     if (!Layout) return null;
 
-    const contextValue = ServerPluginContext.build({ signature, themeSlug, config, serverTranslations, locale });
+    const contextValue = ServerPluginContext.build({
+      signature,
+      themeSlug,
+      config,
+      serverTranslations,
+      frameworkTranslations: runtime.frameworkTranslationPacks(),
+      locale,
+    });
     const body = ThemeSsrContentTree.build({ runtime, content, className: contentClassName, style: contentStyle, notFoundPath, locale });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(
@@ -78,7 +85,7 @@ export class ThemeWorldRenderer {
     // synchronous, so the set belongs to this render alone.
     const tracker = runtime.frameworkReact.PluginUsageTracker;
     tracker?.reset?.();
-    const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched);
+    const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched, { path: requestPath, origin: requestOrigin });
     const usedPlugins: string[] = tracker?.drain?.() ?? [];
     // A `recipe` page's body is an empty box (`ThemeSsrContentTree`): the display slot was never
     // rendered, however many components are registered to it. Claiming otherwise made the browser hold
@@ -101,15 +108,25 @@ export class ThemeWorldRenderer {
    * Safe as a global: `renderToString` is synchronous, so nothing else runs between the assignment
    * and the restore, and the previous value is put back in `finally`.
    */
-  private static renderWithPrefetch(runtime: ThemeSsrRuntime, tree: unknown, prefetched: Record<string, unknown>): string {
+  private static renderWithPrefetch(
+    runtime: ThemeSsrRuntime,
+    tree: unknown,
+    prefetched: Record<string, unknown>,
+    location: { path: string; origin: string },
+  ): string {
     const globals = globalThis as unknown as Record<string, unknown>;
-    const key = RuntimeConstants.GLOBALS.PAGE_PREFETCH;
-    const previous = globals[key];
-    globals[key] = prefetched;
+    const { PAGE_PREFETCH, RENDER_PATH, RENDER_ORIGIN } = RuntimeConstants.GLOBALS;
+    const previous = { prefetch: globals[PAGE_PREFETCH], path: globals[RENDER_PATH], origin: globals[RENDER_ORIGIN] };
+    globals[PAGE_PREFETCH] = prefetched;
+    // The server's `window.location` — see `RenderLocationUtils`.
+    globals[RENDER_PATH] = location.path;
+    globals[RENDER_ORIGIN] = location.origin;
     try {
       return runtime.renderToString(tree);
     } finally {
-      globals[key] = previous;
+      globals[PAGE_PREFETCH] = previous.prefetch;
+      globals[RENDER_PATH] = previous.path;
+      globals[RENDER_ORIGIN] = previous.origin;
     }
   }
 }

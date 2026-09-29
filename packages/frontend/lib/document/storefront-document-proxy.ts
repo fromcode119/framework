@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { CookieConstants } from '@fromcode119/core/client';
+import { CookieConstants, FileSharePageSlug } from '@fromcode119/core/client';
 import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-guard';
 
 /**
@@ -12,7 +12,7 @@ import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-g
  * page. Islands is now the only path for content documents; the flag is gone.
  *
  * Rewrites `/` and any path the App Router's `[...slug]` page would have served. The remaining Next
- * pages (`register`, `forgot-password`, `reset-password`, `verify-email*`, `unsubscribe`) keep their
+ * pages (`register`, `forgot-password`, `reset-password`, `verify-email*`, `unsubscribe`, `files`) keep their
  * routes for now (plan §7 open question 2), and everything that is not a document — api proxy, Next
  * internals, the runtime assets, the internal endpoints, files by extension — is excluded by the
  * proxy matcher before this runs. Only GET/HEAD navigations are documents.
@@ -20,8 +20,12 @@ import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-g
 export class StorefrontDocumentProxy {
   static readonly DOCUMENT_PREFIX = '/fc-document';
 
-  /** Root segments that stay App Router pages while the flag is on. */
-  private static readonly NEXT_PAGE_SEGMENTS = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', 'fc-document', 'internal', 'api', '_next']);
+  /**
+   * Root segments that stay App Router pages. The file-share page is one (`app/files/[token]`); it was
+   * missing here, so every share link emailed to a recipient was rewritten to the document route and
+   * answered 404.
+   */
+  private static readonly NEXT_PAGE_SEGMENTS = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH, 'fc-document', 'internal', 'api', '_next']);
 
   static async handle(request: NextRequest): Promise<NextResponse | Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return NextResponse.next();
