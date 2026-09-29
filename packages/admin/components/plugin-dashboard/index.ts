@@ -6,3 +6,4 @@ export * from '@/components/plugin-dashboard/view/plugin-stats-list.client';
 export * from '@/components/plugin-dashboard/view/plugin-trend-chart.client';
 export * from '@/components/plugin-dashboard/view/section-card.client';
 export * from '@/components/plugin-dashboard/view/day-range-toggle.client';
+export * from '@/components/plugin-dashboard/view/dashboard-widget-card.client';
