@@ -11,7 +11,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * card that would read as "nothing here".
  *
  *   <DashboardWidgetCard title={t('…')} icon={<Inbox size={16} />} href={route}
- *     cacheKey="ecommerce.store" load={() => api.getStore()} renderData={(store) => …} />
+ *     cacheKey="acme.orders" load={() => api.getOrders()} renderData={(orders) => …} />
  *
  * Widgets over the same figures pass the same `cacheKey` and share one load (see DashboardWidgetDataCache).
  */
