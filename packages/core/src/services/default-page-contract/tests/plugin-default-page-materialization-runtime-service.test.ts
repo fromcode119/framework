@@ -87,6 +87,46 @@ describe('PluginDefaultPageMaterializationRuntimeService', () => {
     });
   });
 
+  it("writes the site's own company into default content through the owner's contentValues", async () => {
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager: any = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    manager.plugins = new Map([[TEST_PLUGIN, {
+      manifest: { slug: TEST_PLUGIN },
+      state: 'active',
+      publicAPI: { termsValues: async () => ({ organiserName: 'Acme OOD' }) },
+    }]]);
+    const find = manager.db.find;
+    manager.db.find = vi.fn(async (table: string, options?: any) => (table === '_system_meta'
+      ? [{ key: 'platform_name', value: 'Acme Stars' }]
+      : find(table, options)));
+
+    CoreServices.getInstance().defaultPageContracts.register({
+      namespace: TEST_NAMESPACE,
+      pluginSlug: TEST_PLUGIN,
+      contracts: [{
+        key: 'catalog-terms',
+        capability: 'catalog',
+        kind: PluginDefaultPageContractKind.INDEX,
+        recipe: 'catalog-module.catalog-terms',
+        defaultSlug: '/terms',
+        materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
+        required: true,
+        adoptionHints: [],
+        dependencies: [],
+        defaultContent: [{ type: 'content', data: { text: 'Run by {{organiserName}} for {{siteName}}.' } }],
+        contentValues: 'termsValues',
+      }],
+    });
+
+    await new PluginDefaultPageMaterializationRuntimeService(manager).materialize();
+
+    expect(pages).toEqual([expect.objectContaining({
+      customPermalink: '/terms',
+      content: [{ type: 'content', data: { text: 'Run by Acme OOD for Acme Stars.' } }],
+    })]);
+  });
+
   it('reconciles recipe metadata onto adopted singleton pages during startup materialization', async () => {
     const pages: any[] = [{ id: 1, slug: 'catalog', customPermalink: '/catalog', title: 'Catalog', status: 'published' }];
     let metaValue = '';

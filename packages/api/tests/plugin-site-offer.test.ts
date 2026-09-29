@@ -27,8 +27,10 @@ describe('plugins offered to sites', () => {
     };
     return { db, meta, sitePlugins };
   };
+  let materialized = 0;
   const managerWith = (db: any, plugins: Record<string, string>) => ({
     db,
+    materializeDefaultPages: async () => { materialized += 1; },
     plugins: new Map(Object.entries(plugins).map(([slug, state]) => [slug, { state, manifest: { slug, name: slug.toUpperCase(), version: '1.0.0', description: `${slug} plugin` } }])),
   } as any);
   const request = (tenantId: string | null, slug = '', body: Record<string, unknown> = {}) => ({ params: { slug }, body, query: {}, ...(tenantId ? { tenantId } : {}) } as any);
@@ -73,13 +75,17 @@ describe('plugins offered to sites', () => {
     const controller = new PluginSiteOfferController(managerWith(db, { forms: 'active' }));
     await controller.setOffer(request(null, 'forms', { offered: true }), response());
 
+    materialized = 0;
     const on = response();
     await controller.setForSite(request('site-a', 'forms', { enabled: true }), on);
     expect(on.body).toEqual({ success: true, enabled: true });
+    // Its default pages are created for the site now, not at the next restart.
+    expect(materialized).toBe(1);
     expect(sitePlugins).toEqual([expect.objectContaining({ tenant_id: 'site-a', plugin_slug: 'forms', state: 'active' })]);
 
     await controller.setForSite(request('site-a', 'forms', { enabled: false }), response());
     expect(sitePlugins[0].state).toBe('inactive');
+    expect(materialized).toBe(1);
   });
 
   it('refuses a plugin the platform does not offer, a stopped one, and a request with no site', async () => {

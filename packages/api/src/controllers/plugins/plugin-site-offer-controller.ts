@@ -79,6 +79,9 @@ export class PluginSiteOfferController extends BaseController {
     try {
       if (enabled) await this.tenantState().enable(tenantId, slug);
       else await this.tenantState().disable(tenantId, slug);
+      // The plugin's default pages exist for this site from the moment it is switched on, not from the
+      // next restart; the pass is idempotent and scoped to the site this request is bound to.
+      if (enabled) await this.manager.materializeDefaultPages();
       res.json({ success: true, enabled });
     } catch (err: any) {
       this.logger.error(`Site "${tenantId}" could not switch "${slug}" ${enabled ? 'on' : 'off'}: ${err?.message}`);
