@@ -147,6 +147,8 @@ export class PluginLifecycleController extends BaseController {
     try {
       if (enabled) await service.enable(tenantId, slug);
       else await service.disable(tenantId, slug);
+      // The site gets the plugin's default pages now, not at the next restart (idempotent, every site).
+      if (enabled) await this.manager.materializeDefaultPages();
       return res.json({ success: true, tenantId, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
       this.logger.error(`Tenant toggle failed for plugin "${slug}" on tenant "${tenantId}": ${err?.message}`);

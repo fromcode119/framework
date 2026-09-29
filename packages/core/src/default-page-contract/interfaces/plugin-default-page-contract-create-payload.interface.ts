@@ -10,4 +10,6 @@ export interface IPluginDefaultPageContractCreatePayload {
   title?: string;
   themeLayout?: string;
   defaultContent?: any[];
+  /** See `IPluginDefaultPageContract.contentValues`. */
+  contentValues?: string;
 }
