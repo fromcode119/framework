@@ -807,7 +807,9 @@
           "label": "Support & docs",
           "description": "Links to the developer guide and the project."
         }
-      }
+      },
+      "open": "Open",
+      "loadFailed": "This widget's figures could not be loaded. Reload the page to try again."
     }
   },
   "notFound": {

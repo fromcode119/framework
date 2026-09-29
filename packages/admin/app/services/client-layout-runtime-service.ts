@@ -28,6 +28,7 @@ export class ClientLayoutRuntimeService {
       'PluginTrendChart',
       'PluginChartCard',
       'PluginEmptyState',
+      'DashboardWidgetCard',
       'MediaPicker',
       'Button',
       'Input',
