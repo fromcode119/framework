@@ -17,8 +17,14 @@ import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RecordOperations } from '@/components/collection/list/record-operations';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { NotificationContextStore } from '@/components/view/notification-context-store.client';
+import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
+import { ArchiveOperations } from '@/components/collection/list/archive-operations';
 
 export class CollectionListPageView extends Reactor {
+  static contextType = NotificationContextStore.context;
+  declare context: INotificationContextType | undefined;
+
   @prop declare pluginSlug: string;
   @prop declare slug: string;
   @prop declare router: any;
@@ -46,6 +52,8 @@ export class CollectionListPageView extends Reactor {
   @state selectedIds: string[] = [];
   @state statusFilter = 'all';
   @state fieldFilters: Record<string, string> = {};
+  /** The Archived view of an archivable collection: only archived records, each with Restore. */
+  @state showArchived = false;
   @state visibleColumnIds: string[] = [];
   @state stickyColumnIds: string[] = [];
   @state showColumnsMenu = false;
@@ -97,7 +105,7 @@ export class CollectionListPageView extends Reactor {
       const result = await RecordOperations.fetchCollectionData({
         resolvedSlug, targetPage: page, pageSize: this.pageSize,
         search: this.debouncedSearch, sort: this.sort,
-        statusFilter: this.statusFilter, fieldFilters: this.fieldFilters
+        statusFilter: this.statusFilter, fieldFilters: this.fieldFilters, showArchived: this.showArchived
       });
       this.loadError = '';
       this.data = result.docs;
@@ -107,6 +115,28 @@ export class CollectionListPageView extends Reactor {
       // is empty, when in fact the request failed.
       console.error('Failed to fetch collection data:', error);
       this.loadError = error?.message || AdminI18n.t('collection.list.loadFailed');
+    } finally {
+      this.updateState('loading', false);
+    }
+  }
+
+  /** Archive or restore `ids`, then say what else the archive reached through the collection's keys. */
+  async handleArchive(ids: string[], archiving: boolean): Promise<void> {
+    const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
+    const resolvedSlug = collection?.slug || this.slug;
+    if (!ids.length) return;
+    this.updateState('loading', true);
+    try {
+      const result = await ArchiveOperations.run(resolvedSlug, ids, archiving);
+      const { title, message } = ArchiveOperations.summary(result, archiving);
+      this.context?.notify(NotificationType.SUCCESS, title, message);
+      this.updateState('selectedIds', []);
+      await this.fetchData(this.page);
+    } catch (error: any) {
+      const message = AdminI18n.t(archiving ? 'collection.list.archiveFailed' : 'collection.list.restoreFailed', {
+        message: error?.message || AdminI18n.t('common.unknownError'),
+      });
+      this.context?.notify(NotificationType.ERROR, message, '');
     } finally {
       this.updateState('loading', false);
     }

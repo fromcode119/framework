@@ -7,6 +7,7 @@ import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { DatabaseWriteAudit } from '@core/plugin/context/database-write-audit';
 import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
+import { ArchivedRowFilter } from '@core/plugin/context/archived-row-filter';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
@@ -151,18 +152,21 @@ export class DatabaseContextProxy {
   plugin: ILoadedPlugin,
   manager: IPluginManagerInterface,
   security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>,
-  behaviour?: { resolveLocalized?: boolean }
+  behaviour?: { resolveLocalized?: boolean; includeArchived?: boolean }
 ) {
       const { hasCapability, handleViolation, handleRateLimit } = security;
       const tablePrefix = PhysicalTableNameUtils.createPluginPrefix(plugin.manifest.slug);
       const resolveLocalized = behaviour?.resolveLocalized !== false;
+      const includeArchived = behaviour?.includeArchived === true;
       // `db.stored` — the same proxy (same guards, same rate limit, same denormalization) minus the
       // localized-field collapse, so rows read in the STORED shape. This exists for read-modify-write:
       // reading a `localized: true` field through the collapsing view and writing it back REPLACES the
       // whole locale map with one locale's value — every other language's content is silently lost.
-      // Any code that patches inside a localized value must read
-      // through `stored`. Lazily built once; `stored` on the stored view is itself.
-      let storedView: any = null;
+      // Any code that patches inside a localized value must read through `stored`. `db.withArchived` is
+      // the same for ArchivedRowFilter: archived rows too. Each view is built once; on itself, itself.
+      const views = new Map<string, any>();
+      const view = (name: string, next: { resolveLocalized: boolean; includeArchived: boolean }) => views.get(name)
+        ?? views.set(name, DatabaseContextProxy.createDatabaseProxy(plugin, manager, security, next)).get(name);
 
       const wrappedSql = new Proxy(sql, {
         get: (target, prop) => {
@@ -189,13 +193,8 @@ export class DatabaseContextProxy {
           if (prop === 'eq') return eq;
           if (prop === 'and') return and;
           if (prop === 'or') return or;
-          if (prop === 'stored') {
-            if (!resolveLocalized) return proxy;
-            if (!storedView) {
-              storedView = DatabaseContextProxy.createDatabaseProxy(plugin, manager, security, { resolveLocalized: false });
-            }
-            return storedView;
-          }
+          if (prop === 'stored') return resolveLocalized ? view('stored', { resolveLocalized: false, includeArchived }) : proxy;
+          if (prop === 'withArchived') return includeArchived ? proxy : view('withArchived', { resolveLocalized, includeArchived: true });
 
           // Arbitrary SQL is an explicit, separately approved escape hatch. It is never implied by
           // ordinary database read/write access.
@@ -271,7 +270,7 @@ export class DatabaseContextProxy {
                 && UntenantedBootAccess.shouldSkip(table)) {
                 return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
               }
-              const scoped = DatabaseContextProxy.injectTenant(prop, args);
+              const scoped = DatabaseContextProxy.injectTenant(prop, includeArchived ? args : ArchivedRowFilter.apply(prop, args, manager));
               const out = fn.apply(this, EnumValueCoercion.coerceArguments(scoped));
               if (shouldDenormalize) {
                 const postProcess = (rows: any) => (resolveLocalized

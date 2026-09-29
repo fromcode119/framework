@@ -41,6 +41,10 @@ export class BaseCollectionRouter extends BaseRouter {
       (req: any, res) => this.restController.bulkUpdate(req.collection, req, res));
     this.post(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_BULK_DELETE, this.collectionMiddleware, 
       (req: any, res) => this.restController.bulkDelete(req.collection, req, res));
+    this.post(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_ARCHIVE, this.collectionMiddleware,
+      (req: any, res) => this.restController.archive(req.collection, req, res));
+    this.post(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_RESTORE, this.collectionMiddleware,
+      (req: any, res) => this.restController.restore(req.collection, req, res));
     
     // Field suggestions
     this.get(RouteConstants.SEGMENTS.COLLECTIONS_SLUG_SUGGESTIONS_FIELD, this.collectionMiddleware, 

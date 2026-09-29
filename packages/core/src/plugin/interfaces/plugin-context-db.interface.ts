@@ -10,4 +10,10 @@ import type { IDatabaseManager } from '@core/interfaces/database-manager.interfa
  */
 export interface IPluginContextDb extends IDatabaseManager {
   readonly stored: IDatabaseManager;
+  /**
+   * The same view, but `find`/`count`/`groupCount` on an ARCHIVABLE collection also return archived
+   * rows, which the default view leaves out. For code that must see every row: a sequence finding the
+   * highest number already issued, an existence check that must not hand out a taken value.
+   */
+  readonly withArchived: IPluginContextDb;
 }

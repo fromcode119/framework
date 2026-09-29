@@ -19,6 +19,9 @@ export class FilterBar extends PureReactor {
   @prop declare setStatusFilter: (val: string) => void;
   @prop declare statusOptions: { label: string; value: string }[];
   @prop declare setPage: (val: number) => void;
+  @prop declare archivable?: boolean;
+  @prop declare showArchived?: boolean;
+  @prop declare setShowArchived?: (val: boolean) => void;
   @prop declare showColumnsMenu: boolean;
   @prop declare setShowColumnsMenu: (val: boolean | ((prev: boolean) => boolean)) => void;
   @prop declare columnsMenuRef: Ref<HTMLDivElement>;
@@ -72,6 +75,24 @@ export class FilterBar extends PureReactor {
                 label: option.label || option.value,
                 value: option.value
               }))
+            ]}
+          />
+        </div>
+      )}
+
+      {this.archivable && (
+        <div className="w-full sm:w-44 shrink-0">
+          <Select
+            value={this.showArchived ? 'archived' : 'live'}
+            onChange={(value) => this.setShowArchived?.(value === 'archived')}
+            theme={this.theme}
+            searchable={false}
+            size={FieldSize.MD}
+            className="w-full"
+            triggerClassName="h-11 rounded-xl px-4 text-sm font-semibold"
+            options={[
+              { label: AdminI18n.t('collection.list.viewLive'), value: 'live' },
+              { label: AdminI18n.t('collection.list.viewArchived'), value: 'archived' },
             ]}
           />
         </div>

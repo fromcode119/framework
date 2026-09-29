@@ -251,6 +251,8 @@ export class ServerRoutesSetup {
     this.pluginRouter.post('/:pluginSlug/:slug', middleware, (req: any, res) => this.restController.create(req.collection, req, res));
     this.pluginRouter.post('/:pluginSlug/:slug/bulk-update', middleware, (req: any, res) => this.restController.bulkUpdate(req.collection, req, res));
     this.pluginRouter.post('/:pluginSlug/:slug/bulk-delete', middleware, (req: any, res) => this.restController.bulkDelete(req.collection, req, res));
+    this.pluginRouter.post('/:pluginSlug/:slug/archive', middleware, (req: any, res) => this.restController.archive(req.collection, req, res));
+    this.pluginRouter.post('/:pluginSlug/:slug/restore', middleware, (req: any, res) => this.restController.restore(req.collection, req, res));
     this.pluginRouter.put('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
     this.pluginRouter.patch('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.update(req.collection, req, res));
     this.pluginRouter.delete('/:pluginSlug/:slug/:id', middleware, (req: any, res) => this.restController.delete(req.collection, req, res));

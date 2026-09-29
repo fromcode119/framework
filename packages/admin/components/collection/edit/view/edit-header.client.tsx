@@ -1,5 +1,6 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode, CollectionArchive } from '@fromcode119/core/client';
+import { EditArchiveControl } from '@/components/collection/edit/view/edit-archive-control.client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
@@ -190,6 +191,10 @@ export class EditHeader extends PureReactor {
               >
                 {AdminI18n.t(isNew ? 'common.create' : 'common.save')}
               </Button>
+            )}
+
+            {!isNew && this.canSave && CollectionArchive.isArchivable(collection) && (
+              <EditArchiveControl collection={collection} id={this.id} theme={theme} formData={formData} setFormData={this.setFormData} />
             )}
 
             {!isNew && this.canDelete && (

@@ -172,7 +172,19 @@
       "exportFailed": "Експортът не успя: {{message}}",
       "columnId": "ID",
       "columnCreatedAt": "Създаден",
-      "columnUpdatedAt": "Обновен"
+      "columnUpdatedAt": "Обновен",
+      "viewLive": "Активни записи",
+      "viewArchived": "Архивирани",
+      "archive": "Архивирай",
+      "restore": "Възстанови",
+      "archived": "Архивирани записи: {{count}}",
+      "restored": "Възстановени записи: {{count}}",
+      "archiveAlso": "Архивирани заедно с тях: {{list}}",
+      "restoreAlso": "Възстановени заедно с тях: {{list}}",
+      "archiveSkipped": "Непроменени (без права или грешка): {{list}}",
+      "archiveNothing": "Няма други свързани записи.",
+      "archiveFailed": "Архивирането не успя: {{message}}",
+      "restoreFailed": "Възстановяването не успя: {{message}}"
     },
     "edit": {
       "permalinkCard": "Преглед и адрес",

@@ -59,6 +59,8 @@ export class APIServer {
 
     // Version snapshots are served by their collection's rules (no password field leaves the API).
     this.restController.versioning.useCollectionLookup((slug) => manager.getCollection(slug)?.collection);
+    // A leader's archive reaches the collections that follow its keys, whichever plugin owns them.
+    this.restController.archiving.useCollections(() => manager.getCollections());
     this.graphQLService = new GraphQLService(manager, this.restController);
     this.socket = new WebSocketManager(manager.hooks);
 

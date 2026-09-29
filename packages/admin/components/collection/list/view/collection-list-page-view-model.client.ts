@@ -2,6 +2,7 @@ import { ExportFormat } from '@/components/collection/list/enums/export-format.e
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
 import { CollectionAccess } from '@/lib/collection-access';
+import { CollectionArchive } from '@fromcode119/core/client';
 
 import { CollectionListPageService } from '@/components/collection/list/page-service';
 import type { ICollectionListPageViewModel } from '@/components/collection/list/interfaces/collection-list-page-view-model.interface';
@@ -38,6 +39,14 @@ export class CollectionListPageViewModelBuilder {
       sort: self.state.sort, handleSort: (newSort: string) => self.handleSort(newSort),
       selectedIds: self.state.selectedIds, setSelectedIds: (v: any) => self.updateState('selectedIds', v),
       statusFilter: self.state.statusFilter, setStatusFilter: (v: any) => self.updateState('statusFilter', v),
+      archivable: CollectionArchive.isArchivable(collection),
+      showArchived: self.state.showArchived,
+      setShowArchived: (v: boolean) => {
+        self.updateState('selectedIds', []);
+        self.updateState('page', 1);
+        self.updateState('showArchived', v);
+      },
+      handleArchive: (ids: string[], archiving: boolean) => self.handleArchive(ids, archiving),
       fieldFilters: self.state.fieldFilters, setFieldFilters: (v: any) => self.updateState('fieldFilters', v),
       visibleColumnIds: self.state.visibleColumnIds, setVisibleColumnIds: (v: any) => self.updateState('visibleColumnIds', v),
       stickyColumnIds: self.state.stickyColumnIds, setStickyColumnIds: (v: any) => self.updateState('stickyColumnIds', v),

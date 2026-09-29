@@ -49,6 +49,8 @@ export class RouteEndpointSegments {
   COLLECTIONS_SLUG_BULK: '/:slug/bulk',
   COLLECTIONS_SLUG_BULK_UPDATE: '/:slug/bulk-update',
   COLLECTIONS_SLUG_BULK_DELETE: '/:slug/bulk-delete',
+  COLLECTIONS_SLUG_ARCHIVE: '/:slug/archive',
+  COLLECTIONS_SLUG_RESTORE: '/:slug/restore',
   COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/:slug/suggestions/:field',
   COLLECTIONS_SLUG_ID_VERSION: '/:slug/:id/:version',
   COLLECTIONS_SLUG_ID_VERSION_RESTORE: '/:slug/:id/:version/restore',
@@ -61,6 +63,8 @@ export class RouteEndpointSegments {
   GLOBAL_COLLECTIONS_SLUG_BULK: '/collections/:slug/bulk',
   GLOBAL_COLLECTIONS_SLUG_BULK_UPDATE: '/collections/:slug/bulk-update',
   GLOBAL_COLLECTIONS_SLUG_BULK_DELETE: '/collections/:slug/bulk-delete',
+  GLOBAL_COLLECTIONS_SLUG_ARCHIVE: '/collections/:slug/archive',
+  GLOBAL_COLLECTIONS_SLUG_RESTORE: '/collections/:slug/restore',
   GLOBAL_COLLECTIONS_SLUG_SUGGESTIONS_FIELD: '/collections/:slug/suggestions/:field',
 
   // ── Themes ──────────────────────────────────────────────────────────────

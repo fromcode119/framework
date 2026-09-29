@@ -4,8 +4,9 @@ import { Schema } from '@fromcode119/database';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
+import { CollectionArchiveReadClause } from '@api/services/collection-archive-read-clause';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
-import { CoercionUtils } from '@fromcode119/core';
+import { CoercionUtils, CollectionArchive } from '@fromcode119/core';
 
 export class RestReadController {
   constructor(private readonly runtime: RestControllerRuntime) {}
@@ -16,6 +17,8 @@ export class RestReadController {
       delete (filters as any).locale;
       delete (filters as any).fallback_locale;
       delete (filters as any).locale_mode;
+      const archivedParam = CoercionUtils.toKey((filters as any)[CollectionArchive.QUERY_PARAM]);
+      delete (filters as any)[CollectionArchive.QUERY_PARAM];
 
       const accessConstraints = await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
       const effectiveFilters: Record<string, unknown> = { ...filters, ...accessConstraints };
@@ -32,9 +35,12 @@ export class RestReadController {
 
       const relationshipMatches = await this.resolveRelationshipSearchMatches(req, search);
       const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
+      // Only a session that may see unpublished records may ask for the archived ones.
+      const archivedOnly = archivedParam === CollectionArchive.QUERY_ONLY && canPreview;
       const whereClause = QueryHelper.buildWhereClause(
         this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches,
-        UserCollectionScopeGuard.buildReadClause(userScope),
+        CollectionArchiveReadClause.combine(this.runtime.db, UserCollectionScopeGuard.buildReadClause(userScope),
+          CollectionArchiveReadClause.build(this.runtime.db, collection, table, archivedOnly)),
       );
       const orderBy = QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
       const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
@@ -164,6 +170,16 @@ export class RestReadController {
         return res.status(404).json({ error: 'Not found' });
       }
 
+      // An archived record is gone for the public, like a draft; the admin still opens it to restore it.
+      const archived = CollectionArchive.isArchivable(collection)
+        && CollectionArchive.isArchived(result as Record<string, unknown>);
+      if (archived && !(await this.runtime.accessPolicy.seesUnpublished(collection, req))) {
+        if (!res) {
+          return null;
+        }
+        return res.status(404).json({ error: 'Not found' });
+      }
+
       const statusField = collection.fields.find((field) => field.name === 'status');
       if (statusField && result.status !== 'published') {
         // Same gate as the list read above — a query parameter cannot make a draft readable.
@@ -231,7 +247,9 @@ export class RestReadController {
       const userScopeClause = UserCollectionScopeGuard.buildReadClause(
         await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db),
       );
-      let docs = await this.runtime.db.find(table, { where: systemMetaClause || userScopeClause || undefined, limit: 10000 });
+      const where = CollectionArchiveReadClause.combine(this.runtime.db, systemMetaClause || userScopeClause || undefined,
+        CollectionArchiveReadClause.build(this.runtime.db, collection, table, false));
+      let docs = await this.runtime.db.find(table, { where, limit: 10000 });
       // When the admin list passes `ids` (rows the user selected), export ONLY those records;
       // with no `ids`, export the whole collection.
       const idsParam = CoercionUtils.toString(req.query?.ids);
