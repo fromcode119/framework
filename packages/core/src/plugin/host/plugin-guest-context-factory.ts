@@ -96,6 +96,7 @@ export class PluginGuestContextFactory {
         // build a query object here. Every plugin process paid for it anyway.
         if (prop === 'sql' || prop === 'eq' || prop === 'and' || prop === 'or') return (require('drizzle-orm') as typeof import('drizzle-orm'))[prop];
         if (prop === 'stored') return database.database([...base, { name: 'stored' }]);
+        if (prop === 'withArchived') return database.database([...base, { name: 'withArchived' }]);
         if (typeof prop !== 'string') return undefined;
         return (...args: unknown[]) => remote.call('context', [...base, { name: prop, args: PluginGuestSql.portableArgs(PluginGuestRemote.portable(args)) }]);
       },

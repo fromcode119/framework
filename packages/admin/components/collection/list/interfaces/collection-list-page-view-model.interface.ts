@@ -30,6 +30,11 @@ export interface ICollectionListPageViewModel {
   selectedIds: string[];
   setSelectedIds: React.Dispatch<React.SetStateAction<string[]>>;
   statusFilter: string;
+  /** The collection declares `archive`, so it has an Archived view and Archive / Restore actions. */
+  archivable: boolean;
+  showArchived: boolean;
+  setShowArchived: (value: boolean) => void;
+  handleArchive: (ids: string[], archiving: boolean) => Promise<void>;
   setStatusFilter: React.Dispatch<React.SetStateAction<string>>;
   fieldFilters: Record<string, string>;
   setFieldFilters: React.Dispatch<React.SetStateAction<Record<string, string>>>;

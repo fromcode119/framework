@@ -2,6 +2,7 @@ import { FieldPosition } from '@core/enums/field-position.enum';
 import { NamingStrategy } from '@fromcode119/database/naming-strategy';
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
 import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
+import { CollectionArchive } from '@core/collections/collection-archive';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
@@ -78,6 +79,10 @@ export class PluginEntityRegistrationService {
       this.ensurePermalinkFields(nextCollection);
     }
 
+    if (CollectionArchive.isArchivable(nextCollection)) {
+      this.ensureArchiveFields(nextCollection);
+    }
+
     return nextCollection;
   }
 
@@ -86,6 +91,14 @@ export class PluginEntityRegistrationService {
     for (const field of incoming.fields) {
       if (!fieldNames.has(field.name)) {
         existing.fields.push(field);
+      }
+    }
+  }
+
+  private ensureArchiveFields(collection: ICollection): void {
+    for (const field of CollectionArchive.fields()) {
+      if (!collection.fields.find((existing) => existing.name === field.name)) {
+        collection.fields.push(field);
       }
     }
   }

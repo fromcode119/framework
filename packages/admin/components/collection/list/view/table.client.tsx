@@ -45,6 +45,8 @@ export class CollectionListTable extends PureReactor {
   /** What the signed-in user may do to these records. */
   @prop declare access: CollectionAccess;
   @prop declare onDelete: (id: string, event: MouseEvent) => void;
+  /** Archive / Restore one row; absent when the collection is not archivable. */
+  @prop declare onArchive?: (id: string, archiving: boolean) => void;
   @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
   @prop declare onQuickEditSave: () => void;
   @prop declare onQuickEditClose: () => void;
@@ -127,6 +129,7 @@ export class CollectionListTable extends PureReactor {
               quickEditExpandedId={quickEditExpandedId}
               onQuickEditOpen={onQuickEditOpen}
               onDelete={onDelete}
+              onArchive={this.onArchive}
               access={this.access}
             />
           )}

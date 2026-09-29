@@ -12,6 +12,7 @@ export interface ICollectionListPageViewState {
   sort: string;
   selectedIds: string[];
   statusFilter: string;
+  showArchived: boolean;
   fieldFilters: Record<string, string>;
   visibleColumnIds: string[];
   stickyColumnIds: string[];
