@@ -3,6 +3,7 @@ import { BaseController, PluginManager, Logger, MediaVisibility, SystemConstants
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { Request, Response } from 'express';
 import { MediaManager } from '@fromcode119/media';
+import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 
 /**
  * Putting files IN and reading them back out — the two halves of the library that move bytes.
@@ -27,6 +28,11 @@ export class MediaLibraryController {
   async upload(req: any, res: Response) {
     if (!req.file) {
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+    // Before anything is stored: with no site to own it, the record cannot be written, and the file
+    // would be left in storage with no record pointing at it.
+    if (!SiteOwnedWrites.possible(req)) {
+      return res.status(409).json({ error: SiteOwnedWrites.REQUIRED });
     }
 
     const folderId = req.body.folderId ? parseInt(req.body.folderId) : null;

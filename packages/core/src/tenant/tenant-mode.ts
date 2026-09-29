@@ -40,6 +40,15 @@ export class TenantMode {
     }
   }
 
+  /**
+   * Whether the database keeps every site's records apart — and therefore requires each site-owned
+   * record (media, people) to BELONG to a site. True on such a database even before its first site
+   * exists, which is exactly when a write with no site bound has nowhere to go.
+   */
+  static isIsolationSupported(): boolean {
+    return TenantMode.isolationSupported;
+  }
+
   /** True only when tenants are actually configured. Single-tenant deployments answer false. */
   static isEnabled(): boolean {
     return TenantMode.enabled;
