@@ -15,11 +15,20 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * form, so a field removed from the screen stops being written instead of being written as blank.
  */
 export abstract class GeneralSettingsPageActions extends GeneralSettingsPageState {
+  /**
+   * The payload as it was read back — what a save compares against. Only keys whose value differs
+   * are sent: a site that never set a key shows it blank, and PUTting that blank stored an empty row
+   * that then hid the platform's value (the notification address, the sign-in switches, the sign-up
+   * copy) from that site. Security settings had the same bug.
+   */
+  private loadedPayload: Record<string, unknown> = {};
+
   protected async loadSettings(): Promise<void> {
     this.loadError = null;
     try {
       const response = await AdminSystemSettingsClient.getAll();
       this.settings = GeneralSettingsPageActions.mapResponse(response);
+      this.loadedPayload = GeneralSettingsPageActions.buildPayload(this.settings);
     } catch (err: any) {
       this.settings = null;
       this.loadError = err?.message || AdminI18n.t('settings.general.theSystemSettingsRequestFailed');
@@ -119,9 +128,14 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       return;
     }
 
+    const changed = Object.fromEntries(
+      Object.entries(sendable).filter(([key, value]) => value !== this.loadedPayload[key]),
+    );
+
     this.isSaving = true;
     try {
-      await AdminSystemSettingsClient.update(sendable);
+      if (Object.keys(changed).length > 0) await AdminSystemSettingsClient.update(changed);
+      this.loadedPayload = payload;
 
       // The WHOLE form state, not just what was sent. `AdminUrlUtils.resolveFrontendBaseUrl` reads
       // `frontend_url`/`site_url` from this context for every "view on site" link; registering only
