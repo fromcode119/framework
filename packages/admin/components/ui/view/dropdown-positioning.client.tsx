@@ -155,8 +155,12 @@ export abstract class DropdownPositioning extends Reactor {
   protected static groupItems(items: IDropdownItem[]): Array<{ section?: string; scrolls: boolean; items: IDropdownItem[] }> {
     const groups: Array<{ section?: string; scrolls: boolean; items: IDropdownItem[] }> = [];
     for (const item of items) {
-      if (item.section || groups.length === 0) {
-        groups.push({ section: item.section, scrolls: item.scrolls === true, items: [item] });
+      // A scrolling group holds only its choices. The actions that follow it (Add a site, Sign out)
+      // start a group of their own — inside the box they scrolled out of sight with the sites, which
+      // is the very thing the box exists to prevent.
+      const leavesScrollingGroup = groups[groups.length - 1]?.scrolls === true && !item.selectable;
+      if (item.section || groups.length === 0 || leavesScrollingGroup) {
+        groups.push({ section: item.section, scrolls: item.section ? item.scrolls === true : false, items: [item] });
         continue;
       }
       groups[groups.length - 1].items.push(item);

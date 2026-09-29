@@ -69,7 +69,7 @@ export class MediaGrid extends PureReactor {
     }
 
     return (
-      <div className={viewMode === ViewMode.GRID ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 2xl:grid-cols-8 gap-4" : "space-y-2"}>
+      <div className={viewMode === ViewMode.GRID ? "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4" : "space-y-2"}>
         {this.folders.map(folder => (
           <MediaFolderCard
             key={`folder-${folder.id}`}

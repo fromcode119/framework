@@ -19,6 +19,11 @@ describe('SidebarLanguageItems', () => {
     expect(items.filter((item) => item.selected).map((item) => item.label)).toEqual(['Български']);
   });
 
+  it('gives every choice one line, like the site-default row beside it', () => {
+    const items = SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales });
+    expect(items.every((item) => item.detail === undefined)).toBe(true);
+  });
+
   it('offers nothing when the site has only one language', () => {
     expect(SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales: [locales[0]!] })).toEqual([]);
   });
