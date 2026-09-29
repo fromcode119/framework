@@ -1,6 +1,7 @@
 import { createRequire, registerHooks } from 'node:module';
 import { pathToFileURL } from 'node:url';
 import { EnvUtils } from '@fromcode119/core/client';
+import { ThemeSsrModuleUrl } from '@/lib/ssr/theme-ssr-module-url';
 
 /**
  * The module world a theme's SSR bundle actually runs in — deliberately NOT the one Next bundles.
@@ -169,6 +170,16 @@ export class ThemeSsrRuntime {
   }
 
   /**
+   * The framework's own translation packs, from the SAME framework instance the page renders with. The
+   * browser registers these through the bridge when their modules evaluate; the server has no bridge
+   * install at that moment, so without this its markup painted raw `account.*` keys and the first
+   * client render (already Bulgarian) failed hydration.
+   */
+  frameworkTranslationPacks(): Record<string, Record<string, unknown>> {
+    return this.frameworkReact.FrameworkTranslations.packs();
+  }
+
+  /**
    * Wrap a warmed (resolved) override exactly as `ThemeOverrideRegistrar.withSuspense` wraps the
    * `React.lazy` a theme registers in the browser — the RUNTIME copy of the registrar, so the wrapper is
    * built with the same React the theme bundle renders with. Resolving a lazy override server-side is what
@@ -195,10 +206,14 @@ export class ThemeSsrRuntime {
     registerHooks({
       resolve(specifier, context, nextResolve) {
         const parentUrl = String(context.parentURL || '');
-        if (reactSpecifier.test(specifier) && prefixes.some((prefix) => parentUrl.startsWith(prefix))) {
+        const fromExtension = prefixes.some((prefix) => parentUrl.startsWith(prefix));
+        if (reactSpecifier.test(specifier) && fromExtension) {
           return { url: pathToFileURL(frameworkRequire.resolve(specifier)).href, shortCircuit: true };
         }
-        return nextResolve(specifier, context);
+        const resolved = nextResolve(specifier, context);
+        if (!fromExtension) return resolved;
+        // One module graph per generation — see `ThemeSsrModuleUrl`.
+        return { ...resolved, url: ThemeSsrModuleUrl.carryCacheBuster(specifier, resolved.url, parentUrl) };
       },
     });
   }

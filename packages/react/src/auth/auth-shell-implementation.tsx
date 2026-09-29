@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
-import { RouteConstants } from '@fromcode119/core/client';
+import { RouteConstants, SdkClient } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthLoginForm } from '@react/auth/auth-login-form';
 import { AuthRegisterForm } from '@react/auth/auth-register-form';
@@ -23,7 +23,7 @@ import { AuthShell } from '@react/auth/auth-shell';
  * The active surface comes from the `mode` prop, else from the URL path (`/login`, `/register`,
  * `/forgot-password`, `/reset-password`) — mirroring how AccountShell reads its section. Switching modes
  * is a client-side `history.pushState` + `setState` (with `<a href>` preserved for no-JS / middle-click).
- * If the framework session already has a user, it shows a "you're signed in" state instead.
+ * If the server confirms a session for the stored user, it shows a "you're signed in" state instead.
  */
 export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuthShellState> {
   protected static readonly registeredAsDefault = AuthShell.implementation.provideDefault(AuthShellImplementation);
@@ -44,11 +44,33 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
     // Reset (a token link) is a fresh set-password action even for a signed-in visitor — never short it.
     if (this.state.mode !== AuthMode.RESET) {
       const user = this.session.readStoredUser();
-      if (user) this.setState({ signedInUser: user });
+      if (user) void this.confirmStoredSession(user);
     }
     if (Platform.isBrowser) {
       this.boundPopState = () => this.setState({ mode: this.props.mode || AuthShellImplementation.readModeFromUrl() });
       window.addEventListener('popstate', this.boundPopState);
+    }
+  }
+
+  /**
+   * The stored user is only a cache — the session behind it may have expired. Trusting it alone showed
+   * "you're signed in" to a visitor whose session the server had already dropped, and its button led to
+   * the account route, whose guard sent them straight back here: a loop with no way to sign in. So the
+   * signed-in state waits for the same probe the account guard uses (`/auth/me/person`). A 401 means
+   * the cache is stale and is cleared; any other failure leaves it alone and simply shows the form.
+   */
+  private async confirmStoredSession(user: any): Promise<void> {
+    try {
+      const res = await new SdkClient(this.api).getAuth().get(RouteConstants.SEGMENTS.ME_PERSON, { silent: true });
+      const person = res?.person ?? res?.data?.person ?? null;
+      if (person && (person.id || person.userId || person.email)) {
+        this.setState({ signedInUser: user });
+        return;
+      }
+      this.session.clearSession();
+    } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
+      // The runtime api throws with the response's `statusCode` attached.
+      if (error?.statusCode === 401) this.session.clearSession();
     }
   }
 

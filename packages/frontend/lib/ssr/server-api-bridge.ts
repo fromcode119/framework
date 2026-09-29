@@ -1,4 +1,5 @@
 import { bound } from '@fromcode119/react-class-components';
+import { RenderLocationUtils } from '@fromcode119/core/utils/render-location-utils';
 
 /**
  * The `api` a plugin client is constructed with during a server render.
@@ -21,8 +22,15 @@ export class ServerApiBridge {
     this.baseUrl = String(baseUrl || '');
   }
 
+  /**
+   * The origin of the page being rendered first, exactly as the browser resolves it
+   * (`FrontendApiBaseUrl`: `location.origin` before any configured URL). Answering the configured base
+   * here built plugin URLs — the content image optimizer's above all — on a different host than the
+   * browser does, and every such `src` failed hydration. Outside a render there is no page origin and
+   * the configured base stands.
+   */
   @bound getBaseUrl(): string {
-    return this.baseUrl;
+    return RenderLocationUtils.origin() || this.baseUrl;
   }
 
   @bound get(): Promise<never> {

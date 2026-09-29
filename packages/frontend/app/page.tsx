@@ -34,6 +34,7 @@ export class HomePageRoute {
       locale,
       contentClassName: StorefrontPageKind.HOME.contentClassName,
       contentStyle: StorefrontPageKind.HOME.contentStyle,
+      requestPath: '/',
     });
     return (
       <>

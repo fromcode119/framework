@@ -32,6 +32,7 @@ export class DynamicContentPageRoute {
       locale,
       contentClassName: StorefrontPageKind.CONTENT.contentClassName,
       contentStyle: StorefrontPageKind.CONTENT.contentStyle,
+      requestPath: url,
     });
     return (
       <>

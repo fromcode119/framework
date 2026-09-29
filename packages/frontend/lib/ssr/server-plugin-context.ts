@@ -27,14 +27,18 @@ export class ServerPluginContext {
     themeSlug: string;
     config: Record<string, unknown>;
     serverTranslations: Record<string, unknown>;
+    /** The framework's own packs (`FrameworkTranslations.packs()`) — the base of the plugin layer. */
+    frameworkTranslations: Record<string, Record<string, unknown>>;
     locale: string;
   }): Record<string, unknown> {
-    const { signature, themeSlug, config, serverTranslations, locale } = args;
+    const { signature, themeSlug, config, serverTranslations, frameworkTranslations, locale } = args;
     const noop = () => undefined;
     // Two layers, folded separately — the same reduction the browser provider performs, so a theme's
     // copy overrides a plugin default identically on both sides. One shared bucket here would resolve
     // collisions by registration order and swap the wording at hydration.
-    let registered: Record<string, Record<string, unknown>> = {};
+    // Framework copy first: in the browser it is queued when its module evaluates, ahead of every plugin
+    // bundle, so a plugin registering the same key wins on both sides.
+    let registered: Record<string, Record<string, unknown>> = FrontendI18nService.foldRegistration({}, frameworkTranslations);
     for (const payload of ThemeServerRegistry.translationPayloads(signature)) {
       registered = FrontendI18nService.foldRegistration(registered, payload);
     }

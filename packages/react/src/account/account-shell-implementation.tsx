@@ -30,9 +30,9 @@ export class AccountShellImplementation extends Reactor {
   }
 
   render(): ReactNode {
-    // Registering during render (not in a constructor) keeps this out of reactor's context-forwarding
-    // trap and still lands before the first paint of whichever shell wins. The call is idempotent.
-    AccountTranslations.register();
+    // The copy is already registered: AccountTranslations does it when its module is evaluated, before
+    // any shell renders. It is never registered from here — that updates the context provider's state
+    // during this render, which React rejects as a cross-component update.
     // The gate wraps the OVERRIDE, not the default shell, for the same reason the translations above
     // are registered here: a theme replaces the account's LAYOUT, and must not be able to replace —
     // or be required to re-ship — what the surface itself owns. While the gate sat inside

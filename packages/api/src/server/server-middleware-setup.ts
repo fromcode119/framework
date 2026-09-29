@@ -15,6 +15,7 @@ import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
+import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
 
 export class ServerMiddlewareSetup {
@@ -47,6 +48,9 @@ export class ServerMiddlewareSetup {
       // service's own 'en' default is only the last resort when none is configured.
       const locale = this.requestLocale.resolveRequestLocale(req, this.getDefaultLocale() || 'en');
       req.locale = locale;
+      // Whether the request named its own locale — a site-bound request that did not speaks its site's
+      // language, which is only known once the tenant is (`TenantRequestBinder`).
+      req.localeExplicit = Boolean(this.requestLocale.explicitRequestLocale(req));
       this.runWithTenant(req, res, locale, next);
     });
 
@@ -195,7 +199,7 @@ export class ServerMiddlewareSetup {
         }
         // Visibility is NOT decided here — it needs to know WHO is asking, and nothing does until the
         // auth middleware has run, which is necessarily after this. See SiteVisibilityMiddleware.
-        await this.parts().binder().bind(req, res, locale, tenant, next, 'storefront');
+        await this.parts().binder().bind(req, res, locale, tenant, next, TenantRequestBinder.STOREFRONT_SURFACE);
       })
       .catch((error: unknown) => {
         this.logger.error(`Tenant resolution failed for host "${host}"`, error);

@@ -22,7 +22,7 @@ describe('StorefrontDocumentProxy', () => {
   });
 
   it('leaves the remaining Next pages, the document route, internals and files alone', async () => {
-    for (const path of ['/register', '/forgot-password', '/reset-password?token=x', '/verify-email', '/verify-email-change', '/unsubscribe', '/fc-document/x', '/internal/ssr-status', '/api/v1/health', '/_next/static/a.js', '/logo.png', '/robots.txt']) {
+    for (const path of ['/register', '/forgot-password', '/reset-password?token=x', '/verify-email', '/verify-email-change', '/unsubscribe', '/files/share-token', '/fc-document/x', '/internal/ssr-status', '/api/v1/health', '/_next/static/a.js', '/logo.png', '/robots.txt']) {
       expect((await StorefrontDocumentProxy.handle(request(path))).headers.get('x-middleware-rewrite'), path).toBeNull();
     }
   });
