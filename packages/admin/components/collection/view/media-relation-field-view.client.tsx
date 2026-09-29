@@ -9,6 +9,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class MediaRelationFieldView extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare hasMany: boolean;
+  @prop declare wholeImage: boolean;
   @prop declare open: boolean;
   @prop declare preview: IMediaRelationPreview | null;
   @prop declare selectedIds: Array<string | number>;
@@ -23,7 +24,7 @@ export class MediaRelationFieldView extends PureReactor {
     <div className="space-y-3">
       {preview?.url ? (
         <div className="relative w-full aspect-video rounded-[var(--radius)] overflow-hidden border border-slate-200 dark:border-slate-800">
-          <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className="w-full h-full object-cover" />
+          <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className={`w-full h-full ${this.wholeImage ? 'object-contain p-3' : 'object-cover'}`} />
         </div>
       ) : selectedIds.length > 0 ? (
         <div className={`px-3.5 h-10 flex items-center rounded-[var(--radius)] text-xs font-semibold ${theme === ThemeMode.DARK ? 'bg-slate-900/50 text-slate-200 border border-slate-800' : 'bg-slate-50 text-slate-600 border border-slate-200'}`}>

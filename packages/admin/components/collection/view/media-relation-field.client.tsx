@@ -13,6 +13,8 @@ export class MediaRelationField extends Reactor {
   @prop declare onChange: (val: any) => void;
   @prop declare theme: ThemeMode;
   @prop declare hasMany?: boolean;
+  /** Show the whole picked image instead of filling the box — a logo must not be cropped. */
+  @prop declare wholeImage?: boolean;
 
   @state open = false;
   @state preview: IMediaRelationPreview | null = null;
@@ -100,6 +102,7 @@ export class MediaRelationField extends Reactor {
 
     return (
       <MediaRelationFieldView
+        wholeImage={Boolean(this.wholeImage)}
         theme={this.theme}
         hasMany={hasMany}
         open={this.open}

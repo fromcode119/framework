@@ -41,7 +41,7 @@ export class GeneralEmailLogoRow extends PureReactor {
       >
         {/* A logo, not a banner: the picker's preview fills its container, so the row sets the size. */}
         <div className="max-w-xs space-y-2">
-          <MediaRelationField value={value} onChange={this.change} theme={this.theme} />
+          <MediaRelationField value={value} onChange={this.change} theme={this.theme} wholeImage />
           {value && (
             <Button variant={ButtonVariant.GHOST} icon={<FrameworkIcons.Trash size={14} />} onClick={this.remove}>
               {AdminI18n.t('settings.general.removeEmailLogo')}
