@@ -15,6 +15,7 @@ import { ArchiveTreeInspector } from '@api/controllers/plugins/archive-tree-insp
  * the same PluginManager and delegates, so behavior is unchanged.
  */
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
+import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 import { CoercionUtils } from '@fromcode119/core';
 import { ApplicationUrlUtils } from '@fromcode119/core';
 
@@ -77,6 +78,8 @@ export class PluginArchiveSupport {
       const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
 
       const cacheHeader = AssetCacheHeaderService.resolve(abs);
+      // Served on every host, the admin's included — a document here must not run in that origin.
+      ServedFileHeaderService.apply(res, abs);
 
       if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
         const headers: Record<string, string> = {

@@ -235,7 +235,9 @@ export class PluginDirectoryScannerService {
                 // manifest in the spread below, so the layout resolved above would be dropped. Resolve
                 // against whichever manifest actually wins; resolve() only fills absent values, so
                 // running it again over the disk manifest is a no-op.
-                const effectiveManifest = PluginPackageLayout.resolve(pluginPath, pluginModule.manifest || manifest);
+                // Never a site's: its own process (the uploader's code) reports it, free to rename itself
+                // or declare the seeds/admin UI the policy refused on disk. Only the checked one counts.
+                const effectiveManifest = PluginPackageLayout.resolve(pluginPath, (!rootOwnerTenantId && pluginModule.manifest) || manifest);
                 // Bundled extensions are part of the product: always on, never uninstallable, and
                 // not subject to the operator's saved state — the admin refuses to disable them.
                 if (bundledSlugs.has(String(effectiveManifest.slug || '').toLowerCase())) {

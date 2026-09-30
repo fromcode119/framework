@@ -41,7 +41,21 @@ describe('site plugin runtime allowlist', () => {
       ['settings', 'get'], ['tenants', 'current'], ['theme', 'getActiveSlug'], ['auth', 'verifyToken'],
     ]) {
       expect(() => TenantPluginRuntimePolicy.assertRemoteCall('local-probe', {
-        root: 'context', steps: [{ name: surface }, { name: method, args: [] }],
+        root: 'context', steps: [{ name: surface }, { name: method, args: surface === 'hooks' ? ['local-probe:ping'] : [] }],
+      })).not.toThrow();
+    }
+  });
+
+  it('fires only its own events — never the platform\'s or another plugin\'s', () => {
+    PluginOwners.record('local-probe', 'site-a');
+    for (const method of ['emit', 'call']) {
+      for (const event of ['system:cache:purge', 'system:settings:updated', 'realtime:x', 'another-plugin:order:paid', 'collection:users:afterCreate', 'local-probe-other:x', '', undefined]) {
+        expect(() => TenantPluginRuntimePolicy.assertRemoteCall('local-probe', {
+          root: 'context', steps: [{ name: 'hooks' }, { name: method, args: [event, {}] }],
+        })).toThrow(/site-uploaded plugin/);
+      }
+      expect(() => TenantPluginRuntimePolicy.assertRemoteCall('local-probe', {
+        root: 'context', steps: [{ name: 'hooks' }, { name: method, args: ['local-probe:saved', {}] }],
       })).not.toThrow();
     }
   });

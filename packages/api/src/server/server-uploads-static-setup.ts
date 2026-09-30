@@ -3,20 +3,21 @@ import { MediaManager } from '@fromcode119/media';
 import { ApiConfig } from '@api/config/api-config';
 import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
 import { TenantUploadsStatic } from '@api/server/tenant-uploads-static';
+import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 
 /** Serving the uploads directory: per-SITE, with the shared parent behind it. */
 export class ServerUploadsStaticSetup {
   /**
-   * SVG is an active document format: it is served with an explicit type and a CSP that blocks
-   * script/object/frame execution — defence in depth on top of the upload-time `MediaSvgSanitizer`.
+   * An upload is served on every host, the shared admin's included, so a document format (an `.html`
+   * a site uploaded, an SVG) is served in an opaque origin with no script — see
+   * `ServedFileHeaderService`. SVG also keeps its explicit type, on top of the upload-time
+   * `MediaSvgSanitizer`.
    */
   private static readonly OPTIONS = {
     maxAge: '30d',
     setHeaders: (res: express.Response, filePath: string) => {
-      if (filePath.toLowerCase().endsWith('.svg')) {
-        res.setHeader('Content-Type', 'image/svg+xml');
-        res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'");
-      }
+      if (filePath.toLowerCase().endsWith('.svg')) res.setHeader('Content-Type', 'image/svg+xml');
+      ServedFileHeaderService.apply(res, filePath);
     },
   };
 

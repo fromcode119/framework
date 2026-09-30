@@ -1,5 +1,6 @@
 import express, { Router } from 'express';
 import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
+import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
@@ -26,6 +27,7 @@ export class APIServer {
   private restController: RESTController;
   private graphQLService: GraphQLService;
   private socket: WebSocketManager;
+  private socketAuthorizer: RealtimeSocketAuthorizer;
   private mediaManager!: MediaManager;
   private cache: CacheManager;
   private settingsCache: Map<string, string> = new Map();
@@ -63,6 +65,7 @@ export class APIServer {
     this.restController.archiving.useCollections(() => manager.getCollections());
     this.graphQLService = new GraphQLService(manager, this.restController);
     this.socket = new WebSocketManager(manager.hooks);
+    this.socketAuthorizer = new RealtimeSocketAuthorizer(auth);
 
     // Seeding DEFAULT settings is platform work, not tenant work: the rows belong to no tenant, and
     // the request connection is a non-owner role with no platform marker, so row-level security
@@ -256,13 +259,21 @@ export class APIServer {
         return;
       }
 
-      if (pathname === RouteConstants.SEGMENTS.WEBSOCKET && wss) {
-        wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit('connection', ws, request);
-        });
-      } else {
+      if (pathname !== RouteConstants.SEGMENTS.WEBSOCKET || !wss) {
         socket.destroy();
+        return;
       }
+      // Admitted only with an administrator's session, and bound to that session's site — see
+      // `RealtimeSocketAuthorizer`. A refusal is answered before the upgrade, so no socket exists.
+      void this.socketAuthorizer.authorize(request).then((binding) => {
+        if (!binding) {
+          socket.end('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
+          return;
+        }
+        wss.handleUpgrade(request, socket, head, (ws) => {
+          wss.emit('connection', ws, request, binding);
+        });
+      }, () => socket.destroy());
     });
 
     server.listen(port, host, () => {

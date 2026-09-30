@@ -9,6 +9,7 @@ import { PluginHostCallbacks } from '@core/plugin/host/plugin-host-callbacks';
 import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
 import { PluginHostDispatcher } from '@core/plugin/host/plugin-host-dispatcher';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
 import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-tokens';
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
@@ -216,7 +217,7 @@ export class PluginHost extends PluginHostGenerations {
       // connection must not sit idle in the meantime.
       await this.syncPeers(store);
       await TenantConnectionScope.releaseCurrent();
-      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
+      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
       this.tokens.revoke(token);
     }

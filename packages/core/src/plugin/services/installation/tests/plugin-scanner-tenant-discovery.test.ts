@@ -204,4 +204,60 @@ describe('plugin discovery with per-site plugins on disk', () => {
     expect(Object.keys(ownersBySlug(result))).not.toContain('acme-beta');
     expect(String(result.errored.find((item: any) => item.manifest?.slug === 'acme-beta')?.error)).toContain('"network"');
   });
+  it('IGNORES the manifest a site\'s own process reports about itself — the disk manifest passed the policy', async () => {
+    // The guest is the uploader's code, so whatever it answers at boot is the uploader's choice. A
+    // clean manifest.json passes the site policy; the same package's entry can then report an
+    // `admin` section and a `ui.entry` pointing at its storefront bundle, which the admin would load
+    // in its own origin with the rights of whoever opens the site — a platform administrator included.
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta' });
+    const hosts = {
+      ...isolatingHosts(),
+      describe: vi.fn(async () => ({
+        manifest: {
+          slug: 'acme-beta',
+          version: '1.0.0',
+          name: 'X',
+          admin: { menu: [{ label: 'Pwn', path: '/x' }] },
+          ui: { entry: 'frontend.js' },
+          runtimeModules: { lodash: 'https://attacker.example/lodash.js' },
+          sandbox: false,
+        },
+      })),
+    };
+
+    const result = await scannerOn(plugins, tempRoot('fc-themes-'), hosts).discoverPlugins(new Map(), {}, );
+    const found = result.discovered.find((item: any) => item.plugin?.manifest?.slug === 'acme-beta');
+
+    expect(found).toBeDefined();
+    expect(found.plugin.manifest.admin).toBeUndefined();
+    expect(found.plugin.manifest.ui?.entry).toBeUndefined();
+    expect(found.plugin.manifest.runtimeModules).toBeUndefined();
+    expect(found.plugin.manifest.ownerTenantId).toBe('acme');
+    expect(found.plugin.manifest.sandbox).toEqual(expect.objectContaining({ enabled: true }));
+  });
+
+  it('a site\'s process cannot RENAME itself into a slug nobody owns', async () => {
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta' });
+    const hosts = { ...isolatingHosts(), describe: vi.fn(async () => ({ manifest: { slug: 'unowned-name', version: '1.0.0', name: 'X' } })) };
+
+    const result = await scannerOn(plugins, tempRoot('fc-themes-'), hosts).discoverPlugins(new Map(), {});
+    const slugs = result.discovered.map((item: any) => item.plugin?.manifest?.slug);
+
+    expect(slugs).toContain('acme-beta');
+    expect(slugs).not.toContain('unowned-name');
+  });
+  it('a site\'s manifest cannot call itself BUNDLED — that flag skips the per-site gate on every request', async () => {
+    // `bundled` is a fact about where the code came from (the framework's own root), exactly like the
+    // owner. Believed from an upload, the route gate served the plugin on every site.
+    const plugins = tempRoot('fc-plugins-');
+    writePlugin(path.join(plugins, 'tenants', 'acme', 'acme-beta'), { slug: 'acme-beta', bundled: true });
+
+    const result = await scannerOn(plugins, tempRoot('fc-themes-')).discoverPlugins(new Map(), {});
+    const found = result.discovered.find((item: any) => item.plugin?.manifest?.slug === 'acme-beta');
+
+    expect(found).toBeDefined();
+    expect(found.plugin.manifest.bundled).not.toBe(true);
+  });
 });

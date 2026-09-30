@@ -98,6 +98,29 @@ describe('site plugin package policy', () => {
       expect(reasons).toContain(expected);
     }
   });
+
+  it('refuses every way into the ADMIN: an empty `admin`, `ui.entry` and `ui.adminCss` — but keeps the storefront keys', () => {
+    // The admin imports `ui.entry` on the plugin's own page whether or not `admin` is declared, and
+    // `admin: {}` is empty yet truthy where the admin decides to load a plugin's UI.
+    const dir = tempDir('fc-policy-');
+    fs.writeFileSync(path.join(dir, 'index.js'), '');
+    const reasons = TenantPluginPackagePolicy.violations(dir, {
+      slug: 'x', admin: {}, ui: { entry: 'frontend.js', adminCss: ['a.css'] },
+    } as any).join(' | ');
+    for (const expected of ['"admin"', '"ui.entry"', '"ui.adminCss"']) expect(reasons).toContain(expected);
+
+    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', ui: { frontendEntry: 'frontend.js', css: ['s.css'] } } as any)).toEqual([]);
+  });
+
+  it('refuses an entry file outside the plugin\'s own directory', () => {
+    // Its process would `require` whatever the path names — another site's plugin, under its own user.
+    const dir = tempDir('fc-policy-');
+    fs.writeFileSync(path.join(dir, 'index.js'), '');
+    for (const main of ['../other/index.js', '/etc/passwd']) {
+      expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', main } as any).join(' | ')).toContain('outside');
+    }
+    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', main: 'dist/index.js' } as any)).toEqual([]);
+  });
 });
 
 describe('site plugin install', () => {
@@ -186,5 +209,29 @@ describe('bounded archive extraction', () => {
     const target = tempDir('fc-out-');
     expect(() => SafeArchive.extractZip(file, target, 1024)).toThrow(/unpacks to more than/);
     expect(fs.existsSync(path.join(target, 'big.txt'))).toBe(false);
+  });
+
+  it('refuses an entry that declares itself EMPTY but carries data — the unbounded case of the inflater', () => {
+    // adm-zip caps inflation at the declared size, except a declared 0. 50 KB on the wire became 50 MB
+    // in the api's memory before any limit was consulted.
+    const zip = new AdmZip();
+    zip.addFile('bomb.txt', Buffer.alloc(8 * 1024 * 1024, 'a'));
+    const bytes = zip.toBuffer();
+    bytes.writeUInt32LE(0, bytes.indexOf(Buffer.from([0x50, 0x4b, 0x03, 0x04])) + 22);
+    bytes.writeUInt32LE(0, bytes.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02])) + 24);
+    const file = path.join(tempDir('fc-zip-'), 'bomb.zip');
+    fs.writeFileSync(file, bytes);
+    const target = tempDir('fc-out-');
+
+    expect(() => SafeArchive.extractZip(file, target, 1024 * 1024)).toThrow(/declares no content/);
+    expect(fs.existsSync(path.join(target, 'bomb.txt'))).toBe(false);
+
+    // An honestly empty file still unpacks.
+    const empty = new AdmZip();
+    empty.addFile('empty.txt', Buffer.alloc(0));
+    const emptyFile = path.join(tempDir('fc-zip-'), 'empty.zip');
+    empty.writeZip(emptyFile);
+    SafeArchive.extractZip(emptyFile, target, 1024);
+    expect(fs.readFileSync(path.join(target, 'empty.txt')).length).toBe(0);
   });
 });

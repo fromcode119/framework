@@ -13,6 +13,19 @@ import { NetworkAddressUtils } from '@core/security/network-address-utils';
  * does not answer within the timeout gets a 504 here and is reported to the host, which restarts it.
  */
 export class PluginHostHttpProxy {
+  /**
+   * A SITE's plugin answers on every host the api does — the shared admin included — so what it
+   * receives and what it may send back is narrower than a platform plugin's:
+   *  - never the caller's credentials. The session cookie and `Authorization` of whoever calls its
+   *    route (a platform administrator viewing that site, too) would be the uploader's to replay. The
+   *    user it needs already travels as the host's private user header.
+   *  - never a cookie, and never a page that runs in that host's origin: its answer is served in an
+   *    opaque origin, whatever policy it asked for.
+   */
+  static readonly SITE_PLUGIN_REQUEST_HEADERS_DROPPED = ['cookie', 'authorization', 'proxy-authorization'] as const;
+  static readonly SITE_PLUGIN_RESPONSE_HEADERS_DROPPED = ['set-cookie', 'content-security-policy', 'content-security-policy-report-only', 'x-content-type-options'] as const;
+  static readonly SITE_PLUGIN_RESPONSE_POLICY = 'sandbox allow-scripts allow-forms allow-popups allow-downloads';
+
   /** Requests being served, per routes socket: a replaced plugin process is retired only once its count is 0. */
   private readonly serving = new Map<string, number>();
 
@@ -31,7 +44,7 @@ export class PluginHostHttpProxy {
     req: Request,
     res: Response,
     next: NextFunction,
-    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string; connectionId?: string | null },
+    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string; connectionId?: string | null; siteOwned?: boolean },
     timeoutMs: number,
     onTimeout: () => void,
   ): Promise<void> {
@@ -42,6 +55,7 @@ export class PluginHostHttpProxy {
       delete headers['content-length'];
       delete headers['transfer-encoding'];
       for (const header of PluginGuestHttp.PRIVATE_HEADERS) delete headers[header];
+      if (envelope.siteOwned) for (const header of PluginHostHttpProxy.SITE_PLUGIN_REQUEST_HEADERS_DROPPED) delete headers[header];
       headers[PluginGuestHttp.HEADER_TOKEN] = envelope.token;
       const clientIp = NetworkAddressUtils.resolveClientIp(req);
       if (clientIp) headers[PluginGuestHttp.HEADER_CLIENT_IP] = clientIp;
@@ -92,8 +106,13 @@ export class PluginHostHttpProxy {
           return;
         }
         res.status(reply.statusCode ?? 502);
+        const dropped: readonly string[] = envelope.siteOwned ? PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_HEADERS_DROPPED : [];
         for (const [name, value] of Object.entries(reply.headers)) {
-          if (value !== undefined && !['connection', 'transfer-encoding', 'keep-alive'].includes(name)) res.setHeader(name, value as string | string[]);
+          if (value !== undefined && !['connection', 'transfer-encoding', 'keep-alive', ...dropped].includes(name)) res.setHeader(name, value as string | string[]);
+        }
+        if (envelope.siteOwned) {
+          res.setHeader('Content-Security-Policy', PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_POLICY);
+          res.setHeader('X-Content-Type-Options', 'nosniff');
         }
         reply.pipe(res);
         reply.on('end', finish);

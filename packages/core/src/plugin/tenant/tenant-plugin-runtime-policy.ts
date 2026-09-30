@@ -64,6 +64,20 @@ export class TenantPluginRuntimePolicy {
     if (!TenantPluginRuntimePolicy.CONTEXT_METHODS.get(surface)?.has(method)) {
       TenantPluginRuntimePolicy.refuse(slug, `context.${surface || '*'}.${method || '*'}`);
     }
+    if (surface === 'hooks') TenantPluginRuntimePolicy.assertOwnEvent(slug, method, steps[1]?.args?.[0]);
+  }
+
+  /**
+   * A site's plugin fires only ITS OWN events. The platform acts on others with no site in mind —
+   * `system:cache:purge` empties every site's cache, `system:settings:updated` reloads the platform's
+   * settings — and another plugin's event is that plugin's API, which a site's plugin does not call.
+   * Listening is unaffected: a handler only ever hears its own site.
+   */
+  private static assertOwnEvent(slug: string, method: string, event: unknown): void {
+    const name = String(event ?? '').trim().toLowerCase();
+    const own = slug.trim().toLowerCase();
+    if (name.startsWith(`${own}:`) || name.startsWith(`${own}.`)) return;
+    TenantPluginRuntimePolicy.refuse(slug, `context.hooks.${method}("${name || '*'}") — only events named "${own}:…" are its own`);
   }
 
   private static assertDeclaration(slug: string, steps: NonNullable<IPluginGuestRegistration['steps']>): void {

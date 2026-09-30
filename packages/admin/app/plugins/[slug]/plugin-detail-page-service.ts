@@ -40,6 +40,9 @@ export class PluginDetailPageService {
     const slug = String(plugin?.manifest?.slug ?? '').trim();
     const entry = String((plugin?.manifest as any)?.ui?.entry ?? '').trim();
     if (!slug || !entry) return null;
+    // A site's own plugin adds nothing to the admin (the upload policy refuses it): its code would run
+    // here, in the admin's origin, with the rights of whoever opened the page.
+    if ((plugin?.manifest as any)?.ownerTenantId) return null;
 
     const version = String(plugin?.manifest?.version ?? '').trim();
     const suffix = version ? `?v=${encodeURIComponent(version)}` : '';

@@ -38,6 +38,9 @@ export class InstalledPluginManifestService {
 
     if (ownerTenantId) manifest.ownerTenantId = ownerTenantId;
     else delete manifest.ownerTenantId;
+    // Where the code came from, like the owner: the scanner stamps `bundled` for the framework's own
+    // root. Believed from a package, it would lift the per-site route gate and the capability hold.
+    delete manifest.bundled;
 
     return manifest as IPluginManifest;
   }

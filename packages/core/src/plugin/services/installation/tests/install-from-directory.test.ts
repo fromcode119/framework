@@ -74,4 +74,16 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
 
     await expect(service.installFromDirectory(file)).rejects.toThrow(/not a directory/);
   });
+  it('refuses a slug that is not one plugin directory — `tenants` would replace every site\'s plugins', async () => {
+    vi.mocked(PluginPackageValidator.validateInstalledPackage).mockRestore();
+    const sitePlugin = path.join(pluginsRoot, 'tenants', 'acme', 'theirs', 'index.js');
+    fs.mkdirSync(path.dirname(sitePlugin), { recursive: true });
+    fs.writeFileSync(sitePlugin, '// a site\'s plugin\n');
+
+    for (const slug of ['tenants', '../escape', '', 'Upper', 'a/b']) {
+      fs.writeFileSync(path.join(pkg, 'manifest.json'), JSON.stringify({ ...manifest, slug }));
+      await expect(service.installFromDirectory(pkg)).rejects.toThrow(/slug/);
+    }
+    expect(fs.existsSync(sitePlugin)).toBe(true);
+  });
 });
