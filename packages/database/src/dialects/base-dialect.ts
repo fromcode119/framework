@@ -1,5 +1,6 @@
 import { AggregateStatementBuilder } from '@database/dialects/aggregate-statement-builder';
-import type { AggregateBucketUnit, IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
+import type { IRawStatementHooks } from '@database/interfaces/raw-statement-hooks.interface';
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -58,8 +59,8 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
     (comparison, quotedColumn, values) => this.renderPredicate(comparison, quotedColumn, values),
   );
 
-  /** Raw-text statements — see {@link RawStatementBuilder}. */
-  protected readonly rawStatements = new RawStatementBuilder({
+  /** What the raw-text builders need from this dialect — shared by both, so they cannot drift. */
+  private readonly statementHooks: IRawStatementHooks = {
     quoteIdentifier: (name) => this.quoteIdentifier(name),
     getParamPlaceholder: (index) => this.getParamPlaceholder(index),
     getLikeOperator: () => this.getLikeOperator(),
@@ -67,26 +68,13 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
     dayBucketExpression: (quotedColumn) => this.dayBucketExpression(quotedColumn),
     bucketExpression: (quotedColumn, unit, timeZone) => this.bucketExpression(quotedColumn, unit, timeZone),
     renderPredicate: (comparison, quotedColumn, values) => this.renderPredicate(comparison, quotedColumn, values),
-  });
+  };
+
+  /** Raw-text statements — see {@link RawStatementBuilder}. */
+  protected readonly rawStatements = new RawStatementBuilder(this.statementHooks);
 
   /** Grouped aggregation — see {@link AggregateStatementBuilder}. Filters through the same raw builder. */
-  protected readonly aggregateStatements = new AggregateStatementBuilder(
-    {
-      quoteIdentifier: (name) => this.quoteIdentifier(name),
-      getParamPlaceholder: (index) => this.getParamPlaceholder(index),
-      getLikeOperator: () => this.getLikeOperator(),
-      patternColumnExpression: (quotedColumn) => this.patternColumnExpression(quotedColumn),
-      dayBucketExpression: (quotedColumn) => this.dayBucketExpression(quotedColumn),
-      bucketExpression: (quotedColumn, unit, timeZone) => this.bucketExpression(quotedColumn, unit, timeZone),
-      renderPredicate: (comparison, quotedColumn, values) => this.renderPredicate(comparison, quotedColumn, values),
-    },
-    (where) => this.rawStatements.buildRawFilterSQL(where),
-  );
-
-  /** @see AggregateStatementBuilder.build */
-  protected buildAggregateSQL(tableName: string, options: IAggregateOptions): { sql: string; values: any[] } {
-    return this.aggregateStatements.build(tableName, options);
-  }
+  protected readonly aggregateStatements = new AggregateStatementBuilder(this.statementHooks, (where) => this.rawStatements.buildRawFilterSQL(where));
 
   /** @see RawStatementBuilder.buildGroupCountSQL */
   protected buildGroupCountSQL(...args: Parameters<RawStatementBuilder['buildGroupCountSQL']>): ReturnType<RawStatementBuilder['buildGroupCountSQL']> {
@@ -206,14 +194,11 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
     return `substr(${quotedColumn}, 1, 10)`;
   }
 
-  /**
-   * A timestamp truncated to `unit`, in SQLite's terms. SQLite stores these columns as TEXT and has no
-   * zone conversion, so the bucket is the stored (UTC) calendar — see `IAggregateOptions`.
-   */
+  /** `unit` buckets in SQLite's terms: TEXT columns and no zone conversion, so the UTC calendar. */
   protected bucketExpression(quotedColumn: string, unit: AggregateBucketUnit, _timeZone: string): string {
-    if (unit === 'hour') return `strftime('%Y-%m-%dT%H:00', ${quotedColumn})`;
-    if (unit === 'week') return `date(${quotedColumn}, '-6 days', 'weekday 1')`;
-    if (unit === 'month') return `strftime('%Y-%m-01', ${quotedColumn})`;
+    if (unit === AggregateBucketUnit.HOUR) return `strftime('%Y-%m-%dT%H:00', ${quotedColumn})`;
+    if (unit === AggregateBucketUnit.WEEK) return `date(${quotedColumn}, '-6 days', 'weekday 1')`;
+    if (unit === AggregateBucketUnit.MONTH) return `strftime('%Y-%m-01', ${quotedColumn})`;
     return `substr(${quotedColumn}, 1, 10)`;
   }
 

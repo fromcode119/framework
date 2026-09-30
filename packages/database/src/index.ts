@@ -13,7 +13,12 @@ export type { IDynamicTableOptions } from '@database/interfaces/dynamic-table-op
 export type { ISchemaField } from '@database/interfaces/schema-field.interface';
 export type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 export type { IJoinClause } from '@database/interfaces/join-clause.interface';
-export type { AggregateBucketUnit, AggregateFunction, IAggregateMeasure, IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+export { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
+export { AggregateFunction } from '@database/enums/aggregate-function.enum';
+export type { IAggregateBucket } from '@database/interfaces/aggregate-bucket.interface';
+export type { IAggregateMeasure } from '@database/interfaces/aggregate-measure.interface';
+export type { IAggregateOrder } from '@database/interfaces/aggregate-order.interface';
+export type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 export type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 export type { IMigrationTenantScope } from '@database/interfaces/migration-tenant-scope.interface';
 export type { IDatabaseDriverCreator } from '@database/interfaces/database-driver-creator.interface';

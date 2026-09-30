@@ -28,6 +28,16 @@
       "types": "./dist/enums/sort-direction.enum.d.ts",
       "import": "./dist/enums/sort-direction.enum.js",
       "require": "./dist/enums/sort-direction.enum.js"
+    },
+    "./enums/aggregate-bucket-unit.enum": {
+      "types": "./dist/enums/aggregate-bucket-unit.enum.d.ts",
+      "import": "./dist/enums/aggregate-bucket-unit.enum.js",
+      "require": "./dist/enums/aggregate-bucket-unit.enum.js"
+    },
+    "./enums/aggregate-function.enum": {
+      "types": "./dist/enums/aggregate-function.enum.d.ts",
+      "import": "./dist/enums/aggregate-function.enum.js",
+      "require": "./dist/enums/aggregate-function.enum.js"
     }
   },
   "browser": {

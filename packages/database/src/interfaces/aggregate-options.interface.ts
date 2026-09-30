@@ -1,32 +1,21 @@
-/** The aggregate functions `aggregate` computes in SQL. `count` without a column is `COUNT(*)`. */
-export type AggregateFunction = 'count' | 'countDistinct' | 'sum' | 'avg' | 'min' | 'max';
-
-/** The calendar units a timestamp column is bucketed into. A week starts on Monday (ISO 8601). */
-export type AggregateBucketUnit = 'hour' | 'day' | 'week' | 'month';
-
-/** One computed value per group, returned under `as`. */
-export interface IAggregateMeasure {
-  fn: AggregateFunction;
-  /** The canonical (camelCase) field; omitted only for a plain `count`. */
-  column?: string;
-  /** The key the value is returned under — a plain identifier. */
-  as: string;
-}
+import type { IAggregateBucket } from '@database/interfaces/aggregate-bucket.interface';
+import type { IAggregateMeasure } from '@database/interfaces/aggregate-measure.interface';
+import type { IAggregateOrder } from '@database/interfaces/aggregate-order.interface';
 
 /**
  * Options for `IDatabaseManager.aggregate` — grouped SQL aggregation for a string-named table.
  *
- * `bucket.timeZone` is an IANA zone (`Europe/Sofia`). Postgres buckets in that zone; SQLite and MySQL
- * bucket in UTC, because neither can convert zones without extra setup — a caller that needs local
- * calendar days runs on Postgres, which is what every deployment uses.
+ * Postgres buckets in `bucket.timeZone`; SQLite and MySQL bucket in UTC, because neither can convert
+ * zones without extra setup — a caller that needs local calendar days runs on Postgres, which is what
+ * every deployment uses.
  */
 export interface IAggregateOptions {
   where?: any;
   groupBy?: string[];
-  bucket?: { column: string; unit: AggregateBucketUnit; timeZone?: string };
+  bucket?: IAggregateBucket;
   measures: IAggregateMeasure[];
-  /** A measure's `as`, a `groupBy` field, or `bucket`. Default: `bucket` ascending, else the first measure descending. */
-  orderBy?: { by: string; direction?: 'asc' | 'desc' };
+  /** Default: `bucket` ascending, else the first measure descending. */
+  orderBy?: IAggregateOrder;
   limit?: number;
   offset?: number;
 }

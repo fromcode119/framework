@@ -1,5 +1,8 @@
 import type { IRawStatementHooks } from '@database/interfaces/raw-statement-hooks.interface';
-import type { AggregateFunction, IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
+import { AggregateFunction } from '@database/enums/aggregate-function.enum';
+import { SortDirection } from '@database/enums/sort-direction.enum';
 
 /**
  * `aggregate` — grouped SQL aggregation with several measures, time buckets and an order.
@@ -9,22 +12,14 @@ import type { AggregateFunction, IAggregateOptions } from '@database/interfaces/
  * those is what put a ceiling on every analytics screen, so the database computes them instead.
  *
  * Every caller-supplied name reaches SQL as code, so each one is checked: fields go through the
- * dialect's identifier sanitiser, result keys must be plain identifiers, functions and units come from
- * fixed lists, and a time zone must be one the runtime itself knows.
+ * dialect's identifier sanitiser, result keys must be plain identifiers, functions and units must
+ * resolve to their Enum, and a time zone must be one the runtime itself knows.
+ *
+ * Functions, units and directions are resolved from their `.value`, because that is what arrives from a
+ * sandboxed plugin: an Enum crosses the process boundary as its string.
  */
 export class AggregateStatementBuilder {
   private static readonly PLAIN_NAME = /^[A-Za-z_][A-Za-z0-9_]*$/;
-
-  private static readonly SQL_FUNCTIONS: Record<AggregateFunction, string> = {
-    count: 'COUNT',
-    countDistinct: 'COUNT',
-    sum: 'SUM',
-    avg: 'AVG',
-    min: 'MIN',
-    max: 'MAX',
-  };
-
-  private static readonly UNITS = new Set(['hour', 'day', 'week', 'month']);
 
   /** The key a bucketed timestamp is returned under. */
   static readonly BUCKET_KEY = 'bucket';
@@ -64,11 +59,11 @@ export class AggregateStatementBuilder {
     }
 
     if (options.bucket) {
-      const unit = String(options.bucket.unit);
-      if (!AggregateStatementBuilder.UNITS.has(unit)) throw new Error(`Invalid bucket unit: ${JSON.stringify(unit)}`);
+      const unit = AggregateBucketUnit.fromValue(String(options.bucket.unit));
+      if (!unit) throw new Error(`Invalid bucket unit: ${JSON.stringify(String(options.bucket.unit))}`);
       const expression = this.hooks.bucketExpression(
         this.hooks.quoteIdentifier(options.bucket.column),
-        options.bucket.unit,
+        unit,
         AggregateStatementBuilder.validTimeZone(options.bucket.timeZone),
       );
       select.push(`${expression} AS "${AggregateStatementBuilder.BUCKET_KEY}"`);
@@ -79,7 +74,7 @@ export class AggregateStatementBuilder {
     for (const measure of measures) {
       const name = this.plainName(measure.as, 'measure');
       if (keys.has(name)) throw new Error(`Duplicate aggregate key: ${JSON.stringify(name)}`);
-      select.push(`${this.measureExpression(measure.fn, measure.column)} AS "${name}"`);
+      select.push(`${this.measureExpression(AggregateStatementBuilder.functionOf(measure.fn), measure.column)} AS "${name}"`);
       keys.add(name);
     }
 
@@ -98,7 +93,7 @@ export class AggregateStatementBuilder {
     for (const measure of options.measures) {
       const value = out[measure.as];
       if (value === null || value === undefined) {
-        out[measure.as] = measure.fn === 'count' || measure.fn === 'countDistinct' || measure.fn === 'sum' ? 0 : null;
+        out[measure.as] = AggregateStatementBuilder.functionOf(measure.fn).emptyValue;
       } else {
         out[measure.as] = Number(value);
       }
@@ -106,24 +101,29 @@ export class AggregateStatementBuilder {
     return out;
   }
 
+  private static functionOf(fn: unknown): AggregateFunction {
+    const resolved = AggregateFunction.fromValue(String(fn));
+    if (!resolved) throw new Error(`Invalid aggregate function: ${JSON.stringify(String(fn))}`);
+    return resolved;
+  }
+
   private measureExpression(fn: AggregateFunction, column?: string): string {
-    const sqlFunction = AggregateStatementBuilder.SQL_FUNCTIONS[fn];
-    if (!sqlFunction) throw new Error(`Invalid aggregate function: ${JSON.stringify(fn)}`);
     if (!column) {
-      if (fn !== 'count') throw new Error(`Aggregate "${fn}" needs a column.`);
+      if (fn !== AggregateFunction.COUNT) throw new Error(`Aggregate "${fn.value}" needs a column.`);
       return 'COUNT(*)';
     }
     const quoted = this.hooks.quoteIdentifier(column);
-    return fn === 'countDistinct' ? `COUNT(DISTINCT ${quoted})` : `${sqlFunction}(${quoted})`;
+    return fn === AggregateFunction.COUNT_DISTINCT ? `COUNT(DISTINCT ${quoted})` : `${fn.sql}(${quoted})`;
   }
 
   private orderClause(options: IAggregateOptions, keys: Set<string>): string {
     const requested = options.orderBy?.by;
-    const direction = options.orderBy?.direction === 'asc' ? 'ASC' : options.orderBy?.direction === 'desc' ? 'DESC' : null;
     if (requested) {
       const name = this.plainName(requested, 'orderBy');
       if (!keys.has(name)) throw new Error(`orderBy ${JSON.stringify(name)} is not a returned key.`);
-      return `"${name}" ${direction ?? 'DESC'}`;
+      const direction = SortDirection.fromValue(String(options.orderBy?.direction ?? SortDirection.DESC).toUpperCase());
+      if (!direction) throw new Error(`Invalid orderBy direction: ${JSON.stringify(String(options.orderBy?.direction))}`);
+      return `"${name}" ${direction.value}`;
     }
     if (options.bucket) return `"${AggregateStatementBuilder.BUCKET_KEY}" ASC`;
     return `"${options.measures[0].as}" DESC`;

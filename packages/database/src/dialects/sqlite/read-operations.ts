@@ -39,7 +39,7 @@ export class SqliteReadOperations extends BaseDialect {
   /** Grouped aggregation — see `AggregateStatementBuilder`. */
   async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
     const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
-    const { sql: sqlStr, values } = this.buildAggregateSQL(tableName, { ...options, where: normalizedWhere });
+    const { sql: sqlStr, values } = this.aggregateStatements.build(tableName, { ...options, where: normalizedWhere });
     const rows = await this.executeRawSelect(sqlStr, values);
     return (Array.isArray(rows) ? rows : []).map((row: any) => AggregateStatementBuilder.coerceRow(row, options));
   }

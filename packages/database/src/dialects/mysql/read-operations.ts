@@ -1,5 +1,6 @@
 import { AggregateStatementBuilder } from '@database/dialects/aggregate-statement-builder';
-import type { AggregateBucketUnit, IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { Pool } from 'mysql2/promise';
 import { sql, and, or, like, count as drizzleCount } from 'drizzle-orm';
 import { BaseDialect } from '@database/dialects/base-dialect';
@@ -42,16 +43,16 @@ export class MysqlReadOperations extends BaseDialect {
 
   /** UTC calendar: MySQL converts zones only with its time-zone tables loaded — see `IAggregateOptions`. */
   protected bucketExpression(quotedColumn: string, unit: AggregateBucketUnit, _timeZone: string): string {
-    if (unit === 'hour') return `DATE_FORMAT(${quotedColumn}, '%%Y-%%m-%%dT%%H:00')`;
-    if (unit === 'week') return `DATE_FORMAT(DATE_SUB(${quotedColumn}, INTERVAL WEEKDAY(${quotedColumn}) DAY), '%%Y-%%m-%%d')`;
-    if (unit === 'month') return `DATE_FORMAT(${quotedColumn}, '%%Y-%%m-01')`;
+    if (unit === AggregateBucketUnit.HOUR) return `DATE_FORMAT(${quotedColumn}, '%%Y-%%m-%%dT%%H:00')`;
+    if (unit === AggregateBucketUnit.WEEK) return `DATE_FORMAT(DATE_SUB(${quotedColumn}, INTERVAL WEEKDAY(${quotedColumn}) DAY), '%%Y-%%m-%%d')`;
+    if (unit === AggregateBucketUnit.MONTH) return `DATE_FORMAT(${quotedColumn}, '%%Y-%%m-01')`;
     return `DATE_FORMAT(${quotedColumn}, '%%Y-%%m-%%d')`;
   }
 
   /** Grouped aggregation — see `AggregateStatementBuilder`. */
   async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
     const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
-    const { sql: sqlStr, values } = this.buildAggregateSQL(tableName, { ...options, where: normalizedWhere });
+    const { sql: sqlStr, values } = this.aggregateStatements.build(tableName, { ...options, where: normalizedWhere });
     const rows = await this.executeRawSelect(sqlStr, values);
     return (Array.isArray(rows) ? rows : []).map((row: any) => AggregateStatementBuilder.coerceRow(row, options));
   }

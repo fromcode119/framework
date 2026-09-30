@@ -1,5 +1,6 @@
 import { AggregateStatementBuilder } from '@database/dialects/aggregate-statement-builder';
-import type { AggregateBucketUnit, IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import { Pool } from 'pg';
 import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
 // Aliased: the constructor parameter is also called `drizzle`, and an unaliased import would be
@@ -88,14 +89,14 @@ export class PostgresReadOperations extends BaseDialect {
 
   /** Truncated in the caller's zone: `timestamptz AT TIME ZONE` gives that zone's wall clock. */
   protected bucketExpression(quotedColumn: string, unit: AggregateBucketUnit, timeZone: string): string {
-    const local = `date_trunc('${unit}', ${quotedColumn} AT TIME ZONE '${timeZone}')`;
-    return unit === 'hour' ? `to_char(${local}, 'YYYY-MM-DD"T"HH24:00')` : `to_char(${local}, 'YYYY-MM-DD')`;
+    const local = `date_trunc('${unit.value}', ${quotedColumn} AT TIME ZONE '${timeZone}')`;
+    return unit === AggregateBucketUnit.HOUR ? `to_char(${local}, 'YYYY-MM-DD"T"HH24:00')` : `to_char(${local}, 'YYYY-MM-DD')`;
   }
 
   /** Grouped aggregation — see `AggregateStatementBuilder`. */
   async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
     const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
-    const { sql: sqlStr, values } = this.buildAggregateSQL(tableName, { ...options, where: normalizedWhere });
+    const { sql: sqlStr, values } = this.aggregateStatements.build(tableName, { ...options, where: normalizedWhere });
     const rows = await this.executeRawSelect(sqlStr, values);
     return (Array.isArray(rows) ? rows : []).map((row: any) => AggregateStatementBuilder.coerceRow(row, options));
   }

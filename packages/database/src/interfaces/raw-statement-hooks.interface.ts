@@ -1,5 +1,5 @@
 import type { WhereComparison } from '@database/dialects/where-comparison';
-import type { AggregateBucketUnit } from '@database/interfaces/aggregate-options.interface';
+import type { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
 
 /**
  * What `RawStatementBuilder` needs from the dialect underneath it.
