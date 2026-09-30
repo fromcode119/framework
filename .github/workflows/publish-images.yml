@@ -89,12 +89,18 @@ jobs:
         if: steps.bake.outcome == 'failure'
         run: sleep 90
 
+      # The retry pulls the SAME official image (public.ecr.aws/docker/library is Docker Hub's official
+      # library, mirrored) from Docker Hub instead. The limit that failed is a per-IP data cap on the
+      # shared runner addresses, so retrying the same registry after 90s failed again three releases
+      # running; a different registry is a different quota.
       - name: Build and push (retry)
         if: steps.bake.outcome == 'failure'
         uses: docker/bake-action@v7
         with:
           files: docker-bake.hcl
           push: true
+          set: |
+            *.args.NODE_BASE_IMAGE=docker.io/library/node:22-bookworm-slim
         env:
           VERSION: ${{ steps.v.outputs.VERSION }}
 
