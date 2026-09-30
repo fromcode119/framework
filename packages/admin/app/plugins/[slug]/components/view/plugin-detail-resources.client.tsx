@@ -3,7 +3,6 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -31,16 +30,6 @@ export class PluginDetailResources extends PureReactor {
       <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
         <Card title={AdminI18n.t('plugins.detail.sandboxIsolationPolicy')} className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
           <div className="space-y-3">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex gap-4">
-                <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Shield size={20} /></div>
-                <div>
-                  <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.sandboxIsolation')}</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm">{AdminI18n.t('plugins.detail.enabledByDefaultDisableOnly')}</p>
-                </div>
-              </div>
-              <Switch checked={sandboxSettings.enabled} onChange={(value) => onSandboxSettingsChange({ ...sandboxSettings, enabled: value ?? false })} />
-            </div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex gap-4">
                 <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}><FrameworkIcons.Zap size={20} /></div>
@@ -49,7 +38,7 @@ export class PluginDetailResources extends PureReactor {
                   <p className="text-sm text-slate-500 mt-1 max-w-sm">{AdminI18n.t('plugins.detail.maximumRamAllocatedToThe')}</p>
                 </div>
               </div>
-              <NumberStepper min={MEMORY_MIN_MB} value={sandboxSettings.memoryLimit} placeholder={memoryPlaceholder} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
+              <NumberStepper min={MEMORY_MIN_MB} value={sandboxSettings.memoryLimit} placeholder={memoryPlaceholder} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, memoryLimit: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
             </div>
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex gap-4">
@@ -59,17 +48,7 @@ export class PluginDetailResources extends PureReactor {
                   <p className="text-sm text-slate-500 mt-1 max-w-sm">{AdminI18n.t('plugins.detail.killPluginExecutionIfIt')}</p>
                 </div>
               </div>
-              <NumberStepper min={TIMEOUT_MIN_MS} value={sandboxSettings.timeout} placeholder={timeoutPlaceholder} disabled={!sandboxSettings.enabled} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, timeout: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
-            </div>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-3 border-t border-slate-100 dark:border-slate-800">
-              <div className="flex gap-4">
-                <div className={`p-2.5 rounded-xl h-fit ${theme === ThemeMode.DARK ? 'bg-slate-800 text-amber-500' : 'bg-amber-50 text-amber-600'}`}><FrameworkIcons.ShieldAlert size={20} /></div>
-                <div>
-                  <h3 className={`font-semibold text-sm ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{AdminI18n.t('plugins.detail.allowNativeApis')}</h3>
-                  <p className="text-sm text-slate-500 mt-1 max-w-sm italic">{AdminI18n.t('plugins.detail.advancedModeKeepDisabledUnless')}</p>
-                </div>
-              </div>
-              <Switch disabled={!sandboxSettings.enabled} checked={sandboxSettings.allowNative} onChange={(value) => onSandboxSettingsChange({ ...sandboxSettings, allowNative: value ?? false })} />
+              <NumberStepper min={TIMEOUT_MIN_MS} value={sandboxSettings.timeout} placeholder={timeoutPlaceholder} onChange={(v) => onSandboxSettingsChange({ ...sandboxSettings, timeout: v === '' ? null : (Number.isFinite(parseInt(String(v), 10)) ? parseInt(String(v), 10) : null) })} />
             </div>
           </div>
         </Card>

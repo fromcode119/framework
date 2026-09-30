@@ -1,5 +1,6 @@
 import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
+import { CoercionUtils } from '@core/utils/coercion-utils';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
@@ -48,12 +49,15 @@ export class PluginRuntimeStateService {
     // The table is `Schema.systemPlugins`. A bare `systemPlugins` is no longer exported, and reading it
     // handed `update` an undefined table — every save of a plugin's limits answered 500 and saved nothing.
     const { Schema } = require('@fromcode119/database');
-    const isExplicitlyDisabled = config === false || (config && typeof config === 'object' && config.enabled === false);
-    const normalizedConfig = isExplicitlyDisabled
-      ? false
-      : (config && typeof config === 'object'
-          ? Object.fromEntries(Object.entries(config).filter(([key]) => key !== 'enabled'))
-          : {});
+    // Only a plugin's LIMITS are saved. Where it runs is not a setting (every plugin is isolated, see
+    // `PluginIsolationSettings`), so an `enabled: false` or `sandbox: false` — and `allowNative`, which
+    // nothing ever read — would be a stored value no runtime obeys.
+    const source = config && typeof config === 'object' ? config as Record<string, unknown> : {};
+    const normalizedConfig: Record<string, number> = {};
+    for (const key of ['memoryLimit', 'timeout'] as const) {
+      const value = CoercionUtils.toNumber(source[key]);
+      if (value > 0) normalizedConfig[key] = value;
+    }
 
     await this.db.update(Schema.systemPlugins, { slug }, {
       sandboxConfig: normalizedConfig,
@@ -61,13 +65,9 @@ export class PluginRuntimeStateService {
 
     const plugin = this.plugins.get(slug);
     if (plugin) {
-      if (normalizedConfig === false) {
-        plugin.manifest.sandbox = false;
-      } else if (!plugin.manifest.sandbox || typeof plugin.manifest.sandbox === 'boolean') {
-        plugin.manifest.sandbox = normalizedConfig;
-      } else {
-        plugin.manifest.sandbox = { ...plugin.manifest.sandbox, ...normalizedConfig };
-      }
+      const current = plugin.manifest.sandbox && typeof plugin.manifest.sandbox === 'object' ? plugin.manifest.sandbox : {};
+      const { memoryLimit: _memory, timeout: _timeout, ...rest } = current as Record<string, unknown>;
+      plugin.manifest.sandbox = { ...rest, ...normalizedConfig } as typeof plugin.manifest.sandbox;
     }
 
     this.logger.info(`Sandbox configuration updated for plugin: ${slug}`);

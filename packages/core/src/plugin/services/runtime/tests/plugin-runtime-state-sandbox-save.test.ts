@@ -22,4 +22,18 @@ describe('PluginRuntimeStateService.saveSandboxConfig', () => {
     expect(writes[0].data).toEqual({ sandboxConfig: { memoryLimit: 300, timeout: 20000 } });
     expect(plugin.manifest.sandbox).toEqual({ memoryLimit: 300, timeout: 20000 });
   });
+  it('stores only the limits — never a "run shared" or native-access flag nothing obeys', async () => {
+    const writes: any[] = [];
+    const db = { update: async (_t: unknown, _w: unknown, data: unknown) => { writes.push(data); return { id: 1 }; } };
+    const plugin: any = { manifest: { slug: 'demo', sandbox: { memoryLimit: 256, timeout: 5000 } } };
+    const service = new PluginRuntimeStateService({ info: () => undefined } as any, db, {} as any, new Map([['demo', plugin]]), new Map(), new Map(), new Map());
+
+    await service.saveSandboxConfig('demo', { enabled: false, allowNative: true, memoryLimit: '512', timeout: 0, extra: 'x' });
+    expect(writes[0]).toEqual({ sandboxConfig: { memoryLimit: 512 } });
+    expect(plugin.manifest.sandbox).toEqual({ memoryLimit: 512 });
+
+    await service.saveSandboxConfig('demo', false);
+    expect(writes[1]).toEqual({ sandboxConfig: {} });
+    expect(plugin.manifest.sandbox).toEqual({});
+  });
 });

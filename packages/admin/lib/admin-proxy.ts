@@ -8,6 +8,7 @@ import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-uti
 import { AdminIndexingPolicy } from '@/lib/admin-indexing-policy';
 import { CookieConstants } from '@fromcode119/core/constants/cookie.constants';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminContentSecurityPolicy } from '@/lib/admin-content-security-policy';
 
 /**
  * AdminProxy - Business logic for admin authentication middleware
@@ -29,9 +30,20 @@ export class AdminProxy {
       return AdminProxy.applyNoStoreHeaders(NextResponse.redirect(url));
     };
 
+    // One nonce per page: Next reads the policy from the REQUEST to stamp its own scripts, and the
+    // browser enforces the one on the response (`AdminContentSecurityPolicy`).
+    const policy = AdminContentSecurityPolicy.header(AdminContentSecurityPolicy.nonce(), process.env.NODE_ENV !== 'production');
+    const pass = (): NextResponse => {
+      const headers = new Headers(request.headers);
+      headers.set(AdminContentSecurityPolicy.HEADER, policy);
+      const response = NextResponse.next({ request: { headers } });
+      response.headers.set(AdminContentSecurityPolicy.HEADER, policy);
+      return AdminProxy.applyNoStoreHeaders(response);
+    };
+
     // Allow setup page always to prevent loops during fresh installs
     if (pathname === AdminConstants.ROUTES.AUTH.SETUP) {
-      return AdminProxy.applyNoStoreHeaders(NextResponse.next());
+      return pass();
     }
 
     // If no token and not on a public auth page, redirect to login
@@ -42,10 +54,10 @@ export class AdminProxy {
     // Keep login reachable even when a stale/invalid token cookie exists.
     // The client auth flow decides whether to continue to dashboard or prompt re-auth.
     if (pathname === AdminConstants.ROUTES.AUTH.LOGIN) {
-      return AdminProxy.applyNoStoreHeaders(NextResponse.next());
+      return pass();
     }
 
-    return AdminProxy.applyNoStoreHeaders(NextResponse.next());
+    return pass();
   }
 
   private static applyNoStoreHeaders(response: NextResponse): NextResponse {

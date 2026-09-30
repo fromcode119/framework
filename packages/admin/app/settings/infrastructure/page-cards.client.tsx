@@ -10,8 +10,6 @@ import { SettingRow } from '@/app/settings/general/setting-row';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
-import { PluginIsolationMode } from '@fromcode119/core/client';
-import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
@@ -128,10 +126,9 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
   /**
    * WHERE plugin code runs, and what it may spend there.
    *
-   * T5: an operator decision with a declared default. Isolated = each active plugin in its own
-   * process with no secrets, tenant-bound calls, a heap ceiling and a per-request deadline; shared =
-   * inside the api process, as before. A plugin's manifest may declare `sandbox: false` (shown as
-   * "Shared" on the Plugins page, with its reason).
+   * WHERE plugins run is stated, not chosen: every plugin runs in its own process, with no secrets,
+   * site-bound calls, a heap ceiling and a per-request deadline — a plugin inside the api would hold
+   * the api. Only the limits are the operator's.
    */
   protected pluginIsolationCard(): ReactNode {
     const theme = this.theme;
@@ -144,20 +141,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
             stacked
             description={AdminI18n.t('settings.infrastructure.isolatedEachActivePluginRuns')}
           >
-            <Select
-              theme={theme}
-              value={this.isolationDefault}
-              onChange={this.onIsolationDefault}
-              placeholder={AdminI18n.t('settings.infrastructure.defaultIsolated')}
-              clearable
-              options={[{ value: String(PluginIsolationMode.ISOLATED.value), label: AdminI18n.t('settings.infrastructure.isolatedOwnProcessPerPlugin') }, { value: String(PluginIsolationMode.SHARED.value), label: AdminI18n.t('settings.infrastructure.sharedInsideTheApiProcess') }]}
-            />
-            {this.isolationModeRestartPending ? (
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.savedPluginsAlreadyLoadedStill')}</span>
-                <RestartApiAction label={AdminI18n.t('settings.infrastructure.restartTheApiToMove')} />
-              </div>
-            ) : null}
+            <p className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.everyPluginRunsIsolated')}</p>
           </SettingRow>
           <SettingRow
             theme={theme}

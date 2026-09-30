@@ -33,16 +33,9 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   /** T5b render hosts: '' = the declared defaults. */
   @state ssrRenderMemoryMb = '';
   @state ssrRenderTimeoutMs = '';
-  /** T5 plugin isolation: '' = the declared default (isolated). */
-  @state isolationDefault = '';
+  /** T5 plugin isolation limits: '' = the declared defaults. */
   @state isolationMemoryMb = '';
   @state isolationTimeoutMs = '';
-  /**
-   * The mode last loaded or saved. When a save changes it, plugins already loaded keep running where
-   * they are until the api reloads them, so the card offers that restart right under the control.
-   */
-  @state isolationDefaultInEffect = '';
-  @state isolationModeRestartPending = false;
   @state isSavingIsolation = false;
   @state isSavingRetention = false;
   @state isSavingSsrCap = false;
@@ -75,7 +68,6 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   @bound onSsrRenderMemory(value: number | string): void { this.ssrRenderMemoryMb = String(value); }
   @bound onSsrRenderTimeout(value: number | string): void { this.ssrRenderTimeoutMs = String(value); }
 
-  @bound onIsolationDefault(value: string): void { this.isolationDefault = value; }
   @bound onIsolationMemory(value: number | string): void { this.isolationMemoryMb = String(value); }
   @bound onIsolationTimeout(value: number | string): void { this.isolationTimeoutMs = String(value); }
 }

@@ -23,7 +23,6 @@ export class PluginHostRegistry {
 
   /** The Settings → Infrastructure → Plugin Isolation keys this registry derives its limits from. */
   private static readonly SETTING_KEYS = [
-    SystemConstants.META_KEY.PLUGIN_ISOLATION_DEFAULT,
     SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB,
     SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
   ];
@@ -83,9 +82,9 @@ export class PluginHostRegistry {
     return this.settings;
   }
 
-  /** Whether `manifest.sandbox` plus the platform default put this plugin in its own process. */
-  async isIsolated(sandbox: unknown): Promise<boolean> {
-    return (await this.settingsInEffect()).isIsolated(sandbox);
+  /** Whether this plugin runs in its own process — every plugin does, bar the framework's bundled extensions (`PluginIsolationSettings`). */
+  async isIsolated(sandbox: unknown, bundled = false): Promise<boolean> {
+    return (await this.settingsInEffect()).isIsolated(sandbox, bundled);
   }
 
   /**
