@@ -99,6 +99,10 @@ services:
       - ./packages/admin/app:/app/packages/admin/app
       - ./packages/admin/components:/app/packages/admin/components
       - ./packages/admin/lib:/app/packages/admin/lib
+      # The console's own dictionaries. `lib/i18n` imports them from here, so without this mount the
+      # mounted code ran against the image's baked copies: every key added since the image was built
+      # rendered as its raw name (`login.welcome`), on every screen, with nothing in the console.
+      - ./packages/admin/i18n:/app/packages/admin/i18n
     deploy:
       resources:
         limits:
