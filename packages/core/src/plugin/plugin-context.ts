@@ -5,7 +5,6 @@ import { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import type { IPluginContextDb } from '@core/plugin/interfaces/plugin-context-db.interface';
 import type { IMediaManager } from '@fromcode119/media';
-import type { IEmailDriver } from '@fromcode119/email';
 import type { ICacheManager } from '@fromcode119/cache';
 import { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IPluginSettingsSchema } from '@core/plugin/interfaces/plugin-settings-schema.interface';
@@ -21,6 +20,7 @@ import type { IPluginContextApi } from '@core/plugin/interfaces/plugin-context-a
 import type { IPluginContextLogger } from '@core/plugin/interfaces/plugin-context-logger.interface';
 import type { IPluginContextIntegrations } from '@core/plugin/interfaces/plugin-context-integrations.interface';
 import type { IPluginContextMcp } from '@core/plugin/interfaces/plugin-context-mcp.interface';
+import type { IPluginContextEmail } from '@core/plugin/interfaces/plugin-context-email.interface';
 import type { IPluginContextJobs } from '@core/plugin/interfaces/plugin-context-jobs.interface';
 import type { IPluginContextScheduler } from '@core/plugin/interfaces/plugin-context-scheduler.interface';
 import type { IPluginContextPlugin } from '@core/plugin/interfaces/plugin-context-plugin.interface';
@@ -64,9 +64,8 @@ export class PluginContext {
    * Shortcuts for core integrations
    */
   declare readonly storage: IMediaManager;
-  /** The platform mailer. `IEmailDriver` is the email package's OWN contract — core previously
-   *  declared a local `EmailManager` stub whose `to: string` contradicted the real `string | string[]`. */
-  declare readonly email: IEmailDriver;
+  /** The platform mailer plus the do-not-email list and the per-plugin additions — see IPluginContextEmail. */
+  declare readonly email: IPluginContextEmail;
   declare readonly cache: ICacheManager;
 
   declare readonly redis: any;
