@@ -248,6 +248,14 @@ export class PluginInstallationService {
       return;
     }
 
+    // A plugin in ERROR still has its isolated process: marking it failed stops nothing (the security
+    // monitor's refusal of an undeclared capability, for one). Its next activation reuses that process,
+    // which keeps the OLD code loaded while the registry reports the new version. So the process is
+    // swapped onto the new files first, exactly as for a healthy plugin.
+    if (existingPlugin && existingPlugin.state === PluginState.ERROR) {
+      await this.reloadHost(slug, manifest);
+    }
+
     options.progressReporter?.({
       phase: 'refreshing-plugin-registry',
       message: `Refreshing plugin registry for "${slug}"...`,
