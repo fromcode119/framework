@@ -192,6 +192,8 @@ export { CollectionHookPhase, EntityFieldTransform, FieldType, LayoutDiagnosticC
 // More Enum classes surfaced to plugins as VALUES, not just types.
 export { DatasourceLayout, ExtensionKind, FilterKind, IntegrationConfigFieldType, ScheduleType } from '@fromcode119/core/client';
 export { SortDirection } from '@fromcode119/database/enums/sort-direction.enum';
+export { AggregateBucketUnit } from '@fromcode119/database/enums/aggregate-bucket-unit.enum';
+export { AggregateFunction } from '@fromcode119/database/enums/aggregate-function.enum';
 export { CodeLanguage } from '@fromcode119/core/client';
 // Light/dark. Storefront components need it as much as admin ones, and `@fromcode119/sdk/admin` is an
 // ADMIN-only surface — importing it from a `.storefront` bundle broke the frontend at runtime

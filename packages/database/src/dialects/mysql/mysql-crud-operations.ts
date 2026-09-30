@@ -1,3 +1,4 @@
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { BaseDialect } from '@database/dialects/base-dialect';
@@ -96,6 +97,10 @@ export abstract class MysqlCrudOperations extends BaseDialect {
   }
 
   /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
+  async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
+    return this.reader.aggregate(tableName, options);
+  }
+
   async groupCount(
     tableName: string,
     options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },

@@ -15,6 +15,9 @@ import type { ISourceAliasInput } from './interfaces/source-alias-input.interfac
 export class NextConfigAliases {
   static PRIVATE_PACKAGE_ALIASES: Array<[string, string]>;
 
+  /** `@fromcode119/database/enums/<name>.enum` subpaths the SDK re-exports: pure, so every client graph takes them from source. */
+  static readonly DATABASE_ENUMS: readonly string[] = ['sort-direction', 'aggregate-bucket-unit', 'aggregate-function'];
+
   /**
    * Package -> SOURCE tree aliases, so every bundler compiles `@fromcode119/*` from `packages/<pkg>/src`
    * (never a stale `dist`) and understands the typescript-multiple-inheritance package-private prefixes (`@core/x`) and the
@@ -39,7 +42,7 @@ export class NextConfigAliases {
       alias({ specifier: '@fromcode119/database/naming-strategy', file: path.join(src('database'), 'naming-strategy.ts') }),
       // Single-enum subpaths the SDK and core re-export instead of the whole package; pure, so the client
       // graph takes them from source even though both packages are otherwise server-only stubs.
-      alias({ specifier: '@fromcode119/database/enums/sort-direction.enum', file: path.join(src('database'), 'enums', 'sort-direction.enum.ts') }),
+      ...NextConfigAliases.DATABASE_ENUMS.map((name) => alias({ specifier: `@fromcode119/database/enums/${name}.enum`, file: path.join(src('database'), 'enums', `${name}.enum.ts`) })),
       alias({ specifier: '@fromcode119/scheduler/enums/schedule-type.enum', file: path.join(src('scheduler'), 'enums', 'schedule-type.enum.ts') }),
     ];
     const privatePrefixes = NextConfigAliases.PRIVATE_PACKAGE_ALIASES.map(([pkg, prefix]: [string, string]) =>

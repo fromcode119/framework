@@ -30,7 +30,7 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 export class DatabaseContextProxy {
   private static readonly dbLimiter = new RateLimiter(5000, 60000);
   private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
-  private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'tableExists', 'getColumns']);
+  private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns']);
   private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   private static readonly SCHEMA_METHODS = new Set(['addColumn']);
   /**
@@ -59,7 +59,7 @@ export class DatabaseContextProxy {
   /** Write methods whose SECOND arg is the row payload — never mined for a record id in the audit resource. */
   private static readonly PAYLOAD_SECOND_ARG_METHODS = new Set(['insert', 'upsert']);
   /** Filter lives under `options.where` for these. */
-  private static readonly WHERE_OPTION_METHODS = new Set(['find', 'count', 'groupCount']);
+  private static readonly WHERE_OPTION_METHODS = new Set(['find', 'count', 'groupCount', 'aggregate']);
   /** Filter IS the second argument for these — not an option. */
   private static readonly WHERE_DIRECT_METHODS = new Set(['findOne', 'update', 'delete']);
   private static readonly SYSTEM_TABLES = new Set<string>(Object.values(SystemConstants.TABLE).map((t) => String(t).toLowerCase()));

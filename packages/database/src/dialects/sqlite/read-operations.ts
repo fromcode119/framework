@@ -1,3 +1,5 @@
+import { AggregateStatementBuilder } from '@database/dialects/aggregate-statement-builder';
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import Database from 'better-sqlite3';
 import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
 import { BaseDialect } from '@database/dialects/base-dialect';
@@ -34,6 +36,14 @@ export class SqliteReadOperations extends BaseDialect {
   }
 
   /** COUNT(*) per group — see `BaseDialect.buildGroupCountSQL` for the contract. */
+  /** Grouped aggregation — see `AggregateStatementBuilder`. */
+  async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, options.where);
+    const { sql: sqlStr, values } = this.aggregateStatements.build(tableName, { ...options, where: normalizedWhere });
+    const rows = await this.executeRawSelect(sqlStr, values);
+    return (Array.isArray(rows) ? rows : []).map((row: any) => AggregateStatementBuilder.coerceRow(row, options));
+  }
+
   async groupCount(
     tableName: string,
     options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },

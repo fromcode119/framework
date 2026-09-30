@@ -74,7 +74,7 @@ class AdminNextConfig {
       '@fromcode119/sdk/*': '../sdk/src/*',
       '@fromcode119/database/physical-table-name-utils': '../database/src/physical-table-name-utils.ts',
       '@fromcode119/database/naming-strategy': '../database/src/naming-strategy.ts',
-      '@fromcode119/database/enums/sort-direction.enum': '../database/src/enums/sort-direction.enum.ts',
+      ...Object.fromEntries(NextConfigAliases.DATABASE_ENUMS.map((name) => [`@fromcode119/database/enums/${name}.enum`, `../database/src/enums/${name}.enum.ts`])),
       '@fromcode119/scheduler/enums/schedule-type.enum': '../scheduler/src/enums/schedule-type.enum.ts',
       ...Object.fromEntries(extensions.map(ext => [
         `@fromcode119/${ext}`,
@@ -211,7 +211,7 @@ class AdminNextConfig {
     config.resolve.alias['@fromcode119/sdk/admin/theme-style-variant-select$'] = path.resolve(__dirname, '../sdk/src/admin/view/theme-style-variant-select.client.tsx'); // its source is not at its published path; the sdk prefix alias below would miss it
     config.resolve.alias['@fromcode119/database/physical-table-name-utils$'] = path.resolve(__dirname, '../database/src/physical-table-name-utils.ts');
     config.resolve.alias['@fromcode119/database/naming-strategy$'] = path.resolve(__dirname, '../database/src/naming-strategy.ts');
-    config.resolve.alias['@fromcode119/database/enums/sort-direction.enum$'] = path.resolve(__dirname, '../database/src/enums/sort-direction.enum.ts');
+    for (const name of NextConfigAliases.DATABASE_ENUMS) config.resolve.alias[`@fromcode119/database/enums/${name}.enum$`] = path.resolve(__dirname, `../database/src/enums/${name}.enum.ts`);
     config.resolve.alias['@fromcode119/scheduler/enums/schedule-type.enum$'] = path.resolve(__dirname, '../scheduler/src/enums/schedule-type.enum.ts');
 
     // reactor's React-FREE subpath, resolved from SOURCE. An EXACT (`$`) alias is required: a
