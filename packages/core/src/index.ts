@@ -64,6 +64,8 @@ export { ProcessSignals } from '@core/signals/process-signals';
 export { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 export { RedisProcessSignalTransport } from '@core/signals/redis-process-signal-transport';
 export type { IProcessSignalTransport } from '@core/signals/interfaces/process-signal-transport.interface';
+export { ApiWorkers } from '@core/cluster/api-workers';
+export { RedisWindowCounter } from '@core/security/redis-window-counter';
 export { I18nManager } from '@core/i18n/i18n-manager';
 export { WebSocketManager } from '@core/realtime/web-socket-manager';
 export type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';

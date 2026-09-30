@@ -1,3 +1,5 @@
+import { ApiWorkers } from '@fromcode119/core';
+
 /**
  * Sliding-window throttle for the anonymous share endpoints.
  *
@@ -19,7 +21,8 @@ export class FileShareRateLimiter {
     const entry = FileShareRateLimiter.store.get(address);
     if (!entry || Date.now() > entry.resetAt) return false;
 
-    return entry.count >= limit;
+    // Counted per process: with several api workers each enforces its share of the limit.
+    return entry.count >= ApiWorkers.share(limit);
   }
 
   static record(address: string): void {
@@ -37,7 +40,7 @@ export class FileShareRateLimiter {
 
   /**
    * Drops expired entries so the map cannot grow without bound. In-memory and per-process: a restart
-   * clears it, and a multi-process deployment limits per process. Both are acceptable for a throttle
+   * clears it, and with several workers each process enforces its share. Both are acceptable for a throttle
    * that exists to slow enumeration rather than to enforce a quota.
    */
   private static prune(now: number): void {

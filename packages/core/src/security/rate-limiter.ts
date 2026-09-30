@@ -1,3 +1,5 @@
+import { ApiWorkers } from '@core/cluster/api-workers';
+
 
 export class RateLimiter {
   private counts: Map<string, { count: number, resetAt: number }> = new Map();
@@ -7,8 +9,12 @@ export class RateLimiter {
     private windowMs: number = 60000
   ) {}
 
-  /** `limit` overrides the constructor's for callers whose budget is configurable at runtime. */
+  /**
+   * `limit` overrides the constructor's for callers whose budget is configurable at runtime. Counted in
+   * this process's memory, so with several api workers each enforces its share (ApiWorkers.share).
+   */
   check(key: string, limit: number = this.limit): boolean {
+    const budget = ApiWorkers.share(limit);
     const now = Date.now();
     let record = this.counts.get(key);
 
@@ -18,7 +24,7 @@ export class RateLimiter {
       return true;
     }
 
-    if (record.count >= limit) {
+    if (record.count >= budget) {
       return false;
     }
 

@@ -1,5 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
-import rateLimit, { MemoryStore, RateLimitRequestHandler } from 'express-rate-limit';
+import rateLimit, { MemoryStore, RateLimitRequestHandler, type Store } from 'express-rate-limit';
+import { ApiWorkers } from '@fromcode119/core';
+import { RedisRateLimitStore } from '@api/middlewares/redis-rate-limit-store';
 import { BaseMiddleware } from '@api/middlewares/base-middleware';
 import type { IRateLimitOptions } from '@api/middlewares/interfaces/rate-limit-options.interface';
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
@@ -31,7 +33,7 @@ import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 export class RateLimitMiddleware extends BaseMiddleware {
   private limiter: RateLimitRequestHandler;
   /** Held so a rebuild can stop the old store's sweep timer instead of leaking one per change. */
-  private store: MemoryStore;
+  private store: Store;
   private builtWindowMs: number;
 
   constructor(
@@ -40,8 +42,18 @@ export class RateLimitMiddleware extends BaseMiddleware {
   ) {
     super();
     this.builtWindowMs = this.resolveWindowMs();
-    this.store = new MemoryStore();
+    this.store = RateLimitMiddleware.createStore(this.builtWindowMs);
     this.limiter = this.buildLimiter();
+  }
+
+  /**
+   * In memory for one api process; in Redis, shared, when several workers serve the deployment —
+   * otherwise each worker would let a client through the operator's limit once more.
+   */
+  private static createStore(windowMs: number): Store {
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl && ApiWorkers.isMultiProcess()) return new RedisRateLimitStore(redisUrl, windowMs);
+    return new MemoryStore();
   }
 
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -64,9 +76,9 @@ export class RateLimitMiddleware extends BaseMiddleware {
 
     const previousStore = this.store;
     this.builtWindowMs = windowMs;
-    this.store = new MemoryStore();
+    this.store = RateLimitMiddleware.createStore(windowMs);
     this.limiter = this.buildLimiter();
-    previousStore.shutdown();
+    if (previousStore instanceof MemoryStore) previousStore.shutdown();
   }
 
   private buildLimiter(): RateLimitRequestHandler {
@@ -80,6 +92,9 @@ export class RateLimitMiddleware extends BaseMiddleware {
       limit: (req) => this.options.maxRequests || RateLimitBucketUtils.resolveLimit(req as any, this.settingsCache),
       keyGenerator: (req) => RateLimitBucketUtils.resolveKey(req as any, this.settingsCache),
       message: { error: message },
+      // A shared store that cannot be reached must not turn every request into an error; express-rate-limit
+      // logs the failure and lets the request through. The in-memory store cannot fail this way.
+      passOnStoreError: !(this.store instanceof MemoryStore),
       skip: (req) => {
         if (this.options.skip && this.options.skip(req)) return true;
 
