@@ -191,7 +191,7 @@ describe('plugin discovery with per-site plugins on disk', () => {
 
     await scannerOn(plugins, tempRoot('fc-themes-'), hosts).discoverPlugins(new Map(), {});
 
-    expect(hosts.isIsolated).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, memoryLimit: 64 }));
+    expect(hosts.isIsolated).toHaveBeenCalledWith(expect.objectContaining({ enabled: true, memoryLimit: 64 }), false);
     expect(hosts.describe).toHaveBeenCalledWith('acme-beta', expect.any(String), expect.any(String), expect.anything(), expect.any(Boolean));
   });
 

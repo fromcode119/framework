@@ -146,7 +146,6 @@ export class SystemSettingDescriptors {
       seed: { value: '10080', description: "Login session duration in minutes.", group: "security" },
     },
     [SystemConstants.META_KEY.SSR_GENERATION_CAP]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
-    [SystemConstants.META_KEY.PLUGIN_ISOLATION_DEFAULT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     // Read by the deploy command on the box, not by the running api. `restart` is what deploys always did.
     [SystemConstants.META_KEY.DEPLOY_MODE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,

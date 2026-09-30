@@ -19,6 +19,10 @@ export class ImportMapInstaller {
       script = document.createElement('script');
       script.id = 'fc-runtime-import-map';
       script.type = 'importmap';
+      // An inline import map is inline SCRIPT to a Content-Security-Policy, which `'strict-dynamic'`
+      // does not cover: it runs only with the page's nonce, taken from a script the page already trusts.
+      const trusted = document.querySelector<HTMLScriptElement>('script[nonce]');
+      if (trusted?.nonce) script.nonce = trusted.nonce;
       document.head.appendChild(script);
     }
     script.textContent = JSON.stringify({ imports });

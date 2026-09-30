@@ -44,7 +44,7 @@ export class PluginDirectoryScannerService {
     private logger: Logger,
     private dependencyInstaller: PluginDependencyInstallerService,
     /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
-    private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; isolatesIdentity(): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
+    private hosts: { isIsolated(sandbox: unknown, bundled?: boolean): Promise<boolean>; isolatesIdentity(): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
     this.moduleLoader = new PluginModuleLoader(projectRoot, pluginsRoot);
     this.moduleLoader.ensureSharedModuleResolution();
@@ -226,7 +226,7 @@ export class PluginDirectoryScannerService {
                 // and reports which lifecycle hooks and public-API functions it has; what is staged
                 // here is a set of forwarding stubs. `shouldSandbox` is therefore a real statement
                 // about where the code runs, which the admin's counters report.
-                const shouldSandbox = !!this.hosts && await this.hosts.isIsolated(effectiveSandboxConfig);
+                const shouldSandbox = !!this.hosts && await this.hosts.isIsolated(effectiveSandboxConfig, bundledSlugs.has(String(manifest.slug).toLowerCase()));
                 const pluginModule = shouldSandbox
                   ? await this.hosts!.describe(String(manifest.slug), pluginPath, indexPath, manifest as Record<string, unknown>, String(persistedState?.state ?? '') === PluginState.ACTIVE.value)
                   : PluginModuleResolverService.resolve(await this.loadPluginModule(indexPath));

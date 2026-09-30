@@ -1459,7 +1459,6 @@
       "theStorefrontKeepsUpTo": "The storefront keeps up to {{cap}} theme world(s) resident. Memory and deadline apply to render hosts started from now on.",
       "theStorefrontUsesItsDefault": "The storefront uses its default of {{SSR_GENERATION_CAP_DEFAULT}} resident theme world(s). Memory and deadline apply to render hosts started from now on.",
       "failedToSaveTheServer": "Failed to save the server rendering cap.",
-      "pluginIsolationSettingsSavedThe": "Plugin isolation settings saved. The limits apply to every running plugin now. Where plugins run changes for plugins already loaded when the API restarts — use the button under \"Where plugins run\".",
       "pluginIsolationSettingsSavedAnd": "Plugin isolation settings saved and applied to every running plugin.",
       "failedToSaveThePlugin": "Failed to save the plugin isolation settings.",
       "restartRequested": "Restart requested",
@@ -1505,12 +1504,7 @@
       "default7": "Default {{SSR_RENDER_TIMEOUT_MS_DEFAULT}}",
       "pluginIsolation": "Plugin Isolation",
       "wherePluginsRun": "Where plugins run",
-      "isolatedEachActivePluginRuns": "Isolated: each active plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. Shared: inside the API process. Plugins that declare sandbox: false stay shared either way. A plugin installed from now on follows this at once; plugins already loaded move when the API restarts.",
-      "defaultIsolated": "Default: isolated",
-      "isolatedOwnProcessPerPlugin": "Isolated — own process per plugin",
-      "sharedInsideTheApiProcess": "Shared — inside the API process",
-      "savedPluginsAlreadyLoadedStill": "Saved. Plugins already loaded still run where they were until the API restarts.",
-      "restartTheApiToMove": "Restart the API to move them",
+      "isolatedEachActivePluginRuns": "Every plugin runs in its own process — it cannot read the platform's secrets, every database call is bound to the request's site, and it has a memory ceiling and a deadline. This is not a setting: a plugin inside the API process would hold the whole platform.",
       "memoryCeilingPerPluginProcess": "Memory ceiling per plugin process (MB)",
       "aPluginThatAllocatesPast": "A plugin that allocates past this is killed and restarted; the API and every other plugin are untouched. Saving restarts each running plugin's own process on the new ceiling. A plugin manifest's sandbox.memoryLimit overrides it for that plugin.",
       "default8": "Default {{PLUGIN_ISOLATION_MEMORY_MB_DEFAULT}}",
@@ -1591,7 +1585,8 @@
       "geoAttribution": "IP geolocation by {{name}} ({{license}}). Updated monthly while on.",
       "geoSaved": "Saved",
       "geoSavedOn": "Downloading the database now; it is about 60 MB.",
-      "geoSavedOff": "The database was removed from the server."
+      "geoSavedOff": "The database was removed from the server.",
+      "everyPluginRunsIsolated": "Isolated: each plugin runs in its own process. The limits below apply to every plugin."
     },
     "integrations": {
       "noFieldsRequired": "No fields required",

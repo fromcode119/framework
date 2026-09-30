@@ -22,8 +22,6 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       this.ssrGenerationCap = String(response?.ssr_generation_cap ?? '');
       this.ssrRenderMemoryMb = String(response?.ssr_render_memory_mb ?? '');
       this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
-      this.isolationDefault = String(response?.plugin_isolation_default ?? '');
-      this.isolationDefaultInEffect = this.isolationDefault;
       this.isolationMemoryMb = String(response?.plugin_isolation_memory_mb ?? '');
       this.isolationTimeoutMs = String(response?.plugin_isolation_timeout_ms ?? '');
     } catch (err: any) {
@@ -132,19 +130,14 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
     this.isSavingIsolation = true;
     try {
       await AdminSystemSettingsClient.update({
-        plugin_isolation_default: this.isolationDefault,
         plugin_isolation_memory_mb: this.isolationMemoryMb,
         plugin_isolation_timeout_ms: this.isolationTimeoutMs,
       });
       // Limits reach every running plugin on save: a new deadline at its next call, a new memory
-      // ceiling by restarting that plugin's own process. Where plugins run is the exception.
-      const modeChanged = this.isolationDefault !== this.isolationDefaultInEffect;
-      if (modeChanged) this.isolationModeRestartPending = true;
+      // ceiling by restarting that plugin's own process.
       addNotification({
         title: AdminI18n.t('settings.infrastructure.systemUpdated'),
-        message: modeChanged
-          ? AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedThe')
-          : AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedAnd'),
+        message: AdminI18n.t('settings.infrastructure.pluginIsolationSettingsSavedAnd'),
         type: NotificationType.INFO,
       });
     } catch (err: any) {

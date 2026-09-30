@@ -158,8 +158,6 @@ export class SystemMetaKeys {
   AUTH_SESSION_DURATION: 'auth_session_duration_minutes',
   /** How many distinct server-render worlds (theme+plugin version sets) the storefront keeps resident. Settings → Infrastructure. */
   SSR_GENERATION_CAP: 'ssr_generation_cap',
-  /** `isolated` (own process per plugin, the default) or `shared` (in the api process). */
-  PLUGIN_ISOLATION_DEFAULT: 'plugin_isolation_default',
   DEPLOY_MODE: 'deploy_mode',
   PLUGIN_ISOLATION_MEMORY_MB: 'plugin_isolation_memory_mb',
   PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',

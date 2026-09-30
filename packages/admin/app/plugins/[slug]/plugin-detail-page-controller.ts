@@ -209,9 +209,7 @@ export class PluginDetailPageController {
           notify(
             NotificationType.SUCCESS,
             AdminI18n.t('plugins.detail.resourcesUpdated'),
-            sandboxSettings.enabled
-              ? AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name: plugin.manifest.name })
-              : AdminI18n.t('plugins.detail.sandboxDisabledFor', { name: plugin.manifest.name }),
+            AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name: plugin.manifest.name }),
           );
         }
         triggerRefresh();

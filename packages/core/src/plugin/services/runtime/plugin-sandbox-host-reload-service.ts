@@ -29,7 +29,7 @@ export class PluginSandboxHostReloadService {
 
   async apply(slug: string, manifest: Record<string, unknown>): Promise<ISandboxHostReloadResult> {
     const wasIsolated = Boolean(this.hosts.get(slug));
-    const willBeIsolated = await this.hosts.isIsolated((manifest as { sandbox?: unknown }).sandbox);
+    const willBeIsolated = await this.hosts.isIsolated((manifest as { sandbox?: unknown }).sandbox, (manifest as { bundled?: unknown }).bundled === true);
 
     if (wasIsolated && willBeIsolated) {
       try {

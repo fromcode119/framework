@@ -19,10 +19,8 @@ export class PluginDetailPageService {
    * a number nobody configured for this plugin.
    */
   static readonly DEFAULT_SANDBOX_SETTINGS: IPluginSandboxSettings = {
-    enabled: true,
     memoryLimit: null,
     timeout: null,
-    allowNative: false,
   };
 
   /**
@@ -87,19 +85,10 @@ export class PluginDetailPageService {
    */
   static createSandboxSettings(plugin: ILoadedPlugin): IPluginSandboxSettings {
     const sandbox = plugin.manifest?.sandbox;
-    if (sandbox === false) {
-      return {
-        ...PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS,
-        enabled: false,
-      };
-    }
-
     if (sandbox && typeof sandbox === 'object') {
       return {
-        enabled: true,
         memoryLimit: typeof sandbox.memoryLimit === 'number' ? sandbox.memoryLimit : null,
         timeout: typeof sandbox.timeout === 'number' ? sandbox.timeout : null,
-        allowNative: sandbox.allowNative || false,
       };
     }
 
@@ -120,19 +109,13 @@ export class PluginDetailPageService {
 
   /**
    * Saves the sandbox row and reports what happened to the RUNNING plugin, which is not always the
-   * same thing: the write can succeed while the change still needs an API restart to take effect
-   * (flipping isolation on or off), or — for a live reload of an already-isolated plugin — the save
+   * same thing: the write can succeed while the change still needs an API restart to take effect, or
+   * — for a live reload of an already-isolated plugin — the save
    * can succeed while the reload itself failed and the guest may now be down. Neither of those is a
    * failed save, so both are reported through the result, not thrown.
    */
   static async saveSandbox(slug: string, sandboxSettings: IPluginSandboxSettings): Promise<{ restartRequired: boolean; restartFailed?: boolean; reason?: string }> {
-    const payload = sandboxSettings.enabled
-      ? {
-          memoryLimit: sandboxSettings.memoryLimit,
-          timeout: sandboxSettings.timeout,
-          allowNative: sandboxSettings.allowNative,
-        }
-      : { enabled: false };
+    const payload = { memoryLimit: sandboxSettings.memoryLimit, timeout: sandboxSettings.timeout };
 
     const response = await AdminApi.post(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${slug}/sandbox`, payload);
     return {
