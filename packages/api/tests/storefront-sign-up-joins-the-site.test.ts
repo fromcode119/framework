@@ -26,6 +26,7 @@ class MembershipTable {
 
 class JoinProbe extends AuthControllerPolicy {
   join(req: any, userId: string) { return this.joinStorefrontSite(req, userId); }
+  belongs(req: any, userId: string) { return this.belongsToStorefrontSite(req, userId); }
 }
 
 const probe = (db: MembershipTable) => new JoinProbe({ db, hooks: { call: vi.fn(), emit: vi.fn(), on: vi.fn() } } as any, {} as any);
@@ -51,6 +52,13 @@ describe('signing up on a storefront', () => {
     const db = new MembershipTable([{ user_id: '9', tenant_id: 'shop', roles: '["customer"]', state: 'suspended' }]);
     await probe(db).join(storefront, '9');
     expect(db.rows).toEqual([expect.objectContaining({ state: 'suspended' })]);
+  });
+
+  it('knows who already belongs to the site — in any membership state — and that off a storefront there is nothing to join', async () => {
+    const db = new MembershipTable([{ user_id: '9', tenant_id: 'shop', roles: '["customer"]', state: 'suspended' }]);
+    expect(await probe(db).belongs(storefront, '9')).toBe(true);
+    expect(await probe(db).belongs(storefront, '7')).toBe(false);
+    expect(await probe(db).belongs({ tenantSurface: 'admin', tenant: { id: 'shop' } }, '7')).toBe(true);
   });
 
   it('joins nothing off a storefront (the console, the platform host)', async () => {

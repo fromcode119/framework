@@ -128,6 +128,33 @@ describe('the account a provider identity signs into', () => {
     expect(db.inserted).toHaveLength(0);
   });
 
+  it("refuses an existing account from ANOTHER site where this site's registration is closed — joining is signing up", async () => {
+    const { self } = controller(new DatabaseStub([existing]));
+    vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(false);
+    vi.spyOn(self, 'belongsToStorefrontSite').mockResolvedValue(false);
+    const join = vi.spyOn(self, 'joinStorefrontSite').mockResolvedValue(undefined);
+    const outcome = await self.resolveSsoAccount(request(), new SsoIdentity('owner@example.com', true), 'google');
+    expect(outcome).toBe(SsoSignInError.REGISTRATION_CLOSED);
+    expect(join).not.toHaveBeenCalled();
+    expect(self.setEmailVerified).not.toHaveBeenCalled();
+  });
+
+  it("still signs in a member of this site where registration is closed", async () => {
+    const { self } = controller(new DatabaseStub([existing]));
+    vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(false);
+    vi.spyOn(self, 'belongsToStorefrontSite').mockResolvedValue(true);
+    vi.spyOn(self, 'joinStorefrontSite').mockResolvedValue(undefined);
+    expect(await self.resolveSsoAccount(request(), new SsoIdentity('owner@example.com', true), 'google')).toBe(existing);
+  });
+
+  it('lets an account from another site join where registration is open', async () => {
+    const { self } = controller(new DatabaseStub([existing]));
+    vi.spyOn(self, 'belongsToStorefrontSite').mockResolvedValue(false);
+    const join = vi.spyOn(self, 'joinStorefrontSite').mockResolvedValue(undefined);
+    expect(await self.resolveSsoAccount(request(), new SsoIdentity('owner@example.com', true), 'google')).toBe(existing);
+    expect(join).toHaveBeenCalledWith(expect.anything(), 7);
+  });
+
   it('treats a missing emailVerified in a hook answer as NOT verified', () => {
     expect(SsoIdentity.from({ email: 'a@example.com' }).emailVerified).toBe(false);
     expect(SsoIdentity.from({ email: 'a@example.com', emailVerified: true }).emailVerified).toBe(true);

@@ -239,7 +239,8 @@ export class AuthControllerSso extends AuthControllerRegistration {
    * The email is what joins a provider identity to an account here, so it counts only when the provider
    * vouches for it: an address the provider did not verify would let anyone who can type it into a
    * provider profile sign in as its owner. An existing account with that address is signed in (never
-   * duplicated); otherwise a customer account is created, but only where registration is open.
+   * duplicated); otherwise a customer account is created, but only where registration is open. An
+   * existing account that is not yet a member of this storefront's site joins it only there, too.
    */
   protected async resolveSsoAccount(req: Request, identity: SsoIdentity, provider: string): Promise<any | SsoSignInError> {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return SsoSignInError.SIGN_IN_DISABLED;
@@ -261,6 +262,11 @@ export class AuthControllerSso extends AuthControllerRegistration {
     }
 
     if ((await this.getUserAccountStatus(user.id)) !== AccountStatus.ACTIVE) return SsoSignInError.ACCOUNT_INACTIVE;
+    // An account from ANOTHER site signing in here would join this site as a customer — that is signing
+    // up, so it follows this site's registration setting exactly as a new account does.
+    if (!(await this.belongsToStorefrontSite(req, user.id)) && !(await this.isFrontendRegistrationEnabled())) {
+      return SsoSignInError.REGISTRATION_CLOSED;
+    }
     await this.setEmailVerified(user.id, true);
     await this.joinStorefrontSite(req, user.id);
     return user;

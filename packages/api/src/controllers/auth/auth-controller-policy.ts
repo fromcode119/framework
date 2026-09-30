@@ -30,12 +30,25 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
    * re-activate themselves by signing up again or signing in with a provider.
    */
   protected async joinStorefrontSite(req: Request, userId: string | number): Promise<void> {
-    const storefrontId = (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE ? String((req as any).tenant?.id ?? '') : '';
-    if (!TenantMode.isEnabled() || !storefrontId) return;
-    const memberships = new TenantMembershipService(this.db);
-    if (await memberships.hasAccess(String(userId), storefrontId)) return;
-    if (await this.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(userId), tenant_id: storefrontId })) return;
-    await memberships.grant(String(userId), storefrontId, ['customer']);
+    if (await this.belongsToStorefrontSite(req, userId)) return;
+    await new TenantMembershipService(this.db).grant(String(userId), AuthControllerPolicy.storefrontSiteId(req), ['customer']);
+  }
+
+  /**
+   * Whether the account already belongs to the storefront's site — any membership, in any state — or
+   * there is no storefront site to join (the console, the platform host, a single-site deployment).
+   * An account that does NOT belong would be JOINING the site, which is signing up: it is allowed only
+   * where the site's registration is open.
+   */
+  protected async belongsToStorefrontSite(req: Request, userId: string | number): Promise<boolean> {
+    const storefrontId = AuthControllerPolicy.storefrontSiteId(req);
+    if (!TenantMode.isEnabled() || !storefrontId) return true;
+    if (await new TenantMembershipService(this.db).hasAccess(String(userId), storefrontId)) return true;
+    return Boolean(await this.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(userId), tenant_id: storefrontId }));
+  }
+
+  private static storefrontSiteId(req: Request): string {
+    return (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE ? String((req as any).tenant?.id ?? '') : '';
   }
 
   protected async issueLoginSession(req: Request, res: Response, user: any) {
