@@ -32,6 +32,8 @@ class AdminNextConfig {
   basePath: adminBasePath,
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
+  // Names the framework to every visitor and helps nobody.
+  poweredByHeader: false,
   env: {
     // The version the console SHOWS, read from the root package.json this build came from — the same
     // number auto-tag turns into the release tag and the image tag. It used to be a literal in
