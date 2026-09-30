@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.257] - 2026-09-30
+
+### Added
+
+- **admin**: Infrastructure shows the IP-location switch, the installed database and its credit ([#528](https://github.com/fromcode119/framework/pull/528))
+- **geo**: an IP-location database the operator switches on, and context.geo for plugins ([#527](https://github.com/fromcode119/framework/pull/527))
+- **database**: aggregate — distinct counts, sums, averages and time buckets in SQL ([#526](https://github.com/fromcode119/framework/pull/526))
+
+### Fixed
+
+- **plugins**: a plugin gets the visitor address from the platform, and no client-written private header ([#525](https://github.com/fromcode119/framework/pull/525))
+
 ## [0.2.256] - 2026-09-30
 
 ### Fixed
