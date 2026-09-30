@@ -1,4 +1,5 @@
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
+import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -154,6 +155,16 @@ export interface IDatabaseManager {
 
   /** Drops a column. IRREVERSIBLE — only ever called after a human approved this exact name. */
   dropColumn(table: string, column: string): Promise<void>;
+
+  /**
+   * The schema statements a MIGRATION needs, built by the framework from validated identifiers so a
+   * plugin migration never hand-writes SQL on the owner connection. See `PortableSchemaOperations`.
+   */
+  createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void>;
+  dropTableIfExists(table: string): Promise<void>;
+  dropColumnIfExists(table: string, column: string): Promise<void>;
+  /** Fills `target` from `source` (or its JSON key) where `target` is still NULL. Never overwrites. */
+  copyColumnValues(table: string, target: string, source: string, jsonKey?: string): Promise<void>;
 
   /**
    * Marks this connection as the platform's own (migrations, schema sync), permitting writes to

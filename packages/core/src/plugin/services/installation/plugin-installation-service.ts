@@ -2,7 +2,6 @@ import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum
 import * as fs from 'fs';
 import * as path from 'path';
 import { BackupService } from '@core/management/backup-service';
-import { PluginMigrationLoader } from '@core/database/plugin-migration-loader';
 import { Logger } from '@core/logging';
 import { MigrationManager } from '@core/database/migration-manager';
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
@@ -10,6 +9,8 @@ import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog
 import { VersionComparisonService } from '@core/services/version-comparison-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
+import type { IDatabaseManager } from '@core/interfaces/database-manager.interface';
+import { PluginMigrationRunner } from '@core/plugin/services/installation/plugin-migration-runner';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
@@ -32,7 +33,13 @@ export class PluginInstallationService {
     /** T5: swap an isolated plugin's process for one running the new files; false when it runs in the api process. */
     private readonly reloadHost: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
     private readonly syncCollections: (slug: string) => Promise<void> = async () => undefined,
+    /** Each plugin's migrations run on ITS schema proxy, never the owner connection. Fails closed. */
+    private readonly migrationDatabaseFor: (manifest: IPluginManifest) => IDatabaseManager = (manifest) => {
+      throw new Error(`No migration database was provided, so the migrations of "${manifest.slug}" cannot run.`);
+    },
   ) {}
+
+  private readonly migrations = new PluginMigrationRunner(this.migrationManager, this.migrationDatabaseFor);
 
   /** Set when a replaced plugin could NOT be reloaded in place (shared) and a deferred api restart is owed. */
   private restartOwed = false;
@@ -191,9 +198,9 @@ export class PluginInstallationService {
     // lowercased slug, ownerTenantId stamped from the directory rather than the manifest's own.
     const manifest = InstalledPluginManifestService.read(pluginPath);
 
-    await this.runPluginMigrations(slug, pluginPath, manifest, options.progressReporter);
+    await this.migrations.run(slug, pluginPath, manifest, options.progressReporter);
 
-    // Fills `ui.*` in from what landed on disk — see PR #110. Runs AFTER runPluginMigrations:
+    // Fills `ui.*` in from what landed on disk — see PR #110. Runs AFTER the plugin's migrations:
     // resolve() also backfills `manifest.migrations` from an on-disk dist/migrations dir when
     // undeclared, which would run every plugin's migrations on first install if it ran first.
     PluginPackageLayout.resolve(pluginPath, manifest);
@@ -271,30 +278,5 @@ export class PluginInstallationService {
       message: `Plugin "${slug}" is ready.`,
       pluginSlug: slug,
     });
-  }
-
-  private async runPluginMigrations(
-    slug: string,
-    pluginPath: string,
-    manifest: IPluginManifest,
-    progressReporter?: IPluginInstallProgressReporter,
-  ): Promise<void> {
-    progressReporter?.({
-      phase: 'checking-migrations',
-      message: `Checking migrations for "${slug}"...`,
-      pluginSlug: slug,
-    });
-
-    const pluginMigrations = await PluginMigrationLoader.load(slug, pluginPath, manifest.migrations);
-    if (pluginMigrations.length === 0) {
-      progressReporter?.({
-        phase: 'checking-migrations',
-        message: `No plugin migrations found for "${slug}".`,
-        pluginSlug: slug,
-      });
-      return;
-    }
-
-    await this.migrationManager.migrate(pluginMigrations, progressReporter);
   }
 }

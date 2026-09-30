@@ -1,3 +1,5 @@
+import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
+import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -164,5 +166,16 @@ export abstract class MysqlCrudOperations extends BaseDialect {
       await this.execute(sql`DROP TABLE ${sql.identifier(table)}`);
     }
     await this.execute(sql`SET FOREIGN_KEY_CHECKS = 1`);
+  }
+
+  /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
+  private readonly portableSchema = new PortableSchemaOperations((statement) => this.execute(statement));
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+    return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
+  }
+  async dropTableIfExists(table: string): Promise<void> { return this.portableSchema.dropTableIfExists(table); }
+  async dropColumnIfExists(table: string, column: string): Promise<void> { return this.portableSchema.dropColumnIfExists(table, column); }
+  async copyColumnValues(table: string, target: string, source: string, jsonKey?: string): Promise<void> {
+    return this.portableSchema.copyColumnValues(table, target, source, jsonKey);
   }
 }
