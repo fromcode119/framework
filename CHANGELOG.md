@@ -12,6 +12,10 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 - **sources**: build only commits GitHub merged ([#562](https://github.com/fromcode119/framework/pull/562))
 
+### Performance
+
+- **database**: remember converted column names ([#563](https://github.com/fromcode119/framework/pull/563))
+
 ## [0.2.267] - 2026-09-30
 
 ### Fixed
