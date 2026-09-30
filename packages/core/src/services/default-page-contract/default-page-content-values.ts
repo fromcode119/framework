@@ -62,7 +62,8 @@ export class DefaultPageContentValues {
     const method = String(payload.contentValues || '').trim();
     if (!method) return {};
     const plugin = this.manager.plugins.get(payload.pluginSlug);
-    if (!plugin || !PluginsManagerResolver.isResolvable(plugin, RequestContextUtils.getTenantId() ?? null)) return {};
+    // The owner is usually mid-activation here (its pages are created inside its own activation).
+    if (!plugin || !PluginsManagerResolver.isResolvableWhileActivating(plugin, RequestContextUtils.getTenantId() ?? null)) return {};
     const answer = await (plugin.publicAPI as Record<string, (input: unknown) => Promise<unknown>>)?.[method]?.({ contractKey: payload.key }).catch(() => null);
     return Object.fromEntries(Object.entries((answer ?? {}) as Record<string, unknown>).map(([key, value]) => [key, value == null ? '' : String(value)]));
   }

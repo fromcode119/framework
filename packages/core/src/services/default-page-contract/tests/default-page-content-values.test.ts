@@ -41,6 +41,12 @@ describe('DefaultPageContentValues', () => {
     expect((missing[0] as any).data.text).toBe('Organiser:  (), site .');
   });
 
+  it('asks the owner while it is still activating — its pages are created inside its own activation', async () => {
+    const api = { partnerPageValues: async () => ({ organiserName: 'Acme OOD', organiserUic: '123' }) };
+    const filled = await new DefaultPageContentValues(manager({ platformName: 'Acme Stars', api, state: PluginState.LOADING })).fill(payload('partnerPageValues'));
+    expect((filled[0] as any).data.text).toBe('Organiser: Acme OOD (123), site Acme Stars.');
+  });
+
   it('returns content without placeholders as it is', async () => {
     const plain = [{ type: 'content', data: { text: 'Nothing to fill.' } }];
     expect(await new DefaultPageContentValues(manager({ platformName: 'X' })).fill(payload(undefined, plain))).toBe(plain);
