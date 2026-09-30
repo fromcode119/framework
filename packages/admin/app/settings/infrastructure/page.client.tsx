@@ -98,7 +98,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
               (`/system/deploy/restart`, permission `system:deploy:restart`, audited), a confirmation
               dialog, and a disabled button with a stated reason wherever the deployment cannot
               honour it. */}
-          <div className="lg:col-span-2"><CertificatesSettingsCard /></div>
+          <div className="xl:col-span-2"><CertificatesSettingsCard /></div>
           <DeploymentsCard />
           <RestartServicesCard />
 
