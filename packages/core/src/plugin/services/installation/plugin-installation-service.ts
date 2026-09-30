@@ -37,9 +37,11 @@ export class PluginInstallationService {
     private readonly migrationDatabaseFor: (manifest: IPluginManifest) => IDatabaseManager = (manifest) => {
       throw new Error(`No migration database was provided, so the migrations of "${manifest.slug}" cannot run.`);
     },
-  ) {}
+  ) {
+    this.migrations = new PluginMigrationRunner(migrationManager, migrationDatabaseFor);
+  }
 
-  private readonly migrations = new PluginMigrationRunner(this.migrationManager, this.migrationDatabaseFor);
+  private readonly migrations: PluginMigrationRunner;
 
   /** Set when a replaced plugin could NOT be reloaded in place (shared) and a deferred api restart is owed. */
   private restartOwed = false;
