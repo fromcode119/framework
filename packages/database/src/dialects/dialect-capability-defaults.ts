@@ -40,6 +40,11 @@ export abstract class DialectCapabilityDefaults {
     // no-op
   }
 
+  /** Default is a no-op: a driver without row-level security has no binding to prepare. */
+  async prepareTenantBinding(): Promise<void> {
+    // no-op
+  }
+
   /**
    * Whether this driver can actually isolate tenants. Default FALSE.
    *

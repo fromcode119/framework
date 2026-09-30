@@ -3,6 +3,9 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
 import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
+
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
 /**
  * The executing half. The statements themselves are asserted in `tenant-isolation-sql.test.ts`;
@@ -20,12 +23,38 @@ describe('PostgresTenantIsolation', () => {
     return { issued, run };
   };
 
-  it('isolateTable issues the column half then the enforcement half, in order', async () => {
-    const { issued, run } = recorder();
+  it('isolateTable installs the binding verifier first, then the column half and the enforcement half, in order', async () => {
+    const { issued, run } = recorder([{ schema: 'public' }]);
 
     await new PostgresTenantIsolation(run).isolateTable('pages');
 
-    expect(issued.map((entry) => entry.text)).toEqual(TenantIsolationSql.statementsFor('pages'));
+    const install = TenantBindingSql.installStatements('public');
+    const expected = [TenantBindingSql.currentSchemaStatement(), ...install.before, install.key, ...install.after];
+    const texts = issued.map((entry) => entry.text);
+    expect(texts.slice(0, expected.length)).toEqual(expected);
+    expect(texts.slice(expected.length)).toEqual(TenantIsolationSql.statementsFor('pages'));
+    // The key is a parameter, never interpolated into the SQL text.
+    expect(issued[expected.indexOf(install.key)].values?.[0]).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('installs the verifier only once per process, however many tables it isolates', async () => {
+    const { issued, run } = recorder([{ schema: 'public' }]);
+    const isolation = new PostgresTenantIsolation(run);
+    await isolation.isolateTable('pages');
+    await isolation.isolateTable('orders');
+    expect(issued.filter((entry) => entry.text === TenantBindingSql.currentSchemaStatement())).toHaveLength(1);
+  });
+
+  it('refuses to write a policy when there is no key to verify bindings with', async () => {
+    const previous = process.env.JWT_SECRET;
+    delete process.env.JWT_SECRET;
+    try {
+      const { issued, run } = recorder([{ schema: 'public' }]);
+      await expect(new PostgresTenantIsolation(run).isolateTable('pages')).rejects.toThrow(/JWT_SECRET/);
+      expect(issued.some((entry) => entry.text.includes('CREATE POLICY'))).toBe(false);
+    } finally {
+      process.env.JWT_SECRET = previous;
+    }
   });
 
   it('addTenantColumn never enables row-level security', async () => {

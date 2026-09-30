@@ -1,58 +1,98 @@
-import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 import type { ITenantSessionBinding } from '@database/dialects/postgres/tenant/interfaces/tenant-session-binding.interface';
 import type { IPostgresQueryable } from '@database/dialects/postgres/tenant/interfaces/postgres-queryable.interface';
+import type { IOpenedBinding } from '@database/dialects/postgres/tenant/interfaces/opened-binding.interface';
 
 /**
- * Binds and clears the tenancy markers on ONE pooled client.
+ * Binds and clears the tenancy of ONE pooled client.
  *
- * Session-scoped (`set_config(..., false)`), not `SET LOCAL`, so the binding survives across
- * statements on a held client rather than expiring with a transaction.
+ * The database records each connection's binding — a site, the platform, or none — and changes it only
+ * on a signed request (TenantBindingSql): `fc_binding_open` once, as the connection's first statement,
+ * then `fc_bind` with the next counter each time. SQL that sets `app.tenant_id` itself, clears it, or
+ * replays a signature it saw gets no site and no platform rows at all.
+ *
+ * Session-scoped, not `SET LOCAL`: the binding survives across statements on a held client rather than
+ * expiring with a transaction.
  *
  * Separate from `ITenantIsolation` because it is not a capability a caller outside this package ever
  * reaches for: it takes a raw `pg` client, and the only things holding one are the connection scope,
- * the one-shot client and the pool's own connect handler — all of which live beside this file. The
- * clearing half is what makes the `nullif` guard in the policy load-bearing: released connections
- * are reset to `''`, and `''` must never match a tenant.
+ * the one-shot client and the pool's own connect handler — all of which live beside this file.
  */
 export class PostgresTenantSession {
-  /** Sets the markers the binding asks for. A binding with neither leaves the client untenanted. */
+  private static readonly opened = new WeakMap<object, IOpenedBinding>();
+
+  /** Sets the binding the caller asks for. A binding with neither a site nor the platform is `none`. */
   static async bind(client: IPostgresQueryable, binding: ITenantSessionBinding): Promise<void> {
-    if (binding.tenantId) await client.query(TenantIsolationSql.setTenantStatement(), [binding.tenantId]);
-    if (binding.platformAdmin) await client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']);
+    await PostgresTenantSession.write(client, TenantBindingSql.stateOf(binding));
   }
 
   /**
-   * Clears BOTH markers, always together — then restores the pool's RESTING state.
+   * Clears the binding — then restores the pool's RESTING state: `none` for a request pool, `platform`
+   * for the DDL pool.
    *
-   * The platform-admin marker must never outlive the request that earned it, and a client goes back
-   * to a shared pool, so clearing the tenant while leaving the marker would hand the next borrower a
-   * connection that may write platform rows.
-   *
-   * `platformPool` is what stops that rule breaking the DDL pool. `markAsPlatformConnection` sets the
-   * marker on the pool's `connect` event — i.e. ONCE per physical connection — so a client that had
-   * been through any scope came back with the marker off, and `connect` does not fire again on
-   * reuse. Every later untenanted platform write on that client was then refused: "new row violates
-   * row-level security policy for _system_meta", from code that had done nothing wrong and had no
-   * way to see why. Restoring the resting state here is what makes the pool's own promise — every
-   * client it hands out acts for the platform — actually true.
+   * The platform binding must never outlive the request that earned it, and a client goes back to a
+   * shared pool. `platformPool` is what stops that rule breaking the DDL pool: every client IT hands out
+   * acts for the platform, and `connect` fires once per physical connection, so a client that had been
+   * through a scope must come back as the platform's, or every later untenanted platform write on it is
+   * refused ("new row violates row-level security policy for _system_meta").
    */
   static async clear(client: IPostgresQueryable, platformPool = false): Promise<void> {
-    await client.query(TenantIsolationSql.resetTenantStatement());
-    if (platformPool) {
-      await client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']);
-      return;
-    }
-    await client.query(TenantIsolationSql.resetPlatformAdminStatement());
+    await PostgresTenantSession.write(client, TenantBindingSql.stateOf({ platformAdmin: platformPool }));
   }
 
   /**
-   * Marks a client as the PLATFORM's own, fire-and-forget.
+   * Opens a NEW physical connection in its resting state, from the pool's `connect` event.
    *
-   * Used from the pool's `connect` event, where there is nothing to await into and a failure must
-   * not take the connection down.
+   * Issued SYNCHRONOUSLY: `pg` runs a client's queries in the order they were issued, so this is the
+   * connection's first statement and nothing the borrower sends can run ahead of it. A failure is not
+   * thrown into the pool — the connection then has no binding, and sees nothing.
    */
-  static markPlatformAdmin(client: IPostgresQueryable): void {
-    client.query(TenantIsolationSql.setPlatformAdminStatement(), ['on']).catch(() => undefined);
+  static markResting(client: IPostgresQueryable, platformPool: boolean): void {
+    const pid = PostgresTenantSession.knownPid(client);
+    if (!pid) return;
+    try {
+      PostgresTenantSession.open(client, pid, TenantBindingSql.stateOf({ platformAdmin: platformPool }))
+        .nonce.catch(() => undefined);
+    } catch {
+      // No key to sign with (a process without JWT_SECRET): nothing may throw out of a pool event.
+      // The connection stays unbound and, under the tenant policies, sees nothing.
+    }
+  }
+
+  private static async write(client: IPostgresQueryable, state: string): Promise<void> {
+    const pid = PostgresTenantSession.knownPid(client) ?? await PostgresTenantSession.askPid(client);
+    const existing = PostgresTenantSession.opened.get(client);
+    if (!existing) {
+      // Never opened (a client from a pool without the connect handler): opening IS this binding.
+      await PostgresTenantSession.open(client, pid, state).nonce;
+      return;
+    }
+    const nonce = await existing.nonce;
+    existing.counter += 1;
+    const counter = existing.counter;
+    await client.query(TenantBindingSql.bindStatement(), [state, counter, TenantBindingKey.sign(`${state}:${pid}:${nonce}:${counter}`)]);
+  }
+
+  private static open(client: IPostgresQueryable, pid: number, state: string): IOpenedBinding {
+    const nonce = client.query(TenantBindingSql.openStatement(), [state, TenantBindingKey.sign(`${state}:${pid}`)])
+      .then((result) => String((result as { rows?: Array<{ nonce?: unknown }> })?.rows?.[0]?.nonce ?? ''));
+    const entry: IOpenedBinding = { nonce, counter: 0 };
+    PostgresTenantSession.opened.set(client, entry);
+    // A refused open leaves no entry, so the next bind tries to open again rather than signing
+    // against a nonce that does not exist.
+    nonce.catch(() => { if (PostgresTenantSession.opened.get(client) === entry) PostgresTenantSession.opened.delete(client); });
+    return entry;
+  }
+
+  /** The backend pid `pg` learned when it connected, or null. */
+  private static knownPid(client: IPostgresQueryable): number | null {
+    const known = Number((client as { processID?: unknown }).processID);
+    return Number.isInteger(known) && known > 0 ? known : null;
+  }
+
+  private static async askPid(client: IPostgresQueryable): Promise<number> {
+    const result = (await client.query('SELECT pg_backend_pid() AS pid')) as { rows?: Array<{ pid?: unknown }> };
+    return Number(result?.rows?.[0]?.pid);
   }
 }
-

@@ -7,6 +7,8 @@ import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.int
 import type { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
 import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 
 
 /**
@@ -18,6 +20,9 @@ import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant
  * issues therefore lands exactly where the same statement landed before this class existed.
  */
 export class PostgresTenantIsolation implements ITenantIsolation {
+  /** Installed once per process, before the first policy that calls it (see ensureVerifier). */
+  private verifier: Promise<void> | null = null;
+
   constructor(private readonly run: ISqlRunner) {}
 
   async addTenantColumn(table: string): Promise<void> {
@@ -25,10 +30,12 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   }
 
   async enforceIsolation(table: string): Promise<void> {
+    await this.ensureVerifier();
     await this.runAll(TenantIsolationSql.enforcementStatementsFor(table));
   }
 
   async isolateTable(table: string): Promise<void> {
+    await this.ensureVerifier();
     await this.runAll(TenantIsolationSql.statementsFor(table));
   }
 
@@ -47,6 +54,7 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   }
 
   async applyPolicy(spec: TenantPolicySpec): Promise<void> {
+    await this.ensureVerifier();
     await this.runAll(spec.render(new PostgresTenantPolicyRenderer()));
   }
 
@@ -135,6 +143,41 @@ export class PostgresTenantIsolation implements ITenantIsolation {
     const unassigned = await this.countUnassigned(table);
     await this.run(TenantIsolationSql.backfillStatement(table), [tenantId]);
     return unassigned;
+  }
+
+  /**
+   * The signed-binding verifier every policy calls (TenantBindingSql), with this process's key. Written
+   * before the first policy, because CREATE POLICY refuses a function that does not exist yet — and
+   * rewritten on every boot, so the database always holds the key the running api signs with.
+   *
+   * No key means no policy: a policy whose verifier holds an empty key would accept nothing, and
+   * failing loudly here says why instead of every site silently reading empty.
+   */
+  private ensureVerifier(): Promise<void> {
+    if (!this.verifier) {
+      this.verifier = this.installVerifier().catch((error) => {
+        this.verifier = null;
+        throw error;
+      });
+    }
+    return this.verifier;
+  }
+
+  /** Installs the verifier now, with this runner — see PostgresDatabaseManager.prepareTenantBinding. */
+  async prepareBinding(): Promise<void> {
+    await this.installVerifier();
+  }
+
+  private async installVerifier(): Promise<void> {
+    const key = TenantBindingKey.value();
+    if (!key) {
+      throw new Error('PostgresTenantIsolation: JWT_SECRET is not set, so tenant policies cannot verify a binding; refusing to write them.');
+    }
+    const schema = String((await this.run(TenantBindingSql.currentSchemaStatement()))?.[0]?.schema ?? '');
+    const install = TenantBindingSql.installStatements(schema);
+    await this.runAll(install.before);
+    await this.run(install.key, [key]);
+    await this.runAll(install.after);
   }
 
   private async runAll(statements: string[]): Promise<void> {

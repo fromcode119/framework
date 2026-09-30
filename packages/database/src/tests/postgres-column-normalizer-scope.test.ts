@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 
+process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+
 class FakeClient {
   readonly calls: string[] = [];
   released = false;
