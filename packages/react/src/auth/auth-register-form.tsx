@@ -2,6 +2,7 @@ import type { FormEvent, MouseEvent as ReactMouseEvent, ReactNode } from 'react'
 import { AuthMode } from '@react/auth/enums/auth-mode.enum';
 import { RouteConstants } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
+import { AuthSocialSignIn } from '@react/auth/auth-social-sign-in';
 import type { IAuthFormProps } from '@react/auth/interfaces/auth-form-props.interface';
 import type { IAuthRegisterFormState } from '@react/auth/interfaces/auth-register-form-state.interface';
 
@@ -100,6 +101,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
             {loading ? this.tr('auth.register.submitting', 'Creating account…') : this.tr('auth.register.submit', 'Create account')}
           </button>
         </form>
+        <AuthSocialSignIn />
         <p className="fc-auth__switch">
           {this.tr('auth.register.haveAccount', 'Already have an account?')}{' '}
           <a href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link" onClick={(e) => this.switchToLogin(e)}>

@@ -1,6 +1,8 @@
 import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import { SsoProviderUtils } from '@core/integrations/providers/sso-provider-utils';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 
 /**
  * The `sso` integration descriptor: which providers exist, what each needs configured, and how a
@@ -43,6 +45,13 @@ export class SsoIntegrationDefinition {
       label,
       description,
       fields: [...SsoIntegrationDefinition.commonOauthFields, ...extraFields],
+      // The storefront's "Continue with …" button returns here; the provider refuses any redirect it
+      // was not told about.
+      setupAddresses: [{
+        label: 'Redirect URI',
+        path: ApiPathUtils.versioned(ApiPathUtils.fillPath(SystemApiPaths.ALL.AUTH.SSO_CALLBACK, { provider: key })),
+        description: 'Add this address to the allowed redirect URIs of the app you created with the provider.',
+      }],
       normalizeConfig: SsoProviderUtils.normalizeSsoConfig,
       create: (config: Record<string, unknown>) => ({
         provider: key,

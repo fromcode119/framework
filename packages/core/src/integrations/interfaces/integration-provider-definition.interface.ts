@@ -1,3 +1,4 @@
+import type { IIntegrationSetupAddress } from '@core/integrations/interfaces/integration-setup-address.interface';
 
 import type { Logger } from '@core/logging';
 import type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
@@ -7,6 +8,8 @@ export interface IIntegrationProviderDefinition <TInstance = any> {
   label: string;
   description?: string;
   fields?: IIntegrationConfigField[];
+  /** Site addresses to register with the provider (see {@link IIntegrationSetupAddress}). */
+  setupAddresses?: IIntegrationSetupAddress[];
   create: (config: Record<string, any>, context?: { projectRoot?: string; logger?: Logger }) => TInstance | Promise<TInstance>;
   normalizeConfig?: (config: Record<string, any>) => Record<string, any>;
   /**

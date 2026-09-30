@@ -133,6 +133,7 @@ export class IntegrationRegistry {
         label: provider.label,
         description: provider.description,
         fields: provider.fields || [],
+        setupAddresses: provider.setupAddresses || [],
       })),
     };
   }

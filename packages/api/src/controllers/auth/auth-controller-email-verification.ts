@@ -171,9 +171,12 @@ export class AuthControllerEmailVerification extends AuthControllerPolicy {
    * Returns true when the caller may issue the session; false when a response
    * has already been sent.
    */
+  protected async isTwoFactorEnabled(userId: string | number): Promise<boolean> {
+    return (await this.readMetaRow(`user:${userId}:2fa_enabled`))?.value === 'true';
+  }
+
   protected async enforceTwoFactorChallenge(req: Request, res: Response, user: any): Promise<boolean> {
-    const twoFactorMeta = await this.readMetaRow(`user:${user.id}:2fa_enabled`);
-    if (twoFactorMeta?.value !== 'true') return true;
+    if (!(await this.isTwoFactorEnabled(user.id))) return true;
 
     const totpToken = CoercionUtils.toString(req.body?.totpToken);
     const recoveryCode = CoercionUtils.toString(req.body?.recoveryCode);

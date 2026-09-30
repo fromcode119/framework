@@ -10,6 +10,30 @@ export class SystemAuthSession {
 
   constructor() {
     this.migrateLegacyClientToken();
+    this.adoptSsoHandoff();
+  }
+
+  /**
+   * Completes a social sign-in on whatever page it returned to.
+   *
+   * A redirect sign-in ends with the server setting the httpOnly session cookie and redirecting, so no
+   * login response reaches the page to store the user from. The server leaves the same summary a password
+   * login returns in a short-lived readable cookie instead; the first session store on the next page
+   * records it exactly as `storeSession` does and deletes it. Every theme's pages get this, not just the
+   * framework's own sign-in form.
+   */
+  private adoptSsoHandoff(): void {
+    if (EnvUtils.isServer()) return;
+    const raw = this.browserState.readCookie(CookieConstants.SSO_HANDOFF);
+    if (!raw) return;
+    this.browserState.clearCookie(CookieConstants.SSO_HANDOFF);
+    try {
+      const json = atob(raw.replace(/-/g, '+').replace(/_/g, '/'));
+      const user = JSON.parse(decodeURIComponent(Array.from(json, (ch) => `%${ch.charCodeAt(0).toString(16).padStart(2, '0')}`).join('')));
+      if (user?.id) this.storeSession(user);
+    } catch {
+      // A malformed handoff signs nobody in on the page; the server session still stands on its own.
+    }
   }
 
   /**

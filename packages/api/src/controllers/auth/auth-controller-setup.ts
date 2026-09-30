@@ -1,5 +1,5 @@
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
-import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
+import { AuthControllerSsoOauth } from '@api/controllers/auth/auth-controller-sso-oauth';
 import { InitialSetupPreferences } from '@api/controllers/auth/initial-setup-preferences';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { Request, Response } from 'express';
@@ -16,7 +16,7 @@ import { SetupMode } from '@fromcode119/core';
  * Another link in the auth chain, added when auth-controller-lifecycle reached 402 lines. Setup and
  * login are different moments in a deployment's life that happened to share a file.
  */
-export class AuthControllerSetup extends AuthControllerSso {
+export class AuthControllerSetup extends AuthControllerSsoOauth {
   /** Setup is single-flight per process: two browsers posting the wizard at once must not both claim it. */
   private setupInProgress = false;
 

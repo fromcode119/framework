@@ -39,6 +39,18 @@ export class CookieConstants {
   static readonly SITE_PREVIEW = CookieConstants.cookie('site_preview');
 
   /**
+   * One social sign-in in flight: its `state`, PKCE verifier and return path, sealed by a signed grant.
+   * httpOnly, SameSite=Lax (it must ride the provider's redirect back), ten minutes, scoped to the SSO path.
+   */
+  static readonly SSO_STATE = CookieConstants.cookie('sso_state');
+
+  /**
+   * The signed-in user summary a social sign-in hands to the storefront, which cannot read the httpOnly
+   * session cookie: the same object a password login returns in its response body. Read once and deleted.
+   */
+  static readonly SSO_HANDOFF = CookieConstants.cookie('sso_handoff');
+
+  /**
    * Credentials, and ONLY credentials.
    *
    * `AUTH_CSRF` is deliberately NOT here. It is not a credential — it is one half of a double-submit

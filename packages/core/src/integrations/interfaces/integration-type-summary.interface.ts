@@ -1,3 +1,4 @@
+import type { IIntegrationSetupAddress } from '@core/integrations/interfaces/integration-setup-address.interface';
 import type { IIntegrationConfigField } from '@core/integrations/interfaces/integration-config-field.interface';
 
 export interface IIntegrationTypeSummary {
@@ -10,5 +11,6 @@ export interface IIntegrationTypeSummary {
     label: string;
     description?: string;
     fields?: IIntegrationConfigField[];
+    setupAddresses?: IIntegrationSetupAddress[];
   }>;
 }

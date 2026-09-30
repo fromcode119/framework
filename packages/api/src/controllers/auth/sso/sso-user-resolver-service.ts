@@ -51,7 +51,8 @@ export class SsoUserResolverService {
 
     const email = String(claims?.email || '').trim().toLowerCase();
     if (!email) throw new Error('SSO token did not include an email address');
-    const emailVerified = claims?.email_verified !== false && claims?.email_verified !== 'false';
+    // Only an explicit yes: an address the provider does not vouch for must never name an account here.
+    const emailVerified = claims?.email_verified === true || claims?.email_verified === 'true';
 
     // Google supplies the name in the token; Apple only sends it on first authorization, forwarded by the
     // client in `profile.name`.
@@ -72,12 +73,10 @@ export class SsoUserResolverService {
     }
     const entries = Array.isArray(config?.storedProviders) ? config.storedProviders : [];
     const match = entries.find((e: any) => String(e?.providerKey || '').trim().toLowerCase() === provider);
-    const raw = [
-      ...(Array.isArray(match?.clientIds) ? match.clientIds : []),
-      match?.clientId,
-      match?.audience,
-      ...(Array.isArray(match?.audiences) ? match.audiences : []),
-    ];
+    // The client ID lives in the entry's CONFIG, where the Federated Login form writes it. It used to be
+    // read off the entry itself, which has no such field, so every configured provider answered
+    // "missing client ID" and no id token was ever accepted.
+    const raw = [match?.config?.clientId];
     return Array.from(new Set(raw.map((v) => String(v || '').trim()).filter(Boolean)));
   }
 }
