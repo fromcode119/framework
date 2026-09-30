@@ -262,6 +262,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
 
     if ((await this.getUserAccountStatus(user.id)) !== AccountStatus.ACTIVE) return SsoSignInError.ACCOUNT_INACTIVE;
     await this.setEmailVerified(user.id, true);
+    await this.joinStorefrontSite(req, user.id);
     return user;
   }
 
