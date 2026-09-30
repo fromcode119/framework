@@ -9,6 +9,7 @@ import { RestartServicesCard } from '@/app/settings/infrastructure/restart-servi
 import { DeploymentsCard } from '@/app/settings/infrastructure/deployments-card.client';
 import { InfrastructureSettingsPageCards } from '@/app/settings/infrastructure/page-cards.client';
 import { SiteUploadsCard } from '@/app/settings/infrastructure/site-uploads-card.client';
+import { GeoLocationCard } from '@/app/settings/infrastructure/geo-location-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -79,6 +80,8 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           {this.pluginIsolationCard()}
 
           <SiteUploadsCard />
+
+          <GeoLocationCard />
 
           {this.retentionCard()}
 

@@ -1575,7 +1575,23 @@
         "adminTitle": "Admin",
         "frontendTitle": "Frontend"
       },
-      "restart": "Restart"
+      "restart": "Restart",
+      "geoLocation": "IP location",
+      "geoLookupTitle": "Look up visitors' country and city",
+      "geoLookupDescription": "Keeps DB-IP's free city database on this server and lets plugins turn an address into a country, region and city (for example, analytics). City precision at best; nothing finer is possible from an address. Off removes the database, so no location data stays on the server.",
+      "geoDatabaseTitle": "Database",
+      "geoDatabaseNone": "Not installed",
+      "geoDatabaseInstalled": "Edition {{edition}}, {{size}} MB, installed {{installedAt}}",
+      "geoLastChecked": "Last checked {{lastCheckedAt}}",
+      "geoLastError": "Last update failed: {{error}}",
+      "geoUpdateNow": "Update now",
+      "geoUpdated": "IP location updated",
+      "geoUpdateFailed": "IP location was not updated",
+      "geoUnavailable": "IP location status is unavailable",
+      "geoAttribution": "IP geolocation by {{name}} ({{license}}). Updated monthly while on.",
+      "geoSaved": "Saved",
+      "geoSavedOn": "Downloading the database now; it is about 60 MB.",
+      "geoSavedOff": "The database was removed from the server."
     },
     "integrations": {
       "noFieldsRequired": "No fields required",
