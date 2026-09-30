@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.269] - 2026-09-30
+
+### Added
+
+- **auth**: social sign-in with Google, Microsoft, GitHub and OpenID ([#565](https://github.com/fromcode119/framework/pull/565))
+
+### Fixed
+
+- **cli**: theme pack runs the real pack pipeline ([#566](https://github.com/fromcode119/framework/pull/566))
+
 ## [0.2.268] - 2026-09-30
 
 ### Added
