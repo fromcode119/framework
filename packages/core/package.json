@@ -103,7 +103,7 @@
     "@fromcode119/typescript-multiple-inheritance": "*",
     "@types/ws": "^8.18.1",
     "acme-client": "^5.4.0",
-    "adm-zip": "^0.6.0",
+    "adm-zip": "^0.6.1",
     "chokidar": "^3.6.0",
     "drizzle-orm": "^0.45.1",
     "handlebars": "^4.7.9",
