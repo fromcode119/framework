@@ -8,9 +8,18 @@
 export class NamingStrategy {
   /** A column name safe to interpolate into SQL: letters, digits, underscore; never leading-digit. */
   private static readonly SAFE_IDENTIFIER = /^[A-Za-z_][A-Za-z0-9_]*$/;
+  /**
+   * Converted names, remembered. Every row every query returns has its keys converted, and the same few
+   * hundred column names were run through a regex each time: measured under load, 16% of the api's CPU
+   * went on renaming row keys, and much of its garbage collection on the strings that made. Bounded,
+   * because callers also convert keys taken from request payloads.
+   */
+  private static readonly NAME_CACHE_LIMIT = 4096;
+  private static readonly snakeNames = new Map<string, string>();
+  private static readonly camelNames = new Map<string, string>();
 
   static toSnakeCase(field: string): string {
-    return field.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`);
+    return NamingStrategy.remember(NamingStrategy.snakeNames, field, (name) => name.replace(/[A-Z]/g, (letter) => `_${letter.toLowerCase()}`));
   }
 
   /**
@@ -40,7 +49,16 @@ export class NamingStrategy {
   }
 
   static toCamelCase(field: string): string {
-    return field.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
+    return NamingStrategy.remember(NamingStrategy.camelNames, field, (name) => name.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase()));
+  }
+
+  private static remember(cache: Map<string, string>, name: string, convert: (name: string) => string): string {
+    const known = cache.get(name);
+    if (known !== undefined) return known;
+    if (cache.size >= NamingStrategy.NAME_CACHE_LIMIT) cache.clear();
+    const converted = convert(name);
+    cache.set(name, converted);
+    return converted;
   }
 
   static isPlainObject(value: unknown): value is Record<string, any> {
