@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.258] - 2026-09-30
+
+### Fixed
+
+- **sites**: the first site takes effect by itself, and moving a site keeps its files ([#530](https://github.com/fromcode119/framework/pull/530))
+
 ## [0.2.257] - 2026-09-30
 
 ### Added
