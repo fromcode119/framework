@@ -56,7 +56,7 @@ describe('aggregate', () => {
 
   it('buckets by hour, day, ISO week and month, oldest first', async () => {
     const manager = await makeDb();
-    const by = async (unit: AggregateBucketUnit.HOUR | 'day' | 'week' | 'month') => Object.fromEntries((await manager.aggregate('fcp_events', {
+    const by = async (unit: AggregateBucketUnit) => Object.fromEntries((await manager.aggregate('fcp_events', {
       bucket: { column: 'createdAt', unit }, measures: [{ fn: AggregateFunction.COUNT, as: 'n' }],
     })).map((row) => [row.bucket, row.n]));
     expect(await by(AggregateBucketUnit.DAY)).toEqual({ '2026-09-28': 3, '2026-09-29': 2, '2026-10-05': 1 });
