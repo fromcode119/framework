@@ -23,7 +23,11 @@ export class AuthControllerSession extends AuthControllerLifecycle {
           'system',
           { userId: req.user.id, email: req.user.email, jti: req.user.jti }
         );
-      } catch {}
+      } catch (error) {
+        // The browser's cookie is cleared below either way, but a session that could not be revoked
+        // leaves its token valid until it expires — say so instead of swallowing it.
+        this.manager.writeLog('ERROR', `Logout could not revoke session ${req.user.jti}: ${String((error as Error)?.message ?? error)}`, 'system', { userId: req.user.id });
+      }
     }
 
     this.clearAuthCookies(req as Request, res);
