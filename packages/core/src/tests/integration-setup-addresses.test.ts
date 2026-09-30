@@ -20,4 +20,8 @@ describe('integration setup addresses', () => {
     const sso = registry.listTypes().find((type) => type.key === 'sso');
     expect(sso?.providers.find((provider) => provider.key === 'github')?.setupAddresses?.[0]?.path).toBe('/api/v1/auth/sso/github/callback');
   });
+
+  it('keeps several sign-in providers switched on at once', () => {
+    expect(SsoIntegrationDefinition.definition.allowMultipleActiveProviders).toBe(true);
+  });
 });

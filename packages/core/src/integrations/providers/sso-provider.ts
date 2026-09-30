@@ -65,6 +65,9 @@ export class SsoIntegrationDefinition {
     label: 'Federated Login (SSO)',
     description: 'OAuth/OpenID provider credentials used for customer/admin single sign-on.',
     defaultProvider: 'google',
+    // A site offers every sign-in provider it has switched on — one button each. Without this, saving one
+    // provider switched every other one off, so a site could never offer more than one.
+    allowMultipleActiveProviders: true,
     resolveFromEnv: SsoProviderUtils.resolveSsoFromEnv,
     providers: [
       SsoIntegrationDefinition.provider('google', 'Google OAuth', 'Sign in with Google accounts.'),
