@@ -18,6 +18,26 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
   /** The surface the request binder records for a request that reached a site by its own host. */
   private static readonly STOREFRONT_SURFACE = 'storefront';
 
+  /**
+   * Makes an account that signs up on a site's STOREFRONT a customer of that site.
+   *
+   * `users` is global; what makes an account one of a site's customers is its membership, and a login
+   * enters the storefront's site only for a member (LoginTenantChoice). Sign-up created the account and
+   * nothing else, so a customer who registered on a storefront was issued a session tied to no site,
+   * which the storefront refused on the next request. Same rule as a plugin creating a person
+   * (`context.users.create`), made stricter: ANY existing membership row is left alone, whatever its
+   * state — a site's administrator keeps their roles, and a customer the site suspended cannot
+   * re-activate themselves by signing up again or signing in with a provider.
+   */
+  protected async joinStorefrontSite(req: Request, userId: string | number): Promise<void> {
+    const storefrontId = (req as any).tenantSurface === AuthControllerPolicy.STOREFRONT_SURFACE ? String((req as any).tenant?.id ?? '') : '';
+    if (!TenantMode.isEnabled() || !storefrontId) return;
+    const memberships = new TenantMembershipService(this.db);
+    if (await memberships.hasAccess(String(userId), storefrontId)) return;
+    if (await this.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(userId), tenant_id: storefrontId })) return;
+    await memberships.grant(String(userId), storefrontId, ['customer']);
+  }
+
   protected async issueLoginSession(req: Request, res: Response, user: any) {
     // Bake EFFECTIVE roles (legacy column ∪ `_system_users_roles` junction) into the session token so
     // role assignments from the admin Roles UI / plugins actually drive guards and runtime behavior.

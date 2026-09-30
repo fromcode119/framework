@@ -1,3 +1,4 @@
+import type { IIntegrationResolved } from '@core/integrations/interfaces/integration-resolved.interface';
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
 import { CoreIntegrationRegistration } from '@core/integrations/core-integration-registration';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
@@ -225,6 +226,11 @@ export class IntegrationManager {
     return this.configReader.listConfigs();
   }
 
+  /** Every enabled provider with its RUNTIME config (secrets decrypted); `getConfig` is the admin's masked view. */
+  async resolveMany(type: string): Promise<IIntegrationResolved[]> {
+    return this.registry.resolveMany(this.normalizeKey(type));
+  }
+
   /**
    * Get configuration for a specific integration type
    */
@@ -237,19 +243,7 @@ export class IntegrationManager {
    * above. Each one stores through the registry and then re-resolves the type, so what is running
    * always matches what was just saved.
    */
-  async updateConfig(
-    type: string,
-    provider: string,
-    config: Record<string, any> = {},
-    options: {
-      profileId?: string;
-      profileName?: string;
-      makeActive?: boolean;
-      enabled?: boolean;
-      providerId?: string;
-      providerName?: string;
-    } = {}
-  ) {
+  async updateConfig(type: string, provider: string, config: Record<string, any> = {}, options: Parameters<IntegrationConfigWriteService['updateConfig']>[3] = {}) {
     return this.configWriter.updateConfig(type, provider, config, options);
   }
 

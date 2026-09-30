@@ -43,6 +43,10 @@ export class RouteAuthSegments {
   HOST_INFO: '/host',
   SSO_PROVIDERS: '/sso/providers',
   SSO_LOGIN: '/sso/login',
+  /** Browser redirect to a provider's sign-in page (OAuth authorization-code flow with PKCE). */
+  SSO_START: '/sso/:provider/start',
+  /** Where the provider sends the browser back; the address a site registers with the provider. */
+  SSO_CALLBACK: '/sso/:provider/callback',
   SECURITY: '/security',
   PROFILE: '/profile',
   ME_PERSON: '/me/person',

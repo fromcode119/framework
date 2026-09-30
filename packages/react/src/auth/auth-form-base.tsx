@@ -41,12 +41,21 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
     );
   }
 
-  /** After a successful sign-in, honor a safe `?next=` path, else the framework account page. */
+  /**
+   * Where a sign-in continues: a same-site `?next=` path, else the framework account page. `//host` and
+   * `/\\host` also start with a slash but are protocol-relative addresses a browser follows off-site, so a
+   * crafted sign-in link could hand a freshly signed-in visitor to any site.
+   */
+  protected get afterAuthPath(): string {
+    const next = Platform.isBrowser ? this.browserState.readQueryParamFromWindow('next') : '';
+    const local = Boolean(next) && next.startsWith('/') && !next.startsWith('//') && !next.startsWith('/\\');
+    return local ? next : RouteConstants.SEGMENTS.ACCOUNT;
+  }
+
+  /** After a successful sign-in, go to {@link afterAuthPath}. */
   protected navigateAfterAuth(): void {
     if (!Platform.isBrowser) return;
-    const next = this.browserState.readQueryParamFromWindow('next');
-    const target = next && next.startsWith('/') ? next : RouteConstants.SEGMENTS.ACCOUNT;
-    window.location.assign(target);
+    window.location.assign(this.afterAuthPath);
   }
 
   /** Neutral labelled text/password/email field used by every form. */

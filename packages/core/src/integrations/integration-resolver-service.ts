@@ -55,7 +55,7 @@ export class IntegrationResolverService {
         const normalizedConfig = provider.normalizeConfig
           ? await provider.normalizeConfig(resolvedConfig)
           : resolvedConfig;
-        resolvedFromStored.push({ type: normalizedType, providerKey: entry.providerKey, provider, config: normalizedConfig, source: SettingSource.STORED });
+        resolvedFromStored.push({ type: normalizedType, providerKey: entry.providerKey, provider, config: normalizedConfig, source: SettingSource.STORED, name: entry.name });
       }
       if (resolvedFromStored.length) return resolvedFromStored;
     } else if (storedProfiles?.profiles?.length) {

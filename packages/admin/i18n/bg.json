@@ -1852,7 +1852,12 @@
       "failedToSaveThePlatform": "Настройката за пощата на платформата не можа да бъде запазена",
       "unrestricted": "без ограничения",
       "labelExample": "напр. лаптоп",
-      "never": "никога"
+      "never": "никога",
+      "setupAddresses": "Адреси за регистриране при доставчика",
+      "setupAddressesHint": "Копирайте всеки адрес в настройките на доставчика точно както е показан.",
+      "setupAddressesNoSite": "Отворете тази страница в сайт, за да видите пълния адрес; пътят е еднакъв за всеки сайт.",
+      "setupAddressCopy": "Копирай",
+      "setupAddressCopied": "Копирано"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "Заявката за настройките за локализация е неуспешна.",

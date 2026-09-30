@@ -110,12 +110,18 @@ export class IntegrationRegistry {
       label: runtime.definition.label,
       description: runtime.definition.description,
       defaultProvider: this.normalize(runtime.definition.defaultProvider),
-      providers: Array.from(runtime.providers.values()).map((provider) => ({
-        key: provider.key,
-        label: provider.label,
-        description: provider.description,
-        fields: provider.fields || [],
-      })),
+      providers: this.providerSummaries(runtime),
+    }));
+  }
+
+  /** What the admin is told about each provider: the same shape for the list and for a single type. */
+  private providerSummaries(runtime: { providers: Map<string, IIntegrationProviderDefinition<any>> }): IIntegrationTypeSummary['providers'] {
+    return Array.from(runtime.providers.values()).map((provider) => ({
+      key: provider.key,
+      label: provider.label,
+      description: provider.description,
+      fields: provider.fields || [],
+      setupAddresses: provider.setupAddresses || [],
     }));
   }
 
@@ -128,12 +134,7 @@ export class IntegrationRegistry {
       label: runtime.definition.label,
       description: runtime.definition.description,
       defaultProvider: this.normalize(runtime.definition.defaultProvider),
-      providers: Array.from(runtime.providers.values()).map((provider) => ({
-        key: provider.key,
-        label: provider.label,
-        description: provider.description,
-        fields: provider.fields || [],
-      })),
+      providers: this.providerSummaries(runtime),
     };
   }
 

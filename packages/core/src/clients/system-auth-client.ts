@@ -14,6 +14,11 @@ export class SystemAuthClient {
     return this.requester.get(SystemConstants.API_PATH.AUTH.STATUS, options);
   }
 
+  /** The social sign-in providers this site offers: `{ providers: [{ key, label }] }`. */
+  getSsoProviders(options?: any): Promise<any> {
+    return this.requester.get(SystemConstants.API_PATH.AUTH.SSO_PROVIDERS, options);
+  }
+
   login(payload: { email: string; password: string; captchaToken?: string }, options?: any): Promise<any> {
     return this.requester.post(SystemConstants.API_PATH.AUTH.LOGIN, payload, options);
   }

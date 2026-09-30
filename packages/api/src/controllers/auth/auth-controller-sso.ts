@@ -7,6 +7,9 @@ import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
 import { CoercionUtils } from '@fromcode119/core';
 import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
+import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-error.enum';
+import { SsoIdentity } from '@api/controllers/auth/sso/sso-identity';
+import { SsoOauthClientFactory } from '@api/controllers/auth/sso/sso-oauth-client-factory';
 
 /**
  * Password-reset (forgot/reset) and SSO login handlers. Extracted from
@@ -183,9 +186,10 @@ export class AuthControllerSso extends AuthControllerRegistration {
     return res.json({ success: true, message: 'Password has been reset. Please sign in again.' });
   }
 
+  /** The providers a visitor can sign in with here: switched on, with the credentials a redirect needs. */
   async getSsoProviders(req: Request, res: Response) {
-    const providers = await this.getConfiguredSsoProviders();
-    return res.json({ providers });
+    const available = await new SsoOauthClientFactory(this.manager).available();
+    return res.json({ providers: available.map((item) => ({ key: item.provider.value, label: item.label })) });
   }
 
   async ssoLogin(req: Request, res: Response) {
@@ -198,7 +202,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
 
     const providers = await this.getConfiguredSsoProviders();
     if (!providers.includes(provider)) {
-      return res.status(400).json({ error: `Provider "${provider}" is not enabled` });
+      return res.status(SsoSignInError.NOT_ENABLED.status).json({ error: SsoSignInError.NOT_ENABLED.value });
     }
 
     let payload: any;
@@ -216,38 +220,8 @@ export class AuthControllerSso extends AuthControllerRegistration {
       return res.status(400).json({ error: err?.message || 'SSO provider rejected this login' });
     }
 
-    const email = this.normalizeEmail(payload?.email);
-    if (!email || !this.isValidEmail(email)) {
-      return res.status(400).json({ error: 'SSO payload did not provide a valid email' });
-    }
-
-    let user = await this.db.findOne(SystemConstants.TABLE.USERS, { email });
-    if (!user) {
-      const generatedPassword = randomBytes(24).toString('hex');
-      const hashedPassword = await this.auth.hashPassword(generatedPassword);
-      user = await this.db.insert(SystemConstants.TABLE.USERS, {
-        email,
-        password: hashedPassword,
-        roles: Array.isArray(payload?.roles) && payload.roles.length > 0 ? payload.roles : ['customer'],
-        firstName: String(payload?.firstName || '').trim() || null,
-        lastName: String(payload?.lastName || '').trim() || null
-      });
-      await this.setUserAccountStatus(user.id, AccountStatus.ACTIVE);
-      await this.setForcePasswordReset(user.id, false);
-      await this.pushPasswordHistory(user.id, hashedPassword);
-      await this.upsertMeta(this.getPasswordChangedAtKey(user.id), new Date().toISOString());
-      if (payload?.emailVerified !== false) {
-        await this.setEmailVerified(user.id, true);
-      }
-    }
-
-    const status = await this.getUserAccountStatus(user.id);
-    if (status !== AccountStatus.ACTIVE) {
-      return res.status(403).json({ error: 'Account is not active' });
-    }
-    if (payload?.emailVerified !== false) {
-      await this.setEmailVerified(user.id, true);
-    }
+    const user = await this.resolveSsoAccount(req, SsoIdentity.from(payload), provider);
+    if (user instanceof SsoSignInError) return res.status(user.status).json({ error: user.value });
 
     // App-level 2FA applies on SSO too: an account that enrolled in 2FA must
     // not be able to skip it by logging in through a provider.
@@ -255,19 +229,54 @@ export class AuthControllerSso extends AuthControllerRegistration {
       return;
     }
 
+    const loginResult = await this.completeSsoSignIn(req, res, user, provider);
+    return res.json({ token: loginResult.token, user: loginResult.user });
+  }
+
+  /**
+   * The account a provider's identity signs into, or why it may not.
+   *
+   * The email is what joins a provider identity to an account here, so it counts only when the provider
+   * vouches for it: an address the provider did not verify would let anyone who can type it into a
+   * provider profile sign in as its owner. An existing account with that address is signed in (never
+   * duplicated); otherwise a customer account is created, but only where registration is open.
+   */
+  protected async resolveSsoAccount(req: Request, identity: SsoIdentity, provider: string): Promise<any | SsoSignInError> {
+    if (!(await this.isFrontendAuthEnabledForRequest(req))) return SsoSignInError.SIGN_IN_DISABLED;
+    if (!identity.emailVerified || !identity.email || !this.isValidEmail(identity.email)) return SsoSignInError.UNVERIFIED_EMAIL;
+
+    let user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: identity.email });
+    if (!user) {
+      if (!(await this.isFrontendRegistrationEnabled())) return SsoSignInError.REGISTRATION_CLOSED;
+      const hashedPassword = await this.auth.hashPassword(randomBytes(24).toString('hex'));
+      user = await this.db.insert(SystemConstants.TABLE.USERS, {
+        email: identity.email, password: hashedPassword, roles: ['customer'],
+        firstName: identity.firstName, lastName: identity.lastName,
+      });
+      await this.setUserAccountStatus(user.id, AccountStatus.ACTIVE);
+      await this.setForcePasswordReset(user.id, false);
+      await this.pushPasswordHistory(user.id, hashedPassword);
+      await this.upsertMeta(this.getPasswordChangedAtKey(user.id), new Date().toISOString());
+      this.manager.hooks.emit('auth:user:registered', { userId: user.id, email: identity.email, context: { ssoProvider: provider } });
+    }
+
+    if ((await this.getUserAccountStatus(user.id)) !== AccountStatus.ACTIVE) return SsoSignInError.ACCOUNT_INACTIVE;
+    await this.setEmailVerified(user.id, true);
+    await this.joinStorefrontSite(req, user.id);
+    return user;
+  }
+
+  /** Issues the session for an account a provider signed in, and records it. */
+  protected async completeSsoSignIn(req: Request, res: Response, user: any, provider: string) {
+    const email = this.normalizeEmail(user.email);
     const loginResult = await this.issueLoginSession(req, res, user);
     await this.clearLoginThrottleState(this.getLoginThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || ''));
-
     await this.manager.writeLog(
       'INFO',
       `SSO login for ${email} via ${provider}`,
       'system',
       { userId: user.id, email, provider, ip: NetworkAddressUtils.resolveClientIp(req) }
     ).catch(() => {});
-
-    return res.json({
-      token: loginResult.token,
-      user: loginResult.user
-    });
+    return loginResult;
   }
 }

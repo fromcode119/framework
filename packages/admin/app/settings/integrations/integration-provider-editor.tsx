@@ -11,6 +11,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IntegrationFieldInput } from '@/app/settings/integrations/integration-field-input';
+import { IntegrationSetupAddresses } from '@/app/settings/integrations/integration-setup-addresses';
 import type { IntegrationsFieldOptionsService } from '@/app/settings/integrations/integrations-field-options-service';
 import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
 import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
@@ -155,6 +156,8 @@ export class IntegrationProviderEditor extends PureReactor {
         </div>
 
         {this.renderFields(editor)}
+
+        <IntegrationSetupAddresses addresses={this.currentProviderDefinition?.setupAddresses || []} />
 
         <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
           {editor.isNew ? (

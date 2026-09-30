@@ -79,6 +79,8 @@ export class SystemApiPaths {
       TWO_FACTOR_DISABLE: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.TWO_FACTOR_DISABLE),
       SSO_PROVIDERS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_PROVIDERS),
       SSO_LOGIN: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_LOGIN),
+      SSO_START: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_START),
+      SSO_CALLBACK: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_CALLBACK),
       SESSIONS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS),
       MY_SESSIONS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS_ME),
       REVOKE_SESSION: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS_ID_REVOKE),

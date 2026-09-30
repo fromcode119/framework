@@ -53,6 +53,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     await this.setForcePasswordReset(newUser.id, false);
     await this.pushPasswordHistory(newUser.id, hashedPassword);
     await this.upsertMeta(this.getPasswordChangedAtKey(newUser.id), new Date().toISOString());
+    await this.joinStorefrontSite(req, newUser.id);
 
     const verification = await this.issueEmailVerificationToken(newUser.id, normalizedEmail, flowContext);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);

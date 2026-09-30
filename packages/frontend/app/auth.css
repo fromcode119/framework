@@ -152,3 +152,49 @@
 .fc-auth__link:hover {
   text-decoration: underline;
 }
+
+/* Social sign-in ("Continue with …") under the login/register form: secondary buttons after an "or" rule. */
+.fc-auth__social {
+  margin: 20px 0 0;
+}
+
+.fc-auth__divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 16px;
+  color: #64748b;
+  font-size: 13px;
+}
+
+.fc-auth__divider::before,
+.fc-auth__divider::after {
+  content: "";
+  flex: 1;
+  border-top: 1px solid #e2e8f0;
+}
+
+.fc-auth__social-button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 16px;
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  text-align: center;
+  text-decoration: none;
+}
+
+.fc-auth__social-button:hover {
+  background: #f8fafc;
+}
+
+.fc-auth__social-button:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}

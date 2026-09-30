@@ -1709,7 +1709,12 @@
       "failedToSaveThePlatform": "Failed to save the platform mail setting",
       "unrestricted": "unrestricted",
       "labelExample": "e.g. laptop",
-      "never": "never"
+      "never": "never",
+      "setupAddresses": "Addresses to register with the provider",
+      "setupAddressesHint": "Copy each address into the provider's settings exactly as shown.",
+      "setupAddressesNoSite": "Open this page inside a site to see its full address; the path is the same on every site.",
+      "setupAddressCopy": "Copy",
+      "setupAddressCopied": "Copied"
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",
