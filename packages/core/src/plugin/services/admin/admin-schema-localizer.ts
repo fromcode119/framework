@@ -17,6 +17,7 @@ import { StringUtils } from '@core/utils/string-utils';
  *   admin.collections.<collection>.tabs.<name>         admin tabs / sections (`.sections.<name>.label|description`)
  *   admin.collections.<collection>.fields.<field>.label | description | placeholder
  *   admin.collections.<collection>.fields.<field>.options.<value>
+ *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.settings.tabs.<id>, admin.settings.fields.<field>.…           the settings form, same shape
@@ -150,6 +151,7 @@ export class AdminSchemaLocalizer {
           // The editor groups fields under this heading; one translation per heading, shared by its fields.
           section: this.text(pluginSlug, `${sectionsBase}.${StringUtils.slugify(field.admin.section, '')}.label`, field.admin.section),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
+          ...(field.admin.keyLabels ? { keyLabels: this.keyLabels(pluginSlug, `${key}.keyLabels`, field.admin.keyLabels) } : {}),
         };
       }
       if (Array.isArray(field.options)) {
@@ -160,6 +162,14 @@ export class AdminSchemaLocalizer {
       if (Array.isArray(field.fields)) next.fields = this.fields(pluginSlug, `${key}.fields`, field.fields, sectionsBase);
       return next;
     });
+  }
+
+  /**
+   * The column and row names a read-only structured field prints for its keys (`admin.keyLabels`), per key —
+   * `keyLabels.<key>` — so a table in a Bulgarian console does not head its columns in English.
+   */
+  private keyLabels(pluginSlug: string, base: string, labels: Record<string, unknown>): Record<string, unknown> {
+    return Object.fromEntries(Object.entries(labels).map(([name, label]) => [name, this.text(pluginSlug, `${base}.${name}`, label as string)]));
   }
 
   /**

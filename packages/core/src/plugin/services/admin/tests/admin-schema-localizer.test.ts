@@ -18,6 +18,7 @@ describe('AdminSchemaLocalizer', () => {
     'shop.admin.collections.catalog.sections.stock-and-shipping.label': 'Наличност и доставка',
     'shop.admin.settings.tabs.checkout': 'Поръчване',
     'shop.admin.settings.fields.orderNumberPrefix.description': 'Пред номера.',
+    'shop.admin.collections.catalog.fields.history.keyLabels.changedBy': 'Променено от',
   };
   const localizer = new AdminSchemaLocalizer((plugin, key) => dictionary[`${plugin}.${key}`] || '');
 
@@ -40,6 +41,15 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[0].admin.section).toBe('Наличност и доставка');
     expect(out.fields[1].options.map((option: any) => option.label)).toEqual(['Чернова', 'Published']);
     expect(out.fields[2].fields[0].label).toBe('Код');
+  });
+
+  it('translates the key names a structured read-only field prints, keeping untranslated ones as declared', () => {
+    const out = localizer.collection('shop', {
+      slug: 'shop-products',
+      shortSlug: 'catalog',
+      fields: [{ name: 'history', admin: { component: 'StructuredReadOnlyField', keyLabels: { changedBy: 'Changed by', note: 'Note' } } }],
+    });
+    expect(out.fields[0].admin.keyLabels).toEqual({ changedBy: 'Променено от', note: 'Note' });
   });
 
   it('leaves text a dictionary lacks exactly as declared, and adds nothing that was not declared', () => {
