@@ -1,4 +1,5 @@
 import { AdminServices } from '@/lib/admin-services';
+import type { IMediaRelationPreview } from '@/components/collection/interfaces/media-relation-preview.interface';
 
 export class MediaRelationFieldUtils {
   static resolvePreviewUrl(pathOrUrl: string): string {
@@ -43,5 +44,27 @@ export class MediaRelationFieldUtils {
     }
 
     return MediaRelationFieldUtils.normalizeScalarOrListString(value);
+  }
+
+  /**
+   * The selection after picking `id`. A many-file field ADDS it (once) — it used to be replaced, so a
+   * field meant for several files could only ever hold the last one picked. A one-file field replaces.
+   */
+  static withSelected(ids: Array<string | number>, id: string | number, hasMany: boolean): Array<string | number> | string | number {
+    if (!hasMany) return id;
+    return ids.some((existing) => String(existing) === String(id)) ? ids : [...ids, id];
+  }
+
+  /** The selection without `id`: the remaining list for a many-file field, nothing for a one-file field. */
+  static withoutSelected(ids: Array<string | number>, id: string | number, hasMany: boolean): Array<string | number> | null {
+    return hasMany ? ids.filter((existing) => String(existing) !== String(id)) : null;
+  }
+
+  private static readonly IMAGE_EXTENSION = /\.(png|jpe?g|gif|webp|avif|svg|bmp|ico)(\?|#|$)/i;
+
+  /** The file's type — the recorded one, else read off its name so an older record still previews right. */
+  static mimeTypeOf(preview: IMediaRelationPreview): string {
+    if (preview.mimeType) return preview.mimeType;
+    return MediaRelationFieldUtils.IMAGE_EXTENSION.test(String(preview.filename || preview.url || '')) ? 'image/*' : 'application/octet-stream';
   }
 }
