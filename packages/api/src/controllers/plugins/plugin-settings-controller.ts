@@ -2,15 +2,18 @@ import { Request, Response } from 'express';
 import { PluginManager, Logger } from '@fromcode119/core';
 import type { ILoadedPlugin, PluginContext } from '@fromcode119/core';
 import { PluginSettingsSupport } from '@api/controllers/plugins/plugin-settings-support';
+import { PluginSettingGatedPages } from '@api/controllers/plugins/plugin-setting-gated-pages';
 import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 import { CoercionUtils } from '@fromcode119/core';
 
 export class PluginSettingsController {
   private logger = new Logger({ namespace: 'plugin-settings-controller' });
   private support: PluginSettingsSupport;
+  private gatedPages: PluginSettingGatedPages;
 
   constructor(private manager: PluginManager) {
     this.support = new PluginSettingsSupport(manager, this.logger);
+    this.gatedPages = new PluginSettingGatedPages(manager, this.logger);
   }
 
   /**
@@ -92,6 +95,7 @@ export class PluginSettingsController {
       oldSettings,
       newSettings,
     });
+    await this.gatedPages.afterSave(plugin, oldSettings, newSettings);
 
     res.json({ success: true, settings: this.support.maskPasswordFields(settingsToSave, schema?.fields || []) });
   }

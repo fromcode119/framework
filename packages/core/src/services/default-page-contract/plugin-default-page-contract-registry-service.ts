@@ -95,6 +95,7 @@ export class PluginDefaultPageContractRegistryService extends BaseService {
       dependencies: this.normalizeDependencyArray(contract.dependencies),
       adoptionHints: this.normalizeStringArray(contract.adoptionHints),
       aliases: this.normalizeOptionalStringArray(contract.aliases),
+      enabledBySetting: this.normalizeOptionalString(contract.enabledBySetting),
       namespace,
       pluginSlug,
       canonicalKey: `${namespace}:${pluginSlug}:${key}`,

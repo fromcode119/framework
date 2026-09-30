@@ -68,11 +68,13 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const preliminaryContracts = CoreServices.getInstance().defaultPageContractResolution.resolveAll({
       overrides,
     });
-    const resolvedContracts = PluginDefaultPageMaterializationSiteScope.contractsForCurrentSite(
-      CoreServices.getInstance().defaultPageContractResolution.resolveAll({
-        overrides,
-        siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
-      }),
+    const resolvedContracts = await this.siteScope.contractsEnabledBySettings(
+      PluginDefaultPageMaterializationSiteScope.contractsForCurrentSite(
+        CoreServices.getInstance().defaultPageContractResolution.resolveAll({
+          overrides,
+          siteState: this.associationStore.createSiteStateSnapshot(associationSnapshot, preliminaryContracts),
+        }),
+      ),
     );
     const plan = CoreServices.getInstance().defaultPageMaterialization.createPlan({
       resolvedContracts,
