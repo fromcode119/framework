@@ -1,7 +1,6 @@
-import * as path from 'path';
 import express from 'express';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
-import { Logger, ProjectPaths, SystemConstants, TenantMode, TenantResolverService } from '@fromcode119/core';
+import { Logger, ProjectPaths, TenantMode, TenantResolverService } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 
 /**
@@ -82,9 +81,7 @@ export class TenantUploadsStatic {
 
     try {
       const tenant = await TenantResolverService.shared(this.database).resolveByHost(host);
-      const id = String(tenant?.id ?? '').trim();
-      if (!id || !/^[A-Za-z0-9_-]+$/.test(id)) return null;
-      return path.join(root, SystemConstants.STORAGE.TENANTS_SUBDIR, id);
+      return ProjectPaths.siteUploadsDir(root, String(tenant?.id ?? ''));
     } catch (error: unknown) {
       // Serving the shared parent is what every request got before this existed, so a failed lookup
       // degrades to the old behaviour rather than to a broken image.

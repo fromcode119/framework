@@ -29,7 +29,10 @@ vi.mock('@fromcode119/core', async () => {
     TenantResolverService: {
       shared: () => ({ resolveByHost: async (host: string) => (HOSTS[host] ? { id: HOSTS[host] } : null) }),
     },
-    ProjectPaths: { getUploadsRoot: () => (globalThis as any).__uploadsRoot },
+    ProjectPaths: {
+      getUploadsRoot: () => (globalThis as any).__uploadsRoot,
+      siteUploadsDir: (root: string, id: string) => actual.ProjectPaths.siteUploadsDir(root, id),
+    },
     SystemConstants: { STORAGE: { TENANTS_SUBDIR: 'tenants' } },
     Logger: class { info() {} warn() {} error() {} },
   };
