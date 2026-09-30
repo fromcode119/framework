@@ -25,6 +25,8 @@ class Harness {
       RequestContextUtils.storage.run({ tenantId: site, locale } as any, () => next());
     });
     app.use((req, _res, next) => { if (req.headers['x-test-user']) (req as any).user = { id: 1 }; next(); });
+    // Like the framework's CSRF middleware: a visitor without the token gets one, before any route.
+    app.use((req, res, next) => { if (!String(req.headers.cookie ?? '').includes('fc_csrf=')) res.cookie('fc_csrf', `t${Math.random()}`); next(); });
     app.get('/shop/products', ApiResponseCache.middleware(this.plugin, () => this.plugin), (req, res) => { this.built += 1; this.answer(req, res); });
     await new Promise<void>((resolve) => { this.server = app.listen(0, () => resolve()); });
     this.base = `http://127.0.0.1:${(this.server.address() as AddressInfo).port}`;
@@ -104,7 +106,15 @@ describe('ApiResponseCache', () => {
     expect(h.built).toBe(2);
   });
 
-  it('keeps only a plain 200 JSON answer that sets no cookie', async () => {
+  it('a cookie the framework set before the route (the CSRF token) does not stop keeping, and is set again on a hit', async () => {
+    const first = await fetch(h.base + '/shop/products');
+    const second = await fetch(h.base + '/shop/products');
+    expect([first.headers.get(ApiResponseCache.STATUS_HEADER), second.headers.get(ApiResponseCache.STATUS_HEADER)]).toEqual(['miss', 'hit']);
+    expect(second.headers.get('set-cookie')).toMatch(/^fc_csrf=/);
+    expect(second.headers.get('set-cookie')).not.toBe(first.headers.get('set-cookie'));
+  });
+
+  it('keeps only a plain 200 JSON answer whose handler set no cookie', async () => {
     const cases: Array<(req: express.Request, res: express.Response) => void> = [
       (_req, res) => { res.status(404).json({ error: 'x' }); },
       (_req, res) => { res.cookie('c', '1').json({ ok: 1 }); },

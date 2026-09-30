@@ -25,8 +25,9 @@ import type { IStoredApiResponse } from '@core/plugin/context/interfaces/stored-
  * off), which bounds what no write announces: a sale that starts at a set time.
  *
  * WHO IS NEVER SERVED FROM IT: a request with a session, preview or API credential, a signed-in
- * user, any method but GET, and any route that did not opt in. Only a plain 200 JSON answer that
- * sets no cookie is kept. A disabled plugin, or one a site does not run, is never answered from it.
+ * user, any method but GET, and any route that did not opt in. Only a plain 200 JSON answer whose
+ * handler set no cookie is kept — a cookie the framework already put on the response before the route
+ * (the visitor's CSRF token) belongs to that visitor, is not kept, and is set again on every hit. A disabled plugin, or one a site does not run, is never answered from it.
  *
  * In memory, per api process, bounded by size with the least recently used first out.
  */
@@ -85,7 +86,7 @@ export class ApiResponseCache {
       }
       if (stored) ApiResponseCache.drop(key);
       res.setHeader(ApiResponseCache.STATUS_HEADER, 'miss');
-      ApiResponseCache.capture(res, key, ApiResponseCache.generation);
+      ApiResponseCache.capture(res, key, ApiResponseCache.generation, ApiResponseCache.cookies(res));
       next();
     };
   }
@@ -122,8 +123,13 @@ export class ApiResponseCache {
     ].join('|');
   }
 
+  /** The cookies already on the response, to tell the framework's own from any the handler adds. */
+  private static cookies(res: Response): string {
+    return JSON.stringify(res.getHeader('set-cookie') ?? null);
+  }
+
   /** Keeps the answer this request is about to send, if it is one worth keeping. */
-  private static capture(res: Response, key: string, generation: number): void {
+  private static capture(res: Response, key: string, generation: number, cookiesBefore: string): void {
     const chunks: Buffer[] = [];
     let size = 0;
     const write = res.write.bind(res) as (...args: any[]) => boolean;
@@ -138,16 +144,17 @@ export class ApiResponseCache {
     (res as any).end = (chunk?: unknown, ...rest: unknown[]) => {
       collect(chunk, rest[0]);
       const result = end(chunk, ...rest);
-      ApiResponseCache.store(res, key, generation, chunks, size);
+      ApiResponseCache.store(res, key, generation, chunks, size, cookiesBefore);
       return result;
     };
   }
 
-  private static store(res: Response, key: string, generation: number, chunks: Buffer[], size: number): void {
+  private static store(res: Response, key: string, generation: number, chunks: Buffer[], size: number, cookiesBefore: string): void {
     // Cleared while this was being built: the answer may predate the change that cleared it.
     if (generation !== ApiResponseCache.generation) return;
     if (res.statusCode !== 200 || size > ApiResponseCache.MAX_ENTRY_BYTES) return;
-    if (res.getHeader('set-cookie')) return;
+    // The handler set a cookie: this answer is someone's, not everyone's.
+    if (ApiResponseCache.cookies(res) !== cookiesBefore) return;
     const contentType = String(res.getHeader('content-type') ?? '');
     if (!contentType.includes('application/json')) return;
     const headers: Array<[string, string]> = [];

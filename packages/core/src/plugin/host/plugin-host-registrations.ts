@@ -14,6 +14,7 @@ import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
+import { PluginHostDeclaredRoutes } from '@core/plugin/host/plugin-host-declared-routes';
 
 /**
  * The host's stand-ins for what the guest registered: each one is registered on the REAL context
@@ -27,6 +28,8 @@ import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-run
  */
 export class PluginHostRegistrations {
   private readonly routes = new Set<string>();
+  /** Declared routes a catch-all forwarder steps aside for (see PluginHostDeclaredRoutes). */
+  private readonly declared: PluginHostDeclaredRoutes;
   private readonly hooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
   private readonly platformHooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
   /** The worker is registered on the queue once; its handler id is the CURRENT process's, set per boot. */
@@ -42,7 +45,9 @@ export class PluginHostRegistrations {
     private readonly declare: (steps: NonNullable<IPluginGuestRegistration['steps']>, root: string | undefined) => Promise<unknown>,
     /** Whether the plugin's process is up to be asked. */
     private readonly isRunning: () => boolean,
-  ) {}
+  ) {
+    this.declared = new PluginHostDeclaredRoutes(slug);
+  }
 
   /**
    * Applies one registration. Most answer nothing; `tenants-for-each` answers a count, which the
@@ -98,6 +103,7 @@ export class PluginHostRegistrations {
     const key = `${method} ${registration.path}`;
     if (this.routes.has(key)) return;
     this.routes.add(key);
+    this.declared.add(method, String(registration.path));
     const handlers: unknown[] = [];
     const access = PluginHostRegistrations.reviveAccess(registration.access);
     if (access) handlers.push({ access, anonymousCache: registration.anonymousCache === true });
@@ -109,7 +115,11 @@ export class PluginHostRegistrations {
     const key = `use ${registration.path}`;
     if (this.routes.has(key)) return;
     this.routes.add(key);
-    context.api.use(this.relativePath(String(registration.path)), (req: Request, res: Response, next: NextFunction) => this.forwardRequest(req, res, next));
+    context.api.use(this.relativePath(String(registration.path)), (req: Request, res: Response, next: NextFunction) => {
+      // A route the plugin declared on its own goes on to that route, with its gate and cache.
+      if (this.declared.declares(req.method, `${req.baseUrl || ''}${req.path || ''}`)) return next();
+      return this.forwardRequest(req, res, next);
+    });
   }
 
   private middleware(context: PluginContext, registration: IPluginGuestRegistration): void {
