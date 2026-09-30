@@ -3,6 +3,8 @@ import { TenantState } from '@core/enums/tenant-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantPluginRefusal } from '@core/plugin/tenant/tenant-plugin-refusal';
+import { TenantPluginRefusalReason } from '@core/plugin/tenant/enums/tenant-plugin-refusal-reason.enum';
 
 /**
  * Turning a plugin on or off for one tenant.
@@ -46,7 +48,7 @@ export class PluginTenantStateService {
    */
   async enable(tenantId: string, slug: string): Promise<void> {
     if (!PluginOwners.mayRunFor(slug, tenantId)) {
-      throw new Error(`Plugin "${slug}" belongs to another site and cannot be switched on here.`);
+      throw new TenantPluginRefusal(TenantPluginRefusalReason.POLICY, `Plugin "${slug}" belongs to another site and cannot be switched on here.`);
     }
     await this.write(tenantId, slug, TenantState.ACTIVE.value);
   }

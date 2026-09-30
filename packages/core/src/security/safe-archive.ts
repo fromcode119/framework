@@ -12,6 +12,9 @@ import AdmZip from 'adm-zip';
  * cannot expand to fill the disk every site shares.
  */
 export class SafeArchive {
+  /** The most an honestly empty entry takes compressed (deflate writes 2 bytes; 16 leaves room). */
+  private static readonly EMPTY_ENTRY_MAX_COMPRESSED = 16;
+
   static extractZip(zipPath: string, targetDir: string, maxBytes?: number): void {
     const zip = new AdmZip(zipPath);
     const resolvedTarget = path.resolve(targetDir);
@@ -41,6 +44,12 @@ export class SafeArchive {
         continue;
       }
       fs.mkdirSync(path.dirname(destPath), { recursive: true });
+      // adm-zip bounds inflation by the size an entry DECLARES — except a declared 0, which it inflates
+      // without limit. An empty file compresses to a couple of bytes; anything more claiming to be
+      // empty is an entry lying about its size, which is what a decompression bomb does.
+      if (Number(entry.header.size || 0) === 0 && Number(entry.header.compressedSize || 0) > SafeArchive.EMPTY_ENTRY_MAX_COMPRESSED) {
+        throw new Error(`Refusing zip entry that declares no content but carries data: ${entryName}`);
+      }
       const data = entry.getData();
       written += data.length;
       if (maxBytes && written > maxBytes) {

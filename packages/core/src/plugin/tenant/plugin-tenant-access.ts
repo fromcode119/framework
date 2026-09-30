@@ -107,7 +107,7 @@ export class PluginTenantAccess {
   }
 
   static isVisibleForCurrentTenant(plugin: { manifest?: { slug?: string; bundled?: boolean } }): boolean {
-    if (plugin?.manifest?.bundled === true) return true;
+    if (plugin?.manifest?.bundled === true && !PluginOwners.ownerOf(String(plugin.manifest.slug ?? ''))) return true;
     return PluginTenantAccess.isEnabledForCurrentTenant(String(plugin?.manifest?.slug ?? ''));
   }
 

@@ -3,11 +3,23 @@ import type { WebSocketServer } from 'ws';
 import { Logger } from '@core/logging';
 import { HookManager } from '@core/hooks/hook-manager';
 import type { IMessage } from '@core/realtime/interfaces/message.interface';
+import type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
+import { RequestContextUtils } from '@core/context/request-context';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
+/**
+ * The live socket every `realtime:*` hook and every collection write is pushed through.
+ *
+ * A socket hears only the site it was admitted for. Every connection used to join ONE audience and
+ * nobody was asked who they were, so an anonymous visitor on any site received every site's created,
+ * updated and deleted rows as they happened. The api now admits a connection only with a session and
+ * states its site (`IRealtimeSocketBinding`); an event goes to the sockets of the site whose request
+ * produced it, and an event with no site goes nowhere — "no site" never means "every site".
+ */
 export class WebSocketManager {
   private wss: WebSocketServer | null = null;
   private logger = new Logger({ namespace: 'WebSocket' });
-  private clients: Set<WebSocket> = new Set();
+  private clients: Map<WebSocket, IRealtimeSocketBinding> = new Map();
   private isClosing = false;
 
   constructor(private hooks: HookManager) {
@@ -18,9 +30,14 @@ export class WebSocketManager {
     const { WebSocketServer: WS_Server } = require('ws');
     this.wss = new WS_Server({ noServer: true });
     
-    this.wss!.on('connection', (ws: WebSocket) => {
+    this.wss!.on('connection', (ws: WebSocket, _request: unknown, binding?: IRealtimeSocketBinding) => {
+      // Admitted by the api's upgrade handler, which always states a binding. Without one, nobody did.
+      if (!binding) {
+        ws.close(1008, 'unauthorized');
+        return;
+      }
       if (!this.isClosing) this.logger.debug('Client connected');
-      this.clients.add(ws);
+      this.clients.set(ws, { tenantId: String(binding.tenantId ?? '').trim() || null });
 
       ws.on('message', (data: any) => {
         try {
@@ -47,7 +64,7 @@ export class WebSocketManager {
 
   public close() {
     this.isClosing = true;
-    this.clients.forEach(client => {
+    this.clients.forEach((_binding, client) => {
       client.close();
     });
     this.clients.clear();
@@ -65,7 +82,11 @@ export class WebSocketManager {
 
   public broadcast(type: string, payload: any, plugin?: string) {
     const data = JSON.stringify({ type, payload, plugin });
-    this.clients.forEach(client => {
+    const sites = TenantMode.isEnabled();
+    const tenantId = sites ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+    if (sites && !tenantId) return;
+    this.clients.forEach((binding, client) => {
+      if (sites && binding.tenantId !== tenantId) return;
       if (client.readyState === WebSocket.OPEN) {
         client.send(data);
       }

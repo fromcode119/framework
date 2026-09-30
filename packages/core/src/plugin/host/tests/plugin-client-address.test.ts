@@ -72,4 +72,40 @@ describe('the visitor address a sandboxed plugin sees', () => {
 
     expect(seen).toEqual({ clientIp: '203.0.113.9', header: null });
   });
+  it('a SITE\'s plugin never receives the caller\'s credentials, and can neither set a cookie nor serve a page in the host\'s origin', async () => {
+    // Its routes answer on the shared admin host too: a platform administrator calling one would hand
+    // the uploader a replayable session, and an HTML answer would run as that administrator.
+    const upstreamSocket = socket('site-upstream');
+    const upstream = http.createServer((req, res) => {
+      res.setHeader('Set-Cookie', 'fc_token=attacker; Path=/');
+      res.setHeader('Content-Security-Policy', "default-src *");
+      res.setHeader('Content-Type', 'text/html');
+      res.end(JSON.stringify(req.headers));
+    });
+    await new Promise<void>((resolve) => upstream.listen(upstreamSocket, resolve));
+    closers.push(() => new Promise<void>((resolve) => upstream.close(() => resolve())));
+
+    const proxy = new PluginHostHttpProxy(upstreamSocket);
+    const host = express();
+    host.get('/site', (req, res, next) => {
+      void proxy.forward(req, res, next, { token: 't', tenantId: 'site', locale: 'en', siteLocale: 'en', siteOwned: true }, 5000, () => undefined);
+    });
+    host.get('/platform', (req, res, next) => {
+      void proxy.forward(req, res, next, { token: 't', tenantId: 'site', locale: 'en', siteLocale: 'en' }, 5000, () => undefined);
+    });
+
+    const site = await request(host).get('/site').set('Cookie', 'fc_token=victim').set('Authorization', 'Bearer victim');
+    const seen = JSON.parse(site.text);
+    expect(seen.cookie).toBeUndefined();
+    expect(seen.authorization).toBeUndefined();
+    expect(seen[PluginGuestHttp.HEADER_TENANT]).toBe('site');
+    expect(site.headers['set-cookie']).toBeUndefined();
+    expect(site.headers['content-security-policy']).toBe(PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_POLICY);
+    expect(site.headers['x-content-type-options']).toBe('nosniff');
+
+    // A platform plugin is unchanged: it is curated, and its own session handling reads the cookie.
+    const platform = await request(host).get('/platform').set('Cookie', 'fc_token=victim');
+    expect(JSON.parse(platform.text).cookie).toBe('fc_token=victim');
+    expect(platform.headers['set-cookie']).toBeDefined();
+  });
 });

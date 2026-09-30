@@ -46,7 +46,7 @@ export class PluginDirectoryScannerService {
     /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
     private hosts: { isIsolated(sandbox: unknown): Promise<boolean>; isolatesIdentity(): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
-    this.moduleLoader = new PluginModuleLoader(projectRoot);
+    this.moduleLoader = new PluginModuleLoader(projectRoot, pluginsRoot);
     this.moduleLoader.ensureSharedModuleResolution();
   }
 
@@ -235,7 +235,9 @@ export class PluginDirectoryScannerService {
                 // manifest in the spread below, so the layout resolved above would be dropped. Resolve
                 // against whichever manifest actually wins; resolve() only fills absent values, so
                 // running it again over the disk manifest is a no-op.
-                const effectiveManifest = PluginPackageLayout.resolve(pluginPath, pluginModule.manifest || manifest);
+                // Never a site's: its own process (the uploader's code) reports it, free to rename itself
+                // or declare the seeds/admin UI the policy refused on disk. Only the checked one counts.
+                const effectiveManifest = PluginPackageLayout.resolve(pluginPath, (!rootOwnerTenantId && pluginModule.manifest) || manifest);
                 // Bundled extensions are part of the product: always on, never uninstallable, and
                 // not subject to the operator's saved state — the admin refuses to disable them.
                 if (bundledSlugs.has(String(effectiveManifest.slug || '').toLowerCase())) {

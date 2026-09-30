@@ -2,12 +2,35 @@ import fs from 'fs';
 import path from 'path';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
+import { ProjectPaths } from '@core/config/paths';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 export class PluginPackageValidator {
+  /** One plugin directory name: lowercase letters, digits and dashes — the same rule a site's upload meets. */
+  static readonly SLUG_PATTERN = /^[a-z0-9][a-z0-9-]*$/;
+
   static validateInstalledPackage(packageRoot: string, manifest: IPluginManifest): void {
+    this.validateSlug(manifest);
     this.validateServerEntry(packageRoot, manifest);
     this.validateUiEntries(packageRoot, manifest);
     this.validateMigrations(packageRoot, manifest);
+  }
+
+  /**
+   * The slug becomes the directory the install REPLACES (`rmSync`), so it must name exactly one plugin
+   * directory: never `tenants` (every site's plugins), never `../x` or an empty string (the root).
+   */
+  private static validateSlug(manifest: IPluginManifest): void {
+    const slug = String(manifest.slug ?? '');
+    if (!PluginPackageValidator.SLUG_PATTERN.test(slug) || ProjectPaths.isTenantArtifactsDir(slug)) {
+      throw new Error(`Uploaded plugin archive is invalid: slug "${slug}" must be lowercase letters, digits and dashes, and not a reserved name.`);
+    }
+    // One slug is one plugin across the server. Installed over a site's own, the platform's copy
+    // would win at the next boot and the site's plugin would silently stop running.
+    const owner = PluginOwners.ownerOf(slug);
+    if (owner) {
+      throw new Error(`A plugin named "${slug}" already belongs to site "${owner}". The platform cannot install one with the same slug.`);
+    }
   }
 
   private static validateServerEntry(packageRoot: string, manifest: IPluginManifest): void {

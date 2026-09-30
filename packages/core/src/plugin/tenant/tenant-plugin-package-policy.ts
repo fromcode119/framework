@@ -59,6 +59,7 @@ export class TenantPluginPackagePolicy {
   static violations(contentDir: string, manifest: IPluginManifest): string[] {
     return [
       ...TenantPluginPackagePolicy.manifestViolations(manifest),
+      ...TenantPluginPackagePolicy.entryViolations(contentDir, manifest),
       ...TenantPluginPackagePolicy.sandboxViolations(manifest),
       ...TenantPluginPackagePolicy.capabilityViolations(manifest),
       ...TenantPluginPackagePolicy.directoryViolations(contentDir),
@@ -72,12 +73,25 @@ export class TenantPluginPackagePolicy {
     return TenantThemePackagePolicy.byteSize(contentDir);
   }
 
+  /**
+   * The `ui` keys the ADMIN loads. `ui.entry` is imported as a module by the plugin's page in the
+   * admin, and `ui.adminCss` is linked there — both in the admin's origin. The storefront keys
+   * (`frontendEntry`, `css`, `browserEntries`) stay allowed.
+   */
+  private static readonly ADMIN_UI_KEYS = ['entry', 'adminCss'] as const;
+
   private static manifestViolations(manifest: IPluginManifest): string[] {
     const found: string[] = [];
     const record = manifest as unknown as Record<string, unknown>;
     for (const key of TenantPluginPackagePolicy.FORBIDDEN_MANIFEST_KEYS) {
-      if (TenantPluginPackagePolicy.isEmpty(record[key])) continue;
+      // `admin: {}` is empty, and still truthy where the admin decides whether to load a plugin's UI.
+      if (key === 'admin' ? record[key] === undefined || record[key] === null || record[key] === false : TenantPluginPackagePolicy.isEmpty(record[key])) continue;
       found.push(TenantPluginPackagePolicy.manifestReason(key));
+    }
+    const ui = CoercionUtils.toObject(record.ui);
+    for (const key of TenantPluginPackagePolicy.ADMIN_UI_KEYS) {
+      if (TenantPluginPackagePolicy.isEmpty(ui[key])) continue;
+      found.push(`declares "ui.${key}" — a site's plugin adds nothing to the admin, where it would run with the rights of whoever opens it.`);
     }
     return found;
   }
@@ -88,6 +102,19 @@ export class TenantPluginPackagePolicy {
     }
     if (key === 'dependencies') return 'depends on other plugins — a site\'s plugin stands alone.';
     return `declares "${key}" — a site's plugin does not change the database every site shares.`;
+  }
+
+  /** The file its process `require`s. Outside the package, that is someone else's code under this plugin's user. */
+  private static entryViolations(contentDir: string, manifest: IPluginManifest): string[] {
+    const record = manifest as unknown as Record<string, unknown>;
+    const root = path.resolve(contentDir);
+    return (['main', 'entry'] as const)
+      .filter((key) => !TenantPluginPackagePolicy.isEmpty(record[key]))
+      .filter((key) => {
+        const target = path.resolve(root, String(record[key]));
+        return target !== root && !target.startsWith(root + path.sep);
+      })
+      .map((key) => `names its "${key}" outside its own directory — a site's plugin runs only its own files.`);
   }
 
   private static sandboxViolations(manifest: IPluginManifest): string[] {

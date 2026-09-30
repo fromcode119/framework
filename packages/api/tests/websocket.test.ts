@@ -42,8 +42,10 @@ describe('web-socket-manager', () => {
 
     server.on('upgrade', (request, socket, head) => {
       if (wss) {
+        // The api admits a socket only through `RealtimeSocketAuthorizer`, which states its site; this
+        // harness stands in for it on a deployment without sites.
         wss.handleUpgrade(request, socket, head, (ws) => {
-          wss.emit('connection', ws, request);
+          wss.emit('connection', ws, request, { tenantId: null });
         });
       }
     });

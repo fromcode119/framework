@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode, TenantPluginRefusal } from '@fromcode119/core';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 
 /**
@@ -151,6 +151,8 @@ export class PluginLifecycleController extends BaseController {
       if (enabled) await this.manager.materializeDefaultPages();
       return res.json({ success: true, tenantId, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
+      // A refusal (another site's own plugin) is an answer, not a failure of the server.
+      if (err instanceof TenantPluginRefusal) return res.status(403).json({ error: err.reason.value, message: err.message });
       this.logger.error(`Tenant toggle failed for plugin "${slug}" on tenant "${tenantId}": ${err?.message}`);
       return res.status(500).json({ error: err?.message || String(err) });
     }

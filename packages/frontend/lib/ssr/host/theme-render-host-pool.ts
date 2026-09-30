@@ -1,4 +1,5 @@
 import { ThemeRenderHost } from '@/lib/ssr/host/theme-render-host';
+import { ThemeRenderIdentities } from '@/lib/ssr/host/theme-render-identities';
 import { ThemeRenderSettings } from '@/lib/ssr/host/theme-render-settings';
 import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
 import { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
@@ -58,6 +59,7 @@ export class ThemeRenderHostPool {
     }
     // Forget the failed build so the next request for this signature retries rather than caching null.
     ThemeRenderHostPool.hosts.delete(generation.signature);
+    ThemeRenderIdentities.release(generation.signature);
     return null;
   }
 
@@ -75,6 +77,7 @@ export class ThemeRenderHostPool {
       const pending = ThemeRenderHostPool.hosts.get(victim);
       ThemeRenderHostPool.hosts.delete(victim);
       void pending?.then((host) => host?.stop());
+      ThemeRenderIdentities.release(victim);
       console.info(`[frontend] SSR render host evicted (cap ${cap}): ${victim}`);
     }
   }

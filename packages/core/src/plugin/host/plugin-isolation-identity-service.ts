@@ -17,6 +17,7 @@ export class PluginIsolationIdentityService {
     findOne(table: string, where: Record<string, unknown>): Promise<any>;
     find(table: string, options?: Record<string, unknown>): Promise<any[]>;
     update(table: string, where: Record<string, unknown>, values: Record<string, unknown>): Promise<unknown>;
+    insert(table: string, values: Record<string, unknown>): Promise<unknown>;
   }) {}
 
   identityFor(slug: string): Promise<IGuestIdentity> {
@@ -34,7 +35,13 @@ export class PluginIsolationIdentityService {
     const rows = await db.find(SystemConstants.TABLE.PLUGINS, {});
     const taken = rows.map((entry) => Number(entry?.isolation_uid)).filter((value) => Number.isFinite(value) && value > 0);
     const uid = taken.length ? Math.max(...taken) + 1 : SystemConstants.PROCESS_ISOLATION.PLUGIN_UID_BASE;
+    // A plugin met for the first time has NO row yet — discovery starts it before anything records it.
+    // The number used to be handed out without being kept, so the next newcomer computed the same one:
+    // every plugin on a fresh install ran as ONE user, and a site's just-uploaded plugin shared a user
+    // (and so the private data directory) with a platform plugin. The row is created to hold it; the
+    // plugin's state writer updates that row rather than inserting its own.
     if (row) await db.update(SystemConstants.TABLE.PLUGINS, { slug: slug.toLowerCase() }, { isolation_uid: uid });
+    else await db.insert(SystemConstants.TABLE.PLUGINS, { slug: slug.toLowerCase(), isolation_uid: uid });
     return { uid, gid: uid };
   }
 }

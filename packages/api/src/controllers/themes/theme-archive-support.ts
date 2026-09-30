@@ -7,6 +7,7 @@ import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
+import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 import { CoercionUtils } from '@fromcode119/core';
 import { ApplicationUrlUtils } from '@fromcode119/core';
 
@@ -56,6 +57,8 @@ export class ThemeArchiveSupport {
       const acceptsGzip = String(req.headers['accept-encoding'] || '').includes('gzip');
 
       const cacheHeader = AssetCacheHeaderService.resolve(absolutePath);
+      // Served on every host, the admin's included — a document here must not run in that origin.
+      ServedFileHeaderService.apply(res, absolutePath);
 
       if (mimeType && acceptsGzip && fs.existsSync(gzPath)) {
         const headers: Record<string, string> = {
