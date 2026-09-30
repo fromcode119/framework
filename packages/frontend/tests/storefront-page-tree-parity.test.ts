@@ -333,7 +333,7 @@ describe('the 404 document — the override chain around NotFoundBody is the sam
 });
 
 describe('content a plugin transformer reshapes renders the same on both sides', () => {
-  // A product entry has no blocks of its own; the ecommerce plugin's transformer turns it into a
+  // A product entry has no blocks of its own; a plugin's content transformer turns it into a
   // product-detail block. The server registry DROPPED transformer registrations, so the server rendered
   // the raw entry while the browser rendered the block — a hydration mismatch that rebuilt every
   // product page. Both worlds register the same transformer, the way a plugin bundle does in each.
