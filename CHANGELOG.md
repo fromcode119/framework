@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.266] - 2026-09-30
+
+### Performance
+
+- **plugins**: read an isolated plugin's settings once per invocation ([#558](https://github.com/fromcode119/framework/pull/558))
+- **plugins**: reuse one site-bound connection per isolated plugin invocation ([#556](https://github.com/fromcode119/framework/pull/556))
+
 ## [0.2.265] - 2026-09-30
 
 ### Fixed
