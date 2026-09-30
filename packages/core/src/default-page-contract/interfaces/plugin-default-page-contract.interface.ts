@@ -16,6 +16,13 @@ export interface IPluginDefaultPageContract {
   dependencies: PluginDefaultPageContractDependency[];
   adoptionHints: string[];
   required: boolean;
+  /**
+   * A boolean setting of the owning plugin that switches this page on per site. When set, the page is
+   * materialized only on sites whose stored value of that setting is `true` — a feature a site opts
+   * into brings its page with it, and a site that never turns it on gets no page. Unset: the contract
+   * installs wherever the plugin runs, as before.
+   */
+  enabledBySetting?: string;
   aliases?: string[];
   /**
    * Optional default block content the materializer writes when creating this page (instead
