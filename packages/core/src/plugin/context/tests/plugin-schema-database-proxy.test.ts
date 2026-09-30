@@ -113,14 +113,11 @@ describe('PluginSchemaDatabaseProxy', () => {
     expect(helpers.copyColumnValues).toHaveBeenCalledTimes(1);
   });
 
-  it('requires raw approval before arbitrary SQL execution', () => {
+  it('never exposes raw SQL on the owner connection, not even to a plugin declaring database:raw', () => {
     const execute = vi.fn();
-    const ddl: any = PluginSchemaDatabaseProxy.create(
-      plugin(['database:schema']),
-      manager({ execute }),
-    );
+    const ddl: any = PluginSchemaDatabaseProxy.create(plugin(['database:schema', 'database:raw']), manager({ execute }));
 
-    expect(() => ddl.execute).toThrow(/database:raw/);
+    expect(() => ddl.execute).toThrow(/cannot access schema database property "execute"/);
     expect(execute).not.toHaveBeenCalled();
   });
 });
