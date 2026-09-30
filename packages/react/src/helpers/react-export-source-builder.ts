@@ -81,6 +81,9 @@ export class ReactExportSourceBuilder {
           if (!key || key === 'default' || key === '__esModule') return false;
           if (!/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(key)) return false;
           if (ReactExportSourceBuilder.BANNED_STANDALONE_EXPORTS.has(key)) return false;
+          // Always exported once by buildRequiredExports(); exporting it here too declared it twice and
+          // the whole module failed to evaluate ("Identifier … has already been declared").
+          if (ReactExportSourceBuilder.REQUIRED_REACT_EXPORT_KEYS.includes(key)) return false;
           return typeof bridge[key] !== 'undefined';
         })
         // The registry is populated during the pre-boot stub phase, so the accessor resolves before
