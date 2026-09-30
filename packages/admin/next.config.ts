@@ -146,34 +146,13 @@ class AdminNextConfig {
       {
         source: '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
-          },
-          {
-            key: 'Pragma',
-            value: 'no-cache',
-          },
-          {
-            key: 'Expires',
-            value: '0',
-          },
-          {
-            key: 'Surrogate-Control',
-            value: 'no-store',
-          },
-          {
-            key: 'X-Fromcode-Admin-No-Store',
-            value: '1',
-          },
-        ],
-      },
-      {
-        // The console acts with whoever is signed in — a platform administrator included — so no
-        // other site may frame it and steer those clicks. The admin framing its own pages still works.
-        // No CSP here: this rule also covers the `/api` proxy, whose served files carry their own.
-        source: '/:path*',
-        headers: [
+          { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
+          { key: 'Pragma', value: 'no-cache' },
+          { key: 'Expires', value: '0' },
+          { key: 'Surrogate-Control', value: 'no-store' },
+          { key: 'X-Fromcode-Admin-No-Store', value: '1' },
+          // The console acts with whoever is signed in — a platform administrator included — so no other
+          // site may frame it and steer those clicks. No CSP: the `/api` proxy's served files carry their own.
           { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
