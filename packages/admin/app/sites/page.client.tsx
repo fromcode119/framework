@@ -166,9 +166,9 @@ export class SitesPageClient extends AdminComponent {
         {this.canManagePlatform && this.loading ? <Loader label={AdminI18n.t('sites.loadingSites')} /> : null}
         {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title={AdminI18n.t('sites.sitesUnavailable')} message={this.error} onRetry={this.load} /> : null}
 
-        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <RestoreSiteCard onRestored={this.load} /> : null}
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <RestoreSiteCard /> : null}
 
-        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard onAdopted={this.load} /> : null}
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard /> : null}
 
         {this.canManagePlatform && !this.loading && !this.error && this.multiTenant ? (
           <div className={`${AdminClass.SURFACE} overflow-hidden`}>

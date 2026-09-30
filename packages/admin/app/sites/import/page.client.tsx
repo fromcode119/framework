@@ -9,6 +9,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { SitesClient } from '@/lib/tenants/sites-client';
+import { SitesTurningOnCard } from '@/app/sites/components/view/sites-turning-on-card.client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
 import { ImportPlanView } from '@/app/sites/import/import-plan-view.client';
@@ -114,7 +115,9 @@ export class ImportSitePageClient extends AdminComponent {
     this.busy = true;
     try {
       this.result = await SitesClient.executeImport(this.uploadId, this.values.toIdentity(), this.transitPassphrase);
-      this.notify(NotificationType.INFO, AdminI18n.t('sites.importPlan.siteImported'), AdminI18n.t('sites.importPlan.isLiveForRoutingNo', { primaryHost: this.result?.tenant?.primaryHost }));
+      this.notify(NotificationType.INFO, AdminI18n.t('sites.importPlan.siteImported'), this.result?.restart
+        ? AdminI18n.t('sites.turningOn.explained')
+        : AdminI18n.t('sites.importPlan.isLiveForRoutingNo', { primaryHost: this.result?.tenant?.primaryHost }));
     } catch (err: any) {
       this.notify(NotificationType.ERROR, AdminI18n.t('sites.importPlan.importFailed'), err?.message || AdminI18n.t('sites.importPlan.nothingWasImported'));
     } finally {
@@ -243,6 +246,7 @@ export class ImportSitePageClient extends AdminComponent {
     const result = this.result;
     if (!result) return null;
     return (
+      <>
       <Card title={AdminI18n.t('sites.importPlan.imported')}>
         <p className="fc-sites__text">
           <AdminRichText k="sites.importPlan.resultSummary" vars={{ slug: result.tenant?.slug, rows: result.totalRows, members: result.members, plugins: (result.pluginsEnabled ?? []).join(', ') || AdminI18n.t('sites.none'), theme: result.themeActivated ?? AdminI18n.t('sites.none') }} />
@@ -258,10 +262,16 @@ export class ImportSitePageClient extends AdminComponent {
             <ul className="fc-sites__warnings">{result.exportWarnings.map((w: string) => <li key={w}>{w}</li>)}</ul>
           </details>
         ) : null}
-        <div className="fc-sites__actions">
-          <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>{AdminI18n.t('sites.importPlan.openTheSite')}</Button>
-        </div>
+        {result.restart ? null : (
+          <div className="fc-sites__actions">
+            <Button href={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} icon={<FrameworkIcons.Settings size={14} />}>{AdminI18n.t('sites.importPlan.openTheSite')}</Button>
+          </div>
+        )}
       </Card>
+      {result.restart ? (
+        <SitesTurningOnCard tenantId={String(result.tenant?.id ?? '')} restarting={result.restart.restarting === true} fallbackHref={AdminConstants.ROUTES.SITES.DETAIL(String(result.tenant?.id ?? ''))} />
+      ) : null}
+      </>
     );
   }
 

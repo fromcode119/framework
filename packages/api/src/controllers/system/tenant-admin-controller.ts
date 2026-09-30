@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { ArchiveUploadSessionService, BaseController, CoercionUtils, Logger } from '@fromcode119/core';
 import { TenantAdminService } from '@api/services/tenants/tenant-admin-service';
+import { FirstSiteRestart } from '@api/services/tenants/first-site-restart';
 
 /**
  * HTTP for the Sites admin. Thin: validates the shape of the request, hands it to
@@ -14,8 +15,11 @@ export class TenantAdminController extends BaseController {
   private static readonly ARCHIVE_EXTENSIONS = ['.tar.gz', '.tgz'];
   private readonly logger = new Logger({ namespace: 'tenant-admin' });
 
+  private readonly firstSite: FirstSiteRestart;
+
   constructor(private readonly service: TenantAdminService) {
     super();
+    this.firstSite = new FirstSiteRestart(() => this.service.siteCount());
   }
 
   async list(_req: Request, res: Response): Promise<void> {
@@ -37,7 +41,8 @@ export class TenantAdminController extends BaseController {
 
   async create(req: Request, res: Response): Promise<void> {
     try {
-      res.status(201).json((await this.service.create(TenantAdminController.body(req), this.actor(req))).toJSON());
+      const site = await this.service.create(TenantAdminController.body(req), this.actor(req));
+      res.status(201).json({ ...site.toJSON(), restart: await this.firstSite.afterSiteAdded(this.actor(req)) });
     } catch (error) {
       this.fail(res, error);
     }
@@ -164,7 +169,7 @@ export class TenantAdminController extends BaseController {
       const upload = ArchiveUploadSessionService.resolveUploadedArchive(uploadId);
       const result = await this.service.executeImport(upload.filePath, TenantAdminController.identity(body), this.actor(req), TenantAdminController.passphrase(req));
       ArchiveUploadSessionService.discardSession(uploadId);
-      res.status(201).json(result.toJSON());
+      res.status(201).json({ ...result.toJSON(), restart: await this.firstSite.afterSiteAdded(this.actor(req)) });
     } catch (error) {
       this.fail(res, error);
     }
@@ -192,7 +197,8 @@ export class TenantAdminController extends BaseController {
 
   async adopt(req: Request, res: Response): Promise<void> {
     try {
-      res.status(201).json(await this.service.adopt(TenantAdminController.identity(TenantAdminController.body(req)), this.actor(req)));
+      const outcome = await this.service.adopt(TenantAdminController.identity(TenantAdminController.body(req)), this.actor(req));
+      res.status(201).json({ ...(outcome as Record<string, unknown>), restart: await this.firstSite.afterSiteAdded(this.actor(req)) });
     } catch (error) {
       this.fail(res, error);
     }

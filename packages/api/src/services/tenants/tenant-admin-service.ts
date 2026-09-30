@@ -58,6 +58,10 @@ export class TenantAdminService extends TenantArchiveAdmin {
     return TenantMode.isEnabled();
   }
 
+  async siteCount(): Promise<number> {
+    return this.registry.count();
+  }
+
   async list(): Promise<TenantSummary[]> {
     const tenants = await this.registry.list();
     return Promise.all(tenants.map((tenant) => this.summarize(tenant)));

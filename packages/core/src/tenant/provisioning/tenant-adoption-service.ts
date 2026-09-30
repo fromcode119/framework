@@ -65,7 +65,7 @@ export class TenantAdoptionService {
     await this.enableActivePlugins(tenant.id);
     await this.activateCurrentTheme(tenant.id);
     const unassigned = await this.unassigned();
-    this.logger.warn(`Deployment adopted as tenant "${tenant.slug}" (${tenant.id}); ${members} members. RESTART REQUIRED for tenancy to take effect.`);
+    this.logger.warn(`Deployment adopted as tenant "${tenant.slug}" (${tenant.id}); ${members} members. Tenancy takes effect when the api next starts.`);
     return { tenant, stamped, members, unassigned, restartRequired: true };
   }
 

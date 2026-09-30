@@ -21,8 +21,10 @@ export class SitesClient {
     return SiteRecord.from(await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.TENANT(id), { noDedupe: true }));
   }
 
-  static async create(input: Record<string, unknown>): Promise<SiteRecord> {
-    return SiteRecord.from(await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, input));
+  /** `restart` is set when this was the FIRST site: the api restarts itself so sites take effect. */
+  static async create(input: Record<string, unknown>): Promise<{ site: SiteRecord; restart: { restarting: boolean; exitInMs: number } | null }> {
+    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, input);
+    return { site: SiteRecord.from(response), restart: response?.restart ?? null };
   }
 
   static async update(id: string, patch: Record<string, unknown>): Promise<SiteRecord> {
