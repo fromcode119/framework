@@ -45,6 +45,9 @@ export class BuildService {
     // Auto-update installs what it just built. Injected rather than reached through a context, so
     // this package states its dependency instead of asking a sandbox for permission.
     private readonly installer?: IExtensionInstaller,
+    // Whether to build a commit GitHub did not merge (`GitCommitProvenance`). Asked on every build, so
+    // the operator's switch takes effect at the next one; absent means NO — verification is the default.
+    private readonly buildsUnverifiedCommits: () => Promise<boolean> = async () => false,
   ) {
     this.packageDownloads = new PackageDownloadService(
       packageBuilder,
@@ -73,6 +76,7 @@ export class BuildService {
       (entry) => this.providerFor(entry),
       (...args: any[]) => (this.resolveSourceDirectory as any)(...args),
       (...args: any[]) => (this.resolvePackageArtifact as any)(...args),
+      buildsUnverifiedCommits,
     );
   }
 

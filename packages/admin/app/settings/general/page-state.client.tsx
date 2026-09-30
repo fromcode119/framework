@@ -47,6 +47,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'frontend_auth_enabled',
     'frontend_registration_enabled',
     'signup_email_branded',
+    'sources_build_unverified_commits',
   ] as const;
 
   @state isSaving = false;

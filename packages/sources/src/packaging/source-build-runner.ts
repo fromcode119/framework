@@ -5,6 +5,7 @@ import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import { BuiltPackageInstaller } from '@sources/packaging/built-package-installer';
 import { ExtensionScope } from '@fromcode119/core';
 import { GitUrlPolicy } from '@sources/providers/git/git-url-policy';
+import { GitCommitProvenance } from '@sources/providers/git/git-commit-provenance';
 import { SourceProviders } from '@sources/providers/source-providers';
 import type { IPackageBuiltEvent } from '@sources/packaging/interfaces/package-built-event.interface';
 import type { ISourceProvider } from '@sources/providers/interfaces/source-provider.interface';
@@ -30,6 +31,7 @@ export class SourceBuildRunner {
     private readonly providerFor: (entry: { provider?: unknown }) => ISourceProvider | null,
     private readonly resolveSourceDirectory: (...args: any[]) => any,
     private readonly resolvePackageArtifact: (...args: any[]) => any,
+    private readonly buildsUnverifiedCommits: () => Promise<boolean> = async () => false,
   ) {}
 
   /**
@@ -91,6 +93,11 @@ export class SourceBuildRunner {
       });
       const sourceDir = fetched.directory;
       const commitSha = fetched.revision || 'unknown';
+      // Before anything of it runs: only a commit GitHub merged is built, unless the operator allowed
+      // otherwise. A refusal is recorded on the row like any failed build, with the way out in it.
+      if (!(await this.buildsUnverifiedCommits())) {
+        await GitCommitProvenance.assertMergedByGitHub(sourceDir, String(fetched.revision ?? ''), gitUrl);
+      }
       // Read BEFORE building: what changed is the range between what was last built and what is
       // about to be, and the record still holds the previous revision at this point.
       const changelog = await provider.changesSince({ directory: sourceDir, previousRevision: String(entry.lastCommitSha || '') });

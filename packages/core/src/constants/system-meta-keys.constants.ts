@@ -288,6 +288,8 @@ export class SystemMetaKeys {
    * each key's scope against it.
    */
   FRAMEWORK_REPOSITORY: 'framework_repository',
-  SOURCES_WORKSPACE_ROOT: 'sources_workspace_root'
+  SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
+  /** Sources builds a commit GitHub did not merge. Off unless an operator turns it on (Settings → General). */
+  SOURCES_BUILD_UNVERIFIED_COMMITS: 'sources_build_unverified_commits'
   } as const;
 }

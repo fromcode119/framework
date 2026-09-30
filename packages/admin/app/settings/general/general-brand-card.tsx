@@ -4,6 +4,7 @@ import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
+import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
@@ -70,6 +71,11 @@ export class GeneralBrandCard extends PureReactor {
   @bound
   onSourcesWorkspaceRootChange(e: React.ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('sources_workspace_root', e.target.value);
+  }
+
+  @bound
+  onSourcesBuildUnverifiedChange(value: boolean): void {
+    this.patchSetting('sources_build_unverified_commits', value);
   }
 
   @bound
@@ -235,6 +241,17 @@ export class GeneralBrandCard extends PureReactor {
               className="w-full md:w-64 font-bold"
               placeholder="data/sources"
             />
+          </SettingRow>
+        )}
+
+        {this.shown('sources_build_unverified_commits') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.ShieldAlert}
+            title={AdminI18n.t('settings.general.sourcesBuildUnverified')}
+            description={AdminI18n.t('settings.general.sourcesBuildUnverifiedDescription')}
+          >
+            <Switch checked={settings.sources_build_unverified_commits === true} onChange={this.onSourcesBuildUnverifiedChange} />
           </SettingRow>
         )}
 
