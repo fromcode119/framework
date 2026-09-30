@@ -1,3 +1,5 @@
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantRecord } from '@core/tenant/tenant-record';
 
@@ -76,10 +78,15 @@ export class TenantResolverService {
     return [...byId.values()];
   }
 
-  /** Call after any write to `_system_tenants`. */
+  /** Call after any write to `_system_tenants`. Every api process routes by its own copy, so all of them forget it. */
   invalidate(): void {
     this.cache = null;
+    ProcessSignals.announce(ProcessSignal.SITES_CHANGED);
   }
+
+  private static readonly forgetting = ProcessSignals.on(ProcessSignal.SITES_CHANGED, () => {
+    if (TenantResolverService.instance) TenantResolverService.instance.cache = null;
+  });
 
   private async hostMap(): Promise<Map<string, TenantRecord>> {
     if (this.cache) return this.cache;

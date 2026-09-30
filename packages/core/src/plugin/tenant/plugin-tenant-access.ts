@@ -1,3 +1,5 @@
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { Logger } from '@core/logging';
 import { TenantState } from '@core/enums/tenant-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
@@ -157,13 +159,15 @@ export class PluginTenantAccess {
    * request, so the only thing between a write and the new behaviour is this cache.
    */
   static invalidate(tenantId?: string): void {
-    const tenant = String(tenantId ?? '').trim();
-    if (tenant) {
-      PluginTenantAccess.cache.delete(tenant);
-      return;
-    }
-    PluginTenantAccess.cache.clear();
+    // Every api process holds this cache; the others hear it through the signal and forget theirs.
+    ProcessSignals.announce(ProcessSignal.PLUGIN_ACCESS_CHANGED, { tenantId: String(tenantId ?? '').trim() });
   }
+
+  private static readonly forgetting = ProcessSignals.on(ProcessSignal.PLUGIN_ACCESS_CHANGED, (payload) => {
+    const tenant = String(payload?.tenantId ?? '').trim();
+    if (tenant) PluginTenantAccess.cache.delete(tenant);
+    else PluginTenantAccess.cache.clear();
+  });
 
   /** Test seam. */
   static reset(): void {

@@ -1,3 +1,5 @@
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 
 /**
@@ -28,15 +30,19 @@ export class SiteContentRevision {
     return `${SiteContentRevision.epoch}.${SiteContentRevision.platform}.${site}`;
   }
 
-  /** One site changed. `null` means the platform: every site's pages are stale. */
+  /** One site changed. `null` means the platform: every site's pages are stale. Every api process counts it. */
   static bump(tenantId: string | null | undefined): void {
-    const id = String(tenantId ?? '').trim();
+    ProcessSignals.announce(ProcessSignal.CONTENT_CHANGED, { tenantId: String(tenantId ?? '').trim() });
+  }
+
+  private static readonly counting = ProcessSignals.on(ProcessSignal.CONTENT_CHANGED, (payload) => {
+    const id = String(payload?.tenantId ?? '').trim();
     if (!id) {
       SiteContentRevision.platform += 1;
       return;
     }
     SiteContentRevision.sites.set(id, (SiteContentRevision.sites.get(id) || 0) + 1);
-  }
+  });
 
   /** The site the current request or job is bound to changed; nothing when no site is bound. */
   static bumpCurrentSite(): void {
