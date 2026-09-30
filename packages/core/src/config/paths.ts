@@ -99,6 +99,19 @@ export class ProjectPaths extends UploadPaths {
     return ProjectPaths.tenantArtifactDir(ProjectPaths.getPluginsDir(), tenantId);
   }
 
+  /**
+   * A SITE's own uploads directory under an uploads root: `<root>/tenants/<tenantId>`. Every file
+   * uploaded inside a site is written here, and `/uploads` serves from here before the shared root.
+   *
+   * `null` for an id that cannot be a single path segment — never the root itself, unlike the
+   * artifact directories above, because callers copy this directory into archives and DELETE it.
+   */
+  static siteUploadsDir(uploadsRoot: string, tenantId: string): string | null {
+    const tenant = String(tenantId ?? '').trim();
+    if (!tenant || !/^[A-Za-z0-9_-]+$/.test(tenant)) return null;
+    return path.join(ProjectPaths.tenantArtifactsRoot(uploadsRoot), tenant);
+  }
+
   /** The directory holding every site's artifacts under a root — the one `tenants/` level itself. */
   static tenantArtifactsRoot(base: string): string {
     return path.join(base, SystemConstants.STORAGE.TENANTS_SUBDIR);

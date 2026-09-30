@@ -83,7 +83,9 @@ export class PostgresSchemaIntrospector implements ISchemaIntrospection {
     if (tables.length === 0) return out;
     const rows = await this.run(
       'SELECT rel.relname AS table_name, con.conname AS name, '
-      + 'array_agg(att.attname ORDER BY k.ord) AS columns '
+      // `::text`: an aggregate of `name` is a `name[]`, which the driver does not parse — it arrives
+      // as the string "{key}", and every caller treating it as a list threw on `.every`.
+      + 'array_agg(att.attname::text ORDER BY k.ord) AS columns '
       + 'FROM pg_constraint con '
       + 'JOIN pg_class rel ON rel.oid = con.conrelid '
       + 'JOIN pg_namespace nsp ON nsp.oid = rel.relnamespace '

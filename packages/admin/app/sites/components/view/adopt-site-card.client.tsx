@@ -8,7 +8,8 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
-import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
+import { SitesTurningOnCard } from '@/app/sites/components/view/sites-turning-on-card.client';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
@@ -16,14 +17,12 @@ import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
  * Shown on a deployment with NO sites: this installation IS one site, and the operator can make it
  * the platform's first tenant in place. Every row gets the new tenant's id, every account becomes a
  * member with its current roles, the active plugins and theme become the tenant's. Tenancy itself is
- * decided at boot, so the card says plainly that a restart follows.
+ * decided at boot, so the api restarts itself afterwards and the card waits for it, then opens the site.
  */
 export class AdoptSiteCard extends AdminComponent {
   @state values: SiteFormValues = SiteFormValues.empty();
   @state busy = false;
   @state outcome: Record<string, any> | null = null;
-
-  declare props: { onAdopted: () => void };
 
   @bound onChange(values: SiteFormValues): void {
     this.values = values;
@@ -34,8 +33,7 @@ export class AdoptSiteCard extends AdminComponent {
     this.busy = true;
     try {
       this.outcome = await SitesClient.adopt(this.values.toIdentity());
-      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.deploymentAdopted'), message: AdminI18n.t('sites.restartTheApiFromThis'), type: NotificationType.INFO });
-      this.props.onAdopted();
+      this.runtime.notify.addNotification({ title: AdminI18n.t('sites.deploymentAdopted'), message: AdminI18n.t('sites.turningOn.explained'), type: NotificationType.INFO });
     } catch (err: any) {
       this.runtime.notify.addNotification({ title: AdminI18n.t('sites.adoptionFailed'), message: err?.message || AdminI18n.t('sites.nothingWasChanged'), type: NotificationType.ERROR });
     } finally {
@@ -48,25 +46,25 @@ export class AdoptSiteCard extends AdminComponent {
       const stamped = Object.entries(this.outcome.stamped ?? {}) as Array<[string, number]>;
       const unassigned = Object.entries(this.outcome.unassigned ?? {}) as Array<[string, number]>;
       return (
-        <Card title={AdminI18n.t('sites.adoptedRestartRequired')} icon={<FrameworkIcons.CheckCircle size={16} />}>
-          <p className="fc-sites__text">
-            <AdminRichText k="sites.adoptedOutcome" vars={{ slug: this.outcome.tenant?.slug, rows: stamped.reduce((sum, [, n]) => sum + n, 0), tables: stamped.length, members: this.outcome.members }} />
-          </p>
-          <div className="fc-sites__actions">
-            <RestartApiAction label={AdminI18n.t('sites.restartTheApiToTurn')} />
-          </div>
-          {unassigned.length > 0 ? (
-            <p className="fc-sites__text fc-sites__text--warn">
-              {AdminI18n.t('sites.rowsWithoutOwner', { tables: unassigned.map(([table, n]) => `${table} (${n})`).join(', ') })}
+        <>
+          <Card title={AdminI18n.t('sites.deploymentAdopted')} icon={<FrameworkIcons.CheckCircle size={16} />}>
+            <p className="fc-sites__text">
+              <AdminRichText k="sites.adoptedOutcome" vars={{ slug: this.outcome.tenant?.slug, rows: stamped.reduce((sum, [, n]) => sum + n, 0), tables: stamped.length, members: this.outcome.members }} />
             </p>
-          ) : null}
-        </Card>
+            {unassigned.length > 0 ? (
+              <p className="fc-sites__text fc-sites__text--warn">
+                {AdminI18n.t('sites.rowsWithoutOwner', { tables: unassigned.map(([table, n]) => `${table} (${n})`).join(', ') })}
+              </p>
+            ) : null}
+          </Card>
+          <SitesTurningOnCard tenantId={String(this.outcome.tenant?.id ?? '')} restarting={this.outcome.restart?.restarting === true} fallbackHref={AdminConstants.ROUTES.SITES.ROOT} />
+        </>
       );
     }
     return (
       <Card title={AdminI18n.t('sites.thisDeploymentIsNotMulti')} icon={<FrameworkIcons.Globe size={16} />}>
         <p className="fc-sites__text">
-          {AdminI18n.t('sites.adoptExplained')} <strong>{AdminI18n.t('sites.theApiMustBeRestarted')}</strong>
+          {AdminI18n.t('sites.adoptExplained')} <strong>{AdminI18n.t('sites.theApiRestartsItself')}</strong>
         </p>
         <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} isNew />
         <div className="fc-sites__actions">

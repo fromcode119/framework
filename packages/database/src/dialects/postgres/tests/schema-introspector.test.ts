@@ -17,6 +17,12 @@ describe('PostgresSchemaIntrospector.naturalKeyColumns', () => {
     expect(run).toHaveBeenCalledWith(expect.stringContaining('pg_constraint'), [['_system_meta'], 'tenant_id']);
   });
 
+  it('asks for the columns as text[] — the driver hands a name[] back as the string "{key}"', async () => {
+    const run = vi.fn(async () => []) as unknown as ISqlRunner;
+    await new PostgresSchemaIntrospector(run).naturalKeyColumns(['_system_meta'], 'tenant_id');
+    expect(run).toHaveBeenCalledWith(expect.stringContaining('array_agg(att.attname::text'), expect.anything());
+  });
+
   it('answers an empty map for tables with no such constraint', async () => {
     const run = vi.fn(async () => []) as unknown as ISqlRunner;
     const introspector = new PostgresSchemaIntrospector(run);

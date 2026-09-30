@@ -64,8 +64,12 @@ export class TenantImportCli {
       // no constraint to discover them by. The planner is told this explicitly (`hasSchemaReferences`)
       // rather than guessing from an empty result, so it can refuse a remap it cannot re-point instead
       // of silently importing exactly the defect this importer exists to prevent.
+      // Before the first site there is no policy to discover them by — the boot sweep releases the
+      // policies on a platform with no sites — so it is the tables carrying the site column, as the
+      // export CLI already reads them.
       const catalog = new TenantTableCatalog(db, [], installed.plugins.keys());
-      const tables = await catalog.byPolicy();
+      let tables = await catalog.byPolicy();
+      if (tables.length === 0) tables = await catalog.byColumn();
       if (tables.length === 0) throw new Error('This platform has no tenant tables at all; boot it once so the schema exists.');
 
       const planner = new TenantImportPlanner(db, registry, tables, installed, uploadsDir, catalog.hasSchemaReferences);

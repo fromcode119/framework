@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { ProjectPaths } from '@core/config/paths';
 import type { IDatabaseManager } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -56,7 +57,7 @@ export class TenantEraser {
       }
     });
 
-    const removedFiles = this.removeFiles(files);
+    const removedFiles = this.removeFiles(tenant.id, files);
     await this.registry.remove(tenant.id);
     this.logger.warn(`Tenant "${tenant.slug}" (${tenant.id}) erased: ${Object.values(deleted).reduce((a, b) => a + b, 0)} rows, ${removedFiles} files. Export: ${exportedTo}`);
     return { deleted, files: removedFiles };
@@ -78,14 +79,29 @@ export class TenantEraser {
     return [...names];
   }
 
-  /** Only files this tenant's rows pointed at; a name another tenant's row also uses is left alone. */
-  private removeFiles(names: string[]): number {
+  /**
+   * The site's own uploads directory, whole — every file in it was uploaded inside this site and the
+   * archive written before this carries them — then, in the shared root, only the files this site's
+   * rows pointed at from before sites had their own directories.
+   *
+   * It used to look in the shared root alone, so every file uploaded inside the site stayed on disk
+   * after the site was gone, and a same-named file in the root was removed in its place.
+   */
+  private removeFiles(tenantId: string, names: string[]): number {
     let removed = 0;
+    const own = ProjectPaths.siteUploadsDir(this.uploadsDir, tenantId);
+    const ownFiles = new Set(own && fs.existsSync(own) ? fs.readdirSync(own) : []);
     for (const name of names) {
-      const target = path.join(this.uploadsDir, path.posix.basename(name));
+      const base = path.posix.basename(name);
+      if (ownFiles.has(base)) continue;
+      const target = path.join(this.uploadsDir, base);
       if (!fs.existsSync(target)) continue;
       fs.rmSync(target, { force: true });
       removed += 1;
+    }
+    if (own && ownFiles.size > 0) {
+      fs.rmSync(own, { recursive: true, force: true });
+      removed += ownFiles.size;
     }
     return removed;
   }

@@ -12,17 +12,25 @@ import { SiteMember } from '@/lib/tenants/site-member';
 export class SitesClient {
   private static readonly CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
 
-  static async list(): Promise<{ multiTenant: boolean; sites: SiteRecord[]; inventory: SiteInventory }> {
+  /** `sitesSupported`: whether this database keeps sites apart — false on a single-site install. */
+  static async list(): Promise<{ multiTenant: boolean; sitesSupported: boolean; sites: SiteRecord[]; inventory: SiteInventory }> {
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, { noDedupe: true });
-    return { multiTenant: response?.multiTenant === true, sites: SiteRecord.fromList(response?.tenants), inventory: SiteInventory.from(response?.installed) };
+    return {
+      multiTenant: response?.multiTenant === true,
+      sitesSupported: response?.sitesSupported === true,
+      sites: SiteRecord.fromList(response?.tenants),
+      inventory: SiteInventory.from(response?.installed),
+    };
   }
 
   static async get(id: string): Promise<SiteRecord> {
     return SiteRecord.from(await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.TENANT(id), { noDedupe: true }));
   }
 
-  static async create(input: Record<string, unknown>): Promise<SiteRecord> {
-    return SiteRecord.from(await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, input));
+  /** `restart` is set when this was the FIRST site: the api restarts itself so sites take effect. */
+  static async create(input: Record<string, unknown>): Promise<{ site: SiteRecord; restart: { restarting: boolean; exitInMs: number } | null }> {
+    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, input);
+    return { site: SiteRecord.from(response), restart: response?.restart ?? null };
   }
 
   static async update(id: string, patch: Record<string, unknown>): Promise<SiteRecord> {

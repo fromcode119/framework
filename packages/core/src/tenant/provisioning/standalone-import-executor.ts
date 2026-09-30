@@ -57,12 +57,10 @@ export class StandaloneImportExecutor {
    * invisible to every site and cannot be keyed — rows belonging to nobody, in a database where
    * belonging to somebody is the rule.
    *
-   * It still carries tenant ISOLATION. A policy checks every insert against the connection's current
-   * site, and an un-owned row matches no site, so every insert is refused — one table at a time, with
-   * a raw "violates row-level security policy" from whichever table came first. That is not a
-   * standalone deployment yet; it is a platform that happens to have no sites, and it becomes one at
-   * its next boot, when the framework releases the policies precisely because there are no sites left
-   * to protect anyone from. Saying that is far more useful than the error Postgres would give.
+   * Its database keeps sites APART. There every site-owned record — media, people — must belong to a
+   * site even before the first one exists (`media.tenant_id` is part of its key), so an un-owned
+   * restore fails on the first such row with a raw not-null violation. On such a database the archive
+   * is imported AS a site instead, which is also what turns sites on.
    */
   private async refuseUnlessStandalone(): Promise<void> {
     const rows = await this.db.queryRaw('SELECT count(*)::int AS tenants FROM _system_tenants');
@@ -75,18 +73,12 @@ export class StandaloneImportExecutor {
       );
     }
 
-    if (!this.db.supportsTenantIsolation()) return;
-
-    const policies = await this.db.tenantIsolation.listPolicies();
-    if (!policies.length) return;
-
-    const tables = [...new Set(policies.map((policy) => policy.table))];
-    throw new Error(
-      `Refusing to restore standalone: ${tables.length} table(s) still carry tenant isolation `
-      + `(${tables.slice(0, 3).join(', ')}${tables.length > 3 ? ', …' : ''}), so every row written without `
-      + 'an owner would be refused by their policies. This deployment has no sites, so booting it once '
-      + 'releases that isolation — then restore into it.',
-    );
+    if (this.db.supportsTenantIsolation()) {
+      throw new Error(
+        'Refusing to restore standalone: this database keeps sites apart, so a site\'s records must '
+        + 'belong to a site. Import the archive as a site instead — the first site turns sites on.',
+      );
+    }
   }
 
   async execute(reader: TenantArchiveReader, warnings: string[] = []): Promise<Record<string, number>> {

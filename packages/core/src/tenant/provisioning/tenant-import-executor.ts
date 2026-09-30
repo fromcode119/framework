@@ -1,5 +1,6 @@
 import { TenantImportIdMode } from '@core/tenant/provisioning/enums/tenant-import-id-mode.enum';
 import type { IDatabaseManager } from '@fromcode119/database';
+import { ProjectPaths } from '@core/config/paths';
 import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
@@ -59,7 +60,9 @@ export class TenantImportExecutor {
         await this.db.queryRaw('BEGIN');
         try {
           await new TenantImportUsers(this.db).run(reader, remap, warnings);
-          const files = new TenantImportFiles(this.uploadsDir).run(reader, tenant.id, warnings);
+          // Into the site's OWN directory, where its uploads are written and served from first — the
+          // shared root is only for files that predate per-site directories.
+          const files = new TenantImportFiles(ProjectPaths.siteUploadsDir(this.uploadsDir, tenant.id) ?? this.uploadsDir).run(reader, tenant.id, warnings);
           const installedPlugins = await this.installedPluginSlugs();
           const tables = this.tables.filter((table) => reader.manifest.tableNames.includes(table.name));
           // Every table's ids are decided and allocated BEFORE any row of ANY table is inserted — not

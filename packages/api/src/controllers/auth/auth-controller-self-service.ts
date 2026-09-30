@@ -7,6 +7,7 @@ import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-servi
 import { AuthProfileService } from '@api/services/auth-profile-service';
 import { UserManagementService } from '@api/services/user-management-service';
 import { PeopleSelfService } from '@api/services/people-self-service';
+import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 import { CoercionUtils } from '@fromcode119/core';
 import { AdminConsoleLocale } from '@api/services/system/admin-console-locale';
 
@@ -14,7 +15,11 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
   async getMyPerson(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const person = await new PeopleSelfService(this.db).resolveSelf(req.user);
+    // A person belongs to a site. With no site to own one (the platform scope, or a database that keeps
+    // sites apart before its first site) there is nothing to create: creating it anyway failed every
+    // console load there with a row-level-security error.
+    const service = new PeopleSelfService(this.db);
+    const person = SiteOwnedWrites.possible(req) ? await service.resolveSelf(req.user) : await service.findSelf(req.user);
     // The language the console speaks to this person: their own choice, else the site's default.
     return res.json({ person, consoleLocale: await AdminConsoleLocale.resolve(this.manager, req) });
   }
@@ -22,6 +27,9 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
   async updateMyPerson(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
+    if (!SiteOwnedWrites.possible(req)) {
+      return res.status(409).json({ error: SiteOwnedWrites.REQUIRED, message: 'Your own details, your console language among them, are kept per site. Choose a site first.' });
+    }
     const service = new PeopleSelfService(this.db);
     const self = await service.resolveSelf(req.user);
     const person = await service.updateSelf(self, req.body || {});

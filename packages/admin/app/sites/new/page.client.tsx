@@ -12,6 +12,7 @@ import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { SiteFormValues } from '@/app/sites/site-form-values';
 import { SiteForm } from '@/app/sites/components/view/site-form.client';
+import { SitesTurningOnCard } from '@/app/sites/components/view/sites-turning-on-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Create a site: identity, hosts, first admin, the plugins it runs, the theme it renders with. */
@@ -19,6 +20,7 @@ export class NewSitePageClient extends AdminComponent {
   @state values: SiteFormValues = SiteFormValues.empty();
   @state inventory: SiteInventory | null = null;
   @state saving = false;
+  @state firstSite: { id: string; restarting: boolean } | null = null;
 
   async componentDidMount(): Promise<void> {
     try {
@@ -36,7 +38,13 @@ export class NewSitePageClient extends AdminComponent {
   async save(): Promise<void> {
     this.saving = true;
     try {
-      const site = await SitesClient.create(this.values.toCreatePayload());
+      const { site, restart } = await SitesClient.create(this.values.toCreatePayload());
+      if (restart) {
+        // The first site: the api restarts to turn sites on, and the card below waits for it.
+        this.firstSite = { id: site.id, restarting: restart.restarting };
+        this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteCreated'), message: AdminI18n.t('sites.turningOn.explained'), type: NotificationType.INFO });
+        return;
+      }
       this.runtime.notify.addNotification({ title: AdminI18n.t('sites.siteCreated'), message: AdminI18n.t('sites.isLiveForRoutingNo', { primaryHost: site.primaryHost }), type: NotificationType.INFO });
       this.router.push(AdminConstants.ROUTES.SITES.DETAIL(site.id));
     } catch (err: any) {
@@ -55,12 +63,16 @@ export class NewSitePageClient extends AdminComponent {
           title={AdminI18n.t('sites.newSite')}
           subtitle={AdminI18n.t('sites.aSiteIsACustomer')}
           backHref={AdminConstants.ROUTES.SITES.ROOT}
-          actions={<Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('sites.createSite')}</Button>}
+          actions={this.firstSite ? null : <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={14} />}>{AdminI18n.t('sites.createSite')}</Button>}
         />
         <div className="fc-sites__body">
-        <Card title={AdminI18n.t('sites.identityAndInventory')}>
-          {this.inventory ? <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} inventory={this.inventory} isNew /> : <Loader label={AdminI18n.t('sites.loadingInstalledPluginsAndThemes')} />}
-        </Card>
+        {this.firstSite ? (
+          <SitesTurningOnCard tenantId={this.firstSite.id} restarting={this.firstSite.restarting} fallbackHref={AdminConstants.ROUTES.SITES.DETAIL(this.firstSite.id)} />
+        ) : (
+          <Card title={AdminI18n.t('sites.identityAndInventory')}>
+            {this.inventory ? <SiteForm theme={this.theme} values={this.values} onChange={this.onChange} inventory={this.inventory} isNew /> : <Loader label={AdminI18n.t('sites.loadingInstalledPluginsAndThemes')} />}
+          </Card>
+        )}
         </div>
       </div>
     );

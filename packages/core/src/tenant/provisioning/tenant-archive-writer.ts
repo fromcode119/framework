@@ -187,20 +187,31 @@ export class TenantArchiveWriter {
    *
    * `names` is still used, for the WARNING: a media row pointing at a file that does not exist is a
    * broken record worth naming, and that check would be lost if this only walked the directory.
+   *
+   * A SITE's files are read the way `/uploads` serves them: its own directory first, then the shared
+   * root for files written before sites had one. Reading the root alone missed every file uploaded
+   * inside a site since — the export named each as "missing" and the moved site arrived without them.
    */
   private copyFiles(names: Set<string>, staging: string, warnings: string[]): { count: number; bytes: number } {
     let count = 0;
     let bytes = 0;
     const destination = path.join(staging, TenantArchiveLayout.FILES_DIR);
+    const own = this.source.isTenant && this.source.tenantId
+      ? ProjectPaths.siteUploadsDir(this.source.uploadsDir, this.source.tenantId)
+      : null;
 
     const present = new Set<string>();
-    for (const entry of fs.existsSync(this.source.uploadsDir) ? fs.readdirSync(this.source.uploadsDir) : []) {
-      const from = path.join(this.source.uploadsDir, entry);
-      if (!fs.statSync(from).isFile()) continue;
-      fs.copyFileSync(from, path.join(destination, entry));
-      present.add(entry);
-      count += 1;
-      bytes += fs.statSync(from).size;
+    for (const directory of own ? [own, this.source.uploadsDir] : [this.source.uploadsDir]) {
+      for (const entry of fs.existsSync(directory) ? fs.readdirSync(directory) : []) {
+        // The site's own copy wins over a same-named file in the shared root, as it does when served.
+        if (present.has(entry)) continue;
+        const from = path.join(directory, entry);
+        if (!fs.statSync(from).isFile()) continue;
+        fs.copyFileSync(from, path.join(destination, entry));
+        present.add(entry);
+        count += 1;
+        bytes += fs.statSync(from).size;
+      }
     }
 
     // Named one by one rather than counted: "12 files are missing" tells an operator there is a

@@ -32,13 +32,21 @@ export class PeopleSelfService {
     return out;
   }
 
+  /** The authenticated user's own person row, when this scope has one — never creates it. */
+  async findSelf(user: { id?: any; email?: string }): Promise<any> {
+    const userId = user?.id ?? null;
+    const email = String(user?.email || '').trim().toLowerCase();
+    let person = userId != null ? PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { userId })) : null;
+    if (!person && email) person = PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { email }));
+    return person ?? null;
+  }
+
   /** Resolve (or create + link) the authenticated user's own person row. */
   async resolveSelf(user: { id?: any; email?: string; firstName?: string; lastName?: string }): Promise<any> {
     const userId = user?.id ?? null;
     const email = String(user?.email || '').trim().toLowerCase();
 
-    let person = userId != null ? PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { userId })) : null;
-    if (!person && email) person = PeopleSelfService.toCamel(await this.db.findOne(SystemConstants.TABLE.PEOPLE, { email }));
+    let person = await this.findSelf(user);
 
     if (!person) {
       await this.db.insert(SystemConstants.TABLE.PEOPLE, {

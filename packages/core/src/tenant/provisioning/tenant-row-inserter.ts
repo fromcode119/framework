@@ -79,7 +79,7 @@ export class TenantRowInserter {
         values[column] = SecretTransitResealer.openFromTransit(values[column], this.transitPassphrase);
       }
     }
-    if (this.table.hasTenantColumn && this.tenantId !== null) values.tenant_id = this.tenantId;
+    if (this.table.hasTenantColumn) values.tenant_id = this.tenantId; // null on a standalone restore — see below
 
     const newId = this.table.hasColumn('id') ? this.remap.resolve(this.table.name, row.id) : null;
     if (this.table.hasColumn('id')) values.id = newId;
@@ -130,7 +130,7 @@ export class TenantRowInserter {
    *
    * Requiring `tenant_id` in `values` is what makes the target safe: a conflicting row can only be
    * one this SAME tenant already owns, never an unowned platform row (a different `tenant_id`, or
-   * none) and never another tenant's.
+   * none) and never another tenant's. On a standalone restore the owner IS none, so setup's own rows are updated.
    */
   private upsertConflictColumns(columns: string[]): string[] | null {
     if (this.table.hasSerialId || this.table.naturalKeyColumns.length === 0 || !columns.includes('tenant_id')) return null;

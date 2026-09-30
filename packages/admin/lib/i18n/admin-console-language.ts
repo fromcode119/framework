@@ -25,9 +25,18 @@ export class AdminConsoleLanguage {
     };
   }
 
-  /** Saves the reader's choice ('' returns them to the site's default) and reloads, so every label follows. */
-  static async choose(code: string): Promise<void> {
-    await AdminApi.patch(AdminConstants.ENDPOINTS.AUTH.ME_PERSON, { preferredLocale: code });
+  /**
+   * Saves the reader's choice ('' returns them to the site's default) and reloads, so every label
+   * follows. A refusal is handed to `onError` — the choice is kept on the reader's person, which
+   * belongs to a site, so the platform scope refuses it with the reason.
+   */
+  static async choose(code: string, onError: (message: string) => void): Promise<void> {
+    try {
+      await AdminApi.patch(AdminConstants.ENDPOINTS.AUTH.ME_PERSON, { preferredLocale: code });
+    } catch (err: any) {
+      onError(err?.message || '');
+      return;
+    }
     window.location.reload();
   }
 }
