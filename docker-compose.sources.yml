@@ -146,6 +146,9 @@ services:
       - ./packages/frontend/app:/app/packages/frontend/app
       - ./packages/frontend/components:/app/packages/frontend/components
       - ./packages/frontend/lib:/app/packages/frontend/lib
+      # The storefront's own dictionaries (`@/i18n/*.json`). Without this mount the dev container reads the
+      # baked copy — and an image built before the folder existed has none, so every page fails to compile.
+      - ./packages/frontend/i18n:/app/packages/frontend/i18n
       - ./packages/frontend/runtime:/app/packages/frontend/runtime
       - ./packages/frontend/build:/app/packages/frontend/build
       - ./packages/frontend/public:/app/packages/frontend/public
