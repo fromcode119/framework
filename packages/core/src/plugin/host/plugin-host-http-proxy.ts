@@ -2,6 +2,7 @@ import http from 'http';
 import type { Request, Response, NextFunction } from 'express';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
+import { NetworkAddressUtils } from '@core/security/network-address-utils';
 
 /**
  * Forwards one Express request to the guest's Unix socket and streams the answer back.
@@ -40,7 +41,10 @@ export class PluginHostHttpProxy {
       delete headers.connection;
       delete headers['content-length'];
       delete headers['transfer-encoding'];
+      for (const header of PluginGuestHttp.PRIVATE_HEADERS) delete headers[header];
       headers[PluginGuestHttp.HEADER_TOKEN] = envelope.token;
+      const clientIp = NetworkAddressUtils.resolveClientIp(req);
+      if (clientIp) headers[PluginGuestHttp.HEADER_CLIENT_IP] = clientIp;
       headers[PluginGuestHttp.HEADER_TENANT] = envelope.tenantId ?? '';
       headers[PluginGuestHttp.HEADER_LOCALE] = envelope.locale;
       headers[PluginGuestHttp.HEADER_SITE_LOCALE] = envelope.siteLocale;

@@ -3,6 +3,7 @@
 import express from 'express';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
+import { PluginClientAddressMiddleware } from '@api/middlewares/plugin-client-address-middleware';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
@@ -107,6 +108,7 @@ export class ServerRoutesSetup {
     const tenantPlugin = new TenantPluginGuard(platformAccess);
 
     vApi.use(AUTH, new AuthRouter(this.manager, this.auth).router);
+    vApi.use(PLUGINS, new PluginClientAddressMiddleware().middleware());
     vApi.use(PLUGINS, pluginAssetRouter);
     vApi.use(PLUGINS, new PluginRouter(this.manager, this.auth, platformAdmin).router);
     vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth, tenantPlugin).router);
