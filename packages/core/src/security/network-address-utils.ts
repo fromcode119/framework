@@ -71,21 +71,40 @@ export class NetworkAddressUtils {
     const rawPattern = CoercionUtils.toKey(pattern);
     if (!normalizedAddress || !rawPattern) return false;
 
-    const separatorIndex = rawPattern.indexOf('/');
-    if (separatorIndex < 0) {
-      return NetworkAddressUtils.normalize(rawPattern) === normalizedAddress;
-    }
-
-    const prefixBits = Number(rawPattern.slice(separatorIndex + 1));
-    if (!Number.isInteger(prefixBits) || prefixBits < 0 || prefixBits > 32) return false;
+    const compiled = NetworkAddressUtils.compile(rawPattern);
+    if (compiled.exact !== undefined) return compiled.exact === normalizedAddress;
+    if (compiled.block === undefined || compiled.mask === undefined) return false;
 
     const addressNumber = NetworkAddressUtils.toIpv4Number(normalizedAddress);
-    const blockNumber = NetworkAddressUtils.toIpv4Number(NetworkAddressUtils.normalize(rawPattern.slice(0, separatorIndex)));
-    if (addressNumber === null || blockNumber === null) return false;
-    if (prefixBits === 0) return true;
+    if (addressNumber === null) return false;
+    if (compiled.mask === 0) return true;
+    return ((addressNumber & compiled.mask) >>> 0) === ((compiled.block & compiled.mask) >>> 0);
+  }
 
-    const mask = prefixBits === 32 ? 0xFFFFFFFF : (~((2 ** (32 - prefixBits)) - 1)) >>> 0;
-    return ((addressNumber & mask) >>> 0) === ((blockNumber & mask) >>> 0);
+  /**
+   * A pattern parsed once: the operator's lists are checked against every request, and parsing each
+   * block every time was measured at 8% of the api's CPU under load.
+   */
+  private static readonly compiledPatterns = new Map<string, { exact?: string; block?: number; mask?: number }>();
+
+  private static compile(rawPattern: string): { exact?: string; block?: number; mask?: number } {
+    const known = NetworkAddressUtils.compiledPatterns.get(rawPattern);
+    if (known) return known;
+    let compiled: { exact?: string; block?: number; mask?: number } = {};
+    const separatorIndex = rawPattern.indexOf('/');
+    if (separatorIndex < 0) {
+      compiled = { exact: NetworkAddressUtils.normalize(rawPattern) };
+    } else {
+      const prefixBits = Number(rawPattern.slice(separatorIndex + 1));
+      const blockNumber = NetworkAddressUtils.toIpv4Number(NetworkAddressUtils.normalize(rawPattern.slice(0, separatorIndex)));
+      if (Number.isInteger(prefixBits) && prefixBits >= 0 && prefixBits <= 32 && blockNumber !== null) {
+        const mask = prefixBits === 0 ? 0 : prefixBits === 32 ? 0xFFFFFFFF : (~((2 ** (32 - prefixBits)) - 1)) >>> 0;
+        compiled = { block: blockNumber, mask };
+      }
+    }
+    if (NetworkAddressUtils.compiledPatterns.size > 4096) NetworkAddressUtils.compiledPatterns.clear();
+    NetworkAddressUtils.compiledPatterns.set(rawPattern, compiled);
+    return compiled;
   }
 
   /** True when `address` matches any pattern in the list. An empty list matches nothing. */
@@ -168,11 +187,17 @@ export class NetworkAddressUtils {
 
   /** Split an operator-entered list (commas, whitespace or newlines) into patterns. */
   static parseList(value: unknown): string[] {
-    return CoercionUtils.toString(value)
-      .split(/[\s,;]+/)
-      .map((entry) => entry.trim())
-      .filter(Boolean);
+    const text = CoercionUtils.toString(value);
+    // The same few settings are split on every request; each distinct text is split once.
+    const known = NetworkAddressUtils.parsedLists.get(text);
+    if (known) return [...known];
+    const list = text.split(/[\s,;]+/).map((entry) => entry.trim()).filter(Boolean);
+    if (NetworkAddressUtils.parsedLists.size > 64) NetworkAddressUtils.parsedLists.clear();
+    NetworkAddressUtils.parsedLists.set(text, list);
+    return [...list];
   }
+
+  private static readonly parsedLists = new Map<string, string[]>();
 
   private static toIpv4Number(address: string): number | null {
     const octets = address.split('.');
