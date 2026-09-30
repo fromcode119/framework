@@ -10,20 +10,22 @@ import type { ILoadedPlugin } from '@fromcode119/core';
 export class PluginSettingGatedPages {
   constructor(private readonly manager: PluginManager, private readonly logger: Logger) {}
 
+  /** Never fails the save it follows: a page that cannot be created is logged, the settings stay saved. */
   async afterSave(plugin: ILoadedPlugin, oldSettings: Record<string, any>, newSettings: Record<string, any>): Promise<void> {
-    const contracts = CoreServices.getInstance().defaultPageContracts.listByPlugin(
-      String(plugin.manifest.namespace || ''),
-      String(plugin.manifest.slug || ''),
-    );
-    const switchedOn = contracts.some((contract) => {
-      const setting = contract.enabledBySetting;
-      return Boolean(setting) && newSettings?.[setting!] === true && oldSettings?.[setting!] !== true;
-    });
-    if (!switchedOn) return;
     try {
+      if (!this.switchedOn(plugin, oldSettings, newSettings)) return;
       await this.manager.materializeDefaultPages();
     } catch (error: any) {
       this.logger.error(`Creating the pages "${plugin.manifest.slug}" switched on failed: ${error?.message || error}`);
     }
+  }
+
+  private switchedOn(plugin: ILoadedPlugin, oldSettings: Record<string, any>, newSettings: Record<string, any>): boolean {
+    return CoreServices.getInstance().defaultPageContracts
+      .listByPlugin(String(plugin.manifest.namespace || ''), String(plugin.manifest.slug || ''))
+      .some((contract) => {
+        const setting = contract.enabledBySetting;
+        return Boolean(setting) && newSettings?.[setting!] === true && oldSettings?.[setting!] !== true;
+      });
   }
 }
