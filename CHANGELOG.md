@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.263] - 2026-09-30
+
+### Added
+
+- **plugins**: named schema repairs for plugin migrations ([#549](https://github.com/fromcode119/framework/pull/549))
+
+### Performance
+
+- **database**: stop asking the catalog before every Postgres read ([#548](https://github.com/fromcode119/framework/pull/548))
+
 ## [0.2.262] - 2026-09-30
 
 ### Fixed
