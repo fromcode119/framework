@@ -18,6 +18,7 @@ export interface IGuestProcess {
   /** The spawner that started it — which `extension-host` it runs in — or null for the api's own child. */
   readonly launcher: SpawnerClient | null;
   kill(signal?: NodeJS.Signals): void;
-  onExit(listener: (code: number | null, signal: string | null) => void): void;
+  /** `reason` is set when its launcher stopped it on purpose (a resource limit), and says why. */
+  onExit(listener: (code: number | null, signal: string | null, reason?: string | null) => void): void;
   onOutput(listener: (stream: GuestOutputStream, line: string) => void): void;
 }

@@ -3,6 +3,7 @@ import { PluginHostRegistry } from '@core/plugin/host/plugin-host-registry';
 import { PluginHost } from '@core/plugin/host/plugin-host';
 import { SettingChangeInvalidators } from '@core/settings/setting-change-invalidators';
 import { SystemConstants } from '@core/constants/system.constants';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /**
  * Settings → Infrastructure → Plugin Isolation was read once per boot and handed to every host, so a
@@ -42,6 +43,23 @@ describe('saved plugin isolation limits reach running plugins', () => {
   afterEach(() => {
     IsolationFixture.stored = {};
     SettingChangeInvalidators.reset();
+    PluginOwners.forget('site-own');
+  });
+
+  it('a new share of the machine restarts a SITE\'s plugin on it, and leaves a platform plugin alone', async () => {
+    PluginOwners.record('site-own', 'tenant-a');
+    const registry = IsolationFixture.registry();
+    const site = await IsolationFixture.host(registry, 'site-own');
+    const platform = await IsolationFixture.host(registry, 'forms');
+
+    await IsolationFixture.save({
+      [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT]: '25',
+      [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB]: '256',
+    });
+
+    expect(site.reloads).toHaveLength(1);
+    expect((site.host as any).settings.siteResourceLimits()).toEqual({ cpuPercent: 25, memoryMb: 256 });
+    expect(platform.reloads).toEqual([]);
   });
 
   it('a new deadline governs the next call without replacing the process', async () => {

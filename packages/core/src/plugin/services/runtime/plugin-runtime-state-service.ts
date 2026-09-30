@@ -8,6 +8,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PluginConfigValueService } from '@core/plugin/services/settings/plugin-config-value-service';
 import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
+import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 
 export class PluginRuntimeStateService {
   constructor(
@@ -110,11 +111,16 @@ export class PluginRuntimeStateService {
     return new Map(this.pluginSettings);
   }
 
-  async disableWithError(slug: string): Promise<void> {
+  async disableWithError(slug: string, message: string): Promise<void> {
     const plugin = this.plugins.get(slug);
     if (!plugin) {
       return;
     }
+    // The reason is what the admin shows beside the switch (`plugin.error`); dropping it left a plugin
+    // switched off with nothing saying why.
+    plugin.error = message;
+    plugin.healthStatus = PluginRegistryHealth.ERROR;
+    plugin.stoppedByPlatform = true;
 
     // In-memory state goes 'error' (runtime excludes it); the DB only flips health to
     // 'error' and KEEPS the desired `state` column so the plugin recovers to its prior

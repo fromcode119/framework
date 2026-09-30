@@ -167,6 +167,32 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               <div className="w-full md:w-40">
                 <NumberStepper min={1000} step={1000} value={this.isolationTimeoutMs} onChange={this.onIsolationTimeout} placeholder={AdminI18n.t('settings.infrastructure.default9', { PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT: SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT })} />
               </div>
+            </div>
+          </SettingRow>
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Activity}
+            title={AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShare')}
+            stacked
+            description={AdminI18n.t('settings.infrastructure.siteUploadedPluginCpuShareDescription')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-full md:w-40">
+                <NumberStepper min={10} max={100} step={10} value={this.isolationSiteCpuPercent} onChange={this.onIsolationSiteCpu} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: SystemConstants.PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT })} />
+              </div>
+            </div>
+          </SettingRow>
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Server}
+            title={AdminI18n.t('settings.infrastructure.siteUploadedPluginMemory')}
+            stacked
+            description={AdminI18n.t('settings.infrastructure.siteUploadedPluginMemoryDescription')}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-full md:w-40">
+                <NumberStepper min={64} step={64} value={this.isolationSiteMemoryMb} onChange={this.onIsolationSiteMemory} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: SystemConstants.PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT })} />
+              </div>
               <Button onClick={this.saveIsolation} isLoading={this.isSavingIsolation} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>

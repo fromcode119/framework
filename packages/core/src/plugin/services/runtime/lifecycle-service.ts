@@ -231,6 +231,7 @@ export class LifecycleService {
 
       plugin.state = PluginState.ACTIVE;
       plugin.error = undefined;
+      plugin.stoppedByPlatform = undefined;
       // Enabling re-approves capabilities, so any capability-drift hold is resolved: reset the health
       // axis (in-memory + DB via clearPluginHeld) alongside the state.
       plugin.healthStatus = PluginRegistryHealth.HEALTHY;

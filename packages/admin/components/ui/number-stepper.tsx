@@ -64,6 +64,18 @@ export class NumberStepper extends PureReactor {
     this.onChange(Number.isFinite(parsed) ? parsed : raw);
   }
 
+  /**
+   * A typed number is clamped when the field is left, not on every keystroke — typing "200" into a
+   * field whose minimum is 64 must not snap to 64 at the "2". Without this only the +/- controls
+   * clamped, and a typed value past `max` was saved as typed.
+   */
+  @bound private onLeave(): void {
+    const current = typeof this.value === 'number' ? this.value : Number(this.value);
+    if (this.value === '' || this.value === null || this.value === undefined || !Number.isFinite(current)) return;
+    const clamped = this.clamp(current);
+    if (clamped !== current) this.onChange(clamped);
+  }
+
   render(): ReactNode {
     const { value, disabled, error, placeholder, min, max } = this;
     const sm = this.size === FieldSize.SM;
@@ -75,6 +87,7 @@ export class NumberStepper extends PureReactor {
           size={sm ? FieldSize.SM : FieldSize.MD}
           value={(typeof value === 'number' || typeof value === 'string') ? value : ''}
           onChange={this.onType}
+          onBlur={this.onLeave}
           placeholder={placeholder}
           disabled={disabled}
           error={error}

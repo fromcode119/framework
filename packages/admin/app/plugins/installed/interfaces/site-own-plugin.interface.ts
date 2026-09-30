@@ -4,4 +4,6 @@ import type { ISitePluginOffer } from '@/app/plugins/installed/interfaces/site-p
 export interface ISiteOwnPlugin extends ISitePluginOffer {
   /** Loaded and running on the server; a plugin that failed to start cannot be switched on. */
   running: boolean;
+  /** Why it is not running, when the server stopped it (a crash loop, a resource limit); '' otherwise. */
+  error: string;
 }

@@ -93,7 +93,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     return PluginHostRuntimeReader.read({ slug: this.slug, running: Boolean(this.guest), pid: this.guest?.pid ?? null, uid, limits: this.limits, recentRestarts: Number(this.restarts) || 0 }, this.channel);
   }
 
-  protected exited(code: number | null, signal: string | null): void {
+  protected exited(code: number | null, signal: string | null, stoppedFor?: string | null): void {
     this.channel?.close(new Error(`plugin "${this.slug}" process exited (${signal ?? code})`));
     this.channel = null;
     this.guest = null;
@@ -102,7 +102,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     // Mid-replacement the tokens in the map also belong to the process taking over; they must live.
     if (!this.restarting) this.tokens.revokeAll();
     if (this.stopping || this.restarting) return;
-    void this.restart(`process exited (${signal ?? code})`);
+    void this.restart(stoppedFor ? `stopped because this plugin ${stoppedFor}` : `process exited (${signal ?? code})`);
   }
 
   /**
@@ -113,7 +113,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
    */
   async reload(manifest: Record<string, unknown>): Promise<void> {
     this.manifest = manifest;
-    this.limits = this.settings.forPlugin(manifest.sandbox);
+    this.limits = this.settings.forPlugin(manifest.sandbox, Boolean(PluginOwners.ownerOf(this.slug)));
     if (!this.guest && !this.channel) return;
     this.logger.info('plugin files replaced; starting a fresh process with the new code');
     this.restarting = true;
@@ -131,11 +131,15 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
    * win, so a plugin that declares both sees no change and keeps its process.
    */
   async applySettings(settings: PluginIsolationSettings): Promise<void> {
+    const siteOwned = Boolean(PluginOwners.ownerOf(this.slug));
+    const previous = this.settings;
     this.settings = settings;
-    const next = settings.forPlugin(this.manifest.sandbox);
+    const next = settings.forPlugin(this.manifest.sandbox, siteOwned);
     const heapChanged = next.memoryMb !== this.limits.memoryMb;
+    // A site's plugin is also held to its share of the machine, which its launcher enforces from the start.
+    const shareChanged = siteOwned && (previous.siteCpuPercent !== settings.siteCpuPercent || previous.siteMemoryMb !== settings.siteMemoryMb);
     this.limits = next;
-    if (!heapChanged || (!this.guest && !this.channel)) return;
+    if ((!heapChanged && !shareChanged) || (!this.guest && !this.channel)) return;
     this.logger.info(`isolation limits changed; starting a fresh process with a ${next.memoryMb} MB heap`);
     this.restarting = true;
     try {

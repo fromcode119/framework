@@ -11,7 +11,8 @@ export class ForkedGuestProcess implements IGuestProcess {
   readonly port: IMessagePort;
   readonly socketMode = 0o600;
 
-  constructor(private readonly child: ChildProcess, readonly socketDir: string) {
+  /** `stoppedFor`: why the launcher stopped it, when it did (a resource limit), for the exit to carry. */
+  constructor(private readonly child: ChildProcess, readonly socketDir: string, private readonly stoppedFor: () => string | null = () => null) {
     this.port = new IpcMessagePort(child);
   }
 
@@ -23,8 +24,8 @@ export class ForkedGuestProcess implements IGuestProcess {
     this.child.kill(signal);
   }
 
-  onExit(listener: (code: number | null, signal: string | null) => void): void {
-    this.child.on('exit', (code, signal) => listener(code, signal));
+  onExit(listener: (code: number | null, signal: string | null, reason?: string | null) => void): void {
+    this.child.on('exit', (code, signal) => listener(code, signal, this.stoppedFor()));
   }
 
   onOutput(listener: (stream: GuestOutputStream, line: string) => void): void {

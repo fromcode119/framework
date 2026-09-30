@@ -136,7 +136,7 @@ export class SiteOwnPlugins extends AdminComponent {
                   disabled={this.busy !== null || !plugin.running}
                   onChange={(enabled: boolean) => this.toggle(plugin.slug, enabled)}
                   label={`${plugin.name} · v${plugin.version}`}
-                  description={plugin.running ? plugin.description : AdminI18n.t('plugins.list.notRunningOnTheServer')}
+                  description={plugin.running ? plugin.description : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
                 />
                 <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-semibold text-rose-500 hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
               </div>

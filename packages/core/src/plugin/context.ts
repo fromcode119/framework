@@ -40,6 +40,7 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
 import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
+import { PublicNetworkFetch } from '@core/security/public-network-fetch';
 import { ProjectPaths } from '@core/config/paths';
 import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
@@ -152,8 +153,16 @@ export class PluginContextFactory {
           // method- or host-based split: the framework cannot tell a Stripe capture from a Stripe
           // list call, and a courier API can use POST for lookups too, so anything finer would fail open.
           await new TenantEnvironmentGate(manager.db, manager.audit).assert('network', url, plugin.manifest.slug);
-          manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'allowed');
-          return fetch(url, init);
+          // Public internet only: the request leaves from inside the platform's network, where redis,
+          // the database and the api itself answer (`PublicNetworkFetch`).
+          try {
+            const response = await PublicNetworkFetch.fetch(url, init);
+            manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'allowed');
+            return response;
+          } catch (error) {
+            if (PublicNetworkFetch.isRefusal(error)) manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'denied');
+            throw error;
+          }
         },
         jobs: JobsContextProxy.createJobsProxy(plugin, manager, security) as any,
         scheduler: SchedulerContextProxy.createSchedulerProxy(plugin, manager, security),

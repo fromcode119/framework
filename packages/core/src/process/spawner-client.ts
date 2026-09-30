@@ -32,7 +32,7 @@ export class SpawnerClient {
   private static readonly REQUEST_TIMEOUT_MS = 30_000;
 
   private readonly channel: PluginChannel;
-  private readonly exitListeners = new Map<string, Set<(code: number | null, signal: string | null, pid: number | null) => void>>();
+  private readonly exitListeners = new Map<string, Set<(code: number | null, signal: string | null, pid: number | null, reason?: string | null) => void>>();
   private readonly outputListeners = new Map<string, Set<(stream: GuestOutputStream, line: string) => void>>();
   private readonly disconnectListeners = new Set<() => void>();
 
@@ -157,7 +157,7 @@ export class SpawnerClient {
   }
 
   /** `pid` names WHICH process of this id exited — a replaced predecessor's exit must not be taken for the current one's. */
-  onExit(id: string, listener: (code: number | null, signal: string | null, pid: number | null) => void): void {
+  onExit(id: string, listener: (code: number | null, signal: string | null, pid: number | null, reason?: string | null) => void): void {
     if (!this.exitListeners.has(id)) this.exitListeners.set(id, new Set());
     this.exitListeners.get(id)!.add(listener);
   }
@@ -195,7 +195,7 @@ export class SpawnerClient {
   private notified(type: string, payload: any): void {
     const id = String(payload?.id ?? '');
     if (type === String(SpawnerMessage.EXIT.value)) {
-      for (const listener of this.exitListeners.get(id) ?? []) listener(payload.code ?? null, payload.signal ?? null, payload.pid ?? null);
+      for (const listener of this.exitListeners.get(id) ?? []) listener(payload.code ?? null, payload.signal ?? null, payload.pid ?? null, payload.reason ?? null);
       return;
     }
     if (type === String(SpawnerMessage.OUTPUT.value)) {

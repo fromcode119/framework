@@ -43,7 +43,7 @@ export class PluginSiteOfferController extends BaseController {
     const own = PluginOwners.ownedBy(tenantId)
       .map((slug) => this.manager.plugins.get(slug))
       .filter(Boolean)
-      .map((plugin) => ({ ...describe(plugin), running: PluginState.resolve(plugin!.state) === PluginState.ACTIVE }));
+      .map((plugin) => ({ ...describe(plugin), running: PluginState.resolve(plugin!.state) === PluginState.ACTIVE, error: plugin!.error ?? '' }));
     res.json({ plugins, own });
   }
 

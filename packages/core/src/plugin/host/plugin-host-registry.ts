@@ -25,6 +25,8 @@ export class PluginHostRegistry {
   private static readonly SETTING_KEYS = [
     SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB,
     SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB,
   ];
 
   constructor(private readonly manager: IPluginManagerInterface, private readonly projectRoot: string) {
