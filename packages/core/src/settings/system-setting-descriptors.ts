@@ -1,10 +1,10 @@
 import { SettingScope } from '@core/settings/enums/setting-scope.enum';
-import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { SystemConstants } from '@core/constants/system.constants';
 import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 import { SystemSettingSeedDefaults } from '@core/settings/system-setting-seed-defaults';
 import { LocalizationSettingDescriptors } from '@core/settings/localization-setting-descriptors';
 import { SignupEmailSettingDescriptors } from '@core/settings/signup-email-setting-descriptors';
+import { ApiFirewallSettingDescriptors } from '@core/settings/api-firewall-setting-descriptors';
 
 /**
  * What every system setting DECLARES: its scope, whether it is writable, whether it may be exposed,
@@ -235,36 +235,8 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'false', description: "Enable two-factor authentication.", group: "security" },
     },
-    [SystemConstants.META_KEY.RATE_LIMIT_MAX]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '600', description: "Maximum anonymous requests per rate-limit window per IP (window set by Rate Limit Window, default one minute).", group: "security" },
-    },
-    [SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '2000', description: "Maximum requests per rate-limit window for signed-in requests (counted per IP + token; window set by Rate Limit Window, default one minute).", group: "security" },
-    },
-    [SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '20000', description: "Maximum requests per rate-limit window for internal server-to-server calls (the storefront renderer), counted per calling service address (window set by Rate Limit Window, default one minute).", group: "security" },
-    },
-    [SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: NetworkAddressUtils.PRIVATE_RANGES_TEXT, description: "Addresses/CIDR blocks that count as internal service callers (the storefront renderer, workers). Clear it and nothing is internal: every anonymous caller falls back to the public limit.", group: "security" },
-    },
-    [SystemConstants.META_KEY.RATE_LIMIT_EDGE_PROVIDER_RANGES]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingSeedDefaults.edgeProviderRangesDefault(), description: "Each registered edge provider's published IP ranges, trusted to set that provider's real-visitor header (e.g. Cloudflare's CF-Connecting-IP). JSON, keyed by the provider's own key (\"cloudflare\", ...). Seeded with the ranges built into the code; extend a provider's entry if it publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
-    },
-    [SystemConstants.META_KEY.RATE_LIMIT_WINDOW]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '60000', description: "Rate limit window in milliseconds. Fixed-window: tripping the limit locks a caller out for up to this long, so keep it short.", group: "security" },
-    },
-    // PLATFORM for the reason the rate-limit keys above are: it is read from the API's settings cache,
-    // which an untenanted read fills with the platform row only. The COUNT is per plugin per site.
-    [SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '0', description: "Database calls one plugin may make for one site per minute. 0 = unlimited.", group: "security" },
-    },
+    // Settings → Security → API Firewall — see ApiFirewallSettingDescriptors.
+    ...ApiFirewallSettingDescriptors.ALL,
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Empty means every plugin write is audited. Name a high-volume table here — telemetry, event streams — when its writes would otherwise drown the trail. Seeded empty on purpose: which tables those are depends on what is installed, so it is yours to state.", group: "security" },
