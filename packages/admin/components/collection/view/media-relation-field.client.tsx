@@ -17,7 +17,8 @@ export class MediaRelationField extends Reactor {
   @prop declare wholeImage?: boolean;
 
   @state open = false;
-  @state preview: IMediaRelationPreview | null = null;
+  /** One per selected file, in the stored order. */
+  @state previews: IMediaRelationPreview[] = [];
 
   private hydrateToken = 0;
 
@@ -25,56 +26,46 @@ export class MediaRelationField extends Reactor {
     return MediaRelationFieldUtils.getSelectedIds(this.value);
   }
 
-  @bound private async hydratePreview(): Promise<void> {
+  @bound private async hydratePreviews(): Promise<void> {
     const token = ++this.hydrateToken;
-    const isCurrent = () => token === this.hydrateToken;
-    const selectedIds = this.getSelectedIds();
-    const preview = this.preview;
-
-    const firstId = selectedIds[0];
-    if (!firstId) {
-      if (isCurrent()) this.preview = null;
+    const ids = this.getSelectedIds().map(String);
+    const known = new Map(this.previews.map((preview) => [String(preview.id), preview]));
+    if (ids.every((id) => known.get(id)?.url)) {
+      this.previews = ids.map((id) => known.get(id)!);
       return;
     }
+    const resolved = await Promise.all(ids.map((id) => known.get(id)?.url ? known.get(id)! : this.resolvePreview(id)));
+    if (token !== this.hydrateToken) return;
+    this.previews = resolved.filter((preview): preview is IMediaRelationPreview => Boolean(preview));
+  }
 
-    const currentPreviewId = String(preview?.filename || '').startsWith('media-')
-      ? String(preview?.filename || '').replace(/^media-/, '')
-      : '';
-    if (preview?.url && currentPreviewId === String(firstId)) {
-      return;
-    }
-
+  private async resolvePreview(id: string): Promise<IMediaRelationPreview | null> {
     // A theme-asset selection ("theme:<relativePath>") is not a media record — resolve its preview
     // from the active theme's asset listing instead of the media collection.
-    if (String(firstId).startsWith('theme:')) {
-      const themeAssets = await MediaPickerSourceService.fetchThemeAssets();
-      if (!isCurrent()) return;
-      const match = themeAssets.find((item) => item.id === String(firstId));
-      this.preview = match ? { url: match.url, filename: match.filename } : null;
-      return;
+    if (id.startsWith('theme:')) {
+      const match = (await MediaPickerSourceService.fetchThemeAssets()).find((item) => item.id === id);
+      return match ? { id, url: match.url, filename: match.filename, mimeType: match.mimeType } : null;
     }
-
     // The media API, not the generic collection record: only it addresses the file on the SITE's host.
     // A site's uploads live in its own directory and are served per host, so a bare `path` resolved
     // against the console's host 404s for every file uploaded since sites got their own directories.
     try {
-      const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?id=${encodeURIComponent(String(firstId))}&limit=1`);
-      if (!isCurrent()) return;
+      const response = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}?id=${encodeURIComponent(id)}&limit=1`);
       const docs = Array.isArray(response) ? response : Array.isArray(response?.docs) ? response.docs : [];
       const doc = docs[0];
       const url = doc?.url ? MediaRelationFieldUtils.resolvePreviewUrl(String(doc.url)) : '';
-      this.preview = url ? { url, filename: String(doc.filename || doc.originalName || `media-${firstId}`) } : null;
+      return url ? { id, url, filename: String(doc.originalName || doc.filename || `media-${id}`), mimeType: String(doc.mimeType || '') } : null;
     } catch {
-      if (isCurrent()) this.preview = null;
+      return null;
     }
   }
 
   componentDidMount(): void {
-    void this.hydratePreview();
+    void this.hydratePreviews();
   }
 
   componentDidUpdate(prevProps: { value: any }): void {
-    if (prevProps.value !== this.value) void this.hydratePreview();
+    if (prevProps.value !== this.value) void this.hydratePreviews();
   }
 
   componentWillUnmount(): void {
@@ -83,14 +74,18 @@ export class MediaRelationField extends Reactor {
   }
 
   @bound private handleSelect(item: any): void {
-    const hasMany = this.hasMany ?? false;
     const selectedId = item?.id || item?._id || item;
-    if (hasMany) {
-      this.onChange(selectedId ? [selectedId] : []);
-    } else {
-      this.onChange(selectedId);
-    }
-    this.preview = { url: item.url, filename: item.filename };
+    if (!selectedId) return;
+    const preview = { id: String(selectedId), url: item.url, filename: item.filename, mimeType: item.mimeType };
+    this.previews = this.hasMany
+      ? [...this.previews.filter((existing) => existing.id !== preview.id), preview]
+      : [preview];
+    this.onChange(MediaRelationFieldUtils.withSelected(this.getSelectedIds(), selectedId, Boolean(this.hasMany)));
+  }
+
+  @bound private handleRemove(id: string): void {
+    this.previews = this.previews.filter((preview) => preview.id !== id);
+    this.onChange(MediaRelationFieldUtils.withoutSelected(this.getSelectedIds(), id, Boolean(this.hasMany)));
   }
 
   @bound private handleOpenChange(v: boolean): void {
@@ -98,18 +93,17 @@ export class MediaRelationField extends Reactor {
   }
 
   render(): React.ReactNode {
-    const hasMany = this.hasMany ?? false;
-
     return (
       <MediaRelationFieldView
         wholeImage={Boolean(this.wholeImage)}
         theme={this.theme}
-        hasMany={hasMany}
+        hasMany={Boolean(this.hasMany)}
         open={this.open}
-        preview={this.preview}
+        previews={this.previews}
         selectedIds={this.getSelectedIds()}
         onOpenChange={this.handleOpenChange}
         onSelect={this.handleSelect}
+        onRemove={this.handleRemove}
       />
     );
   }

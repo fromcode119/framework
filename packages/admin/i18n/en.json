@@ -444,7 +444,9 @@
       "selectedId": "Selected media ID: {{ids}}",
       "selectedIds": "Selected media IDs: {{ids}}",
       "none": "No media selected",
-      "select": "Select Media"
+      "select": "Select Media",
+      "add": "Add file",
+      "remove": "Remove {{name}}"
     },
     "person": {
       "readFailed": "People #{{id}} could not be read, so it is not shown here.",
@@ -1312,7 +1314,6 @@
       "thePublicIdentifierForYour": "The public identifier for your portal and administrative interface.",
       "emailLogo": "Email logo",
       "emailLogoDescription": "Shown at the top of every email this site sends — sign-up, password reset, security notices and plugin emails. Use a PNG or JPG: many mail apps do not show SVG. Empty: no logo.",
-      "removeEmailLogo": "Remove logo",
       "eGMyWebsite": "e.g. My Website",
       "frontendUrl": "Frontend URL",
       "thisDeploymentSOwnFrontend": "This deployment's own frontend address — used by the gateway and for its certificate.",
