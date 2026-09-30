@@ -1,4 +1,4 @@
-import { SortDirection } from '@database/enums/sort-direction.enum';
+import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { IMigrationTenantScope } from '@database/interfaces/migration-tenant-scope.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -142,8 +142,8 @@ export abstract class BaseMigration {
   /**
    * Create a (optionally unique) index only when it does not already exist.
    *
-   * Uses `CREATE [UNIQUE] INDEX IF NOT EXISTS` which is supported by all
-   * target database drivers (SQLite, PostgreSQL, MySQL).
+   * The driver builds `CREATE [UNIQUE] INDEX IF NOT EXISTS` from validated names — no raw SQL here,
+   * so a plugin migration needs only the schema capability, never raw SQL.
    *
    * Each column may be a plain string (`'col'`) or an object specifying
    * sort order (`{ name: 'col', order: 'DESC' }`). Mixed forms are allowed.
@@ -159,22 +159,10 @@ export abstract class BaseMigration {
     db: IDatabaseManager,
     tableName: string,
     indexName: string,
-    columns: Array<string | { name: string; order?: SortDirection }>,
+    columns: Array<string | IIndexColumn>,
     options?: { unique?: boolean },
   ): Promise<void> {
-    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
-    BaseMigration.assertSafeIdentifier(indexName, 'index');
-    const unique = options?.unique ? 'UNIQUE ' : '';
-    const cols = columns
-      .map((c) => {
-        if (typeof c === 'string') return `"${BaseMigration.assertSafeIdentifier(c, 'column')}"`;
-        const colName = BaseMigration.assertSafeIdentifier(c.name, 'column');
-        return c.order === SortDirection.ASC || c.order === SortDirection.DESC ? `"${colName}" ${c.order}` : `"${colName}"`;
-      })
-      .join(', ');
-    await db.execute(
-      `CREATE ${unique}INDEX IF NOT EXISTS "${indexName}" ON "${table}" (${cols})`,
-    );
+    await db.createIndexIfMissing(TableResolver.resolve(tableName), indexName, columns, options);
   }
 
   /**
@@ -190,8 +178,7 @@ export abstract class BaseMigration {
     db: IDatabaseManager,
     tableName: string,
   ): Promise<void> {
-    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
-    await db.execute(`DROP TABLE IF EXISTS "${table}"`);
+    await db.dropTableIfExists(TableResolver.resolve(tableName));
   }
 
   /**
@@ -238,16 +225,6 @@ export abstract class BaseMigration {
     tableName: string,
     column: string,
   ): Promise<void> {
-    const table = BaseMigration.assertSafeIdentifier(TableResolver.resolve(tableName), 'table');
-    const safeColumn = BaseMigration.assertSafeIdentifier(column, 'column');
-    try {
-      await db.execute(`ALTER TABLE "${table}" DROP COLUMN IF EXISTS "${safeColumn}"`);
-    } catch {
-      try {
-        await db.execute(`ALTER TABLE "${table}" DROP COLUMN "${safeColumn}"`);
-      } catch {
-        // Column does not exist — nothing to drop.
-      }
-    }
+    await db.dropColumnIfExists(TableResolver.resolve(tableName), column);
   }
 }

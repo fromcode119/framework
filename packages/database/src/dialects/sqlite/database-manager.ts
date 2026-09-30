@@ -1,3 +1,5 @@
+import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
+import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
@@ -276,5 +278,16 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     for (const table of tables) {
       await this.execute(sql`DROP TABLE ${sql.identifier(table)}`);
     }
+  }
+
+  /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
+  private readonly portableSchema = new PortableSchemaOperations((statement) => this.execute(statement));
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+    return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
+  }
+  async dropTableIfExists(table: string): Promise<void> { return this.portableSchema.dropTableIfExists(table); }
+  async dropColumnIfExists(table: string, column: string): Promise<void> { return this.portableSchema.dropColumnIfExists(table, column); }
+  async copyColumnValues(table: string, target: string, source: string, jsonKey?: string): Promise<void> {
+    return this.portableSchema.copyColumnValues(table, target, source, jsonKey);
   }
 }

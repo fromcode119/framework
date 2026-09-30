@@ -83,6 +83,36 @@ describe('PluginSchemaDatabaseProxy', () => {
     expect(dropColumnDefault).not.toHaveBeenCalled();
   });
 
+  it('lets a data migration read and write its own rows with the capabilities its runtime already has', async () => {
+    const find = vi.fn(async () => []);
+    const update = vi.fn(async () => ({}));
+    const reader: any = PluginSchemaDatabaseProxy.create(plugin(['database:read']), manager({ find, update }));
+    const writer: any = PluginSchemaDatabaseProxy.create(plugin(['database:write']), manager({ find, update }));
+
+    await reader.find('@alpha/orders', {});
+    expect(() => reader.update).toThrow(/database:write/);
+    await writer.update('fcp_alpha_orders', { id: 1 }, { note: 'x' });
+    expect(() => writer.find('fcp_beta_orders', {})).toThrow(/database:schema:cross-plugin/);
+    expect(() => writer.update('_system_meta', { id: 1 }, {})).toThrow(/database:schema:cross-plugin/);
+    expect(find).toHaveBeenCalledTimes(1);
+    expect(update).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers the migration helpers as named operations inside the plugin namespace', async () => {
+    const helpers = {
+      createIndexIfMissing: vi.fn(), dropTableIfExists: vi.fn(), dropColumnIfExists: vi.fn(), copyColumnValues: vi.fn(),
+    };
+    const ddl: any = PluginSchemaDatabaseProxy.create(plugin(['database:schema']), manager(helpers));
+
+    await ddl.createIndexIfMissing('fcp_alpha_orders', 'idx_alpha', ['placed_at']);
+    await ddl.copyColumnValues('fcp_alpha_orders', 'sources', 'metadata', 'sources');
+    await ddl.dropColumnIfExists('fcp_alpha_orders', 'metadata');
+    expect(() => ddl.dropTableIfExists('users')).toThrow(/database:schema:cross-plugin/);
+    expect(() => ddl.copyColumnValues('fcp_beta_orders', 'a', 'b')).toThrow(/database:schema:cross-plugin/);
+    expect(helpers.dropTableIfExists).not.toHaveBeenCalled();
+    expect(helpers.copyColumnValues).toHaveBeenCalledTimes(1);
+  });
+
   it('requires raw approval before arbitrary SQL execution', () => {
     const execute = vi.fn();
     const ddl: any = PluginSchemaDatabaseProxy.create(

@@ -1,3 +1,5 @@
+import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
+import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -200,5 +202,16 @@ export abstract class PostgresCrudOperations extends BaseDialect {
   async resetDatabase(): Promise<void> {
     await this.execute(sql`DROP SCHEMA public CASCADE`);
     await this.execute(sql`CREATE SCHEMA public`);
+  }
+
+  /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
+  private readonly portableSchema = new PortableSchemaOperations((statement) => this.queryRaw(statement), (quotedColumn, key) => `${quotedColumn}->'${key}'`);
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+    return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
+  }
+  async dropTableIfExists(table: string): Promise<void> { return this.portableSchema.dropTableIfExists(table); }
+  async dropColumnIfExists(table: string, column: string): Promise<void> { return this.portableSchema.dropColumnIfExists(table, column); }
+  async copyColumnValues(table: string, target: string, source: string, jsonKey?: string): Promise<void> {
+    return this.portableSchema.copyColumnValues(table, target, source, jsonKey);
   }
 }

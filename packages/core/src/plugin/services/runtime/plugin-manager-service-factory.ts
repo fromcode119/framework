@@ -13,6 +13,8 @@ import { PluginTelemetryService } from '@core/plugin/services/health/plugin-tele
 import { PluginScaffoldService } from '@core/plugin/services/installation/plugin-scaffold-service';
 import { PluginAdminRuntimeService } from '@core/plugin/services/admin/plugin-admin-runtime-service';
 import { PluginInstallationService } from '@core/plugin/services/installation/plugin-installation-service';
+import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
+import type { IDatabaseManager } from '@core/interfaces/database-manager.interface';
 import { PluginRuntimeStateService } from '@core/plugin/services/runtime/plugin-runtime-state-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
 import { PluginManagerInitService } from '@core/plugin/services/runtime/plugin-manager-init-service';
@@ -77,6 +79,7 @@ export class PluginManagerServiceFactory {
       (slug: string) => manager.enable(slug),
       (slug: string, manifest) => manager.pluginHosts.reload(slug, manifest as unknown as Record<string, unknown>),
       (slug: string) => lifecycle.syncCollections(slug),
+      (manifest) => PluginSchemaDatabaseProxy.create({ manifest }, manager) as IDatabaseManager,
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)
