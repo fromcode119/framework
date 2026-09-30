@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.271] - 2026-09-30
+
+### Added
+
+- **api**: once-only boot and background work across api workers ([#573](https://github.com/fromcode119/framework/pull/573))
+- **api**: one rate limit across every api worker ([#572](https://github.com/fromcode119/framework/pull/572))
+- **core**: tell every api process when a cached copy is stale ([#569](https://github.com/fromcode119/framework/pull/569))
+
 ## [0.2.270] - 2026-09-30
 
 ### Fixed
