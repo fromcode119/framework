@@ -8,8 +8,15 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ## [0.2.261] - 2026-09-30
 
+### Added
+
+- **pages**: a plugin's default page can be switched on per site by one of its settings ([#542](https://github.com/fromcode119/framework/pull/542))
+
 ### Fixed
 
+- **react**: the @fromcode119/react runtime module declares each export once ([#539](https://github.com/fromcode119/framework/pull/539))
+- **admin**: a structured field's key names are translated like the rest of the field ([#536](https://github.com/fromcode119/framework/pull/536))
+- **dev**: the dev containers mount the storefront's i18n and the admin's public folder ([#535](https://github.com/fromcode119/framework/pull/535))
 - **security**: contain site-uploaded and platform extensions ([#541](https://github.com/fromcode119/framework/pull/541))
 - **plugins**: an update to a plugin in error replaces its process ([#543](https://github.com/fromcode119/framework/pull/543))
 
