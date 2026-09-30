@@ -13,6 +13,7 @@ import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resol
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
+import { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
@@ -36,6 +37,11 @@ export class ServerMiddlewareSetup {
   ) {}
 
   setup() {
+    // First, so every response carries them — including an error or a refusal sent by a later
+    // middleware. The class existed and was exported, but nothing mounted it: no api response had them.
+    this.app.disable('x-powered-by');
+    this.app.use(new SecurityHeadersMiddleware().middleware());
+
     // Gzip for anonymous public JSON GETs (e.g. /system/frontend) — BREACH-scoped:
     // requests carrying auth credentials are never compressed. See the middleware class.
     this.app.use(this.jsonCompression.middleware());

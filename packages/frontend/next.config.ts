@@ -6,6 +6,8 @@ import type { INextWebpackContext } from '../../config/interfaces/next-webpack-c
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Names the framework to every visitor and helps nobody.
+  poweredByHeader: false,
   // Next's dev server 403s `/_next/*` for any Host not listed here, and the page still streams — so a
   // blocked storefront paints its server-rendered shell and never hydrates, with nothing in the
   // browser console to say why. Every SITE is its own host and is created in the admin long after
@@ -127,6 +129,17 @@ const nextConfig = {
   },
   async headers() {
     return [
+      {
+        // Every storefront page: another site may not frame it (a framed customer login is a
+        // clickjacking target), browsers may not sniff a type, and full URLs do not leak to other
+        // sites as referrers. No CSP here: themes ship their own scripts and styles.
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
       {
         // Hashed build chunks are content-addressed (filename changes on every build),
         // so they are safe to cache immutably for a year. This restores Next's own
