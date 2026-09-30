@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.270] - 2026-09-30
+
+### Fixed
+
+- **auth**: social sign-in joins a site only where its registration is open ([#571](https://github.com/fromcode119/framework/pull/571))
+- **admin**: a many-file media field keeps every file, and each can be removed ([#550](https://github.com/fromcode119/framework/pull/550))
+- **pages**: a default page's owner values are read during its own activation ([#553](https://github.com/fromcode119/framework/pull/553))
+
 ## [0.2.269] - 2026-09-30
 
 ### Added
