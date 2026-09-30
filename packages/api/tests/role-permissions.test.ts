@@ -108,14 +108,15 @@ describe('saving a role', () => {
   class FakeDb {
     upserts: any[] = [];
     constructor(private readonly existing: any) {}
-    async findOne(table: unknown) { return table === Schema.systemRoles ? this.existing : null; }
+    async findOne(table: unknown) { return table === Schema.systemRoles || table === '_system_roles' ? this.existing : null; }
+    async find(table: unknown) { return table === '_system_roles' && this.existing ? [this.existing] : []; }
     async upsert(_table: unknown, row: any) { this.upserts.push(row); }
   }
 
   it('refuses permissions the person saving it does not hold', async () => {
     const db = new FakeDb(null);
     const roles = new RoleManagementService(db as any);
-    await expect(roles.saveRole('clerk', { name: 'Clerk', permissions: ['*'] }, ['roles:manage', 'shop:*']))
+    await expect(roles.saveRole('clerk', { name: 'Clerk', permissions: ['*'] }, ['roles:manage', 'shop:*'], { platformAdmin: true }))
       .rejects.toBeInstanceOf(RoleGrantError);
     expect(db.upserts).toHaveLength(0);
   });
@@ -123,7 +124,7 @@ describe('saving a role', () => {
   it('allows what the editor holds, and keeps what the role already had', async () => {
     const db = new FakeDb({ slug: 'clerk', permissions: '["users:manage"]' });
     const roles = new RoleManagementService(db as any);
-    await roles.saveRole('clerk', { name: 'Clerk', permissions: ['users:manage', 'shop:orders:read'] }, ['roles:manage', 'shop:*']);
+    await roles.saveRole('clerk', { name: 'Clerk', permissions: ['users:manage', 'shop:orders:read'] }, ['roles:manage', 'shop:*'], { platformAdmin: true });
     expect(db.upserts[0].permissions).toEqual(['users:manage', 'shop:orders:read']);
   });
 

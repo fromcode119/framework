@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
 
 describe('TenantIsolationSql', () => {
-  it('guards the predicate with nullif so an empty setting never matches', () => {
-    expect(TenantIsolationSql.predicate())
-      .toBe("tenant_id = nullif(current_setting('app.tenant_id', true), '')");
+  it('keeps the raw column DEFAULT guarded with nullif so an empty setting never stamps a phantom tenant', () => {
+    expect(TenantIsolationSql.currentTenantExpression()).toBe("nullif(current_setting('app.tenant_id', true), '')");
   });
 
   it('never emits a bare current_setting comparison', () => {
@@ -52,9 +52,14 @@ describe('TenantIsolationSql', () => {
     expect(TenantIsolationSql.statementsFor('orders')).toContain('ALTER TABLE "orders" FORCE ROW LEVEL SECURITY');
   });
 
-  it('sets and clears the tenant setting at session scope', () => {
-    expect(TenantIsolationSql.setTenantStatement()).toBe("SELECT set_config('app.tenant_id', $1, false)");
-    expect(TenantIsolationSql.resetTenantStatement()).toBe("SELECT set_config('app.tenant_id', '', false)");
+  it('binds only through the signed functions — never by setting the marker directly', () => {
+    expect(TenantBindingSql.openStatement()).toBe('SELECT fc_binding_open($1, $2) AS nonce');
+    expect(TenantBindingSql.bindStatement()).toBe('SELECT fc_bind($1, $2, $3)');
+  });
+
+  it('compares every policy against the VERIFIED site, never the raw setting', () => {
+    expect(TenantIsolationSql.predicate()).toBe('tenant_id = (SELECT fc_bound_tenant())');
+    expect(TenantIsolationSql.predicate()).not.toContain('current_setting');
   });
 
   it('rejects a table name that is not a plain identifier', () => {

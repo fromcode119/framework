@@ -1,6 +1,7 @@
 import { SqlIdentifier } from '@database/dialects/postgres/sql-identifier';
 import { TenantColumn } from '@database/tenant/tenant-column';
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
 
 /**
  * The policies the generic `tenant_id = current_tenant` rule cannot express.
@@ -26,7 +27,8 @@ export class TenantBespokePolicySql {
     const name = SqlIdentifier.assert(table, 'TenantBespokePolicySql');
     const shared = SqlIdentifier.assert(sharedColumn, 'TenantBespokePolicySql');
     const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
+    const bound = TenantIsolationSql.boundTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${bound}`;
     const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
                    `${name}_tenant_update`, `${name}_tenant_delete`];
     return [
@@ -59,7 +61,8 @@ export class TenantBespokePolicySql {
   static unownedReadStatements(table: string): string[] {
     const name = SqlIdentifier.assert(table, 'TenantBespokePolicySql');
     const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
+    const bound = TenantIsolationSql.boundTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${bound}`;
     const unowned = `"${TenantColumn.NAME}" IS NULL`;
     const names = [`${name}_tenant_isolation`, `${name}_tenant_select`, `${name}_tenant_insert`,
                    `${name}_tenant_update`, `${name}_tenant_delete`];
@@ -87,7 +90,8 @@ export class TenantBespokePolicySql {
     const key = SqlIdentifier.assert(keyColumn, 'TenantBespokePolicySql');
     const keys = platformKeys.map((entry) => `'${SqlIdentifier.assertLiteral(entry, 'TenantBespokePolicySql')}'`).join(', ');
     const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
+    const bound = TenantIsolationSql.boundTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${bound}`;
     return [
       `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT`,
       // The DEFAULT is load-bearing and was missing. Migration 022 added the column without one, so
@@ -103,10 +107,10 @@ export class TenantBespokePolicySql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
       `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND (${current} IS NULL OR "${key}" IN (${keys}))))
+         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND (${TenantBindingSql.unboundExpression()} OR "${key}" IN (${keys}))))
          WITH CHECK (
            ${own}
-           OR ("${TenantColumn.NAME}" IS NULL AND current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on')
+           OR ("${TenantColumn.NAME}" IS NULL AND ${TenantBindingSql.platformAdminExpression()})
          )`,
     ];
   }
@@ -134,8 +138,9 @@ export class TenantBespokePolicySql {
   static journalStatements(table: string): string[] {
     const name = SqlIdentifier.assert(table, 'TenantBespokePolicySql');
     const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
-    const platform = `current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on'`;
+    const bound = TenantIsolationSql.boundTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${bound}`;
+    const platform = `${TenantBindingSql.platformAdminExpression()}`;
     return [
       `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT DEFAULT ${current}`,
       `ALTER TABLE "${name}" ALTER COLUMN "${TenantColumn.NAME}" SET DEFAULT ${current}`,
@@ -144,8 +149,8 @@ export class TenantBespokePolicySql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
       `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR (${platform} AND ${current} IS NULL) OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
-         WITH CHECK (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))`,
+         USING (${own} OR ${platform} OR ("${TenantColumn.NAME}" IS NULL AND ${TenantBindingSql.unboundExpression()}))
+         WITH CHECK (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${TenantBindingSql.unboundExpression()}))`,
     ];
   }
 
@@ -153,7 +158,8 @@ export class TenantBespokePolicySql {
   static tenantSettingsStatements(table: string): string[] {
     const name = SqlIdentifier.assert(table, 'TenantBespokePolicySql');
     const current = TenantIsolationSql.currentTenantExpression();
-    const own = `"${TenantColumn.NAME}" = ${current}`;
+    const bound = TenantIsolationSql.boundTenantExpression();
+    const own = `"${TenantColumn.NAME}" = ${bound}`;
     return [
       `ALTER TABLE "${name}" ADD COLUMN IF NOT EXISTS "${TenantColumn.NAME}" TEXT `
         + `DEFAULT ${current}`,
@@ -163,10 +169,10 @@ export class TenantBespokePolicySql {
       `ALTER TABLE "${name}" FORCE ROW LEVEL SECURITY`,
       `DROP POLICY IF EXISTS "${name}_tenant_isolation" ON "${name}"`,
       `CREATE POLICY "${name}_tenant_isolation" ON "${name}"
-         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${current} IS NULL))
+         USING (${own} OR ("${TenantColumn.NAME}" IS NULL AND ${TenantBindingSql.unboundExpression()}))
          WITH CHECK (
            ${own}
-           OR ("${TenantColumn.NAME}" IS NULL AND current_setting('${TenantIsolationSql.PLATFORM_ADMIN_SETTING}', true) = 'on')
+           OR ("${TenantColumn.NAME}" IS NULL AND ${TenantBindingSql.platformAdminExpression()})
          )`,
     ];
   }

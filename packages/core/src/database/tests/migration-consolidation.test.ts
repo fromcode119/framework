@@ -18,6 +18,8 @@ import { SiteOwnedDataMigration } from '@core/database/migrations/045_site_owned
 import { SourcesTableOnSqliteMigration } from '@core/database/migrations/053_sources_table_on_sqlite';
 import { TimestampsCarryTheirZoneMigration } from '@core/database/migrations/054_timestamps_carry_their_zone';
 import { ReadOnlyInspectorRoleMigration } from '@core/database/migrations/055_read_only_inspector_role';
+import { SiteRolesMigration } from '@core/database/migrations/056_site_roles';
+import { SignedTenantBindingMigration } from '@core/database/migrations/057_signed_tenant_binding';
 
 /** `MigrationLoader` requires compiled files at runtime; under vitest the set is handed over directly. */
 const MIGRATIONS = [
@@ -27,10 +29,12 @@ const MIGRATIONS = [
   new SourcesTableOnSqliteMigration(),
   new TimestampsCarryTheirZoneMigration(),
   new ReadOnlyInspectorRoleMigration(),
+  new SiteRolesMigration(),
+  new SignedTenantBindingMigration(),
 ];
 
 /** The consolidated nine, then everything written after the consolidation. */
-const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55];
+const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55, 56, 57];
 
 /**
  * Framework migrations 1–52 were consolidated into nine. Each keeps the number of one version it
@@ -101,7 +105,7 @@ describe('consolidated framework migrations', () => {
     // Only what came after the consolidation runs; nothing consolidated re-creates a table.
     expect(await db.tableExists('_system_plugins')).toBe(false);
     const recorded = await db.find('_system_migrations', {});
-    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55]);
+    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55, 56, 57]);
   });
 
   it('refuses a database that stopped part-way, before running anything', async () => {

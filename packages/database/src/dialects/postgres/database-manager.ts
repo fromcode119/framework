@@ -1,6 +1,6 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
-import { Pool } from 'pg';
+import { Client, Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
 import { pgTable, text } from 'drizzle-orm/pg-core';
@@ -101,9 +101,15 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   public readonly desc = desc;
   public readonly asc = asc;
 
-  constructor(connection: string) {
+  constructor(private readonly connectionString: string) {
     super();
-    this.pool = new Pool({ connectionString: connection });
+    this.pool = new Pool({ connectionString });
+    // Every physical connection starts in its pool's SIGNED resting state — `none` for the request pool,
+    // `platform` for the DDL pool (markAsPlatformConnection) — decided when it connects, so the mark set
+    // after construction still applies. Unsigned, a connection sees nothing (TenantBindingSql).
+    this.pool.on('connect', (client: any) => {
+      PostgresTenantSession.markResting(client, PlatformPool.marks(this.pool));
+    });
     this.drizzle = drizzle(this.pool);
     this.normalizer = new PostgresColumnNormalizer(this.pool);
     this.schemaBuilder = new PostgresSchemaBuilder(this);
@@ -124,10 +130,29 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     // connection, so a client that had been through any tenant or platform scope came back with the
     // marker cleared and never got it again — every later untenanted platform write on that client
     // was refused. The scope's release reads this and restores the resting state.
+    // The connect handler installed in the constructor reads this mark for every new connection.
     PlatformPool.mark(this.pool);
-    this.pool.on('connect', (client: any) => {
-      PostgresTenantSession.markPlatformAdmin(client);
-    });
+  }
+
+  /**
+   * Installs the signed-binding verifier (TenantBindingSql) BEFORE either pool has a connection.
+   *
+   * Every pooled connection opens its binding as its first statement, from the `connect` event, and
+   * that call needs the verifier to exist. On a database that has never had one — the first boot after
+   * an upgrade, or a fresh install — a pooled connection would open before the install that the
+   * isolation sweep performs, and stay unbound: seeing nothing, and refused on every platform write.
+   * So it is done here, over a ONE-OFF connection outside the pools, as the very first thing a boot
+   * does. Called on the OWNER (DDL) manager: only the owner may create the functions and the key.
+   */
+  async prepareTenantBinding(): Promise<void> {
+    const client = new Client({ connectionString: this.connectionString });
+    await client.connect();
+    try {
+      await new PostgresTenantIsolation((sqlText, values) => client.query(sqlText, values as any[]).then((result: any) => result.rows))
+        .prepareBinding();
+    } finally {
+      await client.end();
+    }
   }
 
   /** Postgres isolates with row-level security; see TenantIsolationSql and DatabaseRoleGuard. */

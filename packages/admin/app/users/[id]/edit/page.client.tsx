@@ -28,6 +28,8 @@ export class EditUserPage extends AdminComponent {
     confirmPassword: ''
   };
   @state errors: Record<string, string> = {};
+  /** The API's word that this member's sign-in account is not this site's to change. */
+  @state identityLocked = false;
 
   private mounted = false;
 
@@ -54,6 +56,7 @@ export class EditUserPage extends AdminComponent {
         ? (await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.SECURITY))?.user
         : await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USER(this.routeId));
       if (!this.mounted) return;
+      this.identityLocked = Boolean(data.identityLocked);
       this.formData = {
         email: data.email || '',
         username: data.username || '',
@@ -142,6 +145,7 @@ export class EditUserPage extends AdminComponent {
                 errors={errors}
                 onPatch={(patch) => this.updateForm(patch)}
                 selfService={this.selfService}
+                identityLocked={this.identityLocked}
               />
 
               {errors.global && (

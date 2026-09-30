@@ -25,7 +25,7 @@ class FakeDb {
   inArray(_column: unknown, values: unknown[]) { return { in: values }; }
 
   async find(table: unknown, options?: any) {
-    if (table === Schema.systemRoles) return this.roles;
+    if (table === Schema.systemRoles || table === SystemConstants.TABLE.ROLES) return this.roles;
     if (table === Schema.systemUsersToRoles) {
       const value = options?.where?.eq;
       return this.userRoles.filter((row) => row.userId === value || row.roleSlug === value);
@@ -62,10 +62,11 @@ class FakeDb {
 }
 
 const ROLES = [
-  { slug: 'admin', pluginSlug: '' },
-  { slug: 'editor', pluginSlug: 'system' },
-  { slug: 'partner', pluginSlug: 'referrals' },
-  { slug: 'author', pluginSlug: 'cms' },
+  // Raw rows, as the role catalog reads them: snake_case.
+  { slug: 'admin', plugin_slug: '' },
+  { slug: 'editor', plugin_slug: 'system' },
+  { slug: 'partner', plugin_slug: 'referrals' },
+  { slug: 'author', plugin_slug: 'cms' },
 ];
 
 const makeService = () => {

@@ -14,6 +14,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { RolesListCard } from '@/app/users/roles/components/view/roles-list-card.client';
 import { RolesAuditSidebar } from '@/app/users/roles/components/view/roles-audit-sidebar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 
 export class RolesPage extends AdminComponent {
   private mounted = false;
@@ -25,6 +26,11 @@ export class RolesPage extends AdminComponent {
   @state showDeleteConfirm = false;
   @state roleToDelete: any = null;
   @state isDeleting = false;
+  /**
+   * Whether a role can be created HERE: inside a site (its own roles), or in platform scope by a
+   * platform admin (the platform's). Anyone else in platform scope would only be refused on save.
+   */
+  @state canCreate = false;
 
   componentDidMount(): void {
     this.mounted = true;
@@ -38,16 +44,18 @@ export class RolesPage extends AdminComponent {
   private async fetchData(): Promise<void> {
     try {
       if (this.mounted) this.loading = true;
-      const [rolesRes, logsRes, healthRes] = await Promise.all([
+      const [rolesRes, logsRes, healthRes, scope] = await Promise.all([
         AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES),
         AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.LOGS),
         AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.HEALTH),
+        AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null),
       ]);
       const logs = Array.isArray(logsRes?.docs) ? logsRes.docs : Array.isArray(logsRes) ? logsRes : [];
       if (this.mounted) {
         this.roles = rolesRes || [];
         this.logs = logs;
         this.health = healthRes || null;
+        this.canCreate = scope?.multiTenant === false || Boolean(scope?.current) || PlatformAccess.canManagePlatform(this.auth?.user);
       }
     } catch (err) {
       console.error('Failed to fetch data', err);
@@ -104,7 +112,7 @@ export class RolesPage extends AdminComponent {
           icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
           title={AdminI18n.t('users.roles')}
           subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
-          actions={
+          actions={!this.canCreate ? null :
             <Link href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
               <Button className="px-4 h-9 rounded-lg font-semibold text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
                 {AdminI18n.t('users.createRole')}

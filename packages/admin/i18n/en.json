@@ -2501,7 +2501,12 @@
     "permsCount": "{{count}} perms",
     "maintenance": "maintenance",
     "userNumber": "user #{{id}}",
-    "sourceContact": "contact"
+    "sourceContact": "contact",
+    "identityLockedNotice": "This person's sign-in account is shared with other sites, so its email, name and password are managed by the platform admin. You can still change their status and access on this site.",
+    "removedFromSite": "Removed from this site. The person's account itself is kept, because it is not managed by this site.",
+    "roleScopeSite": "This site",
+    "roleScopePlatform": "Platform",
+    "platformRoleLockedHint": "This is a platform role: it is the same on every site, so it can only be changed in platform scope by the platform admin. You can still give it to people on this site."
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Site settings ({{what}}) are set inside each site — choose one from the site menu.",

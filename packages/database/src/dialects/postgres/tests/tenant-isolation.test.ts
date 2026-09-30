@@ -3,6 +3,9 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-isolation-sql';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
 import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
+
 
 /**
  * The executing half. The statements themselves are asserted in `tenant-isolation-sql.test.ts`;
@@ -20,12 +23,38 @@ describe('PostgresTenantIsolation', () => {
     return { issued, run };
   };
 
-  it('isolateTable issues the column half then the enforcement half, in order', async () => {
-    const { issued, run } = recorder();
+  it('isolateTable installs the binding verifier first, then the column half and the enforcement half, in order', async () => {
+    const { issued, run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
 
     await new PostgresTenantIsolation(run).isolateTable('pages');
 
-    expect(issued.map((entry) => entry.text)).toEqual(TenantIsolationSql.statementsFor('pages'));
+    const install = TenantBindingSql.installStatements('public');
+    const expected = [TenantBindingSql.currentSchemaStatement(), ...install.before, install.key, ...install.after, install.readKey];
+    const texts = issued.map((entry) => entry.text);
+    expect(texts.slice(0, expected.length)).toEqual(expected);
+    expect(texts.slice(expected.length)).toEqual(TenantIsolationSql.statementsFor('pages'));
+  });
+
+  it('takes its key from the DATABASE — no application secret needed — and signs with it', async () => {
+    TenantBindingKey.use('');
+    const { run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
+    await new PostgresTenantIsolation(run).isolateTable('pages');
+    expect(TenantBindingKey.loaded).toBe(true);
+    expect(TenantBindingKey.sign('none:1')).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('never writes a key it was given: the database generates it, once', () => {
+    const install = TenantBindingSql.installStatements('public');
+    expect(install.key).toContain('gen_random_uuid()');
+    expect(install.key).toContain('ON CONFLICT (id) DO NOTHING');
+  });
+
+  it('installs the verifier only once per process, however many tables it isolates', async () => {
+    const { issued, run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
+    const isolation = new PostgresTenantIsolation(run);
+    await isolation.isolateTable('pages');
+    await isolation.isolateTable('orders');
+    expect(issued.filter((entry) => entry.text === TenantBindingSql.currentSchemaStatement())).toHaveLength(1);
   });
 
   it('addTenantColumn never enables row-level security', async () => {

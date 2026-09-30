@@ -3,6 +3,8 @@ import { TenantMembership } from '@core/tenant/tenant-membership';
 import { TenantRecord } from '@core/tenant/tenant-record';
 import { TenantAccess } from '@core/tenant/tenant-access';
 import { CoercionUtils } from '@core/utils/coercion-utils';
+import { RoleCatalog } from '@core/tenant/role-catalog';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 /**
  * Which tenants an account may enter.
@@ -69,11 +71,12 @@ export class TenantMembershipService {
     if (await this.isPlatformAdmin(id)) return this.listForUser(id);
 
     const rows = await this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { user_id: id } });
-    const consoleRoles = await this.consoleRoleSlugs();
-    const administered = (rows ?? [])
-      .map((row: any) => TenantMembership.from(row))
-      .filter((membership) => membership.isActive && membership.roles.some((role) => consoleRoles.has(role)))
-      .map((membership) => membership.tenantId);
+    const administered: string[] = [];
+    for (const membership of (rows ?? []).map((row: any) => TenantMembership.from(row))) {
+      if (!membership.isActive) continue;
+      const consoleRoles = await this.consoleRoleSlugs(membership.tenantId);
+      if (membership.roles.some((role) => consoleRoles.has(role))) administered.push(membership.tenantId);
+    }
     if (administered.length === 0) return [];
 
     const tenants = await this.db.find(SystemConstants.TABLE.TENANTS, {});
@@ -91,16 +94,12 @@ export class TenantMembershipService {
    * was refused outright. A role with no permissions (customer, partner) still opens nothing: there is
    * nothing in a console it could do.
    */
-  private async consoleRoleSlugs(): Promise<Set<string>> {
-    const rows = await this.db.find(SystemConstants.TABLE.ROLES, { limit: 500 });
+  private async consoleRoleSlugs(tenantId: string): Promise<Set<string>> {
+    // The platform's roles AND this site's own: a site's staff role is what opens its console.
+    const roles = await new RoleCatalog(this.db).list(tenantId);
     const slugs = new Set<string>([TenantMembershipService.ADMIN_ROLE]);
-    for (const row of rows ?? []) {
-      const raw = (row as any)?.permissions;
-      let permissions: unknown = raw;
-      if (typeof raw === 'string') {
-        try { permissions = JSON.parse(raw); } catch { permissions = []; }
-      }
-      if (Array.isArray(permissions) && permissions.length > 0) slugs.add(String((row as any).slug ?? '').trim().toLowerCase());
+    for (const role of roles) {
+      if (role.permissions.length > 0) slugs.add(role.slug.trim().toLowerCase());
     }
     return slugs;
   }
@@ -120,6 +119,32 @@ export class TenantMembershipService {
       .filter((membership: TenantMembership) => membership.isActive)
       .map((membership: TenantMembership) => Number(membership.userId))
       .filter((id: number) => Number.isFinite(id));
+  }
+
+  /**
+   * Of `userIds` — members of `tenantId` — the accounts this site does NOT own alone: those holding a
+   * membership row of any OTHER site (in any state), and the platform admin.
+   *
+   * `users` is one table for the whole platform, so an account's email and password are the same
+   * account on every site it belongs to. A site that could rewrite them could sign in as that account
+   * everywhere else — as the platform admin, when the platform admin is a member. What a site may
+   * change on such an account is its own membership; the identity belongs to the platform.
+   */
+  async listSharedUserIds(tenantId: string, userIds: number[]): Promise<number[]> {
+    const tenant = CoercionUtils.toString(tenantId);
+    const ids = userIds.map((id) => CoercionUtils.toString(id)).filter(Boolean);
+    if (!tenant || ids.length === 0) return [];
+    const [memberships, owners] = await Promise.all([
+      this.db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { user_id: { in: ids } } }),
+      this.db.find(SystemConstants.TABLE.USERS, { where: { is_platform_admin: true } }),
+    ]);
+    const shared = new Set<string>();
+    for (const row of memberships ?? []) {
+      const membership = TenantMembership.from(row);
+      if (membership.tenantId !== tenant) shared.add(CoercionUtils.toString(membership.userId));
+    }
+    for (const row of owners ?? []) shared.add(CoercionUtils.toString((row as any).id));
+    return ids.filter((id) => shared.has(id)).map(Number).filter((id) => Number.isFinite(id));
   }
 
   /** Tenant ids this account holds an ACTIVE membership row for. */
@@ -206,6 +231,23 @@ export class TenantMembershipService {
     const membership = TenantMembership.from(row);
     if (!membership.isActive) return null;
     return membership.roles;
+  }
+
+  /**
+   * What this account may do in PLATFORM scope — with no site bound — or `null` for "keep its global
+   * roles".
+   *
+   * `null` on a single-site deployment, where every admin is the platform, and for the platform admin,
+   * whose reach the platform is. Anyone else holds NOTHING there: a global `admin` role on a multi-site
+   * deployment is not platform administration, and platform scope is exactly where platform-level
+   * screens live. Such an account still signs in and picks a site; what it may do is then decided by
+   * that site's membership.
+   */
+  async rolesOutsideSite(userId: string): Promise<string[] | null> {
+    if (!TenantMode.isEnabled()) return null;
+    const id = CoercionUtils.toString(userId);
+    if (id && await this.isPlatformAdmin(id)) return null;
+    return [];
   }
 
   /**

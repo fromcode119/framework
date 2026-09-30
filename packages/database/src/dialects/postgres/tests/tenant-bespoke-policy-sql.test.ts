@@ -28,11 +28,11 @@ describe('bespoke tenant policies, as Postgres DDL', () => {
     const sql = sqlFor(MEDIA);
     // A single `USING (own OR shared) WITH CHECK (own)` would let a borrower DELETE another
     // tenant's shared asset: DELETE falls back to USING. Sharing must widen reads and nothing else.
-    expect(sql).toContain('FOR SELECT USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "shared" IS TRUE)');
+    expect(sql).toContain('FOR SELECT USING ("tenant_id" = (SELECT fc_bound_tenant()) OR "shared" IS TRUE)');
     expect(sql).toContain('FOR INSERT WITH CHECK');
     expect(sql).toContain('FOR UPDATE USING');
     expect(sql).toContain('FOR DELETE USING');
-    expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "shared" IS TRUE)');
+    expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = (SELECT fc_bound_tenant()) OR "shared" IS TRUE)');
   });
 
   /**
@@ -44,17 +44,17 @@ describe('bespoke tenant policies, as Postgres DDL', () => {
    */
   it('lets every tenant READ an unowned row, so a suppression nobody owns keeps applying', () => {
     const sql = sqlFor(UNOWNED);
-    expect(sql).toContain('FOR SELECT USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+    expect(sql).toContain('FOR SELECT USING ("tenant_id" = (SELECT fc_bound_tenant()) OR "tenant_id" IS NULL)');
   });
 
   it('lets NOBODY write an unowned row — not even to delete it', () => {
     const sql = sqlFor(UNOWNED);
     // Same trap as shared-read: DELETE falls back to USING, so a single `USING (own OR unowned)`
     // would let any tenant delete every unowned suppression on the platform.
-    expect(sql).toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\'))');
-    expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
-    expect(sql).not.toContain('FOR UPDATE USING ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
-    expect(sql).not.toContain('FOR INSERT WITH CHECK ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR "tenant_id" IS NULL)');
+    expect(sql).toContain('FOR DELETE USING ("tenant_id" = (SELECT fc_bound_tenant()))');
+    expect(sql).not.toContain('FOR DELETE USING ("tenant_id" = (SELECT fc_bound_tenant()) OR "tenant_id" IS NULL)');
+    expect(sql).not.toContain('FOR UPDATE USING ("tenant_id" = (SELECT fc_bound_tenant()) OR "tenant_id" IS NULL)');
+    expect(sql).not.toContain('FOR INSERT WITH CHECK ("tenant_id" = (SELECT fc_bound_tenant()) OR "tenant_id" IS NULL)');
   });
 
   it('still stamps NEW rows with the current tenant, so widening reads does not make new rows global', () => {
@@ -75,12 +75,14 @@ describe('bespoke tenant policies, as Postgres DDL', () => {
   it('keeps a deployment with NO tenants able to read its own settings', () => {
     // Without this branch, narrowing to the platform-key list would hide every other setting from
     // every installation that has no tenants — which is every installation before it migrates.
-    expect(sqlFor(META)).toContain("nullif(current_setting('app.tenant_id', true), '') IS NULL");
+    expect(sqlFor(META)).toContain('(SELECT fc_unbound())');
   });
 
   it('writes a platform-level row only for a connection marked as a platform admin', () => {
-    expect(sqlFor(META)).toContain("current_setting('app.platform_admin', true) = 'on'");
-    expect(sqlFor(SETTINGS)).toContain("current_setting('app.platform_admin', true) = 'on'");
+    // A VERIFIED marker (TenantBindingSql) — the raw setting is something any SQL can set for itself.
+    expect(sqlFor(META)).toContain('(SELECT fc_platform_admin())');
+    expect(sqlFor(SETTINGS)).toContain('(SELECT fc_platform_admin())');
+    expect(sqlFor(META)).not.toContain("current_setting('app.platform_admin'");
   });
 
   it('drops each policy before creating it, since CREATE POLICY has no IF NOT EXISTS', () => {
@@ -119,14 +121,15 @@ describe('bespoke tenant policies, as Postgres DDL', () => {
     // The read marker is paired with "no tenant bound". Unpaired it overrode a BOUND site, so an
     // operator standing in one customer read every other customer's journal — measured on a live
     // database before this changed. Isolation is not conditional on who is asking.
-    expect(sql).toContain("USING (\"tenant_id\" = nullif(current_setting('app.tenant_id', true), '') OR (current_setting('app.platform_admin', true) = 'on' AND nullif(current_setting('app.tenant_id', true), '') IS NULL)");
-    expect(sql).toContain('WITH CHECK ("tenant_id" = nullif(current_setting(\'app.tenant_id\', true), \'\') OR ("tenant_id" IS NULL AND nullif(current_setting(\'app.tenant_id\', true), \'\') IS NULL))');
+    // A VERIFIED platform binding is by definition bound to no site, so it cannot override one.
+    expect(sql).toContain('USING ("tenant_id" = (SELECT fc_bound_tenant()) OR (SELECT fc_platform_admin()) OR ("tenant_id" IS NULL AND (SELECT fc_unbound())))');
+    expect(sql).toContain('WITH CHECK ("tenant_id" = (SELECT fc_bound_tenant()) OR ("tenant_id" IS NULL AND (SELECT fc_unbound())))');
   });
 
   it('a journal is NOT readable by another tenant merely for being untenanted', () => {
     // The platform marker is set deliberately (`db.withPlatformAdmin`), never by absence of a tenant.
     const sql = sqlFor(JOURNAL);
-    expect(sql).toContain('"tenant_id" IS NULL AND nullif(current_setting(\'app.tenant_id\', true), \'\') IS NULL');
+    expect(sql).toContain('"tenant_id" IS NULL AND (SELECT fc_unbound())');
   });
 
   it('plugin settings admit NO shared keys — a plugin\'s configuration is never platform-level', () => {

@@ -6,6 +6,7 @@ import { PluginManager, Logger, StringUtils, PlatformOwnershipService, PlatformO
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { SystemConstants } from '@fromcode119/core';
 import { RoleManagementService } from '@api/services/role-management-service';
+import type { IRoleEditor } from '@api/services/interfaces/role-editor.interface';
 import { PermissionCatalogService } from '@api/services/permission-catalog-service';
 import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
 
@@ -86,7 +87,9 @@ export class UserManagementService {
       columns: { roleSlug: true },
       where: this.db.eq(Schema.systemUsersToRoles.userId, user.id)
     });
-    const { password, ...safeUser } = user;
+    // `isPlatformAdmin` withheld for the reason the list gives: a site's administrator reads this.
+    const { password, isPlatformAdmin, ...safeUser } = user;
+    void isPlatformAdmin;
     const [accountStatus, forcePasswordReset] = await Promise.all([
       this.readAccountStatus(user.id),
       this.readForcePasswordReset(user.id)
@@ -100,7 +103,14 @@ export class UserManagementService {
     };
   }
 
-  async saveUser(id: number | null, data: any) {
+  /**
+   * `identity: false` leaves the account row alone — email, username, name, password — and saves only
+   * what belongs to the site: roles (as its membership) and the per-site account meta. That is how a
+   * site saves a member whose account it does not own (`TenantUserScope.mayEditIdentity`); the admin
+   * form resends every field on each save, and rewriting them — `username ?? null` included — would
+   * change another site's account.
+   */
+  async saveUser(id: number | null, data: any, options: { identity?: boolean } = {}) {
     const now = new Date();
     const updateData: any = {
       email: data.email,
@@ -116,7 +126,7 @@ export class UserManagementService {
 
     let userId = id;
     if (userId) {
-      await this.db.update(Schema.users, { id: userId }, updateData);
+      if (options.identity !== false) await this.db.update(Schema.users, { id: userId }, updateData);
     } else {
       const initialPassword = data.password || randomBytes(24).toString('hex');
       const newUser = await this.db.insert(Schema.users, {
@@ -165,8 +175,8 @@ export class UserManagementService {
    * @see RoleManagementService.saveRole — `callerRoles` are the roles in effect for the request saving
    * it (a site's membership roles on a site), whose permissions bound what the role may be given.
    */
-  async saveRole(slug: string, data: any, callerRoles: string[]) {
-    return this.roles.saveRole(slug, data, await this.auth.getPermissionsForRoles(callerRoles));
+  async saveRole(slug: string, data: any, callerRoles: string[], editor: IRoleEditor) {
+    return this.roles.saveRole(slug, data, await this.auth.getPermissionsForRoles(callerRoles), editor);
   }
 
   /** @see RoleManagementService.getRole */

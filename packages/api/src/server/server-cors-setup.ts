@@ -1,6 +1,7 @@
 import cors from 'cors';
 import express from 'express';
 import { ApplicationDomainSettingsUtils, ApplicationHostUtils, EnvUtils, Logger, SystemConstants, TenantResolverService } from '@fromcode119/core';
+import { RequestTenantService } from '@api/services/request/request-tenant-service';
 
 export class ServerCorsSetup {
   constructor(
@@ -139,11 +140,41 @@ export class ServerCorsSetup {
       if (origin && ServerCorsSetup.isSameOrigin(origin, req)) {
         return callback(null, { ...corsOptions, origin: true });
       }
-      return callback(null, corsOptions);
+      if (!origin) return callback(null, corsOptions);
+      // ONE SITE NEVER CALLS ANOTHER SITE'S HOST WITH CREDENTIALS. Every active site is on the
+      // allow-list — its pages call the SHARED api host, where the origin is what names the site — so a
+      // request sent to site A's own host from site B's page was granted a credentialed channel too.
+      // Where sites share a parent domain they share the storefront cookie and its readable CSRF
+      // cookie, so B's scripts (a theme, a site-uploaded plugin) could read and act as A's signed-in
+      // customer. A request whose Host is a site is answered for that site's own origins only.
+      void this.crossSite(origin, req).then((cross) => {
+        callback(null, cross ? { ...corsOptions, origin: false } : corsOptions);
+      });
     };
 
     this.app.use(cors(delegate));
     this.app.options(/.*/, cors(delegate) as any);
+  }
+
+  /**
+   * Was this request sent to one site's host from a DIFFERENT site's page? Both hosts resolve through
+   * the same cached host map the tenant router uses. A lookup failure answers "cross-site" — this
+   * decides a credentialed grant, so it fails closed, and says so.
+   */
+  private async crossSite(origin: string, req: any): Promise<boolean> {
+    if (!this.db) return false;
+    let originHost = '';
+    try { originHost = new URL(origin).hostname.toLowerCase(); } catch { return false; }
+    try {
+      const resolver = TenantResolverService.shared(this.db as any);
+      const target = await resolver.resolveByHost(RequestTenantService.hostFrom(req));
+      if (!target) return false;
+      const caller = await resolver.resolveByHost(originHost);
+      return Boolean(caller) && caller!.id !== target.id;
+    } catch (error: unknown) {
+      this.logger.error(`CORS cross-site check failed for "${origin}": ${String((error as Error)?.message ?? error)}`);
+      return true;
+    }
   }
 
   /** Did this request come from a page on the very host it was sent to? Compared with the port. */

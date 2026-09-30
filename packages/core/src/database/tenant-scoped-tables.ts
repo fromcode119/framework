@@ -76,6 +76,11 @@ export class TenantScopedTables {
     // against production through the admin API, which on the deployed build applies no tenant filter
     // and so reports the whole box — it answered `{"webhooks":[],"deliveries":[]}`. Nothing exists
     // yet to be left without an owner, so scoping now closes the hole before anything does.
+    // A site's OWN ROLES. The platform's `_system_roles` has no owner and no policy, and its editor was
+    // reachable by any site's administrator — so one customer could redefine the `customer` role every
+    // other customer's people hold, or delete a role another site's staff sign in with. A site's roles
+    // now live here, one site's rows invisible to every other; the platform's stay in `_system_roles`.
+    String(SystemConstants.TABLE.SITE_ROLES).toLowerCase(),
     String(SystemConstants.TABLE.WEBHOOKS).toLowerCase(),
     String(SystemConstants.TABLE.WEBHOOK_DELIVERIES).toLowerCase(),
   ]);

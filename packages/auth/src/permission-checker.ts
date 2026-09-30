@@ -1,5 +1,5 @@
 import { IDatabaseManager } from '@fromcode119/database';
-import { Logger, StringUtils, PermissionGrants } from '@fromcode119/core';
+import { Logger, StringUtils, PermissionGrants, RoleCatalog, RequestContextUtils } from '@fromcode119/core';
 
 export class UserPermissionChecker {
   private logger = new Logger({ namespace: 'permission-checker' });
@@ -29,31 +29,17 @@ export class UserPermissionChecker {
   }
 
   /** The permissions these role slugs carry, from `_system_roles`. */
-  async permissionsForRoles(roleSlugs: string[]): Promise<string[]> {
-    const slugs = StringUtils.normalizeSlugList(roleSlugs, []);
-    if (slugs.length === 0) return [];
-
-    const allRoles = await this.db.find('_system_roles', { limit: 100 });
-    const matched = (allRoles ?? []).filter((role: any) => slugs.includes(role.slug));
-
-    const permissions: string[] = [];
-    for (const role of matched) {
-      try {
-        const perms = typeof role.permissions === 'string'
-          ? JSON.parse(role.permissions)
-          : (role.permissions || []);
-        if (Array.isArray(perms)) permissions.push(...perms);
-      } catch (err) {
-        this.logger.warn(`Failed to parse permissions for role ${role.slug}: ${String((err as any)?.message || err)}`);
-      }
-    }
-    return [...new Set(permissions)];
+  /**
+   * The permissions `roleSlugs` carry — the platform's roles, plus the SITE's own roles when a site is
+   * in play (see RoleCatalog). `tenantId` defaults to the request's site, which is what every
+   * `requirePermission` gate runs under; a caller minting a session for a site before it is bound names
+   * it explicitly.
+   */
+  async permissionsForRoles(roleSlugs: string[], tenantId?: string | null): Promise<string[]> {
+    const site = tenantId === undefined ? RequestContextUtils.getTenantId() ?? null : tenantId;
+    return new RoleCatalog(this.db).permissionsFor(roleSlugs, site);
   }
 
-  /**
-   * Does this permission set satisfy the requirement? `*` covers everything, an exact match covers
-   * itself, and a `database:*` entry covers `database:read`.
-   */
   static grants(permissions: string[], permission: string): boolean {
     return PermissionGrants.covers(permissions, permission);
   }

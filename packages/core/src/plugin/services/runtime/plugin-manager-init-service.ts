@@ -42,6 +42,9 @@ export class PluginManagerInitService {
   async init(): Promise<void> {
     const manager = this.manager;
 
+    // FIRST, before any pooled connection exists: every connection opens its tenant binding as its first
+    // statement, and that needs the verifier the owner installs here (PostgresDatabaseManager).
+    await manager.schemaDb.prepareTenantBinding();
     await this.migrationManager.migrate();
     // Immediately after migrations, on the OWNER connection: whatever DDL just ran may have created
     // tables the runtime role has no rights to yet.

@@ -158,6 +158,13 @@ export interface IDatabaseManager {
    * deployment-level rows that belong to no tenant. Never called for the request connection.
    */
   markAsPlatformConnection(): void;
+
+  /**
+   * Prepares whatever this driver's tenant isolation needs BEFORE its pools serve anything — for
+   * Postgres, the signed-binding verifier every connection opens against. Called once, first, at boot,
+   * on the owner (DDL) manager. A driver without row-level security has nothing to prepare.
+   */
+  prepareTenantBinding(): Promise<void>;
   connect(): Promise<void>;
   
   // High-level agnostic API

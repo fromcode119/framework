@@ -2,6 +2,7 @@ import { TenantColumn } from '@database/tenant/tenant-column';
 import { PostgresTenantPolicyRenderer } from '@database/dialects/postgres/tenant/postgres-tenant-policy-renderer';
 import { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
 import { SqlIdentifier } from '@database/dialects/postgres/sql-identifier';
+import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
 
 /**
  * The tenant-scoping DDL, in ONE place because it is security-critical and easy to get subtly wrong.
@@ -26,9 +27,17 @@ export class TenantIsolationSql {
   static readonly PLATFORM_ADMIN_SETTING = 'app.platform_admin';
 
 
-  /** The tenant match used by both USING and WITH CHECK. Empty/unset resolves to NULL, never a match. */
+  /**
+   * The tenant match used by both USING and WITH CHECK — against the VERIFIED site (TenantBindingSql),
+   * never the raw setting, which any SQL the app role runs can set for itself.
+   */
   static predicate(): string {
-    return `${TenantColumn.NAME} = ${TenantIsolationSql.currentTenantExpression()}`;
+    return `${TenantColumn.NAME} = ${TenantIsolationSql.boundTenantExpression()}`;
+  }
+
+  /** The verified site, or NULL — what every policy compares against. */
+  static boundTenantExpression(): string {
+    return TenantBindingSql.boundTenantExpression();
   }
 
   /**
@@ -238,32 +247,12 @@ export class TenantIsolationSql {
       + ') AS keyed';
   }
 
-  /** Parameterised; `false` = session scope, so it survives across statements on a held client. */
-  static setTenantStatement(): string {
-    return `SELECT set_config('${TenantIsolationSql.SETTING}', $1, false)`;
-  }
-
   /**
-   * Marks the connection as acting for a PLATFORM ADMIN, which is what permits writing
-   * platform-level (tenant-less) settings. Off unless explicitly turned on, and cleared with the
-   * tenant, so it can never outlive the request that earned it.
+   * The RAW setting — for a column DEFAULT only, which cannot hold the subquery the verified form is.
+   * Safe there because every write still passes the policy's WITH CHECK, which compares against the
+   * verified site: a row stamped from a forged setting is refused. NULL when unset OR reset-to-empty;
+   * the nullif is the whole point.
    */
-  static setPlatformAdminStatement(): string {
-    return "SELECT set_config('app.platform_admin', $1, false)";
-  }
-
-  /** Clearing to '' is safe BECAUSE of the nullif guard — '' never matches a policy. */
-  static resetTenantStatement(): string {
-    return `SELECT set_config('${TenantIsolationSql.SETTING}', '', false)`;
-  }
-
-  /** Clears the platform-admin marker. Always paired with the tenant reset on release. */
-  static resetPlatformAdminStatement(): string {
-    return "SELECT set_config('app.platform_admin', 'off', false)";
-  }
-
-
-  /** The current tenant, or NULL when unset OR reset-to-empty. The nullif is the whole point. */
   static currentTenantExpression(): string {
     return `nullif(current_setting('${TenantIsolationSql.SETTING}', true), '')`;
   }

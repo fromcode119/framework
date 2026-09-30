@@ -4,6 +4,9 @@ import { SystemControllerRuntime } from '@api/controllers/system/system-controll
 import { CoercionUtils, PlatformOwnershipService, RequestContextUtils, TenantMembershipService } from '@fromcode119/core';
 import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 import { RoleGrantError } from '@api/services/role-grant-error';
+import { RoleScopeError } from '@api/services/role-scope-error';
+import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
+import type { IRoleEditor } from '@api/services/interfaces/role-editor.interface';
 
 export class SystemUserController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -23,9 +26,14 @@ export class SystemUserController {
     return true;
   }
 
+  /** Who is editing roles — only a platform admin defines the PLATFORM's roles (RoleManagementService). */
+  private async roleEditor(req: Request): Promise<IRoleEditor> {
+    return { platformAdmin: await new PlatformAccessResolver(this.runtime.db).isPlatformAdmin(req) };
+  }
+
   async getRoles(req: Request, res: Response) {
     try {
-      res.json(await this.runtime.users.getRoles());
+      res.json(await this.runtime.users.getRoles(await this.roleEditor(req)));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -34,19 +42,20 @@ export class SystemUserController {
   async saveRole(req: Request, res: Response) {
     try {
       const callerRoles: string[] = Array.isArray((req as any).user?.roles) ? (req as any).user.roles : [];
-      await this.runtime.users.saveRole(CoercionUtils.toString(req.params.slug || req.body?.slug), req.body, callerRoles);
+      await this.runtime.users.saveRole(CoercionUtils.toString(req.params.slug || req.body?.slug), req.body, callerRoles, await this.roleEditor(req));
       res.json({ success: true });
     } catch (error: any) {
       if (error instanceof RoleGrantError) {
         return res.status(403).json({ error: error.message, permissions: error.permissions });
       }
+      if (error instanceof RoleScopeError) return res.status(error.statusCode).json({ error: error.message });
       res.status(500).json({ error: error.message });
     }
   }
 
   async getRole(req: Request, res: Response) {
     try {
-      const role = await this.runtime.users.getRole(CoercionUtils.toString(req.params.slug));
+      const role = await this.runtime.users.getRole(CoercionUtils.toString(req.params.slug), await this.roleEditor(req));
       if (!role) {
         return res.status(404).json({ error: 'Role not found' });
       }
@@ -58,9 +67,10 @@ export class SystemUserController {
 
   async deleteRole(req: Request, res: Response) {
     try {
-      await this.runtime.users.deleteRole(CoercionUtils.toString(req.params.slug));
+      await this.runtime.users.deleteRole(CoercionUtils.toString(req.params.slug), await this.roleEditor(req));
       res.json({ success: true });
     } catch (error: any) {
+      if (error instanceof RoleScopeError) return res.status(error.statusCode).json({ error: error.message });
       res.status(500).json({ error: error.message });
     }
   }
@@ -87,12 +97,38 @@ export class SystemUserController {
       // Creating is unrestricted (the account does not exist yet, so there is nothing to protect);
       // EDITING an existing one is not.
       if (id !== null && await this.denyOutsideScope(req, res, id)) return;
-      const saved = await this.runtime.users.saveUser(id, req.body);
+      const identity = id === null || (await this.scope(req)).mayEditIdentity(id);
+      if (!identity && await this.refuseIdentityChange(req, res, id as number)) return;
+      const saved = await this.runtime.users.saveUser(id, req.body, { identity });
       if (id === null) await this.attachToCurrentSite(saved, req.body?.roles);
       res.json({ success: true, id: saved });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+  /** The account fields that are the same account on every site it belongs to. */
+  private static readonly IDENTITY_FIELDS = ['email', 'username', 'firstName', 'lastName'] as const;
+
+  /**
+   * Refuses a save that would change a SHARED account's identity from inside a site (see
+   * `TenantUserScope.mayEditIdentity`). A save that resends the stored values unchanged — which the
+   * admin form does on every roles or status change — goes through; only a real change is refused.
+   */
+  private async refuseIdentityChange(req: Request, res: Response, id: number): Promise<boolean> {
+    const current: Record<string, unknown> = (await this.runtime.users.getUser(id)) ?? {};
+    const body = req.body ?? {};
+    const same = (field: string) => CoercionUtils.toString(body[field]).trim().toLowerCase()
+      === CoercionUtils.toString(current[field]).trim().toLowerCase();
+    const changed = Boolean(body.password)
+      || SystemUserController.IDENTITY_FIELDS.some((field) => body[field] !== undefined && !same(field));
+    if (!changed) return false;
+    res.status(403).json({
+      error: 'identity_managed_by_platform',
+      message: 'This person\'s sign-in account is not managed by this site, so its email, name and password '
+        + 'cannot be changed here. You can still change their roles and status on this site.',
+    });
+    return true;
   }
 
   /**
@@ -127,7 +163,9 @@ export class SystemUserController {
       if (!user) {
         return res.status(404).json({ error: 'User not found' });
       }
-      res.json(user);
+      // Tells the form to show the sign-in fields read-only, with the reason, instead of letting the
+      // operator type a change the save will refuse.
+      res.json({ ...user, identityLocked: !(await this.scope(req)).mayEditIdentity(id) });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -161,6 +199,13 @@ export class SystemUserController {
       const id = RequestParamUtils.relationId(req, res, 'user');
       if (id === null) return;
       if (await this.denyOutsideScope(req, res, id)) return;
+      // Deleting from inside a site removes the person FROM THIS SITE when the account is not the site's
+      // alone: the account itself is somebody else's too, and deleting it would delete it everywhere.
+      const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+      if (tenantId && !(await this.scope(req)).mayEditIdentity(id)) {
+        await new TenantMembershipService(this.runtime.db as never).revoke(String(id), tenantId);
+        return res.json({ success: true, removedFromSite: true });
+      }
       await this.runtime.users.deleteUser(id);
       res.json({ success: true });
     } catch (error: any) {

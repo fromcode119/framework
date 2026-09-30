@@ -64,7 +64,7 @@ export class ThemeTenantPlacement {
       );
     }
 
-    const tenantRoot = ProjectPaths.getThemesDirFor(ownerTenantId);
+    const tenantRoot = ProjectPaths.requireSiteThemesDir(ownerTenantId);
     const targetDir = path.join(tenantRoot, slug);
     this.assertWithinQuota(tenantRoot, targetDir, contentDir, quota);
 

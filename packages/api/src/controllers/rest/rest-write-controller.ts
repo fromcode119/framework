@@ -90,7 +90,7 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureUpdateAllowed(collection, req);
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.params.id);
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
+      UserCollectionScopeGuard.ensureWriteAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
       let data = extracted.data;
       const changeSummary = data._change_summary || `Update ${collection.slug} record`;
@@ -188,7 +188,7 @@ export class RestWriteController {
     try {
       await this.runtime.accessPolicy.ensureDeleteAllowed(collection, req);
       SystemMetaCollectionGuard.ensureWritableKey(collection, req.params.id);
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
+      UserCollectionScopeGuard.ensureWriteAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const primaryKey = collection.primaryKey || 'id';
       const recordId = this.runtime.requireRecordIdentifier(collection, req.params.id);
 

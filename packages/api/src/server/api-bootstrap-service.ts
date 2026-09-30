@@ -223,8 +223,11 @@ export class ApiBootstrapService {
     // What an account may do is decided PER SITE: a membership's roles, not the account's global ones.
     // Without this a user who is a customer on one site and an administrator on another was whichever
     // the global roles column said, everywhere.
-    auth.useTenantRoles((userId, tenantId) =>
-      new TenantMembershipService(manager.db).rolesForTenant(userId, tenantId));
+    // With no site bound, only the platform admin keeps global roles (`rolesOutsideSite`).
+    auth.useTenantRoles((userId, tenantId) => {
+      const memberships = new TenantMembershipService(manager.db);
+      return tenantId ? memberships.rolesForTenant(userId, tenantId) : memberships.rolesOutsideSite(userId);
+    });
     manager.setAuth(auth);
 
     // Seed the platform locale BEFORE plugins register.

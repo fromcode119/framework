@@ -14,13 +14,15 @@ import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
  * collections. What a user with the role sees in the console follows from exactly these ticks.
  */
 export class RolePermissionsEditor extends PureReactor {
-  declare props: Pick<RolePermissionsEditor, 'groups' | 'selected' | 'onChange' | 'loadError'>;
+  declare props: Pick<RolePermissionsEditor, 'groups' | 'selected' | 'onChange' | 'loadError' | 'readOnly'>;
 
   @prop declare groups: IPermissionCatalogGroup[];
   @prop declare selected: string[];
   @prop declare onChange: (next: string[]) => void;
   /** Set when the catalog could not be loaded — never shown as "nothing to choose from". */
   @prop declare loadError?: string;
+  /** Shows the role's permissions without letting them change — a platform role viewed from a site. */
+  @prop declare readOnly?: boolean;
 
   private renderUnrecognised(): ReactNode {
     const unknown = RolePermissionSelection.unrecognised(this.selected, this.groups);
@@ -58,7 +60,7 @@ export class RolePermissionsEditor extends PureReactor {
           ) : null}
           {this.renderUnrecognised()}
           {groups.map((group) => (
-            <RolePermissionGroup key={group.key} group={group} selected={selected} onChange={this.onChange} />
+            <RolePermissionGroup key={group.key} group={group} selected={selected} onChange={this.onChange} readOnly={this.readOnly} />
           ))}
         </div>
       </Card>

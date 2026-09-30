@@ -22,6 +22,10 @@ export class RolesListCard extends PureReactor {
         <div className="space-y-2">
           {this.roles.map((role) => {
             const isSystem = role.type === 'system';
+            // A platform role inside a site, or any role this editor may not change here: shown locked,
+            // with where it is defined, rather than offering an edit the API refuses.
+            const locked = isSystem || role.editable === false;
+            const scopeLabel = role.scope === 'site' ? AdminI18n.t('users.roleScopeSite') : AdminI18n.t('users.roleScopePlatform');
             return (
               <div key={role.slug} className={`flex items-center justify-between gap-4 p-3.5 rounded-xl border transition-colors ${
                 dark ? 'bg-slate-950/30 border-slate-800 hover:bg-slate-900/50' : 'bg-white border-slate-200 hover:bg-slate-50'
@@ -36,6 +40,9 @@ export class RolesListCard extends PureReactor {
                     <div className="flex items-center gap-2">
                       <h3 className={`text-sm font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{role.name}</h3>
                       <code className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
+                      {role.scope ? (
+                        <span className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${role.scope === 'site' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-500'}`}>{scopeLabel}</span>
+                      ) : null}
                     </div>
                     <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || AdminI18n.t('users.noDescription')}</p>
                   </div>
@@ -46,8 +53,11 @@ export class RolesListCard extends PureReactor {
                     <span className="text-slate-500"><span className={dark ? 'text-slate-200 font-semibold' : 'text-slate-800 font-semibold'}>{role.users || 0}</span> {Number(role.users) === 1 ? AdminI18n.t('users.userWord') : AdminI18n.t('users.usersWord')}</span>
                     <span className="text-indigo-500 font-semibold">{AdminI18n.t('users.permsCount', { count: role.permissions?.length || 0 })}</span>
                   </div>
-                  {isSystem ? (
-                    <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500">
+                  {locked ? (
+                    <span
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500"
+                      title={isSystem ? undefined : AdminI18n.t('users.platformRoleLockedHint')}
+                    >
                       <FrameworkIcons.Lock size={11} strokeWidth={2} />
                       <span className="font-semibold uppercase tracking-tight text-[10px]">{AdminI18n.t('users.locked')}</span>
                     </span>

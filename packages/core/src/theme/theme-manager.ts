@@ -159,7 +159,7 @@ export class ThemeManager extends ThemeLifecycle {
       throw new Error(`Theme "${name}" does not belong to this site, so it cannot be removed here.`);
     }
 
-    const directory = path.join(ProjectPaths.getThemesDirFor(owner), name);
+    const directory = path.join(ProjectPaths.requireSiteThemesDir(owner), name);
     if (fs.existsSync(directory)) fs.rmSync(directory, { recursive: true, force: true });
     await this.discoverThemes();
     await this.refreshStorefrontRenderer(`theme "${name}" removed by site "${owner}"`);

@@ -1,5 +1,6 @@
 import type { PoolClient } from 'pg';
 import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
+import { PlatformPool } from '@database/tenant/platform-pool';
 import type { TenantScopeStore } from '@database/tenant/tenant-scope-store';
 
 /**
@@ -24,13 +25,22 @@ export class OneShotTenantClient {
       await PostgresTenantSession.bind(client, { tenantId: this.store.tenantId, platformAdmin: this.store.platformAdmin });
       return await (client.query as (...params: unknown[]) => Promise<any>)(...args);
     } finally {
-      try {
-        await PostgresTenantSession.clear(client);
-      } catch {
-        // Same rule as TenantConnectionScope.release: the release below is what matters, and pg
-        // discards a client whose session is broken rather than returning a poisoned one.
-      }
-      client.release();
+      await this.giveBack(client);
     }
+  }
+
+  /**
+   * Same rules as TenantConnectionScope.release: the pool's RESTING state is restored (a platform
+   * pool's client goes back marked as the platform's, or its next untenanted platform write is
+   * refused), and a client that cannot be cleared is destroyed, not reused.
+   */
+  private async giveBack(client: PoolClient): Promise<void> {
+    try {
+      await PostgresTenantSession.clear(client, PlatformPool.marks(this.store.pool));
+    } catch (error) {
+      client.release(error as Error);
+      return;
+    }
+    client.release();
   }
 }
