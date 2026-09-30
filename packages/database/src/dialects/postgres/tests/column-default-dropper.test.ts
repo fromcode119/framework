@@ -31,7 +31,7 @@ describe('PostgresColumnDefaultDropper', () => {
   it('refuses an identifier that is not plain, rather than building the DDL', async () => {
     const { issued, run } = recorder("'x'");
     const outcome = await new PostgresColumnDefaultDropper(run).drop('fcp_shop_products', 'currency"; DROP TABLE users; --');
-    expect(outcome.kind ?? outcome).not.toEqual(SchemaReconcileOutcome.changed());
+    expect(outcome.state).toBe(SchemaReconcileOutcome.failed('').state);
     expect(issued.some((text) => text.includes('DROP TABLE'))).toBe(false);
   });
 });
