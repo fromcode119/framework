@@ -219,8 +219,16 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     }
   }
 
+  /**
+   * The tables a site's rows live in. With sites on, those under a site policy. Before the first
+   * site there IS no policy — the boot sweep releases them on a deployment with no sites — so it is
+   * the tables carrying the site column, given that column first exactly as adoption does. Listing by
+   * policy there found no table at all, and importing the first site planned to skip every row.
+   */
   protected async tables(): Promise<TenantTableDescriptor[]> {
-    return this.tenantTableCatalog().byPolicy();
+    if (TenantMode.isEnabled()) return this.tenantTableCatalog().byPolicy();
+    await new TenantColumnPreparer(this.db).ensureColumns(this.manager.systemCollectionTables());
+    return this.tenantTableCatalog().byColumn();
   }
 
   protected async summarize(tenant: TenantRecord): Promise<TenantSummary> {
