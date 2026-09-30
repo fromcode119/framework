@@ -60,7 +60,7 @@ describe('context.auth.actor()', () => {
 
   it('reaches an isolated plugin: its call is answered in the context of the write that fired its hook', async () => {
     const tokens = new PluginInvocationTokens();
-    const db = { withTenant: async (_tenantId: string, fn: () => Promise<unknown>) => fn() };
+    const db = { tenantLease: () => ({ run: <T>(fn: () => Promise<T>) => fn(), close: async () => undefined }) };
     const dispatcher = new PluginHostDispatcher('alpha', tokens, db, {}, new PluginHostCallbacks('alpha', async () => undefined));
     const context: any = { auth: AuthContextProxy.createAuthProxy({ guard: () => undefined }) };
 

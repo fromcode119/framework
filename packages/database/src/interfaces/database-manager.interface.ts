@@ -1,3 +1,4 @@
+import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
@@ -46,6 +47,12 @@ export interface IDatabaseManager {
    * passthrough. GUARANTEED present — callers call it directly, never type-check for it.
    */
   withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T>;
+  /**
+   * A tenant scope reused across a run of calls that belong together (one isolated plugin invocation).
+   * Every `run` is bound to `tenantId` as `withTenant` would bind it; a driver may keep the bound
+   * connection between runs. The caller `close`s it when the invocation ends.
+   */
+  tenantLease(tenantId: string): ITenantScopeLease;
   /** Run `fn` as a platform admin: no tenant, allowed to write tenant-less platform rows. Dialects without RLS run `fn` as is. */
   withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T>;
 

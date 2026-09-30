@@ -5,6 +5,7 @@ import { PlatformPool } from '@database/tenant/platform-pool';
 import { TenantScopeStore } from '@database/tenant/tenant-scope-store';
 import { LazyTenantClient } from '@database/tenant/lazy-tenant-client';
 import { OneShotTenantClient } from '@database/tenant/one-shot-tenant-client';
+import type { TenantClientParking } from '@database/tenant/tenant-client-parking';
 
 /**
  * Holds ONE pooled client for the duration of a request, with `app.tenant_id` set on it.
@@ -86,6 +87,43 @@ export class TenantConnectionScope {
     await TenantConnectionScope.release(store);
   }
 
+  /**
+   * A scope like `run`'s, that starts from the client `parking` kept from the invocation's previous
+   * run (already bound to the same site) and, when it ends cleanly, parks its client there again
+   * instead of clearing it. See TenantClientParking for when a client is parked and when it is not.
+   *
+   * The store is still this run's own and still closes when the run returns, so a statement that
+   * trails the run takes a one-shot client — it can never land on a client the next run is using.
+   */
+  static async runParked<T>(parking: TenantClientParking, fn: () => Promise<T>): Promise<T> {
+    const store = new TenantScopeStore(parking.pool, parking.tenantId, false);
+    store.client = parking.take();
+    try {
+      return await TenantConnectionScope.storage.run(store, fn);
+    } finally {
+      if (store.pending) await store.pending.catch(() => undefined);
+      store.closed = true;
+      const client = store.client;
+      if (client && !store.inTransaction && parking.park(client)) store.client = null;
+      else await TenantConnectionScope.release(store);
+    }
+  }
+
+  /** Clears a client's binding and gives it back to `pool` — or destroys it when it cannot be cleared. */
+  static async handBack(pool: Pool, client: PoolClient): Promise<void> {
+    try {
+      await PostgresTenantSession.clear(client, PlatformPool.marks(pool));
+    } catch (error) {
+      // A client that cannot be cleared must never be reused carrying a stale tenant. `release()`
+      // with no argument hands it straight back to the pool, markers and all — pg only DESTROYS a
+      // client released with an error. A clear fails on a client left mid-transaction or with a
+      // broken session; either way it is thrown away, never lent to the next request.
+      client.release(error as Error);
+      return;
+    }
+    client.release();
+  }
+
   private static async open<T>(store: TenantScopeStore, fn: () => Promise<T>): Promise<T> {
     try {
       return await TenantConnectionScope.storage.run(store, fn);
@@ -119,16 +157,6 @@ export class TenantConnectionScope {
     store.client = null;
     store.inTransaction = false;
     if (!client) return;
-    try {
-      await PostgresTenantSession.clear(client, PlatformPool.marks(store.pool));
-    } catch (error) {
-      // A client that cannot be cleared must never be reused carrying a stale tenant. `release()`
-      // with no argument hands it straight back to the pool, markers and all — pg only DESTROYS a
-      // client released with an error. A clear fails on a client left mid-transaction or with a
-      // broken session; either way it is thrown away, never lent to the next request.
-      client.release(error as Error);
-      return;
-    }
-    client.release();
+    await TenantConnectionScope.handBack(store.pool, client);
   }
 }

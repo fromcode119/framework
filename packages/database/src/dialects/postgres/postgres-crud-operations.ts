@@ -1,5 +1,7 @@
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
+import { TenantClientParking } from '@database/tenant/tenant-client-parking';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -33,6 +35,11 @@ export abstract class PostgresCrudOperations extends BaseDialect {
    * half must never pick a connection for itself.
    */
   protected abstract get orm(): any;
+
+  /** Keeps the invocation's bound client between its runs; see TenantClientParking. */
+  tenantLease(tenantId: string): ITenantScopeLease {
+    return new TenantClientParking(this.pool, tenantId);
+  }
 
   /** Runs one statement on whichever connection the manager decides. Implemented by the manager. */
   abstract execute(query: any): Promise<any>;
