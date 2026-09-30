@@ -173,6 +173,9 @@ export class AdminConstants {
     CERTIFICATE: (host: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE, { host })),
     CERTIFICATE_SOURCE: (host: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_SOURCE, { host })),
     CERTIFICATE_CLOUDFLARE_TOKEN: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_CERTIFICATE_CLOUDFLARE_TOKEN),
+    /** The platform's IP-location database — state and "update now". Platform admins only. */
+    GEO: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_GEO),
+    GEO_UPDATE: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_GEO_UPDATE),
     TENANT: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),
     TENANT_EXPORT: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_EXPORT, { id })),
     TENANT_PAGES: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_PAGES, { id })),
