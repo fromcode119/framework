@@ -248,6 +248,8 @@ export class PluginInstallationService {
       return;
     }
 
+    // A plugin in ERROR keeps its (old-code) process and enabling reuses it: swap it onto the new files first.
+    if (existingPlugin?.state === PluginState.ERROR) await this.reloadHost(slug, manifest);
     options.progressReporter?.({
       phase: 'refreshing-plugin-registry',
       message: `Refreshing plugin registry for "${slug}"...`,
