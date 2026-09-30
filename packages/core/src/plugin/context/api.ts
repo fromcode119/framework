@@ -14,6 +14,7 @@ import type { ApiPermissionRequirement } from '@core/plugin/context/api-permissi
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { AsyncRouteGuard } from '@core/base/async-route-guard';
+import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 
 export class ApiContextProxy {
   private static readonly apiLimiter = new RateLimiter(1000, 60000);
@@ -36,8 +37,10 @@ export class ApiContextProxy {
         // gate (ApiAccessGate) enforces it when ENFORCE_AUTHZ_GATEWAY=true; undeclared => admin-only.
         // `use` (raw middleware) is exempt — it is not a terminal route.
         let access: AccessLevel | ApiPermissionRequirement | undefined;
+        let anonymousCache = false;
         if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
           access = handlers[0].access;
+          anonymousCache = method === 'get' && handlers[0].anonymousCache === true;
           handlers = handlers.slice(1);
         }
 
@@ -108,7 +111,9 @@ export class ApiContextProxy {
         });
 
         const gate = method === 'use' ? null : ApiAccessGate.build(access);
-        manager.apiHost[method](fullPath, ...(gate ? [gate, ...wrappedHandlers] : wrappedHandlers));
+        // After the access gate, before the handler: a declared route's repeat anonymous GETs (ApiResponseCache).
+        const cache = anonymousCache ? [ApiResponseCache.middleware(plugin, () => manager.plugins.get(plugin.manifest.slug))] : [];
+        manager.apiHost[method](fullPath, ...(gate ? [gate] : []), ...cache, ...wrappedHandlers);
       };
 
       return {

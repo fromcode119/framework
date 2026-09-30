@@ -100,7 +100,7 @@ export class PluginHostRegistrations {
     this.routes.add(key);
     const handlers: unknown[] = [];
     const access = PluginHostRegistrations.reviveAccess(registration.access);
-    if (access) handlers.push({ access });
+    if (access) handlers.push({ access, anonymousCache: registration.anonymousCache === true });
     handlers.push((req: Request, res: Response, next: NextFunction) => this.forwardRequest(req, res, next));
     (context.api as any)[method](this.relativePath(String(registration.path)), ...handlers);
   }

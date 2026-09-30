@@ -47,8 +47,10 @@ export class PluginGuestApiFactory {
 
   private mount(method: string, path: string, handlers: any[]): void {
     let access: unknown;
+    let anonymousCache = false;
     if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
       access = PluginGuestApiFactory.portableAccess(handlers[0].access);
+      anonymousCache = handlers[0].anonymousCache === true;
       handlers = handlers.slice(1);
     }
     if (path.includes('..')) throw new Error(`Security Violation: Plugin "${this.boot.slug}" attempted invalid API path: ${path}`);
@@ -59,7 +61,7 @@ export class PluginGuestApiFactory {
     }
     const fullPath = `/${this.boot.slug}/${cleanPath}`;
     (this.http.app as any)[method](fullPath, ...handlers);
-    const registration: IPluginGuestRegistration = { kind: method === 'use' ? 'use' : 'route', method, path: fullPath, access };
+    const registration: IPluginGuestRegistration = { kind: method === 'use' ? 'use' : 'route', method, path: fullPath, access, anonymousCache };
     void this.registrar.send(registration);
   }
 

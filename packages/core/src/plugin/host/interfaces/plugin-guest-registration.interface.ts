@@ -13,6 +13,8 @@ export interface IPluginGuestRegistration {
   method?: string;
   path?: string;
   access?: unknown;
+  /** route: the descriptor's `anonymousCache` (IApiAccessDescriptor). */
+  anonymousCache?: boolean;
   /** middleware */
   middleware?: { id: string; priority?: number; stage: string };
   /** hook */
