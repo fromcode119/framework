@@ -42,7 +42,7 @@ export class ExtensionBuildCommandService {
     if (steps.some((s) => s.failed)) process.exitCode = 1;
   }
 
-  private static async run(kindValue: string, slug: string, pack: boolean): Promise<void> {
+  static async run(kindValue: string, slug: string, pack: boolean): Promise<void> {
     const { ExtensionBuildPipeline, ExtensionKind } = await import('@fromcode119/extension-builder');
 
     let kind: ExtensionKind;

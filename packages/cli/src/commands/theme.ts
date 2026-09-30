@@ -2,11 +2,11 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import archiver from 'archiver';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
 import { ThemeBuildCommandService } from '@cli/services/theme-build-command-service';
 import { ThemeScaffoldFiles } from '@cli/commands/theme-scaffold-files';
+import { ExtensionBuildCommandService } from '@cli/commands/extension-build-command-service';
 
 export class ThemeCommands {
   static registerThemeCommands(program: Command) {
@@ -132,57 +132,13 @@ export class ThemeCommands {
       .description('Run theme development mode: rebuild on every change under src/')
       .action(async (slug) => { await ThemeBuildCommandService.dev(slug); });
 
+    // The same pipeline as `atlantis pack theme <slug>`. This command used to zip the raw source folder
+    // itself — no integrity stamp, no SSR dependency closure, `node_modules` included — which no platform
+    // could install, and since the archiver import stopped resolving it crashed before writing anything.
     theme
       .command('pack <slug>')
-      .description('Pack a theme into a ZIP')
-      .action(async (slug) => {
-        try {
-          const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
-          const themePath = path.join(themesDir, slug);
-
-          if (!fs.existsSync(themePath)) {
-            console.error(chalk.red(`Theme directory not found: ${themePath}`));
-            return;
-          }
-
-          const jsonPath = path.join(themePath, 'theme.json');
-          const themeJson = await fs.readJson(jsonPath);
-          const version = themeJson.version || '1.0.0';
-
-          const outDir = path.resolve(process.cwd(), 'dist');
-          await fs.ensureDir(outDir);
-
-          const zipName = `theme-${slug}-${version}.zip`;
-          const zipPath = path.join(outDir, zipName);
-
-          console.log(chalk.blue(`\nPacking theme ${chalk.bold(slug)} v${version}...`));
-
-          // Ensure theme is built before packing
-          if (fs.existsSync(path.join(themePath, 'package.json'))) {
-            console.log(chalk.gray('Running theme build...'));
-            const { execSync } = require('child_process');
-            try {
-              execSync('npm run build', { cwd: themePath, stdio: 'inherit' });
-            } catch (e) {
-              console.warn(chalk.yellow('Warning: Build failed, packing as-is.'));
-            }
-          }
-
-          const output = fs.createWriteStream(zipPath);
-          const archive = archiver('zip', { zlib: { level: 9 } });
-
-          archive.on('error', (err) => { throw err; });
-          archive.pipe(output);
-          archive.directory(themePath, false);
-          await archive.finalize();
-
-          console.log(chalk.green(`\nTheme packed successfully!`));
-          console.log(chalk.gray(`Output: ${zipPath}`));
-
-        } catch (error) {
-          console.error(chalk.red('Error packing theme:'), error);
-        }
-      });
+      .description('Pack a theme for distribution (same as `pack theme <slug>`)')
+      .action(async (slug) => { await ExtensionBuildCommandService.run('theme', slug, true); });
 
     theme
       .command('seed')
