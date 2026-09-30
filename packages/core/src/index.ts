@@ -194,6 +194,13 @@ export type { ISettingWrite } from '@core/settings/interfaces/setting-write.inte
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
+export { GeoIpLookup } from '@core/geo/geo-ip-lookup';
+export { GeoDatabaseUpdater } from '@core/geo/geo-database-updater';
+export { GeoDatabaseSource } from '@core/geo/geo-database-source';
+export { GeoDatabaseStore } from '@core/geo/geo-database-store';
+export type { IGeoLocation } from '@core/geo/interfaces/geo-location.interface';
+export type { IGeoDatabaseStatus } from '@core/geo/interfaces/geo-database-status.interface';
+export type { IPluginContextGeo } from '@core/plugin/interfaces/plugin-context-geo.interface';
 export type { INetworkEdgeProvider } from '@core/security/interfaces/network-edge-provider.interface';
 export { NetworkEdgeProviderRegistry } from '@core/security/providers/network-edge-provider-registry';
 export { CloudflareEdgeProvider } from '@core/security/providers/cloudflare/cloudflare-edge-provider';

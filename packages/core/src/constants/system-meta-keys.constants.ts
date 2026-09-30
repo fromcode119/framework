@@ -129,6 +129,12 @@ export class SystemMetaKeys {
    * value below {@link AUDIT_RETENTION_MIN_DAYS} is REFUSED with the reason rather than clamped.
    */
   AUDIT_RETENTION_DAYS: 'audit_retention_days',
+  /**
+   * Whether the platform keeps an IP-location database (DB-IP City Lite, CC BY 4.0) and answers
+   * `context.geo.lookup`. `true` installs it and keeps it current monthly; anything else removes it, so
+   * "off" means no location data exists on the server at all. Settings → Infrastructure.
+   */
+  GEO_IP_LOOKUP: 'geo_ip_lookup',
   
   // Localization
   LOCALIZATION_LOCALES: 'localization_locales',

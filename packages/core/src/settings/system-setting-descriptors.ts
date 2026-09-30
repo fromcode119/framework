@@ -128,6 +128,8 @@ export class SystemSettingDescriptors {
     // No seed — an empty value is KEEP FOREVER, and a platform that started expiring its own security
     // record because a registry picked a number would be the invented default this codebase forbids.
     [SystemConstants.META_KEY.AUDIT_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // PLATFORM: one database for every site. No seed: off until an operator opts in to the download.
+    [SystemConstants.META_KEY.GEO_IP_LOOKUP]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
 
     // Localization rows live in their own table — see LocalizationSettingDescriptors.
     ...LocalizationSettingDescriptors.ALL,

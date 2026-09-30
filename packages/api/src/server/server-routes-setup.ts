@@ -7,7 +7,7 @@ import { PluginClientAddressMiddleware } from '@api/middlewares/plugin-client-ad
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService } from '@fromcode119/core';
+import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, GeoDatabaseUpdater } from '@fromcode119/core';
 import { CoreVersionResolver } from '@api/server/core-version-resolver';
 import { SourcesModuleMount } from '@api/server/sources-module-mount';
 import { MediaManager } from '@fromcode119/media';
@@ -36,6 +36,7 @@ import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
 import { SetupStatusRouter } from '@api/routes/setup-status-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
+import { GeoAdminRouter } from '@api/routes/geo-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
 import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
@@ -156,6 +157,11 @@ export class ServerRoutesSetup {
         this.auth,
         platformAdmin,
       ).router,
+    );
+    // The platform's IP-location database (Settings → Infrastructure). Platform admins only.
+    vApi.use(
+      `${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_GEO}`,
+      new GeoAdminRouter(GeoDatabaseUpdater.for((this.manager as any).db, this.logger), this.auth, platformAdmin).router,
     );
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
     vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
