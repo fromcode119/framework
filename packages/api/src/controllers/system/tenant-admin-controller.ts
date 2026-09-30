@@ -25,7 +25,7 @@ export class TenantAdminController extends BaseController {
   async list(_req: Request, res: Response): Promise<void> {
     try {
       const tenants = await this.service.list();
-      res.json({ multiTenant: this.service.multiTenant, tenants: tenants.map((tenant) => tenant.toJSON()), installed: this.service.installed() });
+      res.json({ multiTenant: this.service.multiTenant, sitesSupported: this.service.sitesSupported, tenants: tenants.map((tenant) => tenant.toJSON()), installed: this.service.installed() });
     } catch (error) {
       this.fail(res, error);
     }

@@ -35,23 +35,15 @@ describe('StandaloneImportExecutor', () => {
   });
 
   /**
-   * The one a real run hit. The policies check every insert against the connection's current site, and
-   * an un-owned row matches none — so every insert fails, one table at a time. A deployment with no
-   * sites releases them at its next boot; saying that is the useful answer.
+   * A database that keeps sites apart requires every site-owned row to belong to a site, even before
+   * the first one exists, so an un-owned restore fails on the first media row. Say so, and name the
+   * path that works: import the archive as a site.
    */
-  it('refuses a destination that still carries tenant isolation, naming what to do', async () => {
-    const policies = [{ table: 'fcp_orbit_pages', policy: 'p1' }, { table: 'users', policy: 'p2' }];
-    const executor = new StandaloneImportExecutor(db(0, policies), [], '/tmp/uploads');
+  it('refuses a database that keeps sites apart, naming the import instead', async () => {
+    const executor = new StandaloneImportExecutor(db(0), [], '/tmp/uploads');
 
-    await expect(executor.execute(reader())).rejects.toThrow(/still carry tenant isolation/);
-    await expect(executor.execute(reader())).rejects.toThrow(/booting it once releases that isolation/);
-  });
-
-  /** No sites and no policies IS a standalone deployment — nothing to refuse. */
-  it('proceeds on a deployment with no sites and no isolation', async () => {
-    const executor = new StandaloneImportExecutor(db(0, []), [], '/tmp/uploads');
-
-    await expect(executor.execute(reader())).resolves.toEqual({});
+    await expect(executor.execute(reader())).rejects.toThrow(/keeps sites apart/);
+    await expect(executor.execute(reader())).rejects.toThrow(/Import the archive as a site/);
   });
 
   /**
@@ -59,7 +51,7 @@ describe('StandaloneImportExecutor', () => {
    * answer — that is the whole point of the refusing default. Single-site by construction, so there is
    * nothing here to check for.
    */
-  it('does not ask about isolation on a driver that has none', async () => {
+  it('proceeds on a single-site database with no sites', async () => {
     const manager = db(0, []);
     (manager as unknown as { supportsTenantIsolation: () => boolean }).supportsTenantIsolation = () => false;
 

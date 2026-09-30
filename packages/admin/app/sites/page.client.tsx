@@ -15,6 +15,7 @@ import { SiteInventory } from '@/lib/tenants/site-inventory';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { RestoreSiteCard } from '@/app/sites/components/view/restore-site-card.client';
 import { AdoptSiteCard } from '@/app/sites/components/view/adopt-site-card.client';
+import { Card } from '@/components/ui/view/card.client';
 import { SitesTable } from '@/app/sites/components/view/sites-table.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
@@ -25,13 +26,15 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Every site on this platform, and the actions that create, move and remove one.
  *
- * On a deployment that is still single-tenant the table is empty by definition and the page offers
- * ADOPTION instead: turning this very deployment into its first site, in place.
+ * On a deployment with no sites yet the table is empty by definition. Where the database keeps sites
+ * apart the page offers creating, importing, or ADOPTING this very deployment as its first site; on a
+ * single-site database it says so and offers restoring a site's archive onto it.
  */
 export class SitesPageClient extends AdminComponent {
   @state sites: SiteRecord[] = [];
   @state inventory: SiteInventory = SiteInventory.empty();
   @state multiTenant = false;
+  @state sitesSupported = false;
   @state loading = true;
   @state error: string | null = null;
   @state busyId: string | null = null;
@@ -65,6 +68,7 @@ export class SitesPageClient extends AdminComponent {
       this.sites = result.sites;
       this.inventory = result.inventory;
       this.multiTenant = result.multiTenant;
+      this.sitesSupported = result.sitesSupported;
     } catch (err: any) {
       this.error = err?.message || AdminI18n.t('sites.couldNotLoadTheSites');
     } finally {
@@ -150,7 +154,7 @@ export class SitesPageClient extends AdminComponent {
           icon={<FrameworkIcons.Globe size={18} strokeWidth={2} />}
           title={AdminI18n.t('sites.sites')}
           subtitle={AdminI18n.t('sites.everyCustomerSiteThisPlatform')}
-          actions={this.multiTenant && this.canManagePlatform ? (
+          actions={(this.multiTenant || this.sitesSupported) && this.canManagePlatform ? (
             <div className="fc-sites__actions">
               <Button variant={ButtonVariant.OUTLINE} href={AdminConstants.ROUTES.SITES.IMPORT} icon={<FrameworkIcons.Upload size={14} />}>{AdminI18n.t('sites.import')}</Button>
               <Button href={AdminConstants.ROUTES.SITES.NEW} icon={<FrameworkIcons.Plus size={14} />}>{AdminI18n.t('sites.newSite')}</Button>
@@ -166,9 +170,15 @@ export class SitesPageClient extends AdminComponent {
         {this.canManagePlatform && this.loading ? <Loader label={AdminI18n.t('sites.loadingSites')} /> : null}
         {this.canManagePlatform && !this.loading && this.error ? <LoadErrorPanel title={AdminI18n.t('sites.sitesUnavailable')} message={this.error} onRetry={this.load} /> : null}
 
-        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <RestoreSiteCard /> : null}
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant && !this.sitesSupported ? (
+          <Card title={AdminI18n.t('sites.singleSite.title')} icon={<FrameworkIcons.Globe size={16} />}>
+            <p className="fc-sites__text">{AdminI18n.t('sites.singleSite.explained')}</p>
+          </Card>
+        ) : null}
 
-        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant ? <AdoptSiteCard /> : null}
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant && !this.sitesSupported ? <RestoreSiteCard /> : null}
+
+        {this.canManagePlatform && !this.loading && !this.error && !this.multiTenant && this.sitesSupported ? <AdoptSiteCard /> : null}
 
         {this.canManagePlatform && !this.loading && !this.error && this.multiTenant ? (
           <div className={`${AdminClass.SURFACE} overflow-hidden`}>

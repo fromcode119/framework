@@ -73,6 +73,7 @@ export class TenantAdminService extends TenantArchiveAdmin {
   }
 
   async create(input: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantSummary> {
+    this.assertSitesSupported();
     // A workspace may start from a preset an installed appearance declares (its plugins, locked to that
     // appearance); anything passed explicitly wins over the preset. Validated BEFORE the row exists.
     const presetId = CoercionUtils.toString(input.preset);

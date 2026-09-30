@@ -5,7 +5,7 @@ import { TenantAdminState } from '@api/services/tenants/tenant-admin-state';
 import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
-import { AuditOutcome, BackupService, CoercionUtils, PluginState, PluginTenantStateService, SystemConstants, TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantColumnPreparer, TenantEraser, TenantIdentity, TenantImportExecutor, TenantImportIdentity, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantRecord, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess } from '@fromcode119/core';
+import { AuditOutcome, BackupService, CoercionUtils, PluginState, PluginTenantStateService, SystemConstants, TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantColumnPreparer, TenantEraser, TenantIdentity, TenantImportExecutor, TenantImportIdentity, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantRecord, TenantMode, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess } from '@fromcode119/core';
 
 /**
  * Moving a whole SITE: exporting it to an archive, previewing an import, executing one, adopting a
@@ -35,6 +35,27 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     return { archivePath: result.archivePath, backup: this.catalog.resolveByPath(result.archivePath), manifest: result.manifest.toJSON() };
   }
 
+  /**
+   * Whether this database can keep sites apart. A deployment set up on one that cannot (setup labels
+   * SQLite and MySQL "single site only") serves exactly one site and never gains a second: with a site
+   * row present, the next boot refuses to start rather than serve several customers from one pool.
+   */
+  get sitesSupported(): boolean {
+    return TenantMode.isIsolationSupported();
+  }
+
+  /**
+   * Refuses to bring a site into being where the next boot would refuse to start because of it.
+   * Creating, importing and adopting each write the site row that turns sites on.
+   */
+  protected assertSitesSupported(): void {
+    if (this.sitesSupported) return;
+    throw Object.assign(new Error(
+      'This installation\'s database keeps a single site and cannot keep several apart, so no site can be '
+      + 'added to it — the platform would refuse to start with one. Restore a site\'s archive onto it instead.',
+    ), { statusCode: 409 });
+  }
+
   /** Export first, ALWAYS; then erase. The typed slug is the operator's confirmation. */
   async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number }> {
     const tenant = await this.requireTenant(id);
@@ -61,6 +82,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
 
   /** `transitPassphrase` must be the one the EXPORT used, when the archive says its secrets were sealed. */
   async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>, transitPassphrase: string | null = null): Promise<TenantImportResult> {
+    this.assertSitesSupported();
     const reader = await TenantArchiveReader.open(archivePath);
     try {
       const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
@@ -81,6 +103,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
   }
 
   async adopt(identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<unknown> {
+    this.assertSitesSupported();
     const identity = TenantIdentity.from(identityInput);
     // COLUMNS FIRST. Adoption stamps the rows of every table that has a `tenant_id` column, and on a
     // deployment whose tables predate tenancy none of them do — the column only arrives on the next

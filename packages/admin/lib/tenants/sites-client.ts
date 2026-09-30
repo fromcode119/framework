@@ -12,9 +12,15 @@ import { SiteMember } from '@/lib/tenants/site-member';
 export class SitesClient {
   private static readonly CHUNK_SIZE_BYTES = 4 * 1024 * 1024;
 
-  static async list(): Promise<{ multiTenant: boolean; sites: SiteRecord[]; inventory: SiteInventory }> {
+  /** `sitesSupported`: whether this database keeps sites apart — false on a single-site install. */
+  static async list(): Promise<{ multiTenant: boolean; sitesSupported: boolean; sites: SiteRecord[]; inventory: SiteInventory }> {
     const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.TENANTS, { noDedupe: true });
-    return { multiTenant: response?.multiTenant === true, sites: SiteRecord.fromList(response?.tenants), inventory: SiteInventory.from(response?.installed) };
+    return {
+      multiTenant: response?.multiTenant === true,
+      sitesSupported: response?.sitesSupported === true,
+      sites: SiteRecord.fromList(response?.tenants),
+      inventory: SiteInventory.from(response?.installed),
+    };
   }
 
   static async get(id: string): Promise<SiteRecord> {

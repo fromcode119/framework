@@ -2687,12 +2687,10 @@
     "reactivate": "Reactivate",
     "noSitesYetCreateOne": "No sites yet. Create one, or import an exported site.",
     "archiveRestored": "Archive restored",
-    "rowsAcrossTablesAdoptThis": "{{toLocaleString}} rows across {{tables}} tables. Adopt this deployment to make it the site.",
     "restoreFailed": "Restore failed",
     "nothingWasWrittenTheRestore": "Nothing was written — the restore is one transaction.",
-    "restoredAdoptNext": "Restored — adopt next",
     "restoreASiteFromAn": "Restore a site from an archive",
-    "bringASiteExportedFrom": "Bring a site exported from another platform onto this installation. The rows arrive owned by nobody, which is what a deployment with no sites looks like — adopting afterwards gives them their owner. Nothing is written unless the whole archive fits: the restore is one transaction.",
+    "bringASiteExportedFrom": "Bring a site exported from another platform onto this installation. Its database keeps a single site, so the archive's records become this installation's own. Nothing is written unless the whole archive fits: the restore is one transaction.",
     "transitPassphraseOnlyIfThe": "Transit passphrase — only if the export sealed its secrets",
     "adminConsole": "Admin console",
     "storefront": "Storefront",
@@ -2734,7 +2732,7 @@
     "adoptedOutcome": "This deployment is now site <strong>{{slug}}</strong>: {{rows}} rows across {{tables}} tables were stamped and {{members}} accounts became members.",
     "rowsWithoutOwner": "Rows still without an owner (they will be INVISIBLE once isolation is on): {{tables}}.",
     "adoptExplained": "There are no sites because everything here belongs to ONE site — this one. Adopting turns it into the platform’s first site in place: every existing row is stamped with the new site’s id, every account becomes a member with the roles it already has, and the active plugins and theme become the site’s. Nothing is copied or moved.",
-    "restoredOutcome": "{{rows}} rows across {{tables}} tables are here, with no owner yet — which is correct for a deployment with no sites. <strong>Adopt this deployment below</strong> to stamp them with the new site, then restart the API.",
+    "restoredOutcome": "{{rows}} rows across {{tables}} tables are here, and they are this installation’s own.",
     "hostRolesHintWorkspace": "Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the admin console like any other unless you say otherwise.",
     "hostRolesHintSite": "Chosen here, never guessed from the name. A host called <code>api.example.com</code> serves the storefront like any other unless you say otherwise.",
     "workspaceNeverListed": "A workspace is a console, so it is never listed publicly. Search indexing for its domain follows",
@@ -2912,6 +2910,12 @@
       "timedOut": "The API has not come back after a minute. Check Settings → Infrastructure, then reload this page.",
       "restartNeeded": "Restart needed",
       "restartNeededExplained": "Sites take effect when the API starts, and this deployment could not restart it by itself. Restart it to turn sites on."
+    },
+    "restored": "Restored",
+    "rowsAcrossTablesRestored": "{{toLocaleString}} rows across {{tables}} tables.",
+    "singleSite": {
+      "title": "This installation serves one site",
+      "explained": "Its database, chosen in setup, keeps a single site, so sites cannot be added here. To run several, set up an installation on PostgreSQL and import this site’s archive there."
     }
   },
   "themes": {
