@@ -95,7 +95,9 @@ export class ServerCorsSetup {
               `CORS BLOCKED: Origin "${origin}" (hostname: "${hostname}") is neither a site on this `
               + `platform nor in the whitelist: ${allowedDomains.join(', ')}`,
             );
-            callback(new Error('Not allowed by CORS'));
+            // A refusal, not an error: no allow headers, so the browser blocks it. Passing an Error made
+            // every unknown origin a 500 and an [ERROR] log line — anyone could fill the error log.
+            callback(null, false);
           });
         } catch (err) {
           this.logger.error(`CORS Error parsing origin "${origin}": ${err}`);
