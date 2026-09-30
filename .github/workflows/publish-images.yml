@@ -73,6 +73,24 @@ jobs:
       # resolves base + builder once and branches — four separate builds would repeat the npm
       # install and compile four times.
       - name: Build and push
+        id: bake
+        # The base image comes from a public registry that rate-limits anonymous pulls (429 Too Many
+        # Requests). That failed two releases in one day, each needing a manual re-run, so a failure
+        # here gets one retry after a pause instead of failing the release.
+        continue-on-error: true
+        uses: docker/bake-action@v7
+        with:
+          files: docker-bake.hcl
+          push: true
+        env:
+          VERSION: ${{ steps.v.outputs.VERSION }}
+
+      - name: Pause before retrying
+        if: steps.bake.outcome == 'failure'
+        run: sleep 90
+
+      - name: Build and push (retry)
+        if: steps.bake.outcome == 'failure'
         uses: docker/bake-action@v7
         with:
           files: docker-bake.hcl
