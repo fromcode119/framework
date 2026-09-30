@@ -69,6 +69,13 @@ export interface IDatabaseManager {
   withExclusiveLock<T>(name: string, fn: () => Promise<T>): Promise<T>;
 
   /**
+   * Runs `fn` while holding a lock named `name` across every process on this database, WITHOUT a
+   * transaction: `fn`'s statements run as they would anyway. For boot work that several api processes
+   * would otherwise race (migrations), where one transaction around all of it would change what it does.
+   */
+  withSessionLock<T>(name: string, fn: () => Promise<T>): Promise<T>;
+
+  /**
    * Makes sure the logins a deployment runs as exist, with the credentials its connection strings name.
    *
    * Called on a privileged BOOTSTRAP connection before the application opens its own, never on the

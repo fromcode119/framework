@@ -19,6 +19,20 @@ export class ApiWorkers {
     return ApiWorkers.count() > 1;
   }
 
+  /**
+   * This worker's number, 0-based (`API_WORKER_INDEX`, set by the process that starts the workers).
+   * A single api process is worker 0.
+   */
+  static index(): number {
+    const index = Number.parseInt(String(process.env.API_WORKER_INDEX ?? ''), 10);
+    return Number.isFinite(index) && index > 0 ? index : 0;
+  }
+
+  /** Whether this worker runs the deployment's once-only background work (monitors, retention, downloads). */
+  static isFirstWorker(): boolean {
+    return ApiWorkers.index() === 0;
+  }
+
   /** This worker's part of `limit`; 0 and below (unlimited / off) pass through unchanged. */
   static share(limit: number): number {
     if (!(limit > 0)) return limit;

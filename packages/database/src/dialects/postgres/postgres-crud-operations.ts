@@ -41,6 +41,21 @@ export abstract class PostgresCrudOperations extends BaseDialect {
     return new TenantClientParking(this.pool, tenantId);
   }
 
+  /** A session-level advisory lock held on its own pooled connection while `fn` runs normally. */
+  async withSessionLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('SELECT pg_advisory_lock(hashtext($1))', [name]);
+      try {
+        return await fn();
+      } finally {
+        await client.query('SELECT pg_advisory_unlock(hashtext($1))', [name]).catch(() => undefined);
+      }
+    } finally {
+      client.release();
+    }
+  }
+
   /** Runs one statement on whichever connection the manager decides. Implemented by the manager. */
   abstract execute(query: any): Promise<any>;
 

@@ -1,10 +1,11 @@
+import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import express, { Router } from 'express';
 import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
 import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, PluginDatabaseQuota, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -46,6 +47,7 @@ export class APIServer {
     const cacheDriver = process.env.REDIS_URL ? 'redis' : 'memory';
     const driver = CacheFactory.create(cacheDriver, { url: process.env.REDIS_URL });
     this.cache = new CacheManager(driver);
+    if (cacheDriver === 'redis' && ApiWorkers.isMultiProcess()) PluginInstallOperationService.getInstance().useSharedStore(this.cache);
     this.scheduler = manager.scheduler;
 
     this.restController = new RESTController(
@@ -132,12 +134,12 @@ export class APIServer {
     await this.setupSettingsSync();
 
     // `_system_logs` had no retention at all, so it grew without bound and buried real warnings.
-    // Starts AFTER the settings sync so the declared window is readable; an unset window prunes nothing.
-    this.logRetention.start();
+    // Starts AFTER the settings sync so the declared window is readable; an unset window prunes nothing. First worker only.
+    if (ApiWorkers.isFirstWorker()) this.logRetention.start();
 
     // The IP-location database follows its switch (Settings → Infrastructure): installed and kept
-    // current while on, removed while off. Downloaded here only; the extension host reads the file.
-    GeoDatabaseUpdater.for((this.manager as any).db, this.logger).start();
+    // current while on, removed while off. Downloaded here only (by the first worker); the extension host reads the file.
+    if (ApiWorkers.isFirstWorker()) GeoDatabaseUpdater.for((this.manager as any).db, this.logger).start();
 
     // Let ApplicationUrlUtils resolve the app URLs from the DB-backed settings, so a URL changed in
     // admin Settings propagates to links, emails and PDFs — not only to CORS. Reads the same sync

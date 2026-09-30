@@ -1,3 +1,4 @@
+import { ApiWorkers } from '@core/cluster/api-workers';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 import { Logger } from '@core/logging';
@@ -45,10 +46,14 @@ export class PluginManagerInitService {
     // FIRST, before any pooled connection exists: every connection opens its tenant binding as its first
     // statement, and that needs the verifier the owner installs here (PostgresDatabaseManager).
     await manager.schemaDb.prepareTenantBinding();
-    await this.migrationManager.migrate();
-    // Immediately after migrations, on the OWNER connection: whatever DDL just ran may have created
-    // tables the runtime role has no rights to yet.
-    await AppRoleGrantService.apply(this.manager.schemaDb);
+    // One api process migrates at a time: several booting together (workers, a rolling deploy) would
+    // each read the same pending list and run it twice. The next finds nothing pending.
+    await manager.schemaDb.withSessionLock('fromcode:boot-migrations', async () => {
+      await this.migrationManager.migrate();
+      // Immediately after migrations, on the OWNER connection: whatever DDL just ran may have created
+      // tables the runtime role has no rights to yet.
+      await AppRoleGrantService.apply(this.manager.schemaDb);
+    });
     await this.coordinator.validateDatabaseState();
     await manager.integrations.initialize();
 
@@ -118,7 +123,8 @@ export class PluginManagerInitService {
 
     // Start background services after migrations and system collections are ready
     await manager.scheduler.start();
-    manager.security.start();
+    // One security monitor per deployment: every worker running one would raise each alert N times.
+    if (ApiWorkers.isFirstWorker()) manager.security.start();
   }
 
   /**
