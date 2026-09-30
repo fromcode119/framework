@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.256] - 2026-09-30
+
+### Fixed
+
+- **admin**: drag dashboard widgets with the pointer — anywhere on the widget, mouse or touch ([#522](https://github.com/fromcode119/framework/pull/522))
+
 ## [0.2.255] - 2026-09-29
 
 ### Fixed
