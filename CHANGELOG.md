@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.262] - 2026-09-30
+
+### Fixed
+
+- **frontend**: apply plugin content transformers in the server render ([#544](https://github.com/fromcode119/framework/pull/544))
+
+### Performance
+
+- **api**: remove the request-path costs a load test found ([#538](https://github.com/fromcode119/framework/pull/538))
+
 ## [0.2.261] - 2026-09-30
 
 ### Added
