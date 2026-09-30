@@ -46,6 +46,6 @@ describe('PluginMigrationRunner', () => {
     await expect(bound.up(owner as any, null, {} as any)).rejects.toThrow(/cannot use schema\.find on "users"/);
     expect(owner.find).toHaveBeenCalledTimes(1);
     expect(owner.find).toHaveBeenCalledWith('fcp_alpha_orders', {});
-    expect(() => db.execute).toThrow(/database:raw/);
+    expect(() => db.execute).toThrow(/cannot access schema database property "execute"/);
   });
 });

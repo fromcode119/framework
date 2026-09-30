@@ -7,9 +7,11 @@ import { PluginPermissionsService } from '@core/security/plugin-permissions-serv
 /**
  * The deliberately small database surface a plugin migration may use on the schema-owner connection.
  *
- * Schema access and arbitrary SQL are separately declared capabilities. Table-aware helpers stay
- * inside the plugin's physical namespace unless the operator also approved cross-plugin schema access.
- * Unknown manager properties never fall through to the raw owner connection.
+ * Named schema operations (`database:schema`) and row reads/writes (`database:read`/`database:write`)
+ * only — never raw SQL, which on this owner connection could read any table or switch row-level
+ * security off (`database:raw` governs the plugin's request connection, not this one). Table-aware
+ * helpers stay inside the plugin's physical namespace unless the operator also approved cross-plugin
+ * schema access. Unknown manager properties never fall through to the raw owner connection.
  */
 export class PluginSchemaDatabaseProxy {
   private static readonly TABLE_METHODS = new Set([
@@ -19,7 +21,7 @@ export class PluginSchemaDatabaseProxy {
     'addColumn',
     'ensureMigrationTable',
     // The schema repairs plugins used RAW SQL for, as named operations the framework validates and
-    // runs (see `execute` below — raw SQL on this owner connection can switch row-level security off).
+    // runs. There is no `execute`: raw SQL on this owner connection could switch row-level security off.
     'ensurePointInTimeColumn',
     'repairTextIdPrimaryKey',
     'ensureTimestampDefault',
@@ -57,13 +59,6 @@ export class PluginSchemaDatabaseProxy {
         if (prop === 'dialect') {
           PluginSchemaDatabaseProxy.require(plugin, manager, 'database:schema');
           return ddl.dialect;
-        }
-        if (prop === 'execute') {
-          PluginSchemaDatabaseProxy.require(plugin, manager, 'database:raw');
-          return (...args: unknown[]) => {
-            manager.audit.logAction(plugin.manifest.slug, 'Plugin Raw SQL', 'migration', 'allowed');
-            return ddl.execute(...args);
-          };
         }
         if (typeof prop === 'string' && PluginSchemaDatabaseProxy.TABLE_METHODS.has(prop)) {
           PluginSchemaDatabaseProxy.require(plugin, manager, 'database:schema');
