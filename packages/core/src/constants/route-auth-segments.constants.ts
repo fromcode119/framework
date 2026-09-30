@@ -128,6 +128,9 @@ export class RouteAuthSegments {
   CERTIFICATES_PLATFORM_ADDRESSES: '/platform-addresses',
   /** Store or clear the Cloudflare API token DNS-01/wildcard orders use. Never returns the value. */
   CERTIFICATES_CLOUDFLARE_TOKEN: '/cloudflare-token',
+  /** `/system/admin/geo` — the IP-location database: its state, and "update now". Platform admins only. */
+  ADMIN_GEO: '/admin/geo',
+  GEO_UPDATE: '/update',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
   TENANTS_ID_PAGES: '/:id/pages',

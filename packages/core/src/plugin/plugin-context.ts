@@ -41,6 +41,7 @@ import type { IPluginContextPeople } from '@core/plugin/interfaces/plugin-contex
 import type { IPluginContextEntityRecords } from '@core/plugin/interfaces/plugin-context-entity-records.interface';
 import type { IPluginContextTenants } from '@core/plugin/interfaces/plugin-context-tenants.interface';
 import type { IPluginContextSigning } from '@core/plugin/interfaces/plugin-context-signing.interface';
+import type { IPluginContextGeo } from '@core/plugin/interfaces/plugin-context-geo.interface';
 import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 import type { IPluginContextMedia } from '@core/plugin/interfaces/plugin-context-media.interface';
 import type { IPluginContextRecordVersions } from '@core/plugin/interfaces/plugin-context-record-versions.interface';
@@ -161,6 +162,7 @@ export class PluginContext {
   declare readonly tenants: IPluginContextTenants;
   /** Signatures for the links this plugin hands out, on a key it never sees. See {@link IPluginContextSigning}. */
   declare readonly signing: IPluginContextSigning;
+  declare readonly geo: IPluginContextGeo;
   /**
    * Run this plugin's schema migrations on the FRAMEWORK's DDL connection.
    *
