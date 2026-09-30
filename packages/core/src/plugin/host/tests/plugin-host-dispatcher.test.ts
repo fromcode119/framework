@@ -9,12 +9,18 @@ import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 function dispatcher() {
   const tokens = new PluginInvocationTokens();
   const scopes: string[] = [];
-  const db = { withTenant: vi.fn(async (tenantId: string, fn: () => Promise<unknown>) => { scopes.push(tenantId); return fn(); }) };
+  const closed: string[] = [];
+  const db = {
+    tenantLease: vi.fn((tenantId: string) => ({
+      run: async <T>(fn: () => Promise<T>) => { scopes.push(tenantId); return fn(); },
+      close: async () => { closed.push(tenantId); },
+    })),
+  };
   const context: any = {
     db: { find: vi.fn(async (table: string) => [{ table, tenant: RequestContextUtils.getTenantId() }]) },
     plugins: { namespace: (ns: string) => ({ ledger: { record: async (p: unknown) => ({ ns, p }) } }) },
   };
-  return { dispatcher: new PluginHostDispatcher('alpha', tokens, db, {}, new PluginHostCallbacks('alpha', async () => undefined)), tokens, db, context, scopes };
+  return { dispatcher: new PluginHostDispatcher('alpha', tokens, db, {}, new PluginHostCallbacks('alpha', async () => undefined)), tokens, db, context, scopes, closed };
 }
 
 describe('PluginHostDispatcher', () => {
@@ -32,6 +38,25 @@ describe('PluginHostDispatcher', () => {
     const rows = await d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['pages'] }], token });
     expect(rows).toEqual([{ table: 'pages', tenant: 't1' }]);
     expect(scopes).toEqual(['t1']);
+  });
+
+  it('reuses ONE lease for every call of an invocation, and closes it when the token is revoked', async () => {
+    const { dispatcher: d, tokens, db, context, scopes, closed } = dispatcher();
+    const token = tokens.mint('route', { locale: 'en', tenantId: 't1' });
+    const other = tokens.mint('route', { locale: 'en', tenantId: 't2' });
+    for (let i = 0; i < 3; i += 1) await d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['pages'] }], token });
+    const rows = await d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['pages'] }], token: other });
+    expect(rows).toEqual([{ table: 'pages', tenant: 't2' }]);
+    expect(db.tenantLease.mock.calls.map((call) => call[0])).toEqual(['t1', 't2']);
+    expect(scopes).toEqual(['t1', 't1', 't1', 't2']);
+    tokens.revoke(token);
+    await Promise.resolve();
+    expect(closed).toEqual(['t1']);
+    await expect(d.dispatch(context, { root: 'context', steps: [{ name: 'db' }, { name: 'find', args: ['pages'] }], token }))
+      .rejects.toMatchObject({ code: 'unknown_invocation' });
+    tokens.revokeAll();
+    await Promise.resolve();
+    expect(closed).toEqual(['t1', 't2']);
   });
 
   it('walks property and call steps, awaiting each call', async () => {

@@ -7,6 +7,7 @@ import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remo
 import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import type { PluginContext } from '@core/plugin/plugin-context';
+import type { ITenantScopeLease } from '@fromcode119/database';
 import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
 import { PluginHostCallPolicy } from '@core/plugin/host/plugin-host-call-policy';
@@ -27,7 +28,7 @@ export class PluginHostDispatcher {
   constructor(
     private readonly slug: string,
     private readonly tokens: PluginInvocationTokens,
-    private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
+    private readonly db: { tenantLease(tenantId: string): ITenantScopeLease },
     private readonly ddl: unknown,
     private readonly callbacks: PluginHostCallbacks,
   ) {}
@@ -45,7 +46,10 @@ export class PluginHostDispatcher {
     // untenanted-boot handling applies (skip-and-warn) instead of "no tenant in the request" rejections.
     if (!invocation.store) return execute();
     const store = invocation.store;
-    return RequestContextUtils.storage.run(store, () => (invocation.tenantId ? this.db.withTenant(invocation.tenantId, execute) : execute()));
+    // The invocation's lease, not a scope per call: a guest serving one request calls back statement by
+    // statement, and binding a connection to the site for each of them was most of its database time.
+    const lease = this.tokens.leaseFor(String(call.token), (tenantId) => this.db.tenantLease(tenantId));
+    return RequestContextUtils.storage.run(store, () => (lease ? lease.run(execute) : execute()));
   }
 
   /**

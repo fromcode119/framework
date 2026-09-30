@@ -1,3 +1,5 @@
+import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
+import { PassThroughTenantLease } from '@database/tenant/pass-through-tenant-lease';
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -149,6 +151,11 @@ export abstract class DialectCapabilityDefaults {
       `${this.constructor.name}: this driver has no tenant isolation strategy, so a tenant-scoped `
       + 'request cannot be served safely. Refusing rather than running the query unisolated.',
     );
+  }
+
+  /** Nothing is kept between scopes by default: each run is this driver's own `withTenant`. */
+  tenantLease(tenantId: string): ITenantScopeLease {
+    return new PassThroughTenantLease(tenantId, (id, fn) => this.withTenant(id, fn));
   }
 
   /** No row-level security here, so there is nothing to lift: `fn` runs as is. */

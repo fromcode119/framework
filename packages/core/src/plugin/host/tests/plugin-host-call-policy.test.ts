@@ -47,7 +47,7 @@ describe('what a plugin process may ask the api for', () => {
 
   it('the dispatcher never walks into a function value', async () => {
     const tokens = new PluginInvocationTokens();
-    const dispatcher = new PluginHostDispatcher('p', tokens, { withTenant: (_t: string, fn: any) => fn() }, {}, new PluginHostCallbacks('p', async () => undefined));
+    const dispatcher = new PluginHostDispatcher('p', tokens, { tenantLease: () => ({ run: (fn: any) => fn(), close: async () => undefined }) }, {}, new PluginHostCallbacks('p', async () => undefined));
     const token = tokens.mint(route, undefined);
     await expect(dispatcher.dispatch(context as any, { root: 'context', steps: [{ name: 'db' }, { name: 'find' }, { name: 'length' }], token } as any)).rejects.toThrow(/function is called/);
     await expect(dispatcher.dispatch(context as any, { root: 'context', steps: [{ name: 'db' }, { name: 'find' }, { name: 'call', args: [] }], token } as any)).rejects.toThrow(/function is called/);

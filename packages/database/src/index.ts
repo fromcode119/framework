@@ -50,6 +50,8 @@ export { JournalPolicySpec } from '@database/tenant/policies/journal-policy-spec
 export { TenantSettingsPolicySpec } from '@database/tenant/policies/tenant-settings-policy-spec';
 export { UnownedReadPolicySpec } from '@database/tenant/policies/unowned-read-policy-spec';
 export { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
+export { TenantClientParking } from '@database/tenant/tenant-client-parking';
+export type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
 // The EXECUTING halves of Postgres tenancy. `TenantIsolationSql` — the statements themselves — is
 // deliberately NOT exported: callers get behaviour, never SQL text. These two are here because
 // constructing the real implementation against a raw client is what an isolation integration test
