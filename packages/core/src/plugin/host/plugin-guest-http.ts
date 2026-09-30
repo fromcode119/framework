@@ -1,6 +1,6 @@
 import fs from 'fs';
 import express from 'express';
-import type { Express, Request, Response, NextFunction } from 'express';
+import type { Express, Router, Request, Response, NextFunction } from 'express';
 import { RequestContextUtils } from '@core/context/request-context';
 import { PermissionGrants } from '@core/utils/permission-grants';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
@@ -81,8 +81,11 @@ export class PluginGuestHttp {
     ];
   }
 
-  readonly app: Express;
-  private server: ReturnType<Express['listen']> | null = null;
+  /** Where the plugin's routes are registered. The 404 and error answers sit after it on {@link server}. */
+  readonly app: Router;
+  private readonly server: Express;
+  private listener: ReturnType<Express['listen']> | null = null;
+  private static readonly GENERIC_ERROR = 'An unexpected error occurred';
 
   constructor(
     private readonly socketPath: string,
@@ -91,12 +94,34 @@ export class PluginGuestHttp {
     /** The api connection a request came from — named by `x-fc-connection`; the process's first when absent. */
     private readonly channelFor: (connectionId: string | null) => PluginChannel | undefined = () => undefined,
   ) {
-    this.app = express();
-    this.app.disable('x-powered-by');
-    this.app.use(this.enterInvocation.bind(this));
-    this.app.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
-    this.app.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
-    this.app.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
+    this.server = express();
+    this.server.disable('x-powered-by');
+    this.server.use(this.enterInvocation.bind(this));
+    this.server.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.server.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.server.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
+    this.app = express.Router();
+    this.server.use(this.app);
+    // Express's own fallbacks answer in HTML, and with the stack trace wherever NODE_ENV is not
+    // `production` — which is every extension host that did not set it. Visitors received the plugin's
+    // file paths and call stack. These answer in JSON and keep the details in this process's log.
+    this.server.use((_req: Request, res: Response) => { res.status(404).json({ error: 'Not Found' }); });
+    this.server.use((error: unknown, req: Request, res: Response, next: NextFunction) => this.answerError(error, req, res, next));
+  }
+
+  /** A client status (4xx) the handler chose is the caller's to read; anything else is a generic 500. */
+  private answerError(error: unknown, req: Request, res: Response, next: NextFunction): void {
+    const raw = error && typeof error === 'object' ? error as { status?: unknown; statusCode?: unknown; message?: unknown; stack?: unknown } : {};
+    const status = Number(raw.status ?? raw.statusCode);
+    const clientStatus = status >= 400 && status <= 499 ? status : 0;
+    if (!clientStatus) console.error(`[plugin] ${req.method} ${req.originalUrl} failed: ${String(raw.stack ?? raw.message ?? error)}`);
+    if (res.headersSent) {
+      next(error);
+      return;
+    }
+    res.status(clientStatus || 500).json(clientStatus
+      ? { error: String(raw.message ?? 'Request Failed') }
+      : { error: 'Internal Server Error', message: PluginGuestHttp.GENERIC_ERROR });
   }
 
   /** The middleware this process registered, by the id the api targets. */
@@ -105,14 +130,14 @@ export class PluginGuestHttp {
   async listen(): Promise<void> {
     if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
     await new Promise<void>((resolve, reject) => {
-      this.server = this.app.listen(this.socketPath, () => resolve());
-      this.server.on('error', reject);
+      this.listener = this.server.listen(this.socketPath, () => resolve());
+      this.listener.on('error', reject);
     });
     fs.chmodSync(this.socketPath, this.socketMode);
   }
 
   async close(): Promise<void> {
-    await new Promise<void>((resolve) => (this.server ? this.server.close(() => resolve()) : resolve()));
+    await new Promise<void>((resolve) => (this.listener ? this.listener.close(() => resolve()) : resolve()));
     if (fs.existsSync(this.socketPath)) fs.rmSync(this.socketPath, { force: true });
   }
 

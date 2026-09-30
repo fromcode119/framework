@@ -92,6 +92,18 @@ export class ApiFirewallCard extends PureReactor {
           min={1000}
           max={86400000}
         />
+
+        <SettingNumberRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE}
+          icon={FrameworkIcons.Database}
+          title={AdminI18n.t('settings.security.pluginDatabaseCallsPerMinute')}
+          description={AdminI18n.t('settings.security.pluginDatabaseCallsPerMinuteHelp')}
+          min={0}
+          max={100000000}
+        />
       </Card>
     );
   }

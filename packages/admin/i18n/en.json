@@ -1870,6 +1870,8 @@
       "addressesOrCidrBlocksYour": "Addresses or CIDR blocks your own services call this API from, comma separated (for example 172.16.0.0/12). A caller is internal only when both its network hop and its resolved address are listed, never because of a header it sent. Leave empty and nothing is internal: every anonymous caller falls back to the per-IP limit above.",
       "rateLimitWindowMilliseconds": "Rate Limit Window (milliseconds)",
       "everyCounterAboveResetsAfter": "Every counter above resets after this window elapses. Example: 60000 is one minute. Fixed-window: a caller who trips a limit is locked out for up to this long, so keep it short. Changing it restarts the counters.",
+      "pluginDatabaseCallsPerMinute": "Plugin database calls per minute",
+      "pluginDatabaseCallsPerMinuteHelp": "How many database calls one plugin may make for one site in a minute. Past it, that plugin's requests for that site fail until the minute ends, so set it well above normal traffic: one product listing makes several calls. 0 = unlimited.",
       "defenseModules": "Defense Modules",
       "signatureEnforcement": "Signature Enforcement",
       "enforced": "Enforced",

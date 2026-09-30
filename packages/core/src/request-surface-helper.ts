@@ -6,6 +6,9 @@ import { ApiVersionUtils } from '@core/api-version';
  * here so behavior stays identical.
  */
 export class RequestSurfaceHelper {
+  /** RFC 3986 scheme followed by `:` — the only shape `new URL(value)` without a base accepts. */
+  private static readonly SCHEME_PREFIX = /^[a-zA-Z][a-zA-Z0-9+.-]*:/;
+
   static readHeader(requestLike: {
     headers?: Record<string, unknown>;
     get?: (name: string) => string | undefined;
@@ -35,10 +38,15 @@ export class RequestSurfaceHelper {
       return '';
     }
 
-    try {
-      const parsedUrl = new URL(normalizedValue);
-      return RequestSurfaceHelper.normalizePathname(parsedUrl.pathname);
-    } catch {}
+    // Only an input with a scheme can parse without a base. Trying `new URL` on every relative path
+    // threw an exception per call — several per request — and building those throws was a third of
+    // the API's CPU under load.
+    if (RequestSurfaceHelper.SCHEME_PREFIX.test(normalizedValue)) {
+      try {
+        const parsedUrl = new URL(normalizedValue);
+        return RequestSurfaceHelper.normalizePathname(parsedUrl.pathname);
+      } catch {}
+    }
 
     const withoutQueryOrHash = normalizedValue.split('?')[0].split('#')[0].trim();
     if (!withoutQueryOrHash) {

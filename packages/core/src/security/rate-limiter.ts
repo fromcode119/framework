@@ -7,7 +7,8 @@ export class RateLimiter {
     private windowMs: number = 60000
   ) {}
 
-  check(key: string): boolean {
+  /** `limit` overrides the constructor's for callers whose budget is configurable at runtime. */
+  check(key: string, limit: number = this.limit): boolean {
     const now = Date.now();
     let record = this.counts.get(key);
 
@@ -17,7 +18,7 @@ export class RateLimiter {
       return true;
     }
 
-    if (record.count >= this.limit) {
+    if (record.count >= limit) {
       return false;
     }
 

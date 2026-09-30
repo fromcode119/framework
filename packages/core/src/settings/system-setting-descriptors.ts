@@ -259,6 +259,12 @@ export class SystemSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '60000', description: "Rate limit window in milliseconds. Fixed-window: tripping the limit locks a caller out for up to this long, so keep it short.", group: "security" },
     },
+    // PLATFORM for the reason the rate-limit keys above are: it is read from the API's settings cache,
+    // which an untenanted read fills with the platform row only. The COUNT is per plugin per site.
+    [SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '0', description: "Database calls one plugin may make for one site per minute. 0 = unlimited.", group: "security" },
+    },
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Empty means every plugin write is audited. Name a high-volume table here — telemetry, event streams — when its writes would otherwise drown the trail. Seeded empty on purpose: which tables those are depends on what is installed, so it is yours to state.", group: "security" },

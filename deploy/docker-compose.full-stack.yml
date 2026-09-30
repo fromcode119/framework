@@ -191,6 +191,9 @@ services:
       # made a first install impossible — the process that would have created it never started.
       - JWT_SECRET=${JWT_SECRET:-}
       - NODE_ENV=production
+      # The logger's own default is debug, which writes a line for every request. Set LOG_LEVEL=debug
+      # in .env to trace one.
+      - LOG_LEVEL=${LOG_LEVEL:-info}
       - API_VERSION_PREFIX=${API_VERSION_PREFIX:-v1}
       - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-v1}
       - API_URL=${API_URL:-}
@@ -347,6 +350,9 @@ services:
       # installs — the api does those. Only the egress rule below applies.
       - DEPLOYMENT_MODE=extension-host
       - GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY:-deny}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      # Express reads it: anything else puts stack traces in plugin error responses.
+      - NODE_ENV=production
     volumes:
       - extension_runtime:/run/fromcode
       # The plugins' code and their writable data directories, at the SAME paths the api names them by.
