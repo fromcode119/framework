@@ -65,6 +65,11 @@ export class ThemeTenantPlacement {
     }
 
     const tenantRoot = ProjectPaths.getThemesDirFor(ownerTenantId);
+    // A malformed id is answered with the PLATFORM root: a site's theme placed there would be discovered
+    // as the platform's own. Refused, as the plugin installer refuses the same answer.
+    if (path.resolve(tenantRoot) === path.resolve(ProjectPaths.getThemesDir())) {
+      throw new Error('This site has no directory of its own for themes.');
+    }
     const targetDir = path.join(tenantRoot, slug);
     this.assertWithinQuota(tenantRoot, targetDir, contentDir, quota);
 

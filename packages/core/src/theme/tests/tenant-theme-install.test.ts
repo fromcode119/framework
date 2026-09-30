@@ -171,6 +171,14 @@ describe('installing a theme uploaded by a site', () => {
       .resolves.toBeTruthy();
   });
 
+  it('refuses a site id that cannot be a directory, rather than placing the theme at the PLATFORM root', async () => {
+    const themesRoot = tempDir('fc-themes-');
+
+    await expect(installerOn(themesRoot).installForTenant(themeZip({ slug: 'sneaky' }), 'acme/../..', new Map(), QUOTA))
+      .rejects.toThrow(/no directory of its own/i);
+    expect(fs.existsSync(path.join(themesRoot, 'sneaky'))).toBe(false);
+  });
+
   it('requires a site — an upload with no site selected is refused', async () => {
     const themesRoot = tempDir('fc-themes-');
 
