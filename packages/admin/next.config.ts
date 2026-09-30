@@ -168,6 +168,17 @@ class AdminNextConfig {
           },
         ],
       },
+      {
+        // The console acts with whoever is signed in — a platform administrator included — so no
+        // other site may frame it and steer those clicks. The admin framing its own pages still works.
+        // No CSP here: this rule also covers the `/api` proxy, whose served files carry their own.
+        source: '/:path*',
+        headers: [
+          { key: 'X-Frame-Options', value: 'SAMEORIGIN' },
+          { key: 'X-Content-Type-Options', value: 'nosniff' },
+          { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
+        ],
+      },
     ];
   },
   webpack: (config: INextWebpackConfig, { isServer, dev }: INextWebpackContext) => {

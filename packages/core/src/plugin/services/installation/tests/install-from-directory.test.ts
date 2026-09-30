@@ -3,6 +3,7 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { PluginArchiveInstallerService } from '@core/plugin/services/installation/plugin-archive-installer-service';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 import { PluginPackageValidator } from '@core/plugin/services/installation/plugin-package-validator';
 
 /**
@@ -85,5 +86,15 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
       await expect(service.installFromDirectory(pkg)).rejects.toThrow(/slug/);
     }
     expect(fs.existsSync(sitePlugin)).toBe(true);
+  });
+  it('refuses a slug that is already one site\'s own plugin — the platform copy would silently replace it', async () => {
+    vi.mocked(PluginPackageValidator.validateInstalledPackage).mockRestore();
+    PluginOwners.record('guestbook', 'acme');
+    try {
+      await expect(service.installFromDirectory(pkg)).rejects.toThrow(/belongs to site "acme"/);
+      expect(fs.existsSync(path.join(pluginsRoot, 'guestbook'))).toBe(false);
+    } finally {
+      PluginOwners.forget('guestbook');
+    }
   });
 });

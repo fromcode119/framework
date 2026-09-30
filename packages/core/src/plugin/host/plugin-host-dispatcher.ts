@@ -9,6 +9,7 @@ import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavai
 import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
+import { PluginHostCallPolicy } from '@core/plugin/host/plugin-host-call-policy';
 
 /**
  * Runs one guest call against the REAL context, under the tenant the call's token was minted for.
@@ -37,7 +38,8 @@ export class PluginHostDispatcher {
       throw Object.assign(new Error(`unknown_invocation: plugin "${this.slug}" presented a token the host did not mint`), { code: 'unknown_invocation' });
     }
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
-    const execute = () => this.walk(this.root(context, call.root), call.steps);
+    PluginHostCallPolicy.assert(this.slug, call, context, invocation.kind);
+    const execute = () => this.walk(this.root(context, call.root), call.steps, call.root);
     // No store means the invocation was not started from a request (boot, a scheduler tick): the call
     // runs OUTSIDE any request context, exactly as the in-process plugin's would, so the context's own
     // untenanted-boot handling applies (skip-and-warn) instead of "no tenant in the request" rejections.
@@ -53,7 +55,8 @@ export class PluginHostDispatcher {
    */
   declare(context: PluginContext, steps: IPluginRemoteCall['steps'], root: string = String(PluginRemoteCallRoot.CONTEXT.value)): Promise<unknown> {
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, { root, steps });
-    return this.walk(this.root(context, root), steps);
+    PluginHostCallPolicy.assert(this.slug, { root, steps }, context, null);
+    return this.walk(this.root(context, root), steps, root);
   }
 
   private root(context: PluginContext, root: IPluginRemoteCall['root']): unknown {
@@ -63,7 +66,7 @@ export class PluginHostDispatcher {
     throw new Error(`unknown call root "${root}"`);
   }
 
-  private async walk(start: unknown, steps: IPluginRemoteCall['steps']): Promise<unknown> {
+  private async walk(start: unknown, steps: IPluginRemoteCall['steps'], root: string): Promise<unknown> {
     let target: any = start;
     let owner: any = undefined;
     for (let index = 0; index < steps.length; index += 1) {
@@ -78,6 +81,7 @@ export class PluginHostDispatcher {
         }
         throw new Error(`cannot read "${step.name}" of ${target}`);
       }
+      PluginHostCallPolicy.assertTarget(this.slug, root, steps, target);
       const next = target[step.name];
       if (step.args) {
         if (typeof next !== 'function') throw new Error(`"${step.name}" is not callable`);

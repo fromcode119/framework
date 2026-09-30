@@ -8,6 +8,7 @@ import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
 import type { IThemeRenderBoot } from '@/lib/ssr/host/interfaces/theme-render-boot.interface';
 import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render-request.interface';
 import type { IThemeSsrMarkupParts } from '@/lib/ssr/interfaces/theme-ssr-markup-parts.interface';
+import { ThemeRenderIdentities } from '@/lib/ssr/host/theme-render-identities';
 
 /**
  * One server-render world in its own process (T5b).
@@ -41,7 +42,8 @@ export class ThemeRenderHost {
   async start(boot: IThemeRenderBoot): Promise<boolean> {
     const launcher = GuestProcessLaunchers.current();
     const label = `render-host:${this.generation.themeSlug}`;
-    const identity = { uid: SystemConstants.PROCESS_ISOLATION.THEME_UID, gid: SystemConstants.PROCESS_ISOLATION.THEME_UID };
+    const uid = ThemeRenderIdentities.uidFor(this.generation.signature);
+    const identity = { uid, gid: uid };
     const guest = await launcher.launch({
       id: `theme-${this.generation.token}`,
       entryPath: path.join(this.frontendDir, ThemeRenderHost.GUEST_MAIN),

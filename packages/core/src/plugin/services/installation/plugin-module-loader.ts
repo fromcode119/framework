@@ -2,6 +2,7 @@ import Module from 'module';
 import fs from 'fs';
 import path from 'path';
 import { PluginEntryModuleLoader } from '@core/plugin/services/installation/plugin-entry-module-loader';
+import { PluginImportBoundary } from '@core/plugin/plugin-import-boundary';
 
 /**
  * Getting a plugin's compiled entry module into this process.
@@ -18,9 +19,12 @@ import { PluginEntryModuleLoader } from '@core/plugin/services/installation/plug
 export class PluginModuleLoader {
   constructor(
     private readonly projectRoot: string,
+    /** Plugins loaded from here reach the framework only through the SDK (`PluginImportBoundary`). */
+    private readonly pluginsRoot?: string,
   ) {}
 
   ensureSharedModuleResolution(): void {
+    if (this.pluginsRoot) PluginImportBoundary.guard(this.pluginsRoot, this.projectRoot);
     try {
       const projectNodeModules = path.resolve(this.projectRoot, 'node_modules');
       if (!fs.existsSync(projectNodeModules) || !fs.statSync(projectNodeModules).isDirectory()) return;

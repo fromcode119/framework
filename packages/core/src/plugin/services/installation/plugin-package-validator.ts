@@ -3,6 +3,7 @@ import path from 'path';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { ProjectPaths } from '@core/config/paths';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 export class PluginPackageValidator {
   /** One plugin directory name: lowercase letters, digits and dashes — the same rule a site's upload meets. */
@@ -23,6 +24,12 @@ export class PluginPackageValidator {
     const slug = String(manifest.slug ?? '');
     if (!PluginPackageValidator.SLUG_PATTERN.test(slug) || ProjectPaths.isTenantArtifactsDir(slug)) {
       throw new Error(`Uploaded plugin archive is invalid: slug "${slug}" must be lowercase letters, digits and dashes, and not a reserved name.`);
+    }
+    // One slug is one plugin across the server. Installed over a site's own, the platform's copy
+    // would win at the next boot and the site's plugin would silently stop running.
+    const owner = PluginOwners.ownerOf(slug);
+    if (owner) {
+      throw new Error(`A plugin named "${slug}" already belongs to site "${owner}". The platform cannot install one with the same slug.`);
     }
   }
 

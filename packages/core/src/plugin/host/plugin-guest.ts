@@ -20,6 +20,7 @@ import { PluginHostProtocol } from '@core/plugin/host/protocol/plugin-host-proto
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
+import { PluginImportBoundary } from '@core/plugin/plugin-import-boundary';
 
 /**
  * The plugin's process. Loads the plugin exactly as the scanner would in-process, gives it a context
@@ -75,6 +76,7 @@ export class PluginGuest {
     process.env.ATLANTIS_PROJECT_ROOT = boot.projectRoot;
     process.chdir(boot.projectRoot);
     PluginGuest.shareFrameworkModules(boot.projectRoot);
+    PluginImportBoundary.guard(boot.pluginDir, boot.projectRoot);
     PluginGuestCoreBridge.install(this.registrar, this.remote, this.handlers, Boolean(boot.manifest.ownerTenantId));
 
     this.http = new PluginGuestHttp(boot.socketPath, this.remote, boot.socketMode, (connectionId) => this.connections.channel(connectionId));
