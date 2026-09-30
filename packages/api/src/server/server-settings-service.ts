@@ -51,9 +51,10 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.SETUP_COMPLETED,
   ];
 
-  subscribeToSettingsChanges() {
+  /** Returns the unsubscribe function. */
+  subscribeToSettingsChanges(): () => void {
     // A signal, not the hook: every api process holds this cache, and each re-reads it on any save.
-    ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, (payload: unknown, local: boolean) => {
+    return ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, (payload: unknown, local: boolean) => {
       const refreshed = this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
       // The gateway is told once, by the process that saved.
       if (!local) return;
