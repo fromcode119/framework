@@ -3,8 +3,8 @@
  * catch-all it also mounted (`context.api.use('/', router)`) can step aside for them.
  *
  * On the api each registration becomes an Express layer in the order the plugin made it. A plugin that
- * mounts a sub-router at `/` before declaring a route — the ecommerce plugin mounts its tags router
- * before `GET /products/:slug`, for ordering reasons of its own — got that route's requests caught by
+ * mounts a sub-router at `/` before declaring a route — a shop that mounts its tags router before
+ * `GET /products/:slug`, for ordering reasons of its own — got that route's requests caught by
  * the catch-all's forwarder: the route's own layers (its declared access gate, the anonymous response
  * cache) never ran for them. The plugin's own process routes the request identically either way.
  *

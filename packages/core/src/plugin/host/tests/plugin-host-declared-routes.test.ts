@@ -25,7 +25,7 @@ describe('PluginHostDeclaredRoutes', () => {
 });
 
 /**
- * The ecommerce shape: a sub-router mounted at `/` BEFORE `GET /products/:slug` is declared. The
+ * A shop's shape: a sub-router mounted at `/` BEFORE `GET /products/:slug` is declared. The
  * declared route's own layers (its gate, the response cache) must run for its requests; anything else
  * still goes to the catch-all.
  */

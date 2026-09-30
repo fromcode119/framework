@@ -11,7 +11,7 @@ describe('saving a plugin\'s settings', () => {
     const registry: any = { savePluginConfig: vi.fn(async () => undefined) };
     const service = new PluginRuntimeStateService({ info: () => undefined } as any, {} as any, registry, new Map(), new Map(), new Map(), new Map());
     const before = SiteContentRevision.current('site-a');
-    await RequestContextUtils.storage.run({ tenantId: 'site-a' } as any, () => service.savePluginConfig('finance', { settings: { taxRatePercent: 20 } }));
+    await RequestContextUtils.storage.run({ tenantId: 'site-a' } as any, () => service.savePluginConfig('ledger', { settings: { taxRatePercent: 20 } }));
     expect(registry.savePluginConfig).toHaveBeenCalledTimes(1);
     expect(SiteContentRevision.current('site-a')).not.toBe(before);
     vi.restoreAllMocks();
