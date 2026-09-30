@@ -1,5 +1,6 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { PluginKeyspace } from '@core/plugin/context/plugin-keyspace';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class IntegrationsContextProxy {
@@ -69,13 +70,15 @@ export class IntegrationsContextProxy {
     manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
-    const cachePrefix = `cache:${plugin.manifest.slug}:`;
+    const slug = plugin.manifest.slug;
     const target = (manager.integrations as any).cache;
     if (!target) return null;
+    // Per SITE as well as per plugin — see PluginKeyspace.
+    const key = (name: string) => `${PluginKeyspace.prefix('cache', slug)}${name}`;
     return {
-      get: (key: string) => target.get(`${cachePrefix}${key}`),
-      set: (key: string, value: any, ttl?: number) => target.set(`${cachePrefix}${key}`, value, ttl),
-      del: (key: string) => target.del(`${cachePrefix}${key}`)
+      get: (name: string) => target.get(key(name)),
+      set: (name: string, value: any, ttl?: number) => target.set(key(name), value, ttl),
+      del: (name: string) => target.del(key(name))
     };
   }
 }

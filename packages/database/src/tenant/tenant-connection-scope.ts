@@ -121,10 +121,13 @@ export class TenantConnectionScope {
     if (!client) return;
     try {
       await PostgresTenantSession.clear(client, PlatformPool.marks(store.pool));
-    } catch {
-      // A client that cannot be cleared must never be reused carrying a stale tenant. Swallowing
-      // here is deliberate: the release below is what matters, and pg discards a client whose
-      // session is broken rather than returning a poisoned one to the pool.
+    } catch (error) {
+      // A client that cannot be cleared must never be reused carrying a stale tenant. `release()`
+      // with no argument hands it straight back to the pool, markers and all — pg only DESTROYS a
+      // client released with an error. A clear fails on a client left mid-transaction or with a
+      // broken session; either way it is thrown away, never lent to the next request.
+      client.release(error as Error);
+      return;
     }
     client.release();
   }

@@ -39,7 +39,7 @@ export class RestVersionController {
 
   async restoreVersion(collection: ICollection, req: any, res: Response) {
     try {
-      UserCollectionScopeGuard.ensureAllows(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
+      UserCollectionScopeGuard.ensureWriteAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const restoredData = await this.runtime.versioningService.restoreVersion(
         collection,
         req.params.id,

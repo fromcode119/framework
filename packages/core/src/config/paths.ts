@@ -27,56 +27,47 @@ export class ProjectPaths extends UploadPaths {
   }
 
   static getPluginsDir(): string {
-      const root = ProjectPaths.getProjectRoot();
-      const isDev = FrameworkRootLocator.isFrameworkRoot(root);
-      const candidates = [
-        process.env.PLUGINS_DIR,
-        isDev ? '../../plugins' : null,
-        isDev ? '../plugins' : null,
-        'plugins'
-      ]
-        .filter((value): value is string | null => value !== null && Boolean(String(value || '').trim()))
-        .map((value) => ProjectPaths.resolveFromRoot(root, value as string));
-
-      const deduped = Array.from(new Set(candidates));
-      const ranked = deduped
-        .map((dir) => ({ dir, manifests: FrameworkRootLocator.countPluginManifests(dir) }))
-        .filter((item) => item.manifests > 0)
-        .sort((a, b) => b.manifests - a.manifests);
-      if (ranked.length > 0) return ranked[0].dir;
-
-      const existing = deduped.find((dir) => fs.existsSync(dir) && fs.statSync(dir).isDirectory());
-      if (existing) return existing;
-
-      return path.resolve(root, 'plugins');
-
+      return ProjectPaths.extensionRoot(process.env.PLUGINS_DIR, 'plugins', (dir) => FrameworkRootLocator.countPluginManifests(dir));
   }
 
   static getThemesDir(): string {
-      const root = ProjectPaths.getProjectRoot();
-      const isDev = FrameworkRootLocator.isFrameworkRoot(root);
-      const candidates = [
-        process.env.THEMES_DIR,
-        isDev ? '../../themes' : null,
-        isDev ? '../themes' : null,
-        'themes'
-      ]
-        .filter((value): value is string | null => value !== null && Boolean(String(value || '').trim()))
-        .map((value) => ProjectPaths.resolveFromRoot(root, value as string));
-
-      const deduped = Array.from(new Set(candidates));
-      const ranked = deduped
-        .map((dir) => ({ dir, manifests: FrameworkRootLocator.countThemeManifests(dir) }))
-        .filter((item) => item.manifests > 0)
-        .sort((a, b) => b.manifests - a.manifests);
-      if (ranked.length > 0) return ranked[0].dir;
-
-      const existing = deduped.find((dir) => fs.existsSync(dir) && fs.statSync(dir).isDirectory());
-      if (existing) return existing;
-
-      return path.resolve(root, 'themes');
-
+      return ProjectPaths.extensionRoot(process.env.THEMES_DIR, 'themes', (dir) => FrameworkRootLocator.countThemeManifests(dir));
   }
+
+  /**
+   * An extension root: the CONFIGURED directory when it exists, otherwise the best-populated fallback.
+   *
+   * The configured value used to be one candidate among the fallbacks, ranked by how many manifests
+   * each held — so in a checkout beside the real `plugins/`/`themes/` trees, an explicit
+   * `PLUGINS_DIR`/`THEMES_DIR` lost to them silently. A build meant for a sandbox wrote into the real
+   * tree, and a test's own themes root was ignored for the real one. A setting the operator made is
+   * the answer; ranking only chooses among the guesses made when there is none.
+   */
+  private static extensionRoot(configured: string | undefined, name: string, countManifests: (dir: string) => number): string {
+    const root = ProjectPaths.getProjectRoot();
+    const explicit = String(configured || '').trim();
+    if (explicit) {
+      const dir = ProjectPaths.resolveFromRoot(root, explicit);
+      if (fs.existsSync(dir) && fs.statSync(dir).isDirectory()) return dir;
+    }
+    const isDev = FrameworkRootLocator.isFrameworkRoot(root);
+    const candidates = [isDev ? `../../${name}` : null, isDev ? `../${name}` : null, name]
+      .filter((value): value is string => value !== null)
+      .map((value) => ProjectPaths.resolveFromRoot(root, value));
+
+    const deduped = Array.from(new Set(candidates));
+    const ranked = deduped
+      .map((dir) => ({ dir, manifests: countManifests(dir) }))
+      .filter((item) => item.manifests > 0)
+      .sort((a, b) => b.manifests - a.manifests);
+    if (ranked.length > 0) return ranked[0].dir;
+
+    const existing = deduped.find((dir) => fs.existsSync(dir) && fs.statSync(dir).isDirectory());
+    if (existing) return existing;
+
+    return path.resolve(root, name);
+  }
+
 
   /**
    * Where a SITE's own uploaded themes live: `<themes root>/tenants/<tenantId>`.

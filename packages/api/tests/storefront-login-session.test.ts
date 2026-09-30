@@ -40,6 +40,7 @@ class DatabaseStub {
 
   async update(): Promise<boolean> { return true; }
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> { return fn(); }
+  async withTenant<T>(_tenantId: string, fn: () => Promise<T>): Promise<T> { return fn(); }
   async execute(): Promise<any[]> { return []; }
 }
 

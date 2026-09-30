@@ -89,8 +89,9 @@ export class RestBulkController {
 
       const results: any[] = [];
       for (const id of ids) {
-        // An account outside the scope is treated exactly like one that does not exist.
-        if (!UserCollectionScopeGuard.allows(userScope, id)) {
+        // An account outside the scope is treated exactly like one that does not exist; a member whose
+        // account is shared with another site is skipped the same way (see `allowsWrite`).
+        if (!UserCollectionScopeGuard.allowsWrite(userScope, id)) {
           continue;
         }
         const where = {
@@ -160,7 +161,7 @@ export class RestBulkController {
       const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
       const parsedIds = ids
         .map((id: any) => this.runtime.requireRecordIdentifier(collection, String(id)))
-        .filter((id: any) => UserCollectionScopeGuard.allows(userScope, id));
+        .filter((id: any) => UserCollectionScopeGuard.allowsWrite(userScope, id));
       if (parsedIds.length === 0) {
         if (!res) {
           return false;

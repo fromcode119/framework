@@ -12,6 +12,8 @@ export class EditRoleSummarySidebar extends PureReactor {
   @prop declare permissionCount: number;
   @prop declare loading: boolean;
   @prop declare onCancel: () => void;
+  /** No Save: this editor may not change the role here (see the notice on the page). */
+  @prop declare readOnly?: boolean;
 
   render(): ReactNode {
     const { type, permissionCount, loading, onCancel } = this;
@@ -32,13 +34,13 @@ export class EditRoleSummarySidebar extends PureReactor {
                </div>
             </div>
 
-            <Button
+            {this.readOnly ? null : <Button
               type="submit"
               className="w-full h-11 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
               isLoading={loading}
             >
               {AdminI18n.t('users.save')}
-            </Button>
+            </Button>}
             <Button
               variant={ButtonVariant.GHOST}
               className="w-full h-11 font-bold text-slate-400"

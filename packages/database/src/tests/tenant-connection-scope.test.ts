@@ -7,7 +7,16 @@ class FakeClient {
   released = false;
   constructor(readonly id: number) {}
   async query(text: string, values?: unknown[]) { this.calls.push({ text, values }); return { rows: [] }; }
-  release() { this.released = true; }
+  releasedWith: unknown = undefined;
+  release(error?: unknown) { this.released = true; this.releasedWith = error; }
+}
+
+/** A client whose reset fails — left mid-transaction, or with a broken session. */
+class UnclearableClient extends FakeClient {
+  async query(text: string, values?: unknown[]) {
+    if (text === TenantIsolationSql.resetTenantStatement()) throw new Error('current transaction is aborted');
+    return super.query(text, values);
+  }
 }
 
 /** Hands out a fresh counting client per `connect`, so re-acquisition after a release is visible. */
@@ -21,6 +30,25 @@ class FakePool {
 }
 
 describe('TenantConnectionScope', () => {
+  it('destroys a client whose tenant cannot be cleared, instead of lending it on still bound to that tenant', async () => {
+    const client = new UnclearableClient(1);
+    const pool = { clients: [client], connect: async () => client as any };
+    await TenantConnectionScope.run(pool as any, 't1', async () => {
+      await TenantConnectionScope.currentClient()!.query('select 1');
+    });
+    expect(client.released).toBe(true);
+    expect(client.releasedWith).toBeInstanceOf(Error);
+  });
+
+  it('does the same for a statement that arrives after the scope closed', async () => {
+    const client = new UnclearableClient(1);
+    const pool = { connect: async () => client as any };
+    let late: any;
+    await TenantConnectionScope.run(pool as any, 't1', async () => { late = TenantConnectionScope.currentClient(); });
+    await late.query('select after close');
+    expect(client.releasedWith).toBeInstanceOf(Error);
+  });
+
   it('takes no client for a scope that issues no statement', async () => {
     const pool = new FakePool();
     await TenantConnectionScope.run(pool as any, 't1', async () => {

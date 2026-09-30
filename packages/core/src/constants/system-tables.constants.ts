@@ -60,6 +60,12 @@ export class SystemTables {
     SITE_PREVIEW_GRANTS: '_system_site_preview_grants',
     USERS: 'users',
     ROLES: '_system_roles',
+    /**
+     * A SITE's own roles, beside the platform's `ROLES`. Row-level scoped (see TenantScopedTables), so a
+     * site reads and writes only its own; the platform's roles stay on top — visible to every site,
+     * editable only in platform scope, and winning over a site role of the same slug (see RoleCatalog).
+     */
+    SITE_ROLES: '_system_site_roles',
     PERMISSIONS: '_system_permissions',
     PLUGINS: '_system_plugins',
     PLUGIN_SETTINGS: '_system_plugin_settings',

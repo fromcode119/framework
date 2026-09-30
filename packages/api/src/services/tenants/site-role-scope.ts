@@ -1,5 +1,5 @@
-import { Schema } from '@fromcode119/database';
-import { PluginTenantAccess, RequestContextUtils, StringUtils, SystemConstants, TenantMembership, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { PluginTenantAccess, RequestContextUtils, RoleCatalog, StringUtils, SystemConstants, TenantMembership, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import type { IRoleCatalogEntry } from '@fromcode119/core';
 
 /**
  * Roles as ONE SITE sees them: which exist there, and which each member holds there.
@@ -35,13 +35,14 @@ export class SiteRoleScope {
     const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
     if (!TenantMode.isEnabled() || !tenantId) return null;
 
+    // The platform's roles and this site's own (RoleCatalog) — a site grants from both.
     const [roles, rows] = await Promise.all([
-      db.find(Schema.systemRoles),
+      new RoleCatalog(db).list(tenantId),
       db.find(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { where: { tenant_id: tenantId } }),
     ]);
-    const visible = new Set<string>((roles || [])
-      .filter((role: any) => SiteRoleScope.isVisibleOnSite(role, tenantId))
-      .map((role: any) => String(role?.slug ?? '')));
+    const visible = new Set<string>(roles
+      .filter((role: IRoleCatalogEntry) => SiteRoleScope.isVisibleOnSite(role, tenantId))
+      .map((role: IRoleCatalogEntry) => role.slug));
     const memberships = new Map<number, string[]>();
     for (const row of rows || []) {
       const membership = TenantMembership.from(row);
@@ -76,6 +77,15 @@ export class SiteRoleScope {
    * granted from it, and the account's platform-wide grants are not touched — a save used to replace
    * that whole list, so it could strip a grant the site had never been shown.
    */
+  /** Takes a role this site just deleted off every one of its memberships. */
+  async withdraw(slug: string): Promise<void> {
+    const memberships = new TenantMembershipService(this.db as never);
+    for (const [userId, roles] of this.memberships) {
+      if (!roles.includes(slug)) continue;
+      await memberships.grant(String(userId), this.tenantId, roles.filter((role) => role !== slug));
+    }
+  }
+
   async grant(userId: number, submitted: string[]): Promise<void> {
     const granted = StringUtils.normalizeSlugList(submitted).filter((slug) => this.visible.has(slug));
     await new TenantMembershipService(this.db as never).grant(String(userId), this.tenantId, granted);

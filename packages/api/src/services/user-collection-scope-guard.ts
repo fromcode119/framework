@@ -66,6 +66,29 @@ export class UserCollectionScopeGuard {
   }
 
   /**
+   * Whether this request may WRITE the account itself — update, delete, archive, restore a version.
+   * Reading a member is not owning their account: one that also belongs to another site, or is the
+   * platform admin, is the same account everywhere (see `TenantUserScope.mayEditIdentity`).
+   */
+  static allowsWrite(scope: TenantUserScope | null, id: unknown): boolean {
+    if (!scope) return true;
+    const numeric = Number(id);
+    return Number.isInteger(numeric) && scope.mayEditIdentity(numeric);
+  }
+
+  /** NOT FOUND outside the scope (as `ensureAllows`); FORBIDDEN, with the reason, for a shared account. */
+  static ensureWriteAllowed(scope: TenantUserScope | null, id: unknown): void {
+    UserCollectionScopeGuard.ensureAllows(scope, id);
+    if (UserCollectionScopeGuard.allowsWrite(scope, id)) return;
+    const error = new Error(
+      'This account is not managed by this site: it signs in to other sites as well, so it can only be '
+      + 'changed by a platform admin. Change this person\'s roles on this site from its Users screen.',
+    ) as Error & { statusCode?: number };
+    error.statusCode = 403;
+    throw error;
+  }
+
+  /**
    * An account created here would land in the global table belonging to no site — invisible to the
    * site that made it, and outside every scope but the platform's. Creating a site's account is done
    * on its Users screen, which also grants the membership; a platform-wide account, in platform scope.

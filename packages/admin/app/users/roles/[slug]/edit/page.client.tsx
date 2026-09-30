@@ -25,6 +25,8 @@ export class EditRolePage extends AdminComponent {
   @state loading = false;
   @state fetching = true;
   @state catalog: IPermissionCatalogGroup[] = [];
+  /** False for a role this editor may not change here — a platform role inside a site (API's `editable`). */
+  @state editable = true;
   @state formData: IEditRoleFormData = {
     slug: '',
     name: '',
@@ -59,6 +61,7 @@ export class EditRolePage extends AdminComponent {
       if (!this.mounted) return;
       this.catalog = Array.isArray(catalog) ? catalog : [];
       if (roleData) {
+        this.editable = roleData.editable !== false;
         this.formData = {
           slug: roleData.slug || '',
           name: roleData.name || '',
@@ -82,6 +85,7 @@ export class EditRolePage extends AdminComponent {
 
   private async handleSubmit(e: FormEvent): Promise<void> {
     e.preventDefault();
+    if (!this.editable) return;
     const notify = this.runtime.notify.notify;
     this.loading = true;
     try {
@@ -98,7 +102,7 @@ export class EditRolePage extends AdminComponent {
 
   render(): ReactElement {
     const theme = this.theme;
-    const { fetching, loading, catalog, formData } = this;
+    const { fetching, loading, catalog, formData, editable } = this;
 
     if (fetching) {
       return (
@@ -120,6 +124,11 @@ export class EditRolePage extends AdminComponent {
         <div className="flex-1 w-full px-6 lg:px-8 py-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
+              {editable ? null : (
+                <p className="text-xs font-bold text-slate-500 bg-amber-500/5 p-4 rounded-xl border border-amber-500/10">
+                  {AdminI18n.t('users.platformRoleLockedHint')}
+                </p>
+              )}
               <Card title={AdminI18n.t('users.roleDetails')}>
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -128,6 +137,7 @@ export class EditRolePage extends AdminComponent {
                       placeholder={AdminI18n.t('users.eGEditor')}
                       value={formData.name}
                       onChange={(e) => this.updateForm({ name: e.target.value })}
+                      disabled={!editable}
                       required
                       size={FieldSize.SM}
                     />
@@ -148,6 +158,7 @@ export class EditRolePage extends AdminComponent {
                       }`}
                       placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
+                      disabled={!editable}
                       onChange={(e) => this.updateForm({ description: e.target.value })}
                     />
                   </div>
@@ -158,6 +169,7 @@ export class EditRolePage extends AdminComponent {
                 groups={catalog}
                 selected={formData.permissions}
                 onChange={(permissions) => this.updateForm({ permissions })}
+                readOnly={!editable}
               />
             </div>
 
@@ -165,6 +177,7 @@ export class EditRolePage extends AdminComponent {
               type={formData.type}
               permissionCount={formData.permissions.length}
               loading={loading}
+              readOnly={!editable}
               onCancel={() => this.router.push(AdminConstants.ROUTES.USERS.ROLE_LIST)}
             />
           </form>

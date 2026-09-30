@@ -16,6 +16,7 @@ import { UsersRowActions } from '@/app/users/components/view/users-row-actions.c
 import { UsersPageHeader } from '@/app/users/components/view/users-page-header.client';
 import type { IUser } from '@/app/users/interfaces/user.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { NotificationType } from '@/components/enums/notification-type.enum';
 
 export class UsersPage extends AdminComponent {
   private mounted = false;
@@ -72,7 +73,12 @@ export class UsersPage extends AdminComponent {
     if (!deleteConfirm) return;
     this.isDeleting = true;
     try {
-      await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER(deleteConfirm.id));
+      const result = await AdminApi.delete(AdminConstants.ENDPOINTS.SYSTEM.USER(deleteConfirm.id));
+      // A person whose account is shared with another site is removed from THIS site, not deleted —
+      // say so, rather than let the operator believe the account is gone.
+      if (result?.removedFromSite) {
+        this.runtime?.notify?.addNotification?.({ title: AdminI18n.t('users.users'), message: AdminI18n.t('users.removedFromSite'), type: NotificationType.INFO });
+      }
       await this.fetchUsers();
       this.deleteConfirm = null;
     } finally {

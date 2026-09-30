@@ -58,7 +58,9 @@ export class AuthControllerSession extends AuthControllerLifecycle {
       res.json(
         AuthSessionRecordService
           .sortByCreatedAtDesc(sessions)
-          .filter((session: any) => scope.allows(Number(session?.userId)))
+          // snake_case: a RAW-manager row, which is not denormalized. Reading `userId` here matched no
+          // session at all, so a site's Sessions screen was always empty.
+          .filter((session: any) => scope.allowsSession(session?.user_id, session?.tenant_id))
           .map((session: any) => AuthSessionRecordService.normalize(session))
           .filter((session: any) => AuthSessionRecordService.isActive(session, now)),
       );
@@ -80,7 +82,7 @@ export class AuthControllerSession extends AuthControllerLifecycle {
       const scope = await TenantUserScope.of(req, this.db);
       const match = await this.db.find(SystemConstants.TABLE.SESSIONS, { where: { id }, limit: 1 });
       const session = match?.[0];
-      if (!session || !scope.allows(Number((session as any).userId))) {
+      if (!session || !scope.allowsSession((session as any).user_id, (session as any).tenant_id)) {
         return res.status(404).json({ error: 'Session not found' });
       }
       await this.db.update(SystemConstants.TABLE.SESSIONS, { id }, { isRevoked: true, updatedAt: new Date() });

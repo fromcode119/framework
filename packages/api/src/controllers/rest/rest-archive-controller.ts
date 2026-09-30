@@ -78,7 +78,7 @@ export class RestArchiveController {
     const scope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
     return raw
       .map((id: unknown) => this.runtime.requireRecordIdentifier(collection, String(id)))
-      .filter((id: unknown) => UserCollectionScopeGuard.allows(scope, id));
+      .filter((id: unknown) => UserCollectionScopeGuard.allowsWrite(scope, id));
   }
 
   /** The requested rows still in the other state — archiving an archived record changes nothing. */

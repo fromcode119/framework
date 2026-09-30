@@ -38,7 +38,8 @@ export class AuthManager {
   }
 
   /**
-   * How to find what an account may do on the site a request is bound to.
+   * How to find what an account may do on the site a request is bound to — or, with `tenantId` empty,
+   * in PLATFORM scope, where no site is bound.
    *
    * Injected rather than looked up here: this class holds a signing secret and nothing else, and the
    * membership tables belong to core. Left unset — every single-tenant deployment — roles stay exactly
@@ -55,9 +56,14 @@ export class AuthManager {
    * an account that was a customer on one site and an administrator on another was one or the other
    * everywhere. A platform admin and a non-member both come back `null` and keep their global roles;
    * only a real membership narrows them.
+   *
+   * Asked with NO site too. A token minted with no site claim carried the account's global roles, and
+   * on a multi-site deployment a global `admin` is not a platform admin: such an account, standing in
+   * platform scope, passed every permission gate that was not also behind PlatformAdminGuard. The
+   * resolver answers that scope as well (see TenantMembershipService.rolesOutsideSite).
    */
   private async applyTenantRoles(user: any, tenantId: string): Promise<any> {
-    if (!this.tenantRoleResolver || !tenantId) return user;
+    if (!this.tenantRoleResolver) return user;
     try {
       const roles = await this.tenantRoleResolver(String(user?.id ?? ''), tenantId);
       return roles ? { ...user, roles } : user;
@@ -99,10 +105,10 @@ export class AuthManager {
    * The permissions a given set of ROLES carries — for baking a session that is scoped to one site,
    * where the roles come from the membership rather than the account.
    */
-  async getPermissionsForRoles(roles: string[]): Promise<string[]> {
+  async getPermissionsForRoles(roles: string[], tenantId?: string | null): Promise<string[]> {
     if (!this.permissionChecker) return [];
     try {
-      return await this.permissionChecker.permissionsForRoles(roles);
+      return await this.permissionChecker.permissionsForRoles(roles, tenantId);
     } catch {
       return [];
     }

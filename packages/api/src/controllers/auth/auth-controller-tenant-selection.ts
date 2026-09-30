@@ -60,10 +60,18 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     tenantId: string | undefined,
     global: { roles: string[]; permissions: string[] },
   ): Promise<{ roles: string[]; permissions: string[] }> {
-    if (!tenantId) return global;
-    const roles = await new TenantMembershipService(this.db).rolesForTenant(userId, tenantId).catch(() => null);
+    const memberships = new TenantMembershipService(this.db);
+    if (!tenantId) {
+      // Platform scope: the same answer the request gate gives (`rolesOutsideSite`), so the token does
+      // not advertise screens the API will refuse.
+      const outside = await memberships.rolesOutsideSite(userId).catch(() => [] as string[]);
+      return outside ? { roles: outside, permissions: [] } : global;
+    }
+    const roles = await memberships.rolesForTenant(userId, tenantId).catch(() => null);
     if (!roles) return global;
-    return { roles, permissions: await this.auth.getPermissionsForRoles(roles) };
+    // Named explicitly: a login mints this before the site is bound, and a site's own roles are read
+    // inside that site's scope (see RoleCatalog).
+    return { roles, permissions: await this.auth.getPermissionsForRoles(roles, tenantId) };
   }
 
   /**

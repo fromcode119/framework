@@ -27,6 +27,8 @@ class FakeDb {
     return this.tenants;
   }
 
+  async withTenant<T>(_tenantId: string, fn: () => Promise<T>): Promise<T> { return fn(); }
+
   async findOne(table: string, where: any) {
     if (table.includes('memberships')) {
       return this.memberships.find(m => m.user_id === where.user_id && m.tenant_id === where.tenant_id) ?? null;
