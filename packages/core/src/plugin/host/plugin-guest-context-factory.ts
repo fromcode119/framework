@@ -7,6 +7,7 @@ import { PluginGuestSql } from '@core/plugin/host/plugin-guest-sql';
 import { PluginGuestState } from '@core/plugin/host/plugin-guest-state';
 import { PluginGuestApiFactory } from '@core/plugin/host/plugin-guest-api-factory';
 import { PluginGuestLocals } from '@core/plugin/host/plugin-guest-locals';
+import { PluginGuestSettings } from '@core/plugin/host/plugin-guest-settings';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
@@ -83,6 +84,7 @@ export class PluginGuestContextFactory {
       'entityRecords', 'entities', 'theme', 'ui', 'integrations', 'storage', 'cache', 'redis', 'extensions']) {
       context[name] = ctx(name);
     }
+    context.settings = new PluginGuestSettings(context.settings as Record<string, any>).proxy();
     return context as unknown as PluginContext;
   }
 
