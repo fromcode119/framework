@@ -36,6 +36,17 @@ export class PluginsManagerResolver implements IPluginApiResolver {
   }
 
   /**
+   * `isResolvable` for the plugin that is being ACTIVATED right now. Its default pages are created inside
+   * its own activation, while its state is still LOADING — after its init has run, before ACTIVE is set —
+   * so the plain check refused it every time and every value the owner supplies for its own pages came
+   * out blank. Only that one state is let through; a crashed, stopped or not-enabled plugin is not.
+   */
+  static isResolvableWhileActivating(plugin: ILoadedPlugin, tenantId: string | null): boolean {
+    if (PluginState.resolve(plugin.state) !== PluginState.LOADING) return PluginsManagerResolver.isResolvable(plugin, tenantId);
+    return PluginsManagerResolver.refusalReason({ ...plugin, state: PluginState.ACTIVE } as ILoadedPlugin, tenantId) === null;
+  }
+
+  /**
    * WHY this plugin is not resolvable, in words, or `null` when it is.
    *
    * The predicate itself lives here so a caller cannot drift from it; what is new is that the answer
