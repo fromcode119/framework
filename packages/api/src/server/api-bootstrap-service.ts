@@ -1,3 +1,4 @@
+import { ProcessSignal, ProcessSignals } from '@fromcode119/core';
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
@@ -148,17 +149,24 @@ export class ApiBootstrapService {
         locale: (await value(SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE)) || (await value(SystemConstants.META_KEY.DEFAULT_LOCALE)),
       };
     });
-    // One listener for every cache that derives a value from a saved setting: the save's payload says
-    // which row each key landed in, and the registry drops exactly the copies that made stale. On the
-    // hook rather than called by the controller, because the hook reaches every api instance.
+    // Every cache derived from a saved setting drops exactly the copies the save made stale. The hook is
+    // local to the saving process; the SIGNAL carries the save to every api process, each with its own copies.
     manager.hooks.on('system:settings:updated', (payload: any) => {
+      ProcessSignals.announce(ProcessSignal.SETTINGS_WRITTEN, {
+        keys: Array.isArray(payload?.keys) ? payload.keys : [],
+        writes: Array.isArray(payload?.writes) ? payload.writes : [],
+      });
+    });
+    ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, (payload: any, local: boolean) => {
       const writes = Array.isArray(payload?.writes) ? payload.writes : [];
       SettingChangeInvalidators.dispatch(writes);
       // A saved setting can change what a page shows; a platform row (no tenant) changes every site.
-      for (const write of writes) SiteContentRevision.bump(write?.tenantId ?? null);
+      // Only the saving process bumps: a bump is itself a signal every process counts.
+      if (local) for (const write of writes) SiteContentRevision.bump(write?.tenantId ?? null);
     });
     // An explicit purge means every rendered page, on every site.
-    manager.hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => SiteContentRevision.bump(null));
+    manager.hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => ProcessSignals.announce(ProcessSignal.CACHE_PURGED));
+    ProcessSignals.on(ProcessSignal.CACHE_PURGED, (_payload: unknown, local: boolean) => { if (local) SiteContentRevision.bump(null); });
 
     // The PLATFORM's own locale (`context.i18n.defaultLocale()` for work no site owns, and every site
     // without one of its own) was seeded once at boot, so saving it changed nothing until a restart.

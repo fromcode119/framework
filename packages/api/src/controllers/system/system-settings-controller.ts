@@ -242,7 +242,7 @@ export class SystemSettingsController {
       // permalink-structure cache) can invalidate immediately instead of waiting out a TTL.
       // `writes` says which row each key landed in, so every cache that derived a value from one
       // (`SettingChangeInvalidators`) drops exactly the copies the save made stale — on every api
-      // instance, since the hook is broadcast.
+      // process: the hook's listener announces it as a ProcessSignal.
       this.runtime.manager.hooks.emit('system:settings:updated', { keys: Object.keys(preparedPayload), writes });
 
       res.json({ success: true });

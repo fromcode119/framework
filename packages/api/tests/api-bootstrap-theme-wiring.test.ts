@@ -59,6 +59,8 @@ vi.mock('@fromcode119/core', () => ({
   HotReloadService: class { start() {} },
   HookEventUtils: { HOOK_EVENTS: { SYSTEM_CACHE_PURGE: 'system:cache:purge' } },
   SiteContentRevision: { bump: () => {} },
+  ProcessSignals: { on: () => () => {}, announce: () => {} },
+  ProcessSignal: { SETTINGS_WRITTEN: { value: 'settings-written' }, CACHE_PURGED: { value: 'cache-purged' } },
   LocalizationUtils: { normalizeLocaleCode: () => '' },
   Logger: class { info() {} warn() {} error() {} },
   PluginManager: class { constructor() { return managerInstance; } },

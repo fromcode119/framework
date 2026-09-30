@@ -1,5 +1,6 @@
 /** ServerSettingsService — settings cache management. Extracted from APIServer (ARC-007). */
 
+import { ProcessSignal, ProcessSignals } from '@fromcode119/core';
 import { ApplicationUrlUtils, Logger } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { CacheManager } from '@fromcode119/cache';
@@ -50,9 +51,13 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.SETUP_COMPLETED,
   ];
 
-  subscribeToSettingsChanges(hooks: { on: (event: string, handler: (payload: unknown) => void) => void }) {
-    hooks.on('system:settings:updated', (payload: unknown) => {
+  /** Returns the unsubscribe function. */
+  subscribeToSettingsChanges(): () => void {
+    // A signal, not the hook: every api process holds this cache, and each re-reads it on any save.
+    return ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, (payload: unknown, local: boolean) => {
       const refreshed = this.refreshSettingsCache().catch((err) => this.logger.error('Settings cache refresh after update failed: ' + err));
+      // The gateway is told once, by the process that saved.
+      if (!local) return;
 
       // A host change must also reach the GATEWAY, which keeps its own routing map. Without this the
       // new address only routed at the gateway's next refresh — and the operator, who had just seen

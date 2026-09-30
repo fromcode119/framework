@@ -1,4 +1,5 @@
-import { CoreServices, HookEventUtils, PluginManager, PluginTenantAccess, RequestContextUtils, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
+import { ProcessSignal, ProcessSignals } from '@fromcode119/core';
+import { CoreServices, PluginManager, PluginTenantAccess, RequestContextUtils, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
@@ -36,8 +37,12 @@ export class ResolutionService {
     if (!hooks) return;
     hooks.on('collection:*:saved', () => this.cache.invalidateResults());
     hooks.on('collection:*:deleted', () => this.cache.invalidateResults());
-    hooks.on('system:settings:updated', () => this.cache.invalidateAll());
-    hooks.on(HookEventUtils.HOOK_EVENTS.SYSTEM_CACHE_PURGE, () => this.cache.invalidateAll());
+    // Settings saves and purges arrive as signals, so every api process clears its own copy.
+    ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, () => this.cache.invalidateAll());
+    ProcessSignals.on(ProcessSignal.CACHE_PURGED, () => this.cache.invalidateAll());
+    // A write handled by ANOTHER process reaches this one only as a content change (the collection
+    // hooks above are local); it clears the resolved results the same way.
+    ProcessSignals.on(ProcessSignal.CONTENT_CHANGED, (_payload: unknown, local: boolean) => { if (!local) this.cache.invalidateResults(); });
   }
 
   /** The plugin design the storefront page `id` shows while its content is empty, or null. */

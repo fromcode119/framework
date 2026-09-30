@@ -60,6 +60,10 @@ export type { IJournalPruneSummary } from '@core/database/interfaces/journal-pru
 export { Seeder } from '@core/database/seeder';
 export { HookManager } from '@core/hooks/hook-manager';
 export { HookAdapterFactory } from '@core/hooks/hook-adapter-factory';
+export { ProcessSignals } from '@core/signals/process-signals';
+export { ProcessSignal } from '@core/signals/enums/process-signal.enum';
+export { RedisProcessSignalTransport } from '@core/signals/redis-process-signal-transport';
+export type { IProcessSignalTransport } from '@core/signals/interfaces/process-signal-transport.interface';
 export { I18nManager } from '@core/i18n/i18n-manager';
 export { WebSocketManager } from '@core/realtime/web-socket-manager';
 export type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';

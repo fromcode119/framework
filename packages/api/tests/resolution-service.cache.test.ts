@@ -1,6 +1,16 @@
 const siteContext = vi.hoisted(() => ({ tenantId: undefined as string | undefined }));
+/** Signal handlers the service registered, by signal value: the settings save now arrives as a ProcessSignal. */
+const signalHandlers = vi.hoisted(() => ({} as Record<string, (payload: any, local: boolean) => void>));
 
 vi.mock('@fromcode119/core', () => ({
+  ProcessSignal: {
+    SETTINGS_WRITTEN: { value: 'settings-written' },
+    CACHE_PURGED: { value: 'cache-purged' },
+    CONTENT_CHANGED: { value: 'content-changed' },
+  },
+  ProcessSignals: {
+    on: (signal: { value: string }, handler: (payload: any, local: boolean) => void) => { signalHandlers[signal.value] = handler; return () => undefined; },
+  },
   RequestContextUtils: {
     getTenantId: vi.fn(() => siteContext.tenantId),
   },
@@ -259,7 +269,7 @@ describe('ResolutionService anonymous result cache', () => {
     expect(find.mock.calls.length).toBeGreaterThan(afterFirst); // cache cleared → fresh scan
   });
 
-  it('invalidates the permalink-structure cache on the settings hook', async () => {
+  it('invalidates the permalink-structure cache on a settings save', async () => {
     const { service, metaFind, hookHandlers } = buildHarness({ findImpl: matchContact });
 
     await service.resolveSlug('/contact', {});
@@ -268,7 +278,7 @@ describe('ResolutionService anonymous result cache', () => {
     await service.resolveSlug('/other', {});
     expect(metaFind).toHaveBeenCalledTimes(1);
 
-    hookHandlers['system:settings:updated']({ keys: ['permalink_structure'] });
+    signalHandlers['settings-written']({ keys: ['permalink_structure'] }, true);
     await service.resolveSlug('/third', {});
     expect(metaFind).toHaveBeenCalledTimes(2);
   });

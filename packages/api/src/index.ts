@@ -3,7 +3,7 @@ import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
 import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
-import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, PluginDatabaseQuota } from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, PluginDatabaseQuota, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
 import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
@@ -112,8 +112,10 @@ export class APIServer {
   }
 
   public async initialize() {
-
     this.logger.info('Initializing API Server infrastructure...');
+    // What another api process changes reaches this one's caches (ProcessSignals); one process needs no transport.
+    const redisUrl = process.env.REDIS_URL;
+    if (redisUrl) await ProcessSignals.use(new RedisProcessSignalTransport(redisUrl)).catch((err) => this.logger.error(`Process signals unavailable; caches stay local to this process: ${err}`));
     
     // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
     // proxy connects from a PRIVATE subnet address (compose/Coolify networks live in 172.16/12 etc.),
@@ -214,7 +216,7 @@ export class APIServer {
 
   private async setupSettingsSync() {
     await this.settingsService.setupSettingsSync();
-    this.settingsService.subscribeToSettingsChanges(this.manager.hooks);
+    this.settingsService.subscribeToSettingsChanges();
     this.settingsInterval = (this.settingsService as any).settingsInterval;
     // Seed the i18n manager's default locale from the configured platform setting (admin Settings →
     // Localization) so server-rendered legal documents (invoices, payout statements) render in the

@@ -1,3 +1,5 @@
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -136,13 +138,15 @@ export class TenantThemeAccess {
    * "no restart" mechanism for theme activation.
    */
   static invalidate(tenantId?: string): void {
-    const tenant = String(tenantId ?? '').trim();
-    if (tenant) {
-      TenantThemeAccess.cache.delete(tenant);
-      return;
-    }
-    TenantThemeAccess.cache.clear();
+    // Every api process holds this cache; the others hear it through the signal and forget theirs.
+    ProcessSignals.announce(ProcessSignal.THEME_ACCESS_CHANGED, { tenantId: String(tenantId ?? '').trim() });
   }
+
+  private static readonly forgetting = ProcessSignals.on(ProcessSignal.THEME_ACCESS_CHANGED, (payload) => {
+    const tenant = String(payload?.tenantId ?? '').trim();
+    if (tenant) TenantThemeAccess.cache.delete(tenant);
+    else TenantThemeAccess.cache.clear();
+  });
 
   /** Test seam. */
   static reset(): void {
