@@ -106,10 +106,29 @@ export class PostgresReadOperations extends BaseDialect {
     return result.rows;
   }
 
+  /**
+   * Tables seen to exist. The first-boot guard below asked the catalog before EVERY read — half of all
+   * statements a request ran. A table that exists keeps existing; one that did not may be created later,
+   * so only "yes" is remembered, and a read that finds a remembered table gone forgets it (see `dropped`).
+   */
+  private readonly knownTables = new Set<string>();
+
+  private static readonly UNDEFINED_TABLE = '42P01';
+
   private async tableExists(tableName: string): Promise<boolean> {
+    if (this.knownTables.has(tableName)) return true;
     const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
     const result: any = await this.orm.execute(query);
-    return (result.rows[0]?.total || 0) > 0;
+    const exists = (result.rows[0]?.total || 0) > 0;
+    if (exists) this.knownTables.add(tableName);
+    return exists;
+  }
+
+  /** True when `error` says a remembered table no longer exists; the table is forgotten, as the guard would answer. */
+  private dropped(error: unknown, tableName: string): boolean {
+    if ((error as { code?: unknown } | null)?.code !== PostgresReadOperations.UNDEFINED_TABLE) return false;
+    this.knownTables.delete(tableName);
+    return true;
   }
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
@@ -152,8 +171,13 @@ export class PostgresReadOperations extends BaseDialect {
       if (limit) sqlQuery += ` LIMIT ${limit}`;
       if (offset) sqlQuery += ` OFFSET ${offset}`;
 
-      const result = await this.executor.query(sqlQuery, values);
-      return result.rows;
+      try {
+        const result = await this.executor.query(sqlQuery, values);
+        return result.rows;
+      } catch (error) {
+        if (this.dropped(error, tableName)) return [];
+        throw error;
+      }
     }
 
     // Otherwise use Drizzle for typed table objects
@@ -246,7 +270,12 @@ export class PostgresReadOperations extends BaseDialect {
       query = query.where(normalizedWhere);
     }
 
-    const [result] = await query;
-    return Number(result?.total || 0);
+    try {
+      const [result] = await query;
+      return Number(result?.total || 0);
+    } catch (error) {
+      if (isString && this.dropped(error, tableOrName)) return 0;
+      throw error;
+    }
   }
 }
