@@ -159,13 +159,7 @@ export class ThemeManager extends ThemeLifecycle {
       throw new Error(`Theme "${name}" does not belong to this site, so it cannot be removed here.`);
     }
 
-    // `getThemesDirFor` answers a malformed id with the PLATFORM root; deleting under it would remove the
-    // platform's theme of that name, not the site's — the same refusal the plugin installer makes.
-    const siteRoot = ProjectPaths.getThemesDirFor(owner);
-    if (path.resolve(siteRoot) === path.resolve(ProjectPaths.getThemesDir())) {
-      throw new Error('This site has no directory of its own for themes.');
-    }
-    const directory = path.join(siteRoot, name);
+    const directory = path.join(ProjectPaths.requireSiteThemesDir(owner), name);
     if (fs.existsSync(directory)) fs.rmSync(directory, { recursive: true, force: true });
     await this.discoverThemes();
     await this.refreshStorefrontRenderer(`theme "${name}" removed by site "${owner}"`);

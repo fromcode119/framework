@@ -3,7 +3,7 @@ import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope'
 import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
 import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+TenantBindingKey.use('test-key');
 
 const OPEN = TenantBindingSql.openStatement();
 const BIND = TenantBindingSql.bindStatement();

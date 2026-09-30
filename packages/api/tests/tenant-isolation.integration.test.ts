@@ -12,9 +12,6 @@ import { PostgresTenantIsolation, PostgresTenantSession } from '@fromcode119/dat
  * It SKIPS without the two connection URLs rather than passing vacuously — a green run with no
  * database would be worse than no test at all.
  */
-// Bindings are signed (TenantBindingKey) with a key derived from this — this suite's own, never a deployment's.
-process.env.JWT_SECRET = 'tenant-isolation-integration-secret';
-
 const runtimeUrl = process.env.TENANT_TEST_DATABASE_URL;
 const ownerUrl = process.env.TENANT_TEST_OWNER_URL;
 

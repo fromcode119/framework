@@ -12,14 +12,19 @@ import { SqlIdentifier } from '@database/dialects/postgres/sql-identifier';
  * `pg_temp.fc_tenant_binding`, that belongs to the OWNER role: private to the connection, gone when the
  * connection ends (so a reused backend pid can never inherit it), and not writable by the application
  * role. It changes only through two SECURITY DEFINER functions, each demanding a signature made with
- * the key in `_system_tenant_binding_key` (owner-only), which the api derives and nothing in the
- * database can read:
+ * the key in `_system_tenant_binding_key` — generated in the database once, readable by the OWNER only,
+ * and read back by the api over its owner connection (TenantBindingKey):
  *
  * - `fc_binding_open(state, sig)` — the FIRST statement on a new connection (issued from the pool's
  *   `connect` event, so nothing can run before it). Signed over `state:pid`; refused once the
  *   connection has opened, so it cannot be replayed on a live one. Returns a fresh random nonce.
  * - `fc_bind(state, counter, sig)` — every later change. Signed over `state:pid:nonce:counter`, and
  *   accepted only for the NEXT counter, so a signature seen once can never be used again.
+ *
+ * A session logged in AS THE OWNER may open and bind without a signature: it owns every table and could
+ * turn row-level security off outright, so a signature would protect nothing from it — and demanding
+ * one made a migration run by a CLI that has no key yet fail on its first policy. `session_user` is the
+ * login, which the application role cannot change (SET ROLE changes `current_user` only).
  *
  * `fc_bound_tenant()`, `fc_platform_admin()` and `fc_unbound()` answer the policies from that table
  * alone, and only when the OWNER created it — a same-named temp table the application role made for
@@ -72,14 +77,17 @@ export class TenantBindingSql {
     return binding.platformAdmin ? 'platform' : 'none';
   }
 
-  /** Everything, in order. `$1` of the key statement is the key. */
-  static installStatements(schema: string): { before: string[]; key: string; after: string[] } {
+  /** Everything, in order. `key` creates the key once; `readKey` returns it (owner connection only). */
+  static installStatements(schema: string): { before: string[]; key: string; readKey: string; after: string[] } {
     const s = SqlIdentifier.assert(schema, 'TenantBindingSql');
     const keys = `"${s}"."${TenantBindingSql.KEY_TABLE}"`;
     const sign = (message: string) =>
       `encode(sha256(convert_to(k.key || encode(sha256(convert_to(k.key || ${message}, 'UTF8')), 'hex'), 'UTF8')), 'hex')`;
     // The binding table exists, and the OWNER made it (current_user is the owner inside these
     // SECURITY DEFINER functions).
+    // The login is the owner of the key table — see the class comment.
+    const ownerSession = `session_user = (SELECT t.tableowner FROM pg_tables t
+                     WHERE t.schemaname = '${s}' AND t.tablename = '${TenantBindingSql.KEY_TABLE}')`;
     const owned = `EXISTS (SELECT 1 FROM pg_class c WHERE c.oid = to_regclass('pg_temp.fc_tenant_binding')
                      AND c.relowner = (SELECT oid FROM pg_roles WHERE rolname = current_user))`;
     // Sets the RAW settings the column DEFAULTs read, to match the verified binding.
@@ -96,7 +104,11 @@ export class TenantBindingSql {
            LOOP EXECUTE format('REVOKE ALL ON TABLE %I.%I FROM %I', '${s}', '${TenantBindingSql.KEY_TABLE}', r.grantee); END LOOP;
          END $$`,
       ],
-      key: `INSERT INTO ${keys} (id, key) VALUES (1, $1) ON CONFLICT (id) DO UPDATE SET key = EXCLUDED.key`,
+      // Generated ONCE, from the server's strong random source (gen_random_uuid), and never replaced: every
+      // replica and every connection already open keeps verifying against the same key.
+      key: `INSERT INTO ${keys} (id, key) VALUES (1, replace(gen_random_uuid()::text || gen_random_uuid()::text, '-', '')) `
+        + 'ON CONFLICT (id) DO NOTHING',
+      readKey: `SELECT key FROM ${keys} WHERE id = 1`,
       after: [
         `CREATE OR REPLACE FUNCTION "${s}".fc_binding_open(p_state text, p_sig text) RETURNS text
            LANGUAGE plpgsql VOLATILE SECURITY DEFINER SET search_path = pg_catalog AS $f$
@@ -105,7 +117,7 @@ export class TenantBindingSql {
              IF to_regclass('pg_temp.fc_tenant_binding') IS NOT NULL THEN
                RAISE EXCEPTION 'tenant binding: this connection is already open';
              END IF;
-             IF NOT EXISTS (SELECT 1 FROM ${keys} k WHERE k.id = 1
+             IF NOT (${ownerSession}) AND NOT EXISTS (SELECT 1 FROM ${keys} k WHERE k.id = 1
                              AND p_sig = ${sign(`p_state || ':' || pg_backend_pid()::text`)}) THEN
                RAISE EXCEPTION 'tenant binding: open refused';
              END IF;
@@ -125,7 +137,8 @@ export class TenantBindingSql {
              UPDATE pg_temp.fc_tenant_binding b SET counter = p_counter, bound = p_state
                FROM ${keys} k
               WHERE k.id = 1 AND p_counter = b.counter + 1
-                AND p_sig = ${sign(`p_state || ':' || pg_backend_pid()::text || ':' || b.nonce || ':' || p_counter::text`)};
+                AND ((${ownerSession})
+                     OR p_sig = ${sign(`p_state || ':' || pg_backend_pid()::text || ':' || b.nonce || ':' || p_counter::text`)});
              IF NOT FOUND THEN
                RAISE EXCEPTION 'tenant binding: bind refused';
              END IF;

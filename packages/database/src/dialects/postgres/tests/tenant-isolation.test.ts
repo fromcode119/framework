@@ -4,8 +4,8 @@ import { TenantIsolationSql } from '@database/dialects/postgres/tenant/tenant-is
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
 import { SharedReadPolicySpec } from '@database/tenant/policies/shared-read-policy-spec';
 import { TenantBindingSql } from '@database/dialects/postgres/tenant/tenant-binding-sql';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
 /**
  * The executing half. The statements themselves are asserted in `tenant-isolation-sql.test.ts`;
@@ -24,37 +24,37 @@ describe('PostgresTenantIsolation', () => {
   };
 
   it('isolateTable installs the binding verifier first, then the column half and the enforcement half, in order', async () => {
-    const { issued, run } = recorder([{ schema: 'public' }]);
+    const { issued, run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
 
     await new PostgresTenantIsolation(run).isolateTable('pages');
 
     const install = TenantBindingSql.installStatements('public');
-    const expected = [TenantBindingSql.currentSchemaStatement(), ...install.before, install.key, ...install.after];
+    const expected = [TenantBindingSql.currentSchemaStatement(), ...install.before, install.key, ...install.after, install.readKey];
     const texts = issued.map((entry) => entry.text);
     expect(texts.slice(0, expected.length)).toEqual(expected);
     expect(texts.slice(expected.length)).toEqual(TenantIsolationSql.statementsFor('pages'));
-    // The key is a parameter, never interpolated into the SQL text.
-    expect(issued[expected.indexOf(install.key)].values?.[0]).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('takes its key from the DATABASE — no application secret needed — and signs with it', async () => {
+    TenantBindingKey.use('');
+    const { run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
+    await new PostgresTenantIsolation(run).isolateTable('pages');
+    expect(TenantBindingKey.loaded).toBe(true);
+    expect(TenantBindingKey.sign('none:1')).toMatch(/^[0-9a-f]{64}$/);
+  });
+
+  it('never writes a key it was given: the database generates it, once', () => {
+    const install = TenantBindingSql.installStatements('public');
+    expect(install.key).toContain('gen_random_uuid()');
+    expect(install.key).toContain('ON CONFLICT (id) DO NOTHING');
   });
 
   it('installs the verifier only once per process, however many tables it isolates', async () => {
-    const { issued, run } = recorder([{ schema: 'public' }]);
+    const { issued, run } = recorder([{ schema: 'public', key: 'db-held-key' }]);
     const isolation = new PostgresTenantIsolation(run);
     await isolation.isolateTable('pages');
     await isolation.isolateTable('orders');
     expect(issued.filter((entry) => entry.text === TenantBindingSql.currentSchemaStatement())).toHaveLength(1);
-  });
-
-  it('refuses to write a policy when there is no key to verify bindings with', async () => {
-    const previous = process.env.JWT_SECRET;
-    delete process.env.JWT_SECRET;
-    try {
-      const { issued, run } = recorder([{ schema: 'public' }]);
-      await expect(new PostgresTenantIsolation(run).isolateTable('pages')).rejects.toThrow(/JWT_SECRET/);
-      expect(issued.some((entry) => entry.text.includes('CREATE POLICY'))).toBe(false);
-    } finally {
-      process.env.JWT_SECRET = previous;
-    }
   });
 
   it('addTenantColumn never enables row-level security', async () => {

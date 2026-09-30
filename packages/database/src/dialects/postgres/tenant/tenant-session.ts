@@ -55,7 +55,7 @@ export class PostgresTenantSession {
       PostgresTenantSession.open(client, pid, TenantBindingSql.stateOf({ platformAdmin: platformPool }))
         .nonce.catch(() => undefined);
     } catch {
-      // No key to sign with (a process without JWT_SECRET): nothing may throw out of a pool event.
+      // Nothing may throw out of a pool event.
       // The connection stays unbound and, under the tenant policies, sees nothing.
     }
   }

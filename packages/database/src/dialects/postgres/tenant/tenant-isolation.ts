@@ -146,12 +146,11 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   }
 
   /**
-   * The signed-binding verifier every policy calls (TenantBindingSql), with this process's key. Written
-   * before the first policy, because CREATE POLICY refuses a function that does not exist yet — and
-   * rewritten on every boot, so the database always holds the key the running api signs with.
-   *
-   * No key means no policy: a policy whose verifier holds an empty key would accept nothing, and
-   * failing loudly here says why instead of every site silently reading empty.
+   * The signed-binding verifier every policy calls (TenantBindingSql), and this process's copy of the
+   * key. Written before the first policy, because CREATE POLICY refuses a function that does not exist
+   * yet — and re-run on every boot, so a change to the functions ships with the release. Needs no
+   * secret from the environment: the key is generated in the database and read back here, over the
+   * owner connection this always runs on.
    */
   private ensureVerifier(): Promise<void> {
     if (!this.verifier) {
@@ -169,15 +168,12 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   }
 
   private async installVerifier(): Promise<void> {
-    const key = TenantBindingKey.value();
-    if (!key) {
-      throw new Error('PostgresTenantIsolation: JWT_SECRET is not set, so tenant policies cannot verify a binding; refusing to write them.');
-    }
     const schema = String((await this.run(TenantBindingSql.currentSchemaStatement()))?.[0]?.schema ?? '');
     const install = TenantBindingSql.installStatements(schema);
     await this.runAll(install.before);
-    await this.run(install.key, [key]);
+    await this.run(install.key);
     await this.runAll(install.after);
+    TenantBindingKey.use(String((await this.run(install.readKey))?.[0]?.key ?? ''));
   }
 
   private async runAll(statements: string[]): Promise<void> {

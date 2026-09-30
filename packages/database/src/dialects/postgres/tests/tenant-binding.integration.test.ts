@@ -5,6 +5,7 @@ import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tena
 import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 import { TenantSettingsPolicySpec } from '@database/tenant/policies/tenant-settings-policy-spec';
 import { PostgresDatabaseManager } from '@database/dialects/postgres/database-manager';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 
 /**
  * Signed tenant bindings, against a REAL Postgres: SQL the application role runs cannot choose its site.
@@ -16,16 +17,15 @@ import { PostgresDatabaseManager } from '@database/dialects/postgres/database-ma
  * SKIPS without the two connection URLs rather than passing vacuously (the same two the api's isolation
  * suite and CI use). Point them at a THROWAWAY database: the suite installs the verifier with its own key.
  */
-// The SAME default as the api's isolation suite: both install the verifier into one CI database, and two
-// keys would overwrite each other mid-run.
-process.env.JWT_SECRET = 'tenant-isolation-integration-secret';
 
 const runtimeUrl = process.env.TENANT_TEST_DATABASE_URL;
 const ownerUrl = process.env.TENANT_TEST_OWNER_URL;
 
-/** The signing contract restated independently of TenantBindingKey; drift fails "accepted once" below. */
+/** The key the database holds, read the way the api reads it: over the OWNER connection. */
+let key = '';
+
+/** The signing contract restated independently of TenantBindingKey; drift fails the replay and boot cases. */
 const sign = (message: string): string => {
-  const key = createHash('sha256').update(`fromcode.tenant-binding\u0000${process.env.JWT_SECRET}`).digest('hex');
   const inner = createHash('sha256').update(key + message, 'utf8').digest('hex');
   return createHash('sha256').update(key + inner, 'utf8').digest('hex');
 };
@@ -43,6 +43,7 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('signed tenant bindings (real Postgres
     const isolation = new PostgresTenantIsolation((text, values) => admin.query(text, values as any[]).then((r: any) => r.rows));
     await isolation.isolateTable('bind_orders');
     await isolation.applyPolicy(new TenantSettingsPolicySpec('bind_settings'));
+    key = (await admin.query('SELECT key FROM _system_tenant_binding_key WHERE id = 1')).rows[0].key;
     await admin.query('GRANT SELECT, INSERT, UPDATE, DELETE ON bind_orders, bind_settings TO fromcode_app');
     await admin.query('GRANT USAGE, SELECT ON SEQUENCE bind_orders_id_seq TO fromcode_app');
 
@@ -140,6 +141,32 @@ describe.skipIf(!runtimeUrl || !ownerUrl)('signed tenant bindings (real Postgres
       await ddl.queryRaw("DELETE FROM bind_settings WHERE key = 'boot_marker'").catch(() => undefined);
       await (ddl as any).pool.end();
       await (runtime as any).pool.end();
+    }
+  });
+
+  it('a migration run with NO key (a CLI, no secrets) still works on the owner connection', async () => {
+    TenantBindingKey.use('');
+    const ddl = new PostgresDatabaseManager(ownerUrl as string);
+    ddl.markAsPlatformConnection();
+    try {
+      await ddl.queryRaw("INSERT INTO bind_settings (key, value) VALUES ('cli_marker', 'ok')");
+      await ddl.queryRaw("DELETE FROM bind_settings WHERE key = 'cli_marker'");
+    } finally {
+      TenantBindingKey.use(key);
+      await (ddl as any).pool.end();
+    }
+  });
+
+  it('an application-role connection that cannot sign gets nothing — the owner exemption is the owner\'s alone', async () => {
+    const client = new Client({ connectionString: runtimeUrl });
+    await client.connect();
+    try {
+      const pid = (await client.query('SELECT pg_backend_pid() AS pid')).rows[0].pid;
+      await expect(client.query('SELECT fc_binding_open($1, $2)', ['platform', ''])).rejects.toThrow(/open refused/);
+      await expect(client.query('SELECT fc_binding_open($1, $2)', ['none', `forged-${pid}`])).rejects.toThrow(/open refused/);
+      expect((await client.query('SELECT * FROM bind_settings')).rows).toHaveLength(0);
+    } finally {
+      await client.end();
     }
   });
 

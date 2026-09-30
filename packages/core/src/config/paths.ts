@@ -85,6 +85,19 @@ export class ProjectPaths extends UploadPaths {
     return ProjectPaths.tenantArtifactDir(ProjectPaths.getThemesDir(), tenantId);
   }
 
+  /**
+   * A site's OWN themes directory, for writing or deleting under. `getThemesDirFor` answers a malformed
+   * id with the PLATFORM root (never a path built from rejected text); acting there would place a site's
+   * theme among the platform's, or delete the platform's theme of that name. So that answer is refused.
+   */
+  static requireSiteThemesDir(tenantId: string): string {
+    const dir = ProjectPaths.getThemesDirFor(tenantId);
+    if (path.resolve(dir) === path.resolve(ProjectPaths.getThemesDir())) {
+      throw new Error('This site has no directory of its own for themes.');
+    }
+    return dir;
+  }
+
   /** Where a SITE's own uploaded plugins live: `<plugins root>/tenants/<tenantId>`. See {@link getThemesDirFor}. */
   static getPluginsDirFor(tenantId: string): string {
     return ProjectPaths.tenantArtifactDir(ProjectPaths.getPluginsDir(), tenantId);

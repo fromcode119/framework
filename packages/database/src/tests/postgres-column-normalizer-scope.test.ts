@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
+import { TenantBindingKey } from '@database/dialects/postgres/tenant/tenant-binding-key';
 
-process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
+TenantBindingKey.use('test-key');
 
 class FakeClient {
   readonly calls: string[] = [];
