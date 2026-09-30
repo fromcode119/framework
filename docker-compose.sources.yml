@@ -103,6 +103,12 @@ services:
       # mounted code ran against the image's baked copies: every key added since the image was built
       # rendered as its raw name (`login.welcome`), on every screen, with nothing in the console.
       - ./packages/admin/i18n:/app/packages/admin/i18n
+      # The icon runtime (`public/fc-runtime/icons/<version>/lucide-react.js`, the import map's `lucide-react`)
+      # is gitignored build output from `npm run build:frontend-icons`, which writes it here and into the
+      # frontend's public. Unmounted, the container served its BAKED copy; an image older than the file
+      # answered the import with the app's HTML, and every plugin's admin bundle failed to load. Run
+      # `npm run build:frontend-icons` once on a fresh checkout — mounting an empty folder hides the baked one.
+      - ./packages/admin/public:/app/packages/admin/public
     deploy:
       resources:
         limits:
