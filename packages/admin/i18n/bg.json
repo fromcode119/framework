@@ -1412,7 +1412,9 @@
       "testEmailDispatchedOne": "Тестовият имейл е изпратен до 1 получател.",
       "testEmailDispatchedMany": "Тестовият имейл е изпратен до {{count}} получатели.",
       "clock12": "12-часов",
-      "clock24": "24-часов"
+      "clock24": "24-часов",
+      "sourcesBuildUnverified": "Изграждане на къмити, които не са слети през GitHub",
+      "sourcesBuildUnverifiedDescription": "Изключено: Sources изгражда само къмит, който самият GitHub е слял — pull request, слят в github.com и подписан с ключа на GitHub. Къмит, качен по друг начин, или хранилище извън GitHub се отказва и екранът Sources казва защо. Включено: изгражда се всеки къмит в следения клон, откъдето и да идва."
     },
     "infrastructure": {
       "siteUploadLimitsUnavailable": "Ограниченията за качване на сайтове не са налични",

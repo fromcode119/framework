@@ -1375,7 +1375,9 @@
       "light": "Light",
       "dark": "Dark",
       "clock12": "12-hour",
-      "clock24": "24-hour"
+      "clock24": "24-hour",
+      "sourcesBuildUnverified": "Build commits not merged through GitHub",
+      "sourcesBuildUnverifiedDescription": "Off: Sources builds only a commit GitHub itself merged — a pull request merged on github.com, signed with GitHub’s key. A commit pushed any other way, or a repository not on GitHub, is refused and the Sources screen says why. On: every commit on the tracked branch is built, wherever it came from."
     },
     "appearance": {
       "appearance": "Appearance",

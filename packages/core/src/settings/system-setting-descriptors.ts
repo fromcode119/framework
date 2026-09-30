@@ -271,6 +271,7 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.FRAMEWORK_REPOSITORY]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
   };
 
 

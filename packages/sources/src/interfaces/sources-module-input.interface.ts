@@ -29,6 +29,11 @@ export interface ISourcesModuleInput {
       resolveArtifact?: (slug: string, kind: string) => Promise<string | null>,
     ): void;
   };
+  /**
+   * Whether to build a commit that GitHub did not merge — Settings → General, off unless the operator
+   * turns it on. Asked on every build.
+   */
+  buildsUnverifiedCommits?: () => Promise<boolean>;
   /** Runs the auto-build timer. */
   scheduler?: { register(name: string, schedule: string, handler: () => Promise<void>): Promise<void> };
 }

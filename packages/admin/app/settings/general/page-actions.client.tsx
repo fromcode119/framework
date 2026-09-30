@@ -65,6 +65,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       marketplace_url: String(settings.marketplace_url ?? '').trim(),
       framework_repository: String(settings.framework_repository ?? '').trim(),
       sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
+      sources_build_unverified_commits: Boolean(settings.sources_build_unverified_commits),
       domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
       timezone: String(settings.timezone ?? '').trim(),
       frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),
