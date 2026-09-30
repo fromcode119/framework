@@ -1,4 +1,4 @@
-import { SystemConstants } from '@fromcode119/core';
+import { RequestContextUtils, SystemConstants } from '@fromcode119/core';
 import { IDatabaseManager } from '@fromcode119/database';
 
 /**
@@ -33,12 +33,20 @@ export class UserPreferencesService {
     const serialized = JSON.stringify(value ?? null);
     if (serialized.length > UserPreferencesService.MAX_VALUE_BYTES) return { success: false, error: 'value_too_large' };
     const metaKey = this.metaKey(userId, key);
-    const existing = await this.db.findOne(SystemConstants.TABLE.META, { key: metaKey }).catch(() => null);
-    if (existing) {
-      await this.db.update(SystemConstants.TABLE.META, { key: metaKey }, { value: serialized, updated_at: new Date() });
-    } else {
-      await this.db.insert(SystemConstants.TABLE.META, { key: metaKey, value: serialized, group: 'User Preferences', updated_at: new Date() });
-    }
+    const write = async (): Promise<void> => {
+      const existing = await this.db.findOne(SystemConstants.TABLE.META, { key: metaKey }).catch(() => null);
+      if (existing) {
+        await this.db.update(SystemConstants.TABLE.META, { key: metaKey }, { value: serialized, updated_at: new Date() });
+      } else {
+        await this.db.insert(SystemConstants.TABLE.META, { key: metaKey, value: serialized, group: 'User Preferences', updated_at: new Date() });
+      }
+    };
+    // Inside a site the preference is that site's row. Outside one it is the platform's row, which
+    // row-level security accepts only inside a platform-admin write — the same bracket the account's
+    // own rows are written in. Without it every save in the platform scope failed ("new row violates
+    // row-level security policy"), so a dashboard arranged there reset on the next load.
+    if (RequestContextUtils.getTenantId()) await write();
+    else await this.db.withPlatformAdmin(write);
     return { success: true };
   }
 }
