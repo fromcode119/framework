@@ -48,7 +48,7 @@ export class GeoDatabaseUpdater {
   async enabled(): Promise<boolean> {
     try {
       const row = await this.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.GEO_IP_LOOKUP });
-      return CoercionUtils.toBoolean(row?.value);
+      return CoercionUtils.toBoolean(row?.value) === true;
     } catch {
       return false;
     }
