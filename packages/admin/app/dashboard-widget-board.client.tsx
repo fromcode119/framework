@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import type { PointerEvent, ReactElement, ReactNode } from 'react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { DashboardWidgetSize } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -10,6 +10,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { DashboardLayout } from '@/lib/dashboard/dashboard-layout';
 import { DashboardLayoutStore } from '@/lib/dashboard/dashboard-layout-store';
 import { DashboardPluginWidgets } from '@/lib/dashboard/dashboard-plugin-widgets';
+import { DashboardPointerDrag } from '@/lib/dashboard/dashboard-pointer-drag';
 import { DashboardWidgetFrame } from '@/app/dashboard-widget-frame.client';
 import { DashboardWidgetPicker } from '@/app/dashboard-widget-picker.client';
 import type { IDashboardLayoutEntry } from '@/lib/dashboard/interfaces/dashboard-layout-entry.interface';
@@ -30,9 +31,16 @@ export class DashboardWidgetBoard extends AdminComponent {
   @state private loaded = false;
   @state private editing = false;
   @state private dragKey = '';
+  @state private overKey = '';
   @state private saveFailed = false;
 
   private mounted = false;
+  /** The layout a drag reorders — the one on screen when it started. */
+  private dragLayout: IDashboardLayoutEntry[] = [];
+  private readonly drag = new DashboardPointerDrag(
+    (dragKey, overKey) => { if (this.mounted) { this.dragKey = dragKey; this.overKey = overKey; } },
+    (dragKey, overKey) => this.commit(DashboardLayout.move(this.dragLayout, dragKey, overKey)),
+  );
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
@@ -98,9 +106,8 @@ export class DashboardWidgetBoard extends AdminComponent {
         onRemove={() => this.commit(DashboardLayout.remove(layout, entry.key))}
         onResize={(size: DashboardWidgetSize) => this.commit(DashboardLayout.resize(layout, entry.key, size))}
         onShift={(step: number) => this.commit(DashboardLayout.shift(layout, entry.key, step))}
-        onDragStart={() => { this.dragKey = entry.key; }}
-        onDragEnd={() => { this.dragKey = ''; }}
-        onDropOn={() => { if (this.dragKey) this.commit(DashboardLayout.move(layout, this.dragKey, entry.key)); this.dragKey = ''; }}
+        dropTarget={this.overKey === entry.key}
+        onPointerDown={(event: PointerEvent) => { this.dragLayout = layout; this.drag.start(entry.key, event); }}
       />
     );
   }

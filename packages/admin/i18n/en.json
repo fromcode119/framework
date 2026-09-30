@@ -759,7 +759,7 @@
       "customize": "Customize dashboard",
       "done": "Done",
       "reset": "Reset to default",
-      "editHint": "Drag a widget by its bar, or use the arrows. Changes are saved as you make them.",
+      "editHint": "Drag a widget to move it, or use the arrows. Changes are saved as you make them.",
       "dragHint": "Drag to move",
       "moveEarlier": "Move {{label}} earlier",
       "moveLater": "Move {{label}} later",
