@@ -8,4 +8,6 @@ export interface IIntegrationResolved <TInstance = any> {
   provider: IIntegrationProviderDefinition<TInstance>;
   config: Record<string, any>;
   source: SettingSource;
+  /** The operator's display name for a stored provider entry (Settings → Integrations), when it has one. */
+  name?: string;
 }
