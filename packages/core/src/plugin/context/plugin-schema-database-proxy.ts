@@ -18,6 +18,12 @@ export class PluginSchemaDatabaseProxy {
     'createTable',
     'addColumn',
     'ensureMigrationTable',
+    // The schema repairs plugins used RAW SQL for, as named operations the framework validates and
+    // runs (see `execute` below — raw SQL on this owner connection can switch row-level security off).
+    'ensurePointInTimeColumn',
+    'repairTextIdPrimaryKey',
+    'ensureTimestampDefault',
+    'dropColumnDefault',
   ]);
 
   private static readonly SYSTEM_TABLES = new Set<string>(

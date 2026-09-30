@@ -112,6 +112,13 @@ export abstract class DialectCapabilityDefaults {
     );
   }
 
+  /** A driver that cannot remove a column default REPORTS rather than throws. */
+  async dropColumnDefault(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
+    return SchemaReconcileOutcome.unsupported(
+      `${this.constructor.name}: this driver cannot remove a default from an existing column.`,
+    );
+  }
+
   /** A driver that cannot add a column default REPORTS rather than throws. */
   async ensureTimestampDefault(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
     return SchemaReconcileOutcome.unsupported(

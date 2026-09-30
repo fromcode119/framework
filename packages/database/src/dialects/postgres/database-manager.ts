@@ -18,6 +18,7 @@ import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
+import { PostgresColumnDefaultDropper } from '@database/dialects/postgres/column-default-dropper';
 import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/timestamp-default-reconciler';
 import { PostgresPointInTimeColumnReconciler } from '@database/dialects/postgres/point-in-time-column-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
@@ -73,6 +74,9 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   private readonly declaredNullability =
     new PostgresDeclaredNullabilityReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly columnDefaults =
+    new PostgresColumnDefaultDropper((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly timestampDefaults =
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
@@ -185,6 +189,11 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   /** Gives a row-timestamp column its `DEFAULT CURRENT_TIMESTAMP` when it has none. Never replaces one. */
   async ensureTimestampDefault(table: string, column: string): Promise<SchemaReconcileOutcome> {
     return this.timestampDefaults.ensure(table, column);
+  }
+
+  /** Removes a column's DEFAULT when it has one. Never touches existing rows. */
+  async dropColumnDefault(table: string, column: string): Promise<SchemaReconcileOutcome> {
+    return this.columnDefaults.drop(table, column);
   }
 
   /** Converts a TEXT date/datetime column to `timestamptz` when every value is ISO-8601. */
