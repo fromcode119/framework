@@ -158,6 +158,11 @@ export abstract class DialectCapabilityDefaults {
     return new PassThroughTenantLease(tenantId, (id, fn) => this.withTenant(id, fn));
   }
 
+  /** A driver without cross-process locks serves one process: `fn` runs as is. */
+  async withSessionLock<T>(_name: string, fn: () => Promise<T>): Promise<T> {
+    return fn();
+  }
+
   /** No row-level security here, so there is nothing to lift: `fn` runs as is. */
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
     return fn();

@@ -254,7 +254,7 @@ export class PluginController extends BaseController {
   }
 
   async installOperation(req: Request, res: Response) {
-    const operation = this.operations.get(CoercionUtils.toString(req.params.operationId));
+    const operation = await this.operations.get(CoercionUtils.toString(req.params.operationId));
     if (!operation) {
       return res.status(404).json({ error: 'Plugin install operation not found.' });
     }

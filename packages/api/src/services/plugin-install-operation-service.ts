@@ -10,6 +10,15 @@ export class PluginInstallOperationService {
   private static instance: PluginInstallOperationService | null = null;
 
   private readonly operations = new Map<string, IPluginInstallOperationState>();
+  /**
+   * With several api workers, the admin's progress poll can reach a worker that is not running the
+   * operation. Each change is copied here, where every worker can read it.
+   */
+  private shared: { get(key: string): Promise<any>; set(key: string, value: unknown, ttlSeconds?: number): Promise<void> } | null = null;
+
+  useSharedStore(store: { get(key: string): Promise<any>; set(key: string, value: unknown, ttlSeconds?: number): Promise<void> }): void {
+    this.shared = store;
+  }
 
   static getInstance(): PluginInstallOperationService {
     if (!this.instance) {
@@ -40,6 +49,7 @@ export class PluginInstallOperationService {
     };
 
     this.operations.set(operation.id, operation);
+    this.share(operation);
 
     Promise.resolve()
       .then(() => execute(this.reportProgress.bind(this, operation.id)))
@@ -49,9 +59,23 @@ export class PluginInstallOperationService {
     return operation;
   }
 
-  get(operationId: string): IPluginInstallOperationState | null {
+  /** This worker's own record, else the copy another worker shared. */
+  async get(operationId: string): Promise<IPluginInstallOperationState | null> {
     this.pruneExpired();
-    return this.operations.get(operationId) || null;
+    const local = this.operations.get(operationId);
+    if (local) return local;
+    if (!this.shared) return null;
+    return (await this.shared.get(PluginInstallOperationService.sharedKey(operationId)).catch(() => null)) || null;
+  }
+
+  private static sharedKey(operationId: string): string {
+    return `plugin-install-operation:${operationId}`;
+  }
+
+  private share(operation: IPluginInstallOperationState): void {
+    if (!this.shared) return;
+    this.shared.set(PluginInstallOperationService.sharedKey(operation.id), operation, PluginInstallOperationService.TTL_MS / 1000)
+      .catch((error: unknown) => PluginInstallOperationService.logger.warn(`Could not share progress of ${operation.kind} for "${operation.pluginSlug}": ${String((error as Error)?.message ?? error)}`));
   }
 
   private reportProgress(operationId: string, progress: IPluginInstallProgress): void {
@@ -71,6 +95,7 @@ export class PluginInstallOperationService {
     if (progress.migrationName && !operation.migrationNames.includes(progress.migrationName)) {
       operation.migrationNames = [...operation.migrationNames, progress.migrationName];
     }
+    this.share(operation);
   }
 
   private complete(operationId: string): void {
@@ -88,6 +113,7 @@ export class PluginInstallOperationService {
     }
     operation.message = operation.message || `Completed ${operation.kind} for "${operation.pluginSlug}".`;
     operation.updatedAt = new Date().toISOString();
+    this.share(operation);
   }
 
   private fail(operationId: string, error: unknown): void {
@@ -104,6 +130,7 @@ export class PluginInstallOperationService {
     // The admin polls this record and shows the message; the LOG must say it too, or a failed install
     // leaves no trace once the operation is pruned from memory.
     PluginInstallOperationService.logger.warn(`${operation.kind} for "${operation.pluginSlug}" failed: ${operation.error}`);
+    this.share(operation);
   }
 
   private pruneExpired(): void {
