@@ -1,3 +1,4 @@
+import type { IAggregateOptions } from '@fromcode119/database';
 export interface IDatabaseManager {
   readonly drizzle: any;
   readonly dialect: string;
@@ -9,6 +10,7 @@ export interface IDatabaseManager {
   update(tableOrName: any, where: any, data: any): Promise<any>;
   delete(tableOrName: any, where: any): Promise<boolean>;
   groupCount(tableName: string, options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number }): Promise<Array<Record<string, unknown>>>;
+  aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>>;
   count(tableName: string, where?: any): Promise<number>;
   
   // Schema Management

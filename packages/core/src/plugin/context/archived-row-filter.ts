@@ -11,7 +11,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
  * view. Filtering here, once, is what makes `archive: {}` on a collection enough; the alternative is
  * a `archivedAt: null` in every plugin query, and the one that forgets it leaks.
  *
- * Only the LISTING methods are filtered — `find`, `count`, `groupCount`. A `findOne` is a point
+ * Only the LISTING methods are filtered — `find`, `count`, `groupCount`, `aggregate`. A `findOne` is a point
  * lookup, and those are overwhelmingly integrity questions ("is this invoice number taken?", "load
  * order 42"): hiding an archived row from them is how a sequence reissues a number an archived record
  * already holds. A caller serving the public from `findOne` checks {@link CollectionArchive.isArchived}.
@@ -21,7 +21,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
  * restoring, the cascade).
  */
 export class ArchivedRowFilter {
-  private static readonly FILTERED_METHODS = new Set(['find', 'count', 'groupCount']);
+  private static readonly FILTERED_METHODS = new Set(['find', 'count', 'groupCount', 'aggregate']);
 
   static apply(prop: string, args: any[], manager: IPluginManagerInterface): any[] { // eslint-disable-line @typescript-eslint/no-explicit-any
     if (!ArchivedRowFilter.FILTERED_METHODS.has(prop)) return args;

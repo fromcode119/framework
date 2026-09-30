@@ -1,4 +1,5 @@
 import type { WhereComparison } from '@database/dialects/where-comparison';
+import type { AggregateBucketUnit } from '@database/interfaces/aggregate-options.interface';
 
 /**
  * What `RawStatementBuilder` needs from the dialect underneath it.
@@ -13,5 +14,7 @@ export interface IRawStatementHooks {
   getLikeOperator(): string;
   patternColumnExpression(quotedColumn: string): string;
   dayBucketExpression(quotedColumn: string): string;
+  /** A timestamp column truncated to `unit`, formatted `YYYY-MM-DD` (`YYYY-MM-DDTHH:00` for hours). `timeZone` is already validated. */
+  bucketExpression(quotedColumn: string, unit: AggregateBucketUnit, timeZone: string): string;
   renderPredicate(comparison: WhereComparison, quotedColumn: string, values: any[]): string;
 }

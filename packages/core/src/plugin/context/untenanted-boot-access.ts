@@ -26,7 +26,7 @@ export class UntenantedBootAccess {
 
   /** Empty results by method — matched to what each database method returns. */
   private static readonly EMPTY: Record<string, unknown> = {
-    find: [], groupCount: [], findOne: null, count: 0,
+    find: [], groupCount: [], aggregate: [], findOne: null, count: 0,
     insert: null, update: null, upsert: null, delete: false,
   };
 

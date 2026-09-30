@@ -1,3 +1,4 @@
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -192,6 +193,9 @@ export interface IDatabaseManager {
   
   delete(tableOrName: any, where: any): Promise<boolean>;
   
+  /** Grouped SQL aggregation — several measures, calendar buckets, an order. See `IAggregateOptions`. */
+  aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>>;
+
   groupCount(tableName: string, options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number }): Promise<Array<Record<string, unknown>>>;
   
   count(tableOrName: any, options?: { where?: any; joins?: any[] }): Promise<number>;

@@ -1,3 +1,4 @@
+import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
@@ -230,6 +231,10 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   }
 
   /** COUNT(*) per group — SQL aggregation, so analytics never page rows into memory to count them. */
+  async aggregate(tableName: string, options: IAggregateOptions): Promise<Array<Record<string, unknown>>> {
+    return this.reader.aggregate(tableName, options);
+  }
+
   async groupCount(
     tableName: string,
     options: { where?: any; groupBy?: string[]; dateBucket?: { column: string }; limit?: number },
