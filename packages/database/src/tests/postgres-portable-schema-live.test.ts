@@ -34,7 +34,7 @@ beforeAll(async () => {
   await db.queryRaw(`CREATE TABLE "${TABLE}" (id serial PRIMARY KEY, metadata jsonb, sources jsonb, provider_key text, fulfillment_provider_key text)`);
   await db.queryRaw(
     `INSERT INTO "${TABLE}" (metadata, provider_key, fulfillment_provider_key, sources) VALUES `
-    + `('{"sources":["feed","crm"]}', 'econt', NULL, NULL), ('{}', 'x', 'kept', '["own"]'), (NULL, NULL, NULL, NULL)`,
+    + `('{"sources":["feed","crm"]}', 'carrier_a', NULL, NULL), ('{}', 'x', 'kept', '["own"]'), (NULL, NULL, NULL, NULL)`,
   );
 });
 
@@ -50,7 +50,7 @@ describe('Postgres portable schema operations (live)', () => {
 
     const rows = await db.queryRaw(`SELECT id, sources, fulfillment_provider_key FROM "${TABLE}" ORDER BY id`);
     expect(rows).toEqual([
-      { id: 1, sources: ['feed', 'crm'], fulfillment_provider_key: 'econt' },
+      { id: 1, sources: ['feed', 'crm'], fulfillment_provider_key: 'carrier_a' },
       { id: 2, sources: ['own'], fulfillment_provider_key: 'kept' },
       { id: 3, sources: null, fulfillment_provider_key: null },
     ]);
