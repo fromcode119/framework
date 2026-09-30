@@ -71,7 +71,7 @@ export class PluginGuestApiFactory {
     void this.registrar.send({
       kind: String(PluginGuestRegistrationKind.MIDDLEWARE.value),
       handlerId: id,
-      middleware: { id: config.id, priority: config.priority, stage: String((config.stage as any)?.value ?? config.stage) },
+      middleware: { id: config.id, priority: config.priority, stage: String((config.stage as any)?.value ?? config.stage), pathIncludes: config.pathIncludes },
     } satisfies IPluginGuestRegistration);
   }
 

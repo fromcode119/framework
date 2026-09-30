@@ -6,4 +6,10 @@ export interface IMiddlewareConfig {
   stage: MiddlewareStage;
   handler: (req: any, res: any, next: (err?: any) => void) => void;
   pluginSlug?: string;
+  /**
+   * Run only for requests whose path contains one of these fragments (`'/collections/finance-wallets'`).
+   * A middleware that guards a few routes should say so: without it, it runs for EVERY api request —
+   * for a plugin in its own process, one extra round trip to that process on each of them.
+   */
+  pathIncludes?: string[];
 }

@@ -16,7 +16,7 @@ export interface IPluginGuestRegistration {
   /** route: the descriptor's `anonymousCache` (IApiAccessDescriptor). */
   anonymousCache?: boolean;
   /** middleware */
-  middleware?: { id: string; priority?: number; stage: string };
+  middleware?: { id: string; priority?: number; stage: string; pathIncludes?: string[] };
   /** hook */
   event?: string;
   /** scheduler */

@@ -130,6 +130,8 @@ export class PluginHostRegistrations {
       id: config.id,
       priority: config.priority,
       stage: MiddlewareStage.resolve(config.stage),
+      // The api decides which requests reach the plugin's process at all.
+      pathIncludes: Array.isArray(config.pathIncludes) ? config.pathIncludes.map(String) : undefined,
       handler: (req: Request, res: Response, next: NextFunction) => { void this.forwardRequest(req, res, next, target, req.originalUrl); },
     });
   }
