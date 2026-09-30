@@ -59,7 +59,27 @@ export class PluginGuestHttp {
   static readonly HEADER_NEXT = 'x-fc-next';
   /** Set by the host when it forwarded the request's ORIGINAL bytes (a webhook): the guest keeps them as `req.rawBody`. */
   static readonly HEADER_RAW_BODY = 'x-fc-raw-body';
+  /**
+   * The visitor's address as the HOST resolved it (`NetworkAddressUtils.resolveClientIp`: `trust proxy`
+   * plus the edge provider's own header). The guest exposes it as `req.clientIp`; the socket a guest sees
+   * is the host's, and `x-forwarded-for` is whatever the client chose to write.
+   */
+  static readonly HEADER_CLIENT_IP = 'x-fc-client-ip';
   static readonly MIDDLEWARE_PATH = '/__fc/middleware';
+
+  /**
+   * Every header the HOST writes for the guest. The host deletes a client's copy of each before writing
+   * its own: `x-fc-original-url` and `x-fc-raw-body` are set only sometimes, so a client's value used to
+   * pass straight through — the guest then routed the request by a URL the client chose, after the host
+   * had authorised a different one.
+   */
+  static get PRIVATE_HEADERS(): readonly string[] {
+    return [
+      PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE,
+      PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_ORIGINAL_URL,
+      PluginGuestHttp.HEADER_NEXT, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP,
+    ];
+  }
 
   readonly app: Express;
   private server: ReturnType<Express['listen']> | null = null;
@@ -206,14 +226,16 @@ export class PluginGuestHttp {
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
     const siteLocale = String(req.headers[PluginGuestHttp.HEADER_SITE_LOCALE] ?? '').trim() || undefined;
     const connectionId = String(req.headers[PluginGuestConnections.HEADER_CONNECTION] ?? '').trim() || null;
+    const clientIp = String(req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? '').trim();
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestConnections.HEADER_CONNECTION]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestConnections.HEADER_CONNECTION]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;
+    (req as any).clientIp = clientIp;
     PluginGuestRemote.invocation.run({ token, tenantId, channel: this.channelFor(connectionId) }, () => {
       RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
     });
