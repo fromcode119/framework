@@ -1,4 +1,4 @@
-import type { DragEvent, ReactNode } from 'react';
+import type { PointerEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { DashboardWidgetSize } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -9,20 +9,22 @@ import type { IDashboardWidgetDefinition } from '@/lib/dashboard/interfaces/dash
  * One widget on the dashboard grid. Outside Customize it is only the widget, at its width; a widget that
  * renders nothing (nothing needs you) takes no space. In Customize it gains a bar to drag it, move it,
  * change its width and remove it, and its content stops taking clicks so arranging never follows a link.
+ * The whole widget is the drag handle (DashboardPointerDrag); the widget it is dragged over is marked
+ * as the place it will land.
  */
 export class DashboardWidgetFrame extends PureReactor {
   @prop declare definition: IDashboardWidgetDefinition;
   @prop declare size: DashboardWidgetSize;
   @prop declare editing: boolean;
   @prop declare dragging: boolean;
+  /** Another widget is being dragged over this one: it will land here. */
+  @prop declare dropTarget: boolean;
   @prop declare isFirst: boolean;
   @prop declare isLast: boolean;
   @prop declare onRemove: () => void;
   @prop declare onResize: (size: DashboardWidgetSize) => void;
   @prop declare onShift: (step: number) => void;
-  @prop declare onDragStart: () => void;
-  @prop declare onDragEnd: () => void;
-  @prop declare onDropOn: () => void;
+  @prop declare onPointerDown: (event: PointerEvent) => void;
 
   private get span(): string {
     if (this.size === DashboardWidgetSize.LARGE) return 'md:col-span-2 lg:col-span-3';
@@ -32,14 +34,17 @@ export class DashboardWidgetFrame extends PureReactor {
 
   render(): ReactNode {
     if (!this.editing) return <div className={`min-w-0 empty:hidden ${this.span}`}>{this.definition.render()}</div>;
+    const outline = this.dragging
+      ? 'opacity-40 outline-indigo-400'
+      : this.dropTarget ? 'outline-indigo-500 bg-indigo-50/60 dark:bg-indigo-500/10' : 'outline-slate-300 dark:outline-slate-700';
     return (
       <div
-        className={`min-w-0 rounded-2xl outline-dashed outline-2 outline-offset-4 transition-opacity ${this.dragging ? 'opacity-40 outline-indigo-400' : 'outline-slate-300 dark:outline-slate-700'} ${this.span}`}
-        onDragOver={(event: DragEvent) => event.preventDefault()}
-        onDrop={(event: DragEvent) => { event.preventDefault(); this.onDropOn(); }}
+        data-widget-key={this.definition.key}
+        onPointerDown={this.onPointerDown}
+        className={`min-w-0 cursor-grab touch-none select-none rounded-2xl outline-dashed outline-2 outline-offset-4 transition-[opacity,background-color] active:cursor-grabbing ${outline} ${this.span}`}
       >
         {this.renderBar()}
-        <div className="pointer-events-none select-none" aria-hidden>
+        <div className="pointer-events-none" aria-hidden>
           {this.definition.render() ?? null}
         </div>
       </div>
@@ -50,10 +55,7 @@ export class DashboardWidgetFrame extends PureReactor {
     const label = this.definition.label;
     return (
       <div
-        draggable
-        onDragStart={(event: DragEvent) => { event.dataTransfer.effectAllowed = 'move'; this.onDragStart(); }}
-        onDragEnd={this.onDragEnd}
-        className="mb-2 flex cursor-grab items-center gap-2 rounded-xl bg-slate-100 px-2.5 py-1.5 active:cursor-grabbing dark:bg-slate-800"
+        className="mb-2 flex items-center gap-2 rounded-xl bg-slate-100 px-2.5 py-1.5 dark:bg-slate-800"
         title={AdminI18n.t('dashboard.widgets.dragHint')}
       >
         <FrameworkIcons.Grid size={14} className="shrink-0 text-slate-400" />
