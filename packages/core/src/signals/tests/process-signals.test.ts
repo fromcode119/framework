@@ -65,6 +65,16 @@ describe('ProcessSignals', () => {
     expect(after).toHaveBeenCalledTimes(1);
   });
 
+  it('a transport that never connects holds nothing up: local delivery works meanwhile', () => {
+    const neverReady: IProcessSignalTransport = { publish: async () => undefined, subscribe: () => new Promise(() => undefined), close: async () => undefined };
+    void ProcessSignals.use(neverReady);
+    const seen = vi.fn();
+    const off = ProcessSignals.on(ProcessSignal.CACHE_PURGED, seen);
+    ProcessSignals.announce(ProcessSignal.CACHE_PURGED);
+    off();
+    expect(seen).toHaveBeenCalledWith({}, true);
+  });
+
   it('ignores a message that is not JSON or names no signal', async () => {
     const transport = new FakeTransport();
     await ProcessSignals.use(transport);

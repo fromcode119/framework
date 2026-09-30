@@ -115,7 +115,8 @@ export class APIServer {
     this.logger.info('Initializing API Server infrastructure...');
     // What another api process changes reaches this one's caches (ProcessSignals); one process needs no transport.
     const redisUrl = process.env.REDIS_URL;
-    if (redisUrl) await ProcessSignals.use(new RedisProcessSignalTransport(redisUrl)).catch((err) => this.logger.error(`Process signals unavailable; caches stay local to this process: ${err}`));
+    // Not awaited: an unreachable Redis must not hold up boot; signals start once it answers.
+    if (redisUrl) void ProcessSignals.use(new RedisProcessSignalTransport(redisUrl)).catch((err) => this.logger.error(`Process signals unavailable; caches stay local to this process: ${err}`));
     
     // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
     // proxy connects from a PRIVATE subnet address (compose/Coolify networks live in 172.16/12 etc.),
