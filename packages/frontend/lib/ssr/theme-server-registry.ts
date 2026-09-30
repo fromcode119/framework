@@ -61,7 +61,9 @@ export class ThemeServerRegistry {
       registerOverride: (name: string, component: unknown, owner?: string, priority?: number, loader?: unknown) => {
         ThemeServerRegistry.target().addOverride(name, new ServerSlotEntry(component, owner, priority, loader));
       },
-      registerContentTransformer: noop,
+      registerContentTransformer: (name: string, transform: (content: unknown, currentContent: unknown) => unknown, priority?: number) => {
+        ThemeServerRegistry.target().registerContentTransformer(name, transform, priority);
+      },
       registerFieldComponent: noop,
       registerPluginClient: noop,
       registerMenuItem: noop,
@@ -139,6 +141,12 @@ export class ThemeServerRegistry {
   }
 
   /** Slot components by slot name, in the shape `SlotsContext` publishes. */
+  /** The content transform of a generation — what `ContentRenderingUtils.buildRenderableContent` adapts with. */
+  static contentTransform(signature: string): (content: unknown, currentContent: unknown) => unknown {
+    const world = ThemeServerRegistry.world(signature);
+    return (content, currentContent) => world.transformContent(content, currentContent);
+  }
+
   static slotMap(signature: string): Record<string, unknown[]> {
     return ThemeServerRegistry.world(signature).slotMap();
   }

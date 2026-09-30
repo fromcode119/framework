@@ -43,7 +43,10 @@ export class ThemeWorldRenderer {
       frameworkTranslations: runtime.frameworkTranslationPacks(),
       locale,
     });
-    const body = ThemeSsrContentTree.build({ runtime, content, className: contentClassName, style: contentStyle, notFoundPath, locale });
+    const body = ThemeSsrContentTree.build({
+      runtime, content, className: contentClassName, style: contentStyle, notFoundPath, locale,
+      transform: ThemeServerRegistry.contentTransform(signature),
+    });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(
       // The page-wide overlay BESIDE the layout, as `StorefrontPageView` renders it in the browser.

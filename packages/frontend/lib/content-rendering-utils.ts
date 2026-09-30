@@ -42,8 +42,15 @@ export class ContentRenderingUtils {
   /**
    * Builds renderable content structure from a content object.
    * Handles direct content and delegates plugin-specific adaptation to registered transformers.
+   *
+   * `transform` is the registry to adapt with. The browser's is the default; a server render passes the
+   * transformers its own bundle generation registered, because the plugin bundles it imports register
+   * into that generation — never into this module's copy of the registry.
    */
-  static buildRenderableContent(content: any): any {
+  static buildRenderableContent(
+    content: any,
+    transform: (content: unknown, currentContent: unknown) => unknown = (value, current) => RenderableContentTransformerRegistry.transform(value, current),
+  ): any {
     const directContent = ResolvedContentShape.resolveContent((content as Record<string, unknown> | null) || null);
     const hasStringContent = typeof directContent === 'string' && directContent.trim().length > 0;
     const hasStructuredContent = Array.isArray(directContent)
@@ -54,6 +61,6 @@ export class ContentRenderingUtils {
       return directContent;
     }
 
-    return RenderableContentTransformerRegistry.transform(content, directContent);
+    return transform(content, directContent);
   }
 }

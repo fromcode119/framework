@@ -15,6 +15,7 @@ import { AccountShellImplementation } from '@fromcode119/react/account/account-s
 import { Override } from '@fromcode119/react/view/override.client';
 import { ThemeOverrideRegistrar } from '@fromcode119/react/theme-override-registrar';
 import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
+import { RenderableContentTransformerRegistry } from '@fromcode119/react/renderable-content-transformer-registry';
 import { ThemeSsrContentTree } from '@/lib/ssr/theme-ssr-content-tree';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
@@ -57,8 +58,15 @@ class ParityFixture {
     return createElement('section', { className: 'blocks', 'data-entry': props.entry?.slug }, JSON.stringify(props.content));
   };
 
+  /** The generation the server renders against; tests that register a transformer publish into it. */
+  static signature = 'parity';
+
+  static get transform() {
+    return ThemeServerRegistry.contentTransform(ParityFixture.signature);
+  }
+
   static server(content: unknown, style: Record<string, string> | null = ParityFixture.style): string {
-    const tree = ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content, className: ParityFixture.className, style });
+    const tree = ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content, className: ParityFixture.className, style, transform: ParityFixture.transform });
     return ParityFixture.runtime.renderToString(tree);
   }
 
@@ -71,7 +79,7 @@ class ParityFixture {
   /** Both sides with the content slot filled — each through ITS OWN `SlotsContext` (the one its `Slot` reads). */
   static serverWithSlot(content: unknown): string {
     const fc = ParityFixture.runtime.frameworkReact;
-    const tree = ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content, className: ParityFixture.className, style: ParityFixture.style });
+    const tree = ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content, className: ParityFixture.className, style: ParityFixture.style, transform: ParityFixture.transform });
     return ParityFixture.runtime.renderToString(
       ParityFixture.runtime.react.createElement(fc.SlotsContext.Context.Provider, { value: ParityFixture.slots }, tree),
     );
@@ -305,7 +313,7 @@ describe('the 404 document — the override chain around NotFoundBody is the sam
   const NotFoundOverride = function NotFoundOverride(props: { path?: string }): React.ReactElement {
     return createElement('section', { className: 'theme-404' }, `Missing: ${props.path}`);
   };
-  const serverTree = (notFoundPath: string) => ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content: null, className: ParityFixture.className, style: ParityFixture.style, notFoundPath });
+  const serverTree = (notFoundPath: string) => ThemeSsrContentTree.build({ runtime: ParityFixture.runtime, content: null, className: ParityFixture.className, style: ParityFixture.style, notFoundPath, transform: ParityFixture.transform });
   const clientTree = (notFoundPath: string) => createElement(StorefrontPageTree, { content: null, className: ParityFixture.className, style: ParityFixture.style, notFoundPath });
 
   it('renders the framework NotFoundBody when no theme overrides the page, byte for byte', () => {
@@ -321,5 +329,36 @@ describe('the 404 document — the override chain around NotFoundBody is the sam
     expect(html).toContain('<section class="theme-404">Missing: /missing-page</section>');
     expect(html).not.toContain('Page not found');
     expect(ProviderFixture.client(clientTree('/missing-page'), overrides)).toBe(html);
+  });
+});
+
+describe('content a plugin transformer reshapes renders the same on both sides', () => {
+  // A product entry has no blocks of its own; the ecommerce plugin's transformer turns it into a
+  // product-detail block. The server registry DROPPED transformer registrations, so the server rendered
+  // the raw entry while the browser rendered the block — a hydration mismatch that rebuilt every
+  // product page. Both worlds register the same transformer, the way a plugin bundle does in each.
+  const transform = (content: unknown, current: unknown) => {
+    const entry = content as { slug?: string; price?: number } | null;
+    if (current || !entry?.slug || entry.price === undefined) return current;
+    return [{ type: 'product-detail', data: { slug: entry.slug } }];
+  };
+  const product = { title: 'Mug', slug: 'mug', price: 12, content: '' };
+
+  beforeAll(() => {
+    RenderableContentTransformerRegistry.register('parity.product-detail', transform, 30);
+    const generation = ThemeServerRegistry.beginGeneration();
+    generation.registerContentTransformer('parity.product-detail', transform, 30);
+    ThemeServerRegistry.publishGeneration(ParityFixture.signature, generation);
+  });
+
+  afterAll(() => {
+    RenderableContentTransformerRegistry.clear();
+    ThemeServerRegistry.evict(ParityFixture.signature);
+  });
+
+  it('hands the transformed blocks to the content slot on the server, byte for byte with the browser', () => {
+    const html = ParityFixture.serverWithSlot(product);
+    expect(html).toContain('product-detail');
+    expect(ParityFixture.clientWithSlot(product)).toBe(html);
   });
 });

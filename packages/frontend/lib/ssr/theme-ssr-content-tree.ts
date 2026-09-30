@@ -27,8 +27,10 @@ export class ThemeSsrContentTree {
     notFoundPath?: string;
     /** The document's locale, so the server's 404 body speaks the language the browser will. */
     locale?: string;
+    /** The content transformers this render's bundles registered (`ThemeServerRegistry.contentTransform`). */
+    transform: (content: unknown, currentContent: unknown) => unknown;
   }): unknown {
-    const { runtime, content, className, style, notFoundPath, locale } = args;
+    const { runtime, content, className, style, notFoundPath, locale, transform } = args;
     const { createElement } = runtime.react;
     const wrapper = { className, style: style ?? undefined };
     const entry = content as Record<string, unknown> | null;
@@ -37,7 +39,7 @@ export class ThemeSsrContentTree {
     if (entry?.recipe) return createElement('div', wrapper);
 
     const Slot = runtime.frameworkReact.Slot;
-    const renderable = ContentRenderingUtils.buildRenderableContent(entry);
+    const renderable = ContentRenderingUtils.buildRenderableContent(entry, transform);
     const isStringContent = !renderable || typeof renderable === 'string';
 
     return createElement(

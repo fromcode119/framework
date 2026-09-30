@@ -27,6 +27,14 @@ export class ThemeServerRegistryState {
 
   private readonly overrides = new Map<string, ServerSlotEntry>();
 
+  /**
+   * Content transformers by name — the server twin of `RenderableContentTransformerRegistry`, applied the
+   * same way (ascending priority, each fed the previous result). Dropping them made every page a
+   * transformer reshapes render one tree on the server and another in the browser: the product page's
+   * "No product selected." against the product itself, a hydration mismatch, and the whole page rebuilt.
+   */
+  private readonly contentTransformers = new Map<string, { priority: number; transform: (content: unknown, currentContent: unknown) => unknown }>();
+
   /** Plugin API clients, keyed `namespace:slug` — what `ContextHooks.usePluginsNamespace` resolves. */
   private readonly pluginApis = new Map<string, unknown>();
 
@@ -52,6 +60,21 @@ export class ThemeServerRegistryState {
     if (!payload) return;
     const bucket = layer === FrontendI18nService.THEME_LAYER ? this.themeTranslations : this.translations;
     bucket.push(payload);
+  }
+
+  registerContentTransformer(name: string, transform: (content: unknown, currentContent: unknown) => unknown, priority?: number): void {
+    const key = String(name || '').trim();
+    if (!key) return;
+    this.contentTransformers.set(key, { priority: Number.isFinite(priority) ? Number(priority) : 10, transform });
+  }
+
+  transformContent(content: unknown, currentContent: unknown): unknown {
+    let next = currentContent;
+    for (const entry of [...this.contentTransformers.values()].sort((left, right) => left.priority - right.priority)) {
+      const transformed = entry.transform(content, next);
+      if (transformed !== undefined) next = transformed;
+    }
+    return next;
   }
 
   registerPluginApi(namespace: string, slug: string, client: unknown): void {
