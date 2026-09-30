@@ -19,7 +19,7 @@ function reference(value: unknown): string {
 }
 
 const INPUTS = [
-  '', '   ', '/', '/api/v1/health', '/api/v1/plugins/ecommerce/products?limit=20', 'api/v1//x//', '/a/b/#frag',
+  '', '   ', '/', '/api/v1/health', '/api/v1/plugins/widgets/items?limit=20', 'api/v1//x//', '/a/b/#frag',
   '//evil.example.com/path', 'https://console.example.com/admin/users?x=1', 'http://h:3000', 'HTTP://H/X/',
   'localhost:3000/x', 'c:/windows', 'mailto:someone@example.com', 'javascript:alert(1)', '?only=query', '#hash',
   '/ü/ä?x', 'https://example.com/%E2%9C%93/', 'x+y.z-1:rest', '1http://no-scheme', null, undefined, 42,
