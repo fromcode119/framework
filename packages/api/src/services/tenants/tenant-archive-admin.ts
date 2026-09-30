@@ -5,7 +5,9 @@ import { TenantAdminState } from '@api/services/tenants/tenant-admin-state';
 import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
-import { AuditOutcome, BackupService, CoercionUtils, PluginState, PluginTenantStateService, SystemConstants, TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantColumnPreparer, TenantEraser, TenantIdentity, TenantImportExecutor, TenantImportIdentity, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantRecord, TenantMode, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess } from '@fromcode119/core';
+import { SiteSupport } from '@api/services/tenants/site-support';
+import { TenantSiteTables } from '@api/services/tenants/tenant-site-tables';
+import { AuditOutcome, BackupService, CoercionUtils, PluginState, PluginTenantStateService, SystemConstants, TenantAdoptionService, TenantArchiveLayout, TenantArchiveManifest, TenantArchiveReader, TenantArchiveSource, TenantArchiveWriter, TenantEraser, TenantIdentity, TenantImportExecutor, TenantImportIdentity, TenantImportPlan, TenantImportPlanner, TenantImportResult, TenantRecord, TenantTableCatalog, TenantTableDescriptor, TenantThemeAccess } from '@fromcode119/core';
 
 /**
  * Moving a whole SITE: exporting it to an archive, previewing an import, executing one, adopting a
@@ -35,27 +37,6 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     return { archivePath: result.archivePath, backup: this.catalog.resolveByPath(result.archivePath), manifest: result.manifest.toJSON() };
   }
 
-  /**
-   * Whether this database can keep sites apart. A deployment set up on one that cannot (setup labels
-   * SQLite and MySQL "single site only") serves exactly one site and never gains a second: with a site
-   * row present, the next boot refuses to start rather than serve several customers from one pool.
-   */
-  get sitesSupported(): boolean {
-    return TenantMode.isIsolationSupported();
-  }
-
-  /**
-   * Refuses to bring a site into being where the next boot would refuse to start because of it.
-   * Creating, importing and adopting each write the site row that turns sites on.
-   */
-  protected assertSitesSupported(): void {
-    if (this.sitesSupported) return;
-    throw Object.assign(new Error(
-      'This installation\'s database keeps a single site and cannot keep several apart, so no site can be '
-      + 'added to it — the platform would refuse to start with one. Restore a site\'s archive onto it instead.',
-    ), { statusCode: 409 });
-  }
-
   /** Export first, ALWAYS; then erase. The typed slug is the operator's confirmation. */
   async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number }> {
     const tenant = await this.requireTenant(id);
@@ -82,7 +63,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
 
   /** `transitPassphrase` must be the one the EXPORT used, when the archive says its secrets were sealed. */
   async executeImport(archivePath: string, identityInput: Record<string, unknown>, actor: Record<string, unknown>, transitPassphrase: string | null = null): Promise<TenantImportResult> {
-    this.assertSitesSupported();
+    SiteSupport.assert();
     const reader = await TenantArchiveReader.open(archivePath);
     try {
       const identity = TenantImportIdentity.resolve(reader.manifest.tenant as unknown as Record<string, unknown>, identityInput);
@@ -103,14 +84,9 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
   }
 
   async adopt(identityInput: Record<string, unknown>, actor: Record<string, unknown>): Promise<unknown> {
-    this.assertSitesSupported();
+    SiteSupport.assert();
     const identity = TenantIdentity.from(identityInput);
-    // COLUMNS FIRST. Adoption stamps the rows of every table that has a `tenant_id` column, and on a
-    // deployment whose tables predate tenancy none of them do — the column only arrives on the next
-    // boot, once a tenant exists and the sweep runs. Adopting before that stamped nothing in those
-    // tables and left their rows ownerless, which row-level security then hid from everyone.
-    await new TenantColumnPreparer(this.db).ensureColumns(this.manager.systemCollectionTables());
-    const tables = await new TenantTableCatalog(this.db, this.manager.registeredCollections.values()).byColumn();
+    const tables = await TenantSiteTables.byColumn(this.db, this.manager.systemCollectionTables(), this.tenantTableCatalog());
     const outcome = await new TenantAdoptionService(this.db, this.registry, tables).adopt(identity);
     await this.record('tenant.adopt', identity.slug, actor, { id: identity.id, stamped: outcome.stamped, members: outcome.members, unassigned: outcome.unassigned });
     await this.gateway.notify();
@@ -219,16 +195,8 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
     }
   }
 
-  /**
-   * The tables a site's rows live in. With sites on, those under a site policy. Before the first
-   * site there IS no policy — the boot sweep releases them on a deployment with no sites — so it is
-   * the tables carrying the site column, given that column first exactly as adoption does. Listing by
-   * policy there found no table at all, and importing the first site planned to skip every row.
-   */
   protected async tables(): Promise<TenantTableDescriptor[]> {
-    if (TenantMode.isEnabled()) return this.tenantTableCatalog().byPolicy();
-    await new TenantColumnPreparer(this.db).ensureColumns(this.manager.systemCollectionTables());
-    return this.tenantTableCatalog().byColumn();
+    return TenantSiteTables.list(this.db, this.manager.systemCollectionTables(), this.tenantTableCatalog());
   }
 
   protected async summarize(tenant: TenantRecord): Promise<TenantSummary> {

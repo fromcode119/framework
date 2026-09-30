@@ -10,6 +10,7 @@ import {
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
+import { SiteSupport } from '@api/services/tenants/site-support';
 
 /**
  * Everything the Sites admin can do to a tenant, in one place, on the OWNER connection.
@@ -58,6 +59,11 @@ export class TenantAdminService extends TenantArchiveAdmin {
     return TenantMode.isEnabled();
   }
 
+  /** Whether this database can keep sites apart at all — false on a single-site install. */
+  get sitesSupported(): boolean {
+    return SiteSupport.supported;
+  }
+
   async siteCount(): Promise<number> {
     return this.registry.count();
   }
@@ -73,7 +79,7 @@ export class TenantAdminService extends TenantArchiveAdmin {
   }
 
   async create(input: Record<string, unknown>, actor: Record<string, unknown>): Promise<TenantSummary> {
-    this.assertSitesSupported();
+    SiteSupport.assert();
     // A workspace may start from a preset an installed appearance declares (its plugins, locked to that
     // appearance); anything passed explicitly wins over the preset. Validated BEFORE the row exists.
     const presetId = CoercionUtils.toString(input.preset);
