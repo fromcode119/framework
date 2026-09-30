@@ -43,6 +43,7 @@ export type { ICoreExtensionState } from '@core/extensions/interfaces/core-exten
 export { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 export { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
 export { RateLimiter } from '@core/security/rate-limiter';
+export { PluginDatabaseQuota } from '@core/security/plugin-database-quota';
 export { SchemaManager } from '@core/database/schema-manager';
 export { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
 export type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';

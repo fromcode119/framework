@@ -3,7 +3,7 @@ import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
 import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
-import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager } from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, PluginDatabaseQuota } from '@fromcode119/core';
 import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
@@ -19,6 +19,7 @@ import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
 import { ApiBootstrapService, ServerCorsSetup, ServerAuthSetup, ServerMaintenanceService, ServerMiddlewareSetup, ServerAppUrlReader, ServerRoutesSetup, ServerSettingsService, ServerUploadsConfigService, ServerUploadsStaticSetup } from '@api/server/index';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
+import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 
 export class APIServer {
   public app = express();
@@ -95,6 +96,7 @@ export class APIServer {
         },
       }),
     );
+    PluginDatabaseQuota.useLimit(() => RateLimitSettingsUtils.resolvePluginDbCallsPerMinute(this.settingsCache));
     this.corsSetup = new ServerCorsSetup(this.app, this.settingsCache, this.logger, (manager as any).db);
     this.maintenanceService = new ServerMaintenanceService(this.manager, this.cache, this.settingsCache, this.logger);
     this.authSetup = new ServerAuthSetup(this.auth, (manager as any).db, this.logger);

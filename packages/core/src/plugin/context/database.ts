@@ -8,7 +8,7 @@ import { DatabaseWriteAudit } from '@core/plugin/context/database-write-audit';
 import { EnumValueCoercion } from '@core/plugin/context/enum-value-coercion';
 import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
 import { ArchivedRowFilter } from '@core/plugin/context/archived-row-filter';
-import { RateLimiter } from '@core/security/rate-limiter';
+import { PluginDatabaseQuota } from '@core/security/plugin-database-quota';
 import { SystemConstants } from '@core/constants/system.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
@@ -28,7 +28,6 @@ import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 // violation (cross-plugin PII reads, tampering with auth/sessions/plugins, etc.).
 
 export class DatabaseContextProxy {
-  private static readonly dbLimiter = new RateLimiter(5000, 60000);
   private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
   private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns']);
   private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
@@ -184,7 +183,7 @@ export class DatabaseContextProxy {
         get: (target, prop) => {
           if (prop === 'then') return undefined;
           if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
-            if (!DatabaseContextProxy.dbLimiter.check(plugin.manifest.slug)) {
+            if (!PluginDatabaseQuota.allow(plugin.manifest.slug, RequestContextUtils.getTenantId())) {
               handleRateLimit('database');
             }
           }

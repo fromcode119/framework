@@ -53,6 +53,9 @@ export class RateLimitSettingsUtils {
   private static readonly ENV_MAX_REQUESTS_INTERNAL = 'RATE_LIMIT_MAX_INTERNAL';
   private static readonly ENV_INTERNAL_CLIENTS = 'RATE_LIMIT_INTERNAL_CLIENTS';
   private static readonly ENV_WINDOW_MS = 'RATE_LIMIT_WINDOW_MS';
+  private static readonly ENV_PLUGIN_DB_CALLS_PER_MINUTE = 'PLUGIN_DB_CALLS_PER_MINUTE';
+  /** Database calls one plugin may make for one site per minute; 0 = unlimited. */
+  static readonly DEFAULT_PLUGIN_DB_CALLS_PER_MINUTE = SystemSettingRegistry.defaultValueOf(SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE);
 
   /** The configured counting window in ms. */
   static resolveWindowMs(settingsCache?: Map<string, string>): number {
@@ -79,6 +82,16 @@ export class RateLimitSettingsUtils {
         RateLimitSettingsUtils.DEFAULT_MAX_REQUESTS,
         settingsCache,
       );
+  }
+
+  /** The configured per-plugin, per-site database call budget; 0 = unlimited. */
+  static resolvePluginDbCallsPerMinute(settingsCache?: Map<string, string>): number {
+    return RateLimitSettingsUtils.resolve(
+      SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE,
+      RateLimitSettingsUtils.ENV_PLUGIN_DB_CALLS_PER_MINUTE,
+      RateLimitSettingsUtils.DEFAULT_PLUGIN_DB_CALLS_PER_MINUTE,
+      settingsCache,
+    );
   }
 
   /** The configured request budget for an internal server-to-server caller. */

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DatabaseContextProxy } from '@core/plugin/context/database';
+import { PluginDatabaseQuota } from '@core/security/plugin-database-quota';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
 
@@ -290,6 +291,7 @@ describe('plugin context.db write audit', () => {
   });
 
   tenantIt('upsert and groupCount consume the database rate limit — they were exempt while missing from the method list', async () => {
+    PluginDatabaseQuota.useLimit(() => 5000);
     const manager = buildManager();
     const rateSecurity = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('rate-limit-upsert-probe'), manager, rateSecurity);
@@ -299,11 +301,21 @@ describe('plugin context.db write audit', () => {
   });
 
   tenantIt('insert consumes the database rate limit — it was exempt while missing from the method list', async () => {
+    PluginDatabaseQuota.useLimit(() => 5000);
     const manager = buildManager();
     const rateSecurity = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;
     const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('rate-limit-insert-probe'), manager, rateSecurity);
 
     for (let i = 0; i < 5001; i += 1) void db.insert;
     expect(rateSecurity.handleRateLimit).toHaveBeenCalledWith('database');
+  });
+
+  tenantIt('a limit of 0 — the declared default — never refuses a plugin', async () => {
+    PluginDatabaseQuota.useLimit(() => 0);
+    const rateSecurity = { hasCapability: () => true, handleViolation: vi.fn(), handleRateLimit: vi.fn() } as any;
+    const db: any = DatabaseContextProxy.createDatabaseProxy(buildPlugin('rate-limit-unlimited-probe'), buildManager(), rateSecurity);
+
+    for (let i = 0; i < 20000; i += 1) void db.find;
+    expect(rateSecurity.handleRateLimit).not.toHaveBeenCalled();
   });
 });

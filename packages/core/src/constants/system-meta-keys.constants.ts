@@ -232,6 +232,7 @@ export class SystemMetaKeys {
    */
   RATE_LIMIT_EDGE_PROVIDER_RANGES: 'rate_limit_edge_provider_ranges',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
+  PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
   /**
    * Physical table names whose plugin `context.db` writes are NOT recorded in the audit log
    * (comma-separated). Read by {@link DatabaseWriteAudit} on every plugin write; seeded with the
