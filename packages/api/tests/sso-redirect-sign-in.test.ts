@@ -83,7 +83,7 @@ const redirectedTo = (res: any): URL => new URL(res.redirect.mock.calls[0][1], '
 
 /** A started sign-in: the cookie `start` would have set, for `provider`, returning to `returnTo`. */
 const startedCookie = async (provider = 'google', returnTo = '/account', errorTo = '/login') => {
-  const state = SsoOauthState.begin(returnTo, errorTo);
+  const state = SsoOauthState.begin(returnTo, errorTo, `https://shop.example/api/v1/auth/sso/${provider}/callback`);
   const grant = await grants.generateGrantToken({ userId: provider, purpose: SsoOauthState.PURPOSE, scope: state.scope(provider, null) });
   return { state, cookie: state.serialize(grant) };
 };
@@ -227,6 +227,20 @@ describe('the redirect round trip', () => {
     expect(handoff?.[2]).toMatchObject({ httpOnly: false, domain: undefined });
     expect(JSON.parse(Buffer.from(handoff?.[1], 'base64url').toString('utf8'))).toEqual({ id: '7', email: 'owner@example.com', roles: ['customer'] });
     expect(res.redirect).toHaveBeenCalledWith(302, '/checkout');
+  });
+});
+
+describe('the redirect URI', () => {
+  it('the callback exchanges the code with the address start sent, even if the site address now resolves differently', async () => {
+    const { instance, self } = controller(new DatabaseStub([{ id: 7, email: 'owner@example.com' }]));
+    const client = fakeClient(new SsoIdentity('owner@example.com', true));
+    vi.spyOn(SsoOauthClientFactory.prototype, 'forProvider').mockResolvedValue(client as any);
+    vi.spyOn(self, 'completeSsoSignIn').mockResolvedValue({ token: 't', user: { id: '7' } });
+    const { state, cookie } = await startedCookie();
+    // Arriving from the provider, the request carries no storefront referer to work the address out from.
+    vi.spyOn(self, 'getFrontendBaseUrl').mockResolvedValue('http://internal-api:3000');
+    await instance.ssoCallback(request({ state: state.state, code: 'c' }, { [CookieConstants.SSO_STATE]: cookie }) as any, response() as any);
+    expect(client.identify).toHaveBeenCalledWith('c', 'https://shop.example/api/v1/auth/sso/google/callback', state.verifier);
   });
 });
 

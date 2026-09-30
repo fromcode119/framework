@@ -5,7 +5,9 @@ import { createHash, randomBytes, timingSafeEqual } from 'crypto';
  *
  * `state` defeats login CSRF (a callback this browser did not start is refused) and `verifier` is the
  * PKCE secret the code exchange must present, so an intercepted code is useless on its own. The paths
- * say where the visitor goes afterwards. The cookie is sealed by a signed grant whose scope is a hash
+ * say where the visitor goes afterwards, and `redirectUri` is the exact callback address sent to the
+ * provider: the exchange must repeat it byte for byte, and the callback request (arriving from the
+ * provider, with no storefront referer) cannot be trusted to work the same address out again. The cookie is sealed by a signed grant whose scope is a hash
  * of every field plus the provider and site, so none of it can be edited or replayed on another site.
  */
 export class SsoOauthState {
@@ -17,10 +19,11 @@ export class SsoOauthState {
     readonly verifier: string,
     readonly returnTo: string,
     readonly errorTo: string,
+    readonly redirectUri: string,
   ) {}
 
-  static begin(returnTo: string, errorTo: string): SsoOauthState {
-    return new SsoOauthState(randomBytes(24).toString('base64url'), randomBytes(48).toString('base64url'), returnTo, errorTo);
+  static begin(returnTo: string, errorTo: string, redirectUri: string): SsoOauthState {
+    return new SsoOauthState(randomBytes(24).toString('base64url'), randomBytes(48).toString('base64url'), returnTo, errorTo, redirectUri);
   }
 
   /** The PKCE `code_challenge` (S256) sent to the provider. */
@@ -31,7 +34,7 @@ export class SsoOauthState {
   /** What the grant is scoped to: this exact state, for this provider, on this site. */
   scope(provider: string, tenantId: string | null): string {
     return createHash('sha256')
-      .update([this.state, this.verifier, this.returnTo, this.errorTo, provider, tenantId ?? ''].join('\n'))
+      .update([this.state, this.verifier, this.returnTo, this.errorTo, this.redirectUri, provider, tenantId ?? ''].join('\n'))
       .digest('base64url');
   }
 
@@ -43,16 +46,16 @@ export class SsoOauthState {
   }
 
   serialize(grant: string): string {
-    return Buffer.from(JSON.stringify({ s: this.state, v: this.verifier, r: this.returnTo, e: this.errorTo, g: grant })).toString('base64url');
+    return Buffer.from(JSON.stringify({ s: this.state, v: this.verifier, r: this.returnTo, e: this.errorTo, u: this.redirectUri, g: grant })).toString('base64url');
   }
 
   /** The state and its grant from a cookie, or null when the cookie is absent or malformed. */
   static parse(raw: unknown): { state: SsoOauthState; grant: string } | null {
     try {
       const data = JSON.parse(Buffer.from(String(raw || ''), 'base64url').toString('utf8'));
-      if (!data?.s || !data?.v || !data?.g) return null;
+      if (!data?.s || !data?.v || !data?.u || !data?.g) return null;
       return {
-        state: new SsoOauthState(String(data.s), String(data.v), SsoOauthState.localPath(data.r), SsoOauthState.localPath(data.e)),
+        state: new SsoOauthState(String(data.s), String(data.v), SsoOauthState.localPath(data.r), SsoOauthState.localPath(data.e), String(data.u)),
         grant: String(data.g),
       };
     } catch {

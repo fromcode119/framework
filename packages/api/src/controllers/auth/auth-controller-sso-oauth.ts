@@ -28,13 +28,14 @@ export class AuthControllerSsoOauth extends AuthControllerSso {
     const client = provider ? await new SsoOauthClientFactory(this.manager).forProvider(provider) : null;
     if (!provider || !client) return this.refuse(res, errorTo, SsoSignInError.NOT_ENABLED);
 
-    const state = SsoOauthState.begin(SsoOauthState.localPath(CoercionUtils.toString(req.query?.returnTo)) || RouteConstants.SEGMENTS.ACCOUNT, errorTo);
+    const returnTo = SsoOauthState.localPath(CoercionUtils.toString(req.query?.returnTo)) || RouteConstants.SEGMENTS.ACCOUNT;
+    const state = SsoOauthState.begin(returnTo, errorTo, await this.ssoRedirectUri(req, provider));
     const grant = await this.auth.generateGrantToken(
       { userId: provider.value, purpose: SsoOauthState.PURPOSE, scope: state.scope(provider.value, RequestContextUtils.getTenantId() ?? null) },
       { expiresIn: SsoOauthState.TTL_SECONDS },
     );
     res.cookie(CookieConstants.SSO_STATE, state.serialize(grant), this.stateCookieOptions(req, provider));
-    return res.redirect(302, client.authorizationUrl(await this.ssoRedirectUri(req, provider), state.state, state.challenge));
+    return res.redirect(302, client.authorizationUrl(state.redirectUri, state.state, state.challenge));
   }
 
   async ssoCallback(req: Request, res: Response) {
@@ -56,7 +57,7 @@ export class AuthControllerSsoOauth extends AuthControllerSso {
 
     let identity;
     try {
-      identity = await client.identify(code, await this.ssoRedirectUri(req, provider), parsed.state.verifier);
+      identity = await client.identify(code, parsed.state.redirectUri, parsed.state.verifier);
     } catch (error: any) {
       this.logger.warn(`[AuthController] ${provider.value} sign-in failed at the provider: ${error?.message || error}`);
       return this.refuse(res, errorTo, SsoSignInError.PROVIDER);
