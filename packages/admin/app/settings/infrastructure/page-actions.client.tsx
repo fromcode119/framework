@@ -24,6 +24,8 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       this.ssrRenderTimeoutMs = String(response?.ssr_render_timeout_ms ?? '');
       this.isolationMemoryMb = String(response?.plugin_isolation_memory_mb ?? '');
       this.isolationTimeoutMs = String(response?.plugin_isolation_timeout_ms ?? '');
+      this.isolationSiteCpuPercent = String(response?.plugin_isolation_site_cpu_percent ?? '');
+      this.isolationSiteMemoryMb = String(response?.plugin_isolation_site_memory_mb ?? '');
     } catch (err: any) {
       this.maintenance = null;
       this.loadError = err?.message || AdminI18n.t('settings.infrastructure.theSystemSettingsRequestFailed');
@@ -132,6 +134,8 @@ export abstract class InfrastructureSettingsPageActions extends InfrastructureSe
       await AdminSystemSettingsClient.update({
         plugin_isolation_memory_mb: this.isolationMemoryMb,
         plugin_isolation_timeout_ms: this.isolationTimeoutMs,
+        plugin_isolation_site_cpu_percent: this.isolationSiteCpuPercent,
+        plugin_isolation_site_memory_mb: this.isolationSiteMemoryMb,
       });
       // Limits reach every running plugin on save: a new deadline at its next call, a new memory
       // ceiling by restarting that plugin's own process.

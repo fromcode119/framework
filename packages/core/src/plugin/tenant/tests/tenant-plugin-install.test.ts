@@ -147,6 +147,22 @@ describe('site plugin install', () => {
     expect(host.enable).toHaveBeenCalledWith('guestbook');
   });
 
+  it('starts a plugin the platform stopped again when the site uploads it anew — and leaves a running one to its reload', async () => {
+    vi.spyOn(TenantPluginQuota, 'current').mockResolvedValue(OPEN);
+    const root = tempDir('fc-plugins-');
+    const { host, installer } = hostOn(root);
+    await installer.install('acme', pluginZip({ slug: 'guestbook' }));
+    host.enable.mockClear();
+
+    await installer.install('acme', pluginZip({ slug: 'guestbook', version: '1.0.1' }));
+    expect(host.pluginHosts.reload).toHaveBeenCalled();
+    expect(host.enable).not.toHaveBeenCalled();
+
+    host.plugins.set('guestbook', { manifest: { slug: 'guestbook' }, state: 'error', error: 'stopped because this plugin used 900 MB of memory', stoppedByPlatform: true });
+    await installer.install('acme', pluginZip({ slug: 'guestbook', version: '1.0.2' }));
+    expect(host.enable).toHaveBeenCalledWith('guestbook');
+  });
+
   it('refuses a slug the platform or another site already has, and never overwrites it', async () => {
     vi.spyOn(TenantPluginQuota, 'current').mockResolvedValue(OPEN);
     const root = tempDir('fc-plugins-');

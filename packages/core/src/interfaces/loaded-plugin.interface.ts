@@ -26,6 +26,12 @@ export interface ILoadedPlugin extends IAtlantisPlugin {
   path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
   error?: string; // Error message when state is PluginState.ERROR
+  /**
+   * The platform switched it off while it ran (a crash loop, a resource limit, a violation) — not a
+   * load that failed. A rescan retries a plugin that failed to load; it must not restart this one, or
+   * opening the Plugins page would bring back what was just stopped. Cleared when it is enabled again.
+   */
+  stoppedByPlatform?: boolean;
   isSandboxed?: boolean;
   entryPath?: string;
   healthStatus?: PluginRegistryHealth;

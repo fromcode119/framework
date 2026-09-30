@@ -153,6 +153,8 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.QUEUE_JOB_ATTEMPTS]: { scope: SettingScope.SITE, writable: false, exposed: true }, // candidate for PLATFORM (Phase 2)
     [SystemConstants.META_KEY.QUEUE_JOB_BACKOFF_MS]: { scope: SettingScope.SITE, writable: false, exposed: true }, // candidate for PLATFORM (Phase 2)

@@ -214,6 +214,14 @@ export class PluginDirectoryScannerService {
                 }
                 if (!isBundledRoot && !rootOwnerTenantId) await this.dependencyInstaller.ensureInstalled(pluginPath);
                 const savedPluginState = existingPlugins.get(manifest.slug as string);
+                // A rescan retries a plugin that failed to LOAD. One the platform stopped while it ran —
+                // a crash loop, a resource limit — stays stopped with its reason until someone enables it:
+                // describing it here would start its process again, and every visit to the Plugins page
+                // rescans.
+                if (savedPluginState?.stoppedByPlatform) {
+                  this.logger.debug(`Plugin "${manifest.slug}" stays stopped: ${savedPluginState.error ?? 'stopped by the platform'}`);
+                  continue;
+                }
                 const persistedState = installedState[(manifest.slug as string).toLowerCase()];
                 let effectiveSandboxConfig = InstalledPluginManifestService.applyPersistedSandbox(
                   manifest,

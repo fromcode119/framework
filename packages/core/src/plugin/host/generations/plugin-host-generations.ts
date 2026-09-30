@@ -15,6 +15,7 @@ import { SpawnerGuests } from '@core/process/spawner-guests';
 import { PluginGuestAttachment } from '@core/plugin/host/connections/plugin-guest-attachment';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /**
  * Where a plugin's processes come from: started here (`launchGeneration`) — or, when another api
@@ -48,6 +49,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
     const launcher = GuestProcessLaunchers.current();
     this.generationCount += 1;
     const attachSecret = PluginGuestGeneration.secret();
+    // A plugin a site uploaded shares the machine with every other site: it gets a share, not the lot.
+    const share = PluginOwners.ownerOf(this.slug) ? this.settings.siteResourceLimits() : undefined;
     const guest = await launcher.launch({
       id: PluginGuestGeneration.guestId(this.slug, this.generationCount),
       entryPath: PluginHostGenerations.guestMainPath(),
@@ -61,6 +64,7 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       writableDirs: [ProjectPaths.getPluginDataDir(this.slug, this.projectRoot)],
       // What another api needs to find this process and take it over (`takeOver`).
       label: { slug: this.slug, version: String(this.manifest.version ?? ''), memoryMb: this.limits.memoryMb, attachSecret },
+      resourceLimits: share,
     });
     const generation = new PluginGuestGeneration(this.generationCount, guest, new PluginChannel(guest.port), attachSecret);
     this.wire(generation);
@@ -74,7 +78,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       throw error;
     }
     const who = launcher.isolatesIdentity && this.identity ? `, uid ${this.identity.uid}` : '';
-    this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who})`);
+    const held = share ? `, held to ${share.cpuPercent}% of a core and ${share.memoryMb} MB` : '';
+    this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who}${held})`);
     return generation;
   }
 
@@ -138,6 +143,6 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
     generation.channel.serve((type, payload) => this.serve(type, payload, generation));
     generation.channel.onNotify((type, payload) => this.notified(type, payload));
     // Only the CURRENT guest's exit means anything; one we already replaced was retired on purpose.
-    guest.onExit((code, signal) => { if (this.guest === guest) this.exited(code, signal); });
+    guest.onExit((code, signal, reason) => { if (this.guest === guest) this.exited(code, signal, reason); });
   }
 }

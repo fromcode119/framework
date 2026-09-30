@@ -27,9 +27,9 @@ export class SpawnedGuestProcess implements IGuestProcess {
     this.spawner.kill(this.id, signal);
   }
 
-  onExit(listener: (code: number | null, signal: string | null) => void): void {
+  onExit(listener: (code: number | null, signal: string | null, reason?: string | null) => void): void {
     // Only THIS process's exit: a predecessor with the same id may still be reported after the swap.
-    this.spawner.onExit(this.id, (code, signal, pid) => { if (pid === null || pid === this.pid) listener(code, signal); });
+    this.spawner.onExit(this.id, (code, signal, pid, reason) => { if (pid === null || pid === this.pid) listener(code, signal, reason ?? null); });
   }
 
   onOutput(listener: (stream: GuestOutputStream, line: string) => void): void {

@@ -63,7 +63,7 @@ export class PluginHost extends PluginHostGenerations {
     this.sentPeerSignature = ''; this.restarts = 0; this.stopping = false; this.restarting = false;
     this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false; this.takenOver = null;
     this.settings = settings;
-    this.limits = settings.forPlugin(manifest.sandbox);
+    this.limits = settings.forPlugin(manifest.sandbox, Boolean(PluginOwners.ownerOf(slug)));
     this.proxy = new PluginHostHttpProxy('');
     this.callbacks = new PluginHostCallbacks(slug, (handlerId, args, store) => this.invoke({ kind: String(PluginInvocationKind.CALLBACK.value), handlerId, args }, store));
     const plugin = { manifest } as unknown as ILoadedPlugin;

@@ -1,4 +1,5 @@
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
+import type { IGuestResourceLimits } from '@core/process/interfaces/guest-resource-limits.interface';
 import type { ISpawnerGuestLabel } from '@core/process/interfaces/spawner-guest-label.interface';
 
 /** What it takes to start one guest process. The environment is never part of it: guests get none. */
@@ -17,4 +18,6 @@ export interface IGuestProcessSpec {
   writableDirs: string[];
   /** For the spawner to hand back to an api looking for a process to take over; never read by it. */
   label?: ISpawnerGuestLabel;
+  /** CPU and memory this guest may hold; the launcher stops it past them. Absent: only the heap ceiling applies. */
+  resourceLimits?: IGuestResourceLimits;
 }

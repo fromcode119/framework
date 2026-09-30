@@ -161,6 +161,8 @@ export class SystemMetaKeys {
   DEPLOY_MODE: 'deploy_mode',
   PLUGIN_ISOLATION_MEMORY_MB: 'plugin_isolation_memory_mb',
   PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',
+  PLUGIN_ISOLATION_SITE_CPU_PERCENT: 'plugin_isolation_site_cpu_percent',
+  PLUGIN_ISOLATION_SITE_MEMORY_MB: 'plugin_isolation_site_memory_mb',
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
   QUEUE_JOB_ATTEMPTS: 'queue_job_attempts',

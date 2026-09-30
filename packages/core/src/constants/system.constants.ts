@@ -29,6 +29,9 @@ export class SystemConstants {
    */
   static readonly PLUGIN_ISOLATION_MEMORY_MB_DEFAULT = 256;
   static readonly PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT = 30_000;
+  /** What one plugin a SITE uploaded may hold of the shared machine: a share of one core, and resident memory. */
+  static readonly PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT = 50;
+  static readonly PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT = 384;
 
   /**
    * What a SITE may store in themes it uploads itself, when the platform has not set a limit. The

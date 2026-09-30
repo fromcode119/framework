@@ -62,6 +62,9 @@ export class TenantPluginInstaller {
       TenantPluginInstaller.replaceDir(contentDir, target);
 
       if (replacing && (await this.host.pluginHosts!.reload(slug, { ...manifest, sandbox: TenantPluginRunRules.isolated(manifest.sandbox), ownerTenantId: tenantId }))) {
+        // A plugin the platform stopped (a crash loop, a resource limit) has no process for the reload to
+        // replace: uploading a fixed version is how the site asks for it back, so start it on the new code.
+        if (replacing.stoppedByPlatform) await this.host.enable(slug);
         return manifest;
       }
       await this.host.discoverPlugins();

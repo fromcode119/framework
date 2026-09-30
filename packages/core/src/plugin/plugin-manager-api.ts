@@ -113,7 +113,7 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
   }
 
   async disableWithError(slug: string, message: string): Promise<void> {
-    await this.runtimeState.disableWithError(slug);
+    await this.runtimeState.disableWithError(slug, message);
   }
 
   public async getSecuritySummary() {

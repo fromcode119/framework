@@ -1,5 +1,6 @@
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { SystemConstants } from '@core/constants/system.constants';
+import type { IGuestResourceLimits } from '@core/process/interfaces/guest-resource-limits.interface';
 
 /**
  * The operator's isolation LIMITS — declared platform settings (Settings → Infrastructure →
@@ -10,21 +11,31 @@ import { SystemConstants } from '@core/constants/system.constants';
  * plugin holds the api itself — every secret, every site's data, the whole schema — so a "shared" mode
  * made one bad plugin a platform compromise. Only the framework's OWN bundled extensions keep the
  * choice their manifest states, since they are the framework. A manifest's `sandbox: { memoryLimit,
- * timeout }` still overrides the platform limits for that plugin.
+ * timeout }` still overrides the platform limits for that plugin — except that a plugin a SITE
+ * uploaded may only lower them: its manifest is the uploader's to write.
+ *
+ * A site's plugin is also held to a share of the machine (`siteResourceLimits`): its CPU and its whole
+ * resident memory, which the heap ceiling and the deadline do not bound.
  */
 export class PluginIsolationSettings {
   private constructor(
     readonly memoryMb: number,
     readonly timeoutMs: number,
+    readonly siteCpuPercent: number = SystemConstants.PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT,
+    readonly siteMemoryMb: number = SystemConstants.PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT,
   ) {}
 
   static async read(db: { findOne(table: string, where: Record<string, unknown>): Promise<any> }): Promise<PluginIsolationSettings> {
-    const value = async (key: string) => CoercionUtils.toString((await db.findOne(SystemConstants.TABLE.META, { key }))?.value).trim();
-    const memory = CoercionUtils.toNumber(await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB));
-    const timeout = CoercionUtils.toNumber(await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS));
+    const value = async (key: string) => CoercionUtils.toNumber(CoercionUtils.toString((await db.findOne(SystemConstants.TABLE.META, { key }))?.value).trim());
+    const memory = await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_MEMORY_MB);
+    const timeout = await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS);
+    const siteCpu = await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT);
+    const siteMemory = await value(SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB);
     return new PluginIsolationSettings(
       memory > 0 ? memory : SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT,
       timeout > 0 ? timeout : SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT,
+      siteCpu > 0 ? siteCpu : SystemConstants.PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT,
+      siteMemory > 0 ? siteMemory : SystemConstants.PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT,
     );
   }
 
@@ -32,12 +43,21 @@ export class PluginIsolationSettings {
     return new PluginIsolationSettings(SystemConstants.PLUGIN_ISOLATION_MEMORY_MB_DEFAULT, SystemConstants.PLUGIN_ISOLATION_TIMEOUT_MS_DEFAULT);
   }
 
-  /** Effective limits for one plugin: its manifest's `sandbox` object wins over the platform values. */
-  forPlugin(sandbox: unknown): { memoryMb: number; timeoutMs: number } {
+  /**
+   * Effective limits for one plugin: its manifest's `sandbox` object wins over the platform values —
+   * for a site's plugin only where it asks for LESS.
+   */
+  forPlugin(sandbox: unknown, siteOwned = false): { memoryMb: number; timeoutMs: number } {
     const declared = sandbox && typeof sandbox === 'object' ? (sandbox as { memoryLimit?: unknown; timeout?: unknown }) : {};
     const memory = CoercionUtils.toNumber(declared.memoryLimit);
     const timeout = CoercionUtils.toNumber(declared.timeout);
-    return { memoryMb: memory > 0 ? memory : this.memoryMb, timeoutMs: timeout > 0 ? timeout : this.timeoutMs };
+    const pick = (asked: number, platform: number) => (asked > 0 && (!siteOwned || asked < platform) ? asked : platform);
+    return { memoryMb: pick(memory, this.memoryMb), timeoutMs: pick(timeout, this.timeoutMs) };
+  }
+
+  /** What a plugin a site uploaded may hold of the shared machine; a platform plugin is not held to it. */
+  siteResourceLimits(): IGuestResourceLimits {
+    return { cpuPercent: this.siteCpuPercent, memoryMb: this.siteMemoryMb };
   }
 
   /** Whether a plugin runs isolated: always, unless it is one of the framework's own bundled extensions. */
