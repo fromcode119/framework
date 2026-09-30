@@ -8,7 +8,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * decision in Settings → Localization.
  */
 export class SidebarLanguageItems {
-  static build(input: { personal: string; defaultLocale: string; locales: Array<{ code: string; label: string }> }): IDropdownItem[] {
+  static build(input: { personal: string; defaultLocale: string; locales: Array<{ code: string; label: string }>; onError: (message: string) => void }): IDropdownItem[] {
     if (input.locales.length < 2) return [];
     const defaultLabel = input.locales.find((locale) => locale.code === input.defaultLocale)?.label || '';
     const siteDefault: IDropdownItem = {
@@ -17,7 +17,7 @@ export class SidebarLanguageItems {
         : AdminI18n.t('shell.account.languageSiteDefaultNone'),
       selectable: true,
       selected: !input.personal,
-      onClick: () => { if (input.personal) void AdminConsoleLanguage.choose(''); },
+      onClick: () => { if (input.personal) void AdminConsoleLanguage.choose('', input.onError); },
     };
     const choices = input.locales.map((locale): IDropdownItem => ({
       // The label is the language's own name; its code under it made these rows twice the height of
@@ -25,7 +25,7 @@ export class SidebarLanguageItems {
       label: locale.label || locale.code.toUpperCase(),
       selectable: true,
       selected: input.personal === locale.code,
-      onClick: () => { if (input.personal !== locale.code) void AdminConsoleLanguage.choose(locale.code); },
+      onClick: () => { if (input.personal !== locale.code) void AdminConsoleLanguage.choose(locale.code, input.onError); },
     }));
     return [siteDefault, ...choices].map((item, index) => ({ ...item, section: index === 0 ? AdminI18n.t('shell.account.language') : undefined }));
   }

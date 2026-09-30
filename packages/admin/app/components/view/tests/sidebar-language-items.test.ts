@@ -6,7 +6,7 @@ describe('SidebarLanguageItems', () => {
   const locales = [{ code: 'en', label: 'English' }, { code: 'bg', label: 'Български' }];
 
   it('marks the site default as chosen when the reader has not picked a language', () => {
-    const items = SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales });
+    const items = SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales, onError: () => undefined });
     expect(items.map((item) => [item.label, item.selected])).toEqual([
       ['Site default (English)', true], ['English', false], ['Български', false],
     ]);
@@ -15,16 +15,16 @@ describe('SidebarLanguageItems', () => {
   });
 
   it("marks the reader's own language", () => {
-    const items = SidebarLanguageItems.build({ personal: 'bg', defaultLocale: 'en', locales });
+    const items = SidebarLanguageItems.build({ personal: 'bg', defaultLocale: 'en', locales, onError: () => undefined });
     expect(items.filter((item) => item.selected).map((item) => item.label)).toEqual(['Български']);
   });
 
   it('gives every choice one line, like the site-default row beside it', () => {
-    const items = SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales });
+    const items = SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales, onError: () => undefined });
     expect(items.every((item) => item.detail === undefined)).toBe(true);
   });
 
   it('offers nothing when the site has only one language', () => {
-    expect(SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales: [locales[0]!] })).toEqual([]);
+    expect(SidebarLanguageItems.build({ personal: '', defaultLocale: 'en', locales: [locales[0]!], onError: () => undefined })).toEqual([]);
   });
 });

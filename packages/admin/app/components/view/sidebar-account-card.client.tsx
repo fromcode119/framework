@@ -184,7 +184,11 @@ export class SidebarAccountCard extends AdminComponent {
           }]
         : []),
       ...this.preferenceItems,
-      ...SidebarLanguageItems.build({ personal: this.personalLanguage, ...AdminConsoleLanguage.site(this.runtime?.globalSettings) }),
+      ...SidebarLanguageItems.build({
+        personal: this.personalLanguage,
+        ...AdminConsoleLanguage.site(this.runtime?.globalSettings),
+        onError: (message) => this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.account.language'), message),
+      }),
       ...this.siteItems,
       {
         label: AdminI18n.t('shell.account.signOut'),
