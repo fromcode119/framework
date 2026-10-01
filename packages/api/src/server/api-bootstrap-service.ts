@@ -1,12 +1,12 @@
-import { ProcessSignal, ProcessSignals } from '@fromcode119/core';
 import dotenv from 'dotenv';
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, HotReloadService, ProcessSignal, ProcessSignals, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
 import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
+import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -157,6 +157,7 @@ export class ApiBootstrapService {
         writes: Array.isArray(payload?.writes) ? payload.writes : [],
       });
     });
+    PluginsChangedSignal.listen(manager, (line) => this.logger.info(line)); // several api processes (API_WORKERS)
     ProcessSignals.on(ProcessSignal.SETTINGS_WRITTEN, (payload: any, local: boolean) => {
       const writes = Array.isArray(payload?.writes) ? payload.writes : [];
       SettingChangeInvalidators.dispatch(writes);

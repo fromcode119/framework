@@ -29,7 +29,11 @@ export class PluginGuestRegistrar {
 
   private readonly standing: IPluginGuestRegistration[] = [];
 
-  constructor(private readonly channel: Pick<PluginChannel, 'request'>) {}
+  constructor(
+    private readonly channel: Pick<PluginChannel, 'request'>,
+    /** Every api holding this process (PluginGuestConnections.all); none before any attached. */
+    private readonly everyone: () => PluginChannel[] = () => [],
+  ) {}
 
   /**
    * Recorded when SENT, so the record keeps the order the plugin registered in, and dropped again if
@@ -41,13 +45,28 @@ export class PluginGuestRegistrar {
     const repeated = this.repeatedDeclaration(registration);
     const kept = repeated ? null : this.record(registration);
     // Sent to the api this invocation came from — the one that will apply it.
-    const answer = await PluginGuestRemote.channelFor(this.channel as PluginChannel).request(String(PluginChannelMessage.REGISTER.value), registration, PluginGuestRegistrar.TIMEOUT_MS);
+    const used = PluginGuestRemote.channelFor(this.channel as PluginChannel);
+    const answer = await used.request(String(PluginChannelMessage.REGISTER.value), registration, PluginGuestRegistrar.TIMEOUT_MS);
     const accepted = answer !== PluginGuestRegistrar.SUPPRESSED;
+    if (accepted && (kept || registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value)) this.tellOthers(used, registration);
     if (!accepted && kept) this.standing.splice(this.standing.indexOf(kept), 1);
     if (accepted && repeated && this.standing.includes(repeated)) this.standing[this.standing.indexOf(repeated)] = { ...registration };
     // A withdrawal counts only once the api has withdrawn it; a suppressed one leaves the hook standing.
     if (accepted && registration.kind === PluginGuestRegistrationKind.HOOK_OFF.value) this.withdraw(registration);
     return answer;
+  }
+
+  /**
+   * Several api processes can hold this process (`API_WORKERS`). One that attached later received the
+   * standing record (`snapshot`); one already attached hears each later registration here, so a hook a
+   * request registers on one api process is not missing on the others. Not awaited: the caller's answer
+   * is the api it asked; another that cannot be told now gets the record when it attaches again.
+   */
+  private tellOthers(used: PluginChannel, registration: IPluginGuestRegistration): void {
+    for (const other of this.everyone()) {
+      if (other === used) continue;
+      other.request(String(PluginChannelMessage.REGISTER.value), registration, PluginGuestRegistrar.TIMEOUT_MS).catch(() => undefined);
+    }
   }
 
   /** What this process has registered and not withdrawn, oldest first — copies, never the live record. */

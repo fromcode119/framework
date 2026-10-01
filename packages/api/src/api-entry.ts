@@ -2,6 +2,7 @@ import { SystemConstants } from '@fromcode119/core';
 import { PrivilegeDrop } from '@fromcode119/core/process';
 import { APIServer } from '@api/index';
 import { ProcessSafetyNet } from '@api/process-safety-net';
+import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 
 /**
  * Boots the API server, turning an unhandled bootstrap failure into a non-zero exit.
@@ -13,6 +14,16 @@ import { ProcessSafetyNet } from '@api/process-safety-net';
  */
 export class ApiEntry {
   static main(): void {
+    if (ApiWorkerSupervisor.isWanted()) {
+      const unsupported = ApiWorkerSupervisor.unsupportedReason();
+      if (!unsupported) {
+        new ApiWorkerSupervisor().run().catch(ApiEntry.fail);
+        return;
+      }
+      // Said, and then run as ONE process — with the per-process budgets (ApiWorkers.share) undivided.
+      console.warn(`[api-workers] ${unsupported}; running one api process.`);
+      process.env.API_WORKERS = '1';
+    }
     // Installed before bootstrap so a failure during plugin registration is also named rather than
     // printing a bare stack and exiting.
     ProcessSafetyNet.install();

@@ -11,6 +11,7 @@ export { ForkGuestLauncher } from '@core/process/fork-guest-launcher';
 export { SpawnerGuestLauncher } from '@core/process/spawner-guest-launcher';
 export { SpawnerClient } from '@core/process/spawner-client';
 export { PrivilegeDrop } from '@core/process/privilege-drop';
+export { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
 export { ProcessEntry } from '@core/process/process-entry';
 export { GuestEntryPort } from '@core/process/guest-entry-port';
 export { SocketMessagePort } from '@core/process/socket-message-port';

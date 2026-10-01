@@ -20,7 +20,7 @@ import type { IRequestStore } from '@core/context/interfaces/request-store.inter
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
-import { PluginHostGenerations } from '@core/plugin/host/generations/plugin-host-generations';
+import { PluginHostSharedProcesses } from '@core/plugin/host/generations/plugin-host-shared-processes';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
@@ -37,7 +37,7 @@ import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
  * re-initialised; after three deaths the plugin is disabled with the reason, and nothing else on the
  * platform notices either way.
  */
-export class PluginHost extends PluginHostGenerations {
+export class PluginHost extends PluginHostSharedProcesses {
   constructor(
     slug: string,
     pluginDir: string,
@@ -63,7 +63,7 @@ export class PluginHost extends PluginHostGenerations {
     this.socketPath = ''; this.guest = null; this.channel = null; this.context = null; this.generation = null; this.generationCount = 0;
     this.describeResult = null;
     this.sentPeerSignatures = new Map(); this.restarts = 0; this.stopping = false; this.restarting = false;
-    this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false; this.takenOver = null;
+    this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false; this.takenOver = null; this.operatorRelaunch = false; this.awaitingReplacement = false;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox, Boolean(PluginOwners.ownerOf(slug)));
     this.proxy = new PluginHostHttpProxy('');
@@ -109,7 +109,7 @@ export class PluginHost extends PluginHostGenerations {
   async start(): Promise<{ contractKeys: string[]; publicApiKeys: string[]; manifest: unknown }> {
     if (this.channel && !this.channel.isClosed && this.describeResult) return this.describeResult;
     this.stopping = false;
-    const generation = (await this.takeOver()) ?? await this.launchGeneration();
+    const generation = await this.acquire();
     this.adopt(generation);
     return generation.described!;
   }

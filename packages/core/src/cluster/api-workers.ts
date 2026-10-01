@@ -28,6 +28,15 @@ export class ApiWorkers {
     return Number.isFinite(index) && index > 0 ? index : 0;
   }
 
+  /**
+   * Whether this api process starts plugin processes on its own — at boot, after a crash, on a move to a
+   * newer extension-host. With several, only process 0 does; the others attach to what it started
+   * (PluginHostSharedProcesses). An operator's update starts the new process wherever it was asked.
+   */
+  static startsPluginProcesses(): boolean {
+    return !ApiWorkers.isMultiProcess() || ApiWorkers.isFirstWorker();
+  }
+
   /** Whether this worker runs the deployment's once-only background work (monitors, retention, downloads). */
   static isFirstWorker(): boolean {
     return ApiWorkers.index() === 0;
