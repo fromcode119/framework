@@ -105,24 +105,24 @@ export class RegisterPage extends Reactor {
 
   render() {
     return (
-      <main className="min-h-screen bg-slate-50 text-slate-900">
-        <div className="mx-auto max-w-xl px-6 py-16">
-          <h1 className="text-3xl font-bold tracking-tight">{FrontendCopy.t(this.locale, 'frontend.registerClient.createAccount')}</h1>
-          <p className="mt-2 text-sm text-slate-600">
+      <main className="fc-auth">
+        <div className="fc-auth__card">
+          <h1 className="fc-auth__title">{FrontendCopy.t(this.locale, 'frontend.registerClient.createAccount')}</h1>
+          <p className="fc-auth__subtitle">
             {FrontendCopy.t(this.locale, 'frontend.registerClient.registerToTrackPurchasesAnd')}
           </p>
 
-          <form onSubmit={this.handleSubmit} className="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <form onSubmit={this.handleSubmit}>
             {this.error ? (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{this.error}</div>
+              <div className="fc-auth__error">{this.error}</div>
             ) : null}
 
             {this.successMessage ? (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <div className="fc-auth__notice">
                 <p>{this.successMessage}</p>
                 {this.verificationUrl ? (
-                  <p className="mt-2">
-                    <a href={this.verificationUrl} className="font-semibold underline" target="_blank" rel="noopener noreferrer">
+                  <p>
+                    <a href={this.verificationUrl} className="fc-auth__link" target="_blank" rel="noopener noreferrer">
                       {FrontendCopy.t(this.locale, 'frontend.registerClient.openVerificationLink')}
                     </a>
                   </p>
@@ -130,20 +130,20 @@ export class RegisterPage extends Reactor {
               </div>
             ) : null}
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="text-sm font-semibold">
-                {FrontendCopy.t(this.locale, 'frontend.registerClient.firstName')}
+            <div className="fc-auth__row">
+              <label className="fc-auth__field">
+                <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.registerClient.firstName')}</span>
                 <input
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  className="fc-auth__input"
                   value={this.firstName}
                   onChange={this.onFirstNameChange}
                   placeholder={FrontendCopy.t(this.locale, 'frontend.registerClient.john')}
                 />
               </label>
-              <label className="text-sm font-semibold">
-                {FrontendCopy.t(this.locale, 'frontend.registerClient.lastName')}
+              <label className="fc-auth__field">
+                <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.registerClient.lastName')}</span>
                 <input
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  className="fc-auth__input"
                   value={this.lastName}
                   onChange={this.onLastNameChange}
                   placeholder={FrontendCopy.t(this.locale, 'frontend.registerClient.doe')}
@@ -151,11 +151,11 @@ export class RegisterPage extends Reactor {
               </label>
             </div>
 
-            <label className="block text-sm font-semibold">
-              {FrontendCopy.t(this.locale, 'frontend.registerClient.email')}
+            <label className="fc-auth__field">
+              <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.registerClient.email')}</span>
               <input
                 type="email"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                className="fc-auth__input"
                 value={this.email}
                 onChange={this.onEmailChange}
                 placeholder="you@example.com"
@@ -163,23 +163,23 @@ export class RegisterPage extends Reactor {
               />
             </label>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <label className="text-sm font-semibold">
-                {FrontendCopy.t(this.locale, 'frontend.registerClient.password')}
+            <div className="fc-auth__row">
+              <label className="fc-auth__field">
+                <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.registerClient.password')}</span>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  className="fc-auth__input"
                   value={this.password}
                   onChange={this.onPasswordChange}
                   placeholder={FrontendCopy.t(this.locale, 'frontend.registerClient.min8Characters')}
                   required
                 />
               </label>
-              <label className="text-sm font-semibold">
-                {FrontendCopy.t(this.locale, 'frontend.registerClient.confirmPassword')}
+              <label className="fc-auth__field">
+                <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.registerClient.confirmPassword')}</span>
                 <input
                   type="password"
-                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                  className="fc-auth__input"
                   value={this.confirmPassword}
                   onChange={this.onConfirmPasswordChange}
                   placeholder={FrontendCopy.t(this.locale, 'frontend.registerClient.repeatPassword')}
@@ -191,15 +191,15 @@ export class RegisterPage extends Reactor {
             <button
               type="submit"
               disabled={this.isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="fc-auth__button"
             >
               {this.isSubmitting ? FrontendCopy.t(this.locale, 'frontend.registerClient.creatingAccount') : FrontendCopy.t(this.locale, 'frontend.registerClient.register')}
             </button>
           </form>
 
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="fc-auth__switch">
             {FrontendCopy.t(this.locale, 'frontend.registerClient.alreadyRegistered')}{' '}
-            <Link href="/verify-email" className="font-semibold text-indigo-600 hover:underline">
+            <Link href="/verify-email" className="fc-auth__link">
               {FrontendCopy.t(this.locale, 'frontend.registerClient.verifyEmail')}
             </Link>
           </p>

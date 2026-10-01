@@ -198,3 +198,35 @@
   outline: 2px solid #4f46e5;
   outline-offset: 2px;
 }
+
+/* Two fields side by side (first + last name, password + confirm) — stacked on a phone. */
+.fc-auth__row {
+  display: grid;
+  grid-template-columns: 1fr;
+  column-gap: 12px;
+}
+
+@media (min-width: 640px) {
+  .fc-auth__row {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* A page of several cards (verify email: the verification card and the resend card) in one column. */
+.fc-auth__stack {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 48px 16px;
+  box-sizing: border-box;
+}
+
+.fc-auth__stack .fc-auth__card {
+  margin: 16px 0;
+}
+
+/* A status message under the button that produced it. */
+.fc-auth__button + .fc-auth__notice,
+.fc-auth__button + .fc-auth__error,
+.fc-auth__button + div > .fc-auth__notice {
+  margin-top: 16px;
+}

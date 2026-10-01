@@ -23,11 +23,11 @@ export class VerifyEmailVerificationCard extends PureReactor {
 
   render() {
     return (
-      <div className="fc-auth-card fc-auth-card-primary">
-        <label className="fc-auth-field">
-          <span className="fc-auth-field-label">{this.verificationTokenLabel}</span>
+      <div className="fc-auth-card fc-auth-card-primary fc-auth__card">
+        <label className="fc-auth-field fc-auth__field">
+          <span className="fc-auth-field-label fc-auth__label">{this.verificationTokenLabel}</span>
           <input
-            className="fc-auth-input"
+            className="fc-auth-input fc-auth__input"
             value={this.token}
             onChange={this.handleTokenChange}
             placeholder={this.verificationTokenPlaceholder}
@@ -38,20 +38,14 @@ export class VerifyEmailVerificationCard extends PureReactor {
           type="button"
           onClick={this.onVerify}
           disabled={this.status === VerificationStatus.VERIFYING}
-          className="fc-auth-button fc-auth-button-primary"
+          className="fc-auth-button fc-auth-button-primary fc-auth__button"
         >
           {this.status === VerificationStatus.VERIFYING ? this.verifyingLabel : this.verifyButtonLabel}
         </button>
 
         {this.message ? (
           <div
-            className={`fc-auth-alert ${
-              this.status === VerificationStatus.SUCCESS
-                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                : this.status === VerificationStatus.ERROR
-                  ? 'border border-rose-200 bg-rose-50 text-rose-700'
-                  : 'border border-slate-200 bg-slate-50 text-slate-700'
-            }`}
+            className={`fc-auth-alert ${this.status === VerificationStatus.ERROR ? 'fc-auth__error' : 'fc-auth__notice'}`}
           >
             {this.message}
           </div>
@@ -59,7 +53,7 @@ export class VerifyEmailVerificationCard extends PureReactor {
 
         {this.status === VerificationStatus.SUCCESS ? (
           <p className="fc-auth-card-link-row">
-            <Link href="/login" className="fc-auth-inline-link">
+            <Link href="/login" className="fc-auth-inline-link fc-auth__link">
               {this.goToLoginLabel}
             </Link>
           </p>

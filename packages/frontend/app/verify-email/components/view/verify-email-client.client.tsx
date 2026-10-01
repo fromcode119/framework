@@ -154,22 +154,22 @@ export class VerifyEmailPage extends Reactor {
     const copy = this.copy;
     const recaptchaSiteKey = this.recaptchaSiteKey;
     return (
-      <main className="fc-auth-page fc-verify-email-page min-h-screen bg-slate-50 text-slate-900">
+      <main className="fc-auth-page fc-verify-email-page">
         {recaptchaSiteKey ? (
           <Script
             src={`https://www.google.com/recaptcha/api.js?render=${encodeURIComponent(recaptchaSiteKey)}`}
             strategy="afterInteractive"
           />
         ) : null}
-        <div className="fc-auth-shell mx-auto max-w-xl px-6 py-16">
-          <Link href="/" className="fc-auth-back-link">
+        <div className="fc-auth-shell fc-auth__stack">
+          <Link href="/" className="fc-auth-back-link fc-auth__link">
             {`← ${copy.backHome}`}
           </Link>
 
           <div className="fc-auth-hero">
             <p className="fc-auth-kicker">{copy.kicker}</p>
-            <h1 className="fc-auth-title">{copy.title}</h1>
-            <p className="fc-auth-description">
+            <h1 className="fc-auth-title fc-auth__title">{copy.title}</h1>
+            <p className="fc-auth-description fc-auth__subtitle">
               {copy.description}
             </p>
           </div>
@@ -205,9 +205,9 @@ export class VerifyEmailPage extends Reactor {
             onSubmit={this.resend}
           />
 
-          <p className="fc-auth-footer">
+          <p className="fc-auth-footer fc-auth__switch">
             {copy.noAccount}{' '}
-            <Link href="/register" className="fc-auth-footer-link">
+            <Link href="/register" className="fc-auth-footer-link fc-auth__link">
               {copy.register}
             </Link>
           </p>
