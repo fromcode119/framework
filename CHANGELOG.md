@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.291] - 2026-10-01
+
+### Added
+
+- **email**: plugins can read a mailbox — context.email.inbox ([#633](https://github.com/fromcode119/framework/pull/633))
+
+### Fixed
+
+- **deploy**: the frontend warm-up keeps Next's own hostname (re-lands #629) ([#637](https://github.com/fromcode119/framework/pull/637))
+
+### Reverted
+
+- a new frontend warms every site before it takes visitors (#629) ([#635](https://github.com/fromcode119/framework/pull/635))
+
 ## [0.2.290] - 2026-10-01
 
 ### Added
