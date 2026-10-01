@@ -150,10 +150,16 @@ export class IntegrationManager {
       this.instances.set(instanceKey, instance);
       return instance;
     } catch (error: any) {
-      this.logger.error(`Failed to get integration "${normalized}": ${error.message}`);
+      // Nothing configured is not a failure — callers of an optional one (`ai`) carry on without it.
+      if (await this.registry.isUnconfigured(normalized, preferStored)) {
+        this.logger.debug(`Integration "${normalized}" is not configured: ${error.message}`);
+      } else {
+        this.logger.error(`Failed to get integration "${normalized}": ${error.message}`);
+      }
       throw error;
     }
   }
+
 
   /** Cache key for a resolved instance: the request's tenant (empty for platform-level work) plus the type. */
   private instanceKey(normalizedType: string): string {

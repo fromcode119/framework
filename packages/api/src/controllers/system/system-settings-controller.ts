@@ -138,6 +138,15 @@ export class SystemSettingsController {
           minimumDays: SystemConstants.AUDIT_RETENTION_MIN_DAYS,
         });
       }
+      // A value outside the setting's declared range is refused, naming each key and what it accepts.
+      const outOfRange = SystemSettingRegistry.rangeViolations(preparedPayload);
+      if (outOfRange.length > 0) {
+        return res.status(400).json({
+          error: 'setting_out_of_range',
+          message: outOfRange.map((v) => `${v.key} must be ${v.max !== undefined ? `between ${v.min} and ${v.max}` : `at least ${v.min}`} (got ${String(v.value)}); leave it empty for the default.`).join(' '),
+          keys: outOfRange.map((v) => v.key),
+        });
+      }
       const timestamp = new Date();
 
       const actor = (req as any).user || {};

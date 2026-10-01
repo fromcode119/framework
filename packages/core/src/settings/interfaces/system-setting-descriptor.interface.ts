@@ -36,4 +36,10 @@ export interface ISystemSettingDescriptor {
    */
   platformAdminWrites?: boolean;
   seed?: { value: string | (() => string); description: string; group: string };
+  /**
+   * The numbers this setting accepts. A save outside it is refused with the reason — never stored, and
+   * never quietly clamped: a CPU share of 30200% is a limit that limits nothing. Empty stays allowed
+   * (it means "the declared default"). The admin's own field carries the same bounds.
+   */
+  range?: { min: number; max?: number };
 }
