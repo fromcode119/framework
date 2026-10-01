@@ -1,11 +1,12 @@
 import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
+import { Logger, PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 import { FrontendMetadataCachePolicy } from '@api/services/system/frontend-metadata-cache-policy';
 import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
+import { StepTimer } from '@api/services/system/step-timer';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -15,6 +16,10 @@ import { AdminSchemaLocalization } from '@api/services/system/admin-schema-local
  * other system controllers. Composed by SystemController with the same runtime.
  */
 export class SystemMetadataController {
+  /** A `/system/frontend` answer slower than this logs where its time went (StepTimer). */
+  static readonly SLOW_FRONTEND_METADATA_MS = 2_000;
+  private static readonly logger = new Logger({ namespace: 'system-frontend' });
+
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
   async getAdminMetadata(req: Request, res: Response) {
@@ -79,12 +84,18 @@ export class SystemMetadataController {
 
 
   async getFrontendMetadata(req: Request, res: Response) {
+    // Every storefront page waits on this answer; when it is slow, the log says which step was.
+    const steps = new StepTimer();
     const metadata = await this.runtime.themeManager.getFrontendMetadata(this.runtime.manager.getRuntimeModules());
+    steps.mark('theme');
     const adminMetadata = await this.runtime.manager.getAdminMetadata() as any;
+    steps.mark('adminMetadata');
     const publicSettings = await this.runtime.publicFrontendSettings.getSettings(this.runtime.db);
+    steps.mark('publicSettings');
     // Per-plugin, security-filtered settings (only fields flagged `public: true`) keyed by
     // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
     const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
+    steps.mark('pluginSettings');
     // Both axes (T2): a tenant's storefront lists — and server-renders with — only the plugins its site
     // runs. The frontend derives its render signature from this list, so two sites with different plugin
     // sets get different SSR worlds, and a plugin a site does not run never contributes a slot to its pages.
@@ -122,6 +133,7 @@ export class SystemMetadataController {
     };
     const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
     const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
+    steps.mark('renderLimits');
 
     // WHICH SITE this is and whether it is open yet. The storefront cannot ask the tenant table — it
     // has no tenant knowledge, it forwards a host and the api resolves — so the one payload it
@@ -131,6 +143,17 @@ export class SystemMetadataController {
     const site = tenantId
       ? await TenantResolverService.shared(this.runtime.db).resolveById(tenantId)
       : null;
+    steps.mark('site');
+    const preview = site && !site.isReadable ? await new SiteVisibilityGate(this.runtime.db).canPreview(site, req) : false;
+    const menu = (await AdminSchemaLocalization.forSite(this.runtime.manager)).menu(
+      Array.isArray(adminMetadata?.menu)
+        ? adminMetadata.menu
+        : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
+      (slug) => String((adminMetadata?.plugins || []).find((plugin: any) => plugin?.slug === slug)?.admin?.label || ''),
+    );
+    steps.mark('menu');
+    const slow = steps.slowReport(SystemMetadataController.SLOW_FRONTEND_METADATA_MS);
+    if (slow) SystemMetadataController.logger.warn(`Slow /system/frontend for ${String(req.headers['x-forwarded-host'] || req.headers.host || '')}: ${slow}`);
 
     // A private site's answer is not cacheable at the edge: it changes the moment somebody presses
     // Publish, and a cached "closed" would outlive the decision. A console request is never shared
@@ -159,17 +182,12 @@ export class SystemMetadataController {
           // is cached at the edge for everyone; a per-caller answer inside it would be served to the
           // next anonymous visitor, who would then be told a published site is private. A closed
           // site's payload is `no-store` (below), which is what makes a per-caller field safe there.
-          preview: site.isReadable ? false : await new SiteVisibilityGate(this.runtime.db).canPreview(site, req),
+          preview,
         }
         : null,
       // The admin's navigation, in the console's language — the admin reads its menu from this payload
       // too, so leaving it as declared put the plugins' entries back into English.
-      menu: (await AdminSchemaLocalization.forSite(this.runtime.manager)).menu(
-        Array.isArray(adminMetadata?.menu)
-          ? adminMetadata.menu
-          : (Array.isArray((metadata as any)?.menu) ? (metadata as any).menu : []),
-        (slug) => String((adminMetadata?.plugins || []).find((plugin: any) => plugin?.slug === slug)?.admin?.label || ''),
-      ),
+      menu,
       plugins,
       publicSettings,
       settings: pluginPublicSettings,

@@ -2,6 +2,7 @@
 
 import express from 'express';
 import { ApiOutcomeCounter, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
+import { DatabasePoolWatch } from '@api/server/database-pool-watch';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
@@ -43,6 +44,8 @@ export class ServerMiddlewareSetup {
     this.app.use(new SecurityHeadersMiddleware().middleware());
     // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
     this.app.use((req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode, req.method, req.originalUrl)); next(); });
+    // Requests queued for a database connection look idle from everywhere else (DatabasePoolWatch).
+    new DatabasePoolWatch().start();
 
     // Gzip for anonymous public JSON GETs (e.g. /system/frontend) — BREACH-scoped:
     // requests carrying auth credentials are never compressed. See the middleware class.

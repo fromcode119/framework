@@ -1,6 +1,6 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
-import { Client, Pool } from 'pg';
+import { Client, type Pool } from 'pg';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
 import { pgTable, text } from 'drizzle-orm/pg-core';
@@ -14,7 +14,6 @@ import { PostgresSchemaBuilder } from '@database/dialects/postgres/schema-builde
 import { PostgresReadOperations } from '@database/dialects/postgres/read-operations';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
-import { PostgresTenantSession } from '@database/dialects/postgres/tenant/tenant-session';
 import { PostgresTenantIsolation } from '@database/dialects/postgres/tenant/tenant-isolation';
 import { PostgresDeclaredUniqueReconciler } from '@database/dialects/postgres/declared-unique-reconciler';
 import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgres/declared-nullability-reconciler';
@@ -23,6 +22,7 @@ import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/
 import { PostgresPointInTimeColumnReconciler } from '@database/dialects/postgres/point-in-time-column-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
 import { PlatformPool } from '@database/tenant/platform-pool';
+import { PostgresPoolFactory } from '@database/dialects/postgres/postgres-pool-factory';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -107,13 +107,7 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   constructor(private readonly connectionString: string) {
     super();
-    this.pool = new Pool({ connectionString });
-    // Every physical connection starts in its pool's SIGNED resting state — `none` for the request pool,
-    // `platform` for the DDL pool (markAsPlatformConnection) — decided when it connects, so the mark set
-    // after construction still applies. Unsigned, a connection sees nothing (TenantBindingSql).
-    this.pool.on('connect', (client: any) => {
-      PostgresTenantSession.markResting(client, PlatformPool.marks(this.pool));
-    });
+    this.pool = PostgresPoolFactory.open(connectionString);
     this.drizzle = drizzle(this.pool);
     this.normalizer = new PostgresColumnNormalizer(this.pool);
     this.schemaBuilder = new PostgresSchemaBuilder(this);

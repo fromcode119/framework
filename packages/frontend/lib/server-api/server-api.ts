@@ -1,3 +1,4 @@
+import { ServerApiInflight } from '@/lib/server-api/server-api-inflight';
 import { SystemConstants, ApiVersionUtils, CookieConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { cookies, headers } from 'next/headers';
@@ -104,7 +105,7 @@ export class ServerApiUtils {
       const timeout = setTimeout(() => controller.abort(), ServerApiConfig.SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
-        const response = await fetch(url, { cache: 'no-store', signal: controller.signal, headers: forwardedHeaders });
+        const response = await ServerApiInflight.track(() => fetch(url, { cache: 'no-store', signal: controller.signal, headers: forwardedHeaders }));
         if (!response.ok) {
           // Only a status that is a real answer (404, 403, …) counts as "the API says there is
           // nothing here". A 429/5xx means it could not serve us — never treat that as absence.
@@ -113,6 +114,7 @@ export class ServerApiUtils {
           } else {
             lastError = new Error(`API responded ${response.status} ${response.statusText}`.trim());
           }
+          await ServerApiUtils.discard(response);
           continue;
         }
         answered = true;
@@ -159,22 +161,26 @@ export class ServerApiUtils {
       const timeout = setTimeout(() => controller.abort(), ServerApiConfig.SERVER_FETCH_TIMEOUT_MS);
       try {
         const url = /^https?:\/\//i.test(requestPath) ? requestPath : `${prefix}${requestPath}`;
-        const response = await fetch(url, {
+        const response = await ServerApiInflight.track(() => fetch(url, {
           ...requestInit,
           cache: requestInit?.cache ?? 'no-store',
           signal: controller.signal,
           headers: ServerApiUtils.mergeHeaders(forwardedHeaders, requestInit?.headers),
-        });
+        }));
         if (!response.ok) {
+          // Only the response handed back is read by anyone; every other one is released here.
+          if (lastResponse) await ServerApiUtils.discard(lastResponse);
           lastResponse = response;
           // A 429/5xx is not an answer about this document — keep looking, and if no prefix ever
           // answers, report unreachable rather than handing back a status callers read as "absent".
           if (ServerApiErrors.isUnavailableStatus(response.status)) {
             lastError = new Error(`API responded ${response.status} ${response.statusText}`.trim());
+            await ServerApiUtils.discard(response);
             lastResponse = null;
           }
           continue;
         }
+        if (lastResponse) await ServerApiUtils.discard(lastResponse);
         return ServerFetchOutcome.resolved<Response>(response);
       } catch (error) {
         ServerApiErrors.rethrowIfControlFlowSignal(error);
@@ -236,12 +242,12 @@ export class ServerApiUtils {
       // Same forwarded headers as the other two paths. This one bypassed the builder, so the
       // internal fetch — the one `/system/frontend` prefers — carried no host and was the first to 404.
       const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();
-      const response = await fetch(`${baseUrl}${normalizedPath}`, {
+      const response = await ServerApiInflight.track(() => fetch(`${baseUrl}${normalizedPath}`, {
         ...requestInit,
         cache: requestInit?.cache ?? 'no-store',
         signal: controller.signal,
         headers: ServerApiUtils.mergeHeaders(forwardedHeaders, requestInit?.headers),
-      });
+      }));
       return ServerFetchOutcome.resolved<Response>(response);
     } catch (error) {
       ServerApiErrors.rethrowIfControlFlowSignal(error);
@@ -250,6 +256,15 @@ export class ServerApiUtils {
     } finally {
       clearTimeout(timeout);
     }
+  }
+
+  /**
+   * Releases a response nobody will read. An unread body keeps its connection to the api checked
+   * out until the garbage collector finds it, so every 404 or 5xx a fallback loop moved past held a
+   * socket the next request could have reused.
+   */
+  static async discard(response: Response): Promise<void> {
+    await response.body?.cancel().catch(() => undefined);
   }
 
   private static AdminUrlUtils(path: unknown): string | null {
