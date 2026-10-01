@@ -6,17 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
-## [0.2.273] - 2026-09-30
+## [0.2.274] - 2026-10-01
 
-### Added
+### Fixed
 
-- **core**: hold site plugins to a share of the machine; context.fetch reaches only the public internet ([#576](https://github.com/fromcode119/framework/pull/576))
+- **plugins**: context.email is typed as what it really is ([#579](https://github.com/fromcode119/framework/pull/579))
+- **auth**: a logout that cannot revoke its session is logged, not swallowed ([#583](https://github.com/fromcode119/framework/pull/583))
+
+### Performance
+
+- **plugins**: anonymous response cache, path-scoped plugin middleware, less per-request work ([#578](https://github.com/fromcode119/framework/pull/578))
+
+## [0.2.273] - 2026-10-01
 
 ### Fixed
 
 - **deps**: upgrade packages with known critical and high vulnerabilities ([#575](https://github.com/fromcode119/framework/pull/575))
 - **security**: send the security headers the api and storefront were missing ([#580](https://github.com/fromcode119/framework/pull/580))
 - **api**: an origin CORS refuses gets no allow headers, not a 500 ([#577](https://github.com/fromcode119/framework/pull/577))
+
+## [0.2.272] - 2026-09-30
+
+### Added
+
+- **core**: hold site plugins to a share of the machine; context.fetch reaches only the public internet ([#576](https://github.com/fromcode119/framework/pull/576))
 
 ## [0.2.271] - 2026-09-30
 
