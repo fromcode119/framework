@@ -22,7 +22,8 @@ export abstract class IntegrationsSettingsPageReconcile extends IntegrationsSett
 
   protected reconcileActiveType(): void {
     const { integrations, queryType, activeType } = this;
-    if (!integrations.length) return;
+    // The page is showing where that type lives; rewriting the URL to another type would hide it.
+    if (!integrations.length || this.platformOnlyType) return;
 
     const key = IntegrationReconciler.activeTypeKey(integrations, queryType, activeType);
     if (key === this.prevReconcileKey) return;

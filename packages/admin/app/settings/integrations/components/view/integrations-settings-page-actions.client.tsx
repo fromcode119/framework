@@ -26,7 +26,9 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
         .filter((doc: any) => doc && typeof doc.key === 'string')
         .sort((a: IIntegrationRecord, b: IIntegrationRecord) => a.label.localeCompare(b.label));
       IntegrationsPageUtils.hydrateFieldTypes(sorted);
+      const platformOnlyType = await this.findPlatformOnlyType(sorted);
       if (!this.mounted) return;
+      this.platformOnlyType = platformOnlyType;
       this.integrations = sorted;
       if (!sorted.length) {
         this.activeType = '';
@@ -48,6 +50,22 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       });
     } finally {
       if (this.mounted) this.loading = false;
+    }
+  }
+
+  /**
+   * A requested type this site's list does not carry may be one only the platform has (monitoring). Ask
+   * for it: the api refuses a platform-only type with its label, so the page can say where it lives and
+   * offer the switch instead of quietly opening the first type in the list.
+   */
+  private async findPlatformOnlyType(listed: IIntegrationRecord[]): Promise<{ key: string; label: string } | null> {
+    const queryType = this.queryType;
+    if (!queryType || listed.some((integration) => integration.key === queryType)) return null;
+    try {
+      await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.INTEGRATION(queryType));
+      return null;
+    } catch (error: any) {
+      return error?.data?.error === 'platform_only_integration' ? { key: queryType, label: String(error.data.label || queryType) } : null;
     }
   }
 

@@ -10,6 +10,7 @@ import { IntegrationEmptyState } from '@/app/settings/integrations/integration-e
 import { Platform } from '@fromcode119/react-class-components';
 import { IntegrationsSettingsPageActions } from '@/app/settings/integrations/components/view/integrations-settings-page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 
 /**
  * The integrations settings screen.
@@ -73,6 +74,10 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           <Loader label={AdminI18n.t('settings.integrations.loadingIntegrationProviders')} />
         </div>
       );
+    }
+
+    if (this.platformOnlyType) {
+      return <div className="p-8 lg:p-12"><PlatformScopeGate what={this.platformOnlyType.label}>{null}</PlatformScopeGate></div>;
     }
 
     if (!integrations.length) {

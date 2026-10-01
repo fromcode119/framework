@@ -121,7 +121,8 @@ export class SystemIntegrationController {
     if (!RequestContextUtils.getTenantId()) return false;
     const summary = await this.runtime.manager.integrations.getConfig(CoercionUtils.toString(req.params.type));
     if (!summary?.platformOnly) return false;
-    res.status(403).json({ error: 'platform_only_integration' });
+    // The label lets a bookmarked link opened inside a site say WHICH screen lives on the platform.
+    res.status(403).json({ error: 'platform_only_integration', label: summary.label });
     return true;
   }
 }
