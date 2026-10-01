@@ -116,6 +116,8 @@ jobs:
         env:
           TENANT_TEST_DATABASE_URL: postgresql://fromcode_app:app_ci_only@127.0.0.1:5432/fromcode
           TENANT_TEST_OWNER_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
+          # The own query layer's rows compared with Drizzle's; the suite creates and drops its own table.
+          DB_READ_TEST_DATABASE_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
           QUEUE_TEST_REDIS_URL: redis://127.0.0.1:6379
           REDIS_TEST_URL: redis://127.0.0.1:6379
           MYSQL_TEST_URL: mysql://root:rootpw@127.0.0.1:3306/mysql
