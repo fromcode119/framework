@@ -47,6 +47,9 @@ export class MonitoringIntegrationDefinition {
       MonitoringIntegrationDefinition.provider('email', 'Email', 'Incidents to the platform admins and the notification address in Settings → General.', []),
       MonitoringIntegrationDefinition.provider('uptimerobot', 'UptimeRobot', 'Watches every site from outside and alerts through your UptimeRobot alert contacts, even when the whole server is down.', [
         { name: 'apiKey', label: 'Main API key', type: IntegrationConfigFieldType.PASSWORD, required: true, description: 'UptimeRobot → Integrations & API → Main API key.' },
+        // Sent with every monitor it creates: left to UptimeRobot, a new account's default is a paid-plan
+        // interval, and the free plan refuses the monitor ("not allowed to use some settings").
+        { name: 'interval', label: 'Check every (seconds)', type: IntegrationConfigFieldType.NUMBER, required: true, defaultValue: '300', description: 'How often UptimeRobot checks each address. The free plan allows 300 or more; shorter needs a paid plan.' },
         MonitoringIntegrationDefinition.namePrefixField,
       ]),
       MonitoringIntegrationDefinition.provider('betterstack', 'Better Stack', 'Watches every site from outside and alerts through your Better Stack on-call settings, even when the whole server is down.', [

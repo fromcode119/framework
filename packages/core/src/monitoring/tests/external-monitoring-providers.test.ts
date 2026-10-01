@@ -36,6 +36,20 @@ describe('UptimeRobotMonitoringProvider', () => {
     expect(calls.every((c) => c.params.api_key === 'key-1')).toBe(true);
   });
 
+  it('creates each monitor at the configured check interval, which the free plan requires to be 300 or more', async () => {
+    const created: Array<Record<string, string>> = [];
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
+      const method = url.split('/').pop()!;
+      if (method === 'newMonitor') created.push(Object.fromEntries(new URLSearchParams(init.body)));
+      return { ok: true, status: 200, json: async () => (method === 'getMonitors' ? { stat: 'ok', monitors: [] } : { stat: 'ok' }) };
+    }));
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ', 300).syncTargets(targets);
+    expect(created.map((c) => c.interval)).toEqual(targets.map(() => '300'));
+    created.length = 0;
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
+    expect(created.every((c) => !('interval' in c))).toBe(true);
+  });
+
   it('fails loudly on an API error rather than reporting a sync that did not happen', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ stat: 'fail', error: { message: 'api_key is wrong' } }) })));
     await expect(new UptimeRobotMonitoringProvider('bad', 'Platform: ').syncTargets(targets)).rejects.toThrow(/api_key is wrong/);
