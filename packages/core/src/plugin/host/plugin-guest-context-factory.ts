@@ -8,6 +8,7 @@ import { PluginGuestState } from '@core/plugin/host/plugin-guest-state';
 import { PluginGuestApiFactory } from '@core/plugin/host/plugin-guest-api-factory';
 import { PluginGuestLocals } from '@core/plugin/host/plugin-guest-locals';
 import { PluginGuestSettings } from '@core/plugin/host/plugin-guest-settings';
+import { PluginGuestMemo } from '@core/plugin/host/plugin-guest-memo';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
@@ -85,6 +86,8 @@ export class PluginGuestContextFactory {
       context[name] = ctx(name);
     }
     context.settings = new PluginGuestSettings(context.settings as Record<string, any>).proxy();
+    // Kept here, in the plugin's own process — never a call back to the api (PluginGuestSiteCache).
+    context.memo = new PluginGuestMemo().api();
     return context as unknown as PluginContext;
   }
 

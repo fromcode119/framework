@@ -11,6 +11,7 @@ import { DatabaseContextProxy } from '@core/plugin/context/database';
 import { IntegrationsContextProxy } from '@core/plugin/context/integrations';
 import { McpContextProxy } from '@core/plugin/context/mcp';
 import { JobsContextProxy } from '@core/plugin/context/jobs';
+import { MemoContextProxy } from '@core/plugin/context/memo';
 import { SchedulerContextProxy } from '@core/plugin/context/scheduler';
 import { CollectionsContextProxy } from '@core/plugin/context/collections';
 import { I18nContextProxy } from '@core/plugin/context/i18n';
@@ -165,6 +166,7 @@ export class PluginContextFactory {
           }
         },
         jobs: JobsContextProxy.createJobsProxy(plugin, manager, security) as any,
+        memo: MemoContextProxy.createMemoProxy(),
         scheduler: SchedulerContextProxy.createSchedulerProxy(plugin, manager, security),
         logger: {
           info: (msg: string, ...meta: unknown[]) => {

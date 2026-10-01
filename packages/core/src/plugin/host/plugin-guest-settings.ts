@@ -1,4 +1,5 @@
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
+import { PluginGuestSiteCache } from '@core/plugin/host/plugin-guest-site-cache';
 
 /**
  * `context.settings` for an isolated plugin, reading each answer once per site and content revision.
@@ -16,11 +17,8 @@ import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
  * caller receives its own copy, as it did from the api.
  */
 export class PluginGuestSettings {
-  /** Kept reads stay few: one per site and argument list, under the current revision. */
-  private static readonly MAX_KEPT = 256;
-
   private readonly reads = new WeakMap<object, Map<string, Promise<unknown>>>();
-  private readonly kept = new Map<string, { read: Promise<unknown>; at: number }>();
+  private readonly kept = new PluginGuestSiteCache();
 
   constructor(private readonly base: Record<string | symbol, any>) {}
 
@@ -46,7 +44,7 @@ export class PluginGuestSettings {
     const key = JSON.stringify(args);
     let read = reads.get(key);
     if (!read) {
-      read = this.keptRead(invocation, key, args);
+      read = this.kept.read(`settings\u0000${key}`, () => this.base.get(...args));
       reads.set(key, read);
       // A failed read is not an answer: the next caller asks again.
       read.catch(() => { if (reads!.get(key) === read) reads!.delete(key); });
@@ -54,33 +52,12 @@ export class PluginGuestSettings {
     return structuredClone(await read);
   }
 
-  private keptRead(invocation: { tenantId: string | null; revision?: string; cacheMaxAgeMs?: number }, key: string, args: unknown[]): Promise<unknown> {
-    const maxAgeMs = Number(invocation.cacheMaxAgeMs) || 0;
-    if (!invocation.revision || !(maxAgeMs > 0)) return Promise.resolve(this.base.get(...args));
-    const keptKey = `${PluginGuestSettings.site(invocation.tenantId)}${invocation.revision}\u0000${key}`;
-    const now = Date.now();
-    const kept = this.kept.get(keptKey);
-    if (kept && now - kept.at < maxAgeMs) return kept.read;
-    const read = Promise.resolve(this.base.get(...args));
-    if (this.kept.size >= PluginGuestSettings.MAX_KEPT) this.kept.delete(this.kept.keys().next().value as string);
-    this.kept.set(keptKey, { read, at: now });
-    read.catch(() => { if (this.kept.get(keptKey)?.read === read) this.kept.delete(keptKey); });
-    return read;
-  }
-
   private update(args: unknown[]): unknown {
     const invocation = PluginGuestRemote.invocation.getStore();
-    if (invocation) {
-      this.reads.delete(invocation);
-      // The save moves the site's revision on the api; until a request carries the new one, nothing kept
-      // for this site under the old one may answer it.
-      const site = PluginGuestSettings.site(invocation.tenantId);
-      for (const keptKey of [...this.kept.keys()]) if (keptKey.startsWith(site)) this.kept.delete(keptKey);
-    }
+    if (invocation) this.reads.delete(invocation);
+    // The save moves the site's revision on the api; until a request carries the new one, nothing kept
+    // for this site under the old one may answer it.
+    this.kept.forgetCurrentSite();
     return this.base.update(...args);
-  }
-
-  private static site(tenantId: string | null): string {
-    return `${tenantId ?? ''}\u0000`;
   }
 }
