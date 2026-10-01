@@ -11,8 +11,6 @@ import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
-import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
-import { PostgresKnownTables } from '@database/dialects/postgres/postgres-known-tables';
 
 /**
  * PostgresReadOperations - SELECT / count read path for the Postgres manager.
@@ -40,8 +38,6 @@ export class PostgresReadOperations extends BaseDialect {
   }
   private normalizer: PostgresColumnNormalizer;
   public readonly like: any;
-  private readonly tables = new PostgresKnownTables(() => this.orm);
-  private ownStatements: PostgresTableStatements | null = null;
 
   constructor(pool: Pool, drizzle: any, normalizer: PostgresColumnNormalizer, like: any) {
     super();
@@ -110,6 +106,31 @@ export class PostgresReadOperations extends BaseDialect {
     return result.rows;
   }
 
+  /**
+   * Tables seen to exist. The first-boot guard below asked the catalog before EVERY read — half of all
+   * statements a request ran. A table that exists keeps existing; one that did not may be created later,
+   * so only "yes" is remembered, and a read that finds a remembered table gone forgets it (see `dropped`).
+   */
+  private readonly knownTables = new Set<string>();
+
+  private static readonly UNDEFINED_TABLE = '42P01';
+
+  private async tableExists(tableName: string): Promise<boolean> {
+    if (this.knownTables.has(tableName)) return true;
+    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
+    const result: any = await this.orm.execute(query);
+    const exists = (result.rows[0]?.total || 0) > 0;
+    if (exists) this.knownTables.add(tableName);
+    return exists;
+  }
+
+  /** True when `error` says a remembered table no longer exists; the table is forgotten, as the guard would answer. */
+  private dropped(error: unknown, tableName: string): boolean {
+    if ((error as { code?: unknown } | null)?.code !== PostgresReadOperations.UNDEFINED_TABLE) return false;
+    this.knownTables.delete(tableName);
+    return true;
+  }
+
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     const { limit, offset, orderBy, where, columns, joins, search } = options;
 
@@ -118,7 +139,7 @@ export class PostgresReadOperations extends BaseDialect {
       const tableName = tableOrName;
 
       // Guard against querying tables that haven't been created yet (first boot).
-      if (!(await this.tables.exists(tableName))) {
+      if (!(await this.tableExists(tableName))) {
         return [];
       }
 
@@ -154,37 +175,12 @@ export class PostgresReadOperations extends BaseDialect {
         const result = await this.executor.query(sqlQuery, values);
         return result.rows;
       } catch (error) {
-        if (this.tables.dropped(error, tableName)) return [];
+        if (this.dropped(error, tableName)) return [];
         throw error;
       }
     }
 
-    // A whole-table read (the collection API's): assembled once per table, not by the builder each time.
-    const wholeTable = !(columns && Object.keys(columns).length > 0) && !(joins && joins.length > 0) && !search;
-    if (wholeTable && PostgresTableStatements.mode() !== 'drizzle') {
-      const orderExprs = this.buildOrderBy(orderBy);
-      const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
-      const parts = { where: this.wholeTableWhere(where, tableOrName), orderBy: orderList, limit, offset };
-      return this.tableStatements.find(this.executor, tableOrName, parts, () => this.builderQuery(tableOrName, options));
-    }
-    return await this.builderQuery(tableOrName, options);
-  }
-
-  private get tableStatements(): PostgresTableStatements {
-    return (this.ownStatements ??= new PostgresTableStatements(this.drizzle.dialect));
-  }
-
-  /** The filter exactly as the builder applies it: the parsed conditions, else a caller's own SQL fragment. */
-  private wholeTableWhere(where: any, table: any): any {
-    const conditions = this.buildWhereConditions(where, table);
-    if (conditions.length > 0) return and(...conditions);
-    const isPlain = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    return where && (!isPlain || Object.keys(where).length > 0) ? where : undefined;
-  }
-
-  /** Drizzle's query builder: explicit columns, joins, search — and every read under DB_READ_PATH=drizzle. */
-  private builderQuery(tableOrName: any, options: any): any {
-    const { limit, offset, orderBy, where, columns, joins, search } = options;
+    // Otherwise use Drizzle for typed table objects
     let query: any;
 
     if (columns && Object.keys(columns).length > 0) {
@@ -206,17 +202,20 @@ export class PostgresReadOperations extends BaseDialect {
 
     const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
     const conditions = this.buildWhereConditions(where, tableOrName);
-    if (conditions.length === 0 && where && (!isPlainWhere || Object.keys(where).length > 0)) conditions.push(where);
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
+      query = query.where(where);
+    }
 
-    // ANDed with the filter: a second `.where()` replaces the first in Drizzle, so a search used to drop it.
     if (search && search.columns.length > 0 && search.value) {
         const pattern = `%${search.value}%`;
         const likeConditions = search.columns.map((col: string) =>
             this.like(this.resolveColumn(col, tableOrName), pattern)
         );
-        conditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
+        const searchExpr = likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions);
+        query = query.where(searchExpr);
     }
-    if (conditions.length > 0) query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
 
     const orderExprs = this.buildOrderBy(orderBy);
     if (orderExprs) {
@@ -226,11 +225,11 @@ export class PostgresReadOperations extends BaseDialect {
     if (limit) query = query.limit(limit);
     if (offset) query = query.offset(offset);
 
-    return query;
+    return await query;
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { joins } = options;
+    const { where, joins, search } = options;
     const isString = typeof tableOrName === 'string';
 
     // Guard: if given a string table name, skip the query entirely when the
@@ -238,20 +237,10 @@ export class PostgresReadOperations extends BaseDialect {
     // this guard, Postgres emits ERROR-level log entries for every
     // not-yet-synced plugin collection even though the caller catches the
     // exception.
-    if (isString && !(await this.tables.exists(tableOrName))) {
+    if (isString && !(await this.tableExists(tableOrName))) {
       return 0;
     }
 
-    if (!isString && !(joins && joins.length > 0) && PostgresTableStatements.mode() !== 'drizzle') {
-      const whereFragment = this.wholeTableWhere(options.where, tableOrName);
-      return this.tableStatements.count(this.executor, tableOrName, whereFragment, () => this.builderCount(tableOrName, options));
-    }
-    return this.builderCount(tableOrName, options);
-  }
-
-  private async builderCount(tableOrName: any, options: any): Promise<number> {
-    const { where, joins, search } = options;
-    const isString = typeof tableOrName === 'string';
     const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
 
     let query = this.orm.select({ total: drizzleCount() }).from(tableIdentifier);
@@ -285,7 +274,7 @@ export class PostgresReadOperations extends BaseDialect {
       const [result] = await query;
       return Number(result?.total || 0);
     } catch (error) {
-      if (isString && this.tables.dropped(error, tableOrName)) return 0;
+      if (isString && this.dropped(error, tableOrName)) return 0;
       throw error;
     }
   }
