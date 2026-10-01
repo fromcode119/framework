@@ -84,6 +84,7 @@ describe('site plugin runtime allowlist', () => {
       PluginGuestRegistrationKind.MCP_TOOLS,
       PluginGuestRegistrationKind.GATE,
       PluginGuestRegistrationKind.CANONICAL_PATH,
+      PluginGuestRegistrationKind.MIDDLEWARE,
     ]) {
       expect(() => TenantPluginRuntimePolicy.assertRegistration('local-probe', { kind: String(kind.value) }))
         .toThrow(/site-uploaded plugin/);
@@ -92,7 +93,7 @@ describe('site plugin runtime allowlist', () => {
 
   it('allows route, hook, and scoped schema declarations only', () => {
     PluginOwners.record('local-probe', 'site-a');
-    for (const kind of [PluginGuestRegistrationKind.ROUTE, PluginGuestRegistrationKind.HOOK]) {
+    for (const kind of [PluginGuestRegistrationKind.ROUTE, PluginGuestRegistrationKind.USE, PluginGuestRegistrationKind.HOOK]) {
       expect(() => TenantPluginRuntimePolicy.assertRegistration('local-probe', { kind: String(kind.value) })).not.toThrow();
     }
     expect(() => TenantPluginRuntimePolicy.assertRegistration('local-probe', {

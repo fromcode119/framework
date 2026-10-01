@@ -44,6 +44,16 @@ None of this needs configuring; it holds for every plugin a site uploads.
   internet addresses — never the database, the cache, the platform's own API, or a cloud provider's
   metadata address — checked on the address the connection actually uses and again on every redirect.
 
+**It cannot get between its own site and that site's visitors.**
+
+- It answers only on its own routes. It cannot register middleware, so it never sees a request meant
+  for anything else on its site — the sign-in form, checkout, account pages or another plugin.
+- It hears what happens on its site but cannot change it. When the platform or another plugin raises
+  an event (an order about to be saved, a page about to render, someone signing in), a site's plugin
+  receives a copy with passwords, tokens, keys and session ids replaced by `[redacted]`. Its answer is
+  discarded, and the platform does not wait for it, so a slow or failing plugin cannot hold up the site.
+  Only for events it raises itself (`<its-slug>:…`) does its answer count.
+
 **It cannot take over the admin or its visitors.**
 
 - It cannot inject scripts into the admin or the storefront: the admin runs under a strict

@@ -14,6 +14,7 @@ import type { PluginContext } from '@core/plugin/plugin-context';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
+import { SitePluginHookDelivery } from '@core/plugin/tenant/site-plugin-hook-delivery';
 import { PluginHostDeclaredRoutes } from '@core/plugin/host/plugin-host-declared-routes';
 
 /**
@@ -171,7 +172,8 @@ export class PluginHostRegistrations {
   private standIn(id: string, event: string): (payload: unknown, ev: string) => unknown {
     return (payload: unknown, ev: string) => {
       if (event === PluginHostState.PLUGINS_READY_EVENT && !this.isRunning()) return undefined;
-      return this.invoke('hook', id, [payload, ev], RequestContextUtils.storage.getStore());
+      const store = RequestContextUtils.storage.getStore();
+      return SitePluginHookDelivery.deliver(this.slug, ev || event, payload, (delivered) => this.invoke('hook', id, [delivered, ev], store));
     };
   }
 
