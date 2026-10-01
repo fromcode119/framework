@@ -98,7 +98,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.channel = null;
     this.guest = null;
     this.generation = null;
-    this.describeResult = null; this.sentPeerSignature = '';
+    this.describeResult = null; this.sentPeerSignatures = new Map();
     // Mid-replacement the tokens in the map also belong to the process taking over; they must live.
     if (!this.restarting) this.tokens.revokeAll();
     if (this.stopping || this.restarting) return;
@@ -208,7 +208,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.socketPath = generation.socketPath;
     this.proxy.retarget(this.socketPath);
     this.describeResult = generation.described;
-    this.sentPeerSignature = '';
+    this.sentPeerSignatures = new Map();
     // A guest that stays up for a minute has earned its restart budget back: three failures in a
     // lifetime is a broken plugin, three failures a week apart is not.
     if (this.healthyTimer) clearTimeout(this.healthyTimer);
@@ -270,14 +270,17 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     const peers = this.peers(store);
     const enabledPlugins = this.enabledPlugins(store);
     const signature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
-    if (signature === this.sentPeerSignature) return;
-    await this.channel.request(String(PluginChannelMessage.PEERS.value), { peers, enabledPlugins }, this.limits.timeoutMs);
-    this.sentPeerSignature = signature;
+    // Per SITE: one site's snapshot sent over another's made the guest answer a concurrent request of
+    // the first site with the second's peers ("Missing required dependency" on a site that has it).
+    const tenantId = String(store?.tenantId ?? '').trim() || null;
+    if (signature === this.sentPeerSignatures.get(tenantId ?? '')) return;
+    await this.channel.request(String(PluginChannelMessage.PEERS.value), { peers, enabledPlugins, tenantId }, this.limits.timeoutMs);
+    this.sentPeerSignatures.set(tenantId ?? '', signature);
   }
 
-  /** Records what an invocation envelope already told the guest, so `syncPeers` does not repeat it. */
-  protected rememberPeerSignature(peers: Record<string, string[]>, enabledPlugins: string[]): void {
-    this.sentPeerSignature = PluginHostGuestBridge.peerSignature(peers, enabledPlugins);
+  /** Records what an invocation envelope already told the guest for its site, so `syncPeers` does not repeat it. */
+  protected rememberPeerSignature(peers: Record<string, string[]>, enabledPlugins: string[], tenantId: string | null): void {
+    this.sentPeerSignatures.set(tenantId ?? '', PluginHostGuestBridge.peerSignature(peers, enabledPlugins));
   }
 
   /**

@@ -60,7 +60,7 @@ export class PluginHost extends PluginHostGenerations {
     this.tokens = new PluginInvocationTokens();
     this.socketPath = ''; this.guest = null; this.channel = null; this.context = null; this.generation = null; this.generationCount = 0;
     this.describeResult = null;
-    this.sentPeerSignature = ''; this.restarts = 0; this.stopping = false; this.restarting = false;
+    this.sentPeerSignatures = new Map(); this.restarts = 0; this.stopping = false; this.restarting = false;
     this.healthyTimer = null; this.wasEnabled = false; this.initDeferred = false; this.takenOver = null;
     this.settings = settings;
     this.limits = settings.forPlugin(manifest.sandbox, Boolean(PluginOwners.ownerOf(slug)));
@@ -172,7 +172,7 @@ export class PluginHost extends PluginHostGenerations {
     this.channel = null;
     this.generation = null;
     this.describeResult = null;
-    this.sentPeerSignature = '';
+    this.sentPeerSignatures = new Map();
     this.tokens.revokeAll();
   }
 
@@ -193,7 +193,7 @@ export class PluginHost extends PluginHostGenerations {
         peers: this.peers(store),
         enabledPlugins: this.enabledPlugins(store),
       };
-      this.rememberPeerSignature(invocation.peers, invocation.enabledPlugins);
+      this.rememberPeerSignature(invocation.peers, invocation.enabledPlugins, invocation.tenantId);
       // About to wait on another process: hand the request's database connection back first. Held
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
