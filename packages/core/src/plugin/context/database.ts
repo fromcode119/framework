@@ -205,7 +205,7 @@ export class DatabaseContextProxy {
               DatabaseWriteAudit.logWrite(manager, plugin.manifest.slug, 'execute', tablePrefix, undefined);
               // Raw SQL may write anything: the site's rendered pages are no longer known to be current.
               SiteContentRevision.bumpCurrentSite();
-              return executeFn.apply(this, args);
+              return SiteContentRevision.afterWrite(executeFn.apply(this, args));
             };
           }
 
@@ -270,7 +270,8 @@ export class DatabaseContextProxy {
                 return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
               }
               const scoped = DatabaseContextProxy.injectTenant(prop, includeArchived ? args : ArchivedRowFilter.apply(prop, args, manager));
-              const out = fn.apply(this, EnumValueCoercion.coerceArguments(scoped));
+              const applied = fn.apply(this, EnumValueCoercion.coerceArguments(scoped));
+              const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) ? SiteContentRevision.afterWrite(applied) : applied;
               if (shouldDenormalize) {
                 const postProcess = (rows: any) => (resolveLocalized
                   ? DatabaseContextProxy.postProcessResult(rows, table, manager)

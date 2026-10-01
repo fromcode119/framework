@@ -58,4 +58,15 @@ export class SiteContentRevision {
     if (tenantId) SiteContentRevision.bump(tenantId);
     else if (!TenantMode.isEnabled()) SiteContentRevision.bump(null);
   }
+
+  /**
+   * Bumps again once a write has landed. A bump made only BEFORE the write let a read that ran in
+   * between see the old rows under the NEW revision — and a cache keyed on the revision (a kept answer,
+   * a plugin's kept settings) then held that old answer as if it were current. Each statement commits on
+   * its own (no transaction spans a plugin's request), so "resolved" means visible.
+   */
+  static afterWrite<T>(result: T): T {
+    if (!result || typeof (result as any).then !== 'function') return result;
+    return (result as any).then((value: unknown) => { SiteContentRevision.bumpCurrentSite(); return value; });
+  }
 }
