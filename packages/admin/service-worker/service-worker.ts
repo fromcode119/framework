@@ -16,6 +16,8 @@
  * rule next-build-codegen applies to Next's route exports, so the only hand-written export here is `export class`.
  */
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
+// Deep import: the worker must not pull the core barrel (and its server code) into its bundle.
+import { PushNotificationWorker } from '@fromcode119/core/push/push-notification-worker';
 
 export class AdminServiceWorker {
   /**
@@ -80,5 +82,8 @@ export class AdminServiceWorker {
       if (AdminServiceWorker.isNetworkOnly(new URL(request.url))) return;
       event.respondWith(AdminServiceWorker.networkFirst(request));
     });
+
+    // Staff alerts on a device that turned notifications on for this console.
+    PushNotificationWorker.listen(scope);
   }
 }

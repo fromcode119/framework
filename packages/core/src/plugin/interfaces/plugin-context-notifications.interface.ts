@@ -24,4 +24,19 @@ export interface IPluginContextNotifications {
     userId: number,
     message: { title: string; body?: string; link?: string },
   ): Promise<{ success: boolean }>;
+  /**
+   * Tell a CUSTOMER something outside the site, the ways they chose: a notification on the storefront
+   * devices they turned on, and a text message when they agreed to texts and the site has a provider.
+   * `category` is `'updates'` (about something they did — an order, a booking, a reply) or `'offers'`
+   * (anything sent unprompted); consent is per category. `link` is a storefront path. `text` replaces
+   * the title and body in the text message. Email stays the plugin's own. Best-effort: never throws.
+   *
+   * The person is their account id, or the email their account signs in with (an order knows only the
+   * email). Only what they agreed to ON THIS SITE counts, so an email can never reach another site's
+   * choices; an email with no account behind it reaches nobody.
+   */
+  notifyPerson(
+    person: { userId?: number; email?: string },
+    message: { title: string; body?: string; link?: string; text?: string; category: string },
+  ): Promise<{ pushed: number; texted: boolean }>;
 }

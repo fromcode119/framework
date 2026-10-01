@@ -24,7 +24,8 @@
   },
   "scripts": {
     "dev": "node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next dev --webpack -H 0.0.0.0",
-    "build": "npm run build:bin && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
+    "build:sw": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs esbuild service-worker/storefront-service-worker.ts --bundle --format=iife --global-name=StorefrontServiceWorkerModule --target=es2020 --tsconfig=tsconfig.json \"--footer:js=StorefrontServiceWorkerModule.StorefrontServiceWorker.register();\" --outfile=public/fc-push-worker.js",
+    "build": "npm run build:bin && npm run build:sw && node ../next-build-codegen/dist/next-build-codegen-cli.cjs with-middleware -- next build",
     "start": "exec node ../core/dist/process/app-launcher-main.js --app frontend --hostname 0.0.0.0",
     "lint": "next lint",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project frontend",

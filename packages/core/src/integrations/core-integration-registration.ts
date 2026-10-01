@@ -1,5 +1,6 @@
 import { IntegrationRegistry } from '@core/integrations/integration-registry';
 import { EmailIntegrationDefinition } from '@core/integrations/providers/email-integration-definition';
+import { SmsIntegrationDefinition } from '@core/integrations/providers/sms-integration-definition';
 import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
 import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-provider';
 import { QueueIntegrationDefinition } from '@core/integrations/providers/queue-provider';
@@ -21,6 +22,7 @@ import { MonitoringIntegrationDefinition } from '@core/monitoring/monitoring-int
 export class CoreIntegrationRegistration {
   static applyTo(registry: IntegrationRegistry): void {
     registry.registerType(EmailIntegrationDefinition.definition);
+    registry.registerType(SmsIntegrationDefinition.definition);
     registry.registerType(StorageIntegrationDefinition.definition);
     registry.registerType(CacheIntegrationDefinition.definition);
     registry.registerType(QueueIntegrationDefinition.definition);

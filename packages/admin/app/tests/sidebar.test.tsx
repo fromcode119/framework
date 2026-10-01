@@ -21,6 +21,8 @@ vi.mock('@fromcode119/react', () => ({
     usePlugins: () => mockUsePlugins(),
   },
   Slot: () => null,
+  // The notifications menu asks the browser about push; jsdom has none, which is what this reports.
+  PushDevice: class { static supported = false; static blocked = false; async isOn() { return false; } },
   // Every icon, not a hand-listed five. The list version broke the moment a component reached for an
   // icon nobody had added here — React renders `undefined` as "Element type is invalid", which names
   // the COMPONENT and not the missing icon, so the failure reads like a bug in the thing under test.

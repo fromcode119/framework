@@ -69,6 +69,12 @@ export class RouteAuthSegments {
   ADMIN_PREFERENCES_KEY: '/admin/preferences/:key',
   /** A person's own email-stream preferences. Session-scoped: never takes an address from the caller. */
   EMAIL_PREFERENCES: '/email-preferences',
+  /** This site's push key, and the signed-in person's devices that accept push messages. */
+  PUSH_KEY: '/push/key',
+  PUSH_SUBSCRIPTIONS: '/push/subscriptions',
+  PUSH_SUBSCRIPTIONS_REMOVE: '/push/subscriptions/remove',
+  /** What the signed-in person agreed to be sent outside the site: texts, offers as notifications. */
+  NOTIFICATION_PREFERENCES: '/notification-preferences',
   /**
    * The same surface for someone arriving from a link in an email rather than a session. PUBLIC by
    * necessity — most recipients have no account — and safe because the signed token is what names the

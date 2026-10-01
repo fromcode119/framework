@@ -7,6 +7,7 @@ import { AccountSessionsPanel } from '@react/account/sessions-panel';
 import { AccountTwoFactorPanel } from '@react/account/two-factor-panel';
 import { AccountEmailPreferencesPanel } from '@react/account/email-preferences-panel';
 import { AccountFilesPanel } from '@react/account/files-panel';
+import { AccountPushNotificationsPanel } from '@react/account/push-notifications-panel';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
 import { PluginUsageTracker } from '@react/plugin-usage-tracker';
 
@@ -36,6 +37,7 @@ export class AccountSectionRegistry {
     { component: AccountEmailPreferencesPanel, pluginSlug: 'framework' },
     // Appending is safe: sections sort by priority then key, never by position in this array.
     { component: AccountFilesPanel, pluginSlug: 'framework' },
+    { component: AccountPushNotificationsPanel, pluginSlug: 'framework' },
   ] as unknown as ISlotComponent[];
 
   /** Framework panels + everything registered in the `account.panels` slot. The complete account. */

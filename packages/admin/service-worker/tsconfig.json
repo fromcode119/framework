@@ -29,6 +29,7 @@
   },
   "include": [
     "service-worker.ts",
-    "../lib/pwa/admin-service-worker-constants.ts"
+    "../lib/pwa/admin-service-worker-constants.ts",
+    "../../core/src/push/push-notification-worker.ts"
   ]
 }

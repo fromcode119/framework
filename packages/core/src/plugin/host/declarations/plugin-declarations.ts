@@ -28,6 +28,7 @@ export class PluginDeclarations {
     ['entityRecords', 'registerProvider'],
     ['integrations', 'registerType'],
     ['integrations', 'registerProvider'],
+    ['sms', 'registerProvider'],
     ['ui', 'registerHeadInjection'],
     ['people', 'registerSource'],
   ];

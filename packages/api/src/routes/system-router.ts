@@ -11,6 +11,8 @@ import { SystemController } from '@api/controllers/system/system-controller';
 import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
 import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
 import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
+import { SystemPushController } from '@api/controllers/system/system-push-controller';
+import { SystemNotificationPreferencesController } from '@api/controllers/system/system-notification-preferences-controller';
 import { SystemRedirectsController } from '@api/controllers/system/system-redirects-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
@@ -57,6 +59,8 @@ export class SystemRouter extends SystemPlatformRoutes {
     const translate = (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback;
     this.emailPreferencesController = new SystemEmailPreferencesController(manager, translate);
     this.emailPreferencesTokenController = new SystemEmailPreferencesTokenController(manager, translate);
+    this.pushController = new SystemPushController(manager);
+    this.notificationPreferencesController = new SystemNotificationPreferencesController(manager);
     // The redirect store service instance registered at boot is stateless beyond its db handle, so a
     // second instance over the same manager db is equivalent.
     this.redirectsController = new SystemRedirectsController(new SystemRedirectService((manager as any).db));
@@ -75,6 +79,13 @@ export class SystemRouter extends SystemPlatformRoutes {
       (req: any, res: any) => this.emailPreferencesController.list(req, res));
     this.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES, this.auth.guard(),
       (req: any, res: any) => this.emailPreferencesController.update(req, res));
+    // A person's own push devices. Self-service like the email streams: the person is the session's.
+    this.get(RouteConstants.SEGMENTS.PUSH_KEY, this.auth.guard(), (req: any, res: any) => this.pushController.key(req, res));
+    this.get(RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS, this.auth.guard(), (req: any, res: any) => this.pushController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS, this.auth.guard(), (req: any, res: any) => this.pushController.subscribe(req, res));
+    this.get(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, this.auth.guard(), (req: any, res: any) => this.notificationPreferencesController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, this.auth.guard(), (req: any, res: any) => this.notificationPreferencesController.update(req, res));
+    this.post(RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS_REMOVE, this.auth.guard(), (req: any, res: any) => this.pushController.unsubscribe(req, res));
     // The same surface, reached from a link in an email. No guard: most recipients have no account,
     // and the signed token is the credential. The controller derives the address from that token
     // alone, so an address in the query or body is ignored and cannot aim this at a stranger.

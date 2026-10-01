@@ -74,6 +74,10 @@ export class SystemTables {
     LOGS: '_system_logs',
     AUDIT_LOGS: '_system_audit_logs',
     NOTIFICATIONS: '_system_notifications',
+    /** A person's devices that accept push messages from this site. */
+    PUSH_SUBSCRIPTIONS: '_system_push_subscriptions',
+    /** What each person agreed to be sent outside the site — texts, notifications — and when. */
+    CHANNEL_CONSENTS: '_system_channel_consents',
     WEBHOOK_DELIVERIES: '_system_webhook_deliveries',
     EMAIL_SUPPRESSIONS: '_system_email_suppressions',
     META: '_system_meta',
