@@ -38,6 +38,9 @@ export class MonitoringAdminController extends BaseController {
     return {
       incidents: await new MonitoringIncidentStore(this.manager.db).readOpen(),
       providers: providers.map(({ key }) => key),
+      // Whether any active provider delivers the platform's own incidents. An outside watcher (UptimeRobot)
+      // only watches addresses, so with it alone a plugin down or a full disk reaches nobody.
+      alerting: providers.some(({ provider }) => Boolean(provider.notify)),
       targets: await PlatformMonitorTask.for(this.manager).targets(),
     };
   }

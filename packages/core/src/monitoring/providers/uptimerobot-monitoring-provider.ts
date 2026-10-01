@@ -12,7 +12,8 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
   private static readonly API = 'https://api.uptimerobot.com/v2';
   private static readonly HTTP_MONITOR = '1';
 
-  constructor(private readonly apiKey: string, private readonly namePrefix: string) {}
+  /** `interval` is the operator's "Check every (seconds)"; 0 (not set) sends none and leaves it to UptimeRobot. */
+  constructor(private readonly apiKey: string, private readonly namePrefix: string, private readonly interval = 0) {}
 
   async syncTargets(targets: IMonitoringTarget[]): Promise<void> {
     const existing = await this.ownMonitors();
@@ -23,7 +24,8 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
     const present = new Set(existing.map((monitor) => monitor.url));
     for (const target of targets) {
       if (present.has(target.url)) continue;
-      await this.call('newMonitor', { type: UptimeRobotMonitoringProvider.HTTP_MONITOR, url: target.url, friendly_name: `${this.namePrefix}${target.label}` });
+      const interval: Record<string, string> = this.interval > 0 ? { interval: String(this.interval) } : {};
+      await this.call('newMonitor', { type: UptimeRobotMonitoringProvider.HTTP_MONITOR, url: target.url, friendly_name: `${this.namePrefix}${target.label}`, ...interval });
     }
   }
 
