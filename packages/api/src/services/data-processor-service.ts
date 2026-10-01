@@ -118,32 +118,51 @@ export class DataProcessorService {
     }
 
     const transformed = this.localization.transformOutgoingData(collection, data, options);
+    const { passwords, arrays } = DataProcessorService.outgoingShape(collection);
 
     // SECURITY: `type: 'password'` fields (e.g. the users bcrypt hash) NEVER leave the API —
     // unconditionally stripped from every outgoing document (reads AND the echoed doc in write
     // responses), regardless of admin.hidden or access flags. This is a data-type rule: a stored
     // secret/credential hash is write-only through this layer.
-    // `FieldType.resolve(...)`, not `field.type === FieldType.PASSWORD`: a collection may declare its
-    // field type as the raw literal (`type: 'password'`) — every plugin does — and a raw string is never
-    // reference-equal to the Enum member, so the direct comparison silently strips nothing.
-    collection.fields.forEach((field) => {
-      if (FieldType.resolve(field.type) === FieldType.PASSWORD) {
-        delete transformed[field.name];
-      }
-    });
+    for (const name of passwords) delete transformed[name];
 
     // Ensure array fields are parsed if they came back as strings
-    collection.fields.filter((f) => FieldType.resolve(f.type) === FieldType.ARRAY).forEach((field) => {
-        const value = transformed[field.name];
-        if (typeof value === 'string') {
-            try {
-                transformed[field.name] = JSON.parse(value);
-            } catch {
-                transformed[field.name] = [];
-            }
+    for (const name of arrays) {
+      const value = transformed[name];
+      if (typeof value === 'string') {
+        try {
+          transformed[name] = JSON.parse(value);
+        } catch {
+          transformed[name] = [];
         }
-    });
+      }
+    }
 
     return transformed;
   }
+
+  /**
+   * Which of a collection's fields are passwords and which are arrays, worked out once per field list
+   * rather than for every field of every row: on a list read it was a fifth of the api's time. Keyed by
+   * the `fields` array itself and its length, so a collection registered again, or a field pushed onto
+   * its list, is read afresh — a password field must never be missed.
+   * `FieldType.resolve(...)`, not `field.type === FieldType.PASSWORD`: a collection may declare its field
+   * type as the raw literal (`type: 'password'`) — every plugin does — and a raw string is never
+   * reference-equal to the Enum member, so the direct comparison silently strips nothing.
+   */
+  private static outgoingShape(collection: ICollection): { count: number; passwords: string[]; arrays: string[] } {
+    const fields = collection.fields as object;
+    let shape = DataProcessorService.shapes.get(fields);
+    if (!shape || shape.count !== collection.fields.length) {
+      shape = {
+        count: collection.fields.length,
+        passwords: collection.fields.filter((field) => FieldType.resolve(field.type) === FieldType.PASSWORD).map((field) => field.name),
+        arrays: collection.fields.filter((field) => FieldType.resolve(field.type) === FieldType.ARRAY).map((field) => field.name),
+      };
+      DataProcessorService.shapes.set(fields, shape);
+    }
+    return shape;
+  }
+
+  private static readonly shapes = new WeakMap<object, { count: number; passwords: string[]; arrays: string[] }>();
 }
