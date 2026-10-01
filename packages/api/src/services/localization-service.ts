@@ -1,4 +1,4 @@
-import { ICollection, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
+import { ApiResponseCache, ICollection, RequestContextUtils, SiteContentRevision, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { CoreServices } from '@fromcode119/core';
 import { LocalizationUtils } from '@fromcode119/core';
 
@@ -54,6 +54,43 @@ export class LocalizationService {
     return JSON.stringify(map);
   }
 
+  /**
+   * The five locale settings, for the site in scope. Every request read the WHOLE settings table for
+   * them — on a plain collection list, the one statement besides the read itself. Kept per site under
+   * its content revision (SiteContentRevision), which a settings save moves in every api process, so
+   * the next request after a save reads them afresh — and never longer than the operator's API response
+   * cache age (0 keeps nothing), the backstop for a write that did not move the revision.
+   */
+  private async localeSettings(): Promise<Record<string, any>> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '');
+    const revision = SiteContentRevision.current(tenantId || null);
+    const maxAgeMs = ApiResponseCache.maxAgeSeconds() * 1000;
+    const kept = this.keptLocaleSettings.get(tenantId);
+    if (kept?.revision === revision && Date.now() - kept.at < maxAgeMs) return kept.map;
+    const settingsMap: Record<string, any> = {};
+    try {
+      const settingsRows = await this.db.find(SystemConstants.TABLE.META, { where: { key: { in: LocalizationService.LOCALE_KEYS } } });
+      if (Array.isArray(settingsRows)) {
+        SystemSettingsExposureUtils.withPrecedence(settingsRows).forEach((row: any) => {
+          if (row.key) settingsMap[row.key] = row.value;
+        });
+      }
+    } catch {
+      // Fall back to defaults if metadata fetch fails — and keep nothing, so the next request asks again.
+      return settingsMap;
+    }
+    if (this.keptLocaleSettings.size > 1000) this.keptLocaleSettings.clear();
+    if (maxAgeMs > 0) this.keptLocaleSettings.set(tenantId, { revision, at: Date.now(), map: settingsMap });
+    return settingsMap;
+  }
+
+  private static readonly LOCALE_KEYS = [
+    SystemConstants.META_KEY.DEFAULT_LOCALE, SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE, SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE,
+    SystemConstants.META_KEY.FALLBACK_LOCALE, SystemConstants.META_KEY.ENABLED_LOCALES,
+  ];
+
+  private readonly keptLocaleSettings = new Map<string, { revision: string; at: number; map: Record<string, any> }>();
+
   public async getLocaleContext(req: any): Promise<{
     locale: string;
     defaultLocale: string;
@@ -62,17 +99,7 @@ export class LocalizationService {
   }> {
     if (req?._fcLocaleContext) return req._fcLocaleContext;
 
-    let settingsMap: Record<string, any> = {};
-    try {
-      const settingsRows = await this.db.find(SystemConstants.TABLE.META);
-      if (Array.isArray(settingsRows)) {
-        SystemSettingsExposureUtils.withPrecedence(settingsRows).forEach((row: any) => {
-          if (row.key) settingsMap[row.key] = row.value;
-        });
-      }
-    } catch {
-      // Fall back to defaults if metadata fetch fails.
-    }
+    const settingsMap = await this.localeSettings();
 
     const requestedLocale = LocalizationUtils.normalizeLocaleCode(
       req?.query?.locale || req?.locale || req?.headers?.['x-locale'] || ''

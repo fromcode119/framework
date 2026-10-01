@@ -135,7 +135,17 @@ export class ApiConfig {
    * Versioned API routes.
    */
   get routes() {
-    const withVersion = (path: unknown) => `${this.prefixes.VERSIONED}${this.normalizePath(path, '/')}`;
+    // Read on every request, by several middlewares: built once per prefix, which changes only with the
+    // environment, rather than re-deriving each of its paths every time.
+    const versioned = this.prefixes.VERSIONED;
+    if (this.builtRoutes?.versioned !== versioned) this.builtRoutes = { versioned, routes: this.buildRoutes(versioned) };
+    return this.builtRoutes.routes;
+  }
+
+  private builtRoutes: { versioned: string; routes: ReturnType<ApiConfig['buildRoutes']> } | null = null;
+
+  private buildRoutes(versioned: string) {
+    const withVersion = (path: unknown) => `${versioned}${this.normalizePath(path, '/')}`;
     const withoutVersion = (path: unknown) => `${this.prefixes.BASE}${this.normalizePath(path, '/')}`;
 
     return {

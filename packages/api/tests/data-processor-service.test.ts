@@ -82,3 +82,21 @@ describe('DataProcessorService — localized scalar-field write guard (the produ
     expect(out.contentBlocks).toEqual({ en: { blocks: [] }, bg: blocks });
   });
 });
+
+describe('DataProcessorService outgoing fields, worked out once per collection', () => {
+  const service = () => new DataProcessorService(null, { transformOutgoingData: (_c: unknown, d: any) => ({ ...d }) } as any);
+
+  it('strips every password field and parses array fields on every row', () => {
+    const collection: any = { slug: 'users', fields: [{ name: 'email', type: 'text' }, { name: 'password', type: 'password' }, { name: 'tags', type: 'array' }] };
+    const rows = service().filterHiddenFields(collection, [{ email: 'a', password: 'h1', tags: '["x"]' }, { email: 'b', password: 'h2', tags: 'not json' }], { localeContext: {}, rawLocalized: false });
+    expect(rows).toEqual([{ email: 'a', tags: ['x'] }, { email: 'b', tags: [] }]);
+  });
+
+  it('a password field added to a collection later is stripped too — never served from an older answer', () => {
+    const svc = service();
+    const collection: any = { slug: 'people', fields: [{ name: 'email', type: 'text' }] };
+    expect(svc.filterHiddenFields(collection, { email: 'a', pin: '1234' }, { localeContext: {}, rawLocalized: false })).toEqual({ email: 'a', pin: '1234' });
+    collection.fields.push({ name: 'pin', type: 'password' });
+    expect(svc.filterHiddenFields(collection, { email: 'a', pin: '1234' }, { localeContext: {}, rawLocalized: false })).toEqual({ email: 'a' });
+  });
+});
