@@ -77,3 +77,5 @@ export * from 'drizzle-orm/pg-core';
 export type { IDatabaseManager as DatabaseManager } from '@database/interfaces/database-manager.interface';
 export { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
 export { SortDirection } from '@database/enums/sort-direction.enum';
+export { DatabasePoolRegistry } from '@database/pool/database-pool-registry';
+export type { IDatabasePoolSnapshot } from '@database/interfaces/database-pool-snapshot.interface';

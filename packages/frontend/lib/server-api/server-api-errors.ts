@@ -1,3 +1,4 @@
+import { ServerApiInflight } from '@/lib/server-api/server-api-inflight';
 import { SystemConstants, ApiVersionUtils, CookieConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
 import { cookies, headers } from 'next/headers';
@@ -60,7 +61,8 @@ export class ServerApiErrors {
    */
   static reportTransportFailure(kind: string, requestPath: string, error: unknown): void {
     if (ServerApiErrors.isAbortError(error)) {
-      console.error(`[frontend] Timed out on ${kind} ${requestPath} after ${ServerApiConfig.SERVER_FETCH_TIMEOUT_MS}ms`);
+      // How many calls this process had open with it says whether the wait was the api's or ours.
+      console.error(`[frontend] Timed out on ${kind} ${requestPath} after ${ServerApiConfig.SERVER_FETCH_TIMEOUT_MS}ms (api calls in this process: ${ServerApiInflight.describe()})`);
       return;
     }
     console.error(`[frontend] Failed ${kind} ${requestPath}: ${ServerApiErrors.describeError(error)}`);
