@@ -1,5 +1,6 @@
 import type { IEmailDriver } from '@fromcode119/email';
 import type { IEmailCategory } from '@core/email/interfaces/email-category.interface';
+import type { IPluginContextEmailInbox } from '@core/plugin/interfaces/plugin-context-email-inbox.interface';
 
 /**
  * What a plugin's `context.email` actually is: the platform mailer (`send`), the do-not-email list the
@@ -21,4 +22,6 @@ export interface IPluginContextEmail extends IEmailDriver {
   buildPreferencesUrl(address: string): Promise<string>;
   /** The site's email logo as an absolute URL, or '' when the site has none. */
   logoUrl(): Promise<string>;
+  /** Read new mail from an IMAP mailbox; needs the `network` capability as well as `email`. */
+  inbox: IPluginContextEmailInbox;
 }

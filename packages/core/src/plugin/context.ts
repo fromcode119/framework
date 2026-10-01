@@ -137,7 +137,13 @@ export class PluginContextFactory {
         },
         get email() {
           if (!security.hasCapability('email')) security.handleViolation('email');
-          return EmailContextProxy.createEmailProxy(plugin, manager, () => pathContext.resolveActiveThemeSlug());
+          return EmailContextProxy.createEmailProxy(plugin, manager, () => pathContext.resolveActiveThemeSlug(), async (target: string) => {
+            // Reading a mailbox is egress like `fetch`: the same capability, the same refusal on a
+            // non-production site, and the same audit trail.
+            if (!security.hasCapability('network')) security.handleViolation('network');
+            await new TenantEnvironmentGate(manager.db, manager.audit).assert('network', target, plugin.manifest.slug);
+            manager.audit.logAction(plugin.manifest.slug, 'Mailbox Read', target, 'allowed');
+          });
         },
         get cache() {
           if (!security.hasCapability('cache')) security.handleViolation('cache');

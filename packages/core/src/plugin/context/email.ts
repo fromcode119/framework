@@ -8,6 +8,8 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { SigningSecretService } from '@core/security/signing-secret-service';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
+import { PluginInbox } from '@core/email/plugin-inbox';
+import type { IInboxAccount, IInboxFetchOptions } from '@fromcode119/email';
 
 /**
  * `context.email` — the mail driver, plus the ability to DECLARE an opt-outable stream.
@@ -28,11 +30,25 @@ export class EmailContextProxy {
    * `activeThemeSlug` is the plugin's own `paths.resolveActiveThemeSlug` — the theme this request's
    * site renders with, answered the same way wherever the plugin runs.
    */
-  static createEmailProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface, activeThemeSlug: () => Promise<string | null>): any {
+  static createEmailProxy(
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
+    activeThemeSlug: () => Promise<string | null>,
+    /** The same gate `context.fetch` passes: the `network` capability and the site's environment. */
+    assertNetwork: (target: string) => Promise<void> = async () => { throw new Error('network is not available here'); },
+  ): any {
     const driver = (manager as any).integrations?.email;
     const slug = String(plugin?.manifest?.slug || '').trim();
 
     const additions: Record<string, unknown> = {
+      /**
+       * Read new mail from an IMAP mailbox (a helpdesk's support address). The plugin keeps the account
+       * and the last UID it has seen; the host connects — public addresses and IMAP ports only — and
+       * hands back the messages. See {@link PluginInbox}.
+       */
+      inbox: {
+        fetch: (account: IInboxAccount, options?: IInboxFetchOptions) => PluginInbox.fetch(account, options ?? {}, assertNetwork),
+      },
       /**
        * Declare a stream this plugin sends that a person may switch off. Call it in `onInit` — the
        * registry is in-memory, so it is rebuilt on every boot from whatever is actually installed and
