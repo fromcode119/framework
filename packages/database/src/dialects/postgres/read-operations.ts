@@ -174,12 +174,8 @@ export class PostgresReadOperations extends BaseDialect {
     return (this.ownStatements ??= new PostgresTableStatements(this.drizzle.dialect));
   }
 
-  /** The filter exactly as the builder applies it: the parsed conditions, else a caller's own SQL fragment. */
   private wholeTableWhere(where: any, table: any): any {
-    const conditions = this.buildWhereConditions(where, table);
-    if (conditions.length > 0) return and(...conditions);
-    const isPlain = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    return where && (!isPlain || Object.keys(where).length > 0) ? where : undefined;
+    return PostgresTableStatements.filter(this.buildWhereConditions(where, table), where);
   }
 
   /** Drizzle's query builder: explicit columns, joins, search — and every read under DB_READ_PATH=drizzle. */

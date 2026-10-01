@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from 'util';
 import { types } from 'pg';
-import { sql, getTableColumns } from 'drizzle-orm';
+import { sql, and, getTableColumns } from 'drizzle-orm';
 import type { ITableReadParts } from '@database/interfaces/table-read-parts.interface';
 
 /**
@@ -17,17 +17,24 @@ import type { ITableReadParts } from '@database/interfaces/table-read-parts.inte
  * difference — returning Drizzle's answer — which is how the two were proven equal.
  */
 export class PostgresTableStatements {
-  private static readonly shapes = new WeakMap<object, { from: string; fields: Array<[string, any]> }>();
+  private static readonly shapes = new WeakMap<object, { list: string; from: string; fields: Array<[string, any]> }>();
 
   /** Drizzle's driver parsers: these types reach `mapFromDriverValue` as the strings Postgres sent. */
   private static readonly RAW_TYPE_IDS = new Set<number>([
     types.builtins.TIMESTAMPTZ, types.builtins.TIMESTAMP, types.builtins.DATE, types.builtins.INTERVAL, 1231, 1115, 1185, 1187, 1182,
   ]);
 
-  private static readonly TYPES = {
+  static readonly TYPES = {
     getTypeParser: (typeId: number, format?: any) =>
       PostgresTableStatements.RAW_TYPE_IDS.has(typeId) ? (value: unknown) => value : (types.getTypeParser as any)(typeId, format),
   };
+
+  /** The filter exactly as the builder applies it: the parsed `conditions`, else a caller's own SQL fragment. */
+  static filter(conditions: any[], where: any): any {
+    if (conditions.length > 0) return and(...conditions);
+    const isPlain = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
+    return where && (!isPlain || Object.keys(where).length > 0) ? where : undefined;
+  }
 
   static mode(): string {
     const mode = String(process.env.DB_READ_PATH ?? '').trim().toLowerCase();
@@ -69,10 +76,15 @@ export class PostgresTableStatements {
     table: object,
     parts: ITableReadParts,
   ): Promise<Array<Record<string, unknown>>> {
-    const { fields } = this.shapeOf(table);
     const { text, params } = this.selectStatement(table, parts);
     const result = await executor.query({ text, rowMode: 'array', types: PostgresTableStatements.TYPES }, params);
-    return (result.rows as unknown[][]).map((row) => {
+    return this.decode(table, result.rows);
+  }
+
+  /** Rows read in `columnList` order, decoded to the table's field names by each column's own decoder. */
+  decode(table: object, rows: unknown[][]): Array<Record<string, unknown>> {
+    const { fields } = this.shapeOf(table);
+    return rows.map((row) => {
       const record: Record<string, unknown> = {};
       for (let index = 0; index < fields.length; index += 1) {
         const [key, column] = fields[index];
@@ -81,6 +93,16 @@ export class PostgresTableStatements {
       }
       return record;
     });
+  }
+
+  /** Every column of `table`, quoted, in the order Drizzle selects and returns them. */
+  columnList(table: object): string {
+    return this.shapeOf(table).list;
+  }
+
+  /** The table's fields — `[fieldName, column]` — in column order. */
+  fields(table: object): Array<[string, any]> {
+    return this.shapeOf(table).fields;
   }
 
   /** `count(*)` of `table` under `where`, as a number. Under `shadow`, compared with `builder`'s total, which answers. */
@@ -120,13 +142,13 @@ export class PostgresTableStatements {
     return `${kind} ${JSON.stringify(value)?.slice(0, 80)}`;
   }
 
-  private shapeOf(table: object): { from: string; fields: Array<[string, any]> } {
+  private shapeOf(table: object): { list: string; from: string; fields: Array<[string, any]> } {
     let shape = PostgresTableStatements.shapes.get(table);
     if (!shape) {
       const fields = Object.entries(getTableColumns(table as any)) as Array<[string, any]>;
       const list = fields.map(([, column]) => this.dialect.sqlToQuery(sql`${sql.identifier(String(column.name))}`).sql).join(', ');
       // The table as Drizzle's dialect names it (quoting, any schema), not as assembled here.
-      shape = { from: `select ${list} from ${this.dialect.sqlToQuery(sql`${table}`).sql}`, fields };
+      shape = { list, from: `select ${list} from ${this.dialect.sqlToQuery(sql`${table}`).sql}`, fields };
       PostgresTableStatements.shapes.set(table, shape);
     }
     return shape;
