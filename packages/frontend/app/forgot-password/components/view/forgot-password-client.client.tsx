@@ -40,28 +40,28 @@ export class ForgotPasswordPage extends Reactor {
 
   render() {
     return (
-      <main className="min-h-screen bg-slate-50 text-slate-900">
-        <div className="mx-auto max-w-xl px-6 py-16">
-          <h1 className="text-3xl font-bold tracking-tight">{FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.forgotPassword')}</h1>
-          <p className="mt-2 text-sm text-slate-600">
+      <main className="fc-auth">
+        <div className="fc-auth__card">
+          <h1 className="fc-auth__title">{FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.forgotPassword')}</h1>
+          <p className="fc-auth__subtitle">
             {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.enterYourEmailAndWe')}
           </p>
 
-          <form onSubmit={this.handleSubmit} className="mt-8 space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <form onSubmit={this.handleSubmit}>
             {this.error ? (
-              <div className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">{this.error}</div>
+              <div className="fc-auth__error">{this.error}</div>
             ) : null}
             {this.message ? (
-              <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+              <div className="fc-auth__notice">
                 <p>{this.message}</p>
               </div>
             ) : null}
 
-            <label className="block text-sm font-semibold">
-              {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.email')}
+            <label className="fc-auth__field">
+              <span className="fc-auth__label">{FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.email')}</span>
               <input
                 type="email"
-                className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-sm outline-none focus:border-indigo-500"
+                className="fc-auth__input"
                 value={this.email}
                 onChange={(event) => (this.email = event.target.value)}
                 placeholder="you@example.com"
@@ -72,15 +72,15 @@ export class ForgotPasswordPage extends Reactor {
             <button
               type="submit"
               disabled={this.isSubmitting}
-              className="inline-flex w-full items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50"
+              className="fc-auth__button"
             >
               {this.isSubmitting ? FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.sending') : FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.sendResetLink')}
             </button>
           </form>
 
-          <p className="mt-4 text-sm text-slate-600">
+          <p className="fc-auth__switch">
             {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.needAccountVerification')}{' '}
-            <Link href="/verify-email" className="font-semibold text-indigo-600 hover:underline">
+            <Link href="/verify-email" className="fc-auth__link">
               {FrontendCopy.t(this.locale, 'frontend.forgotPasswordClient.verifyEmail')}
             </Link>
           </p>

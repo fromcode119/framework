@@ -26,14 +26,14 @@ export class VerifyEmailResendCard extends PureReactor {
 
   render(): ReactNode {
     return (
-      <form onSubmit={this.onSubmit} className="fc-auth-card fc-auth-card-secondary">
-        <h2 className="fc-auth-secondary-title">{this.resendTitle}</h2>
-        <p className="fc-auth-secondary-copy">{this.resendDescription}</p>
-        <label className="fc-auth-field">
-          <span className="fc-auth-field-label">{this.emailLabel}</span>
+      <form onSubmit={this.onSubmit} className="fc-auth-card fc-auth-card-secondary fc-auth__card">
+        <h2 className="fc-auth-secondary-title fc-auth__title">{this.resendTitle}</h2>
+        <p className="fc-auth-secondary-copy fc-auth__subtitle">{this.resendDescription}</p>
+        <label className="fc-auth-field fc-auth__field">
+          <span className="fc-auth-field-label fc-auth__label">{this.emailLabel}</span>
           <input
             type="email"
-            className="fc-auth-input"
+            className="fc-auth-input fc-auth__input"
             value={this.email}
             onChange={this.handleEmailChange}
             placeholder="you@example.com"
@@ -43,25 +43,21 @@ export class VerifyEmailResendCard extends PureReactor {
         <button
           type="submit"
           disabled={this.isResending}
-          className="fc-auth-button fc-auth-button-secondary"
+          className="fc-auth-button fc-auth-button-secondary fc-auth__button fc-auth__button--secondary"
         >
           {this.isResending ? this.resendSendingLabel : this.resendButtonLabel}
         </button>
 
         {this.resendMessage ? (
           <div
-            className={`fc-auth-alert ${
-              this.resendStatus === VerificationStatus.SUCCESS
-                ? 'border border-emerald-200 bg-emerald-50 text-emerald-700'
-                : 'border border-rose-200 bg-rose-50 text-rose-700'
-            }`}
+            className={`fc-auth-alert ${this.resendStatus === VerificationStatus.SUCCESS ? 'fc-auth__notice' : 'fc-auth__error'}`}
           >
             <p>{this.resendMessage}</p>
             {this.resendVerificationUrl ? (
               <p className="fc-auth-card-link-row">
                 <a
                   href={this.resendVerificationUrl}
-                  className="fc-auth-inline-link"
+                  className="fc-auth-inline-link fc-auth__link"
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -71,7 +67,7 @@ export class VerifyEmailResendCard extends PureReactor {
             ) : null}
             {this.resendStatus === VerificationStatus.SUCCESS ? (
               <p className="fc-auth-card-link-row">
-                <Link href="/login" className="fc-auth-inline-link">
+                <Link href="/login" className="fc-auth-inline-link fc-auth__link">
                   {this.goToLoginLabel}
                 </Link>
               </p>
