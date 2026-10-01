@@ -1,4 +1,5 @@
-import { pgTable, serial, text, numeric, boolean, timestamp, jsonb } from 'drizzle-orm/pg-core';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlTable } from '@database/sql/sql-table';
 
 import type { IDynamicTableOptions } from '@database/interfaces/dynamic-table-options.interface';
 
@@ -13,7 +14,7 @@ export class DynamicSchema {
 
       // If primaryKey is 'id' and not in fields, add it as serial
       if (primaryKey === 'id' && !fields.find(f => f.name === 'id')) {
-        columns.id = serial('id').primaryKey();
+        columns.id = SqlColumns.serial('id').primaryKey();
       }
 
       fields.forEach(field => {
@@ -22,22 +23,22 @@ export class DynamicSchema {
 
         switch (field.type) {
           case 'number':
-            column = numeric(dbName);
+            column = SqlColumns.numeric(dbName);
             break;
           case 'boolean':
-            column = boolean(dbName);
+            column = SqlColumns.boolean(dbName);
             break;
           case 'date':
-            column = timestamp(dbName, { withTimezone: true });
+            column = SqlColumns.timestamp(dbName, { withTimezone: true });
             break;
           case 'json':
           case 'relationship':
           case 'upload':
           case 'richText':
-            column = jsonb(dbName);
+            column = SqlColumns.jsonb(dbName);
             break;
           default:
-            column = text(dbName);
+            column = SqlColumns.text(dbName);
         }
 
         if (field.name === primaryKey) {
@@ -48,15 +49,15 @@ export class DynamicSchema {
       });
 
       if (timestamps) {
-        if (!columns.createdAt) columns.createdAt = timestamp('created_at', { withTimezone: true }).defaultNow();
-        if (!columns.updatedAt) columns.updatedAt = timestamp('updated_at', { withTimezone: true }).defaultNow();
+        if (!columns.createdAt) columns.createdAt = SqlColumns.timestamp('created_at', { withTimezone: true }).defaultNow();
+        if (!columns.updatedAt) columns.updatedAt = SqlColumns.timestamp('updated_at', { withTimezone: true }).defaultNow();
       }
 
       if (workflow) {
-        if (!columns.status) columns.status = text('status').notNull().default('draft');
+        if (!columns.status) columns.status = SqlColumns.text('status').notNull().default('draft');
       }
 
-      return pgTable(slug, columns);
+      return SqlTable.define(slug, columns);
 
   }
 }

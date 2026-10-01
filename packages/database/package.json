@@ -14,6 +14,16 @@
       "import": "./dist/physical-table-name-utils.js",
       "require": "./dist/physical-table-name-utils.js"
     },
+    "./sql/sql": {
+      "types": "./dist/sql/sql.d.ts",
+      "import": "./dist/sql/sql.js",
+      "require": "./dist/sql/sql.js"
+    },
+    "./sql/sql-renderer": {
+      "types": "./dist/sql/sql-renderer.d.ts",
+      "import": "./dist/sql/sql-renderer.js",
+      "require": "./dist/sql/sql-renderer.js"
+    },
     "./naming-strategy": {
       "types": "./dist/naming-strategy.d.ts",
       "import": "./dist/naming-strategy.js",
@@ -65,14 +75,13 @@
   "dependencies": {
     "@fromcode119/sdk": "*",
     "better-sqlite3": "^12.6.2",
-    "drizzle-orm": "^0.45.1",
     "mysql2": "^3.16.1",
     "pg": "^8.11.3"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/pg": "^8.11.0",
-    "drizzle-kit": "^0.31.10",
+    "drizzle-orm": "^0.45.1",
     "typescript": "^5.3.3"
   },
   "publishConfig": {

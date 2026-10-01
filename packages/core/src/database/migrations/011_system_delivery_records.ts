@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -24,7 +24,7 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
   async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_notifications" (
             "id" SERIAL PRIMARY KEY,
             "user_id" INTEGER NOT NULL,
@@ -36,11 +36,11 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE INDEX IF NOT EXISTS "idx_system_notifications_user"
             ON "_system_notifications" ("user_id", "read_at")
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_webhook_deliveries" (
             "id" SERIAL PRIMARY KEY,
             "webhook_id" INTEGER NOT NULL,
@@ -52,8 +52,8 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_hook" ON "_system_webhook_deliveries" ("webhook_id", "id")`);
-        await db.execute(sql`
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_hook" ON "_system_webhook_deliveries" ("webhook_id", "id")`);
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_email_suppressions" (
             "id" SERIAL PRIMARY KEY,
             "address" TEXT NOT NULL,
@@ -62,10 +62,10 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS "idx_email_suppressions_addr_cat" ON "_system_email_suppressions" ("address", "category")`);
+        await db.execute(Sql.query`CREATE UNIQUE INDEX IF NOT EXISTS "idx_email_suppressions_addr_cat" ON "_system_email_suppressions" ("address", "category")`);
       },
       mysql: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_notifications (
             id INT AUTO_INCREMENT PRIMARY KEY,
             user_id INT NOT NULL,
@@ -78,7 +78,7 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             INDEX idx_system_notifications_user (user_id, read_at)
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_webhook_deliveries (
             id INT AUTO_INCREMENT PRIMARY KEY,
             webhook_id INT NOT NULL,
@@ -91,7 +91,7 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             INDEX idx_webhook_deliveries_hook (webhook_id, id)
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_email_suppressions (
             id INT AUTO_INCREMENT PRIMARY KEY,
             address VARCHAR(320) NOT NULL,
@@ -103,7 +103,7 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
         `));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_notifications" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "user_id" INTEGER NOT NULL,
@@ -115,11 +115,11 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE INDEX IF NOT EXISTS "idx_system_notifications_user"
             ON "_system_notifications" ("user_id", "read_at")
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_webhook_deliveries" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "webhook_id" INTEGER NOT NULL,
@@ -131,8 +131,8 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_hook" ON "_system_webhook_deliveries" ("webhook_id", "id")`));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_webhook_deliveries_hook" ON "_system_webhook_deliveries" ("webhook_id", "id")`));
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_email_suppressions" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "address" TEXT NOT NULL,
@@ -141,7 +141,7 @@ export class SystemDeliveryRecordsMigration extends BaseMigration {
             "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_email_suppressions_addr_cat" ON "_system_email_suppressions" ("address", "category")`));
+        await db.execute(Sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_email_suppressions_addr_cat" ON "_system_email_suppressions" ("address", "category")`));
       },
     });
   }

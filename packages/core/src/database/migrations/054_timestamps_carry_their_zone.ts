@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 
 /**
@@ -34,7 +34,7 @@ export class TimestampsCarryTheirZoneMigration extends BaseMigration {
         TimestampsCarryTheirZoneMigration.logger.warn(`Skipped ${table}.${column}: not a plain identifier.`);
         continue;
       }
-      await db.execute(sql.raw(
+      await db.execute(Sql.raw(
         `ALTER TABLE "${table}" ALTER COLUMN "${column}" TYPE TIMESTAMP WITH TIME ZONE USING "${column}" AT TIME ZONE 'UTC'`,
       ));
       TimestampsCarryTheirZoneMigration.logger.info(`${table}.${column} now carries its time zone.`);

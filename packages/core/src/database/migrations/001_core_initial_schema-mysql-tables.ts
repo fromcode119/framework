@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * MySQL table-creation statements for the initial framework migration.
@@ -27,7 +27,7 @@ export class InitialFrameworkMysqlTables {
   static async create(db: IDatabaseManager): Promise<void> {
     const { KEY } = InitialFrameworkMysqlTables;
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_plugins" (
             "slug" ${KEY} PRIMARY KEY,
             "state" VARCHAR(64) NOT NULL DEFAULT 'inactive',
@@ -44,7 +44,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "users" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "email" ${KEY} NOT NULL UNIQUE,
@@ -59,7 +59,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_roles" (
             "slug" ${KEY} PRIMARY KEY,
             "name" VARCHAR(255) NOT NULL,
@@ -71,7 +71,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_permissions" (
             "name" ${KEY} PRIMARY KEY,
             "description" TEXT,
@@ -83,7 +83,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_themes" (
             "slug" ${KEY} PRIMARY KEY,
             "state" VARCHAR(64) NOT NULL DEFAULT 'inactive',
@@ -95,7 +95,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_users_roles" (
             "user_id" INT NOT NULL,
             "role_slug" ${KEY} NOT NULL,
@@ -105,7 +105,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_roles_permissions" (
             "role_slug" ${KEY} NOT NULL,
             "permission_name" ${KEY} NOT NULL,
@@ -115,7 +115,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_plugin_settings" (
             "plugin_slug" ${KEY} PRIMARY KEY,
             "settings" JSON,
@@ -124,7 +124,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_trusted_publishers" (
             "publisher_id" ${KEY} PRIMARY KEY,
             "name" VARCHAR(255) NOT NULL,
@@ -136,7 +136,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_meta" (
             "key" ${KEY} PRIMARY KEY,
             "value" TEXT NOT NULL,
@@ -146,7 +146,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_sessions" (
             "id" ${KEY} PRIMARY KEY,
             "user_id" INT NOT NULL,
@@ -161,7 +161,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_logs" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "plugin_slug" VARCHAR(191),
@@ -172,7 +172,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "media_folders" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "name" VARCHAR(255) NOT NULL,
@@ -183,7 +183,7 @@ export class InitialFrameworkMysqlTables {
           )
         `));
 
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "media" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "filename" VARCHAR(255) NOT NULL,
@@ -207,7 +207,7 @@ export class InitialFrameworkMysqlTables {
         `));
 
     // `plugin_slug` and `status` are indexed, and MySQL cannot index an unbounded column.
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "plugin_slug" VARCHAR(191) NOT NULL,
@@ -220,7 +220,7 @@ export class InitialFrameworkMysqlTables {
         `));
 
     // `name` is UNIQUE and `plugin_slug` references _system_plugins, so neither can be TEXT here.
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "name" VARCHAR(191) NOT NULL UNIQUE,

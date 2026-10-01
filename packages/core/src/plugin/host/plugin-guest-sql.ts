@@ -1,32 +1,28 @@
-import type { PgDialect } from 'drizzle-orm/pg-core';
+import type { SqlRenderer } from '@fromcode119/database/sql/sql-renderer';
 
 /**
- * A drizzle `sql` template is an object graph of chunks, not data — it cannot cross to the host.
- * Plugin migrations write `db.execute(sql\`…\`)`, so the guest flattens the template to
- * `{ sql, params }` here and the host runs it as a parametrised statement.
+ * A built `Sql` statement is an object graph of chunks, not data — it cannot cross to the host. The
+ * guest renders it to `{ $sql, params }` here and the host runs it as a parametrised statement.
  */
 export class PluginGuestSql {
-  /**
-   * Built on the first SQL object, not when the class loads: this runs in every plugin process, and a
-   * plugin that never writes raw SQL has no use for drizzle's Postgres dialect (~11 MB of modules).
-   */
-  private static dialectInstance: PgDialect | null = null;
+  /** Loaded on the first SQL object, not when the class loads: most plugin processes never build one. */
+  private static rendererInstance: SqlRenderer | null = null;
 
-  private static get dialect(): PgDialect {
-    if (!PluginGuestSql.dialectInstance) {
-      const { PgDialect: Dialect } = require('drizzle-orm/pg-core') as typeof import('drizzle-orm/pg-core');
-      PluginGuestSql.dialectInstance = new Dialect();
+  private static get renderer(): SqlRenderer {
+    if (!PluginGuestSql.rendererInstance) {
+      const { SqlRenderer: Renderer } = require('@fromcode119/database/sql/sql-renderer') as typeof import('@fromcode119/database/sql/sql-renderer');
+      PluginGuestSql.rendererInstance = Renderer.POSTGRES;
     }
-    return PluginGuestSql.dialectInstance;
+    return PluginGuestSql.rendererInstance;
   }
 
   static isSqlObject(value: unknown): boolean {
-    return !!value && typeof value === 'object' && Array.isArray((value as any).queryChunks);
+    return !!value && typeof value === 'object' && Array.isArray((value as any).chunks) && typeof (value as any).getSQL === 'function';
   }
 
   static flatten(value: unknown): { $sql: string; params: unknown[] } {
-    const query = PluginGuestSql.dialect.sqlToQuery(value as any);
-    return { $sql: query.sql, params: query.params as unknown[] };
+    const { text, params } = PluginGuestSql.renderer.render(value);
+    return { $sql: text, params };
   }
 
   /** Rewrites SQL objects among `args` so the whole list is clonable. */

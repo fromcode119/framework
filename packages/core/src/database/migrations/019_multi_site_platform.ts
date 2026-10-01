@@ -1,7 +1,7 @@
 import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { Logger } from '@core/logging';
-import { BaseMigration, IDatabaseManager, TenantColumn, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, TenantColumn, Sql } from '@fromcode119/database';
 
 /**
  * The platform becomes multi-site.
@@ -38,7 +38,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private async createTable(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_redirects" (
             "id" SERIAL PRIMARY KEY,
             "from_path" TEXT NOT NULL UNIQUE,
@@ -51,13 +51,13 @@ export class MultiSitePlatformMigration extends BaseMigration {
             "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE INDEX IF NOT EXISTS "idx_system_redirects_lookup"
             ON "_system_redirects" ("from_path", "enabled")
         `);
       },
       mysql: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_redirects (
             id INT AUTO_INCREMENT PRIMARY KEY,
             -- 512, not 768. These tables are utf8mb4, so an index counts 4 bytes per character:
@@ -77,7 +77,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
         `));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_redirects" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "from_path" TEXT NOT NULL UNIQUE,
@@ -90,7 +90,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
             "updated_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE INDEX IF NOT EXISTS "idx_system_redirects_lookup"
             ON "_system_redirects" ("from_path", "enabled")
         `));
@@ -109,7 +109,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
     types: { id: string; key: string; json: string; jsonDefault: string; timestamp: string },
   ): Promise<void> {
     const rolesDefault = types.jsonDefault ? ` NOT NULL DEFAULT ${types.jsonDefault}` : '';
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_memberships" (
         "id" ${types.id},
         "user_id" ${types.key} NOT NULL,
@@ -122,7 +122,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
       )
     `));
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_tenant_memberships_tenant_idx" '
       + 'ON "_system_tenant_memberships" ("tenant_id")',
     ));
@@ -161,9 +161,9 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private static async addSessionTenantColumn(db: IDatabaseManager, keyType: string): Promise<void> {
     // Existing sessions are deleted: they carry no tenant claim, so they would be refused on the
     // next request anyway. Introducing tenancy logs everyone out, deliberately.
-    await db.execute(sql.raw('DELETE FROM "_system_sessions"'));
+    await db.execute(Sql.raw('DELETE FROM "_system_sessions"'));
     await ColumnGuard.addIfMissing(db, '_system_sessions', 'tenant_id', keyType);
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_sessions_tenant_idx" ON "_system_sessions" ("tenant_id")',
     ));
   }
@@ -185,8 +185,8 @@ export class MultiSitePlatformMigration extends BaseMigration {
    * carries meaning rather than being an accident, so the schema says so and the admin surfaces it.
    */
   private static async scopeSettings(db: IDatabaseManager): Promise<void> {
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT'));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT'));
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_meta_tenant_idx" ON "_system_meta" ("tenant_id")',
     ));
 
@@ -194,13 +194,13 @@ export class MultiSitePlatformMigration extends BaseMigration {
     // rather than being assigned to an arbitrary tenant. Anything a tenant should own is set again
     // per tenant from its own admin.
     const keys = MultiSitePlatformMigration.PLATFORM_KEYS.map((key) => `'${key}'`).join(', ');
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `UPDATE "_system_meta" SET "tenant_id" = NULL WHERE "key" IN (${keys})`,
     ));
 
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" ENABLE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('DROP POLICY IF EXISTS "_system_meta_tenant_isolation" ON "_system_meta"'));
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" ENABLE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('DROP POLICY IF EXISTS "_system_meta_tenant_isolation" ON "_system_meta"'));
     // WITH CHECK is wider than "own tenant" by exactly one case: a PLATFORM row, and only while the
     // connection has been marked as acting for a platform admin.
     //
@@ -209,7 +209,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
     // separate GUC the framework sets only after verifying the account, so "may write platform
     // settings" is an explicit, inspectable state on the connection rather than an implicit
     // consequence of which role happens to be connected.
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       CREATE POLICY "_system_meta_tenant_isolation" ON "_system_meta"
         USING ("tenant_id" = nullif(current_setting('app.tenant_id', true), '') OR "tenant_id" IS NULL)
         WITH CHECK (
@@ -228,16 +228,16 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private static async scopeMedia(db: IDatabaseManager): Promise<void> {
     // The full sequence lives here, not in the generic sweep: media is excluded from that path
     // precisely so this policy is not overwritten on the next boot.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'ALTER TABLE "media" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT '
       + "DEFAULT nullif(current_setting('app.tenant_id', true), '')",
     ));
-    await db.execute(sql.raw('CREATE INDEX IF NOT EXISTS "media_tenant_id_idx" ON "media" ("tenant_id")'));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw('CREATE INDEX IF NOT EXISTS "media_tenant_id_idx" ON "media" ("tenant_id")'));
+    await db.execute(Sql.raw(
       'ALTER TABLE "media" ADD COLUMN IF NOT EXISTS "shared" BOOLEAN NOT NULL DEFAULT FALSE',
     ));
-    await db.execute(sql.raw('ALTER TABLE "media" ENABLE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('ALTER TABLE "media" FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "media" ENABLE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "media" FORCE ROW LEVEL SECURITY'));
 
     // FOUR policies, one per command, because WITH CHECK does not govern DELETE.
     //
@@ -248,19 +248,19 @@ export class MultiSitePlatformMigration extends BaseMigration {
 
     for (const name of ['media_tenant_isolation', 'media_tenant_select', 'media_tenant_insert',
                         'media_tenant_update', 'media_tenant_delete']) {
-      await db.execute(sql.raw(`DROP POLICY IF EXISTS "${name}" ON "media"`));
+      await db.execute(Sql.raw(`DROP POLICY IF EXISTS "${name}" ON "media"`));
     }
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE POLICY "media_tenant_select" ON "media" FOR SELECT USING (${own} OR "shared" IS TRUE)`,
     ));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE POLICY "media_tenant_insert" ON "media" FOR INSERT WITH CHECK (${own})`,
     ));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE POLICY "media_tenant_update" ON "media" FOR UPDATE USING (${own}) WITH CHECK (${own})`,
     ));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE POLICY "media_tenant_delete" ON "media" FOR DELETE USING (${own})`,
     ));
   }
@@ -287,8 +287,8 @@ export class MultiSitePlatformMigration extends BaseMigration {
    * It needs Postgres 15+, which this deployment is.
    */
   private static async widenPrimaryKey(db: IDatabaseManager): Promise<void> {
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" DROP CONSTRAINT IF EXISTS "_system_meta_pkey"'));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" DROP CONSTRAINT IF EXISTS "_system_meta_pkey"'));
+    await db.execute(Sql.raw(
       'ALTER TABLE "_system_meta" ADD CONSTRAINT "_system_meta_pkey" '
       + 'UNIQUE NULLS NOT DISTINCT ("key", "tenant_id")',
     ));
@@ -313,8 +313,8 @@ export class MultiSitePlatformMigration extends BaseMigration {
     // `new row violates row-level security policy`. Lifting FORCE for the copy and restoring it
     // immediately afterwards is the narrow, explicit way through; the alternative — a policy loose
     // enough for the migration to slip past — would be loose for every request as well.
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" NO FORCE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" NO FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw(`
       INSERT INTO "_system_meta" ("key", "value", "description", "group", "tenant_id")
       SELECT m."key", m."value", m."description", m."group", t."id"
       FROM "_system_meta" m
@@ -322,7 +322,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
       WHERE m."tenant_id" IS NULL AND m."key" NOT IN (${keys})
       ON CONFLICT DO NOTHING
     `));
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
   }
 
 
@@ -346,10 +346,10 @@ export class MultiSitePlatformMigration extends BaseMigration {
 
     // Re-asserted rather than assumed: 022 set them, but this migration lifted FORCE for the copy
     // above and a table left un-FORCEd would let the owner connection read every tenant.
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" ENABLE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('DROP POLICY IF EXISTS "_system_meta_tenant_isolation" ON "_system_meta"'));
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" ENABLE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "_system_meta" FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('DROP POLICY IF EXISTS "_system_meta_tenant_isolation" ON "_system_meta"'));
+    await db.execute(Sql.raw(`
       CREATE POLICY "_system_meta_tenant_isolation" ON "_system_meta"
         USING (
           ${own}
@@ -373,28 +373,28 @@ export class MultiSitePlatformMigration extends BaseMigration {
    * while every isolation test still passed.
    */
   private static async scopePluginSettings(db: IDatabaseManager): Promise<void> {
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'ALTER TABLE "_system_plugin_settings" ADD COLUMN IF NOT EXISTS "tenant_id" TEXT '
       + "DEFAULT nullif(current_setting('app.tenant_id', true), '')",
     ));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_plugin_settings_tenant_idx" '
       + 'ON "_system_plugin_settings" ("tenant_id")',
     ));
 
     // NULLS NOT DISTINCT keeps the pre-tenancy row unique per plugin; without it Postgres treats
     // every NULL as distinct and duplicates would accumulate unseen.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'ALTER TABLE "_system_plugin_settings" DROP CONSTRAINT IF EXISTS "_system_plugin_settings_pkey"',
     ));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'ALTER TABLE "_system_plugin_settings" ADD CONSTRAINT "_system_plugin_settings_pkey" '
       + 'UNIQUE NULLS NOT DISTINCT ("plugin_slug", "tenant_id")',
     ));
 
     // Every existing tenant inherits the configuration in force today, so enabling per-tenant plugin
     // settings changes nobody's behaviour on the day it runs.
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       INSERT INTO "_system_plugin_settings" ("plugin_slug", "settings", "tenant_id")
       SELECT s."plugin_slug", s."settings", t."id"
       FROM "_system_plugin_settings" s
@@ -403,9 +403,9 @@ export class MultiSitePlatformMigration extends BaseMigration {
       ON CONFLICT DO NOTHING
     `));
 
-    await db.execute(sql.raw('ALTER TABLE "_system_plugin_settings" ENABLE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw('ALTER TABLE "_system_plugin_settings" FORCE ROW LEVEL SECURITY'));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw('ALTER TABLE "_system_plugin_settings" ENABLE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw('ALTER TABLE "_system_plugin_settings" FORCE ROW LEVEL SECURITY'));
+    await db.execute(Sql.raw(
       'DROP POLICY IF EXISTS "_system_plugin_settings_tenant_isolation" ON "_system_plugin_settings"',
     ));
 
@@ -414,7 +414,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
     // fall to its schema defaults. Unlike `_system_meta` there is no list of shared keys — a plugin's
     // configuration is never platform-level once tenants exist.
     const current = `nullif(current_setting('app.tenant_id', true), '')`;
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       CREATE POLICY "_system_plugin_settings_tenant_isolation" ON "_system_plugin_settings"
         USING ("tenant_id" = ${current} OR ("tenant_id" IS NULL AND ${current} IS NULL))
         WITH CHECK (
@@ -434,7 +434,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
     // `key` is `TEXT` on Postgres/SQLite and `VARCHAR(191)` on MySQL: `tenant_id`/`plugin_slug` are
     // the composite primary key and `state` carries a DEFAULT, and MySQL accepts neither on a TEXT
     // column.
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_plugins" (
         "tenant_id" ${key} NOT NULL,
         "plugin_slug" ${key} NOT NULL,
@@ -445,7 +445,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
       )
     `));
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_tenant_plugins_tenant_idx" '
       + 'ON "_system_tenant_plugins" ("tenant_id")',
     ));
@@ -465,7 +465,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
    * instead, which is why this takes `insertKeyword` rather than being one shared statement.
    */
   private static async backfillFromActivePlugins(db: IDatabaseManager, insertKeyword = 'INSERT'): Promise<void> {
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       ${insertKeyword} INTO "_system_tenant_plugins" ("tenant_id", "plugin_slug", "state", "enabled_at")
       SELECT t."id", p."slug", 'active', CURRENT_TIMESTAMP
       FROM "_system_tenants" t
@@ -478,7 +478,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private static async createTableV25(
     db: IDatabaseManager, timestamp: string, json: string, key: string = 'TEXT',
   ): Promise<void> {
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       CREATE TABLE IF NOT EXISTS "_system_tenant_themes" (
         "tenant_id" ${key} NOT NULL,
         "theme_slug" ${key} NOT NULL,
@@ -488,7 +488,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
         CONSTRAINT "_system_tenant_themes_pk" PRIMARY KEY ("tenant_id", "theme_slug")
       )
     `));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       'CREATE INDEX IF NOT EXISTS "_system_tenant_themes_tenant_idx" ON "_system_tenant_themes" ("tenant_id")',
     ));
   }
@@ -501,7 +501,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
    * nothing either, and that is the truth rather than an invented default.
    */
   private static async backfillFromActiveTheme(db: IDatabaseManager, insertKeyword = 'INSERT'): Promise<void> {
-    await db.execute(sql.raw(`
+    await db.execute(Sql.raw(`
       ${insertKeyword} INTO "_system_tenant_themes" ("tenant_id", "theme_slug", "state", "config")
       SELECT t."id", p."slug", 'active', p."config"
       FROM "_system_tenants" t
@@ -518,7 +518,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
 
   /** Names the accounts about to lose the seat, so the change is never silent. */
   private async reportExtraOwners(db: IDatabaseManager): Promise<void> {
-    const result: any = await db.execute(sql`
+    const result: any = await db.execute(Sql.query`
       SELECT "id", "email" FROM "users"
        WHERE "is_platform_admin" = TRUE
          AND "id" <> (SELECT MIN("id") FROM "users" WHERE "is_platform_admin" = TRUE)
@@ -544,7 +544,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
 
   /** Re-running must not fail on a constraint that scoping already replaced. */
   private static async hasConstraint(db: IDatabaseManager, constraint: string): Promise<boolean> {
-    const rows = await db.execute(sql.raw(
+    const rows = await db.execute(Sql.raw(
       `SELECT 1 FROM pg_constraint WHERE conname = '${constraint}' `
       + `AND conrelid = '${MultiSitePlatformMigration.TABLE}'::regclass`,
     )) as unknown as { length?: number } | { rows?: unknown[] };
@@ -602,7 +602,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private async v020SystemTenants(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_tenants" (
             "id" TEXT PRIMARY KEY,
             "slug" TEXT NOT NULL UNIQUE,
@@ -613,12 +613,12 @@ export class MultiSitePlatformMigration extends BaseMigration {
             "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE INDEX IF NOT EXISTS "_system_tenants_state_idx" ON "_system_tenants" ("state")
         `);
       },
       sqlite: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_tenants" (
             "id" TEXT PRIMARY KEY,
             "slug" TEXT NOT NULL UNIQUE,
@@ -629,7 +629,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
             "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE INDEX IF NOT EXISTS "_system_tenants_state_idx" ON "_system_tenants" ("state")
         `);
       },
@@ -637,7 +637,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
         // "id", "slug" and "primary_host" are each a key (PK or UNIQUE) so none can be TEXT; "state"
         // is indexed below so it needs the same width. `host_aliases` drops the JSON default — MySQL
         // rejects a literal default on a JSON column — the framework writes '[]' on every insert.
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_tenants" (
             "id" VARCHAR(191) PRIMARY KEY,
             "slug" VARCHAR(191) NOT NULL UNIQUE,
@@ -893,11 +893,11 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private async v026IsolationIdentities(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`ALTER TABLE "_system_plugins" ADD COLUMN IF NOT EXISTS "isolation_uid" INTEGER`);
+        await db.execute(Sql.query`ALTER TABLE "_system_plugins" ADD COLUMN IF NOT EXISTS "isolation_uid" INTEGER`);
       },
       sqlite: async () => {
         try {
-          await db.execute(sql`ALTER TABLE "_system_plugins" ADD COLUMN "isolation_uid" INTEGER`);
+          await db.execute(Sql.query`ALTER TABLE "_system_plugins" ADD COLUMN "isolation_uid" INTEGER`);
         } catch (e: any) {
           const msg: string = (e?.message ?? '') + (e?.cause?.message ?? '');
           if (!msg.includes('duplicate column name')) throw e;
@@ -919,13 +919,13 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private async v027TenantKinds(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`ALTER TABLE "_system_tenants" ADD COLUMN IF NOT EXISTS "kind" TEXT NOT NULL DEFAULT 'site'`);
-        await db.execute(sql`ALTER TABLE "_system_tenants" ADD COLUMN IF NOT EXISTS "appearance" TEXT NOT NULL DEFAULT ''`);
+        await db.execute(Sql.query`ALTER TABLE "_system_tenants" ADD COLUMN IF NOT EXISTS "kind" TEXT NOT NULL DEFAULT 'site'`);
+        await db.execute(Sql.query`ALTER TABLE "_system_tenants" ADD COLUMN IF NOT EXISTS "appearance" TEXT NOT NULL DEFAULT ''`);
       },
       sqlite: async () => {
         for (const statement of [
-          sql`ALTER TABLE "_system_tenants" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'site'`,
-          sql`ALTER TABLE "_system_tenants" ADD COLUMN "appearance" TEXT NOT NULL DEFAULT ''`,
+          Sql.query`ALTER TABLE "_system_tenants" ADD COLUMN "kind" TEXT NOT NULL DEFAULT 'site'`,
+          Sql.query`ALTER TABLE "_system_tenants" ADD COLUMN "appearance" TEXT NOT NULL DEFAULT ''`,
         ]) {
           try {
             await db.execute(statement);
@@ -959,13 +959,13 @@ export class MultiSitePlatformMigration extends BaseMigration {
   private async v028RecordShares(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`ALTER TABLE "_system_file_shares" ADD COLUMN IF NOT EXISTS "resource_type" TEXT NOT NULL DEFAULT ''`);
-        await db.execute(sql`ALTER TABLE "_system_file_shares" ADD COLUMN IF NOT EXISTS "resource_ids" TEXT NOT NULL DEFAULT '[]'`);
+        await db.execute(Sql.query`ALTER TABLE "_system_file_shares" ADD COLUMN IF NOT EXISTS "resource_type" TEXT NOT NULL DEFAULT ''`);
+        await db.execute(Sql.query`ALTER TABLE "_system_file_shares" ADD COLUMN IF NOT EXISTS "resource_ids" TEXT NOT NULL DEFAULT '[]'`);
       },
       sqlite: async () => {
         for (const statement of [
-          sql`ALTER TABLE "_system_file_shares" ADD COLUMN "resource_type" TEXT NOT NULL DEFAULT ''`,
-          sql`ALTER TABLE "_system_file_shares" ADD COLUMN "resource_ids" TEXT NOT NULL DEFAULT '[]'`,
+          Sql.query`ALTER TABLE "_system_file_shares" ADD COLUMN "resource_type" TEXT NOT NULL DEFAULT ''`,
+          Sql.query`ALTER TABLE "_system_file_shares" ADD COLUMN "resource_ids" TEXT NOT NULL DEFAULT '[]'`,
         ]) {
           try {
             await db.execute(statement);
@@ -982,10 +982,10 @@ export class MultiSitePlatformMigration extends BaseMigration {
         // it to NOT NULL — by which point nothing is left NULL to reject.
         await ColumnGuard.addIfMissing(db, '_system_file_shares', 'resource_type', "VARCHAR(191) NOT NULL DEFAULT ''");
         await ColumnGuard.addIfMissing(db, '_system_file_shares', 'resource_ids', 'TEXT NULL');
-        await db.execute(sql`
+        await db.execute(Sql.query`
           UPDATE "_system_file_shares" SET "resource_ids" = '[]' WHERE "resource_ids" IS NULL
         `);
-        await db.execute(sql`ALTER TABLE "_system_file_shares" MODIFY COLUMN "resource_ids" TEXT NOT NULL`);
+        await db.execute(Sql.query`ALTER TABLE "_system_file_shares" MODIFY COLUMN "resource_ids" TEXT NOT NULL`);
       },
     });
   }
@@ -1014,23 +1014,23 @@ export class MultiSitePlatformMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           UPDATE "users" SET "is_platform_admin" = FALSE
            WHERE "is_platform_admin" = TRUE
              AND "id" <> (SELECT MIN("id") FROM "users" WHERE "is_platform_admin" = TRUE)
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE UNIQUE INDEX IF NOT EXISTS "users_single_platform_owner"
             ON "users" ("is_platform_admin") WHERE "is_platform_admin"
         `);
       },
       sqlite: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           UPDATE "users" SET "is_platform_admin" = 0
            WHERE "is_platform_admin" = 1
              AND "id" <> (SELECT MIN("id") FROM "users" WHERE "is_platform_admin" = 1)
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE UNIQUE INDEX IF NOT EXISTS "users_single_platform_owner"
             ON "users" ("is_platform_admin") WHERE "is_platform_admin" = 1
         `);
@@ -1038,7 +1038,7 @@ export class MultiSitePlatformMigration extends BaseMigration {
       mysql: async () => {
         // MySQL has no partial index, so the single-seat rule is upheld by PlatformOwnershipService
         // alone here. The demotion still runs, so the data matches the rule either way.
-        await db.execute(sql`
+        await db.execute(Sql.query`
           UPDATE "users" SET "is_platform_admin" = FALSE
            WHERE "is_platform_admin" = TRUE
              AND "id" <> (SELECT "id" FROM (SELECT MIN("id") AS "id" FROM "users" WHERE "is_platform_admin" = TRUE) AS "first")

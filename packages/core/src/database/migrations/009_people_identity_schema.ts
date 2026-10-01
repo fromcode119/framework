@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -16,7 +16,7 @@ export class PeopleIdentityMigration extends BaseMigration {
   async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people" (
             "id" SERIAL PRIMARY KEY,
             "user_id" INTEGER UNIQUE REFERENCES "users"("id") ON DELETE SET NULL,
@@ -46,10 +46,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_relationships" (
             "id" SERIAL PRIMARY KEY,
             "from_person_id" INTEGER NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
@@ -60,9 +60,9 @@ export class PeopleIdentityMigration extends BaseMigration {
             "updated_at" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people_addresses" (
             "id" SERIAL PRIMARY KEY,
             "person_id" INTEGER NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
@@ -81,7 +81,7 @@ export class PeopleIdentityMigration extends BaseMigration {
           )
         `);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
             "id" SERIAL PRIMARY KEY,
             "kind" TEXT NOT NULL,
@@ -95,7 +95,7 @@ export class PeopleIdentityMigration extends BaseMigration {
         `);
       },
       sqlite: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "user_id" INTEGER UNIQUE REFERENCES "users"("id") ON DELETE SET NULL,
@@ -125,10 +125,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_relationships" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "from_person_id" INTEGER NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
@@ -139,9 +139,9 @@ export class PeopleIdentityMigration extends BaseMigration {
             "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people_addresses" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "person_id" INTEGER NOT NULL REFERENCES "people"("id") ON DELETE CASCADE,
@@ -160,7 +160,7 @@ export class PeopleIdentityMigration extends BaseMigration {
           )
         `);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "kind" TEXT NOT NULL,
@@ -176,7 +176,7 @@ export class PeopleIdentityMigration extends BaseMigration {
       mysql: async () => {
         // Indexed or unique columns are bounded; everything else keeps the shape the other two use.
         // `email` and `phone` carry indexes, and ("kind","key") is a composite UNIQUE.
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "user_id" INT UNIQUE,
@@ -207,10 +207,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_email" ON "people" ("email")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_people_phone" ON "people" ("phone")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_relationships" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "from_person_id" INT NOT NULL,
@@ -223,10 +223,10 @@ export class PeopleIdentityMigration extends BaseMigration {
             FOREIGN KEY ("to_person_id") REFERENCES "people"("id") ON DELETE CASCADE
           )
         `);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_person_rel_to" ON "person_relationships" ("to_person_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_person_rel_from" ON "person_relationships" ("from_person_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_person_rel_to" ON "person_relationships" ("to_person_id")`);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "people_addresses" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "person_id" INT NOT NULL,
@@ -246,7 +246,7 @@ export class PeopleIdentityMigration extends BaseMigration {
           )
         `);
 
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "person_catalogs" (
             "id" INT AUTO_INCREMENT PRIMARY KEY,
             "kind" VARCHAR(96) NOT NULL,
@@ -270,8 +270,8 @@ export class PeopleIdentityMigration extends BaseMigration {
     const tables = ['person_catalogs', 'people_addresses', 'person_relationships', 'people'];
     for (const table of tables) {
       await DialectHelper.executeForDialect(db.dialect, {
-        postgres: async () => await db.execute(sql`DROP TABLE IF EXISTS "${sql.raw(table)}" CASCADE`),
-        default: async () => await db.execute(sql`DROP TABLE IF EXISTS "${sql.raw(table)}"`)
+        postgres: async () => await db.execute(Sql.query`DROP TABLE IF EXISTS "${Sql.raw(table)}" CASCADE`),
+        default: async () => await db.execute(Sql.query`DROP TABLE IF EXISTS "${Sql.raw(table)}"`)
       });
     }
   }

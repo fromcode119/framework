@@ -69,9 +69,15 @@ export type { IDatabaseBackupHandler } from '@database/dialects/interfaces/datab
 export type { IDatabaseDialectDefinition } from '@database/dialects/interfaces/database-dialect-definition.interface';
 export type { IDatabaseDialectResolver } from '@database/dialects/interfaces/database-dialect-resolver.interface';
 
-// Drizzle ORM re-exports
-export { sql, and, or, eq, ne, gt, gte, lt, lte, inArray, notInArray, isNull, isNotNull, exists, notExists, between, notBetween, like, notLike, ilike, notIlike, not, asc, desc, count, avg, sum, min, max, relations, extractTablesRelationalConfig } from 'drizzle-orm';
-export * from 'drizzle-orm/pg-core';
+// Building SQL: the tag and operators, declared tables and their columns, and rendering.
+export { Sql } from '@database/sql/sql';
+export { SqlFragment } from '@database/sql/sql-fragment';
+export { SqlTable } from '@database/sql/sql-table';
+export { SqlColumn } from '@database/sql/sql-column';
+export { SqlColumns } from '@database/sql/sql-columns';
+export { SqlColumnBuilder } from '@database/sql/sql-column-builder';
+export { SqlRenderer } from '@database/sql/sql-renderer';
+export type { ISqlTag } from '@database/interfaces/sql-tag.interface';
 
 // Type aliases for backward compatibility
 export type { IDatabaseManager as DatabaseManager } from '@database/interfaces/database-manager.interface';

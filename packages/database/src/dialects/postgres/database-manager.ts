@@ -1,9 +1,12 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { Client, type Pool } from 'pg';
-import { drizzle } from 'drizzle-orm/node-postgres';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
-import { pgTable, text } from 'drizzle-orm/pg-core';
+import { Sql } from '@database/sql/sql';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlFragment } from '@database/sql/sql-fragment';
+import { SqlRenderer } from '@database/sql/sql-renderer';
+import { SqlTable } from '@database/sql/sql-table';
+import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -48,17 +51,6 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     return (TenantConnectionScope.currentClient(this.pool) as any) ?? this.pool;
   }
 
-  /**
-   * Drizzle bound to the same connection as `executor`. The pool-wide instance is for untenanted
-   * callers only: a Drizzle statement issued INSIDE a scope on the pool would need a second client
-   * while the scope holds its own — ten concurrent scopes, ten held clients, and every such
-   * statement waits for an eleventh that never comes (the column normalizer had exactly this bug).
-   */
-  protected get orm(): any {
-    const client = TenantConnectionScope.currentClient(this.pool);
-    return client ? drizzle(client as any) : this.drizzle;
-  }
-  public readonly drizzle: any;
   public readonly dialect = 'postgres' as const;
   protected normalizer: PostgresColumnNormalizer;
   protected schemaBuilder: PostgresSchemaBuilder;
@@ -94,24 +86,23 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     new PostgresSchemaIntrospector((sqlText, values) => this.queryRaw(sqlText, values));
 
   // Standard operators
-  public readonly like = ilike;
-  public readonly eq = eq;
-  public readonly ne = ne;
-  public readonly and = and;
-  public readonly or = or;
-  public readonly isNull = isNull;
-  public readonly isNotNull = isNotNull;
-  public readonly inArray = inArray;
-  public readonly desc = desc;
-  public readonly asc = asc;
+  public readonly like = Sql.ilike;
+  public readonly eq = Sql.eq;
+  public readonly ne = Sql.ne;
+  public readonly and = Sql.and;
+  public readonly or = Sql.or;
+  public readonly isNull = Sql.isNull;
+  public readonly isNotNull = Sql.isNotNull;
+  public readonly inArray = Sql.inArray;
+  public readonly desc = Sql.desc;
+  public readonly asc = Sql.asc;
 
   constructor(private readonly connectionString: string) {
     super();
     this.pool = PostgresPoolFactory.open(connectionString);
-    this.drizzle = drizzle(this.pool);
     this.normalizer = new PostgresColumnNormalizer(this.pool);
     this.schemaBuilder = new PostgresSchemaBuilder(this);
-    this.reader = new PostgresReadOperations(this.pool, this.drizzle, this.normalizer, this.like);
+    this.reader = new PostgresReadOperations(this.pool, this.normalizer, this.like);
   }
 
   /**
@@ -251,11 +242,20 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     client.release();
   }
 
+  /**
+   * Runs a statement on the scope's connection. A fragment is rendered and bound; its timestamps,
+   * dates and intervals come back as the text Postgres sent, as they always have.
+   */
   async execute(query: any): Promise<any> {
     if (typeof query === 'string') {
       return this.executor.query(query);
     }
-    return this.orm.execute(query);
+    // A statement a plugin process built and flattened to `{ $sql, params }` to cross to the host.
+    if (typeof query?.$sql === 'string') {
+      return this.executor.query({ text: query.$sql, types: PostgresTableStatements.TYPES }, query.params ?? []);
+    }
+    const { text, params } = SqlRenderer.POSTGRES.render(query as SqlFragment);
+    return this.executor.query({ text, types: PostgresTableStatements.TYPES }, params);
   }
 
   invalidateTableCache(tableName: string): void {
@@ -265,9 +265,9 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   private getDynamicTable(tableName: string, columns: string[]): any {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(col);
+      tableColumns[col] = SqlColumns.text(col);
     }
-    return pgTable(tableName, tableColumns);
+    return SqlTable.define(tableName, tableColumns);
   }
 
   /**
@@ -279,8 +279,8 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     return `${quotedColumn}::text`;
   }
 
-  protected drizzlePatternColumn(column: any): any {
-    return sql`${column}::text`;
+  protected fragmentPatternColumn(column: any): any {
+    return Sql.query`${column}::text`;
   }
 
   protected getLikeOperator(): string {

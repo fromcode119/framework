@@ -1,10 +1,12 @@
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
-import { drizzle } from 'drizzle-orm/better-sqlite3';
 import Database from 'better-sqlite3';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
-import { sqliteTable, text } from 'drizzle-orm/sqlite-core';
+import { Sql } from '@database/sql/sql';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlTable } from '@database/sql/sql-table';
+import { SqlTableReads } from '@database/sql/sql-table-reads';
+import { SqliteTableStatements } from '@database/dialects/sqlite/sqlite-table-statements';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -17,23 +19,23 @@ import { SqliteReadOperations } from '@database/dialects/sqlite/read-operations'
 
 export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManager {
   private sqlite: Database.Database;
-  public readonly drizzle: any;
   public readonly dialect = 'sqlite' as const;
+  private statements: SqliteTableStatements;
   private normalizer: SqliteColumnNormalizer;
   private schemaBuilder: SqliteSchemaBuilder;
   private reader: SqliteReadOperations;
 
   // Standard operators
-  public readonly like = like;
-  public readonly eq = eq;
-  public readonly ne = ne;
-  public readonly and = and;
-  public readonly or = or;
-  public readonly isNull = isNull;
-  public readonly isNotNull = isNotNull;
-  public readonly inArray = inArray;
-  public readonly desc = desc;
-  public readonly asc = asc;
+  public readonly like = Sql.like;
+  public readonly eq = Sql.eq;
+  public readonly ne = Sql.ne;
+  public readonly and = Sql.and;
+  public readonly or = Sql.or;
+  public readonly isNull = Sql.isNull;
+  public readonly isNotNull = Sql.isNotNull;
+  public readonly inArray = Sql.inArray;
+  public readonly desc = Sql.desc;
+  public readonly asc = Sql.asc;
 
   constructor(connection: string) {
     super();
@@ -49,21 +51,21 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     const params = new URLSearchParams(queryIndex >= 0 ? stripped.slice(queryIndex + 1) : '');
     const readonly = params.get('mode') === 'ro';
     this.sqlite = new Database(dbPath, readonly ? { readonly: true, fileMustExist: true } : {});
-    this.drizzle = drizzle(this.sqlite);
+    this.statements = new SqliteTableStatements(this.sqlite);
     this.normalizer = new SqliteColumnNormalizer(this.sqlite);
     this.schemaBuilder = new SqliteSchemaBuilder(this);
-    this.reader = new SqliteReadOperations(this.sqlite, this.drizzle, this.normalizer, this.like);
+    this.reader = new SqliteReadOperations(this.sqlite, this.statements, this.normalizer, this.like);
   }
 
   async connect() {
     // SQLite is synchronous and connects immediately
   }
 
-  async execute(query: any) {
+  async execute(query: any): Promise<any> {
     if (typeof query === 'string') {
       return this.sqlite.exec(query);
     }
-    return this.drizzle.run(query);
+    return this.statements.run(query);
   }
 
   /**
@@ -100,9 +102,9 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   private getDynamicTable(tableName: string, columns: string[]) {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(NamingStrategy.toSnakeCase(col));
+      tableColumns[col] = SqlColumns.text(NamingStrategy.toSnakeCase(col));
     }
-    return sqliteTable(tableName, tableColumns);
+    return SqlTable.define(tableName, tableColumns);
   }
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
@@ -132,7 +134,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       return result || null;
     }
 
-    const [result] = await this.drizzle.insert(tableOrName).values(normalizedData).returning();
+    const [result] = this.statements.write(tableOrName, this.statements.writes.insertStatement(tableOrName, normalizedData));
     return result;
   }
 
@@ -158,23 +160,17 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       return results[0] || null;
     }
 
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    const [result] = await this.drizzle.update(tableOrName)
-      .set(normalizedData)
-      .where(and(...conditions))
-      .returning();
-
+    // With no filter this used to run with NO where — every row rewritten. Refused, as a delete is.
+    const filter = SqlTableReads.filter(this.buildWhereConditions(where, tableOrName), where);
+    const [result] = this.statements.write(tableOrName, this.statements.writes.updateStatement(tableOrName, normalizedData, filter));
     return result;
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const normalizedData = this.normalizeDataForSchemaObject(data);
     const normalizedSet = this.normalizeDataForSchemaObject(options.set);
-    const query = this.drizzle.insert(tableOrName).values(normalizedData).onConflictDoUpdate({
-      target: typeof options.target === 'string' ? (tableOrName as any)[options.target] : options.target,
-      set: normalizedSet
-    }).returning();
-    const [result] = await query;
+    const target = typeof options.target === 'string' ? (tableOrName as any)[options.target] : options.target;
+    const [result] = this.statements.write(tableOrName, this.statements.writes.upsertStatement(tableOrName, normalizedData, target, normalizedSet));
     return result;
   }
 
@@ -214,18 +210,8 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
       return result.changes > 0;
     }
 
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    let query = this.drizzle.delete(tableOrName);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    } else {
-      throw new Error('Unsafe delete blocked: missing where clause');
-    }
-    const result = await query.returning();
-    return result.length > 0;
+    const filter = SqlTableReads.filter(this.buildWhereConditions(where, tableOrName), where);
+    return this.statements.write(tableOrName, this.statements.writes.deleteStatement(tableOrName, filter)).length > 0;
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
@@ -246,18 +232,17 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   // Schema Management
   async getTables(): Promise<string[]> {
-    const result: any = await this.drizzle.all(sql`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);
+    const result: any = this.statements.all(Sql.query`SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'`);
     return result.map((r: any) => r.name);
   }
 
   async tableExists(tableName: string): Promise<boolean> {
-    const query = sql`SELECT count(*) as total FROM sqlite_master WHERE type='table' AND name=${tableName}`;
-    const result: any = await this.drizzle.all(query);
+    const result: any = this.statements.all(Sql.query`SELECT count(*) as total FROM sqlite_master WHERE type='table' AND name=${tableName}`);
     return (result[0]?.total || 0) > 0;
   }
 
   async getColumns(tableName: string): Promise<string[]> {
-    const result: any = await this.drizzle.all(sql`PRAGMA table_info(${sql.identifier(tableName)})`);
+    const result: any = this.statements.all(Sql.query`PRAGMA table_info(${Sql.identifier(tableName)})`);
     return result.map((r: any) => r.name.toLowerCase());
   }
 
@@ -276,7 +261,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   async resetDatabase(): Promise<void> {
     const tables = await this.getTables();
     for (const table of tables) {
-      await this.execute(sql`DROP TABLE ${sql.identifier(table)}`);
+      await this.execute(Sql.query`DROP TABLE ${Sql.identifier(table)}`);
     }
   }
 

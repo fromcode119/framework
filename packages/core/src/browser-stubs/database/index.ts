@@ -5,6 +5,5 @@ export { NamingStrategy } from '@core/browser-stubs/database/naming-strategy';
 export { DatabaseFactory } from '@core/browser-stubs/database/database-factory';
 export { DatabaseConnectionUrls } from '@core/browser-stubs/database/database-connection-urls';
 export { Schema } from '@core/browser-stubs/database/schema';
-export { sql } from '@core/browser-stubs/database/sql';
-export { eq } from '@core/browser-stubs/database/eq';
+export { Sql } from '@core/browser-stubs/database/sql';
 export type { IDatabaseManager } from '@core/browser-stubs/database/interfaces/database-manager.interface';

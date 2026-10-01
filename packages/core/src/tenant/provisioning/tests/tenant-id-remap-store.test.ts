@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 import { TenantIdRemapStore } from '@core/tenant/provisioning/tenant-id-remap-store';
+import { SqlRenderer } from '@fromcode119/database';
 
 /**
  * The map an import builds is worth keeping, because reconstructing it afterwards is the expensive
@@ -13,20 +14,16 @@ import { TenantIdRemapStore } from '@core/tenant/provisioning/tenant-id-remap-st
  * cheap alternative being correct.
  */
 describe('TenantIdRemapStore', () => {
-  /** The SQL a statement carries, whether it arrived as a string or as a `sql.raw()` object. */
-  const textOf = (statement: any): string => {
-    if (typeof statement === 'string') return statement;
-    const chunks = statement?.queryChunks ?? [];
-    return chunks.map((chunk: any) => (chunk?.value ?? []).join('')).join('');
-  };
+  /** The SQL a statement carries, whether it arrived as a string or as a built `Sql` statement. */
+  const textOf = (statement: any): string => (typeof statement === 'string' ? statement : SqlRenderer.POSTGRES.render(statement).text);
 
   /** A database that records what it was asked to run, and answers from rows put in front of it. */
   const fakeDb = (rows: any[] = []) => {
     const executed: string[] = [];
     return {
       executed,
-      // `sql.raw()` keeps its text in `queryChunks`, not on a `.sql` property — stringifying the
-      // object itself yields "[object Object]" and a test that can never match.
+      // A built statement is rendered for its text — stringifying the object would yield
+      // "[object Object]" and a test that can never match.
       execute: async (statement: any) => { executed.push(textOf(statement)); return []; },
       queryRaw: async (statement: any) => { executed.push(String(statement)); return rows; },
     } as any;

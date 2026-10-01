@@ -8,7 +8,7 @@ import path from 'node:path';
  * What a plugin process loads when it imports `@fromcode119/sdk/server`.
  *
  * Every plugin runs in its own process and nearly all of them import this entry. It used to re-export
- * `APIServer`, and through it the whole api — graphql, drizzle, archiver, the MCP server — plus the core
+ * `APIServer`, and through it the whole api — graphql, the database layer, archiver, the MCP server — plus the core
  * index and the image library: about 2,200 modules and 70 MB in every plugin process, for plugins that
  * only wanted `BaseController`. Twenty-one plugins made the api container 2 GB.
  *

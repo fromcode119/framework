@@ -2,7 +2,10 @@ import { AggregateStatementBuilder } from '@database/dialects/aggregate-statemen
 import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { Pool } from 'mysql2/promise';
-import { sql, and, or, like, count as drizzleCount } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
+import { SqlRenderer } from '@database/sql/sql-renderer';
+import { SqlTableReads } from '@database/sql/sql-table-reads';
+import type { MysqlTableStatements } from '@database/dialects/mysql/mysql-table-statements';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { MysqlColumnNormalizer } from '@database/dialects/mysql/column-normalizer';
 
@@ -14,14 +17,14 @@ import { MysqlColumnNormalizer } from '@database/dialects/mysql/column-normalize
  */
 export class MysqlReadOperations extends BaseDialect {
   private pool: Pool;
-  private drizzle: any;
+  private statements: MysqlTableStatements;
   private normalizer: MysqlColumnNormalizer;
   public readonly like: any;
 
-  constructor(pool: Pool, drizzle: any, normalizer: MysqlColumnNormalizer, likeOp: any) {
+  constructor(pool: Pool, statements: MysqlTableStatements, normalizer: MysqlColumnNormalizer, likeOp: any) {
     super();
     this.pool = pool;
-    this.drizzle = drizzle;
+    this.statements = statements;
     this.normalizer = normalizer;
     this.like = likeOp;
   }
@@ -74,24 +77,9 @@ export class MysqlReadOperations extends BaseDialect {
         return this.processJoinedRows(rows, joins);
         }
 
-        let query;
-        if (columns && Object.keys(columns).length > 0) {
-        const selectFields: Record<string, any> = {};
-        for (const [key, value] of Object.entries(columns)) {
-            if (value) {
-            selectFields[key] = sql`${sql.identifier(key)}`;
-            }
-        }
-        query = this.drizzle.select(selectFields).from(sql`${sql.identifier(tableOrName)}`);
-        } else {
-        // `select()` with no fields renders an EMPTY select list against a raw `from` on this
-        // driver — `select  from \`t\``, a syntax error. Since a bare `find(table)` passes no
-        // columns, that is most reads on MySQL. The star is spelled out, and the result is executed
-        // as raw SQL below so the rows come back keyed by their real column names rather than by
-        // this placeholder.
-        query = this.drizzle.select({ '*': sql`*` }).from(sql`${sql.identifier(tableOrName)}`);
-        selectedEverything = true;
-        }
+        // Named columns are read by their keys; a bare `find` reads every column, keyed by its real name.
+        const picked = columns ? Object.entries(columns).filter(([, value]) => value).map(([key]) => key) : [];
+        const list = picked.length > 0 ? Sql.join(picked.map((key) => Sql.identifier(key)), Sql.raw(', ')) : Sql.raw('*');
 
         const allConditions: any[] = [];
         if (normalizedWhere) {
@@ -102,128 +90,61 @@ export class MysqlReadOperations extends BaseDialect {
         }
         }
         const searchArg = await this.resolveSearchArg(this.normalizer, tableOrName, search);
-        if (searchArg) {
-        const pattern = `%${searchArg.value}%`;
-        const likeConditions = searchArg.columns.map((col: string) => like(this.resolveColumn(col), pattern));
-        allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
-        }
-        if (allConditions.length > 0) {
-        query = query.where(and(...allConditions));
-        }
-
+        if (searchArg) allConditions.push(this.stringSearch(searchArg));
+        const filter = Sql.and(...allConditions);
         const orderExprs = this.buildOrderBy(orderBy);
-        if (orderExprs) {
-        query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
-        }
+        const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : [];
 
-        if (limit) query = query.limit(limit);
-        if (offset) query = query.offset(offset);
-
-        // NOT `const [rows] = await query`. Drizzle's mysql2 `execute()` resolves to
-        // `[rows, fields]`, but a SELECT BUILDER resolves to the rows array itself — so destructuring
-        // took the FIRST ROW and returned it as if it were the result set. Every `find()` on this
-        // driver returned one object instead of an array, which is why `MigrationManager` failed with
-        // "executed.map is not a function" the first time MySQL was actually run.
-        // Composed by the builder, executed raw: drizzle maps a mapped selection onto ITS keys, which
-        // for the star placeholder above would hand every caller `{ '*': ... }` instead of columns.
-        if (selectedEverything) {
-          const { sql: text, params } = query.toSQL();
-          return await this.executeRawSelect(text, params as any[]);
-        }
-
-        const rows = await query;
-        return Array.isArray(rows) ? rows : [];
+        const { text, params } = SqlRenderer.MYSQL.render(Sql.join([
+          Sql.query`select ${list} from ${Sql.identifier(tableOrName)}`,
+          filter ? Sql.query` where ${filter}` : Sql.empty(),
+          orderList.length > 0 ? Sql.query` order by ${Sql.join(orderList, Sql.raw(', '))}` : Sql.empty(),
+          limit ? Sql.query` limit ${limit}` : Sql.empty(),
+          offset ? Sql.query` offset ${offset}` : Sql.empty(),
+        ]));
+        if (picked.length === 0) return await this.executeRawSelect(text, params as any[]);
+        const rows = await this.statements.arrays(text, params);
+        return rows.map((row) => Object.fromEntries(picked.map((key, index) => [key, row[index]])));
     }
 
-    // tableOrName is a Drizzle table schema object
-    let query: any;
-
-    if (columns && Object.keys(columns).length > 0) {
-      const selection: Record<string, any> = {};
-      for (const [key, val] of Object.entries(columns)) {
-        if (val) selection[key] = (tableOrName as any)[key];
-      }
-      query = this.drizzle.select(selection).from(tableOrName);
-    } else {
-      query = this.drizzle.select().from(tableOrName);
-    }
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const allConditions: any[] = [];
-    if (where) {
-      if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        allConditions.push(...this.buildWhereConditions(where, tableOrName));
-      } else {
-        allConditions.push(where);
-      }
-    }
-    if (search && search.columns.length > 0 && search.value) {
-      const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) =>
-        this.like(this.resolveColumn(col, tableOrName), pattern)
-      );
-      allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
-    }
-    if (allConditions.length > 0) {
-      query = query.where(and(...allConditions));
-    }
-
+    // A declared table.
+    const match = this.searchCondition(tableOrName, search);
     const orderExprs = this.buildOrderBy(orderBy);
-    if (orderExprs) {
-      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
-    }
+    const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
+    const filter = SqlTableReads.filterWithSearch(this.buildWhereConditions(where, tableOrName), where, match);
+    return this.statements.find(tableOrName, { columns, joins, where: filter, orderBy: orderList, limit, offset });
+  }
 
-    if (limit) query = query.limit(limit);
-    if (offset) query = query.offset(offset);
+  /** A table-by-name search, already resolved to its real columns. */
+  private stringSearch(search: { columns: string[]; value: string }): any {
+    const pattern = `%${search.value}%`;
+    const matches = search.columns.map((col: string) => Sql.like(this.resolveColumn(col), pattern));
+    return matches.length === 1 ? matches[0] : Sql.or(...matches);
+  }
 
-    // Same as the string-table branch above: a select builder resolves to the rows, not to
-    // `[rows, fields]`.
-    const results = await query;
-    return Array.isArray(results) ? results : [];
+  /** The search over named columns, as one condition — or none. A table by name resolves its columns first. */
+  private searchCondition(table: any, search: any): any {
+    if (!(search && search.columns.length > 0 && search.value)) return undefined;
+    const pattern = `%${search.value}%`;
+    const matches = search.columns.map((col: string) => this.like(this.resolveColumn(col, typeof table === 'string' ? undefined : table), pattern));
+    return matches.length === 1 ? matches[0] : Sql.or(...matches);
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { where, joins } = options;
+    const { where, joins, search } = options;
     const isString = typeof tableOrName === 'string';
-    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
+    const isPlain = !!normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
+    const conditions = isPlain ? this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName) : [];
+    // The same search `find` applies, so the total describes the list being shown.
+    const searchArg = isString ? await this.resolveSearchArg(this.normalizer, tableOrName, search) : search;
+    const filter = SqlTableReads.filterWithSearch(conditions, normalizedWhere, isString && searchArg ? this.stringSearch(searchArg) : this.searchCondition(tableOrName, searchArg));
+    if (!isString) return this.statements.count(tableOrName, { joins, where: filter });
 
-    // `drizzleCount()` renders to nothing against a RAW `from` on this driver — the emitted SQL was
-    // `select  from \`t\``, a syntax error, so `count()` never returned a number at all. Spelling the
-    // aggregate out keeps it independent of how the builder treats a raw table identifier.
-    let query = this.drizzle.select({ total: sql<number>`count(*)`.as('total') }).from(tableIdentifier);
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const conditions: any[] = [];
-    if (normalizedWhere) {
-      if (typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype) {
-        conditions.push(...this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName));
-      } else {
-        conditions.push(normalizedWhere);
-      }
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    // Same destructuring mistake as `find`, and quieter: `[result]` took the single count ROW, so
-    // `result[0]` was undefined and this returned 0 for EVERY table. Nothing errors on a count of
-    // zero — it just makes an empty platform out of a full one, which is how `TenantMode` would have
-    // read "no tenants" on a MySQL deployment that had them.
-    const rows = await query;
+    const joined = joins && joins.length > 0
+      ? joins.map((join: any) => Sql.query` ${Sql.raw(join.type === 'left' ? 'left' : 'inner')} join ${typeof join.table === 'string' ? Sql.identifier(join.table) : join.table}${join.on ? Sql.query` on ${join.on}` : undefined}`)
+      : [];
+    const [rows] = await this.statements.run(Sql.query`select count(*) as ${Sql.identifier('total')} from ${Sql.identifier(tableOrName)}${Sql.join(joined)}${filter ? Sql.query` where ${filter}` : undefined}`);
     return Number((Array.isArray(rows) ? rows[0] : undefined)?.total || 0);
   }
 }

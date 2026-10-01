@@ -1,10 +1,10 @@
-import { sql, or, eq, ne, gt, gte, lt, lte, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import { WhereComparison } from '@database/dialects/where-comparison';
 import type { ISqlDialectHooks } from '@database/interfaces/sql-dialect-hooks.interface';
 
 /**
- * Turns one WHERE description into SQL — as raw text with bound values, or as drizzle conditions.
+ * Turns one WHERE description into SQL — as raw text with bound values, or as `Sql` condition fragments.
  *
  * COMPOSED, NOT INHERITED, which is the reason this class exists at all. It was ~115 lines inside
  * `BaseDialect`, and the obvious way to split that file — make predicates a base class — does not
@@ -27,34 +27,34 @@ export class SqlPredicateRenderer {
 
   /**
    * Build WHERE clause conditions from a plain object
-   * Converts { id: 1, status: 'active' } into drizzle condition array
+   * Converts { id: 1, status: 'active' } into an array of condition fragments
    *
    * Keys are canonical camelCase field names; `resolveColumn` maps each to the real column (see there).
-   * Pass `tableOrName` whenever the caller has a drizzle table object so its declared columns win.
+   * Pass `tableOrName` whenever the caller has a declared table so its declared columns win.
    */
   buildWhereConditions(where: any, tableOrName?: any): any[] {
     if (typeof where !== 'object' || where === null) return [];
     if (Object.getPrototypeOf(where) !== Object.prototype) return [];
 
     // Same parse as the raw-SQL path, so `{ createdAt: { gte, lte } }` means the same range whether the
-    // caller reached a drizzle table object or a string table name.
+    // caller reached a declared table or a string table name.
     return WhereClauseParser.parse(where).map((comparison) => {
       const column = this.dialect.resolveColumn(comparison.column, tableOrName);
       // Same null rule as the raw-SQL paths: absence is IS NULL / IS NOT NULL, never `= NULL`.
       if (comparison.value === null) {
-        if (comparison.operator === 'eq') return isNull(column);
-        if (comparison.operator === 'ne') return isNotNull(column);
+        if (comparison.operator === 'eq') return Sql.isNull(column);
+        if (comparison.operator === 'ne') return Sql.isNotNull(column);
         throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
       }
       if (comparison.isSet) {
         // Drizzle's own inArray/notInArray REJECT an empty list at runtime. An empty set is a real
         // thing to ask for, though — "any of the ids this page selected", where the page selected
         // none — so it renders as the constant it means, rather than throwing at the call site.
-        if (comparison.values.length === 0) return comparison.operator === 'in' ? sql`1 = 0` : sql`1 = 1`;
-        return comparison.operator === 'in' ? inArray(column, comparison.values) : notInArray(column, comparison.values);
+        if (comparison.values.length === 0) return comparison.operator === 'in' ? Sql.query`1 = 0` : Sql.query`1 = 1`;
+        return comparison.operator === 'in' ? Sql.inArray(column, comparison.values) : Sql.notInArray(column, comparison.values);
       }
-      if (comparison.isPattern) return this.drizzlePatternCondition(column, comparison);
-      return SqlPredicateRenderer.DRIZZLE_OPERATORS[comparison.operator](column, comparison.value);
+      if (comparison.isPattern) return this.fragmentPatternCondition(column, comparison);
+      return SqlPredicateRenderer.FRAGMENT_OPERATORS[comparison.operator](column, comparison.value);
     });
   }
   /**
@@ -117,19 +117,19 @@ export class SqlPredicateRenderer {
     return `${this.dialect.patternColumnExpression(quotedColumn)} ${this.dialect.getLikeOperator()} ${this.dialect.getParamPlaceholder(values.length)} ESCAPE '${WhereComparison.LIKE_ESCAPE}'`;
   }
   /**
-   * The drizzle equivalent of `renderPatternPredicate`.
+   * The fragment equivalent of `renderPatternPredicate`.
    *
    * Drizzle's `like`/`ilike` helpers emit no ESCAPE clause, so a pattern built through them would let
    * a user's own `%` act as a wildcard. This keeps the escape character the raw paths use, and asks
    * the dialect for the same operator (Postgres answers ILIKE), so a search means one thing whether
    * the caller reached a typed table or a table name.
    */
-  drizzlePatternCondition(column: any, comparison: WhereComparison): any {
-    return sql`${this.dialect.drizzlePatternColumn(column)} ${sql.raw(this.dialect.getLikeOperator())} ${comparison.likePattern} ESCAPE ${sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
+  fragmentPatternCondition(column: any, comparison: WhereComparison): any {
+    return Sql.query`${this.dialect.fragmentPatternColumn(column)} ${Sql.raw(this.dialect.getLikeOperator())} ${comparison.likePattern} ESCAPE ${Sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
   }
-  /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
-  private static readonly DRIZZLE_OPERATORS: Record<string, (column: any, value: any) => any> = {
-    eq, ne, gt, gte, lt, lte,
+  /** Canonical operator name -> condition builder, keyed exactly like WhereComparison. */
+  private static readonly FRAGMENT_OPERATORS: Record<string, (column: any, value: any) => any> = {
+    eq: Sql.eq, ne: Sql.ne, gt: Sql.gt, gte: Sql.gte, lt: Sql.lt, lte: Sql.lte,
   };
   /**
    * Build raw SQL WHERE clause for string-based queries
@@ -159,22 +159,22 @@ export class SqlPredicateRenderer {
   }
 
   /**
-   * The drizzle twin of the OR-ed LIKE group `buildRawFilterSQL` appends, so `count` can apply the
+   * The fragment twin of the OR-ed LIKE group `buildRawFilterSQL` appends, so `count` can apply the
    * SAME search `find` did.
    *
    * It could not, until now: `count` accepted only `where`, so a searched list showed the total of
    * the UNSEARCHED table — "1 of 240 results" under a list of one. A total that does not describe the
    * list beside it is a lie the operator has no way to spot.
    */
-  drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
+  fragmentSearchCondition(search?: { columns: string[]; value: string }): any {
     if (!search || search.columns.length === 0 || !search.value) return null;
     const pattern = `%${WhereComparison.escapeLikeOperand(search.value)}%`;
-    const escapeClause = sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
-    const likeOperator = sql.raw(this.dialect.getLikeOperator());
+    const escapeClause = Sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
+    const likeOperator = Sql.raw(this.dialect.getLikeOperator());
     const parts = search.columns.map(
-      (column) => sql`${sql.raw(this.dialect.patternColumnExpression(this.dialect.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
+      (column) => Sql.query`${Sql.raw(this.dialect.patternColumnExpression(this.dialect.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
     );
-    return parts.length === 1 ? parts[0] : or(...parts);
+    return parts.length === 1 ? parts[0] : Sql.or(...parts);
   }
 
 }

@@ -27,8 +27,8 @@ export class NamingStrategy {
    * plain identifier.
    *
    * Column names are the one caller-supplied value that reaches SQL as CODE rather than as a bound
-   * parameter, and neither plain double-quoting nor drizzle's `sql.identifier` escapes an embedded
-   * double quote — such a name would close the quoted identifier and inject. Canonical schema field
+   * parameter, and plain double-quoting does not escape an embedded double quote — such a name would
+   * close the quoted identifier and inject. Canonical schema field
    * names are always plain identifiers, so anything else is rejected rather than escaped.
    */
   static toSafeColumnIdentifier(field: string): string {

@@ -1,6 +1,5 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import { NamingStrategy, TableArgMethods } from '@fromcode119/database';
-import { sql, eq, and, or } from 'drizzle-orm';
+import { NamingStrategy, Sql, TableArgMethods } from '@fromcode119/database';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
@@ -167,10 +166,11 @@ export class DatabaseContextProxy {
       const view = (name: string, next: { resolveLocalized: boolean; includeArchived: boolean }) => views.get(name)
         ?? views.set(name, DatabaseContextProxy.createDatabaseProxy(plugin, manager, security, next)).get(name);
 
-      const wrappedSql = new Proxy(sql, {
+      const tag = Sql.tag();
+      const wrappedSql = new Proxy(tag, {
         get: (target, prop) => {
           if (prop === 'identifier') {
-            return (name: string) => sql.identifier(`${tablePrefix}${name}`);
+            return (name: string) => Sql.identifier(`${tablePrefix}${name}`);
           }
           return (target as any)[prop];
         },
@@ -189,9 +189,9 @@ export class DatabaseContextProxy {
           }
 
           if (prop === 'sql') return wrappedSql;
-          if (prop === 'eq') return eq;
-          if (prop === 'and') return and;
-          if (prop === 'or') return or;
+          if (prop === 'eq') return Sql.eq;
+          if (prop === 'and') return Sql.and;
+          if (prop === 'or') return Sql.or;
           if (prop === 'stored') return resolveLocalized ? view('stored', { resolveLocalized: false, includeArchived }) : proxy;
           if (prop === 'withArchived') return includeArchived ? proxy : view('withArchived', { resolveLocalized, includeArchived: true });
 

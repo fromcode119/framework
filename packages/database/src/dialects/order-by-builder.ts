@@ -1,5 +1,5 @@
 import { SortDirection } from '@database/enums/sort-direction.enum';
-import { sql, desc, asc } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { NamingStrategy } from '@database/naming-strategy';
 
 /**
@@ -37,12 +37,12 @@ export class OrderByBuilder {
 
   /**
    * Build ORDER BY clause from various formats
-   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or drizzle expressions
+   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or built order expressions
    */
   buildOrderBy(orderBy: any): any {
     if (!orderBy) return null;
 
-    // Array of drizzle expressions - pass through
+    // Array of built order expressions - pass through
     if (Array.isArray(orderBy)) {
       return orderBy;
     }
@@ -53,8 +53,8 @@ export class OrderByBuilder {
       const parts = this.parseOrderByString(orderBy);
       if (parts.length === 0) return null;
       return parts.map((part) => {
-        const orderFn = part.direction === SortDirection.DESC ? desc : asc;
-        return orderFn(sql.identifier(NamingStrategy.toSafeColumnIdentifier(part.column)));
+        const orderFn = part.direction === SortDirection.DESC ? Sql.desc : Sql.asc;
+        return orderFn(Sql.identifier(NamingStrategy.toSafeColumnIdentifier(part.column)));
       });
     }
 
@@ -63,8 +63,8 @@ export class OrderByBuilder {
     // gate, so neither shape can put an unvalidated name into an identifier position.
     if (typeof orderBy === 'object' && Object.getPrototypeOf(orderBy) === Object.prototype) {
       return Object.entries(orderBy).map(([column, direction]) => {
-        const orderFn = String(direction).toLowerCase() === 'desc' ? desc : asc;
-        return orderFn(sql.identifier(NamingStrategy.toSafeColumnIdentifier(column)));
+        const orderFn = String(direction).toLowerCase() === 'desc' ? Sql.desc : Sql.asc;
+        return orderFn(Sql.identifier(NamingStrategy.toSafeColumnIdentifier(column)));
       });
     }
 

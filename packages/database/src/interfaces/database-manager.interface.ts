@@ -11,11 +11,10 @@ import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
 
 /**
- * Interface representing a database manager that provides access to Drizzle ORM
- * and high-level CRUD operations.
+ * Interface representing a database manager: high-level CRUD operations, and statements built with
+ * `Sql`.
  */
 export interface IDatabaseManager {
-  readonly drizzle: any; 
   readonly dialect: string;
   
   // Dialect-aware operators
@@ -36,8 +35,8 @@ export interface IDatabaseManager {
   /**
    * One parametrized SQL statement, returning its rows. Runs on the SAME connection the manager would
    * use for any other statement — inside a tenant scope that is the held client carrying
-   * `app.tenant_id`, so row-level security applies. `execute` with a drizzle `sql` template goes
-   * through drizzle's own pool and does NOT, which is why this exists: raw, parametrized, tenant-bound.
+   * `app.tenant_id`, so row-level security applies. `execute` takes a built `Sql` statement on the same
+   * connection; this takes text and values, for SQL written by hand.
    */
   queryRaw(sqlText: string, values?: unknown[]): Promise<Array<Record<string, unknown>>>;
 

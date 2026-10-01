@@ -1,5 +1,5 @@
 import { RowTimestampColumn } from '@database/row-timestamp-column';
-import { sql } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { NamingStrategy } from '@database/naming-strategy';
@@ -27,20 +27,20 @@ export class SqliteSchemaBuilder {
     const fieldSnakeNames = fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
-      columnDefs.push(sql`id INTEGER PRIMARY KEY AUTOINCREMENT`);
+      columnDefs.push(Sql.query`id INTEGER PRIMARY KEY AUTOINCREMENT`);
     }
     if (!fieldSnakeNames.includes('created_at')) {
-      columnDefs.push(sql`created_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+      columnDefs.push(Sql.query`created_at TEXT DEFAULT CURRENT_TIMESTAMP`);
     }
     if (!fieldSnakeNames.includes('updated_at')) {
-      columnDefs.push(sql`updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
+      columnDefs.push(Sql.query`updated_at TEXT DEFAULT CURRENT_TIMESTAMP`);
     }
 
     for (const field of fields) {
       columnDefs.push(this.fieldToSqlFragment(field));
     }
 
-    const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
+    const query = Sql.query`CREATE TABLE ${Sql.identifier(tableName)} (${Sql.join(columnDefs, Sql.query`, `)})`;
     await this.host.execute(query);
     this.host.invalidateTableCache(tableName);
   }
@@ -50,10 +50,10 @@ export class SqliteSchemaBuilder {
     // SQLite likewise refuses a NOT NULL column without a default on a populated table; SQLite cannot
     // drop a default afterwards, so the type's empty value stays as the column default here.
     if (field.required && field.defaultValue === undefined) {
-      const backfill = field.type === 'number' || field.type === 'boolean' ? sql.raw('0') : field.type === 'date' ? sql.raw('CURRENT_TIMESTAMP') : sql.raw("''");
-      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef} DEFAULT ${backfill}`);
+      const backfill = field.type === 'number' || field.type === 'boolean' ? Sql.raw('0') : field.type === 'date' ? Sql.raw('CURRENT_TIMESTAMP') : Sql.raw("''");
+      await this.host.execute(Sql.query`ALTER TABLE ${Sql.identifier(tableName)} ADD COLUMN ${columnDef} DEFAULT ${backfill}`);
     } else {
-      await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+      await this.host.execute(Sql.query`ALTER TABLE ${Sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
     }
     if (field.unique) {
       await this.createUniqueIndex(tableName, NamingStrategy.toSnakeCase(field.name));
@@ -67,13 +67,13 @@ export class SqliteSchemaBuilder {
       .replace(/_+/g, '_');
 
     await this.host.execute(
-      sql`CREATE UNIQUE INDEX IF NOT EXISTS ${sql.identifier(indexName)} ON ${sql.identifier(tableName)} (${sql.identifier(columnName)})`
+      Sql.query`CREATE UNIQUE INDEX IF NOT EXISTS ${Sql.identifier(indexName)} ON ${Sql.identifier(tableName)} (${Sql.identifier(columnName)})`
     );
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {
-    await this.host.execute(sql`
-      CREATE TABLE IF NOT EXISTS ${sql.identifier(tableName)} (
+    await this.host.execute(Sql.query`
+      CREATE TABLE IF NOT EXISTS ${Sql.identifier(tableName)} (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         name TEXT NOT NULL,
         version INTEGER NOT NULL,
@@ -86,11 +86,11 @@ export class SqliteSchemaBuilder {
   private fieldToSqlFragment(field: ISchemaField, options: { includeUnique?: boolean } = {}): any {
     const dbName = NamingStrategy.toSnakeCase(field.name);
     const includeUnique = options.includeUnique !== false;
-    let type = sql`TEXT`;
+    let type = Sql.query`TEXT`;
 
     switch (field.type) {
-      case 'number': type = sql`REAL`; break;
-      case 'boolean': type = sql`INTEGER`; break;
+      case 'number': type = Sql.query`REAL`; break;
+      case 'boolean': type = Sql.query`INTEGER`; break;
       case 'json':
       case 'relationship':
       case 'upload':
@@ -101,28 +101,28 @@ export class SqliteSchemaBuilder {
       case 'date':
       case 'datetime':
       default:
-        type = sql`TEXT`;
+        type = Sql.query`TEXT`;
     }
 
     const constraints: any[] = [];
-    if (field.required) constraints.push(sql`NOT NULL`);
-    if (includeUnique && field.unique) constraints.push(sql`UNIQUE`);
+    if (field.required) constraints.push(Sql.query`NOT NULL`);
+    if (includeUnique && field.unique) constraints.push(Sql.query`UNIQUE`);
 
     if (field.defaultValue !== undefined) {
       if (typeof field.defaultValue === 'string') {
-        constraints.push(sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
+        constraints.push(Sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
       } else if (typeof field.defaultValue === 'boolean') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue ? 1 : 0}`));
+        constraints.push(Sql.raw(`DEFAULT ${field.defaultValue ? 1 : 0}`));
       } else if (typeof field.defaultValue === 'number') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
+        constraints.push(Sql.raw(`DEFAULT ${field.defaultValue}`));
       }
     }
 
     // SQLite refuses a non-constant default on ADD COLUMN, so only a CREATE TABLE gets it here.
     if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue) && includeUnique) {
-      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
+      constraints.push(Sql.query`DEFAULT CURRENT_TIMESTAMP`);
     }
 
-    return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;
+    return Sql.query`${Sql.identifier(dbName)} ${type} ${Sql.join(constraints, Sql.query` `)}`;
   }
 }

@@ -190,7 +190,7 @@ class AdminNextConfig {
     // The admin/frontend apps never run these directly — all data access goes
     // through the API server via HTTP. core/src statically imports from these
     // packages; we replace them with a no-op proxy so webpack doesn't chase
-    // server-only imports (drizzle-orm, pg, nodemailer, ffmpeg, etc.).
+    // server-only imports (pg, nodemailer, ffmpeg, etc.).
     for (const [pkg, stub] of Object.entries(NextConfigAliases.getServerOnlyStubFiles())) {
       config.resolve.alias[`${pkg}$`] = stub;
     }

@@ -1,4 +1,5 @@
-import { sql } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
+import { SqlRenderer } from '@database/sql/sql-renderer';
 
 /**
  * Tables seen to exist. The first-boot guard asked the catalog before EVERY read — half of all
@@ -10,13 +11,13 @@ export class PostgresKnownTables {
 
   private readonly known = new Set<string>();
 
-  /** `orm` runs the catalog query on the request's connection. */
-  constructor(private readonly orm: () => { execute(query: any): Promise<any> }) {}
+  /** `executor` runs the catalog query on the request's connection. */
+  constructor(private readonly executor: () => { query(text: string, values?: unknown[]): Promise<any> }) {}
 
   async exists(tableName: string): Promise<boolean> {
     if (this.known.has(tableName)) return true;
-    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
-    const result: any = await this.orm().execute(query);
+    const { text, params } = SqlRenderer.POSTGRES.render(Sql.query`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`);
+    const result: any = await this.executor().query(text, params);
     const exists = (result.rows[0]?.total || 0) > 0;
     if (exists) this.known.add(tableName);
     return exists;

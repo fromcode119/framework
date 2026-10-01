@@ -6,6 +6,7 @@ import * as tar from 'tar';
 import { ProjectPaths } from '@core/config/paths';
 import { SiteTransferBundleService } from '@core/management/site-transfer-bundle-service';
 import { FrameworkRootLocator } from '@core/config/framework-root-locator';
+import { SqlTable } from '@fromcode119/database';
 
 describe('SiteTransferBundleService', () => {
   const temporaryDirectories: string[] = [];
@@ -39,7 +40,7 @@ describe('SiteTransferBundleService', () => {
 
     const service = new SiteTransferBundleService({
       find: async (table: any) => {
-        if (String(table?.[Symbol.for('drizzle:Name')] || table?.['_.name'] || '') === '_system_themes') {
+        if ((typeof table === 'string' ? table : SqlTable.nameOf(table)) === '_system_themes') {
           return [{ slug: 'starter', state: 'active' }];
         }
         return [{ slug: 'demo', version: '1.0.0', state: 'active' }];

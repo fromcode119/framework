@@ -1,7 +1,7 @@
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
 import { Logger } from '@core/logging';
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * A site's lifecycle as the platform sees it.
@@ -42,19 +42,19 @@ export class SiteLifecycleMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = SiteLifecycleMigration.hasRow(await db.execute(sql.raw(
+        present = SiteLifecycleMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_name = '${TABLE}' AND column_name = 'visibility'`,
         )));
       },
       sqlite: async () => {
-        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${TABLE})`));
+        const result: any = await db.execute(Sql.raw(`PRAGMA table_info(${TABLE})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === 'visibility');
       },
       mysql: async () => {
         // Scoped to this schema — `information_schema` spans every database on the server.
-        present = SiteLifecycleMigration.hasRow(await db.execute(sql.raw(
+        present = SiteLifecycleMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = '${TABLE}' AND column_name = 'visibility'`,
         )));
@@ -92,19 +92,19 @@ export class SiteLifecycleMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = SiteLifecycleMigration.hasRowV44(await db.execute(sql.raw(
+        present = SiteLifecycleMigration.hasRowV44(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_name = '${TABLE}' AND column_name = 'environment'`,
         )));
       },
       sqlite: async () => {
-        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${TABLE})`));
+        const result: any = await db.execute(Sql.raw(`PRAGMA table_info(${TABLE})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === 'environment');
       },
       mysql: async () => {
         // Scoped to this schema — `information_schema` spans every database on the server.
-        present = SiteLifecycleMigration.hasRowV44(await db.execute(sql.raw(
+        present = SiteLifecycleMigration.hasRowV44(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = '${TABLE}' AND column_name = 'environment'`,
         )));
@@ -137,15 +137,15 @@ export class SiteLifecycleMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS "${COLUMN}" JSONB NOT NULL DEFAULT '{}'::jsonb`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS "${COLUMN}" JSONB NOT NULL DEFAULT '{}'::jsonb`));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN "${COLUMN}" TEXT NOT NULL DEFAULT '{}'`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN "${COLUMN}" TEXT NOT NULL DEFAULT '{}'`));
       },
       mysql: async () => {
         // MySQL refuses a literal default on JSON, so the column is nullable and the reader treats
         // null as "nothing declared" — the same answer an empty object gives.
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN \`${COLUMN}\` JSON NULL`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN \`${COLUMN}\` JSON NULL`));
       },
     });
   }
@@ -214,19 +214,19 @@ export class SiteLifecycleMigration extends BaseMigration {
     if (!existed) {
       await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'private'`,
           ));
         },
         sqlite: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN visibility TEXT NOT NULL DEFAULT 'private'`,
           ));
         },
         mysql: async () => {
           // Same as SQLite — no IF NOT EXISTS on ADD COLUMN — and the column is short and compared
           // by value, so it is bounded rather than TEXT.
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN visibility VARCHAR(32) NOT NULL DEFAULT 'private'`,
           ));
         },
@@ -238,7 +238,7 @@ export class SiteLifecycleMigration extends BaseMigration {
       return;
     }
 
-    const result: any = await db.execute(sql.raw(`UPDATE ${TABLE} SET visibility = 'public'`));
+    const result: any = await db.execute(Sql.raw(`UPDATE ${TABLE} SET visibility = 'public'`));
     const opened = Number(result?.rowCount ?? result?.rows?.length ?? 0);
 
     logger.info(
@@ -275,7 +275,7 @@ export class SiteLifecycleMigration extends BaseMigration {
     const { TABLE_V42: TABLE, loggerV42: logger } = SiteLifecycleMigration;
     const type = PortableColumnTypes.for(db.dialect);
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS ${TABLE} (
         id ${type.key} PRIMARY KEY,
         tenant_id ${type.key} NOT NULL,
@@ -297,11 +297,11 @@ export class SiteLifecycleMigration extends BaseMigration {
 
     // Both secrets are looked up by hash, on the hot path: the session hash is read on every
     // storefront request that carries a preview cookie.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${TABLE}_session ON ${TABLE} (session_hash)`,
     ));
     // The sweep asks "what has lapsed"; a site's own row set is asked for when access is withdrawn.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${TABLE}_tenant ON ${TABLE} (tenant_id)`,
     ));
 
@@ -342,18 +342,18 @@ export class SiteLifecycleMigration extends BaseMigration {
     // on as a clause.
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(
+        await db.execute(Sql.raw(
           `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS environment TEXT NOT NULL DEFAULT 'production'`,
         ));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(
+        await db.execute(Sql.raw(
           `ALTER TABLE ${TABLE} ADD COLUMN environment TEXT NOT NULL DEFAULT 'production'`,
         ));
       },
       mysql: async () => {
         // Bounded rather than TEXT: the column is short and compared by value.
-        await db.execute(sql.raw(
+        await db.execute(Sql.raw(
           `ALTER TABLE ${TABLE} ADD COLUMN environment VARCHAR(32) NOT NULL DEFAULT 'production'`,
         ));
       },

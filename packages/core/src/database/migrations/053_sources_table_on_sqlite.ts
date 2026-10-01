@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 
 /**
@@ -28,7 +28,7 @@ export class SourcesTableOnSqliteMigration extends BaseMigration {
         logger.warn(`Both "${OLD_TABLE}" and "${NEW_TABLE}" exist; which holds the real sources is an operator's call. Nothing was moved.`);
         return;
       }
-      await db.execute(sql.raw(`ALTER TABLE ${OLD_TABLE} RENAME TO ${NEW_TABLE}`));
+      await db.execute(Sql.raw(`ALTER TABLE ${OLD_TABLE} RENAME TO ${NEW_TABLE}`));
       logger.info(`Renamed ${OLD_TABLE} -> ${NEW_TABLE}.`);
     }
     if (!(await db.tableExists(NEW_TABLE))) return;

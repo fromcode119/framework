@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { APIServer } from '@api/index';
 import { PluginManager, ServerCoreServices, ThemeManager } from '@fromcode119/core';
-import { sql } from '@fromcode119/database';
+import { Sql } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 
 describe('System E2E / Integration', () => {
@@ -34,7 +34,7 @@ describe('System E2E / Integration', () => {
         // Every request now resolves a tenant from its Host header, and an unknown host is refused.
         // Supertest talks to 127.0.0.1, so that host has to belong to a tenant — the same setup a
         // real deployment gets from migration 020 plus a provisioned tenant.
-        await (manager as any).db.execute(sql`
+        await (manager as any).db.execute(Sql.query`
             CREATE TABLE IF NOT EXISTS "_system_tenants" (
               "id" TEXT PRIMARY KEY,
               "slug" TEXT NOT NULL UNIQUE,
@@ -45,7 +45,7 @@ describe('System E2E / Integration', () => {
               "updated_at" DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        await (manager as any).db.execute(sql`
+        await (manager as any).db.execute(Sql.query`
             INSERT OR IGNORE INTO "_system_tenants" ("id","slug","primary_host","host_aliases","state")
             VALUES ('test-tenant','test','127.0.0.1','["localhost"]','active')
         `);

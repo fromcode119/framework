@@ -27,7 +27,7 @@ export class WorkflowService {
         //
         // These filters MUST be a plain object. `collection.slug` is a STRING, so `find` takes the raw
         // SQL path, and `buildRawFilterSQL` only builds conditions when the where is a plain object
-        // (`Object.getPrototypeOf(where) === Object.prototype`). A drizzle expression — `and(ne(...),
+        // (`Object.getPrototypeOf(where) === Object.prototype`). A built expression — `and(ne(...),
         // lte(...))` — is a class instance, so every condition was skipped, the WHERE clause came out
         // EMPTY, and this selected EVERY row of every workflow-enabled collection.
         //

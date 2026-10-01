@@ -169,7 +169,7 @@ describe('set and pattern where operators', () => {
     }
 
     const probe = (): ProbePostgresReadOperations =>
-      new ProbePostgresReadOperations({} as any, {} as any, new PostgresColumnNormalizer({} as any), (() => undefined) as any);
+      new ProbePostgresReadOperations({} as any, new PostgresColumnNormalizer({} as any), (() => undefined) as any);
 
     it('numbers a set positionally and continues numbering after it', () => {
       const { sql, values } = probe().buildWhere({ status: { in: ['A', 'B', 'C'] }, fullName: 'x' });

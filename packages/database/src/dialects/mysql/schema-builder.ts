@@ -1,5 +1,5 @@
 import { RowTimestampColumn } from '@database/row-timestamp-column';
-import { sql } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { NamingStrategy } from '@database/naming-strategy';
@@ -21,15 +21,15 @@ export class MysqlSchemaBuilder {
     const fieldSnakeNames = collection.fields.map(f => NamingStrategy.toSnakeCase(f.name));
 
     if (!fieldSnakeNames.includes('id')) {
-      columnDefs.push(sql`id INT AUTO_INCREMENT PRIMARY KEY`);
+      columnDefs.push(Sql.query`id INT AUTO_INCREMENT PRIMARY KEY`);
     }
 
     if (!fieldSnakeNames.includes('created_at')) {
-      columnDefs.push(sql`created_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
+      columnDefs.push(Sql.query`created_at DATETIME DEFAULT CURRENT_TIMESTAMP`);
     }
 
     if (!fieldSnakeNames.includes('updated_at')) {
-      columnDefs.push(sql`updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
+      columnDefs.push(Sql.query`updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP`);
     }
 
     for (const field of collection.fields) {
@@ -37,20 +37,20 @@ export class MysqlSchemaBuilder {
       columnDefs.push(this.fieldToSqlFragment(field));
     }
 
-    const query = sql`CREATE TABLE ${sql.identifier(tableName)} (${sql.join(columnDefs, sql`, `)})`;
+    const query = Sql.query`CREATE TABLE ${Sql.identifier(tableName)} (${Sql.join(columnDefs, Sql.query`, `)})`;
     await this.host.execute(query);
     this.host.invalidateTableCache(tableName);
   }
 
   async addColumn(tableName: string, field: ISchemaField): Promise<void> {
     const columnDef = this.fieldToSqlFragment(field);
-    await this.host.execute(sql`ALTER TABLE ${sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
+    await this.host.execute(Sql.query`ALTER TABLE ${Sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
     this.host.invalidateTableCache(tableName);
   }
 
   async ensureMigrationTable(tableName: string): Promise<void> {
-    await this.host.execute(sql`
-      CREATE TABLE IF NOT EXISTS ${sql.identifier(tableName)} (
+    await this.host.execute(Sql.query`
+      CREATE TABLE IF NOT EXISTS ${Sql.identifier(tableName)} (
         id INT AUTO_INCREMENT PRIMARY KEY,
         name VARCHAR(255) NOT NULL,
         version INT NOT NULL,
@@ -75,31 +75,31 @@ export class MysqlSchemaBuilder {
     // default on a text field therefore could not be created AT ALL on this driver, which is what
     // stopped `_system_webhooks` (`method` defaults to 'POST') and took the whole boot with it.
     const boundString = field.defaultValue !== undefined || field.unique;
-    let type = boundString ? sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : sql`TEXT`;
+    let type = boundString ? Sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : Sql.query`TEXT`;
 
     switch (field.type) {
-      case 'number': type = sql`NUMERIC`; break;
-      case 'boolean': type = sql`BOOLEAN`; break;
+      case 'number': type = Sql.query`NUMERIC`; break;
+      case 'boolean': type = Sql.query`BOOLEAN`; break;
       // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
       // compared as strings. Both are points in time.
       case 'date':
-      case 'datetime': type = sql`DATETIME`; break;
+      case 'datetime': type = Sql.query`DATETIME`; break;
       case 'json':
       case 'relationship':
       case 'upload':
       case 'richText':
-        type = sql`JSON`;
+        type = Sql.query`JSON`;
         break;
       case 'textarea':
       case 'text':
       case 'select':
       default:
-        type = boundString ? sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : sql`TEXT`;
+        type = boundString ? Sql.raw(MysqlSchemaBuilder.BOUNDED_STRING) : Sql.query`TEXT`;
     }
 
     const constraints: any[] = [];
-    if (field.required) constraints.push(sql`NOT NULL`);
-    if (field.unique) constraints.push(sql`UNIQUE`);
+    if (field.required) constraints.push(Sql.query`NOT NULL`);
+    if (field.unique) constraints.push(Sql.query`UNIQUE`);
 
     // A JSON column cannot carry a default here either, and unlike a string there is nothing to
     // widen — so the default is dropped rather than failing the table. Every reader of these already
@@ -108,18 +108,18 @@ export class MysqlSchemaBuilder {
 
     if (field.defaultValue !== undefined && !isJsonColumn) {
       if (typeof field.defaultValue === 'string') {
-        constraints.push(sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
+        constraints.push(Sql.raw(`DEFAULT '${field.defaultValue.replace(/'/g, "''")}'`));
       } else if (typeof field.defaultValue === 'boolean') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue ? 'true' : 'false'}`));
+        constraints.push(Sql.raw(`DEFAULT ${field.defaultValue ? 'true' : 'false'}`));
       } else if (typeof field.defaultValue === 'number') {
-        constraints.push(sql.raw(`DEFAULT ${field.defaultValue}`));
+        constraints.push(Sql.raw(`DEFAULT ${field.defaultValue}`));
       }
     }
 
     if (RowTimestampColumn.needsDefault(dbName, String(field.type), field.defaultValue)) {
-      constraints.push(sql`DEFAULT CURRENT_TIMESTAMP`);
+      constraints.push(Sql.query`DEFAULT CURRENT_TIMESTAMP`);
     }
 
-    return sql`${sql.identifier(dbName)} ${type} ${sql.join(constraints, sql` `)}`;
+    return Sql.query`${Sql.identifier(dbName)} ${type} ${Sql.join(constraints, Sql.query` `)}`;
   }
 }

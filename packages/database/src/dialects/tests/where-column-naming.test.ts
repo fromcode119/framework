@@ -2,11 +2,12 @@ import { afterEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlTable } from '@database/sql/sql-table';
 import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manager';
 
 /**
- * The drizzle branches of `find`/`count` build their WHERE via `BaseDialect.buildWhereConditions`, which
+ * The declared-table branches of `find`/`count` build their WHERE via `BaseDialect.buildWhereConditions`, which
  * emitted `eq(sql.identifier(key), value)` VERBATIM. Canonical field names are camelCase and the physical
  * columns are snake_case, so `{ where: { affiliateCode } }` produced `"affiliateCode" = ?` — the same
  * unresolvable-identifier bug the search columns had. Postgres `count()` used to carry a local workaround
@@ -38,11 +39,11 @@ describe('where column naming', () => {
     return manager;
   }
 
-  /** camelCase JS keys mapped to snake_case physical columns — the normal drizzle shape. */
-  const referralsTable = sqliteTable('fcp_test_referrals', {
-    id: integer('id'),
-    affiliateCode: text('affiliate_code'),
-    customerEmail: text('customer_email'),
+  /** camelCase JS keys mapped to snake_case physical columns — the normal declared-table shape. */
+  const referralsTable = SqlTable.define('fcp_test_referrals', {
+    id: SqlColumns.integer('id'),
+    affiliateCode: SqlColumns.text('affiliate_code'),
+    customerEmail: SqlColumns.text('customer_email'),
   });
 
   it('find() resolves a camelCase where key against the snake_case column', async () => {
@@ -76,7 +77,7 @@ describe('where column naming', () => {
     await manager.execute(`INSERT INTO "fcp_test_camel" ("fooBar") VALUES ('kept')`);
 
     // The table object DECLARES the physical name, so the declared column must win over snake-casing.
-    const camelTable = sqliteTable('fcp_test_camel', { id: integer('id'), fooBar: text('fooBar') });
+    const camelTable = SqlTable.define('fcp_test_camel', { id: SqlColumns.integer('id'), fooBar: SqlColumns.text('fooBar') });
 
     const rows = await manager.find(camelTable, { where: { fooBar: 'kept' } });
     expect(rows).toHaveLength(1);

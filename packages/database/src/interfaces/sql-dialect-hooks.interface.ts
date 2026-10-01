@@ -18,5 +18,5 @@ export interface ISqlDialectHooks {
   patternColumnExpression(quotedColumn: string): string;
   getLikeOperator(): string;
   resolveColumn(column: string, tableOrName?: any): any;
-  drizzlePatternColumn(column: any): any;
+  fragmentPatternColumn(column: any): any;
 }

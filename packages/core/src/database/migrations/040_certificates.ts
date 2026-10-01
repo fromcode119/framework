@@ -1,7 +1,7 @@
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
 import { Logger } from '@core/logging';
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * TLS certificates for the hosts the platform serves.
@@ -51,18 +51,18 @@ export class CertificatesMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = CertificatesMigration.hasRow(await db.execute(sql.raw(
+        present = CertificatesMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_name = '${table}' AND column_name = '${column}'`,
         )));
       },
       sqlite: async () => {
-        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${table})`));
+        const result: any = await db.execute(Sql.raw(`PRAGMA table_info(${table})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === column);
       },
       mysql: async () => {
-        present = CertificatesMigration.hasRow(await db.execute(sql.raw(
+        present = CertificatesMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = '${table}' AND column_name = '${column}'`,
         )));
@@ -105,7 +105,7 @@ export class CertificatesMigration extends BaseMigration {
     // for why the types are resolved rather than the whole statement being written out twice.
     const type = PortableColumnTypes.for(db.dialect);
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS ${TABLE} (
         host ${type.key} PRIMARY KEY,
         tenant_id ${type.key} NULL,
@@ -131,11 +131,11 @@ export class CertificatesMigration extends BaseMigration {
 
     // The expiry sweep asks "what runs out soonest" on every run, and the admin's platform-wide list
     // orders by the same column.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${TABLE}_not_after ON ${TABLE} (not_after)`,
     ));
     // A site's own page asks for just its hosts.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${TABLE}_tenant ON ${TABLE} (tenant_id)`,
     ));
 
@@ -166,7 +166,7 @@ export class CertificatesMigration extends BaseMigration {
     const { ACCOUNTS, CHALLENGES, loggerV41: logger } = CertificatesMigration;
     const type = PortableColumnTypes.for(db.dialect);
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS ${ACCOUNTS} (
         directory_url ${type.key} PRIMARY KEY,
         account_url ${type.longTextNullable},
@@ -176,7 +176,7 @@ export class CertificatesMigration extends BaseMigration {
       )`,
     ));
 
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS ${CHALLENGES} (
         token ${type.key} PRIMARY KEY,
         host ${type.key} NOT NULL,
@@ -187,7 +187,7 @@ export class CertificatesMigration extends BaseMigration {
 
     // The sweep deletes what has expired rather than letting tokens accumulate for the life of the
     // deployment; a token is useless the moment its order finishes either way.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${CHALLENGES}_expires ON ${CHALLENGES} (expires_at)`,
     ));
 
@@ -222,17 +222,17 @@ export class CertificatesMigration extends BaseMigration {
     if (!(await this.hasColumn(db, TABLE, CHALLENGE_COLUMN))) {
       await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS ${CHALLENGE_COLUMN} ${type.shortText} NOT NULL DEFAULT 'http-01'`,
           ));
         },
         sqlite: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN ${CHALLENGE_COLUMN} ${type.shortText} NOT NULL DEFAULT 'http-01'`,
           ));
         },
         mysql: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN ${CHALLENGE_COLUMN} ${type.shortText} NOT NULL DEFAULT 'http-01'`,
           ));
         },
@@ -242,17 +242,17 @@ export class CertificatesMigration extends BaseMigration {
     if (!(await this.hasColumn(db, TABLE, WILDCARD_COLUMN))) {
       await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS ${WILDCARD_COLUMN} BOOLEAN NOT NULL DEFAULT ${type.boolFalse}`,
           ));
         },
         sqlite: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN ${WILDCARD_COLUMN} BOOLEAN NOT NULL DEFAULT ${type.boolFalse}`,
           ));
         },
         mysql: async () => {
-          await db.execute(sql.raw(
+          await db.execute(Sql.raw(
             `ALTER TABLE ${TABLE} ADD COLUMN ${WILDCARD_COLUMN} BOOLEAN NOT NULL DEFAULT ${type.boolFalse}`,
           ));
         },

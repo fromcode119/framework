@@ -1,6 +1,6 @@
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { Logger } from '@core/logging';
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * Site-owned data: what belongs to one site, and how a site's records keep their identity.
@@ -44,19 +44,19 @@ export class SiteOwnedDataMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = SiteOwnedDataMigration.hasRow(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_name = '${table}' AND column_name = '${COLUMN}'`,
         )));
       },
       sqlite: async () => {
-        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${table})`));
+        const result: any = await db.execute(Sql.raw(`PRAGMA table_info(${table})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === COLUMN);
       },
       mysql: async () => {
         // Scoped to this schema — `information_schema` spans every database on the server.
-        present = SiteOwnedDataMigration.hasRow(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRow(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = '${table}' AND column_name = '${COLUMN}'`,
         )));
@@ -85,18 +85,18 @@ export class SiteOwnedDataMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = SiteOwnedDataMigration.hasRowV46(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRowV46(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_name = '${table}' AND column_name = '${column}'`,
         )));
       },
       sqlite: async () => {
-        const result: any = await db.execute(sql.raw(`PRAGMA table_info(${table})`));
+        const result: any = await db.execute(Sql.raw(`PRAGMA table_info(${table})`));
         const rows: any[] = Array.isArray(result) ? result : (result?.rows ?? []);
         present = rows.some((row: any) => String(row?.name || '') === column);
       },
       mysql: async () => {
-        present = SiteOwnedDataMigration.hasRowV46(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRowV46(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.columns
             WHERE table_schema = DATABASE() AND table_name = '${table}' AND column_name = '${column}'`,
         )));
@@ -128,18 +128,18 @@ export class SiteOwnedDataMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        present = SiteOwnedDataMigration.hasRowV48(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRowV48(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.tables WHERE table_name = '${table}'`,
         )));
       },
       sqlite: async () => {
-        present = SiteOwnedDataMigration.hasRowV48(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRowV48(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM sqlite_master WHERE type='table' AND name='${table}'`,
         )));
       },
       mysql: async () => {
         // Scoped to this schema — `information_schema` spans every database on the server.
-        present = SiteOwnedDataMigration.hasRowV48(await db.execute(sql.raw(
+        present = SiteOwnedDataMigration.hasRowV48(await db.execute(Sql.raw(
           `SELECT 1 AS present FROM information_schema.tables `
           + `WHERE table_schema = DATABASE() AND table_name = '${table}'`,
         )));
@@ -212,7 +212,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
     // constraint it points at, so the parent's key cannot be replaced while they hold it.
     for (const key of SiteOwnedDataMigration.COMPOSITE_KEYS) {
       if (!(await SiteOwnedDataMigration.tableExistsV49(db, key.child))) continue;
-      await db.execute(sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
+      await db.execute(Sql.raw(`ALTER TABLE ${key.child} DROP CONSTRAINT IF EXISTS ${key.constraint}`));
     }
 
     const widened: string[] = [];
@@ -252,12 +252,12 @@ export class SiteOwnedDataMigration extends BaseMigration {
     try {
       const constraint = await SiteOwnedDataMigration.primaryKeyName(db, table);
       const drop = constraint ? `DROP CONSTRAINT ${constraint}, ` : '';
-      await db.execute(sql.raw(`ALTER TABLE ${table} ${drop}ADD PRIMARY KEY (tenant_id, id)`));
+      await db.execute(Sql.raw(`ALTER TABLE ${table} ${drop}ADD PRIMARY KEY (tenant_id, id)`));
 
       // An id is still looked up on its own — by the reference walk, by a plugin reading a row it was
       // handed — and the widened key no longer serves that, because `id` is now its second column.
       // This index is what keeps those reads from turning into scans.
-      await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS idx_${table}_id ON ${table} (id)`));
+      await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS idx_${table}_id ON ${table} (id)`));
       return null;
     } catch (error) {
       return error instanceof Error ? error.message : String(error);
@@ -305,7 +305,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
       if (!(await SiteOwnedDataMigration.tableExistsV49(db, key.parent))) continue;
 
       const composite = perTenant.has(key.parent) && await SiteOwnedDataMigration.hasTenantColumn(db, key.child);
-      await db.execute(sql.raw(
+      await db.execute(Sql.raw(
         `ALTER TABLE ${key.child} ADD CONSTRAINT ${key.constraint} `
         + (composite
           ? `FOREIGN KEY (tenant_id, ${key.column}) REFERENCES ${key.parent} (tenant_id, id)`
@@ -450,7 +450,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
       // The parent may or may not have been widened, so the reference is rebuilt in the shape it is
       // already in — read from the catalog — with only the missing action added.
       const columns = await SiteOwnedDataMigration.keyColumns(db, ref.constraint);
-      await db.execute(sql.raw(
+      await db.execute(Sql.raw(
         `ALTER TABLE ${ref.child} DROP CONSTRAINT ${ref.constraint}, `
         + `ADD CONSTRAINT ${ref.constraint} FOREIGN KEY (${columns.child}) `
         + `REFERENCES ${ref.parent} (${columns.parent}) ON DELETE ${ref.action}`,
@@ -545,14 +545,14 @@ export class SiteOwnedDataMigration extends BaseMigration {
       // words.
       await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => {
-          await db.execute(sql.raw(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${COLUMN} TEXT`));
+          await db.execute(Sql.raw(`ALTER TABLE ${table} ADD COLUMN IF NOT EXISTS ${COLUMN} TEXT`));
         },
         sqlite: async () => {
-          await db.execute(sql.raw(`ALTER TABLE ${table} ADD COLUMN ${COLUMN} TEXT`));
+          await db.execute(Sql.raw(`ALTER TABLE ${table} ADD COLUMN ${COLUMN} TEXT`));
         },
         mysql: async () => {
           // Bounded rather than TEXT: a tenant id is short and is compared by value, never searched.
-          await db.execute(sql.raw(`ALTER TABLE ${table} ADD COLUMN ${COLUMN} VARCHAR(190) NULL`));
+          await db.execute(Sql.raw(`ALTER TABLE ${table} ADD COLUMN ${COLUMN} VARCHAR(190) NULL`));
         },
       });
 
@@ -560,13 +560,13 @@ export class SiteOwnedDataMigration extends BaseMigration {
       // site's own" is asked on each read of these tables once ownership gating is in.
       await DialectHelper.executeForDialect(db.dialect, {
         postgres: async () => {
-          await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
+          await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
         },
         sqlite: async () => {
-          await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
+          await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
         },
         mysql: async () => {
-          await db.execute(sql.raw(`CREATE INDEX ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
+          await db.execute(Sql.raw(`CREATE INDEX ${table}_${COLUMN}_idx ON ${table} (${COLUMN})`));
         },
       });
 
@@ -614,13 +614,13 @@ export class SiteOwnedDataMigration extends BaseMigration {
     // first rather than leaned on as a clause.
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS ${COLUMN} TEXT`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN IF NOT EXISTS ${COLUMN} TEXT`));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN ${COLUMN} TEXT`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN ${COLUMN} TEXT`));
       },
       mysql: async () => {
-        await db.execute(sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN ${COLUMN} VARCHAR(190) NULL`));
+        await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN ${COLUMN} VARCHAR(190) NULL`));
       },
     });
 
@@ -679,7 +679,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
     // wide costs nothing here, because these columns are compared for equality and never summed.
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS ${TABLE} (
             tenant_id    TEXT        NOT NULL,
             table_name   TEXT        NOT NULL,
@@ -689,7 +689,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
           )`));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS ${TABLE} (
             tenant_id    TEXT NOT NULL,
             table_name   TEXT NOT NULL,
@@ -699,7 +699,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
           )`));
       },
       mysql: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS ${TABLE} (
             tenant_id    VARCHAR(190) NOT NULL,
             table_name   VARCHAR(190) NOT NULL,
@@ -712,7 +712,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
 
     // The only question this table is asked: "for this tenant and table, what did `old_id` become?"
     // Not unique — a tenant imported twice holds both runs, and `imported_at` orders them.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE INDEX IF NOT EXISTS idx_${TABLE}_lookup ON ${TABLE} (tenant_id, table_name, old_id)`,
     ));
 

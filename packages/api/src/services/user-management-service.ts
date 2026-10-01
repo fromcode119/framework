@@ -1,6 +1,5 @@
 import { randomBytes } from 'crypto';
-import { getTableName } from 'drizzle-orm';
-import { IDatabaseManager, Schema } from '@fromcode119/database';
+import { IDatabaseManager, Schema, SqlTable } from '@fromcode119/database';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, Logger, StringUtils, PlatformOwnershipService, PlatformOwnershipError, TenantMembershipService, RequestContextUtils } from '@fromcode119/core';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
@@ -11,12 +10,12 @@ import { PermissionCatalogService } from '@api/services/permission-catalog-servi
 import { SiteRoleScope } from '@api/services/tenants/site-role-scope';
 
 // Physical table names for the composite-key junction tables. Writes go through the string-table
-// path (which maps camelCase → snake_case columns); the drizzle schema-object write path does not
-// apply that mapping for these keyless junction tables, producing "no such column: userId".
+// path (which maps camelCase → snake_case columns) — the one path every dialect runs these keyless
+// junction tables through the same way.
 
 export class UserManagementService {
-  private static readonly USERS_ROLES_TABLE = getTableName(Schema.systemUsersToRoles);
-  private static readonly USERS_TABLE = getTableName(Schema.users);
+  private static readonly USERS_ROLES_TABLE = SqlTable.nameOf(Schema.systemUsersToRoles);
+  private static readonly USERS_TABLE = SqlTable.nameOf(Schema.users);
 
   private logger = new Logger({ namespace: 'UserManagement' });
 
@@ -222,7 +221,7 @@ export class UserManagementService {
     // column — NOT the junction table written above. Keep the column in sync so an assigned role
     // actually grants its permissions; otherwise "Manage Roles" is a silent no-op for access control.
     // Use the STRING table path: it is json-column-aware and stringifies the array exactly ONCE. The
-    // schema-object path double-encodes jsonb (normalizer stringifies, then drizzle `.set()` again).
+    // declared-table path double-encodes jsonb on SQLite (the normalizer stringifies, then the column again).
     await this.db.update(UserManagementService.USERS_TABLE, { id: userId }, { roles: normalized, updatedAt: new Date() });
   }
 

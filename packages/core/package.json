@@ -105,7 +105,6 @@
     "acme-client": "^5.4.0",
     "adm-zip": "^0.6.1",
     "chokidar": "^3.6.0",
-    "drizzle-orm": "^0.45.1",
     "handlebars": "^4.7.9",
     "ioredis": "^5.9.2",
     "mmdb-lib": "^3.0.3",
