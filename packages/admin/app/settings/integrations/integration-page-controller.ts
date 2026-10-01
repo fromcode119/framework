@@ -83,7 +83,7 @@ export class IntegrationPageController {
         providerKey: defaultProvider.key,
         providerName: '',
         enabled: true,
-        config: {},
+        config: IntegrationsPageUtils.defaultConfigForFields(defaultProvider.fields),
         preservedSecretFields: {}
       },
     });
