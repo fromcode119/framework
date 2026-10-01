@@ -6,12 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.286] - 2026-10-01
+
+### Fixed
+
+- **monitoring**: UptimeRobot monitors on the free plan; say when nothing delivers alerts ([#617](https://github.com/fromcode119/framework/pull/617))
+
 ## [0.2.285] - 2026-10-01
 
 ### Fixed
 
-- **api**: storefront reads the sign-in switches the way the api applies them ([#615](https://github.com/fromcode119/framework/pull/615))
 - **frontend**: default sign-up, verification and password pages are styled ([#616](https://github.com/fromcode119/framework/pull/616))
+- **api**: storefront reads the sign-in switches the way the api applies them ([#615](https://github.com/fromcode119/framework/pull/615))
 
 ## [0.2.284] - 2026-10-01
 
