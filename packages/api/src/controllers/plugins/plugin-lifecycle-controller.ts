@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import fs from 'fs';
 import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode, TenantPluginRefusal } from '@fromcode119/core';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
+import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
 /**
  * Enabling, disabling, re-approving and removing an installed plugin — platform-wide and per tenant.
@@ -38,7 +39,7 @@ export class PluginLifecycleController extends BaseController {
     }
     const isolated = Boolean(this.manager.pluginHosts.get(slug));
     try {
-      await this.manager.finalizeInstalledPlugin(slug);
+      await PluginsChangedSignal.around(slug, () => this.manager.finalizeInstalledPlugin(slug));
       res.json({ success: true, restartScheduled: !isolated });
     } catch (err: any) {
       this.logger.error(`Could not load the installed version of "${slug}": ${err?.message ?? err}`);
@@ -87,14 +88,16 @@ export class PluginLifecycleController extends BaseController {
     }
 
     try {
-      if (enabled) {
-        await this.manager.enable(slug, {
-          force: CoercionUtils.toBoolean(force),
-          recursive: CoercionUtils.toBoolean(recursive)
-        });
-      } else {
-        await this.manager.disable(slug);
-      }
+      await PluginsChangedSignal.around(slug, async () => {
+        if (enabled) {
+          await this.manager.enable(slug, {
+            force: CoercionUtils.toBoolean(force),
+            recursive: CoercionUtils.toBoolean(recursive)
+          });
+        } else {
+          await this.manager.disable(slug);
+        }
+      });
       res.json({ success: true, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
       if (err.message.startsWith('DEPENDENCY_ISSUES:')) {
@@ -169,7 +172,7 @@ export class PluginLifecycleController extends BaseController {
     for (const p of held) {
       const slug = p.manifest.slug;
       try {
-        await this.manager.enable(slug, { force: false, recursive: false });
+        await PluginsChangedSignal.around(slug, () => this.manager.enable(slug, { force: false, recursive: false }));
         results.push({ slug, ok: true });
       } catch (err: any) {
         results.push({ slug, ok: false, error: err?.message || String(err) });
@@ -182,7 +185,7 @@ export class PluginLifecycleController extends BaseController {
   async delete(req: Request, res: Response) {
     const slug = CoercionUtils.toString(req.params.slug);
     try {
-      await this.manager.delete(slug);
+      await PluginsChangedSignal.around(slug, () => this.manager.delete(slug));
       res.json({ success: true });
     } catch (err: any) {
       const isValidationError = err.message.toLowerCase().includes('cannot delete') ||

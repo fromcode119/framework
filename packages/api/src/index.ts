@@ -3,6 +3,7 @@ import { PluginInstallOperationService } from '@api/services/plugin-install-oper
 import express, { Router } from 'express';
 import { GracefulHttpShutdown } from '@api/server/graceful-http-shutdown';
 import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer';
+import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
@@ -184,7 +185,7 @@ export class APIServer {
     // one limiter silently did not apply to the other.
     this.app.use(`${apiConfig.prefixes.BASE}/`, new RateLimitMiddleware({}, this.settingsCache).middleware());
 
-    this.setupAuthIntegration();
+    this.authSetup.configure();
     await this.registerCoreCollection('users', CoreCollections.user);
     await this.registerCoreCollection('media', CoreCollections.media);
     await this.registerCoreCollection('settings', CoreCollections.settings);
@@ -228,10 +229,6 @@ export class APIServer {
       this.settingsCache.get(SystemConstants.META_KEY.DEFAULT_LOCALE) || '', { short: true },
     );
     if (configuredLocale) this.manager.i18n.setLocale(configuredLocale);
-  }
-
-  private setupAuthIntegration() {
-    this.authSetup.configure();
   }
 
   private setupMiddleware() {
@@ -285,6 +282,7 @@ export class APIServer {
 
     server.listen(port, host, () => {
       this.logger.info(`Running on http://${host}:${port}`);
+      ApiWorkerSupervisor.reportReady(); // plugins are up and it listens: the next api process may start
     });
     new GracefulHttpShutdown(server, this.logger).install();
   }

@@ -5,6 +5,7 @@ import { PluginInstallOperationService } from '@api/services/plugin-install-oper
 import { PluginHealthSupport } from '@api/controllers/plugins/plugin-health-support';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
+import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
 export class PluginController extends BaseController {
 
@@ -183,7 +184,7 @@ export class PluginController extends BaseController {
     try {
       // The write throwing is a real 500; whether the RUNNING plugin picked up the change (still
       // pending a restart, or reloaded-but-failed-to-boot) is a non-fatal outcome reported alongside success.
-      const result = await (this.manager as any).saveSandboxConfig(slug, req.body);
+      const result = await PluginsChangedSignal.around<Record<string, unknown>>(slug, () => (this.manager as any).saveSandboxConfig(slug, req.body));
       res.json({ success: true, ...result });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
@@ -215,11 +216,11 @@ export class PluginController extends BaseController {
       }
 
       const operation = this.operations.start(slug, 'marketplace install', async (reportProgress) => {
-        await this.manager.installOrUpdateFromMarketplace(slug, {
+        await PluginsChangedSignal.around(slug, () => this.manager.installOrUpdateFromMarketplace(slug, {
           enable: true,
           progressReporter: reportProgress,
           version: requestedVersion || undefined,
-        });
+        }));
       });
 
       res.status(202).json({
@@ -241,7 +242,7 @@ export class PluginController extends BaseController {
   async updateAll(_req: Request, res: Response) {
     try {
       const operation = this.operations.start('all', 'marketplace update-all', async (reportProgress) => {
-        const result = await this.manager.updateAllFromMarketplace({ progressReporter: reportProgress });
+        const result = await PluginsChangedSignal.around<{ updated: string[]; failed: { slug: string; error: string }[] }>('', () => this.manager.updateAllFromMarketplace({ progressReporter: reportProgress }));
         if (result.failed.length && !result.updated.length) {
           throw new Error(`Every update failed: ${result.failed.map((f) => `${f.slug} (${f.error})`).join('; ')}`);
         }

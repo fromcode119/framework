@@ -10,6 +10,9 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { PluginConfigValueService } from '@core/plugin/services/settings/plugin-config-value-service';
 import { PluginSettingsKeyMigrationService } from '@core/plugin/services/settings/plugin-settings-key-migration-service';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { ApiWorkers } from '@core/cluster/api-workers';
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 
 export class PluginRuntimeStateService {
   constructor(
@@ -116,23 +119,34 @@ export class PluginRuntimeStateService {
   }
 
   async disableWithError(slug: string, message: string): Promise<void> {
-    const plugin = this.plugins.get(slug);
-    if (!plugin) {
-      return;
+    if (!this.markStopped(slug, message)) return;
+    // In-memory state goes 'error' (runtime excludes it); the DB only flips health to
+    // 'error' and KEEPS the desired `state` column so the plugin recovers to its prior
+    // active/inactive state on the next clean boot instead of being stuck in error.
+    await this.db.update(SystemConstants.TABLE.PLUGINS, { slug }, {
+      health_status: 'error',
+      updated_at: new Date(),
+    });
+    // With several api processes, api 0 decides whether a plugin's process runs (it starts them): the
+    // others mirror its stop instead of each holding a process the platform has given up on.
+    if (ApiWorkers.isMultiProcess() && ApiWorkers.startsPluginProcesses()) {
+      ProcessSignals.announce(ProcessSignal.PLUGIN_STOPPED, { slug, message });
     }
+  }
+
+  /**
+   * The platform stopped this plugin, in this process's memory only — what `disableWithError` records
+   * here, and what another api process's stop is mirrored with. False when there is no such plugin.
+   */
+  markStopped(slug: string, message: string): boolean {
+    const plugin = this.plugins.get(slug);
+    if (!plugin) return false;
     // The reason is what the admin shows beside the switch (`plugin.error`); dropping it left a plugin
     // switched off with nothing saying why.
     plugin.error = message;
     plugin.healthStatus = PluginRegistryHealth.ERROR;
     plugin.stoppedByPlatform = true;
-
-    // In-memory state goes 'error' (runtime excludes it); the DB only flips health to
-    // 'error' and KEEPS the desired `state` column so the plugin recovers to its prior
-    // active/inactive state on the next clean boot instead of being stuck in error.
     plugin.state = PluginState.ERROR;
-    await this.db.update(SystemConstants.TABLE.PLUGINS, { slug }, {
-      health_status: 'error',
-      updated_at: new Date(),
-    });
+    return true;
   }
 }

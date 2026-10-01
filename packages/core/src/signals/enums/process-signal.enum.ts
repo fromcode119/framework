@@ -2,7 +2,8 @@ import { Enum } from '@fromcode119/react-class-components/lang';
 
 /**
  * Something one api process changed that every OTHER api process must hear about, because it holds a
- * copy derived from it. Invalidation only: a signal makes a process forget or re-read, never act.
+ * copy derived from it, or a live event it must pass to its own connections. A signal makes a process
+ * forget, re-read or relay — never do the work itself a second time.
  *
  * Carried as a VALUE on the wire: the message crosses a process boundary.
  */
@@ -19,6 +20,15 @@ export class ProcessSignal extends Enum {
   static readonly THEME_ACCESS_CHANGED = new ProcessSignal('theme-access-changed');
   /** Something a site's pages are built from changed. `{ tenantId }`, null for every site. */
   static readonly CONTENT_CHANGED = new ProcessSignal('content-changed');
+  /**
+   * The platform's plugins changed — installed, updated, enabled, disabled, removed or held. `{ slug }`.
+   * Every other api process restarts, one at a time, to load them as they are now (ApiWorkerSupervisor).
+   */
+  static readonly PLUGINS_CHANGED = new ProcessSignal('plugins-changed');
+  /** Api 0 stopped a plugin after its process failed (`disableWithError`): `{ slug, message }`. The others mirror it. */
+  static readonly PLUGIN_STOPPED = new ProcessSignal('plugin-stopped');
+  /** A live event for the admin's sockets: `{ type, payload, plugin, tenantId }`. Each process sends it to its own. */
+  static readonly REALTIME_BROADCAST = new ProcessSignal('realtime-broadcast');
 
   private constructor(value: string) {
     super(value);

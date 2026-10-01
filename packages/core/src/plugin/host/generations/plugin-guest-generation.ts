@@ -61,10 +61,17 @@ export class PluginGuestGeneration {
     return `plugin-${slug}.${instance}.${generation}`;
   }
 
-  /** This api instance, as an id-safe token: the container's hostname, which is unique per container. */
+  /**
+   * This api PROCESS, as an id-safe token: the container's hostname and a token drawn once per process
+   * start. The hostname alone was shared by every api process in a container (`API_WORKERS`), and by an
+   * api process restarted in place, whose generations count from 1 again — a new process was then given
+   * the directory of an earlier one and could not take its socket. Short: it is part of a socket path.
+   */
   static instance(): string {
-    return os.hostname().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 24) || 'api';
+    return PluginGuestGeneration.processInstance;
   }
+
+  private static readonly processInstance = `${os.hostname().toLowerCase().replace(/[^a-z0-9-]/g, '').slice(0, 12) || 'api'}-${Math.random().toString(36).slice(2, 8)}`;
 
   /**
    * Waits until nothing is in flight to this process — no message awaiting its answer, no HTTP request

@@ -92,7 +92,7 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
    *
    * Anything that goes wrong leaves it to a fresh process, and says so.
    */
-  protected async takeOver(): Promise<PluginGuestGeneration | null> {
+  protected async takeOver(options: { excludePid?: number | null; quiet?: boolean } = {}): Promise<PluginGuestGeneration | null> {
     const spawner = SpawnerClient.current(this.pool);
     if (spawner?.hostedBy !== SpawnerClient.HOSTED_BY_EXTENSION_HOST) return null;
     const version = String(this.manifest.version ?? '');
@@ -104,6 +104,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
     });
     const listing = inventory
       .filter((entry) => entry.label?.slug === this.slug && entry.label.version === version && entry.label.memoryMb === this.limits.memoryMb)
+      // A process this api is replacing (one stuck past its deadline) is never the one to attach to.
+      .filter((entry) => !options.excludePid || entry.pid !== options.excludePid)
       .pop();
     if (!listing?.label) return null;
     try {
@@ -113,7 +115,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       if (!attachment.enabled) {
         attachment.channel.close();
         attachment.port.close();
-        this.logger.warn(`running process ${listing.pid} had not finished starting (onEnable) when its api went; starting a new one`);
+        // Waiting for the api process that is starting it (PluginHostSharedProcesses) is not a failure.
+        if (!options.quiet) this.logger.warn(`running process ${listing.pid} had not finished starting (onEnable) when its api went; starting a new one`);
         return null;
       }
       await spawner.claim(listing.id).catch((error) => { attachment.channel.close(); throw error; });

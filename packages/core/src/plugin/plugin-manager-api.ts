@@ -116,6 +116,11 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
     await this.runtimeState.disableWithError(slug, message);
   }
 
+  /** Another api process stopped this plugin (ProcessSignal.PLUGIN_STOPPED): the same state here, not written again. */
+  markStoppedElsewhere(slug: string, message: string): void {
+    this.runtimeState.markStopped(slug, message);
+  }
+
   public async getSecuritySummary() {
     return this.adminRuntime.getSecuritySummary();
   }

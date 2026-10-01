@@ -6,6 +6,9 @@ import type { IMessage } from '@core/realtime/interfaces/message.interface';
 import type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
+import { ApiWorkers } from '@core/cluster/api-workers';
+import { ProcessSignals } from '@core/signals/process-signals';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 
 /**
  * The live socket every `realtime:*` hook and every collection write is pushed through.
@@ -24,6 +27,11 @@ export class WebSocketManager {
 
   constructor(private hooks: HookManager) {
     this.setupHooks();
+    // With several api processes an admin's socket lives in one of them, the write that produced an
+    // event in any: each passes on what the others produced, to its own sockets of that site.
+    ProcessSignals.on(ProcessSignal.REALTIME_BROADCAST, (payload: any, local: boolean) => {
+      if (!local) this.deliver(String(payload?.data ?? ''), payload?.tenantId ?? null);
+    });
   }
 
   public initialize(server: any) {
@@ -84,6 +92,15 @@ export class WebSocketManager {
     const data = JSON.stringify({ type, payload, plugin });
     const sites = TenantMode.isEnabled();
     const tenantId = sites ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+    if (sites && !tenantId) return;
+    this.deliver(data, tenantId);
+    if (ApiWorkers.isMultiProcess()) ProcessSignals.announce(ProcessSignal.REALTIME_BROADCAST, { data, tenantId });
+  }
+
+  /** To this process's sockets of `tenantId`'s site (every socket on a single-site install). */
+  private deliver(data: string, tenantId: string | null): void {
+    if (!data) return;
+    const sites = TenantMode.isEnabled();
     if (sites && !tenantId) return;
     this.clients.forEach((binding, client) => {
       if (sites && binding.tenantId !== tenantId) return;

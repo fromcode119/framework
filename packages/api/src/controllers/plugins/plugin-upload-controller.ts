@@ -3,6 +3,7 @@ import fs from 'fs';
 import { ArchiveUploadSessionService, BaseController, PluginManager } from '@fromcode119/core';
 import { PluginInstallOperationService } from '@api/services/plugin-install-operation-service';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
+import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
 /**
  * Receiving a plugin ARCHIVE: direct upload, chunked upload sessions, and inspecting what was staged
@@ -27,10 +28,11 @@ export class PluginUploadController extends BaseController {
   private startArchiveInstallOperation(detachedArchivePath: string) {
     return this.operations.start('upload', 'archive install', async (reportProgress) => {
       try {
-        await this.manager.installUploadedPluginArchive(detachedArchivePath, {
+        // Which plugin it holds is known only once it is unpacked: every api process reloads.
+        await PluginsChangedSignal.around('', () => this.manager.installUploadedPluginArchive(detachedArchivePath, {
           enable: true,
           progressReporter: reportProgress,
-        });
+        }));
       } finally {
         if (fs.existsSync(detachedArchivePath)) {
           fs.unlinkSync(detachedArchivePath);

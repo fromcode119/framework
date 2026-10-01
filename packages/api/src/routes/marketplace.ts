@@ -3,6 +3,7 @@ import { PluginManager } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { CoercionUtils } from '@fromcode119/core';
+import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
 /**
  * Marketplace routes for browsing and installing plugins.
@@ -37,9 +38,10 @@ export class MarketplaceRouter extends BaseRouter {
 
     this.post('/install/:slug', this.asyncHandler(async (req, res) => {
       const requestedVersion = CoercionUtils.toString(req.query?.version);
-      const manifest = await this.manager.installOrUpdateFromMarketplace(CoercionUtils.toString(req.params.slug), {
+      const slug = CoercionUtils.toString(req.params.slug);
+      const manifest = await PluginsChangedSignal.around(slug, () => this.manager.installOrUpdateFromMarketplace(slug, {
         version: requestedVersion || undefined,
-      });
+      }));
       res.json({ success: true, manifest });
     }));
   }

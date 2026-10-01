@@ -44,6 +44,11 @@ export class PluginGuestConnections {
     return (connectionId && this.attached.get(connectionId)?.channel) || this.primary;
   }
 
+  /** Every api holding this process: the one that started it and each that attached. */
+  all(): PluginChannel[] {
+    return [this.primary, ...[...this.attached.values()].map((entry) => entry.channel)].filter((channel) => !channel.isClosed);
+  }
+
   get attachedCount(): number {
     return this.attached.size;
   }
