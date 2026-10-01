@@ -20,4 +20,14 @@ describe('CollectionAccess', () => {
     const admin = CollectionAccess.for({ roles: ['admin'], permissions: [] }, orders);
     expect([admin.canCreate, admin.canUpdate, admin.canDelete, admin.allowsPluginAction({ pluginSlug: 'shop' })]).toEqual([true, true, true, true]);
   });
+
+  it('the list offers no create or edit on rows the collection says the runtime writes', () => {
+    const log = { ...orders, admin: { disableCreate: true, disableEdit: true } };
+    const admin = CollectionAccess.forList({ roles: ['admin'], permissions: [] }, log);
+    expect([admin.canCreate, admin.canUpdate, admin.canDelete]).toEqual([false, false, true]);
+    expect(admin.allowsPluginAction({ pluginSlug: 'shop' })).toBe(true);
+    const createOnly = CollectionAccess.forList({ roles: ['admin'], permissions: [] }, { ...orders, admin: { disableCreate: true } });
+    expect([createOnly.canCreate, createOnly.canUpdate]).toEqual([false, true]);
+    expect(CollectionAccess.forList({ roles: ['admin'], permissions: [] }, orders)).toBe(CollectionAccess.FULL);
+  });
 });

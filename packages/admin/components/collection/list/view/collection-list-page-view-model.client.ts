@@ -31,7 +31,7 @@ export class CollectionListPageViewModelBuilder {
 
     return {
       router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
-      pageSize: self.pageSize, frontendUrl, access: CollectionAccess.for(self.props.user, collection),
+      pageSize: self.pageSize, frontendUrl, access: CollectionAccess.forList(self.props.user, collection),
       data: self.state.data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
       loadError: self.state.loadError,
       search: self.state.search, setSearch: (v: any) => self.updateState('search', v),
