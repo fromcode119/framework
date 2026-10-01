@@ -122,9 +122,19 @@ export class ApplicationUrlResolver {
    */
   private static readonly basePaths = new Map<string, string>();
 
+  /** The environment variables each app's base path is derived from, in computeAppBasePath's order. */
+  private static readonly BASE_PATH_SOURCES: Readonly<Record<string, readonly [string, string]>> = {
+    [ApplicationUrlResolver.API_APP]: ['API_URL', 'NEXT_PUBLIC_API_URL'],
+    [ApplicationUrlResolver.ADMIN_APP]: ['ADMIN_URL', 'NEXT_PUBLIC_ADMIN_BASE_PATH'],
+    [ApplicationUrlResolver.FRONTEND_APP]: ['FRONTEND_URL', 'NEXT_PUBLIC_FRONTEND_URL'],
+  };
+
   static readAppBasePathFromEnvironment(app: string): string {
     const env = typeof process !== 'undefined' && process?.env ? process.env : ({} as Record<string, string | undefined>);
-    const key = [app, env.API_URL, env.NEXT_PUBLIC_API_URL, env.ADMIN_URL, env.NEXT_PUBLIC_ADMIN_BASE_PATH, env.FRONTEND_URL, env.NEXT_PUBLIC_FRONTEND_URL].join('\u0000');
+    // Only the two variables this app's path is derived from (computeAppBasePath): each read of the
+    // environment is a call into the runtime, and this runs several times per request.
+    const [first, second] = ApplicationUrlResolver.BASE_PATH_SOURCES[app] ?? [];
+    const key = first ? `${app}\u0000${env[first] ?? ''}\u0000${env[second] ?? ''}` : app;
     const known = ApplicationUrlResolver.basePaths.get(key);
     if (known !== undefined) return known;
     const value = ApplicationUrlResolver.computeAppBasePath(app);

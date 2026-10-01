@@ -62,7 +62,11 @@ export class PluginHostPortableView {
     if (depth >= PluginHostPortableView.MAX_DEPTH) return false;
     if (PluginHostPortableView.isBuiltIn(value)) return false;
     if (Array.isArray(value)) return value.some((entry) => PluginHostPortableView.carriesBehaviour(entry, depth + 1));
-    if (PluginHostPortableView.methodNames(value).length) return true;
+    // A plain object (a row, a settings bag — nearly every result) has no class methods: its only
+    // possible behaviour is a function among its own values, which the walk below finds. Looking up its
+    // prototype chain for every row of every answer was measurable api time.
+    const proto = Object.getPrototypeOf(value);
+    if (proto !== Object.prototype && proto !== null && PluginHostPortableView.methodNames(value).length) return true;
     return Object.values(value as Record<string, unknown>).some((entry) => PluginHostPortableView.carriesBehaviour(entry, depth + 1));
   }
 
