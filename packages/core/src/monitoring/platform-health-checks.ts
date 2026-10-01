@@ -51,7 +51,7 @@ export class PlatformHealthChecks {
     const scheme = EnvUtils.isProduction() ? 'https' : 'http';
     const watched = (await this.sites()).filter((site) => !site.isWorkspace && site.isReadable && site.primaryHost);
     // All at once: one after another, a handful of unanswering sites would outlast the request that asked.
-    const results = await Promise.all(watched.map(async (site) => {
+    const results = await Promise.all(watched.map(async (site): Promise<Omit<IMonitoringIncident, 'openedAt'> | null> => {
       const url = `${scheme}://${site.primaryHost}/`;
       const problem = await PlatformHealthChecks.probe(url);
       return problem ? { key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } } : null;
