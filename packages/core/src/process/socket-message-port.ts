@@ -57,7 +57,16 @@ export class SocketMessagePort implements IMessagePort {
         server.close();
         resolve(new SocketMessagePort(socket));
       });
-      server.listen(socketPath, () => fs.chmodSync(socketPath, mode));
+      // A throw in this callback has no caller: it was an uncaught exception that took the whole api down.
+      server.listen(socketPath, () => {
+        try {
+          fs.chmodSync(socketPath, mode);
+        } catch (error) {
+          clearTimeout(timer);
+          server.close();
+          reject(error);
+        }
+      });
     });
   }
 
