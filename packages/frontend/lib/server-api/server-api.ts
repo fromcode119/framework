@@ -1,3 +1,4 @@
+import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ServerApiInflight } from '@/lib/server-api/server-api-inflight';
 import { SystemConstants, ApiVersionUtils, CookieConstants } from '@fromcode119/core/client';
 import { ApplicationUrlUtils } from '@fromcode119/core/client';
@@ -264,7 +265,7 @@ export class ServerApiUtils {
    * socket the next request could have reused.
    */
   static async discard(response: Response): Promise<void> {
-    await response.body?.cancel().catch(() => undefined);
+    await ResponseDrain.discard(response);
   }
 
   private static AdminUrlUtils(path: unknown): string | null {
