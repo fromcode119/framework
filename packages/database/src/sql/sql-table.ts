@@ -10,7 +10,16 @@ export class SqlTable {
   static readonly SCHEMA = Symbol.for('fromcode.sql.table.schema');
   static readonly COLUMNS = Symbol.for('fromcode.sql.table.columns');
 
-  static define<T extends Record<string, SqlColumnBuilder>>(name: string, builders: T, schema?: string): SqlTable & { [K in keyof T]: SqlColumn } {
+  /**
+   * `constraints` documents table-level keys (a composite primary key); the constraints themselves are
+   * created by the migrations, as they always were.
+   */
+  static define<T extends Record<string, SqlColumnBuilder>>(name: string, builders: T, constraints?: (table: any) => unknown): SqlTable & { [K in keyof T]: SqlColumn } {
+    return SqlTable.defineIn(undefined, name, builders, constraints);
+  }
+
+  /** A table in a named schema, rendered `"schema"."name"`. */
+  static defineIn<T extends Record<string, SqlColumnBuilder>>(schema: string | undefined, name: string, builders: T, _constraints?: (table: any) => unknown): SqlTable & { [K in keyof T]: SqlColumn } {
     const table: any = new SqlTable();
     const columns: Record<string, SqlColumn> = {};
     for (const [key, builder] of Object.entries(builders)) {

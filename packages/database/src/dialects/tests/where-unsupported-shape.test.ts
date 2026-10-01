@@ -2,19 +2,19 @@ import { afterEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { and, lte, ne, sql } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manager';
 
 /**
  * A `where` that the raw-SQL path cannot parse must FAIL, never quietly become "no filter".
  *
  * `find(tableName, …)` takes the raw-SQL path, where the only supported shape is a plain object
- * (`{ col: value }` / `{ col: { gte, lte } }`). A drizzle expression is a class instance, and the
+ * (`{ col: value }` / `{ col: { gte, lte } }`). A built SQL expression is a class instance, and the
  * condition builder used to skip anything that was not a plain object — emitting NO WHERE clause and
  * returning every row, while the call site read as a perfectly successful filtered query.
  *
  * That shipped: `WorkflowService.processScheduledContent` filtered with
- * `and(ne(sql.identifier('status'), 'published'), lte(sql.identifier('scheduled_publish_at'), now))`
+ * `and(ne(Sql.identifier('status'), 'published'), lte(Sql.identifier('scheduled_publish_at'), now))`
  * against a string table name, so it matched EVERY row of every workflow-enabled collection. On
  * a production site that re-published EVERY content page on every scheduler tick, overwrote their real
  * `published_at` dates with `now`, and fired 32 spurious `collection:published` hooks each run — and
@@ -45,14 +45,14 @@ describe('raw-SQL where: unsupported shapes fail loudly', () => {
     return manager;
   }
 
-  it('throws instead of returning every row when handed a drizzle expression', async () => {
+  it('throws instead of returning every row when handed a SQL expression', async () => {
     const manager = await seedManager();
 
     await expect(
       manager.find('fcp_alpha_pages', {
-        where: and(
-          ne(sql.identifier('status'), 'published'),
-          lte(sql.identifier('scheduled_publish_at'), new Date().toISOString()),
+        where: Sql.and(
+          Sql.ne(Sql.identifier('status'), 'published'),
+          Sql.lte(Sql.identifier('scheduled_publish_at'), new Date().toISOString()),
         ),
       }),
     ).rejects.toThrow(/Unsupported `where`/);

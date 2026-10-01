@@ -2,7 +2,8 @@ import { afterEach, describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { sqliteTable, text, integer } from 'drizzle-orm/sqlite-core';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlTable } from '@database/sql/sql-table';
 import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manager';
 
 /**
@@ -41,11 +42,11 @@ describe('search column naming', () => {
   }
 
   /** Drizzle table object: camelCase JS keys mapped to snake_case physical columns. */
-  const referralsTable = sqliteTable('fcp_test_referrals', {
-    id: integer('id'),
-    affiliateCode: text('affiliate_code'),
-    customerEmail: text('customer_email'),
-    status: text('status'),
+  const referralsTable = SqlTable.define('fcp_test_referrals', {
+    id: SqlColumns.integer('id'),
+    affiliateCode: SqlColumns.text('affiliate_code'),
+    customerEmail: SqlColumns.text('customer_email'),
+    status: SqlColumns.text('status'),
   });
 
   describe('raw string-table path', () => {
@@ -102,7 +103,7 @@ describe('search column naming', () => {
     });
   });
 
-  describe('drizzle table-object path', () => {
+  describe('declared table path', () => {
     it('matches by the mapped column when the search column is a declared camelCase property', async () => {
       const manager = await seedManager();
 
@@ -125,7 +126,7 @@ describe('search column naming', () => {
 
     it('snake_cases the identifier fallback for a column the table object does not declare', async () => {
       const manager = await seedManager();
-      const partialTable = sqliteTable('fcp_test_referrals', { id: integer('id') });
+      const partialTable = SqlTable.define('fcp_test_referrals', { id: SqlColumns.integer('id') });
 
       const rows = await manager.find(partialTable, {
         search: { columns: ['customerEmail'], value: 'gil@' },
@@ -136,7 +137,7 @@ describe('search column naming', () => {
 
     it('does NOT match every row through the identifier fallback', async () => {
       const manager = await seedManager();
-      const partialTable = sqliteTable('fcp_test_referrals', { id: integer('id') });
+      const partialTable = SqlTable.define('fcp_test_referrals', { id: SqlColumns.integer('id') });
 
       const rows = await manager.find(partialTable, {
         search: { columns: ['customerEmail'], value: 'ustomerEmail' },

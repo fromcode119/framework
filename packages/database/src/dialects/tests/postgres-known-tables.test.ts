@@ -7,18 +7,16 @@ import { PostgresReadOperations } from '@database/dialects/postgres/read-operati
  * later), and a remembered table that has since been dropped answers what the guard would: nothing.
  */
 function reader(existing: Set<string>) {
-  const catalog = vi.fn(async (query: any) => {
-    const name = query?.queryChunks?.find((chunk: unknown) => typeof chunk === 'string' && !String(chunk).includes(' ')) as string | undefined;
-    const table = [...existing].find((candidate) => JSON.stringify(query).includes(candidate)) ?? name;
-    return { rows: [{ total: table && existing.has(table) ? 1 : 0 }] };
-  });
-  const rows = vi.fn(async (text: string) => {
+  const catalog = vi.fn(async ({ table }: { table: unknown }) => ({ rows: [{ total: existing.has(String(table)) ? 1 : 0 }] }));
+  const rows = vi.fn(async (text: string, values?: unknown[]) => {
+    // The catalog question goes to the same connection as every other statement.
+    if (text.includes('information_schema.tables')) return catalog({ table: values?.[0] });
     const table = /FROM "([^"]+)"/.exec(text)?.[1] ?? '';
     if (!existing.has(table)) throw Object.assign(new Error(`relation "${table}" does not exist`), { code: '42P01' });
     return { rows: [{ id: 1 }] };
   });
   const normalizer = { normalizeWhereForTable: async (_table: string, where: unknown) => where } as any;
-  const ops = new PostgresReadOperations({ query: rows } as any, { execute: catalog } as any, normalizer, (() => undefined) as any);
+  const ops = new PostgresReadOperations({ query: rows } as any, normalizer, (() => undefined) as any);
   return { ops, catalog, rows };
 }
 

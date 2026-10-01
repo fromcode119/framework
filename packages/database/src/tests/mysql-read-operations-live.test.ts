@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 // `require()` of an aliased path, which the ESM test runner cannot resolve — so going through it
 // made every case here skip silently, which is worse than having no test at all.
 import { MysqlDatabaseManager } from '@database/dialects/mysql/database-manager';
-import { sql } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 
 /**
  * The MySQL driver against a real MySQL, because none of these bugs could be seen without one.
@@ -24,7 +24,7 @@ const reachable = async (): Promise<boolean> => {
   try {
     const probe: any = new MysqlDatabaseManager(url);
     await probe.connect();
-    await probe.execute(sql`SELECT 1`);
+    await probe.execute(Sql.query`SELECT 1`);
     return true;
   } catch {
     return false;
@@ -40,17 +40,17 @@ describe('MySQL read operations, against a live server', async () => {
     if (!available) return;
     db = new MysqlDatabaseManager(url);
     await db.connect();
-    await db.execute(sql.raw(`DROP TABLE IF EXISTS ${table}`));
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(`DROP TABLE IF EXISTS ${table}`));
+    await db.execute(Sql.raw(
       `CREATE TABLE ${table} (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(191), kind VARCHAR(64))`));
     for (const [name, kind] of [['first', 'a'], ['second', 'a'], ['third', 'b']]) {
-      await db.execute(sql.raw(`INSERT INTO ${table} (name, kind) VALUES ('${name}', '${kind}')`));
+      await db.execute(Sql.raw(`INSERT INTO ${table} (name, kind) VALUES ('${name}', '${kind}')`));
     }
   });
 
   afterAll(async () => {
     if (!available || !db) return;
-    await db.execute(sql.raw(`DROP TABLE IF EXISTS ${table}`));
+    await db.execute(Sql.raw(`DROP TABLE IF EXISTS ${table}`));
   });
 
   it.skipIf(!available)('returns an ARRAY of every row, not the first one', async () => {
@@ -98,12 +98,12 @@ describe('MySQL read operations, against a live server', async () => {
   it.skipIf(!available)('accepts double-quoted identifiers, because ANSI_QUOTES is set per connection', async () => {
     // Without ANSI_QUOTES MySQL reads "id" as the STRING 'id', so every migration in the tree — all
     // of which quote identifiers this way — would parse as nonsense.
-    const result: any = await db.execute(sql.raw(`SELECT "id" FROM "${table}" LIMIT 1`));
+    const result: any = await db.execute(Sql.raw(`SELECT "id" FROM "${table}" LIMIT 1`));
     expect(result).toBeDefined();
   });
 
   it.skipIf(!available)('translates CREATE INDEX IF NOT EXISTS, which MySQL does not have', async () => {
-    const statement = sql.raw(`CREATE INDEX IF NOT EXISTS "idx_probe_kind" ON "${table}" ("kind")`);
+    const statement = Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_probe_kind" ON "${table}" ("kind")`);
 
     await db.execute(statement);
     // Twice, because "if not exists" means the second one is a no-op rather than a duplicate-key error.

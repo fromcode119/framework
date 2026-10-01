@@ -8,7 +8,7 @@ import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolat
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import { JoinType } from '@database/enums/join-type.enum';
-import { sql, or, eq, ne, gt, gte, lt, lte, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import { WhereComparison } from '@database/dialects/where-comparison';
 import { NamingStrategy } from '@database/naming-strategy';
@@ -233,7 +233,7 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
   protected resolveColumn(column: string, tableOrName?: any): any {
     const declared = tableOrName?.[column] ?? tableOrName?.[NamingStrategy.toSnakeCase(column)];
     if (declared !== undefined && declared !== null) return declared;
-    return sql`${sql.identifier(NamingStrategy.toSafeColumnIdentifier(column))}`;
+    return Sql.query`${Sql.identifier(NamingStrategy.toSafeColumnIdentifier(column))}`;
   }
 
   /**

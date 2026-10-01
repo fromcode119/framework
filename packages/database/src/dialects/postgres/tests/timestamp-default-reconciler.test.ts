@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/timestamp-default-reconciler';
 import { PostgresSchemaBuilder } from '@database/dialects/postgres/schema-builder';
 import { SchemaReconcileState } from '@database/enums/schema-reconcile-state.enum';
-import { PgDialect } from 'drizzle-orm/pg-core';
+import { SqlRenderer } from '@database/sql/sql-renderer';
 
 describe('PostgresTimestampDefaultReconciler', () => {
   const recorder = (rows: Array<Record<string, unknown>>) => {
@@ -46,7 +46,7 @@ describe('PostgresSchemaBuilder — a collection that claims createdAt', () => {
   const created = async (fields: Array<Record<string, unknown>>) => {
     const statements: string[] = [];
     const host = {
-      execute: async (query: any) => { statements.push(new PgDialect().sqlToQuery(query).sql); },
+      execute: async (query: any) => { statements.push(SqlRenderer.POSTGRES.render(query).text); },
       invalidateTableCache: () => undefined,
     } as any;
     await new PostgresSchemaBuilder(host).createTable({ slug: 'fcp_alpha_orders', fields } as any);

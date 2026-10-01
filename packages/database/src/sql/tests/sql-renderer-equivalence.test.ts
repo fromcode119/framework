@@ -25,7 +25,7 @@ const ours = SqlTable.define('items', {
   day: c.date('day'), dayDate: c.date('day_date', { mode: 'date' }), meta: c.json('meta'), tags: c.jsonb('tags'), ref: c.uuid('ref'),
 });
 const theirsInSchema = pgSchema('tenant_a').table('docs', { id: serial('id') });
-const oursInSchema = SqlTable.define('docs', { id: c.serial('id') }, 'tenant_a');
+const oursInSchema = SqlTable.defineIn('tenant_a', 'docs', { id: c.serial('id') });
 
 /** One case: the same expression, written once against each library. */
 type Build = (s: { sql: any; t: any; ops: any; schemaTable: any }) => unknown;

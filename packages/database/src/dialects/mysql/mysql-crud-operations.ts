@@ -4,8 +4,9 @@ import type { IAggregateOptions } from '@database/interfaces/aggregate-options.i
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { BaseDialect } from '@database/dialects/base-dialect';
-import { drizzle } from 'drizzle-orm/mysql2';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
+import { SqlTableReads } from '@database/sql/sql-table-reads';
+import type { MysqlTableStatements } from '@database/dialects/mysql/mysql-table-statements';
 
 /**
  * Reading and writing rows, and the schema calls beside them — the MySQL half.
@@ -18,7 +19,7 @@ export abstract class MysqlCrudOperations extends BaseDialect {
   protected declare reader: any;
   protected declare normalizer: any;
   protected declare schemaBuilder: any;
-  public declare readonly drizzle: any;
+  protected declare statements: MysqlTableStatements;
 
   abstract execute(query: any): Promise<any>;
   protected abstract getDynamicTable(tableName: string, columns: string[]): any;
@@ -36,7 +37,7 @@ export abstract class MysqlCrudOperations extends BaseDialect {
     const normalizedData = await this.normalizer.normalizeDataForTable(tableName, data);
     const columns = Object.keys(normalizedData);
     const table = this.getDynamicTable(tableName, columns);
-    const [result] = await this.drizzle.insert(table).values(normalizedData);
+    const result = await this.statements.write(this.statements.writes.insertStatement(table, normalizedData));
 
     // MySQL insert doesn't return the row with .returning() usually (depends on driver/version)
     // For now, return what we have or try to fetch it if needed.
@@ -50,22 +51,16 @@ export abstract class MysqlCrudOperations extends BaseDialect {
     const allColumns = [...new Set([...Object.keys(normalizedWhere || {}), ...Object.keys(normalizedData)])];
     const table = this.getDynamicTable(tableName, allColumns);
 
-    const conditions = this.buildWhereConditions(normalizedWhere);
-
-    await this.drizzle
-      .update(table)
-      .set(normalizedData)
-      .where(and(...conditions));
+    // With no filter this used to run with NO where — every row rewritten. Refused, as on every dialect.
+    const filter = SqlTableReads.filter(this.buildWhereConditions(normalizedWhere), normalizedWhere);
+    await this.statements.write(this.statements.writes.updateStatement(table, normalizedData, filter));
 
     return this.findOne(tableName, normalizedWhere);
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
-    // MySQL Drizzle uses onDuplicateKeyUpdate
-    const query = this.drizzle.insert(tableOrName).values(data).onDuplicateKeyUpdate({
-      set: options.set
-    });
-    const [result] = await query;
+    // MySQL's form of an upsert: on a duplicate key, the row is updated with `set`.
+    const result = await this.statements.write(this.statements.writes.upsertOnDuplicateStatement(tableOrName, data, options.set));
     return { ...data, id: result.insertId };
   }
 
@@ -75,22 +70,14 @@ export abstract class MysqlCrudOperations extends BaseDialect {
       const columns = Object.keys(normalizedWhere || {});
       const table = this.getDynamicTable(tableOrName, columns);
 
-      const conditions = this.buildWhereConditions(normalizedWhere);
-      const [result] = await this.drizzle.delete(table).where(and(...conditions));
+      // With no filter this used to delete EVERY row. Refused, as on every dialect.
+      const filter = SqlTableReads.filter(this.buildWhereConditions(normalizedWhere), normalizedWhere);
+      const result = await this.statements.write(this.statements.writes.deleteStatement(table, filter));
       return result.affectedRows > 0;
     }
 
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    let query = this.drizzle.delete(tableOrName);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    } else {
-      throw new Error('Unsafe delete blocked: missing where clause');
-    }
-    const [result] = await query;
+    const filter = SqlTableReads.filter(this.buildWhereConditions(where, tableOrName), where);
+    const result = await this.statements.write(this.statements.writes.deleteStatement(tableOrName, filter));
     return result.affectedRows > 0;
   }
 
@@ -112,7 +99,7 @@ export abstract class MysqlCrudOperations extends BaseDialect {
 
   // Schema Management
   async getTables(): Promise<string[]> {
-    const result: any = await this.execute(sql`SHOW TABLES`);
+    const result: any = await this.execute(Sql.query`SHOW TABLES`);
     return result.map((r: any) => Object.values(r)[0]);
   }
 
@@ -123,7 +110,7 @@ export abstract class MysqlCrudOperations extends BaseDialect {
    * that was not there.
    */
   async tableExists(tableName: string): Promise<boolean> {
-    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
+    const query = Sql.query`SELECT count(*) as total FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
     const result: any = await this.execute(query);
     return (result[0]?.total || 0) > 0;
   }
@@ -140,7 +127,7 @@ export abstract class MysqlCrudOperations extends BaseDialect {
    * already have this column" got yes from somebody else's table.
    */
   async getColumns(tableName: string): Promise<string[]> {
-    const query = sql`
+    const query = Sql.query`
       SELECT column_name AS name FROM information_schema.columns
       WHERE table_schema = DATABASE() AND table_name = ${tableName}`;
     const result: any = await this.execute(query);
@@ -161,11 +148,11 @@ export abstract class MysqlCrudOperations extends BaseDialect {
 
   async resetDatabase(): Promise<void> {
     const tables = await this.getTables();
-    await this.execute(sql`SET FOREIGN_KEY_CHECKS = 0`);
+    await this.execute(Sql.query`SET FOREIGN_KEY_CHECKS = 0`);
     for (const table of tables) {
-      await this.execute(sql`DROP TABLE ${sql.identifier(table)}`);
+      await this.execute(Sql.query`DROP TABLE ${Sql.identifier(table)}`);
     }
-    await this.execute(sql`SET FOREIGN_KEY_CHECKS = 1`);
+    await this.execute(Sql.query`SET FOREIGN_KEY_CHECKS = 1`);
   }
 
   /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */

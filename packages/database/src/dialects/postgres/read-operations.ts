@@ -2,10 +2,9 @@ import { AggregateStatementBuilder } from '@database/dialects/aggregate-statemen
 import { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import { Pool } from 'pg';
-import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
-// Aliased: the constructor parameter is also called `drizzle`, and an unaliased import would be
-// shadowed by it inside methods — silently resolving to the wrong thing rather than failing.
-import { drizzle as createDrizzle } from 'drizzle-orm/node-postgres';
+import { Sql } from '@database/sql/sql';
+import { SqlRenderer } from '@database/sql/sql-renderer';
+import { SqlTableReads } from '@database/sql/sql-table-reads';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresColumnNormalizer } from '@database/dialects/postgres/column-normalizer';
@@ -22,31 +21,19 @@ import { PostgresKnownTables } from '@database/dialects/postgres/postgres-known-
  */
 export class PostgresReadOperations extends BaseDialect {
   private pool: Pool;
-  private drizzle: any;
 
   /** Raw statements: the request's held client when a tenant scope is open, else the pool. */
   private get executor(): { query: (text: any, values?: any[]) => Promise<any> } {
     return (TenantConnectionScope.currentClient(this.pool) as any) ?? this.pool;
   }
-
-  /**
-   * Drizzle bound to the request's held client when a tenant scope is open, else the pool-wide
-   * instance. Without this, Drizzle reads would take an arbitrary pooled connection with no
-   * `app.tenant_id` set and return zero rows — RLS failing closed, but on the wrong connection.
-   */
-  private get orm(): any {
-    const client = TenantConnectionScope.currentClient(this.pool);
-    return client ? createDrizzle(client as any) : this.drizzle;
-  }
   private normalizer: PostgresColumnNormalizer;
   public readonly like: any;
-  private readonly tables = new PostgresKnownTables(() => this.orm);
-  private ownStatements: PostgresTableStatements | null = null;
+  private readonly tables = new PostgresKnownTables(() => this.executor);
+  private readonly tableStatements = new PostgresTableStatements();
 
-  constructor(pool: Pool, drizzle: any, normalizer: PostgresColumnNormalizer, like: any) {
+  constructor(pool: Pool, normalizer: PostgresColumnNormalizer, like: any) {
     super();
     this.pool = pool;
-    this.drizzle = drizzle;
     this.normalizer = normalizer;
     this.like = like;
   }
@@ -61,7 +48,7 @@ export class PostgresReadOperations extends BaseDialect {
   }
 
   protected drizzlePatternColumn(column: any): any {
-    return sql`${column}::text`;
+    return Sql.query`${column}::text`;
   }
 
   protected getLikeOperator(): string {
@@ -159,129 +146,56 @@ export class PostgresReadOperations extends BaseDialect {
       }
     }
 
-    // A whole-table read (the collection API's): assembled once per table, not by the builder each time.
-    const wholeTable = !(columns && Object.keys(columns).length > 0) && !(joins && joins.length > 0) && !search;
-    if (wholeTable && PostgresTableStatements.mode() !== 'drizzle') {
-      const orderExprs = this.buildOrderBy(orderBy);
-      const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
-      const parts = { where: this.wholeTableWhere(where, tableOrName), orderBy: orderList, limit, offset };
-      return this.tableStatements.find(this.executor, tableOrName, parts, () => this.builderQuery(tableOrName, options));
-    }
-    return await this.builderQuery(tableOrName, options);
-  }
-
-  private get tableStatements(): PostgresTableStatements {
-    return (this.ownStatements ??= new PostgresTableStatements(this.drizzle.dialect));
-  }
-
-  private wholeTableWhere(where: any, table: any): any {
-    return PostgresTableStatements.filter(this.buildWhereConditions(where, table), where);
-  }
-
-  /** Drizzle's query builder: explicit columns, joins, search — and every read under DB_READ_PATH=drizzle. */
-  private builderQuery(tableOrName: any, options: any): any {
-    const { limit, offset, orderBy, where, columns, joins, search } = options;
-    let query: any;
-
-    if (columns && Object.keys(columns).length > 0) {
-      const selection: Record<string, any> = {};
-      for (const [key, val] of Object.entries(columns)) {
-        if (val) selection[key] = (tableOrName as any)[key];
-      }
-      query = this.orm.select(selection).from(tableOrName);
-    } else {
-      query = this.orm.select().from(tableOrName);
-    }
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    if (conditions.length === 0 && where && (!isPlainWhere || Object.keys(where).length > 0)) conditions.push(where);
-
-    // ANDed with the filter: a second `.where()` replaces the first in Drizzle, so a search used to drop it.
-    if (search && search.columns.length > 0 && search.value) {
-        const pattern = `%${search.value}%`;
-        const likeConditions = search.columns.map((col: string) =>
-            this.like(this.resolveColumn(col, tableOrName), pattern)
-        );
-        conditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
-    }
-    if (conditions.length > 0) query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
-
+    const filter = this.typedFilter(tableOrName, where, search);
     const orderExprs = this.buildOrderBy(orderBy);
-    if (orderExprs) {
-      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
-    }
+    const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
+    return this.tableStatements.find(this.executor, tableOrName, { columns, joins, where: filter, orderBy: orderList, limit, offset });
+  }
 
-    if (limit) query = query.limit(limit);
-    if (offset) query = query.offset(offset);
+  /** The caller's filter, ANDed with the search over the named columns. */
+  private typedFilter(table: any, where: any, search: any): any {
+    return SqlTableReads.filterWithSearch(this.buildWhereConditions(where, table), where, this.typedSearch(table, search));
+  }
 
-    return query;
+  /** The search over named columns of a declared table, as one condition — or none. */
+  private typedSearch(table: any, search: any): any {
+    if (!(search && search.columns.length > 0 && search.value)) return undefined;
+    const pattern = `%${search.value}%`;
+    const matches = search.columns.map((column: string) => this.like(this.resolveColumn(column, table), pattern));
+    return matches.length === 1 ? matches[0] : Sql.or(...matches);
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
-    const { joins } = options;
-    const isString = typeof tableOrName === 'string';
+    const { where, joins, search } = options;
+    if (typeof tableOrName !== 'string') {
+      // The search a `find` applies applies here too — the total describes the list being shown.
+      return this.tableStatements.count(this.executor, tableOrName, { joins, where: this.typedFilter(tableOrName, where, search) });
+    }
 
     // Guard: if given a string table name, skip the query entirely when the
     // table hasn't been created yet (first boot / fresh install).  Without
     // this guard, Postgres emits ERROR-level log entries for every
     // not-yet-synced plugin collection even though the caller catches the
     // exception.
-    if (isString && !(await this.tables.exists(tableOrName))) {
+    if (!(await this.tables.exists(tableOrName))) {
       return 0;
     }
 
-    if (!isString && !(joins && joins.length > 0) && PostgresTableStatements.mode() !== 'drizzle') {
-      const whereFragment = this.wholeTableWhere(options.where, tableOrName);
-      return this.tableStatements.count(this.executor, tableOrName, whereFragment, () => this.builderCount(tableOrName, options));
-    }
-    return this.builderCount(tableOrName, options);
-  }
-
-  private async builderCount(tableOrName: any, options: any): Promise<number> {
-    const { where, joins, search } = options;
-    const isString = typeof tableOrName === 'string';
-    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
-
-    let query = this.orm.select({ total: drizzleCount() }).from(tableIdentifier);
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    // `buildWhereConditions` resolves each camelCase key via `resolveColumn`, so a schema field like
-    // `affiliateCode` reaches the real `affiliate_code` column instead of the non-existent
-    // `"affiliateCode"` Postgres would reject (identifiers are quoted case-sensitively). For a string
-    // table there is no column map to consult, so pass none and let it snake-case the identifier.
-    const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
-    const isPlainWhere = !!normalizedWhere && typeof normalizedWhere === 'object' && Object.getPrototypeOf(normalizedWhere) === Object.prototype;
-    const conditions = this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName);
+    // For a string table there is no column map to consult, so the where keys are snake-cased into
+    // identifiers (identifiers are quoted case-sensitively: `affiliateCode` would not exist).
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableOrName, where);
+    const conditions = this.buildWhereConditions(normalizedWhere);
     // The same search `find` applied, so the total describes the list the caller is showing.
-    const searchCondition = isString
-      ? this.drizzleSearchCondition(await this.resolveSearchArg(this.normalizer, tableOrName, search))
-      : null;
+    const searchCondition = this.drizzleSearchCondition(await this.resolveSearchArg(this.normalizer, tableOrName, search));
     if (searchCondition) conditions.push(searchCondition);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (normalizedWhere && (!isPlainWhere || Object.keys(normalizedWhere).length > 0)) {
-      query = query.where(normalizedWhere);
-    }
-
+    const filter = PostgresTableStatements.filter(conditions, normalizedWhere);
+    const query = Sql.query`select count(*) from ${Sql.identifier(tableOrName)}${filter ? Sql.query` where ${filter}` : undefined}`;
+    const { text, params } = SqlRenderer.POSTGRES.render(query);
     try {
-      const [result] = await query;
-      return Number(result?.total || 0);
+      const result = await this.executor.query({ text, rowMode: 'array' }, params);
+      return Number(result.rows[0]?.[0] || 0);
     } catch (error) {
-      if (isString && this.tables.dropped(error, tableOrName)) return 0;
+      if (this.tables.dropped(error, tableOrName)) return 0;
       throw error;
     }
   }

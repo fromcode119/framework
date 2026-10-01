@@ -1,7 +1,9 @@
 import { AggregateStatementBuilder } from '@database/dialects/aggregate-statement-builder';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import Database from 'better-sqlite3';
-import { sql, and, or, count as drizzleCount } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
+import { SqlTableReads } from '@database/sql/sql-table-reads';
+import type { SqliteTableStatements } from '@database/dialects/sqlite/sqlite-table-statements';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { SqliteColumnNormalizer } from '@database/dialects/sqlite/column-normalizer';
 import { SqliteDateUtils } from '@database/dialects/sqlite/date-utils';
@@ -14,14 +16,14 @@ import { SqliteDateUtils } from '@database/dialects/sqlite/date-utils';
  */
 export class SqliteReadOperations extends BaseDialect {
   private sqlite: Database.Database;
-  private drizzle: any;
+  private statements: SqliteTableStatements;
   private normalizer: SqliteColumnNormalizer;
   public readonly like: any;
 
-  constructor(sqlite: Database.Database, drizzle: any, normalizer: SqliteColumnNormalizer, like: any) {
+  constructor(sqlite: Database.Database, statements: SqliteTableStatements, normalizer: SqliteColumnNormalizer, like: any) {
     super();
     this.sqlite = sqlite;
-    this.drizzle = drizzle;
+    this.statements = statements;
     this.normalizer = normalizer;
     this.like = like;
   }
@@ -92,60 +94,26 @@ export class SqliteReadOperations extends BaseDialect {
       return this.executeRawSelect(sqlStr, values);
     }
 
-    // tableOrName is a Drizzle table schema object
-    let query: any;
+    // A declared table.
+    const orderExprs = this.buildOrderBy(orderBy);
+    const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
+    return this.statements.find(tableOrName, { columns, joins, where: this.typedFilter(tableOrName, where, search), orderBy: orderList, limit, offset });
+  }
 
-    if (columns && Object.keys(columns).length > 0) {
-      const selection: Record<string, any> = {};
-      for (const [key, val] of Object.entries(columns)) {
-        if (val) selection[key] = (tableOrName as any)[key];
-      }
-      query = this.drizzle.select(selection).from(tableOrName);
-    } else {
-      query = this.drizzle.select().from(tableOrName);
-    }
-
-    if (joins && joins.length > 0) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
-    }
-
-    const allConditions: any[] = [];
-    if (where) {
-      if (typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype) {
-        allConditions.push(...this.buildWhereConditions(where, tableOrName));
-      } else {
-        allConditions.push(where);
-      }
-    }
+  /** The caller's filter ANDed with the search over the named columns. */
+  private typedFilter(table: any, where: any, search: any): any {
+    let match: any;
     if (search && search.columns.length > 0 && search.value) {
       const pattern = `%${search.value}%`;
-      const likeConditions = search.columns.map((col: string) =>
-        this.like(this.resolveColumn(col, tableOrName), pattern)
-      );
-      allConditions.push(likeConditions.length === 1 ? likeConditions[0] : or(...likeConditions));
+      const matches = search.columns.map((column: string) => this.like(this.resolveColumn(column, table), pattern));
+      match = matches.length === 1 ? matches[0] : Sql.or(...matches);
     }
-    if (allConditions.length > 0) {
-      query = query.where(and(...allConditions));
-    }
-
-    const orderExprs = this.buildOrderBy(orderBy);
-    if (orderExprs) {
-      query = query.orderBy(...(Array.isArray(orderExprs) ? orderExprs : [orderExprs]));
-    }
-
-    if (limit) query = query.limit(limit);
-    if (offset) query = query.offset(offset);
-
-    return await query;
+    return SqlTableReads.filterWithSearch(this.buildWhereConditions(where, table), where, match);
   }
 
   async count(tableOrName: any, options: any = {}): Promise<number> {
     const { where, joins, search } = options;
     const isString = typeof tableOrName === 'string';
-    const tableIdentifier = isString ? sql`${sql.identifier(tableOrName)}` : tableOrName;
     const normalizedWhere = isString ? await this.normalizer.normalizeWhereForTable(tableOrName, where) : where;
 
     // Check if we can use simple raw SQL for performance
@@ -166,30 +134,17 @@ export class SqliteReadOperations extends BaseDialect {
       }
     }
 
-    // Use Drizzle for complex counts
-    let query = this.drizzle.select({ total: drizzleCount() }).from(tableIdentifier);
-
-    if (hasJoins) {
-      for (const join of joins) {
-        const joinFn = join.type === 'left' ? query.leftJoin : query.innerJoin;
-        query = joinFn.call(query, join.table, join.on);
-      }
+    if (!isString) {
+      // The search a `find` applies applies here too — the total describes the list being shown.
+      return this.statements.count(tableOrName, { joins, where: this.typedFilter(tableOrName, where, search) });
     }
 
-    const conditions: any[] = [];
-    if (normalizedWhere) {
-      if (isPlainWhere) {
-        conditions.push(...this.buildWhereConditions(normalizedWhere, isString ? undefined : tableOrName));
-      } else {
-        conditions.push(normalizedWhere);
-      }
-    }
-
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
-    const [result] = await query;
-    return Number(result?.total || 0);
+    // A table by name, with joins or the caller's own SQL fragment as its filter.
+    const conditions = isPlainWhere ? this.buildWhereConditions(normalizedWhere) : [];
+    const filter = SqlTableReads.filter(conditions, normalizedWhere);
+    const table = Sql.identifier(tableOrName);
+    const joined = hasJoins ? joins.map((join: any) => Sql.query` ${Sql.raw(join.type === 'left' ? 'left' : 'inner')} join ${typeof join.table === 'string' ? Sql.identifier(join.table) : join.table}${join.on ? Sql.query` on ${join.on}` : undefined}`) : [];
+    const [row] = this.statements.all(Sql.query`select count(*) as total from ${table}${Sql.join(joined)}${filter ? Sql.query` where ${filter}` : undefined}`) as any[];
+    return Number(row?.total || 0);
   }
 }

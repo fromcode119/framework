@@ -1,4 +1,4 @@
-import { sql, or, eq, ne, gt, gte, lt, lte, isNull, isNotNull, inArray, notInArray } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import { WhereComparison } from '@database/dialects/where-comparison';
 import type { ISqlDialectHooks } from '@database/interfaces/sql-dialect-hooks.interface';
@@ -42,16 +42,16 @@ export class SqlPredicateRenderer {
       const column = this.dialect.resolveColumn(comparison.column, tableOrName);
       // Same null rule as the raw-SQL paths: absence is IS NULL / IS NOT NULL, never `= NULL`.
       if (comparison.value === null) {
-        if (comparison.operator === 'eq') return isNull(column);
-        if (comparison.operator === 'ne') return isNotNull(column);
+        if (comparison.operator === 'eq') return Sql.isNull(column);
+        if (comparison.operator === 'ne') return Sql.isNotNull(column);
         throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
       }
       if (comparison.isSet) {
         // Drizzle's own inArray/notInArray REJECT an empty list at runtime. An empty set is a real
         // thing to ask for, though — "any of the ids this page selected", where the page selected
         // none — so it renders as the constant it means, rather than throwing at the call site.
-        if (comparison.values.length === 0) return comparison.operator === 'in' ? sql`1 = 0` : sql`1 = 1`;
-        return comparison.operator === 'in' ? inArray(column, comparison.values) : notInArray(column, comparison.values);
+        if (comparison.values.length === 0) return comparison.operator === 'in' ? Sql.query`1 = 0` : Sql.query`1 = 1`;
+        return comparison.operator === 'in' ? Sql.inArray(column, comparison.values) : Sql.notInArray(column, comparison.values);
       }
       if (comparison.isPattern) return this.drizzlePatternCondition(column, comparison);
       return SqlPredicateRenderer.DRIZZLE_OPERATORS[comparison.operator](column, comparison.value);
@@ -125,11 +125,11 @@ export class SqlPredicateRenderer {
    * the caller reached a typed table or a table name.
    */
   drizzlePatternCondition(column: any, comparison: WhereComparison): any {
-    return sql`${this.dialect.drizzlePatternColumn(column)} ${sql.raw(this.dialect.getLikeOperator())} ${comparison.likePattern} ESCAPE ${sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
+    return Sql.query`${this.dialect.drizzlePatternColumn(column)} ${Sql.raw(this.dialect.getLikeOperator())} ${comparison.likePattern} ESCAPE ${Sql.raw(`'${WhereComparison.LIKE_ESCAPE}'`)}`;
   }
-  /** Canonical operator name -> drizzle condition builder, keyed exactly like WhereComparison. */
+  /** Canonical operator name -> condition builder, keyed exactly like WhereComparison. */
   private static readonly DRIZZLE_OPERATORS: Record<string, (column: any, value: any) => any> = {
-    eq, ne, gt, gte, lt, lte,
+    eq: Sql.eq, ne: Sql.ne, gt: Sql.gt, gte: Sql.gte, lt: Sql.lt, lte: Sql.lte,
   };
   /**
    * Build raw SQL WHERE clause for string-based queries
@@ -169,12 +169,12 @@ export class SqlPredicateRenderer {
   drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
     if (!search || search.columns.length === 0 || !search.value) return null;
     const pattern = `%${WhereComparison.escapeLikeOperand(search.value)}%`;
-    const escapeClause = sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
-    const likeOperator = sql.raw(this.dialect.getLikeOperator());
+    const escapeClause = Sql.raw(`ESCAPE '${WhereComparison.LIKE_ESCAPE}'`);
+    const likeOperator = Sql.raw(this.dialect.getLikeOperator());
     const parts = search.columns.map(
-      (column) => sql`${sql.raw(this.dialect.patternColumnExpression(this.dialect.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
+      (column) => Sql.query`${Sql.raw(this.dialect.patternColumnExpression(this.dialect.quoteIdentifier(column)))} ${likeOperator} ${pattern} ${escapeClause}`,
     );
-    return parts.length === 1 ? parts[0] : or(...parts);
+    return parts.length === 1 ? parts[0] : Sql.or(...parts);
   }
 
 }

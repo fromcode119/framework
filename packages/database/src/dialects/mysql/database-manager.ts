@@ -1,9 +1,11 @@
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
-import { drizzle } from 'drizzle-orm/mysql2';
 import mysql from 'mysql2/promise';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, like, desc, asc } from 'drizzle-orm';
-import { mysqlTable, text } from 'drizzle-orm/mysql-core';
+import { Sql } from '@database/sql/sql';
+import { SqlColumns } from '@database/sql/sql-columns';
+import { SqlRenderer } from '@database/sql/sql-renderer';
+import { SqlTable } from '@database/sql/sql-table';
+import { MysqlTableStatements } from '@database/dialects/mysql/mysql-table-statements';
 import { NamingStrategy } from '@database/naming-strategy';
 import type { IDatabaseManager } from '@database/interfaces/database-manager.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
@@ -16,23 +18,23 @@ import { MysqlCrudOperations } from '@database/dialects/mysql/mysql-crud-operati
 
 export class MysqlDatabaseManager extends MysqlCrudOperations implements IDatabaseManager {
   private pool: mysql.Pool;
-  public readonly drizzle: any;
+  protected statements: MysqlTableStatements;
   public readonly dialect = 'mysql' as const;
   protected normalizer: MysqlColumnNormalizer;
   protected schemaBuilder: MysqlSchemaBuilder;
   protected reader: MysqlReadOperations;
 
   // Standard operators
-  public readonly like = like;
-  public readonly eq = eq;
-  public readonly ne = ne;
-  public readonly and = and;
-  public readonly or = or;
-  public readonly isNull = isNull;
-  public readonly isNotNull = isNotNull;
-  public readonly inArray = inArray;
-  public readonly desc = desc;
-  public readonly asc = asc;
+  public readonly like = Sql.like;
+  public readonly eq = Sql.eq;
+  public readonly ne = Sql.ne;
+  public readonly and = Sql.and;
+  public readonly or = Sql.or;
+  public readonly isNull = Sql.isNull;
+  public readonly isNotNull = Sql.isNotNull;
+  public readonly inArray = Sql.inArray;
+  public readonly desc = Sql.desc;
+  public readonly asc = Sql.asc;
 
   constructor(connection: string) {
     super();
@@ -48,10 +50,10 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
     // depends on.
     this.pool = mysql.createPool(connection);
     MysqlDatabaseManager.applyAnsiQuotes(this.pool);
-    this.drizzle = drizzle(this.pool);
+    this.statements = new MysqlTableStatements(this.pool);
     this.normalizer = new MysqlColumnNormalizer(this.pool);
     this.schemaBuilder = new MysqlSchemaBuilder(this);
-    this.reader = new MysqlReadOperations(this.pool, this.drizzle, this.normalizer, this.like);
+    this.reader = new MysqlReadOperations(this.pool, this.statements, this.normalizer, this.like);
   }
 
   /**
@@ -171,23 +173,26 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
 
     if (statement && /^\s*CREATE\s+(UNIQUE\s+)?INDEX\s+IF\s+NOT\s+EXISTS\s/i.test(statement)) {
       return MysqlDatabaseManager.ignoring('ER_DUP_KEYNAME', async () =>
-        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(sql.raw(statement.replace(/\s+IF\s+NOT\s+EXISTS\s+/i, ' ')))));
+        MysqlDatabaseManager.rowsOf(await this.statements.query(statement.replace(/\s+IF\s+NOT\s+EXISTS\s+/i, ' '), [])));
     }
 
     // `ALTER TABLE t DROP COLUMN IF EXISTS c` — PostgreSQL has it, MySQL does not, and migrations
     // write it. ER_CANT_DROP_FIELD_OR_KEY is the "already gone" answer being asked for.
     if (statement && /^\s*ALTER\s+TABLE\s+.+\sDROP\s+COLUMN\s+IF\s+EXISTS\s/i.test(statement)) {
       return MysqlDatabaseManager.ignoring('ER_CANT_DROP_FIELD_OR_KEY', async () =>
-        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(
-          sql.raw(statement.replace(/\sDROP\s+COLUMN\s+IF\s+EXISTS\s+/i, ' DROP COLUMN ')))));
+        MysqlDatabaseManager.rowsOf(await this.statements.query(
+          statement.replace(/\sDROP\s+COLUMN\s+IF\s+EXISTS\s+/i, ' DROP COLUMN '), [])));
     }
 
     if (statement && /^\s*DROP\s+INDEX\s+IF\s+EXISTS\s/i.test(statement)) {
       return MysqlDatabaseManager.ignoring('ER_CANT_DROP_FIELD_OR_KEY', async () =>
-        MysqlDatabaseManager.rowsOf(await this.drizzle.execute(sql.raw(statement.replace(/\s+IF\s+EXISTS\s+/i, ' ')))));
+        MysqlDatabaseManager.rowsOf(await this.statements.query(statement.replace(/\s+IF\s+EXISTS\s+/i, ' '), [])));
     }
 
-    return MysqlDatabaseManager.rowsOf(await this.drizzle.execute(query));
+    if (typeof query === 'string') return MysqlDatabaseManager.rowsOf(await this.statements.query(query, []));
+    // A statement a plugin process built and flattened to `{ $sql, params }` to cross to the host.
+    if (typeof query?.$sql === 'string') return MysqlDatabaseManager.rowsOf(await this.statements.query(query.$sql, query.params ?? []));
+    return MysqlDatabaseManager.rowsOf(await this.statements.run(query));
   }
 
   /**
@@ -207,18 +212,16 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
     return result;
   }
 
-  /** The SQL a drizzle statement carries, when it is a plain one we can read. Otherwise empty. */
+  /** The text of a statement with nothing bound — the only kind that can be rewritten as text. Otherwise empty. */
   private static statementText(query: any): string {
     // A plain string is the whole statement. `BaseMigration.createIndexIfMissing` passes one, and
     // without this it reached MySQL untranslated and failed on `IF NOT EXISTS` — while documenting
     // that this manager translated it.
     if (typeof query === 'string') return query;
-    const chunks = query?.queryChunks;
-    if (!Array.isArray(chunks)) return '';
-    // A statement built only from static text has no parameters to lose; one with bindings is left
-    // alone, because rebuilding it from its text would drop them.
-    if (chunks.some((chunk: any) => chunk?.value === undefined && chunk?.encoder)) return '';
-    return chunks.map((chunk: any) => (Array.isArray(chunk?.value) ? chunk.value.join('') : '')).join('');
+    if (!query || typeof query !== 'object' || typeof query.$sql === 'string') return '';
+    // A statement with bindings is left alone, because rebuilding it from its text would drop them.
+    const { text, params } = SqlRenderer.MYSQL.render(query);
+    return params.length === 0 ? text : '';
   }
 
   /** Run `fn`, treating one MySQL error code as success — the state the caller asked for. */
@@ -236,7 +239,7 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
   }
 
   /**
-   * A drizzle table built from column names the caller used.
+   * A table declared from the column names the caller used.
    *
    * The KEY stays exactly as given so the caller's data object still matches, while the SQL NAME is
    * snake_cased — which is the convention every table in this schema is created with, and what
@@ -247,9 +250,9 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
   protected getDynamicTable(tableName: string, columns: string[]) {
     const tableColumns: Record<string, any> = {};
     for (const col of columns) {
-      tableColumns[col] = text(NamingStrategy.toSnakeCase(col));
+      tableColumns[col] = SqlColumns.text(NamingStrategy.toSnakeCase(col));
     }
-    return mysqlTable(tableName, tableColumns);
+    return SqlTable.define(tableName, tableColumns);
   }
 
 }

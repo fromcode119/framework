@@ -8,9 +8,8 @@ import type { ISchemaField } from '@database/interfaces/schema-field.interface';
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
-import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
+import { Sql } from '@database/sql/sql';
 import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
-import { PostgresTableWrites } from '@database/dialects/postgres/postgres-table-writes';
 
 /**
  * Reading and writing rows, and the schema calls that sit beside them.
@@ -29,14 +28,6 @@ export abstract class PostgresCrudOperations extends BaseDialect {
   protected abstract get executor(): { query: (text: any, values?: any[]) => Promise<any> };
   protected declare normalizer: any;
   protected declare schemaBuilder: any;
-  public declare readonly drizzle: any;
-
-  /**
-   * The connection a statement must use: the request's held client inside a tenant scope, the pool
-   * otherwise. Declared abstract because the manager owns the pool and therefore the choice — this
-   * half must never pick a connection for itself.
-   */
-  protected abstract get orm(): any;
 
   /** Keeps the invocation's bound client between its runs; see TenantClientParking. */
   tenantLease(tenantId: string): ITenantScopeLease {
@@ -89,18 +80,12 @@ export abstract class PostgresCrudOperations extends BaseDialect {
       );
       return result.rows[0] || null;
     }
-    const builder = () => this.orm.insert(tableOrName).values(data).returning();
-    if (Array.isArray(data) || PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
-    const [result] = await this.writes.run(this.executor, tableOrName, 'insert', () => this.writes.insertStatement(tableOrName, data), builder);
+    const [result] = await this.tableStatements.write(this.executor, tableOrName, this.tableStatements.writes.insertStatement(tableOrName, data));
     return result;
   }
 
-  private ownWrites: PostgresTableWrites | null = null;
-
-  /** Writes on a typed table, assembled by our own query layer — see PostgresTableWrites. */
-  private get writes(): PostgresTableWrites {
-    return (this.ownWrites ??= new PostgresTableWrites(new PostgresTableStatements(this.drizzle.dialect), this.drizzle.dialect));
-  }
+  /** Reads and writes on a declared table — see PostgresTableStatements. */
+  private readonly tableStatements = new PostgresTableStatements();
 
   async update(tableOrName: any, where: any, data: any): Promise<any> {
     if (typeof tableOrName === 'string') {
@@ -131,19 +116,14 @@ export abstract class PostgresCrudOperations extends BaseDialect {
     // A typed update with no filter, or with a caller's SQL fragment, used to run with NO where at all —
     // every row rewritten. It is refused, or filtered, exactly as a delete is.
     const filter = PostgresTableStatements.filter(this.buildWhereConditions(where, tableOrName), where);
-    const builder = () => this.orm.update(tableOrName).set(data).where(filter).returning();
-    if (!filter) throw new Error('Unsafe update blocked: missing where clause');
-    if (PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
-    const [result] = await this.writes.run(this.executor, tableOrName, 'update', () => this.writes.updateStatement(tableOrName, data, filter), builder);
+    const [result] = await this.tableStatements.write(this.executor, tableOrName, this.tableStatements.writes.updateStatement(tableOrName, data, filter));
     return result;
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const { target, set } = options;
     const conflict = typeof target === 'string' ? (tableOrName as any)[target] : target;
-    const builder = () => this.orm.insert(tableOrName).values(data).onConflictDoUpdate({ target: conflict, set }).returning();
-    if (Array.isArray(data) || PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
-    const [result] = await this.writes.run(this.executor, tableOrName, 'upsert', () => this.writes.upsertStatement(tableOrName, data, conflict, set), builder);
+    const [result] = await this.tableStatements.write(this.executor, tableOrName, this.tableStatements.writes.upsertStatement(tableOrName, data, conflict, set));
     return result;
   }
 
@@ -159,10 +139,7 @@ export abstract class PostgresCrudOperations extends BaseDialect {
     }
 
     const filter = PostgresTableStatements.filter(this.buildWhereConditions(where, tableOrName), where);
-    if (!filter) throw new Error('Unsafe delete blocked: missing where clause');
-    const builder = () => this.orm.delete(tableOrName).where(filter).returning();
-    if (PostgresTableWrites.mode() === 'drizzle') return (await builder()).length > 0;
-    const rows = await this.writes.run(this.executor, tableOrName, 'delete', () => this.writes.deleteStatement(tableOrName, filter), builder);
+    const rows = await this.tableStatements.write(this.executor, tableOrName, this.tableStatements.writes.deleteStatement(tableOrName, filter));
     return rows.length > 0;
   }
 
@@ -198,19 +175,19 @@ export abstract class PostgresCrudOperations extends BaseDialect {
 
   // Schema Management
   async getTables(): Promise<string[]> {
-    const query = sql`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`;
+    const query = Sql.query`SELECT table_name FROM information_schema.tables WHERE table_schema = 'public'`;
     const result: any = await this.execute(query);
     return result.rows.map((r: any) => r.table_name);
   }
 
   async tableExists(tableName: string): Promise<boolean> {
-    const query = sql`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
+    const query = Sql.query`SELECT count(*) as total FROM information_schema.tables WHERE table_name = ${tableName}`;
     const result: any = await this.execute(query);
     return (result.rows[0]?.total || 0) > 0;
   }
 
   async getColumns(tableName: string): Promise<string[]> {
-    const result: any = await this.execute(sql`SELECT column_name FROM information_schema.columns WHERE table_name = ${tableName}`);
+    const result: any = await this.execute(Sql.query`SELECT column_name FROM information_schema.columns WHERE table_name = ${tableName}`);
     return result.rows.map((r: any) => r.column_name.toLowerCase());
   }
 
@@ -227,8 +204,8 @@ export abstract class PostgresCrudOperations extends BaseDialect {
   }
 
   async resetDatabase(): Promise<void> {
-    await this.execute(sql`DROP SCHEMA public CASCADE`);
-    await this.execute(sql`CREATE SCHEMA public`);
+    await this.execute(Sql.query`DROP SCHEMA public CASCADE`);
+    await this.execute(Sql.query`CREATE SCHEMA public`);
   }
 
   /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
