@@ -4,6 +4,8 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { PushDelivery } from '@core/push/push-delivery';
 import { PushSurface } from '@core/push/enums/push-surface.enum';
+import { PersonNotifier } from '@core/notifications/person-notifier';
+import { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
 
 /**
  * Framework-owned notification dispatch. Generic cross-cutting work — "who are the platform admins"
@@ -65,6 +67,16 @@ export class NotificationsContextProxy {
       ): Promise<{ success: boolean }> {
         const success = await NotificationsContextProxy.alert(manager, userId, message, sourceSlug);
         return { success };
+      },
+
+      async notifyPerson(
+        userId: number,
+        message: { title: string; body?: string; link?: string; text?: string; category: string },
+      ): Promise<{ pushed: number; texted: boolean }> {
+        // The category decides whose consent covers the message, so an unknown one sends nothing.
+        const category = NotificationCategory.fromValue(String(message?.category ?? '')) as NotificationCategory | undefined;
+        if (!category) return { pushed: 0, texted: false };
+        return new PersonNotifier(manager).notify({ ...message, userId, category });
       },
 
       async notifyAdmins(

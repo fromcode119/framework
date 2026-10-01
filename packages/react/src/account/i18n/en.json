@@ -131,7 +131,17 @@
       "blocked": "Notifications are blocked for this site in your browser. Allow them in the browser's site settings, then come back here.",
       "declined": "Notifications were not allowed, so nothing was switched on.",
       "failed": "That did not work. Please try again.",
-      "others": "Notifications are on for {{count}} of your other devices."
+      "others": "Notifications are on for {{count}} of your other devices.",
+      "offersAsNotifications": "Offers as notifications",
+      "offersAsNotificationsDetail": "News and offers on the devices where notifications are on.",
+      "textsTitle": "Text messages",
+      "textsUnavailable": "This site does not send text messages.",
+      "phone": "Mobile number",
+      "phoneHint": "With your country code, e.g. +359 88 123 4567",
+      "updatesByText": "Updates by text",
+      "updatesByTextDetail": "Your orders, bookings and support replies.",
+      "offersByText": "Offers by text",
+      "offersByTextDetail": "News and offers, now and then. Reply STOP to stop them."
     }
   }
 }

@@ -73,6 +73,8 @@ export class RouteAuthSegments {
   PUSH_KEY: '/push/key',
   PUSH_SUBSCRIPTIONS: '/push/subscriptions',
   PUSH_SUBSCRIPTIONS_REMOVE: '/push/subscriptions/remove',
+  /** What the signed-in person agreed to be sent outside the site: texts, offers as notifications. */
+  NOTIFICATION_PREFERENCES: '/notification-preferences',
   /**
    * The same surface for someone arriving from a link in an email rather than a session. PUBLIC by
    * necessity — most recipients have no account — and safe because the signed token is what names the

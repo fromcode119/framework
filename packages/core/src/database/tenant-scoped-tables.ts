@@ -86,6 +86,8 @@ export class TenantScopedTables {
     // A person's devices that accept this SITE's push messages. A subscription is made against one
     // site's key and names a person of that site; another site must neither see nor message it.
     String(SystemConstants.TABLE.PUSH_SUBSCRIPTIONS).toLowerCase(),
+    // A person's agreement to be texted or notified by THIS site. It is that site's record of consent.
+    String(SystemConstants.TABLE.CHANNEL_CONSENTS).toLowerCase(),
   ]);
 
   /**

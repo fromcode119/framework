@@ -26,6 +26,7 @@ import { MetaContextProxy } from '@core/plugin/context/meta';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
 import { RealtimeContextProxy } from '@core/plugin/context/realtime';
+import { SmsContextProxy } from '@core/plugin/context/sms';
 import { GeoContextProxy } from '@core/plugin/context/geo';
 import { MigrationsContextProxy } from '@core/plugin/context/migrations';
 import { MediaContextProxy } from '@core/plugin/context/media';
@@ -259,6 +260,8 @@ export class PluginContextFactory {
         signing: SigningContextProxy.createSigningProxy(manager, plugin.manifest.slug),
         // Mints and sends on the HOST: the room's sockets are the api's, and so is the key.
         realtime: RealtimeContextProxy.createRealtimeProxy(manager, plugin.manifest.slug),
+        // Providers register on the HOST; their `send` is called back in the plugin's own process.
+        sms: SmsContextProxy.createSmsProxy(plugin, manager),
         // Looks up on the HOST: the database file stays with the platform.
         geo: GeoContextProxy.createGeoProxy(),
         // Schema migrations run on the framework's DDL connection, never the request role.

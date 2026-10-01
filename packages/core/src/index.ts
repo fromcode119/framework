@@ -73,6 +73,11 @@ export { PushDelivery } from '@core/push/push-delivery';
 export { PushSenderKeys } from '@core/push/push-sender-keys';
 export { PushSubscriptionStore } from '@core/push/push-subscription-store';
 export { PushSurface } from '@core/push/enums/push-surface.enum';
+export { ChannelConsentStore } from '@core/notifications/channel-consent-store';
+export { ConsentChannel } from '@core/notifications/enums/consent-channel.enum';
+export { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
+export { PersonNotifier } from '@core/notifications/person-notifier';
+export { PhoneNumber } from '@core/notifications/phone-number';
 export { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
 export type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
 

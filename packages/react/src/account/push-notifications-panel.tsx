@@ -4,6 +4,7 @@ import { CoercionUtils, PushNotificationWorker, RouteConstants, SdkClient } from
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountTranslations } from '@react/account/account-translations';
 import { PushDevice } from '@react/push/push-device';
+import { AccountChannelPreferences } from '@react/account/channel-preferences';
 
 /**
  * Account → Notifications: whether THIS device shows the site's notifications.
@@ -92,6 +93,7 @@ export class AccountPushNotificationsPanel extends PluginComponent {
             </label>
           </li>
         </ul>
+        <AccountChannelPreferences pushSupported={supported} />
         {this.otherDevices > 0 ? <p className="fc-acct-note">{this.t('account.notifications.others', { count: this.otherDevices }, `Notifications are on for ${this.otherDevices} of your other devices.`)}</p> : null}
       </div>
     );
