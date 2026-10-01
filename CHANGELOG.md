@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.292] - 2026-10-01
+
+### Added
+
+- **realtime**: live events to a room a plugin admitted a browser to ([#640](https://github.com/fromcode119/framework/pull/640))
+
+### Fixed
+
+- **frontend**: storefront api calls release what they skip, and a slow call says why ([#642](https://github.com/fromcode119/framework/pull/642))
+
+### Performance
+
+- **database**: whole-table reads assembled by our own query layer ([#632](https://github.com/fromcode119/framework/pull/632))
+
 ## [0.2.291] - 2026-10-01
 
 ### Added
