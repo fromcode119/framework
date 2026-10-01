@@ -59,8 +59,11 @@ export class PushDevice {
     return [browser, system].filter(Boolean).join(' · ');
   }
 
-  private static bytes(base64url: string): Uint8Array {
+  private static bytes(base64url: string): ArrayBuffer {
     const base64 = base64url.replace(/-/g, '+').replace(/_/g, '/').padEnd(Math.ceil(base64url.length / 4) * 4, '=');
-    return Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+    const binary = atob(base64);
+    const bytes = new Uint8Array(new ArrayBuffer(binary.length));
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return bytes.buffer;
   }
 }
