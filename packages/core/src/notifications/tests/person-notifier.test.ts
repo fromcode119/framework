@@ -69,6 +69,11 @@ describe('telling a customer something', () => {
     expect(calls).toEqual([{ config: { token: 'secret' }, message: { to: '+359881234567', body: 'Hi' } }]);
     expect(() => sms.registerProvider({ key: 'none', label: 'x', send: async () => ({ id: '' }) })).toThrow();
 
+    // Its settings go back to the plugin that provides it, and to no other.
+    const active = { ...fake.manager, integrations: { ...fake.manager.integrations, get: async () => sender } };
+    expect(await SmsContextProxy.createSmsProxy({ manifest: { namespace: 'org.test', slug: 'sms-test' } } as any, active).activeSettings()).toEqual({ provider: 'acme', config: { token: 'secret' } });
+    expect(await SmsContextProxy.createSmsProxy({ manifest: { namespace: 'org.test', slug: 'other' } } as any, active).activeSettings()).toBeNull();
+
     await fake.store.grant(5, ConsentChannel.SMS, NotificationCategory.UPDATES, '+359881234567', 'test');
     await fake.store.grant(5, ConsentChannel.SMS, NotificationCategory.OFFERS, '+359881234567', 'test');
     await fake.store.grant(6, ConsentChannel.SMS, NotificationCategory.UPDATES, '+447700900123', 'test');

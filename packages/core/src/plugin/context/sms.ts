@@ -28,7 +28,7 @@ export class SmsContextProxy {
           description: provider.description ? String(provider.description) : undefined,
           fields: Array.isArray(provider.fields) ? provider.fields : [],
           namespace: plugin.manifest.namespace,
-          create: (config: Record<string, unknown>) => new PluginSmsSender((settings, message) => send(settings, message), config ?? {}),
+          create: (config: Record<string, unknown>) => new PluginSmsSender(plugin.manifest.slug, key, (settings, message) => send(settings, message), config ?? {}),
         });
       },
 
@@ -39,6 +39,11 @@ export class SmsContextProxy {
       },
 
       status: async () => ({ configured: (await new PersonNotifier(manager).sender()).configured }),
+
+      activeSettings: async () => {
+        const sender = await new PersonNotifier(manager).sender();
+        return sender instanceof PluginSmsSender && sender.owner === plugin.manifest.slug ? { provider: sender.key, config: { ...sender.config } } : null;
+      },
     };
   }
 }

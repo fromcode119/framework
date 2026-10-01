@@ -25,4 +25,11 @@ export interface IPluginContextSms {
 
   /** Whether this site has a text-message provider set up. */
   status(): Promise<{ configured: boolean }>;
+
+  /**
+   * The site's saved settings for its text-message provider — secrets included — but only when that
+   * provider is THIS plugin's; null otherwise. For checking that a callback (a STOP reply, a delivery
+   * report) really came from the provider, with the same credentials the messages are sent with.
+   */
+  activeSettings(): Promise<{ provider: string; config: Record<string, unknown> } | null>;
 }

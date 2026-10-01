@@ -10,8 +10,11 @@ export class PluginSmsSender implements ISmsSender {
   readonly configured = true;
 
   constructor(
+    /** The plugin that provides it — the only one ever shown these settings (`context.sms.activeSettings`). */
+    readonly owner: string,
+    readonly key: string,
     private readonly sendWith: (config: Record<string, unknown>, message: { to: string; body: string }) => Promise<unknown>,
-    private readonly config: Record<string, unknown>,
+    readonly config: Record<string, unknown>,
   ) {}
 
   async send(message: { to: string; body: string }): Promise<{ id: string }> {
