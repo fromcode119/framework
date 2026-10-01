@@ -128,6 +128,8 @@ export { RouteConstants } from '@fromcode119/core/client';
 export { AccountRouteUtils } from '@fromcode119/core/client';
 // Listens to a room a plugin admitted this browser to (`context.realtime.roomToken`).
 export { RealtimeRoomClient } from '@fromcode119/core/client';
+export { StorefrontNoticeClient, StorefrontNoticeDisplay, StorefrontNoticeParam, StorefrontNoticeTone } from '@fromcode119/core/client';
+export type { IStorefrontNotice, IStorefrontNoticeOptions } from '@fromcode119/core/client';
 export { PublicRouteConstants } from '@fromcode119/core/client';
 export { DataSourceConstants } from '@fromcode119/core/client';
 

@@ -2,6 +2,9 @@ import { Reactor } from '@fromcode119/react-class-components';
 import { SystemConstants } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import { AccountSlotRegistrar } from '@/components/account/account-slot-registrar';
+import { ContextBridge } from '@fromcode119/react/context-bridge';
+import { StorefrontNoticeBar } from '@fromcode119/react/storefront-notice/storefront-notice-bar';
+import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 
 export class ThemeInitializer extends Reactor {
   /**
@@ -20,6 +23,8 @@ export class ThemeInitializer extends Reactor {
 
   private static registerSlots(): boolean {
     AccountSlotRegistrar.register();
+    // The one-time notice a redirect from an email link carries (`context.ui.noticeUrl`), over every page.
+    ContextBridge.registerSlotComponent(StorefrontContentContract.OVERLAY_SLOT, StorefrontNoticeBar, 'framework', 1);
     return true;
   }
 

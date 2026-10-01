@@ -66,6 +66,7 @@
       "require": "./dist/view/plugin-runtime-provider.client.js"
     },
     "./account/account-shell.css": "./dist/account/account-shell.css",
+    "./storefront-notice/storefront-notice-bar.css": "./dist/storefront-notice/storefront-notice-bar.css",
     "./account/token-email-preferences-panel.client": {
       "types": "./dist/account/token-email-preferences-panel.client.d.ts",
       "import": "./dist/account/token-email-preferences-panel.client.js",
@@ -79,7 +80,7 @@
   "scripts": {
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:styles",
     "dev": "tsc -w",
-    "copy:styles": "mkdir -p dist/account && cp -r src/account/*.css dist/account/"
+    "copy:styles": "mkdir -p dist/account dist/storefront-notice && cp -r src/account/*.css dist/account/ && cp src/storefront-notice/*.css dist/storefront-notice/"
   },
   "peerDependencies": {
     "react": "^18.0.0 || ^19.0.0",
