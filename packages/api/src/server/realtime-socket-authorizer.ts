@@ -12,13 +12,27 @@ import type { IRealtimeSocketBinding } from '@fromcode119/core';
  *
  * The session is read from the cookies only, the newest valid one winning, for the reason
  * `AdminTenantResolver` gives: a browser can present two sessions of the same name.
+ *
+ * The one other way in is a room token (`?room=`), minted by a plugin for a browser it checked —
+ * a visitor in a support chat, say. It admits that browser to that room of that site and nothing
+ * else (`RealtimeRoomTokens`). A request that presents a room token is judged by the token alone:
+ * a bad one is refused, never retried as an administrator's session.
  */
 export class RealtimeSocketAuthorizer {
   private static readonly COOKIES: readonly string[] = [CookieConstants.AUTH_TOKEN, CookieConstants.CLIENT_AUTH_TOKEN];
 
-  constructor(private readonly auth: { verifyToken(token: string): Promise<unknown> }) {}
+  static readonly ROOM_PARAM = 'room';
 
-  async authorize(request: http.IncomingMessage): Promise<IRealtimeSocketBinding | null> {
+  constructor(
+    private readonly auth: { verifyToken(token: string): Promise<unknown> },
+    private readonly rooms: { verify(token: string): Promise<{ tenantId: string | null; room: string } | null> },
+  ) {}
+
+  async authorize(request: http.IncomingMessage, url: URL): Promise<IRealtimeSocketBinding | null> {
+    if (url.searchParams.has(RealtimeSocketAuthorizer.ROOM_PARAM)) {
+      const admitted = await this.rooms.verify(url.searchParams.get(RealtimeSocketAuthorizer.ROOM_PARAM) || '').catch(() => null);
+      return admitted ? { tenantId: admitted.tenantId, room: admitted.room } : null;
+    }
     let newest: Record<string, unknown> | null = null;
     for (const token of RealtimeSocketAuthorizer.tokensFrom(request)) {
       try {

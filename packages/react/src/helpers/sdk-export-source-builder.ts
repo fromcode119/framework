@@ -68,6 +68,7 @@ export class SdkExportSourceBuilder {
     'RuntimeConstants',
     'RouteConstants',
     'AccountRouteUtils',
+    'RealtimeRoomClient',
     'PublicRouteConstants',
     'DataSourceConstants',
     'Logger',

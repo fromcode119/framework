@@ -6,8 +6,8 @@ import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer
 import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
-import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers, ApiVersionUtils } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -69,7 +69,7 @@ export class APIServer {
     this.restController.archiving.useCollections(() => manager.getCollections());
     this.graphQLService = new GraphQLService(manager, this.restController);
     this.socket = new WebSocketManager(manager.hooks);
-    this.socketAuthorizer = new RealtimeSocketAuthorizer(auth);
+    this.socketAuthorizer = new RealtimeSocketAuthorizer(auth, new RealtimeRoomTokens(manager));
 
     // Seeding DEFAULT settings is platform work, not tenant work: the rows belong to no tenant, and
     // the request connection is a non-owner role with no platform marker, so row-level security
@@ -255,21 +255,23 @@ export class APIServer {
       // A malformed upgrade URL makes `new URL` throw, and an emitter callback has no caller to catch
       // it — that is an uncaughtException, i.e. the process, from an unauthenticated socket. A request
       // we cannot parse is a request we refuse.
-      let pathname: string;
+      let url: URL;
       try {
-        pathname = new URL(request.url || '', `http://${host}:${port}`).pathname;
+        url = new URL(request.url || '', `http://${host}:${port}`);
       } catch {
         socket.destroy();
         return;
       }
 
-      if (pathname !== RouteConstants.SEGMENTS.WEBSOCKET || !wss) {
+      // Under the api's own path, so every host reaches it — a site's storefront hands only `/api/*`
+      // to the api, and a visitor in a live chat is on the storefront.
+      if (url.pathname !== `${ApiVersionUtils.API_BASE_PATH}${RouteConstants.SEGMENTS.WEBSOCKET}` || !wss) {
         socket.destroy();
         return;
       }
-      // Admitted only with an administrator's session, and bound to that session's site — see
+      // Admitted with an administrator's session or a room token, and bound to that site — see
       // `RealtimeSocketAuthorizer`. A refusal is answered before the upgrade, so no socket exists.
-      void this.socketAuthorizer.authorize(request).then((binding) => {
+      void this.socketAuthorizer.authorize(request, url).then((binding) => {
         if (!binding) {
           socket.end('HTTP/1.1 401 Unauthorized\r\nConnection: close\r\nContent-Length: 0\r\n\r\n');
           return;

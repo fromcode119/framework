@@ -126,6 +126,8 @@ export { CookieConstants, CookieSameSite } from '@fromcode119/core/client';
 export { RuntimeConstants } from '@fromcode119/core/client';
 export { RouteConstants } from '@fromcode119/core/client';
 export { AccountRouteUtils } from '@fromcode119/core/client';
+// Listens to a room a plugin admitted this browser to (`context.realtime.roomToken`).
+export { RealtimeRoomClient } from '@fromcode119/core/client';
 export { PublicRouteConstants } from '@fromcode119/core/client';
 export { DataSourceConstants } from '@fromcode119/core/client';
 

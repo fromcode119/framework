@@ -78,6 +78,7 @@ export { PluginFrontendRuntimeUtils } from '@core/utils/plugin-frontend-runtime-
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';
 export { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+export { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
 // Browser-safe: a pure Enum over four strings, importing nothing but `Enum` itself. The admin needs
 // it because "plugin | theme | appearance | core" was being spelled out by hand in five places —
 // once in the form's option list, once in its state, once in its values, once in the ternary that

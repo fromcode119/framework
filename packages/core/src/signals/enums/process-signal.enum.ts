@@ -29,6 +29,8 @@ export class ProcessSignal extends Enum {
   static readonly PLUGIN_STOPPED = new ProcessSignal('plugin-stopped');
   /** A live event for the admin's sockets: `{ type, payload, plugin, tenantId }`. Each process sends it to its own. */
   static readonly REALTIME_BROADCAST = new ProcessSignal('realtime-broadcast');
+  /** A live event for one room's sockets: `{ tenantId, room, data }`. Each process sends it to its own. */
+  static readonly REALTIME_ROOM = new ProcessSignal('realtime-room');
 
   private constructor(value: string) {
     super(value);
