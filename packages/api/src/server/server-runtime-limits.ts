@@ -1,4 +1,5 @@
 import { ApiResponseCache, PluginDatabaseQuota, SystemConstants, SystemSettingRegistry } from '@fromcode119/core';
+import { DatabasePoolRegistry } from '@fromcode119/database';
 import { RateLimitSettingsUtils } from '@api/utils/rate-limit-settings-utils';
 
 /**
@@ -9,6 +10,14 @@ export class ServerRuntimeLimits {
   static apply(settingsCache: Map<string, string>): void {
     PluginDatabaseQuota.useLimit(() => RateLimitSettingsUtils.resolvePluginDbCallsPerMinute(settingsCache));
     ApiResponseCache.useMaxAge(() => ServerRuntimeLimits.responseCacheSeconds(settingsCache));
+    DatabasePoolRegistry.useRequestPoolMax(() => ServerRuntimeLimits.databasePoolMax(settingsCache));
+  }
+
+  /** Settings → Infrastructure → Database connections; the declared default until the operator saves one. */
+  static databasePoolMax(settingsCache: Map<string, string>): number {
+    const key = SystemConstants.META_KEY.DATABASE_POOL_MAX;
+    const saved = Number(settingsCache.get(key));
+    return Number.isInteger(saved) && saved > 0 ? saved : Number(SystemSettingRegistry.defaultValueOf(key));
   }
 
   /** Settings → Infrastructure → API response cache; the declared default until the operator saves one. */
