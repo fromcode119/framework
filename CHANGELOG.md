@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.275] - 2026-10-01
+
+### Fixed
+
+- **plugin-host**: a newer plugin process's route declaration takes effect ([#586](https://github.com/fromcode119/framework/pull/586))
+- **plugin-host**: keep each site's peer snapshot apart in the guest ([#585](https://github.com/fromcode119/framework/pull/585))
+
 ## [0.2.274] - 2026-10-01
 
 ### Fixed
