@@ -92,8 +92,9 @@ export class PluginAdminRuntimeService {
 
   private async getSecondaryPanelAllowlistEntries(): Promise<IAdminSecondaryPanelAllowlistEntry[]> {
     try {
-      const records = await this.db.find(SystemConstants.TABLE.META);
-      const row = (records || []).find((entry: any) => String(entry?.key || '') === 'admin.secondaryPanel.allowlist.v1');
+      // The one row, not the whole settings table: this runs on every admin and storefront metadata request.
+      const records = await this.db.find(SystemConstants.TABLE.META, { where: { key: 'admin.secondaryPanel.allowlist.v1' } });
+      const row = (records || [])[0];
       if (!row || row.value === null || row.value === undefined) {
         return [];
       }
