@@ -646,7 +646,9 @@
       "deviceBlocked": "Notifications are blocked for this console in your browser — allow them in the site settings",
       "deviceDeclined": "Notifications were not allowed, so nothing was switched on.",
       "deviceFailed": "Could not change notifications on this device.",
-      "loadFailed": "Notifications could not be loaded."
+      "loadFailed": "Notifications could not be loaded.",
+      "new": "New ({{count}})",
+      "earlier": "Earlier"
     }
   },
   "nav": {

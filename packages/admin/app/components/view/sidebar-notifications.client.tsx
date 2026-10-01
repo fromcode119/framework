@@ -96,21 +96,30 @@ export class SidebarNotifications extends AdminComponent {
     };
   }
 
+  /** One alert: its title, and what it says with when, on the line under it. */
+  private item(notification: Record<string, any>, section?: string): IDropdownItem {
+    return {
+      label: CoercionUtils.toString(notification.title),
+      detail: [CoercionUtils.toString(notification.body).slice(0, 140), SidebarNotifications.when(notification.createdAt)].filter(Boolean).join(' · '),
+      section,
+      scrolls: section ? true : undefined,
+      onClick: () => { void this.open(notification); },
+    };
+  }
+
+  /** The actions first, so they never sit below a long list; then what is new, then the rest. */
   private get items(): IDropdownItem[] {
-    const list: IDropdownItem[] = this.notifications.length
-      ? this.notifications.map((notification, index) => ({
-          label: CoercionUtils.toString(notification.title),
-          detail: [CoercionUtils.toString(notification.body).slice(0, 140), SidebarNotifications.when(notification.createdAt)].filter(Boolean).join(' · '),
-          selected: !notification.read,
-          section: index === 0 ? AdminI18n.t('shell.notifications.title') : undefined,
-          scrolls: index === 0 ? true : undefined,
-          onClick: () => { void this.open(notification); },
-        }))
-      : [{ label: AdminI18n.t('shell.notifications.empty'), section: AdminI18n.t('shell.notifications.title'), onClick: () => undefined }];
-    return [
-      ...list,
-      ...(this.unread ? [{ label: AdminI18n.t('shell.notifications.markAllRead'), icon: <FrameworkIcons.Check size={16} />, onClick: () => { void this.readAll(); } }] : []),
+    const fresh = this.notifications.filter((notification) => !notification.read);
+    const seen = this.notifications.filter((notification) => notification.read);
+    const actions: IDropdownItem[] = [
       this.deviceItem,
+      ...(this.unread ? [{ label: AdminI18n.t('shell.notifications.markAllRead'), icon: <FrameworkIcons.Check size={16} />, onClick: () => { void this.readAll(); } }] : []),
+    ];
+    if (!this.notifications.length) return [...actions, { label: AdminI18n.t('shell.notifications.empty'), section: AdminI18n.t('shell.notifications.title'), onClick: () => undefined }];
+    return [
+      ...actions,
+      ...fresh.map((notification, index) => this.item(notification, index === 0 ? AdminI18n.t('shell.notifications.new', { count: fresh.length }) : undefined)),
+      ...seen.map((notification, index) => this.item(notification, index === 0 ? AdminI18n.t('shell.notifications.earlier') : undefined)),
     ];
   }
 
