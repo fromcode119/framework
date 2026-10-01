@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
 
 /**
@@ -18,7 +18,7 @@ export class PushSubscriptionsMigration extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const type = PortableColumnTypes.for(db.dialect);
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS _system_push_subscriptions (
         id ${type.autoId},
         user_id INTEGER NOT NULL,
@@ -32,6 +32,6 @@ export class PushSubscriptionsMigration extends BaseMigration {
         created_at ${type.timestamp} DEFAULT ${type.now}
       )`,
     ));
-    await db.execute(sql.raw('CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON _system_push_subscriptions (user_id, surface)'));
+    await db.execute(Sql.raw('CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user ON _system_push_subscriptions (user_id, surface)'));
   }
 }
