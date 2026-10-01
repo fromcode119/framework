@@ -34,13 +34,13 @@ export class MonitoringAdminController extends BaseController {
   }
 
   private async snapshot() {
-    const providers = await new MonitoringProviderFactory(this.manager).active();
+    const factory = new MonitoringProviderFactory(this.manager);
+    const providers = await factory.active();
     return {
       incidents: await new MonitoringIncidentStore(this.manager.db).readOpen(),
       providers: providers.map(({ key }) => key),
-      // Whether any active provider delivers the platform's own incidents. An outside watcher (UptimeRobot)
-      // only watches addresses, so with it alone a plugin down or a full disk reaches nobody.
-      alerting: providers.some(({ provider }) => Boolean(provider.notify)),
+      // Whether anyone is actually told about the platform's own incidents, and whether its mail is real.
+      ...(await factory.delivery(providers)),
       targets: await PlatformMonitorTask.for(this.manager).targets(),
     };
   }
