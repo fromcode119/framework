@@ -8,7 +8,7 @@ import { SystemIntegrationController } from '@api/controllers/system/system-inte
  * inside a site exactly as before.
  */
 describe('platform-only integration types', () => {
-  const types: Record<string, any> = { monitoring: { key: 'monitoring', platformOnly: true }, email: { key: 'email', platformOnly: false } };
+  const types: Record<string, any> = { monitoring: { key: 'monitoring', label: 'Monitoring', platformOnly: true }, email: { key: 'email', platformOnly: false } };
   const setup = () => {
     const integrations = {
       listConfigs: vi.fn(async () => Object.values(types)),
@@ -35,7 +35,7 @@ describe('platform-only integration types', () => {
     const res = response();
     await inSite(() => controller.updateIntegration({ params: { type: 'monitoring' }, body: { provider: 'email' } } as any, res));
     expect(res.status).toHaveBeenCalledWith(403);
-    expect(res.json).toHaveBeenCalledWith({ error: 'platform_only_integration' });
+    expect(res.json).toHaveBeenCalledWith({ error: 'platform_only_integration', label: 'Monitoring' });
     expect(integrations.updateConfig).not.toHaveBeenCalled();
   });
 

@@ -28,6 +28,8 @@ export abstract class IntegrationsSettingsPageState extends AdminComponent {
   @state changingProviderId: string | null = null;
   @state removeCandidateId: string | null = null;
   @state integrations: IIntegrationRecord[] = [];
+  /** A `?type=` that exists but belongs to the platform, asked for while standing in a site. */
+  @state platformOnlyType: { key: string; label: string } | null = null;
   @state activeType = '';
   @state selectedProviderId = '';
   @state editor: IProviderEditorState | null = null;
