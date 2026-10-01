@@ -7,6 +7,8 @@ import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 import { FrontendMetadataCachePolicy } from '@api/services/system/frontend-metadata-cache-policy';
 import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 import { StepTimer } from '@api/services/system/step-timer';
+import { FrontendMetadataCache } from '@api/services/system/frontend-metadata-cache';
+import type { IFrontendMetadataParts } from '@api/services/system/interfaces/frontend-metadata-parts.interface';
 
 /**
  * The metadata documents the admin and the storefront boot from — navigation, enabled plugins,
@@ -19,6 +21,9 @@ export class SystemMetadataController {
   /** A `/system/frontend` answer slower than this logs where its time went (StepTimer). */
   static readonly SLOW_FRONTEND_METADATA_MS = 2_000;
   private static readonly logger = new Logger({ namespace: 'system-frontend' });
+
+  /** The site's parts of `/system/frontend`, computed once per site and content revision. */
+  private readonly frontendParts = new FrontendMetadataCache();
 
   constructor(private readonly runtime: SystemControllerRuntime) {}
 
@@ -88,14 +93,6 @@ export class SystemMetadataController {
     const steps = new StepTimer();
     const metadata = await this.runtime.themeManager.getFrontendMetadata(this.runtime.manager.getRuntimeModules());
     steps.mark('theme');
-    const adminMetadata = await this.runtime.manager.getAdminMetadata() as any;
-    steps.mark('adminMetadata');
-    const publicSettings = await this.runtime.publicFrontendSettings.getSettings(this.runtime.db);
-    steps.mark('publicSettings');
-    // Per-plugin, security-filtered settings (only fields flagged `public: true`) keyed by
-    // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
-    const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
-    steps.mark('pluginSettings');
     // Both axes (T2): a tenant's storefront lists — and server-renders with — only the plugins its site
     // runs. The frontend derives its render signature from this list, so two sites with different plugin
     // sets get different SSR worlds, and a plugin a site does not run never contributes a slot to its pages.
@@ -119,21 +116,15 @@ export class SystemMetadataController {
         },
     }));
 
-    // How many server-render worlds the storefront keeps resident (Settings → Infrastructure). The
-    // frontend reads it off this payload rather than owning a constant, so the operator's number is the
-    // one in force; the default here mirrors the declared setting's own default and nothing else.
-    const capRow = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.SSR_GENERATION_CAP }).catch(() => null);
-    const declaredCap = Number(capRow?.value);
-    const ssrGenerationCap = Number.isFinite(declaredCap) && declaredCap >= 1 ? Math.floor(declaredCap) : SystemConstants.SSR_GENERATION_CAP_DEFAULT;
-    // T5b: each resident world is a process; its heap ceiling and per-render deadline are declared here too.
-    const declaredNumber = async (key: string, fallback: number) => {
-      const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key }).catch(() => null);
-      const value = Number(row?.value);
-      return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
-    };
-    const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
-    const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
-    steps.mark('renderLimits');
+    // The site's parts — the same for every visitor of this site at this revision, with this plugin set
+    // and theme — kept per site (FrontendMetadataCache). Nothing in them depends on who is asking.
+    const signature = JSON.stringify([
+      (metadata as any)?.activeTheme ? [(metadata as any).activeTheme.slug, (metadata as any).activeTheme.version, (metadata as any).activeTheme.assetVersion] : null,
+      plugins.map((plugin: any) => `${plugin.slug}@${plugin.version}`),
+    ]);
+    const parts = await this.frontendParts.get(signature, () => this.computeFrontendParts(steps));
+    steps.mark('parts');
+    const { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs } = parts;
 
     // WHICH SITE this is and whether it is open yet. The storefront cannot ask the tenant table — it
     // has no tenant knowledge, it forwards a host and the api resolves — so the one payload it
@@ -198,5 +189,33 @@ export class SystemMetadataController {
       // reach this site's pages (see SiteContentRevision).
       contentRevision: SiteContentRevision.current(tenantId),
     });
+  }
+  /** The site's parts of `/system/frontend`; `steps` records where a fresh computation spends its time. */
+  private async computeFrontendParts(steps: StepTimer): Promise<IFrontendMetadataParts> {
+    const adminMetadata = await this.runtime.manager.getAdminMetadata() as any;
+    steps.mark('adminMetadata');
+    const publicSettings = await this.runtime.publicFrontendSettings.getSettings(this.runtime.db);
+    steps.mark('publicSettings');
+    // Per-plugin, security-filtered settings (only fields flagged `public: true`) keyed by
+    // namespace/slug — consumed by the storefront via `runtime.globalSettings`.
+    const pluginPublicSettings = await this.runtime.manager.getPublicFrontendPluginSettings();
+    steps.mark('pluginSettings');
+
+    // How many server-render worlds the storefront keeps resident (Settings → Infrastructure). The
+    // frontend reads it off this payload rather than owning a constant, so the operator's number is the
+    // one in force; the default here mirrors the declared setting's own default and nothing else.
+    const capRow = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.SSR_GENERATION_CAP }).catch(() => null);
+    const declaredCap = Number(capRow?.value);
+    const ssrGenerationCap = Number.isFinite(declaredCap) && declaredCap >= 1 ? Math.floor(declaredCap) : SystemConstants.SSR_GENERATION_CAP_DEFAULT;
+    // T5b: each resident world is a process; its heap ceiling and per-render deadline are declared here too.
+    const declaredNumber = async (key: string, fallback: number) => {
+      const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key }).catch(() => null);
+      const value = Number(row?.value);
+      return Number.isFinite(value) && value > 0 ? Math.floor(value) : fallback;
+    };
+    const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
+    const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
+    steps.mark('renderLimits');
+    return { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs };
   }
 }
