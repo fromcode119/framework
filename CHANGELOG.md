@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.279] - 2026-10-01
+
+### Added
+
+- **monitoring**: an api error alert names the routes that failed ([#599](https://github.com/fromcode119/framework/pull/599))
+
+### Fixed
+
+- **deploy**: the api owns plugins/tenants, where sites' uploads go ([#598](https://github.com/fromcode119/framework/pull/598))
+
 ## [0.2.278] - 2026-10-01
 
 ### Added
