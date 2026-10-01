@@ -125,6 +125,12 @@ export class TenantConnectionScope {
   }
 
   private static async open<T>(store: TenantScopeStore, fn: () => Promise<T>): Promise<T> {
+    // A scope opened INSIDE another on the same pool would hold the outer scope's client while it
+    // waits for one of its own. Under concurrency that is the whole pool held and every request
+    // queued for a second client — a deadlock until something times out (a site's page data read the
+    // platform's sign-in switches this way, and every storefront stalled in 12 s steps). The outer
+    // scope gives its client back first and takes a fresh one, still bound, on its next statement.
+    await TenantConnectionScope.releaseOuter(store.pool);
     try {
       return await TenantConnectionScope.storage.run(store, fn);
     } finally {
@@ -132,6 +138,15 @@ export class TenantConnectionScope {
       store.closed = true;
       await TenantConnectionScope.release(store);
     }
+  }
+
+  /** Hands back the enclosing scope's client on `pool` — never mid-transaction (see releaseCurrent). */
+  private static async releaseOuter(pool: Pool): Promise<void> {
+    const outer = TenantConnectionScope.storage.getStore();
+    if (!outer || outer.pool !== pool || outer.closed) return;
+    if (outer.pending) await outer.pending.catch(() => undefined);
+    if (outer.inTransaction) return;
+    await TenantConnectionScope.release(outer);
   }
 
   private static acquire(store: TenantScopeStore): Promise<PoolClient> {
