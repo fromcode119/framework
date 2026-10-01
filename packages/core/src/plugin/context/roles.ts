@@ -27,7 +27,7 @@ export class RolesContextProxy {
    *
    * Membership roles are authoritative here, exactly as they are for request guards — the account's
    * global roles say what it is elsewhere, not here. Untenanted callers (boot, platform work, a
-   * single-tenant deployment) keep the global answer, which is the right one when there is no site.
+   * single-tenant deployment) keep the global answer, narrowed to platform admins when sites exist.
    */
   private static async resolveUserIdsWithRole(manager: IPluginManagerInterface, slug: string): Promise<number[]> {
     const roleSlug = String(slug).trim().toLowerCase();
@@ -56,13 +56,20 @@ export class RolesContextProxy {
       if (Number.isFinite(id) && id > 0) ids.add(id);
     }
     const users = await manager.db.find(SystemConstants.TABLE.USERS, { limit: 5000 }).catch(() => []);
+    const platformAdmins = new Set<number>();
     for (const user of (Array.isArray(users) ? users : [])) {
       const record = NamingStrategy.denormalizeRecord(user);
-      if (StringUtils.normalizeSlugList((record as any)?.roles).includes(roleSlug)) {
-        const id = Number(record?.id);
-        if (Number.isFinite(id) && id > 0) ids.add(id);
-      }
+      const id = Number(record?.id);
+      if (!Number.isFinite(id) || id <= 0) continue;
+      // snake_case: the RAW manager does not denormalize what it hands back.
+      if (user?.is_platform_admin === true) platformAdmins.add(id);
+      if (StringUtils.normalizeSlugList((record as any)?.roles).includes(roleSlug)) ids.add(id);
     }
+    // With sites but none bound, this is platform work (a health alert, a certificate expiring), and the
+    // platform's people are its admins. A global `admin` role is also what a site's own administrator
+    // holds, so answering with it sent one platform's incidents — every other site's name and address —
+    // to the owners of each site on it.
+    if (TenantMode.isEnabled()) return Array.from(ids).filter((id) => platformAdmins.has(id));
     return Array.from(ids);
   }
 

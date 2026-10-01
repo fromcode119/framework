@@ -110,6 +110,7 @@ export class IntegrationRegistry {
       label: runtime.definition.label,
       description: runtime.definition.description,
       defaultProvider: this.normalize(runtime.definition.defaultProvider),
+      platformOnly: Boolean(runtime.definition.platformOnly),
       providers: this.providerSummaries(runtime),
     }));
   }
@@ -134,6 +135,7 @@ export class IntegrationRegistry {
       label: runtime.definition.label,
       description: runtime.definition.description,
       defaultProvider: this.normalize(runtime.definition.defaultProvider),
+      platformOnly: Boolean(runtime.definition.platformOnly),
       providers: this.providerSummaries(runtime),
     };
   }

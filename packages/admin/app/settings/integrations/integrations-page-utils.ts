@@ -113,4 +113,13 @@ export class IntegrationsPageUtils {
     }
     return nextConfig;
   }
+
+  /** A new provider's starting values: what each field declares as its default, shown and editable. */
+  static defaultConfigForFields(fields: Array<{ name: string; defaultValue?: string | number | boolean }> = []): Record<string, any> {
+    const config: Record<string, any> = {};
+    for (const field of fields) {
+      if (field.defaultValue !== undefined) config[field.name] = field.defaultValue;
+    }
+    return config;
+  }
 }

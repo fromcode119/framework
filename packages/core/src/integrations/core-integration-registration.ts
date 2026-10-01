@@ -5,6 +5,7 @@ import { CacheIntegrationDefinition } from '@core/integrations/providers/cache-p
 import { QueueIntegrationDefinition } from '@core/integrations/providers/queue-provider';
 import { McpIntegrationDefinition } from '@core/integrations/providers/mcp-integration-definition';
 import { SsoIntegrationDefinition } from '@core/integrations/providers/sso-provider';
+import { MonitoringIntegrationDefinition } from '@core/monitoring/monitoring-integration-definition';
 
 /**
  * The integration types the framework itself ships, and the ONE place that list is written.
@@ -25,5 +26,6 @@ export class CoreIntegrationRegistration {
     registry.registerType(QueueIntegrationDefinition.definition);
     registry.registerType(SsoIntegrationDefinition.definition);
     registry.registerType(McpIntegrationDefinition.definition);
+    registry.registerType(MonitoringIntegrationDefinition.definition);
   }
 }

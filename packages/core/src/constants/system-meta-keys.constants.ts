@@ -1,4 +1,5 @@
 import { PluginIsolationMetaKeys } from '@core/constants/plugin-isolation-meta-keys.constants';
+import { MonitoringMetaKeys } from '@core/constants/monitoring-meta-keys.constants';
 
 /**
  * Well-known keys in the system meta table.
@@ -162,6 +163,7 @@ export class SystemMetaKeys {
   SSR_GENERATION_CAP: 'ssr_generation_cap',
   DEPLOY_MODE: 'deploy_mode',
   ...PluginIsolationMetaKeys.ALL,
+  ...MonitoringMetaKeys.ALL,
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
   QUEUE_JOB_ATTEMPTS: 'queue_job_attempts',

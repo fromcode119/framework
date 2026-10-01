@@ -1,0 +1,20 @@
+<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a">
+  {{#if isResolved}}<p style="margin:0 0 12px"><strong style="color:#067647">Resolved</strong> at {{resolvedAt}} (it started at {{openedAt}}).</p>{{/if}}
+  {{#if isPluginUnhealthy}}
+    <p style="margin:0 0 12px"><strong>The plugin "{{subject}}" is not running</strong> ({{reason}}).</p>
+    {{#unless isResolved}}<p style="margin:0 0 12px">A plugin that is held waits for an admin to re-approve it in Admin &rarr; Plugins; a plugin in error shows why there.</p>{{/unless}}
+  {{/if}}
+  {{#if isSiteDown}}
+    <p style="margin:0 0 12px"><strong>The site "{{subject}}" is down.</strong> <code>{{url}}</code> {{#if status}}answered with a server error ({{status}}){{else}}did not answer{{#if error}} ({{error}}){{/if}}{{/if}}.</p>
+  {{/if}}
+  {{#if isDiskFull}}
+    <p style="margin:0 0 12px"><strong>The server disk is {{percent}}% full</strong> ({{usedGib}} of {{totalGib}} GiB). The alert threshold is {{threshold}}%.</p>
+  {{/if}}
+  {{#if isMemoryFull}}
+    <p style="margin:0 0 12px"><strong>The server memory is {{percent}}% full</strong> ({{usedGib}} of {{totalGib}} GiB). The alert threshold is {{threshold}}%.</p>
+  {{/if}}
+  {{#if isApiErrors}}
+    <p style="margin:0 0 12px"><strong>The api is failing requests:</strong> {{errors}} of {{total}} ({{percent}}%) ended in a server error since the last check. The alert threshold is {{threshold}}%.</p>
+  {{/if}}
+  <p style="margin:0;color:#667085">Thresholds and the providers that receive this are in Settings &rarr; Infrastructure &rarr; Monitoring and Settings &rarr; Integrations &rarr; Monitoring.</p>
+</div>

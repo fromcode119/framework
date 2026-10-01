@@ -1,0 +1,1 @@
+{{#if isResolved}}RESOLVED: {{/if}}{{#if isPluginUnhealthy}}Plugin "{{subject}}" is not running{{/if}}{{#if isSiteDown}}Site "{{subject}}" is down{{/if}}{{#if isDiskFull}}The server disk is {{percent}}% full{{/if}}{{#if isMemoryFull}}The server memory is {{percent}}% full{{/if}}{{#if isApiErrors}}The api is failing {{percent}}% of requests{{/if}}

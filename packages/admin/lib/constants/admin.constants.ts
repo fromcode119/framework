@@ -176,6 +176,7 @@ export class AdminConstants {
     /** The platform's IP-location database — state and "update now". Platform admins only. */
     GEO: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_GEO),
     GEO_UPDATE: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_GEO_UPDATE),
+    MONITORING: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_MONITORING), MONITORING_CHECK: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_MONITORING_CHECK),
     TENANT: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT, { id })),
     TENANT_EXPORT: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_EXPORT, { id })),
     TENANT_PAGES: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_TENANT_PAGES, { id })),

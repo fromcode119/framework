@@ -82,7 +82,7 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       providerKey: defaultProvider.key,
       providerName: '',
       enabled: true,
-      config: {},
+      config: IntegrationsPageUtils.defaultConfigForFields(defaultProvider.fields),
       preservedSecretFields: {}
     };
   }
