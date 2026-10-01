@@ -10,6 +10,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
+- **core**: no error for an integration nobody set up; no boot wait for a missing sandbox; refuse out-of-range limits ([#605](https://github.com/fromcode119/framework/pull/605))
 - **email**: the site's email logo stays readable in a dark-mode inbox ([#603](https://github.com/fromcode119/framework/pull/603))
 
 ## [0.2.281] - 2026-10-01
