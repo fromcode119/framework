@@ -1,3 +1,4 @@
+import { SiteContentRevision } from '@core/tenant/site-content-revision';
 import { SystemConstants } from '@core/constants/system.constants';
 import { Logger } from '@core/logging';
 import { CoercionUtils } from '@core/utils/coercion-utils';
@@ -23,6 +24,9 @@ export class PluginRuntimeStateService {
 
   async savePluginConfig(slug: string, config: any): Promise<void> {
     await this.registry.savePluginConfig(slug, config);
+    // A plugin's settings (a tax rate, a currency, a label) can change what that site's pages and
+    // cached answers show: the site's content revision moves, or every site's for a platform save.
+    SiteContentRevision.bumpCurrentSite();
     // The in-memory manifest is ONE object per plugin for the whole process — the PLATFORM's copy. A
     // site's save must not land there: it did, and every other site's settings screen then showed that
     // site's values (issuer, IBAN, tax rate), and saving it wrote them into the other site's row.

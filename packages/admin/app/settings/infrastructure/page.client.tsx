@@ -10,6 +10,7 @@ import { DeploymentsCard } from '@/app/settings/infrastructure/deployments-card.
 import { InfrastructureSettingsPageCards } from '@/app/settings/infrastructure/page-cards.client';
 import { SiteUploadsCard } from '@/app/settings/infrastructure/site-uploads-card.client';
 import { GeoLocationCard } from '@/app/settings/infrastructure/geo-location-card.client';
+import { ApiResponseCacheCard } from '@/app/settings/infrastructure/api-response-cache-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -72,7 +73,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           />
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-8">
           {this.maintenanceCard()}
 
           {this.serverRenderingCard()}
@@ -82,6 +83,8 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           <SiteUploadsCard />
 
           <GeoLocationCard />
+
+          <ApiResponseCacheCard />
 
           {this.retentionCard()}
 
@@ -95,7 +98,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
               (`/system/deploy/restart`, permission `system:deploy:restart`, audited), a confirmation
               dialog, and a disabled button with a stated reason wherever the deployment cannot
               honour it. */}
-          <div className="lg:col-span-2"><CertificatesSettingsCard /></div>
+          <div className="xl:col-span-2"><CertificatesSettingsCard /></div>
           <DeploymentsCard />
           <RestartServicesCard />
 

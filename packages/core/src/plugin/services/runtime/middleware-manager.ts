@@ -47,6 +47,7 @@ export class MiddlewareManager {
       if (index >= list.length) return next();
 
       const middleware = list[index++];
+      if (!MiddlewareManager.appliesTo(middleware, req)) return run();
       try {
         // We use a regular function call instead of await if handler is not async
         // but wrap it in Promise.resolve just in case.
@@ -57,6 +58,14 @@ export class MiddlewareManager {
     };
 
     await run();
+  }
+
+  /** A middleware that named the paths it guards runs only for those. */
+  private static appliesTo(middleware: IMiddlewareConfig, req: any): boolean {
+    const fragments = middleware.pathIncludes;
+    if (!Array.isArray(fragments) || fragments.length === 0) return true;
+    const path = String(req?.originalUrl || req?.url || req?.path || '');
+    return fragments.some((fragment) => fragment && path.includes(fragment));
   }
 
   public unregisterByPlugin(pluginSlug: string): void {

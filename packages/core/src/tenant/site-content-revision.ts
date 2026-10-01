@@ -1,3 +1,4 @@
+import { TenantMode } from '@core/tenant/tenant-mode';
 import { ProcessSignals } from '@core/signals/process-signals';
 import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { RequestContextUtils } from '@core/context/request-context';
@@ -44,9 +45,15 @@ export class SiteContentRevision {
     SiteContentRevision.sites.set(id, (SiteContentRevision.sites.get(id) || 0) + 1);
   });
 
-  /** The site the current request or job is bound to changed; nothing when no site is bound. */
+  /**
+   * The site the current request or job is bound to changed. On a multi-site platform, work bound to
+   * no site bumps nothing (background work must not re-render every site). A single-site install binds
+   * no request to a site at all, so there the one site's pages are the platform's: bumping nothing left
+   * its cached pages and answers unchanged after an edit, an order or a stock change.
+   */
   static bumpCurrentSite(): void {
     const tenantId = RequestContextUtils.getTenantId();
     if (tenantId) SiteContentRevision.bump(tenantId);
+    else if (!TenantMode.isEnabled()) SiteContentRevision.bump(null);
   }
 }

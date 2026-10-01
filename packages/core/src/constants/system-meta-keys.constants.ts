@@ -233,6 +233,8 @@ export class SystemMetaKeys {
   RATE_LIMIT_EDGE_PROVIDER_RANGES: 'rate_limit_edge_provider_ranges',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
+  /** Longest a kept answer to an anonymous plugin GET is served, in seconds (ApiResponseCache); 0 = off. */
+  API_RESPONSE_CACHE_SECONDS: 'api_response_cache_seconds',
   /**
    * Physical table names whose plugin `context.db` writes are NOT recorded in the audit log
    * (comma-separated). Read by {@link DatabaseWriteAudit} on every plugin write; seeded with the
