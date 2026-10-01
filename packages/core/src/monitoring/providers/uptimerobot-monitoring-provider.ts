@@ -24,7 +24,7 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
     const present = new Set(existing.map((monitor) => monitor.url));
     for (const target of targets) {
       if (present.has(target.url)) continue;
-      const interval = this.interval > 0 ? { interval: String(this.interval) } : {};
+      const interval: Record<string, string> = this.interval > 0 ? { interval: String(this.interval) } : {};
       await this.call('newMonitor', { type: UptimeRobotMonitoringProvider.HTTP_MONITOR, url: target.url, friendly_name: `${this.namePrefix}${target.label}`, ...interval });
     }
   }
