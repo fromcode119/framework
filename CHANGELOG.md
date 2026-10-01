@@ -6,6 +6,20 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.291] - 2026-10-01
+
+### Added
+
+- **email**: plugins can read a mailbox — context.email.inbox ([#633](https://github.com/fromcode119/framework/pull/633))
+
+### Fixed
+
+- **core**: a site's plugin can no longer reach into its own site ([#630](https://github.com/fromcode119/framework/pull/630))
+
+### Reverted
+
+- **deploy**: the frontend warm-up handover (#629) took every storefront down during the 0.2.290 deploy; reverted ([#635](https://github.com/fromcode119/framework/pull/635))
+
 ## [0.2.290] - 2026-10-01
 
 ### Added
