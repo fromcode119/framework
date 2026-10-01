@@ -57,8 +57,10 @@ export class SocketMessagePort implements IMessagePort {
         server.close();
         resolve(new SocketMessagePort(socket));
       });
-      // A throw in this callback has no caller: it was an uncaught exception that took the whole api down.
-      server.listen(socketPath, () => {
+      // `exclusive`: in an api process the supervisor started (API_WORKERS), a plain `listen` is handed to
+      // the supervisor, which runs as root — the socket was root's and this process could not set its
+      // mode. A throw in this callback has no caller: it was an uncaught exception that took the api down.
+      server.listen({ path: socketPath, exclusive: true }, () => {
         try {
           fs.chmodSync(socketPath, mode);
         } catch (error) {
