@@ -5,6 +5,8 @@ import Link from 'next/link';
 import Script from 'next/script';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
+import { FrontendAuthRequestHeaders } from '@/lib/frontend-auth-request-headers';
+import { FrontendTokenRedemption } from '@/lib/frontend-token-redemption';
 import { VerifyEmailCaptchaService } from '@/app/verify-email/verify-email-captcha-service';
 import { VerifyEmailResendCard } from '@/app/verify-email/components/view/verify-email-resend-card.client';
 import { VerifyEmailVerificationCard } from '@/app/verify-email/components/view/verify-email-verification-card.client';
@@ -59,18 +61,8 @@ export class VerifyEmailPage extends Reactor {
     this.status = VerificationStatus.VERIFYING;
     this.message = '';
     try {
-      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.VERIFY_EMAIL), {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Framework-Client': 'frontend-ui',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({ token: tokenValue })
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
+      const { ok, payload } = await FrontendTokenRedemption.redeem(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.VERIFY_EMAIL), tokenValue);
+      if (!ok) {
         const backendMessage = String(payload?.error || payload?.message || '').trim();
         if (backendMessage === 'Invalid verification token') {
           throw new Error(copy.invalidToken);
@@ -101,11 +93,7 @@ export class VerifyEmailPage extends Reactor {
       const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.RESEND_VERIFICATION), {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Framework-Client': 'frontend-ui',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: FrontendAuthRequestHeaders.json(),
         body: JSON.stringify({
           email: this.emailForResend,
           captchaToken: captchaToken || undefined

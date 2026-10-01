@@ -3,6 +3,7 @@ import { Reactor, state, bound, prop } from '@fromcode119/react-class-components
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
+import { FrontendAuthRequestHeaders } from '@/lib/frontend-auth-request-headers';
 
 export class ForgotPasswordPage extends Reactor {
   /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
@@ -22,12 +23,7 @@ export class ForgotPasswordPage extends Reactor {
       const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.FORGOT_PASSWORD, { context: 'frontend' }), {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Framework-Client': 'frontend-ui',
-          'X-Reset-Context': 'frontend',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: FrontendAuthRequestHeaders.json({ 'X-Reset-Context': 'frontend' }),
         body: JSON.stringify({ email: this.email, context: 'frontend' })
       });
       const payload = await response.json().catch(() => ({}));
