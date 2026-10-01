@@ -1,4 +1,4 @@
-{{#if logoUrl}}<p><img src="{{logoUrl}}" alt="{{appName}}" height="40" style="display:block;height:40px;width:auto;border:0;" /></p>{{/if}}
+{{#if logoUrl}}<p><span style="display:table;padding:8px 12px;border-radius:8px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);"><img src="{{logoUrl}}" alt="{{appName}}" height="40" style="display:block;height:40px;width:auto;border:0;" /></span></p>{{/if}}
 <p>{{#if event.newLogin}}A new login was detected on your account.{{/if}}{{#if event.passwordChanged}}Your account password was changed successfully.{{/if}}{{#if event.passwordReset}}Your password has been reset successfully.{{/if}}{{#if event.emailChangeRequested}}A request to change your account email was received.{{/if}}{{#if event.emailChanged}}Your account email has been updated.{{/if}}{{#if event.twoFactorEnabled}}Two-factor authentication has been enabled on your account.{{/if}}{{#if event.twoFactorDisabled}}Two-factor authentication has been disabled on your account.{{/if}}</p>
 <ul>
   {{#if facts.ipAddress}}<li>IP address: {{facts.ipAddress}}</li>{{/if}}
