@@ -104,3 +104,6 @@ export type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 export { Reactor, PureReactor, Provider, Bridge, Enum, Context, ReactPrimitives, prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
 // reactor's ref TYPE — type-only, so it needs no runtime shim entry, only a package export.
 export type { Ref } from '@fromcode119/react-class-components';
+// THIS browser's push notifications for one surface of the site — the console and the account use it.
+export { PushDevice } from '@react/push/push-device';
+export type { IPushDeviceRequests } from '@react/push/interfaces/push-device-requests.interface';

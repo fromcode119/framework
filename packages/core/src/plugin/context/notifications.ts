@@ -1,6 +1,9 @@
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { SystemConstants } from '@core/constants/system.constants';
+import { MetaContextProxy } from '@core/plugin/context/meta';
+import { PushDelivery } from '@core/push/push-delivery';
+import { PushSurface } from '@core/push/enums/push-surface.enum';
 
 /**
  * Framework-owned notification dispatch. Generic cross-cutting work — "who are the platform admins"
@@ -34,14 +37,33 @@ export class NotificationsContextProxy {
     }
   }
 
+  /**
+   * A staff alert: the bell in the console, and a push to every console device the person turned
+   * notifications on for. The push is an extra way of reaching them — it never fails the alert.
+   */
+  private static async alert(
+    manager: IPluginManagerInterface,
+    userId: number,
+    message: { title: string; body?: string; link?: string },
+    source: string,
+  ): Promise<boolean> {
+    const stored = await NotificationsContextProxy.persistInApp(manager, userId, message, source);
+    if (stored) {
+      await new PushDelivery(manager.db, MetaContextProxy.createMetaProxy(manager))
+        .toPerson(Number(userId), message, PushSurface.CONSOLE)
+        .catch(() => 0);
+    }
+    return stored;
+  }
+
   static createNotificationsProxy(manager: IPluginManagerInterface, sourceSlug = '') {
     return {
-      /** Persist an in-app inbox notification for one user (surfaced by the admin/portal bell). */
+      /** An in-app inbox notification for one user (the console bell), pushed to their console devices too. */
       async notifyUser(
         userId: number,
         message: { title: string; body?: string; link?: string },
       ): Promise<{ success: boolean }> {
-        const success = await NotificationsContextProxy.persistInApp(manager, userId, message, sourceSlug);
+        const success = await NotificationsContextProxy.alert(manager, userId, message, sourceSlug);
         return { success };
       },
 
@@ -80,7 +102,7 @@ export class NotificationsContextProxy {
         try {
           const adminIds = await RolesContextProxy.createRolesProxy(manager).listUserIdsWithRole('admin');
           for (const adminId of (Array.isArray(adminIds) ? adminIds : [])) {
-            await NotificationsContextProxy.persistInApp(
+            await NotificationsContextProxy.alert(
               manager,
               Number(adminId),
               { title: message.subject, body: String(message.text ?? '') },

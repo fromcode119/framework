@@ -152,6 +152,13 @@ export class AdminConstants {
   SYSTEM: {
     HEALTH: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.HEALTH),
     SETTINGS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS),
+    /** The signed-in person's console notifications (the bell), and their devices that accept push. */
+    NOTIFICATIONS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS),
+    NOTIFICATIONS_READ_ALL: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS_READ_ALL),
+    NOTIFICATION_READ: (id: number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_NOTIFICATIONS_ID_READ, { id: String(id) }),
+    PUSH_KEY: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.PUSH_KEY),
+    PUSH_SUBSCRIPTIONS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS),
+    PUSH_SUBSCRIPTIONS_REMOVE: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS_REMOVE),
     SETTINGS_PLATFORM_KEYS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
     PERSONAL_DATA_POLICY: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PERSONAL_DATA_POLICY),
     BACKUPS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),

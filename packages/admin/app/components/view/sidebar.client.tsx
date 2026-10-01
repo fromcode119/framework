@@ -10,6 +10,7 @@ import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 import { SidebarBrandHeader } from '@/app/sidebar-brand-header';
 import { SidebarNavGroups } from '@/app/sidebar-nav-groups';
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
+import { SidebarNotifications } from '@/app/components/view/sidebar-notifications.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
 import { SidebarMobileSecondaryPanel } from '@/app/sidebar-mobile-secondary-panel';
 
@@ -194,6 +195,7 @@ export class Sidebar extends AdminComponent {
           {/* The pinned foot of the sidebar. The collapse toggle used to be `absolute bottom-0` with an
               opaque background, which silently covered anything else placed down here. */}
           <div className="mt-auto shrink-0">
+            <SidebarNotifications isMini={isMini} />
             <SidebarAccountCard isMini={isMini} />
             <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} />
           </div>

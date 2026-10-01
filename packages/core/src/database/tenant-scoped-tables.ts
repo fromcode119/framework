@@ -83,6 +83,9 @@ export class TenantScopedTables {
     String(SystemConstants.TABLE.SITE_ROLES).toLowerCase(),
     String(SystemConstants.TABLE.WEBHOOKS).toLowerCase(),
     String(SystemConstants.TABLE.WEBHOOK_DELIVERIES).toLowerCase(),
+    // A person's devices that accept this SITE's push messages. A subscription is made against one
+    // site's key and names a person of that site; another site must neither see nor message it.
+    String(SystemConstants.TABLE.PUSH_SUBSCRIPTIONS).toLowerCase(),
   ]);
 
   /**

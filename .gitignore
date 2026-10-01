@@ -89,6 +89,7 @@ storage/
 # Generated service worker — built from packages/admin/service-worker/service-worker.ts
 # by `npm run build:sw` (chained into admin's build/prepack). Never hand-edit or commit.
 packages/admin/public/sw.js
+packages/frontend/public/fc-push-worker.js
 
 # Generated Next middleware bindings — next-build-codegen emits these from the authored class
 # (`proxy-route.ts`, "export class AdminProxyRoute") because Next resolves middleware by export NAME

@@ -12,7 +12,8 @@
       "partner": "Partner",
       "affiliate": "Partner",
       "emailPreferences": "Email preferences",
-      "files": "Files"
+      "files": "Files",
+      "notifications": "Notifications"
     },
     "shell": {
       "title": "My account",
@@ -99,7 +100,8 @@
       "sessions": "Devices you are signed in on",
       "two-factor": "Extra protection when signing in",
       "emailPreferences": "Choose which emails you receive",
-      "files": "Everything available for you to download"
+      "files": "Everything available for you to download",
+      "notifications": "Messages on this device when something needs you"
     },
     "emailPreferences": {
       "loading": "Loading…",
@@ -118,6 +120,18 @@
       "sentToYou": "Sent to you",
       "download": "Download",
       "noFiles": "Nothing to download here yet."
+    },
+    "notifications": {
+      "loading": "Loading…",
+      "device": "This device",
+      "deviceDetail": "Updates about your orders, bookings and support conversations, shown even when the site is closed.",
+      "on": "On",
+      "off": "Off",
+      "unsupported": "This browser cannot show notifications. On an iPhone, add the site to your Home Screen first.",
+      "blocked": "Notifications are blocked for this site in your browser. Allow them in the browser's site settings, then come back here.",
+      "declined": "Notifications were not allowed, so nothing was switched on.",
+      "failed": "That did not work. Please try again.",
+      "others": "Notifications are on for {{count}} of your other devices."
     }
   }
 }

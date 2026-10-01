@@ -24,6 +24,7 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
   protected declare redirectsController: any;
   protected declare emailPreferencesController: any;
   protected declare emailPreferencesTokenController: any;
+  protected declare pushController: any;
   protected declare upload: multer.Multer;
   protected declare chunkUpload: multer.Multer;
 
