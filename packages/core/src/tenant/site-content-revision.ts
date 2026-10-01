@@ -15,11 +15,13 @@ import { RequestContextUtils } from '@core/context/request-context';
  * only cost is one fresh render. Under-invalidating would show a visitor stale content, so anything
  * unsure bumps.
  *
- * In memory, per api process. The EPOCH changes with every start, so a restart can never hand the
- * storefront a revision an earlier process already used for different content.
+ * In memory, per api process. The EPOCH is unique to each process — its start time and a random part,
+ * because several api processes start in the same millisecond — so no two processes, and no restart,
+ * can hand out the same revision for different content. A plugin process that several api processes
+ * share keys its caches on it (PluginGuestSettings).
  */
 export class SiteContentRevision {
-  private static readonly epoch = Date.now().toString(36);
+  private static readonly epoch = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
   private static platform = 0;
 
@@ -55,5 +57,16 @@ export class SiteContentRevision {
     const tenantId = RequestContextUtils.getTenantId();
     if (tenantId) SiteContentRevision.bump(tenantId);
     else if (!TenantMode.isEnabled()) SiteContentRevision.bump(null);
+  }
+
+  /**
+   * Bumps again once a write has landed. A bump made only BEFORE the write let a read that ran in
+   * between see the old rows under the NEW revision — and a cache keyed on the revision (a kept answer,
+   * a plugin's kept settings) then held that old answer as if it were current. Each statement commits on
+   * its own (no transaction spans a plugin's request), so "resolved" means visible.
+   */
+  static afterWrite<T>(result: T): T {
+    if (!result || typeof (result as any).then !== 'function') return result;
+    return (result as any).then((value: unknown) => { SiteContentRevision.bumpCurrentSite(); return value; });
   }
 }

@@ -67,3 +67,69 @@ describe('PluginGuestSettings', () => {
     expect(base.register).toHaveBeenCalledTimes(1);
   });
 });
+
+/**
+ * Kept across requests: the api sends each invocation its site's content revision and the operator's
+ * maximum age. A product list read the shop's settings once per request; repeats under one revision
+ * now share that read, and any save moves the revision.
+ */
+describe('PluginGuestSettings, kept per site and revision', () => {
+  const at = <T>(tenantId: string | null, revision: string | undefined, fn: () => Promise<T>, cacheMaxAgeMs = 60_000) =>
+    PluginGuestRemote.invocation.run({ token: `t${Math.random()}`, tenantId, revision, cacheMaxAgeMs }, fn);
+
+  it('shares one read between requests of the same site and revision', async () => {
+    const { base, proxy } = settings();
+    for (let i = 0; i < 3; i += 1) expect(await at('t1', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'EUR' });
+    expect(base.get).toHaveBeenCalledTimes(1);
+  });
+
+  it('reads again under a new revision — a save anywhere is seen by the next request that carries it', async () => {
+    const { base, proxy } = settings();
+    await at('t1', 'r1', () => proxy.get());
+    await base.update({ storeCurrency: 'USD' });
+    expect(await at('t1', 'r2', () => proxy.get())).toEqual({ storeCurrency: 'USD' });
+    expect(base.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('never answers one site with another site\'s read', async () => {
+    const values: Record<string, string> = { shop: 'EUR', blog: 'GBP' };
+    const base = { get: vi.fn(async () => ({ storeCurrency: values[String(PluginGuestRemote.invocation.getStore()?.tenantId)] })), update: vi.fn() };
+    const proxy = new PluginGuestSettings(base).proxy() as any;
+    expect(await at('shop', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'EUR' });
+    expect(await at('blog', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'GBP' });
+    expect(await at('shop', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'EUR' });
+    expect(base.get).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps nothing when the operator turned the cache off, or past its age', async () => {
+    const { base, proxy } = settings();
+    await at('t1', 'r1', () => proxy.get(), 0);
+    await at('t1', 'r1', () => proxy.get(), 0);
+    expect(base.get).toHaveBeenCalledTimes(2);
+
+    vi.useFakeTimers();
+    try {
+      await at('t1', 'r9', () => proxy.get(), 1000);
+      vi.advanceTimersByTime(1001);
+      await at('t1', 'r9', () => proxy.get(), 1000);
+      expect(base.get).toHaveBeenCalledTimes(4);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('forgets what it kept for the site when the plugin saves its own settings', async () => {
+    const { base, proxy } = settings();
+    await at('t1', 'r1', () => proxy.get());
+    await at('t1', 'r1', () => proxy.update({ storeCurrency: 'USD' }));
+    // A request still under the old revision (in flight before the bump reached it) reads the save.
+    expect(await at('t1', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'USD' });
+  });
+
+  it('does not keep a failed read', async () => {
+    const { base, proxy } = settings();
+    base.get.mockRejectedValueOnce(new Error('channel busy'));
+    await expect(at('t1', 'r1', () => proxy.get())).rejects.toThrow('channel busy');
+    expect(await at('t1', 'r1', () => proxy.get())).toEqual({ storeCurrency: 'EUR' });
+  });
+});

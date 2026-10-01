@@ -44,7 +44,7 @@ export class PluginHostHttpProxy {
     req: Request,
     res: Response,
     next: NextFunction,
-    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; targetPath?: string; originalUrl?: string; connectionId?: string | null; siteOwned?: boolean },
+    envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; revision: string; cacheMaxAgeMs: number; targetPath?: string; originalUrl?: string; connectionId?: string | null; siteOwned?: boolean },
     timeoutMs: number,
     onTimeout: () => void,
   ): Promise<void> {
@@ -62,6 +62,7 @@ export class PluginHostHttpProxy {
       headers[PluginGuestHttp.HEADER_TENANT] = envelope.tenantId ?? '';
       headers[PluginGuestHttp.HEADER_LOCALE] = envelope.locale;
       headers[PluginGuestHttp.HEADER_SITE_LOCALE] = envelope.siteLocale;
+      headers[PluginGuestHttp.HEADER_CACHE] = PluginGuestHttp.encodeCacheScope(envelope);
       // Which api this request came through, when the process is one this api took over (never the client's say).
       if (envelope.connectionId) headers[PluginGuestConnections.HEADER_CONNECTION] = envelope.connectionId; else delete headers[PluginGuestConnections.HEADER_CONNECTION];
       headers[PluginGuestHttp.HEADER_USER] = PluginGuestHttp.encodeUser((req as any).user);

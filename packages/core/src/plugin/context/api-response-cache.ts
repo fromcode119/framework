@@ -46,6 +46,14 @@ export class ApiResponseCache {
     ApiResponseCache.maxAge = resolver;
   }
 
+  /**
+   * The operator's maximum age, in seconds; 0 when off. Plugin processes keep what they cache (their
+   * settings) no longer than this either, so one setting bounds how old any kept answer can be.
+   */
+  static maxAgeSeconds(): number {
+    return Math.max(0, Number(ApiResponseCache.maxAge()) || 0);
+  }
+
   private static readonly forgetting = [
     ProcessSignal.SETTINGS_WRITTEN,
     ProcessSignal.CACHE_PURGED,
@@ -68,7 +76,7 @@ export class ApiResponseCache {
   static middleware(plugin: ILoadedPlugin, lookup: () => ILoadedPlugin | undefined, optedIn: () => boolean = () => true) {
     return (req: Request, res: Response, next: NextFunction): void => {
       if (!optedIn()) return next();
-      const maxAgeMs = Math.max(0, Number(ApiResponseCache.maxAge()) || 0) * 1000;
+      const maxAgeMs = ApiResponseCache.maxAgeSeconds() * 1000;
       if (req.method !== 'GET' || !(maxAgeMs > 0)) return next();
       if (ApiResponseCache.personal(req)) {
         res.setHeader(ApiResponseCache.STATUS_HEADER, 'bypass');

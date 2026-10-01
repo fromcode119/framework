@@ -26,7 +26,7 @@ export class PluginGuestRemote {
    * attached to more than one api (`PluginGuestConnections`), and a token is only valid at the api that
    * minted it — so a call back goes on the channel the invocation arrived on, never just the first one.
    */
-  static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null; channel?: PluginChannel }>();
+  static readonly invocation = new AsyncLocalStorage<{ token: string; tenantId: string | null; revision?: string; cacheMaxAgeMs?: number; channel?: PluginChannel }>();
 
   /** Replaces the process's first channel once the api that started it is gone (`PluginGuestConnections.promote`). */
   static primary: PluginChannel | null = null;

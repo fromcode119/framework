@@ -25,6 +25,8 @@ import { PluginHostState } from '@core/plugin/host/plugin-host-state';
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
+import { SiteContentRevision } from '@core/tenant/site-content-revision';
+import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 
 /**
  * One isolated plugin, from the host's side: its process, its channel, its tokens, its stand-ins.
@@ -192,6 +194,7 @@ export class PluginHost extends PluginHostGenerations {
         siteLocale: this.defaultLocaleFor(store),
         peers: this.peers(store),
         enabledPlugins: this.enabledPlugins(store),
+        ...PluginHost.cacheScope(store),
       };
       this.rememberPeerSignature(invocation.peers, invocation.enabledPlugins, invocation.tenantId);
       // About to wait on another process: hand the request's database connection back first. Held
@@ -203,6 +206,12 @@ export class PluginHost extends PluginHostGenerations {
     } finally {
       this.tokens.revoke(token);
     }
+  }
+
+  /** What the plugin process may key a kept answer on for this work, and for how long (IPluginInvocation). */
+  private static cacheScope(store: IRequestStore | undefined): { revision: string; cacheMaxAgeMs: number } {
+    const tenantId = String(store?.tenantId ?? '').trim() || null;
+    return { revision: SiteContentRevision.current(tenantId), cacheMaxAgeMs: ApiResponseCache.maxAgeSeconds() * 1000 };
   }
 
   private async forwardRequest(req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string): Promise<void> {
@@ -217,7 +226,7 @@ export class PluginHost extends PluginHostGenerations {
       // connection must not sit idle in the meantime.
       await this.syncPeers(store);
       await TenantConnectionScope.releaseCurrent();
-      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
+      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), ...PluginHost.cacheScope(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
       this.tokens.revoke(token);
     }

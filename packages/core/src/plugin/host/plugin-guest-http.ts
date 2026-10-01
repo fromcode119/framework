@@ -23,6 +23,8 @@ export class PluginGuestHttp {
   static readonly HEADER_TOKEN = 'x-fc-token';
   static readonly HEADER_TENANT = 'x-fc-tenant';
   static readonly HEADER_SITE_LOCALE = 'x-fc-site-locale';
+  /** `<max age ms>;<site revision>` — what the plugin process may key a kept answer on (IPluginInvocation). */
+  static readonly HEADER_CACHE = 'x-fc-cache';
   static readonly HEADER_LOCALE = 'x-fc-locale';
   static readonly HEADER_USER = 'x-fc-user';
 
@@ -50,6 +52,18 @@ export class PluginGuestHttp {
    * a platform whose first market writes Cyrillic, where that is most accounts. Base64 of the UTF-8
    * JSON is always header-safe.
    */
+  static encodeCacheScope(scope: { revision: string; cacheMaxAgeMs: number }): string {
+    return `${Math.max(0, Math.floor(scope.cacheMaxAgeMs) || 0)};${scope.revision}`;
+  }
+
+  /** Nothing kept (max age 0) for a missing or malformed value. */
+  static decodeCacheScope(raw: string): { revision?: string; cacheMaxAgeMs: number } {
+    const at = raw.indexOf(';');
+    const cacheMaxAgeMs = at > 0 ? Number(raw.slice(0, at)) : 0;
+    const revision = at > 0 ? raw.slice(at + 1) : '';
+    return Number.isFinite(cacheMaxAgeMs) && cacheMaxAgeMs > 0 && revision ? { revision, cacheMaxAgeMs } : { cacheMaxAgeMs: 0 };
+  }
+
   static encodeUser(user: unknown): string {
     if (!user) return '';
     return Buffer.from(JSON.stringify(user), 'utf8').toString('base64');
@@ -76,7 +90,7 @@ export class PluginGuestHttp {
   static get PRIVATE_HEADERS(): readonly string[] {
     return [
       PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE,
-      PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_ORIGINAL_URL,
+      PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_ORIGINAL_URL,
       PluginGuestHttp.HEADER_NEXT, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP,
     ];
   }
@@ -250,18 +264,19 @@ export class PluginGuestHttp {
     const tenantId = String(req.headers[PluginGuestHttp.HEADER_TENANT] ?? '').trim() || null;
     const locale = String(req.headers[PluginGuestHttp.HEADER_LOCALE] ?? '');
     const siteLocale = String(req.headers[PluginGuestHttp.HEADER_SITE_LOCALE] ?? '').trim() || undefined;
+    const cacheScope = PluginGuestHttp.decodeCacheScope(String(req.headers[PluginGuestHttp.HEADER_CACHE] ?? ''));
     const connectionId = String(req.headers[PluginGuestConnections.HEADER_CONNECTION] ?? '').trim() || null;
     const clientIp = String(req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? '').trim();
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestConnections.HEADER_CONNECTION]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestConnections.HEADER_CONNECTION]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;
     (req as any).clientIp = clientIp;
-    PluginGuestRemote.invocation.run({ token, tenantId, channel: this.channelFor(connectionId) }, () => {
+    PluginGuestRemote.invocation.run({ token, tenantId, ...cacheScope, channel: this.channelFor(connectionId) }, () => {
       RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
     });
   }
