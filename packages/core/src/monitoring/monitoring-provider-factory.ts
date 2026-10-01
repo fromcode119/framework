@@ -3,6 +3,7 @@ import type { IMonitoringProvider } from '@core/monitoring/interfaces/monitoring
 import { EmailMonitoringProvider } from '@core/monitoring/providers/email-monitoring-provider';
 import { UptimeRobotMonitoringProvider } from '@core/monitoring/providers/uptimerobot-monitoring-provider';
 import { BetterStackMonitoringProvider } from '@core/monitoring/providers/betterstack-monitoring-provider';
+import { PlatformMailUnavailableEmailDriver } from '@core/integrations/platform-mail-unavailable-email-driver';
 
 /**
  * Turns the active `monitoring` integration entries into working providers. With nothing configured the
@@ -19,6 +20,18 @@ export class MonitoringProviderFactory {
       providers.push({ key: entry.providerKey, provider: await this.build(entry) });
     }
     return providers;
+  }
+
+  /**
+   * Whether the active providers actually tell anyone about the platform's own incidents, and whether the
+   * platform has a mail server of its own. The email provider sends through the platform's mail; when that
+   * is the mock — nothing configured in platform scope — every alert is logged and dropped, so email only
+   * counts when the platform's mail is real. An outside watcher (UptimeRobot) never delivers incidents.
+   */
+  async delivery(active: Array<{ key: string; provider: IMonitoringProvider }>): Promise<{ alerting: boolean; platformMail: boolean }> {
+    const platformMail = !PlatformMailUnavailableEmailDriver.isMock(await this.manager.integrations.resolveMany('email'));
+    const alerting = active.some(({ key, provider }) => Boolean(provider.notify) && (key !== 'email' || platformMail));
+    return { alerting, platformMail };
   }
 
   private async build(entry: IIntegrationResolved): Promise<IMonitoringProvider> {

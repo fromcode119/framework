@@ -37,7 +37,7 @@ export class MonitoringCard extends AdminComponent {
   };
 
   @state thresholds: Record<string, string> = {};
-  @state status: { incidents: any[]; providers: string[]; alerting?: boolean; targets: Array<{ url: string }> } | null = null;
+  @state status: { incidents: any[]; providers: string[]; alerting?: boolean; platformMail?: boolean; targets: Array<{ url: string }> } | null = null;
   @state loaded = false;
   @state saving = false;
   @state checking = false;
@@ -120,6 +120,7 @@ export class MonitoringCard extends AdminComponent {
         </SettingRow>
         <SettingRow theme={this.theme} icon={FrameworkIcons.Bell} title={AdminI18n.t('settings.infrastructure.monitoringProviders')} stacked description={AdminI18n.t('settings.infrastructure.monitoringProvidersHelp')}>
           <p className="text-sm">{providers || AdminI18n.t('settings.infrastructure.monitoringNoProviders')}</p>
+          {this.status?.providers?.includes('email') && this.status?.platformMail === false ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoPlatformMail')}</p> : null}
           {providers && this.status?.alerting === false ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoAlerting')}</p> : null}
           <p className="mt-1 text-xs text-slate-500">{watched ? AdminI18n.t('settings.infrastructure.monitoringWatched', { addresses: watched }) : AdminI18n.t('settings.infrastructure.monitoringNothingWatched')}</p>
         </SettingRow>

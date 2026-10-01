@@ -1628,6 +1628,7 @@
       "monitoringProvidersHelp": "Chosen in Settings → Integrations → Monitoring: email to the platform admins, and outside services such as UptimeRobot or Better Stack that keep watching even when the whole server is down.",
       "monitoringNoProviders": "No provider is active, so nobody is told.",
       "monitoringNoAlerting": "None of these sends the platform's own alerts — a plugin down, the disk or memory full, api errors — so nobody is told about them. Add Email in Settings → Integrations → Monitoring as well.",
+      "monitoringNoPlatformMail": "Email alerts are not sent: the platform has no mail server of its own, so they are only logged. Set one up in Settings → Integrations → Email, in Platform scope.",
       "monitoringWatched": "Watched from outside: {{addresses}}",
       "monitoringNothingWatched": "No outside service watches the sites yet.",
       "monitoringDisk": "Alert when the disk is this full (%)",
