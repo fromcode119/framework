@@ -1610,6 +1610,7 @@
       "monitoringOpenIncidents": "Текущи проблеми",
       "monitoringNoIncidents": "В момента няма проблеми.",
       "monitoringSince": "От {{time}}",
+      "monitoringFailingRoutes": "Най-често неуспешни: {{routes}}",
       "monitoringCheckNow": "Провери сега",
       "monitoringChecked": "Проверено",
       "monitoringOpenCount": "Текущи проблеми: {{count}}.",

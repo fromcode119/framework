@@ -6,6 +6,7 @@
 {{/if}}{{#if isDiskFull}}The server disk is {{percent}}% full ({{usedGib}} of {{totalGib}} GiB). The alert threshold is {{threshold}}%.
 {{/if}}{{#if isMemoryFull}}The server memory is {{percent}}% full ({{usedGib}} of {{totalGib}} GiB). The alert threshold is {{threshold}}%.
 {{/if}}{{#if isApiErrors}}{{errors}} of {{total}} api requests ({{percent}}%) ended in a server error since the last check. The alert threshold is {{threshold}}%.
-{{/if}}
+{{#if routes}}Failing most: {{routes}}
+{{/if}}{{/if}}
 Started: {{openedAt}}
 Thresholds and the providers that receive this are in Settings -> Infrastructure -> Monitoring and Settings -> Integrations -> Monitoring.

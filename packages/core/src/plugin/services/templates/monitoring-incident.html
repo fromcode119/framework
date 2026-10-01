@@ -15,6 +15,7 @@
   {{/if}}
   {{#if isApiErrors}}
     <p style="margin:0 0 12px"><strong>The api is failing requests:</strong> {{errors}} of {{total}} ({{percent}}%) ended in a server error since the last check. The alert threshold is {{threshold}}%.</p>
+    {{#if routes}}<p style="margin:0 0 12px"><strong>Failing most:</strong> {{routes}}</p>{{/if}}
   {{/if}}
   <p style="margin:0;color:#667085">Thresholds and the providers that receive this are in Settings &rarr; Infrastructure &rarr; Monitoring and Settings &rarr; Integrations &rarr; Monitoring.</p>
 </div>
