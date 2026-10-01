@@ -22,7 +22,10 @@ own_if_needed() {
 
 case "${DEPLOYMENT_MODE:-}" in
   api|api-admin|full)
-    for dir in /app/data /app/backups /app/public/uploads /app/storage/private /app/plugins /app/themes /app/appearance; do
+    # `plugins/tenants` by name: `site-extension-host` mounts it, and a bind mount whose source is missing
+    # is created by docker owned by root — inside a `plugins` the app can already write, so the check on
+    # `plugins` alone never looks at it, and every site's upload then fails.
+    for dir in /app/data /app/backups /app/public/uploads /app/storage/private /app/plugins /app/plugins/tenants /app/themes /app/appearance; do
       own_if_needed "$dir"
     done
     # Database logins, before anything connects. This replaces an init script that was mounted into the
