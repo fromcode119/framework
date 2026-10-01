@@ -1,3 +1,5 @@
+import { PluginIsolationMetaKeys } from '@core/constants/plugin-isolation-meta-keys.constants';
+
 /**
  * Well-known keys in the system meta table.
  *
@@ -159,10 +161,7 @@ export class SystemMetaKeys {
   /** How many distinct server-render worlds (theme+plugin version sets) the storefront keeps resident. Settings → Infrastructure. */
   SSR_GENERATION_CAP: 'ssr_generation_cap',
   DEPLOY_MODE: 'deploy_mode',
-  PLUGIN_ISOLATION_MEMORY_MB: 'plugin_isolation_memory_mb',
-  PLUGIN_ISOLATION_TIMEOUT_MS: 'plugin_isolation_timeout_ms',
-  PLUGIN_ISOLATION_SITE_CPU_PERCENT: 'plugin_isolation_site_cpu_percent',
-  PLUGIN_ISOLATION_SITE_MEMORY_MB: 'plugin_isolation_site_memory_mb',
+  ...PluginIsolationMetaKeys.ALL,
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
   QUEUE_JOB_ATTEMPTS: 'queue_job_attempts',

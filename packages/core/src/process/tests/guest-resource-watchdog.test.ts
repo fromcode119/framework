@@ -16,7 +16,7 @@ describe('GuestResourceWatchdog', () => {
     vi.useFakeTimers();
     const g = guest(100);
     const onBreach = vi.fn();
-    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 0 }, onBreach);
+    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 0, diskMb: 0, maxTasks: 0 }, onBreach);
     for (let i = 0; i < GuestResourceWatchdog.WINDOW_SAMPLES; i += 1) g.advance(5_000);
     expect(onBreach).not.toHaveBeenCalled();
     g.advance(5_000);
@@ -28,7 +28,7 @@ describe('GuestResourceWatchdog', () => {
     vi.useFakeTimers();
     const g = guest(40);
     const onBreach = vi.fn();
-    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 0 }, onBreach);
+    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 0, diskMb: 0, maxTasks: 0 }, onBreach);
     for (let i = 0; i < 60; i += 1) g.advance(5_000);
     expect(onBreach).not.toHaveBeenCalled();
   });
@@ -37,16 +37,47 @@ describe('GuestResourceWatchdog', () => {
     vi.useFakeTimers();
     const g = guest(0, 900);
     const onBreach = vi.fn();
-    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 384 }, onBreach);
+    new GuestResourceWatchdog(g.read, 5_000, g.now).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 384, diskMb: 0, maxTasks: 0 }, onBreach);
     g.advance(5_000);
     expect(onBreach).toHaveBeenCalledWith(expect.stringMatching(/used 900 MB of memory; the limit for this plugin is 384 MB/));
+  });
+
+  it('stops a plugin past its disk, measured every second sample and only for a guest with a user of its own', () => {
+    vi.useFakeTimers();
+    const g = guest(0);
+    const measure = vi.fn(() => ({ bytes: 150 * 1024 * 1024, files: 12 }));
+    const onBreach = vi.fn();
+    new GuestResourceWatchdog(g.read, 5_000, g.now, measure).watch({ pid: 1, uid: 20024, dirs: ['/app/data/plugins/x'] }, { cpuPercent: 50, memoryMb: 384, diskMb: 100, maxTasks: 64 }, onBreach);
+    g.advance(5_000);
+    expect(measure).not.toHaveBeenCalled();
+    g.advance(5_000);
+    expect(measure).toHaveBeenCalledWith(20024, ['/app/data/plugins/x']);
+    expect(onBreach).toHaveBeenCalledWith('stored 150 MB on disk; the limit for this plugin is 100 MB');
+  });
+
+  it('stops a plugin that keeps too many files, whatever their size', () => {
+    vi.useFakeTimers();
+    const g = guest(0);
+    const onBreach = vi.fn();
+    new GuestResourceWatchdog(g.read, 5_000, g.now, () => ({ bytes: 10, files: 100_001 })).watch({ pid: 1, uid: 20024 }, { cpuPercent: 50, memoryMb: 384, diskMb: 100, maxTasks: 64 }, onBreach);
+    g.advance(10_000);
+    expect(onBreach).toHaveBeenCalledWith('kept more than 100000 files on disk');
+  });
+
+  it('does not measure disk for a guest without a user of its own', () => {
+    vi.useFakeTimers();
+    const g = guest(0);
+    const measure = vi.fn(() => ({ bytes: 0, files: 0 }));
+    new GuestResourceWatchdog(g.read, 5_000, g.now, measure).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 384, diskMb: 100, maxTasks: 64 }, vi.fn());
+    g.advance(30_000);
+    expect(measure).not.toHaveBeenCalled();
   });
 
   it('stops watching once the process is gone, and reports nothing', () => {
     vi.useFakeTimers();
     const read = vi.fn(() => null);
     const onBreach = vi.fn();
-    new GuestResourceWatchdog(read, 5_000).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 384 }, onBreach);
+    new GuestResourceWatchdog(read, 5_000).watch({ pid: 1 }, { cpuPercent: 50, memoryMb: 384, diskMb: 0, maxTasks: 0 }, onBreach);
     for (let i = 0; i < 5; i += 1) vi.advanceTimersByTime(5_000);
     expect(read).toHaveBeenCalledTimes(1);
     expect(onBreach).not.toHaveBeenCalled();
@@ -57,7 +88,7 @@ describe('GuestResourceWatchdog', () => {
     try {
       const reason = await new Promise<string>((resolve, reject) => {
         const deadline = setTimeout(() => reject(new Error('the watchdog never flagged a process pinned at 100%')), 10_000);
-        new GuestResourceWatchdog(GuestResourceWatchdog.readProc, 200).watch({ pid: busy.pid! }, { cpuPercent: 50, memoryMb: 0 }, (why) => {
+        new GuestResourceWatchdog(GuestResourceWatchdog.readProc, 200).watch({ pid: busy.pid! }, { cpuPercent: 50, memoryMb: 0, diskMb: 0, maxTasks: 0 }, (why) => {
           clearTimeout(deadline);
           resolve(why);
         });

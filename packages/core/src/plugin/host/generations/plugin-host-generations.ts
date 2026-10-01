@@ -78,7 +78,7 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       throw error;
     }
     const who = launcher.isolatesIdentity && this.identity ? `, uid ${this.identity.uid}` : '';
-    const held = share ? `, held to ${share.cpuPercent}% of a core and ${share.memoryMb} MB` : '';
+    const held = share ? `, held to ${share.cpuPercent}% of a core, ${share.memoryMb} MB, ${share.diskMb} MB on disk and ${share.maxTasks} processes` : '';
     this.logger.info(`isolated process ${guest.pid} up (heap ${this.limits.memoryMb} MB, deadline ${this.limits.timeoutMs} ms${who}${held})`);
     return generation;
   }

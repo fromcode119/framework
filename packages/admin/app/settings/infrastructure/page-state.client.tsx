@@ -33,13 +33,6 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   /** T5b render hosts: '' = the declared defaults. */
   @state ssrRenderMemoryMb = '';
   @state ssrRenderTimeoutMs = '';
-  /** T5 plugin isolation limits: '' = the declared defaults. */
-  @state isolationMemoryMb = '';
-  @state isolationTimeoutMs = '';
-  /** What a plugin a SITE uploaded may hold of the shared machine: '' = the declared defaults. */
-  @state isolationSiteCpuPercent = '';
-  @state isolationSiteMemoryMb = '';
-  @state isSavingIsolation = false;
   @state isSavingRetention = false;
   @state isSavingSsrCap = false;
 
@@ -71,8 +64,4 @@ export abstract class InfrastructureSettingsPageState extends AdminComponent {
   @bound onSsrRenderMemory(value: number | string): void { this.ssrRenderMemoryMb = String(value); }
   @bound onSsrRenderTimeout(value: number | string): void { this.ssrRenderTimeoutMs = String(value); }
 
-  @bound onIsolationMemory(value: number | string): void { this.isolationMemoryMb = String(value); }
-  @bound onIsolationTimeout(value: number | string): void { this.isolationTimeoutMs = String(value); }
-  @bound onIsolationSiteCpu(value: number | string): void { this.isolationSiteCpuPercent = String(value); }
-  @bound onIsolationSiteMemory(value: number | string): void { this.isolationSiteMemoryMb = String(value); }
 }

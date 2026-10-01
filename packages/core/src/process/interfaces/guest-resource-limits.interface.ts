@@ -8,4 +8,8 @@ export interface IGuestResourceLimits {
   cpuPercent: number;
   /** Resident memory in MB — the whole process, not only the V8 heap `--max-old-space-size` caps. */
   memoryMb: number;
+  /** Everything its user owns on disk, in MB (`GuestDiskUsage`). */
+  diskMb: number;
+  /** Processes and threads its user may run at once (`RLIMIT_NPROC`, set by `GuestLaunchCommand`). */
+  maxTasks: number;
 }
