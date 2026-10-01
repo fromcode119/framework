@@ -31,9 +31,24 @@ describe('a site plugin hears other events, and changes only its own', () => {
     expect(heard.customer.password).toBe(SitePluginHookDelivery.REDACTED);
     expect(heard.accessToken).toBe(SitePluginHookDelivery.REDACTED);
     expect(heard.items[0].apiKey).toBe(SitePluginHookDelivery.REDACTED);
-    expect(heard.customer.address.city).toBe('Sofia');
-    expect(heard.customer.email).toBe('a@b.c');
+    expect(heard.customer.email).toBe(SitePluginHookDelivery.REDACTED);
+    expect(heard.customer.address).toBe(SitePluginHookDelivery.REDACTED);
+    expect(heard.total).toBe(120);
+    expect(heard.items[0].sku).toBe('x');
     expect(original.customer.password).toBe('hunter2');
+  });
+
+  it('removes personal data, and a person\'s plain name, but keeps a product\'s name', () => {
+    const copy: any = SitePluginHookDelivery.redact({
+      product: { name: 'Mug', price: 9 },
+      billing: { name: 'Ana Petrova', city: 'Sofia', postalCode: '1000', phone: '+359' },
+      user: { id: 4, firstName: 'Ana', displayName: 'ana', ipAddress: '1.2.3.4' },
+      shippingAddress: { line1: 'Street 1' },
+    });
+    expect(copy.product).toEqual({ name: 'Mug', price: 9 });
+    expect(copy.billing).toEqual({ name: '[redacted]', city: 'Sofia', postalCode: '[redacted]', phone: '[redacted]' });
+    expect(copy.user).toEqual({ id: 4, firstName: '[redacted]', displayName: '[redacted]', ipAddress: '[redacted]' });
+    expect(copy.shippingAddress).toBe('[redacted]');
   });
 
   it('a failing site listener does not fail the platform\'s call', async () => {
@@ -55,12 +70,12 @@ describe('a site plugin hears other events, and changes only its own', () => {
   });
 
   it('copies a shared object twice and drops only a true cycle', () => {
-    const address = { city: 'Sofia' };
-    const cyclic: any = { billing: address, shipping: address };
+    const place = { city: 'Sofia' };
+    const cyclic: any = { from: place, to: place };
     cyclic.self = cyclic;
     const copy: any = SitePluginHookDelivery.redact(cyclic);
-    expect(copy.billing).toEqual({ city: 'Sofia' });
-    expect(copy.shipping).toEqual({ city: 'Sofia' });
+    expect(copy.from).toEqual({ city: 'Sofia' });
+    expect(copy.to).toEqual({ city: 'Sofia' });
     expect(copy.self).toBeUndefined();
   });
 });

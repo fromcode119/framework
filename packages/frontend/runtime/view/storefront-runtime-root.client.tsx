@@ -4,6 +4,7 @@ import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@fromcode119/react/context/view/plugins-provider.client';
 import type { PluginsProviderSeed } from '@fromcode119/react/context/plugins-provider-seed';
 import { PluginRuntimeProvider } from '@fromcode119/react/view/plugin-runtime-provider.client';
+import { PluginWidgetHost } from '@fromcode119/react';
 import { SystemGate } from '@/components/view/system-gate.client';
 import { ThemeInitializer } from '@/components/view/theme-initializer.client';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
@@ -38,7 +39,8 @@ export class StorefrontRuntimeRoot extends Reactor {
         <PluginRuntimeProvider>
           <SystemGate>
             <PluginLoader preloadedModules={this.preloadedModules} />
-            {this.children}
+            {/* The storefront is where plugin widgets appear (PluginWidgetHost); the admin never says so. */}
+            <PluginWidgetHost.Context.Provider value>{this.children}</PluginWidgetHost.Context.Provider>
           </SystemGate>
         </PluginRuntimeProvider>
       </PluginsProvider>

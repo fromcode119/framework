@@ -48,17 +48,37 @@ None of this needs configuring; it holds for every plugin a site uploads.
 
 - It answers only on its own routes. It cannot register middleware, so it never sees a request meant
   for anything else on its site — the sign-in form, checkout, account pages or another plugin.
-- It hears what happens on its site but cannot change it. When the platform or another plugin raises
-  an event (an order about to be saved, a page about to render, someone signing in), a site's plugin
-  receives a copy with passwords, tokens, keys and session ids replaced by `[redacted]`. Its answer is
-  discarded, and the platform does not wait for it, so a slow or failing plugin cannot hold up the site.
-  Only for events it raises itself (`<its-slug>:…`) does its answer count.
+- It hears what happens on its site but cannot change it, and does not learn who it happened to. When
+  the platform or another plugin raises an event (an order about to be saved, a page about to render,
+  someone signing in), a site's plugin receives a copy with every secret (passwords, tokens, keys,
+  session ids) and every piece of personal data (emails, phone numbers, people's names, street
+  addresses, postcodes, dates of birth, IP addresses, tax and bank numbers) replaced by `[redacted]`.
+  Its answer is discarded, and the platform does not wait for it, so a slow or failing plugin cannot
+  hold up the site. Only for events it raises itself (`<its-slug>:…`) does its answer count.
+- It puts no code into the site's pages. No storefront script, stylesheet, `<head>` entry or root file
+  (`/promo.txt`) — the upload is refused, and the platform strips them even from one already
+  installed. Code in the site's own pages could read everything a visitor types and hand it to the
+  plugin's routes to collect later; no browser policy can stop that, because those routes are on the
+  same site.
+- It appears on the storefront only as a **widget**: a frame in a theme slot, declared in its
+  manifest, showing one of its own routes:
+
+  ```json
+  "ui": { "widgets": [{ "slot": "product.after", "path": "/widget", "height": 240, "title": "Reviews" }] }
+  ```
+
+  The frame is sandboxed into an origin of its own. It cannot see or touch the page around it, the
+  visitor's cookies or storage, or anything typed outside the widget, and it is not told which page it
+  is on. It may call its own routes, without the visitor's credentials. Widgets appear only on the
+  storefront, never in the admin.
+- It serves a page only into its widget. Opened directly, an HTML (or SVG or XML) answer from a
+  site's plugin is refused, so it cannot put a sign-in or payment form on the site's own address.
 
 **It cannot take over the admin or its visitors.**
 
 - It cannot inject scripts into the admin or the storefront: the admin runs under a strict
   Content-Security-Policy, and anything a site plugin serves is sandboxed and stripped of cookies and
-  credentials.
+  credentials. Root files any plugin serves (`llms.txt`, a feed) are sandboxed too.
 - It cannot write to another site's files, another plugin's files, or the platform's.
 
 **It cannot exhaust the server.** Each limit is a setting under **Settings → Infrastructure → Plugin
@@ -110,9 +130,10 @@ plugin process shares, so it is where most of the remaining risk lives.
 
 ## What no platform can do for you
 
-- **A plugin can damage the site that installed it.** It has that site's permissions: it can break that
-  site's pages or corrupt that site's own data. That is the boundary this design draws — one site, not
-  the server — so keep backups per site.
+- **A plugin can still misbehave inside its own widget and its own data.** It can show wrong or
+  offensive content in its widget, ask visitors to type things into it, or lose the settings it keeps.
+  It cannot reach the rest of the site's pages, its customers' details or anyone's sign-in. Install
+  site plugins you can account for, and keep backups per site.
 - **Code you merged is code you run.** Build provenance proves GitHub merged a commit, not that the
   commit is safe. Review is the control.
 - **Isolation is not a substitute for patching.** Users, containers and even gVisor have had flaws. Each

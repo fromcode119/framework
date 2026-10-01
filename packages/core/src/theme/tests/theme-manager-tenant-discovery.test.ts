@@ -42,6 +42,20 @@ afterEach(() => {
 });
 
 describe('theme discovery with per-site themes on disk', () => {
+  it('keeps a site’s theme the site’s when its manifest is re-read — the active theme is re-read on every request', async () => {
+    const root = themesRoot();
+    writeTheme(path.join(root, 'tenants', 'acme', 'acme-look'), { slug: 'acme-look', name: 'Look', version: '1.0.0' });
+    const subject = managerOn(root);
+    await subject.discoverThemes();
+
+    const reread = (subject as any).loadThemeManifestFromDisk('acme-look');
+
+    expect(reread?.ownerTenantId).toBe('acme');
+    expect(discovered(subject).get('acme-look')?.ownerTenantId).toBe('acme');
+    // Its directory still resolves where it lives, not under the platform root.
+    expect(subject.getThemeDirectory('acme-look')).toBe(path.join(root, 'tenants', 'acme', 'acme-look'));
+  });
+
   it('leaves the platform’s own themes exactly as they were — no owner', async () => {
     const root = themesRoot();
     writeTheme(path.join(root, 'aurora'), { slug: 'aurora', name: 'Aurora', version: '1.0.0' });

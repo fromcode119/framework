@@ -5,6 +5,8 @@ import "@/app/auth.css";
 // the package unimportable by Node and blocks server-rendering a theme.
 import "@fromcode119/react/account/account-shell.css";
 import "@fromcode119/react/files/file-share.css";
+// A plugin widget's frame (PluginWidgetFrame) — same reason as the two above.
+import "@fromcode119/react/widgets/plugin-widget-frame.css";
 import type { Metadata } from 'next';
 import { StorefrontRuntimeGate } from "@/app/components/view/storefront-runtime-gate.client";
 import { ThemeAssetsView } from '@/components/theme-assets';

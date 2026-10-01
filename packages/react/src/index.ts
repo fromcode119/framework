@@ -27,6 +27,8 @@ export type { IRenderableContentTransformerMetadata } from '@react/interfaces/re
 // dynamic-import table; only the name index is eager. No consumer imports a bare
 // Lucide icon name from '@fromcode119/react' (verified), so nothing static breaks.
 export { Slot } from '@react/slot';
+export { PluginWidgetHost } from '@react/widgets/plugin-widget-host';
+export { PluginWidgetFrame } from '@react/widgets/plugin-widget-frame';
 export { AccountShell } from '@react/account-shell';
 // The four route-level shells are Suspense BOUNDARIES; each implementation module registers itself as the
 // boundary's default when evaluated. They are exported so this package's module graph evaluates them —

@@ -7,6 +7,7 @@ import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
+import { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
 
 /**
  * A plugin learns the visitor's address from the PLATFORM, never from a header the visitor wrote.
@@ -94,7 +95,8 @@ describe('the visitor address a sandboxed plugin sees', () => {
       void proxy.forward(req, res, next, { token: 't', tenantId: 'site', locale: 'en', siteLocale: 'en' }, 5000, () => undefined);
     });
 
-    const site = await request(host).get('/site').set('Cookie', 'fc_token=victim').set('Authorization', 'Bearer victim');
+    // Asked for as a widget's frame, the only place a site's plugin may show a page.
+    const site = await request(host).get('/site').set('Sec-Fetch-Dest', 'iframe').set('Cookie', 'fc_token=victim').set('Authorization', 'Bearer victim');
     const seen = JSON.parse(site.text);
     expect(seen.cookie).toBeUndefined();
     expect(seen.authorization).toBeUndefined();
@@ -102,6 +104,12 @@ describe('the visitor address a sandboxed plugin sees', () => {
     expect(site.headers['set-cookie']).toBeUndefined();
     expect(site.headers['content-security-policy']).toBe(PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_POLICY);
     expect(site.headers['x-content-type-options']).toBe('nosniff');
+
+    // The same page opened as a page of its own would sit on the site's real address: refused.
+    const opened = await request(host).get('/site').set('Sec-Fetch-Dest', 'document');
+    expect(opened.status).toBe(403);
+    expect(opened.text).toBe(SitePluginResponseRules.REFUSAL);
+    expect(opened.headers['set-cookie']).toBeUndefined();
 
     // A platform plugin is unchanged: it is curated, and its own session handling reads the cookie.
     const platform = await request(host).get('/platform').set('Cookie', 'fc_token=victim');

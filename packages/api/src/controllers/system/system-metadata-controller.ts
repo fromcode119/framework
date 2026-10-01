@@ -1,4 +1,4 @@
-import { PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
+import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -97,10 +97,15 @@ export class SystemMetadataController {
       version: plugin.manifest.version,
       name: plugin.manifest.name,
       capabilities: plugin.manifest.capabilities,
-      ui: {
-        ...(plugin.manifest.ui || {}),
-        headInjections: this.runtime.manager.getHeadInjections(plugin.manifest.slug),
-      },
+      // A plugin a SITE uploaded reaches the storefront only as sandboxed widgets: nothing else of its
+      // `ui` is handed to the page, whatever its manifest says (TenantPluginPackagePolicy refuses the
+      // rest on upload and at every boot; this holds even for one that slipped past).
+      ui: PluginOwners.ownerOf(plugin.manifest.slug)
+        ? { widgets: plugin.manifest.ui?.widgets ?? [] }
+        : {
+          ...(plugin.manifest.ui || {}),
+          headInjections: this.runtime.manager.getHeadInjections(plugin.manifest.slug),
+        },
     }));
 
     // How many server-render worlds the storefront keeps resident (Settings → Infrastructure). The

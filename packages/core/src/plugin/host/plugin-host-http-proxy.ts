@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
+import { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
 
 /**
  * Forwards one Express request to the guest's Unix socket and streams the answer back.
@@ -24,7 +25,8 @@ export class PluginHostHttpProxy {
    */
   static readonly SITE_PLUGIN_REQUEST_HEADERS_DROPPED = ['cookie', 'authorization', 'proxy-authorization'] as const;
   static readonly SITE_PLUGIN_RESPONSE_HEADERS_DROPPED = ['set-cookie', 'content-security-policy', 'content-security-policy-report-only', 'x-content-type-options'] as const;
-  static readonly SITE_PLUGIN_RESPONSE_POLICY = 'sandbox allow-scripts allow-forms allow-popups allow-downloads';
+  /** Sandboxed, and framed only by its own site: a widget on another site's page is not this site's widget. */
+  static readonly SITE_PLUGIN_RESPONSE_POLICY = "sandbox allow-scripts allow-forms allow-popups allow-downloads; frame-ancestors 'self'";
 
   /** Requests being served, per routes socket: a replaced plugin process is retired only once its count is 0. */
   private readonly serving = new Map<string, number>();
@@ -104,6 +106,14 @@ export class PluginHostHttpProxy {
         if (reply.headers[PluginGuestHttp.HEADER_NEXT]) {
           reply.resume();
           reply.on('end', () => { finish(); next(); });
+          return;
+        }
+        // A site's plugin shows a page only inside its widget (SitePluginResponseRules).
+        if (envelope.siteOwned && SitePluginResponseRules.refusesDocument(reply.statusCode ?? 502, reply.headers['content-type'], req.headers['sec-fetch-dest'])) {
+          reply.resume();
+          reply.on('end', finish);
+          res.status(403).set({ 'Content-Type': 'text/plain; charset=utf-8', 'Content-Security-Policy': PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_POLICY, 'X-Content-Type-Options': 'nosniff' })
+            .send(SitePluginResponseRules.REFUSAL);
           return;
         }
         res.status(reply.statusCode ?? 502);

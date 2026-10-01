@@ -102,6 +102,12 @@ export interface IPluginManifest {
     adminCss?: string[];
     assets?: string[];
     headInjections?: any[];
+    /**
+     * Sandboxed frames the storefront places in theme slots: `{ slot, path, height? }`, where `path` is
+     * one of this plugin's own routes and `height` is in CSS pixels. The only way a plugin a SITE
+     * uploaded appears on the storefront — the frame cannot see or touch the page around it.
+     */
+    widgets?: Array<{ slot: string; path: string; height?: number; title?: string }>;
     publicRoutes?: IPublicRouteManifest[];
     // Head-data provider contract: the plugin's own API path serving resolved head data,
     // plus the record field names it wants forwarded from the resolved content record.

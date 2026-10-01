@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/react-class-components';
 import { PluginsProvider } from '@fromcode119/react/context/view/plugins-provider.client';
 import { PluginRuntimeProvider } from '@fromcode119/react/view/plugin-runtime-provider.client';
+import { PluginWidgetHost } from '@fromcode119/react';
 import { SystemGate } from '@/components/view/system-gate.client';
 import { ThemeInitializer } from '@/components/view/theme-initializer.client';
 import { FrontendApiBaseUrl } from '@/lib/api-base-url';
@@ -24,7 +25,7 @@ export class RootProvider extends Reactor {
         <ThemeInitializer />
         <PluginRuntimeProvider>
           <SystemGate>
-            {React.Children.toArray(this.children)}
+            <PluginWidgetHost.Context.Provider value>{React.Children.toArray(this.children)}</PluginWidgetHost.Context.Provider>
           </SystemGate>
         </PluginRuntimeProvider>
       </PluginsProvider>

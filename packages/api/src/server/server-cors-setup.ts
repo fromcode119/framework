@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { ApplicationDomainSettingsUtils, ApplicationHostUtils, EnvUtils, Logger, SystemConstants, TenantResolverService } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationHostUtils, EnvUtils, Logger, SitePluginResponseRules, SystemConstants, TenantResolverService } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 
 export class ServerCorsSetup {
@@ -139,6 +139,13 @@ export class ServerCorsSetup {
     // will not let a cross-origin fetch set it without a preflight this server never approves.
     const delegate: cors.CorsOptionsDelegate = (req: any, callback: any) => {
       const origin = String(req?.headers?.origin || '');
+      // A plugin WIDGET is a sandboxed frame: its origin is opaque and it sends `Origin: null`. It may
+      // call its own plugin's routes — never anything else, and never with credentials. Anything else
+      // sending `null` is refused here quietly: it is not a parse error, and it used to log one.
+      if (origin === SitePluginResponseRules.OPAQUE_ORIGIN) {
+        const ownRoute = SitePluginResponseRules.sitePluginOf(String(req?.originalUrl || req?.url || ''));
+        return callback(null, ownRoute ? { ...corsOptions, origin: true, credentials: false } : { ...corsOptions, origin: false });
+      }
       if (origin && ServerCorsSetup.isSameOrigin(origin, req)) {
         return callback(null, { ...corsOptions, origin: true });
       }

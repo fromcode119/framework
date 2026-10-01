@@ -128,8 +128,14 @@ export abstract class ThemeDiscovery extends ThemeManagerState {
       }
 
       const manifest: IThemeManifest = ManifestNormalizer.theme(JSON.parse(fs.readFileSync(manifestPath, 'utf8')), themeDirectory);
-      this.themes.set(manifest.slug, manifest);
-      return manifest;
+      // Ownership comes from the directory discovery found it in, never from the package — so a re-read
+      // keeps the owner already known. Dropping it turned a site's uploaded theme into the platform's on
+      // the first refresh: its directory then resolved under the platform root and every page of that
+      // site failed, and the theme counted as one the platform offers to every site.
+      const ownerTenantId = this.themes.get(slug)?.ownerTenantId;
+      const refreshed: IThemeManifest = ownerTenantId ? { ...manifest, ownerTenantId } : manifest;
+      this.themes.set(manifest.slug, refreshed);
+      return refreshed;
     } catch (error) {
       this.logger.warn(`Failed to refresh theme manifest for ${slug}: ${(error as Error).message}`);
       return null;
