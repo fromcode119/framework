@@ -248,6 +248,8 @@ services:
       # replaces the api alone, and the plugins' memory is counted there. Remove this line (and the
       # service) and the api starts them itself, as before. Unreachable, plugins show why in the admin.
       - EXTENSION_HOST_SOCKET=/run/fromcode/spawner.sock
+      # Plugins a SITE uploads start in `site-extension-host` or not at all — never beside the platform's.
+      - EXTENSION_HOST_SITE_POOL=required
       - ENFORCE_AUTHZ_GATEWAY=true
       - ENFORCE_COLLECTION_READ_AUTHZ=true
       - ENFORCE_PLUGIN_INTEGRITY=true
@@ -255,6 +257,7 @@ services:
       - db
       - redis
       - extension-host
+      - site-extension-host
     volumes:
       # The sockets of every plugin process, shared with `extension-host`, which creates them.
       - extension_runtime:/run/fromcode
@@ -373,6 +376,50 @@ services:
           # ~30 MB per plugin process measured on production (2026-09-26), each capped by its own heap
           # limit; this leaves room for a plugin being replaced beside its running process.
           memory: 2G
+
+  # Plugins a SITE uploads — the platform's least trusted code — run here, apart from the platform's
+  # own: a container of their own with no network at all, only the sites' plugins and their data
+  # mounted, and on a box that has it a sandboxing runtime (`SITE_PLUGIN_RUNTIME=runsc`, gVisor) that
+  # puts a user-space kernel between that code and the box's. A flaw it reaches in the kernel then lands
+  # in the sandbox, not on the host every site runs on. The api starts a site's plugin here or not at all
+  # (`EXTENSION_HOST_SITE_POOL` on the api). The runtime must be registered with docker, with
+  # `--host-uds=all` so the api and the plugins can still reach each other's sockets.
+  site-extension-host:
+    image: ${IMAGE_API:-atlantis-api}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api-only
+      args:
+        - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
+    command: node packages/core/dist/process/extension-host/extension-host-main.js
+    init: true
+    runtime: ${SITE_PLUGIN_RUNTIME:-runc}
+    network_mode: none
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+      - CHOWN
+      - FOWNER
+      - DAC_OVERRIDE
+      - KILL
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - DEPLOYMENT_MODE=extension-host
+      - EXTENSION_HOST_POOL=site
+      - GUEST_EGRESS_POLICY=none
+    volumes:
+      - extension_runtime:/run/fromcode
+      - ../plugins/tenants:/app/plugins/tenants:ro
+      - ../data/plugins/tenants:/app/data/plugins/tenants
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 1G
 
   admin:
     build:

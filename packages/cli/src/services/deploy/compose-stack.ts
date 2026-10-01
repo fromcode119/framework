@@ -23,9 +23,13 @@ export class ComposeStack {
    * Services a release MAY declare. Asked for only when the compose files name them: compose refuses a
    * service it does not know, and a rollback to a release from before one existed must still pull.
    */
-  static readonly OPTIONAL = ['extension-host', 'edge'];
+  static readonly OPTIONAL = ['extension-host', 'site-extension-host', 'edge'];
 
   static readonly EXTENSION_HOST = 'extension-host';
+  /** Where plugins a SITE uploads run, sandboxed, apart from the platform's (a release may declare it). */
+  static readonly SITE_EXTENSION_HOST = 'site-extension-host';
+  /** Every service that runs plugin processes; each is started first and rolled last, with no gap. */
+  static readonly EXTENSION_HOSTS = [ComposeStack.EXTENSION_HOST, ComposeStack.SITE_EXTENSION_HOST];
   /** Holds the public ports in front of the gateway, so the gateway can be rolled like the apps. */
   static readonly EDGE = 'edge';
   /** The ports those two listen on for plain HTTP inside their containers (`EDGE_HTTP_PORT`, the gateway's). */

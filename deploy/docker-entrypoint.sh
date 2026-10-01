@@ -102,6 +102,8 @@ case "${GUEST_EGRESS_POLICY:-deny}" in
       echo "[entrypoint] iptables not installed; guests can reach the network" >&2
     fi
     ;;
+  # A container with no network at all (`network_mode: none`) needs no rule: there is nothing to reach.
+  none) echo "[entrypoint] guest egress: none (this container has no network)" >&2 ;;
   *) echo "[entrypoint] guest egress: allow (GUEST_EGRESS_POLICY=${GUEST_EGRESS_POLICY})" >&2 ;;
 esac
 

@@ -1,5 +1,6 @@
 import { SpawnerClient } from '@core/process/spawner-client';
 import { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * The api's connections to the `extension-host` containers, kept up for the life of the api.
@@ -17,29 +18,36 @@ export class ExtensionHostLink {
   private static readonly SCAN_MS = 2_000;
   private static readonly START_POLL_MS = 250;
 
-  private readonly connected = new Map<string, { client: SpawnerClient; birth: number }>();
+  private readonly connected = new Map<string, { client: SpawnerClient; birth: number; pool: string }>();
   private readonly connecting = new Set<string>();
   private lastFailure = 'no extension-host has announced itself';
 
   constructor(private readonly socketPath: string, private readonly log: (line: string) => void, private readonly scanMs = ExtensionHostLink.SCAN_MS) {}
 
-  /** The newest host, or null when none answered within `waitMs` — then the link keeps trying. */
+  /** The newest platform host, or null when none answered within `waitMs` — then the link keeps trying. */
   async start(waitMs: number): Promise<SpawnerClient | null> {
     const deadline = Date.now() + waitMs;
     for (;;) {
       await this.scan();
-      if (this.connected.size || Date.now() >= deadline) break;
+      if (this.pools().every((pool) => this.newest(pool)) || Date.now() >= deadline) break;
       await new Promise((resolve) => setTimeout(resolve, ExtensionHostLink.START_POLL_MS));
     }
     const scanning = setInterval(() => { void this.scan(); }, this.scanMs);
     scanning.unref();
-    const current = this.newest();
-    if (!current) {
-      const reason = `extension-host unreachable at ${this.socketPath}: ${this.lastFailure}`;
-      SpawnerClient.publishUnavailable(reason);
-      this.log(`${reason}; plugin processes start once it answers`);
+    for (const pool of this.pools()) {
+      if (this.newest(pool)) continue;
+      const reason = pool === ExtensionHostPool.PLATFORM
+        ? `extension-host unreachable at ${this.socketPath}: ${this.lastFailure}`
+        : `the sandboxed extension-host for plugins sites upload has not announced itself in ${this.socketPath}`;
+      SpawnerClient.publishUnavailable(reason, pool);
+      this.log(`${reason}; ${pool} plugin processes start once it answers`);
     }
-    return current;
+    return this.newest(ExtensionHostPool.PLATFORM);
+  }
+
+  /** The pools this api starts plugins in: the platform's, and the sites' own when the deployment runs one. */
+  private pools(): string[] {
+    return ExtensionHostPool.siteRequired() ? [ExtensionHostPool.PLATFORM, ExtensionHostPool.SITE] : [ExtensionHostPool.PLATFORM];
   }
 
   /** Connects to every host it can see and is not connected to yet. */
@@ -51,8 +59,8 @@ export class ExtensionHostLink {
         this.connecting.add(candidate.socketPath);
         try {
           const client = await SpawnerClient.connect(candidate.socketPath, 0);
-          this.attach(client, candidate.socketPath, candidate.birth);
-          this.log(`connected to extension-host at ${candidate.socketPath} (spawner pid ${client.pid})`);
+          this.attach(client, candidate.socketPath, candidate.birth, candidate.pool);
+          this.log(`connected to extension-host at ${candidate.socketPath} (${candidate.pool} plugins, spawner pid ${client.pid})`);
         } catch (error) {
           this.lastFailure = error instanceof Error ? error.message : String(error);
         } finally {
@@ -61,34 +69,34 @@ export class ExtensionHostLink {
       }));
   }
 
-  private attach(client: SpawnerClient, socketPath: string, birth: number): void {
-    this.connected.set(socketPath, { client, birth });
+  private attach(client: SpawnerClient, socketPath: string, birth: number, pool: string): void {
+    this.connected.set(socketPath, { client, birth, pool });
     client.onDisconnect(() => {
       this.connected.delete(socketPath);
-      const next = this.newest();
+      const next = this.newest(pool);
       if (next) {
-        this.log(`lost the connection to extension-host at ${socketPath}; new plugin processes start in the one that remains, and any still running there start again in it`);
-        this.publish();
+        this.log(`lost the connection to extension-host at ${socketPath}; new plugin processes start in the one that remains, and any still running there start again in it (${pool} plugins)`);
+        this.publish(pool);
         return;
       }
-      SpawnerClient.publish(null);
-      SpawnerClient.publishUnavailable(`lost the connection to extension-host at ${socketPath}; reconnecting`);
-      this.log(`lost the connection to extension-host at ${socketPath}; its plugin processes stopped; reconnecting`);
+      SpawnerClient.publish(null, pool);
+      SpawnerClient.publishUnavailable(`lost the connection to extension-host at ${socketPath}; reconnecting`, pool);
+      this.log(`lost the connection to extension-host at ${socketPath}; its plugin processes stopped; reconnecting (${pool} plugins)`);
     });
-    this.publish();
+    this.publish(pool);
   }
 
-  /** The newest connected host becomes the one new processes start in. */
-  private publish(): void {
-    const newest = this.newest();
-    if (!newest || newest === SpawnerClient.current()) return;
-    SpawnerClient.publishUnavailable(null);
-    SpawnerClient.publish(newest);
+  /** The newest connected host of `pool` becomes the one its new processes start in. */
+  private publish(pool: string): void {
+    const newest = this.newest(pool);
+    if (!newest || newest === SpawnerClient.current(pool)) return;
+    SpawnerClient.publishUnavailable(null, pool);
+    SpawnerClient.publish(newest, pool);
   }
 
-  private newest(): SpawnerClient | null {
+  private newest(pool: string): SpawnerClient | null {
     let best: { client: SpawnerClient; birth: number } | null = null;
-    for (const entry of this.connected.values()) if (!best || entry.birth >= best.birth) best = entry;
+    for (const entry of this.connected.values()) if (entry.pool === pool && (!best || entry.birth >= best.birth)) best = entry;
     return best?.client ?? null;
   }
 }

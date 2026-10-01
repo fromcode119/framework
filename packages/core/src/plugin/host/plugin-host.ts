@@ -72,7 +72,7 @@ export class PluginHost extends PluginHostGenerations {
     this.outage = new PluginHostOutage(
       slug,
       () => [...manager.registeredCollections].filter(([, entry]) => entry.pluginSlug === slug).flatMap(([physical, entry]) => [physical, entry.collection.slug, entry.collection.shortSlug].filter(Boolean)),
-      () => GuestProcessLaunchers.unavailableReason() ?? (this.restarting ? 'its process is restarting' : 'its process is not running'),
+      () => GuestProcessLaunchers.unavailableReason(this.pool) ?? (this.restarting ? 'its process is restarting' : 'its process is not running'),
     );
     this.registrations = new PluginHostRegistrations(
       slug,

@@ -100,7 +100,9 @@ export class PluginDetailOverview extends PureReactor {
               <Switch checked={this.isActive} onChange={(_: boolean) => this.onToggle()} className="scale-110" />
             </div>}
           </div>
-          {!this.siteScope ? <PluginSiteOfferSwitch slug={this.plugin.manifest.slug} /> : null}
+          {/* A site's own upload runs only for that site: offering it to others is refused, so it is explained, not offered. */}
+          {!this.siteScope && !(this.plugin.manifest as any).ownerTenantId ? <PluginSiteOfferSwitch slug={this.plugin.manifest.slug} /> : null}
+          {!this.siteScope && (this.plugin.manifest as any).ownerTenantId ? <p className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-xs text-slate-500">{AdminI18n.t('plugins.detail.siteOwnNotOffered', { site: String((this.plugin.manifest as any).ownerTenantId) })}</p> : null}
         </Card>
 
         {this.siteScope ? (

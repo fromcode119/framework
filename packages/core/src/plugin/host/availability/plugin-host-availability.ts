@@ -29,7 +29,7 @@ export abstract class PluginHostAvailability extends PluginHostGuestBridge {
    * be started right now (the caller returns), false when the caller should start the process.
    */
   protected deferWhileUnavailable(key: string): boolean {
-    if (!GuestProcessLaunchers.unavailableReason()) return false;
+    if (!GuestProcessLaunchers.unavailableReason(this.pool)) return false;
     if (key === 'onInit') {
       if (!this.initDeferred) this.answerWhileDown();
       this.initDeferred = true;
@@ -75,7 +75,7 @@ export abstract class PluginHostAvailability extends PluginHostGuestBridge {
 
   /** Waits for the extension-host, then runs what boot could not. */
   async resumeWhenAvailable(): Promise<void> {
-    await GuestProcessLaunchers.whenAvailable();
+    await GuestProcessLaunchers.whenAvailable(this.pool);
     if (this.stopping || this.guest) return;
     try {
       const initDeferred = this.initDeferred;
@@ -101,7 +101,7 @@ export abstract class PluginHostAvailability extends PluginHostGuestBridge {
    * Answers whether it moved; a plugin already in the current host, not running, or mid-restart stays.
    */
   async moveToCurrentHost(): Promise<boolean> {
-    const current = SpawnerClient.current();
+    const current = SpawnerClient.current(this.pool);
     const launcher = this.guest?.launcher ?? null;
     if (!current || !launcher || launcher === current || this.stopping || this.restarting) return false;
     this.restarting = true;

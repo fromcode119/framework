@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import { LineSplitter } from '@core/process/line-splitter';
 import { SpawnerGuests } from '@core/process/spawner-guests';
@@ -45,7 +46,8 @@ export class PrivilegedSpawner {
 
   private async handle(type: string, payload: any): Promise<unknown> {
     switch (type) {
-      case String(SpawnerMessage.PING.value): return { pid: process.pid };
+      // The kernel it sees: the box's own, or a sandboxing runtime's (gVisor reports its own) — what the admin shows.
+      case String(SpawnerMessage.PING.value): return { pid: process.pid, kernel: os.release() };
       case String(SpawnerMessage.PREPARE.value): return this.prepare(payload);
       case String(SpawnerMessage.SPAWN.value): return this.spawn(payload);
       case String(SpawnerMessage.INVENTORY.value): return this.guests.inventory().map((listing) => ({ ...listing, guestDir: path.join(this.runtimeDir, listing.id, 'guest') }));

@@ -46,7 +46,7 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
    * its own guest id and sockets. It serves nothing until `adopt` makes it the current one.
    */
   protected async launchGeneration(): Promise<PluginGuestGeneration> {
-    const launcher = GuestProcessLaunchers.current();
+    const launcher = GuestProcessLaunchers.current(this.pool);
     this.generationCount += 1;
     const attachSecret = PluginGuestGeneration.secret();
     // A plugin a site uploaded shares the machine with every other site: it gets a share, not the lot.
@@ -61,14 +61,14 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       // container; a 1 MB semi-space measured about 12 MB less resident per process at the same work.
       execArgv: [`--max-old-space-size=${this.limits.memoryMb}`, '--max-semi-space-size=1'],
       identity: this.identity,
-      writableDirs: [ProjectPaths.getPluginDataDir(this.slug, this.projectRoot)],
+      writableDirs: [ProjectPaths.getPluginDataDir(this.slug, this.projectRoot, PluginOwners.ownerOf(this.slug))],
       // What another api needs to find this process and take it over (`takeOver`).
       label: { slug: this.slug, version: String(this.manifest.version ?? ''), memoryMb: this.limits.memoryMb, attachSecret },
       resourceLimits: share,
     });
     const generation = new PluginGuestGeneration(this.generationCount, guest, new PluginChannel(guest.port), attachSecret);
     this.wire(generation);
-    const boot = PluginGuestBootMessage.build(generation, { slug: this.slug, pluginDir: this.pluginDir, entryPath: this.entryPath, manifest: this.manifest, projectRoot: this.projectRoot, defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en') }, PluginHostGenerations.lingerMs());
+    const boot = PluginGuestBootMessage.build(generation, { slug: this.slug, pluginDir: this.pluginDir, entryPath: this.entryPath, manifest: this.manifest, projectRoot: this.projectRoot, defaultLocale: String(this.manager.i18n?.getDefaultLocale?.() ?? 'en') }, PluginHostGenerations.lingerMs(this.pool));
     try {
       generation.described = await generation.channel.request(String(PluginChannelMessage.BOOT.value), boot, PluginHostState.BOOT_TIMEOUT_MS);
       const refusal = PluginHostProtocol.refusal(generation.described?.protocol);
@@ -93,7 +93,7 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
    * Anything that goes wrong leaves it to a fresh process, and says so.
    */
   protected async takeOver(): Promise<PluginGuestGeneration | null> {
-    const spawner = SpawnerClient.current();
+    const spawner = SpawnerClient.current(this.pool);
     if (spawner?.hostedBy !== SpawnerClient.HOSTED_BY_EXTENSION_HOST) return null;
     const version = String(this.manifest.version ?? '');
     // A rolling deploy never replaces the extension-host, so it can be older than this api and not know
@@ -132,8 +132,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
   }
 
   /** How long a process outlives the last api holding it: long enough for a deploy's next api, and only where one can come. */
-  static lingerMs(): number {
-    return SpawnerClient.current()?.hostedBy === SpawnerClient.HOSTED_BY_EXTENSION_HOST ? SpawnerGuests.ORPHAN_GRACE_MS : 0;
+  static lingerMs(pool?: string): number {
+    return SpawnerClient.current(pool)?.hostedBy === SpawnerClient.HOSTED_BY_EXTENSION_HOST ? SpawnerGuests.ORPHAN_GRACE_MS : 0;
   }
 
   /** What every process of this plugin answers to: its messages, its output, and its exit. */

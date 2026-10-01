@@ -58,8 +58,8 @@ The following are **out of scope**:
 Atlantis has several built-in security layers you should be aware of when researching:
 
 - **Security Monitor** — Real-time threat detection loop (`packages/core/src/security/`)
-- **Plugin Sandboxing** — Plugins run with declared capabilities only via `SandboxManager`
-- **Cryptographic Signing** — All plugins must pass signature verification on load
+- **Plugin Process Isolation** — Every plugin outside the framework's own runs in its own OS process and user, with an empty environment, and answers only the SDK contract; a plugin a SITE uploads is further limited to a short list of SDK calls, has no network, is held to CPU/memory/disk/process limits, and runs in its own container that can run under gVisor (see [docs/untrusted-plugins.md](docs/untrusted-plugins.md))
+- **Build Provenance** — Plugins and themes built from Git are built only from commits GitHub merged through a pull request
 - **RBAC** — Role-based access control enforced at the kernel level
 - **MFA / TOTP** — Native two-factor authentication with encrypted secret storage
 - **Audit Logging** — Comprehensive audit trail for all admin and auth actions

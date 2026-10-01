@@ -199,6 +199,29 @@ Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep
 `MARKETPLACE_URL` may be left **empty**, which disables marketplace lookups. Plugin and theme
 updates come from their own repositories.
 
+## Recommended: sandbox the plugins sites upload
+
+Plugins a site uploads run in their own container, `site-extension-host`: no network, only the sites'
+plugins and their data. On a server where you can install [gVisor](https://gvisor.dev), run it under
+gVisor as well, so that code never reaches the server's own kernel:
+
+```bash
+# On the server, as root: install runsc (verify the checksum), register it with Docker under its own
+# name with the flag the plugins need, and reload Docker — a reload, not a restart.
+ARCH=$(uname -m); URL=https://storage.googleapis.com/gvisor/releases/release/latest/${ARCH}
+curl -fsSLO ${URL}/gvisor.tar.zstd && curl -fsSLO ${URL}/gvisor.tar.zstd.sha512
+sha512sum -c gvisor.tar.zstd.sha512 && tar --zstd -xf gvisor.tar.zstd -C /usr/local/bin
+runsc install --runtime runsc-plugins -- --host-uds=all
+systemctl reload docker
+```
+
+Then set `SITE_PLUGIN_RUNTIME=runsc-plugins` in `deploy/.env` and deploy. A plugin's page in the admin
+says which kernel its sandbox runs on. Leave it unset and the container runs on Docker's default runtime —
+still apart from the platform's plugins and without a network, just without the second kernel.
+
+Keep the server's own kernel patched either way: see
+[Running Plugins You Don't Fully Trust](../docs/untrusted-plugins.md).
+
 ## Optional: the PDF renderer
 
 Plugins that print PDFs (today: one plugin's PDF export) do it in a **separate browser

@@ -10,6 +10,7 @@ import type { ISpawnerGuestListing } from '@core/process/interfaces/spawner-gues
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 import { SpawnerMessage } from '@core/process/enums/spawner-message.enum';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * The app's handle on its privileged spawner: the one root process left after the app dropped its
@@ -38,6 +39,8 @@ export class SpawnerClient {
 
   /** The spawner's pid, learned from its answer to `ping`. */
   private spawnerPid: number | null;
+  /** The kernel the spawner sees (`os.release()`): a sandboxing runtime reports its own, not the box's. */
+  kernel: string | null = null;
 
   constructor(
     port: IMessagePort,
@@ -76,51 +79,61 @@ export class SpawnerClient {
 
   /**
    * The api was configured for an `extension-host` it could not reach. Plugin processes then fail to
-   * start WITH this reason — never quietly started somewhere else.
+   * start WITH this reason — never quietly started somewhere else. Per pool (`ExtensionHostPool`).
    */
-  static publishUnavailable(reason: string | null): void {
-    (globalThis as Record<PropertyKey, unknown>)[SpawnerClient.UNAVAILABLE_KEY] = reason ?? undefined;
+  static publishUnavailable(reason: string | null, pool: string = ExtensionHostPool.PLATFORM): void {
+    (globalThis as Record<PropertyKey, unknown>)[SpawnerClient.keyFor(SpawnerClient.UNAVAILABLE_KEY, pool)] = reason ?? undefined;
   }
 
-  static unavailableReason(): string | null {
-    return ((globalThis as Record<PropertyKey, unknown>)[SpawnerClient.UNAVAILABLE_KEY] as string | undefined) ?? null;
+  static unavailableReason(pool: string = ExtensionHostPool.PLATFORM): string | null {
+    return ((globalThis as Record<PropertyKey, unknown>)[SpawnerClient.keyFor(SpawnerClient.UNAVAILABLE_KEY, pool)] as string | undefined) ?? null;
   }
 
-  static current(): SpawnerClient | null {
-    return ((globalThis as Record<PropertyKey, unknown>)[SpawnerClient.GLOBAL_KEY] as SpawnerClient | undefined) ?? null;
+  static current(pool: string = ExtensionHostPool.PLATFORM): SpawnerClient | null {
+    return ((globalThis as Record<PropertyKey, unknown>)[SpawnerClient.keyFor(SpawnerClient.GLOBAL_KEY, pool)] as SpawnerClient | undefined) ?? null;
   }
 
   /** `null` withdraws it: the connection to the `extension-host` was lost, and nothing can be started. */
-  static publish(client: SpawnerClient | null): void {
+  static publish(client: SpawnerClient | null, pool: string = ExtensionHostPool.PLATFORM): void {
     const shared = globalThis as Record<PropertyKey, unknown>;
-    const previous = SpawnerClient.current();
-    shared[SpawnerClient.GLOBAL_KEY] = client ?? undefined;
+    const previous = SpawnerClient.current(pool);
+    shared[SpawnerClient.keyFor(SpawnerClient.GLOBAL_KEY, pool)] = client ?? undefined;
     if (!client) return;
     // A different host now starts new processes — a newer extension-host beside the old one. What runs
     // on the old one is moved over by whoever listens (the plugin hosts), one gapless swap at a time.
     if (previous && previous !== client) {
-      for (const listener of (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<() => void> | undefined) ?? []) listener();
+      for (const listener of (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<(pool: string) => void> | undefined) ?? []) listener(pool);
     }
-    const waiters = (shared[SpawnerClient.WAITERS_KEY] as Array<() => void> | undefined) ?? [];
-    shared[SpawnerClient.WAITERS_KEY] = [];
+    const waitersKey = SpawnerClient.keyFor(SpawnerClient.WAITERS_KEY, pool);
+    const waiters = (shared[waitersKey] as Array<() => void> | undefined) ?? [];
+    shared[waitersKey] = [];
     for (const resolve of waiters) resolve();
   }
 
-  /** Called whenever a different spawner replaces the published one (never for the first, nor for none). */
-  static onChange(listener: () => void): void {
+  /** Called whenever a different spawner replaces the published one of a pool (never for the first, nor for none). */
+  static onChange(listener: (pool: string) => void): void {
     const shared = globalThis as Record<PropertyKey, unknown>;
-    const listeners = (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<() => void> | undefined) ?? [];
+    const listeners = (shared[SpawnerClient.CHANGE_LISTENERS_KEY] as Array<(pool: string) => void> | undefined) ?? [];
     shared[SpawnerClient.CHANGE_LISTENERS_KEY] = listeners;
     listeners.push(listener);
   }
 
-  /** Resolves once a spawner is published — at once when one already is. */
-  static whenAvailable(): Promise<void> {
-    if (SpawnerClient.current()) return Promise.resolve();
+  /** Resolves once a spawner of `pool` is published — at once when one already is. */
+  static whenAvailable(pool: string = ExtensionHostPool.PLATFORM): Promise<void> {
+    if (SpawnerClient.current(pool)) return Promise.resolve();
     const shared = globalThis as Record<PropertyKey, unknown>;
-    const waiters = (shared[SpawnerClient.WAITERS_KEY] as Array<() => void> | undefined) ?? [];
-    shared[SpawnerClient.WAITERS_KEY] = waiters;
+    const waitersKey = SpawnerClient.keyFor(SpawnerClient.WAITERS_KEY, pool);
+    const waiters = (shared[waitersKey] as Array<() => void> | undefined) ?? [];
+    shared[waitersKey] = waiters;
     return new Promise((resolve) => waiters.push(resolve));
+  }
+
+  /**
+   * The `globalThis` slot of one pool. The platform's keeps the key it always had, so a copy of this
+   * class from before pools (the other bundle of core) still finds the same spawner.
+   */
+  private static keyFor(base: symbol, pool: string): symbol {
+    return pool === ExtensionHostPool.PLATFORM ? base : Symbol.for(`${base.description}:${pool}`);
   }
 
   get pid(): number | null {
@@ -129,8 +142,9 @@ export class SpawnerClient {
 
   /** Blocks until the spawner answers, so a failed fork is a startup error rather than a later surprise. */
   async ready(): Promise<unknown> {
-    const answer = await this.channel.request<{ pid?: number }>(String(SpawnerMessage.PING.value), {}, SpawnerClient.REQUEST_TIMEOUT_MS);
+    const answer = await this.channel.request<{ pid?: number; kernel?: string }>(String(SpawnerMessage.PING.value), {}, SpawnerClient.REQUEST_TIMEOUT_MS);
     this.spawnerPid = answer?.pid ?? this.spawnerPid;
+    this.kernel = answer?.kernel ?? null;
     return answer;
   }
 

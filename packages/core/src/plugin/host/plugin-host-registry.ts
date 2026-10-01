@@ -7,6 +7,7 @@ import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-sett
 import { GuestProcessLaunchers } from '@core/process/guest-process-launchers';
 import { SpawnerClient } from '@core/process/spawner-client';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * Every isolated plugin's host, by slug — owned by the plugin manager.
@@ -105,7 +106,7 @@ export class PluginHostRegistry {
       this.hosts.set(slug, host);
     }
     // Nowhere to start it now: it boots like an inactive plugin and starts when the extension-host answers.
-    const unavailable = active ? GuestProcessLaunchers.unavailableReason() : null;
+    const unavailable = active ? GuestProcessLaunchers.unavailableReason(host.pool) : null;
     if (unavailable) {
       this.logger.warn(`${slug}: ${unavailable} — it starts as soon as the extension-host answers`);
       void host.resumeWhenAvailable();
@@ -141,8 +142,9 @@ export class PluginHostRegistry {
   }
 
   /** Whether guests run as their own OS users here (a privileged spawner exists) or share the api's. */
-  isolatesIdentity(): boolean {
-    return GuestProcessLaunchers.current().isolatesIdentity;
+  /** Whether a plugin can run under its own user — for a site's plugin, in the pool a site's plugin starts in. */
+  isolatesIdentity(siteOwned = false): boolean {
+    return GuestProcessLaunchers.current(ExtensionHostPool.forPlugin(siteOwned)).isolatesIdentity;
   }
 
   /** For the admin: which plugins run in their own process right now. */

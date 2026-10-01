@@ -128,7 +128,8 @@ class ComposeFixture {
     processesFromUid: async (id: string) => {
       const count = this.plugins[id] ?? 0;
       // The api moves one plugin per look once the new host is there.
-      if (this.pluginsMove && count > 0 && (this.containers['extension-host'] ?? []).some((c) => c.includes('-new-'))) this.plugins[id] = count - 1;
+      const service = Object.keys(this.containers).find((key) => this.containers[key].includes(id)) ?? 'extension-host';
+      if (this.pluginsMove && count > 0 && (this.containers[service] ?? []).some((c) => c.includes('-new-'))) this.plugins[id] = count - 1;
       return count;
     },
   };
@@ -166,6 +167,31 @@ describe('RollingDeploy', () => {
     expect(compose.plugins['host-old']).toBe(0);
     expect(compose.containers['extension-host']).toHaveLength(1);
     expect(compose.containers['extension-host'][0]).toContain('-new-');
+  });
+
+  it('starts and rolls the sites\' sandboxed host the same way, each host draining only its own plugins', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host', 'site-extension-host'];
+    compose.containers['extension-host'] = ['host-old'];
+    compose.containers['site-extension-host'] = ['sandbox-old'];
+    compose.plugins['host-old'] = 2;
+    compose.plugins['sandbox-old'] = 2;
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(compose.ensured).toEqual(['extension-host', 'site-extension-host']);
+    for (const [service, old] of [['extension-host', 'host-old'], ['site-extension-host', 'sandbox-old']]) {
+      expect(compose.plugins[old]).toBe(0);
+      expect(compose.stopped.indexOf(old)).toBeGreaterThan(compose.stopped.indexOf('front-old'));
+      expect(compose.containers[service]).toHaveLength(1);
+      expect(compose.containers[service][0]).toContain('-new-');
+    }
+  });
+
+  it('leaves out the sandboxed host on a release that does not declare it — a rollback still deploys', async () => {
+    const compose = new ComposeFixture(() => true);
+    compose.declares = ['extension-host'];
+    compose.stack.imageOf = async () => 'ghcr.io/fromcode119/framework-api:v0.2.196';
+    expect(await new RollingDeploy(compose.stack, async () => undefined).run('v0.2.196')).toBe(true);
+    expect(compose.ensured).toEqual(['extension-host']);
   });
 
   it('keeps the running extension-host, and every plugin in it, when the new one never listens', async () => {

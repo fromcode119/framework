@@ -73,12 +73,19 @@ export class PluginDetailSidebar extends PureReactor {
                 <span className="text-[10px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.none')}</span>
               )}
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-xs font-semibold tracking-wider text-slate-500">{AdminI18n.t('plugins.detail.author')}</span>
-              <span className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>
-                {typeof plugin.manifest.author === 'object' ? plugin.manifest.author.name : (plugin.manifest.author || AdminI18n.t('plugins.detail.officialCore'))}
-              </span>
-            </div>
+            {/* Who it comes from, as declared: a site's own upload says which site; a manifest that names no author
+                shows no author — never a provenance it does not have. */}
+            {(() => {
+              const owner = String((plugin.manifest as any).ownerTenantId ?? '').trim();
+              const declared = typeof plugin.manifest.author === 'object' ? plugin.manifest.author?.name : plugin.manifest.author;
+              const source = owner ? AdminI18n.t('plugins.detail.uploadedBySite', { site: owner }) : String(declared ?? '').trim();
+              return source ? (
+                <div className="flex justify-between items-center">
+                  <span className="text-xs font-semibold tracking-wider text-slate-500">{AdminI18n.t(owner ? 'plugins.detail.source' : 'plugins.detail.author')}</span>
+                  <span className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>{source}</span>
+                </div>
+              ) : null;
+            })()}
           </div>
           {/* The raw definition (install path, checksum, sandbox, approved capabilities) is the platform's, like removal below. */}
           {this.canManage ? <div className={`mt-6 pt-4 border-t ${theme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} space-y-4`}>

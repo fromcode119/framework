@@ -7,6 +7,10 @@ export interface IPluginRuntimeResponse {
   isolated: boolean;
   runtime: {
     hostedBy: string;
+    /** `site`: the sites' own sandboxed host, apart from the platform's plugins. */
+    pool: string;
+    /** The kernel its host sees; gVisor reports its own (`…gvisor…`) instead of the server's. */
+    hostKernel: string | null;
     hostUnavailable: string | null;
     running: boolean;
     pid: number | null;

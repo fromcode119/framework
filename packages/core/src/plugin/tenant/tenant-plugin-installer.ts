@@ -29,7 +29,7 @@ export class TenantPluginInstaller {
     const own = TenantPluginInstaller.ownDirs(tenantId);
     return {
       enabled: limits.enabled,
-      isolated: Boolean(this.host.pluginHosts?.isolatesIdentity()),
+      isolated: Boolean(this.host.pluginHosts?.isolatesIdentity(true)),
       maxBytes: limits.maxBytes,
       maxPlugins: limits.maxPlugins,
       usedBytes: own.reduce((total, dir) => total + TenantPluginPackagePolicy.byteSize(dir), 0),
@@ -40,7 +40,7 @@ export class TenantPluginInstaller {
   async install(tenantId: string, archivePath: string): Promise<IPluginManifest> {
     const limits = await TenantPluginQuota.current();
     if (!limits.enabled) throw new TenantPluginRefusal(TenantPluginRefusalReason.DISABLED, 'The platform does not allow sites to upload their own plugins.');
-    if (!this.host.pluginHosts?.isolatesIdentity()) {
+    if (!this.host.pluginHosts?.isolatesIdentity(true)) {
       throw new TenantPluginRefusal(TenantPluginRefusalReason.ISOLATION_UNAVAILABLE, 'This server cannot run a site\'s plugin under its own user, so it does not accept one.');
     }
 
