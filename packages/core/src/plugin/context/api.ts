@@ -10,7 +10,7 @@ import { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { RateLimiter } from '@core/security/rate-limiter';
 import { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 import { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
-import type { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
+import type { IApiAccessDescriptor } from '@core/plugin/context/interfaces/api-access-descriptor.interface';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { AsyncRouteGuard } from '@core/base/async-route-guard';
@@ -36,11 +36,11 @@ export class ApiContextProxy {
         // A route may DECLARE its access as a leading `{ access }` descriptor. The central fail-closed
         // gate (ApiAccessGate) enforces it when ENFORCE_AUTHZ_GATEWAY=true; undeclared => admin-only.
         // `use` (raw middleware) is exempt — it is not a terminal route.
-        let access: AccessLevel | ApiPermissionRequirement | undefined;
-        let anonymousCache = false;
+        // Read per request, not here: a plugin host updates its routes' descriptors in place when a newer
+        // process of the plugin declares them differently (PluginHostRegistrations).
+        let descriptor: IApiAccessDescriptor | undefined;
         if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
-          access = handlers[0].access;
-          anonymousCache = method === 'get' && handlers[0].anonymousCache === true;
+          descriptor = handlers[0];
           handlers = handlers.slice(1);
         }
 
@@ -110,9 +110,12 @@ export class ApiContextProxy {
           }
         });
 
-        const gate = method === 'use' ? null : ApiAccessGate.build(access);
+        const gate = method === 'use' ? null : ApiAccessGate.follow(() => descriptor?.access);
         // After the access gate, before the handler: a declared route's repeat anonymous GETs (ApiResponseCache).
-        const cache = anonymousCache ? [ApiResponseCache.middleware(plugin, () => manager.plugins.get(plugin.manifest.slug))] : [];
+        const cached = descriptor;
+        const cache = method === 'get' && cached
+          ? [ApiResponseCache.middleware(plugin, () => manager.plugins.get(plugin.manifest.slug), () => cached.anonymousCache === true)]
+          : [];
         manager.apiHost[method](fullPath, ...(gate ? [gate] : []), ...cache, ...wrappedHandlers);
       };
 

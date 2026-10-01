@@ -28,6 +28,12 @@ import { PluginHostDeclaredRoutes } from '@core/plugin/host/plugin-host-declared
  */
 export class PluginHostRegistrations {
   private readonly routes = new Set<string>();
+  /**
+   * Each mounted route's descriptor, by `method path`. Express mounts a route once, so a newer process
+   * of the plugin — an upgrade, or the move to a newer extension-host — that declares the same route
+   * differently updates it here; the platform gate and the response cache read it per request.
+   */
+  private readonly descriptors = new Map<string, { access: AccessLevel | ApiPermissionRequirement | undefined; anonymousCache: boolean }>();
   /** Declared routes a catch-all forwarder steps aside for (see PluginHostDeclaredRoutes). */
   private readonly declared: PluginHostDeclaredRoutes;
   private readonly hooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
@@ -101,14 +107,24 @@ export class PluginHostRegistrations {
   private route(context: PluginContext, registration: IPluginGuestRegistration): void {
     const method = String(registration.method || 'get');
     const key = `${method} ${registration.path}`;
-    if (this.routes.has(key)) return;
+    // Undeclared stays undeclared (`access` undefined): the platform gate treats it as admin-only.
+    const access = PluginHostRegistrations.reviveAccess(registration.access);
+    const anonymousCache = registration.anonymousCache === true;
+    const mounted = this.descriptors.get(key);
+    if (mounted) {
+      mounted.access = access;
+      mounted.anonymousCache = anonymousCache;
+      return;
+    }
+    const descriptor = { access, anonymousCache };
+    this.descriptors.set(key, descriptor);
     this.routes.add(key);
     this.declared.add(method, String(registration.path));
-    const handlers: unknown[] = [];
-    const access = PluginHostRegistrations.reviveAccess(registration.access);
-    if (access) handlers.push({ access, anonymousCache: registration.anonymousCache === true });
-    handlers.push((req: Request, res: Response, next: NextFunction) => this.forwardRequest(req, res, next));
-    (context.api as any)[method](this.relativePath(String(registration.path)), ...handlers);
+    (context.api as any)[method](
+      this.relativePath(String(registration.path)),
+      descriptor,
+      (req: Request, res: Response, next: NextFunction) => this.forwardRequest(req, res, next),
+    );
   }
 
   private use(context: PluginContext, registration: IPluginGuestRegistration): void {
