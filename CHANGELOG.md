@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.283] - 2026-10-01
+
+### Added
+
+- **plugins**: context.memo — answers a plugin keeps per site until the site changes ([#601](https://github.com/fromcode119/framework/pull/601))
+- **api**: run the api as several processes sharing one set of plugin processes ([#611](https://github.com/fromcode119/framework/pull/611))
+
+### Fixed
+
+- **admin**: list row actions honour disableCreate and disableEdit ([#609](https://github.com/fromcode119/framework/pull/609))
+- **frontend**: default sign-up, verification and password pages send the CSRF token ([#607](https://github.com/fromcode119/framework/pull/607))
+
 ## [0.2.282] - 2026-10-01
 
 ### Fixed
