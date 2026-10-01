@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.295] - 2026-10-01
+
+### Added
+
+- **infrastructure**: the api's database connection limit is a setting, and the pool warns only on real shortages ([#651](https://github.com/fromcode119/framework/pull/651))
+
+### Fixed
+
+- **frontend**: every server-side fetch releases a response it does not read ([#649](https://github.com/fromcode119/framework/pull/649))
+
 ## [0.2.294] - 2026-10-01
 
 ### Fixed
