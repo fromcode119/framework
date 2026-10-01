@@ -22,6 +22,7 @@ import type { IPluginContextIntegrations } from '@core/plugin/interfaces/plugin-
 import type { IPluginContextMcp } from '@core/plugin/interfaces/plugin-context-mcp.interface';
 import type { IPluginContextEmail } from '@core/plugin/interfaces/plugin-context-email.interface';
 import type { IPluginContextJobs } from '@core/plugin/interfaces/plugin-context-jobs.interface';
+import type { IPluginContextMemo } from '@core/plugin/interfaces/plugin-context-memo.interface';
 import type { IPluginContextScheduler } from '@core/plugin/interfaces/plugin-context-scheduler.interface';
 import type { IPluginContextPlugin } from '@core/plugin/interfaces/plugin-context-plugin.interface';
 import type { IPluginContextPaths } from '@core/plugin/interfaces/plugin-context-paths.interface';
@@ -67,6 +68,8 @@ export class PluginContext {
   /** The platform mailer plus the do-not-email list and the per-plugin additions — see IPluginContextEmail. */
   declare readonly email: IPluginContextEmail;
   declare readonly cache: ICacheManager;
+  /** Answers kept per site until the site changes — see IPluginContextMemo. */
+  declare readonly memo: IPluginContextMemo;
 
   declare readonly redis: any;
   declare readonly fetch: (url: string, init?: any) => Promise<any>;
