@@ -2,4 +2,6 @@
 export interface IGuestResourceTarget {
   pid: number;
   uid?: number | null;
+  /** Its own writable directories, measured for disk with the places any user may write. */
+  dirs?: string[];
 }

@@ -58,7 +58,13 @@ describe('saved plugin isolation limits reach running plugins', () => {
     });
 
     expect(site.reloads).toHaveLength(1);
-    expect((site.host as any).settings.siteResourceLimits()).toEqual({ cpuPercent: 25, memoryMb: 256 });
+    expect((site.host as any).settings.siteResourceLimits()).toEqual({ cpuPercent: 25, memoryMb: 256, diskMb: 100, maxTasks: 64 });
+
+    await IsolationFixture.save({ [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MAX_TASKS]: '32' });
+    expect(site.reloads).toHaveLength(2);
+    await IsolationFixture.save({ [SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_DISK_MB]: '20' });
+    expect(site.reloads).toHaveLength(3);
+    expect(platform.reloads).toEqual([]);
     expect(platform.reloads).toEqual([]);
   });
 

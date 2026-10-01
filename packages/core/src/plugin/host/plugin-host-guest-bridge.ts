@@ -137,7 +137,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     const next = settings.forPlugin(this.manifest.sandbox, siteOwned);
     const heapChanged = next.memoryMb !== this.limits.memoryMb;
     // A site's plugin is also held to its share of the machine, which its launcher enforces from the start.
-    const shareChanged = siteOwned && (previous.siteCpuPercent !== settings.siteCpuPercent || previous.siteMemoryMb !== settings.siteMemoryMb);
+    const shareChanged = siteOwned && JSON.stringify(previous.siteResourceLimits()) !== JSON.stringify(settings.siteResourceLimits());
     this.limits = next;
     if ((!heapChanged && !shareChanged) || (!this.guest && !this.channel)) return;
     this.logger.info(`isolation limits changed; starting a fresh process with a ${next.memoryMb} MB heap`);

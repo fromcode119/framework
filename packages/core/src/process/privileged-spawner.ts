@@ -4,6 +4,8 @@ import path from 'path';
 import { LineSplitter } from '@core/process/line-splitter';
 import { SpawnerGuests } from '@core/process/spawner-guests';
 import { GuestResourceWatchdog } from '@core/process/guest-resource-watchdog';
+import { GuestLaunchCommand } from '@core/process/guest-launch-command';
+import { GuestDiskUsage } from '@core/process/guest-disk-usage';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import type { IGuestIdentity } from '@core/process/interfaces/guest-identity.interface';
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
@@ -92,7 +94,8 @@ export class PrivilegedSpawner {
       this.guests.removeIf(id, previous);
       previous.kill('SIGKILL');
     }
-    const child = spawn(process.execPath, [...args.execArgv, args.entryPath, ...args.args, '--fc-host-socket', args.hostSocket], {
+    const launch = GuestLaunchCommand.build(process.execPath, [...args.execArgv, args.entryPath, ...args.args, '--fc-host-socket', args.hostSocket], args.resourceLimits);
+    const child = spawn(launch.command, launch.args, {
       cwd: args.cwd,
       // Nothing from this process: no database URL, no secrets. (Typed loosely because the Next apps augment
       // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
@@ -112,7 +115,7 @@ export class PrivilegedSpawner {
     // Its share of the machine, counted over every process running as its user; past it, all of them stop.
     let stoppedFor: string | null = null;
     const unwatch = args.resourceLimits
-      ? this.watchdog.watch({ pid: child.pid, uid: args.identity.uid }, args.resourceLimits, (reason) => {
+      ? this.watchdog.watch({ pid: child.pid, uid: args.identity.uid, dirs: [...args.writableDirs, path.join(this.runtimeDir, id, 'guest')] }, args.resourceLimits, (reason) => {
         stoppedFor = reason;
         tell(String(SpawnerMessage.OUTPUT.value), { id, stream: String(GuestOutputStream.STDERR.value), line: `[resource limit] this plugin ${reason} — stopping it` });
         PrivilegedSpawner.killUser(args.identity!.uid);
@@ -121,6 +124,10 @@ export class PrivilegedSpawner {
       : null;
     child.on('exit', (code, signal) => {
       unwatch?.();
+      // A site plugin's temp files go with its LAST process — not while a replacement of it still runs.
+      if (args.resourceLimits && args.identity && GuestResourceWatchdog.pidsOf(args.identity.uid).length === 0) {
+        GuestDiskUsage.removeShared(args.identity.uid);
+      }
       out.flush();
       err.flush();
       const holders = this.guests.holders(id);

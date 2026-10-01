@@ -2,6 +2,7 @@ import fs from 'fs';
 import type { IGuestResourceLimits } from '@core/process/interfaces/guest-resource-limits.interface';
 
 import type { IGuestResourceTarget } from '@core/process/interfaces/guest-resource-target.interface';
+import { GuestDiskUsage } from '@core/process/guest-disk-usage';
 
 /**
  * Stops a guest process that takes more than its share of the machine.
@@ -22,11 +23,14 @@ export class GuestResourceWatchdog {
   static readonly WINDOW_SAMPLES = 6;
   /** `USER_HZ`: the unit of `/proc/<pid>/stat` CPU times. Fixed at 100 by the kernel ABI on every architecture Linux ships. */
   static readonly TICKS_PER_SECOND = 100;
+  /** Disk is walked every second sample (10 s): a filesystem walk costs more than reading `/proc`. */
+  static readonly DISK_EVERY = 2;
 
   constructor(
     private readonly read: (target: IGuestResourceTarget) => { cpuTicks: number; rssMb: number } | null = GuestResourceWatchdog.readProc,
     private readonly sampleMs = GuestResourceWatchdog.SAMPLE_MS,
     private readonly now: () => number = Date.now,
+    private readonly measureDisk: (uid: number, dirs: string[]) => { bytes: number; files: number } = GuestDiskUsage.measure,
   ) {}
 
   static isSupported(): boolean {
@@ -40,6 +44,7 @@ export class GuestResourceWatchdog {
    */
   watch(target: IGuestResourceTarget, limits: IGuestResourceLimits, onBreach: (reason: string) => void): () => void {
     const samples: Array<{ at: number; cpuTicks: number }> = [];
+    let ticks = 0;
     let stopped = false;
     const stop = () => {
       stopped = true;
@@ -52,6 +57,18 @@ export class GuestResourceWatchdog {
       if (limits.memoryMb > 0 && usage.rssMb > limits.memoryMb) {
         stop();
         return onBreach(`used ${Math.round(usage.rssMb)} MB of memory; the limit for this plugin is ${limits.memoryMb} MB`);
+      }
+      ticks += 1;
+      const disk = limits.diskMb > 0 && target.uid !== undefined && target.uid !== null && ticks % GuestResourceWatchdog.DISK_EVERY === 0
+        ? this.measureDisk(target.uid, target.dirs ?? [])
+        : null;
+      if (disk && disk.files > GuestDiskUsage.MAX_FILES) {
+        stop();
+        return onBreach(`kept more than ${GuestDiskUsage.MAX_FILES} files on disk`);
+      }
+      if (disk && disk.bytes > limits.diskMb * 1024 * 1024) {
+        stop();
+        return onBreach(`stored ${Math.round(disk.bytes / (1024 * 1024))} MB on disk; the limit for this plugin is ${limits.diskMb} MB`);
       }
       samples.push({ at: this.now(), cpuTicks: usage.cpuTicks });
       // WINDOW_SAMPLES intervals need one sample more than that to measure.

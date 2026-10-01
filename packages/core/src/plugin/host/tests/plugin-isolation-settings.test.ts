@@ -42,8 +42,10 @@ describe('the limits a manifest can set', () => {
 
   it('come with a declared share of the machine for a site plugin, from the platform settings', async () => {
     const rows: Record<string, string> = { plugin_isolation_site_cpu_percent: '30', plugin_isolation_site_memory_mb: '200' };
+    const withDisk = await PluginIsolationSettings.read({ findOne: async (_table, where) => ({ plugin_isolation_site_disk_mb: { value: '20' }, plugin_isolation_site_max_tasks: { value: '32' } } as any)[String(where.key)] ?? null });
+    expect(withDisk.siteResourceLimits()).toMatchObject({ diskMb: 20, maxTasks: 32 });
     const read = await PluginIsolationSettings.read({ findOne: async (_table, where) => (rows[String(where.key)] ? { value: rows[String(where.key)] } : null) });
-    expect(read.siteResourceLimits()).toEqual({ cpuPercent: 30, memoryMb: 200 });
-    expect(PluginIsolationSettings.defaults().siteResourceLimits()).toEqual({ cpuPercent: 50, memoryMb: 384 });
+    expect(read.siteResourceLimits()).toEqual({ cpuPercent: 30, memoryMb: 200, diskMb: 100, maxTasks: 64 });
+    expect(PluginIsolationSettings.defaults().siteResourceLimits()).toEqual({ cpuPercent: 50, memoryMb: 384, diskMb: 100, maxTasks: 64 });
   });
 });

@@ -1524,6 +1524,10 @@
       "siteUploadedPluginCpuShareDescription": "A plugin a site uploaded that keeps a core busier than this for 30 seconds is stopped and restarted; after three restarts it is disabled, with the reason in its log. Every process running as that plugin counts. Platform plugins are not held to it. Saving restarts each running site plugin.",
       "siteUploadedPluginMemory": "Total memory per site-uploaded plugin (MB)",
       "siteUploadedPluginMemoryDescription": "All the memory a plugin a site uploaded holds — its heap and everything outside it. Past this it is stopped and restarted, and disabled after three restarts. Keep it above the memory ceiling above. Platform plugins are not held to it.",
+      "siteUploadedPluginDisk": "Disk per site-uploaded plugin (MB)",
+      "siteUploadedPluginDiskDescription": "Everything a plugin a site uploaded keeps on disk — its data folder and anything it leaves in /tmp — counted every 10 seconds. Past this, or past 100,000 files, it is stopped and restarted, and disabled after three restarts with the reason shown. Platform plugins are not held to it.",
+      "siteUploadedPluginProcesses": "Processes per site-uploaded plugin",
+      "siteUploadedPluginProcessesDescription": "How many processes and threads a plugin a site uploaded may run at once; one plugin process uses about 7. The system refuses any more, so a plugin cannot crowd out other sites' plugins. Saving restarts each running site plugin on the new limit. Platform plugins are not held to it.",
       "defaultValue": "Default {{value}}",
       "retention": "Retention",
       "logRetention": "Log Retention",
@@ -1600,7 +1604,7 @@
       "geoSaved": "Saved",
       "geoSavedOn": "Downloading the database now; it is about 60 MB.",
       "geoSavedOff": "The database was removed from the server.",
-      "everyPluginRunsIsolated": "Isolated: each plugin runs in its own process. The memory ceiling and the deadline apply to every plugin; the CPU share and total memory apply only to plugins a site uploaded."
+      "everyPluginRunsIsolated": "Isolated: each plugin runs in its own process. The memory ceiling and the deadline apply to every plugin; the CPU share, total memory, disk and processes apply only to plugins a site uploaded."
     },
     "integrations": {
       "noFieldsRequired": "No fields required",

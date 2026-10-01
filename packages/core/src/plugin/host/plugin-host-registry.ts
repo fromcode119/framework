@@ -27,6 +27,8 @@ export class PluginHostRegistry {
     SystemConstants.META_KEY.PLUGIN_ISOLATION_TIMEOUT_MS,
     SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_CPU_PERCENT,
     SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MEMORY_MB,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_DISK_MB,
+    SystemConstants.META_KEY.PLUGIN_ISOLATION_SITE_MAX_TASKS,
   ];
 
   constructor(private readonly manager: IPluginManagerInterface, private readonly projectRoot: string) {

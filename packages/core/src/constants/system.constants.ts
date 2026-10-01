@@ -32,6 +32,9 @@ export class SystemConstants {
   /** What one plugin a SITE uploaded may hold of the shared machine: a share of one core, and resident memory. */
   static readonly PLUGIN_ISOLATION_SITE_CPU_PERCENT_DEFAULT = 50;
   static readonly PLUGIN_ISOLATION_SITE_MEMORY_MB_DEFAULT = 384;
+  /** Everything one site plugin's user keeps on disk, and the processes + threads it may run at once (a guest runs ~7). */
+  static readonly PLUGIN_ISOLATION_SITE_DISK_MB_DEFAULT = 100;
+  static readonly PLUGIN_ISOLATION_SITE_MAX_TASKS_DEFAULT = 64;
 
   /**
    * What a SITE may store in themes it uploads itself, when the platform has not set a limit. The
