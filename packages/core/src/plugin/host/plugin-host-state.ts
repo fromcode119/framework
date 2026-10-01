@@ -62,7 +62,8 @@ export abstract class PluginHostState {
    * The peer snapshot last SENT to the guest, as a signature. Empty means the guest holds whatever
    * its boot left it — which is why it is cleared wherever the channel is. See `PluginHost.syncPeers`.
    */
-  protected declare sentPeerSignature: string;
+  /** What the guest was last told, per site (`''` = no site): each site has its own peers and plugins. */
+  protected declare sentPeerSignatures: Map<string, string>;
 
   /**
    * Set in the constructor from its parameters, declared here so the guest-bridge half can read them.

@@ -16,7 +16,7 @@ import { PluginHostGuestBridge } from '@core/plugin/host/plugin-host-guest-bridg
 describe('PluginHost peer sync on forwarded requests', () => {
   const host = (sent: Array<{ type: string; payload: any }>, peers: Record<string, string[]>, enabled: string[]) => {
     const instance = Object.create(PluginHostGuestBridge.prototype) as any;
-    instance.sentPeerSignature = '';
+    instance.sentPeerSignatures = new Map();
     instance.limits = { timeoutMs: 1_000, memoryMb: 128 };
     instance.channel = {
       isClosed: false,
@@ -80,6 +80,19 @@ describe('PluginHost peer sync on forwarded requests', () => {
 
     expect(sent).toHaveLength(2);
     expect(sent[1].payload.peers['org.fromcode:shipping-adapter']).toContain('searchCities');
+  });
+
+  it('keeps each site\'s snapshot apart: another site in between does not make the first resend, and each carries its site', async () => {
+    const sent: Array<{ type: string; payload: any }> = [];
+    const bySite: Record<string, Record<string, string[]>> = { a: { 'org.fromcode:billing': ['quote'] }, b: {} };
+    const instance = host(sent, {}, []);
+    instance.peers = (store: any) => bySite[store?.tenantId ?? ''] ?? {};
+
+    await instance.syncPeers({ tenantId: 'a' });
+    await instance.syncPeers({ tenantId: 'b' });
+    await instance.syncPeers({ tenantId: 'a' });
+
+    expect(sent.map((m) => m.payload.tenantId)).toEqual(['a', 'b']);
   });
 
   it('says nothing to a channel that is gone', async () => {

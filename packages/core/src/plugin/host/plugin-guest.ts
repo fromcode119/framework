@@ -62,7 +62,7 @@ export class PluginGuest {
       case String(PluginChannelMessage.INVOKE.value): return this.invoke(payload as IPluginInvocation, channel);
       // Routes this guest serves arrive on its socket, not through `invoke`, so they carry no
       // envelope. The host pushes the snapshot here instead, and only when it has changed.
-      case String(PluginChannelMessage.PEERS.value): { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins'>); return true; }
+      case String(PluginChannelMessage.PEERS.value): { this.state.update(payload as Pick<IPluginInvocation, 'peers' | 'enabledPlugins' | 'tenantId'>); return true; }
       case String(PluginChannelMessage.STOP.value): return this.stop();
       case String(PluginChannelMessage.PING.value): return 'pong';
       case String(PluginChannelMessage.RUNTIME.value): return PluginGuestRuntimeReporter.report(this.registrar);
