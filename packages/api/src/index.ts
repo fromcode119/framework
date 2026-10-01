@@ -6,8 +6,8 @@ import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer
 import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
-import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers, ApiVersionUtils } from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, RealtimeRoomClient, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -265,7 +265,7 @@ export class APIServer {
 
       // Under the api's own path, so every host reaches it — a site's storefront hands only `/api/*`
       // to the api, and a visitor in a live chat is on the storefront.
-      if (url.pathname !== `${ApiVersionUtils.API_BASE_PATH}${RouteConstants.SEGMENTS.WEBSOCKET}` || !wss) {
+      if (url.pathname !== RealtimeRoomClient.socketPath() || !wss) {
         socket.destroy();
         return;
       }

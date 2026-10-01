@@ -52,9 +52,17 @@ export class RealtimeRoomClient {
     socket?.close();
   }
 
+  /**
+   * Where the socket is served: under the VERSIONED api path, because that is what every host hands to
+   * the api. The api's upgrade handler reads this same method, so the two cannot drift apart.
+   */
+  static socketPath(): string {
+    return ApiPathUtils.versioned(RouteConstants.SEGMENTS.WEBSOCKET);
+  }
+
   /** `ws(s)://<this page's origin>/api/<version>/socket?room=<token>` */
   static socketUrl(token: string): string {
-    const http = ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), ApiPathUtils.versioned(RouteConstants.SEGMENTS.WEBSOCKET));
+    const http = ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), RealtimeRoomClient.socketPath());
     const url = new URL(http, window.location.href);
     url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';
     url.searchParams.set('room', token);

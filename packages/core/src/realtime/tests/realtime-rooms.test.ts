@@ -7,6 +7,8 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { WebSocketManager } from '@core/realtime/web-socket-manager';
 import { RealtimeRoomTokens } from '@core/realtime/realtime-room-tokens';
 import { RealtimeContextProxy } from '@core/plugin/context/realtime';
+import { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
+import { ApiVersionUtils } from '@core/api-version';
 import type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
 
 /**
@@ -146,5 +148,10 @@ describe('realtime rooms', () => {
     await expect(onSite('alpha', () => realtime.emit('a b', 'message', {}))).rejects.toThrow(/room name/);
     await expect(onSite('alpha', () => realtime.emit('conversation-1', '', {}))).rejects.toThrow(/event type/);
     await expect(onSite('alpha', () => realtime.emit('conversation-1', 'message', { body: 'x'.repeat(70_000) }))).rejects.toThrow(/limited/);
+  });
+
+  it('the socket lives under the versioned api path — the one prefix every host hands to the api', () => {
+    expect(RealtimeRoomClient.socketPath()).toBe(`${ApiVersionUtils.prefix()}/socket`);
+    expect(RealtimeRoomClient.socketPath()).toMatch(/^\/api\/v\d+\/socket$/);
   });
 });
