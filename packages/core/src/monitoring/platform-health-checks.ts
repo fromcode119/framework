@@ -18,6 +18,8 @@ import type { TenantRecord } from '@core/tenant/tenant-record';
 export class PlatformHealthChecks {
   /** Fewer api requests than this since the last check is too few to call a share of them a trend. */
   private static readonly MIN_API_SAMPLE = 20;
+  /** How many sites' home pages are fetched at the same time. */
+  static readonly PROBES_AT_ONCE = 2;
 
   constructor(private readonly manager: any, private readonly sites: () => Promise<TenantRecord[]>) {}
 
@@ -50,12 +52,20 @@ export class PlatformHealthChecks {
   private async sitesDown(): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
     const scheme = EnvUtils.isProduction() ? 'https' : 'http';
     const watched = (await this.sites()).filter((site) => !site.isWorkspace && site.isReadable && site.primaryHost);
-    // All at once: one after another, a handful of unanswering sites would outlast the request that asked.
-    const results = await Promise.all(watched.map(async (site): Promise<Omit<IMonitoringIncident, 'openedAt'> | null> => {
-      const url = `${scheme}://${site.primaryHost}/`;
-      const problem = await PlatformHealthChecks.probe(url);
-      return problem ? { key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } } : null;
-    }));
+    // A few at a time. One after another, a handful of unanswering sites outlasted the request that asked;
+    // all at once, every check fired a render of every site in the same moment — on a small box, a burst
+    // that helped tip the api's database pool into the 2026-10-01 storefront stall.
+    const results: Array<Omit<IMonitoringIncident, 'openedAt'> | null> = new Array(watched.length).fill(null);
+    let next = 0;
+    const worker = async (): Promise<void> => {
+      while (next < watched.length) {
+        const site = watched[next++];
+        const url = `${scheme}://${site.primaryHost}/`;
+        const problem = await PlatformHealthChecks.probe(url);
+        results[watched.indexOf(site)] = problem ? { key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } } : null;
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(PlatformHealthChecks.PROBES_AT_ONCE, watched.length) }, worker));
     return results.filter((incident): incident is Omit<IMonitoringIncident, 'openedAt'> => incident !== null);
   }
 
