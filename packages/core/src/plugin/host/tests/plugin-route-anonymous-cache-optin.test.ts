@@ -30,7 +30,7 @@ describe('a route\'s anonymous-cache opt-in, from the plugin process to the api'
     expect(calls.map(([path, descriptor]) => [path, descriptor.anonymousCache])).toEqual([['products', true], ['cart', false]]);
   });
 
-  it('the api puts the cache in front of a declared GET only', () => {
+  it('the api puts the cache in front of every declared GET, never a POST', () => {
     const mounted: Record<string, number> = {};
     const manager: any = { plugins: new Map(), apiHost: {} };
     for (const method of ['get', 'post']) manager.apiHost[method] = (path: string, ...handlers: any[]) => { mounted[`${method} ${path}`] = handlers.length; };
@@ -39,8 +39,9 @@ describe('a route\'s anonymous-cache opt-in, from the plugin process to the api'
     api.get('products', { access: AccessLevel.PUBLIC, anonymousCache: true }, () => undefined);
     api.get('cart', { access: AccessLevel.PUBLIC }, () => undefined);
     api.post('orders', { access: AccessLevel.PUBLIC, anonymousCache: true }, () => undefined);
-    // One more handler (the cache) on the declared GET; none on the undeclared GET or on a POST.
-    expect(mounted['get /shop/products'] - mounted['get /shop/cart']).toBe(1);
-    expect(mounted['post /shop/orders']).toBe(mounted['get /shop/cart']);
+    // Every declared GET carries the cache, which steps aside unless the declaration opts in: a newer
+    // process of the plugin may opt a mounted route in or out (plugin-host-route-redeclared.test.ts).
+    expect(mounted['get /shop/products']).toBe(mounted['get /shop/cart']);
+    expect(mounted['get /shop/cart'] - mounted['post /shop/orders']).toBe(1);
   });
 });

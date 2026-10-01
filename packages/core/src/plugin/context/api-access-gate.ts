@@ -40,13 +40,21 @@ export class ApiAccessGate {
    * (inert) so the caller registers the route exactly as before.
    */
   static build(access: AccessLevel | ApiPermissionRequirement | undefined): ((req: Request, res: Response, next: NextFunction) => void) | null {
+    return ApiAccessGate.follow(() => access);
+  }
+
+  /**
+   * The gate for a route whose declared access can change while it stays mounted — a plugin process
+   * replaced by a newer one declares its routes again, and Express cannot remount them. Read per request.
+   */
+  static follow(resolve: () => AccessLevel | ApiPermissionRequirement | undefined): ((req: Request, res: Response, next: NextFunction) => void) | null {
     if (!ApiAccessGate.enabled()) return null;
     return (req: Request, res: Response, next: NextFunction): void => {
       // `void` discarded the rejection. evaluate() calls next() from inside its own promise, so the
       // ENTIRE downstream Express chain runs there — any throw in it rejected this promise with nobody
       // watching, which is fatal under Node 22. Route it back into Express instead. This gate is
       // fail-closed, so an error here must never become an allow.
-      ApiAccessGate.evaluate(access, req, res, next).catch((error: unknown) => next(error));
+      ApiAccessGate.evaluate(resolve(), req, res, next).catch((error: unknown) => next(error));
     };
   }
 

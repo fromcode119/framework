@@ -61,9 +61,13 @@ export class ApiResponseCache {
     ApiResponseCache.bytes = 0;
   }
 
-  /** The middleware for one opted-in route of `plugin`; `lookup` answers the plugin as it is now. */
-  static middleware(plugin: ILoadedPlugin, lookup: () => ILoadedPlugin | undefined) {
+  /**
+   * The middleware for one route of `plugin`; `lookup` answers the plugin as it is now, and `optedIn`
+   * whether the route currently declares `anonymousCache` (a newer process of the plugin may change it).
+   */
+  static middleware(plugin: ILoadedPlugin, lookup: () => ILoadedPlugin | undefined, optedIn: () => boolean = () => true) {
     return (req: Request, res: Response, next: NextFunction): void => {
+      if (!optedIn()) return next();
       const maxAgeMs = Math.max(0, Number(ApiResponseCache.maxAge()) || 0) * 1000;
       if (req.method !== 'GET' || !(maxAgeMs > 0)) return next();
       if (ApiResponseCache.personal(req)) {
