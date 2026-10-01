@@ -7,10 +7,14 @@ import type { IMonitoringTarget } from '@core/monitoring/interfaces/monitoring-t
  *
  * Only monitors whose name starts with the configured prefix are the platform's: those are added and
  * removed to match the site list, and every other monitor in the account is left alone.
+ *
+ * Speaks the v3 API. v2 still reads, but refuses every `newMonitor` on current accounts — whatever the
+ * settings — with "You are not allowed to use some settings with your current plan", while v3 creates the
+ * same monitor with the same key.
  */
 export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
-  private static readonly API = 'https://api.uptimerobot.com/v2';
-  private static readonly HTTP_MONITOR = '1';
+  private static readonly API = 'https://api.uptimerobot.com/v3';
+  private static readonly PAGE_SIZE = 200;
 
   /** `interval` is the operator's "Check every (seconds)"; 0 (not set) sends none and leaves it to UptimeRobot. */
   constructor(private readonly apiKey: string, private readonly namePrefix: string, private readonly interval = 0) {}
@@ -19,38 +23,46 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
     const existing = await this.ownMonitors();
     const wanted = new Map(targets.map((target) => [target.url, target]));
     for (const monitor of existing) {
-      if (!wanted.has(monitor.url)) await this.call('deleteMonitor', { id: String(monitor.id) });
+      if (!wanted.has(monitor.url)) await this.call('DELETE', `/monitors/${encodeURIComponent(String(monitor.id))}`);
     }
     const present = new Set(existing.map((monitor) => monitor.url));
     for (const target of targets) {
       if (present.has(target.url)) continue;
-      const interval: Record<string, string> = this.interval > 0 ? { interval: String(this.interval) } : {};
-      await this.call('newMonitor', { type: UptimeRobotMonitoringProvider.HTTP_MONITOR, url: target.url, friendly_name: `${this.namePrefix}${target.label}`, ...interval });
+      const interval = this.interval > 0 ? { interval: this.interval } : {};
+      await this.call('POST', '/monitors', { type: 'HTTP', url: target.url, friendlyName: `${this.namePrefix}${target.label}`, ...interval });
     }
   }
 
   private async ownMonitors(): Promise<Array<{ id: number; url: string }>> {
-    const monitors: Array<{ id: number; url: string; friendly_name: string }> = [];
-    for (let offset = 0; ; offset += 50) {
-      const page = await this.call('getMonitors', { offset: String(offset), limit: '50' });
-      const batch = Array.isArray(page?.monitors) ? page.monitors : [];
-      monitors.push(...batch);
-      if (batch.length < 50) break;
+    const monitors: Array<{ id: number; url: string; friendlyName?: string }> = [];
+    let next: string | null = `${UptimeRobotMonitoringProvider.API}/monitors?limit=${UptimeRobotMonitoringProvider.PAGE_SIZE}`;
+    while (next) {
+      const page = await this.call('GET', next);
+      monitors.push(...(Array.isArray(page?.data) ? page.data : []));
+      next = UptimeRobotMonitoringProvider.nextPage(page?.nextLink);
     }
-    return monitors.filter((monitor) => String(monitor.friendly_name ?? '').startsWith(this.namePrefix));
+    return monitors.filter((monitor) => String(monitor.friendlyName ?? '').startsWith(this.namePrefix));
   }
 
-  private async call(method: string, params: Record<string, string>): Promise<any> {
-    const response = await fetch(`${UptimeRobotMonitoringProvider.API}/${method}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Cache-Control': 'no-cache' },
-      body: new URLSearchParams({ api_key: this.apiKey, format: 'json', ...params }).toString(),
+  /** The cursor UptimeRobot hands back — followed only on its own host, since the key goes with it. */
+  private static nextPage(link: unknown): string | null {
+    if (!link) return null;
+    const url = new URL(String(link), UptimeRobotMonitoringProvider.API);
+    return url.origin === new URL(UptimeRobotMonitoringProvider.API).origin ? url.toString() : null;
+  }
+
+  private async call(method: string, path: string, body?: Record<string, unknown>): Promise<any> {
+    const url = path.startsWith('http') ? path : `${UptimeRobotMonitoringProvider.API}${path}`;
+    const response = await fetch(url, {
+      method,
+      headers: { Authorization: `Bearer ${this.apiKey}`, 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
       signal: AbortSignal.timeout(15_000),
     });
-    const body = await response.json().catch(() => null);
-    if (!response.ok || body?.stat !== 'ok') {
-      throw new Error(`UptimeRobot ${method} failed: ${body?.error?.message ?? response.status}`);
+    const payload = await response.json().catch(() => null);
+    if (!response.ok) {
+      throw new Error(`UptimeRobot ${method} ${path.replace(UptimeRobotMonitoringProvider.API, '')} failed: ${payload?.message ?? payload?.error ?? response.status}`);
     }
-    return body;
+    return payload;
   }
 }

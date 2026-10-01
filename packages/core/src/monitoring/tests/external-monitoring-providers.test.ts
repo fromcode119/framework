@@ -15,44 +15,46 @@ const targets = [
 afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('UptimeRobotMonitoringProvider', () => {
-  it('adds missing sites, removes only its own stale monitors, and leaves every other monitor alone', async () => {
-    const calls: Array<{ method: string; params: Record<string, string> }> = [];
+  /** A v3 account: two pages of monitors, the second reached by `nextLink`. */
+  const account = (pages: any[][]) => {
+    const calls: Array<{ method: string; url: string; auth: string; body: any }> = [];
     vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
-      const method = url.split('/').pop()!;
-      const params = Object.fromEntries(new URLSearchParams(init.body));
-      calls.push({ method, params });
-      const body = method === 'getMonitors'
-        ? { stat: 'ok', monitors: [
-          { id: 1, url: 'https://shop.example/', friendly_name: 'Platform: shop' },
-          { id: 2, url: 'https://gone.example/', friendly_name: 'Platform: gone' },
-          { id: 3, url: 'https://gone.example/', friendly_name: 'My own personal monitor' },
-        ] }
-        : { stat: 'ok' };
-      return { ok: true, status: 200, json: async () => body };
+      calls.push({ method: init.method, url, auth: init.headers.Authorization, body: init.body ? JSON.parse(init.body) : null });
+      if (init.method === 'GET') {
+        const page = new URL(url).searchParams.get('cursor') ? 1 : 0;
+        return { ok: true, status: 200, json: async () => ({ data: pages[page], nextLink: page + 1 < pages.length ? 'https://api.uptimerobot.com/v3/monitors?cursor=2' : null }) };
+      }
+      return { ok: true, status: 200, json: async () => ({ id: 99 }) };
     }));
-    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
-    expect(calls.filter((c) => c.method === 'deleteMonitor').map((c) => c.params.id)).toEqual(['2']);
-    expect(calls.filter((c) => c.method === 'newMonitor').map((c) => [c.params.url, c.params.friendly_name])).toEqual([['https://new.example/', 'Platform: new']]);
-    expect(calls.every((c) => c.params.api_key === 'key-1')).toBe(true);
+    return calls;
+  };
+
+  it('adds missing sites, removes only its own stale monitors across pages, and leaves every other monitor alone', async () => {
+    const calls = account([
+      [{ id: 1, url: 'https://shop.example/', friendlyName: 'Platform: shop' }, { id: 3, url: 'https://gone.example/', friendlyName: 'My own personal monitor' }],
+      [{ id: 2, url: 'https://gone.example/', friendlyName: 'Platform: gone' }],
+    ]);
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ', 300).syncTargets(targets);
+    expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.url)).toEqual(['https://api.uptimerobot.com/v3/monitors/2']);
+    expect(calls.filter((c) => c.method === 'POST').map((c) => c.body)).toEqual([{ type: 'HTTP', url: 'https://new.example/', friendlyName: 'Platform: new', interval: 300 }]);
+    expect(calls.every((c) => c.auth === 'Bearer key-1')).toBe(true);
   });
 
-  it('creates each monitor at the configured check interval, which the free plan requires to be 300 or more', async () => {
-    const created: Array<Record<string, string>> = [];
-    vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
-      const method = url.split('/').pop()!;
-      if (method === 'newMonitor') created.push(Object.fromEntries(new URLSearchParams(init.body)));
-      return { ok: true, status: 200, json: async () => (method === 'getMonitors' ? { stat: 'ok', monitors: [] } : { stat: 'ok' }) };
-    }));
-    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ', 300).syncTargets(targets);
-    expect(created.map((c) => c.interval)).toEqual(targets.map(() => '300'));
-    created.length = 0;
+  it('sends no interval when none is configured', async () => {
+    const calls = account([[]]);
     await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
-    expect(created.every((c) => !('interval' in c))).toBe(true);
+    expect(calls.filter((c) => c.method === 'POST').every((c) => !('interval' in c.body))).toBe(true);
+  });
+
+  it('never follows a next page to another host, which would hand it the key', async () => {
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => ({ ok: true, status: 200, json: async () => ({ data: [], nextLink: url.includes('evil') ? null : 'https://evil.example/steal' }) })));
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets([]);
+    expect((globalThis.fetch as any).mock.calls.map((c: any[]) => new URL(c[0]).host)).toEqual(['api.uptimerobot.com']);
   });
 
   it('fails loudly on an API error rather than reporting a sync that did not happen', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => ({ stat: 'fail', error: { message: 'api_key is wrong' } }) })));
-    await expect(new UptimeRobotMonitoringProvider('bad', 'Platform: ').syncTargets(targets)).rejects.toThrow(/api_key is wrong/);
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: false, status: 401, json: async () => ({ message: 'Invalid API key' }) })));
+    await expect(new UptimeRobotMonitoringProvider('bad', 'Platform: ').syncTargets(targets)).rejects.toThrow(/Invalid API key/);
   });
 });
 
