@@ -49,15 +49,14 @@ export class PlatformHealthChecks {
 
   private async sitesDown(): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
     const scheme = EnvUtils.isProduction() ? 'https' : 'http';
-    const found: Array<Omit<IMonitoringIncident, 'openedAt'>> = [];
-    for (const site of await this.sites()) {
-      if (site.isWorkspace || !site.isReadable || !site.primaryHost) continue;
+    const watched = (await this.sites()).filter((site) => !site.isWorkspace && site.isReadable && site.primaryHost);
+    // All at once: one after another, a handful of unanswering sites would outlast the request that asked.
+    const results = await Promise.all(watched.map(async (site) => {
       const url = `${scheme}://${site.primaryHost}/`;
       const problem = await PlatformHealthChecks.probe(url);
-      if (!problem) continue;
-      found.push({ key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } });
-    }
-    return found;
+      return problem ? { key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } } : null;
+    }));
+    return results.filter((incident): incident is Omit<IMonitoringIncident, 'openedAt'> => incident !== null);
   }
 
   /**

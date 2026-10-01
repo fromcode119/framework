@@ -1,5 +1,6 @@
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantMode } from '@core/tenant/tenant-mode';
 import type { IPluginContextRoles } from '@core/plugin/interfaces/plugin-context-roles.interface';
 
 /**
@@ -7,7 +8,7 @@ import type { IPluginContextRoles } from '@core/plugin/interfaces/plugin-context
  * `users_roles` junction, or sit past the window a naive JSON-column scan would look at.
  */
 class UsersFixture {
-  static readonly users = [
+  static users: Array<Record<string, unknown>> = [
     { id: 1, email: 'Founder@Example.com', roles: ['admin'] },
     { id: 2, email: 'ops@example.com', roles: [] },
     { id: 3, email: 'customer@example.com', roles: ['customer'] },
@@ -74,5 +75,19 @@ describe('context.roles.listUserEmailsWithRole', () => {
     const roles = RolesContextProxy.createRolesProxy(UsersFixture.createManager()) as IPluginContextRoles;
 
     expect([...(await roles.listUserIdsWithRole('admin'))].sort((a, b) => a - b)).toEqual([1, 2, 4]);
+  });
+
+  it('with sites but none bound, answers with the platform admins only — not every site owner holding admin', async () => {
+    const users = UsersFixture.users;
+    UsersFixture.users = [{ ...users[0], is_platform_admin: true } as any, ...users.slice(1)];
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    try {
+      const roles = RolesContextProxy.createRolesProxy(UsersFixture.createManager()) as IPluginContextRoles;
+
+      expect(await roles.listUserEmailsWithRole('admin')).toEqual(['founder@example.com']);
+    } finally {
+      UsersFixture.users = users;
+      vi.restoreAllMocks();
+    }
   });
 });
