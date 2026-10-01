@@ -155,6 +155,12 @@ export class IntegrationRegistry {
     return resolvedMany[0];
   }
 
+  /** Whether `typeKey` resolves only to its built-in default: nothing stored, nothing in the environment. */
+  async isUnconfigured(typeKey: string, preferStored = true): Promise<boolean> {
+    const resolved = await this.resolve(typeKey, { preferStored }).catch(() => null);
+    return !resolved || resolved.source === SettingSource.DEFAULT;
+  }
+
   async resolveMany<TInstance = any>(
     typeKey: string,
     options: { preferStored?: boolean } = {},

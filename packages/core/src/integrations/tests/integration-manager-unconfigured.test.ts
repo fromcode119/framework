@@ -13,7 +13,7 @@ describe('IntegrationManager.get for an integration that cannot be created', () 
     const instance = new IntegrationManager({} as any, '/tmp', logger as any);
     (instance as any).registry = {
       instantiate: async () => { throw new Error('OpenAI API key is required for AI Assistant integration.'); },
-      resolve: async () => ({ source }),
+      isUnconfigured: async () => source === SettingSource.DEFAULT,
     };
     return { instance, logger };
   };

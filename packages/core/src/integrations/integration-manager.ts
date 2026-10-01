@@ -8,7 +8,6 @@ import { MediaManager } from '@fromcode119/media';
 import { CacheManager } from '@fromcode119/cache';
 import type { QueueManager } from '@fromcode119/queue';
 import { Logger } from '@core/logging';
-import { SettingSource } from '@core/settings/enums/setting-source.enum';
 import { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';
 import { IntegrationTenantResolver } from '@core/integrations/integration-tenant-resolver';
 import { IntegrationInstanceInvalidator } from '@core/integrations/integration-instance-invalidator';
@@ -151,10 +150,8 @@ export class IntegrationManager {
       this.instances.set(instanceKey, instance);
       return instance;
     } catch (error: any) {
-      // An integration nobody configured — no stored profile, nothing in the environment — is not a
-      // failure: callers of an optional one (`ai`) ask whether it is there and carry on without it. Only
-      // one the operator DID configure is an error worth an operator's attention.
-      if (await this.isUnconfigured(normalized, preferStored)) {
+      // Nothing configured is not a failure — callers of an optional one (`ai`) carry on without it.
+      if (await this.registry.isUnconfigured(normalized, preferStored)) {
         this.logger.debug(`Integration "${normalized}" is not configured: ${error.message}`);
       } else {
         this.logger.error(`Failed to get integration "${normalized}": ${error.message}`);
@@ -163,11 +160,6 @@ export class IntegrationManager {
     }
   }
 
-  /** Whether `typeKey` resolves only to its built-in default — nothing stored, nothing in the environment. */
-  private async isUnconfigured(typeKey: string, preferStored: boolean): Promise<boolean> {
-    const resolved = await this.registry.resolve(typeKey, { preferStored }).catch(() => null);
-    return !resolved || resolved.source === SettingSource.DEFAULT;
-  }
 
   /** Cache key for a resolved instance: the request's tenant (empty for platform-level work) plus the type. */
   private instanceKey(normalizedType: string): string {
