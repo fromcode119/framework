@@ -155,7 +155,7 @@ export class ThemeHeadModel {
       const versioned = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
       const response = await fetch(versioned.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });
       if (!response.ok) {
-        await ResponseDrain.discard(response);
+        ResponseDrain.discard(response);
         return '';
       }
       const source = await response.text();
@@ -176,7 +176,7 @@ export class ThemeHeadModel {
         const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
         const response = await fetch(versionedPublicHref.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });
         if (!response.ok) {
-          await ResponseDrain.discard(response);
+          ResponseDrain.discard(response);
           return '';
         }
         return ThemeCssUrlRewriter.rewrite(await response.text(), publicHref);

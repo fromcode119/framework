@@ -11,11 +11,18 @@ describe('ResponseDrain', () => {
     cancel: onCancel,
   }), { status });
 
+  it('never waits on the cancel — a teed body (Next keeps one for its cache) does not resolve it', () => {
+    const [branch] = new ReadableStream({ start(c) { c.enqueue(new TextEncoder().encode('{}')); } }).tee();
+    // Returns at once: nothing to await, so a render that skipped this response carries on.
+    expect(ResponseDrain.discard(new Response(branch, { status: 404 }))).toBeUndefined();
+  });
+
   it('cancels the body of a response it is handed, and tolerates none', async () => {
     const cancel = vi.fn();
-    await ResponseDrain.discard(openBody(cancel, 404));
+    ResponseDrain.discard(openBody(cancel, 404));
+    await new Promise((resolve) => setTimeout(resolve, 0));
     expect(cancel).toHaveBeenCalledTimes(1);
-    await expect(ResponseDrain.discard(null)).resolves.toBeUndefined();
+    expect(() => ResponseDrain.discard(null)).not.toThrow();
   });
 
   it('the site-visibility check releases a 503 it does not read, and still lets the visitor in', async () => {

@@ -115,7 +115,7 @@ export class ServerApiUtils {
           } else {
             lastError = new Error(`API responded ${response.status} ${response.statusText}`.trim());
           }
-          await ServerApiUtils.discard(response);
+          ServerApiUtils.discard(response);
           continue;
         }
         answered = true;
@@ -170,18 +170,18 @@ export class ServerApiUtils {
         }));
         if (!response.ok) {
           // Only the response handed back is read by anyone; every other one is released here.
-          if (lastResponse) await ServerApiUtils.discard(lastResponse);
+          if (lastResponse) ServerApiUtils.discard(lastResponse);
           lastResponse = response;
           // A 429/5xx is not an answer about this document — keep looking, and if no prefix ever
           // answers, report unreachable rather than handing back a status callers read as "absent".
           if (ServerApiErrors.isUnavailableStatus(response.status)) {
             lastError = new Error(`API responded ${response.status} ${response.statusText}`.trim());
-            await ServerApiUtils.discard(response);
+            ServerApiUtils.discard(response);
             lastResponse = null;
           }
           continue;
         }
-        if (lastResponse) await ServerApiUtils.discard(lastResponse);
+        if (lastResponse) ServerApiUtils.discard(lastResponse);
         return ServerFetchOutcome.resolved<Response>(response);
       } catch (error) {
         ServerApiErrors.rethrowIfControlFlowSignal(error);
@@ -264,8 +264,8 @@ export class ServerApiUtils {
    * out until the garbage collector finds it, so every 404 or 5xx a fallback loop moved past held a
    * socket the next request could have reused.
    */
-  static async discard(response: Response): Promise<void> {
-    await ResponseDrain.discard(response);
+  static discard(response: Response): void {
+    ResponseDrain.discard(response);
   }
 
   private static AdminUrlUtils(path: unknown): string | null {

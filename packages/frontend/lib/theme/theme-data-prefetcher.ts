@@ -60,7 +60,7 @@ export class ThemeDataPrefetcher {
           headers: forwardedHeaders,
         } as RequestInit);
         if (response.ok) return await response.json();
-        await ResponseDrain.discard(response);
+        ResponseDrain.discard(response);
       } catch {
         // Fall through to the retry; a second failure degrades to no prefetch for this entry.
       }
