@@ -70,7 +70,7 @@ export class SiteVisibilityProxyGuard {
         signal: AbortSignal.timeout(ServerApiConfig.SERVER_FETCH_TIMEOUT_MS),
       });
       if (!response.ok) {
-        await ResponseDrain.discard(response);
+        ResponseDrain.discard(response);
         return true;
       }
       const payload = await response.json() as { site?: { isReadable?: unknown; preview?: unknown } | null };
