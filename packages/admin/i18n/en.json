@@ -1639,7 +1639,12 @@
       "monitoringKindSiteDown": "Site \"{{subject}}\" is down — {{url}}",
       "monitoringKindDiskFull": "The server disk is {{percent}}% full (threshold {{threshold}}%)",
       "monitoringKindMemoryFull": "The server memory is {{percent}}% full (threshold {{threshold}}%)",
-      "monitoringKindApiErrors": "{{percent}}% of api requests failed (threshold {{threshold}}%)"
+      "monitoringKindApiErrors": "{{percent}}% of api requests failed (threshold {{threshold}}%)",
+      "databasePool": "Database Connections",
+      "databasePoolMax": "Connections the api may hold at once",
+      "databasePoolHelp": "Every site shares these. When all are in use, a request waits for one to come back, and the api log warns once requests have waited over 2 seconds. Postgres allows 100 connections in total by default, for everything that connects. A save applies at once.",
+      "databasePoolSaved": "The database connection limit applies from the next request.",
+      "databasePoolUnavailable": "The database connection setting could not be loaded"
     },
     "integrations": {
       "noFieldsRequired": "No fields required",

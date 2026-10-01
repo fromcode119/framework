@@ -1,5 +1,6 @@
 import { PluginIsolationMetaKeys } from '@core/constants/plugin-isolation-meta-keys.constants';
 import { MonitoringMetaKeys } from '@core/constants/monitoring-meta-keys.constants';
+import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 
 /**
  * Well-known keys in the system meta table.
@@ -164,6 +165,7 @@ export class SystemMetaKeys {
   DEPLOY_MODE: 'deploy_mode',
   ...PluginIsolationMetaKeys.ALL,
   ...MonitoringMetaKeys.ALL,
+  ...CapacityMetaKeys.ALL,
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',
   QUEUE_JOB_ATTEMPTS: 'queue_job_attempts',
@@ -234,8 +236,6 @@ export class SystemMetaKeys {
   RATE_LIMIT_EDGE_PROVIDER_RANGES: 'rate_limit_edge_provider_ranges',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
-  /** Longest a kept answer to an anonymous plugin GET is served, in seconds (ApiResponseCache); 0 = off. */
-  API_RESPONSE_CACHE_SECONDS: 'api_response_cache_seconds',
   /**
    * Physical table names whose plugin `context.db` writes are NOT recorded in the audit log
    * (comma-separated). Read by {@link DatabaseWriteAudit} on every plugin write; seeded with the

@@ -6,6 +6,7 @@ import { LocalizationSettingDescriptors } from '@core/settings/localization-sett
 import { SignupEmailSettingDescriptors } from '@core/settings/signup-email-setting-descriptors';
 import { ApiFirewallSettingDescriptors } from '@core/settings/api-firewall-setting-descriptors';
 import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-cache-setting-descriptors';
+import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
 
 /**
@@ -244,6 +245,8 @@ export class SystemSettingDescriptors {
     ...ApiFirewallSettingDescriptors.ALL,
     // Settings → Infrastructure → API response cache — see ApiResponseCacheSettingDescriptors.
     ...ApiResponseCacheSettingDescriptors.ALL,
+    // Settings → Infrastructure → Database connections — see DatabasePoolSettingDescriptors.
+    ...DatabasePoolSettingDescriptors.ALL,
     // Settings → Infrastructure → Monitoring — see MonitoringSettingDescriptors.
     ...MonitoringSettingDescriptors.ALL,
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {

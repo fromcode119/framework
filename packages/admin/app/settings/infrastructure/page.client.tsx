@@ -12,6 +12,7 @@ import { SiteUploadsCard } from '@/app/settings/infrastructure/site-uploads-card
 import { PluginIsolationCard } from '@/app/settings/infrastructure/plugin-isolation-card.client';
 import { GeoLocationCard } from '@/app/settings/infrastructure/geo-location-card.client';
 import { ApiResponseCacheCard } from '@/app/settings/infrastructure/api-response-cache-card.client';
+import { DatabasePoolCard } from '@/app/settings/infrastructure/database-pool-card.client';
 import { MonitoringCard } from '@/app/settings/infrastructure/monitoring-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -87,6 +88,8 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           <GeoLocationCard />
 
           <ApiResponseCacheCard />
+
+          <DatabasePoolCard />
 
           <MonitoringCard />
 

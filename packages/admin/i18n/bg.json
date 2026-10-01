@@ -1632,7 +1632,12 @@
       "monitoringKindSiteDown": "Сайтът „{{subject}}“ не работи — {{url}}",
       "monitoringKindDiskFull": "Дискът на сървъра е запълнен на {{percent}}% (праг {{threshold}}%)",
       "monitoringKindMemoryFull": "Паметта на сървъра е заета на {{percent}}% (праг {{threshold}}%)",
-      "monitoringKindApiErrors": "{{percent}}% от заявките към API са неуспешни (праг {{threshold}}%)"
+      "monitoringKindApiErrors": "{{percent}}% от заявките към API са неуспешни (праг {{threshold}}%)",
+      "databasePool": "Връзки с базата данни",
+      "databasePoolMax": "Връзки, които API може да държи едновременно",
+      "databasePoolHelp": "Всички сайтове ги споделят. Когато всички са заети, заявката изчаква, докато се освободи една, а дневникът на API предупреждава, щом заявките чакат повече от 2 секунди. По подразбиране Postgres допуска общо 100 връзки за всичко, което се свързва. Записаната стойност важи веднага.",
+      "databasePoolSaved": "Ограничението на връзките с базата данни важи от следващата заявка.",
+      "databasePoolUnavailable": "Настройката за връзките с базата данни не може да бъде заредена"
     },
     "components": {
       "unknown": "Неизвестно",
