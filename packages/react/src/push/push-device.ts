@@ -1,3 +1,4 @@
+import { Platform } from '@fromcode119/react-class-components';
 import type { IPushDeviceRequests } from '@react/push/interfaces/push-device-requests.interface';
 
 /**
@@ -15,7 +16,7 @@ export class PushDevice {
 
   /** This browser can receive push at all. (On an iPhone, only once the site is on the Home Screen.) */
   static get supported(): boolean {
-    return typeof window !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
+    return Platform.hasWindow && 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
   }
 
   /** The person said no in the browser: only the browser's own site settings can undo that. */
@@ -53,7 +54,7 @@ export class PushDevice {
 
   /** "Chrome on Mac" — enough for a person to tell their devices apart in a list. */
   static label(): string {
-    const agent = typeof navigator === 'undefined' ? '' : navigator.userAgent;
+    const agent = Platform.isBrowser ? navigator.userAgent : '';
     const browser = /Edg\//.test(agent) ? 'Edge' : /Firefox\//.test(agent) ? 'Firefox' : /Chrome\//.test(agent) ? 'Chrome' : /Safari\//.test(agent) ? 'Safari' : '';
     const system = /iPhone|iPad/.test(agent) ? 'iOS' : /Android/.test(agent) ? 'Android' : /Mac OS X/.test(agent) ? 'Mac' : /Windows/.test(agent) ? 'Windows' : /Linux/.test(agent) ? 'Linux' : '';
     return [browser, system].filter(Boolean).join(' · ');

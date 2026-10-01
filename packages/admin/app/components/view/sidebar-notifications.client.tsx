@@ -8,7 +8,7 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownPlacement } from '@/components/ui/enums/dropdown-placement.enum';
-import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminNotificationEndpoints } from '@/lib/constants/admin-notification-endpoints';
 import { AdminServiceWorkerConstants } from '@/lib/pwa/constants/admin-service-worker.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -36,9 +36,9 @@ export class SidebarNotifications extends AdminComponent {
       scope: AdminPathUtils.toAdminPath('/'),
       surface: 'console',
       requests: {
-        publicKey: async () => CoercionUtils.toString((await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PUSH_KEY, { noDedupe: true }))?.publicKey),
-        save: async (body) => { await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.PUSH_SUBSCRIPTIONS, body); },
-        remove: async (endpoint) => { await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.PUSH_SUBSCRIPTIONS_REMOVE, { endpoint }); },
+        publicKey: async () => CoercionUtils.toString((await AdminApi.get(AdminNotificationEndpoints.PUSH_KEY, { noDedupe: true }))?.publicKey),
+        save: async (body) => { await AdminApi.post(AdminNotificationEndpoints.PUSH_SUBSCRIPTIONS, body); },
+        remove: async (endpoint) => { await AdminApi.post(AdminNotificationEndpoints.PUSH_SUBSCRIPTIONS_REMOVE, { endpoint }); },
       },
     });
   }
@@ -51,20 +51,20 @@ export class SidebarNotifications extends AdminComponent {
   }
 
   private async load(): Promise<void> {
-    const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.NOTIFICATIONS, { noDedupe: true, silent: true }).catch(() => null);
+    const response = await AdminApi.get(AdminNotificationEndpoints.LIST, { noDedupe: true }).catch(() => null);
     if (!response) return;
     this.setState({ notifications: CoercionUtils.toArray(response.notifications), unread: CoercionUtils.toNumber(response.unread, 0) });
   }
 
   private async open(notification: Record<string, any>): Promise<void> {
-    if (!notification.read) await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.NOTIFICATION_READ(Number(notification.id)), {}).catch(() => undefined);
+    if (!notification.read) await AdminApi.post(AdminNotificationEndpoints.read(Number(notification.id)), {}).catch(() => undefined);
     const link = CoercionUtils.toString(notification.link);
     if (link.startsWith('/')) this.router.push(link);
     void this.load();
   }
 
   private async readAll(): Promise<void> {
-    await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.NOTIFICATIONS_READ_ALL, {}).catch(() => undefined);
+    await AdminApi.post(AdminNotificationEndpoints.READ_ALL, {}).catch(() => undefined);
     void this.load();
   }
 
