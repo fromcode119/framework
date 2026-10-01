@@ -264,7 +264,10 @@ export class ContextProviderApiHooks {
 
     const getFrontendMetadata = React.useCallback(async (options?: { ensureLoaded?: boolean }) => {
       const ensureLoaded = options?.ensureLoaded !== false;
-      if (ensureLoaded && !stabilityRef.current.activeTheme) {
+      // `loadConfig` answers "already loaded" itself (and joins an in-flight load). Asking
+      // `!activeTheme` instead re-fetched the storefront config on every call for a site that has
+      // no theme, because there the answer stays null however many times it is loaded.
+      if (ensureLoaded) {
         await stabilityRef.current.loadConfig(ContextProviderStateService.getFrontendConfigPath());
       }
 

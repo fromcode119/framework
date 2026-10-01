@@ -97,11 +97,21 @@ export class ContextProviderConfigLoaderHooks {
           const base = getBaseURL();
           const data = await apiFetch(resolvedPath, { method: 'GET', silent: true });
 
-          if (data.runtimeModules) {
+          // The storefront config describes the storefront: its plugins carry no `admin` section,
+          // its menu is the site's, its settings are the public ones. Once another config (the
+          // admin's metadata) has supplied this provider's plugins, collections, menu and settings,
+          // a storefront load may only add its theme. Applying the rest replaced the admin's
+          // collections with an empty list, so on a site with no active theme — where
+          // `getFrontendMetadata()` loads this config — every plugin edit page said its collection
+          // did not exist and the admin settings became `{}`.
+          const pluginSurfaceOwnedElsewhere = isFrontendConfigPath
+            && [...loadedConfigPathsRef.current].some((loadedPath) => loadedPath !== resolvedPath);
+
+          if (data.runtimeModules && !pluginSurfaceOwnedElsewhere) {
             setServerRuntimeModules(data.runtimeModules);
           }
 
-          if (data.plugins) {
+          if (data.plugins && !pluginSurfaceOwnedElsewhere) {
             setPlugins(data.plugins);
             const allCollections: ICollectionMetadata[] = [];
             data.plugins.forEach((plugin: any) => {
@@ -115,16 +125,18 @@ export class ContextProviderConfigLoaderHooks {
             setCollections(allCollections);
           }
 
-          if (data.menu) {
+          if (data.menu && !pluginSurfaceOwnedElsewhere) {
             setMenuItems(data.menu);
           }
 
           // Identity-preserving: keeps the previous state object when nothing changed, so a
           // config (re)load without secondary-panel data does not churn the context value.
-          const nextSecondaryPanel = data.secondaryPanel;
-          setSecondaryPanel((prev) => ContextProviderStateService.resolveNextSecondaryPanelState(prev, nextSecondaryPanel));
+          if (!pluginSurfaceOwnedElsewhere) {
+            const nextSecondaryPanel = data.secondaryPanel;
+            setSecondaryPanel((prev) => ContextProviderStateService.resolveNextSecondaryPanelState(prev, nextSecondaryPanel));
+          }
 
-          if (data.settings) {
+          if (data.settings && !pluginSurfaceOwnedElsewhere) {
             setSettings(data.settings);
           }
 
