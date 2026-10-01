@@ -96,6 +96,7 @@ export class MonitoringCard extends AdminComponent {
             <FrameworkIcons.Warning size={14} className="mt-0.5 shrink-0 text-amber-500" />
             <span>
               <span className="font-medium">{this.incidentLine(incident)}</span>
+              {incident.values?.routes ? <span className="block text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringFailingRoutes', { routes: incident.values.routes })}</span> : null}
               <span className="block text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.monitoringSince', { time: new Date(incident.openedAt).toLocaleString() })}</span>
             </span>
           </li>

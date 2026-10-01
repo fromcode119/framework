@@ -4,6 +4,7 @@ import { HostResourceService } from '@core/management/host-resource-service';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { MonitoringChange } from '@core/monitoring/enums/monitoring-change.enum';
 import { EnvUtils } from '@core/utils/env-utils';
+import { ApiOutcomeCounter } from '@core/monitoring/api-outcome-counter';
 
 /** `_system_meta` in memory, behind the platform-admin marker the store uses. */
 class MetaTable {
@@ -80,6 +81,18 @@ describe('PlatformMonitorTask', () => {
     vi.spyOn(HostResourceService, 'read').mockResolvedValue({ disk: { usedBytes: 90, totalBytes: 100 }, memory: { usedBytes: 10, totalBytes: 100 } } as any);
     const { opened } = await task().run();
     expect(opened).toEqual([expect.objectContaining({ key: 'disk-full', values: expect.objectContaining({ percent: 90, threshold: 85 }) })]);
+  });
+
+  it('names the routes behind an api error incident, most failing first, with ids folded', async () => {
+    ApiOutcomeCounter.drain();
+    for (let i = 0; i < 16; i += 1) ApiOutcomeCounter.record(503, 'GET', `/api/v1/plugins/shop/orders/${i}?token=secret`);
+    for (let i = 0; i < 8; i += 1) ApiOutcomeCounter.record(500, 'post', '/api/v1/system/admin/monitoring/check');
+    ApiOutcomeCounter.record(200, 'GET', '/api/v1/health');
+    const { opened } = await task().run();
+    expect(opened).toEqual([expect.objectContaining({
+      key: 'api-errors',
+      values: expect.objectContaining({ errors: 24, total: 25, percent: 96, routes: 'GET /api/v1/plugins/shop/orders/:id (16); POST /api/v1/system/admin/monitoring/check (8)' }),
+    })]);
   });
 
   it('syncs external providers only when the addresses change, and retries a sync that failed', async () => {

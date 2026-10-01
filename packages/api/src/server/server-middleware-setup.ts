@@ -42,7 +42,7 @@ export class ServerMiddlewareSetup {
     this.app.disable('x-powered-by');
     this.app.use(new SecurityHeadersMiddleware().middleware());
     // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
-    this.app.use((_req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode)); next(); });
+    this.app.use((req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode, req.method, req.originalUrl)); next(); });
 
     // Gzip for anonymous public JSON GETs (e.g. /system/frontend) — BREACH-scoped:
     // requests carrying auth credentials are never compressed. See the middleware class.

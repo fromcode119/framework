@@ -83,13 +83,15 @@ export class PlatformHealthChecks {
   }
 
   private async apiErrors(): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
-    const { total, errors } = ApiOutcomeCounter.drain();
+    const { total, errors, failing } = ApiOutcomeCounter.drain();
     const threshold = await PlatformHealthChecks.threshold(SystemConstants.META_KEY.MONITORING_API_ERROR_PERCENT);
     if (!threshold || total < PlatformHealthChecks.MIN_API_SAMPLE) return [];
     const percent = Math.round((errors / total) * 100);
     if (percent < threshold) return [];
     const kind = MonitoringIncidentKind.API_ERRORS;
-    return [{ key: kind.value, kind: kind.value, values: { errors, total, percent, threshold } }];
+    // Which routes failed most — `GET /api/v1/x (12); POST /y (3)` — so the alert says who was hit.
+    const routes = failing.map(({ route, count }) => `${route} (${count})`).join('; ');
+    return [{ key: kind.value, kind: kind.value, values: { errors, total, percent, threshold, routes } }];
   }
 
   private static async threshold(key: string): Promise<number> {
