@@ -84,6 +84,21 @@ describe('extension-host pools', () => {
     expect(GuestProcessLaunchers.unavailableReason()).toBeNull();
   }, 20_000);
 
+  it('does not hold the api\'s start for a missing sandbox: the platform\'s plugins start at once, a site\'s later', async () => {
+    process.env[ExtensionHostPool.SITE_REQUIRED_ENV] = 'required';
+    await host('h-platform', 'platform');
+    const started = Date.now();
+    const platform = await new ExtensionHostLink(legacy, () => undefined, 100).start(10_000);
+    expect(platform).not.toBeNull();
+    expect(Date.now() - started).toBeLessThan(3_000);
+    expect(GuestProcessLaunchers.unavailableReason(ExtensionHostPool.SITE)).toMatch(/sandboxed extension-host/);
+
+    await host('h-sandbox', 'site');
+    for (let i = 0; i < 50 && !SpawnerClient.current(ExtensionHostPool.SITE); i += 1) await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(SpawnerClient.current(ExtensionHostPool.SITE)).not.toBeNull();
+    expect(GuestProcessLaunchers.unavailableReason(ExtensionHostPool.SITE)).toBeNull();
+  }, 20_000);
+
   it('fails closed for the site pool even before any link ran — no quiet fork beside the api', () => {
     expect(GuestProcessLaunchers.unavailableReason(ExtensionHostPool.SITE)).toMatch(/sandboxed extension-host/);
     expect(GuestProcessLaunchers.current(ExtensionHostPool.SITE).constructor.name).toBe('UnavailableGuestLauncher');

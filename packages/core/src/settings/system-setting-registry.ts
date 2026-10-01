@@ -155,6 +155,18 @@ export class SystemSettingRegistry {
   }
 
   /** Every key the generic settings PUT may accept. */
+  /** Each value in `payload` outside its setting's declared `range`; empty means "the default" and always passes. */
+  static rangeViolations(payload: Record<string, unknown>): Array<{ key: string; value: unknown; min: number; max?: number }> {
+    const violations: Array<{ key: string; value: unknown; min: number; max?: number }> = [];
+    for (const [key, value] of Object.entries(payload)) {
+      const range = (SystemSettingRegistry.REGISTRY as Record<string, ISystemSettingDescriptor>)[key]?.range;
+      if (!range || value === null || value === undefined || String(value).trim() === '') continue;
+      const number = Number(value);
+      if (!Number.isFinite(number) || number < range.min || (range.max !== undefined && number > range.max)) violations.push({ key, value, ...range });
+    }
+    return violations;
+  }
+
   static writableKeys(): Set<string> {
     if (!SystemSettingRegistry.writableKeysCache) {
       SystemSettingRegistry.writableKeysCache = new Set(

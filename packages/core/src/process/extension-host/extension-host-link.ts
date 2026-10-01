@@ -29,7 +29,10 @@ export class ExtensionHostLink {
     const deadline = Date.now() + waitMs;
     for (;;) {
       await this.scan();
-      if (this.pools().every((pool) => this.newest(pool)) || Date.now() >= deadline) break;
+      // Only the platform's host is waited for. Without the sites' sandbox the api must still start the
+      // platform's plugins at once — waiting for it held every boot for the whole wait, and a site's plugin
+      // starts as soon as the sandbox appears on a later scan (until then it says why it is not running).
+      if (this.newest(ExtensionHostPool.PLATFORM) || Date.now() >= deadline) break;
       await new Promise((resolve) => setTimeout(resolve, ExtensionHostLink.START_POLL_MS));
     }
     const scanning = setInterval(() => { void this.scan(); }, this.scanMs);
