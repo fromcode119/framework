@@ -6,6 +6,7 @@ import { NotificationCategory } from '@core/notifications/enums/notification-cat
 import { PhoneNumber } from '@core/notifications/phone-number';
 import { SmsContextProxy } from '@core/plugin/context/sms';
 import { UnconfiguredSmsSender } from '@core/notifications/unconfigured-sms-sender';
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 
 /** A customer is texted only with their agreement, for that kind of message, at the number they gave. */
 describe('telling a customer something', () => {
@@ -63,7 +64,8 @@ describe('telling a customer something', () => {
     const fake = setup();
     const calls: any[] = [];
     const sms = SmsContextProxy.createSmsProxy({ manifest: { namespace: 'org.test', slug: 'sms-test' } } as any, fake.manager);
-    sms.registerProvider({ key: 'acme', label: 'Acme', send: async (config, message) => { calls.push({ config, message }); return { id: 'x9' }; } });
+    sms.registerProvider({ key: 'acme', label: 'Acme', fields: [{ name: 'token', label: 'Token', type: 'password' }], send: async (config, message) => { calls.push({ config, message }); return { id: 'x9' }; } });
+    expect(fake.providers.acme.fields[0].type).toBe(IntegrationConfigFieldType.PASSWORD);
     const sender = fake.providers.acme.create({ token: 'secret' });
     expect(await sender.send({ to: '+359881234567', body: 'Hi' })).toEqual({ id: 'x9' });
     expect(calls).toEqual([{ config: { token: 'secret' }, message: { to: '+359881234567', body: 'Hi' } }]);

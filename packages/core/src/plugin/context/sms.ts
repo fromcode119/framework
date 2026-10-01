@@ -4,6 +4,7 @@ import { PersonNotifier } from '@core/notifications/person-notifier';
 import { PhoneNumber } from '@core/notifications/phone-number';
 import { PluginSmsSender } from '@core/notifications/plugin-sms-sender';
 import { SmsIntegrationDefinition } from '@core/integrations/providers/sms-integration-definition';
+import { IntegrationConfigFieldType } from '@core/integrations/enums/integration-config-field-type.enum';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import type { IPluginContextSms } from '@core/plugin/interfaces/plugin-context-sms.interface';
@@ -26,7 +27,9 @@ export class SmsContextProxy {
           key,
           label: String(provider.label ?? key),
           description: provider.description ? String(provider.description) : undefined,
-          fields: Array.isArray(provider.fields) ? provider.fields : [],
+          // Types arrive as plain strings from a plugin's process; a password field must be the enum to be
+          // masked in the console and decrypted for `send`.
+          fields: (Array.isArray(provider.fields) ? provider.fields : []).map((field: any) => ({ ...field, type: IntegrationConfigFieldType.resolve(field?.type) })), // eslint-disable-line @typescript-eslint/no-explicit-any
           namespace: plugin.manifest.namespace,
           create: (config: Record<string, unknown>) => new PluginSmsSender(plugin.manifest.slug, key, (settings, message) => send(settings, message), config ?? {}),
         });
