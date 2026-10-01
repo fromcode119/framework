@@ -71,15 +71,6 @@ export class TenantRouteMap {
     return this.byHost.size;
   }
 
-  /** One host for each site the frontend serves — what a new frontend renders once before it takes visitors. */
-  siteHosts(): string[] {
-    const bySite = new Map<string, string>();
-    for (const route of this.byHost.values()) {
-      if (route.tenantId && route.target === GatewayTarget.FRONTEND && !bySite.has(route.tenantId)) bySite.set(route.tenantId, route.host);
-    }
-    return [...bySite.values()];
-  }
-
   toJSON(): Record<string, unknown> {
     return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup };
   }

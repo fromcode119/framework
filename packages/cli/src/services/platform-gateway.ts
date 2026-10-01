@@ -1,6 +1,5 @@
 import http from 'http';
 import { GatewayRetryPolicy } from '@cli/services/gateway-retry-policy';
-import { RefusedAddressLookup } from '@cli/services/refused-address-lookup';
 import { Duplex } from 'stream';
 import httpProxy from 'http-proxy';
 import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, RouteConstants, TenantRouteMap } from '@fromcode119/core';
@@ -45,8 +44,7 @@ export class PlatformGateway {
    * proxied call opened and closed its own connection, and a burst from ONE page load answered
    * `Parse Error: Data after 'Connection: close'`.
    */
-  private readonly addresses = new RefusedAddressLookup();
-  private readonly agent = new http.Agent({ keepAlive: true, maxSockets: 256, maxFreeSockets: 32, lookup: this.addresses.lookup } as http.AgentOptions);
+  private readonly agent = new http.Agent({ keepAlive: true, maxSockets: 256, maxFreeSockets: 32 });
 
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly retries = new GatewayRetryPolicy();
@@ -78,7 +76,6 @@ export class PlatformGateway {
   start(): void {
     this.proxy.on('error', (error, req, res) => {
       const target = this.targetOf.get(req);
-      this.addresses.noteRefused(error as NodeJS.ErrnoException);
       if (target && this.retries.allows(error as NodeJS.ErrnoException, req, res)) {
         this.proxy.web(req, res as http.ServerResponse, { target });
         return;
