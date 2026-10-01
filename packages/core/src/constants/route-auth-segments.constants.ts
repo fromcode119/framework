@@ -234,6 +234,7 @@ export class RouteAuthSegments {
   DEPLOY_CAPACITY: '/deploy/capacity',
   EVENTS: '/events',
   FRONTEND: '/frontend',
+  STOREFRONT_NOTICE: '/storefront-notice',
   I18N: '/i18n',
   WEBHOOKS: '/webhooks',
   SHORTCODES: '/shortcodes',

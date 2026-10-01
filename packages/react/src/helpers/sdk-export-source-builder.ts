@@ -69,6 +69,11 @@ export class SdkExportSourceBuilder {
     'RouteConstants',
     'AccountRouteUtils',
     'RealtimeRoomClient',
+    // A plugin's confirmation page shows the notice a redirect carried (context.ui.noticeUrl).
+    'StorefrontNoticeClient',
+    'StorefrontNoticeDisplay',
+    'StorefrontNoticeParam',
+    'StorefrontNoticeTone',
     'PublicRouteConstants',
     'DataSourceConstants',
     'Logger',

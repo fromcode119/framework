@@ -97,6 +97,7 @@ export { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client'
 export { PluginNavigation } from '@react/plugin-navigation';
 export { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
 export { PluginComponent } from '@react/view/plugin-component.client';
+export { StorefrontNoticeBar } from '@react/storefront-notice/storefront-notice-bar';
 export { PluginDefaultStyle } from '@react/view/plugin-default-style';
 export type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 

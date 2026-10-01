@@ -13,6 +13,7 @@ import { SystemEmailPreferencesController } from '@api/controllers/system/system
 import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
 import { SystemPushController } from '@api/controllers/system/system-push-controller';
 import { SystemNotificationPreferencesController } from '@api/controllers/system/system-notification-preferences-controller';
+import { SystemStorefrontNoticeController } from '@api/controllers/system/system-storefront-notice-controller';
 import { SystemRedirectsController } from '@api/controllers/system/system-redirects-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
@@ -61,6 +62,7 @@ export class SystemRouter extends SystemPlatformRoutes {
     this.emailPreferencesTokenController = new SystemEmailPreferencesTokenController(manager, translate);
     this.pushController = new SystemPushController(manager);
     this.notificationPreferencesController = new SystemNotificationPreferencesController(manager);
+    this.storefrontNoticeController = new SystemStorefrontNoticeController(manager as any);
     // The redirect store service instance registered at boot is stateless beyond its db handle, so a
     // second instance over the same manager db is equivalent.
     this.redirectsController = new SystemRedirectsController(new SystemRedirectService((manager as any).db));
@@ -93,6 +95,10 @@ export class SystemRouter extends SystemPlatformRoutes {
       (req: any, res: any) => this.emailPreferencesTokenController.list(req, res));
     this.post(RouteConstants.SEGMENTS.EMAIL_PREFERENCES_BY_TOKEN,
       (req: any, res: any) => this.emailPreferencesTokenController.update(req, res));
+    // A one-time storefront notice (the bar after a link from an email). No guard: the visitor usually has
+    // no session, and the signed token is the credential — words, site and display all come out of it.
+    this.get(RouteConstants.SEGMENTS.STOREFRONT_NOTICE,
+      (req: any, res: any) => this.storefrontNoticeController.resolve(req, res));
     // Global admin search (command palette). system:view — spans record labels across every collection.
     this.get(RouteConstants.SEGMENTS.ADMIN_SEARCH, this.auth.requirePermission('system:view'),
       this.controller.search);

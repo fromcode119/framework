@@ -7,6 +7,8 @@ import "@fromcode119/react/account/account-shell.css";
 import "@fromcode119/react/files/file-share.css";
 // A plugin widget's frame (PluginWidgetFrame) — same reason as the two above.
 import "@fromcode119/react/widgets/plugin-widget-frame.css";
+// The one-time storefront notice (StorefrontNoticeBar) — same reason as the ones above.
+import "@fromcode119/react/storefront-notice/storefront-notice-bar.css";
 import type { Metadata } from 'next';
 import { StorefrontRuntimeGate } from "@/app/components/view/storefront-runtime-gate.client";
 import { ThemeAssetsView } from '@/components/theme-assets';

@@ -78,6 +78,12 @@ export { ConsentChannel } from '@core/notifications/enums/consent-channel.enum';
 export { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
 export { PersonNotifier } from '@core/notifications/person-notifier';
 export { PhoneNumber } from '@core/notifications/phone-number';
+export { StorefrontNoticeTokens } from '@core/storefront-notice/storefront-notice-tokens';
+export { StorefrontNoticeTone } from '@core/storefront-notice/storefront-notice-tone';
+export { StorefrontNoticeDisplay } from '@core/storefront-notice/storefront-notice-display';
+export { StorefrontNoticeParam } from '@core/storefront-notice/storefront-notice-param';
+export type { IStorefrontNotice } from '@core/storefront-notice/interfaces/storefront-notice.interface';
+export type { IStorefrontNoticeOptions } from '@core/storefront-notice/interfaces/storefront-notice-options.interface';
 export { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
 export type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
 
@@ -141,7 +147,7 @@ export { PlatformCountrySource } from '@core/enums/platform-country-source.enum'
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
 export { FormatUtils } from '@core/utils/format-utils';
 export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from '@core/api';
-export { AdminUserClient, ApiScopeClient, CollectionScopeClient, SettingsScopeClient, SdkClient, AdminGlobalClient, AdminResourceClient, AdminSdkClient, BrowserStateClient, BrowserStateRuntimeBuilder, SystemAuthClient, SystemAuthSession } from '@core/clients';
+export { AdminUserClient, ApiScopeClient, CollectionScopeClient, SettingsScopeClient, SdkClient, AdminGlobalClient, AdminResourceClient, AdminSdkClient, BrowserStateClient, BrowserStateRuntimeBuilder, StorefrontNoticeClient, SystemAuthClient, SystemAuthSession } from '@core/clients';
 export type { IBrowserCookieOptions } from '@core/clients';
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';

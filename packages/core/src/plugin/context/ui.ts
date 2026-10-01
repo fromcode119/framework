@@ -1,5 +1,12 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import type { IStorefrontNotice } from '@core/storefront-notice/interfaces/storefront-notice.interface';
+import type { IStorefrontNoticeOptions } from '@core/storefront-notice/interfaces/storefront-notice-options.interface';
+import { StorefrontNoticeTokens } from '@core/storefront-notice/storefront-notice-tokens';
+import { StorefrontNoticeDisplay } from '@core/storefront-notice/storefront-notice-display';
+import { StorefrontNoticeParam } from '@core/storefront-notice/storefront-notice-param';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 
 export class UiContextProxy {
   static createUiProxy(
@@ -26,8 +33,26 @@ export class UiContextProxy {
             injections.push(injection);
           }
           manager.headInjections.set(slug, injections);
-        }
+        },
+        noticeUrl: (path: string, notice: IStorefrontNotice, options?: IStorefrontNoticeOptions) =>
+          UiContextProxy.noticeUrl(manager, path, notice, options),
       };
 
+  }
+
+  /** See IPluginContextUi.noticeUrl. */
+  static async noticeUrl(manager: IPluginManagerInterface, path: string, notice: IStorefrontNotice, options?: IStorefrontNoticeOptions): Promise<string> {
+    const target = String(path ?? '').trim();
+    // A path on the site and nothing else: `//host` and `https://…` would make this an open redirect.
+    if (!target.startsWith('/') || target.startsWith('//') || /[\s\\]/.test(target)) {
+      throw new Error(`context.ui.noticeUrl takes a path on the site, not "${target}"`);
+    }
+    const display = StorefrontNoticeDisplay.parse(options?.display ?? StorefrontNoticeDisplay.BAR.value);
+    if (!display) throw new Error(`context.ui.noticeUrl: unknown display "${String(options?.display)}"`);
+    const token = await new StorefrontNoticeTokens(manager).mint(notice, display, options?.ttlSeconds);
+    const base = await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP);
+    // The join drops a lone `/`, which turned the homepage into `https://host?fc_notice=`.
+    const url = target === '/' ? `${base}/` : ApplicationUrlUtils.joinApiPath(base, target);
+    return `${url}${url.includes('?') ? '&' : '?'}${StorefrontNoticeParam.NAME}=${encodeURIComponent(token)}`;
   }
 }

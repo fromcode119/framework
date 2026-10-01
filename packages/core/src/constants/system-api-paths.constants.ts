@@ -107,6 +107,7 @@ export class SystemApiPaths {
       HEALTH: SystemApiPaths.ROUTE_SEGMENTS.HEALTH,
       STATUS: SystemApiPaths.ROUTE_SEGMENTS.STATUS,
       FRONTEND: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.FRONTEND),
+      STOREFRONT_NOTICE: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.STOREFRONT_NOTICE),
       ADMIN_TENANTS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_TENANTS),
       SITE_PREVIEW: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.SITE_PREVIEW),
       SITE_PREVIEW_SESSION: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, `${SystemApiPaths.ROUTE_SEGMENTS.SITE_PREVIEW}${SystemApiPaths.ROUTE_SEGMENTS.SITE_PREVIEW_SESSION}`),
