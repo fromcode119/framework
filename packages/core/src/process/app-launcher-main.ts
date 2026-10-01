@@ -17,7 +17,7 @@ import { PublicServerHandover } from '@core/process/public-server-handover';
  * runs no guest code and gets none. Both then start Next in this very process, so the spawner client
  * published on `globalThis` is right there for the Next-bundled render host to find.
  *
- * The frontend starts on a private port, renders every site once (`FrontendWarmup`), and only then
+ * The frontend starts on a warm-up port, renders every site once (`FrontendWarmup`), and only then
  * takes the public one — so a new container in a rolling deploy refuses visitors until its sites are
  * warm, the gateway sends them to the old one meanwhile, and the deploy, which waits for the public
  * port to answer, retires the old one only after that.
@@ -40,17 +40,15 @@ export class AppLauncherMain {
       await nextStart({ port, hostname }, dir);
       return;
     }
-    const privatePort = port + AppLauncherMain.PRIVATE_PORT_OFFSET;
-    const servers = await PublicServerHandover.capture(() => nextStart({ port: privatePort, hostname: '127.0.0.1' }, dir));
+    const warmUp = FrontendWarmup.listen(port, hostname);
+    const privatePort = warmUp.port;
+    const servers = await PublicServerHandover.capture(() => nextStart(warmUp, dir));
     const next = PublicServerHandover.listeningOn(servers, privatePort);
     if (!next) throw new Error(`The frontend did not start on its private port ${privatePort}.`);
     await new FrontendWarmup(String(process.env.API_URL ?? '').trim(), privatePort).run();
     await PublicServerHandover.open(next, port, hostname);
     console.log(`[app-launcher] frontend takes visitors on ${hostname}:${port}`);
   }
-
-  /** The private port is the public one plus this — inside the container only, never published. */
-  private static readonly PRIVATE_PORT_OFFSET = 100;
 
   private static flag(argv: string[], name: string): string {
     const index = argv.indexOf(name);

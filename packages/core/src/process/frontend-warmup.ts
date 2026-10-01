@@ -11,7 +11,7 @@ import { TenantRouteMap } from '@core/tenant/tenant-route-map';
  * server about 25 seconds, during which every other render on the box slows down too. Measured on four
  * consecutive deploys: the first visitor to each site after a release waited 15–25 seconds or got a 500
  * ("Frontend could not reach the API"), and the platform monitor reported the sites down. Rendering each
- * site here, on a private port, moves that wait from the first visitor to the deploy.
+ * site here, on the warm-up port, moves that wait from the first visitor to the deploy.
  *
  * Never fails the start: a site that does not answer in time is logged and left to warm on its first
  * request, as before, and the whole pass is bounded so a release can never hang on it.
@@ -22,6 +22,20 @@ export class FrontendWarmup {
   /** The whole pass, well inside the 240 s a rolling deploy waits for the new frontend to answer. */
   static readonly TOTAL_BUDGET_MS = 150_000;
   private static readonly MAP_TIMEOUT_MS = 10_000;
+
+  /** The warm-up port is the public one plus this. Never published and never named by the gateway. */
+  static readonly PORT_OFFSET = 100;
+
+  /**
+   * Where Next starts before it takes visitors: another port, but the SAME hostname as the public one.
+   * Next answers a middleware rewrite to its own host itself only when the destination matches the
+   * hostname it was started with; started as 127.0.0.1, the storefront's `/` → `/fc-document` rewrite was
+   * instead proxied to itself with the visitor's https scheme — TLS to a plain port — and every storefront
+   * answered 500 (production, 2026-10-01, 0.2.290).
+   */
+  static listen(port: number, hostname: string): { port: number; hostname: string } {
+    return { port: port + FrontendWarmup.PORT_OFFSET, hostname };
+  }
 
   constructor(
     private readonly apiBase: string,

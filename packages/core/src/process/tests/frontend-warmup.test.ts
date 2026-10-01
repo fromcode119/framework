@@ -79,3 +79,9 @@ describe('PublicServerHandover', () => {
     await new Promise((resolve) => started.close(resolve));
   });
 });
+
+describe('FrontendWarmup.listen', () => {
+  it('starts Next on another port but the same hostname — a different one broke every storefront', () => {
+    expect(FrontendWarmup.listen(3000, '0.0.0.0')).toEqual({ port: 3100, hostname: '0.0.0.0' });
+  });
+});
