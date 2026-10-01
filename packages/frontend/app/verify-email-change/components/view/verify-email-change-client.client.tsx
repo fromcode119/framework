@@ -4,6 +4,7 @@ import { Reactor, state, bound, prop } from '@fromcode119/react-class-components
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
+import { FrontendTokenRedemption } from '@/lib/frontend-token-redemption';
 
 export class VerifyEmailChangePage extends Reactor {
   /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
@@ -22,18 +23,8 @@ export class VerifyEmailChangePage extends Reactor {
     this.status = VerificationStatus.VERIFYING;
     this.message = '';
     try {
-      const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_CONFIRM), {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Framework-Client': 'frontend-ui',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
-        body: JSON.stringify({ token: value })
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) {
+      const { ok, payload } = await FrontendTokenRedemption.redeem(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_CONFIRM), value);
+      if (!ok) {
         throw new Error(payload?.error || payload?.message || 'Failed to confirm email change.');
       }
       this.status = VerificationStatus.SUCCESS;

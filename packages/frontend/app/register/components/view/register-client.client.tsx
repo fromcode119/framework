@@ -4,6 +4,7 @@ import { Reactor, state, bound, prop } from '@fromcode119/react-class-components
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
+import { FrontendAuthRequestHeaders } from '@/lib/frontend-auth-request-headers';
 
 export class RegisterPage extends Reactor {
   /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
@@ -76,11 +77,7 @@ export class RegisterPage extends Reactor {
       const response = await fetch(FrontendApiRoutes.buildFrontendApiUrl(SystemConstants.API_PATH.AUTH.REGISTER), {
         method: 'POST',
         credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-Framework-Client': 'frontend-ui',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: FrontendAuthRequestHeaders.json(),
         body: JSON.stringify({
           firstName: this.firstName,
           lastName: this.lastName,
