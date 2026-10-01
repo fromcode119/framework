@@ -70,13 +70,15 @@ export class NotificationsContextProxy {
       },
 
       async notifyPerson(
-        userId: number,
+        person: { userId?: number; email?: string },
         message: { title: string; body?: string; link?: string; text?: string; category: string },
       ): Promise<{ pushed: number; texted: boolean }> {
         // The category decides whose consent covers the message, so an unknown one sends nothing.
         const category = NotificationCategory.fromValue(String(message?.category ?? '')) as NotificationCategory | undefined;
         if (!category) return { pushed: 0, texted: false };
-        return new PersonNotifier(manager).notify({ ...message, userId, category });
+        const notifier = new PersonNotifier(manager);
+        const userId = await notifier.resolve(person ?? {});
+        return userId ? notifier.notify({ ...message, userId, category }) : { pushed: 0, texted: false };
       },
 
       async notifyAdmins(

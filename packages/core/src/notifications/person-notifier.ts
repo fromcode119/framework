@@ -7,6 +7,7 @@ import { ConsentChannel } from '@core/notifications/enums/consent-channel.enum';
 import { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
 import { UnconfiguredSmsSender } from '@core/notifications/unconfigured-sms-sender';
 import { SmsIntegrationDefinition } from '@core/integrations/providers/sms-integration-definition';
+import { SystemConstants } from '@core/constants/system.constants';
 import type { ISmsSender } from '@core/notifications/interfaces/sms-sender.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 
@@ -45,6 +46,16 @@ export class PersonNotifier {
     if (!Number.isFinite(userId) || userId <= 0 || !String(input.title ?? '').trim()) return { pushed: 0, texted: false };
     const [pushed, texted] = await Promise.all([this.push(userId, input), this.text(userId, input)]);
     return { pushed, texted };
+  }
+
+  /** The account behind an id or a sign-in email, or 0 — an email with no account reaches nobody. */
+  async resolve(person: { userId?: unknown; email?: unknown }): Promise<number> {
+    const id = Number(person.userId);
+    if (Number.isFinite(id) && id > 0) return id;
+    const email = String(person.email ?? '').trim().toLowerCase();
+    if (!email) return 0;
+    const user = await this.manager.db.findOne(SystemConstants.TABLE.USERS, { email }).catch(() => null);
+    return Number(user?.id) > 0 ? Number(user.id) : 0;
   }
 
   private async push(userId: number, input: { title: string; body?: string; link?: string; category: NotificationCategory }): Promise<number> {

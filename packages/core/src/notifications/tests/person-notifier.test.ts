@@ -83,3 +83,15 @@ describe('telling a customer something', () => {
     expect(fake.db.rows.map((r) => r.user_id)).toEqual([6]);
   });
 });
+
+describe('who a notice is for', () => {
+  it('finds the account behind a sign-in email, and nobody behind an unknown one', async () => {
+    const rows = [{ id: 12, email: 'ana@shop.test' }];
+    const manager: any = { db: { findOne: async (_t: string, where: any) => rows.find((r) => r.email === where.email) ?? null } };
+    const notifier = new PersonNotifier(manager);
+    expect(await notifier.resolve({ email: ' Ana@Shop.test ' })).toBe(12);
+    expect(await notifier.resolve({ email: 'nobody@shop.test' })).toBe(0);
+    expect(await notifier.resolve({ userId: 7 })).toBe(7);
+    expect(await notifier.resolve({})).toBe(0);
+  });
+});
