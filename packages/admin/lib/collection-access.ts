@@ -37,4 +37,23 @@ export class CollectionAccess {
     const can = (action: CollectionPermissionAction) => PermissionGrants.covers(permissions, PermissionNames.collection(pluginSlug, key, action));
     return new CollectionAccess(can(CollectionPermissionAction.CREATE), can(CollectionPermissionAction.UPDATE), can(CollectionPermissionAction.DELETE), permissions);
   }
+
+  /**
+   * What the LIST offers for this collection's rows: the user's access, narrowed by the collection's own
+   * `admin.disableCreate` / `admin.disableEdit` — rows the runtime writes. The record page already refuses
+   * both, so a Duplicate that opened a "cannot be created here" screen and a quick edit that saved past
+   * the lock were controls that did not do what they offered. (The record page keeps `for()`: its
+   * view-only notice and its deliberate override are about the user, not the declaration.)
+   */
+  static forList(user: any, collection: any): CollectionAccess {
+    const access = CollectionAccess.for(user, collection);
+    const admin = collection?.admin ?? {};
+    if (admin.disableCreate !== true && admin.disableEdit !== true) return access;
+    return new CollectionAccess(
+      access.canCreate && admin.disableCreate !== true,
+      access.canUpdate && admin.disableEdit !== true,
+      access.canDelete,
+      access.permissions,
+    );
+  }
 }
