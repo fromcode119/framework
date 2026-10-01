@@ -1,3 +1,5 @@
+import { AsyncLocalStorage } from 'async_hooks';
+
 /**
  * How many api worker processes serve this deployment, and what that means for a per-process budget.
  *
@@ -34,8 +36,19 @@ export class ApiWorkers {
    * (PluginHostSharedProcesses). An operator's update starts the new process wherever it was asked.
    */
   static startsPluginProcesses(): boolean {
-    return !ApiWorkers.isMultiProcess() || ApiWorkers.isFirstWorker();
+    return !ApiWorkers.isMultiProcess() || ApiWorkers.isFirstWorker() || ApiWorkers.operator.getStore() === true;
   }
+
+  /**
+   * Runs an operator's plugin change (install, enable, update…) in THIS api process: whatever plugin
+   * process it needs, it starts here, as a single api would. The other api processes then load the change
+   * (PluginsChangedSignal) and attach to what it started.
+   */
+  static asOperator<T>(work: () => Promise<T>): Promise<T> {
+    return ApiWorkers.operator.run(true, work);
+  }
+
+  private static readonly operator = new AsyncLocalStorage<boolean>();
 
   /** Whether this worker runs the deployment's once-only background work (monitors, retention, downloads). */
   static isFirstWorker(): boolean {

@@ -1,4 +1,4 @@
-import { ProcessSignals, ProcessSignal } from '@fromcode119/core';
+import { ApiWorkers, ProcessSignals, ProcessSignal } from '@fromcode119/core';
 import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 
 /**
@@ -16,7 +16,8 @@ export class PluginsChangedSignal {
   static async around<T>(slug: string, work: () => Promise<T>): Promise<T> {
     PluginsChangedSignal.announce(slug);
     try {
-      return await work();
+      // The plugin processes this change needs are started HERE, whichever api process it reached.
+      return await ApiWorkers.asOperator(work);
     } finally {
       PluginsChangedSignal.announce(slug);
     }
