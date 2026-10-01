@@ -134,6 +134,8 @@ export class RouteAuthSegments {
   CERTIFICATES_CLOUDFLARE_TOKEN: '/cloudflare-token',
   /** `/system/admin/geo` — the IP-location database: its state, and "update now". Platform admins only. */
   ADMIN_GEO: '/admin/geo',
+  ADMIN_MONITORING: '/admin/monitoring',
+  MONITORING_CHECK: '/check',
   GEO_UPDATE: '/update',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',

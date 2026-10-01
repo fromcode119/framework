@@ -1,7 +1,7 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
+import { ApiOutcomeCounter, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
@@ -41,6 +41,8 @@ export class ServerMiddlewareSetup {
     // middleware. The class existed and was exported, but nothing mounted it: no api response had them.
     this.app.disable('x-powered-by');
     this.app.use(new SecurityHeadersMiddleware().middleware());
+    // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
+    this.app.use((_req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode)); next(); });
 
     // Gzip for anonymous public JSON GETs (e.g. /system/frontend) — BREACH-scoped:
     // requests carrying auth credentials are never compressed. See the middleware class.

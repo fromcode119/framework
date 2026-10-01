@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { CoercionUtils } from '@fromcode119/core';
+import { CoercionUtils, RequestContextUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 export class SystemIntegrationController {
@@ -7,7 +7,9 @@ export class SystemIntegrationController {
 
   async getIntegrations(req: Request, res: Response) {
     try {
-      const data = await this.runtime.manager.integrations.listConfigs();
+      // A platform-only type (monitoring) is the platform admin's: a site never lists it.
+      const all = await this.runtime.manager.integrations.listConfigs();
+      const data = RequestContextUtils.getTenantId() ? all.filter((entry: { platformOnly?: boolean }) => !entry.platformOnly) : all;
       res.json({ docs: data, totalDocs: data.length });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -15,6 +17,7 @@ export class SystemIntegrationController {
   }
 
   async getIntegration(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const integration = await this.runtime.manager.integrations.getConfig(CoercionUtils.toString(req.params.type));
       if (!integration) {
@@ -27,6 +30,7 @@ export class SystemIntegrationController {
   }
 
   async updateIntegration(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const updated = await (this.runtime.manager.integrations as any).updateConfig(
         req.params.type,
@@ -48,6 +52,7 @@ export class SystemIntegrationController {
   }
 
   async setIntegrationProviderEnabled(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const updated = await (this.runtime.manager.integrations as any).setProviderEnabled(
         req.params.type,
@@ -61,6 +66,7 @@ export class SystemIntegrationController {
   }
 
   async removeIntegrationProvider(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const updated = await (this.runtime.manager.integrations as any).removeProvider(req.params.type, req.params.providerId);
       res.json({ success: !!updated, integration: updated });
@@ -70,6 +76,7 @@ export class SystemIntegrationController {
   }
 
   async activateIntegrationProfile(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const updated = await (this.runtime.manager.integrations as any).activateProfile(req.params.type, req.params.profileId);
       res.json({ success: !!updated, integration: updated });
@@ -79,6 +86,7 @@ export class SystemIntegrationController {
   }
 
   async renameIntegrationProfile(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const profileName = CoercionUtils.toString(req.body?.profileName) || CoercionUtils.toString(req.body?.name);
       if (!profileName) {
@@ -96,11 +104,24 @@ export class SystemIntegrationController {
   }
 
   async deleteIntegrationProfile(req: Request, res: Response) {
+    if (await this.refusedForSite(req, res)) return;
     try {
       const updated = await (this.runtime.manager.integrations as any).deleteProfile(req.params.type, req.params.profileId);
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
+  }
+
+  /**
+   * A platform-only type changed from inside a site would write an entry nothing reads, so it is refused
+   * with the reason rather than saved and ignored.
+   */
+  private async refusedForSite(req: Request, res: Response): Promise<boolean> {
+    if (!RequestContextUtils.getTenantId()) return false;
+    const summary = await this.runtime.manager.integrations.getConfig(CoercionUtils.toString(req.params.type));
+    if (!summary?.platformOnly) return false;
+    res.status(403).json({ error: 'platform_only_integration' });
+    return true;
   }
 }

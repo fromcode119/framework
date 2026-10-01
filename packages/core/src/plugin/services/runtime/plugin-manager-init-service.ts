@@ -10,6 +10,7 @@ import { PersonCatalogService } from '@core/plugin/services/people/person-catalo
 import { RecordVersions } from '@core/collections/record-versions';
 import { WebhooksCollection } from '@core/collections/webhooks';
 import { CertificateExpiryWarningTask } from '@core/certificates/certificate-expiry-warning-task';
+import { PlatformMonitorTask } from '@core/monitoring/platform-monitor-task';
 import { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { SitePreviewGrantService } from '@core/tenant/preview/site-preview-grant-service';
@@ -91,6 +92,11 @@ export class PluginManagerInitService {
     // in June 2025, and an uploaded certificate never had an issuer watching it at all.
     await manager.scheduler.register(CertificateExpiryWarningTask.NAME, CertificateExpiryWarningTask.SCHEDULE, async () => {
       await new CertificateExpiryWarningTask(new CertificateStoreService(manager.db), manager).run();
+    }, { type: 'cron' });
+    // The platform watching itself: sites, plugins, disk, memory, api errors — one alert when something
+    // breaks and one when it recovers, to every active `monitoring` provider (email by default).
+    await manager.scheduler.register(PlatformMonitorTask.NAME, PlatformMonitorTask.SCHEDULE, async () => {
+      await PlatformMonitorTask.for(manager).run();
     }, { type: 'cron' });
     // Obtains and renews what the platform manages. Most passes do nothing: with no authority
     // declared it returns immediately. The per-host backoff, not this interval, rations attempts.

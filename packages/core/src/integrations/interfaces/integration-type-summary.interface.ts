@@ -6,6 +6,8 @@ export interface IIntegrationTypeSummary {
   label: string;
   description?: string;
   defaultProvider: string;
+  /** See `IIntegrationTypeDefinition.platformOnly`. */
+  platformOnly: boolean;
   providers: Array<{
     key: string;
     label: string;
