@@ -30,9 +30,9 @@ export class SystemIntegrationController {
   }
 
   async updateIntegration(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
-      const updated = await (this.runtime.manager.integrations as any).updateConfig(
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).updateConfig(
         req.params.type,
         req.body.provider,
         req.body.config || {},
@@ -44,7 +44,7 @@ export class SystemIntegrationController {
           makeActive: req.body.makeActive === undefined ? true : CoercionUtils.toBoolean(req.body.makeActive),
           enabled: req.body.enabled === undefined ? undefined : CoercionUtils.toBoolean(req.body.enabled),
         }
-      );
+      ));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -52,13 +52,13 @@ export class SystemIntegrationController {
   }
 
   async setIntegrationProviderEnabled(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
-      const updated = await (this.runtime.manager.integrations as any).setProviderEnabled(
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).setProviderEnabled(
         req.params.type,
         req.params.providerId,
         CoercionUtils.toBoolean(req.body?.enabled)
-      );
+      ));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -66,9 +66,9 @@ export class SystemIntegrationController {
   }
 
   async removeIntegrationProvider(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
-      const updated = await (this.runtime.manager.integrations as any).removeProvider(req.params.type, req.params.providerId);
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).removeProvider(req.params.type, req.params.providerId));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -76,9 +76,9 @@ export class SystemIntegrationController {
   }
 
   async activateIntegrationProfile(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
-      const updated = await (this.runtime.manager.integrations as any).activateProfile(req.params.type, req.params.profileId);
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).activateProfile(req.params.type, req.params.profileId));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -86,17 +86,17 @@ export class SystemIntegrationController {
   }
 
   async renameIntegrationProfile(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
       const profileName = CoercionUtils.toString(req.body?.profileName) || CoercionUtils.toString(req.body?.name);
       if (!profileName) {
         return res.status(400).json({ error: 'profileName is required' });
       }
-      const updated = await (this.runtime.manager.integrations as any).renameProfile(
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).renameProfile(
         req.params.type,
         req.params.profileId,
         profileName
-      );
+      ));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
@@ -104,13 +104,29 @@ export class SystemIntegrationController {
   }
 
   async deleteIntegrationProfile(req: Request, res: Response) {
-    if (await this.refusedForSite(req, res)) return;
+    if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
-      const updated = await (this.runtime.manager.integrations as any).deleteProfile(req.params.type, req.params.profileId);
+      const updated = await this.asScope(() => (this.runtime.manager.integrations as any).deleteProfile(req.params.type, req.params.profileId));
       res.json({ success: !!updated, integration: updated });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
+  }
+
+  /**
+   * Platform scope (no site bound) writes the platform's own rows (`tenant_id IS NULL`), which the database
+   * accepts only under the platform-admin marker — so only a platform admin may, and the write runs under
+   * it. Without it every save in platform scope failed with "new row violates row-level security policy".
+   * Inside a site the write stays the site's, on the site's own connection.
+   */
+  private async refusedForPlatform(req: Request, res: Response): Promise<boolean> {
+    if (RequestContextUtils.getTenantId() || await this.runtime.isPlatformAdmin(req)) return false;
+    res.status(403).json({ error: 'platform_admin_required', message: 'Only a platform admin can change the platform\'s integrations.' });
+    return true;
+  }
+
+  private asScope<T>(write: () => Promise<T>): Promise<T> {
+    return RequestContextUtils.getTenantId() ? write() : this.runtime.db.withPlatformAdmin(write);
   }
 
   /**
