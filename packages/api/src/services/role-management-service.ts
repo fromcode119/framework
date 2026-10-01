@@ -98,7 +98,7 @@ export class RoleManagementService {
       description: data.description,
       type: data.type || 'custom',
       permissions: requested,
-      // Provide timestamps explicitly: drizzle would otherwise emit the pg `.defaultNow()` (`now()`)
+      // Provide timestamps explicitly: the declared table would otherwise emit its `.defaultNow()` (`now()`)
       // for these omitted columns, which the SQLite runtime rejects ("no such function: now").
       createdAt: now,
       updatedAt: now,

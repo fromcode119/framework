@@ -82,7 +82,7 @@ export class SqliteReadOperations extends BaseDialect {
         if (selected.length > 0) columnPart = selected.join(', ');
       }
 
-      // Use raw SQL for dynamic table names — drizzle.select() without args produces
+      // Use raw SQL for dynamic table names — a select with no declared columns produces
       // an empty column list ("select  from …") which SQLite rejects
       const searchArg = await this.resolveSearchArg(this.normalizer, tableName, search);
       const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);

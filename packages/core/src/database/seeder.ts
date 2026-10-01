@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import fs from 'fs';
 import path from 'path';
@@ -45,7 +45,7 @@ export class Seeder {
 
       const resolved = this.resolver.resolveCallable(loadedModule);
 
-      await resolved.callable(this.db, sql);
+      await resolved.callable(this.db, Sql.tag());
       this.logger.info(`Seed completed successfully using ${resolved.sourceType}:${resolved.symbolName}.`);
     } catch (err: any) {
       const suffix = err?.code ? ` [${err.code}]` : '';

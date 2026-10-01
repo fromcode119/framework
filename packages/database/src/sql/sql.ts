@@ -41,7 +41,7 @@ export class Sql {
     return new SqlFragment([]);
   }
 
-  /** The tag with its helpers attached, for callers handed a drizzle-shaped `sql` (the plugin `db.sql`). */
+  /** The tag with its helpers attached, for callers handed a callable `sql` with helpers (the plugin `db.sql`, a migration's `sql` argument). */
   static tag(): ISqlTag {
     return Object.assign((strings: TemplateStringsArray, ...values: unknown[]) => Sql.query(strings, ...values), {
       raw: Sql.raw, identifier: Sql.identifier, join: Sql.join, param: Sql.param, empty: Sql.empty,

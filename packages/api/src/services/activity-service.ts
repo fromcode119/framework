@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 import { ICollection } from '@fromcode119/core';
 
 export class ActivityService {
@@ -15,7 +15,7 @@ export class ActivityService {
         
         const rows = await this.db.find(tableName, {
           limit: 5,
-          orderBy: this.db.desc(sql`${sql.identifier(pk)}`)
+          orderBy: this.db.desc(Sql.query`${Sql.identifier(pk)}`)
         });
         
         rows.forEach((row: any) => {

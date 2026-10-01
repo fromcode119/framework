@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { PortableColumnTypes } from '@core/database/helpers/portable-column-types';
 
 /**
@@ -20,7 +20,7 @@ export class SiteRolesMigration extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const type = PortableColumnTypes.for(db.dialect);
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `CREATE TABLE IF NOT EXISTS _system_site_roles (
         id ${type.autoId},
         slug ${type.key} NOT NULL UNIQUE,

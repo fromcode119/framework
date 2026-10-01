@@ -61,7 +61,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
     // SQLite is synchronous and connects immediately
   }
 
-  async execute(query: any) {
+  async execute(query: any): Promise<any> {
     if (typeof query === 'string') {
       return this.sqlite.exec(query);
     }

@@ -47,7 +47,7 @@ export class PostgresReadOperations extends BaseDialect {
     return `${quotedColumn}::text`;
   }
 
-  protected drizzlePatternColumn(column: any): any {
+  protected fragmentPatternColumn(column: any): any {
     return Sql.query`${column}::text`;
   }
 
@@ -186,7 +186,7 @@ export class PostgresReadOperations extends BaseDialect {
     const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableOrName, where);
     const conditions = this.buildWhereConditions(normalizedWhere);
     // The same search `find` applied, so the total describes the list the caller is showing.
-    const searchCondition = this.drizzleSearchCondition(await this.resolveSearchArg(this.normalizer, tableOrName, search));
+    const searchCondition = this.fragmentSearchCondition(await this.resolveSearchArg(this.normalizer, tableOrName, search));
     if (searchCondition) conditions.push(searchCondition);
     const filter = PostgresTableStatements.filter(conditions, normalizedWhere);
     const query = Sql.query`select count(*) from ${Sql.identifier(tableOrName)}${filter ? Sql.query` where ${filter}` : undefined}`;

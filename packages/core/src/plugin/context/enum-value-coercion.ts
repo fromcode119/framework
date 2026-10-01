@@ -42,7 +42,7 @@ export class EnumValueCoercion {
 
   /**
    * Structures that must be handed to the driver untouched. Dates and Buffers are legitimate bound
-   * parameters, and drizzle's SQL fragment objects carry internal state that must not be rebuilt.
+   * parameters, and built SQL fragments carry internal state that must not be rebuilt.
    */
   private static isOpaque(value: object): boolean {
     return value instanceof Date
@@ -69,7 +69,7 @@ export class EnumValueCoercion {
       return (changed ? next : value) as unknown as T;
     }
 
-    // Only plain-ish objects are walked. A class instance from a plugin (a drizzle fragment, an entity)
+    // Only plain-ish objects are walked. A class instance from a plugin (a SQL fragment, an entity)
     // is left alone: rebuilding it as a bare object would strip its prototype and its behaviour.
     const proto = Object.getPrototypeOf(value);
     if (proto !== Object.prototype && proto !== null) return value;

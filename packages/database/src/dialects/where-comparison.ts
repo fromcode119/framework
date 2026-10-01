@@ -3,7 +3,7 @@
  *
  * `where` values are either a literal (meaning equality) or an operator object
  * (`{ gte: from, lte: to }`). Both shapes are parsed into this one form so the raw-SQL builders and
- * the drizzle builders emit the SAME set of predicates from the same parse, instead of each
+ * the fragment builders emit the SAME set of predicates from the same parse, instead of each
  * re-interpreting the caller's object.
  *
  * Three KINDS of operator, because they render differently:

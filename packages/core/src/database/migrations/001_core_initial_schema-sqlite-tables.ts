@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * SQLite table-creation statements for the initial framework migration. Each `db.execute`
@@ -8,7 +8,7 @@ import { IDatabaseManager, sql } from '@fromcode119/database';
 export class InitialFrameworkSqliteTables {
   static async create(db: IDatabaseManager): Promise<void> {
     // SQLite equivalents
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_plugins" (
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
@@ -25,7 +25,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "users" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "email" TEXT NOT NULL UNIQUE,
@@ -40,7 +40,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_roles" (
             "slug" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL,
@@ -52,7 +52,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_permissions" (
             "name" TEXT PRIMARY KEY,
             "description" TEXT,
@@ -64,7 +64,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_themes" (
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
@@ -76,7 +76,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_users_roles" (
             "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
             "role_slug" TEXT NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
@@ -84,7 +84,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_roles_permissions" (
             "role_slug" TEXT NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
             "permission_name" TEXT NOT NULL REFERENCES "_system_permissions"("name") ON DELETE CASCADE,
@@ -92,7 +92,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_plugin_settings" (
             "plugin_slug" TEXT PRIMARY KEY REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
             "settings" TEXT NOT NULL DEFAULT '{}',
@@ -100,7 +100,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_trusted_publishers" (
             "publisher_id" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL,
@@ -112,7 +112,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_meta" (
             "key" TEXT PRIMARY KEY,
             "value" TEXT NOT NULL,
@@ -122,7 +122,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_sessions" (
             "id" TEXT PRIMARY KEY,
             "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
@@ -136,7 +136,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_logs" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "plugin_slug" TEXT,
@@ -147,7 +147,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "media_folders" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "name" TEXT NOT NULL,
@@ -157,7 +157,7 @@ export class InitialFrameworkSqliteTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "media" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "filename" TEXT NOT NULL,
@@ -178,7 +178,7 @@ export class InitialFrameworkSqliteTables {
             "optimized_height" INTEGER
           )
         `);
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "plugin_slug" TEXT NOT NULL,
@@ -189,7 +189,7 @@ export class InitialFrameworkSqliteTables {
             "created_at" DATETIME DEFAULT CURRENT_TIMESTAMP
           )
         `);
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "name" TEXT NOT NULL UNIQUE,

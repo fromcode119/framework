@@ -1,7 +1,7 @@
 import { ColumnGuard } from '@core/database/helpers/column-guard';
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { Logger } from '@core/logging';
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * Sources — the repositories an installation builds extensions from — as framework-owned platform
@@ -94,7 +94,7 @@ export class SourcesMigration extends BaseMigration {
     if (!oldExists) return newExists;
 
     // A rename keeps the rows, the sequence and the indexes; recreating and copying keeps only rows.
-    await db.execute(sql.raw(`ALTER TABLE ${OLD_TABLE} RENAME TO ${NEW_TABLE}`));
+    await db.execute(Sql.raw(`ALTER TABLE ${OLD_TABLE} RENAME TO ${NEW_TABLE}`));
     logger.info(`Renamed ${OLD_TABLE} -> ${NEW_TABLE}: Sources is platform configuration.`);
     return true;
   }
@@ -111,7 +111,7 @@ export class SourcesMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           DO $$
           DECLARE policy_row record;
           BEGIN
@@ -121,11 +121,11 @@ export class SourcesMigration extends BaseMigration {
             END LOOP;
           END $$;
         `));
-        await db.execute(sql.raw(`ALTER TABLE ${NEW_TABLE} NO FORCE ROW LEVEL SECURITY`));
-        await db.execute(sql.raw(`ALTER TABLE ${NEW_TABLE} DISABLE ROW LEVEL SECURITY`));
+        await db.execute(Sql.raw(`ALTER TABLE ${NEW_TABLE} NO FORCE ROW LEVEL SECURITY`));
+        await db.execute(Sql.raw(`ALTER TABLE ${NEW_TABLE} DISABLE ROW LEVEL SECURITY`));
         // Dropping the column takes its index and its default with it. The default was what stamped
         // each row with whichever site happened to be in scope when an operator added a source.
-        await db.execute(sql.raw(`ALTER TABLE ${NEW_TABLE} DROP COLUMN IF EXISTS tenant_id`));
+        await db.execute(Sql.raw(`ALTER TABLE ${NEW_TABLE} DROP COLUMN IF EXISTS tenant_id`));
       },
       sqlite: async () => {
         // SQLite has no row-level security, so there is nothing to release — and dropping a column
@@ -173,7 +173,7 @@ export class SourcesMigration extends BaseMigration {
 
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           DO $$
           DECLARE target record;
           BEGIN
@@ -224,7 +224,7 @@ export class SourcesMigration extends BaseMigration {
         // same outcome as the Postgres branch: find any unique index whose column set is exactly
         // `(slug)` via the catalogue, by columns rather than by name for the same reason the Postgres
         // branch does — the generated name depends on which migration created the table.
-        const result = await db.execute(sql.raw(`
+        const result = await db.execute(Sql.raw(`
           SELECT index_name AS name
           FROM information_schema.STATISTICS
           WHERE table_schema = DATABASE() AND table_name = '${TABLE}'
@@ -234,7 +234,7 @@ export class SourcesMigration extends BaseMigration {
         `));
         const rows: any[] = Array.isArray(result) ? result : ((result as any)?.rows ?? []);
         for (const row of rows) {
-          await db.execute(sql.raw(`ALTER TABLE ${TABLE} DROP INDEX ${row.name}`));
+          await db.execute(Sql.raw(`ALTER TABLE ${TABLE} DROP INDEX ${row.name}`));
         }
       },
     });
@@ -244,7 +244,7 @@ export class SourcesMigration extends BaseMigration {
   /** True when rows already share a `(type, slug)` pair, which the new index could not accept. */
   private async hasDuplicatePairs(db: IDatabaseManager): Promise<boolean> {
     const { TABLE_V37: TABLE, loggerV37: logger } = SourcesMigration;
-    const result: any = await db.execute(sql.raw(
+    const result: any = await db.execute(Sql.raw(
       `SELECT type, slug, COUNT(*) AS copies FROM ${TABLE} GROUP BY type, slug HAVING COUNT(*) > 1`,
     ));
 
@@ -263,7 +263,7 @@ export class SourcesMigration extends BaseMigration {
 
   private async createCompositeIndex(db: IDatabaseManager): Promise<void> {
     const { TABLE_V37: TABLE, INDEX, loggerV37: logger } = SourcesMigration;
-    await db.execute(sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS ${INDEX} ON ${TABLE} (type, slug)`));
+    await db.execute(Sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS ${INDEX} ON ${TABLE} (type, slug)`));
     logger.info(`${TABLE} is keyed on (type, slug): one slug can name a plugin, a theme and an appearance.`);
   }
 
@@ -319,20 +319,20 @@ export class SourcesMigration extends BaseMigration {
   private async v032SourcesTable(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql.raw(SourcesMigration.createStatement('SERIAL PRIMARY KEY', 'TIMESTAMPTZ')));
+        await db.execute(Sql.raw(SourcesMigration.createStatement('SERIAL PRIMARY KEY', 'TIMESTAMPTZ')));
         // Row-level security, exactly as every other tenant-scoped table gets it. The column, its
         // default, the index, ENABLE + FORCE and the policy all come from the framework's own helper
         // so this table cannot drift from the rest.
         await db.tenantIsolation.isolateTable(SourcesMigration.TABLE);
       },
       sqlite: async () => {
-        await db.execute(sql.raw(SourcesMigration.createStatement('INTEGER PRIMARY KEY AUTOINCREMENT', 'TEXT')));
+        await db.execute(Sql.raw(SourcesMigration.createStatement('INTEGER PRIMARY KEY AUTOINCREMENT', 'TEXT')));
       },
       mysql: async () => {
         // `slug` carries a UNIQUE, `type` joins it in migration 037's composite index, and `branch`,
         // `last_build_status` and `disable_permalink` each carry a DEFAULT — none of those five can
         // be TEXT in MySQL, so they get VARCHAR(191) here.
-        await db.execute(sql.raw(
+        await db.execute(Sql.raw(
           SourcesMigration.createStatement('INT AUTO_INCREMENT PRIMARY KEY', 'TIMESTAMP NULL', 'VARCHAR(191)'),
         ));
       },
@@ -370,7 +370,7 @@ export class SourcesMigration extends BaseMigration {
     });
     // The default only applies to rows written after it exists, so existing ones are stated too —
     // a NULL provider would read as "unknown", and the build refuses an unknown provider by design.
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `UPDATE ${SourcesMigration.TABLE_V34} SET provider = 'git' WHERE provider IS NULL OR provider = ''`,
     ));
   }
@@ -398,7 +398,7 @@ export class SourcesMigration extends BaseMigration {
       'install_after_build',
       'BOOLEAN DEFAULT TRUE',
     );
-    await db.execute(sql.raw(
+    await db.execute(Sql.raw(
       `UPDATE ${SourcesMigration.TABLE_V35} SET install_after_build = TRUE WHERE install_after_build IS NULL`,
     ));
   }
@@ -509,7 +509,7 @@ export class SourcesMigration extends BaseMigration {
 
     // Only the columns that are there, dropped plainly: `DROP COLUMN IF EXISTS` is not SQLite (or MySQL).
     for (const column of await this.presentColumns(db)) {
-      await db.execute(sql.raw(`ALTER TABLE ${TABLE} DROP COLUMN ${column}`));
+      await db.execute(Sql.raw(`ALTER TABLE ${TABLE} DROP COLUMN ${column}`));
     }
 
     logger.info(`${TABLE} no longer carries permalink columns, or the unique constraint one of them held.`);

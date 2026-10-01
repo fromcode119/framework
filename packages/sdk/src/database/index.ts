@@ -1,4 +1,4 @@
-export { DatabaseFactory, sql } from '@fromcode119/database';
+export { DatabaseFactory, Sql } from '@fromcode119/database';
 // Table name resolution — converts semantic refs like @plugin/table to physical table names.
 // Use in migrations where raw SQL requires the physical table name.
 export { TableResolver } from '@fromcode119/database';

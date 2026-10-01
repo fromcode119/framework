@@ -129,7 +129,6 @@ describe('where operators', () => {
     const probe = (): ProbePostgresReadOperations =>
       new ProbePostgresReadOperations(
         {} as any,
-        {} as any,
         new PostgresColumnNormalizer({} as any),
         (() => undefined) as any
       );

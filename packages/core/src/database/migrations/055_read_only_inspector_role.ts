@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -18,20 +18,20 @@ export class ReadOnlyInspectorRoleMigration extends BaseMigration {
     if (!(await db.tableExists('_system_roles'))) return;
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES ('inspector', 'Inspector (read-only)', 'Sees everything an administrator sees and cannot change anything. Give it to an account for an inspection, take it away after.', 'system', '["database:read"]'::jsonb)
           ON CONFLICT DO NOTHING
         `);
       },
       sqlite: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT OR IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES ('inspector', 'Inspector (read-only)', 'Sees everything an administrator sees and cannot change anything. Give it to an account for an inspection, take it away after.', 'system', '["database:read"]')
         `);
       },
       mysql: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES ('inspector', 'Inspector (read-only)', 'Sees everything an administrator sees and cannot change anything. Give it to an account for an inspection, take it away after.', 'system', '["database:read"]')
         `);

@@ -91,15 +91,17 @@ export class PluginGuestContextFactory {
     return context as unknown as PluginContext;
   }
 
-  /** `db` with `sql`/`eq`/`and`/`or` local (they build query objects) and SQL objects flattened for the wire. */
+  /** `db` with `sql`/`eq`/`and`/`or` local (they build statements) and statements flattened for the wire. */
   private database(base: Array<{ name: string; args?: unknown[] }>): unknown {
     const remote = this.remote;
     const database = this;
     return new Proxy({}, {
       get(_target, prop) {
-        // Loaded on first use, not at boot: drizzle is ~100 modules and ~10 MB, and most plugins never
-        // build a query object here. Every plugin process paid for it anyway.
-        if (prop === 'sql' || prop === 'eq' || prop === 'and' || prop === 'or') return (require('drizzle-orm') as typeof import('drizzle-orm'))[prop];
+        // Loaded on first use, not at boot: most plugins never build a query object here.
+        if (prop === 'sql' || prop === 'eq' || prop === 'and' || prop === 'or') {
+          const { Sql } = require('@fromcode119/database/sql/sql') as typeof import('@fromcode119/database/sql/sql');
+          return prop === 'sql' ? Sql.tag() : Sql[prop];
+        }
         if (prop === 'stored') return database.database([...base, { name: 'stored' }]);
         if (prop === 'withArchived') return database.database([...base, { name: 'withArchived' }]);
         if (typeof prop !== 'string') return undefined;

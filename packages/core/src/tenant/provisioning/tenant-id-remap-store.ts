@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import { TenantIdRemap } from '@core/tenant/provisioning/tenant-id-remap';
 
@@ -50,7 +50,7 @@ export class TenantIdRemapStore {
           .map((row) => `(${TenantIdRemapStore.quote(tenantId)}, ${TenantIdRemapStore.quote(row.table)}, `
             + `${TenantIdRemapStore.quote(row.oldId)}, ${TenantIdRemapStore.quote(row.newId)})`)
           .join(', ');
-        await this.db.execute(sql.raw(
+        await this.db.execute(Sql.raw(
           `INSERT INTO ${TenantIdRemapStore.TABLE} (tenant_id, table_name, old_id, new_id) VALUES ${values}`,
         ));
       }

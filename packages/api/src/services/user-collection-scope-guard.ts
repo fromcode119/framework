@@ -1,5 +1,5 @@
 import { ICollection, SystemConstants } from '@fromcode119/core';
-import { sql } from '@fromcode119/database';
+import { Sql } from '@fromcode119/database';
 import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 
 /**
@@ -37,8 +37,8 @@ export class UserCollectionScopeGuard {
     const ids = scope?.ids ?? null;
     if (!ids) return null;
     // An empty scope is "no accounts", never "no filter".
-    if (!ids.length) return sql`1 = 0`;
-    return sql`${sql.identifier('id')} IN (${sql.join(ids.map((id) => sql`${id}`), sql`, `)})`;
+    if (!ids.length) return Sql.query`1 = 0`;
+    return Sql.query`${Sql.identifier('id')} IN (${Sql.join(ids.map((id) => Sql.query`${id}`), Sql.query`, `)})`;
   }
 
   /** The object form of the same restriction, for readers that take a plain `where`. */

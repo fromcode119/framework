@@ -1,5 +1,5 @@
 import { FieldType, ICollection } from '@fromcode119/core';
-import { DynamicSchema, IDatabaseManager, NamingStrategy, timestamp, sql } from '@fromcode119/database';
+import { DynamicSchema, IDatabaseManager, NamingStrategy, Sql } from '@fromcode119/database';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 
 export class QueryHelper {
@@ -33,15 +33,6 @@ export class QueryHelper {
       timestamps: useTimestamps,
       workflow: hasWorkflow
     });
-
-    if (useTimestamps) {
-      if (!(table as any).createdAt) {
-        (table as any).createdAt = timestamp('created_at', { withTimezone: true });
-      }
-      if (!(table as any).updatedAt) {
-        (table as any).updatedAt = timestamp('updated_at', { withTimezone: true });
-      }
-    }
 
     this.virtualTables.set(collection.slug, { shape, table });
     return table;
@@ -96,14 +87,14 @@ export class QueryHelper {
       if (relationshipMatches) {
         for (const [fieldName, ids] of Object.entries(relationshipMatches)) {
           if (!Array.isArray(ids) || ids.length === 0) continue;
-          const physicalColumn = sql.identifier(NamingStrategy.toSnakeCase(fieldName));
+          const physicalColumn = Sql.identifier(NamingStrategy.toSnakeCase(fieldName));
           const numericIds = ids.map((value) => Number(value)).filter((value) => Number.isFinite(value));
           if (numericIds.length === ids.length) {
-            const list = sql.join(numericIds.map((value) => sql`${value}`), sql`, `);
-            searchClauses.push(sql`CAST(${physicalColumn} AS REAL) IN (${list})`);
+            const list = Sql.join(numericIds.map((value) => Sql.query`${value}`), Sql.query`, `);
+            searchClauses.push(Sql.query`CAST(${physicalColumn} AS REAL) IN (${list})`);
           } else {
-            const list = sql.join(ids.map((value) => sql`${String(value)}`), sql`, `);
-            searchClauses.push(sql`CAST(${physicalColumn} AS TEXT) IN (${list})`);
+            const list = Sql.join(ids.map((value) => Sql.query`${String(value)}`), Sql.query`, `);
+            searchClauses.push(Sql.query`CAST(${physicalColumn} AS TEXT) IN (${list})`);
           }
         }
       }
@@ -133,7 +124,7 @@ export class QueryHelper {
     // only) — so a Cyrillic term like "Вселенска" became "вселенска" and never matched the unfolded
     // column. Lowering symmetrically in SQL keeps ASCII case-insensitive and makes Cyrillic match by
     // the (un-folded) same case, instead of never matching.
-    return sql`LOWER(CAST(${column} AS TEXT)) LIKE LOWER(${`%${search}%`})`;
+    return Sql.query`LOWER(CAST(${column} AS TEXT)) LIKE LOWER(${`%${search}%`})`;
   }
 
   private static normalizeSearch(search?: string): string {
@@ -144,13 +135,13 @@ export class QueryHelper {
 
   public static buildOrderBy(db: IDatabaseManager, collection: ICollection, table: any, sort?: string) {
     const pk = collection.primaryKey || 'id';
-    let orderBy: any[] = [table[pk] ? db.desc(table[pk]) : db.desc(sql`1`)]; 
+    let orderBy: any[] = [table[pk] ? db.desc(table[pk]) : db.desc(Sql.query`1`)]; 
     
     if (sort) {
       const isDesc = sort.startsWith('-');
       const fieldName = isDesc ? sort.substring(1) : sort;
       if (table[fieldName]) {
-        orderBy = [isDesc ? db.desc(table[fieldName]) : sql`${table[fieldName]} asc`];
+        orderBy = [isDesc ? db.desc(table[fieldName]) : Sql.query`${table[fieldName]} asc`];
       }
     }
     return orderBy;

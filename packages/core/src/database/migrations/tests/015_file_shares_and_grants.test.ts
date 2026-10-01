@@ -1,6 +1,7 @@
 import Database from 'better-sqlite3';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FileSharesAndGrantsMigration } from '@core/database/migrations/015_file_shares_and_grants';
+import { SqlRenderer } from '@fromcode119/database';
 
 /**
  * Runs the migration's SQLite branch against a real in-memory database rather than asserting on
@@ -12,8 +13,8 @@ describe('015_file_shares_and_grants', () => {
   let executed: string[];
   let db: any;
 
-  /** `sql.raw('X')` stores the text at queryChunks[0].value[0]; the migration uses raw for SQLite. */
-  const textOf = (statement: any): string => String(statement?.queryChunks?.[0]?.value?.[0] ?? '');
+  /** The statement's text as SQLite runs it; the migration writes raw SQL for SQLite. */
+  const textOf = (statement: any): string => SqlRenderer.SQLITE.render(statement).text;
 
   beforeEach(async () => {
     sqlite = new Database(':memory:');

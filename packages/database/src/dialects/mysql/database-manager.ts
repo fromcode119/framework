@@ -198,7 +198,7 @@ export class MysqlDatabaseManager extends MysqlCrudOperations implements IDataba
   /**
    * The ROWS of a result, discarding mysql2's field metadata.
    *
-   * `drizzle.execute()` on this driver resolves to `[rows, fields]`, which every caller in the tree
+   * mysql2's `query()` resolves to `[rows, fields]`, which every caller in the tree
    * reads wrongly: the idiom migrations use is
    * `Array.isArray(result) ? result : result?.rows ?? []`, and against a two-element tuple that
    * answers "two rows" for ANY query. `tableExists` therefore said yes about tables that did not

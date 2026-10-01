@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 import { SystemConstants } from '@core/constants/system.constants';
 import { InitialFrameworkPostgresTables } from '@core/database/migrations/001_core_initial_schema-postgres-tables';
@@ -62,7 +62,7 @@ export class InitialFrameworkMigration extends BaseMigration {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
         await InitialFrameworkPostgresTables.create(db);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES
             ('admin', 'Administrator', 'Full system access', 'system', '["*"]'::jsonb),
@@ -73,7 +73,7 @@ export class InitialFrameworkMigration extends BaseMigration {
       },
       sqlite: async () => {
         await InitialFrameworkSqliteTables.create(db);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT OR IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES
             ('admin', 'Administrator', 'Full system access', 'system', '["*"]'),
@@ -84,7 +84,7 @@ export class InitialFrameworkMigration extends BaseMigration {
       // MySQL spells "insert if absent" `INSERT IGNORE`; the JSON columns take plain string literals.
       mysql: async () => {
         await InitialFrameworkMysqlTables.create(db);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           INSERT IGNORE INTO "_system_roles" ("slug", "name", "description", "type", "permissions")
           VALUES
             ('admin', 'Administrator', 'Full system access', 'system', '["*"]'),

@@ -1,4 +1,4 @@
-import { sql } from '@fromcode119/database';
+import { Sql } from '@fromcode119/database';
 
 /**
  * Refuses to serve requests on a database connection that bypasses row-level security.
@@ -21,7 +21,7 @@ export class DatabaseRoleGuard {
   }): Promise<void> {
     if (String(db?.dialect || '').toLowerCase() !== DatabaseRoleGuard.POSTGRES) return;
 
-    const result = await db.execute(sql`
+    const result = await db.execute(Sql.query`
       SELECT
         (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS is_superuser,
         EXISTS (

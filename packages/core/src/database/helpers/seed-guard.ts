@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { Sql } from '@fromcode119/database';
 import type { IDatabaseManager } from '@fromcode119/database';
 
 /**
@@ -61,11 +61,11 @@ export class SeedGuard {
    */
   private static bind(statement: string, values: unknown[]) {
     const parts = statement.split('?');
-    const chunks: unknown[] = [sql.raw(parts[0])];
+    const chunks: unknown[] = [Sql.raw(parts[0])];
     values.forEach((value, index) => {
-      chunks.push(sql`${value}`);
-      chunks.push(sql.raw(parts[index + 1] ?? ''));
+      chunks.push(Sql.query`${value}`);
+      chunks.push(Sql.raw(parts[index + 1] ?? ''));
     });
-    return sql.join(chunks as any, sql.raw(''));
+    return Sql.join(chunks as any, Sql.raw(''));
   }
 }

@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 import { Logger } from '@core/logging';
 import type { ISystemMigration } from '@core/interfaces/system-migration.interface';
 import { MigrationLoader } from '@core/database/migrations';
@@ -50,7 +50,7 @@ export class MigrationManager {
         pluginSlug: this.resolvePluginSlug(migration.name),
         migrationName: migration.name,
       });
-      await migration.up(this.db, sql, new MigrationTenantScope(this.db));
+      await migration.up(this.db, Sql.tag(), new MigrationTenantScope(this.db));
       await this.db.insert(SystemConstants.TABLE.MIGRATIONS, {
         name: migration.name,
         version: migration.version,
@@ -82,7 +82,7 @@ export class MigrationManager {
       const migration = systemMigrations.find((m: any) => m.version === record.version);
       if (migration && migration.down) {
         this.logger.info(`Rolling back: ${migration.name} (v${migration.version})...`);
-        await migration.down(this.db, sql);
+        await migration.down(this.db, Sql.tag());
       }
       await this.db.delete(SystemConstants.TABLE.MIGRATIONS, { id: record.id });
     }
@@ -101,7 +101,7 @@ export class MigrationManager {
   }
 
   private async getMaxBatch(): Promise<number> {
-    const result: any = await this.db.execute(sql`SELECT MAX(batch) as max_batch FROM _system_migrations`);
+    const result: any = await this.db.execute(Sql.query`SELECT MAX(batch) as max_batch FROM _system_migrations`);
     const rows = Array.isArray(result) ? result : (result.rows || []);
     return rows[0]?.max_batch || rows[0]?.MAX_BATCH || 0;
   }

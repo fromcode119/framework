@@ -1,6 +1,5 @@
 import type { IAggregateOptions } from '@fromcode119/database';
 export interface IDatabaseManager {
-  readonly drizzle: any;
   readonly dialect: string;
   execute(query: any): Promise<any>;
   connect(): Promise<void>;

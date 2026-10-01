@@ -279,7 +279,7 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     return `${quotedColumn}::text`;
   }
 
-  protected drizzlePatternColumn(column: any): any {
+  protected fragmentPatternColumn(column: any): any {
     return Sql.query`${column}::text`;
   }
 

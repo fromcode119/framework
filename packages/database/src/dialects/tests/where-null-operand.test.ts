@@ -10,7 +10,7 @@ import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manage
  * It used to emit `column = ?` with a NULL parameter, which is never true in SQL — so
  * `{ revoked_at: null }` guards matched nothing, `update` calls reported "0 rows" for rows that were
  * plainly there, and `{ ne: null }` filters returned nothing at all. Both raw-SQL paths and the
- * drizzle path share the rule now; these tests pin the whole surface: find, count, update.
+ * declared-table path share the rule now; these tests pin the whole surface: find, count, update.
  */
 describe('where with a null operand', () => {
   const dbPaths: string[] = [];

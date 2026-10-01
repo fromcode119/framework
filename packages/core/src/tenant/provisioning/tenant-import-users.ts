@@ -35,7 +35,7 @@ export class TenantImportUsers {
         remap.set(SystemConstants.TABLE.USERS, user.id, existing[0].id);
         continue;
       }
-      // Raw, so the insert is part of the import's transaction: `insert()` goes through drizzle's own
+      // Raw, so the insert is part of the import's transaction: `insert()` goes through the manager's own
       // pool and would survive a rollback as an account with no site.
       const inserted = await this.db.queryRaw(
         `INSERT INTO ${TenantSql.identifier(SystemConstants.TABLE.USERS)} `

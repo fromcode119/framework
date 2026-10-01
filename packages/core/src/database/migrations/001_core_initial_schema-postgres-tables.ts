@@ -1,4 +1,4 @@
-import { IDatabaseManager, sql } from '@fromcode119/database';
+import { IDatabaseManager, Sql } from '@fromcode119/database';
 
 /**
  * PostgreSQL table-creation statements for the initial framework migration. Each `db.execute`
@@ -8,7 +8,7 @@ import { IDatabaseManager, sql } from '@fromcode119/database';
 export class InitialFrameworkPostgresTables {
   static async create(db: IDatabaseManager): Promise<void> {
     // 1. Plugins Table
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_plugins" (
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
@@ -26,7 +26,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 2. Users Table
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "users" (
             "id" SERIAL PRIMARY KEY,
             "email" TEXT NOT NULL UNIQUE,
@@ -42,7 +42,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 3. System Roles Table
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_roles" (
             "slug" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL,
@@ -55,7 +55,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 4. System Permissions Table
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_permissions" (
             "name" TEXT PRIMARY KEY,
             "description" TEXT,
@@ -68,7 +68,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 5. Themes Table
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_themes" (
             "slug" TEXT PRIMARY KEY,
             "state" TEXT NOT NULL DEFAULT 'inactive',
@@ -81,7 +81,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 6. Bridge Tables
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_users_roles" (
             "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
             "role_slug" TEXT NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
@@ -89,7 +89,7 @@ export class InitialFrameworkPostgresTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_roles_permissions" (
             "role_slug" TEXT NOT NULL REFERENCES "_system_roles"("slug") ON DELETE CASCADE,
             "permission_name" TEXT NOT NULL REFERENCES "_system_permissions"("name") ON DELETE CASCADE,
@@ -98,7 +98,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 7. Plugin Settings
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_plugin_settings" (
             "plugin_slug" TEXT PRIMARY KEY REFERENCES "_system_plugins"("slug") ON DELETE CASCADE,
             "settings" JSONB NOT NULL DEFAULT '{}',
@@ -107,7 +107,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 8. Trusted Publishers
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_trusted_publishers" (
             "publisher_id" TEXT PRIMARY KEY,
             "name" TEXT NOT NULL,
@@ -120,7 +120,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 9. System Meta
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_meta" (
             "key" TEXT PRIMARY KEY,
             "value" TEXT NOT NULL,
@@ -131,7 +131,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 10. Sessions
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_sessions" (
             "id" UUID PRIMARY KEY DEFAULT gen_random_uuid(),
             "user_id" INTEGER NOT NULL REFERENCES "users"("id") ON DELETE CASCADE,
@@ -146,7 +146,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 11. Logs
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_logs" (
             "id" SERIAL PRIMARY KEY,
             "plugin_slug" TEXT,
@@ -158,7 +158,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 12. Media
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "media_folders" (
             "id" SERIAL PRIMARY KEY,
             "name" TEXT NOT NULL,
@@ -168,7 +168,7 @@ export class InitialFrameworkPostgresTables {
           )
         `);
 
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "media" (
             "id" SERIAL PRIMARY KEY,
             "filename" TEXT NOT NULL,
@@ -191,7 +191,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 13. Security audit log
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_audit_logs" (
             "id" SERIAL PRIMARY KEY,
             "plugin_slug" TEXT NOT NULL,
@@ -204,7 +204,7 @@ export class InitialFrameworkPostgresTables {
         `);
 
     // 14. Scheduler tasks — `schedule` is a cron expression or an interval, as `type` says
-    await db.execute(sql`
+    await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_scheduler_tasks" (
             "id" SERIAL PRIMARY KEY,
             "name" TEXT NOT NULL UNIQUE,

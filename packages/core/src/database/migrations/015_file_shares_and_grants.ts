@@ -1,4 +1,4 @@
-import { BaseMigration, IDatabaseManager, sql } from '@fromcode119/database';
+import { BaseMigration, IDatabaseManager, Sql } from '@fromcode119/database';
 import { DialectHelper } from '@core/database/helpers/dialect';
 
 /**
@@ -35,7 +35,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
   async up(db: IDatabaseManager): Promise<void> {
     await DialectHelper.executeForDialect(db.dialect, {
       postgres: async () => {
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_file_shares" (
             "id" SERIAL PRIMARY KEY,
             "title" TEXT NOT NULL,
@@ -45,7 +45,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_file_grants" (
             "id" SERIAL PRIMARY KEY,
             "share_id" INTEGER NOT NULL,
@@ -63,7 +63,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `);
-        await db.execute(sql`
+        await db.execute(Sql.query`
           CREATE TABLE IF NOT EXISTS "_system_file_access_log" (
             "id" SERIAL PRIMARY KEY,
             -- NULLABLE on purpose. An attempt with an unknown token has no grant to point at, and that
@@ -79,15 +79,15 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "share_id" INTEGER
           )
         `);
-        await db.execute(sql`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`);
-        await db.execute(sql`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`);
+        await db.execute(Sql.query`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`);
+        await db.execute(Sql.query`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`);
       },
       mysql: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_file_shares (
             id INT AUTO_INCREMENT PRIMARY KEY,
             title TEXT NOT NULL,
@@ -97,7 +97,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_file_grants (
             id INT AUTO_INCREMENT PRIMARY KEY,
             share_id INT NOT NULL,
@@ -118,7 +118,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             KEY idx_file_grants_email (email)
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS _system_file_access_log (
             id INT AUTO_INCREMENT PRIMARY KEY,
             grant_id INT,
@@ -135,7 +135,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
         `));
       },
       sqlite: async () => {
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_file_shares" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "title" TEXT NOT NULL,
@@ -145,7 +145,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_file_grants" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "share_id" INTEGER NOT NULL,
@@ -163,7 +163,7 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "created_at" TEXT DEFAULT CURRENT_TIMESTAMP
           )
         `));
-        await db.execute(sql.raw(`
+        await db.execute(Sql.raw(`
           CREATE TABLE IF NOT EXISTS "_system_file_access_log" (
             "id" INTEGER PRIMARY KEY AUTOINCREMENT,
             "grant_id" INTEGER,
@@ -175,12 +175,12 @@ export class FileSharesAndGrantsMigration extends BaseMigration {
             "share_id" INTEGER
           )
         `));
-        await db.execute(sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`));
-        await db.execute(sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`));
+        await db.execute(Sql.raw(`CREATE UNIQUE INDEX IF NOT EXISTS "idx_file_grants_token_hash" ON "_system_file_grants" ("token_hash")`));
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_share" ON "_system_file_grants" ("share_id")`));
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_grants_email" ON "_system_file_grants" ("email")`));
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_grant" ON "_system_file_access_log" ("grant_id")`));
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_share" ON "_system_file_access_log" ("share_id")`));
+        await db.execute(Sql.raw(`CREATE INDEX IF NOT EXISTS "idx_file_access_log_created" ON "_system_file_access_log" ("created_at")`));
       },
     });
   }

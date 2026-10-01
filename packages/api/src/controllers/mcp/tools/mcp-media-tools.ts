@@ -111,7 +111,7 @@ export class McpMediaTools {
       optimizedHeight: optimized?.height ?? null,
     };
 
-    // STRING table name, never the drizzle Schema.media object: the drizzle table's `defaultNow()`
+    // STRING table name, never the declared Schema.media table: that table's `defaultNow()`
     // compiles to Postgres `now()`, which SQLite does not have — the string path routes through the
     // dialect, which owns the timestamps on both databases (same as MediaController).
     // `url` is part of the tool's OUTPUT, not the DB record — it is the address the next tool call

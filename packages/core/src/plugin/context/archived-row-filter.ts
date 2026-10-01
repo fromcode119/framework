@@ -29,7 +29,7 @@ export class ArchivedRowFilter {
 
     const options = args[1] ?? {};
     const where = options.where;
-    // A drizzle expression cannot be merged into; it is the caller's own SQL and stays as written.
+    // A built SQL expression cannot be merged into; it is the caller's own SQL and stays as written.
     if (where !== undefined && !ArchivedRowFilter.isPlainObject(where)) return args;
     if (CollectionArchive.mentionsArchive(where)) return args;
 

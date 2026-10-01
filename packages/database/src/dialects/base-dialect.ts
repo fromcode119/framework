@@ -47,7 +47,7 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
     patternColumnExpression: (quotedColumn) => this.patternColumnExpression(quotedColumn),
     getLikeOperator: () => this.getLikeOperator(),
     resolveColumn: (column, tableOrName) => this.resolveColumn(column, tableOrName),
-    drizzlePatternColumn: (column) => this.drizzlePatternColumn(column),
+    fragmentPatternColumn: (column) => this.fragmentPatternColumn(column),
   });
 
   /**
@@ -111,14 +111,14 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
     return this.predicates.renderPredicate(comparison, quotedColumn, values);
   }
 
-  /** @see SqlPredicateRenderer.drizzleSearchCondition */
-  protected drizzleSearchCondition(search?: { columns: string[]; value: string }): any {
-    return this.predicates.drizzleSearchCondition(search);
+  /** @see SqlPredicateRenderer.fragmentSearchCondition */
+  protected fragmentSearchCondition(search?: { columns: string[]; value: string }): any {
+    return this.predicates.fragmentSearchCondition(search);
   }
 
-  /** @see SqlPredicateRenderer.drizzlePatternCondition */
-  protected drizzlePatternCondition(column: any, comparison: WhereComparison): any {
-    return this.predicates.drizzlePatternCondition(column, comparison);
+  /** @see SqlPredicateRenderer.fragmentPatternCondition */
+  protected fragmentPatternCondition(column: any, comparison: WhereComparison): any {
+    return this.predicates.fragmentPatternCondition(column, comparison);
   }
 
 
@@ -157,15 +157,15 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
 
 
 
-  /** The drizzle twin of {@link patternColumnExpression} — Postgres casts, everyone else does not. */
-  protected drizzlePatternColumn(column: any): any {
+  /** The fragment twin of {@link patternColumnExpression} — Postgres casts, everyone else does not. */
+  protected fragmentPatternColumn(column: any): any {
     return column;
   }
 
 
   /**
    * Build ORDER BY clause from various formats
-   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or drizzle expressions
+   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or built order expressions
    */
   protected buildOrderBy(orderBy: any): any {
     return this.orderByBuilder.buildOrderBy(orderBy);
@@ -206,9 +206,9 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
    * Quote one identifier for raw-SQL interpolation, rejecting anything that is not a plain identifier.
    *
    * Every raw builder below interpolates column names directly into the statement, so the name is the
-   * one place a caller-supplied string reaches SQL as CODE rather than as a bound parameter. Neither
-   * plain quoting nor drizzle's `sql.identifier` escapes an embedded double quote, so a name carrying
-   * one would close the quoted identifier and inject. Names are canonical schema field names — always
+   * one place a caller-supplied string reaches SQL as CODE rather than as a bound parameter. Plain
+   * quoting does not escape an embedded double quote, so a name carrying one would close the quoted
+   * identifier and inject. Names are canonical schema field names — always
    * plain identifiers — so anything else is rejected rather than escaped.
    */
   protected quoteIdentifier(name: string): string {
@@ -218,11 +218,11 @@ export abstract class BaseDialect extends DialectCapabilityDefaults {
   /**
    * Resolve one canonical field name (a `where` key or a `search.columns` entry) to a column expression.
    *
-   * Callers pass CANONICAL camelCase schema field names; the PHYSICAL column is snake_case. A drizzle
-   * table object keys its columns by that same camelCase name, so prefer the declared property — it
+   * Callers pass CANONICAL camelCase schema field names; the PHYSICAL column is snake_case. A declared
+   * table keys its columns by that same camelCase name, so prefer the declared property — it
    * already maps to the right physical column, and it is the only thing that gets a genuinely
-   * camelCase physical column right. When the table object does not declare it — or there is no table
-   * object at all — fall back to a raw identifier, snake_cased: a verbatim camelCase identifier matches
+   * camelCase physical column right. When the table does not declare it — or there is no declared table
+   * at all — fall back to a raw identifier, snake_cased: a verbatim camelCase identifier matches
    * no column, and SQLite does not always reject it but degrades the double-quoted name to a STRING
    * LITERAL, so the predicate compares the column NAME as text (matching nothing, or every row when the
    * term is a substring of that name). Postgres/MySQL raise "column does not exist" instead.

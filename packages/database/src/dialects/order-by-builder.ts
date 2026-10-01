@@ -37,12 +37,12 @@ export class OrderByBuilder {
 
   /**
    * Build ORDER BY clause from various formats
-   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or drizzle expressions
+   * Supports: string ("created_at desc"), object ({ created_at: 'desc' }), or built order expressions
    */
   buildOrderBy(orderBy: any): any {
     if (!orderBy) return null;
 
-    // Array of drizzle expressions - pass through
+    // Array of built order expressions - pass through
     if (Array.isArray(orderBy)) {
       return orderBy;
     }

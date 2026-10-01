@@ -7,7 +7,7 @@ import { SqlTable } from '@database/sql/sql-table';
 import { SqliteDatabaseManager } from '@database/dialects/sqlite/database-manager';
 
 /**
- * The drizzle branches of `find`/`count` build their WHERE via `BaseDialect.buildWhereConditions`, which
+ * The declared-table branches of `find`/`count` build their WHERE via `BaseDialect.buildWhereConditions`, which
  * emitted `eq(sql.identifier(key), value)` VERBATIM. Canonical field names are camelCase and the physical
  * columns are snake_case, so `{ where: { affiliateCode } }` produced `"affiliateCode" = ?` — the same
  * unresolvable-identifier bug the search columns had. Postgres `count()` used to carry a local workaround
@@ -39,7 +39,7 @@ describe('where column naming', () => {
     return manager;
   }
 
-  /** camelCase JS keys mapped to snake_case physical columns — the normal drizzle shape. */
+  /** camelCase JS keys mapped to snake_case physical columns — the normal declared-table shape. */
   const referralsTable = SqlTable.define('fcp_test_referrals', {
     id: SqlColumns.integer('id'),
     affiliateCode: SqlColumns.text('affiliate_code'),

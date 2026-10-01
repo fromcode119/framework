@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { PgDialect } from 'drizzle-orm/pg-core';
+import { SqlRenderer } from '@fromcode119/database';
 import { TimestampsCarryTheirZoneMigration } from '@core/database/migrations/054_timestamps_carry_their_zone';
 
 describe('054 timestamps carry their zone', () => {
@@ -10,7 +10,7 @@ describe('054 timestamps carry their zone', () => {
       db: {
         dialect,
         queryRaw: async () => columns,
-        execute: async (query: any) => { executed.push(new PgDialect().sqlToQuery(query).sql); },
+        execute: async (query: any) => { executed.push(SqlRenderer.POSTGRES.render(query).text); },
       } as any,
     };
   };

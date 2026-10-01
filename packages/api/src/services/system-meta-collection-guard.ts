@@ -1,5 +1,5 @@
 import { ICollection, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
-import { sql } from '@fromcode119/database';
+import { Sql } from '@fromcode119/database';
 
 /**
  * `_system_meta` is reachable through the generic collection REST API as well (the `settings`
@@ -60,10 +60,10 @@ export class SystemMetaCollectionGuard {
     const exposableKeys = Array.from(SystemSettingsExposureUtils.getExposableKeys());
     if (!exposableKeys.length) {
       // Nothing is declared exposable — return no rows rather than falling through to "no filter".
-      return sql`1 = 0`;
+      return Sql.query`1 = 0`;
     }
 
-    const keyList = sql.join(exposableKeys.map((key) => sql`${key}`), sql`, `);
-    return sql`${sql.identifier('key')} IN (${keyList})`;
+    const keyList = Sql.join(exposableKeys.map((key) => Sql.query`${key}`), Sql.query`, `);
+    return Sql.query`${Sql.identifier('key')} IN (${keyList})`;
   }
 }

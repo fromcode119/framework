@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import type { OneShotTenantClient } from '@database/tenant/one-shot-tenant-client';
 
 /**
- * What the executors and drizzle see as "the request's client": the pg `query` surface, backed by
+ * What the executors see as "the request's client": the pg `query` surface, backed by
  * a pooled client that is taken on the first call (see TenantConnectionScope). Drizzle's
  * node-postgres driver and the raw executors only ever call `query`, so this is the whole contract.
  */

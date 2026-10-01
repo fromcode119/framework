@@ -3,7 +3,7 @@ import os from 'os';
 import path from 'path';
 import { createHash } from 'crypto';
 import * as tar from 'tar';
-import { IDatabaseManager, eq, Schema } from '@fromcode119/database';
+import { IDatabaseManager, Schema, Sql } from '@fromcode119/database';
 import { ProjectPaths } from '@core/config/paths';
 import { BackupService } from '@core/management/backup-service';
 import type { ISiteTransferBundleManifest } from '@core/management/interfaces/site-transfer-bundle-manifest.interface';
@@ -139,7 +139,7 @@ export class SiteTransferBundleService {
   }
 
   private async readActiveTheme(): Promise<{ slug: string | null; version: string | null }> {
-    const rows = await this.db.find(Schema.systemThemes, { where: eq(Schema.systemThemes.state, 'active') });
+    const rows = await this.db.find(Schema.systemThemes, { where: Sql.eq(Schema.systemThemes.state, 'active') });
     const activeTheme = rows[0];
     if (!activeTheme?.slug) {
       return { slug: null, version: null };
@@ -154,7 +154,7 @@ export class SiteTransferBundleService {
 
   private async readActivePlugins(): Promise<Array<{ slug: string; version: string | null }>> {
     const rows = await this.db.find(Schema.systemPlugins, {
-      where: eq(Schema.systemPlugins.state, 'active'),
+      where: Sql.eq(Schema.systemPlugins.state, 'active'),
       orderBy: this.db.asc(Schema.systemPlugins.slug),
     });
 

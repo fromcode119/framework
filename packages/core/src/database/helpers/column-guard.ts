@@ -1,4 +1,4 @@
-import { sql } from 'drizzle-orm';
+import { Sql } from '@fromcode119/database';
 import type { IDatabaseManager } from '@fromcode119/database';
 
 /**
@@ -19,6 +19,6 @@ export class ColumnGuard {
   static async addIfMissing(db: IDatabaseManager, table: string, column: string, definition: string): Promise<void> {
     const existing = await db.getColumns(table);
     if (existing.map((name) => name.toLowerCase()).includes(column.toLowerCase())) return;
-    await db.execute(sql.raw(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${definition}`));
+    await db.execute(Sql.raw(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${definition}`));
   }
 }
