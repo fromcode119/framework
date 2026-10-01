@@ -68,6 +68,8 @@ export { ApiWorkers } from '@core/cluster/api-workers';
 export { RedisWindowCounter } from '@core/security/redis-window-counter';
 export { I18nManager } from '@core/i18n/i18n-manager';
 export { WebSocketManager } from '@core/realtime/web-socket-manager';
+export { RealtimeRoomTokens } from '@core/realtime/realtime-room-tokens';
+export { RealtimeRoomClient } from '@core/realtime/realtime-room-client';
 export type { IRealtimeSocketBinding } from '@core/realtime/interfaces/realtime-socket-binding.interface';
 
 // Capability Registry

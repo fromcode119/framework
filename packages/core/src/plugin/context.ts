@@ -25,6 +25,7 @@ import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
+import { RealtimeContextProxy } from '@core/plugin/context/realtime';
 import { GeoContextProxy } from '@core/plugin/context/geo';
 import { MigrationsContextProxy } from '@core/plugin/context/migrations';
 import { MediaContextProxy } from '@core/plugin/context/media';
@@ -256,6 +257,8 @@ export class PluginContextFactory {
         tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),
         // Signs on the HOST: an isolated plugin has no key to decrypt the signing root with, and must not.
         signing: SigningContextProxy.createSigningProxy(manager, plugin.manifest.slug),
+        // Mints and sends on the HOST: the room's sockets are the api's, and so is the key.
+        realtime: RealtimeContextProxy.createRealtimeProxy(manager, plugin.manifest.slug),
         // Looks up on the HOST: the database file stays with the platform.
         geo: GeoContextProxy.createGeoProxy(),
         // Schema migrations run on the framework's DDL connection, never the request role.

@@ -15,32 +15,46 @@ describe('who may open the live socket', () => {
     customer: { id: 2, roles: ['customer'], tenantId: 'alpha', iat: 10 },
     'no-site': { id: 3, roles: ['admin'], iat: 10 },
   };
+  const rooms: Record<string, { tenantId: string | null; room: string }> = {
+    'chat-token': { tenantId: 'alpha', room: 'helpdesk:conversation-1' },
+  };
   const authorizer = new RealtimeSocketAuthorizer({
     verifyToken: async (token: string) => {
       if (!claims[token]) throw new Error('invalid');
       return claims[token];
     },
+  }, {
+    verify: async (token: string) => rooms[token] ?? null,
   });
   const upgrade = (cookie?: string) => ({ headers: cookie ? { cookie } : {} }) as any;
+  const at = (query = '') => new URL(`http://api.test/api/v1/socket${query}`);
   const sites = () => TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
   it('refuses a connection with no session, a forged one, or a customer\'s', async () => {
     sites();
-    expect(await authorizer.authorize(upgrade())).toBeNull();
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=forged`))).toBeNull();
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=customer`))).toBeNull();
+    expect(await authorizer.authorize(upgrade(), at())).toBeNull();
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=forged`), at())).toBeNull();
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=customer`), at())).toBeNull();
   });
 
   it('binds an administrator to the site of the session, the newest session winning', async () => {
     sites();
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin`))).toEqual({ tenantId: 'alpha' });
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin; ${CookieConstants.AUTH_TOKEN}=site-admin-newer`))).toEqual({ tenantId: 'beta' });
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin`), at())).toEqual({ tenantId: 'alpha' });
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin; ${CookieConstants.AUTH_TOKEN}=site-admin-newer`), at())).toEqual({ tenantId: 'beta' });
   });
 
   it('refuses an administrator session that names no site where there are sites, and admits it where there are none', async () => {
     sites();
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=no-site`))).toBeNull();
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=no-site`), at())).toBeNull();
     TenantMode.reset();
-    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=no-site`))).toEqual({ tenantId: null });
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=no-site`), at())).toEqual({ tenantId: null });
+  });
+
+  it('admits a room token to its room alone, and never falls back to the session beside a bad one', async () => {
+    sites();
+    expect(await authorizer.authorize(upgrade(), at('?room=chat-token'))).toEqual({ tenantId: 'alpha', room: 'helpdesk:conversation-1' });
+    expect(await authorizer.authorize(upgrade(), at('?room=forged'))).toBeNull();
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin`), at('?room=forged'))).toBeNull();
+    expect(await authorizer.authorize(upgrade(`${CookieConstants.AUTH_TOKEN}=site-admin`), at('?room='))).toBeNull();
   });
 });

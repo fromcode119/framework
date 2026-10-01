@@ -18,6 +18,9 @@ import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
  * updated and deleted rows as they happened. The api now admits a connection only with a session and
  * states its site (`IRealtimeSocketBinding`); an event goes to the sockets of the site whose request
  * produced it, and an event with no site goes nowhere — "no site" never means "every site".
+ *
+ * A socket admitted with a room token (`RealtimeRoomTokens`) hears only its room — what a plugin sends
+ * there with `context.realtime.emit` — and none of the site's writes.
  */
 export class WebSocketManager {
   private wss: WebSocketServer | null = null;
@@ -32,6 +35,11 @@ export class WebSocketManager {
     ProcessSignals.on(ProcessSignal.REALTIME_BROADCAST, (payload: any, local: boolean) => {
       if (!local) this.deliver(String(payload?.data ?? ''), payload?.tenantId ?? null);
     });
+    // A room's events are announced, never sent directly: the room's sockets may live in any process,
+    // this one included.
+    ProcessSignals.on(ProcessSignal.REALTIME_ROOM, (payload: any) => {
+      this.deliverToRoom(String(payload?.data ?? ''), payload?.tenantId ?? null, String(payload?.room ?? ''));
+    });
   }
 
   public initialize(server: any) {
@@ -45,9 +53,13 @@ export class WebSocketManager {
         return;
       }
       if (!this.isClosing) this.logger.debug('Client connected');
-      this.clients.set(ws, { tenantId: String(binding.tenantId ?? '').trim() || null });
+      const room = String(binding.room ?? '').trim() || null;
+      this.clients.set(ws, { tenantId: String(binding.tenantId ?? '').trim() || null, room });
 
       ws.on('message', (data: any) => {
+        // A room socket only listens. What a visitor says goes through the owning plugin's own routes,
+        // which check who they are; it never reaches the hook bus from here.
+        if (room) return;
         try {
           const message = JSON.parse(data.toString());
           this.handleMessage(ws, message);
@@ -103,10 +115,23 @@ export class WebSocketManager {
     const sites = TenantMode.isEnabled();
     if (sites && !tenantId) return;
     this.clients.forEach((binding, client) => {
+      // A room socket was admitted for its room alone, never for the site's writes.
+      if (binding.room) return;
       if (sites && binding.tenantId !== tenantId) return;
       if (client.readyState === WebSocket.OPEN) {
         client.send(data);
       }
+    });
+  }
+
+  /** To this process's sockets admitted to `room` of `tenantId`'s site. */
+  private deliverToRoom(data: string, tenantId: string | null, room: string): void {
+    if (!data || !room) return;
+    const sites = TenantMode.isEnabled();
+    if (sites && !tenantId) return;
+    this.clients.forEach((binding, client) => {
+      if (binding.room !== room || (sites && binding.tenantId !== tenantId)) return;
+      if (client.readyState === WebSocket.OPEN) client.send(data);
     });
   }
 
