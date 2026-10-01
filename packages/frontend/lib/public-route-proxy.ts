@@ -8,6 +8,13 @@ import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 
 export class PublicRouteProxy {
   private static readonly DEFAULT_CONTENT_TYPE = 'text/plain; charset=utf-8';
+  /**
+   * A root file (`llms.txt`, a feed) is served from the SITE's own origin, unlike the plugin route it
+   * comes from. Whatever type the plugin answered with, it is never a page that runs: sandboxed, with
+   * nothing it may load. A feed reader ignores this; a browser that would otherwise render an HTML or
+   * XHTML answer as a live page on the site does not run it.
+   */
+  static readonly POLICY = "sandbox; default-src 'none'";
   private static readonly FORWARDED_HEADERS = [
     'cache-control',
     'content-type',
@@ -112,6 +119,8 @@ export class PublicRouteProxy {
     if (!forwarded.has('content-type')) {
       forwarded.set('content-type', fallbackContentType || PublicRouteProxy.DEFAULT_CONTENT_TYPE);
     }
+    forwarded.set('content-security-policy', PublicRouteProxy.POLICY);
+    forwarded.set('x-content-type-options', 'nosniff');
 
     return forwarded;
   }

@@ -1,0 +1,14 @@
+/**
+ * A plugin widget's frame (PluginWidgetFrame). Imported by the frontend's root layout, not by the
+ * component — a runtime CSS import in this package compiles to a `require()` and makes it un-importable
+ * by Node (see `files/file-share.css`).
+ *
+ * The frame takes the slot's width; its height is the widget's own, set on the element.
+ */
+
+.fc-plugin-widget {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+}

@@ -64,6 +64,9 @@ describe('PublicRouteProxy', () => {
     expect(forwardedHeaders.get('x-forwarded-proto')).toBe('https');
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('public, max-age=300');
+    // Served from the site's own origin: never a page that runs, whatever type the plugin answered with.
+    expect(response.headers.get('content-security-policy')).toBe("sandbox; default-src 'none'");
+    expect(response.headers.get('x-content-type-options')).toBe('nosniff');
     expect(response.headers.get('content-type')).toBe('application/xml; charset=utf-8');
     expect(response.headers.get('etag')).toBe('feed-etag');
     expect(await response.text()).toBe('<feed />');

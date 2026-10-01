@@ -313,6 +313,7 @@ export type { ISiteClock } from '@core/i18n/interfaces/site-clock.interface';
 export { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 export { PluginTenantStateService } from '@core/plugin/tenant/plugin-tenant-state-service';
 export { PluginOwners } from '@core/plugin/tenant/plugin-owners';
+export { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
 export { TenantPluginInstaller } from '@core/plugin/tenant/tenant-plugin-installer';
 export { TenantPluginRefusal } from '@core/plugin/tenant/tenant-plugin-refusal';
 export { TenantPluginRefusalReason } from '@core/plugin/tenant/enums/tenant-plugin-refusal-reason.enum';

@@ -99,7 +99,7 @@ describe('site plugin package policy', () => {
     }
   });
 
-  it('refuses every way into the ADMIN: an empty `admin`, `ui.entry` and `ui.adminCss` — but keeps the storefront keys', () => {
+  it('refuses every way into the ADMIN: an empty `admin`, `ui.entry` and `ui.adminCss`', () => {
     // The admin imports `ui.entry` on the plugin's own page whether or not `admin` is declared, and
     // `admin: {}` is empty yet truthy where the admin decides to load a plugin's UI.
     const dir = tempDir('fc-policy-');
@@ -108,8 +108,35 @@ describe('site plugin package policy', () => {
       slug: 'x', admin: {}, ui: { entry: 'frontend.js', adminCss: ['a.css'] },
     } as any).join(' | ');
     for (const expected of ['"admin"', '"ui.entry"', '"ui.adminCss"']) expect(reasons).toContain(expected);
+  });
 
-    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', ui: { frontendEntry: 'frontend.js', css: ['s.css'] } } as any)).toEqual([]);
+  it('refuses every way into the site\'s own pages: storefront bundles, stylesheets and root files', () => {
+    // Code in the site's origin reads what a visitor types and posts it to the plugin's own routes.
+    const dir = tempDir('fc-policy-');
+    fs.writeFileSync(path.join(dir, 'index.js'), '');
+    const reasons = TenantPluginPackagePolicy.violations(dir, {
+      slug: 'x', ui: { frontendEntry: 'frontend.js', css: ['s.css'], browserEntries: ['tracker'], publicRoutes: [{ path: 'promo.txt' }], headDataPath: '/head' },
+    } as any).join(' | ');
+    for (const key of ['frontendEntry', 'css', 'browserEntries', 'publicRoutes', 'headDataPath']) expect(reasons).toContain(`"ui.${key}"`);
+
+    fs.mkdirSync(path.join(dir, 'ui'));
+    fs.writeFileSync(path.join(dir, 'ui', 'frontend.js'), '');
+    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x' } as any).join(' | ')).toContain('storefront bundle');
+  });
+
+  it('accepts widgets that name a slot and one of its own routes, and refuses any other shape', () => {
+    const dir = tempDir('fc-policy-');
+    fs.writeFileSync(path.join(dir, 'index.js'), '');
+    expect(TenantPluginPackagePolicy.violations(dir, {
+      slug: 'x', ui: { widgets: [{ slot: 'product.after', path: '/widget', height: 240 }, { slot: 'footer', path: '/w/news' }] },
+    } as any)).toEqual([]);
+    for (const widget of [
+      { slot: '', path: '/w' }, { slot: 'a b', path: '/w' }, { slot: 's', path: 'https://evil.test/' },
+      { slot: 's', path: '/../../auth' }, { slot: 's', path: '/w?x=<' }, { slot: 's', path: '/w', height: 5 }, { slot: 's', path: '/w', height: 99999 },
+    ]) {
+      expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', ui: { widgets: [widget] } } as any)).not.toEqual([]);
+    }
+    expect(TenantPluginPackagePolicy.violations(dir, { slug: 'x', ui: { widgets: Array.from({ length: 11 }, () => ({ slot: 's', path: '/w' })) } } as any)).not.toEqual([]);
   });
 
   it('refuses an entry file outside the plugin\'s own directory', () => {

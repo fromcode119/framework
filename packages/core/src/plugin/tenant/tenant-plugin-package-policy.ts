@@ -18,8 +18,11 @@ import { CoercionUtils } from '@core/utils/coercion-utils';
  *  - NO SCHEMA. Migrations are `require()`d inside the api process, and collections become platform
  *    tables — both would let one customer's code change the database every customer shares.
  *  - NO ADMIN UI. An admin bundle runs in the admin origin; a platform administrator opening that
- *    site would execute it with platform rights. A storefront bundle is allowed: it runs where the
- *    site's own theme already runs, in the visitor's browser.
+ *    site would execute it with platform rights.
+ *  - NO CODE IN THE SITE'S PAGES. A storefront bundle, stylesheet or root file runs (or renders) in the
+ *    site's own origin, where it can read everything a visitor types — the sign-in form, the address
+ *    form — and hand it to its own routes to collect later. A site's plugin shows on the storefront only
+ *    as a WIDGET (`ui.widgets`): a sandboxed frame in a slot, which cannot see the page around it.
  *  - NO INSTALL STEP. Nothing is `npm install`ed for it: dependencies ship bundled, or not at all.
  *  - A CLOSED SET OF CAPABILITIES. Capabilities are declared by the plugin itself and approved on
  *    enable, so for a site's plugin the list below is the ceiling — routes, hooks, translations
@@ -80,6 +83,21 @@ export class TenantPluginPackagePolicy {
    */
   private static readonly ADMIN_UI_KEYS = ['entry', 'adminCss'] as const;
 
+  /** The `ui` keys that put code or files into the site's own pages and origin. */
+  private static readonly STOREFRONT_UI_KEYS = ['frontendEntry', 'css', 'browserEntries', 'publicRoutes', 'headInjections', 'headDataPath'] as const;
+
+  /** Storefront bundles the layout would load even when the manifest does not name them. */
+  private static readonly STOREFRONT_BUNDLES = [
+    path.join(PluginPackageLayout.UI_DIR, PluginPackageLayout.FRONTEND_ENTRY),
+    path.join('ui', PluginPackageLayout.FRONTEND_ENTRY),
+    path.join('ui-ssr', 'entry.mjs'),
+  ] as const;
+
+  /** How many widgets one plugin may place, and how tall one may be (CSS pixels). */
+  private static readonly MAX_WIDGETS = 10;
+  private static readonly WIDGET_HEIGHT = { min: 40, max: 2000 } as const;
+  private static readonly WIDGET_SLOT = /^[a-z0-9][a-z0-9._:-]{0,99}$/i;
+  private static readonly WIDGET_PATH = /^\/[a-z0-9._~\/-]{0,200}$/i;
   private static manifestViolations(manifest: IPluginManifest): string[] {
     const found: string[] = [];
     const record = manifest as unknown as Record<string, unknown>;
@@ -93,6 +111,33 @@ export class TenantPluginPackagePolicy {
       if (TenantPluginPackagePolicy.isEmpty(ui[key])) continue;
       found.push(`declares "ui.${key}" — a site's plugin adds nothing to the admin, where it would run with the rights of whoever opens it.`);
     }
+    for (const key of TenantPluginPackagePolicy.STOREFRONT_UI_KEYS) {
+      if (TenantPluginPackagePolicy.isEmpty(ui[key])) continue;
+      found.push(`declares "ui.${key}" — a site's plugin puts nothing into the site's own pages; show it as a widget ("ui.widgets") instead.`);
+    }
+    return [...found, ...TenantPluginPackagePolicy.widgetViolations(ui.widgets)];
+  }
+
+  /** `ui.widgets`: each one a slot to sit in, a path on the plugin's own routes, and an optional height. */
+  private static widgetViolations(widgets: unknown): string[] {
+    if (widgets === undefined || widgets === null) return [];
+    if (!Array.isArray(widgets)) return ['declares "ui.widgets" that is not a list.'];
+    if (widgets.length > TenantPluginPackagePolicy.MAX_WIDGETS) return [`declares ${widgets.length} widgets — at most ${TenantPluginPackagePolicy.MAX_WIDGETS}.`];
+    const found: string[] = [];
+    widgets.forEach((widget, index) => {
+      const record = CoercionUtils.toObject(widget);
+      const slot = CoercionUtils.toString(record.slot);
+      const route = CoercionUtils.toString(record.path);
+      if (!TenantPluginPackagePolicy.WIDGET_SLOT.test(slot)) found.push(`widget ${index + 1} names no valid "slot".`);
+      if (!TenantPluginPackagePolicy.WIDGET_PATH.test(route) || route.includes('..')) {
+        found.push(`widget ${index + 1} has a "path" that is not one of its own routes ("/widget", no "..").`);
+      }
+      if (record.height !== undefined) {
+        const height = CoercionUtils.toNumber(record.height);
+        const { min, max } = TenantPluginPackagePolicy.WIDGET_HEIGHT;
+        if (!Number.isInteger(height) || height < min || height > max) found.push(`widget ${index + 1} has a "height" outside ${min}–${max}.`);
+      }
+    });
     return found;
   }
 
@@ -149,6 +194,11 @@ export class TenantPluginPackagePolicy {
     for (const bundle of TenantPluginPackagePolicy.ADMIN_BUNDLES) {
       if (fs.existsSync(path.join(contentDir, bundle))) {
         found.push(`contains an admin bundle ("${bundle}") — a site's plugin adds nothing to the admin.`);
+      }
+    }
+    for (const bundle of TenantPluginPackagePolicy.STOREFRONT_BUNDLES) {
+      if (fs.existsSync(path.join(contentDir, bundle))) {
+        found.push(`contains a storefront bundle ("${bundle}") — a site's plugin shows on the storefront only as a widget ("ui.widgets").`);
       }
     }
     return found;

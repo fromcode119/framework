@@ -152,11 +152,12 @@ export class ThemeSsrRuntime {
     const wrap = (Context: { Context: { Provider: unknown } }, value: unknown, child: unknown) =>
       createElement(Context.Context.Provider, { value }, child);
 
-    // Innermost, so it sees the same values every other provider publishes.
+    // Innermost, so it sees the same values every other provider publishes. This render is always the
+    // storefront, where plugin widgets appear — as `StorefrontRuntimeRoot` says in the browser.
     const withPluginRuntime = createElement(
       fc.PluginRuntimeContext.context.Provider,
       { value: values.pluginRuntime },
-      tree,
+      createElement(fc.PluginWidgetHost.Context.Provider, { value: true }, tree),
     );
 
     return wrap(fc.SlotsContext, values.slots,

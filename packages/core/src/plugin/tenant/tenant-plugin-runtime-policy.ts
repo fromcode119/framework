@@ -17,10 +17,15 @@ export class TenantPluginRuntimePolicy {
     ['theme', new Set(['getActiveConfig', 'getActiveSlug', 'getCurrentPluginSettings', 'getVariables'])],
   ]);
 
+  /**
+   * No MIDDLEWARE. A plugin's middleware runs in front of every request to its site that matches the
+   * paths it names — the sign-in form, checkout, another plugin's routes — and is handed the parsed
+   * body: on a site whose plugin was written to harvest, that is every customer's password. Its own
+   * routes (`ROUTE`, `USE`) already run its own code, so middleware added nothing a site's plugin needs.
+   */
   private static readonly REGISTRATIONS = new Set<string>([
     String(PluginGuestRegistrationKind.ROUTE.value),
     String(PluginGuestRegistrationKind.USE.value),
-    String(PluginGuestRegistrationKind.MIDDLEWARE.value),
     String(PluginGuestRegistrationKind.HOOK.value),
     String(PluginGuestRegistrationKind.HOOK_OFF.value),
     String(PluginGuestRegistrationKind.DECLARATION.value),
@@ -74,10 +79,16 @@ export class TenantPluginRuntimePolicy {
    * Listening is unaffected: a handler only ever hears its own site.
    */
   private static assertOwnEvent(slug: string, method: string, event: unknown): void {
+    if (TenantPluginRuntimePolicy.isOwnEvent(slug, event)) return;
+    const name = String(event ?? '').trim().toLowerCase();
+    TenantPluginRuntimePolicy.refuse(slug, `context.hooks.${method}("${name || '*'}") — only events named "${slug.trim().toLowerCase()}:…" are its own`);
+  }
+
+  /** `<slug>:…` or `<slug>.…` — the events a plugin fires about itself. */
+  static isOwnEvent(slug: string, event: unknown): boolean {
     const name = String(event ?? '').trim().toLowerCase();
     const own = slug.trim().toLowerCase();
-    if (name.startsWith(`${own}:`) || name.startsWith(`${own}.`)) return;
-    TenantPluginRuntimePolicy.refuse(slug, `context.hooks.${method}("${name || '*'}") — only events named "${own}:…" are its own`);
+    return name.startsWith(`${own}:`) || name.startsWith(`${own}.`);
   }
 
   private static assertDeclaration(slug: string, steps: NonNullable<IPluginGuestRegistration['steps']>): void {
