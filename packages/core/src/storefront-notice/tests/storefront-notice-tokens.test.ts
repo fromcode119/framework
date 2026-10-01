@@ -101,5 +101,7 @@ describe('storefront notice tokens', () => {
     await expect(onSite('shop', () => UiContextProxy.noticeUrl(manager, '//evil.example/', notice))).rejects.toThrow(/path on the site/);
     const url = await onSite('shop', () => UiContextProxy.noticeUrl(manager, '/', notice));
     expect(url).toMatch(/\/\?fc_notice=v1\./);
+    const page = await onSite('shop', () => UiContextProxy.noticeUrl(manager, '/newsletter/confirmed', notice, { display: 'page' }));
+    expect(page).toMatch(/\/newsletter\/confirmed\?fc_notice=v1\./);
   });
 });

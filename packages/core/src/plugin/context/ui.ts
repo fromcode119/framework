@@ -51,7 +51,8 @@ export class UiContextProxy {
     if (!display) throw new Error(`context.ui.noticeUrl: unknown display "${String(options?.display)}"`);
     const token = await new StorefrontNoticeTokens(manager).mint(notice, display, options?.ttlSeconds);
     const base = await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP);
-    const url = ApplicationUrlUtils.joinApiPath(base, target);
+    // The join drops a lone `/`, which turned the homepage into `https://host?fc_notice=`.
+    const url = target === '/' ? `${base}/` : ApplicationUrlUtils.joinApiPath(base, target);
     return `${url}${url.includes('?') ? '&' : '?'}${StorefrontNoticeParam.NAME}=${encodeURIComponent(token)}`;
   }
 }
