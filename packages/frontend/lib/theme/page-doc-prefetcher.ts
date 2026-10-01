@@ -1,3 +1,4 @@
+import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ApiVersionUtils, LocalizationUtils, RuntimeConstants } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -53,6 +54,7 @@ export class PageDocPrefetcher {
             next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },
           } as RequestInit);
           if (response.ok) results[String(entry.key).trim()] = await response.json();
+          else await ResponseDrain.discard(response);
         } catch {
           // Non-critical — the theme keeps its client fetch fallback.
         }
@@ -111,6 +113,7 @@ export class PageDocPrefetcher {
           next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },
         } as RequestInit);
         if (response.ok) results[key] = await response.json();
+        else await ResponseDrain.discard(response);
       } catch {
         // Non-critical — the block keeps its client fetch fallback.
       }

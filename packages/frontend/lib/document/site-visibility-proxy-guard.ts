@@ -1,3 +1,5 @@
+import { ResponseDrain } from '@/lib/server-api/response-drain';
+import { ServerApiConfig } from '@/lib/server-api/server-api-config';
 import { CookieConstants } from '@fromcode119/core/client';
 /**
  * Answers for a site that has not been published, before any page runs.
@@ -60,11 +62,17 @@ export class SiteVisibilityProxyGuard {
       // send a storefront session into a call that has no business seeing one.
       if (previewCookie) headers.cookie = `${CookieConstants.SITE_PREVIEW}=${previewCookie}`;
 
+      // Bounded like every other server-side api call: unbounded, a stalled api held every page
+      // request here for as long as it took, though this guard fails open by design.
       const response = await fetch(`${apiBase.replace(/\/+$/, '')}/api/v1/system/frontend`, {
         headers,
         cache: 'no-store',
+        signal: AbortSignal.timeout(ServerApiConfig.SERVER_FETCH_TIMEOUT_MS),
       });
-      if (!response.ok) return true;
+      if (!response.ok) {
+        await ResponseDrain.discard(response);
+        return true;
+      }
       const payload = await response.json() as { site?: { isReadable?: unknown; preview?: unknown } | null };
       // No `site` means this deployment serves one site and has no tenants — not an unpublished one.
       if (!payload?.site) return true;

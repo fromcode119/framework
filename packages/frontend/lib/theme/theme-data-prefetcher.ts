@@ -1,3 +1,4 @@
+import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ApiVersionUtils, RuntimeConstants } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -59,6 +60,7 @@ export class ThemeDataPrefetcher {
           headers: forwardedHeaders,
         } as RequestInit);
         if (response.ok) return await response.json();
+        await ResponseDrain.discard(response);
       } catch {
         // Fall through to the retry; a second failure degrades to no prefetch for this entry.
       }
