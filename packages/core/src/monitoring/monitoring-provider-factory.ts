@@ -24,7 +24,7 @@ export class MonitoringProviderFactory {
   private async build(entry: IIntegrationResolved): Promise<IMonitoringProvider> {
     const config = entry.config ?? {};
     if (entry.providerKey === 'email') return new EmailMonitoringProvider(this.manager);
-    if (entry.providerKey === 'uptimerobot') return new UptimeRobotMonitoringProvider(String(config.apiKey ?? ''), String(config.namePrefix ?? ''), Number(config.interval) || 0);
+    if (entry.providerKey === 'uptimerobot') return new UptimeRobotMonitoringProvider(String(config.apiKey ?? ''), String(config.namePrefix ?? ''), Number(config.interval) || 0, Number(config.timeout) || 0);
     if (entry.providerKey === 'betterstack') return new BetterStackMonitoringProvider(String(config.apiToken ?? ''), String(config.namePrefix ?? ''));
     return (await entry.provider.create(config)) as IMonitoringProvider;
   }

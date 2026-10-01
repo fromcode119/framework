@@ -49,6 +49,8 @@ export class MonitoringIntegrationDefinition {
         { name: 'apiKey', label: 'Main API key', type: IntegrationConfigFieldType.PASSWORD, required: true, description: 'UptimeRobot → Integrations & API → Main API key.' },
         // Sent with every monitor it creates, so how often each address is checked is the operator's choice.
         { name: 'interval', label: 'Check every (seconds)', type: IntegrationConfigFieldType.NUMBER, required: true, defaultValue: '300', description: 'How often UptimeRobot checks each address. The free plan allows 300 or more; shorter needs a paid plan.' },
+        // UptimeRobot's v3 API refuses a monitor without one ("timeout must be a number").
+        { name: 'timeout', label: 'Wait for an answer (seconds)', type: IntegrationConfigFieldType.NUMBER, required: true, defaultValue: '30', description: 'How long UptimeRobot waits for an address to answer before the check counts as failed: 1 to 60.' },
         MonitoringIntegrationDefinition.namePrefixField,
       ]),
       MonitoringIntegrationDefinition.provider('betterstack', 'Better Stack', 'Watches every site from outside and alerts through your Better Stack on-call settings, even when the whole server is down.', [

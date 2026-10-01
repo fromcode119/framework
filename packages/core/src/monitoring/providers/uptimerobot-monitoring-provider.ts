@@ -16,8 +16,11 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
   private static readonly API = 'https://api.uptimerobot.com/v3';
   private static readonly PAGE_SIZE = 200;
 
-  /** `interval` is the operator's "Check every (seconds)"; 0 (not set) sends none and leaves it to UptimeRobot. */
-  constructor(private readonly apiKey: string, private readonly namePrefix: string, private readonly interval = 0) {}
+  /**
+   * `interval` and `timeout` are the operator's "Check every" and "Wait for an answer" (seconds); 0 (not set)
+   * sends none and leaves it to UptimeRobot.
+   */
+  constructor(private readonly apiKey: string, private readonly namePrefix: string, private readonly interval = 0, private readonly timeout = 0) {}
 
   async syncTargets(targets: IMonitoringTarget[]): Promise<void> {
     const existing = await this.ownMonitors();
@@ -28,8 +31,8 @@ export class UptimeRobotMonitoringProvider implements IMonitoringProvider {
     const present = new Set(existing.map((monitor) => monitor.url));
     for (const target of targets) {
       if (present.has(target.url)) continue;
-      const interval = this.interval > 0 ? { interval: this.interval } : {};
-      await this.call('POST', '/monitors', { type: 'HTTP', url: target.url, friendlyName: `${this.namePrefix}${target.label}`, ...interval });
+      const timing = { ...(this.interval > 0 ? { interval: this.interval } : {}), ...(this.timeout > 0 ? { timeout: this.timeout } : {}) };
+      await this.call('POST', '/monitors', { type: 'HTTP', url: target.url, friendlyName: `${this.namePrefix}${target.label}`, ...timing });
     }
   }
 

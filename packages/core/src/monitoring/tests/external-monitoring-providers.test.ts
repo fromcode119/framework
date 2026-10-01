@@ -34,16 +34,16 @@ describe('UptimeRobotMonitoringProvider', () => {
       [{ id: 1, url: 'https://shop.example/', friendlyName: 'Platform: shop' }, { id: 3, url: 'https://gone.example/', friendlyName: 'My own personal monitor' }],
       [{ id: 2, url: 'https://gone.example/', friendlyName: 'Platform: gone' }],
     ]);
-    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ', 300).syncTargets(targets);
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ', 300, 30).syncTargets(targets);
     expect(calls.filter((c) => c.method === 'DELETE').map((c) => c.url)).toEqual(['https://api.uptimerobot.com/v3/monitors/2']);
-    expect(calls.filter((c) => c.method === 'POST').map((c) => c.body)).toEqual([{ type: 'HTTP', url: 'https://new.example/', friendlyName: 'Platform: new', interval: 300 }]);
+    expect(calls.filter((c) => c.method === 'POST').map((c) => c.body)).toEqual([{ type: 'HTTP', url: 'https://new.example/', friendlyName: 'Platform: new', interval: 300, timeout: 30 }]);
     expect(calls.every((c) => c.auth === 'Bearer key-1')).toBe(true);
   });
 
-  it('sends no interval when none is configured', async () => {
+  it('sends no interval or timeout when none is configured', async () => {
     const calls = account([[]]);
     await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
-    expect(calls.filter((c) => c.method === 'POST').every((c) => !('interval' in c.body))).toBe(true);
+    expect(calls.filter((c) => c.method === 'POST').every((c) => !('interval' in c.body) && !('timeout' in c.body))).toBe(true);
   });
 
   it('never follows a next page to another host, which would hand it the key', async () => {
