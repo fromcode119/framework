@@ -232,13 +232,24 @@ export class ProjectPaths extends UploadPaths {
    * A plugin's own writable directory — `<data>/plugins/<slug>`, the only place its process may write
    * (the spawner makes it that plugin's user's, and nobody else's).
    */
-  static getPluginDataDir(slug: string, projectRoot: string = ProjectPaths.getProjectRoot()): string {
-      return path.join(ProjectPaths.getDataDir(projectRoot), ProjectPaths.PLUGIN_DATA_DIR, slug);
+  /**
+   * A plugin's own data directory. A SITE's plugin keeps its data under `tenants/<site>/`, apart from the
+   * platform's plugins, so the sandbox it runs in can be given its sites' data and nothing else.
+   */
+  static getPluginDataDir(slug: string, projectRoot: string = ProjectPaths.getProjectRoot(), ownerTenantId?: string | null): string {
+      return path.join(ProjectPaths.getDataDir(projectRoot), ProjectPaths.PLUGIN_DATA_DIR, ...ProjectPaths.ownerSegments(ownerTenantId), slug);
   }
 
   /** The same directory as a path relative to the project root — what `context.plugin.dataDir` reports. */
-  static getPluginDataPath(slug: string): string {
-      return `./${path.posix.join(ProjectPaths.DATA_DIR, ProjectPaths.PLUGIN_DATA_DIR, slug)}`;
+  static getPluginDataPath(slug: string, ownerTenantId?: string | null): string {
+      return `./${path.posix.join(ProjectPaths.DATA_DIR, ProjectPaths.PLUGIN_DATA_DIR, ...ProjectPaths.ownerSegments(ownerTenantId), slug)}`;
+  }
+
+  private static ownerSegments(ownerTenantId?: string | null): string[] {
+      const owner = String(ownerTenantId ?? '').trim();
+      if (!owner) return [];
+      if (!/^[A-Za-z0-9_-]+$/.test(owner)) throw new Error(`refusing a plugin owner id that is not one path segment: "${owner}"`);
+      return [SystemConstants.STORAGE.TENANTS_SUBDIR, owner];
   }
 
   static getRepositoryArtifactsDir(subDir?: string): string {

@@ -16,11 +16,11 @@ import { TenantPluginPackagePolicy } from '@core/plugin/tenant/tenant-plugin-pac
  */
 export class TenantPluginRunRules {
   /** Why this site's plugin must not be started, or null when it may. */
-  static refusal(pluginPath: string, manifest: IPluginManifest, hosts: { isolatesIdentity(): boolean } | null | undefined): string | null {
+  static refusal(pluginPath: string, manifest: IPluginManifest, hosts: { isolatesIdentity(siteOwned?: boolean): boolean } | null | undefined): string | null {
     if (!hosts) {
       return 'Plugin isolation is not available on this server, and a site\'s plugin runs only isolated.';
     }
-    if (!hosts.isolatesIdentity()) {
+    if (!hosts.isolatesIdentity(true)) {
       return 'This server cannot run a plugin under its own user (no privileged spawner), and a site\'s plugin runs only that way.';
     }
     const violations = TenantPluginPackagePolicy.violations(pluginPath, manifest);

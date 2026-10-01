@@ -124,6 +124,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 | [API Reference](docs/api-reference.md) | REST and GraphQL APIs |
 | [Certificates and TLS](docs/certificates-and-tls.md) | HTTPS, certificate uploads, expiry warnings |
 | [Site Visibility and Preview](docs/site-visibility-and-preview.md) | Private/unlisted/public sites, previewing before launch |
+| [Running Plugins You Don't Fully Trust](docs/untrusted-plugins.md) | What stops a bad plugin from taking over the server, and the operator's checklist |
 | [Backup and Site Transfer](docs/backup-and-transfer.md) | System backups, restore, site-transfer bundles |
 | [Full documentation index](docs/README.md) | Every guide, including the module and package docs |
 
@@ -152,6 +153,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 📊 **Atomic Migrations** — 7-phase database synchronization across core and all active plugins.
 - 🛡️ **Kernel Security Loop** — Real-time threat detection, cryptographic plugin signing, audit logging.
 - 🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process with a heap ceiling and a per-call deadline; a crash takes down only that plugin.
+- 🧯 **A bad plugin breaks one site, not the server** — A plugin a site uploads runs as its own user with no network, no secrets and only a short list of SDK calls, held to CPU, memory, disk and process limits, in a sandbox container of its own that can run under gVisor ([what to do](#-running-plugins-you-dont-fully-trust)).
 - 🔁 **Rolling updates, zero gap** — A release replaces the api, admin, storefront and gateway one at a time: the new container starts beside the old one, takes traffic once it answers, and the old one drains its in-flight requests before it stops. No failed request, no maintenance window ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
 - ⚖️ **Built-in edge load balancer** — The platform's own `edge` holds ports 80/443 and spreads connections across every running gateway (least-busy first, health-checked every second, a refusing gateway is skipped and the request retried on another), passing the visitor's real address on with the PROXY protocol. Prefer HAProxy or another proxy? Point `EDGE_IMAGE`/`EDGE_COMMAND` at it — a ready HAProxy config ships in `deploy/edge/haproxy` ([the edge](deploy/DEPLOYMENT.md#the-edge)).
 - 🔌 **Plugins survive deploys** — Plugin processes live in the optional `extension-host` container; a new api takes the running processes over instead of restarting them, and the admin shows where each one runs and what it registered.
@@ -162,6 +164,30 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 🏛️ **Pure OOP Codebase** — Every layer is class-based; the UI layer runs on standalone `react-class-components`, `next-build-codegen` and `typescript-multiple-inheritance` packages.
 
 See the [Architecture guide](docs/architecture.md) for how each of these actually works.
+
+---
+
+## 🛡️ Running plugins you don't fully trust
+
+On most platforms one bad plugin is enough: the site sends spam, every other site on the server is
+defaced, and the hosting account changes hands. Here the boundary is one site. A plugin a site uploads
+gets no network, no secrets and no database of its own, may call only a short list of SDK methods, and
+is held to CPU, memory, disk and process limits in a sandbox container of its own — and site uploads
+are off until a platform administrator turns them on.
+
+What stays your job, on any deployment:
+
+1. **Patch the server's kernel** and turn on automatic security updates — it is the one thing every
+   plugin process shares.
+2. **Run site plugins under a sandboxing runtime** such as [gVisor](https://gvisor.dev)
+   (`SITE_PLUGIN_RUNTIME`), so a kernel flaw lands in the sandbox, not on the server.
+3. **Leave site uploads off** unless a site needs them, and **install platform plugins only from
+   sources you trust** — they are part of the platform.
+4. **Require reviewed pull requests** on the repositories you build from, and keep backups you have
+   restored at least once.
+
+The full guide — every protection, every limit, and what no platform can do for you — is
+[Running Plugins You Don't Fully Trust](docs/untrusted-plugins.md).
 
 ---
 

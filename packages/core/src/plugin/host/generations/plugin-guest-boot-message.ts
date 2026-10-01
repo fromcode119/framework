@@ -1,6 +1,7 @@
 import { ProjectPaths } from '@core/config/paths';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /** The `boot` message a plugin process gets — the only configuration it has (its environment is empty). */
 export class PluginGuestBootMessage {
@@ -21,7 +22,7 @@ export class PluginGuestBootMessage {
         slug,
         namespace: String(manifest.namespace || '').trim(),
         version: String(manifest.version || ''),
-        dataDir: ProjectPaths.getPluginDataPath(slug),
+        dataDir: ProjectPaths.getPluginDataPath(slug, PluginOwners.ownerOf(slug)),
         rootDir: pluginDir,
         config: (manifest.config as Record<string, unknown>) || {},
       },

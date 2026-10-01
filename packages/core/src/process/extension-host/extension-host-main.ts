@@ -9,6 +9,7 @@ import { ProcessEntry } from '@core/process/process-entry';
 import { SocketMessagePort } from '@core/process/socket-message-port';
 import { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
 import { ExtensionHostLegacyLink } from '@core/process/extension-host/extension-host-legacy-link';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * The `extension-host` container: starts and supervises plugin processes for the api.
@@ -65,19 +66,25 @@ export class ExtensionHostMain {
     fs.chownSync(socketPath, 0, gid);
     fs.chmodSync(socketPath, 0o660);
     // Announced last, once it can be connected to: an api that finds the announcement finds a socket.
+    // The announcement says which plugins this host runs (`ExtensionHostPool`).
+    const pool = ExtensionHostPool.ofThisHost();
     const announcement = path.join(hostsDir, hostDirName);
-    fs.writeFileSync(announcement, '');
+    fs.writeFileSync(announcement, pool);
     fs.chownSync(announcement, 0, gid);
     fs.chmodSync(announcement, 0o640);
-    console.info(`[extension-host] listening on ${socketPath} (group ${gid}); pid ${process.pid}`);
+    console.info(`[extension-host] listening on ${socketPath} (group ${gid}, ${pool} plugins); pid ${process.pid}`);
 
+    // The legacy `spawner.sock` is what an api from before pools connects to for EVERY plugin: only a
+    // platform host may answer there, or such an api would start the platform's plugins in the sandbox.
+    const platform = pool === ExtensionHostPool.PLATFORM;
     const legacyLink = setInterval(() => {
+      if (!platform) return;
       try { ExtensionHostLegacyLink.maintain(runtimeDir, hostDirName); } catch (error) {
         console.warn(`[extension-host] could not point ${ExtensionHostSocket.FILE} at this host: ${error instanceof Error ? error.message : String(error)}`);
       }
     }, ExtensionHostMain.LEGACY_LINK_INTERVAL_MS);
     legacyLink.unref();
-    ExtensionHostLegacyLink.maintain(runtimeDir, hostDirName);
+    if (platform) ExtensionHostLegacyLink.maintain(runtimeDir, hostDirName);
 
     for (const signal of ['SIGTERM', 'SIGINT'] as const) {
       process.once(signal, () => {
@@ -85,7 +92,7 @@ export class ExtensionHostMain {
         server.close();
         // Withdrawn first, so no api starts anything here while it goes.
         fs.rmSync(announcement, { force: true });
-        ExtensionHostLegacyLink.release(runtimeDir, hostDirName);
+        if (platform) ExtensionHostLegacyLink.release(runtimeDir, hostDirName);
         fs.rmSync(hostDir, { recursive: true, force: true });
         process.exit(0);
       });

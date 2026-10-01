@@ -34,7 +34,7 @@ export class RollingDeploy {
   ) {}
 
   async run(version: string): Promise<boolean> {
-    if (!(await this.extensionHost(version))) return false;
+    for (const host of ComposeStack.EXTENSION_HOSTS) if (!(await this.extensionHost(host, version))) return false;
     for (const service of DeployStrategy.ROLLED) {
       console.log(chalk.blue(`\nRolling ${service}...`));
       if (!(await this.roll(service, version))) {
@@ -42,7 +42,7 @@ export class RollingDeploy {
         return false;
       }
     }
-    if (!(await this.rollExtensionHost(version))) return false;
+    for (const host of ComposeStack.EXTENSION_HOSTS) if (!(await this.rollExtensionHost(host, version))) return false;
     // With `edge` holding the public ports the gateway is just another app behind it: a new one beside
     // the old, `edge` sends new connections to whichever answers, and the old one drains. Without an
     // edge it owns the ports itself and can only be restarted — the one gap left.
@@ -64,16 +64,16 @@ export class RollingDeploy {
    * is missing — and left alone when it runs: recreating it would stop every plugin process at once.
    * It moves to the new image after the apps (`rollExtensionHost`), with no gap.
    */
-  private async extensionHost(version: string): Promise<boolean> {
-    if (!(await this.stack.declared([ComposeStack.EXTENSION_HOST])).length) return true;
-    const running = (await this.stack.containerIds(ComposeStack.EXTENSION_HOST)).length > 0;
-    if ((await this.stack.ensure(ComposeStack.EXTENSION_HOST)) !== 0) {
-      console.error(chalk.red('extension-host could not be started; nothing was rolled.'));
+  private async extensionHost(service: string, version: string): Promise<boolean> {
+    if (!(await this.stack.declared([service])).length) return true;
+    const running = (await this.stack.containerIds(service)).length > 0;
+    if ((await this.stack.ensure(service)) !== 0) {
+      console.error(chalk.red(`${service} could not be started; nothing was rolled.`));
       return false;
     }
     console.log(running
-      ? chalk.gray(`extension-host keeps running, and its plugin processes with it, until the apps are on ${version}.`)
-      : chalk.blue('Started extension-host, where the new api starts its plugin processes.'));
+      ? chalk.gray(`${service} keeps running, and its plugin processes with it, until the apps are on ${version}.`)
+      : chalk.blue(`Started ${service}, where the new api starts its plugin processes.`));
     return true;
   }
 
@@ -85,20 +85,20 @@ export class RollingDeploy {
    * It used to be left on its old image until a restart deploy, so a fix to the code plugin processes
    * run on never shipped with its release; replacing it in place stopped every plugin at once.
    */
-  private async rollExtensionHost(version: string): Promise<boolean> {
-    if (!(await this.stack.declared([ComposeStack.EXTENSION_HOST])).length) return true;
-    const before = await this.stack.containerIds(ComposeStack.EXTENSION_HOST);
+  private async rollExtensionHost(service: string, version: string): Promise<boolean> {
+    if (!(await this.stack.declared([service])).length) return true;
+    const before = await this.stack.containerIds(service);
     const stale: string[] = [];
     for (const id of before) if (!(await this.stack.imageOf(id)).endsWith(`:${version}`)) stale.push(id);
     if (!stale.length) return true;
 
-    console.log(chalk.blue('\nRolling extension-host (each plugin moves to the new one with a gapless swap)...'));
-    if ((await this.stack.scale(ComposeStack.EXTENSION_HOST, before.length + 1)) !== 0) return false;
-    const fresh = (await this.stack.containerIds(ComposeStack.EXTENSION_HOST)).filter((id) => !before.includes(id));
+    console.log(chalk.blue(`\nRolling ${service} (each plugin moves to the new one with a gapless swap)...`));
+    if ((await this.stack.scale(service, before.length + 1)) !== 0) return false;
+    const fresh = (await this.stack.containerIds(service)).filter((id) => !before.includes(id));
     if (fresh.length !== 1) return false;
     if (!(await this.until(async () => (await this.stack.logsOf(fresh[0])).includes(RollingDeploy.EXTENSION_HOST_READY), this.readyTimeoutMs))) {
       await this.stack.stopAndRemove(fresh[0], RollingDeploy.STOP_GRACE_SECONDS);
-      console.error(chalk.red(`extension-host on ${version} did not start listening; the running one keeps every plugin.`));
+      console.error(chalk.red(`${service} on ${version} did not start listening; the running one keeps every plugin.`));
       return false;
     }
 
@@ -117,10 +117,10 @@ export class RollingDeploy {
       // Said, and then done anyway: a process still there restarts in the new host when this one stops —
       // a short pause for that plugin, not for the platform.
       const left = await remaining();
-      console.warn(chalk.yellow(`${left ?? 'An unknown number of'} plugin process(es) had not moved to the new extension-host after ${this.moveTimeoutMs / 1000} s; they restart in it when the old one stops.`));
+      console.warn(chalk.yellow(`${left ?? 'An unknown number of'} plugin process(es) had not moved to the new ${service} after ${this.moveTimeoutMs / 1000} s; they restart in it when the old one stops.`));
     }
     for (const id of stale) await this.stack.stopAndRemove(id, RollingDeploy.STOP_GRACE_SECONDS);
-    console.log(chalk.green(`extension-host is on ${version}.`));
+    console.log(chalk.green(`${service} is on ${version}.`));
     return true;
   }
 

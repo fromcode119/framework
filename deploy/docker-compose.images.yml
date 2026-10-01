@@ -25,6 +25,10 @@ services:
     build: !reset null
     image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}
 
+  site-extension-host:
+    build: !reset null
+    image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}
+
   db-secrets:
     build: !reset null
     image: ghcr.io/fromcode119/framework-api:${VERSION:-latest}

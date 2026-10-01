@@ -5,6 +5,10 @@ export interface IPluginHostRuntime {
   slug: string;
   /** A `PluginProcessHost` value. */
   hostedBy: string;
+  /** Which host pool it starts in (`ExtensionHostPool`): `site` is the sites' own sandboxed host. */
+  pool: string;
+  /** The kernel its host sees — a sandboxing runtime such as gVisor reports its own; null when unknown. */
+  hostKernel: string | null;
   /** Set when the api is configured for the extension-host and could not reach it — why nothing runs. */
   hostUnavailable: string | null;
   running: boolean;

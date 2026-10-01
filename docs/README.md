@@ -34,6 +34,9 @@ How the platform serves HTTPS: uploading a certificate, where keys are stored, e
 ### [Site Visibility and Preview](./site-visibility-and-preview.md)
 What private/unlisted/public actually do, and how a site's own people see it before it is published — including why that needs a one-time link rather than a permission check.
 
+### [Running Plugins You Don't Fully Trust](./untrusted-plugins.md)
+What stops a plugin a site uploads from reaching other sites, the platform or the server — every protection and limit — and the operator's checklist: patching, a sandboxing runtime, and what no platform can do for you.
+
 ### [Plugin Development Guide](./plugin-development-guide.md)
 The plugin ecosystem, plugin structure, and cross-plugin communication rules — plus how to create your own plugins, register collections, and hook into framework events.
 

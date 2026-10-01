@@ -3,6 +3,7 @@ import { GuestProcessLauncher } from '@core/process/guest-process-launcher';
 import { SpawnerClient } from '@core/process/spawner-client';
 import { SpawnerGuestLauncher } from '@core/process/spawner-guest-launcher';
 import { UnavailableGuestLauncher } from '@core/process/unavailable-guest-launcher';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * Which launcher this process has. Decided by whether a privileged spawner was published — by
@@ -11,21 +12,27 @@ import { UnavailableGuestLauncher } from '@core/process/unavailable-guest-launch
  * class, one shared `globalThis`. Nothing here may be cached in a static field.
  */
 export class GuestProcessLaunchers {
-  static current(): GuestProcessLauncher {
-    const spawner = SpawnerClient.current();
+  /** The launcher for `pool` (`ExtensionHostPool`); the platform's unless a plugin's pool says otherwise. */
+  static current(pool: string = ExtensionHostPool.PLATFORM): GuestProcessLauncher {
+    const spawner = SpawnerClient.current(pool);
     if (spawner) return new SpawnerGuestLauncher(spawner);
     // Configured for the extension-host and it could not be reached: say so, never fall back quietly.
-    const unavailable = SpawnerClient.unavailableReason();
-    return unavailable ? new UnavailableGuestLauncher(unavailable) : new ForkGuestLauncher();
+    const unavailable = GuestProcessLaunchers.unavailableReason(pool);
+    if (unavailable) return new UnavailableGuestLauncher(unavailable);
+    return new ForkGuestLauncher();
   }
 
-  /** Why nothing can be started right now (the `extension-host` is out of reach), or null. */
-  static unavailableReason(): string | null {
-    return SpawnerClient.current() ? null : SpawnerClient.unavailableReason();
+  /** Why nothing of `pool` can be started right now, or null. */
+  static unavailableReason(pool: string = ExtensionHostPool.PLATFORM): string | null {
+    if (SpawnerClient.current(pool)) return null;
+    const reason = SpawnerClient.unavailableReason(pool);
+    if (reason) return reason;
+    // A site's plugin runs in its own pool or nowhere: no host of it yet is a reason, not a fallback.
+    return pool === ExtensionHostPool.PLATFORM ? null : 'the sandboxed extension-host for plugins sites upload has not connected yet';
   }
 
-  /** Resolves when something can be started again. */
-  static whenAvailable(): Promise<void> {
-    return GuestProcessLaunchers.unavailableReason() ? SpawnerClient.whenAvailable() : Promise.resolve();
+  /** Resolves when something of `pool` can be started again. */
+  static whenAvailable(pool: string = ExtensionHostPool.PLATFORM): Promise<void> {
+    return GuestProcessLaunchers.unavailableReason(pool) ? SpawnerClient.whenAvailable(pool) : Promise.resolve();
   }
 }

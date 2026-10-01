@@ -184,7 +184,7 @@ export class PluginContextFactory {
           slug: plugin.manifest.slug,
           namespace: String(plugin.manifest.namespace || '').trim(),
           version: plugin.manifest.version,
-          dataDir: ProjectPaths.getPluginDataPath(plugin.manifest.slug),
+          dataDir: ProjectPaths.getPluginDataPath(plugin.manifest.slug, PluginOwners.ownerOf(plugin.manifest.slug)),
           rootDir: pathContext.currentPluginRoot,
           config: plugin.manifest.config || {},
         },

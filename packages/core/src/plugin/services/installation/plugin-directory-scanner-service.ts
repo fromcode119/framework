@@ -45,7 +45,7 @@ export class PluginDirectoryScannerService {
     private logger: Logger,
     private dependencyInstaller: PluginDependencyInstallerService,
     /** T5: when present, isolated plugins are DESCRIBED by their own process instead of required here. */
-    private hosts: { isIsolated(sandbox: unknown, bundled?: boolean): Promise<boolean>; isolatesIdentity(): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
+    private hosts: { isIsolated(sandbox: unknown, bundled?: boolean): Promise<boolean>; isolatesIdentity(siteOwned?: boolean): boolean; describe(slug: string, dir: string, entry: string, manifest: Record<string, unknown>, active: boolean): Promise<Record<string, unknown>> } | null = null,
   ) {
     this.moduleLoader = new PluginModuleLoader(projectRoot, pluginsRoot);
     this.moduleLoader.ensureSharedModuleResolution();

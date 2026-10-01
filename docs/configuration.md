@@ -68,6 +68,9 @@ for how the kernel shares one Cache/Queue/Storage/Email manager across every plu
 | `GATEWAY_CERTIFICATES_TTL_MS` | `60000` | How long the gateway keeps its certificate bundle before refreshing (last good bundle survives an api outage) |
 | `APPEARANCE_DIR` | `./appearance` | Installed admin appearances (product consoles) |
 | `ADMIN_APPEARANCE` | _(empty)_ | Deployment default appearance for a standalone product install (a single-site deployment that IS a workspace) |
+| `SITE_PLUGIN_RUNTIME` | `runc` | The container runtime `site-extension-host` — where plugins a SITE uploads run — uses. Set it to a sandboxing runtime registered with Docker, such as gVisor's `runsc` with `--host-uds=all`, so those plugins never touch the server's own kernel. See [Running Plugins You Don't Fully Trust](./untrusted-plugins.md). |
+| `EXTENSION_HOST_SITE_POOL` | `required` in the shipped compose | On the api: `required` starts a site's plugin only in `site-extension-host`, never beside the platform's plugins; unset starts every plugin in `extension-host`. |
+| `EXTENSION_HOST_POOL` | `platform` | On an extension-host: which plugins it runs, `platform` or `site`. |
 
 > Multi-site mode switches on by itself when the site table has rows; an installation with no sites behaves exactly as a single-site install. Adding the first site needs a restart.
 

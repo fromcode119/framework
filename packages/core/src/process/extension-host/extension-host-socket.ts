@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
 
 /**
  * Where the api finds the `extension-host` containers, and who may connect to them.
@@ -47,12 +48,12 @@ export class ExtensionHostSocket {
    * its `hosts/` announcement's mtime; a pre-hosts host listening at the top-level path is the oldest of
    * all. A top-level LINK is skipped: it points at a host that is already listed.
    */
-  static candidates(legacySocket: string): Array<{ socketPath: string; birth: number }> {
+  static candidates(legacySocket: string): Array<{ socketPath: string; birth: number; pool: string }> {
     const runtimeDir = path.dirname(legacySocket);
-    const found: Array<{ socketPath: string; birth: number }> = [];
+    const found: Array<{ socketPath: string; birth: number; pool: string }> = [];
     try {
       const legacy = fs.lstatSync(legacySocket);
-      if (!legacy.isSymbolicLink()) found.push({ socketPath: legacySocket, birth: 0 });
+      if (!legacy.isSymbolicLink()) found.push({ socketPath: legacySocket, birth: 0, pool: ExtensionHostPool.PLATFORM });
     } catch { /* no pre-hosts host */ }
     let entries: string[] = [];
     try {
@@ -60,8 +61,11 @@ export class ExtensionHostSocket {
     } catch { /* no host has announced itself yet */ }
     for (const entry of entries.filter((name) => ExtensionHostSocket.isHostDirName(name))) {
       try {
-        const birth = fs.statSync(path.join(runtimeDir, ExtensionHostSocket.HOSTS_DIR, entry)).mtimeMs;
-        found.push({ socketPath: path.join(runtimeDir, entry, ExtensionHostSocket.FILE), birth });
+        const announcement = path.join(runtimeDir, ExtensionHostSocket.HOSTS_DIR, entry);
+        const birth = fs.statSync(announcement).mtimeMs;
+        // An announcement from before pools is empty: a platform host.
+        const pool = ExtensionHostPool.of(fs.readFileSync(announcement, 'utf8'));
+        found.push({ socketPath: path.join(runtimeDir, entry, ExtensionHostSocket.FILE), birth, pool });
       } catch { /* withdrawn while we looked */ }
     }
     return found.sort((left, right) => left.birth - right.birth);

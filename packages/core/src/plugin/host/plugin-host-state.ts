@@ -10,6 +10,8 @@ import type { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outa
 import { PluginIsolationSettings } from '@core/plugin/host/plugin-isolation-settings';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin-guest-generation';
+import { ExtensionHostPool } from '@core/process/extension-host/extension-host-pool';
+import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
 /**
  * Everything a `PluginHost` holds, declared once for both halves.
@@ -24,6 +26,14 @@ import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin
  * field carrying an initialiser would simply never run.
  */
 export abstract class PluginHostState {
+  /**
+   * Where this plugin's processes start (`ExtensionHostPool`): a plugin a site uploaded in the sites' own
+   * sandboxed host when the deployment runs one, every other plugin in the platform's.
+   */
+  get pool(): string {
+    return ExtensionHostPool.forPlugin(Boolean(PluginOwners.ownerOf(this.slug)));
+  }
+
   /** Mirrors `PluginManager.PLUGINS_READY_EVENT`, re-emitted when this guest is replaced. A literal
    *  rather than an import: the host cannot import the manager without a cycle. */
   static readonly PLUGINS_READY_EVENT = 'plugins:ready';

@@ -89,8 +89,8 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
 
   /** This plugin's process for the admin: where it runs, as whom, its limits, and what it reports. */
   runtime(): Promise<IPluginHostRuntime> {
-    const uid = GuestProcessLaunchers.current().isolatesIdentity && this.identity ? Number(this.identity.uid) : null;
-    return PluginHostRuntimeReader.read({ slug: this.slug, running: Boolean(this.guest), pid: this.guest?.pid ?? null, uid, limits: this.limits, recentRestarts: Number(this.restarts) || 0 }, this.channel);
+    const uid = GuestProcessLaunchers.current(this.pool).isolatesIdentity && this.identity ? Number(this.identity.uid) : null;
+    return PluginHostRuntimeReader.read({ slug: this.slug, pool: this.pool, running: Boolean(this.guest), pid: this.guest?.pid ?? null, uid, limits: this.limits, recentRestarts: Number(this.restarts) || 0 }, this.channel);
   }
 
   protected exited(code: number | null, signal: string | null, stoppedFor?: string | null): void {
@@ -220,12 +220,12 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   protected async restart(reason: string): Promise<void> {
     if (this.stopping || this.restarting) return;
     this.restarting = true;
-    const unavailable = GuestProcessLaunchers.unavailableReason();
+    const unavailable = GuestProcessLaunchers.unavailableReason(this.pool);
     if (unavailable) {
       // Nowhere to start it: the extension-host is out of reach, and its return — not this plugin —
       // decides when. Not counted against the budget, or one container restart would fail every plugin.
       this.logger.warn(`${reason}; ${unavailable} — restarting when it is back.`);
-      await GuestProcessLaunchers.whenAvailable();
+      await GuestProcessLaunchers.whenAvailable(this.pool);
       if (this.stopping) { this.restarting = false; return; }
     } else {
       this.restarts += 1;

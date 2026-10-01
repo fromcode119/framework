@@ -62,7 +62,14 @@ export class PluginProcessCard extends AdminComponent {
    * In the extension-host a plugin's process carries over when the api restarts or deploys (the new api
    * takes it over); started by the api itself, it goes with the api.
    */
-  private whereItRuns(inExtensionHost: boolean): ReactNode {
+  private whereItRuns(inExtensionHost: boolean, sandboxed: boolean, kernel: string | null): ReactNode {
+    if (sandboxed) {
+      // Said as measured: the kernel the sandbox host sees is gVisor's own only when gVisor runs it.
+      const runtime = String(kernel ?? '').toLowerCase().includes('gvisor')
+        ? AdminI18n.t('plugins.process.sandboxGvisor', { kernel: kernel ?? '' })
+        : AdminI18n.t('plugins.process.sandboxNoRuntime', { kernel: kernel ?? '?' });
+      return this.row(<FrameworkIcons.Shield size={20} />, AdminI18n.t('plugins.process.where'), AdminI18n.t('plugins.process.ownInSandbox'), `${AdminI18n.t('plugins.process.ownInSandboxHint')} ${runtime}`);
+    }
     return inExtensionHost
       ? this.row(<FrameworkIcons.Server size={20} />, AdminI18n.t('plugins.process.where'), AdminI18n.t('plugins.process.ownInHost'), AdminI18n.t('plugins.process.ownInHostHint'))
       : this.row(<FrameworkIcons.Server size={20} />, AdminI18n.t('plugins.process.where'), AdminI18n.t('plugins.process.ownByApi'), AdminI18n.t('plugins.process.ownByApiHint'));
@@ -78,10 +85,10 @@ export class PluginProcessCard extends AdminComponent {
     const report = runtime.report;
     return (
       <div className="space-y-4">
-        {this.whereItRuns(runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value))}
+        {this.whereItRuns(runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value), runtime.pool === 'site', runtime.hostKernel)}
         {runtime.hostUnavailable && <p className="text-sm text-[var(--destructive)]">{AdminI18n.t('plugins.process.hostUnavailable', { reason: runtime.hostUnavailable })}</p>}
         {!runtime.running && <p className="text-sm text-amber-600 dark:text-amber-400">{AdminI18n.t('plugins.detail.notRunningThePluginIs')}</p>}
-        {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, AdminI18n.t('plugins.detail.process'), `pid ${runtime.pid}${runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value) ? ` ${AdminI18n.t('plugins.process.inExtensionHost')}` : ''} · ${runtime.uid !== null ? AdminI18n.t('plugins.process.osUser', { uid: runtime.uid }) : AdminI18n.t('plugins.process.sameOsUser')}`, runtime.uid !== null ? undefined : AdminI18n.t('plugins.process.noSpawner'))}
+        {runtime.running && this.row(<FrameworkIcons.Terminal size={20} />, AdminI18n.t('plugins.detail.process'), `pid ${runtime.pid}${runtime.pool === 'site' ? ` ${AdminI18n.t('plugins.process.inSandboxHost')}` : runtime.hostedBy === String(PluginProcessHost.EXTENSION_HOST.value) ? ` ${AdminI18n.t('plugins.process.inExtensionHost')}` : ''} · ${runtime.uid !== null ? AdminI18n.t('plugins.process.osUser', { uid: runtime.uid }) : AdminI18n.t('plugins.process.sameOsUser')}`, runtime.uid !== null ? undefined : AdminI18n.t('plugins.process.noSpawner'))}
         {report && this.row(<FrameworkIcons.Zap size={20} />, AdminI18n.t('dashboard.systemPanel.memory'), AdminI18n.t('plugins.process.memory', { rss: PluginProcessFormat.megabytes(report.memory.rssBytes), heap: PluginProcessFormat.megabytes(report.memory.heapUsedBytes), limit: runtime.limits.memoryMb }))}
         {report && this.row(<FrameworkIcons.Clock size={20} />, AdminI18n.t('plugins.process.upFor'), AdminI18n.t('plugins.process.uptime', { uptime: PluginProcessFormat.duration(report.uptimeSeconds), node: report.nodeVersion, protocol: report.protocolVersion }), AdminI18n.t('plugins.process.timeoutHint', { timeout: runtime.limits.timeoutMs }))}
         {this.row(<FrameworkIcons.Refresh size={20} />, AdminI18n.t('plugins.process.restarts'), String(runtime.recentRestarts), AdminI18n.t('plugins.process.restartsHint'))}
