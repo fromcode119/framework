@@ -15,11 +15,13 @@ import { RequestContextUtils } from '@core/context/request-context';
  * only cost is one fresh render. Under-invalidating would show a visitor stale content, so anything
  * unsure bumps.
  *
- * In memory, per api process. The EPOCH changes with every start, so a restart can never hand the
- * storefront a revision an earlier process already used for different content.
+ * In memory, per api process. The EPOCH is unique to each process — its start time and a random part,
+ * because several api processes start in the same millisecond — so no two processes, and no restart,
+ * can hand out the same revision for different content. A plugin process that several api processes
+ * share keys its caches on it (PluginGuestSettings).
  */
 export class SiteContentRevision {
-  private static readonly epoch = Date.now().toString(36);
+  private static readonly epoch = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 
   private static platform = 0;
 

@@ -21,4 +21,11 @@ export interface IPluginInvocation {
   /** Which peer plugin APIs exist right now (`ns:slug` → function names) and which are enabled for this tenant. */
   peers: Record<string, string[]>;
   enabledPlugins: string[];
+  /**
+   * The site's content revision (SiteContentRevision) when the work started, and how long the plugin
+   * process may keep an answer it read for it (the API response cache setting; 0 = keep nothing).
+   * Anything a setting, an import or a content write changes moves the revision.
+   */
+  revision?: string;
+  cacheMaxAgeMs?: number;
 }
