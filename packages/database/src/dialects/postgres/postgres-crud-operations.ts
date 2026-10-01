@@ -9,6 +9,8 @@ import { BaseDialect } from '@database/dialects/base-dialect';
 import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 import { sql, eq, and, or, ne, isNull, isNotNull, inArray, desc, asc, ilike } from 'drizzle-orm';
+import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
+import { PostgresTableWrites } from '@database/dialects/postgres/postgres-table-writes';
 
 /**
  * Reading and writing rows, and the schema calls that sit beside them.
@@ -87,8 +89,17 @@ export abstract class PostgresCrudOperations extends BaseDialect {
       );
       return result.rows[0] || null;
     }
-    const [result] = await this.orm.insert(tableOrName).values(data).returning();
+    const builder = () => this.orm.insert(tableOrName).values(data).returning();
+    if (Array.isArray(data) || PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
+    const [result] = await this.writes.run(this.executor, tableOrName, 'insert', () => this.writes.insertStatement(tableOrName, data), builder);
     return result;
+  }
+
+  private ownWrites: PostgresTableWrites | null = null;
+
+  /** Writes on a typed table, assembled by our own query layer — see PostgresTableWrites. */
+  private get writes(): PostgresTableWrites {
+    return (this.ownWrites ??= new PostgresTableWrites(new PostgresTableStatements(this.drizzle.dialect), this.drizzle.dialect));
   }
 
   async update(tableOrName: any, where: any, data: any): Promise<any> {
@@ -117,22 +128,22 @@ export abstract class PostgresCrudOperations extends BaseDialect {
       return result.rows[0] || null;
     }
 
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    const [result] = await this.orm
-      .update(tableOrName)
-      .set(data)
-      .where(and(...conditions))
-      .returning();
+    // A typed update with no filter, or with a caller's SQL fragment, used to run with NO where at all —
+    // every row rewritten. It is refused, or filtered, exactly as a delete is.
+    const filter = PostgresTableStatements.filter(this.buildWhereConditions(where, tableOrName), where);
+    const builder = () => this.orm.update(tableOrName).set(data).where(filter).returning();
+    if (!filter) throw new Error('Unsafe update blocked: missing where clause');
+    if (PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
+    const [result] = await this.writes.run(this.executor, tableOrName, 'update', () => this.writes.updateStatement(tableOrName, data, filter), builder);
     return result;
   }
 
   async upsert(tableOrName: any, data: any, options: { target: string | string[]; set: any }): Promise<any> {
     const { target, set } = options;
-    const query = this.orm.insert(tableOrName).values(data).onConflictDoUpdate({
-      target: typeof target === 'string' ? (tableOrName as any)[target] : target,
-      set
-    }).returning();
-    const [result] = await query;
+    const conflict = typeof target === 'string' ? (tableOrName as any)[target] : target;
+    const builder = () => this.orm.insert(tableOrName).values(data).onConflictDoUpdate({ target: conflict, set }).returning();
+    if (Array.isArray(data) || PostgresTableWrites.mode() === 'drizzle') return (await builder())[0];
+    const [result] = await this.writes.run(this.executor, tableOrName, 'upsert', () => this.writes.upsertStatement(tableOrName, data, conflict, set), builder);
     return result;
   }
 
@@ -147,18 +158,12 @@ export abstract class PostgresCrudOperations extends BaseDialect {
       return (result.rowCount || 0) > 0;
     }
 
-    const isPlainWhere = !!where && typeof where === 'object' && Object.getPrototypeOf(where) === Object.prototype;
-    const conditions = this.buildWhereConditions(where, tableOrName);
-    let query = this.orm.delete(tableOrName);
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    } else if (where && (!isPlainWhere || Object.keys(where).length > 0)) {
-      query = query.where(where);
-    } else {
-      throw new Error('Unsafe delete blocked: missing where clause');
-    }
-    const result = await query.returning();
-    return result.length > 0;
+    const filter = PostgresTableStatements.filter(this.buildWhereConditions(where, tableOrName), where);
+    if (!filter) throw new Error('Unsafe delete blocked: missing where clause');
+    const builder = () => this.orm.delete(tableOrName).where(filter).returning();
+    if (PostgresTableWrites.mode() === 'drizzle') return (await builder()).length > 0;
+    const rows = await this.writes.run(this.executor, tableOrName, 'delete', () => this.writes.deleteStatement(tableOrName, filter), builder);
+    return rows.length > 0;
   }
 
   protected getParamPlaceholder(index: number): string {
