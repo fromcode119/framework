@@ -51,6 +51,7 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       branchFailure: '',
       inspecting: false,
       inspectFailed: false,
+      inspectFailure: '',
       gitSecret: '',
       gitUrl: build?.gitUrl || '',
       slug: build?.slug || '',
@@ -94,6 +95,9 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
   /** What the identity fields can say before a repository has answered — never a guess. */
   protected get slugPlaceholder(): string {
     if (this.state.inspecting) return AdminI18n.t('sources.readingTheRepository');
+    // "Declares no manifest" only when the repository was READ and says nothing; any other failure
+    // (refused token, a page opened for another site, an unreachable remote) is the server's own words.
+    if (this.state.inspectFailure) return this.state.inspectFailure;
     if (this.state.inspectFailed) return AdminI18n.t('sources.thisRepositoryDeclaresNoExtension');
     return AdminI18n.t('sources.readFromTheRepository');
   }

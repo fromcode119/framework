@@ -31,6 +31,8 @@ export interface IBuildSourceFormState {
   inspecting: boolean;
   /** Set when a repository was read but declared no extension, so the form can say so. */
   inspectFailed: boolean;
+  /** The server's reason the repository could not be read; empty when it was read and declares nothing. */
+  inspectFailure: string;
   gitSecret: string;
   gitUrl: string;
   slug: string;
