@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.305] - 2026-10-02
+
+### Fixed
+
+- **react**: a late translation answer for another locale no longer wins ([#672](https://github.com/fromcode119/framework/pull/672)), merged before the 0.2.304 tag but not listed there
+- **core**: a field one plugin adds to another's collection is translated by the plugin that added it ([#673](https://github.com/fromcode119/framework/pull/673)), merged before the 0.2.304 tag but not listed there
+- **versions**: history entries the framework writes read in the console's language ([#675](https://github.com/fromcode119/framework/pull/675))
+- **admin**: a theme layout's name and description may be given per language ([#676](https://github.com/fromcode119/framework/pull/676))
+
 ## [0.2.304] - 2026-10-02
 
 ### Fixed
