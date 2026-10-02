@@ -60,6 +60,16 @@ export abstract class BaseMigration {
   abstract readonly name: string;
 
   /**
+   * Whether the release before this one keeps working while this migration runs and after it has run.
+   *
+   * A rolling deploy starts the new api, which migrates, while the previous api is still serving. That is
+   * safe only for a purely additive change — a new table, a new nullable column, a new index — that
+   * touches no data the running release reads. Say `true` only then; a rename, a drop, a NOT NULL on an
+   * existing table or a data rewrite stays `false`, and the deploy takes the restart path for it.
+   */
+  readonly rollingSafe: boolean = false;
+
+  /**
    * Apply this migration.
    *
    * @param db      - The database manager instance provided by the migration runner.

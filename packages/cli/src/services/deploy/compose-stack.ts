@@ -1,4 +1,5 @@
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
+import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
 
 /**
  * The compose stack on the target.
@@ -165,10 +166,10 @@ export class ComposeStack {
     return result.code === 0 ? result.stdout.trim() : '';
   }
 
-  /** The core migration files shipped in the api image of the version `.env` now names. */
-  async migrationFiles(): Promise<string[]> {
-    const result = await this.shell.run(`docker compose ${await this.flags()} run --rm --no-deps -T --entrypoint ls api /app/packages/core/dist/database/migrations`);
-    return result.code === 0 ? result.stdout.split('\n').map((line) => line.trim()).filter(Boolean) : [];
+  /** The core migrations shipped in the api image of the version `.env` now names, as that image declares them. */
+  async shippedMigrations(): Promise<ShippedMigration[]> {
+    const result = await this.shell.run(`docker compose ${await this.flags()} run --rm --no-deps -T --entrypoint node api -e '${ShippedMigration.PROBE}'`);
+    return result.code === 0 ? ShippedMigration.parse(result.stdout) : [];
   }
 
   /**
