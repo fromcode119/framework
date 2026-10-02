@@ -16,6 +16,7 @@ import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 import { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
+import { ConsoleLocaleMiddleware } from '@api/middlewares/console-locale-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
@@ -70,6 +71,8 @@ export class ServerMiddlewareSetup {
     this.app.use(this.platformRobots.middleware());
 
     this.app.use(this.auth.middleware());
+    // A console request speaks the reader's console language — see the middleware.
+    this.app.use(new ConsoleLocaleMiddleware(this.manager).middleware());
 
     // IMMEDIATELY after auth, and before anything that can return content: the first point in the
     // chain where both halves of the question exist — which site, and who is asking.
