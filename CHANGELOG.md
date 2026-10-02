@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.300] - 2026-10-02
+
+### Fixed
+
+- **deploy**: additive core migrations no longer force a restart deploy ([#660](https://github.com/fromcode119/framework/pull/660))
+
+### Performance
+
+- **core**: cut per-request work on isolated plugin routes; refuse SQL in limit/offset ([#661](https://github.com/fromcode119/framework/pull/661))
+
 ## [0.2.299] - 2026-10-01
 
 ### Added
