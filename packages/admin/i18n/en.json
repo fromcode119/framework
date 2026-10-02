@@ -219,7 +219,14 @@
       "versionValues": "Version V{{version}} Values",
       "empty": "Empty",
       "noChanges": "No changes detected between current state and this version.",
-      "applied": "Revision applied to form. Click \"Save Changes\" to persist."
+      "applied": "Revision applied to form. Click \"Save Changes\" to persist.",
+      "summary": {
+        "created": "Created",
+        "updated": "Updated",
+        "bulk-created": "Created in bulk",
+        "bulk-updated": "Updated in bulk",
+        "restored": "Restored to version V{{version}}"
+      }
     },
     "pageDesign": {
       "thisPage": "This page",

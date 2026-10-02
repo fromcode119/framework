@@ -1,5 +1,5 @@
 import { IDatabaseManager, NamingStrategy, Schema } from '@fromcode119/database';
-import { Logger, RecordVersions } from '@fromcode119/core';
+import { Logger, RecordVersions, VersionChangeSummary } from '@fromcode119/core';
 import { type ICollection, FieldType, SystemConstants } from '@fromcode119/core';
 
 export class VersioningService {
@@ -174,7 +174,7 @@ export class VersioningService {
       refId, 
       restoredRecord || dataToRestore, 
       user, 
-      `Restored to version ${version}`
+      VersionChangeSummary.restored(version)
     );
 
     return restoredRecord || dataToRestore;

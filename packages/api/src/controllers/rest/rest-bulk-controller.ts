@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { ICollection, HookEventUtils } from '@fromcode119/core';
+import { ICollection, HookEventUtils, VersionChangeSummary } from '@fromcode119/core';
 import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
@@ -16,7 +16,7 @@ export class RestBulkController {
       UserCollectionScopeGuard.ensureCreateAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db));
       const table = QueryHelper.getVirtualTable(collection);
       const results: any[] = [];
-      const globalSummary = req.body._change_summary || `Bulk creation of ${collection.slug}`;
+      const globalSummary = req.body._change_summary || VersionChangeSummary.BULK_CREATED;
       const localeContext = await this.runtime.localization.getLocaleContext(req);
 
       for (let data of items) {
@@ -65,7 +65,7 @@ export class RestBulkController {
       const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
       const ids = req.body.ids;
       const data = req.body.data;
-      const changeSummary = req.body._change_summary || `Bulk update of ${collection.slug}`;
+      const changeSummary = req.body._change_summary || VersionChangeSummary.BULK_UPDATED;
       if (!Array.isArray(ids) || ids.length === 0) {
         if (!res) {
           throw new Error('ids must be a non-empty array');
