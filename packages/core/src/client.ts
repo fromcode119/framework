@@ -26,6 +26,7 @@ export * from '@core/interfaces/field-input.interface';
 
 // ── Collections ───────────────────────────────────────────────────────────────
 export { RecordVersions } from '@core/collections/record-versions';
+export { VersionChangeSummary } from '@core/collections/version-change-summary';
 export { CollectionArchive } from '@core/collections/collection-archive';
 
 // ── Capability Registry ───────────────────────────────────────────────────────

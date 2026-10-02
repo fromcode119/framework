@@ -1,4 +1,4 @@
-import { EntityParseMode } from '@fromcode119/core';
+import { EntityParseMode, VersionChangeSummary } from '@fromcode119/core';
 import { Response } from 'express';
 import { ICollection, CoreServices, HookEventUtils } from '@fromcode119/core';
 import { QueryHelper } from '@api/services/query-helper';
@@ -54,7 +54,7 @@ export class RestWriteController {
           recordId,
           finalItem,
           req.user,
-          `Initial creation of ${collection.slug} record`
+          VersionChangeSummary.CREATED
         );
       }
 
@@ -93,7 +93,7 @@ export class RestWriteController {
       UserCollectionScopeGuard.ensureWriteAllowed(await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db), req.params.id);
       const extracted = this.runtime.fieldGuard.extractReadOnlyOverrideMetadata(req.body);
       let data = extracted.data;
-      const changeSummary = data._change_summary || `Update ${collection.slug} record`;
+      const changeSummary = data._change_summary || VersionChangeSummary.UPDATED;
       if (data._change_summary) {
         delete data._change_summary;
       }

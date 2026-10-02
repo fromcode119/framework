@@ -10,6 +10,7 @@ export * from '@core/interfaces/field-input.interface';
 export type { IPluginInstallProgress } from '@core/plugin/interfaces/plugin-install-progress.interface';
 export type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 export { RecordVersions } from '@core/collections/record-versions';
+export { VersionChangeSummary } from '@core/collections/version-change-summary';
 
 // Core Classes (Server-only)
 export { ApiAccessGate } from '@core/plugin/context/api-access-gate';

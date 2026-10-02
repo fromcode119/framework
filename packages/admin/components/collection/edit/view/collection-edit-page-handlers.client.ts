@@ -6,6 +6,7 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
 import { CollectionEditUtils } from '@/components/collection/collection-edit-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { VersionChangeSummary } from '@fromcode119/core/client';
 
 /**
  * Imperative handlers for the collection edit page (submit, revisions, delete, read-only override),
@@ -15,6 +16,13 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class CollectionEditPageHandlers {
   /** Version History page size. Sent as `limit`, and `offset` is derived from it. */
   private static readonly REVISIONS_PAGE_SIZE = 20;
+
+  /** A version's summary as the reader reads it: a framework code in their language, a typed one as typed. */
+  static summaryText(summary: unknown): string {
+    const code = VersionChangeSummary.parse(summary);
+    if (code) return AdminI18n.t(`collection.revision.summary.${code.kind}`, { version: code.version ?? '' });
+    return String(summary ?? '').trim() || '-';
+  }
 
   private static context(self: any): { collection: any; resolvedSlug: string; isNew: boolean } {
     const collection = AdminCollectionUtils.resolveCollection(self.props.collections, self.props.pluginSlug, self.props.slug);
@@ -156,7 +164,7 @@ export class CollectionEditPageHandlers {
       const docs = result.docs || [];
       const mapped = docs.map((v: any) => ({
         id: v.id, version: v.version || 1, date: new Date(v.created_at),
-        user: v.updated_by || '-', action: v.change_summary || '-',
+        user: v.updated_by || '-', action: CollectionEditPageHandlers.summaryText(v.change_summary),
         changes: CollectionEditUtils.reviveSerializedRevisionValue(v.version_data || {})
       }));
       self.setState((prev: any) => {
