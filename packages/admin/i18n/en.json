@@ -3225,7 +3225,8 @@
     "unknown": "Unknown",
     "adding": "Adding...",
     "general": "General",
-    "delete": "Delete"
+    "delete": "Delete",
+    "inactive": "Inactive"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",

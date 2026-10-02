@@ -35,11 +35,11 @@ export class ThemeSettingsHeader extends Reactor {
             <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {themeDetail.name}
             </h1>
-            {/* `.value`, not the member: the controller hydrates `themeDetail.state` into a `ThemeState`
-                at the fetch boundary, and an Enum handed to React as a child is an object — it threw
-                "Minified React error #31 … object with keys {value}" and blanked the whole page. */}
+            {/* Words, never the member: the controller hydrates `themeDetail.state` into a `ThemeState`, and an
+                Enum handed to React as a child is an object — it threw "Minified React error #31" and blanked
+                the page. Its raw value ("active") also read English in every console. */}
             <Badge variant={themeDetail.state === ThemeState.ACTIVE ? 'success' : 'gray'}>
-              {themeDetail.state.value}
+              {AdminI18n.t(themeDetail.state === ThemeState.ACTIVE ? 'themes.active' : 'themes.inactive')}
             </Badge>
           </div>
           <div className="flex items-center gap-2 mt-1">

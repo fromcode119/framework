@@ -3655,7 +3655,8 @@
     "unknown": "Неизвестно",
     "adding": "Добавяне...",
     "general": "Общи",
-    "delete": "Изтрий"
+    "delete": "Изтрий",
+    "inactive": "Неактивна"
   },
   "mediaPicker": {
     "uploads": "Качени",
