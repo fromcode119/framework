@@ -212,6 +212,7 @@ export class ContextProviderApiHooks {
 
     const { loadConfig } = ContextProviderConfigLoaderHooks.useConfigLoader({
       apiFetch,
+      clientType,
       getBaseURL,
       setServerRuntimeModules,
       setPlugins,
