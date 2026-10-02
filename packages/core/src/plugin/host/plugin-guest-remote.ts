@@ -2,6 +2,7 @@ import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavai
 import { AsyncLocalStorage } from 'async_hooks';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { CopyOnChange } from '@core/plugin/host/copy-on-change';
+import { PluginJsonRows } from '@core/plugin/host/plugin-json-rows';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
@@ -57,7 +58,7 @@ export class PluginGuestRemote {
    */
   async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
     const result = await PluginGuestRemote.channelFor(this.channel).request(String(PluginChannelMessage.CALL.value), { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
-    return this.rehydrate(result, root, steps, token);
+    return PluginJsonRows.is(result) ? PluginJsonRows.decode(result) : this.rehydrate(result, root, steps, token);
   }
 
   /**

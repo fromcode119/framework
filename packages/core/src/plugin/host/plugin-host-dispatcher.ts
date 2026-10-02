@@ -11,6 +11,8 @@ import type { ITenantScopeLease } from '@fromcode119/database';
 import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
 import { PluginHostCallPolicy } from '@core/plugin/host/plugin-host-call-policy';
+import { PluginJsonRows } from '@core/plugin/host/plugin-json-rows';
+import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
 
 /**
  * Runs one guest call against the REAL context, under the tenant the call's token was minted for.
@@ -33,14 +35,16 @@ export class PluginHostDispatcher {
     private readonly callbacks: PluginHostCallbacks,
   ) {}
 
-  async dispatch(context: PluginContext, call: IPluginRemoteCall): Promise<unknown> {
+  /** `protocol`: what the calling process said it speaks — query rows go to it as JSON text if it reads them. */
+  async dispatch(context: PluginContext, call: IPluginRemoteCall, protocol?: IPluginProtocolIdentity | null): Promise<unknown> {
+    const jsonRows = PluginJsonRows.readBy(protocol);
     const invocation = this.tokens.resolve(call.token);
     if (!invocation) {
       throw Object.assign(new Error(`unknown_invocation: plugin "${this.slug}" presented a token the host did not mint`), { code: 'unknown_invocation' });
     }
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
     PluginHostCallPolicy.assert(this.slug, call, context, invocation.kind);
-    const execute = () => this.walk(this.root(context, call.root), call.steps, call.root);
+    const execute = () => this.walk(this.root(context, call.root), call.steps, call.root, jsonRows);
     // No store means the invocation was not started from a request (boot, a scheduler tick): the call
     // runs OUTSIDE any request context, exactly as the in-process plugin's would, so the context's own
     // untenanted-boot handling applies (skip-and-warn) instead of "no tenant in the request" rejections.
@@ -70,7 +74,7 @@ export class PluginHostDispatcher {
     throw new Error(`unknown call root "${root}"`);
   }
 
-  private async walk(start: unknown, steps: IPluginRemoteCall['steps'], root: string): Promise<unknown> {
+  private async walk(start: unknown, steps: IPluginRemoteCall['steps'], root: string, jsonRows = false): Promise<unknown> {
     let target: any = start;
     let owner: any = undefined;
     for (let index = 0; index < steps.length; index += 1) {
@@ -90,7 +94,8 @@ export class PluginHostDispatcher {
       if (step.args) {
         if (typeof next !== 'function') throw new Error(`"${step.name}" is not callable`);
         owner = target;
-        target = await next.apply(owner, this.revive(step.name, step.args));
+        const args = this.revive(step.name, step.args);
+        target = await next.apply(owner, jsonRows && PluginHostDispatcher.isDbFind(root, steps, index) ? PluginHostDispatcher.askForJsonRows(args) : args);
       } else {
         owner = target;
         target = next;
@@ -146,6 +151,23 @@ export class PluginHostDispatcher {
     if (!last?.args) return false;
     if (!['get', 'require', 'optional'].includes(last.name)) return false;
     return ['namespace', 'plugins', 'dependencies'].includes(String(previous));
+  }
+
+  /**
+   * Is the call being made `context.db.find(...)` — directly, or through the `stored` / `withArchived`
+   * views — and the last step? Only that call is answered as JSON rows; every other read keeps its shape.
+   */
+  private static isDbFind(root: string, steps: IPluginRemoteCall['steps'], index: number): boolean {
+    if (root !== String(PluginRemoteCallRoot.CONTEXT.value) || index !== steps.length - 1 || steps[index].name !== 'find') return false;
+    if (steps[0]?.name !== 'db' || steps[0].args) return false;
+    return steps.slice(1, index).every((step) => !step.args && (step.name === 'stored' || step.name === 'withArchived'));
+  }
+
+  /** `find`'s arguments with the request for JSON rows added to its options (`PluginJsonRows.REQUEST`). */
+  private static askForJsonRows(args: unknown[]): unknown[] {
+    const options = args[1];
+    if (options !== undefined && (options === null || typeof options !== 'object' || Array.isArray(options))) return args;
+    return [args[0], { ...(options as object | undefined), [PluginJsonRows.REQUEST]: true }, ...args.slice(2)];
   }
 
   /** Values that crossed as their wire form and must be objects again on this side. */

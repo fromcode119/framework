@@ -36,7 +36,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   protected async serve(type: string, payload: any, generation?: PluginGuestGeneration): Promise<unknown> {
     if (type === String(PluginChannelMessage.CALL.value)) {
       if (!this.context) throw new Error(`plugin "${this.slug}" called the host before it had a context`);
-      return this.dispatcher.dispatch(this.context, payload as IPluginRemoteCall);
+      return this.dispatcher.dispatch(this.context, payload as IPluginRemoteCall, (generation ?? this.generation)?.described?.protocol);
     }
     if (type === String(PluginChannelMessage.REGISTER.value)) {
       if (!this.context) throw new Error(`plugin "${this.slug}" registered before it had a context`);

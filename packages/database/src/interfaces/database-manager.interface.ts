@@ -9,6 +9,7 @@ import type { ISchemaCollection } from '@database/interfaces/schema-collection.i
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { IColumnStats } from '@database/interfaces/column-stats.interface';
 import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
+import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 /**
  * Interface representing a database manager: high-level CRUD operations, and statements built with
@@ -216,6 +217,13 @@ export interface IDatabaseManager {
     search?: { columns: string[]; value: string };
   }): Promise<any[]>;
   
+  /**
+   * `find` on a string-named table with the rows as one JSON text, keyed and typed as `find` plus
+   * camelCase naming would give them — or null when this dialect or query cannot answer so, and the
+   * caller runs `find` (see `PostgresReadOperations.findAsJson`).
+   */
+  findAsJson(tableName: string, options?: any): Promise<IJsonRows | null>;
+
   findOne(tableOrName: any, where: any): Promise<any | null>;
   
   insert(tableOrName: any, data: any): Promise<any>;

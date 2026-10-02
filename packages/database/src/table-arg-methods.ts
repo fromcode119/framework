@@ -10,7 +10,7 @@
  */
 export class TableArgMethods {
   /** Reads. */
-  static readonly READ: readonly string[] = ['find', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns'];
+  static readonly READ: readonly string[] = ['find', 'findAsJson', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns'];
 
   /** Writes. */
   static readonly WRITE: readonly string[] = ['insert', 'update', 'upsert', 'delete'];

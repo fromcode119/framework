@@ -14,12 +14,11 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { SiteContentRevision } from '@core/tenant/site-content-revision';
 import { UntenantedBootAccess } from '@core/plugin/context/untenanted-boot-access';
 import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
+import { PluginDbJsonFind } from '@core/plugin/context/plugin-db-json-find';
 
 // Plugins read with the schema's camelCase field names. Raw-SQL paths in
 // the dialects return rows keyed by snake_case DB columns; convert top-level
 // keys here so plugin code can stick to one canonical name.
-
-// Methods whose FIRST argument is a table name — guarded against system/other-plugin table access.
 
 // Framework-owned system tables. Plugins must reach these ONLY through the dedicated context APIs
 // (context.users / context.people / context.meta / context.media / context.recordVersions / …),
@@ -209,7 +208,7 @@ export class DatabaseContextProxy {
             };
           }
 
-          if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop)) {
+          if (typeof prop === 'string' && DatabaseContextProxy.TABLE_ARG_METHODS.has(prop) && !PluginDbJsonFind.HOST_ONLY_METHODS.has(prop)) {
             if (DatabaseContextProxy.READ_METHODS.has(prop) && !hasCapability('database:read')) {
               handleViolation('database:read');
             }
@@ -223,6 +222,7 @@ export class DatabaseContextProxy {
             if (typeof fn !== 'function') return fn;
             const shouldDenormalize = DatabaseContextProxy.ROW_RETURNING_METHODS.has(prop);
             return function (this: any, ...args: any[]) {
+              const asJson = prop === 'find' && PluginDbJsonFind.takeRequest(args);
               // SECURITY: deny direct access to framework system tables and other plugins' tables.
               // The framework's own context proxies (users/people/meta/media/recordVersions/…) use the
               // RAW manager db, so they are NOT affected by this guard — only plugin context.db is.
@@ -271,12 +271,12 @@ export class DatabaseContextProxy {
                 return UntenantedBootAccess.skip(plugin.manifest.slug, prop, table);
               }
               const scoped = DatabaseContextProxy.injectTenant(prop, includeArchived ? args : ArchivedRowFilter.apply(prop, args, manager));
-              const applied = fn.apply(this, EnumValueCoercion.coerceArguments(scoped));
+              const callArgs = EnumValueCoercion.coerceArguments(scoped);
+              const postProcess = (rows: any) => (resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : DatabaseContextProxy.denormalizeResult(rows));
+              if (asJson) return PluginDbJsonFind.run(target, callArgs, () => fn.apply(this, callArgs), postProcess, resolveLocalized ? { table, manager } : null);
+              const applied = fn.apply(this, callArgs);
               const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) ? SiteContentRevision.afterWrite(applied) : applied;
               if (shouldDenormalize) {
-                const postProcess = (rows: any) => (resolveLocalized
-                  ? DatabaseContextProxy.postProcessResult(rows, table, manager)
-                  : DatabaseContextProxy.denormalizeResult(rows));
                 if (out && typeof out.then === 'function') {
                   return out.then(postProcess);
                 }

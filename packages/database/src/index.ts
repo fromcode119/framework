@@ -13,6 +13,7 @@ export type { IDynamicTableOptions } from '@database/interfaces/dynamic-table-op
 export type { ISchemaField } from '@database/interfaces/schema-field.interface';
 export type { IIndexColumn } from '@database/interfaces/index-column.interface';
 export type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
+export type { IJsonRows } from '@database/interfaces/json-rows.interface';
 export type { IJoinClause } from '@database/interfaces/join-clause.interface';
 export { AggregateBucketUnit } from '@database/enums/aggregate-bucket-unit.enum';
 export { AggregateFunction } from '@database/enums/aggregate-function.enum';

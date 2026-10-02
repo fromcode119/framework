@@ -10,6 +10,7 @@ import { NamingStrategy } from '@database/naming-strategy';
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 import { Sql } from '@database/sql/sql';
 import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
+import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 /**
  * Reading and writing rows, and the schema calls that sit beside them.
@@ -54,6 +55,11 @@ export abstract class PostgresCrudOperations extends BaseDialect {
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     return this.reader.find(tableOrName, options);
+  }
+
+  /** See `PostgresReadOperations.findAsJson`. */
+  async findAsJson(tableName: string, options: any = {}): Promise<IJsonRows | null> {
+    return this.reader.findAsJson(tableName, options);
   }
 
   async findOne(tableOrName: any, where: any): Promise<any | null> {

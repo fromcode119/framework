@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { DialectColumnNormalizer } from '@database/dialects/dialect-column-normalizer';
 import { NamingStrategy } from '@database/naming-strategy';
 import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope';
+import { JsonRowShape } from '@database/dialects/postgres/json-row-shape';
 
 /**
  * PostgresColumnNormalizer - Postgres-specific column metadata lookup.
@@ -18,9 +19,26 @@ import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope'
 export class PostgresColumnNormalizer extends DialectColumnNormalizer {
   private pool: Pool;
 
+  /** Each table's JSON row shape (`JsonRowShape`), or null when it has none; dropped with the column types. */
+  private readonly jsonShapes = new Map<string, JsonRowShape | null>();
+
   constructor(pool: Pool) {
     super();
     this.pool = pool;
+  }
+
+  invalidateTableCache(tableName: string): void {
+    super.invalidateTableCache(tableName);
+    this.jsonShapes.delete(tableName);
+  }
+
+  /** How `tableName`'s rows are read as JSON, or null when one of its columns has no exact JSON form. */
+  async jsonRowShape(tableName: string): Promise<JsonRowShape | null> {
+    if (this.jsonShapes.has(tableName)) return this.jsonShapes.get(tableName) ?? null;
+    const result = await this.executor.query(JsonRowShape.COLUMNS_SQL, [tableName]);
+    const shape = JsonRowShape.of(tableName, result.rows || []);
+    this.jsonShapes.set(tableName, shape);
+    return shape;
   }
 
   private get executor(): { query: (text: string, values?: any[]) => Promise<any> } {

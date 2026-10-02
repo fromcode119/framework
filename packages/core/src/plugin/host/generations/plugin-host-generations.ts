@@ -127,7 +127,8 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       this.generationCount += 1;
       const guest = new SpawnedGuestProcess(spawner, listing.id, listing.pid, attachment.port, listing.guestDir);
       const generation = new PluginGuestGeneration(this.generationCount, guest, attachment.channel, listing.label.attachSecret, attachment.connectionId);
-      generation.described = attachment.described;
+      // What it said at boot, with the protocol it speaks NOW (the attach answer carries it apart).
+      generation.described = attachment.described ? { ...attachment.described, protocol: attachment.protocol } : attachment.described;
       this.wire(generation);
       this.takenOver = attachment.registrations;
       this.logger.info(`took over running process ${listing.pid} (${attachment.registrations.length} registrations to restore) instead of starting another`);
