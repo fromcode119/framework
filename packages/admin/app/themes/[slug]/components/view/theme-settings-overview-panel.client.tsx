@@ -1,5 +1,5 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode, LocalizationUtils } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
@@ -42,8 +42,8 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             {themeDetail.layouts?.map((layout) => (
               <div key={layout.name} className={`p-4 rounded-xl border transition-all ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50/50 border-slate-100 shadow-sm'}`}>
-                <div className={`text-sm font-semibold mb-1 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{layout.label}</div>
-                <p className="text-[11px] text-slate-500 font-medium">{layout.description || AdminI18n.t('themes.standardPlatformOptimizedLayout')}</p>
+                <div className={`text-sm font-semibold mb-1 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{LocalizationUtils.resolveLabelText(layout.label, AdminI18n.locale) || layout.name}</div>
+                <p className="text-[11px] text-slate-500 font-medium">{LocalizationUtils.resolveLabelText(layout.description, AdminI18n.locale) || AdminI18n.t('themes.standardPlatformOptimizedLayout')}</p>
               </div>
             ))}
           </div>

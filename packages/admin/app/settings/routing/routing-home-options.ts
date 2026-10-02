@@ -2,6 +2,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { RoutingPageUtils } from '@/app/settings/routing/routing-page-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { LocalizationUtils } from '@fromcode119/core/client';
 
 /**
  * What the "home page shows" dropdown offers, assembled from the theme's layouts, the site's
@@ -47,12 +48,12 @@ export class RoutingHomeOptions {
       ? rawLayouts.map((layout: any, idx: number) => {
         if (typeof layout === 'string') return { key: layout, label: layout };
         const key = String(layout?.slug || layout?.name || layout?.key || layout?.id || `layout-${idx + 1}`);
-        const label = String(layout?.title || layout?.label || layout?.name || layout?.slug || key);
+        const label = LocalizationUtils.resolveLabelText(layout?.title || layout?.label, AdminI18n.locale) || String(layout?.name || layout?.slug || key);
         return { key, label };
       })
       : Object.entries(rawLayouts || {}).map(([key, layout]: [string, any]) => {
         if (typeof layout === 'string') return { key, label: layout };
-        const label = String(layout?.title || layout?.label || layout?.name || layout?.slug || key);
+        const label = LocalizationUtils.resolveLabelText(layout?.title || layout?.label, AdminI18n.locale) || String(layout?.name || layout?.slug || key);
         return { key, label };
       });
 
