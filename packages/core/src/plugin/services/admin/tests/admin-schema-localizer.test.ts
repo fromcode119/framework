@@ -22,6 +22,22 @@ describe('AdminSchemaLocalizer', () => {
   };
   const localizer = new AdminSchemaLocalizer((plugin, key) => dictionary[`${plugin}.${key}`] || '');
 
+  it("translates a field another plugin added from that plugin's dictionary, not the owner's", () => {
+    const words = { ...dictionary, 'seo.admin.extendedFields.ogTitle.label': 'OG заглавие', 'seo.admin.extendedFields.ogTitle.description': 'Заглавие за социалните мрежи.' };
+    const out = new AdminSchemaLocalizer((plugin, key) => words[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products',
+      shortSlug: 'catalog',
+      fields: [
+        { name: 'name', label: 'Product Name' },
+        { name: 'ogTitle', label: 'OG Title', extendedBy: 'seo', admin: { description: 'Open Graph title.' } },
+        { name: 'canonicalUrl', label: 'Canonical URL', extendedBy: 'seo' },
+      ],
+    });
+    expect(out.fields.map((field: any) => field.label)).toEqual(['Име', 'OG заглавие', 'Canonical URL']);
+    expect(out.fields[1].admin.description).toBe('Заглавие за социалните мрежи.');
+    expect(out.fields[1].extendedBy).toBe('seo');
+  });
+
   it('translates a collection, its fields, options, sub-fields and tabs', () => {
     const out = localizer.collection('shop', {
       slug: 'shop-products',

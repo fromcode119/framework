@@ -15,6 +15,12 @@ export interface IField {
   type: FieldType | string;
   label?: string;
   placeholder?: string;
+  /**
+   * The plugin that added this field to another plugin's collection (`context.collections.extend`), set
+   * by the framework. Its label and description are that plugin's to translate (`admin.extendedFields`),
+   * since the owner of the collection has no words for a field it never declared.
+   */
+  extendedBy?: string;
   localized?: boolean;
   required?: boolean;
   unique?: boolean;
