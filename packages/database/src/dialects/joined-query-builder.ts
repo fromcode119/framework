@@ -4,6 +4,7 @@ import { NamingStrategy } from '@database/naming-strategy';
 import { WhereClauseParser } from '@database/dialects/where-clause-parser';
 import type { WhereComparison } from '@database/dialects/where-comparison';
 import type { IJoinClause } from '@database/interfaces/join-clause.interface';
+import { RowWindow } from '@database/dialects/row-window';
 
 /**
  * Builds a SELECT that spans joined tables, and unpacks what comes back.
@@ -93,8 +94,7 @@ export class JoinedQueryBuilder {
       }
     }
 
-    if (limit) sqlStr += ` LIMIT ${limit}`;
-    if (offset) sqlStr += ` OFFSET ${offset}`;
+    sqlStr += RowWindow.clause(limit, offset);
 
     return { sql: sqlStr, values };
   }

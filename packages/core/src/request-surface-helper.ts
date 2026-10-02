@@ -33,6 +33,11 @@ export class RequestSurfaceHelper {
   }
 
   static normalizePathname(value: unknown): string {
+    // Most calls pass a path that is already normal — a request path, a declared prefix — and this runs
+    // dozens of times per request: answer those without the trim, split and two regex replaces below.
+    if (typeof value === 'string' && RequestSurfaceHelper.isAlreadyNormal(value)) {
+      return value;
+    }
     const normalizedValue = String(value || '').trim();
     if (!normalizedValue) {
       return '';
@@ -62,6 +67,25 @@ export class RequestSurfaceHelper {
     }
 
     return compacted.replace(/\/+$/, '');
+  }
+
+  /**
+   * Whether `normalizePathname` would return `value` unchanged: a leading slash, no trailing one, no
+   * repeated slash, no query or fragment, and only printable ASCII — so neither `trim` nor a scheme
+   * parse could touch it. Anything else takes the full path.
+   */
+  private static isAlreadyNormal(value: string): boolean {
+    const length = value.length;
+    if (length === 0 || value.charCodeAt(0) !== 47) return false;
+    if (length > 1 && value.charCodeAt(length - 1) === 47) return false;
+    let previous = 0;
+    for (let index = 0; index < length; index += 1) {
+      const code = value.charCodeAt(index);
+      if (code <= 32 || code >= 127 || code === 63 || code === 35) return false;
+      if (code === 47 && previous === 47) return false;
+      previous = code;
+    }
+    return true;
   }
 
   static stripApiVersionPrefix(pathname: string): string {

@@ -4,6 +4,13 @@ import type { IEntityColumnMetadata } from '@core/entity/interfaces/entity-colum
 
 export class EntityMetadataService {
   private static readonly registry = new WeakMap<Function, IEntityColumnMetadata[]>();
+  /**
+   * Each class's resolved fields, kept: every mapped row asked for them, and walking the prototype
+   * chain to rebuild the same object was a measurable share of a plugin listing. Declaring a field (at
+   * class definition) moves `generation`, so a class declared later never reuses an older answer.
+   */
+  private static readonly resolved = new WeakMap<Function, { generation: number; fields: IEntityFieldsConfig }>();
+  private static generation = 0;
 
   static defineField(target: object, propertyKey: string | symbol, config: IEntityFieldConfig): void {
     const constructor = target.constructor;
@@ -17,18 +24,22 @@ export class EntityMetadataService {
       fields.push(metadata);
     }
     this.registry.set(constructor, fields);
+    EntityMetadataService.generation += 1;
   }
 
   static resolveFields(instanceOrConstructor: object | Function): IEntityFieldsConfig {
     const constructor = typeof instanceOrConstructor === 'function'
       ? instanceOrConstructor
       : instanceOrConstructor.constructor;
+    const known = this.resolved.get(constructor);
+    if (known && known.generation === EntityMetadataService.generation) return known.fields;
     const fields: IEntityFieldsConfig = {};
 
     for (const metadata of this.resolveMetadataChain(constructor)) {
       fields[metadata.name] = metadata.config;
     }
 
+    this.resolved.set(constructor, { generation: EntityMetadataService.generation, fields });
     return fields;
   }
 

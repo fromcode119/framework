@@ -23,6 +23,8 @@ import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
  */
 export abstract class PluginHostGenerations extends PluginHostAvailability {
   private static readonly ATTACH_TIMEOUT_MS = 10_000;
+  /** `--max-semi-space-size` for every plugin process, in MB — see `launchGeneration`. */
+  static readonly YOUNG_GENERATION_CEILING_MB = 16;
 
   /**
    * The guest's entry file — always core's BUILT output.
@@ -56,10 +58,12 @@ export abstract class PluginHostGenerations extends PluginHostAvailability {
       entryPath: PluginHostGenerations.guestMainPath(),
       args: [],
       cwd: this.projectRoot,
-      // A guest is mostly idle between calls, and V8's default young generation (16 MB semi-spaces,
-      // three of them) is sized for a busy process. Twenty-two guests on production held ~2 GB in one
-      // container; a 1 MB semi-space measured about 12 MB less resident per process at the same work.
-      execArgv: [`--max-old-space-size=${this.limits.memoryMb}`, '--max-semi-space-size=1'],
+      // The young generation's CEILING, not its size: V8 starts it small and grows it only while a
+      // process allocates heavily, so an idle guest stays as small as it was at 1 MB (measured: the
+      // same resident memory, idle). A 1 MB ceiling made a busy one collect garbage constantly — a
+      // product listing of 20 items cost the shop plugin 15-20% more CPU than at 16 MB, which in turn
+      // holds about 30 MB more while it is that busy.
+      execArgv: [`--max-old-space-size=${this.limits.memoryMb}`, `--max-semi-space-size=${PluginHostGenerations.YOUNG_GENERATION_CEILING_MB}`],
       identity: this.identity,
       writableDirs: [ProjectPaths.getPluginDataDir(this.slug, this.projectRoot, PluginOwners.ownerOf(this.slug))],
       // What another api needs to find this process and take it over (`takeOver`).

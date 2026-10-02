@@ -2,6 +2,14 @@ import { CacheManager } from '@fromcode119/cache';
 import { Logger, PluginManager, SystemConstants } from '@fromcode119/core';
 
 export class ServerMaintenanceService {
+  /**
+   * How long one answer stands. Every request asks, and each answer is a Redis round trip: under load
+   * that was a network call per request for a flag that changes a few times a year. Within this window
+   * requests share one lookup; a switch made on another api reaches this one within it.
+   */
+  static readonly STATUS_REUSE_MS = 1000;
+  private recent: { at: number; status: Promise<boolean> } | null = null;
+
   constructor(
     private manager: PluginManager,
     private cache: CacheManager,
@@ -9,7 +17,15 @@ export class ServerMaintenanceService {
     private logger: Logger,
   ) {}
 
-  async getStatus(): Promise<boolean> {
+  getStatus(): Promise<boolean> {
+    const now = Date.now();
+    if (this.recent && now - this.recent.at < ServerMaintenanceService.STATUS_REUSE_MS) return this.recent.status;
+    const status = this.lookUpStatus();
+    this.recent = { at: now, status };
+    return status;
+  }
+
+  private async lookUpStatus(): Promise<boolean> {
     try {
       let redisVal = await this.cache.get(`system_setting:${SystemConstants.META_KEY.MAINTENANCE_MODE}`);
       const memoryVal = this.settingsCache.get(SystemConstants.META_KEY.MAINTENANCE_MODE);
