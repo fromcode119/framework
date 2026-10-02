@@ -18,8 +18,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { PluginDefaultPageContractMaterializationExecutionOutcome } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-execution-outcome.enum';
 import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 import { DefaultPageContentValues } from '@core/services/default-page-contract/default-page-content-values';
-import { RequestContextUtils } from '@core/context/request-context';
-import { SiteLocaleAccess } from '@core/i18n/site-locale-access';
+import { DefaultPageSiteTitle } from '@core/services/default-page-contract/default-page-site-title';
 
 export class PluginDefaultPageMaterializationRuntimeService extends BaseService {
   private readonly associationService = new PluginDefaultPageBackfillAssociationService();
@@ -150,11 +149,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const result = await CoreServices.getInstance().collectionWriteCompatibility.findAndUpsert(
       query,
       lookupCandidates,
-      this.buildPagePayload(collection, {
-        ...payload,
-        title: await this.titleInSiteLanguage(payload),
-        defaultContent: await new DefaultPageContentValues(this.manager).fill(payload),
-      }),
+      this.buildPagePayload(collection, { ...payload, title: await new DefaultPageSiteTitle(this.manager).resolve(payload), defaultContent: await new DefaultPageContentValues(this.manager).fill(payload) }),
       {
         targetKey: collection.slug,
         fields: ['slug', 'customPermalink'],
@@ -163,20 +158,6 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     );
 
     return result?.record ? this.toPageSnapshot(result.record) : undefined;
-  }
-
-  /**
-   * The page title in the language of the site the page is created for: the contract's `titleKey` from
-   * its plugin's translations, else the declared `title`. Read here, inside the site, because the
-   * contract itself was declared at boot when no site — and so no site language — was known.
-   */
-  private async titleInSiteLanguage(payload: IPluginDefaultPageContractCreatePayload): Promise<string | undefined> {
-    const key = String(payload.titleKey || '').trim();
-    if (!key) return payload.title;
-    const tenantId = RequestContextUtils.getTenantId();
-    if (tenantId) await SiteLocaleAccess.warm(tenantId);
-    const locale = SiteLocaleAccess.get(tenantId) || this.manager.i18n.getDefaultLocale();
-    return this.manager.i18n.translateOrFallback(`${payload.pluginSlug}.${key}`, payload.title || '', {}, locale) || payload.title;
   }
 
   private buildPagePayload(collection: ICollection, payload: IPluginDefaultPageContractCreatePayload): Record<string, any> {
