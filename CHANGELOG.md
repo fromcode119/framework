@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.306] - 2026-10-02
+
+### Fixed
+
+- **admin**: the theme state badge reads in the console's language ([#681](https://github.com/fromcode119/framework/pull/681))
+
 ## [0.2.305] - 2026-10-02
 
 ### Fixed
