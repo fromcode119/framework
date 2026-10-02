@@ -18,6 +18,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 import { PluginDefaultPageContractMaterializationExecutionOutcome } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-execution-outcome.enum';
 import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 import { DefaultPageContentValues } from '@core/services/default-page-contract/default-page-content-values';
+import { DefaultPageSiteTitle } from '@core/services/default-page-contract/default-page-site-title';
 
 export class PluginDefaultPageMaterializationRuntimeService extends BaseService {
   private readonly associationService = new PluginDefaultPageBackfillAssociationService();
@@ -148,7 +149,7 @@ export class PluginDefaultPageMaterializationRuntimeService extends BaseService 
     const result = await CoreServices.getInstance().collectionWriteCompatibility.findAndUpsert(
       query,
       lookupCandidates,
-      this.buildPagePayload(collection, { ...payload, defaultContent: await new DefaultPageContentValues(this.manager).fill(payload) }),
+      this.buildPagePayload(collection, { ...payload, title: await new DefaultPageSiteTitle(this.manager).resolve(payload), defaultContent: await new DefaultPageContentValues(this.manager).fill(payload) }),
       {
         targetKey: collection.slug,
         fields: ['slug', 'customPermalink'],
