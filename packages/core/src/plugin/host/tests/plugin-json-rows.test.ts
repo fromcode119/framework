@@ -63,4 +63,17 @@ describe('PluginJsonRows', () => {
     expect(PluginJsonRows.is([{ [PluginJsonRows.KEY]: 1 }])).toBe(false);
     expect(PluginJsonRows.is({ rows: [] })).toBe(false);
   });
+
+  it('names only context.db.find, directly or through the stored and withArchived views, as answered with JSON rows', () => {
+    const find = { name: 'find', args: ['t', {}] };
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'db' }, find])).toBe(true);
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'db' }, { name: 'stored' }, find])).toBe(true);
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'db' }, { name: 'withArchived' }, { name: 'stored' }, find])).toBe(true);
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'db' }, { name: 'count', args: ['t'] }])).toBe(false);
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'plugins' }, { name: 'namespace', args: ['x'] }, find])).toBe(false);
+    expect(PluginJsonRows.isDbFind('context', [{ name: 'db' }, { name: 'find' }])).toBe(false);
+    expect(PluginJsonRows.isDbFind('core', [{ name: 'db' }, find])).toBe(false);
+    expect(PluginJsonRows.isDbFind('context', [find])).toBe(false);
+  });
 });
+

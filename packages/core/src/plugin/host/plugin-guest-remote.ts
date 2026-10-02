@@ -58,7 +58,7 @@ export class PluginGuestRemote {
    */
   async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
     const result = await PluginGuestRemote.channelFor(this.channel).request(String(PluginChannelMessage.CALL.value), { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
-    return PluginJsonRows.is(result) ? PluginJsonRows.decode(result) : this.rehydrate(result, root, steps, token);
+    return PluginJsonRows.isDbFind(root, steps) && PluginJsonRows.is(result) ? PluginJsonRows.decode(result) : this.rehydrate(result, root, steps, token);
   }
 
   /**

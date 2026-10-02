@@ -95,7 +95,7 @@ export class PluginHostDispatcher {
         if (typeof next !== 'function') throw new Error(`"${step.name}" is not callable`);
         owner = target;
         const args = this.revive(step.name, step.args);
-        target = await next.apply(owner, jsonRows && PluginHostDispatcher.isDbFind(root, steps, index) ? PluginHostDispatcher.askForJsonRows(args) : args);
+        target = await next.apply(owner, jsonRows && index === steps.length - 1 && PluginJsonRows.isDbFind(root, steps) ? PluginHostDispatcher.askForJsonRows(args) : args);
       } else {
         owner = target;
         target = next;
@@ -151,16 +151,6 @@ export class PluginHostDispatcher {
     if (!last?.args) return false;
     if (!['get', 'require', 'optional'].includes(last.name)) return false;
     return ['namespace', 'plugins', 'dependencies'].includes(String(previous));
-  }
-
-  /**
-   * Is the call being made `context.db.find(...)` — directly, or through the `stored` / `withArchived`
-   * views — and the last step? Only that call is answered as JSON rows; every other read keeps its shape.
-   */
-  private static isDbFind(root: string, steps: IPluginRemoteCall['steps'], index: number): boolean {
-    if (root !== String(PluginRemoteCallRoot.CONTEXT.value) || index !== steps.length - 1 || steps[index].name !== 'find') return false;
-    if (steps[0]?.name !== 'db' || steps[0].args) return false;
-    return steps.slice(1, index).every((step) => !step.args && (step.name === 'stored' || step.name === 'withArchived'));
   }
 
   /** `find`'s arguments with the request for JSON rows added to its options (`PluginJsonRows.REQUEST`). */

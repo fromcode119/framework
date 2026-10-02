@@ -1,6 +1,8 @@
 import type { IJsonRows } from '@fromcode119/database';
 import { LocalizedReadResolver } from '@core/plugin/context/localized-read-resolver';
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
+import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
+import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
 
 /**
  * Query rows on their way from the api to an isolated plugin as the JSON text Postgres wrote
@@ -30,6 +32,18 @@ export class PluginJsonRows {
   private static readonly DATE_TIME = /(\d{1,})-(\d{2})-(\d{2}) (\d{2}):(\d{2}):(\d{2})(\.\d{1,})?.*?( BC)?$/;
   private static readonly TIME_ZONE = /([Z+-])(\d{2})?:?(\d{2})?:?(\d{2})?/;
   private static readonly INFINITY = /^-?infinity$/;
+
+  /**
+   * Whether a call is `context.db.find(...)` — directly or through the `stored` / `withArchived` views.
+   * The ONLY call answered as JSON rows: the host marks nothing else, and a plugin process decodes
+   * nothing else, so another call's answer that happens to carry `KEY` is never read as rows.
+   */
+  static isDbFind(root: string, steps: IPluginRemoteCall['steps']): boolean {
+    const last = steps.length - 1;
+    if (root !== String(PluginRemoteCallRoot.CONTEXT.value) || last < 1 || steps[last].name !== 'find' || !steps[last].args) return false;
+    if (steps[0]?.name !== 'db' || steps[0].args) return false;
+    return steps.slice(1, last).every((step) => !step.args && (step.name === 'stored' || step.name === 'withArchived'));
+  }
 
   /** Whether a plugin process that answered with this protocol identity said it reads JSON rows. */
   static readBy(identity: IPluginProtocolIdentity | null | undefined): boolean {

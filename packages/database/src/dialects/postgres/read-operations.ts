@@ -22,6 +22,8 @@ import type { IJsonRows } from '@database/interfaces/json-rows.interface';
  * previously used inline — SQL generation stays byte-identical.
  */
 export class PostgresReadOperations extends BaseDialect {
+  /** Postgres `undefined_column`. */
+  private static readonly UNDEFINED_COLUMN = '42703';
   private pool: Pool;
 
   /** Raw statements: the request's held client when a tenant scope is open, else the pool. */
@@ -166,6 +168,9 @@ export class PostgresReadOperations extends BaseDialect {
   async findAsJson(tableName: string, options: any = {}): Promise<IJsonRows | null> {
     const { limit, offset, orderBy, where, columns, joins, search } = options;
     if (tableName !== String(tableName) || (joins && joins.length > 0) || (columns && Object.keys(columns).length > 0)) return null;
+    // Inside a transaction a failed statement aborts the caller's work, so a shape that went stale
+    // could not fall back below: there, `find` answers.
+    if (TenantConnectionScope.inTransaction(this.pool)) return null;
     if (!(await this.tables.exists(tableName))) return { text: '[]', revive: {} };
     const shape = await this.normalizer.jsonRowShape(tableName);
     if (!shape) return null;
@@ -180,6 +185,12 @@ export class PostgresReadOperations extends BaseDialect {
       result = await this.executor.query({ text: shape.statement(inner), values, rowMode: 'array' } as any);
     } catch (error) {
       if (this.tables.dropped(error, tableName)) return { text: '[]', revive: {} };
+      // A column the remembered shape names is gone (dropped or renamed elsewhere): the statement fails
+      // before its signature can be compared. Forget the shape and let `find` answer.
+      if ((error as { code?: unknown } | null)?.code === PostgresReadOperations.UNDEFINED_COLUMN) {
+        this.normalizer.invalidateTableCache(tableName);
+        return null;
+      }
       throw error;
     }
     const rows: unknown[][] = result.rows;
