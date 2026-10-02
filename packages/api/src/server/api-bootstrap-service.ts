@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
 import { AppearanceManager, HotReloadService, ProcessSignal, ProcessSignals, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
@@ -7,6 +6,7 @@ import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } fro
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
+import { PluginApiHost } from '@api/server/plugin-api-host';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -79,8 +79,8 @@ export class ApiBootstrapService {
     }
 
     const manager = new PluginManager();
-    const pluginApiRouter = express.Router();
-    manager.setApiHost(pluginApiRouter);
+    const pluginApiHost = new PluginApiHost();
+    manager.setApiHost(pluginApiHost);
 
     await manager.init();
 
@@ -269,7 +269,7 @@ export class ApiBootstrapService {
     SystemRedirectService.register((manager as any).db);
 
     const server = createServer(manager, themeManager, auth);
-    server.pluginRouter.use(pluginApiRouter);
+    server.pluginRouter.use(pluginApiHost.dispatch);
 
     await server.initialize();
     server.setupPluginCollectionProxy();
