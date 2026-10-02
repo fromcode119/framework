@@ -42,10 +42,17 @@ export class ContextProviderI18nHooks {
       seededTranslationsLocale,
     } = args;
 
+    // The locale of the most recent request. The console asks for the platform's language first and the
+    // reader's once it knows it; two requests in flight can answer in either order, and the late English
+    // one used to overwrite the Bulgarian — every server-translated plugin screen then read English.
+    const latestLocaleRef = React.useRef('');
     const loadTranslations = React.useCallback(async (newLocale: string) => {
+      const requested = String(newLocale || '').trim() || 'en';
+      latestLocaleRef.current = requested;
       try {
-        const encodedLocale = encodeURIComponent(String(newLocale || '').trim() || 'en');
+        const encodedLocale = encodeURIComponent(requested);
         const data = await api.get(`${SystemConstants.API_PATH.SYSTEM.I18N}?locale=${encodedLocale}`, { silent: true });
+        if (latestLocaleRef.current !== requested) return;
         // Replace: this holds ONLY the server (active-locale) translations. Plugin/theme UI
         // translations registered via registerTranslations live in `registeredTranslations` (per
         // locale) and are layered on in `effectiveTranslations`, so they survive a (re)load here and
