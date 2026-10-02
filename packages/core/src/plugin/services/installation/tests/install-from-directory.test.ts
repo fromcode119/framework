@@ -69,6 +69,28 @@ describe('PluginArchiveInstallerService.installFromDirectory', () => {
     expect(fs.existsSync(path.join(target, 'index.ts'))).toBe(true);
   });
 
+  it('refuses a package from another vendor that shares an installed plugin\'s slug, and leaves the installed one', async () => {
+    const target = path.join(pluginsRoot, 'guestbook');
+    fs.mkdirSync(target, { recursive: true });
+    fs.writeFileSync(path.join(target, 'manifest.json'), JSON.stringify({ ...manifest, namespace: 'org.fromcode' }));
+    fs.writeFileSync(path.join(target, 'index.js'), '// installed\n');
+    fs.writeFileSync(path.join(pkg, 'manifest.json'), JSON.stringify({ ...manifest, namespace: 'com.othervendor' }));
+
+    await expect(service.installFromDirectory(pkg)).rejects.toThrow(/org\.fromcode/);
+    expect(fs.readFileSync(path.join(target, 'index.js'), 'utf8')).toBe('// installed\n');
+  });
+
+  it('updates a plugin from the same vendor', async () => {
+    const target = path.join(pluginsRoot, 'guestbook');
+    fs.mkdirSync(target, { recursive: true });
+    fs.writeFileSync(path.join(target, 'manifest.json'), JSON.stringify({ ...manifest, namespace: 'org.fromcode', version: '0.1.30' }));
+    fs.writeFileSync(path.join(pkg, 'manifest.json'), JSON.stringify({ ...manifest, namespace: 'org.fromcode' }));
+    vi.spyOn(await import('@core/management/backup-service').then((m) => m.BackupService), 'create').mockResolvedValue(undefined as never);
+
+    await service.installFromDirectory(pkg);
+    expect(JSON.parse(fs.readFileSync(path.join(target, 'manifest.json'), 'utf8')).version).toBe('0.1.31');
+  });
+
   it('refuses a path that is not a directory rather than treating it as one', async () => {
     const file = path.join(root, 'guestbook.zip');
     fs.writeFileSync(file, 'PK');
