@@ -12,6 +12,8 @@ import { PortableColumnTypes } from '@core/database/helpers/portable-column-type
 export class ChannelConsentsMigration extends BaseMigration {
   readonly version = 59;
   readonly name = 'Channel consents';
+  /** Only a new table and its index: the running release never reads it. */
+  readonly rollingSafe = true;
 
   async up(db: IDatabaseManager): Promise<void> {
     const type = PortableColumnTypes.for(db.dialect);

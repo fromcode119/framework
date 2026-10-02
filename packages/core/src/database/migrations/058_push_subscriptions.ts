@@ -15,6 +15,8 @@ import { PortableColumnTypes } from '@core/database/helpers/portable-column-type
 export class PushSubscriptionsMigration extends BaseMigration {
   readonly version = 58;
   readonly name = 'Push subscriptions';
+  /** Only a new table and its index: the running release never reads it. */
+  readonly rollingSafe = true;
 
   async up(db: IDatabaseManager): Promise<void> {
     const type = PortableColumnTypes.for(db.dialect);

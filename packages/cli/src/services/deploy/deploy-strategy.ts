@@ -7,8 +7,10 @@ import { RemoteShell } from '@cli/services/deploy/remote-shell';
  *
  * The choice is the platform setting `deploy_mode` (Settings → Infrastructure → Deployments), read from
  * the platform's own database on the box. Rolling is refused, with the reason printed, when:
- *  - the release carries core migrations the database has not run. The new api migrates while the old
- *    one is still serving, and a renamed or dropped column would break the old one for that minute;
+ *  - the release carries a core migration the database has not run that does not declare itself
+ *    `rollingSafe`. The new api migrates while the old one is still serving, and a renamed or dropped
+ *    column would break the old one for that minute. A purely additive one (a new table, a new index)
+ *    says so, and rolls;
  *  - the box does not have the memory to run a second copy of the largest app while it is swapped.
  * Either way the deploy still happens, as a restart: nothing is left half-done because rolling was out.
  */
@@ -44,20 +46,17 @@ export class DeployStrategy {
     return { mode: DeployMode.ROLLING, reason: capacity.describe() };
   }
 
-  /** "migration 55" style description of what the new image would run, or '' when nothing. */
+  /**
+   * "migration 55" style description of what the new image would run that the serving release cannot run
+   * beside, or '' when nothing. Additive migrations that declare `rollingSafe` are not counted.
+   */
   private async pendingMigrations(): Promise<string> {
-    const shipped = DeployStrategy.highestVersion(await this.stack.migrationFiles());
-    const applied = Number(await this.stack.query("SELECT COALESCE(MAX(version), 0) FROM _system_migrations WHERE name NOT LIKE 'plugin:%'")) || 0;
+    const shipped = await this.stack.shippedMigrations();
     // An image that could not be listed must not pass for "nothing to migrate".
-    if (shipped === 0) return 'migrations that could not be listed';
-    return shipped > applied ? `migration ${applied + 1}${shipped > applied + 1 ? `–${shipped}` : ''}` : '';
-  }
-
-  /** `054_timestamps_carry_their_zone.js` → 54; the highest one in the list. */
-  static highestVersion(files: string[]): number {
-    return files.reduce((max, file) => {
-      const match = /^(\d+)_.+\.js$/.exec(file.trim());
-      return match ? Math.max(max, Number(match[1])) : max;
-    }, 0);
+    if (!shipped.length) return 'migrations that could not be listed';
+    const applied = Number(await this.stack.query("SELECT COALESCE(MAX(version), 0) FROM _system_migrations WHERE name NOT LIKE 'plugin:%'")) || 0;
+    const blocking = shipped.filter((migration) => migration.version > applied && !migration.rollingSafe).map((migration) => migration.version).sort((a, b) => a - b);
+    if (!blocking.length) return '';
+    return blocking.length === 1 ? `migration ${blocking[0]}` : `migrations ${blocking.join(', ')}`;
   }
 }
