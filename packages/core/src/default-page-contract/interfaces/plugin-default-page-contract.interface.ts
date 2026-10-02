@@ -10,6 +10,14 @@ export interface IPluginDefaultPageContract {
   capability: string;
   recipe: string;
   title?: string;
+  /**
+   * A key in the owning plugin's translations for the page title, looked up in the SITE's language
+   * (Settings → Localization) when the page is created there. Contracts are declared once at boot,
+   * before any site is known, so a `title` computed then is in the platform's language — a Bulgarian
+   * site got "Confirm your subscription". `title` stays the text used when the key has no translation.
+   * A theme override's title still wins over both.
+   */
+  titleKey?: string;
   themeLayout?: string;
   styleVariant?: string;
   materializationMode: PluginDefaultPageContractMaterializationMode;

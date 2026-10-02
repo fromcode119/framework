@@ -11,6 +11,7 @@ import { PluginDefaultPageContractMaterializationStatus } from '@core/default-pa
 import { PluginDefaultPageContractResolutionStatus } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-status.enum';
 import { PluginDefaultPageContractMaterializationMode } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-mode.enum';
 import { PluginDefaultPageContractMaterializationPageMatchSource } from '@core/default-page-contract/enums/plugin-default-page-contract-materialization-page-match-source.enum';
+import { PluginDefaultPageContractResolutionSource } from '@core/default-page-contract/enums/plugin-default-page-contract-resolution-source.enum';
 
 /**
  * Builds candidate pages and individual materialization plan entries. Extracted from
@@ -213,6 +214,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
       aliases: [...contract.effectiveAliases],
       recipe: contract.effectiveRecipe,
       title: contract.effectiveTitle,
+      titleKey: contract.sources.effectiveTitle === PluginDefaultPageContractResolutionSource.DECLARATION ? contract.titleKey : undefined,
       themeLayout: contract.effectiveThemeLayout,
       defaultContent: Array.isArray(contract.defaultContent) ? contract.defaultContent : undefined,
       contentValues: contract.contentValues,

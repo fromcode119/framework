@@ -3,6 +3,8 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { I18nManager } from '@core/i18n/i18n-manager';
+import { SiteLocaleAccess } from '@core/i18n/site-locale-access';
 import { CoreServices } from '@core/services/core-services';
 import { ServerCoreServices } from '@core/services/server-core-services';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
@@ -590,6 +592,47 @@ describe('PluginDefaultPageMaterializationRuntimeService inside a site', () => {
       new PluginDefaultPageMaterializationRuntimeService(manager as any).materialize());
 
     expect(pages.map((page) => page.customPermalink)).toEqual(['/shop']);
+  });
+
+  it("titles the page in the SITE's language from the contract's titleKey, not the platform's", async () => {
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager: any = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    manager.i18n = new I18nManager('en');
+    manager.i18n.registerTranslations('en', 'shop-plugin', { pages: { index: 'Shop' } });
+    manager.i18n.registerTranslations('bg', 'shop-plugin', { pages: { index: 'Магазин' } });
+    SiteLocaleAccess.configure(async (tenantId) => (tenantId === 't1' ? 'bg' : ''));
+    const declared = contract('shop-plugin', 'shop-index', '/shop');
+    CoreServices.getInstance().defaultPageContracts.register({
+      ...declared,
+      contracts: [{ ...declared.contracts[0], title: 'Shop', titleKey: 'pages.index' }],
+    });
+    await PluginTenantAccess.warm('t1');
+
+    await RequestContextUtils.storage.run({ locale: '', tenantId: 't1' }, () =>
+      new PluginDefaultPageMaterializationRuntimeService(manager).materialize());
+
+    expect(pages.map((page) => page.title)).toEqual(['Магазин']);
+  });
+
+  it('keeps the declared title when the site language has no translation for the key', async () => {
+    const pages: any[] = [];
+    let metaValue = '';
+    const manager: any = createManager(pages, () => metaValue, (next) => { metaValue = next; });
+    manager.i18n = new I18nManager('en');
+    manager.i18n.registerTranslations('bg', 'shop-plugin', { pages: {} });
+    SiteLocaleAccess.configure(async () => 'bg');
+    const declared = contract('shop-plugin', 'shop-index', '/shop');
+    CoreServices.getInstance().defaultPageContracts.register({
+      ...declared,
+      contracts: [{ ...declared.contracts[0], title: 'Shop', titleKey: 'pages.index' }],
+    });
+    await PluginTenantAccess.warm('t1');
+
+    await RequestContextUtils.storage.run({ locale: '', tenantId: 't1' }, () =>
+      new PluginDefaultPageMaterializationRuntimeService(manager).materialize());
+
+    expect(pages.map((page) => page.title)).toEqual(['Shop']);
   });
 
   it('outside a site (the single-site boot pass) every contract still applies', async () => {
