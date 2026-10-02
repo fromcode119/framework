@@ -103,23 +103,27 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
     const gitUrl = this.state.gitUrl.trim();
     if (!gitUrl || !branch) return;
 
-    this.setState({ inspecting: true, inspectFailed: false });
+    this.setState({ inspecting: true, inspectFailed: false, inspectFailure: '' });
     let response: any = null;
+    let failure = '';
     try {
       response = await SourcesApi.inspect(this.remoteReadPayload({ gitUrl, branch }));
-    } catch {
+    } catch (error: any) {
+      // The server's own words, as for branches — a failed read is not a repository without a manifest.
+      failure = String(error?.message || error?.error || '').trim();
       response = null;
     }
 
     const declared = response?.declared;
     if (!declared?.slug) {
-      this.setState({ inspecting: false, inspectFailed: true });
+      this.setState({ inspecting: false, inspectFailed: true, inspectFailure: failure });
       return;
     }
 
     this.setState({
       inspecting: false,
       inspectFailed: false,
+      inspectFailure: '',
       slug: String(declared.slug),
       type: this.declaredType(declared.type),
     });
