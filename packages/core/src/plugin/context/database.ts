@@ -1,5 +1,5 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import { NamingStrategy, Sql, TableArgMethods } from '@fromcode119/database';
+import { NamingStrategy, Sql, TableArgMethods, TableResolver } from '@fromcode119/database';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
@@ -226,7 +226,8 @@ export class DatabaseContextProxy {
               // SECURITY: deny direct access to framework system tables and other plugins' tables.
               // The framework's own context proxies (users/people/meta/media/recordVersions/…) use the
               // RAW manager db, so they are NOT affected by this guard — only plugin context.db is.
-              if (DatabaseContextProxy.isForbiddenTable(args[0], tablePrefix)) {
+              // Judged by the table the call REACHES: as written, `@beta/orders` passed and hit fcp_beta_orders.
+              if (DatabaseContextProxy.isForbiddenTable(TableResolver.resolve(args[0]), tablePrefix)) {
                 if (DatabaseContextProxy.isIsolationEnforced()) {
                   manager.audit.logAction(plugin.manifest.slug, 'Database Access Denied', String(args[0]), 'blocked');
                   throw new Error(
