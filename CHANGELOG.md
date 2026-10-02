@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.307] - 2026-10-02
+
+### Fixed
+
+- **react**: a site theme's stylesheet no longer restyles the admin ([#678](https://github.com/fromcode119/framework/pull/678))
+
+### Performance
+
+- **database**: prepare repeated reads once per connection; keep idle connections ([#682](https://github.com/fromcode119/framework/pull/682))
+- **api**: route a plugin request straight to its own plugin's routes ([#680](https://github.com/fromcode119/framework/pull/680))
+
 ## [0.2.306] - 2026-10-02
 
 ### Fixed
@@ -16,15 +27,15 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **react**: a late translation answer for another locale no longer wins ([#672](https://github.com/fromcode119/framework/pull/672)), merged before the 0.2.304 tag but not listed there
-- **core**: a field one plugin adds to another's collection is translated by the plugin that added it ([#673](https://github.com/fromcode119/framework/pull/673)), merged before the 0.2.304 tag but not listed there
-- **versions**: history entries the framework writes read in the console's language ([#675](https://github.com/fromcode119/framework/pull/675))
 - **admin**: a theme layout's name and description may be given per language ([#676](https://github.com/fromcode119/framework/pull/676))
+- **versions**: history entries the framework writes read in the console's language ([#675](https://github.com/fromcode119/framework/pull/675))
 
 ## [0.2.304] - 2026-10-02
 
 ### Fixed
 
+- **core**: a field one plugin adds to another's collection is translated by the plugin that added it ([#673](https://github.com/fromcode119/framework/pull/673))
+- **react**: a late translation answer for another locale no longer wins ([#672](https://github.com/fromcode119/framework/pull/672))
 - **sources**: the Add Source form says why a repository could not be read ([#671](https://github.com/fromcode119/framework/pull/671))
 
 ## [0.2.303] - 2026-10-02
