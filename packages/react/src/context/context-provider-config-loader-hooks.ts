@@ -4,10 +4,13 @@ import { ApplicationHostUtils, ApiPathUtils, PublicAssetUrlUtils } from '@fromco
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 import { ContextProviderStateService } from '@react/context/context-provider-state-service';
+import { ThemeCssScoper } from '@react/context/theme-css-scoper';
+import { ClientType } from '@fromcode119/core/client';
 
 export class ContextProviderConfigLoaderHooks {
   static useConfigLoader(args: {
     apiFetch: (path: string, options?: RequestInit & { silent?: boolean; noDedupe?: boolean }) => Promise<any>;
+    clientType: ClientType;
     getBaseURL: () => string;
     setServerRuntimeModules: React.Dispatch<React.SetStateAction<Record<string, any>>>;
     setPlugins: React.Dispatch<React.SetStateAction<any[]>>;
@@ -23,6 +26,7 @@ export class ContextProviderConfigLoaderHooks {
   }) {
     const {
       apiFetch,
+      clientType,
       getBaseURL,
       inFlightConfigLoadsRef,
       loadedConfigPathsRef,
@@ -175,10 +179,16 @@ export class ContextProviderConfigLoaderHooks {
                 const versionedCssUrl = PublicAssetUrlUtils.appendVersion(fullUrl, PublicAssetUrlUtils.themeAssetStamp(theme));
                 if (!cssRegistry.has(versionedCssUrl)) {
                   cssRegistry.add(versionedCssUrl);
-                  const link = document.createElement('link');
-                  link.rel = 'stylesheet';
-                  link.href = versionedCssUrl;
-                  document.head.appendChild(link);
+                  if (clientType === ClientType.ADMIN_UI) {
+                    // The admin needs the theme's css only inside block previews; mounted globally,
+                    // the theme's element rules restyle the console itself. See ThemeCssScoper.
+                    void ContextProviderConfigLoaderHooks.mountScopedThemeCss(versionedCssUrl, theme.slug);
+                  } else {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = versionedCssUrl;
+                    document.head.appendChild(link);
+                  }
                 }
               });
             }
@@ -250,6 +260,19 @@ export class ContextProviderConfigLoaderHooks {
         .filter((part) => Number.isFinite(part));
     } catch {
       return [];
+    }
+  }
+
+  private static async mountScopedThemeCss(cssUrl: string, themeSlug: string): Promise<void> {
+    try {
+      const response = await fetch(cssUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const style = document.createElement('style');
+      style.setAttribute('data-theme-scoped', themeSlug);
+      style.textContent = ThemeCssScoper.scope(await response.text(), new URL(cssUrl, window.location.href).href);
+      document.head.appendChild(style);
+    } catch (error) {
+      console.warn('[Fromcode] Failed to load theme css for previews:', cssUrl, error);
     }
   }
 }
