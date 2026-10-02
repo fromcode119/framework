@@ -1,6 +1,7 @@
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import { AsyncLocalStorage } from 'async_hooks';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
+import { CopyOnChange } from '@core/plugin/host/copy-on-change';
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 
@@ -72,22 +73,15 @@ export class PluginGuestRemote {
     if (value === null || typeof value !== 'object') return value;
     // Payload types the host sends verbatim; walking a Buffer's bytes would cost more than the call.
     if (Buffer.isBuffer(value) || value instanceof Date || value instanceof Map || value instanceof Set) return value;
-    if (Array.isArray(value)) return value.map((entry) => this.rehydrate(entry, root, steps, token));
+    const revive = (entry: unknown) => this.rehydrate(entry, root, steps, token);
+    if (Array.isArray(value)) return CopyOnChange.array(value, revive);
     const local = PluginGuestRemote.localHandler(value, this.recall);
     if (local) return local;
     const marker = (value as Record<string, unknown>)[PluginGuestRemote.HOST_OBJECT] as
       | { methods?: string[]; path?: string[]; data?: Record<string, unknown>; opaque?: boolean; names?: string[] }
       | undefined;
     if (marker?.opaque) return this.forwarder(root, steps, marker.path || [], token, marker.names || []);
-    if (!marker) {
-      const plain: Record<string, unknown> = {};
-      let changed = false;
-      for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
-        plain[key] = this.rehydrate(entry, root, steps, token);
-        if (plain[key] !== entry) changed = true;
-      }
-      return changed ? plain : value;
-    }
+    if (!marker) return CopyOnChange.object(value as Record<string, unknown>, revive);
 
     const at = (marker.path || []).map((name) => ({ name }));
     const object: Record<string, unknown> = {};
@@ -261,7 +255,7 @@ export class PluginGuestRemote {
 
   /** `{ $fcCallback: id }` coming back from the host is one of THIS guest's functions — return the original. */
   private static localHandler(value: object, recall: ((id: string) => ((...args: any[]) => unknown) | null) | null): ((...args: any[]) => unknown) | null {
-    if (!recall) return null;
+    if (!recall || !Object.prototype.hasOwnProperty.call(value, PluginGuestRemote.CALLBACK)) return null;
     const keys = Object.keys(value);
     if (keys.length !== 1 || keys[0] !== PluginGuestRemote.CALLBACK) return null;
     const id = (value as Record<string, unknown>)[PluginGuestRemote.CALLBACK];

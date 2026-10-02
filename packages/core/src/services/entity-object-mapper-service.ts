@@ -3,17 +3,67 @@ import { NumberUtils } from '@core/utils/number-utils';
 import { EntityEnumResolverService } from '@core/services/entity-enum-resolver-service';
 import type { IEntityFieldConfig } from '@core/entity/interfaces/entity-field-config.interface';
 import type { IEntityFieldsConfig } from '@core/entity/interfaces/entity-fields-config.interface';
+import type { IEntityFieldPlan } from '@core/entity/interfaces/entity-field-plan.interface';
 
 export class EntityObjectMapperService {
+  /**
+   * Each field config's plan, kept per config object. Every row re-split every source path and
+   * re-listed every transform: a 20-product listing ran that for ~80 fields per product, which was the
+   * largest single cost in the shop plugin's process. The configs are declared once and never change.
+   */
+  private static readonly plans = new WeakMap<IEntityFieldsConfig, IEntityFieldPlan[]>();
+
   static map<TOutput>(source: unknown, fields: IEntityFieldsConfig): TOutput {
     const row = CoercionUtils.toParsedObject(source);
     const output: Record<string, unknown> = {};
 
-    for (const [targetKey, config] of Object.entries(fields)) {
-      output[targetKey] = this.coerceValue(this.resolveValue(row, output, targetKey, config), config);
+    for (const field of this.planOf(fields)) {
+      output[field.key] = this.coercePlanned(this.resolvePlanned(row, output, field), field);
     }
 
     return output as TOutput;
+  }
+
+  private static planOf(fields: IEntityFieldsConfig): IEntityFieldPlan[] {
+    const known = this.plans.get(fields);
+    if (known) return known;
+    const plan = Object.entries(fields).map(([key, config]) => ({
+      key,
+      config,
+      sources: (config.from?.length ? config.from : [key]).map((path) => String(path || '').split('.').filter(Boolean)),
+      transforms: this.resolveTransforms(config.transform),
+    }));
+    this.plans.set(fields, plan);
+    return plan;
+  }
+
+  /** `resolveValue` for a planned field — the same order: each source, then `fallbackTo`, then the default. */
+  private static resolvePlanned(row: Record<string, unknown>, output: Record<string, unknown>, field: IEntityFieldPlan): unknown {
+    for (const parts of field.sources) {
+      let value: unknown = row;
+      for (const part of parts) {
+        if (!value || typeof value !== 'object') { value = undefined; break; }
+        value = (value as Record<string, unknown>)[part];
+      }
+      if (value !== undefined && value !== null && value !== '') return value;
+    }
+    const { config } = field;
+    if (config.fallbackTo && output[config.fallbackTo] !== undefined && output[config.fallbackTo] !== '') {
+      return output[config.fallbackTo];
+    }
+    return config.default;
+  }
+
+  /** `coerceValue` for a planned field. */
+  private static coercePlanned(value: unknown, field: IEntityFieldPlan): unknown {
+    if (field.config.optional && (value === undefined || value === null || value === '')) {
+      return undefined;
+    }
+    let nextValue = this.coerceBaseValue(value, field.config);
+    for (const transform of field.transforms) {
+      nextValue = this.applyTransform(nextValue, transform);
+    }
+    return nextValue;
   }
 
   static clean<TOutput>(source: unknown, fields: IEntityFieldsConfig): Partial<TOutput> {

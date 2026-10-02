@@ -7,6 +7,7 @@ import type { SqliteTableStatements } from '@database/dialects/sqlite/sqlite-tab
 import { BaseDialect } from '@database/dialects/base-dialect';
 import { SqliteColumnNormalizer } from '@database/dialects/sqlite/column-normalizer';
 import { SqliteDateUtils } from '@database/dialects/sqlite/date-utils';
+import { RowWindow } from '@database/dialects/row-window';
 
 /**
  * SqliteReadOperations - SELECT / count read path for the SQLite manager.
@@ -88,8 +89,7 @@ export class SqliteReadOperations extends BaseDialect {
       const { sql: whereSql, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);
       let sqlStr = `SELECT ${columnPart} FROM "${tableName}"${whereSql}`;
       if (orderBy) sqlStr += this.buildRawOrderByClause(orderBy);
-      if (limit) sqlStr += ` LIMIT ${limit}`;
-      if (offset) sqlStr += ` OFFSET ${offset}`;
+      sqlStr += RowWindow.clause(limit, offset);
 
       return this.executeRawSelect(sqlStr, values);
     }

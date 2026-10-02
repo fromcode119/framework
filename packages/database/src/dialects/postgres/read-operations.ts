@@ -12,6 +12,7 @@ import { TenantConnectionScope } from '@database/tenant/tenant-connection-scope'
 import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestamp-predicate';
 import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
 import { PostgresKnownTables } from '@database/dialects/postgres/postgres-known-tables';
+import { RowWindow } from '@database/dialects/row-window';
 
 /**
  * PostgresReadOperations - SELECT / count read path for the Postgres manager.
@@ -134,8 +135,7 @@ export class PostgresReadOperations extends BaseDialect {
       sqlQuery += whereClause;
       sqlQuery += this.buildRawOrderByClause(orderBy);
 
-      if (limit) sqlQuery += ` LIMIT ${limit}`;
-      if (offset) sqlQuery += ` OFFSET ${offset}`;
+      sqlQuery += RowWindow.clause(limit, offset);
 
       try {
         const result = await this.executor.query(sqlQuery, values);

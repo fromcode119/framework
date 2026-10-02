@@ -62,4 +62,28 @@ describe('PluginGuestRemote', () => {
     class FakeEnum { constructor(readonly value: string) {} }
     expect(PluginGuestRemote.portable([{ role: new FakeEnum('measure') }])).toEqual([{ role: 'measure' }]);
   });
+
+  it('hands back a plain answer as it arrived — rows are not copied to find nothing to revive', async () => {
+    const answer = { rows: [{ id: 1, nested: { list: [1, 2] } }, { id: 2, at: new Date(0) }], total: 2 };
+    const channel = { request: async () => answer } as unknown as PluginChannel;
+    const result = await new PluginGuestRemote(channel, 1000).ref('context').db.find('t', {});
+    expect(result).toBe(answer);
+  });
+
+  it('revives a host object deep in an answer, copying only the path to it and leaving the answer untouched', async () => {
+    const plain = { id: 1 };
+    const marked = { [PluginGuestRemote.HOST_OBJECT]: { methods: ['send'], path: ['client'], data: { name: 'courier' } } };
+    const answer = { items: [plain, marked], other: { x: 1 } };
+    const calls: any[] = [];
+    const channel = { request: async (_type: string, payload: any) => { calls.push(payload); return calls.length === 1 ? answer : 'sent'; } } as unknown as PluginChannel;
+    const result: any = await new PluginGuestRemote(channel, 1000).ref('context').integrations.get('shipping');
+    expect(result).not.toBe(answer);
+    expect(result.items[0]).toBe(plain);
+    expect(result.other).toBe(answer.other);
+    expect(result.items[1].name).toBe('courier');
+    expect(await result.items[1].send(5)).toBe('sent');
+    expect(answer.items[1]).toBe(marked);
+    expect(Object.keys(marked)).toEqual([PluginGuestRemote.HOST_OBJECT]);
+  });
 });
+

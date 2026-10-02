@@ -23,6 +23,10 @@ const INPUTS = [
   '//evil.example.com/path', 'https://console.example.com/admin/users?x=1', 'http://h:3000', 'HTTP://H/X/',
   'localhost:3000/x', 'c:/windows', 'mailto:someone@example.com', 'javascript:alert(1)', '?only=query', '#hash',
   '/ü/ä?x', 'https://example.com/%E2%9C%93/', 'x+y.z-1:rest', '1http://no-scheme', null, undefined, 42,
+  // Paths that are already normal take a shortcut; it must give the same answer, and so must every
+  // near miss that the shortcut has to hand to the full normalisation.
+  '/a', '/api', '/api/v1/plugins/widgets/items', '/a-b_c.d~e/f@g', '/a/', '/a//b', '//', '/a?', '/a#',
+  ' /a', '/a ', '/a\t', '/a\n', '/\u00a0a', '/a\u00a0', '/ü', '/a\u2028', '/a/b/c/', 'a', '/\u007f',
 ];
 
 describe('RequestSurfaceHelper.normalizePathname', () => {
