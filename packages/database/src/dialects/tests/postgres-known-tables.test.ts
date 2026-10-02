@@ -8,7 +8,10 @@ import { PostgresReadOperations } from '@database/dialects/postgres/read-operati
  */
 function reader(existing: Set<string>) {
   const catalog = vi.fn(async ({ table }: { table: unknown }) => ({ rows: [{ total: existing.has(String(table)) ? 1 : 0 }] }));
-  const rows = vi.fn(async (text: string, values?: unknown[]) => {
+  const rows = vi.fn(async (input: string | { text: string; values?: unknown[] }, given?: unknown[]) => {
+    // A read is sent as a statement config (`PreparedStatements.mark`); the catalog question as text.
+    const text = input === String(input) ? String(input) : (input as { text: string }).text;
+    const values = given ?? (input === String(input) ? undefined : (input as { values?: unknown[] }).values);
     // The catalog question goes to the same connection as every other statement.
     if (text.includes('information_schema.tables')) return catalog({ table: values?.[0] });
     const table = /FROM "([^"]+)"/.exec(text)?.[1] ?? '';
