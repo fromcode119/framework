@@ -13,6 +13,7 @@ import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestam
 import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
 import { PostgresKnownTables } from '@database/dialects/postgres/postgres-known-tables';
 import { RowWindow } from '@database/dialects/row-window';
+import { PreparedStatements } from '@database/dialects/postgres/prepared-statements';
 import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 /**
@@ -141,7 +142,7 @@ export class PostgresReadOperations extends BaseDialect {
       sqlQuery += RowWindow.clause(limit, offset);
 
       try {
-        const result = await this.executor.query(sqlQuery, values);
+        const result = await this.executor.query(PreparedStatements.mark(sqlQuery, values));
         return result.rows;
       } catch (error) {
         if (this.tables.dropped(error, tableName)) return [];
@@ -182,7 +183,7 @@ export class PostgresReadOperations extends BaseDialect {
 
     let result: any;
     try {
-      result = await this.executor.query({ text: shape.statement(inner), values, rowMode: 'array' } as any);
+      result = await this.executor.query(PreparedStatements.mark(shape.statement(inner), values, { rowMode: 'array' }));
     } catch (error) {
       if (this.tables.dropped(error, tableName)) return { text: '[]', revive: {} };
       // A column the remembered shape names is gone (dropped or renamed elsewhere): the statement fails
