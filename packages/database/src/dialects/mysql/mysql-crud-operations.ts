@@ -7,6 +7,7 @@ import { BaseDialect } from '@database/dialects/base-dialect';
 import { Sql } from '@database/sql/sql';
 import { SqlTableReads } from '@database/sql/sql-table-reads';
 import type { MysqlTableStatements } from '@database/dialects/mysql/mysql-table-statements';
+import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 /**
  * Reading and writing rows, and the schema calls beside them — the MySQL half.
@@ -26,6 +27,11 @@ export abstract class MysqlCrudOperations extends BaseDialect {
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     return this.reader.find(tableOrName, options);
+  }
+
+  /** No JSON row path here: callers run `find`. */
+  async findAsJson(_tableName: string, _options?: any): Promise<IJsonRows | null> {
+    return null;
   }
 
   async findOne(tableName: string, where: any): Promise<any | null> {

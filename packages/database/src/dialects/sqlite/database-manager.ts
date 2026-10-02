@@ -16,6 +16,7 @@ import { SqliteDateUtils } from '@database/dialects/sqlite/date-utils';
 import { SqliteColumnNormalizer } from '@database/dialects/sqlite/column-normalizer';
 import { SqliteSchemaBuilder } from '@database/dialects/sqlite/schema-builder';
 import { SqliteReadOperations } from '@database/dialects/sqlite/read-operations';
+import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManager {
   private sqlite: Database.Database;
@@ -109,6 +110,11 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   async find(tableOrName: any, options: any = {}): Promise<any[]> {
     return this.reader.find(tableOrName, options);
+  }
+
+  /** No JSON row path here: callers run `find`. */
+  async findAsJson(_tableName: string, _options?: any): Promise<IJsonRows | null> {
+    return null;
   }
 
   async findOne(tableOrName: any, where: any): Promise<any | null> {

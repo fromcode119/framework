@@ -41,6 +41,22 @@ export class LocalizedReadResolver {
     return LocalizedReadResolver.resolveRow(result, localizedFields, locale);
   }
 
+  /**
+   * The fields of `table` that are `localized: true`, and the locale this request reads them in — what
+   * `resolveRows` needs where the collection registry and the request are not at hand (a plugin
+   * process decoding rows the api sent as JSON, `PluginJsonRows`).
+   */
+  static resolutionFor(table: unknown, manager: IPluginManagerInterface): { fields: string[]; locale: string } | null {
+    const fields = LocalizedReadResolver.resolveLocalizedFields(table, manager);
+    if (!fields.length) return null;
+    return { fields, locale: LocalizationUtils.normalizeLocaleCode(RequestContextUtils.getLocale(), { short: true }) };
+  }
+
+  /** `rows` with `fields` collapsed to `locale` — `resolveResult` with the fields and locale already known. */
+  static resolveRows(rows: unknown[], fields: string[], locale: string): unknown[] {
+    return rows.map((row) => LocalizedReadResolver.resolveRow(row, fields, locale));
+  }
+
   private static resolveRow(row: unknown, localizedFields: string[], locale: string): unknown {
     if (!row || typeof row !== 'object' || Array.isArray(row)) return row;
 

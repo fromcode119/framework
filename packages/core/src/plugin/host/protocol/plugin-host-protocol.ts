@@ -1,4 +1,5 @@
 import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfaces/plugin-protocol-identity.interface';
+import { PluginJsonRows } from '@core/plugin/host/plugin-json-rows';
 
 /**
  * The version of the messages between the api and a plugin process — checked when a process boots.
@@ -15,8 +16,11 @@ import type { IPluginProtocolIdentity } from '@core/plugin/host/protocol/interfa
 export class PluginHostProtocol {
   static readonly VERSION = 1;
 
+  /** What this runtime's plugin processes can read beyond VERSION: query rows as JSON text. */
+  static readonly ACCEPTS: readonly string[] = [PluginJsonRows.ACCEPTS];
+
   static identity(): IPluginProtocolIdentity {
-    return { version: PluginHostProtocol.VERSION, node: process.version };
+    return { version: PluginHostProtocol.VERSION, node: process.version, accepts: [...PluginHostProtocol.ACCEPTS] };
   }
 
   /** Why this api must not use a process that answered `identity`, or null when it can. */

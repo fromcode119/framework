@@ -13,6 +13,7 @@ import { PostgresTimestampPredicate } from '@database/dialects/postgres/timestam
 import { PostgresTableStatements } from '@database/dialects/postgres/postgres-table-statements';
 import { PostgresKnownTables } from '@database/dialects/postgres/postgres-known-tables';
 import { RowWindow } from '@database/dialects/row-window';
+import type { IJsonRows } from '@database/interfaces/json-rows.interface';
 
 /**
  * PostgresReadOperations - SELECT / count read path for the Postgres manager.
@@ -21,6 +22,8 @@ import { RowWindow } from '@database/dialects/row-window';
  * previously used inline — SQL generation stays byte-identical.
  */
 export class PostgresReadOperations extends BaseDialect {
+  /** Postgres `undefined_column`. */
+  private static readonly UNDEFINED_COLUMN = '42703';
   private pool: Pool;
 
   /** Raw statements: the request's held client when a tenant scope is open, else the pool. */
@@ -150,6 +153,54 @@ export class PostgresReadOperations extends BaseDialect {
     const orderExprs = this.buildOrderBy(orderBy);
     const orderList = orderExprs ? (Array.isArray(orderExprs) ? orderExprs : [orderExprs]) : undefined;
     return this.tableStatements.find(this.executor, tableOrName, { columns, joins, where: filter, orderBy: orderList, limit, offset });
+  }
+
+  /**
+   * `find` on a table named by string, with the rows returned as ONE JSON text Postgres wrote — keyed
+   * and typed exactly as `find` followed by `NamingStrategy.denormalizeRecord` (`JsonRowShape`).
+   *
+   * For a caller that only passes rows on: an isolated plugin's query crosses to its process as this
+   * text, instead of being parsed into objects here, renamed, checked and serialised again. The
+   * filter, search, order and window are `find`'s own. Null when this query cannot be answered so —
+   * a selected column list, a join, a column type with no exact JSON form, or a table whose columns
+   * changed since its shape was read — and the caller then runs `find`.
+   */
+  async findAsJson(tableName: string, options: any = {}): Promise<IJsonRows | null> {
+    const { limit, offset, orderBy, where, columns, joins, search } = options;
+    if (tableName !== String(tableName) || (joins && joins.length > 0) || (columns && Object.keys(columns).length > 0)) return null;
+    // Inside a transaction a failed statement aborts the caller's work, so a shape that went stale
+    // could not fall back below: there, `find` answers.
+    if (TenantConnectionScope.inTransaction(this.pool)) return null;
+    if (!(await this.tables.exists(tableName))) return { text: '[]', revive: {} };
+    const shape = await this.normalizer.jsonRowShape(tableName);
+    if (!shape) return null;
+
+    const normalizedWhere = await this.normalizer.normalizeWhereForTable(tableName, where);
+    const searchArg = await this.resolveSearchArg(this.normalizer, tableName, search);
+    const { sql: whereClause, values } = this.buildRawFilterSQL(normalizedWhere, searchArg);
+    const inner = `SELECT * FROM "${tableName}"${whereClause}${this.buildRawOrderByClause(orderBy)}${RowWindow.clause(limit, offset)}`;
+
+    let result: any;
+    try {
+      result = await this.executor.query({ text: shape.statement(inner), values, rowMode: 'array' } as any);
+    } catch (error) {
+      if (this.tables.dropped(error, tableName)) return { text: '[]', revive: {} };
+      // A column the remembered shape names is gone (dropped or renamed elsewhere): the statement fails
+      // before its signature can be compared. Forget the shape and let `find` answer.
+      if ((error as { code?: unknown } | null)?.code === PostgresReadOperations.UNDEFINED_COLUMN) {
+        this.normalizer.invalidateTableCache(tableName);
+        return null;
+      }
+      throw error;
+    }
+    const rows: unknown[][] = result.rows;
+    if (rows.length && rows[0][1] !== shape.signature) {
+      this.normalizer.invalidateTableCache(tableName);
+      return null;
+    }
+    let text = '[';
+    for (let index = 0; index < rows.length; index += 1) text += (index ? ',' : '') + String(rows[index][0]);
+    return { text: `${text}]`, revive: shape.revive };
   }
 
   /** The caller's filter, ANDed with the search over the named columns. */

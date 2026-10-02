@@ -41,6 +41,12 @@ export class TenantConnectionScope {
    * stand-in: the pooled client behind it is taken on the first `query` and carries the scope's
    * tenant (or platform-admin marker) from then on.
    */
+  /** Whether this scope's client on `pool` is between a `BEGIN` and its end. */
+  static inTransaction(pool?: Pool): boolean {
+    const store = TenantConnectionScope.storage.getStore();
+    return !!store && (!pool || store.pool === pool) && store.inTransaction;
+  }
+
   static currentClient(pool?: Pool): LazyTenantClient | undefined {
     const store = TenantConnectionScope.storage.getStore();
     if (!store) return undefined;

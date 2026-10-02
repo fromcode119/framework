@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
+import { PluginJsonRows } from '@core/plugin/host/plugin-json-rows';
 
 function remoteWithRecorder(): { remote: PluginGuestRemote; calls: any[] } {
   const calls: any[] = [];
@@ -84,6 +85,14 @@ describe('PluginGuestRemote', () => {
     expect(await result.items[1].send(5)).toBe('sent');
     expect(answer.items[1]).toBe(marked);
     expect(Object.keys(marked)).toEqual([PluginGuestRemote.HOST_OBJECT]);
+  });
+
+  it('decodes JSON rows only as the answer to its own db.find — any other answer carrying the key stays data', async () => {
+    const rows = PluginJsonRows.wrap({ text: '[{"id":1}]', revive: {} }, null);
+    const channel = { request: async () => rows } as unknown as PluginChannel;
+    const remote = new PluginGuestRemote(channel, 1000);
+    expect(await remote.ref('context').db.find('t', {})).toEqual([{ id: 1 }]);
+    expect(await remote.ref('context').plugins.namespace('org.x').ledger.read()).toEqual(rows);
   });
 });
 
