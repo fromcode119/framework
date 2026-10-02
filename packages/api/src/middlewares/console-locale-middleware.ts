@@ -6,8 +6,8 @@ import { AdminConsoleLocale } from '@api/services/system/admin-console-locale';
  * A console request speaks the console language of the person making it.
  *
  * The console names no locale on its API calls, so they resolved to the PLATFORM default: everything a
- * plugin translated on the server for an admin screen — a sitemap's source names, a review's source,
- * numerology meanings — came back English in a Bulgarian console, while the console's own copy and the
+ * plugin translated on the server for an admin screen — the names it lists, the labels it derives,
+ * the copy it builds — came back English in a Bulgarian console, while the console's own copy and the
  * field labels (`AdminConsoleLocale`) were Bulgarian. Runs after authentication, on the admin surface
  * only, and only when the request named no locale of its own (`?locale`, the locale cookie). It sets
  * both `req.locale` and the request context, which is what isolated plugins receive.
