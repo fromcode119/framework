@@ -35,9 +35,9 @@ describe('ContextProviderI18nHooks — answers for a locale no longer asked for'
     const { rerender } = renderHook(({ locale }) => ContextProviderI18nHooks.useI18nRuntime({ ...shared, locale }), { initialProps: { locale: 'en' } });
     rerender({ locale: 'bg' });
 
-    answers.bg.resolve({ plugin: { title: 'Нумерологичен пакет' } });
-    await waitFor(() => expect(setTranslations).toHaveBeenCalledWith({ plugin: { title: 'Нумерологичен пакет' } }));
-    answers.en.resolve({ plugin: { title: 'Numerology suite' } });
+    answers.bg.resolve({ plugin: { title: 'Добре дошли' } });
+    await waitFor(() => expect(setTranslations).toHaveBeenCalledWith({ plugin: { title: 'Добре дошли' } }));
+    answers.en.resolve({ plugin: { title: 'Welcome' } });
     await new Promise((r) => setTimeout(r, 0));
 
     expect(setTranslations).toHaveBeenCalledTimes(1);
