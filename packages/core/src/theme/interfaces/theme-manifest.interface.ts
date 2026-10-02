@@ -19,8 +19,9 @@ export interface IThemeManifest {
   updateUrl?: string; // External URL to check for updates
   layouts: {
     name: string;
-    label: string;
-    description?: string;
+    /** Text, or text per language (`{ "en": "Standard page", "bg": "Стандартна страница" }`) — the console shows its reader's. */
+    label: string | Record<string, string>;
+    description?: string | Record<string, string>;
   }[];
   slots?: string[]; // Defined slot names this theme provides
   overrides?: { name: string; component: string; priority?: number }[]; // Component overrides

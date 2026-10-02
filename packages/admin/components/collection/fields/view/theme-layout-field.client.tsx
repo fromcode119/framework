@@ -1,6 +1,6 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
+import { LocalizationUtils, ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
@@ -63,7 +63,7 @@ export class ThemeLayoutField extends Reactor {
             .map((layout: any) => {
               const name = typeof layout?.name === 'string' ? layout.name : '';
               if (!name) return null;
-              return { label: layout?.label || this.humanizeLayoutName(name), value: name, description: typeof layout?.description === 'string' ? layout.description : '' };
+              return { label: LocalizationUtils.resolveLabelText(layout?.label, AdminI18n.locale) || this.humanizeLayoutName(name), value: name, description: LocalizationUtils.resolveLabelText(layout?.description, AdminI18n.locale) };
             })
             .filter(Boolean) as IThemeLayoutOption[]
         : rawLayouts && typeof rawLayouts === 'object'
