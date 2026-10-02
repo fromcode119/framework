@@ -138,6 +138,12 @@ export class AdminSchemaLocalizer {
     return fields.map((field) => {
       const name = String(field?.name || '');
       if (!name) return field;
+      // A field another plugin added (`extend`) speaks that plugin's words, from `admin.extendedFields`.
+      const extender = field.extendedBy && field.extendedBy !== pluginSlug ? String(field.extendedBy) : '';
+      if (extender) {
+        const [translated] = this.fields(extender, 'admin.extendedFields', [{ ...field, extendedBy: undefined }], 'admin.extendedFields.sections') ?? [field];
+        return { ...translated, extendedBy: extender };
+      }
       const key = `${base}.${name}`;
       const next: Record<string, any> = {
         ...field,

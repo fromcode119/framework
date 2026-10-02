@@ -91,7 +91,7 @@ export class CollectionsContextProxy {
               const existingNames = new Set(entry.collection.fields.map((f: IField) => f.name));
               extensions.fields.forEach((f: IField) => {
                 if (!existingNames.has(f.name)) {
-                  entry.collection.fields.push(f);
+                  entry.collection.fields.push({ ...f, extendedBy: plugin.manifest.slug });
                 }
               });
             }
@@ -110,7 +110,7 @@ export class CollectionsContextProxy {
                     const existingNames = new Set(data.collection.fields.map((f: IField) => f.name));
                     extensions.fields.forEach((f: any) => {
                       if (!existingNames.has(f.name)) {
-                        data.collection.fields.push(f);
+                        data.collection.fields.push({ ...f, extendedBy: plugin.manifest.slug });
                       }
                     });
                   }
