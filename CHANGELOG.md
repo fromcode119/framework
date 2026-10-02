@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.302] - 2026-10-02
+
+### Fixed
+
+- **core**: judge a plugin's table access by the table the call reaches ([#667](https://github.com/fromcode119/framework/pull/667))
+- **api**: a console request speaks the reader's console language ([#666](https://github.com/fromcode119/framework/pull/666))
+
+### Performance
+
+- **core**: hand an isolated plugin's query rows over as the JSON Postgres writes ([#665](https://github.com/fromcode119/framework/pull/665))
+
 ## [0.2.301] - 2026-10-02
 
 ### Fixed
