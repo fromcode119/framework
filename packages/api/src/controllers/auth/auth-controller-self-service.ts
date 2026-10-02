@@ -1,6 +1,6 @@
 import { InspectorAccess } from '@fromcode119/auth';
 import { Response } from 'express';
-import { TenantMode, TenantMembershipService } from '@fromcode119/core';
+import { RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
 import { SystemConstants } from '@fromcode119/core';
 import { AuthControllerSecurity } from '@api/controllers/auth/auth-controller-security';
 import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-service';
@@ -10,6 +10,7 @@ import { PeopleSelfService } from '@api/services/people-self-service';
 import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 import { CoercionUtils } from '@fromcode119/core';
 import { AdminConsoleLocale } from '@api/services/system/admin-console-locale';
+import { ConsoleLocaleMiddleware } from '@api/middlewares/console-locale-middleware';
 
 export class AuthControllerSelfService extends AuthControllerSecurity {
   async getMyPerson(req: any, res: Response) {
@@ -33,6 +34,8 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     const service = new PeopleSelfService(this.db);
     const self = await service.resolveSelf(req.user);
     const person = await service.updateSelf(self, req.body || {});
+    // Their console language may just have changed: the next request must not answer in the old one.
+    ConsoleLocaleMiddleware.forget(String(RequestContextUtils.getTenantId() ?? ''), req.user?.id);
     return res.json({ person });
   }
 
