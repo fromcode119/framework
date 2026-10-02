@@ -20,16 +20,22 @@ describe('ThemeCssScoper', () => {
     expect(out.indexOf('h1')).toBeGreaterThan(out.indexOf('@scope'));
   });
 
-  it('maps html / body / :root to the scope root, keeping document-root conditions', () => {
+  it('maps html / :root to the scope root and body to its child, keeping document-root conditions', () => {
     const out = scopedBody('body { margin: 0 } html { color: red } :root[data-theme=dark] .card { color: #fff } html:not(.light) .x { a: b }');
-    expect(out).toContain(':scope { margin: 0 }');
+    expect(out).toContain(':scope > * { margin: 0 }');
     expect(out).toContain(':scope { color: red }');
     expect(out).toContain(':root[data-theme=dark] :scope .card { color: #fff }');
     expect(out).toContain(':root:not(.light) :scope .x { a: b }');
   });
 
+  it('keeps body a child of html, so `body { background: inherit }` inherits the html ground', () => {
+    const out = scopedBody('html { background: #0a0015; font-family: Montserrat } body { background: inherit; font-family: inherit }');
+    expect(out).toContain(':scope { background: #0a0015; font-family: Montserrat }');
+    expect(out).toContain(':scope > * { background: inherit; font-family: inherit }');
+  });
+
   it('keeps @font-face and @keyframes at the top level and rewrites selectors inside @media', () => {
-    const out = scopeOf('@font-face { font-family: X; src: url(fonts/x.woff2) } @keyframes spin { to { transform: rotate(1turn) } } @media (min-width: 600px) { body { padding: 1px } .a { b: c } }');
+    const out = scopeOf('@font-face { font-family: X; src: url(fonts/x.woff2) } @keyframes spin { to { transform: rotate(1turn) } } @media (min-width: 600px) { html { padding: 1px } .a { b: c } }');
     const scopeAt = out.indexOf('@scope');
     expect(out.indexOf('@font-face')).toBeLessThan(scopeAt);
     expect(out.indexOf('@keyframes')).toBeLessThan(scopeAt);

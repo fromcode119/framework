@@ -11,8 +11,11 @@
  * The rules are wrapped in `@scope ([data-fc-theme-surface])`, so they only reach elements inside a
  * container carrying that attribute — the block editor's preview, or any admin surface that renders
  * a theme component. Inside the scope:
- *  - `html` / `body` / `:root` at the start of a selector mean the scope root (`:scope`), keeping
- *    the condition they carry (`:root[data-theme=dark] .x` → `:root[data-theme=dark] :scope .x`).
+ *  - `html` / `:root` at the start of a selector mean the scope root (`:scope`), keeping the
+ *    condition they carry (`:root[data-theme=dark] .x` → `:root[data-theme=dark] :scope .x`).
+ *    `body` means the scope root's child (`:scope > *`): a page's body is html's child, and a theme
+ *    that paints `html` and writes `body { background: inherit }` relies on exactly that — collapsed
+ *    onto one element, the body rule wiped the html ground it was meant to inherit.
  *  - `@font-face`, `@keyframes`, `@property`, `@counter-style`, `@font-palette-values` and
  *    `@import` cannot live inside `@scope`; they are document-global by nature and stay top level.
  *  - Relative `url()`s are resolved against the stylesheet's own URL, because the text is inlined
@@ -57,8 +60,8 @@ export class ThemeCssScoper {
     const condition = compound.slice(match[0].length);
     // A condition on the document root (`:root[data-theme=dark]`, `html.dark`) still holds outside
     // the scope, so it is kept as an ancestor of `:scope`. `body` carries none the admin shares.
-    const isDocumentElement = /^(?::root|html)$/i.test(match[0]);
-    return condition && isDocumentElement ? `:root${condition} :scope${rest}` : `:scope${rest}`;
+    if (/^body$/i.test(match[0])) return `:scope > *${rest}`;
+    return condition ? `:root${condition} :scope${rest}` : `:scope${rest}`;
   }
 
   private static compoundEnd(selector: string): number {
