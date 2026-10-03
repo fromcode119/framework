@@ -28,4 +28,12 @@ describe('RestReadController logging', () => {
     await expect(controller.find(collection, { query: {} })).rejects.toBe(failure);
     expect(logger.error).toHaveBeenCalledWith(expect.stringContaining('database connection lost'), expect.objectContaining({ stack: failure.stack }));
   });
+
+  it('a refused filter (400) is the caller\'s mistake: debug, not an error', async () => {
+    const refused = Object.assign(new Error('Cannot filter or sort by: costPerItem.'), { statusCode: 400 });
+    const { controller, logger } = controllerThrowing(refused);
+    await expect(controller.find(collection, { query: {} })).rejects.toBe(refused);
+    expect(logger.error).not.toHaveBeenCalled();
+    expect(logger.debug).toHaveBeenCalledTimes(1);
+  });
 });
