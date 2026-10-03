@@ -6,11 +6,10 @@ import { Logger } from '@core/logging';
 /**
  * Watches the plugins directory and announces what changed.
  *
- * READ THIS BEFORE TRUSTING THE NAME. It does **not** re-register a plugin into this process. It
- * cannot: the api holds each plugin's manifest and collection schema in memory from boot, and
- * `PluginEntityRegistrationService.mergeCollectionFields` only ADDS fields that are not already
- * registered — it never updates one — because several plugins legitimately extend the same
- * collection. Re-running a plugin's registration would therefore keep every old field definition.
+ * READ THIS BEFORE TRUSTING THE NAME. It does **not** re-register a plugin into this process: the
+ * api holds an in-process plugin's manifest and code from boot. (An ISOLATED plugin updated through
+ * the installer is different — its new process re-registers its collections, and the owner's field
+ * definitions are refreshed by `PluginEntityRegistrationService.refreshOwnCollectionFields`.)
  *
  * What it used to do was worse than nothing: it logged `Triggering reload...` and then, by its own
  * comment, "just log the intent". An operator reading that line would believe the new code was
