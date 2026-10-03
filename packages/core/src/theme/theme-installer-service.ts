@@ -15,6 +15,7 @@ import { ProjectPaths } from '@core/config/paths';
 import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-policy';
 import { ThemeBundledPluginInstaller } from '@core/theme/theme-bundled-plugin-installer';
 import { ThemeTenantPlacement } from '@core/theme/theme-tenant-placement';
+import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 
 export class ThemeInstallerService {
   private readonly bundledPlugins: ThemeBundledPluginInstaller;
@@ -52,10 +53,8 @@ export class ThemeInstallerService {
     fs.mkdirSync(tempDir, { recursive: true });
     try {
       await BackupService.downloadAndExtract(downloadUrl, tempDir);
-      const targetDir = path.join(this.themesRoot, slug);
-      if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-      fs.mkdirSync(targetDir, { recursive: true });
-      this.moveDir(tempDir, targetDir);
+      // Swapped in whole: the storefront never renders from a half-written theme.
+      ExtensionDirectorySwap.replaceSync(path.join(this.themesRoot, slug), (stagingDir) => this.moveDir(tempDir, stagingDir));
       await this.discoverThemes();
       const installedManifest = this.pluginManager?._themes?.get?.(slug);
       if (installedManifest) await this.installDependencies(installedManifest);
@@ -166,15 +165,11 @@ export class ThemeInstallerService {
     const targetDir = path.join(this.themesRoot, manifest.slug);
     if (fs.existsSync(targetDir)) {
       await BackupService.create(manifest.slug, targetDir, BackupSectionKey.THEMES);
-      fs.rmSync(targetDir, { recursive: true, force: true });
     }
-    fs.mkdirSync(targetDir, { recursive: true });
-
-    if (options.keepSource) {
-      fs.cpSync(contentDir, targetDir, { recursive: true });
-    } else {
-      this.moveDir(contentDir, targetDir);
-    }
+    ExtensionDirectorySwap.replaceSync(targetDir, (stagingDir) => {
+      if (options.keepSource) fs.cpSync(contentDir, stagingDir, { recursive: true });
+      else this.moveDir(contentDir, stagingDir);
+    });
 
     await this.discoverThemes();
     const installedManifest = themesMap.get(manifest.slug) || manifest;
