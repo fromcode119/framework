@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { BaseController, CoercionUtils, Logger, PluginManager, PluginOwners, PluginState, PluginTenantStateService, TenantMode } from '@fromcode119/core';
 import { PluginSiteOfferStore } from '@api/controllers/plugins/plugin-site-offer-store';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 
 /**
  * The plugins a SITE may add to itself: the ones the platform offers.
@@ -28,13 +29,18 @@ export class PluginSiteOfferController extends BaseController {
     if (!TenantMode.isEnabled() || !tenantId) return res.json({ offered: slugs });
 
     const enabled = new Set(await this.tenantState().listEnabled(tenantId));
-    const describe = (plugin: any) => ({
-      slug: plugin.manifest.slug,
-      name: plugin.manifest.name,
-      description: plugin.manifest.description ?? '',
-      version: plugin.manifest.version,
-      enabledHere: enabled.has(plugin.manifest.slug),
-    });
+    // Name and description in the console's language, as the installed list shows them.
+    const localizer = await AdminSchemaLocalization.forRequest(this.manager, req);
+    const describe = (plugin: any) => {
+      const manifest = localizer.manifest(plugin.manifest.slug, plugin.manifest);
+      return {
+        slug: plugin.manifest.slug,
+        name: manifest.name,
+        description: manifest.description ?? '',
+        version: plugin.manifest.version,
+        enabledHere: enabled.has(plugin.manifest.slug),
+      };
+    };
     const plugins = slugs
       .map((slug) => this.manager.plugins.get(slug))
       .filter((plugin) => plugin && PluginState.resolve(plugin.state) === PluginState.ACTIVE)
