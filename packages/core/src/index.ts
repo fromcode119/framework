@@ -219,6 +219,7 @@ export { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
 export type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-setting-descriptor.interface';
 export type { ISettingWrite } from '@core/settings/interfaces/setting-write.interface';
 export { SettingScope } from '@core/settings/enums/setting-scope.enum';
+export { SettingSource } from '@core/settings/enums/setting-source.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
 export { GeoIpLookup } from '@core/geo/geo-ip-lookup';
