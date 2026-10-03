@@ -114,6 +114,12 @@ export interface IPluginManifest {
      * uploaded appears on the storefront — the frame cannot see or touch the page around it.
      */
     widgets?: Array<{ slot: string; path: string; height?: number; title?: string }>;
+    /**
+     * Outside hosts this plugin's STOREFRONT code loads from or talks to in the visitor's browser
+     * (`"js.stripe.com"`). On a site whose theme the site uploaded, the storefront allows only these,
+     * the theme's own and the site itself (StorefrontContentSecurityPolicy).
+     */
+    storefrontHosts?: string[];
     publicRoutes?: IPublicRouteManifest[];
     // Head-data provider contract: the plugin's own API path serving resolved head data,
     // plus the record field names it wants forwarded from the resolved content record.

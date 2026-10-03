@@ -69,6 +69,14 @@ describe('what a site may upload as a theme', () => {
     expect(TenantThemePackagePolicy.violations(dir, manifest({ bundledPlugins: ['x.zip'] }))[0]).toMatch(/bundledPlugins/);
   });
 
+  it('accepts declared host names, and refuses "any" or anything that is not a host name', () => {
+    const dir = packageDir(() => undefined);
+
+    expect(TenantThemePackagePolicy.violations(dir, manifest({ network: { hosts: ['fonts.fonts.example', '*.cdn.example'] } }))).toEqual([]);
+    expect(TenantThemePackagePolicy.violations(dir, manifest({ network: { any: true } }))[0]).toMatch(/network\.any/);
+    expect(TenantThemePackagePolicy.violations(dir, manifest({ network: { hosts: ['https://x.example/a'] } }))[0]).toMatch(/not host names/);
+  });
+
   it('refuses runtimeModules — a site theme may not remap the modules the platform provides', () => {
     const dir = packageDir(() => undefined);
     const modules = { '@fromcode119/react-class-components': { url: 'https://evil.example/x.js' } };

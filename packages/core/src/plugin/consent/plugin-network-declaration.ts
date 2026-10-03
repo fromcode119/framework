@@ -14,6 +14,11 @@ export class PluginNetworkDeclaration {
   /** A host name, or `*.` and a host name. Lowercase letters, digits, dots and hyphens only. */
   private static readonly HOST_PATTERN = /^(\*\.)?([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/;
 
+  /** Whether `value` is a host name, or `*.` and a host name. */
+  static isHost(value: string): boolean {
+    return PluginNetworkDeclaration.HOST_PATTERN.test(String(value ?? '').trim().toLowerCase());
+  }
+
   /** The declared hosts, normalized: lowercase, trimmed, de-duplicated, sorted. Invalid entries are dropped. */
   static hosts(manifest: IPluginManifest): string[] {
     const declared = Array.isArray(manifest.network?.hosts) ? manifest.network!.hosts : [];

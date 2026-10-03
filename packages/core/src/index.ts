@@ -28,6 +28,7 @@ export type { IApiPermissionCheck } from '@core/plugin/context/interfaces/api-pe
 export { PluginManager } from '@core/plugin/plugin-manager';
 export type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 export { ThemeManager } from '@core/theme/theme-manager';
+export { StorefrontContentSecurityPolicy } from '@core/theme/storefront-content-security-policy';
 export { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 export { AppearanceManager } from '@core/appearance/appearance-manager';
 export { AppearanceInstallerService } from '@core/appearance/appearance-installer-service';

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
+import { PluginNetworkDeclaration } from '@core/plugin/consent/plugin-network-declaration';
 
 /**
  * What a SITE is allowed to put in a theme it uploads.
@@ -47,8 +48,25 @@ export class TenantThemePackagePolicy {
     return [
       ...TenantThemePackagePolicy.forbiddenDirViolations(contentDir),
       ...TenantThemePackagePolicy.manifestViolations(manifest),
+      ...TenantThemePackagePolicy.networkViolations(manifest),
       ...TenantThemePackagePolicy.fileViolations(contentDir),
     ];
+  }
+
+  /**
+   * A site's theme names each outside host its pages use; its storefront may reach only those. A
+   * declaration that is not a list of host names would quietly allow nothing, so it is refused.
+   */
+  private static networkViolations(manifest: IThemeManifest): string[] {
+    const network = (manifest as unknown as { network?: { hosts?: unknown; any?: unknown } }).network;
+    if (network === undefined || network === null) return [];
+    const found: string[] = [];
+    if (network.any !== undefined) found.push('declares "network.any" — a site\'s theme names each outside host it uses in "network.hosts".');
+    const hosts = network.hosts === undefined ? [] : network.hosts;
+    if (!Array.isArray(hosts)) return [...found, 'declares "network.hosts" that is not a list of host names.'];
+    const invalid = hosts.filter((host) => !PluginNetworkDeclaration.isHost(String(host ?? '')));
+    if (invalid.length) found.push(`declares "network.hosts" entries that are not host names: ${invalid.map(String).join(', ')}.`);
+    return found;
   }
 
   private static forbiddenDirViolations(contentDir: string): string[] {

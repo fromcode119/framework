@@ -13,6 +13,14 @@ afterEach(() => {
 });
 
 describe('SiteVisibilityProxyGuard', () => {
+  it('carries the site\'s Content-Security-Policy with its verdict, and none when the api sends none', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => answer({ site: { isReadable: true }, contentSecurityPolicy: "default-src 'self'" })));
+    expect(await SiteVisibilityProxyGuard.verdict('own-theme.test', 'http://api', '')).toEqual({ readable: true, contentSecurityPolicy: "default-src 'self'" });
+
+    vi.stubGlobal('fetch', vi.fn(async () => answer({ site: { isReadable: true }, contentSecurityPolicy: null })));
+    expect(await SiteVisibilityProxyGuard.verdict('platform-theme.test', 'http://api', '')).toEqual({ readable: true, contentSecurityPolicy: null });
+  });
+
   it('serves a published site and closes an unpublished one', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => answer({ site: { isReadable: true, preview: false } })));
     expect(await SiteVisibilityProxyGuard.isReadable('open.test', 'http://api', '')).toBe(true);

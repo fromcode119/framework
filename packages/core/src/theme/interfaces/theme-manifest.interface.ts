@@ -57,4 +57,10 @@ export interface IThemeManifest {
     entry?: string;
     css?: string[];
   };
+  /**
+   * The outside hosts the theme's pages load from or talk to (`"fonts.googleapis.com"`, `"*.example.com"`).
+   * For a theme a SITE uploaded, they are the only ones its storefront may reach besides the site itself
+   * and the plugins running there (StorefrontContentSecurityPolicy).
+   */
+  network?: { hosts?: string[] };
 }

@@ -1,6 +1,6 @@
 import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { Logger, PluginState, SystemConstants, SystemSettingsExposureUtils } from '@fromcode119/core';
+import { ApplicationUrlUtils, Logger, PluginState, StorefrontContentSecurityPolicy, SystemConstants, SystemSettingsExposureUtils, ThemeState } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
@@ -190,6 +190,10 @@ export class SystemMetadataController {
       // What the storefront's rendered-page cache is keyed on: it changes on every write that can
       // reach this site's pages (see SiteContentRevision).
       contentRevision: SiteContentRevision.current(tenantId),
+      // Where a site's OWN theme may load from and send to; null for a platform theme. The storefront
+      // sends it as the Content-Security-Policy of every page.
+      contentSecurityPolicy: StorefrontContentSecurityPolicy.of(this.runtime.themeManager.getThemes().find((theme) => theme.state === ThemeState.ACTIVE) ?? null, plugins,
+        [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)]),
     });
   }
   /** The site's parts of `/system/frontend`; `steps` records where a fresh computation spends its time. */

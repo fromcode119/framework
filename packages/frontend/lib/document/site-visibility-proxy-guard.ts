@@ -1,6 +1,7 @@
 import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ServerApiConfig } from '@/lib/server-api/server-api-config';
-import { CookieConstants } from '@fromcode119/core/client';
+import { CoercionUtils, CookieConstants } from '@fromcode119/core/client';
+import type { ISiteProxyVerdict } from '@/lib/document/interfaces/site-proxy-verdict.interface';
 /**
  * Answers for a site that has not been published, before any page runs.
  *
@@ -23,7 +24,7 @@ export class SiteVisibilityProxyGuard {
   /** How long a verdict is trusted. Short: this is the delay between pressing Publish and seeing it. */
   private static readonly TTL_MS = 10_000;
 
-  private static readonly cache = new Map<string, { readable: boolean; at: number }>();
+  private static readonly cache = new Map<string, { verdict: ISiteProxyVerdict; at: number }>();
 
   /**
    * Whether this VISITOR may be served this host. Unknown hosts and unreachable apis answer TRUE.
@@ -41,21 +42,28 @@ export class SiteVisibilityProxyGuard {
    * be locked out of their own.
    */
   static async isReadable(host: string, apiBase: string, previewCookie: string): Promise<boolean> {
+    return (await SiteVisibilityProxyGuard.verdict(host, apiBase, previewCookie)).readable;
+  }
+
+  /** The readability answer, plus the Content-Security-Policy the site's pages carry (null for none). */
+  static async verdict(host: string, apiBase: string, previewCookie: string): Promise<ISiteProxyVerdict> {
     const hostKey = String(host || '').trim().toLowerCase();
-    if (!hostKey || !apiBase) return true;
+    if (!hostKey || !apiBase) return SiteVisibilityProxyGuard.OPEN;
 
     const cookie = String(previewCookie || '').trim();
     const key = cookie ? `${hostKey}\u0000${await SiteVisibilityProxyGuard.fingerprint(cookie)}` : hostKey;
 
     const cached = SiteVisibilityProxyGuard.cache.get(key);
-    if (cached && Date.now() - cached.at < SiteVisibilityProxyGuard.TTL_MS) return cached.readable;
+    if (cached && Date.now() - cached.at < SiteVisibilityProxyGuard.TTL_MS) return cached.verdict;
 
-    const readable = await SiteVisibilityProxyGuard.ask(hostKey, apiBase, cookie);
-    SiteVisibilityProxyGuard.cache.set(key, { readable, at: Date.now() });
-    return readable;
+    const verdict = await SiteVisibilityProxyGuard.ask(hostKey, apiBase, cookie);
+    SiteVisibilityProxyGuard.cache.set(key, { verdict, at: Date.now() });
+    return verdict;
   }
 
-  private static async ask(host: string, apiBase: string, previewCookie: string): Promise<boolean> {
+  private static readonly OPEN: ISiteProxyVerdict = { readable: true, contentSecurityPolicy: null };
+
+  private static async ask(host: string, apiBase: string, previewCookie: string): Promise<ISiteProxyVerdict> {
     try {
       const headers: Record<string, string> = { 'x-forwarded-host': host, host };
       // Only this one cookie is forwarded, by name. Passing the visitor's whole Cookie header would
@@ -71,16 +79,17 @@ export class SiteVisibilityProxyGuard {
       });
       if (!response.ok) {
         ResponseDrain.discard(response);
-        return true;
+        return SiteVisibilityProxyGuard.OPEN;
       }
-      const payload = await response.json() as { site?: { isReadable?: unknown; preview?: unknown } | null };
+      const payload = await response.json() as { site?: { isReadable?: unknown; preview?: unknown } | null; contentSecurityPolicy?: unknown };
+      const contentSecurityPolicy = CoercionUtils.toString(payload?.contentSecurityPolicy) || null;
       // No `site` means this deployment serves one site and has no tenants — not an unpublished one.
-      if (!payload?.site) return true;
+      if (!payload?.site) return { readable: true, contentSecurityPolicy };
       // Open to everyone, OR open to this caller. `preview` is the api's own answer about the cookie
       // that was just forwarded; this never reads the cookie's contents or decides anything from it.
-      return payload.site.isReadable === true || payload.site.preview === true;
+      return { readable: payload.site.isReadable === true || payload.site.preview === true, contentSecurityPolicy };
     } catch {
-      return true;
+      return SiteVisibilityProxyGuard.OPEN;
     }
   }
 
