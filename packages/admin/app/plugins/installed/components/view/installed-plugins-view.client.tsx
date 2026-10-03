@@ -92,8 +92,8 @@ export class InstalledPluginsView extends Reactor {
         <>
           {failedPluginsCount > 0 ? (
             <div className={`rounded-xl border px-4 py-3 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-              <div className="flex items-start gap-3">
-                <div className={`rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className={`self-start rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
                   <FrameworkIcons.Alert size={18} />
                 </div>
                 <div>
@@ -107,17 +107,17 @@ export class InstalledPluginsView extends Reactor {
           ) : null}
           {this.heldPluginsCount > 0 ? (
             <div className={`rounded-xl border px-4 py-3 ${theme === ThemeMode.DARK ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-              <div className="flex items-start gap-3">
-                <div className={`rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className={`self-start rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}>
                   <FrameworkIcons.Alert size={18} />
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
                   <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-amber-100/90' : 'text-amber-700'}`}>
                     {AdminI18n.t(this.heldPluginsCount === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: this.heldPluginsCount })}
                   </p>
                 </div>
-                <button onClick={this.onReapproveAll} disabled={this.isActivating} className="shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+                <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                   {this.isActivating ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
                   <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
                 </button>
