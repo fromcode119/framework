@@ -34,6 +34,9 @@ vi.mock('@fromcode119/core', () => ({
   PluginState: {
     ACTIVE: 'active',
   },
+  CollectionPermissionAction: {
+    READ: { value: 'read' },
+  },
   HookEventUtils: {
     HOOK_EVENTS: { SYSTEM_CACHE_PURGE: 'system:cache:purge' },
   },
@@ -68,6 +71,7 @@ interface Harness {
 function buildHarness(overrides: {
   findImpl?: (collection: any, options: any) => Promise<any>;
   withHooks?: boolean;
+  fields?: any[];
 } = {}): Harness {
   const find = vi.fn().mockImplementation(
     overrides.findImpl ?? (() => Promise.resolve({ docs: [] })),
@@ -86,7 +90,7 @@ function buildHarness(overrides: {
           collection: {
             slug: 'pages',
             shortSlug: 'pages',
-            fields: [{ name: 'slug' }, { name: 'customPermalink' }],
+            fields: overrides.fields ?? [{ name: 'slug' }, { name: 'customPermalink' }],
           },
         },
       ],
@@ -320,5 +324,43 @@ describe('ResolutionService anonymous result cache', () => {
 
     const result = await service.resolveSlug('/contact', { user: { id: 9 } });
     expect(result?.doc?.id).toBe(3);
+  });
+});
+
+describe('ResolutionService staff-only fields', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.clearAllMocks();
+  });
+
+  const fields = [
+    { name: 'slug' },
+    { name: 'customPermalink' },
+    { name: 'content', withheldWhen: ['accessPassword'] },
+    { name: 'accessPassword', staffOnly: true },
+  ];
+  const lockedPage = (_collection: any, options: any) => Promise.resolve(options?.query?.slug === 'locked'
+    ? { docs: [{ id: 9, slug: 'locked', content: 'secret body', accessPassword: 'pw' }] }
+    : { docs: [] });
+
+  it('a gate sees the staff-only field it decides by; the visitor never does', async () => {
+    const { service, find, gatesApply } = buildHarness({ findImpl: lockedPage, fields });
+
+    const resolved: any = await service.resolveSlug('/locked', {});
+
+    // The reads were made for resolution, so the conditional field is the gates' call…
+    expect(find.mock.calls.some(([, req]) => Object.getOwnPropertySymbols(req).length > 0)).toBe(true);
+    expect(gatesApply.mock.calls[0][0].doc.accessPassword).toBe('pw');
+    // …and what reaches the visitor carries no staff-only value.
+    expect(resolved.doc).not.toHaveProperty('accessPassword');
+    expect(resolved.doc.content).toBe('secret body');
+  });
+
+  it('an administrator gets the whole document', async () => {
+    const { service } = buildHarness({ findImpl: lockedPage, fields });
+
+    const resolved: any = await service.resolveSlug('/locked', { user: { id: 1, roles: ['admin'] } });
+
+    expect(resolved.doc.accessPassword).toBe('pw');
   });
 });

@@ -1,6 +1,7 @@
 import { ResolutionMatchKind } from '@api/services/helpers/enums/resolution-match-kind.enum';
 import { CoercionUtils, type ICollection } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
+import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import type { IResolutionPriorityScanContext } from '@api/services/helpers/interfaces/resolution-priority-scan-context.interface';
@@ -55,7 +56,7 @@ export class ResolutionCollectionScanService {
       if (finds.length === 0) continue;
 
       const settled = await Promise.allSettled(
-        finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user } as any)),
+        finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
       );
       for (let i = 0; i < finds.length; i++) {
         const outcome = settled[i];
@@ -85,7 +86,7 @@ export class ResolutionCollectionScanService {
     for (let i = 0; i < jobs.length; i += ResolutionCollectionScanService.STRUCTURE_CHUNK_SIZE) {
       const chunk = jobs.slice(i, i + ResolutionCollectionScanService.STRUCTURE_CHUNK_SIZE);
       const settled = await Promise.allSettled(
-        chunk.map((j) => this.restController.find(j.collection, { query: j.query, user: ctx.options.user } as any)),
+        chunk.map((j) => this.restController.find(j.collection, { query: j.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
       );
       for (let k = 0; k < chunk.length; k++) {
         const outcome = settled[k];

@@ -35,6 +35,22 @@ export interface IField {
    */
   relationToEntity?: string;
   hasMany?: boolean; // For relationship
+  /**
+   * Readable only by someone who reads the whole collection — an administrator, or a role granted
+   * reading it. The framework's generic reads (lists, single records, page resolution) never return it
+   * to anyone else, and refuse to filter, sort or search by it, so it cannot be guessed a prefix at a
+   * time. For a value the public side of a collection must never carry: a stored access password, a
+   * cost price, the address of a paid file. The owning plugin still reads it through its own routes.
+   */
+  staffOnly?: boolean;
+  /**
+   * Held back from a reader who does not read the whole collection while ANY of these sibling fields
+   * holds a value on the record: content behind a password or a plan. The generic reads return it as
+   * `null` and list it in the record's `withheldFields`, so a storefront can say why rather than show
+   * an empty page; the owning plugin serves it to the reader entitled to it. Page resolution leaves it
+   * to the plugin's content-resolution gate, which knows the visitor.
+   */
+  withheldWhen?: string[];
   min?: number; // For number
   max?: number; // For number
   minLength?: number; // For text
