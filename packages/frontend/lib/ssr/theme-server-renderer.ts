@@ -93,6 +93,7 @@ export class ThemeServerRenderer {
         frontendDir,
         boot: { config, publicApiBaseUrl, themesDir: ThemeSsrRuntime.themesDir(), pluginsDir: ThemeSsrRuntime.pluginsDir(), frontendDir },
         request,
+        siteId: String((config as { site?: { id?: unknown } }).site?.id ?? ''),
       });
     }
 
