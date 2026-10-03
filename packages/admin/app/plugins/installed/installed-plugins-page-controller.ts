@@ -9,7 +9,6 @@ import { VersionComparisonService } from '@fromcode119/core/client';
 import { InstalledPluginsUploadService } from '@/app/plugins/installed/installed-plugins-upload-service';
 import type { IInstalledPluginMarketplaceItem } from '@/app/plugins/installed/interfaces/installed-plugin-marketplace-item.interface';
 import type { IInstalledPluginsArchiveInspection } from '@/app/plugins/installed/interfaces/installed-plugins-archive-inspection.interface';
-import type { IPluginReapprovalEntry } from '@/app/plugins/installed/interfaces/plugin-reapproval-entry.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -63,6 +62,7 @@ export class InstalledPluginsPageController {
     return {
       supported: true,
       uploadId,
+      slug: String(info.slug || ''),
       previewTitle: AdminI18n.t('plugins.upload.installTitle', { name: info.name || info.slug || AdminI18n.t('plugins.upload.package') }),
       previewDescription: AdminI18n.t('plugins.upload.review'),
       previewSections: InstalledPluginsUploadService.buildPreviewSections(info),
@@ -83,14 +83,6 @@ export class InstalledPluginsPageController {
 
   static async toggle(slug: string, enabled: boolean, options: { force?: boolean; recursive?: boolean } = {}): Promise<void> {
     await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled, ...options });
-  }
-
-  /** Re-approve every held plugin. Returns only the entries that failed. */
-  static async reapproveAll(): Promise<IPluginReapprovalEntry[]> {
-    const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.REAPPROVE_ALL, {}) as {
-      reapproved?: IPluginReapprovalEntry[];
-    };
-    return (result?.reapproved || []).filter((entry) => !entry.ok);
   }
 
   /** Uninstall a plugin, deactivating it first when it is still running. */
@@ -115,7 +107,12 @@ export class InstalledPluginsPageController {
   }
 
   static countHeld(plugins: ILoadedPlugin[]): number {
-    return plugins.filter((plugin) => plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason)).length;
+    return InstalledPluginsPageController.heldSlugs(plugins).length;
+  }
+
+  /** The plugins waiting on an approval, in list order. */
+  static heldSlugs(plugins: ILoadedPlugin[]): string[] {
+    return plugins.filter((plugin) => plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason)).map((plugin) => plugin.manifest.slug);
   }
 
   static hasUpdate(plugin: ILoadedPlugin, marketplaceData: IInstalledPluginMarketplaceItem[]): boolean {
@@ -128,9 +125,5 @@ export class InstalledPluginsPageController {
   static deleteConfirmDescription(pluginToDelete: string | null, plugins: ILoadedPlugin[]): string {
     const isActive = plugins.find((plugin) => plugin.manifest.slug === pluginToDelete)?.state === PluginState.ACTIVE;
     return AdminI18n.t(isActive ? 'plugins.list.removeActive' : 'plugins.list.thisWillPermanentlyRemoveAnd', { pluginToDelete });
-  }
-
-  static reapprovalFailureMessage(failed: IPluginReapprovalEntry[]): string {
-    return AdminI18n.t('plugins.list.pluginCouldNotBeRe', { length: failed.length });
   }
 }

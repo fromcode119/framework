@@ -5,7 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { PluginHeldReason } from '@fromcode119/core/client';
+import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import { AdminClass } from '@/lib/admin-class';
@@ -77,15 +77,15 @@ export class PluginHealthView extends PureReactor {
 
         {counts.held > 0 ? (
           <div className={`rounded-xl border px-4 py-3 ${isDark ? 'border-amber-500/20 bg-amber-500/10 text-amber-100' : 'border-amber-200 bg-amber-50 text-amber-700'}`}>
-            <div className="flex items-start gap-3">
-              <div className={`rounded-lg p-2 ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}><FrameworkIcons.Alert size={18} /></div>
-              <div className="flex-1">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+              <div className={`self-start rounded-lg p-2 ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}><FrameworkIcons.Alert size={18} /></div>
+              <div className="min-w-0 flex-1">
                 <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
                 <p className={`mt-1 text-sm font-medium leading-relaxed ${isDark ? 'text-amber-100/90' : 'text-amber-700'}`}>
                   {AdminI18n.t(counts.held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: counts.held })}
                 </p>
               </div>
-              <button onClick={this.onReapproveAll} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+              <button onClick={this.onReapproveAll} disabled={this.isBusy} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                 {this.isBusy ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
                 <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
               </button>
@@ -102,9 +102,7 @@ export class PluginHealthView extends PureReactor {
                 {this.report.held.map((entry) => {
                   const drift = this.drift(entry);
                   // `entry` is API JSON, so `heldReason` is a raw string here — resolve before comparing.
-                  const heldLabel = PluginHeldReason.resolve(entry.heldReason) === PluginHeldReason.CAPABILITY_DRIFT
-                    ? AdminI18n.t('plugins.list.needsReApproval')
-                    : AdminI18n.t('plugins.list.held');
+                  const heldLabel = PluginHeldLabel.of(entry.heldReason);
                   return (
                     <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                       <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'}`}><FrameworkIcons.Shield size={18} strokeWidth={1.5} /></div>

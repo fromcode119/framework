@@ -27,10 +27,14 @@ export class StorefrontDocumentProxy {
    */
   private static readonly NEXT_PAGE_SEGMENTS = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH, 'fc-document', 'internal', 'api', '_next']);
 
+  /** App Router pages that render the site's theme: they carry its Content-Security-Policy too. */
+  private static readonly THEMED_NEXT_PAGES = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH]);
+
   static async handle(request: NextRequest): Promise<NextResponse | Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return NextResponse.next();
     const pathname = request.nextUrl.pathname;
-    if (!StorefrontDocumentProxy.isDocumentPath(pathname)) return NextResponse.next();
+    const themedPage = StorefrontDocumentProxy.THEMED_NEXT_PAGES.has(StorefrontDocumentProxy.firstSegment(pathname));
+    if (!StorefrontDocumentProxy.isDocumentPath(pathname) && !themedPage) return NextResponse.next();
 
     // A site that is not published answers here, before any page runs. This is the only point every
     // document entry passes through — the islands route and both App Router pages each resolve
@@ -40,18 +44,29 @@ export class StorefrontDocumentProxy {
     // WHO is asking, not just where. A site's own people hold a preview cookie for this host; the
     // guard forwards it and lets the api decide. Read by name — nothing here interprets its value.
     const preview = String(request.cookies.get(CookieConstants.SITE_PREVIEW)?.value || '');
-    if (!(await SiteVisibilityProxyGuard.isReadable(host, apiBase, preview))) {
-      return SiteVisibilityProxyGuard.holdingResponse();
-    }
+    const verdict = await SiteVisibilityProxyGuard.verdict(host, apiBase, preview);
+    // The themed Next pages too: they resolve the site's content like a document, and on a site that is
+    // not published the api refuses it — which reached the visitor as a 500 instead of this page.
+    if (!verdict.readable) return SiteVisibilityProxyGuard.holdingResponse();
+    if (themedPage) return StorefrontDocumentProxy.withPolicy(NextResponse.next(), verdict.contentSecurityPolicy);
 
     const target = request.nextUrl.clone();
     target.pathname = `${StorefrontDocumentProxy.DOCUMENT_PREFIX}${pathname === '/' ? '' : pathname}`;
-    return NextResponse.rewrite(target);
+    return StorefrontDocumentProxy.withPolicy(NextResponse.rewrite(target), verdict.contentSecurityPolicy);
+  }
+
+  /** A site whose theme the site uploaded limits where its pages load from and send to. */
+  private static withPolicy(response: NextResponse, policy: string | null): NextResponse {
+    if (policy) response.headers.set('Content-Security-Policy', policy);
+    return response;
+  }
+
+  private static firstSegment(pathname: string): string {
+    return (String(pathname || '').split('/').filter(Boolean)[0] || '').toLowerCase();
   }
 
   static isDocumentPath(pathname: string): boolean {
-    const first = String(pathname || '').split('/').filter(Boolean)[0] || '';
-    if (StorefrontDocumentProxy.NEXT_PAGE_SEGMENTS.has(first.toLowerCase())) return false;
+    if (StorefrontDocumentProxy.NEXT_PAGE_SEGMENTS.has(StorefrontDocumentProxy.firstSegment(pathname))) return false;
     return !/\.[a-z0-9]{2,5}$/i.test(pathname);
   }
 }

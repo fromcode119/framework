@@ -6,6 +6,8 @@ import type { IScaffoldPluginInput } from '@core/plugin/services/interfaces/scaf
 import type { IScaffoldPluginResult } from '@core/plugin/services/interfaces/scaffold-plugin-result.interface';
 import type { ThemeManager } from '@core/theme/theme-manager';
 import type { ISandboxHostReloadResult } from '@core/plugin/interfaces/sandbox-host-reload-result.interface';
+import type { IPluginConsentSummary } from '@core/plugin/consent/interfaces/plugin-consent-summary.interface';
+import { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
 import { PluginContext } from '@core/plugin/plugin-context';
 import { PluginContextFactory } from '@core/plugin/context';
 import { PluginManagerExtensions } from '@core/plugin/plugin-manager-extensions';
@@ -29,7 +31,17 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
   async materializeDefaultPages(): Promise<void> { return this.lifecycle.materializeDefaultPagesFinalPass(); }
   /** Every active plugin's seed data, for the site currently in scope. */
   async runPluginSeedsForCurrentSite(): Promise<string[]> { return this.lifecycle.runSeedsForCurrentSite(); }
-  async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}) { return this.lifecycle.enable(slug, options); }
+  /** `approve` is the exact consent list the operator was shown; required when the plugin asks for anything not approved yet. */
+  async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}) { return this.lifecycle.enable(slug, options); }
+  /** New files ask for more than was approved: stop and hold the plugin for approval. True when held. */
+  async holdIfUnapproved(slug: string, manifest: IPluginManifest): Promise<boolean> { return this.lifecycle.approval.holdIfUnapproved(slug, manifest); }
+  /** What the consent dialog shows for an installed plugin, or null when there is no such plugin. */
+  consentSummary(slug: string): IPluginConsentSummary | null {
+    const plugin = this.plugins.get(slug);
+    if (!plugin) return null;
+    const registered = [...this.registeredCollections.entries()].filter(([, entry]) => entry.pluginSlug === slug).map(([collection]) => collection);
+    return PluginApprovalGate.summaryOf(plugin, registered);
+  }
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
   async register(plugin: IAtlantisPlugin, path?: string) { return this.lifecycle.register(plugin, path); }

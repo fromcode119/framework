@@ -25,7 +25,11 @@ export class PluginTeardownService {
     private readonly logger: any,
   ) {}
 
-  async disable(slug: string, options: { persistState?: boolean } = {}): Promise<void> {
+  /**
+   * @param options.ignoreDependents stop it even though active plugins depend on it — a plugin held for
+   * approval must stop, and its dependents then answer as they would with it missing.
+   */
+  async disable(slug: string, options: { persistState?: boolean; ignoreDependents?: boolean } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin || plugin.state !== PluginState.ACTIVE) return;
 
@@ -36,7 +40,7 @@ export class PluginTeardownService {
       p.manifest.dependencies[slug]
     );
     
-    if (activeDependents.length > 0) {
+    if (activeDependents.length > 0 && !options.ignoreDependents) {
       const dependentNames = activeDependents.map((p: any) => p.manifest.slug).join(', ');
       throw new Error(
         `Cannot disable plugin "${slug}" because it is required by active plugins: ${dependentNames}. ` +

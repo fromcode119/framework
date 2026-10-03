@@ -21,6 +21,7 @@ import { prop, state } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { Screenshot } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
 
 export class MarketplaceDetailPage extends AdminComponent {
   @prop declare params: Promise<{ slug: string }>;
@@ -37,6 +38,7 @@ export class MarketplaceDetailPage extends AdminComponent {
   @state installOperation: IPluginInstallOperation | null = null;
   @state activeImageIndex = 0;
   @state showLightbox = false;
+  @state consentSlugs: string[] = [];
 
   private mounted = false;
   private prevSelectedVersion = '';
@@ -119,7 +121,8 @@ export class MarketplaceDetailPage extends AdminComponent {
         await Promise.resolve(triggerRefresh());
       }
       await this.fetchData();
-      notify(NotificationType.SUCCESS, isUpdate ? AdminI18n.t('plugins.list.updateComplete') : AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t('plugins.list.pluginVIsInstalledAnd', { pluginSlug: pluginSlug, version: plugin.version }));
+      notify(NotificationType.SUCCESS, isUpdate ? AdminI18n.t('plugins.list.updateComplete') : AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t(isUpdate ? 'plugins.list.wasUpdated' : 'plugins.list.wasInstalled', { slug: pluginSlug, targetVersion: plugin.version }));
+      this.consentSlugs = [pluginSlug]; // whatever it asks for that nobody approved yet waits for this dialog
     } catch (err: any) {
       notify(NotificationType.ERROR, AdminI18n.t('plugins.list.installationFailed'), err.message || AdminI18n.t('plugins.list.failedToInstallPlugin'));
     }
@@ -160,6 +163,7 @@ export class MarketplaceDetailPage extends AdminComponent {
 
     return (
       <div className="space-y-4 animate-in fade-in duration-500">
+        <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => { this.consentSlugs = []; void this.fetchData(); }} />
         <button
           onClick={() => this.router.push(AdminConstants.ROUTES.PLUGINS.MARKETPLACE)}
           className={`flex items-center gap-2 h-9 px-4 rounded-lg border font-semibold transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800' : 'bg-white border-slate-200 text-slate-500 hover:text-indigo-600 hover:border-indigo-100 hover:bg-indigo-50/30'}`}

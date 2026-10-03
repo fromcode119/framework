@@ -27,6 +27,8 @@ import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-b
 import { PluginSeedRunner } from '@core/plugin/services/runtime/plugin-seed-runner';
 import { PluginRegistrationState } from '@core/plugin/services/runtime/plugin-registration-state';
 import { PluginTeardownService } from '@core/plugin/services/runtime/plugin-teardown-service';
+import { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
+import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
 
 export class LifecycleService {
   private logger = new Logger({ namespace: 'lifecycle-service' });
@@ -38,6 +40,7 @@ export class LifecycleService {
 
   private readonly registrationState: PluginRegistrationState;
   private readonly teardown: PluginTeardownService;
+  readonly approval: PluginApprovalGate;
 
   constructor(
     private manager: IPluginManagerInterface,
@@ -45,11 +48,12 @@ export class LifecycleService {
     private discovery: DiscoveryService,
     private schemaManager: SchemaManager
   ) {
-    this.registrationState = new PluginRegistrationState(this.manager, this.registry, this.logger);
     this.seeder = new Seeder(manager.db);
     this.failureIsolation = new PluginFailureIsolationService(manager, registry, this.logger);
     this.activation = new PluginCollectionActivationService(manager, schemaManager, this.seeder, this.logger);
     this.teardown = new PluginTeardownService(this.manager, this.registry, this.activation, this.logger);
+    this.approval = new PluginApprovalGate(this.manager, this.registry, this.teardown, this.logger);
+    this.registrationState = new PluginRegistrationState(this.manager, this.registry, this.logger, this.approval);
     this.bootHealth = new PluginBootHealthReporter(this.manager, this.logger);
     this.seedRunner = new PluginSeedRunner(this.manager, this.activation);
   }
@@ -90,13 +94,17 @@ export class LifecycleService {
     this.discovery.validateDependencies(plugin.manifest, this.manager.plugins);
 
     const registryData = await this.registry.loadInstalledPluginsState();
-    const { state, heldReason, saved } = await this.registrationState.resolve(slug, plugin, registryData);
+    const { state, heldReason: resolvedHold, saved, approved } = await this.registrationState.resolve(slug, plugin, registryData);
+    // Nothing of a plugin runs before it is approved — not even its registration hooks.
+    const approvedToRun = PluginConsentSet.covers(plugin.manifest, approved);
+    const heldReason = resolvedHold
+      ?? (approvedToRun ? undefined : approved.length ? PluginHeldReason.CAPABILITY_DRIFT : PluginHeldReason.AWAITING_APPROVAL);
     const loadedPlugin: ILoadedPlugin = {
       ...plugin,
       instanceId: randomUUID(),
       state: PluginState.INACTIVE,
       path: pluginPath,
-      approvedCapabilities: saved?.approvedCapabilities || [],
+      approvedCapabilities: approved,
       healthStatus: heldReason ? PluginRegistryHealth.WARNING : (saved?.healthStatus || PluginRegistryHealth.HEALTHY),
       heldReason
     };
@@ -123,19 +131,8 @@ export class LifecycleService {
     // writes its settings from onInit writes a row whose plugin_slug is a foreign key onto this table.
     const createdRegistryRow = await this.registry.ensurePluginRegistryRow(slug, plugin.manifest.version);
     try {
-      if (isFreshInstall && loadedPlugin.onInstall) await loadedPlugin.onInstall(ctx);
-      if (isVersionUpdate && loadedPlugin.onUpdate && savedVersion) {
-        await loadedPlugin.onUpdate(ctx, { oldVersion: savedVersion, newVersion: plugin.manifest.version });
-      }
-      if (loadedPlugin.onInit) await loadedPlugin.onInit(ctx);
-      // ...and again, once per site, with every registration method inert.
-      //
-      // `onInit` does two jobs: it REGISTERS (global, exactly once — done by the call above) and it
-      // sets up DATA (per site). Boot has no site, so the second half was skipped or refused for all
-      // of them: seven plugins shipped defaults, backfills and normalisations that ran for nobody.
-      // That is a framework problem, not seven plugin problems, so the framework replays the hook
-      // rather than asking every plugin author to remember a tenancy call.
-      await PluginSiteDataReplay.run(loadedPlugin, ctx, this.manager.db, this.logger);
+      if (approvedToRun) await this.runRegistrationHooks(loadedPlugin, ctx, { isFreshInstall, savedVersion });
+      else loadedPlugin.registrationDeferred = { isFreshInstall, savedVersion };
     } catch (err: any) {
       this.failureIsolation.rollbackPartialRegistration(loadedPlugin);
       await this.failureIsolation.markPluginError(loadedPlugin, err.message);
@@ -178,7 +175,21 @@ export class LifecycleService {
     // inside enable().)
     loadedPlugin.healthStatus = PluginRegistryHealth.HEALTHY;
     loadedPlugin.error = undefined;
-    await this.registry.savePluginState(slug, state, saved ? undefined : (plugin.manifest.capabilities as string[]), plugin.manifest.version);
+    await this.registry.savePluginState(slug, state, saved ? undefined : approved, plugin.manifest.version);
+  }
+
+  /**
+   * `onInstall` (fresh), `onUpdate` (new version), `onInit` — then `onInit` again once per site with every
+   * registration method inert. `onInit` both REGISTERS (global, once) and sets up DATA (per site); boot has
+   * no site, so the framework replays it per site rather than asking every plugin to remember tenancy.
+   */
+  private async runRegistrationHooks(plugin: ILoadedPlugin, ctx: any, run: { isFreshInstall: boolean; savedVersion?: string }): Promise<void> {
+    if (run.isFreshInstall && plugin.onInstall) await plugin.onInstall(ctx);
+    if (run.savedVersion && run.savedVersion !== plugin.manifest.version && plugin.onUpdate) {
+      await plugin.onUpdate(ctx, { oldVersion: run.savedVersion, newVersion: plugin.manifest.version });
+    }
+    if (plugin.onInit) await plugin.onInit(ctx);
+    await PluginSiteDataReplay.run(plugin, ctx, this.manager.db, this.logger);
   }
 
   /** Syncs an active plugin's collections to the database, e.g. after its process was swapped for new code. */
@@ -193,7 +204,8 @@ export class LifecycleService {
     await this.activation.materializeDefaultPages(slug);
   }
 
-  async enable(slug: string, options: { force?: boolean, recursive?: boolean } = {}): Promise<void> {
+  /** @param options.approve the exact consent list the operator was shown (PluginApprovalGate.ensureApproved). */
+  async enable(slug: string, options: { force?: boolean, recursive?: boolean, approve?: readonly string[] } = {}): Promise<void> {
     const plugin = this.manager.plugins.get(slug);
     if (!plugin) throw new Error(`Plugin "${slug}" not found.`);
     if (plugin.state === PluginState.ACTIVE) {
@@ -212,7 +224,7 @@ export class LifecycleService {
           for (const issue of issues) {
             if (issue.type === DependencyIssueKind.INACTIVE) {
               this.logger.info(`Recursively enabling dependency "${issue.slug}" for "${slug}"...`);
-              await this.enable(issue.slug, options);
+              await this.enable(issue.slug, { ...options, approve: undefined });
             } else if (issue.type === DependencyIssueKind.MISSING) {
               throw new Error(`Dependency "${issue.slug}" is missing and required by "${slug}".`);
             } else if (issue.type === DependencyIssueKind.INCOMPATIBLE) {
@@ -225,9 +237,14 @@ export class LifecycleService {
       }
     }
 
+    await this.approval.ensureApproved(plugin, options.approve);
     const ctx = (this.manager as any).createContext(plugin);
     
     try {
+      if (plugin.registrationDeferred) {
+        await this.runRegistrationHooks(plugin, ctx, plugin.registrationDeferred);
+        plugin.registrationDeferred = undefined;
+      }
       plugin.state = PluginState.LOADING;
       // An isolated plugin's `onEnable` is a forwarding stub (T5): it runs in the plugin's own process.
       if (plugin.onEnable) await plugin.onEnable(ctx);
@@ -243,10 +260,10 @@ export class LifecycleService {
       // axis (in-memory + DB via clearPluginHeld) alongside the state.
       plugin.healthStatus = PluginRegistryHealth.HEALTHY;
       plugin.heldReason = undefined;
-      const currentCaps = plugin.manifest.capabilities as string[] || [];
-      plugin.approvedCapabilities = currentCaps;
+      // What it runs with is exactly what it asks for now — ensureApproved above made sure that is approved.
+      plugin.approvedCapabilities = PluginConsentSet.of(plugin.manifest);
 
-      await this.registry.savePluginState(slug, PluginState.ACTIVE, currentCaps, plugin.manifest.version);
+      await this.registry.savePluginState(slug, PluginState.ACTIVE, plugin.approvedCapabilities, plugin.manifest.version);
       await this.registry.clearPluginHeld(slug);
       await this.registry.writeLog('INFO', `Plugin "${slug}" successfully enabled.`, slug);
     } catch (error) {

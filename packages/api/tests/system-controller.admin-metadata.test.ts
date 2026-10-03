@@ -13,6 +13,7 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
     };
     const themeManager: any = {
       getFrontendMetadata: vi.fn().mockResolvedValue({}),
+      getThemes: vi.fn().mockReturnValue([]),
     };
     const restController: any = {};
     const auth: any = {};
@@ -113,6 +114,7 @@ describe('SystemController.getFrontendMetadata public settings', () => {
     };
     const themeManager: any = {
       getFrontendMetadata: vi.fn().mockResolvedValue({ activeTheme: null }),
+      getThemes: vi.fn().mockReturnValue([]),
     };
     const restController: any = {};
     const auth: any = {};

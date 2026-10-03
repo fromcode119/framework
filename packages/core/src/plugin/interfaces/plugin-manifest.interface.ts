@@ -7,6 +7,7 @@ import type { IMenuItemManifest } from '@core/interfaces/menu-item-manifest.inte
 import type { ISecondaryPanelManifest } from '@core/interfaces/secondary-panel-manifest.interface';
 import type { IPublicRouteManifest } from '@core/interfaces/public-route-manifest.interface';
 import type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
+import type { IPluginNetworkDeclaration } from '@core/plugin/consent/interfaces/plugin-network-declaration.interface';
 
 export interface IPluginManifest {
   // Identity
@@ -39,6 +40,11 @@ export interface IPluginManifest {
    */
   capabilities?: string[];
   permissions?: string[];
+  /**
+   * Where `context.fetch` may go. Required with the `network` capability: the hosts are part of what
+   * an operator approves, and a request to any other host is refused (`PluginNetworkDeclaration`).
+   */
+  network?: IPluginNetworkDeclaration;
   
   // Hooks & Extensions
   hooks?: any;
@@ -108,6 +114,12 @@ export interface IPluginManifest {
      * uploaded appears on the storefront — the frame cannot see or touch the page around it.
      */
     widgets?: Array<{ slot: string; path: string; height?: number; title?: string }>;
+    /**
+     * Outside hosts this plugin's STOREFRONT code loads from or talks to in the visitor's browser
+     * (`"js.stripe.com"`). On a site whose theme the site uploaded, the storefront allows only these,
+     * the theme's own and the site itself (StorefrontContentSecurityPolicy).
+     */
+    storefrontHosts?: string[];
     publicRoutes?: IPublicRouteManifest[];
     // Head-data provider contract: the plugin's own API path serving resolved head data,
     // plus the record field names it wants forwarded from the resolved content record.

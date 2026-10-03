@@ -131,6 +131,7 @@ export type { IPluginHealthResponse } from '@core/plugin/interfaces/plugin-healt
 export { LoadedPluginHydration } from '@core/plugin/services/runtime/loaded-plugin-hydration';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
+export { PluginConsentSummary } from '@core/plugin/consent/plugin-consent-summary';
 export { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
 export { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 export { PluginProcessHost } from '@core/plugin/host/runtime/enums/plugin-process-host.enum';

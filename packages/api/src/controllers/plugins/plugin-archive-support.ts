@@ -1,4 +1,4 @@
-import { ExtensionKind } from '@fromcode119/core';
+import { ExtensionKind, PluginConsentSummary } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import fs from 'fs';
 import os from 'os';
@@ -171,6 +171,8 @@ export class PluginArchiveSupport {
         existing: existing
           ? { installed: true, version: String(existing.manifest?.version || ''), state: String(existing.state || '') }
           : { installed: false },
+        // What installing it would ask the operator to approve, against what is approved now.
+        consent: PluginConsentSummary.of({ ...manifest, slug }, existing?.approvedCapabilities || []),
       };
     } finally {
       fs.rmSync(extractedDir, { recursive: true, force: true });

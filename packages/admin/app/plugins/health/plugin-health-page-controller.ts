@@ -1,8 +1,6 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
-import type { IPluginReapprovalEntry } from '@/app/plugins/health/interfaces/plugin-reapproval-entry.interface';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * Data access + business logic for the plugin health page. Hook-free by contract: the page-client
  * class owns React state, lifecycle and notifications; this controller owns "how to fetch/do it".
@@ -14,11 +12,6 @@ export class PluginHealthPageController {
     return result ?? null;
   }
 
-  /** Re-approve a single held plugin and enable it. */
-  static async approveEnable(slug: string): Promise<void> {
-    await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.TOGGLE(slug), { enabled: true });
-  }
-
   /**
    * Serve the version installed on disk. `restartScheduled` is true when the plugin runs inside the api,
    * which then restarts itself to load the new code; an isolated plugin is swapped in place.
@@ -26,18 +19,5 @@ export class PluginHealthPageController {
   static async loadInstalled(slug: string): Promise<{ restartScheduled: boolean }> {
     const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.LOAD_INSTALLED(slug), {}) as { restartScheduled?: boolean };
     return { restartScheduled: result?.restartScheduled === true };
-  }
-
-  /** Re-approve every held plugin. Returns only the entries that failed. */
-  static async reapproveAll(): Promise<IPluginReapprovalEntry[]> {
-    const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.REAPPROVE_ALL, {}) as {
-      reapproved?: IPluginReapprovalEntry[];
-    };
-    return (result?.reapproved || []).filter((entry) => !entry.ok);
-  }
-
-  /** Human-readable summary of a partial re-approval failure. */
-  static reapprovalFailureMessage(failed: IPluginReapprovalEntry[]): string {
-    return AdminI18n.t('plugins.list.pluginCouldNotBeRe', { length: failed.length });
   }
 }

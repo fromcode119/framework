@@ -17,7 +17,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
   it('drops the old subscription through the REAL plugin context', async () => {
     const hooks = new HookManager();
     const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
-    const plugin: any = { manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] } };
+    const plugin: any = { manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] }, approvedCapabilities: ['hooks'] };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext(plugin, manager, logger);
 
@@ -40,7 +40,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
     const hooks = new HookManager();
     const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
-    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] } } as any, manager, logger);
+    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] }, approvedCapabilities: ['hooks'] } as any, manager, logger);
     const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
     const host = Object.create(PluginHost.prototype) as any;
     // Every forwarded event records WHICH process's channel it went down.

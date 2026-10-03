@@ -49,7 +49,13 @@ export class PluginSiteOfferController extends BaseController {
     const own = PluginOwners.ownedBy(tenantId)
       .map((slug) => this.manager.plugins.get(slug))
       .filter(Boolean)
-      .map((plugin) => ({ ...describe(plugin), running: PluginState.resolve(plugin!.state) === PluginState.ACTIVE, error: plugin!.error ?? '' }));
+      .map((plugin) => ({
+        ...describe(plugin),
+        running: PluginState.resolve(plugin!.state) === PluginState.ACTIVE,
+        error: plugin!.error ?? '',
+        // Placed but waiting for the site admin's approval of what it asks for.
+        needsApproval: Boolean(this.manager.consentSummary(plugin!.manifest.slug)?.requiresApproval),
+      }));
     res.json({ plugins, own });
   }
 

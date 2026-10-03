@@ -11,6 +11,7 @@ import { TenantPluginRunRules } from '@core/plugin/tenant/tenant-plugin-run-rule
 import { TenantPluginPackagePolicy } from '@core/plugin/tenant/tenant-plugin-package-policy';
 import { TenantPluginRefusal } from '@core/plugin/tenant/tenant-plugin-refusal';
 import { TenantPluginRefusalReason } from '@core/plugin/tenant/enums/tenant-plugin-refusal-reason.enum';
+import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
 
 /**
  * A SITE installing and removing a plugin of its own.
@@ -61,7 +62,10 @@ export class TenantPluginInstaller {
       const replacing = this.host.plugins.get(slug);
       TenantPluginInstaller.replaceDir(contentDir, target);
 
-      if (replacing && (await this.host.pluginHosts!.reload(slug, { ...manifest, sandbox: TenantPluginRunRules.isolated(manifest.sandbox), ownerTenantId: tenantId }))) {
+      const placed = { ...manifest, sandbox: TenantPluginRunRules.isolated(manifest.sandbox), ownerTenantId: tenantId };
+      if (replacing && (await this.host.pluginHosts!.reload(slug, placed))) {
+        // A version that asks for more than this site approved stops and waits for the site's approval.
+        if (await this.host.holdIfUnapproved(slug, placed as IPluginManifest)) return manifest;
         // A plugin the platform stopped (a crash loop, a resource limit) has no process for the reload to
         // replace: uploading a fixed version is how the site asks for it back, so start it on the new code.
         if (replacing.stoppedByPlatform) await this.host.enable(slug);
@@ -72,11 +76,23 @@ export class TenantPluginInstaller {
       if (!loaded || PluginOwners.ownerOf(slug) !== tenantId) {
         throw new TenantPluginRefusal(TenantPluginRefusalReason.INVALID, `"${slug}" was placed but did not load; see the plugin's error on the Plugins page.`);
       }
-      await this.host.enable(slug);
+      // A plugin that asks for anything is placed, not run: the site's admin approves it next.
+      await this.host.enable(slug).catch(async (error) => {
+        if (!PluginConsentRequiredError.is(error)) throw error;
+        await this.host.holdIfUnapproved(slug, loaded.manifest);
+      });
       return manifest;
     } finally {
       fs.rmSync(tempDir, { recursive: true, force: true });
     }
+  }
+
+  /** The site's admin approves one of THIS site's plugins with the exact list the consent dialog showed. */
+  async approve(tenantId: string, slug: string, approve: readonly string[]): Promise<void> {
+    if (PluginOwners.ownerOf(slug) !== tenantId) {
+      throw new TenantPluginRefusal(TenantPluginRefusalReason.NOT_FOUND, `This site has no plugin "${slug}".`);
+    }
+    await this.host.enable(slug, { approve });
   }
 
   /** Removes one of THIS site's plugins. Anything else is "not found" — a site cannot probe others'. */

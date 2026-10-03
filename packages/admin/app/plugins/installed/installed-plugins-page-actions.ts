@@ -6,6 +6,7 @@ import { InstalledPluginsPageController } from '@/app/plugins/installed/installe
 import type { IInstalledPluginsPageClientState } from '@/app/plugins/installed/interfaces/installed-plugins-page-client-state.interface';
 import type { IInstalledPluginsPageHost } from '@/app/plugins/installed/interfaces/installed-plugins-page-host.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentRequest } from '@/components/plugins/plugin-consent-request';
 
 /**
  * Orchestration for the installed-plugins page: binds {@link InstalledPluginsPageController} I/O to
@@ -61,6 +62,9 @@ export class InstalledPluginsPageActions {
       await InstalledPluginsPageController.installArchive(uploadId, (status) => this.setOperationStatus(status));
       notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.uploadSuccessful'), AdminI18n.t('plugins.list.pluginUploadedSuccessfully'));
       await this.host.refresh();
+      // Installed, not running: what it asks for is approved next, in the consent dialog.
+      const slug = this.host.state.pendingUploadSlug;
+      if (slug && this.host.mounted) this.host.patch({ consentSlugs: [slug], consentInitial: null });
     } catch (error: any) {
       notify(NotificationType.ERROR, AdminI18n.t('plugins.list.uploadFailed'), error.message);
     } finally {
@@ -88,6 +92,7 @@ export class InstalledPluginsPageActions {
         uploadPreviewDescription: inspection.previewDescription ?? '',
         uploadPreviewSections: inspection.previewSections ?? [],
         pendingUploadId: inspection.uploadId ?? null,
+        pendingUploadSlug: inspection.slug || null,
         showUploadPreview: true,
       });
     } catch (error: any) {
@@ -129,7 +134,10 @@ export class InstalledPluginsPageActions {
       }
       this.host.triggerRefresh();
     } catch (error: any) {
-      if (error.status === 409 && error.data?.issues) {
+      const consent = PluginConsentRequest.fromError(error);
+      if (consent) {
+        this.host.patch({ consentSlugs: [slug], consentInitial: consent });
+      } else if (error.status === 409 && error.data?.issues) {
         // Hydrate `type` at the fetch boundary: `IDependencyIssue.type` is DECLARED as the enum but the
         // 409 body carries a plain string, so `issue.type.value` in DependencyDialog was `undefined`
         // and `.toUpperCase()` on it threw — the dialog crashed for every non-"missing" issue.
@@ -144,23 +152,16 @@ export class InstalledPluginsPageActions {
     }
   }
 
-  async reapproveAll(): Promise<void> {
-    const { notify } = this.host.notify;
-    this.host.patch({ isActivating: true });
-    try {
-      const failed = await InstalledPluginsPageController.reapproveAll();
-      if (failed.length > 0) {
-        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalIncomplete'), InstalledPluginsPageController.reapprovalFailureMessage(failed));
-      } else {
-        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginsReApproved'), AdminI18n.t('plugins.list.allHeldPluginsHaveBeen'));
-      }
-      await this.host.refresh();
-      this.host.triggerRefresh();
-    } catch (error: any) {
-      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalFailed'), error.message);
-    } finally {
-      if (this.host.mounted) this.host.patch({ isActivating: false });
-    }
+  /** One consent dialog per held plugin, in turn. */
+  reapproveAll(): void {
+    this.host.patch({ consentSlugs: InstalledPluginsPageController.heldSlugs(this.host.state.plugins), consentInitial: null });
+  }
+
+  /** The consent dialogs are done: show what is now running. */
+  async consentFinished(): Promise<void> {
+    this.host.patch({ consentSlugs: [], consentInitial: null });
+    await this.host.refresh();
+    this.host.triggerRefresh();
   }
 
   async deleteConfirmed(): Promise<void> {

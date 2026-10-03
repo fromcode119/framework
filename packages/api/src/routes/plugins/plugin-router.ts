@@ -54,6 +54,7 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.ACTIVE, this.controller.active);
     this.post(RouteConstants.SEGMENTS.PLUGINS_SLUG_TOGGLE, this.auth.guard(['admin']), platform, this.lifecycleController.toggle);
     this.post(RouteConstants.SEGMENTS.PLUGINS_REAPPROVE_ALL, this.auth.guard(['admin']), platform, this.lifecycleController.reapproveAll);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_SLUG_CONSENT, this.auth.guard(['admin']), platform, this.lifecycleController.consent);
     // Health is a SITE screen: a site on this platform behaves like its own installation, so it can
     // see whether the plugins IT runs are healthy. The controller filters the report to the bound
     // site's assignment, which is what makes this safe to open — without that filter it would hand
@@ -81,6 +82,8 @@ export class PluginRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.PLUGINS_MINE_QUOTA, this.auth.guard(['admin']), this.sitePluginController.quota);
     this.post(RouteConstants.SEGMENTS.PLUGINS_MINE_UPLOAD, this.auth.guard(['admin']), this.siteUpload, this.sitePluginController.upload);
     this.delete(RouteConstants.SEGMENTS.PLUGINS_MINE_SLUG, this.auth.guard(['admin']), this.sitePluginController.remove);
+    this.get(RouteConstants.SEGMENTS.PLUGINS_MINE_SLUG_CONSENT, this.auth.guard(['admin']), this.sitePluginController.consent);
+    this.post(RouteConstants.SEGMENTS.PLUGINS_MINE_SLUG_APPROVE, this.auth.guard(['admin']), this.sitePluginController.approve);
     this.get(RouteConstants.SEGMENTS.PLUGINS_MARKETPLACE, this.auth.guard(['admin']), this.controller.marketplace);
     this.post(RouteConstants.SEGMENTS.PLUGINS_INSTALL, this.auth.guard(['admin']), platform, this.controller.install);
     this.post(RouteConstants.SEGMENTS.PLUGINS_UPDATE_ALL, this.auth.guard(['admin']), platform, (req: any, res: any) => this.controller.updateAll(req, res));

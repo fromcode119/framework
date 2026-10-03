@@ -12,6 +12,9 @@ import { AdminClass } from '@/lib/admin-class';
 import type { ISitePluginQuota } from '@/app/plugins/installed/interfaces/site-plugin-quota.interface';
 import type { ISiteOwnPlugin } from '@/app/plugins/installed/interfaces/site-own-plugin.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
+import { PluginConsentScope } from '@/components/plugins/enums/plugin-consent-scope.enum';
+import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 
 /**
  * In a site: the plugins it uploaded itself — an upload of its own, a switch for each, and removing one.
@@ -25,6 +28,9 @@ export class SiteOwnPlugins extends AdminComponent {
   @state loadError = '';
   @state busy: string | null = null;
   @state uploadPercent: number | null = null;
+  /** The consent dialog for one of this site's plugins, and the summary its upload already returned. */
+  @state consentSlugs: string[] = [];
+  @state consentInitial: IPluginConsentSummary | null = null;
   private fileInput: HTMLInputElement | null = null;
 
   async componentDidMount(): Promise<void> {
@@ -64,6 +70,8 @@ export class SiteOwnPlugins extends AdminComponent {
       const answer = await AdminApi.upload(AdminConstants.ENDPOINTS.PLUGINS.MINE_UPLOAD, form, { onProgress: (progress: any) => { this.uploadPercent = progress?.percent ?? null; } });
       this.runtime.notify.notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginUploaded'), AdminI18n.t('plugins.list.isInstalledForThisSite', { value: answer?.name || answer?.slug }));
       await this.load();
+      // Placed, not running: what it asks for is approved next.
+      if (answer?.consent) this.askConsent(String(answer.slug), answer.consent);
     } catch (err: any) {
       this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('plugins.list.notUploaded'), err?.message || AdminI18n.t('plugins.list.thePluginCouldNotBe'));
     } finally {
@@ -84,6 +92,19 @@ export class SiteOwnPlugins extends AdminComponent {
     } finally {
       this.busy = null;
     }
+  }
+
+  private askConsent(slug: string, initial: IPluginConsentSummary | null = null): void {
+    this.consentInitial = initial;
+    this.consentSlugs = [slug];
+  }
+
+  @bound
+  private async consentFinished(): Promise<void> {
+    this.consentSlugs = [];
+    this.consentInitial = null;
+    this.runtime.plugins.triggerRefresh();
+    await this.load();
   }
 
   @bound
@@ -136,13 +157,18 @@ export class SiteOwnPlugins extends AdminComponent {
                   disabled={this.busy !== null || !plugin.running}
                   onChange={(enabled: boolean) => this.toggle(plugin.slug, enabled)}
                   label={`${plugin.name} · v${plugin.version}`}
-                  description={plugin.running ? plugin.description : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
+                  description={plugin.running ? plugin.description : plugin.needsApproval ? AdminI18n.t('plugins.list.waitsForYourApproval') : (plugin.error ? AdminI18n.t('plugins.list.notRunningBecause', { reason: plugin.error }) : AdminI18n.t('plugins.list.notRunningOnTheServer'))}
                 />
+                {plugin.needsApproval ? (
+                  <button type="button" onClick={() => this.askConsent(plugin.slug)} disabled={this.busy !== null} className="text-xs font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 disabled:opacity-50">{AdminI18n.t('plugins.list.reviewAndApprove')}</button>
+                ) : null}
                 <button type="button" onClick={() => this.remove(plugin.slug)} disabled={this.busy !== null} className="text-xs font-semibold text-rose-500 hover:text-rose-600 disabled:opacity-50">{AdminI18n.t('plugins.list.remove')}</button>
               </div>
             ))}
           </div>
         )}
+        <PluginConsentHost slugs={this.consentSlugs} initial={this.consentInitial} scope={PluginConsentScope.SITE}
+          onApproved={() => undefined} onFinished={this.consentFinished} />
       </Card>
     );
   }

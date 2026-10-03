@@ -24,7 +24,7 @@ describe('a plugin process replaced by one that no longer registers a middleware
     const middlewares = new MiddlewareManager();
     const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
-    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'probe', capabilities: ['api'] } } as any, manager, logger);
+    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'probe', capabilities: ['api'] }, approvedCapabilities: ['api'] } as any, manager, logger);
     const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async () => undefined, () => true);
     const middleware = (id: string, handlerId: string) => ({ kind: String(PluginGuestRegistrationKind.MIDDLEWARE.value), handlerId, middleware: { id, stage: 'post_auth' } });
     registrations.apply(context, middleware('gate', 'h-old-1') as any);

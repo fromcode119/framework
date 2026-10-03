@@ -2,6 +2,8 @@ import { IUploadPreviewSection } from '@/components/ui/interfaces/upload-preview
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentCopy } from '@/components/plugins/plugin-consent-copy';
+import type { IPluginConsentEntry } from '@/components/plugins/interfaces/plugin-consent-entry.interface';
 
 export class InstalledPluginsUploadService {
   private static readonly MAX_CHUNK_RETRIES = 3;
@@ -75,6 +77,7 @@ export class InstalledPluginsUploadService {
     const dependencies = Array.isArray(info?.dependencies) ? info.dependencies : [];
     const peerDependencies = Array.isArray(info?.peerDependencies) ? info.peerDependencies : [];
     const existing = info?.existing || { installed: false };
+    const consentEntries = Array.isArray(info?.consent?.entries) ? info.consent.entries : [];
 
     return [
       {
@@ -94,6 +97,13 @@ export class InstalledPluginsUploadService {
       {
         title: AdminI18n.t('plugins.list.peerDependencies'),
         items: peerDependencies.length ? peerDependencies : [AdminI18n.t('plugins.upload.noPeerDependencies')],
+      },
+      {
+        // What it will ask to be approved for once installed; nothing of it runs before that.
+        title: AdminI18n.t('plugins.upload.permissions'),
+        items: consentEntries.length
+          ? consentEntries.map((entry: IPluginConsentEntry) => PluginConsentCopy.of(entry, String(info?.consent?.anyHostReason || '')).title)
+          : [AdminI18n.t('plugins.upload.noPermissions')],
       },
       {
         title: AdminI18n.t('plugins.list.installImpact'),

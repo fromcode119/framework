@@ -44,6 +44,7 @@ import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
 import { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
 import { PublicNetworkFetch } from '@core/security/public-network-fetch';
+import { PluginNetworkDeclaration } from '@core/plugin/consent/plugin-network-declaration';
 import { ProjectPaths } from '@core/config/paths';
 import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 
@@ -143,6 +144,7 @@ export class PluginContextFactory {
             // Reading a mailbox is egress like `fetch`: the same capability, the same refusal on a
             // non-production site, and the same audit trail.
             if (!security.hasCapability('network')) security.handleViolation('network');
+            PluginNetworkDeclaration.assertReachable(plugin, target, () => manager.audit.logAction(plugin.manifest.slug, 'Mailbox Read', target, 'denied'));
             await new TenantEnvironmentGate(manager.db, manager.audit).assert('network', target, plugin.manifest.slug);
             manager.audit.logAction(plugin.manifest.slug, 'Mailbox Read', target, 'allowed');
           });
@@ -165,7 +167,7 @@ export class PluginContextFactory {
           // Public internet only: the request leaves from inside the platform's network, where redis,
           // the database and the api itself answer (`PublicNetworkFetch`).
           try {
-            const response = await PublicNetworkFetch.fetch(url, init);
+            const response = await PublicNetworkFetch.fetch(url, init, (host) => PluginNetworkDeclaration.permits(plugin.manifest, plugin.approvedCapabilities || [], host));
             manager.audit.logAction(plugin.manifest.slug, 'Network Request', url, 'allowed');
             return response;
           } catch (error) {

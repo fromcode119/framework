@@ -1,12 +1,37 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
 import { StorefrontDocumentProxy } from '@/lib/document/storefront-document-proxy';
+import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-guard';
 
 const request = (path: string, method = 'GET') => new NextRequest(`http://frontend.local${path}`, { method });
 
 describe('StorefrontDocumentProxy', () => {
   afterEach(() => {
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('sends a site\'s own-theme policy with its content pages and its themed Next pages alike', async () => {
+    const policy = "default-src 'self'; form-action 'self'";
+    vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: true, contentSecurityPolicy: policy });
+
+    expect((await StorefrontDocumentProxy.handle(request('/shop'))).headers.get('content-security-policy')).toBe(policy);
+    expect((await StorefrontDocumentProxy.handle(request('/register'))).headers.get('content-security-policy')).toBe(policy);
+    expect((await StorefrontDocumentProxy.handle(request('/reset-password?token=x'))).headers.get('content-security-policy')).toBe(policy);
+    expect((await StorefrontDocumentProxy.handle(request('/logo.png'))).headers.get('content-security-policy')).toBeNull();
+  });
+
+  it('answers the holding page for a site that is not published, on its themed Next pages too', async () => {
+    vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: false, contentSecurityPolicy: null });
+
+    expect((await StorefrontDocumentProxy.handle(request('/register'))).status).toBe(503);
+    expect((await StorefrontDocumentProxy.handle(request('/shop'))).status).toBe(503);
+  });
+
+  it('sends no policy for a site on a platform theme', async () => {
+    vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: true, contentSecurityPolicy: null });
+
+    expect((await StorefrontDocumentProxy.handle(request('/shop'))).headers.get('content-security-policy')).toBeNull();
   });
 
   it('rewrites content even where an old deployment still sets the retired flag to false', async () => {
