@@ -112,7 +112,7 @@ export class PluginRegistrationState {
         this.logger.warn(`Plugin "${slug}" HELD: it asks for [${missing.join(', ')}], which nobody approved. Approve it to activate.`);
         await this.registry.markPluginHeld(slug, heldReason);
       }
-    } else if (state === PluginState.ACTIVE && approved.length !== PluginConsentSet.of(plugin.manifest).length) {
+    } else if (state === PluginState.ACTIVE && approved.some((entry) => !PluginConsentSet.of(plugin.manifest).includes(entry))) {
       // It asks for LESS than was approved. Nothing to hold — but the approval shrinks with it, so a
       // later release that asks for the dropped entry again needs approving again.
       approved = PluginConsentSet.of(plugin.manifest);

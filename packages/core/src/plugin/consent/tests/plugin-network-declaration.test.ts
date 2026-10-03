@@ -68,6 +68,18 @@ describe('what an operator approves', () => {
   });
 });
 
+describe('narrowing from any host to named hosts', () => {
+  it('is covered by the old approval, reaches the named host, and marks nothing new', () => {
+    const narrowed = manifest({ network: { hosts: ['api.payments.example'] } });
+    const approved = ['hooks', 'network', 'network:any'];
+
+    expect(PluginConsentSet.covers(narrowed, approved)).toBe(true);
+    expect(PluginNetworkDeclaration.permits(narrowed, approved, 'api.payments.example')).toBe(true);
+    expect(PluginNetworkDeclaration.permits(narrowed, approved, 'collect.elsewhere.example')).toBe(false);
+    expect(PluginConsentSummary.of(narrowed, approved).requiresApproval).toBe(false);
+  });
+});
+
 describe('the consent summary', () => {
   it('ranks the riskiest first, marks what is new and names what was dropped', () => {
     const declared = manifest({ capabilities: ['network', 'hooks', 'database:raw', 'i18n'], network: { any: true, reason: 'Webhooks.' } });

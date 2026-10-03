@@ -194,6 +194,16 @@ describe('nothing of a plugin runs before it is approved', () => {
     expect(manager.plugins.get('shop').heldReason).toBeUndefined();
   });
 
+  it('a plugin approved for any host that now names its hosts keeps running, and its approval narrows to them', async () => {
+    const saved = { shop: { state: PluginState.ACTIVE, version: '1.0.0', approvedCapabilities: ['hooks', 'network', 'network:any'] } };
+    const { service, manager, registry } = buildService(saved);
+
+    await service.register({ manifest: { ...SHOP } } as any);
+
+    expect(manager.plugins.get('shop').heldReason).toBeUndefined();
+    expect(registry.savePluginState).toHaveBeenCalledWith('shop', PluginState.ACTIVE, SHOP_CONSENT, '2.0.0');
+  });
+
   it('a version that asks for LESS keeps running, and its approval shrinks with it', async () => {
     const saved = { shop: { state: PluginState.ACTIVE, version: '1.0.0', approvedCapabilities: [...SHOP_CONSENT, 'email'] } };
     const { service, manager, registry } = buildService(saved);
