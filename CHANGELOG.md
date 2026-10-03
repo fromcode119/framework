@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.318] - 2026-10-03
+
+### Fixed
+
+- **frontend**: retire a site's old render world before trimming to the cap ([#714](https://github.com/fromcode119/framework/pull/714))
+- **core**: a plugin update swaps its directory in whole ([#713](https://github.com/fromcode119/framework/pull/713))
+- **admin**: Bulgarian console text uses standard Cyrillic letterforms ([#711](https://github.com/fromcode119/framework/pull/711))
+
+### Performance
+
+- datasource prefetch asks for cards and the block's filters; media hydrates in one lookup ([#710](https://github.com/fromcode119/framework/pull/710))
+
 ## [0.2.317] - 2026-10-03
 
 ### Fixed
