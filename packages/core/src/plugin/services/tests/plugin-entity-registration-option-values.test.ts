@@ -4,7 +4,7 @@ import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-en
 /**
  * An isolated plugin declares select options with Enum members; across the process boundary a member
  * arrives as a plain `{ value, label, … }` object. The console then matched no stored value, printed it
- * raw and found no translation — every status in an mlm list read "pending" in a Bulgarian console.
+ * raw and found no translation — every status in a list read "pending" in a Bulgarian console.
  */
 describe('PluginEntityRegistrationService — select option values', () => {
   const member = (value: string) => ({ value, label: value[0].toUpperCase() + value.slice(1), isTerminal: false });
