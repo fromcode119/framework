@@ -29,7 +29,7 @@ export class TenantThemePackagePolicy {
   private static readonly FORBIDDEN_DIRS = ['ui-ssr', 'plugins', 'bundled-plugins', 'node_modules'] as const;
 
   /** Manifest keys that ask the platform to DO something at install time, rather than describing the theme. */
-  private static readonly FORBIDDEN_MANIFEST_KEYS = ['bundledPlugins', 'dependencies', 'seeds'] as const;
+  private static readonly FORBIDDEN_MANIFEST_KEYS = ['bundledPlugins', 'dependencies', 'seeds', 'runtimeModules'] as const;
 
   /** Native addons are machine code; nothing about a browser-rendered theme needs one. */
   private static readonly FORBIDDEN_EXTENSIONS = ['.node'] as const;
@@ -72,13 +72,17 @@ export class TenantThemePackagePolicy {
       if (Array.isArray(value) && value.length === 0) continue;
       if (typeof value === 'object' && !Array.isArray(value) && Object.keys(value).length === 0) continue;
       if (typeof value === 'string' && !value.trim()) continue;
-      found.push(
-        key === 'seeds'
-          ? 'declares "seeds" — installing a site\'s theme writes no rows to the database.'
-          : `declares "${key}", which installs code onto the platform; a site's theme may not.`,
-      );
+      found.push(TenantThemePackagePolicy.manifestReason(key));
     }
     return found;
+  }
+
+  private static manifestReason(key: (typeof TenantThemePackagePolicy.FORBIDDEN_MANIFEST_KEYS)[number]): string {
+    if (key === 'seeds') return 'declares "seeds" — installing a site\'s theme writes no rows to the database.';
+    if (key === 'runtimeModules') {
+      return 'declares "runtimeModules" — a site\'s theme cannot replace the modules the platform provides.';
+    }
+    return `declares "${key}", which installs code onto the platform; a site's theme may not.`;
   }
 
   /**
