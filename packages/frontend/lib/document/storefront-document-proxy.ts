@@ -45,8 +45,10 @@ export class StorefrontDocumentProxy {
     // guard forwards it and lets the api decide. Read by name — nothing here interprets its value.
     const preview = String(request.cookies.get(CookieConstants.SITE_PREVIEW)?.value || '');
     const verdict = await SiteVisibilityProxyGuard.verdict(host, apiBase, preview);
-    if (themedPage) return StorefrontDocumentProxy.withPolicy(NextResponse.next(), verdict.contentSecurityPolicy);
+    // The themed Next pages too: they resolve the site's content like a document, and on a site that is
+    // not published the api refuses it — which reached the visitor as a 500 instead of this page.
     if (!verdict.readable) return SiteVisibilityProxyGuard.holdingResponse();
+    if (themedPage) return StorefrontDocumentProxy.withPolicy(NextResponse.next(), verdict.contentSecurityPolicy);
 
     const target = request.nextUrl.clone();
     target.pathname = `${StorefrontDocumentProxy.DOCUMENT_PREFIX}${pathname === '/' ? '' : pathname}`;

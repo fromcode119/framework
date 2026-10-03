@@ -21,6 +21,13 @@ describe('StorefrontDocumentProxy', () => {
     expect((await StorefrontDocumentProxy.handle(request('/logo.png'))).headers.get('content-security-policy')).toBeNull();
   });
 
+  it('answers the holding page for a site that is not published, on its themed Next pages too', async () => {
+    vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: false, contentSecurityPolicy: null });
+
+    expect((await StorefrontDocumentProxy.handle(request('/register'))).status).toBe(503);
+    expect((await StorefrontDocumentProxy.handle(request('/shop'))).status).toBe(503);
+  });
+
   it('sends no policy for a site on a platform theme', async () => {
     vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: true, contentSecurityPolicy: null });
 
