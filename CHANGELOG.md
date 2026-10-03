@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.308] - 2026-10-03
+
+### Fixed
+
+- **admin**: framework fields, role names and the records panel read in the console's language ([#685](https://github.com/fromcode119/framework/pull/685))
+- **core**: a select option declared with an Enum member stores its string ([#686](https://github.com/fromcode119/framework/pull/686))
+- **api**: plugins offered to a site are named in the console's language ([#687](https://github.com/fromcode119/framework/pull/687))
+
 ## [0.2.307] - 2026-10-02
 
 ### Fixed
