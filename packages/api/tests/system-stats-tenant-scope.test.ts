@@ -57,7 +57,7 @@ const controller = (opts: { rows?: any[] } = {}) => {
       findOne: vi.fn(async () => ({ value: '' })),
     },
     themeManager: { getThemes: () => [{}, {}, {}], getActiveThemeManifest: () => ({ name: 'x' }) },
-    manager: { getSecuritySummary: vi.fn(async () => SUMMARY), getPlugins: () => PLUGINS },
+    manager: { getSecuritySummary: vi.fn(async () => SUMMARY), getPlugins: () => PLUGINS, integrations: { resolveMany: vi.fn(async () => []) } },
   };
   return new SystemAdminController(runtime as never);
 };

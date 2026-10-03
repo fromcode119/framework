@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SiteBaseUrl, SystemConstants, TenantMode, PluginTenantAccess, AdminScope } from '@fromcode119/core';
+import { ApplicationUrlUtils, AttentionResolutionService, CoreServices, HostResourceService, InstallationChecklistService, RecentEditsService, SettingSource, SiteBaseUrl, SystemConstants, TenantMode, PluginTenantAccess, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { SecretService } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -134,6 +134,11 @@ export class SystemSiteOverviewController {
         readMeta: async (key: string) => {
           const row = await this.runtime.db.findOne(SystemConstants.TABLE.META, { key });
           return String(row?.value ?? '').trim();
+        },
+        emailProvider: async () => {
+          const resolved = await this.runtime.manager.integrations.resolveMany('email').catch(() => []);
+          const configured = resolved.find((entry) => entry.source !== SettingSource.DEFAULT);
+          return String(configured?.name || configured?.providerKey || '').trim();
         },
       });
       // `scope` is stamped on BOTH branches, not just the site one. The dashboard heads its activity

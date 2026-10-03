@@ -22,6 +22,13 @@ export class InstallationChecklistService {
       countUsers: () => Promise<number>;
       canStoreSecrets: () => boolean;
       readMeta: (key: string) => Promise<string>;
+      /**
+       * The email provider the mailer would actually use, or '' when it would fall back to its
+       * built-in default. Read through the integration resolver rather than a meta key: providers
+       * are stored as a list (`integration_email_providers`), and the old single-provider key this
+       * used to read is written by nothing — so every installation was told nothing could be sent.
+       */
+      emailProvider: () => Promise<string>;
       storefrontUrl: () => string;
     },
   ) {}
@@ -37,7 +44,7 @@ export class InstallationChecklistService {
     ]);
 
     const [emailProvider, timezone, locales] = await Promise.all([
-      this.deps.readMeta('integration_email_provider'),
+      this.deps.emailProvider(),
       this.deps.readMeta('timezone'),
       this.deps.readMeta('enabled_locales'),
     ]);
