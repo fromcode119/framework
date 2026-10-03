@@ -78,7 +78,7 @@ export class PluginManagerServiceFactory {
       () => manager.discoverPlugins(),
       (slug: string) => manager.enable(slug),
       (slug: string, manifest) => manager.pluginHosts.reload(slug, manifest as unknown as Record<string, unknown>),
-      (slug: string) => lifecycle.syncCollections(slug),
+      (slug: string) => lifecycle.refreshAfterHotUpdate(slug),
       (manifest) => PluginSchemaDatabaseProxy.create({ manifest }, manager) as IDatabaseManager,
     );
 

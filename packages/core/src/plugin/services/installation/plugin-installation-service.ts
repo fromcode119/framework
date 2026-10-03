@@ -32,7 +32,8 @@ export class PluginInstallationService {
     private readonly enablePlugin: (slug: string) => Promise<void>,
     /** T5: swap an isolated plugin's process for one running the new files; false when it runs in the api process. */
     private readonly reloadHost: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
-    private readonly syncCollections: (slug: string) => Promise<void> = async () => undefined,
+    /** After a hot update of an active plugin: sync its tables and create the default pages it requires. */
+    private readonly refreshActivePlugin: (slug: string) => Promise<void> = async () => undefined,
     /** Each plugin's migrations run on ITS schema proxy, never the owner connection. Fails closed. */
     private readonly migrationDatabaseFor: (manifest: IPluginManifest) => IDatabaseManager = (manifest) => {
       throw new Error(`No migration database was provided, so the migrations of "${manifest.slug}" cannot run.`);
@@ -226,8 +227,9 @@ export class PluginInstallationService {
       // plugin that runs inside the api process still needs the api restarted to load new code.
       if (await this.reloadHost(slug, manifest)) {
         existingPlugin.manifest = manifest;
-        // Only a boot or an activation used to sync tables: a release adding a field broke every read of it.
-        if (desiredState === PluginState.ACTIVE) await this.syncCollections(slug);
+        // Only a boot or an activation used to sync tables and create default pages: a release adding a
+        // field broke every read of it, and one adding a required page left it 404 until a restart.
+        if (desiredState === PluginState.ACTIVE) await this.refreshActivePlugin(slug);
         options.progressReporter?.({
           phase: 'plugin-reloaded',
           message: `Plugin "${slug}" was replaced and its process restarted on the new code. No API restart needed.`,
