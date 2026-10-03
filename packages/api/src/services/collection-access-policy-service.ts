@@ -1,4 +1,5 @@
 import { WriteOperation } from '@api/services/enums/write-operation.enum';
+import { ReadConstraintOperators } from '@api/services/read-constraint-operators';
 import { ICollection, EnvUtils, PermissionGrants, PermissionNames, CollectionPermissionAction, ContentPreviewAccessUtils } from '@fromcode119/core';
 
 export class CollectionAccessPolicyService {
@@ -86,6 +87,10 @@ export class CollectionAccessPolicyService {
     }
 
     for (const [key, expectedValue] of Object.entries(constraints)) {
+      if (ReadConstraintOperators.isOperator(expectedValue)) {
+        if (!ReadConstraintOperators.matches(record[key], expectedValue)) return false;
+        continue;
+      }
       if (record[key] !== expectedValue) {
         return false;
       }

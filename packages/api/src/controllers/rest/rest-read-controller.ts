@@ -6,6 +6,7 @@ import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { CollectionArchiveReadClause } from '@api/services/collection-archive-read-clause';
 import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
+import { ReadConstraintOperators } from '@api/services/read-constraint-operators';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { CoercionUtils, CollectionArchive } from '@fromcode119/core';
 
@@ -22,7 +23,8 @@ export class RestReadController {
       delete (filters as any)[CollectionArchive.QUERY_PARAM];
 
       const accessConstraints = await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
-      const effectiveFilters: Record<string, unknown> = { ...filters, ...accessConstraints };
+      const rule = ReadConstraintOperators.split(accessConstraints);
+      const effectiveFilters: Record<string, unknown> = { ...filters, ...rule.equalities };
       const table = QueryHelper.getVirtualTable(collection);
       const localeContext = await this.runtime.localization.getLocaleContext(req);
       const rawLocalized = String(locale_mode || '').toLowerCase() === 'raw';
@@ -44,6 +46,7 @@ export class RestReadController {
       const whereClause = QueryHelper.buildWhereClause(
         this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches,
         CollectionArchiveReadClause.combine(this.runtime.db, UserCollectionScopeGuard.buildReadClause(userScope),
+          ReadConstraintOperators.buildClause(this.runtime.db, table, rule.operators),
           CollectionArchiveReadClause.build(this.runtime.db, collection, table, archivedOnly)),
         partialReader,
       );
@@ -234,11 +237,12 @@ export class RestReadController {
    * An access refusal (401/403) is the policy doing its job, not a server failure. Page resolution asks
    * every collection for a slug on each anonymous visit, and a collection a visitor may not read
    * (broadcast lists, campaigns) answered with an [ERROR] and a stack trace per request — noise that
-   * buries real failures. Refusals are logged at debug; everything else stays an error.
+   * buries real failures. Any request the api refused (a 4xx — a refusal, or a filter on a field the
+   * reader may not query) is the caller's mistake and is logged at debug; only a server failure is an error.
    */
   private logFailure(err: any, message: string): void {
     const status = Number(err?.statusCode);
-    if (status === 401 || status === 403) {
+    if (status >= 400 && status < 500) {
       this.runtime.logger.debug(message);
       return;
     }
