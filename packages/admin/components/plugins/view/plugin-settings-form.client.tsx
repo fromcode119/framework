@@ -95,9 +95,9 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         {/* hidden file input for import */}
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 
-        {/* Tabs */}
+        {/* Tabs — they wrap onto further rows: a plugin with many tabs ran past the panel and the last ones were clipped out of reach. */}
         {schema.tabs && schema.tabs.length > 0 && (
-          <div className={`flex gap-2 p-2 rounded-xl ${
+          <div className={`flex flex-wrap gap-2 p-2 rounded-xl ${
             theme === ThemeMode.DARK ? 'bg-slate-900' : 'bg-slate-100'
           }`}>
             {schema.tabs.map((tab: any) => (
