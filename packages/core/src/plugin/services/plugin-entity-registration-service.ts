@@ -169,8 +169,12 @@ export class PluginEntityRegistrationService {
     return [...fields].map((field) => {
       const mutableField = { ...field } as IField;
       mutableField.options = Array.isArray(field.options)
-        ? field.options.map((option) => ({ ...option }))
+        ? field.options.map((option) => (option && typeof option === 'object'
+          ? { ...option, value: PluginEntityRegistrationService.storedValue((option as { value?: unknown }).value) }
+          : option))
         : field.options as IField['options'];
+      // Only an option-bearing field's default is an option value; a json field's default object is data.
+      if (Array.isArray(field.options) && field.defaultValue !== undefined) mutableField.defaultValue = PluginEntityRegistrationService.storedValue(field.defaultValue) as IField['defaultValue'];
       mutableField.relationTo = Array.isArray(field.relationTo)
         ? [...field.relationTo]
         : field.relationTo as IField['relationTo'];
@@ -180,6 +184,22 @@ export class PluginEntityRegistrationService {
       mutableField.admin = field.admin ? { ...field.admin } : field.admin as IField['admin'];
       return mutableField;
     });
+  }
+
+  /**
+   * The value a select stores, from what a plugin declared.
+   *
+   * Plugins declare options with Enum members (`value: PayoutStatus.PENDING`). An isolated plugin's
+   * declaration crosses the process boundary as structured data, which keeps a member's fields but not
+   * its class, so it arrived as `{ value: 'pending', label: 'Pending', … }`. A list then matched no
+   * stored value and printed it raw, the console found no translation for it, and the editor's dropdown
+   * could not show the stored status. A member — hydrated or not — becomes the string it stores.
+   */
+  static storedValue(value: unknown): unknown {
+    if (value && typeof value === 'object' && !Array.isArray(value) && typeof (value as { value?: unknown }).value === 'string') {
+      return (value as { value: string }).value;
+    }
+    return value;
   }
 
   private cloneHooks(collection: ICollectionInput): ICollection['hooks'] {
