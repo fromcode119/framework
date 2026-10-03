@@ -1346,7 +1346,8 @@
         "noTables": "Creates no data collections of its own.",
         "adminScreens": "Adds screens to this console.",
         "storefrontCode": "Adds code to the pages visitors see.",
-        "storefrontWidgets": "Places {{count}} sandboxed frames on the storefront."
+        "storefrontWidgets": "Places {{count}} sandboxed frames on the storefront.",
+        "storefrontHosts": "In visitors' browsers its storefront code talks to: {{hosts}}."
       },
       "entry": {
         "api": {

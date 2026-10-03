@@ -25,6 +25,8 @@ export interface IPluginConsentSummary {
   storefrontWidgets: number;
   /** It ships code that runs inside the storefront page itself. */
   storefrontCode: boolean;
+  /** Outside hosts its storefront code loads from or talks to in the visitor's browser. */
+  storefrontHosts: string[];
   /** It runs in its own process, with these limits when it sets them. */
   isolated: boolean;
   memoryLimitMb: number | null;

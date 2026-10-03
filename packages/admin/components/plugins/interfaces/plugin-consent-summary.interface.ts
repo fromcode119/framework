@@ -16,6 +16,7 @@ export interface IPluginConsentSummary {
   adminScreens: boolean;
   storefrontWidgets: number;
   storefrontCode: boolean;
+  storefrontHosts: string[];
   isolated: boolean;
   memoryLimitMb: number | null;
   timeoutMs: number | null;

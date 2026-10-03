@@ -47,6 +47,7 @@ export class PluginConsentFacts extends PureReactor {
     if (summary.adminScreens) facts.push(AdminI18n.t('plugins.consent.facts.adminScreens'));
     if (summary.storefrontCode) facts.push(AdminI18n.t('plugins.consent.facts.storefrontCode'));
     if (summary.storefrontWidgets) facts.push(AdminI18n.t('plugins.consent.facts.storefrontWidgets', { count: summary.storefrontWidgets }));
+    if (summary.storefrontHosts?.length) facts.push(AdminI18n.t('plugins.consent.facts.storefrontHosts', { hosts: summary.storefrontHosts.join(', ') }));
     return facts;
   }
 }

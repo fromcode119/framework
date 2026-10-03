@@ -25,7 +25,7 @@ const summary = (extra: Partial<IPluginConsentSummary> = {}): IPluginConsentSumm
   ],
   consent: ['hooks', 'i18n', 'network:any', 'network:host:api.courier.example'],
   requiresApproval: true, dropped: [], anyHostReason: 'Sends each label to the address you set.', invalidHosts: [],
-  collections: ['shipments'], adminScreens: true, storefrontWidgets: 0, storefrontCode: false,
+  collections: ['shipments'], adminScreens: true, storefrontWidgets: 0, storefrontCode: false, storefrontHosts: [],
   isolated: true, memoryLimitMb: null, timeoutMs: null,
   ...extra,
 });
