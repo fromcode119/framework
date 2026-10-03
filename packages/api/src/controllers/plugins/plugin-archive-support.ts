@@ -167,8 +167,10 @@ export class PluginArchiveSupport {
         peerDependencies: this.formatDependencyMap(manifest?.peerDependencies),
         hasUiBundle: ArchiveTreeInspector.containsDirectory(extractedDir, 'ui'),
         hasServerCode: ArchiveTreeInspector.containsFile(extractedDir, /(^|\/)index\.(js|ts)$/i),
-        existingVersion: existing?.manifest?.version || null,
-        action: existing ? 'update' : 'install',
+        // What an install would replace, in the shape the upload dialog's "Install Impact" reads.
+        existing: existing
+          ? { installed: true, version: String(existing.manifest?.version || ''), state: String(existing.state || '') }
+          : { installed: false },
       };
     } finally {
       fs.rmSync(extractedDir, { recursive: true, force: true });

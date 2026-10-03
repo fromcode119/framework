@@ -6,6 +6,7 @@ import path from 'path';
 import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
 import { ArchiveUploadRequestParser } from '@api/controllers/archive-upload-request-parser';
+import { ArchiveTreeInspector } from '@api/controllers/plugins/archive-tree-inspector';
 import { AssetCacheHeaderService } from '@api/services/asset-cache-header-service';
 import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 import { CoercionUtils } from '@fromcode119/core';
@@ -140,7 +141,7 @@ export class ThemeArchiveSupport {
       const existing = this.manager.getThemes().find((theme: any) => theme?.slug === slug);
       const themeRoot = path.dirname(themeEntry);
       const bundledEntries = this.collectBundledPluginArchives(themeRoot).map((archivePath) => ({
-        name: path.relative(themeRoot, archivePath).replace(/\\/g, '/'),
+        archive: path.relative(themeRoot, archivePath).replace(/\\/g, '/'),
         size: fs.statSync(archivePath).size,
       }));
 
@@ -152,9 +153,12 @@ export class ThemeArchiveSupport {
         author: String(manifest?.author || ''),
         dependencies: this.formatDependencyMap(manifest?.dependencies),
         hasUiBundle: this.directoryContainsSegment(themeRoot, 'ui'),
+        files: ArchiveTreeInspector.countFiles(themeRoot),
         bundledPlugins: bundledEntries,
-        existingVersion: existing?.version || null,
-        action: existing ? 'update' : 'install',
+        // What an install would replace, in the shape the upload dialog's "Install Impact" reads.
+        existing: existing
+          ? { installed: true, version: String(existing.version || ''), state: String(existing.state || '') }
+          : { installed: false },
       };
     } finally {
       fs.rmSync(extractedDir, { recursive: true, force: true });
