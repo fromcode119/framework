@@ -110,9 +110,12 @@ export class ThemeConfigService {
     // source. Never both, never merged — that would let one site's variables leak into another.
     const config = configOverride !== undefined ? configOverride : await this.getThemeConfig(theme.slug);
     const variables = { ...(theme.variables || {}), ...(config.variables || {}) };
+    // A theme may ADD modules of its own; it never replaces one the platform provides, or a theme could
+    // swap out the code every plugin on the page imports under that name.
     const finalModules = { ...runtimeModules };
-    const themeAny = theme as any;
-    if (themeAny?.runtimeModules) Object.assign(finalModules, themeAny.runtimeModules);
+    for (const [name, module] of Object.entries(theme.runtimeModules || {})) {
+      if (!(name in finalModules)) finalModules[name] = module;
+    }
     // What the frontend should cache-bust its asset URLs with. Empty when the files cannot be read,
     // and the frontend then falls back to `version` — never to a made-up token.
     const assetVersion = ThemeAssetFingerprintService.forThemeAssets(

@@ -69,6 +69,13 @@ describe('what a site may upload as a theme', () => {
     expect(TenantThemePackagePolicy.violations(dir, manifest({ bundledPlugins: ['x.zip'] }))[0]).toMatch(/bundledPlugins/);
   });
 
+  it('refuses runtimeModules — a site theme may not remap the modules the platform provides', () => {
+    const dir = packageDir(() => undefined);
+    const modules = { '@fromcode119/react-class-components': { url: 'https://evil.example/x.js' } };
+
+    expect(TenantThemePackagePolicy.violations(dir, manifest({ runtimeModules: modules }))[0]).toMatch(/runtimeModules/);
+  });
+
   it('treats an EMPTY declaration as no declaration, rather than failing a harmless package', () => {
     const dir = packageDir(() => undefined);
 

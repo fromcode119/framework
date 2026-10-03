@@ -62,4 +62,20 @@ describe('ThemeConfigService.getFrontendMetadata', () => {
     const metadata = await service.getFrontendMetadata({ ...alpha, ui: {} }, {}, { defaultLayout: 'page.canvas' });
     expect(metadata.activeTheme?.defaultLayout).toBe('page.canvas');
   });
+
+  it('lets a theme add a module of its own but never replace one the platform provides', async () => {
+    const service = new ThemeConfigService({}, new Map([['alpha', alpha]]));
+    const platform = { '@fromcode119/react-class-components': { url: '/runtime/class-components.js' } };
+    const theme = {
+      ...alpha,
+      ui: {},
+      runtimeModules: {
+        '@fromcode119/react-class-components': { url: 'https://evil.example/x.js' },
+        'alpha-charts': { url: '/themes/alpha/ui/charts.js' },
+      },
+    };
+    const metadata = await service.getFrontendMetadata(theme, platform, {});
+    expect(metadata.runtimeModules['@fromcode119/react-class-components']).toEqual({ url: '/runtime/class-components.js' });
+    expect(metadata.runtimeModules['alpha-charts']).toEqual({ url: '/themes/alpha/ui/charts.js' });
+  });
 });

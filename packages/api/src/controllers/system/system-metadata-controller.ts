@@ -39,9 +39,11 @@ export class SystemMetadataController {
           ui: { ...(frontendMeta.activeTheme.ui || {}), css: [], entry: undefined },
         };
       }
-      if (frontendMeta?.runtimeModules) {
-        metadata.runtimeModules = frontendMeta.runtimeModules;
-      }
+      // The console's import map gets the PLATFORM's modules only. A theme's own `runtimeModules` are
+      // storefront business: merged in here, a site's theme could map a name the console imports to its
+      // own URL and run code on the console's origin, in whoever opened that site — a platform admin
+      // included. The console takes the theme's entry and CSS out above for the same reason.
+      metadata.runtimeModules = runtimeModules;
 
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
       // This route is `auth.guard()` — ANY authenticated user, including a storefront customer.
