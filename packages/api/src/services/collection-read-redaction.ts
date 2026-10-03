@@ -83,6 +83,14 @@ export class CollectionReadRedaction {
     return new Set([...shape.staffOnly, ...shape.withheld.map((entry) => entry.field)]);
   }
 
+  /**
+   * The fields `withheldWhen` decides on. A read of only some fields must read these too: redaction
+   * cannot withhold a value on account of a field it never saw.
+   */
+  static decidingFields(collection: ICollection): string[] {
+    return [...new Set(CollectionReadRedaction.shapeOf(collection).withheld.flatMap((entry) => entry.when))];
+  }
+
   /** Whether a stored value counts as "set" for `withheldWhen` — mirrored in SQL by the search clause. */
   static holdsValue(value: unknown): boolean {
     if (value === null || value === undefined || value === false || value === '') return false;

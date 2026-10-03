@@ -158,6 +158,9 @@ export class LocalizationService {
       // admin.hidden purely to avoid a duplicate permalink editor, so the frontend received pages with
       // NO slug and every slug-routed static page (login, about, contact, cart, …) fell back to the
       // generic block flow. Field visibility belongs to access control, not to an admin-UI flag.
+      // A field the record was not read with stays absent — not added as `undefined` to every row of a
+      // read that asked for a few fields.
+      if (!(field.name in cleanData)) return;
       let value = cleanData[field.name];
       if (field.type === 'array' && typeof value === 'string') {
         try {

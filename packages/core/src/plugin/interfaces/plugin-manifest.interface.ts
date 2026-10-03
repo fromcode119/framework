@@ -8,6 +8,7 @@ import type { ISecondaryPanelManifest } from '@core/interfaces/secondary-panel-m
 import type { IPublicRouteManifest } from '@core/interfaces/public-route-manifest.interface';
 import type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
 import type { IPluginNetworkDeclaration } from '@core/plugin/consent/interfaces/plugin-network-declaration.interface';
+import type { IPluginReadRoute } from '@core/plugin/interfaces/plugin-read-route.interface';
 
 export interface IPluginManifest {
   // Identity
@@ -45,6 +46,8 @@ export interface IPluginManifest {
    * an operator approves, and a request to any other host is refused (`PluginNetworkDeclaration`).
    */
   network?: IPluginNetworkDeclaration;
+  /** Public GET routes the framework answers from the plugin's own records — see IPluginReadRoute. */
+  readRoutes?: IPluginReadRoute[];
   
   // Hooks & Extensions
   hooks?: any;
