@@ -12,7 +12,7 @@ import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
  * the database, so a release adding a field (finance 0.1.86's `chargeFeeToBuyer`) ran against a table
  * without the column: every read of the collection failed until the api was restarted.
  */
-describe('PluginInstallationService.finalizeInstalledPlugin — hot update syncs the schema', () => {
+describe('PluginInstallationService.finalizeInstalledPlugin — hot update refreshes the active plugin', () => {
   let root: string;
   let pluginsRoot: string;
   const slug = 'sample-ledger';
@@ -57,7 +57,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — hot update syncs
     return { service, syncCollections };
   }
 
-  it('syncs an active plugin\'s collections once its new process is running', async () => {
+  it('refreshes an active plugin (tables and default pages) once its new process is running', async () => {
     const { service, syncCollections } = setup(PluginState.ACTIVE, true);
     await service.finalizeInstalledPlugin(slug, {});
     expect(syncCollections).toHaveBeenCalledWith(slug);
