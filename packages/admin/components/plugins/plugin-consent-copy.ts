@@ -12,7 +12,11 @@ export class PluginConsentCopy {
   private static readonly ANY_HOST = 'anyHost';
   private static readonly INTEGRATION_PREFIX = 'integration:';
 
-  static of(entry: IPluginConsentEntry, anyHostReason: string): IPluginConsentCopy {
+  /** @param anyHost the plugin may reach every host, so its `network` line must not say "only these". */
+  static of(entry: IPluginConsentEntry, anyHostReason: string, anyHost = false): IPluginConsentCopy {
+    if (anyHost && entry.entry === 'network') {
+      return { title: AdminI18n.t('plugins.consent.entry.network.title'), detail: AdminI18n.t('plugins.consent.entry.network.detailAny') };
+    }
     if (entry.kind === PluginConsentCopy.HOST) {
       return { title: AdminI18n.t('plugins.consent.entry.host.title', { host: entry.host }), detail: AdminI18n.t('plugins.consent.entry.host.detail') };
     }

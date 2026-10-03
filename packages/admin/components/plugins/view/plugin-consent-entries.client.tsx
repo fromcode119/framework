@@ -39,7 +39,7 @@ export class PluginConsentEntries extends PureReactor {
   }
 
   private renderEntry(entry: IPluginConsentEntry): ReactNode {
-    const copy = PluginConsentCopy.of(entry, this.anyHostReason);
+    const copy = PluginConsentCopy.of(entry, this.anyHostReason, this.entries.some((candidate) => candidate.kind === 'anyHost'));
     return (
       <li key={entry.entry} className="flex items-start justify-between gap-3">
         <div className="min-w-0">

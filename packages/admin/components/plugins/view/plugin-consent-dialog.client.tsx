@@ -110,7 +110,7 @@ export class PluginConsentDialog extends AdminComponent {
 
             <p className="mt-4 text-sm text-slate-700 dark:text-slate-300">
               {AdminI18n.t('plugins.consent.overview', { total: summary.entries.length, high: counts.high, medium: counts.medium, low: counts.low })}
-              {added ? ` ${AdminI18n.t('plugins.consent.overviewNew', { count: added })}` : ''}
+              {added ? ` ${AdminI18n.t(added === 1 ? 'plugins.consent.overviewNewOne' : 'plugins.consent.overviewNewMany', { count: added })}` : ''}
             </p>
 
             <div className="mt-4 space-y-6 max-h-[52vh] overflow-auto pr-1">

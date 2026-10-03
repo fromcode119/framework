@@ -1320,7 +1320,6 @@
       "title": "Approve \"{{name}}\" {{version}}",
       "description": "Nothing of this plugin runs until you approve it. Read what it will be able to do.",
       "overview": "It asks for {{total}} permissions: {{high}} high risk, {{medium}} medium, {{low}} low.",
-      "overviewNew": "{{count}} of them are new.",
       "nothing": "It asks for no permissions.",
       "new": "New",
       "risk": {
@@ -1427,7 +1426,8 @@
         },
         "network": {
           "title": "Connects to the internet",
-          "detail": "Only to the hosts listed here."
+          "detail": "Only to the hosts listed here.",
+          "detailAny": "To any address, for the reason it gives below."
         },
         "pluginsInteract": {
           "title": "Works with other plugins",
@@ -1478,7 +1478,9 @@
           "title": "Uses \"{{entry}}\"",
           "detail": "A permission this console has no description for."
         }
-      }
+      },
+      "overviewNewOne": "1 of them is new.",
+      "overviewNewMany": "{{count}} of them are new."
     }
   },
   "settings": {
