@@ -70,7 +70,7 @@ export class PluginNetworkDeclaration {
     if (PluginNetworkDeclaration.allowsAnyHost(manifest)) return approved.includes(PluginNetworkDeclaration.ANY_TOKEN);
     return PluginNetworkDeclaration.hosts(manifest).some((declared) =>
       PluginNetworkDeclaration.matches(declared, host)
-      && approved.includes(PluginNetworkDeclaration.HOST_TOKEN_PREFIX + declared));
+      && (approved.includes(PluginNetworkDeclaration.HOST_TOKEN_PREFIX + declared) || approved.includes(PluginNetworkDeclaration.ANY_TOKEN)));
   }
 
   /** Refuses a target outside what the plugin was approved to reach; `onRefused` records it first. */

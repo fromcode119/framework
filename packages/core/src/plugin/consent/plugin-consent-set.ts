@@ -25,7 +25,16 @@ export class PluginConsentSet {
   /** What the manifest asks for that the approved set does not hold. Empty means it may run. */
   static missing(manifest: IPluginManifest, approved: readonly string[] | undefined): string[] {
     const held = new Set((approved || []).map((entry) => String(entry).toLowerCase()));
-    return PluginConsentSet.of(manifest).filter((entry) => !held.has(entry));
+    return PluginConsentSet.of(manifest).filter((entry) => !PluginConsentSet.holds(held, entry));
+  }
+
+  /**
+   * Whether an approved set holds one entry. Approval to reach ANY host covers each single host: a
+   * plugin that narrows from "any" to the hosts it names asks for less, so it keeps running.
+   */
+  static holds(held: ReadonlySet<string>, entry: string): boolean {
+    if (held.has(entry)) return true;
+    return entry.startsWith(PluginNetworkDeclaration.HOST_TOKEN_PREFIX) && held.has(PluginNetworkDeclaration.ANY_TOKEN);
   }
 
   static covers(manifest: IPluginManifest, approved: readonly string[] | undefined): boolean {

@@ -22,7 +22,7 @@ export class PluginConsentSummary {
     const consent = PluginConsentSet.of(manifest);
     const held = new Set(approved.map((entry) => String(entry).toLowerCase()));
     const entries = consent
-      .map((entry) => PluginConsentSummary.entry(entry, !held.has(entry)))
+      .map((entry) => PluginConsentSummary.entry(entry, !PluginConsentSet.holds(held, entry)))
       .sort((a, b) => PluginConsentSummary.RANK.indexOf(a.risk) - PluginConsentSummary.RANK.indexOf(b.risk) || a.entry.localeCompare(b.entry));
     const sandbox = manifest.sandbox;
     const sandboxConfig = sandbox && typeof sandbox === 'object' ? sandbox : null;
