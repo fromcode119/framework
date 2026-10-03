@@ -65,3 +65,30 @@ describe('PageDocPrefetcher.datasourceQuery', () => {
     expect(Object.fromEntries(PageDocPrefetcher.datasourceQuery(null))).toEqual({ view: 'card' });
   });
 });
+
+describe('PageDocPrefetcher.prefetch', () => {
+  // Every page-scoped prefetch used a bare `fetch` that named no site; on a multi-site deployment the API
+  // refused each one, so no page payload was ever emitted. And a theme without page-derived entries never
+  // prefetched its datasource blocks at all.
+  const doc = { content: [{ id: 'grid-1', type: 'collection', data: { pluginSlug: 'shop', datasourceKey: 'items', limit: 6, filterValues: { tag: 'new' } } }] };
+
+  it('fetches datasource blocks through the site-aware fetch, for a theme with no page entries', async () => {
+    const { ThemeDataPrefetcher } = await import('@/lib/theme/theme-data-prefetcher');
+    const fetchEntry = vi.spyOn(ThemeDataPrefetcher, 'fetchEntry').mockResolvedValue([{ id: 1 }]);
+    const results = await PageDocPrefetcher.prefetch(doc, { ui: {} });
+    expect(fetchEntry).toHaveBeenCalledTimes(1);
+    const url = String(fetchEntry.mock.calls[0][0]);
+    expect(url).toContain('/plugins/shop/items?');
+    expect(url).toContain('tag=new');
+    expect(url).toContain('view=card');
+    expect(results['datasource:grid-1']).toEqual([{ id: 1 }]);
+    fetchEntry.mockRestore();
+  });
+
+  it('leaves a block out when its fetch comes back empty', async () => {
+    const { ThemeDataPrefetcher } = await import('@/lib/theme/theme-data-prefetcher');
+    const fetchEntry = vi.spyOn(ThemeDataPrefetcher, 'fetchEntry').mockResolvedValue(undefined);
+    expect(await PageDocPrefetcher.prefetch(doc, { ui: {} })).toEqual({});
+    fetchEntry.mockRestore();
+  });
+});

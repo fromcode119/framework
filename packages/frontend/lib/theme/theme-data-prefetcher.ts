@@ -39,8 +39,11 @@ export class ThemeDataPrefetcher {
    *
    * Retrying once inside the same render fixes the render that gets cached, which is the only one that
    * matters. A genuinely absent API still degrades to no prefetch, exactly as before.
+   *
+   * Shared with `PageDocPrefetcher`: every server-side prefetch reaches the API through this, so none
+   * can be the one that forgot the tenant or a shared cache.
    */
-  private static async fetchEntry(url: string): Promise<unknown | undefined> {
+  static async fetchEntry(url: string): Promise<unknown | undefined> {
     // THE TENANT, and the reason this whole mechanism was dead. A server-to-server fetch reaches the
     // API as `Host: api:3000`, and on a multi-tenant deployment the API routes by host — so every
     // prefetch resolved no site and was refused. Nothing failed loudly: the payload came back empty,

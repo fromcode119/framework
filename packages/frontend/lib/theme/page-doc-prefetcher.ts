@@ -1,4 +1,3 @@
-import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ApiVersionUtils, LocalizationUtils, RuntimeConstants } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -23,9 +22,15 @@ import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-fro
  *
  * Only anonymous-safe endpoints may be declared (same contract as the static
  * prefetch): the fetch is unauthenticated and the payload lands in shared HTML.
+ *
+ * Every fetch goes through `ThemeDataPrefetcher.fetchEntry`, which names the SITE and never shares a
+ * cache. These used a bare `fetch` with a URL-keyed revalidating cache: on a multi-site deployment the
+ * API could not tell which site asked and refused every one, so no page payload was ever emitted and
+ * every page-scoped consumer fell back to its client fetch — and naming the site with that cache kept
+ * would have served one site's records to another. Datasource blocks are prefetched for every theme,
+ * not only one that also declares page-derived entries.
  */
 export class PageDocPrefetcher {
-  private static readonly CACHE_REVALIDATE_SECONDS = 30;
   private static readonly DEFAULT_MAX_VALUES = 3;
 
   static async prefetch(doc: unknown, theme: Record<string, any>): Promise<Record<string, unknown>> {
@@ -33,7 +38,6 @@ export class PageDocPrefetcher {
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
       : [];
     const pageEntries = apis.filter((entry) => entry?.fromPage && entry.key && entry.pluginSlug);
-    if (!pageEntries.length) return {};
 
     const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
     const results: Record<string, unknown> = {};
@@ -49,15 +53,8 @@ export class PageDocPrefetcher {
         query.set(String(entry.fromPage?.queryParam || '').trim(), values.join(','));
         const apiPath = ServerApiPaths.buildPluginPath(entry.pluginSlug, entry.path || '', query);
         const url = `${internalBase}${ApiVersionUtils.prefix()}${apiPath}`;
-        try {
-          const response = await fetch(url, {
-            next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },
-          } as RequestInit);
-          if (response.ok) results[String(entry.key).trim()] = await response.json();
-          else ResponseDrain.discard(response);
-        } catch {
-          // Non-critical — the theme keeps its client fetch fallback.
-        }
+        const payload = await ThemeDataPrefetcher.fetchEntry(url);
+        if (payload !== undefined) results[String(entry.key).trim()] = payload;
       }),
     );
 
@@ -104,15 +101,8 @@ export class PageDocPrefetcher {
       const query = PageDocPrefetcher.datasourceQuery(data);
 
       const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, datasourceKey, query);
-      try {
-        const response = await fetch(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`, {
-          next: { revalidate: PageDocPrefetcher.CACHE_REVALIDATE_SECONDS },
-        } as RequestInit);
-        if (response.ok) results[key] = await response.json();
-        else ResponseDrain.discard(response);
-      } catch {
-        // Non-critical — the block keeps its client fetch fallback.
-      }
+      const payload = await ThemeDataPrefetcher.fetchEntry(`${internalBase}${ApiVersionUtils.prefix()}${apiPath}`);
+      if (payload !== undefined) results[key] = payload;
     }));
   }
 
