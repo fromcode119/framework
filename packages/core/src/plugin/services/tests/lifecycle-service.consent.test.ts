@@ -183,6 +183,17 @@ describe('nothing of a plugin runs before it is approved', () => {
     expect(manager.db.update).toHaveBeenCalledWith('_system_plugins', { slug: 'shop' }, expect.objectContaining({ capabilities: JSON.stringify(SHOP_CONSENT) }));
   });
 
+  it('an old approval of a plugin that names no hosts carries over as "any host", and it keeps running', async () => {
+    const legacy = { ...SHOP, network: undefined };
+    const saved = { shop: { state: PluginState.ACTIVE, version: '2.0.0', approvedCapabilities: ['hooks', 'network'] } };
+    const { service, manager } = buildService(saved);
+
+    await service.register({ manifest: legacy } as any);
+
+    expect(manager.plugins.get('shop').approvedCapabilities).toEqual(['hooks', 'network', 'network:any']);
+    expect(manager.plugins.get('shop').heldReason).toBeUndefined();
+  });
+
   it('a version that asks for LESS keeps running, and its approval shrinks with it', async () => {
     const saved = { shop: { state: PluginState.ACTIVE, version: '1.0.0', approvedCapabilities: [...SHOP_CONSENT, 'email'] } };
     const { service, manager, registry } = buildService(saved);

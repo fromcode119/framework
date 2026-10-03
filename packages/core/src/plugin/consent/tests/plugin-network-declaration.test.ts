@@ -27,8 +27,11 @@ describe('the hosts a plugin declares', () => {
     expect(PluginNetworkDeclaration.permits(declared, approved, 'collect.elsewhere.example')).toBe(false);
   });
 
-  it('refuse everything when nothing is declared, and allow every host only for an approved "any"', () => {
+  it('treat a plugin that names no hosts as reaching any host, allowed only once that is approved', () => {
+    expect(PluginConsentSet.of(manifest())).toEqual(['hooks', 'network', 'network:any']);
     expect(PluginNetworkDeclaration.permits(manifest(), ['network'], 'api.payments.example')).toBe(false);
+    expect(PluginNetworkDeclaration.permits(manifest(), ['network', 'network:any'], 'api.payments.example')).toBe(true);
+    expect(PluginNetworkDeclaration.permits(manifest({ network: { hosts: [] } }), ['network', 'network:any'], 'api.payments.example')).toBe(false);
     const any = manifest({ network: { any: true, reason: 'Sends each submission to the webhook URL you set.' } });
     expect(PluginNetworkDeclaration.permits(any, ['network'], 'hooks.elsewhere.example')).toBe(false);
     expect(PluginNetworkDeclaration.permits(any, ['network', 'network:any'], 'hooks.elsewhere.example')).toBe(true);

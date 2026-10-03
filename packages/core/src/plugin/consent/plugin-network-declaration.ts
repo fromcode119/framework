@@ -36,8 +36,13 @@ export class PluginNetworkDeclaration {
       .filter((host) => !PluginNetworkDeclaration.HOST_PATTERN.test(host));
   }
 
+  /**
+   * Every host: declared as `any`, or — for a plugin that asks for `network` and names no hosts at all —
+   * assumed, so a plugin written before declarations existed keeps working. Either way it is shown and
+   * approved as "any internet address", the riskiest entry, never granted silently.
+   */
   static allowsAnyHost(manifest: IPluginManifest): boolean {
-    return manifest.network?.any === true;
+    return manifest.network?.any === true || manifest.network === undefined || manifest.network === null;
   }
 
   static anyHostReason(manifest: IPluginManifest): string {
