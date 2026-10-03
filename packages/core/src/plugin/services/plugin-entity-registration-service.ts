@@ -86,6 +86,27 @@ export class PluginEntityRegistrationService {
     return nextCollection;
   }
 
+  /**
+   * The OWNING plugin registered its collection again — its process was swapped for new code. Its
+   * declared fields replace the definitions held since boot (a field turned read-only, relabelled,
+   * given new options), and new ones are added. Fields it no longer declares stay until a restart:
+   * another plugin may have extended this collection, and dropping a field here would hide its data.
+   * Without this, an in-place update kept every changed field definition until the api restarted.
+   */
+  refreshOwnCollectionFields(existing: ICollection, incoming: ICollection): void {
+    const next = [...existing.fields];
+    const indexByName = new Map(next.map((field: IField, index: number) => [field.name, index]));
+    for (const field of incoming.fields) {
+      const index = indexByName.get(field.name);
+      if (index === undefined) next.push(field);
+      else next[index] = field;
+    }
+    // A NEW array, not the old one edited: caches keyed by the fields array (the data processor's
+    // password/array field lists) recompute only for a new identity or length — a field turned into
+    // a password in place would otherwise keep being returned raw.
+    existing.fields = next;
+  }
+
   mergeCollectionFields(existing: ICollection, incoming: ICollection): void {
     const fieldNames = new Set(existing.fields.map((field: IField) => field.name));
     for (const field of incoming.fields) {
