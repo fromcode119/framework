@@ -1023,7 +1023,6 @@
       "resourceLimits": "Ресурси",
       "securityCapabilities": "Сигурност и права",
       "requiresYourApproval": "Изисква вашето одобрение",
-      "systemAccess": "Достъп до {{value}}",
       "standardIsolation": "Стандартна изолация",
       "minimalSystemPermissions": "Минимални системни права",
       "errorCopied": "Грешката е копирана",

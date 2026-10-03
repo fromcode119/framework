@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from 'react';
 
 import { ContextHooks } from '@fromcode119/react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
-import { PluginState } from '@fromcode119/core/client';
+import { PluginConsentSummary, PluginState } from '@fromcode119/core/client';
 import { ThemeHooks } from '@/components/view/use-theme.client';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { NotificationHooks } from '@/components/view/use-notification.client';
@@ -186,7 +186,7 @@ export class PluginDetailPageController {
         setPlugin({
           ...plugin,
           state: status,
-          approvedCapabilities: status === PluginState.ACTIVE ? [...(plugin.manifest.capabilities || [])] : plugin.approvedCapabilities,
+          approvedCapabilities: status === PluginState.ACTIVE ? PluginConsentSummary.of(plugin.manifest).consent : plugin.approvedCapabilities,
         });
         notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.statusUpdated'), `${plugin.manifest.name} is now ${status}.`);
         triggerRefresh();

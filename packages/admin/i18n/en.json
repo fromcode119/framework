@@ -986,7 +986,6 @@
       "resourceLimits": "Resource Limits",
       "securityCapabilities": "Security & Capabilities",
       "requiresYourApproval": "Requires your approval",
-      "systemAccess": "System {{value}} access",
       "standardIsolation": "Standard Isolation",
       "minimalSystemPermissions": "Minimal system permissions",
       "errorCopied": "Error Copied",
