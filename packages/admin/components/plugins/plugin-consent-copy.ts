@@ -36,6 +36,16 @@ export class PluginConsentCopy {
       ?? { title: AdminI18n.t('plugins.consent.entry.unknown.title', { entry: entry.entry }), detail: AdminI18n.t('plugins.consent.entry.unknown.detail') };
   }
 
+  /** An approval entry as the dialog names it — for entries the summary lists bare, such as dropped ones. */
+  static titleOfEntry(entry: string): string {
+    const hostPrefix = 'network:host:';
+    if (entry.startsWith(hostPrefix)) {
+      return PluginConsentCopy.of({ entry, kind: PluginConsentCopy.HOST, host: entry.slice(hostPrefix.length), risk: '', isNew: false }, '').title;
+    }
+    const kind = entry === 'network:any' ? PluginConsentCopy.ANY_HOST : 'capability';
+    return PluginConsentCopy.of({ entry, kind, host: '', risk: '', isNew: false }, '').title;
+  }
+
   private static capabilities(): Map<string, IPluginConsentCopy> {
     return new Map<string, IPluginConsentCopy>([
     ['api', { title: AdminI18n.t('plugins.consent.entry.api.title'), detail: AdminI18n.t('plugins.consent.entry.api.detail') }],

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentCopy } from '@/components/plugins/plugin-consent-copy';
 
 /** What else approving the plugin means: where it runs, what it creates, where it shows up. */
 export class PluginConsentFacts extends PureReactor {
@@ -22,7 +23,7 @@ export class PluginConsentFacts extends PureReactor {
         </ul>
         {summary.dropped.length ? (
           <p className="text-[13px] text-slate-600 dark:text-slate-400">
-            {AdminI18n.t('plugins.consent.dropped', { entries: summary.dropped.join(', ') })}
+            {AdminI18n.t('plugins.consent.dropped', { entries: summary.dropped.map((entry) => PluginConsentCopy.titleOfEntry(entry)).join('; ') })}
           </p>
         ) : null}
         {summary.invalidHosts.length ? (

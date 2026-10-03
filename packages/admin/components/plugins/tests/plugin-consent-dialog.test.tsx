@@ -49,6 +49,13 @@ describe('the plugin consent dialog', () => {
     expect(screen.getByText(/Sends each label to the address you set\./)).toBeTruthy();
   });
 
+  it('names what the plugin no longer asks for in the same words, never as raw entries', () => {
+    mount({ summary: summary({ dropped: ['network:host:old.courier.example', 'email'] }) });
+
+    expect(screen.getByText(/It no longer asks for: Connects to old\.courier\.example; Sends email\./)).toBeTruthy();
+    expect(screen.queryByText(/network:host:/)).toBeNull();
+  });
+
   it('keeps Approve disabled until the operator confirms they read it', () => {
     mount({ summary: summary() });
     const approve = screen.getByRole('button', { name: /Approve and turn on/ });
