@@ -138,7 +138,17 @@ html.dark {
     background: var(--fc-canvas);
     color: var(--fc-text);
     font-family: var(--fc-font-body);
+    /* The console is `lang="bg"` for a Bulgarian reader, and the system UI font answers that with its
+       Bulgarian locale glyphs ("д" drawn like "g", "т" like "m"), which read as broken type in an
+       interface. The language stays declared (screen readers, hyphenation); only the locale glyph
+       substitution is off, so Cyrillic renders in its standard upright forms. */
+    font-feature-settings: "locl" 0;
   }
+}
+
+/* A site theme's block preview shows the site's own typography, locale glyphs included. */
+[data-fc-theme-surface] {
+  font-feature-settings: normal;
 }
 
 @layer components {
