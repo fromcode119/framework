@@ -185,8 +185,8 @@ export class LifecycleService {
   /**
    * What an active plugin needs after a hot update put new code in place: its tables synced to the
    * collections the new code declares, and the default pages its contracts require created. Enabling and
-   * booting both did this; a hot update only synced tables, so a release adding a required page (ecommerce's
-   * `/cart` and `/checkout`) answered 404 on every site until the api was next restarted.
+   * booting both did this; a hot update only synced tables, so a release adding a required page answered
+   * 404 on every site until the api was next restarted.
    */
   async refreshAfterHotUpdate(slug: string): Promise<void> {
     await this.activation.syncPluginCollections(slug);
