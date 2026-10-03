@@ -26,8 +26,8 @@ describe('ThemeRenderHostPool superseded worlds', () => {
   });
   afterEach(() => vi.restoreAllMocks());
 
-  const render = (siteId: string, signature: string) => ThemeRenderHostPool.render({
-    generation: { signature } as any, settings: { generationCap: 5 } as any, frontendDir: '', boot: {} as any, request: {} as any, siteId,
+  const render = (siteId: string, signature: string, cap = 5) => ThemeRenderHostPool.render({
+    generation: { signature } as any, settings: { generationCap: cap } as any, frontendDir: '', boot: {} as any, request: {} as any, siteId,
   });
 
   it('retires the world a site leaves once no site renders with it', async () => {
@@ -51,5 +51,15 @@ describe('ThemeRenderHostPool superseded worlds', () => {
     await render('shop', 'v1');
     expect(started.map((host) => host.signature)).toEqual(['v1', 'v2']);
     expect(started[1].retired).toBe(false);
+  });
+
+  it('at the cap, an update retires its own old world instead of evicting another site', async () => {
+    await render('a', 'a1', 2);
+    await render('b', 'b1', 2);
+    await render('a', 'a1', 2); // site a was served last, so b is the least recently used
+    await render('a', 'a2', 2);
+    const state = Object.fromEntries(started.map((host) => [host.signature, host.retired]));
+    expect(state).toEqual({ a1: true, b1: false, a2: false });
+    expect([...pool.hosts.keys()].sort()).toEqual(['a2', 'b1']);
   });
 });

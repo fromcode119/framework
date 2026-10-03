@@ -58,8 +58,11 @@ export class ThemeRenderHostPool {
       if (!ThemeRenderHostPool.births.has(key)) ThemeRenderHostPool.births.set(key, ++ThemeRenderHostPool.born);
       pending = ThemeRenderHostPool.start(generation, settings, frontendDir, boot);
       ThemeRenderHostPool.hosts.set(key, pending);
-      ThemeRenderHostPool.evictAbove(settings.generationCap, key);
       host = await pending;
+      // Retire the world this site leaves BEFORE trimming to the cap: trimming first counted the
+      // superseded world as resident and evicted another site's live one in its place.
+      if (host) ThemeRenderHostPool.moveSite(siteId, key);
+      ThemeRenderHostPool.evictAbove(settings.generationCap, key);
     }
     if (!host) return null;
     ThemeRenderHostPool.moveSite(siteId, key);
