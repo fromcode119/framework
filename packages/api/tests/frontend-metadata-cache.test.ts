@@ -105,7 +105,7 @@ describe('SystemController.getFrontendMetadata with the site parts kept', () => 
       getPublicFrontendPluginSettings: vi.fn().mockResolvedValue({}),
       db: { findOne: vi.fn().mockResolvedValue(null), find: vi.fn().mockResolvedValue([]), withPlatformAdmin: (work: () => unknown) => work() },
     };
-    const controller = new SystemController(manager, { getFrontendMetadata: vi.fn().mockResolvedValue({ activeTheme: null }) } as any, {} as any, {} as any);
+    const controller = new SystemController(manager, { getFrontendMetadata: vi.fn().mockResolvedValue({ activeTheme: null }), getThemes: vi.fn().mockReturnValue([]) } as any, {} as any, {} as any);
     const metadataController = (controller as any).metadata ?? controller;
     return { manager, controller, metadataController };
   };

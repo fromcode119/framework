@@ -31,6 +31,7 @@ describe('plugins offered to sites', () => {
   const managerWith = (db: any, plugins: Record<string, string>) => ({
     db,
     materializeDefaultPages: async () => { materialized += 1; },
+    consentSummary: () => null,
     plugins: new Map(Object.entries(plugins).map(([slug, state]) => [slug, { state, manifest: { slug, name: slug.toUpperCase(), version: '1.0.0', description: `${slug} plugin` } }])),
   } as any);
   const request = (tenantId: string | null, slug = '', body: Record<string, unknown> = {}) => ({ params: { slug }, body, query: {}, ...(tenantId ? { tenantId } : {}) } as any);
