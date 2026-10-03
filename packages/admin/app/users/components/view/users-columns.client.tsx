@@ -19,7 +19,7 @@ export class UsersColumns {
     return Array.isArray(user.roles) ? user.roles : [];
   }
 
-  static build(theme: ThemeMode): any[] {
+  static build(theme: ThemeMode, roleNames: Record<string, string> = {}): any[] {
     return [
       {
         header: AdminI18n.t('users.user'),
@@ -45,7 +45,7 @@ export class UsersColumns {
           <div className="flex flex-wrap gap-1">
             {UsersColumns.getRoles(user).map(role => (
               <Badge key={role} variant={role === 'admin' ? 'purple' : 'blue'} className="font-bold tracking-tight">
-                {role}
+                {roleNames[role] || role}
               </Badge>
             ))}
           </div>

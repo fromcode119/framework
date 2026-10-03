@@ -25,6 +25,8 @@ export class UsersPage extends AdminComponent {
   @state users: IUser[] = [];
   @state loading = true;
   @state stats: { total: number; active: number; roles: number } = { total: 0, active: 0, roles: 0 };
+  /** role slug → the name the operator gave it under Roles; the list shows names, never slugs. */
+  @state roleNames: Record<string, string> = {};
   @state deleteConfirm: IUser | null = null;
   @state isDeleting = false;
   /** Current page of the client-side user table. */
@@ -45,9 +47,13 @@ export class UsersPage extends AdminComponent {
 
   private async fetchUsers(): Promise<void> {
     try {
-      const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS);
+      const [response, roles] = await Promise.all([
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.USERS),
+        AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.ROLES).catch(() => []),
+      ]);
       const userData = response.docs || [];
       if (!this.mounted) return;
+      this.roleNames = Object.fromEntries((Array.isArray(roles) ? roles : []).map((role: any) => [String(role?.slug ?? ''), String(role?.name ?? '').trim()]).filter(([slug, name]) => slug && name));
       this.loadError = '';
 
       // Stats based on real RBAC data
@@ -112,7 +118,7 @@ export class UsersPage extends AdminComponent {
   }
 
   private get columns(): any[] {
-    return UsersColumns.build(this.theme);
+    return UsersColumns.build(this.theme, this.roleNames);
   }
 
   render(): ReactElement {

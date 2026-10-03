@@ -14,7 +14,8 @@
       "download": "Download",
       "downloadItem": "Download {{title}}",
       "open": "Open",
-      "openItem": "Open {{title}}"
+      "openItem": "Open {{title}}",
+      "all": "All"
     }
   }
 }

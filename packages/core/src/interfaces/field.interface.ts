@@ -18,7 +18,8 @@ export interface IField {
   /**
    * The plugin that added this field to another plugin's collection (`context.collections.extend`), set
    * by the framework. Its label and description are that plugin's to translate (`admin.extendedFields`),
-   * since the owner of the collection has no words for a field it never declared.
+   * since the owner of the collection has no words for a field it never declared. `'system'` marks a
+   * field the framework adds itself (archive fields), whose words are the console's.
    */
   extendedBy?: string;
   localized?: boolean;

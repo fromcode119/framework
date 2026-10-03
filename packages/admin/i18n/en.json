@@ -269,7 +269,17 @@
     "notCreatedByHand": "{{title}} are not created by hand",
     "backTo": "Back to {{title}}",
     "roleLacksCreate": "Your role does not include adding {{name}}.",
-    "structuredValue": "value"
+    "structuredValue": "value",
+    "systemFields": {
+      "archivedAt": {
+        "label": "Archived",
+        "description": "Set by Archive, cleared by Restore. Archived records are left out of every list, report and storefront page."
+      },
+      "archivedWith": {
+        "label": "Archived with",
+        "description": "The record whose archiving took this one along. Restoring that record restores this one."
+      }
+    }
   },
   "common": {
     "active": "Active",

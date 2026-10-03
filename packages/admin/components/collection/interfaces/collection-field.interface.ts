@@ -4,6 +4,8 @@ import { FieldPosition } from '@fromcode119/core/client';
 export interface ICollectionField {
   name: string;
   label?: string;
+  /** Who added the field to this collection — a plugin slug, or `system` for the framework (see `IField.extendedBy`). */
+  extendedBy?: string;
   type: string;
   localized?: boolean;
   required?: boolean;
