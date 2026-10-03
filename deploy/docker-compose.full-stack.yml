@@ -539,7 +539,11 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
+          # A plugin or theme update builds a fresh render world beside the live one and retires the old one
+          # about a minute later, so the storefront briefly holds two. At 512M it ran at its ceiling (the
+          # cgroup's peak equalled the limit, thousands of limit hits) and a swap could kill it — every site
+          # down until it restarts.
+          memory: 1G
 
   # Runs once, before the database, and usually does nothing.
   #
