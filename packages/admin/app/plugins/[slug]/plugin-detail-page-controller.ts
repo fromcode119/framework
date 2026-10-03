@@ -22,6 +22,8 @@ import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plu
 import { PluginDetailPageService } from '@/app/plugins/[slug]/plugin-detail-page-service';
 import { PluginAssetLoaderService } from '@/app/services/plugin-asset-loader-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentRequest } from '@/components/plugins/plugin-consent-request';
+import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 
 export class PluginDetailPageController {
   static useModel(slug: string): IPluginDetailPageModel {
@@ -56,6 +58,9 @@ export class PluginDetailPageController {
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [sandboxSettings, setSandboxSettings] = useState<IPluginSandboxSettings>(PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS);
     const [isolationDefaults, setIsolationDefaults] = useState<{ memoryMb: number; timeoutMs: number } | null>(null);
+    // Turning on a plugin that asks for anything not approved opens the consent dialog instead.
+    const [consentSlugs, setConsentSlugs] = useState<string[]>([]);
+    const [consentInitial, setConsentInitial] = useState<IPluginConsentSummary | null>(null);
     const { theme } = ThemeHooks.useTheme();
 
     useEffect(() => {
@@ -186,6 +191,8 @@ export class PluginDetailPageController {
         notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.statusUpdated'), `${plugin.manifest.name} is now ${status}.`);
         triggerRefresh();
       } catch (error: any) {
+        const consent = PluginConsentRequest.fromError(error);
+        if (consent) { setConsentInitial(consent); setConsentSlugs([consent.slug]); return; }
         console.error('[PluginDetailPage] Toggle error:', error);
         notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.toggleFailed'), error.message || AdminI18n.t('plugins.detail.failedToUpdatePluginState'));
       }
@@ -244,7 +251,17 @@ export class PluginDetailPageController {
       router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     };
 
+    const consentFinished = async () => {
+      setConsentSlugs([]);
+      setConsentInitial(null);
+      setPlugin((await PluginDetailPageService.fetchPlugin(slug)) || plugin);
+      triggerRefresh();
+    };
+
     return {
+      consentSlugs,
+      consentInitial,
+      consentFinished,
       activeTab,
       siteScope: siteScope === true,
       fetchLogs,

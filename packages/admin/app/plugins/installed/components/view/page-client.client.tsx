@@ -15,6 +15,8 @@ import type { IInstalledPluginMarketplaceItem } from '@/app/plugins/installed/in
 import type { IInstalledPluginsPageClientState } from '@/app/plugins/installed/interfaces/installed-plugins-page-client-state.interface';
 import type { IInstalledPluginsPageHost } from '@/app/plugins/installed/interfaces/installed-plugins-page-host.interface';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
+import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 
 export class InstalledPluginsPageClient
   extends AdminComponent
@@ -53,6 +55,9 @@ export class InstalledPluginsPageClient
   @state uploadPreviewSections: IUploadPreviewSection[] = [];
   @state operationStatus: IPluginInstallOperation | null = null;
   @state imageErrors: Record<string, boolean> = {};
+  @state pendingUploadSlug: string | null = null;
+  @state consentSlugs: string[] = [];
+  @state consentInitial: IPluginConsentSummary | null = null;
 
   get notify(): INotificationContextType {
     return this.runtime.notify;
@@ -108,6 +113,9 @@ export class InstalledPluginsPageClient
 
   render(): ReactNode {
     return (
+      <>
+      <PluginConsentHost slugs={this.consentSlugs} initial={this.consentInitial}
+        onApproved={() => undefined} onFinished={() => void this.actions.consentFinished()} />
       <InstalledPluginsView
         canManage={this.canManage}
         siteScope={this.siteScope}
@@ -125,7 +133,7 @@ export class InstalledPluginsPageClient
         dependencyIssues={this.dependencyIssues}
         failedPluginsCount={InstalledPluginsPageController.countFailed(this.plugins)}
         heldPluginsCount={InstalledPluginsPageController.countHeld(this.plugins)}
-        onReapproveAll={() => this.actions.reapproveAll()}
+        onReapproveAll={async () => this.actions.reapproveAll()}
         filteredPlugins={InstalledPluginsPageController.filterPlugins(this.plugins, this.searchQuery)}
         fileInputRef={this.fileInputRef}
         handleDragLeave={(event) => {
@@ -187,6 +195,7 @@ export class InstalledPluginsPageClient
         uploadPreviewSections={this.uploadPreviewSections}
         uploadPreviewTitle={this.uploadPreviewTitle}
       />
+      </>
     );
   }
 }

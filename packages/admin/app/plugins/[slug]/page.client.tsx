@@ -6,6 +6,7 @@ import { PluginDetailView } from '@/app/plugins/[slug]/components/view/plugin-de
 import { PluginDetailPageController } from '@/app/plugins/[slug]/plugin-detail-page-controller';
 import type { IPluginDetailPageValues } from '@/app/plugins/[slug]/interfaces/plugin-detail-page-values.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
 
 /** Hook→class bridge: reads the route param + page model, then renders the hook-free detail view. */
 export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
@@ -28,6 +29,9 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
     if (!model.plugin) return null;
 
     return (
+      <>
+      <PluginConsentHost slugs={model.consentSlugs} initial={model.consentInitial}
+        onApproved={() => undefined} onFinished={() => void model.consentFinished()} />
       <PluginDetailView
         activeTab={model.activeTab}
         isDeleting={model.isDeleting}
@@ -63,6 +67,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         siteScope={model.siteScope}
         slug={slug}
       />
+      </>
     );
   }
 }

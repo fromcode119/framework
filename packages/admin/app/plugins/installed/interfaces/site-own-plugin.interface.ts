@@ -6,4 +6,6 @@ export interface ISiteOwnPlugin extends ISitePluginOffer {
   running: boolean;
   /** Why it is not running, when the server stopped it (a crash loop, a resource limit); '' otherwise. */
   error: string;
+  /** Placed, but waiting for this site's admin to approve what it asks for. */
+  needsApproval: boolean;
 }

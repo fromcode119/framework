@@ -1109,7 +1109,6 @@
       "failedToConnectToThe": "Failed to connect to the marketplace.",
       "updateStarted": "Update Started",
       "installationStarted": "Installation Started",
-      "pluginVIsInstalledAnd": "Plugin \"{{pluginSlug}}\" v{{version}} is installed and active.",
       "failedToInstallPlugin": "Failed to install plugin.",
       "notSaved": "Not saved: {{message}}",
       "notSavedCorrect": "Not saved — correct: {{join}}",
@@ -1293,7 +1292,10 @@
       "defaultDescription": "Manage and configure your {{name}} tools.",
       "ownPluginsQuota": "Only this site runs it, in its own process, with no database schema, network or admin screens. This site holds {{plugins}} of {{maxPlugins}} plugins, {{used}} of {{max}} MB — limits the platform sets.",
       "resetFailed": "Failed to reset: {{reason}}",
-      "importFailed": "Import failed: {{reason}}"
+      "importFailed": "Import failed: {{reason}}",
+      "awaitingApproval": "Waiting for approval",
+      "reviewAndApprove": "Review and approve",
+      "waitsForYourApproval": "Placed, and waiting for your approval of what it asks for."
     },
     "upload": {
       "name": "Name: {{value}}",
@@ -1311,7 +1313,172 @@
       "failed": "Upload failed.",
       "installTitle": "Install plugin \"{{name}}\"?",
       "package": "package",
-      "review": "Review package contents before continuing."
+      "review": "Review package contents before continuing.",
+      "permissions": "What it will ask you to approve",
+      "noPermissions": "It asks for no permissions."
+    },
+    "consent": {
+      "title": "Approve \"{{name}}\" {{version}}",
+      "description": "Nothing of this plugin runs until you approve it. Read what it will be able to do.",
+      "overview": "It asks for {{total}} permissions: {{high}} high risk, {{medium}} medium, {{low}} low.",
+      "overviewNew": "{{count}} of them are new.",
+      "nothing": "It asks for no permissions.",
+      "new": "New",
+      "risk": {
+        "high": "High risk",
+        "medium": "Medium risk",
+        "low": "Low risk"
+      },
+      "acknowledge": "I understand what \"{{name}}\" will be able to do.",
+      "approve": "Approve and turn on",
+      "changed": "The plugin's request changed since you opened this. Review it again.",
+      "failed": "The plugin could not be approved.",
+      "approved": "Plugin approved",
+      "approvedText": "{{slug}} is approved and on.",
+      "dropped": "It no longer asks for: {{entries}}.",
+      "invalidHosts": "These listed hosts are not valid addresses, so it can never reach them: {{hosts}}.",
+      "facts": {
+        "heading": "What else approving it means",
+        "isolated": "Runs in its own process, apart from the platform.",
+        "isolatedLimits": "Runs in its own process, with {{memory}} MB of memory and {{timeout}} ms per call.",
+        "shared": "Runs inside the platform's own process, with no separation.",
+        "tables": "Creates its own data: {{tables}}.",
+        "noTables": "Creates no data collections of its own.",
+        "adminScreens": "Adds screens to this console.",
+        "storefrontCode": "Adds code to the pages visitors see.",
+        "storefrontWidgets": "Places {{count}} sandboxed frames on the storefront."
+      },
+      "entry": {
+        "api": {
+          "title": "Adds its own API endpoints",
+          "detail": "Answers requests at addresses under its own name."
+        },
+        "apiRoutes": {
+          "title": "Adds its own API routes",
+          "detail": "Answers requests at addresses under its own name."
+        },
+        "admin": {
+          "title": "Adds console screens",
+          "detail": "Shows its own pages and menus to admins."
+        },
+        "content": {
+          "title": "Reads and changes site content",
+          "detail": "Pages, posts and media of the sites that run it."
+        },
+        "database": {
+          "title": "Stores data in its own tables",
+          "detail": "Reads and writes the tables it creates, for each site that runs it."
+        },
+        "databaseRead": {
+          "title": "Reads its own tables",
+          "detail": "Reads the tables it creates."
+        },
+        "databaseWrite": {
+          "title": "Writes to its own tables",
+          "detail": "Creates, changes and deletes rows in the tables it creates."
+        },
+        "databaseSchema": {
+          "title": "Changes the shape of its tables",
+          "detail": "Adds and alters columns in its own tables."
+        },
+        "databaseRaw": {
+          "title": "Runs database queries it writes itself",
+          "detail": "Sends its own SQL to its own tables. Approve only a plugin you trust."
+        },
+        "databaseSchemaCrossPlugin": {
+          "title": "Changes other plugins' tables",
+          "detail": "Alters the shape of tables that another plugin owns."
+        },
+        "databaseAll": {
+          "title": "Full control of its database tables",
+          "detail": "Every database permission, including its own queries and schema changes."
+        },
+        "email": {
+          "title": "Sends email",
+          "detail": "Sends messages to people from the platform's mail account."
+        },
+        "filesystemRead": {
+          "title": "Reads files on the server",
+          "detail": "Reads files stored on the server."
+        },
+        "filesystemWrite": {
+          "title": "Writes files on the server",
+          "detail": "Creates and changes files on the server."
+        },
+        "frontend": {
+          "title": "Runs code on the storefront",
+          "detail": "Adds scripts and styles to the pages visitors see."
+        },
+        "hooks": {
+          "title": "Reacts to platform events",
+          "detail": "Runs when orders, sign-ups and other events happen."
+        },
+        "i18n": {
+          "title": "Adds translations",
+          "detail": "Ships its text in more languages."
+        },
+        "integrations": {
+          "title": "Uses connected services",
+          "detail": "Uses the integrations an admin set up in Settings."
+        },
+        "integration": {
+          "title": "Plugs into the {{name}} integration",
+          "detail": "Provides or uses a service of that type in Settings, Integrations."
+        },
+        "network": {
+          "title": "Connects to the internet",
+          "detail": "Only to the hosts listed here."
+        },
+        "pluginsInteract": {
+          "title": "Works with other plugins",
+          "detail": "Calls functions that other installed plugins offer."
+        },
+        "extensionsManage": {
+          "title": "Installs and removes extensions",
+          "detail": "Changes which plugins and themes are installed."
+        },
+        "cache": {
+          "title": "Uses the cache",
+          "detail": "Keeps short-lived copies of data to answer faster."
+        },
+        "jobs": {
+          "title": "Runs background jobs",
+          "detail": "Queues work to finish after a request returns."
+        },
+        "scheduler": {
+          "title": "Runs on a schedule",
+          "detail": "Starts tasks at set times, such as daily reports."
+        },
+        "redisGlobal": {
+          "title": "Shares data across all sites",
+          "detail": "Reads and writes a store that every site on the platform uses."
+        },
+        "settings": {
+          "title": "Keeps its own settings",
+          "detail": "Stores the options an admin sets on its settings page."
+        },
+        "storage": {
+          "title": "Stores files",
+          "detail": "Saves and reads files in the site's media storage."
+        },
+        "everything": {
+          "title": "Everything",
+          "detail": "Every permission the platform has. Approve only a plugin you fully trust."
+        },
+        "host": {
+          "title": "Connects to {{host}}",
+          "detail": "Sends data to this address and receives its answers."
+        },
+        "anyHost": {
+          "title": "Connects to any internet address",
+          "detail": "The plugin says why: {{reason}}",
+          "noReason": "The plugin gives no reason."
+        },
+        "unknown": {
+          "title": "Uses \"{{entry}}\"",
+          "detail": "A permission this console has no description for."
+        }
+      }
     }
   },
   "settings": {

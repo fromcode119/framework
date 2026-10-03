@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
-import { PluginHeldReason, PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
+import { PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
+import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -26,7 +27,7 @@ export class InstalledPluginCard extends PureReactor {
     const { canManage, hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this;
     const hasRuntimeError = Boolean(plugin.error) || plugin.state === PluginState.ERROR;
     const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
-    const heldLabel = plugin.heldReason === PluginHeldReason.CAPABILITY_DRIFT ? AdminI18n.t('plugins.list.needsReApproval') : AdminI18n.t('plugins.list.held');
+    const heldLabel = PluginHeldLabel.of(plugin.heldReason);
     const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
     const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
     const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');

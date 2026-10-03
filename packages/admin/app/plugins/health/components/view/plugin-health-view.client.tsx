@@ -5,7 +5,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { PluginHeldReason } from '@fromcode119/core/client';
+import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { IPluginHealthEntry } from '@/app/plugins/health/interfaces/plugin-health-entry.interface';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import { AdminClass } from '@/lib/admin-class';
@@ -102,9 +102,7 @@ export class PluginHealthView extends PureReactor {
                 {this.report.held.map((entry) => {
                   const drift = this.drift(entry);
                   // `entry` is API JSON, so `heldReason` is a raw string here — resolve before comparing.
-                  const heldLabel = PluginHeldReason.resolve(entry.heldReason) === PluginHeldReason.CAPABILITY_DRIFT
-                    ? AdminI18n.t('plugins.list.needsReApproval')
-                    : AdminI18n.t('plugins.list.held');
+                  const heldLabel = PluginHeldLabel.of(entry.heldReason);
                   return (
                     <div key={entry.slug} className={`flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
                       <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-amber-500/10 text-amber-400 ring-1 ring-amber-500/20' : 'bg-amber-50 text-amber-600 ring-1 ring-amber-100'}`}><FrameworkIcons.Shield size={18} strokeWidth={1.5} /></div>

@@ -8,6 +8,7 @@ import { PluginHealthView } from '@/app/plugins/health/components/view/plugin-he
 import { PluginHealthPageController } from '@/app/plugins/health/plugin-health-page-controller';
 import type { IPluginHealthReport } from '@/app/plugins/health/interfaces/plugin-health-report.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
 
 export class PluginHealthPageClient extends AdminComponent {
   private mounted = false;
@@ -17,6 +18,8 @@ export class PluginHealthPageClient extends AdminComponent {
   @state report: IPluginHealthReport | null = null;
   @state isBusy = false;
   @state busySlug: string | null = null;
+  /** Plugins whose consent dialog is showing or queued. */
+  @state consentSlugs: string[] = [];
 
   /** The registry being reported on is the shared container's, not this site's. */
   private get canManagePlatform(): boolean {
@@ -58,24 +61,9 @@ export class PluginHealthPageClient extends AdminComponent {
     }
   }
 
-  private async approveEnable(slug: string): Promise<void> {
-    const { notify } = this.runtime.notify;
-    const triggerRefresh = this.runtime.plugins?.triggerRefresh;
-    this.isBusy = true;
-    this.busySlug = slug;
-    try {
-      await PluginHealthPageController.approveEnable(slug);
-      notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginApproved'), AdminI18n.t('plugins.list.hasBeenReApprovedAnd', { slug: slug }));
-      await this.fetchReport();
-      triggerRefresh?.();
-    } catch (error: any) {
-      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.approvalFailed'), error.message);
-    } finally {
-      if (this.mounted) {
-        this.isBusy = false;
-        this.busySlug = null;
-      }
-    }
+  /** Approving a held plugin is the consent dialog's job: it shows what the plugin asks for first. */
+  private approveEnable(slug: string): void {
+    this.consentSlugs = [slug];
   }
 
   private async loadInstalled(slug: string): Promise<void> {
@@ -101,24 +89,15 @@ export class PluginHealthPageClient extends AdminComponent {
     }
   }
 
-  private async reapproveAll(): Promise<void> {
-    const { notify } = this.runtime.notify;
-    const triggerRefresh = this.runtime.plugins?.triggerRefresh;
-    this.isBusy = true;
-    try {
-      const failed = await PluginHealthPageController.reapproveAll();
-      if (failed.length > 0) {
-        notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalIncomplete'), PluginHealthPageController.reapprovalFailureMessage(failed));
-      } else {
-        notify(NotificationType.SUCCESS, AdminI18n.t('plugins.list.pluginsReApproved'), AdminI18n.t('plugins.list.allHeldPluginsHaveBeen'));
-      }
-      await this.fetchReport();
-      triggerRefresh?.();
-    } catch (error: any) {
-      notify(NotificationType.ERROR, AdminI18n.t('plugins.list.reApprovalFailed'), error.message);
-    } finally {
-      if (this.mounted) this.isBusy = false;
-    }
+  /** One consent dialog per held plugin, in turn. */
+  private reapproveAll(): void {
+    this.consentSlugs = (this.report?.held || []).map((entry) => entry.slug);
+  }
+
+  private consentFinished(): void {
+    this.consentSlugs = [];
+    void this.fetchReport();
+    this.runtime.plugins?.triggerRefresh?.();
   }
 
   render(): ReactNode {
@@ -131,16 +110,19 @@ export class PluginHealthPageClient extends AdminComponent {
     const { loading, report, isBusy, busySlug } = this;
 
     return (
+      <>
+      <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => this.consentFinished()} />
       <PluginHealthView
         loading={loading}
         report={report}
         isBusy={isBusy}
         busySlug={busySlug}
-        onApproveEnable={(slug) => this.approveEnable(slug)}
-        onReapproveAll={() => this.reapproveAll()}
+        onApproveEnable={async (slug) => this.approveEnable(slug)}
+        onReapproveAll={async () => this.reapproveAll()}
         onLoadInstalled={(slug) => this.loadInstalled(slug)}
         theme={this.theme}
       />
+      </>
     );
   }
 }

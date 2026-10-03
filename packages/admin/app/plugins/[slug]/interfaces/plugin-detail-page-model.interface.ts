@@ -1,3 +1,4 @@
+import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { RefObject } from 'react';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
@@ -9,6 +10,10 @@ import type { IPluginMarketplaceItem } from '@/app/plugins/[slug]/interfaces/plu
 import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plugin-sandbox-settings.interface';
 
 export interface IPluginDetailPageModel {
+  /** The consent dialog for this plugin, when turning it on needs an approval first. */
+  consentSlugs: string[];
+  consentInitial: IPluginConsentSummary | null;
+  consentFinished: () => Promise<void>;
   activeTab: PluginDetailTab;
   /** The operator is standing in a site: the platform's controls for this plugin are not offered here. */
   siteScope: boolean;

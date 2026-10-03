@@ -19,6 +19,7 @@ import { MarketplaceEmptyState } from '@/app/plugins/marketplace/components/view
 import { state } from '@fromcode119/react-class-components';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
@@ -32,6 +33,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   @state updateAllProgress = '';
   @state searchQuery = '';
   @state imageErrors: Record<string, boolean> = {};
+  @state consentSlugs: string[] = [];
 
   /** Installing code onto the shared container is the platform's act, never a site's. */
   private get canManagePlatform(): boolean {
@@ -119,6 +121,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
       }
       await this.fetchData(true);
       notify(NotificationType.SUCCESS, isUpdate ? AdminI18n.t('plugins.list.updateComplete') : AdminI18n.t('plugins.list.installationComplete'), AdminI18n.t(isUpdate ? 'plugins.list.wasUpdated' : 'plugins.list.wasInstalled', { slug, targetVersion }));
+      this.consentSlugs = [slug]; // whatever it asks for that nobody approved yet waits for this dialog
     } catch (err: any) {
       console.error('[Marketplace] Installation failed:', err);
       notify(NotificationType.ERROR, isUpdate ? AdminI18n.t('plugins.list.updateFailed') : AdminI18n.t('plugins.list.installationFailed'), err.message || AdminI18n.t(isUpdate ? 'plugins.list.failedToUpdate' : 'plugins.list.failedToInstall'));
@@ -220,6 +223,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
     return (
       <div className="space-y-4 animate-in fade-in duration-500">
+        <PluginConsentHost slugs={this.consentSlugs} onApproved={() => undefined} onFinished={() => { this.consentSlugs = []; void this.fetchData(true); }} />
         <MarketplaceSearchBar
           theme={theme}
           searchQuery={searchQuery}
