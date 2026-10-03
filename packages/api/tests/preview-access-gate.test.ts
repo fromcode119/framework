@@ -113,6 +113,7 @@ describe('preview access gate', () => {
         matchesReadConstraints: vi.fn().mockReturnValue(true),
         // The real rule: with no role grants wired it is exactly the preview rule under test.
         seesUnpublished: (collection: any, req: any) => new CollectionAccessPolicyService().seesUnpublished(collection, req),
+        readsEverything: (collection: any, req: any) => new CollectionAccessPolicyService().readsEverything(collection, req),
       },
       localization: { getLocaleContext: vi.fn().mockResolvedValue({}) },
       processor: { filterHiddenFields: vi.fn((_collection: any, rows: any) => rows) },
@@ -163,6 +164,16 @@ describe('preview access gate', () => {
         .find(collection, { query: { preview: '1', draft: '1' } } as any, res);
 
       expect(runtime.db.eq).toHaveBeenCalledWith(expect.anything(), 'published');
+    });
+
+    it('find keeps the published-only filter when an anonymous caller asks for ?status=draft', async () => {
+      const runtime = buildRuntime({});
+      const res: any = { json: vi.fn(), status: vi.fn().mockReturnThis() };
+
+      await new RestReadController(runtime as any).find(collection, { query: { status: 'draft' } } as any, res);
+
+      expect(runtime.db.eq).toHaveBeenCalledWith(expect.anything(), 'published');
+      expect(runtime.db.eq).not.toHaveBeenCalledWith(expect.anything(), 'draft');
     });
 
     it('find drops the published-only filter for an admin session', async () => {

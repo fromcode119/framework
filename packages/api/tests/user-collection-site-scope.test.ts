@@ -69,6 +69,8 @@ function controllerOver(db: any) {
     ensureCreateAllowed: vi.fn(async () => undefined),
     ensureUpdateAllowed: vi.fn(async () => undefined),
     ensureDeleteAllowed: vi.fn(async () => undefined),
+    readsEverything: vi.fn(async () => true),
+    ensureReadsEverything: vi.fn(async () => undefined),
   };
   runtime.logger = { info: vi.fn(), warn: vi.fn(), error: vi.fn(), debug: vi.fn() };
   runtime.fieldGuard = {

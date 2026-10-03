@@ -8,7 +8,7 @@ import { RestReadController } from '@api/controllers/rest/rest-read-controller';
  */
 const controllerThrowing = (error: Error & { statusCode?: number }) => {
   const logger = { error: vi.fn(), debug: vi.fn(), warn: vi.fn(), info: vi.fn() };
-  const runtime: any = { logger, accessPolicy: { resolveReadConstraints: async () => { throw error; } } };
+  const runtime: any = { logger, accessPolicy: { resolveReadConstraints: async () => { throw error; }, readsEverything: async () => false } };
   return { controller: new RestReadController(runtime), logger };
 };
 const collection: any = { slug: 'fcp_example_lists', fields: [] };

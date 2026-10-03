@@ -5,6 +5,7 @@ import { QueryHelper } from '@api/services/query-helper';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { CollectionArchiveReadClause } from '@api/services/collection-archive-read-clause';
+import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { CoercionUtils, CollectionArchive } from '@fromcode119/core';
 
@@ -29,9 +30,12 @@ export class RestReadController {
       // lift this default filter on its own, which handed every draft to any anonymous caller.
       const canPreview = await this.runtime.accessPolicy.seesUnpublished(collection, req);
 
-      if (!effectiveFilters.status && !canPreview && collection.fields.find((field) => field.name === 'status')) {
+      // Not a default the caller may override: `?status=draft` used to replace it and list every draft.
+      if (!canPreview && collection.fields.find((field) => field.name === 'status')) {
         effectiveFilters.status = 'published';
       }
+      const partialReader = !(await this.runtime.accessPolicy.readsEverything(collection, req));
+      if (partialReader) CollectionReadRedaction.assertQueryable(collection, filters, sort);
 
       const relationshipMatches = await this.resolveRelationshipSearchMatches(req, search);
       const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
@@ -41,6 +45,7 @@ export class RestReadController {
         this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches,
         CollectionArchiveReadClause.combine(this.runtime.db, UserCollectionScopeGuard.buildReadClause(userScope),
           CollectionArchiveReadClause.build(this.runtime.db, collection, table, archivedOnly)),
+        partialReader,
       );
       const orderBy = QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
       const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
@@ -79,7 +84,8 @@ export class RestReadController {
 
       const total = await this.runtime.db.count(table, { where: whereClause });
       const result = {
-        docs: this.runtime.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized }),
+        docs: this.forReader(collection, req, partialReader,
+          this.runtime.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized })),
         totalDocs: total,
         limit: limitValue,
         offset: offsetValue,
@@ -191,7 +197,8 @@ export class RestReadController {
         }
       }
 
-      const filtered = this.runtime.processor.filterHiddenFields(collection, result, { localeContext, rawLocalized });
+      const filtered = this.forReader(collection, req, !(await this.runtime.accessPolicy.readsEverything(collection, req)),
+        this.runtime.processor.filterHiddenFields(collection, result, { localeContext, rawLocalized }));
       if (!res) {
         return filtered;
       }
@@ -213,74 +220,14 @@ export class RestReadController {
     }
   }
 
-  async getSuggestions(collection: ICollection, req: Request, res: Response) {
-    try {
-      await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
-      // Suggestions return DISTINCT column values, which on the system meta table means the stored
-      // token/secret values themselves. There is nothing to suggest there — fail closed.
-      if (SystemMetaCollectionGuard.guards(collection)) {
-        return res.json([]);
-      }
-      const field = CoercionUtils.toString(req.params.field);
-      const query = (req.query as any).q;
-      const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
-      // No accounts in scope means no suggestions — an empty `IN ()` must never reach the query.
-      if (userScope?.ids?.length === 0) {
-        return res.json([]);
-      }
-      res.json(await this.runtime.suggestionService.getSuggestions(
-        collection, field, query, UserCollectionScopeGuard.buildWhere(userScope),
-      ));
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  }
-
-  async export(collection: ICollection, req: Request, res: Response) {
-    try {
-      await this.runtime.accessPolicy.resolveReadConstraints(collection, req);
-      const format = req.query.format || 'json';
-      const table = QueryHelper.getVirtualTable(collection);
-      // The export path builds no WHERE of its own, so the system-meta restriction is applied here
-      // too — a CSV export must never be the way around the redaction.
-      const systemMetaClause = SystemMetaCollectionGuard.buildReadClause(collection);
-      const userScopeClause = UserCollectionScopeGuard.buildReadClause(
-        await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db),
-      );
-      const where = CollectionArchiveReadClause.combine(this.runtime.db, systemMetaClause || userScopeClause || undefined,
-        CollectionArchiveReadClause.build(this.runtime.db, collection, table, false));
-      let docs = await this.runtime.db.find(table, { where, limit: 10000 });
-      // When the admin list passes `ids` (rows the user selected), export ONLY those records;
-      // with no `ids`, export the whole collection.
-      const idsParam = CoercionUtils.toString(req.query?.ids);
-      if (idsParam) {
-        const primaryKey = collection.primaryKey || 'id';
-        const selected = new Set(idsParam.split(',').map((value) => value.trim()).filter(Boolean));
-        docs = docs.filter((doc: any) => selected.has(String(doc[primaryKey])));
-      }
-      if (format === 'csv') {
-        const fields = collection.fields.map((field) => field.name);
-        const csvRows = [
-          fields.join(','),
-          ...docs.map((doc: any) => fields.map((field) => {
-            const value = doc[field];
-            const stringValue = value === null || value === undefined
-              ? ''
-              : (typeof value === 'object' ? JSON.stringify(value) : String(value));
-            return `"${stringValue.replace(/"/g, '""')}"`;
-          }).join(',')),
-        ];
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename=${collection.slug}_export.csv`);
-        return res.send(csvRows.join('\n'));
-      }
-
-      res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', `attachment; filename=${collection.slug}_export.json`);
-      res.json(docs);
-    } catch (err: any) {
-      res.status(err?.statusCode || 500).json({ error: err.message });
-    }
+  /**
+   * The records as this reader may see them. Page resolution reads on the visitor's behalf and leaves
+   * what is held back conditionally to the plugins' content gates, which know the visitor; it strips
+   * the staff-only fields itself once they have run.
+   */
+  private forReader<T>(collection: ICollection, req: any, partialReader: boolean, data: T): T {
+    if (!partialReader || req?.[CollectionReadRedaction.FOR_RESOLUTION] === true) return data;
+    return CollectionReadRedaction.redact(collection, data);
   }
 
   /**

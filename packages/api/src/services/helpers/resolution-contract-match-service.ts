@@ -1,6 +1,7 @@
 
 import type { ICollection, IResolvedPluginDefaultPageContract } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
+import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 import { ResolutionContractPresentationService } from '@api/services/helpers/resolution-contract-presentation-service';
 import { ResolutionContractPathService } from '@api/services/helpers/resolution-contract-path-service';
 import { ResolutionCollectionLookup } from '@api/services/helpers/resolution-collection-lookup';
@@ -109,6 +110,7 @@ export class ResolutionContractMatchService {
         limit: 1,
       }),
       user: options.user,
+      [CollectionReadRedaction.FOR_RESOLUTION]: true,
     } as any);
 
     if (result?.docs?.length > 0) {
@@ -150,6 +152,7 @@ export class ResolutionContractMatchService {
         limit: 1,
       }),
       user: options.user,
+      [CollectionReadRedaction.FOR_RESOLUTION]: true,
     } as any);
 
     if (result?.docs?.length > 0) {
@@ -191,6 +194,7 @@ export class ResolutionContractMatchService {
         limit: 1,
       }),
       user: options.user,
+      [CollectionReadRedaction.FOR_RESOLUTION]: true,
     } as any);
 
     if (result?.docs?.length > 0) {

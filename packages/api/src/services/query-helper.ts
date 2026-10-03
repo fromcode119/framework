@@ -1,6 +1,7 @@
 import { FieldType, ICollection } from '@fromcode119/core';
 import { DynamicSchema, IDatabaseManager, NamingStrategy, Sql } from '@fromcode119/database';
 import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-guard';
+import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 
 export class QueryHelper {
   private static virtualTables: Map<string, { shape: string; table: any }> = new Map();
@@ -59,6 +60,9 @@ export class QueryHelper {
     // A restriction the caller resolved asynchronously and that no filter may widen — the account
     // scope of `users` (UserCollectionScopeGuard). ANDed like every other chunk.
     scopeClause?: unknown,
+    // A reader who does not read the whole collection: the fields it may not see are no part of a
+    // search, and a field held back while a sibling is set is matched only where it is not.
+    partialReader = false,
   ) {
     const whereChunks: any[] = [];
     if (scopeClause) {
@@ -76,9 +80,15 @@ export class QueryHelper {
     // Handle Search across top-level scalar fields that users expect in the admin table.
     const normalizedSearch = QueryHelper.normalizeSearch(search);
     if (normalizedSearch) {
+      const shape = partialReader ? CollectionReadRedaction.shapeOf(collection) : null;
       const searchClauses = collection.fields
         .filter((field) => QueryHelper.searchableFieldTypes.has(FieldType.resolve(field.type).value) && table[field.name])
-        .map((field) => QueryHelper.buildSearchClause(db, table[field.name], normalizedSearch));
+        .filter((field) => !shape?.staffOnly.includes(field.name))
+        .map((field) => {
+          const clause = QueryHelper.buildSearchClause(db, table[field.name], normalizedSearch);
+          const heldWhen = shape?.withheld.find((entry) => entry.field === field.name)?.when ?? [];
+          return heldWhen.length === 0 ? clause : db.and(clause, ...heldWhen.map((name) => QueryHelper.buildUnsetClause(table[name])));
+        });
       // Match relationship fields by their related record's name: `field IN (matchedRelatedIds)`,
       // resolved upstream so the list search also covers related records (e.g. inventory by product).
       // The relationship column is a jsonb column whose id is stored as TEXT (e.g. "5.0"), so a
@@ -125,6 +135,12 @@ export class QueryHelper {
     // column. Lowering symmetrically in SQL keeps ASCII case-insensitive and makes Cyrillic match by
     // the (un-folded) same case, instead of never matching.
     return Sql.query`LOWER(CAST(${column} AS TEXT)) LIKE LOWER(${`%${search}%`})`;
+  }
+
+  /** `CollectionReadRedaction.holdsValue` in SQL: the sibling holds nothing a reader is kept out by. */
+  private static buildUnsetClause(column: any) {
+    if (!column) return Sql.query`1 = 1`;
+    return Sql.query`(${column} IS NULL OR CAST(${column} AS TEXT) IN ('', '[]', '{}', 'null', 'false'))`;
   }
 
   private static normalizeSearch(search?: string): string {

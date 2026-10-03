@@ -155,6 +155,25 @@ export class CollectionAccessPolicyService {
   }
 
   /**
+   * Does this request read the WHOLE collection — every field of every record — the way an
+   * administrator does? A role granted reading the collection does too. Everyone else is a partial
+   * reader: the collection's `staffOnly` and `withheldWhen` fields are held back from them.
+   */
+  async readsEverything(collection: ICollection, req: any): Promise<boolean> {
+    return this.isAdmin(req?.user) || this.isGranted(collection, req, CollectionPermissionAction.READ);
+  }
+
+  /**
+   * The console's own read tools — export and value suggestions — are for those who read the whole
+   * collection. They return raw columns across every record, so offered to anyone who may merely
+   * browse a public collection they handed out drafts and stored passwords wholesale.
+   */
+  async ensureReadsEverything(collection: ICollection, req: any): Promise<void> {
+    if (await this.readsEverything(collection, req)) return;
+    this.throwAuthError(req, `Reading every record of "${collection.slug}" requires permission.`);
+  }
+
+  /**
    * Does a role in effect for this request hold `<plugin>:<collection>:<action>` (or a wildcard over
    * it)? Only a plugin's collections are grantable this way. A SYSTEM collection (users, media,
    * settings…) is governed by the framework's own permissions on its own routes, and a collection

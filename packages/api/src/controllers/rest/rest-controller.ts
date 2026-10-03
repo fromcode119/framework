@@ -7,6 +7,7 @@ import { IDatabaseManager } from '@fromcode119/database';
 import { RestBulkController } from '@api/controllers/rest/rest-bulk-controller';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
+import { RestConsoleReadController } from '@api/controllers/rest/rest-console-read-controller';
 import { RestWriteController } from '@api/controllers/rest/rest-write-controller';
 import { RestVersionController } from '@api/controllers/rest/rest-version-controller';
 import { RestArchiveController } from '@api/controllers/rest/rest-archive-controller';
@@ -14,6 +15,7 @@ import { RestArchiveController } from '@api/controllers/rest/rest-archive-contro
 export class RESTController {
   private readonly runtime: RestControllerRuntime;
   private readonly readController: RestReadController;
+  private readonly consoleReadController: RestConsoleReadController;
   private readonly writeController: RestWriteController;
   private readonly bulkController: RestBulkController;
   private readonly versionController: RestVersionController;
@@ -29,6 +31,7 @@ export class RESTController {
   ) {
     this.runtime = new RestControllerRuntime(db, auth, onSettingsUpdate, hooks);
     this.readController = new RestReadController(this.runtime);
+    this.consoleReadController = new RestConsoleReadController(this.runtime);
     this.writeController = new RestWriteController(this.runtime);
     this.bulkController = new RestBulkController(this.runtime);
     this.versionController = new RestVersionController(this.runtime);
@@ -128,11 +131,11 @@ export class RESTController {
   }
 
   async getSuggestions(collection: ICollection, req: Request, res: Response) {
-    return this.readController.getSuggestions(collection, req, res);
+    return this.consoleReadController.getSuggestions(collection, req, res);
   }
 
   async export(collection: ICollection, req: Request, res: Response) {
-    return this.readController.export(collection, req, res);
+    return this.consoleReadController.export(collection, req, res);
   }
 
   async import(collection: ICollection, req: Request, res: Response) {

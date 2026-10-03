@@ -8,12 +8,15 @@ import { ResolutionCollectionScanService } from '@api/services/helpers/resolutio
 import type { IResolutionScanEntry } from '@api/services/helpers/interfaces/resolution-scan-entry.interface';
 import type { IPageDesign } from '@api/services/helpers/interfaces/page-design.interface';
 import { PageDesignLookupService } from '@api/services/helpers/page-design-lookup-service';
+import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
+import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 
 export class ResolutionService {
   private readonly contractMatcher: ResolutionContractMatchService;
   private readonly cache: ResolutionCacheService;
   private readonly scanner: ResolutionCollectionScanService;
   private readonly pageDesigns: PageDesignLookupService;
+  private readonly accessPolicy = new CollectionAccessPolicyService();
 
   constructor(
     private manager: PluginManager,
@@ -67,7 +70,7 @@ export class ResolutionService {
       user: options.user,
       preview: options.preview,
     });
-    if (gated) return this.withCanonicalPath(gated);
+    if (gated) return this.withCanonicalPath(await this.forVisitor(gated, options.user));
 
     // Nothing resolved to content — consult plugin-registered redirect resolvers
     // (e.g. a redirect plugin's retired-URL rules) before returning null. The framework
@@ -77,6 +80,20 @@ export class ResolutionService {
       return { type: 'redirect', plugin: '', doc: null, redirect };
     }
     return gated;
+  }
+
+  /**
+   * The resolved document without the fields its collection keeps from a partial reader. Done AFTER
+   * the gates: a plugin's gate may need such a field to decide (the access password it checks), and
+   * what is held back conditionally is the gate's call — but no staff-only value reaches a visitor.
+   */
+  private async forVisitor<T extends { type?: unknown; plugin?: unknown; doc?: unknown }>(resolved: T, user: unknown): Promise<T> {
+    if (!resolved?.doc || Object(resolved.doc) !== resolved.doc) return resolved;
+    const collection = this.findResolvedCollection(this.manager.registeredCollections,
+      String(resolved.type || ''), String(resolved.plugin || ''));
+    if (!collection || !CollectionReadRedaction.declaresAny(collection)) return resolved;
+    if (await this.accessPolicy.readsEverything(collection, { user })) return resolved;
+    return { ...resolved, doc: CollectionReadRedaction.redact(collection, resolved.doc, false) };
   }
 
   /**
