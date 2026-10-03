@@ -5,6 +5,7 @@ import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
 import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
+import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 
 /**
  * Installs an admin appearance package (marketplace download or uploaded zip) into the appearances
@@ -89,15 +90,11 @@ export class AppearanceInstallerService {
     const slug = String(manifest?.slug || expectedSlug || '').trim();
     if (!slug) throw new Error('Invalid appearance: missing "slug" in appearance.json.');
     const targetDir = path.join(this.appearancesRoot, slug);
-    if (fs.existsSync(targetDir)) {
-      fs.rmSync(targetDir, { recursive: true, force: true });
-    }
-    fs.mkdirSync(targetDir, { recursive: true });
-    if (options.keepSource) {
-      fs.cpSync(contentDir, targetDir, { recursive: true });
-    } else {
-      this.moveDir(contentDir, targetDir);
-    }
+    // Swapped in whole: a console loading this appearance never meets it half-written.
+    ExtensionDirectorySwap.replaceSync(targetDir, (stagingDir) => {
+      if (options.keepSource) fs.cpSync(contentDir, stagingDir, { recursive: true });
+      else this.moveDir(contentDir, stagingDir);
+    });
     this.logger.info(`Appearance "${slug}" installed to ${targetDir}.`);
     return manifest;
   }

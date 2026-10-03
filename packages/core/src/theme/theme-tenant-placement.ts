@@ -3,6 +3,7 @@ import path from 'path';
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { ProjectPaths } from '@core/config/paths';
 import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-policy';
+import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 
 /**
  * Putting a theme into ONE SITE's own directory, and refusing it when that site has no room.
@@ -68,9 +69,7 @@ export class ThemeTenantPlacement {
     const targetDir = path.join(tenantRoot, slug);
     this.assertWithinQuota(tenantRoot, targetDir, contentDir, quota);
 
-    if (fs.existsSync(targetDir)) fs.rmSync(targetDir, { recursive: true, force: true });
-    fs.mkdirSync(targetDir, { recursive: true });
-    this.moveDir(contentDir, targetDir);
+    ExtensionDirectorySwap.replaceSync(targetDir, (stagingDir) => this.moveDir(contentDir, stagingDir));
 
     await this.discoverThemes();
     // Nothing else runs. No seeds, no dependency install, no bundled plugins — the policy above has
