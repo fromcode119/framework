@@ -7,6 +7,8 @@ import { Enum } from '@fromcode119/react-class-components/lang';
 export class PluginHeldReason extends Enum {
   /** The manifest's capabilities differ from the approved set; an admin must re-approve. */
   static readonly CAPABILITY_DRIFT = new PluginHeldReason('capability_drift');
+  /** Installed but never approved (a Sources build, an upload): it runs once an admin approves it. */
+  static readonly AWAITING_APPROVAL = new PluginHeldReason('awaiting_approval');
 
   private constructor(value: string) {
     super(value);

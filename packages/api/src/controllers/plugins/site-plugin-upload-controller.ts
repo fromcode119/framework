@@ -1,7 +1,7 @@
 import fs from 'fs';
 import multer from 'multer';
 import type { Request, Response } from 'express';
-import { BaseController, CoercionUtils, Logger, PluginManager, PluginTenantStateService, TenantPluginQuota, TenantPluginRefusal, TenantPluginRefusalReason } from '@fromcode119/core';
+import { BaseController, CoercionUtils, Logger, PluginConsentRequiredError, PluginManager, PluginOwners, PluginTenantStateService, TenantPluginQuota, TenantPluginRefusal, TenantPluginRefusalReason } from '@fromcode119/core';
 
 /**
  * A SITE uploading and removing plugins of its own.
@@ -48,11 +48,37 @@ export class SitePluginUploadController extends BaseController {
       if (!tenantId) return SitePluginUploadController.siteRequired(res);
       if (!req.file) return res.status(400).json({ error: 'no_file', message: 'Choose a .zip plugin package to upload.' });
       const manifest = await this.manager.tenantPlugins.install(tenantId, req.file.path);
-      res.json({ success: true, slug: manifest.slug, name: manifest.name, version: manifest.version });
+      // Placed but not run when it asks for anything: the console opens the consent dialog on this summary.
+      const summary = this.manager.consentSummary(String(manifest.slug));
+      res.json({ success: true, slug: manifest.slug, name: manifest.name, version: manifest.version, consent: summary?.requiresApproval ? summary : null });
     } catch (err: any) {
       this.refuse(res, err, tenantId, 'upload a plugin');
     } finally {
       if (req.file && fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+    }
+  }
+
+  /** What the consent dialog shows for one of THIS site's plugins. Another site's plugin is "not found". */
+  async consent(req: Request, res: Response) {
+    const tenantId = SitePluginUploadController.tenantOf(req);
+    if (!tenantId) return SitePluginUploadController.siteRequired(res);
+    const slug = CoercionUtils.toString(req.params.slug);
+    const summary = PluginOwners.ownerOf(slug) === tenantId ? this.manager.consentSummary(slug) : null;
+    if (!summary) return res.status(404).json({ error: TenantPluginRefusalReason.NOT_FOUND.value, message: `This site has no plugin "${slug}".` });
+    res.json(summary);
+  }
+
+  /** The site's admin approves one of THIS site's plugins with the exact list the dialog showed. */
+  async approve(req: Request, res: Response) {
+    const tenantId = SitePluginUploadController.tenantOf(req);
+    if (!tenantId) return SitePluginUploadController.siteRequired(res);
+    try {
+      const approve = Array.isArray(req.body?.approve) ? req.body.approve.map((entry: unknown) => CoercionUtils.toString(entry)) : [];
+      await this.manager.tenantPlugins.approve(tenantId, CoercionUtils.toString(req.params.slug), approve);
+      res.json({ success: true });
+    } catch (err: any) {
+      if (PluginConsentRequiredError.is(err)) return res.status(409).json({ code: err.code, error: err.message, summary: err.summary });
+      this.refuse(res, err, tenantId, 'approve a plugin');
     }
   }
 

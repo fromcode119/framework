@@ -56,6 +56,7 @@ function hostOn(pluginsRoot: string, options: { isolates?: boolean } = {}) {
       }
     }),
     enable: vi.fn(async () => undefined),
+    holdIfUnapproved: vi.fn(async () => false),
     delete: vi.fn(async (slug: string) => { plugins.delete(slug); }),
   };
   return { host, installer: new TenantPluginInstaller(host) };

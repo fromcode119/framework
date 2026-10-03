@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import fs from 'fs';
-import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode, TenantPluginRefusal } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, CoercionUtils, PluginRegistryHealth, PluginState, PluginTenantAccess, PluginTenantStateService, PluginToggleScopeConstants, TenantMembershipService, TenantMode, TenantPluginRefusal, PluginConsentRequiredError } from '@fromcode119/core';
 import { PluginArchiveSupport } from '@api/controllers/plugins/plugin-archive-support';
 import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 
@@ -61,6 +61,7 @@ export class PluginLifecycleController extends BaseController {
   async toggle(req: Request, res: Response) {
     const slug = CoercionUtils.toString(req.params.slug);
     const { enabled, force, recursive } = req.body;
+    const approve = PluginLifecycleController.approvalOf(req.body?.approve);
 
     // `scope: 'platform'` is the operator-wide axis — is this plugin loadable AT ALL. It is a
     // platform-admin action and is refused for anyone else, because one customer must never be able
@@ -92,7 +93,8 @@ export class PluginLifecycleController extends BaseController {
         if (enabled) {
           await this.manager.enable(slug, {
             force: CoercionUtils.toBoolean(force),
-            recursive: CoercionUtils.toBoolean(recursive)
+            recursive: CoercionUtils.toBoolean(recursive),
+            approve,
           });
         } else {
           await this.manager.disable(slug);
@@ -100,6 +102,8 @@ export class PluginLifecycleController extends BaseController {
       });
       res.json({ success: true, state: enabled ? 'active' : 'inactive' });
     } catch (err: any) {
+      // Not a failure: the plugin asks for something nobody approved, and the console shows what.
+      if (PluginConsentRequiredError.is(err)) return res.status(409).json({ code: err.code, error: err.message, summary: err.summary });
       if (err.message.startsWith('DEPENDENCY_ISSUES:')) {
         try {
           const json = err.message.replace('DEPENDENCY_ISSUES: ', '');
@@ -162,23 +166,40 @@ export class PluginLifecycleController extends BaseController {
   }
 
 
-  /** Re-approve + enable every plugin currently held on the warning axis (capability drift).
-   *  enable() advances approvedCapabilities to the current manifest, so the hold clears. */
-  async reapproveAll(_req: Request, res: Response) {
+  /**
+   * Approve and enable every held plugin, each with the exact list the console showed for it
+   * (`approvals: { [slug]: string[] }`). One without a list, or whose request changed since it was
+   * shown, is reported with its summary instead of being approved.
+   */
+  async reapproveAll(req: Request, res: Response) {
+    const approvals = (req.body?.approvals && typeof req.body.approvals === 'object') ? req.body.approvals : {};
     const held = this.manager.getPlugins().filter(
       (p) => p.healthStatus === PluginRegistryHealth.WARNING || Boolean(p.heldReason),
     );
-    const results: Array<{ slug: string; ok: boolean; error?: string }> = [];
+    const results: Array<{ slug: string; ok: boolean; error?: string; summary?: unknown }> = [];
     for (const p of held) {
       const slug = p.manifest.slug;
       try {
-        await PluginsChangedSignal.around(slug, () => this.manager.enable(slug, { force: false, recursive: false }));
+        const approve = PluginLifecycleController.approvalOf(approvals[slug]);
+        await PluginsChangedSignal.around(slug, () => this.manager.enable(slug, { force: false, recursive: false, approve }));
         results.push({ slug, ok: true });
       } catch (err: any) {
-        results.push({ slug, ok: false, error: err?.message || String(err) });
+        results.push({ slug, ok: false, error: err?.message || String(err), summary: PluginConsentRequiredError.is(err) ? err.summary : undefined });
       }
     }
     res.json({ success: results.every((r) => r.ok), reapproved: results });
+  }
+
+  /** What the consent dialog shows for an installed plugin. */
+  async consent(req: Request, res: Response) {
+    const summary = this.manager.consentSummary(CoercionUtils.toString(req.params.slug));
+    if (!summary) return res.status(404).json({ error: 'Plugin not found' });
+    res.json(summary);
+  }
+
+  /** The consent list a request sends, as strings; undefined when it sends none. */
+  static approvalOf(value: unknown): string[] | undefined {
+    return Array.isArray(value) ? value.map((entry) => CoercionUtils.toString(entry)) : undefined;
   }
 
 

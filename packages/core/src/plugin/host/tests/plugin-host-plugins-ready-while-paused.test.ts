@@ -17,7 +17,7 @@ describe('a plugin whose process is down', () => {
     const hooks = new HookManager();
     const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
-    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'paused-probe', capabilities: ['hooks'] } } as any, manager, logger);
+    const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'paused-probe', capabilities: ['hooks'] }, approvedCapabilities: ['hooks'] } as any, manager, logger);
     const invoked: string[] = [];
     const registrations = new PluginHostRegistrations('paused-probe', {} as any, async (_kind, handlerId, args) => { invoked.push(`${handlerId}:${String(args[1])}`); }, async () => undefined, {} as any, async () => undefined, () => running.value);
     registrations.apply(context, { kind: String(PluginGuestRegistrationKind.PLUGINS_ON.value), event: PluginHostState.PLUGINS_READY_EVENT, handlerId: 'ready' } as any);

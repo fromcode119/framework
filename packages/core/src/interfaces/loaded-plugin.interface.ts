@@ -25,6 +25,11 @@ export interface ILoadedPlugin extends IAtlantisPlugin {
   isRunning?: () => boolean;
   path?: string; // Absolute path to the plugin folder
   approvedCapabilities?: string[];
+  /**
+   * Its registration hooks (`onInstall` / `onUpdate` / `onInit`) did not run, because its manifest asks
+   * for something nobody approved yet. They run when it is approved and enabled (PluginApprovalGate).
+   */
+  registrationDeferred?: { isFreshInstall: boolean; savedVersion?: string };
   error?: string; // Error message when state is PluginState.ERROR
   /**
    * The platform switched it off while it ran (a crash loop, a resource limit, a violation) — not a

@@ -7,6 +7,7 @@ import type { IMenuItemManifest } from '@core/interfaces/menu-item-manifest.inte
 import type { ISecondaryPanelManifest } from '@core/interfaces/secondary-panel-manifest.interface';
 import type { IPublicRouteManifest } from '@core/interfaces/public-route-manifest.interface';
 import type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
+import type { IPluginNetworkDeclaration } from '@core/plugin/consent/interfaces/plugin-network-declaration.interface';
 
 export interface IPluginManifest {
   // Identity
@@ -39,6 +40,11 @@ export interface IPluginManifest {
    */
   capabilities?: string[];
   permissions?: string[];
+  /**
+   * Where `context.fetch` may go. Required with the `network` capability: the hosts are part of what
+   * an operator approves, and a request to any other host is refused (`PluginNetworkDeclaration`).
+   */
+  network?: IPluginNetworkDeclaration;
   
   // Hooks & Extensions
   hooks?: any;

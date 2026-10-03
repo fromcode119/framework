@@ -80,6 +80,7 @@ export class PluginManagerServiceFactory {
       (slug: string, manifest) => manager.pluginHosts.reload(slug, manifest as unknown as Record<string, unknown>),
       (slug: string) => lifecycle.refreshAfterHotUpdate(slug),
       (manifest) => PluginSchemaDatabaseProxy.create({ manifest }, manager) as IDatabaseManager,
+      (slug: string, manifest) => lifecycle.approval.holdIfUnapproved(slug, manifest),
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)

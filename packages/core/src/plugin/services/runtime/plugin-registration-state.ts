@@ -5,6 +5,8 @@ import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
+import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
+import type { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
 
 /**
  * What state a plugin should come back in, given what the registry saved and what the plugin now
@@ -32,6 +34,7 @@ export class PluginRegistrationState {
     private readonly manager: any,
     private readonly registry: any,
     private readonly logger: any,
+    private readonly gate: PluginApprovalGate,
   ) {}
 
   /** Resolve the state and any held reason for `slug`, applying every rule above in order. */
@@ -39,7 +42,7 @@ export class PluginRegistrationState {
     slug: string,
     plugin: IAtlantisPlugin,
     registryData: Record<string, any>,
-  ): Promise<{ state: PluginState; heldReason: PluginHeldReason | undefined; saved: any }> {
+  ): Promise<{ state: PluginState; heldReason: PluginHeldReason | undefined; saved: any; approved: string[] }> {
     const normSlug = slug.toLowerCase();
     const saved = registryData[normSlug];
     let state: PluginState = saved?.state || PluginState.INACTIVE;
@@ -80,49 +83,41 @@ export class PluginRegistrationState {
     const isBundled = plugin.manifest?.bundled === true;
     if (isBundled) {
       heldReason = undefined;
-      await this.registry.savePluginState(
-        slug,
-        PluginState.ACTIVE,
-        (plugin.manifest.capabilities as string[]) || [],
-        plugin.manifest.version,
-      );
+      const approved = PluginConsentSet.of(plugin.manifest);
+      await this.registry.savePluginState(slug, PluginState.ACTIVE, approved, plugin.manifest.version);
+      return { state, heldReason, saved, approved };
     }
 
-    if (state === PluginState.ACTIVE && !isBundled) {
-      const diff = PluginBootHealthReporter.computeCapabilityDiff(
-        (plugin.manifest.capabilities as string[]) || [],
-        saved?.approvedCapabilities || [],
-      );
-      if (diff.changed) {
-        const action = PluginBootHealthReporter.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
-        if (action === PluginApprovalMode.AUTO_APPROVE) {
-          const currentCaps = (plugin.manifest.capabilities as string[]) || [];
-          this.logger.warn(
-            `Plugin "${slug}" AUTO-APPROVED capability change (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]) — AUTO_APPROVE_PLUGIN_CAPABILITIES is on and the plugin is trusted.`,
-          );
-          await this.registry.savePluginState(slug, PluginState.ACTIVE, currentCaps, plugin.manifest.version);
-          await this.registry.writeLog('WARN', `Auto-approved capability change for "${slug}": +[${diff.added.join(', ')}] -[${diff.removed.join(', ')}]`, slug);
-          try {
-            const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
-            await notifications.notifyAdmins({
-              subject: `[Atlantis] Auto-approved new capabilities for "${slug}"`,
-              text: `"${slug}" gained capabilities [${diff.added.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
-            });
-          } catch { /* best-effort */ }
-          // state stays 'active' -> the existing active path enables it below.
-        } else {
-          // Capability set changed since it was last approved. Do NOT silently deactivate (that looked
-          // like a deliberate disable and caused a prod outage). Hold it: inactive + health 'warning' +
-          // reason, so the admin sees it and one-click re-approves (enable() advances the approved set).
-          state = PluginState.INACTIVE;
-          heldReason = PluginHeldReason.CAPABILITY_DRIFT;
-          this.logger.warn(
-            `Plugin "${slug}" HELD: capabilities changed since approval (added: [${diff.added.join(', ')}], removed: [${diff.removed.join(', ')}]). Re-approve to activate.`,
-          );
-          await this.registry.markPluginHeld(slug, heldReason);
-        }
+    let approved: string[] = saved ? await this.gate.carryForward(slug, plugin.manifest, saved.approvedCapabilities || []) : [];
+    const missing = PluginConsentSet.missing(plugin.manifest, approved);
+    if (state === PluginState.ACTIVE && missing.length) {
+      const action = PluginBootHealthReporter.resolveDriftAction(slug, Boolean(saved?.signatureVerified));
+      if (action === PluginApprovalMode.AUTO_APPROVE) {
+        approved = PluginConsentSet.of(plugin.manifest);
+        this.logger.warn(`Plugin "${slug}" AUTO-APPROVED [${missing.join(', ')}] — AUTO_APPROVE_PLUGIN_CAPABILITIES is on and the plugin is trusted.`);
+        await this.registry.savePluginState(slug, PluginState.ACTIVE, approved, plugin.manifest.version);
+        await this.registry.writeLog('WARN', `Auto-approved for "${slug}": [${missing.join(', ')}]`, slug);
+        try {
+          const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
+          await notifications.notifyAdmins({
+            subject: `[Atlantis] Auto-approved new capabilities for "${slug}"`,
+            text: `"${slug}" now asks for [${missing.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
+          });
+        } catch { /* best-effort */ }
+      } else {
+        // It asks for more than was approved. Do NOT silently deactivate (that looked like a deliberate
+        // disable and caused a prod outage): hold it, so the admin sees what it waits on and approves it.
+        state = PluginState.INACTIVE;
+        heldReason = PluginHeldReason.CAPABILITY_DRIFT;
+        this.logger.warn(`Plugin "${slug}" HELD: it asks for [${missing.join(', ')}], which nobody approved. Approve it to activate.`);
+        await this.registry.markPluginHeld(slug, heldReason);
       }
+    } else if (state === PluginState.ACTIVE && approved.length !== PluginConsentSet.of(plugin.manifest).length) {
+      // It asks for LESS than was approved. Nothing to hold — but the approval shrinks with it, so a
+      // later release that asks for the dropped entry again needs approving again.
+      approved = PluginConsentSet.of(plugin.manifest);
+      await this.registry.savePluginState(slug, PluginState.ACTIVE, approved, plugin.manifest.version);
     }
-    return { state, heldReason, saved };
+    return { state, heldReason, saved, approved };
   }
 }

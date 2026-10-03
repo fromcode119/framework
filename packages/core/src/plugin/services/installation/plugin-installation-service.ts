@@ -17,6 +17,7 @@ import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugi
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { InstalledPluginManifestService } from '@core/plugin/services/installation/installed-plugin-manifest-service';
+import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
 
 export class PluginInstallationService {
   constructor(
@@ -38,6 +39,8 @@ export class PluginInstallationService {
     private readonly migrationDatabaseFor: (manifest: IPluginManifest) => IDatabaseManager = (manifest) => {
       throw new Error(`No migration database was provided, so the migrations of "${manifest.slug}" cannot run.`);
     },
+    /** New files ask for more than was approved: stop and hold it for approval. True when held (PluginApprovalGate). */
+    private readonly holdIfUnapproved: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
   ) {
     this.migrations = new PluginMigrationRunner(migrationManager, migrationDatabaseFor);
   }
@@ -222,6 +225,7 @@ export class PluginInstallationService {
           : existingPlugin.state;
 
       await this.registry.savePluginState(slug, desiredState, existingPlugin.approvedCapabilities, manifest.version);
+      const held = await this.holdIfUnapproved(slug, manifest);
 
       // T5: an isolated plugin is its own process — swap in a new one on the new files, live. Only a
       // plugin that runs inside the api process still needs the api restarted to load new code.
@@ -229,7 +233,7 @@ export class PluginInstallationService {
         existingPlugin.manifest = manifest;
         // Only a boot or an activation used to sync tables and create default pages: a release adding a
         // field broke every read of it, and one adding a required page left it 404 until a restart.
-        if (desiredState === PluginState.ACTIVE) await this.refreshActivePlugin(slug);
+        if (desiredState === PluginState.ACTIVE && !held) await this.refreshActivePlugin(slug);
         options.progressReporter?.({
           phase: 'plugin-reloaded',
           message: `Plugin "${slug}" was replaced and its process restarted on the new code. No API restart needed.`,
@@ -274,7 +278,11 @@ export class PluginInstallationService {
         message: `Activating "${slug}"...`,
         pluginSlug: slug,
       });
-      await this.enablePlugin(slug);
+      // A plugin that asks for anything is installed, not run, until an admin approves it.
+      await this.enablePlugin(slug).catch(async (error) => {
+        if (!PluginConsentRequiredError.is(error)) throw error;
+        await this.holdIfUnapproved(slug, manifest);
+      });
     }
 
     options.progressReporter?.({

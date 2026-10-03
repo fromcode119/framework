@@ -19,9 +19,13 @@ export class PublicNetworkFetch {
   private static readonly REDIRECT_STATUSES = new Set([301, 302, 303, 307, 308]);
   private static agent: Agent | null = null;
 
-  static async fetch(rawUrl: string, init: Record<string, any> = {}): Promise<Response> {
+  /**
+   * @param allowHost when given, every hop's host must pass it too — the hosts a plugin was approved
+   * to reach. A redirect to any other host is refused like a private address is.
+   */
+  static async fetch(rawUrl: string, init: Record<string, any> = {}, allowHost?: (hostname: string) => boolean): Promise<Response> {
     const mode = String(init.redirect ?? 'follow');
-    let url = PublicNetworkFetch.assertTarget(rawUrl);
+    let url = PublicNetworkFetch.assertTarget(rawUrl, allowHost);
     let request: Record<string, any> = { ...init, redirect: 'manual', dispatcher: PublicNetworkFetch.dispatcher() };
     for (let hop = 0; ; hop += 1) {
       const response = await PublicNetworkFetch.send(url, request);
@@ -31,14 +35,14 @@ export class PublicNetworkFetch {
       await response.body?.cancel().catch(() => undefined);
       if (mode === 'error') throw new TypeError(`fetch refused a redirect from ${url}`);
       if (hop >= PublicNetworkFetch.MAX_REDIRECTS) throw new TypeError(`fetch stopped after ${PublicNetworkFetch.MAX_REDIRECTS} redirects`);
-      const next = PublicNetworkFetch.assertTarget(new URL(location, url).toString());
+      const next = PublicNetworkFetch.assertTarget(new URL(location, url).toString(), allowHost);
       request = PublicNetworkFetch.followRequest(request, response.status, new URL(url).origin !== new URL(next).origin);
       url = next;
     }
   }
 
   /** The URL itself: http(s) only, and an address written as an IP must already be a public one. */
-  static assertTarget(rawUrl: string): string {
+  static assertTarget(rawUrl: string, allowHost?: (hostname: string) => boolean): string {
     let url: URL;
     try {
       url = new URL(String(rawUrl ?? ''));
@@ -51,6 +55,9 @@ export class PublicNetworkFetch {
     const host = url.hostname.replace(/^\[|\]$/g, '');
     if (isIP(host) && !NetworkAddressUtils.isPublic(host)) {
       throw PublicNetworkFetch.refusal(`fetch refused ${url.host}: not a public internet address`);
+    }
+    if (allowHost && !allowHost(host.toLowerCase())) {
+      throw PublicNetworkFetch.refusal(`fetch refused ${url.host}: not a host this plugin was approved to reach`);
     }
     return url.toString();
   }
