@@ -38,6 +38,15 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[1].extendedBy).toBe('seo');
   });
 
+  it("translates the related-records panel's title and empty hint", () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.recordLinks.title': 'Свързани записи' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog', fields: [],
+      admin: { recordLinks: { kind: 'k', keys: { orderNumber: 'orderNumber' }, title: 'Related records', emptyHint: 'Nothing linked yet.' } },
+    });
+    expect([out.admin.recordLinks.title, out.admin.recordLinks.emptyHint, out.admin.recordLinks.kind]).toEqual(['Свързани записи', 'Nothing linked yet.', 'k']);
+  });
+
   it('translates a collection, its fields, options, sub-fields and tabs', () => {
     const out = localizer.collection('shop', {
       slug: 'shop-products',

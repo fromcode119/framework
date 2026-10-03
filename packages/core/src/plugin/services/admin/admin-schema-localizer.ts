@@ -20,6 +20,7 @@ import { StringUtils } from '@core/utils/string-utils';
  *   admin.collections.<collection>.fields.<field>.keyLabels.<key>        a structured field's key names
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
+ *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
  *   admin.settings.tabs.<id>, admin.settings.fields.<field>.…           the settings form, same shape
  *   admin.widgets.<id>.label | description                              a dashboard widget
  *
@@ -34,6 +35,13 @@ export class AdminSchemaLocalizer {
       ...collection.admin,
       tabs: this.labelled(pluginSlug, `${base}.tabs`, collection.admin.tabs),
       sections: this.sections(pluginSlug, `${base}.sections`, collection.admin.sections),
+      ...(collection.admin.recordLinks ? {
+        recordLinks: {
+          ...collection.admin.recordLinks,
+          title: this.text(pluginSlug, `${base}.recordLinks.title`, collection.admin.recordLinks.title),
+          emptyHint: this.text(pluginSlug, `${base}.recordLinks.emptyHint`, collection.admin.recordLinks.emptyHint),
+        },
+      } : {}),
     } : collection.admin;
     const adminLayout = collection.adminLayout ? {
       ...collection.adminLayout,
