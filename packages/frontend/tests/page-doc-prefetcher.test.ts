@@ -47,3 +47,21 @@ describe('PageDocPrefetcher.buildMergeScript', () => {
     expect(script).toContain('\\u003c');
   });
 });
+
+describe('PageDocPrefetcher.datasourceQuery', () => {
+  // A block narrowed by one of its datasource's filters was prefetched as the whole list, so its first
+  // paint held whichever of the newest records matched — often fewer than it shows.
+  it('sends the paging, the sort, the filters the operator set and the card view', () => {
+    const query = PageDocPrefetcher.datasourceQuery({ limit: 8, sort: '-id', filterValues: { tag: 'summer', size: '', nested: { a: 1 } } });
+    expect(Object.fromEntries(query)).toEqual({ limit: '8', sort: '-id', tag: 'summer', view: 'card' });
+  });
+
+  it('reads the older single filter pair, and the filter map wins over it', () => {
+    expect(PageDocPrefetcher.datasourceQuery({ filterKey: 'tag', filterValue: 'winter' }).get('tag')).toBe('winter');
+    expect(PageDocPrefetcher.datasourceQuery({ filterKey: 'tag', filterValue: 'winter', filterValues: { tag: 'summer' } }).get('tag')).toBe('summer');
+  });
+
+  it('asks only for the card view when the block declares nothing', () => {
+    expect(Object.fromEntries(PageDocPrefetcher.datasourceQuery(null))).toEqual({ view: 'card' });
+  });
+});

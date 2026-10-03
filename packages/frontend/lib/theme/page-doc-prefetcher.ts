@@ -101,11 +101,7 @@ export class PageDocPrefetcher {
       if (seen.has(key)) return;
       seen.add(key);
 
-      const query = new URLSearchParams();
-      const limit = Number(data?.limit);
-      if (Number.isFinite(limit) && limit > 0) query.set('limit', String(Math.floor(limit)));
-      const sort = String(data?.sort || '').trim();
-      if (sort) query.set('sort', sort);
+      const query = PageDocPrefetcher.datasourceQuery(data);
 
       const apiPath = ServerApiPaths.buildPluginPath(pluginSlug, datasourceKey, query);
       try {
@@ -119,6 +115,36 @@ export class PageDocPrefetcher {
       }
     }));
   }
+
+  /**
+   * What a datasource block asks its datasource for: its paging and sort, the filters the operator set in
+   * the block (`filterValues`, keyed by the filters the datasource itself declares, plus the older single
+   * `filterKey`/`filterValue` pair), and the compact card view a block renders from.
+   *
+   * The filters used to stay behind, so a block narrowed to one category was prefetched as the whole
+   * list and its first paint held whichever of the newest records happened to match — often fewer than
+   * it shows. A datasource ignores a parameter it does not know, the card view included.
+   */
+  static datasourceQuery(data: Record<string, unknown> | null): URLSearchParams {
+    const query = new URLSearchParams();
+    const limit = Number(data?.limit);
+    if (Number.isFinite(limit) && limit > 0) query.set('limit', String(Math.floor(limit)));
+    const sort = String(data?.sort || '').trim();
+    if (sort) query.set('sort', sort);
+    const filters = PageDocPrefetcher.asRecord(data?.filterValues) || {};
+    const legacyKey = String(data?.filterKey || '').trim();
+    const legacyValue = String(data?.filterValue || '').trim();
+    if (legacyKey && legacyValue && filters[legacyKey] === undefined) query.set(legacyKey, legacyValue);
+    for (const [key, value] of Object.entries(filters)) {
+      const text = Object(value) === value ? '' : String(value ?? '').trim();
+      if (key && text) query.set(key, text);
+    }
+    query.set('view', PageDocPrefetcher.DATASOURCE_VIEW);
+    return query;
+  }
+
+  /** The view a datasource block's records are asked for in — a block paints cards, not whole records. */
+  static readonly DATASOURCE_VIEW = 'card';
 
   /**
    * The key a datasource payload lands under — `datasource:<blockId>`, so the rendering plugin reads the
