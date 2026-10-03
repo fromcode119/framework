@@ -40,6 +40,15 @@ describe('a plugin re-registering its own collection', () => {
     expect(fields.map((field: any) => field.name)).toContain('sku');
   });
 
+  it('swaps in a new fields array, so caches keyed by the array recompute', () => {
+    const manager = buildManager();
+    const collections = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'shop' } } as any, manager, logger, security);
+    collections.register(products(true) as any);
+    const before = manager.registeredCollections.get('fcp_shop_products').collection.fields;
+    collections.register(products(false) as any);
+    expect(manager.registeredCollections.get('fcp_shop_products').collection.fields).not.toBe(before);
+  });
+
   it('keeps a field the release no longer declares — another plugin may have extended the collection', () => {
     const manager = buildManager();
     const collections = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'shop' } } as any, manager, logger, security);

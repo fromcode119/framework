@@ -94,12 +94,17 @@ export class PluginEntityRegistrationService {
    * Without this, an in-place update kept every changed field definition until the api restarted.
    */
   refreshOwnCollectionFields(existing: ICollection, incoming: ICollection): void {
-    const indexByName = new Map(existing.fields.map((field: IField, index: number) => [field.name, index]));
+    const next = [...existing.fields];
+    const indexByName = new Map(next.map((field: IField, index: number) => [field.name, index]));
     for (const field of incoming.fields) {
       const index = indexByName.get(field.name);
-      if (index === undefined) existing.fields.push(field);
-      else existing.fields[index] = field;
+      if (index === undefined) next.push(field);
+      else next[index] = field;
     }
+    // A NEW array, not the old one edited: caches keyed by the fields array (the data processor's
+    // password/array field lists) recompute only for a new identity or length — a field turned into
+    // a password in place would otherwise keep being returned raw.
+    existing.fields = next;
   }
 
   mergeCollectionFields(existing: ICollection, incoming: ICollection): void {
