@@ -8,6 +8,7 @@ import { SafeArchive } from '@core/security/safe-archive';
 import { PluginPackageValidator } from '@core/plugin/services/installation/plugin-package-validator';
 import { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
 import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
+import { PluginDirectorySwap } from '@core/plugin/services/installation/plugin-directory-swap';
 
 /**
  * PluginArchiveInstallerService
@@ -183,17 +184,17 @@ export class PluginArchiveInstallerService {
       PluginArchiveInstallerService.refuseSourceCheckout(targetDir, manifest.slug, PluginDirectoryAction.REPLACE);
       PluginArchiveInstallerService.refuseOtherVendor(targetDir, manifest);
       await BackupService.create(manifest.slug, targetDir, BackupSectionKey.PLUGINS);
-      fs.rmSync(targetDir, { recursive: true, force: true });
-    }
-    fs.mkdirSync(targetDir, { recursive: true });
-
-    if (options.keepSource) {
-      fs.cpSync(contentDir, targetDir, { recursive: true });
-    } else {
-      this.moveDir(contentDir, targetDir);
     }
 
-    await this.dependencyInstaller.ensureInstalled(targetDir);
+    // Built beside the live directory and swapped in whole: a reader never sees it half-written.
+    await PluginDirectorySwap.replace(targetDir, async (stagingDir) => {
+      if (options.keepSource) {
+        fs.cpSync(contentDir, stagingDir, { recursive: true });
+      } else {
+        this.moveDir(contentDir, stagingDir);
+      }
+      await this.dependencyInstaller.ensureInstalled(stagingDir);
+    });
     return manifest;
   }
 }

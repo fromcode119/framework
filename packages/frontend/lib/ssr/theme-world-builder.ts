@@ -96,7 +96,8 @@ export class ThemeWorldBuilder {
     const pluginsDir = ThemeSsrRuntime.pluginsDir();
     if (!pluginsDir || !existsSync(pluginsDir)) return [];
     return readdirSync(pluginsDir, { withFileTypes: true })
-      .filter((item) => item.isDirectory())
+      // A hidden directory is an install in progress (or a leftover), never an installed plugin.
+      .filter((item) => item.isDirectory() && !item.name.startsWith('.'))
       .map((item) => ThemeSsrBundles.pluginEntry(item.name))
       .filter((entry) => existsSync(entry));
   }
