@@ -22,15 +22,31 @@ export class ThemeRenderHostPool {
   /** Signatures in least-recently-used order (front = oldest). */
   private static recency: string[] = [];
 
+  /**
+   * The signature each site renders with now. An extension update gives a site a new signature; the
+   * world it leaves behind used to stay resident until the cap pushed it out, so a few updates filled
+   * the storefront with superseded processes — five generations of one site at once, at the memory limit.
+   */
+  private static siteSignatures = new Map<string, string>();
+
+  /** The order signatures were first built in: a site only moves FORWARD, to a newer world. */
+  private static births = new Map<string, number>();
+  private static born = 0;
+
   static async render(args: {
     generation: ThemeSsrGeneration;
     settings: ThemeRenderSettings;
     frontendDir: string;
     boot: IThemeRenderBoot;
     request: IThemeRenderRequest;
+    /** The site this page belongs to — what ties a new generation to the one it supersedes. */
+    siteId: string;
   }): Promise<ThemeSsrMarkup | null> {
-    const { generation, settings, frontendDir, boot, request } = args;
+    const { generation, settings, frontendDir, boot, request, siteId } = args;
     const key = generation.signature;
+    // A request still carrying the config from before an update must not bring the world it replaced
+    // back to life; that one page renders client-side, as any server-render miss does.
+    if (ThemeRenderHostPool.superseded(siteId, key)) return null;
     ThemeRenderHostPool.touch(key);
     let pending = ThemeRenderHostPool.hosts.get(key);
     let host = pending ? await pending : null;
@@ -39,12 +55,14 @@ export class ThemeRenderHostPool {
       pending = undefined;
     }
     if (!pending) {
+      if (!ThemeRenderHostPool.births.has(key)) ThemeRenderHostPool.births.set(key, ++ThemeRenderHostPool.born);
       pending = ThemeRenderHostPool.start(generation, settings, frontendDir, boot);
       ThemeRenderHostPool.hosts.set(key, pending);
       ThemeRenderHostPool.evictAbove(settings.generationCap, key);
       host = await pending;
     }
     if (!host) return null;
+    ThemeRenderHostPool.moveSite(siteId, key);
     const parts = await host.render(request);
     return parts ? ThemeSsrMarkup.fromParts(parts) : null;
   }
@@ -61,6 +79,30 @@ export class ThemeRenderHostPool {
     ThemeRenderHostPool.hosts.delete(generation.signature);
     ThemeRenderIdentities.release(generation.signature);
     return null;
+  }
+
+  /** Whether the site already moved on from this signature to one built after it. */
+  private static superseded(siteId: string, signature: string): boolean {
+    const current = siteId ? ThemeRenderHostPool.siteSignatures.get(siteId) : undefined;
+    const born = ThemeRenderHostPool.births.get(signature);
+    // A signature never built before is newer than anything the site renders with now.
+    if (!current || current === signature || born === undefined) return false;
+    return born < (ThemeRenderHostPool.births.get(current) ?? 0);
+  }
+
+  /** Records the site's current signature; the one it left is retired once no site renders with it. */
+  private static moveSite(siteId: string, signature: string): void {
+    if (!siteId) return;
+    const previous = ThemeRenderHostPool.siteSignatures.get(siteId);
+    ThemeRenderHostPool.siteSignatures.set(siteId, signature);
+    if (!previous || previous === signature) return;
+    if ([...ThemeRenderHostPool.siteSignatures.values()].includes(previous)) return;
+    ThemeRenderHostPool.recency = ThemeRenderHostPool.recency.filter((entry) => entry !== previous);
+    const pending = ThemeRenderHostPool.hosts.get(previous);
+    ThemeRenderHostPool.hosts.delete(previous);
+    void pending?.then((host) => host?.retire());
+    ThemeRenderIdentities.release(previous);
+    console.info(`[frontend] SSR render host superseded for site ${siteId}: ${previous}`);
   }
 
   private static touch(signature: string): void {

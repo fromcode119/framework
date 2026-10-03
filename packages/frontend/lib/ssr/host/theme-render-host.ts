@@ -26,6 +26,8 @@ export class ThemeRenderHost {
   private guest: IGuestProcess | null = null;
   private channel: PluginChannel | null = null;
   private alive = false;
+  private inFlight = 0;
+  private retiring = false;
 
   constructor(readonly generation: ThemeSsrGeneration, private readonly settings: ThemeRenderSettings, private readonly frontendDir: string) {}
 
@@ -77,13 +79,26 @@ export class ThemeRenderHost {
   /** One page. A render that misses the deadline kills the process: a hung theme must not hold a request open. */
   async render(request: IThemeRenderRequest): Promise<IThemeSsrMarkupParts | null> {
     if (!this.channel || !this.isAlive) return null;
+    this.inFlight += 1;
     try {
       return await this.channel.request<IThemeSsrMarkupParts | null>('render', request, this.settings.timeoutMs);
     } catch (error) {
       console.warn(`[render-host:${this.generation.themeSlug}] render failed: ${error instanceof Error ? error.message : String(error)}`);
       this.stop();
       return null;
+    } finally {
+      this.inFlight -= 1;
+      if (this.retiring && this.inFlight === 0) this.stop();
     }
+  }
+
+  /**
+   * A newer world replaced this one: stop once the renders already running here finish, so no page is
+   * cut off mid-render. Until then the process keeps serving those requests and nothing else is sent to it.
+   */
+  retire(): void {
+    this.retiring = true;
+    if (this.inFlight === 0) this.stop();
   }
 
   stop(): void {
