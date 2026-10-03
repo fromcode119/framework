@@ -128,7 +128,7 @@ export class RecordsHubImplementation extends Reactor {
                   className={`rounded-full px-3 py-1 text-[11px] font-bold transition-colors ${activeGroup === key
                     ? (dark ? 'bg-indigo-500 text-white' : 'bg-indigo-600 text-white')
                     : (dark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}`}>
-                  {key === 'all' ? 'All' : key}
+                  {key === 'all' ? ViewTranslations.t('view.recordsHub.all') : key}
                 </button>
               ))}
             </div>

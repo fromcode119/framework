@@ -13,6 +13,8 @@ import type { IField } from '@core/interfaces/field.interface';
  */
 export class CollectionArchive {
   /** When the record was archived. Empty on every record that is not. */
+  /** `IField.extendedBy` for a field the framework itself adds — translated by the console, not a plugin. */
+  static readonly SYSTEM_EXTENDER = 'system';
   static readonly ARCHIVED_AT = 'archivedAt';
   /** The record this one was archived together with (`<collection slug>:<id>`), empty when archived on its own. */
   static readonly ARCHIVED_WITH = 'archivedWith';
@@ -68,6 +70,8 @@ export class CollectionArchive {
         name: CollectionArchive.ARCHIVED_AT,
         type: FieldType.DATETIME,
         label: 'Archived',
+        // The framework's own field: its words are the console's (`collection.systemFields.*`).
+        extendedBy: CollectionArchive.SYSTEM_EXTENDER,
         admin: {
           position: FieldPosition.SIDEBAR,
           readOnly: true,
@@ -78,6 +82,7 @@ export class CollectionArchive {
         name: CollectionArchive.ARCHIVED_WITH,
         type: FieldType.TEXT,
         label: 'Archived with',
+        extendedBy: CollectionArchive.SYSTEM_EXTENDER,
         admin: {
           position: FieldPosition.SIDEBAR,
           readOnly: true,

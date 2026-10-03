@@ -1,5 +1,6 @@
 import type { ReactElement } from 'react';
 import { FieldRendererUtils } from '@/components/collection/field-renderer-utils';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { FieldRendererHeader } from '@/components/collection/field-renderer-header';
 import { FieldControlRenderer } from '@/components/collection/field-control-renderer';
 import { FieldRendererFooter } from '@/components/collection/field-renderer-footer';
@@ -47,7 +48,8 @@ export class FieldRendererView extends FieldRendererViewLocale {
     const label = this.label;
 
     const resolvedCurrentText = FieldRendererUtils.resolveRenderableText(currentValue, this.activeLocale || defaultLocale);
-    const resolvedFieldDescription = FieldRendererUtils.resolveRenderableText(this.field.admin?.description, this.activeLocale || defaultLocale);
+    const ownDescription = this.field.extendedBy === 'system' ? AdminI18n.optional(`collection.systemFields.${this.field.name}.description`) : '';
+    const resolvedFieldDescription = ownDescription || FieldRendererUtils.resolveRenderableText(this.field.admin?.description, this.activeLocale || defaultLocale);
 
     return (
       <div className={FieldRendererUtils.wrapperClassName(this.field)}>

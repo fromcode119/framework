@@ -14,7 +14,8 @@
       "download": "Изтегляне",
       "downloadItem": "Изтегляне на {{title}}",
       "open": "Отваряне",
-      "openItem": "Отваряне на {{title}}"
+      "openItem": "Отваряне на {{title}}",
+      "all": "Всички"
     }
   }
 }
