@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.323] - 2026-10-04
+
+### Added
+
+- **core**: context.entityFacts — facts one plugin holds about another's records ([#727](https://github.com/fromcode119/framework/pull/727))
+
+### Fixed
+
+- **admin**: record fields open on the site's language; field text in the console's language ([#725](https://github.com/fromcode119/framework/pull/725))
+- **api**: Rebuild pages no longer replays the theme seed over a running site ([#730](https://github.com/fromcode119/framework/pull/730))
+- **core**: enabling a plugin syncs the collections it extended ([#729](https://github.com/fromcode119/framework/pull/729))
+
 ## [0.2.322] - 2026-10-04
 
 ### Fixed
