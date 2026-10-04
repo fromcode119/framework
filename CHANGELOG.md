@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.326] - 2026-10-04
+
+### Fixed
+
+- **core**: a plugin updated in place takes its new access rules and hooks ([#743](https://github.com/fromcode119/framework/pull/743))
+- extension vendor is checked for themes and appearances, and shown in the console ([#739](https://github.com/fromcode119/framework/pull/739))
+- **admin**: plugin and theme pages use the full content width ([#741](https://github.com/fromcode119/framework/pull/741))
+
 ## [0.2.325] - 2026-10-04
 
 ### Performance
