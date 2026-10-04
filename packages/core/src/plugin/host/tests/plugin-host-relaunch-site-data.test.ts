@@ -16,6 +16,7 @@ describe('a relaunch', () => {
 
   const relaunchWith = async (plugin: unknown) => {
     const replayed: Array<{ plugin: unknown; context: unknown; channel: string }> = [];
+    const invoked: string[] = [];
     const manager: any = { hooks: new HookManager(), plugins: new Map(plugin ? [['site-data-probe', plugin]] : []), db: {}, middlewares: new MiddlewareManager(), registeredCollections: new Map() };
     const logger: any = { info() {}, warn() {}, error() {}, debug() {} };
     const host = Object.create(PluginHost.prototype) as any;
@@ -32,11 +33,11 @@ describe('a relaunch', () => {
       context, manager, logger, wasEnabled: false, restarts: 0, healthyTimer: null,
       registrations: { resetForRestart() {}, apply: async () => undefined },
       proxy: { retarget() {}, inFlight: () => 0 }, limits: { timeoutMs: 1000 },
-      invoke: async () => undefined,
+      invoke: async (invocation: { name: string }) => { invoked.push(invocation.name); },
       launchGeneration: async () => next,
     });
     await host.relaunch();
-    return { replayed, host, context };
+    return { replayed, host, context, invoked };
   };
 
   it('runs the per-site data pass on the NEW process, with the plugin context, and hands that context back', async () => {
@@ -45,6 +46,25 @@ describe('a relaunch', () => {
 
     expect(replayed).toEqual([{ plugin, context, channel: 'next' }]);
     expect(host.context).toBe(context);
+  });
+
+  /**
+   * A hot install of a release that asks for more is held: approving runs its `onInit` and the per-site
+   * pass (deferred registration). The relaunch ran them too, so one process ran `onInit` twice and kept
+   * two copies of every registration; the next api to take it over replayed both and failed on the
+   * second MCP tool ("already registered") — finance, and the nine plugins that depend on it, went down.
+   */
+  it('runs neither onInit nor the per-site pass for a plugin held for approval', async () => {
+    const plugin = { manifest: { slug: 'site-data-probe' }, onInit: async () => undefined, registrationDeferred: { isFreshInstall: false, savedVersion: '0.1.0' } };
+    const { replayed, invoked } = await relaunchWith(plugin);
+
+    expect(invoked).toEqual([]);
+    expect(replayed).toEqual([]);
+  });
+
+  it('runs onInit on the new process for a plugin that is not held', async () => {
+    const { invoked } = await relaunchWith({ manifest: { slug: 'site-data-probe' }, onInit: async () => undefined });
+    expect(invoked).toEqual(['onInit']);
   });
 
   it('has nothing to replay for a plugin the manager no longer holds', async () => {
