@@ -163,5 +163,15 @@ export class PluginCollectionActivationService {
         await this.schemaManager.syncCollection(collection);
       }
     }
+
+    // Collections of OTHER plugins this one added fields to (`extend`). Enabling SEO on a site where the
+    // shop was already on added `ogImage` to the products collection but not its column, and every
+    // product read failed ("column og_image does not exist") until the api restarted and synced all.
+    const extended = Array.from(this.manager.registeredCollections.values())
+      .filter((entry) => entry.pluginSlug !== pluginSlug
+        && (entry.collection.fields || []).some((field: any) => field?.extendedBy === pluginSlug));
+    for (const { collection } of extended) {
+      await this.schemaManager.syncCollection(collection);
+    }
   }
 }
