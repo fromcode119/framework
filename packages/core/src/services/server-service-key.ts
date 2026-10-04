@@ -28,6 +28,7 @@ export class ServerServiceKey {
   static readonly CANONICAL_PATH_RESOLVERS = 'canonicalPathResolvers';
 
   static readonly ENTITY_RECORDS = 'entityRecords';
+  static readonly ENTITY_FACTS = 'entityFacts';
   static readonly ATTENTION = 'attention';
   static readonly CATALOG_CONTRIBUTIONS = 'catalog-contributions';
 

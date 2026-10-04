@@ -22,6 +22,7 @@ import { UsersContextProxy } from '@core/plugin/context/users';
 import { PeopleContextProxy } from '@core/plugin/context/people';
 import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
+import { EntityFactsContextProxy } from '@core/plugin/context/entity-facts';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
@@ -255,6 +256,7 @@ export class PluginContextFactory {
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
+        entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
         tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),

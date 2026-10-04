@@ -19,6 +19,7 @@ import type { RedirectResolverRegistryService } from '@core/services/redirect-re
 import type { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
 import type { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
+import type { EntityFactsRegistryService } from '@core/services/entity-facts/entity-facts-registry-service';
 import type { EntityRecordsResolutionService } from '@core/services/entity-records/entity-records-resolution-service';
 import { ServerServiceRegistry } from '@core/services/server-service-registry';
 import { ServerServiceKey } from '@core/services/server-service-key';
@@ -206,6 +207,11 @@ export class CoreServices {
    */
   get catalogContributions(): CatalogContributionRegistry {
     return ServerServiceRegistry.require<CatalogContributionRegistry>(ServerServiceKey.CATALOG_CONTRIBUTIONS);
+  }
+
+  /** Facts one plugin holds about another's records (a product's rating) — see EntityFactsRegistryService. */
+  get entityFacts(): EntityFactsRegistryService {
+    return ServerServiceRegistry.require<EntityFactsRegistryService>(ServerServiceKey.ENTITY_FACTS);
   }
 
   get entityRecords(): PluginEntityRecordsRegistryService {
