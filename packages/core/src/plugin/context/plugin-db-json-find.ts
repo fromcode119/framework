@@ -35,8 +35,9 @@ export class PluginDbJsonFind {
     find: () => unknown,
     postProcess: (rows: unknown) => unknown,
     localized: { table: unknown; manager: IPluginManagerInterface } | null,
+    omit: readonly string[] = [],
   ): Promise<unknown> {
-    return db.findAsJson(callArgs[0], callArgs[1]).then((rows: any) => (rows
+    return db.findAsJson(callArgs[0], omit.length ? { ...callArgs[1], omit } : callArgs[1]).then((rows: any) => (rows
       ? PluginJsonRows.wrap(rows, localized ? LocalizedReadResolver.resolutionFor(localized.table, localized.manager) : null)
       : Promise.resolve(find()).then(postProcess)));
   }

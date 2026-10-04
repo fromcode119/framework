@@ -6,6 +6,7 @@ import { SystemMetaCollectionGuard } from '@api/services/system-meta-collection-
 import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-guard';
 import { CollectionArchiveReadClause } from '@api/services/collection-archive-read-clause';
 import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
+import { CollectionReadColumns } from '@api/services/collection-read-columns';
 import { ReadConstraintOperators } from '@api/services/read-constraint-operators';
 import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
@@ -65,9 +66,7 @@ export class RestReadController {
         ? parsedOffset
         : (safePage - 1) * limitValue;
 
-      const columns = options.fields
-        ? Object.fromEntries(['id', ...options.fields, ...CollectionReadRedaction.decidingFields(collection)].filter((field) => (table as any)[field]).map((field) => [field, true]))
-        : undefined;
+      const columns = CollectionReadColumns.forList(collection, table, options.fields, partialReader);
       let rowsResult = await this.runtime.db.find(table, {
         where: whereClause,
         limit: limitValue,
@@ -207,8 +206,10 @@ export class RestReadController {
         }
       }
 
-      const filtered = this.forReader(collection, req, !(await this.runtime.accessPolicy.readsEverything(collection, req)),
-        this.runtime.processor.filterHiddenFields(collection, result, { localeContext, rawLocalized }));
+      const partialReader = !(await this.runtime.accessPolicy.readsEverything(collection, req));
+      const record = partialReader ? CollectionReadColumns.withoutOnRequest(collection, result) : result;
+      const filtered = this.forReader(collection, req, partialReader,
+        this.runtime.processor.filterHiddenFields(collection, record, { localeContext, rawLocalized }));
       if (!res) {
         return filtered;
       }

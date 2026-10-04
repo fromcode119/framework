@@ -4,6 +4,7 @@ import type { ICollection, IPluginReadRoute, PluginManager } from '@fromcode119/
 import { Sql } from '@fromcode119/database';
 import type { RESTController } from '@api/controllers/rest/rest-controller';
 import { CollectionReadOptions } from '@api/services/collection-read-options';
+import { CollectionReadColumns } from '@api/services/collection-read-columns';
 
 /**
  * Answers a plugin's declared read routes (IPluginReadRoute) itself, from the records the plugin keeps
@@ -103,7 +104,7 @@ export class PluginReadRoutes {
     });
     read[CollectionReadOptions.KEY] = {
       where: (db: any, table: any) => PluginReadRoutes.filterClause(db, table, route, query),
-      orderBy: (db: any, table: any) => PluginReadRoutes.order(db, table, route, query.sort),
+      orderBy: (db: any, table: any) => PluginReadRoutes.order(db, table, route, query.sort, new Set(CollectionReadColumns.onRequest(collection))),
       // The answer is the prepared document alone: no other column is read, and nothing counts the matches.
       fields: [route.document],
       withoutTotal: true,
@@ -121,9 +122,9 @@ export class PluginReadRoutes {
 
   /**
    * The route's fixed conditions and the declared filters the request names, ANDed — OR any record the
-   * plugin has not prepared yet. An unprepared record is in every answer, whatever it would match once
-   * prepared (its conditions are not set yet), and `order` puts it first: while one exists the page
-   * holds it, and the plugin answers.
+   * plugin has not prepared yet. An unprepared record is a candidate for every answer, whatever it would
+   * match once prepared (its conditions are not set yet): when one falls inside the page, the plugin
+   * answers (see `order`).
    */
   static filterClause(db: any, table: any, route: IPluginReadRoute, query: Record<string, unknown>): unknown {
     const fixed = Object.entries(route.where || {}).map(([field, value]) => db.eq(PluginReadRoutes.column(table, route, field), value));
@@ -143,17 +144,23 @@ export class PluginReadRoutes {
   }
 
   /**
-   * Unprepared records first; then the order the request names among the route's declared sorts —
-   * `price`, `-price`, or the older `price-asc` / `price-desc` — else the route's `defaultSort`; ties by
-   * id, newest first, so a page is the same page every time it is asked for.
+   * The order the request names among the route's declared sorts — `price`, `-price`, or the older
+   * `price-asc` / `price-desc` — else the route's `defaultSort`; ties by id, newest first, so a page is
+   * the same page every time it is asked for.
+   *
+   * On a field the record holds as it is (not one the plugin derives), an unprepared record already sorts
+   * where it belongs: if none falls inside the page, the page is exactly the plugin's. Only a sort on a
+   * derived (`readOnRequest`) field puts unprepared records first — that costs a full sort, so a route
+   * should sort by real fields.
    */
-  static order(db: any, table: any, route: IPluginReadRoute, sort: unknown): unknown[] {
-    const unpreparedFirst = Sql.query`(${PluginReadRoutes.column(table, route, route.document)} IS NULL) DESC`;
+  static order(db: any, table: any, route: IPluginReadRoute, sort: unknown, derived: ReadonlySet<string> = new Set()): unknown[] {
     const parsed = PluginReadRoutes.parseSort(sort, route) ?? PluginReadRoutes.parseSort(route.defaultSort, route);
     const field = parsed ? route.sorts![parsed.name].field : 'id';
     const column = PluginReadRoutes.column(table, route, field);
-    const primary = !parsed || parsed.descending ? db.desc(column) : Sql.query`${column} asc`;
-    return field === 'id' ? [unpreparedFirst, primary] : [unpreparedFirst, primary, db.desc(PluginReadRoutes.column(table, route, 'id'))];
+    const order = [!parsed || parsed.descending ? db.desc(column) : Sql.query`${column} asc`];
+    if (field !== 'id') order.push(db.desc(PluginReadRoutes.column(table, route, 'id')));
+    if (derived.has(field)) order.unshift(Sql.query`(${PluginReadRoutes.column(table, route, route.document)} IS NULL) DESC`);
+    return order;
   }
 
   /**

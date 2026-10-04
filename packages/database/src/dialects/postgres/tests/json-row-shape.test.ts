@@ -27,6 +27,14 @@ describe('JsonRowShape', () => {
     expect(sql.indexOf('"id"')).toBeLessThan(sql.indexOf('"customPermalink"'));
   });
 
+  it('leaves the fields it is asked to omit out of every row', () => {
+    const shape = JsonRowShape.of('fcp_alpha_items', [column('id', 23), column('public_card', 3802), column('title', 25)])!;
+    const sql = shape.statement('SELECT * FROM "fcp_alpha_items"', ['publicCard']);
+    expect(sql).not.toContain('public_card');
+    expect(sql).toContain('r."id" AS "id", r."title" AS "title"');
+    expect(shape.statement('SELECT * FROM "fcp_alpha_items"')).toContain('r."public_card" AS "publicCard"');
+  });
+
   it.each([
     ['a timestamp without a zone', 1114],
     ['a date', 1082],

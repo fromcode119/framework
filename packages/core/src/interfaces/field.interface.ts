@@ -51,6 +51,13 @@ export interface IField {
    * to the plugin's content-resolution gate, which knows the visitor.
    */
   withheldWhen?: string[];
+  /**
+   * Derived data kept for one consumer — a prepared document a read route answers with, its sort and
+   * filter keys. Not part of a read that does not name it: the public side of the generic reads and a
+   * plugin's own `find` / `findOne` without `columns` leave it out, so every other read of the record
+   * does not carry it. Staff reading the whole collection still see it in the console.
+   */
+  readOnRequest?: boolean;
   min?: number; // For number
   max?: number; // For number
   minLength?: number; // For text

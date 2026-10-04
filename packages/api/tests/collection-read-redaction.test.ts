@@ -141,6 +141,27 @@ describe('collection read redaction', () => {
       expect(res.json.mock.calls[0][0].docs[0].content).toBe('secret body');
     });
 
+    it('a public read leaves out readOnRequest fields; staff and a read that names them get them', async () => {
+      const cards: any = { ...collection, slug: 'fcp_example_cards', fields: [...collection.fields, { name: 'card', type: 'json', readOnRequest: true }] };
+      const withCard = { ...locked, card: { a: 1 } };
+      const anonymous = buildRuntime([withCard]);
+      await new RestReadController(anonymous as any).find(cards, { query: {} } as any, response());
+      expect(Object.keys(anonymous.db.find.mock.calls[0][1].columns)).not.toContain('card');
+      expect(Object.keys(anonymous.db.find.mock.calls[0][1].columns)).toContain('title');
+      const admin = buildRuntime([withCard]);
+      await new RestReadController(admin as any).find(cards, { query: {}, user: ADMIN } as any, response());
+      expect(admin.db.find.mock.calls[0][1].columns).toBeUndefined();
+      const named = buildRuntime([withCard]);
+      await new RestReadController(named as any).find(cards, { query: {}, [CollectionReadOptions.KEY]: { fields: ['card'] } } as any, response());
+      expect(Object.keys(named.db.find.mock.calls[0][1].columns)).toContain('card');
+      const one = response();
+      await new RestReadController(buildRuntime([withCard]) as any).findOne(cards, { params: { id: '1' }, query: {} } as any, one);
+      expect(one.json.mock.calls[0][0]).not.toHaveProperty('card');
+      const staffOne = response();
+      await new RestReadController(buildRuntime([withCard]) as any).findOne(cards, { params: { id: '1' }, query: {}, user: ADMIN } as any, staffOne);
+      expect(staffOne.json.mock.calls[0][0].card).toEqual({ a: 1 });
+    });
+
     it('a read of some fields also reads what withholds them, so a withheld field stays withheld', async () => {
       const runtime = buildRuntime([{ id: 1, content: 'secret body', accessPassword: 'pw' }]);
       const res = response();

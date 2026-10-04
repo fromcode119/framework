@@ -167,7 +167,7 @@ export class PostgresReadOperations extends BaseDialect {
    * changed since its shape was read — and the caller then runs `find`.
    */
   async findAsJson(tableName: string, options: any = {}): Promise<IJsonRows | null> {
-    const { limit, offset, orderBy, where, columns, joins, search } = options;
+    const { limit, offset, orderBy, where, columns, joins, search, omit } = options;
     if (tableName !== String(tableName) || (joins && joins.length > 0) || (columns && Object.keys(columns).length > 0)) return null;
     // Inside a transaction a failed statement aborts the caller's work, so a shape that went stale
     // could not fall back below: there, `find` answers.
@@ -183,7 +183,7 @@ export class PostgresReadOperations extends BaseDialect {
 
     let result: any;
     try {
-      result = await this.executor.query(PreparedStatements.mark(shape.statement(inner), values, { rowMode: 'array' }));
+      result = await this.executor.query(PreparedStatements.mark(shape.statement(inner, omit), values, { rowMode: 'array' }));
     } catch (error) {
       if (this.tables.dropped(error, tableName)) return { text: '[]', revive: {} };
       // A column the remembered shape names is gone (dropped or renamed elsewhere): the statement fails
