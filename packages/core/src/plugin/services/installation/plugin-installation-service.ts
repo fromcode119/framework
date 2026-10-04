@@ -18,6 +18,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginPackageLayout } from '@core/plugin/plugin-package-layout';
 import { InstalledPluginManifestService } from '@core/plugin/services/installation/installed-plugin-manifest-service';
 import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
+import { PluginInstallRollback } from '@core/plugin/services/installation/plugin-install-rollback';
 
 export class PluginInstallationService {
   constructor(
@@ -43,9 +44,11 @@ export class PluginInstallationService {
     private readonly holdIfUnapproved: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
   ) {
     this.migrations = new PluginMigrationRunner(migrationManager, migrationDatabaseFor);
+    this.rollback = new PluginInstallRollback(pluginsRoot, logger);
   }
 
   private readonly migrations: PluginMigrationRunner;
+  private readonly rollback: PluginInstallRollback;
 
   /** Set when a replaced plugin could NOT be reloaded in place (shared) and a deferred api restart is owed. */
   private restartOwed = false;
@@ -54,6 +57,7 @@ export class PluginInstallationService {
     slug: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; version?: string; deferRestart?: boolean } = {},
   ): Promise<IPluginManifest> {
+    const startedAt = Date.now();
     const pkg = await this.marketplace.getPluginInfo(slug, options.version);
     if (!pkg) {
       throw new Error(`Plugin "${slug}"${options.version ? ` v${options.version}` : ''} not found in marketplace.`);
@@ -89,6 +93,7 @@ export class PluginInstallationService {
       enable: options.enable ?? existing?.state === PluginState.ACTIVE,
       progressReporter: options.progressReporter,
       deferRestart: options.deferRestart,
+      startedAt,
     });
     return manifest;
   }
@@ -97,14 +102,11 @@ export class PluginInstallationService {
     filePath: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<IPluginManifest> {
-    options.progressReporter?.({
-      phase: 'extracting-package',
-      message: 'Extracting uploaded plugin package...',
-      pluginSlug: 'upload',
-    });
+    options.progressReporter?.({ phase: 'extracting-package', message: 'Extracting uploaded plugin package...', pluginSlug: 'upload' });
 
+    const startedAt = Date.now();
     const manifest = await this.discovery.installFromZip(filePath);
-    await this.finalizeInstalledPlugin(manifest.slug, options);
+    await this.finalizeInstalledPlugin(manifest.slug, { ...options, startedAt });
     return manifest;
   }
 
@@ -116,14 +118,11 @@ export class PluginInstallationService {
     packageDir: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<IPluginManifest> {
-    options.progressReporter?.({
-      phase: 'extracting-package',
-      message: 'Installing built plugin package...',
-      pluginSlug: 'build',
-    });
+    options.progressReporter?.({ phase: 'extracting-package', message: 'Installing built plugin package...', pluginSlug: 'build' });
 
+    const startedAt = Date.now();
     const manifest = await this.discovery.installFromDirectory(packageDir);
-    await this.finalizeInstalledPlugin(manifest.slug, options);
+    await this.finalizeInstalledPlugin(manifest.slug, { ...options, startedAt });
     return manifest;
   }
 
@@ -191,7 +190,7 @@ export class PluginInstallationService {
 
   async finalizeInstalledPlugin(
     slug: string,
-    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; deferRestart?: boolean } = {},
+    options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter; deferRestart?: boolean; startedAt?: number } = {},
   ): Promise<void> {
     const existingPlugin = this.plugins.get(slug);
     const manifestPath = path.join(this.pluginsRoot, slug, 'manifest.json');
@@ -204,7 +203,9 @@ export class PluginInstallationService {
     // lowercased slug, ownerTenantId stamped from the directory rather than the manifest's own.
     const manifest = InstalledPluginManifestService.read(pluginPath);
 
-    await this.migrations.run(slug, pluginPath, manifest, options.progressReporter);
+    // Given the install's start, a failed migration puts the files this install replaced back.
+    const migrate = () => this.migrations.run(slug, pluginPath, manifest, options.progressReporter);
+    await (options.startedAt === undefined ? migrate() : this.rollback.runOrRestore(slug, options.startedAt, migrate));
 
     // Fills `ui.*` in from what landed on disk — see PR #110. Runs AFTER the plugin's migrations:
     // resolve() also backfills `manifest.migrations` from an on-disk dist/migrations dir when

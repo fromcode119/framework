@@ -70,6 +70,23 @@ export class BackupService {
   }
 
   /**
+   * The newest backup of `slug` written at or after `sinceMs`, or null. Matched on the exact slug plus
+   * the timestamp that follows it, so `shop` never picks up a backup of `shop-extra`.
+   */
+  static latestSince(slug: string, type: BackupSectionKey, sinceMs: number): string | null {
+    const dir = path.join(this.getBackupsDir(), type.value);
+    if (!fs.existsSync(dir)) return null;
+    const escaped = slug.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&');
+    const own = new RegExp('^' + escaped + '-\\d{4}-\\d{2}-\\d{2}T.*\\.tar\\.gz$');
+    const newest = fs.readdirSync(dir)
+      .filter((name) => own.test(name))
+      .map((name) => ({ file: path.join(dir, name), time: fs.statSync(path.join(dir, name)).mtimeMs }))
+      .filter((entry) => entry.time >= sinceMs)
+      .sort((a, b) => b.time - a.time)[0];
+    return newest?.file ?? null;
+  }
+
+  /**
    * Restores from a backup file
    * @param backupPath - The path to the backup file
    * @param targetDir - The directory where it should be extracted
