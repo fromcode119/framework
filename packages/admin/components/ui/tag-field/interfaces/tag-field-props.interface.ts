@@ -9,6 +9,8 @@ export interface ITagFieldProps {
   theme?: ThemeMode;
   collectionSlug?: string;
   fieldName?: string;
+  /** The field's translated label, used in the placeholder. */
+  fieldLabel?: string;
   sourceCollection?: string; // If we want to fetch suggestions from another collection
   sourceField?: string;      // The field in the other collection to suggest from
   hasMany?: boolean;         // Default true, if false it acts as a single select

@@ -11,4 +11,10 @@ describe('PermalinkInputUtils.compute — base URL', () => {
     );
     expect(computed.baseUrl).toBe('https://shop.example.com');
   });
+
+  it('shows "…" before the record has a slug, but its path is empty — the placeholder is never an address', () => {
+    const computed = PermalinkInputUtils.compute({ value: '', slug: '', onChange: () => {} } as never, {}, '');
+    expect(computed.displayValue).toBe('…');
+    expect(computed.pathValue).toBe('');
+  });
 });

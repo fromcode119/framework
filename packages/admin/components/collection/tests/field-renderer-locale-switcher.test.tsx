@@ -77,3 +77,55 @@ describe('localized field — the locale switcher offers the configured language
     expect(container.textContent).not.toContain('Bulgarian');
   });
 });
+
+/**
+ * A record's localized field holds SITE content, so it opens on the site's language — not the console's.
+ * On a Bulgarian site with an English console every name box opened on EN, looked empty, and a new
+ * product got an English-only name.
+ */
+describe('localized field — opens on the site language', () => {
+  const SITE_BG = { ...GLOBAL_SETTINGS, admin_default_locale: 'en', frontend_default_locale: 'bg', default_locale: 'bg' };
+
+  function input(container: HTMLElement): HTMLInputElement {
+    return container.querySelector('input') as HTMLInputElement;
+  }
+
+  it('shows the site-language value, not the console-language one', () => {
+    const { container } = renderLocalizedField(SITE_BG);
+    expect(input(container).value).toBe('Вселенски портал');
+  });
+
+  it('moves to the site language when the settings arrive after the first render', () => {
+    const view = renderLocalizedField({});
+    view.rerender(
+      <FieldRendererView
+        field={{ name: 'siteName', label: 'Site name', type: 'text', localized: true } as any}
+        value={{ en: 'Universe Portal', bg: 'Вселенски портал' }}
+        onChange={vi.fn()}
+        collectionSlug="settings-kappa"
+        plugins={{ collections: [], fieldComponents: {} } as any}
+        globalSettings={SITE_BG}
+      />,
+    );
+    expect(input(view.container).value).toBe('Вселенски портал');
+  });
+
+  it('keeps the language the operator picked', () => {
+    const view = renderLocalizedField(SITE_BG);
+    const toggle = screen.getAllByRole('button').find((b) => /BG/i.test(b.textContent || ''));
+    fireEvent.click(toggle!);
+    fireEvent.click(screen.getByText(/English/i));
+    expect(input(view.container).value).toBe('Universe Portal');
+    view.rerender(
+      <FieldRendererView
+        field={{ name: 'siteName', label: 'Site name', type: 'text', localized: true } as any}
+        value={{ en: 'Universe Portal', bg: 'Вселенски портал' }}
+        onChange={vi.fn()}
+        collectionSlug="settings-kappa"
+        plugins={{ collections: [], fieldComponents: {} } as any}
+        globalSettings={{ ...SITE_BG }}
+      />,
+    );
+    expect(input(view.container).value).toBe('Universe Portal');
+  });
+});
