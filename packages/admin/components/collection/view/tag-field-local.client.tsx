@@ -64,6 +64,7 @@ export class TagFieldLocal extends AdminComponent {
     <TagField 
       collectionSlug={collectionSlug}
       fieldName={field.name}
+      fieldLabel={field.label || undefined}
       value={safeValue}
       onChange={onChange}
       theme={themeMode}

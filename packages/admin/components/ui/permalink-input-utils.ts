@@ -22,7 +22,9 @@ export class PermalinkInputUtils {
 
     const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
     const isCustomMode = !!normalizedValue;
-    const displayValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || 'unnamed-resource'));
+    // Before a record has a slug the preview ends in "…" — it used to print the English "unnamed-resource"
+    // into every new record's address on any console language.
+    const displayValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || '…'));
 
     const now = new Date();
     const replacements: Record<string, string> = {

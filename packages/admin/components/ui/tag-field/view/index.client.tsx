@@ -20,6 +20,8 @@ export class TagField extends Reactor {
   @prop declare theme?: ThemeMode;
   @prop declare collectionSlug?: string;
   @prop declare fieldName?: string;
+  /** The field's own (translated) label; the placeholder used to spell out the code name instead ("Cross Sells"). */
+  @prop declare fieldLabel?: string;
   @prop declare sourceCollection?: string;
   @prop declare sourceField?: string;
   @prop declare hasMany?: boolean;
@@ -140,7 +142,7 @@ export class TagField extends Reactor {
     const onChange = this.onChange;
     const { inputValue, suggestions, showSuggestions, sourceUnavailableMessage, labels, isCreating } = this;
     const tags = this.getTags();
-    const inferredFieldLabel = TagFieldUtils.inferFieldLabel(fieldName);
+    const inferredFieldLabel = this.fieldLabel || TagFieldUtils.inferFieldLabel(fieldName);
     const effectivePlaceholder = this.placeholder || (sourceCollection ? AdminI18n.t('ui.tags.search', { label: inferredFieldLabel }) : AdminI18n.t('ui.tags.add', { label: inferredFieldLabel }));
     const effectiveSuggestionsLabel = this.suggestionsLabel || AdminI18n.t('ui.tags.existing', { label: inferredFieldLabel });
 

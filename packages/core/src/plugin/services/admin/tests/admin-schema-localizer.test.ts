@@ -122,4 +122,13 @@ describe('AdminSchemaLocalizer', () => {
     });
     expect(out.fields[0].admin.fallback.map((rule: any) => rule.emptyMeans)).toEqual(['не се показва срок за доставка.', 'kept.']);
   });
+
+  it('translates a placeholder declared under admin (relationship and tag fields)', () => {
+    const words = { ...dictionary, 'shop.admin.collections.catalog.fields.related.placeholder': 'Търсете продукти по име…' };
+    const out = new AdminSchemaLocalizer((plugin, key) => words[`${plugin}.${key}`] || '').collection('shop', {
+      slug: 'shop-products', shortSlug: 'catalog',
+      fields: [{ name: 'related', label: 'Related', type: 'relationship', admin: { placeholder: 'Search products by name...' } }],
+    });
+    expect(out.fields[0].admin.placeholder).toBe('Търсете продукти по име…');
+  });
 });

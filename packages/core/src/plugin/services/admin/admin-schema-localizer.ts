@@ -162,6 +162,9 @@ export class AdminSchemaLocalizer {
         next.admin = {
           ...field.admin,
           description: this.text(pluginSlug, `${key}.description`, field.admin.description),
+          // A relationship or tag field declares its placeholder here, not at the top level; it was left in
+          // the schema's English ("Search products by name…") on a Bulgarian console.
+          ...(field.admin.placeholder ? { placeholder: this.text(pluginSlug, `${key}.placeholder`, field.admin.placeholder) } : {}),
           // The editor groups fields under this heading; one translation per heading, shared by its fields.
           section: this.text(pluginSlug, `${sectionsBase}.${StringUtils.slugify(field.admin.section, '')}.label`, field.admin.section),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
