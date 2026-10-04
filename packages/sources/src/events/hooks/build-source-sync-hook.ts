@@ -1,11 +1,11 @@
-import type { HookManager } from '@fromcode119/core';
+import type { PlatformScopedHooks } from '@sources/events/hooks/platform-scoped-hooks';
 import { BuildService } from '@sources/packaging/build-service';
 import type { IBuildSourceInput } from '@sources/sources/interfaces/build-source-input.interface';
 
 export class BuildSourceSyncHook {
   static readonly EVENT = 'sources:sync';
 
-  static register(hooks: HookManager, buildService: BuildService): void {
+  static register(hooks: PlatformScopedHooks, buildService: BuildService): void {
     hooks.on(BuildSourceSyncHook.EVENT, async (payload: unknown) => {
       const sources = BuildSourceSyncHook.readSources(payload);
       const syncedSources = await buildService.syncSources(sources);

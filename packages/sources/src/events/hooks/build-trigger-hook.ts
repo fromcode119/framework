@@ -1,12 +1,12 @@
 import { CoercionUtils } from '@fromcode119/core';
-import type { HookManager } from '@fromcode119/core';
+import type { PlatformScopedHooks } from '@sources/events/hooks/platform-scoped-hooks';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 export class BuildTriggerHook {
   static readonly EVENT = 'sources:builds:trigger';
 
-  static register(hooks: HookManager, buildService: BuildService): void {
+  static register(hooks: PlatformScopedHooks, buildService: BuildService): void {
     hooks.on(BuildTriggerHook.EVENT, async (payload: unknown) => {
       // An EMPTY payload still means "build everything" — that is a different request, not an
       // incomplete one. A payload that names a source must name it fully.
