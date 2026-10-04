@@ -41,6 +41,8 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       // shows what it stored. `!== false` rather than `Boolean(...)` so a row the migration has not
       // reached yet does not read as "off" on a screen that would then save that.
       installAfterBuild: build ? build.installAfterBuild !== false : true,
+      publishToSite: build?.publishToSite || '',
+      sites: [],
       branch: build?.branch || '',
       provider: build?.provider || 'git',
       providers: [],

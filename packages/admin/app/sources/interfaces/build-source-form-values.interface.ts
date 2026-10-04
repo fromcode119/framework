@@ -4,6 +4,8 @@ export interface IBuildSourceFormValues {
   autoBuild: boolean;
   autoUpdate: boolean;
   installAfterBuild: boolean;
+  /** The site each successful build is published to; '' = off. */
+  publishToSite: string;
   branch: string;
   gitSecret: string;
   gitUrl: string;

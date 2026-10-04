@@ -16,6 +16,10 @@ export interface IBuildSourceRecord extends IBuildSourceInput {
   autoBuild?: boolean;
   autoUpdate?: boolean;
   installAfterBuild?: boolean;
+  /** The site each successful build is published to; '' when publishing is off. */
+  publishToSite?: string;
+  /** The outcome of the last hand-over to that site, as shown on the Sources screen. */
+  lastPublish?: string;
   /** Commit subjects since the previously built revision — the changelog for `version`. */
   changelog?: string;
   [key: string]: unknown;

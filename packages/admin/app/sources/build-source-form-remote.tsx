@@ -1,6 +1,7 @@
 import { ExtensionScope } from '@fromcode119/core/client';
 import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import { SourcesApi } from '@/app/sources/sources-api';
+import { SitesClient } from '@/lib/tenants/sites-client';
 import { BuildSourceFormState } from '@/app/sources/build-source-form-state';
 
 /**
@@ -31,6 +32,19 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
       // The form still works: a source that names no provider is tracked with the default, and the
       // field simply has nothing to offer rather than inventing an option.
       this.setState({ providers: [], types: [] });
+    }
+  }
+
+  /**
+   * The sites a source can publish its builds to. Read from the platform; a failure leaves only "Off",
+   * never a guessed site.
+   */
+  protected async loadSites(): Promise<void> {
+    try {
+      const { sites } = await SitesClient.list();
+      this.setState({ sites: sites.filter((site) => site.isActive).map((site) => ({ label: `${site.slug} — ${site.primaryHost}`, value: site.id })) });
+    } catch {
+      this.setState({ sites: [] });
     }
   }
 

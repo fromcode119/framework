@@ -1,3 +1,4 @@
+import { CoercionUtils } from '@fromcode119/core';
 import { ExtensionScope } from '@fromcode119/core';
 import { Logger } from '@fromcode119/core';
 import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
@@ -44,6 +45,7 @@ export class BuildSourceService {
       // Defaults ON when the caller says nothing: a source is added to have its result arrive, and
       // a build that leaves its package in the workspace did half a job.
       installAfterBuild: input.installAfterBuild === undefined ? true : Boolean(input.installAfterBuild),
+      publishToSite: CoercionUtils.toString(input.publishToSite) || null,
       branch: this.normalizeBranch(input.branch),
       git_secret: this.encryptSecret(input.gitSecret),
       git_url: this.normalizeGitUrl(input.gitUrl),
@@ -203,6 +205,8 @@ export class BuildSourceService {
     if (typeof input.autoBuild === 'boolean') updates.autoBuild = input.autoBuild;
     if (typeof input.autoUpdate === 'boolean') updates.autoUpdate = input.autoUpdate;
     if (typeof input.installAfterBuild === 'boolean') updates.installAfterBuild = input.installAfterBuild;
+    // Present-and-empty switches publishing off; absent leaves it as it was.
+    if (input.publishToSite !== undefined) updates.publishToSite = CoercionUtils.toString(input.publishToSite) || null;
 
     await this.db.update(this.buildsSlug, { id: existing.id }, updates);
     const refreshed = await this.db.findOne(this.buildsSlug, identity.where);

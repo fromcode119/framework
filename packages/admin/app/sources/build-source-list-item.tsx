@@ -204,6 +204,14 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
               {this.build.lastError}
             </div>
           ) : null}
+          {/* Where builds are handed, and what happened last time — the operator sees the hand-over
+              without opening the target site. */}
+          {this.build.publishToSite ? (
+            <div className="mt-2 text-xs text-slate-500 dark:text-slate-400">
+              {AdminI18n.t('sources.publishesTo', { site: this.build.publishToSite })}
+              {this.build.lastPublish ? <span className="block">{this.build.lastPublish}</span> : <span className="block">{AdminI18n.t('sources.notPublishedYet')}</span>}
+            </div>
+          ) : null}
         </div>
       </div>
     );

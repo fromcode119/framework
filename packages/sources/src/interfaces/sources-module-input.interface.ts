@@ -1,6 +1,7 @@
 import type { RequestHandler } from 'express';
 import type { HookManager } from '@fromcode119/core';
 import type { IExtensionInstaller } from '@sources/interfaces/extension-installer.interface';
+import type { ISitePackagePublisher } from '@sources/packaging/interfaces/site-package-publisher.interface';
 
 /**
  * What Sources needs from the framework to run.
@@ -34,6 +35,8 @@ export interface ISourcesModuleInput {
    * turns it on. Asked on every build.
    */
   buildsUnverifiedCommits?: () => Promise<boolean>;
+  /** Hands a source's builds to the site it publishes to (its media library + hook delivery). */
+  sitePublisher?: ISitePackagePublisher;
   /** Runs the auto-build timer. */
   scheduler?: { register(name: string, schedule: string, handler: () => Promise<void>): Promise<void> };
 }

@@ -137,6 +137,9 @@ export class BuildSourceMapper {
       // such row, so a null here means the migration has not run yet — and the build path reads the
       // same column, so both agree either way.
       installAfterBuild: BuildSourceMapper.readFlag(source.install_after_build, source.installAfterBuild),
+      // The site each successful build is handed to ('' = none), and what happened the last time.
+      publishToSite: String(source.publish_to_site ?? source.publishToSite ?? '').trim(),
+      lastPublish: String(source.last_publish ?? source.lastPublish ?? '').trim(),
       branch: (source.branch || '').trim() || GitBranchPolicy.DEFAULT_BRANCH,
       provider: SourceProviders.normalize(source.provider),
       changelog: typeof source.changelog === 'string' ? source.changelog : '',

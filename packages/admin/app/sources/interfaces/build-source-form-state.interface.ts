@@ -19,6 +19,9 @@ export interface IBuildSourceFormState {
   autoBuild: boolean;
   autoUpdate: boolean;
   installAfterBuild: boolean;
+  publishToSite: string;
+  /** The sites a build can be published to, read from the platform; empty until read. */
+  sites: Array<{ label: string; value: string }>;
   branch: string;
   /** Branch names the remote reported. Empty until a URL is entered, or when it cannot be read. */
   branches: string[];

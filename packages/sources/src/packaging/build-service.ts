@@ -1,3 +1,5 @@
+import type { ISitePackagePublisher } from '@sources/packaging/interfaces/site-package-publisher.interface';
+import { SourcePackagePublication } from '@sources/packaging/source-package-publication';
 import { ExtensionScope } from '@fromcode119/core';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 import type { ISourceProvider } from '@sources/providers/interfaces/source-provider.interface';
@@ -48,6 +50,8 @@ export class BuildService {
     // Whether to build a commit GitHub did not merge (`GitCommitProvenance`). Asked on every build, so
     // the operator's switch takes effect at the next one; absent means NO — verification is the default.
     private readonly buildsUnverifiedCommits: () => Promise<boolean> = async () => false,
+    // Hands a build to the site its source publishes to. Absent: publishing reports that it cannot run.
+    private readonly sitePublisher?: ISitePackagePublisher,
   ) {
     this.packageDownloads = new PackageDownloadService(
       packageBuilder,
@@ -77,6 +81,7 @@ export class BuildService {
       (...args: any[]) => (this.resolveSourceDirectory as any)(...args),
       (...args: any[]) => (this.resolvePackageArtifact as any)(...args),
       buildsUnverifiedCommits,
+      new SourcePackagePublication((identity) => this.archivePackage(identity), sitePublisher),
     );
   }
 
@@ -223,6 +228,7 @@ export class BuildService {
   }
 
   async createSource(input: any): Promise<any> {
+    await this.assertPublishTarget(input);
     return this.buildSourceService.createSource(input);
   }
 
@@ -235,7 +241,16 @@ export class BuildService {
   }
 
   async updateSource(identity: BuildSourceIdentity, input: any): Promise<any> {
+    await this.assertPublishTarget(input);
     return this.buildSourceService.updateSource(identity, input);
+  }
+
+  /** A source may only publish to a site that exists — a typo would otherwise publish nowhere, silently. */
+  private async assertPublishTarget(input: any): Promise<void> {
+    const siteId = CoercionUtils.toString(input?.publishToSite);
+    if (!siteId) return;
+    if (!this.sitePublisher) throw new Error('This installation cannot publish builds to sites.');
+    if (!(await this.sitePublisher.isSite(siteId))) throw new Error(`There is no active site "${siteId}" to publish to.`);
   }
 
   /** @see SourceBuildRunner.buildOne */

@@ -18,4 +18,6 @@ export interface IBuildSourceInput {
   autoUpdate?: boolean;
   /** Put each successful build in place when the extension is not installed yet. Defaults to on. */
   installAfterBuild?: boolean;
+  /** A site id to publish each successful build to; empty switches it off. */
+  publishToSite?: string;
 }

@@ -8,3 +8,5 @@ export { CatalogContributionService } from '@sources/catalog/catalog-contributio
 export { SourcesEvents } from '@sources/events/sources-events';
 export { SourcesRouter } from '@sources/http/sources-router';
 export { SourcesSettingsSchema } from '@sources/settings/sources-settings-schema';
+export type { ISitePackagePublisher } from '@sources/packaging/interfaces/site-package-publisher.interface';
+export type { IPackagePublishedEvent } from '@sources/packaging/interfaces/package-published-event.interface';

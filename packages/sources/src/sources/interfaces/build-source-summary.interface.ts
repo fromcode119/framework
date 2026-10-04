@@ -31,6 +31,10 @@ export interface IBuildSourceSummary {
   autoUpdate?: boolean;
   /** Put each successful build in place when the extension is not installed yet. Defaults to on. */
   installAfterBuild?: boolean;
+  /** The site each successful build is published to; '' when publishing is off. */
+  publishToSite?: string;
+  /** The outcome of the last hand-over to that site, as shown on the Sources screen. */
+  lastPublish?: string;
   /** Commit subjects since the previously built revision, as the changelog for this version. */
   changelog?: string;
   hasGitSecret: boolean;
