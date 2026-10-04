@@ -1,12 +1,12 @@
 import { CoercionUtils } from '@fromcode119/core';
-import type { HookManager } from '@fromcode119/core';
+import type { PlatformScopedHooks } from '@sources/events/hooks/platform-scoped-hooks';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 export class BuildPackageArtifactHook {
   static readonly EVENT = 'sources:packages:resolve';
 
-  static register(hooks: HookManager, buildService: BuildService): void {
+  static register(hooks: PlatformScopedHooks, buildService: BuildService): void {
     hooks.on(BuildPackageArtifactHook.EVENT, async (payload: unknown) => {
       const identity = BuildPackageArtifactHook.identityFrom(payload);
       if (!identity) {

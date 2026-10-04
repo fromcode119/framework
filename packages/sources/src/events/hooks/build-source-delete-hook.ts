@@ -1,12 +1,12 @@
 import { CoercionUtils } from '@fromcode119/core';
-import type { HookManager } from '@fromcode119/core';
+import type { PlatformScopedHooks } from '@sources/events/hooks/platform-scoped-hooks';
 import { BuildService } from '@sources/packaging/build-service';
 import { BuildSourceIdentity } from '@sources/sources/build-source-identity';
 
 export class BuildSourceDeleteHook {
   static readonly EVENT = 'sources:delete';
 
-  static register(hooks: HookManager, buildService: BuildService): void {
+  static register(hooks: PlatformScopedHooks, buildService: BuildService): void {
     hooks.on(BuildSourceDeleteHook.EVENT, async (payload: unknown) => {
       const identity = BuildSourceDeleteHook.identityFrom(payload);
       if (!identity) {

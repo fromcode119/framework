@@ -19,6 +19,7 @@ import { BuildSourceListHook } from '@sources/events/hooks/build-source-list-hoo
 import { BuildSourceSyncHook } from '@sources/events/hooks/build-source-sync-hook';
 import { BuildTriggerHook } from '@sources/events/hooks/build-trigger-hook';
 import { BuildUpdatesCheckHook } from '@sources/events/hooks/build-updates-check-hook';
+import { PlatformScopedHooks } from '@sources/events/hooks/platform-scoped-hooks';
 import type { ISourcesModuleInput } from '@sources/interfaces/sources-module-input.interface';
 
 /**
@@ -88,13 +89,15 @@ export class SourcesModule {
   }
 
   private static registerHooks(input: ISourcesModuleInput, buildService: BuildService): void {
-    BuildPackageArtifactHook.register(input.hooks, buildService);
-    BuildPackageDownloadHook.register(input.hooks, buildService);
-    BuildSourceDeleteHook.register(input.hooks, buildService);
-    BuildSourceListHook.register(input.hooks, buildService);
-    BuildSourceSyncHook.register(input.hooks, buildService);
-    BuildTriggerHook.register(input.hooks, buildService);
-    BuildUpdatesCheckHook.register(input.hooks, buildService);
+    // Every Sources hook is a platform control — see PlatformScopedHooks.
+    const hooks = new PlatformScopedHooks(input.hooks);
+    BuildPackageArtifactHook.register(hooks, buildService);
+    BuildPackageDownloadHook.register(hooks, buildService);
+    BuildSourceDeleteHook.register(hooks, buildService);
+    BuildSourceListHook.register(hooks, buildService);
+    BuildSourceSyncHook.register(hooks, buildService);
+    BuildTriggerHook.register(hooks, buildService);
+    BuildUpdatesCheckHook.register(hooks, buildService);
   }
 
   /**
