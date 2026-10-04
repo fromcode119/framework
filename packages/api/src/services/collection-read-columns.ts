@@ -8,15 +8,16 @@ import { CollectionReadRedaction } from '@api/services/collection-read-redaction
  * whole collection — every column but the `readOnRequest` ones. `undefined` reads them all.
  */
 export class CollectionReadColumns {
-  private static readonly onRequestByCollection = new WeakMap<ICollection, string[]>();
+  private static readonly onRequestByCollection = new WeakMap<object, { count: number; names: string[] }>();
 
+  /** Keyed by the `fields` array and its length, like CollectionReadRedaction: a re-registered field list is read afresh. */
   static onRequest(collection: ICollection): string[] {
-    let names = CollectionReadColumns.onRequestByCollection.get(collection);
-    if (!names) {
-      names = collection.fields.filter((field) => field.readOnRequest).map((field) => field.name);
-      CollectionReadColumns.onRequestByCollection.set(collection, names);
+    let known = CollectionReadColumns.onRequestByCollection.get(collection.fields);
+    if (!known || known.count !== collection.fields.length) {
+      known = { count: collection.fields.length, names: collection.fields.filter((field) => field.readOnRequest).map((field) => field.name) };
+      CollectionReadColumns.onRequestByCollection.set(collection.fields, known);
     }
-    return names;
+    return known.names;
   }
 
   static forList(collection: ICollection, table: object, requested: string[] | undefined, partialReader: boolean): Record<string, boolean> | undefined {
