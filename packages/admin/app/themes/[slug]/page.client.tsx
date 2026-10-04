@@ -166,7 +166,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     const { adminTheme, activeTab } = model;
     const dark = adminTheme === ThemeMode.DARK;
     return (
-      <div className="mx-auto max-w-5xl space-y-5 pb-12">
+      <div className="w-full space-y-5 pb-12">
         <ThemeSettingsHeader page={this} model={model} />
         <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
           <ThemeDetailTabs activeTab={activeTab} onTabChange={this.handleTabChange} theme={adminTheme} />
