@@ -39,7 +39,7 @@ describe('a plugin host in an api process that does not start plugin processes',
     const h = Object.create(PluginHost.prototype) as any;
     Object.assign(h, {
       slug: 'shared-probe', manifest: { slug: 'shared-probe' }, generation: previous, guest: previous?.guest ?? null, channel: previous?.channel ?? null,
-      context: { marker: 'context' }, manager: { hooks: new HookManager(), plugins: new Map(), db: {}, middlewares: new MiddlewareManager() },
+      context: { marker: 'context' }, manager: { hooks: new HookManager(), plugins: new Map(), db: {}, middlewares: new MiddlewareManager(), registeredCollections: new Map() },
       logger: { info() {}, warn() {}, error() {}, debug() {} }, restarts: 0, healthyTimer: null, stopping: false,
       operatorRelaunch: false, awaitingReplacement: false, takenOver: null, sentPeerSignatures: new Map(),
       registrations: { resetForRestart: vi.fn(), apply: async (_ctx: unknown, r: unknown) => { applied.push(r); } },
