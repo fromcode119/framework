@@ -134,13 +134,15 @@ describe('PluginReadRoutes', () => {
     expect(next).toHaveBeenCalled();
   });
 
-  it('orders by a declared sort in either form, ties by id, else by the default sort', () => {
+  it('orders unprepared records first, then by a declared sort in either form, ties by id, else the default sort', () => {
     const db: any = { desc: vi.fn((c: unknown) => ({ desc: c })) };
-    const table: any = { price: 'price', updatedAt: 'updated_at', id: 'id' };
-    expect(PluginReadRoutes.order(db, table, route as any, 'price-asc')).toHaveLength(2);
-    expect(PluginReadRoutes.order(db, table, route as any, '-price')).toEqual([{ desc: 'price' }, { desc: 'id' }]);
-    expect(PluginReadRoutes.order(db, table, route as any, '')).toEqual([{ desc: 'updated_at' }, { desc: 'id' }]);
-    expect(PluginReadRoutes.order(db, table, { ...route, defaultSort: undefined } as any, '')).toBeUndefined();
+    const table: any = { price: 'price', updatedAt: 'updated_at', id: 'id', card: 'card' };
+    const asc = PluginReadRoutes.order(db, table, route as any, 'price-asc');
+    expect(asc).toHaveLength(3);
+    expect(asc[2]).toEqual({ desc: 'id' });
+    expect(PluginReadRoutes.order(db, table, route as any, '-price').slice(1)).toEqual([{ desc: 'price' }, { desc: 'id' }]);
+    expect(PluginReadRoutes.order(db, table, route as any, '').slice(1)).toEqual([{ desc: 'updated_at' }, { desc: 'id' }]);
+    expect(PluginReadRoutes.order(db, table, { ...route, defaultSort: undefined } as any, '').slice(1)).toEqual([{ desc: 'id' }]);
   });
 
   it('leaves to the plugin a sort it does not declare, and a lookup key with any value, even a nested one', () => {
@@ -153,19 +155,29 @@ describe('PluginReadRoutes', () => {
     expect(find).not.toHaveBeenCalled();
   });
 
-  it('builds only the declared filters the request names; one on a missing field matches nothing', () => {
-    const db: any = { eq: vi.fn((c: unknown, v: unknown) => ({ eq: [c, v] })), and: vi.fn((...a: unknown[]) => ({ and: a })) };
-    expect(PluginReadRoutes.filterClause(db, { kind: 'kind' }, route as any, { u: 'x' })).toBeUndefined();
-    expect(PluginReadRoutes.filterClause(db, { kind: 'kind' }, route as any, { kind: 'gift' })).toEqual({ eq: ['kind', 'gift'] });
-    expect(PluginReadRoutes.filterClause(db, { kind: 'kind', tagKeys: 'tag_keys' }, route as any, { kind: 'gift', tag: 'new' })).toHaveProperty('and');
-    expect(PluginReadRoutes.filterClause(db, {}, route as any, { tag: 'new' })).toBeTruthy();
+  it('builds only the declared filters the request names, and always lets an unprepared record in', () => {
+    const db: any = { eq: vi.fn((c: unknown, v: unknown) => ({ eq: [c, v] })), and: vi.fn((...a: unknown[]) => ({ and: a })), or: vi.fn((...a: unknown[]) => ({ or: a })) };
+    const table = { kind: 'kind', tagKeys: 'tag_keys', card: 'card' };
+    expect(PluginReadRoutes.filterClause(db, table, route as any, { u: 'x' })).toBeUndefined();
+    const one: any = PluginReadRoutes.filterClause(db, table, route as any, { kind: 'gift' });
+    expect(one.or[0]).toEqual({ eq: ['kind', 'gift'] });
+    expect(one.or).toHaveLength(2);
+    expect((PluginReadRoutes.filterClause(db, table, route as any, { kind: 'gift', tag: 'new' }) as any).or[0]).toHaveProperty('and');
+    const fixed: any = PluginReadRoutes.filterClause(db, table, { ...route, where: { kind: 'shop' } } as any, {});
+    expect(fixed.or[0]).toEqual({ eq: ['kind', 'shop'] });
   });
 
-  it('always applies the route\'s fixed conditions; one on a missing field matches nothing', () => {
-    const db: any = { eq: vi.fn((c: unknown, v: unknown) => ({ eq: [c, v] })), and: vi.fn((...a: unknown[]) => ({ and: a })) };
-    const fixedRoute: any = { ...route, where: { listed: true } };
-    expect(PluginReadRoutes.filterClause(db, { listed: 'listed' }, fixedRoute, {})).toEqual({ eq: ['listed', true] });
-    expect(PluginReadRoutes.filterClause(db, {}, fixedRoute, {})).toBeTruthy();
-    expect(db.eq).not.toHaveBeenCalledWith(undefined, true);
+  it('a field the collection does not have fails the read, so the plugin answers — never an empty list', async () => {
+    const db: any = { eq: vi.fn(), and: vi.fn(), or: vi.fn(), desc: vi.fn() };
+    expect(() => PluginReadRoutes.filterClause(db, { card: 'card' }, route as any, { tag: 'new' })).toThrow(/tagKeys/);
+    expect(() => PluginReadRoutes.filterClause(db, { kind: 'kind' }, route as any, { kind: 'gift' })).toThrow(/card/);
+    expect(() => PluginReadRoutes.order(db, { card: 'card', id: 'id' }, route as any, '-price')).toThrow(/price/);
+    const { routes, find } = build();
+    find.mockImplementationOnce(async (_c: any, read: any) => { CollectionReadOptions.of(read).where!(db, {}); return { docs: [] }; });
+    const res = response();
+    const next = vi.fn();
+    routes.handle(request('/shop/items', { view: 'card', kind: 'gift' }), res, next);
+    await vi.waitFor(() => expect(next).toHaveBeenCalledWith());
+    expect(res.json).not.toHaveBeenCalled();
   });
 });
