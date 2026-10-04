@@ -2,10 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 import { PluginSchemaDatabaseProxy } from '@core/plugin/context/plugin-schema-database-proxy';
 
 describe('PluginSchemaDatabaseProxy', () => {
-  const manager = (schemaDb: Record<string, unknown>) => ({
+  const manager = (schemaDb: Record<string, unknown>, slugs: string[] = []) => ({
     schemaDb,
     db: {},
     audit: { logAction: vi.fn() },
+    getPlugins: () => slugs.map((slug) => ({ manifest: { slug } })),
   }) as any;
 
   const plugin = (capabilities: string[]) => ({
@@ -119,5 +120,29 @@ describe('PluginSchemaDatabaseProxy', () => {
 
     expect(() => ddl.execute).toThrow(/cannot access schema database property "execute"/);
     expect(execute).not.toHaveBeenCalled();
+  });
+
+  it('gives a plugin with a hyphenated slug its own tables, in physical and semantic form', async () => {
+    const tableExists = vi.fn(async () => true);
+    const ddl: any = PluginSchemaDatabaseProxy.create(
+      { manifest: { slug: 'two-words', name: 'Two', version: '1.0.0', capabilities: ['database:schema'] } } as any,
+      manager({ tableExists }, ['two-words', 'alpha']),
+    );
+
+    await expect(ddl.tableExists('fcp_two_words_items')).resolves.toBe(true);
+    await expect(ddl.tableExists('@two-words/items')).resolves.toBe(true);
+    expect(() => ddl.tableExists('fcp_alpha_orders')).toThrow(/database:schema:cross-plugin/);
+  });
+
+  it('never hands a plugin the tables of a plugin whose slug extends its own', () => {
+    const tableExists = vi.fn();
+    const ddl: any = PluginSchemaDatabaseProxy.create(
+      { manifest: { slug: 'shop', name: 'Shop', version: '1.0.0', capabilities: ['database:schema'] } } as any,
+      manager({ tableExists }, ['shop', 'shop-extra']),
+    );
+
+    expect(() => ddl.tableExists('fcp_shop_extra_addresses')).toThrow(/database:schema:cross-plugin/);
+    expect(() => ddl.tableExists('fcp_other_rows')).toThrow(/database:schema:cross-plugin/);
+    expect(tableExists).not.toHaveBeenCalled();
   });
 });

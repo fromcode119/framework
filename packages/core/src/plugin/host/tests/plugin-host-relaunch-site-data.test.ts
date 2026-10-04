@@ -16,7 +16,7 @@ describe('a relaunch', () => {
 
   const relaunchWith = async (plugin: unknown) => {
     const replayed: Array<{ plugin: unknown; context: unknown; channel: string }> = [];
-    const manager: any = { hooks: new HookManager(), plugins: new Map(plugin ? [['site-data-probe', plugin]] : []), db: {}, middlewares: new MiddlewareManager() };
+    const manager: any = { hooks: new HookManager(), plugins: new Map(plugin ? [['site-data-probe', plugin]] : []), db: {}, middlewares: new MiddlewareManager(), registeredCollections: new Map() };
     const logger: any = { info() {}, warn() {}, error() {}, debug() {} };
     const host = Object.create(PluginHost.prototype) as any;
     const context = { marker: 'the plugin context' };

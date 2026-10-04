@@ -22,7 +22,7 @@ describe('a plugin process replaced by one that no longer registers a middleware
   it("leaves none of the old process's middleware standing — only what the new one registers", async () => {
     const hooks = new HookManager();
     const middlewares = new MiddlewareManager();
-    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares };
+    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares, registeredCollections: new Map() };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'probe', capabilities: ['api'] }, approvedCapabilities: ['api'] } as any, manager, logger);
     const registrations = new PluginHostRegistrations('probe', {} as any, async () => undefined, async () => undefined, {} as any, async () => undefined, () => true);

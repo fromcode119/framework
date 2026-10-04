@@ -16,7 +16,7 @@ import { MiddlewareManager } from '@core/plugin/services/runtime/middleware-mana
 describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
   it('drops the old subscription through the REAL plugin context', async () => {
     const hooks = new HookManager();
-    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
+    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager(), registeredCollections: new Map() };
     const plugin: any = { manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] }, approvedCapabilities: ['hooks'] };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext(plugin, manager, logger);
@@ -38,7 +38,7 @@ describe('a relaunched guest leaves no stale plugins:ready subscriber', () => {
 
   it('keeps the old subscriber on the OLD process while the replacement boots, then swaps to the new one in one step', async () => {
     const hooks = new HookManager();
-    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager() };
+    const manager: any = { hooks, plugins: new Map(), db: {}, jobs: {}, logger: { child: () => ({}) }, middlewares: new MiddlewareManager(), registeredCollections: new Map() };
     const logger: any = { child: () => ({ info() {}, warn() {}, error() {}, debug() {} }), info() {}, warn() {}, error() {}, debug() {} };
     const context = PluginContextFactory.createPluginContext({ manifest: { slug: 'relaunch-probe', capabilities: ['hooks'] }, approvedCapabilities: ['hooks'] } as any, manager, logger);
     const tick = () => new Promise((resolve) => setTimeout(resolve, 0));
