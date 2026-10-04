@@ -3,7 +3,6 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import * as tar from 'tar';
-import { BackupService } from '@core/management/backup-service';
 import { PluginInstallRollback } from '@core/plugin/services/installation/plugin-install-rollback';
 
 describe('PluginInstallRollback', () => {
@@ -35,7 +34,7 @@ describe('PluginInstallRollback', () => {
     const backup = path.join(tempDir(), 'alpha-2026-10-04T10-00-00-000Z.tar.gz');
     await tar.create({ gzip: true, file: backup, cwd: pluginsRoot }, ['alpha']);
     writePlugin(pluginsRoot, '1.0.1');
-    vi.spyOn(BackupService, 'latestSince').mockReturnValue(backup);
+    vi.spyOn(PluginInstallRollback, 'latestBackupSince').mockReturnValue(backup);
 
     await expect(new PluginInstallRollback(pluginsRoot, logger).runOrRestore('alpha', 0, async () => {
       throw new Error('migration failed');
@@ -47,7 +46,7 @@ describe('PluginInstallRollback', () => {
   it('removes a plugin that was not installed before when its migration step fails', async () => {
     const pluginsRoot = tempDir();
     writePlugin(pluginsRoot, '1.0.0');
-    vi.spyOn(BackupService, 'latestSince').mockReturnValue(null);
+    vi.spyOn(PluginInstallRollback, 'latestBackupSince').mockReturnValue(null);
 
     await expect(new PluginInstallRollback(pluginsRoot, logger).runOrRestore('alpha', 0, async () => {
       throw new Error('migration failed');
@@ -59,7 +58,7 @@ describe('PluginInstallRollback', () => {
   it('leaves the new files alone when the step succeeds', async () => {
     const pluginsRoot = tempDir();
     writePlugin(pluginsRoot, '1.0.1');
-    const latest = vi.spyOn(BackupService, 'latestSince');
+    const latest = vi.spyOn(PluginInstallRollback, 'latestBackupSince');
 
     await new PluginInstallRollback(pluginsRoot, logger).runOrRestore('alpha', 0, async () => undefined);
 

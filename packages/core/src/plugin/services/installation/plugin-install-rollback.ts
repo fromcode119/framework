@@ -32,9 +32,26 @@ export class PluginInstallRollback {
     }
   }
 
+  /**
+   * The newest backup of `slug` written at or after `sinceMs`, or null. Matched on the exact slug plus
+   * the timestamp that follows it, so `shop` never picks up a backup of `shop-extra`.
+   */
+  static latestBackupSince(slug: string, sinceMs: number): string | null {
+    const dir = BackupService.getBackupsDirectory(BackupSectionKey.PLUGINS.value);
+    if (!fs.existsSync(dir)) return null;
+    const escaped = slug.replace(/[.*+?^$(){}|[\]\\]/g, '\\$&');
+    const own = new RegExp('^' + escaped + '-\\d{4}-\\d{2}-\\d{2}T.*\\.tar\\.gz$');
+    const newest = fs.readdirSync(dir)
+      .filter((name) => own.test(name))
+      .map((name) => ({ file: path.join(dir, name), time: fs.statSync(path.join(dir, name)).mtimeMs }))
+      .filter((entry) => entry.time >= sinceMs)
+      .sort((a, b) => b.time - a.time)[0];
+    return newest?.file ?? null;
+  }
+
   private async restore(slug: string, startedAt: number): Promise<void> {
     const targetDir = path.join(this.pluginsRoot, slug);
-    const backup = BackupService.latestSince(slug, BackupSectionKey.PLUGINS, startedAt);
+    const backup = PluginInstallRollback.latestBackupSince(slug, startedAt);
     if (!backup) {
       fs.rmSync(targetDir, { recursive: true, force: true });
       this.logger.warn(`Install of "${slug}" failed; its files were removed, as it was not installed before.`);

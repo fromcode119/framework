@@ -3,9 +3,10 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as path from 'path';
 import { BackupService } from '@core/management/backup-service';
+import { PluginInstallRollback } from '@core/plugin/services/installation/plugin-install-rollback';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 
-describe('BackupService.latestSince', () => {
+describe('PluginInstallRollback.latestBackupSince', () => {
   let root = '';
 
   afterEach(() => {
@@ -27,8 +28,8 @@ describe('BackupService.latestSince', () => {
     backup('shop-2026-10-04T10-00-00-000Z.tar.gz', 3_000_000);
     backup('shop-extra-2026-10-04T11-00-00-000Z.tar.gz', 4_000_000);
 
-    expect(path.basename(BackupService.latestSince('shop', BackupSectionKey.PLUGINS, 2_000_000) ?? ''))
+    expect(path.basename(PluginInstallRollback.latestBackupSince('shop', 2_000_000) ?? ''))
       .toBe('shop-2026-10-04T10-00-00-000Z.tar.gz');
-    expect(BackupService.latestSince('shop', BackupSectionKey.PLUGINS, 3_500_000)).toBeNull();
+    expect(PluginInstallRollback.latestBackupSince('shop', 3_500_000)).toBeNull();
   });
 });
