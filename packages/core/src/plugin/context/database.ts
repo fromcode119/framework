@@ -15,6 +15,7 @@ import { SiteContentRevision } from '@core/tenant/site-content-revision';
 import { UntenantedBootAccess } from '@core/plugin/context/untenanted-boot-access';
 import { TenantScopedTables } from '@core/database/tenant-scoped-tables';
 import { PluginDbJsonFind } from '@core/plugin/context/plugin-db-json-find';
+import { PluginDbOnRequestFields } from '@core/plugin/context/plugin-db-on-request-fields';
 
 // Plugins read with the schema's camelCase field names. Raw-SQL paths in
 // the dialects return rows keyed by snake_case DB columns; convert top-level
@@ -108,10 +109,8 @@ export class DatabaseContextProxy {
 
   /**
    * Everything a row must pass through on its way out to plugin code: names denormalized to the
-   * schema's camelCase, THEN `localized: true` fields collapsed to the request's locale.
-   *
-   * The order is load-bearing — {@link LocalizedReadResolver} looks fields up by their schema name, so
-   * it has to run after the snake_case keys have been converted.
+   * schema's camelCase, THEN `localized: true` fields collapsed to the request's locale. The order is
+   * load-bearing: {@link LocalizedReadResolver} looks fields up by their schema (camelCase) name.
    */
   private static postProcessResult(result: any, table: unknown, manager: IPluginManagerInterface): any { // eslint-disable-line @typescript-eslint/no-explicit-any
     return LocalizedReadResolver.resolveResult(DatabaseContextProxy.denormalizeResult(result), table, manager);
@@ -272,8 +271,9 @@ export class DatabaseContextProxy {
               }
               const scoped = DatabaseContextProxy.injectTenant(prop, includeArchived ? args : ArchivedRowFilter.apply(prop, args, manager));
               const callArgs = EnumValueCoercion.coerceArguments(scoped);
-              const postProcess = (rows: any) => (resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : DatabaseContextProxy.denormalizeResult(rows));
-              if (asJson) return PluginDbJsonFind.run(target, callArgs, () => fn.apply(this, callArgs), postProcess, resolveLocalized ? { table, manager } : null);
+              const omitted = PluginDbOnRequestFields.omittedFor(prop, callArgs, manager);
+              const postProcess = (rows: any) => PluginDbOnRequestFields.strip(resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : DatabaseContextProxy.denormalizeResult(rows), omitted);
+              if (asJson) return PluginDbJsonFind.run(target, callArgs, () => fn.apply(this, callArgs), postProcess, resolveLocalized ? { table, manager } : null, omitted);
               const applied = fn.apply(this, callArgs);
               const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) ? SiteContentRevision.afterWrite(applied) : applied;
               if (shouldDenormalize) {

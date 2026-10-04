@@ -43,7 +43,7 @@ export class JsonRowShape {
 
   private constructor(
     private readonly tableName: string,
-    private readonly select: string,
+    private readonly parts: ReadonlyArray<{ key: string; sql: string }>,
     readonly revive: Record<string, 'timestamp' | 'float'>,
     readonly signature: string,
   ) {}
@@ -51,37 +51,39 @@ export class JsonRowShape {
   /** The shape for `tableName`'s columns (rows of `COLUMNS_SQL`), or null when one has no exact JSON form. */
   static of(tableName: string, columns: Array<{ name: string; type: number; kind: string; signature: string }>): JsonRowShape | null {
     if (!columns.length || !JsonRowShape.IDENTIFIER.test(tableName)) return null;
-    const parts: string[] = [];
+    const parts: Array<{ key: string; sql: string }> = [];
     const revive: Record<string, 'timestamp' | 'float'> = {};
     for (const { name, type, kind } of columns) {
       if (!JsonRowShape.IDENTIFIER.test(name)) return null;
       const key = NamingStrategy.toCamelCase(name);
       const column = `r."${name}"`;
       if (JsonRowShape.AS_IS.has(type) || kind === 'e') {
-        parts.push(`${column} AS "${key}"`);
+        parts.push({ key, sql: `${column} AS "${key}"` });
       } else if (JsonRowShape.AS_TEXT.has(type)) {
-        parts.push(`${column}::text AS "${key}"`);
+        parts.push({ key, sql: `${column}::text AS "${key}"` });
       } else if (JsonRowShape.AS_FLOAT.has(type)) {
-        parts.push(`${column}::text AS "${key}"`);
+        parts.push({ key, sql: `${column}::text AS "${key}"` });
         revive[key] = 'float';
       } else if (type === JsonRowShape.TIMESTAMPTZ) {
-        parts.push(`${column} AS "${key}"`);
+        parts.push({ key, sql: `${column} AS "${key}"` });
         revive[key] = 'timestamp';
       } else {
         return null;
       }
     }
-    return new JsonRowShape(tableName, parts.join(', '), revive, String(columns[0].signature));
+    return new JsonRowShape(tableName, parts, revive, String(columns[0].signature));
   }
 
   /**
    * `inner` (a `SELECT * ... ORDER BY ... LIMIT ...` on this table) re-read as one JSON text per row,
    * each with the table's CURRENT signature beside it — computed once per statement. The outer selects
-   * only project, so rows keep the order the inner statement produced.
+   * only project, so rows keep the order the inner statement produced. `omit` names fields (camelCase)
+   * left out of each row.
    */
-  statement(inner: string): string {
+  statement(inner: string, omit: readonly string[] = []): string {
+    const select = this.parts.filter((part) => !omit.includes(part.key)).map((part) => part.sql).join(', ');
     const current = `(SELECT md5(string_agg(a.attname || ':' || a.atttypid, ',' ORDER BY a.attnum)) FROM pg_attribute a`
       + ` WHERE a.attrelid = 'public."${this.tableName}"'::regclass AND a.attnum > 0 AND NOT a.attisdropped)`;
-    return `SELECT row_to_json(j)::text, ${current} FROM (SELECT ${this.select} FROM (${inner}) r) j`;
+    return `SELECT row_to_json(j)::text, ${current} FROM (SELECT ${select} FROM (${inner}) r) j`;
   }
 }

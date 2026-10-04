@@ -134,15 +134,16 @@ describe('PluginReadRoutes', () => {
     expect(next).toHaveBeenCalled();
   });
 
-  it('orders unprepared records first, then by a declared sort in either form, ties by id, else the default sort', () => {
+  it('orders by a declared sort in either form, ties by id, else the default sort; unprepared first only on a derived field', () => {
     const db: any = { desc: vi.fn((c: unknown) => ({ desc: c })) };
     const table: any = { price: 'price', updatedAt: 'updated_at', id: 'id', card: 'card' };
-    const asc = PluginReadRoutes.order(db, table, route as any, 'price-asc');
-    expect(asc).toHaveLength(3);
-    expect(asc[2]).toEqual({ desc: 'id' });
-    expect(PluginReadRoutes.order(db, table, route as any, '-price').slice(1)).toEqual([{ desc: 'price' }, { desc: 'id' }]);
-    expect(PluginReadRoutes.order(db, table, route as any, '').slice(1)).toEqual([{ desc: 'updated_at' }, { desc: 'id' }]);
-    expect(PluginReadRoutes.order(db, table, { ...route, defaultSort: undefined } as any, '').slice(1)).toEqual([{ desc: 'id' }]);
+    expect(PluginReadRoutes.order(db, table, route as any, 'price-asc')).toHaveLength(2);
+    expect(PluginReadRoutes.order(db, table, route as any, '-price')).toEqual([{ desc: 'price' }, { desc: 'id' }]);
+    expect(PluginReadRoutes.order(db, table, route as any, '')).toEqual([{ desc: 'updated_at' }, { desc: 'id' }]);
+    expect(PluginReadRoutes.order(db, table, { ...route, defaultSort: undefined } as any, '')).toEqual([{ desc: 'id' }]);
+    const derived = PluginReadRoutes.order(db, table, route as any, '-price', new Set(['price']));
+    expect(derived).toHaveLength(3);
+    expect(derived.slice(1)).toEqual([{ desc: 'price' }, { desc: 'id' }]);
   });
 
   it('leaves to the plugin a sort it does not declare, and a lookup key with any value, even a nested one', () => {
