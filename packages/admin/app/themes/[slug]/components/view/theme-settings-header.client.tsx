@@ -1,76 +1,79 @@
 import { ThemeSettingsTab } from '@/app/themes/[slug]/enums/theme-settings-tab.enum';
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode, ThemeState } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { ThemeState } from '@fromcode119/core/client';
-import { Reactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
-export class ThemeSettingsHeader extends Reactor {
+/**
+ * The theme page's header: where you are, which theme, its state and version — and its actions: open the
+ * site it styles, and on the Settings tab save the edits.
+ */
+export class ThemeSettingsHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<ThemeSettingsHeader, 'page' | 'model'>;
 
   @prop declare page: IThemeSettingsPageView;
   @prop declare model: ThemeSettingsRenderModel;
 
-  render(): ReactNode {
-    const page = this.page;
-    const model = this.model;
-    const { adminTheme, themeDetail, marketplaceVersion } = model;
-    const { activeTab, isUpdating, isSaving } = page;
+  @bound private save(): void {
+    void this.page.handleSaveConfig();
+  }
+
+  private openSite(dark: boolean): ReactNode {
+    const url = this.model.livePreviewUrl;
+    if (!url) return null;
     return (
-      <div className="flex items-center gap-4">
-        <Link
-          href="/themes"
-          className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm ${adminTheme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 hover:shadow-md'}`}
-        >
-          <FrameworkIcons.Left size={18} strokeWidth={2.5} />
-        </Link>
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-3">
-            <h1 className={`text-xl font-bold tracking-tight truncate ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {themeDetail.name}
-            </h1>
-            {/* Words, never the member: the controller hydrates `themeDetail.state` into a `ThemeState`, and an
-                Enum handed to React as a child is an object — it threw "Minified React error #31" and blanked
-                the page. Its raw value ("active") also read English in every console. */}
-            <Badge variant={themeDetail.state === ThemeState.ACTIVE ? 'success' : 'gray'}>
-              {AdminI18n.t(themeDetail.state === ThemeState.ACTIVE ? 'themes.active' : 'themes.inactive')}
-            </Badge>
+      <a href={url} target="_blank" rel="noreferrer"
+        className={`inline-flex h-9 items-center gap-1.5 rounded-lg border px-3.5 text-[13px] font-medium transition-colors ${dark ? 'border-slate-700 text-slate-200 hover:bg-slate-800' : 'border-slate-200 text-slate-700 hover:bg-slate-50'}`}>
+        <FrameworkIcons.External size={14} />
+        {AdminI18n.t('themes.openSite')}
+      </a>
+    );
+  }
+
+  render(): ReactNode {
+    const { themeDetail, adminTheme } = this.model;
+    const { activeTab, isSaving } = this.page;
+    const dark = adminTheme === ThemeMode.DARK;
+    const active = themeDetail.state === ThemeState.ACTIVE;
+    return (
+      <div>
+        <div className={`mb-2 flex items-center gap-1.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
+          <Link href={AdminConstants.ROUTES.THEMES.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('themes.installed')}</Link>
+          <span>/</span>
+          <span>{themeDetail.name}</span>
+        </div>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${dark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}>
+            <FrameworkIcons.Palette size={20} />
           </div>
-          <div className="flex items-center gap-2 mt-1">
-            <span className={`text-[11px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-lg ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-500'}`}>{themeDetail.slug}</span>
-            <span className="text-slate-500 opacity-30">•</span>
-            <span className={`text-[11px] font-semibold uppercase tracking-wide ${marketplaceVersion && marketplaceVersion !== themeDetail.version ? 'text-amber-500' : 'text-slate-400'}`}>
-              {AdminI18n.t('themes.versionLabel', { version: themeDetail.version })}
-            </span>
-            {marketplaceVersion && marketplaceVersion !== themeDetail.version && (
-              <button
-                onClick={() => void page.handleUpdate()}
-                disabled={isUpdating}
-                className="ml-3 px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all flex items-center gap-1.5 shadow-lg shadow-indigo-600/20"
-              >
-                {isUpdating ? <FrameworkIcons.Loader size={10} className="animate-spin" /> : <FrameworkIcons.Zap size={10} />}
-                {isUpdating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
+          <div className="min-w-0 flex-1">
+            <h1 className={`truncate text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{themeDetail.name}</h1>
+            {/* Words, never the member: `themeDetail.state` is a `ThemeState` Enum, and an Enum handed to
+                React as a child is an object — it threw "Minified React error #31" and blanked the page. */}
+            <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
+              <Badge variant={active ? 'success' : 'gray'}>{AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}</Badge>
+              <span>v{themeDetail.version}</span>
+              {themeDetail.author ? <><span>·</span><span>{themeDetail.author}</span></> : null}
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {this.openSite(dark)}
+            {activeTab === ThemeSettingsTab.SETTINGS ? (
+              <button type="button" onClick={this.save} disabled={isSaving}
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
+                {isSaving ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Check size={14} />}
+                {AdminI18n.t('themes.saveChanges')}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
-
-        {activeTab === ThemeSettingsTab.SETTINGS && (
-          <button
-            onClick={() => void page.handleSaveConfig()}
-            disabled={isSaving}
-            className={`h-9 px-4 rounded-lg flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wide transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 ${adminTheme === ThemeMode.DARK ? 'bg-indigo-600 text-white hover:bg-indigo-500' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
-          >
-            {isSaving ? <FrameworkIcons.Loader size={16} className="animate-spin" /> : <FrameworkIcons.Zap size={16} />}
-            {AdminI18n.t('themes.applyArchitectureUpdate')}
-          </button>
-        )}
       </div>
     );
   }

@@ -4,6 +4,7 @@ import { Enum } from '@fromcode119/react-class-components';
 export class ThemeSettingsTab extends Enum {
   static readonly OVERVIEW = new ThemeSettingsTab('overview');
   static readonly SETTINGS = new ThemeSettingsTab('settings');
+  static readonly MAINTENANCE = new ThemeSettingsTab('maintenance');
 
   private constructor(value: string) {
     super(value);

@@ -1,42 +1,63 @@
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ReactNode } from 'react';
+import type { ISettingsTabGroup } from '@fromcode119/core/client';
+import type { ComponentType, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The page's one row of tabs: Overview, then the plugin's settings — one tab per group it declares, or a
+ * single "Settings" — and, set apart on the right, the platform's Security and Resources.
+ */
 export class PluginDetailTabs extends PureReactor {
-  private static readonly SITE_TABS: readonly PluginDetailTab[] = [PluginDetailTab.OVERVIEW, PluginDetailTab.SETTINGS];
-
   @prop declare activeTab: PluginDetailTab;
-  @prop declare onTabChange: (tabId: PluginDetailTab) => void;
+  @prop declare activeGroup: string;
+  @prop declare groups: ISettingsTabGroup[];
+  @prop declare onTabChange: (tabId: PluginDetailTab, group?: string) => void;
   @prop declare theme: ThemeMode;
-  /** In a site only its own tabs are offered; the platform's (Security, Resource Limits) live in Platform scope. */
+  /** In a site only its own tabs are offered; the platform's (Security, Resources) live in Platform scope. */
   @prop declare siteScope: boolean;
 
-  render(): ReactNode {
-    const { activeTab, onTabChange, theme } = this;
-    const tabs = [
-      { id: PluginDetailTab.OVERVIEW, label: AdminI18n.t('plugins.detail.overview'), icon: FrameworkIcons.Plugins },
-      { id: PluginDetailTab.SETTINGS, label: AdminI18n.t('plugins.detail.configuration'), icon: FrameworkIcons.Settings },
-      { id: PluginDetailTab.PERMISSIONS, label: AdminI18n.t('plugins.detail.security'), icon: FrameworkIcons.Shield },
-      { id: PluginDetailTab.RESOURCES, label: AdminI18n.t('plugins.detail.resourceLimits'), icon: FrameworkIcons.Zap },
-    ].filter((tab) => !this.siteScope || PluginDetailTabs.SITE_TABS.includes(tab.id));
+  private icon(name: string | undefined): ComponentType<{ size?: number }> {
+    const icons = FrameworkIcons as unknown as Record<string, ComponentType<{ size?: number }>>;
+    return (name && icons[name]) || FrameworkIcons.Settings;
+  }
 
+  private get currentGroup(): string {
+    const groups = this.groups || [];
+    return groups.some((group) => group.id === this.activeGroup) ? this.activeGroup : (groups[0]?.id ?? '');
+  }
+
+  private tab(key: string, label: string, Icon: ComponentType<{ size?: number }>, active: boolean, onClick: () => void, className = ''): ReactNode {
+    const dark = this.theme === ThemeMode.DARK;
+    const tone = active
+      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
+      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
     return (
-      <div className={`flex gap-2 p-1 ${AdminClass.SURFACE} w-fit backdrop-blur border transition-all duration-300 ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-sm'}`}>
-        {tabs.map((tab) => (
-          <button
-            key={tab.id.value}
-            onClick={() => onTabChange(tab.id)}
-            className={`flex items-center gap-2 px-4 py-1.5 text-[11px] font-semibold uppercase tracking-wider transition-all rounded-lg ${activeTab === tab.id ? (theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 shadow-sm shadow-indigo-500/10' : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50') : (theme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50')}`}
-          >
-            <tab.icon size={14} />
-            {tab.label}
-          </button>
-        ))}
-      </div>
+      <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
+        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-semibold' : 'font-medium'} ${tone} ${className}`}>
+        <Icon size={15} />
+        {label}
+      </button>
+    );
+  }
+
+  render(): ReactNode {
+    const { activeTab, onTabChange } = this;
+    const groups = this.groups || [];
+    const settingsActive = activeTab === PluginDetailTab.SETTINGS;
+    const current = this.currentGroup;
+    const platform = !this.siteScope;
+    return (
+      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 border-b ${this.theme === ThemeMode.DARK ? 'border-slate-800' : 'border-slate-200'}`}>
+        {this.tab('overview', AdminI18n.t('plugins.detail.overview'), FrameworkIcons.Info, activeTab === PluginDetailTab.OVERVIEW, () => onTabChange(PluginDetailTab.OVERVIEW))}
+        {groups.length
+          ? groups.map((group) => this.tab(`group-${group.id}`, group.label, this.icon(group.icon), settingsActive && current === group.id, () => onTabChange(PluginDetailTab.SETTINGS, group.id)))
+          : this.tab('settings', AdminI18n.t('plugins.detail.configuration'), FrameworkIcons.Settings, settingsActive, () => onTabChange(PluginDetailTab.SETTINGS))}
+        {platform ? this.tab('permissions', AdminI18n.t('plugins.detail.security'), FrameworkIcons.Shield, activeTab === PluginDetailTab.PERMISSIONS, () => onTabChange(PluginDetailTab.PERMISSIONS), 'ml-auto') : null}
+        {platform ? this.tab('resources', AdminI18n.t('plugins.detail.resourceLimits'), FrameworkIcons.Zap, activeTab === PluginDetailTab.RESOURCES, () => onTabChange(PluginDetailTab.RESOURCES)) : null}
+      </nav>
     );
   }
 }

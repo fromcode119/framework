@@ -1,7 +1,7 @@
 import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { RefObject } from 'react';
-import type { ILoadedPlugin } from '@fromcode119/core/client';
+import type { ILoadedPlugin, ISettingsTabGroup } from '@fromcode119/core/client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
 import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
 import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.enum';
@@ -15,12 +15,16 @@ export interface IPluginDetailPageModel {
   consentInitial: IPluginConsentSummary | null;
   consentFinished: () => Promise<void>;
   activeTab: PluginDetailTab;
+  /** The plugin's settings groups (each a page tab); empty means one "Settings" tab. */
+  settingsGroups: ISettingsTabGroup[];
+  settingsGroup: string;
+  settingsSection: string;
   /** The operator is standing in a site: the platform's controls for this plugin are not offered here. */
   siteScope: boolean;
   fetchLogs: () => Promise<void>;
   handleDelete: () => Promise<void>;
   handleSaveSandbox: () => Promise<void>;
-  handleTabChange: (tabId: PluginDetailTab) => void;
+  handleTabChange: (tabId: PluginDetailTab, group?: string, section?: string) => void;
   handleToggle: () => Promise<void>;
   handleUpdate: () => Promise<void>;
   isDeleting: boolean;

@@ -351,7 +351,8 @@
     "required": "Задължително",
     "import": "Импорт",
     "reset": "Нулиране",
-    "notScheduledYet": "още не е насрочено"
+    "notScheduledYet": "още не е насрочено",
+    "more": "Още действия"
   },
   "ui": {
     "table": {
@@ -1064,7 +1065,14 @@
       "stateActive": "Активен",
       "stateInactive": "Неактивен",
       "stateLoading": "Зарежда се",
-      "stateError": "Грешка"
+      "stateError": "Грешка",
+      "version": "Версия",
+      "availableVersion": "Налична версия",
+      "category": "Категория",
+      "recentActivity": "Последна активност",
+      "uninstallHint": "Премахва плъгина, настройките, кеша и локалното му състояние от платформата.",
+      "switchInPlatformScope": "Включването и изключването за всички сайтове и предлагането на сайтовете става в обхват „Платформа“.",
+      "otherSettings": "Други настройки"
     },
     "process": {
       "hostUnavailable": "Контейнерът за разширения е недостъпен, затова процесите на плъгините не могат да стартират: {{reason}}",
@@ -3835,7 +3843,23 @@
     "adding": "Добавяне...",
     "general": "Общи",
     "delete": "Изтрий",
-    "inactive": "Неактивна"
+    "inactive": "Неактивна",
+    "status": "Състояние",
+    "details": "Подробности",
+    "author": "Автор",
+    "version": "Версия",
+    "availableVersion": "Налична версия",
+    "maintenance": "Поддръжка",
+    "layoutSection": "Оформление",
+    "extensionsSection": "Разширения",
+    "versionReady": "Версия {{version}} е готова",
+    "saveChanges": "Запази промените",
+    "runSeedsHint": "Зарежда отново примерните данни на темата — страници и съдържание — в този сайт.",
+    "resetThemeHint": "Изчиства запазените настройки на темата за този сайт и зарежда отново примерните данни.",
+    "notActiveHint": "Този сайт използва друга тема.",
+    "removeTheme": "Изтрий темата",
+    "layoutsTitle": "Оформления",
+    "layoutDefault": "по подразбиране"
   },
   "mediaPicker": {
     "uploads": "Качени",

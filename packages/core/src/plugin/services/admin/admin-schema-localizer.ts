@@ -21,7 +21,7 @@ import { StringUtils } from '@core/utils/string-utils';
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
- *   admin.settings.tabs.<id>, admin.settings.fields.<field>.…           the settings form, same shape
+ *   admin.settings.tabs.<id>, admin.settings.groups.<id>, admin.settings.fields.<field>.…   the settings form, same shape
  *   admin.widgets.<id>.label | description                              a dashboard widget
  *
  * `lookup(pluginSlug, key)` answers the translation or '' — the caller binds it to one locale.
@@ -73,6 +73,9 @@ export class AdminSchemaLocalizer {
       tabs: Array.isArray(schema.tabs)
         ? schema.tabs.map((tab: any) => ({ ...tab, label: this.text(pluginSlug, `admin.settings.tabs.${tab?.id}`, tab?.label) }))
         : schema.tabs,
+      groups: Array.isArray(schema.groups)
+        ? schema.groups.map((group: any) => ({ ...group, label: this.text(pluginSlug, `admin.settings.groups.${group?.id}`, group?.label) }))
+        : schema.groups,
       fields: this.fields(pluginSlug, 'admin.settings.fields', schema.fields, 'admin.settings.sections'),
     };
   }

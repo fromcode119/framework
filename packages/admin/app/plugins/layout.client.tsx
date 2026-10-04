@@ -72,6 +72,11 @@ export class PluginsLayout extends AdminComponent {
   }
 
   render(): ReactNode {
+    // A plugin's own page carries its own header (where you are, the plugin, its actions) and nothing
+    // below it: the section header and the ecosystem footer belong to the lists.
+    if (this.isPluginDetail) {
+      return <div className="w-full px-6 pt-6 lg:px-8 animate-in fade-in duration-500">{this.children}</div>;
+    }
     const theme = this.theme;
     const tabs = this.tabs;
     const isMarketplace = this.isMarketplace;

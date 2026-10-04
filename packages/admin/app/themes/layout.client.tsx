@@ -49,8 +49,13 @@ export class ThemesLayout extends AdminComponent {
   }
 
   render(): ReactNode {
+    // A theme's own page carries its own header (where you are, the theme, its actions) and nothing below
+    // it: the section header and the footer belong to the lists.
+    if (this.isDetailPage) {
+      return <div className="w-full px-6 pt-6 lg:px-8 animate-in fade-in duration-500">{this.children}</div>;
+    }
     const theme = this.theme;
-    const { isMarketplace, isInstalled, isDetailPage, activeTab } = this;
+    const { isMarketplace, isInstalled, activeTab } = this;
 
     return (
       <div className="w-full pb-12 animate-in fade-in duration-700">
@@ -64,7 +69,7 @@ export class ThemesLayout extends AdminComponent {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="space-y-0.5">
                 <h1 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {isDetailPage ? AdminI18n.t('themes.themeDetail') : activeTab.label}
+                  {activeTab.label}
                 </h1>
                 <p className={`text-xs font-medium max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {isMarketplace

@@ -1,17 +1,17 @@
 import { ThemeSettingsTab } from '@/app/themes/[slug]/enums/theme-settings-tab.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import { Platform, prop, state } from '@fromcode119/react-class-components';
+import { Platform, bound, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { ThemeSettingsController } from '@/app/themes/[slug]/components/view/theme-settings-controller.client';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 import { ThemeSettingsHeader } from '@/app/themes/[slug]/components/view/theme-settings-header.client';
 import { ThemeSettingsOverviewPanel } from '@/app/themes/[slug]/components/view/theme-settings-overview-panel.client';
-import { ThemeSettingsVariablesPanel } from '@/app/themes/[slug]/components/view/theme-settings-variables-panel.client';
-import { ThemeSettingsLayoutsPanel } from '@/app/themes/[slug]/components/view/theme-settings-layouts-panel.client';
-import { ThemeSettingsExtensionsPanel } from '@/app/themes/[slug]/components/view/theme-settings-extensions-panel.client';
-import { ThemeSettingsSidebar } from '@/app/themes/[slug]/components/view/theme-settings-sidebar.client';
+import { ThemeSettingsSections } from '@/app/themes/[slug]/components/view/theme-settings-sections.client';
+import { ThemeSettingsMaintenancePanel } from '@/app/themes/[slug]/components/view/theme-settings-maintenance-panel.client';
+import { ThemeDetailTabs } from '@/app/themes/[slug]/components/view/theme-detail-tabs.client';
 import { ThemeSettingsDialogs } from '@/app/themes/[slug]/components/view/theme-settings-dialogs.client';
 import type { ITheme } from '@/app/themes/[slug]/interfaces/theme.interface';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
@@ -19,9 +19,7 @@ import type { IThemeSettingsPageHost } from '@/app/themes/[slug]/interfaces/them
 import type { IPluginsContextSurface } from '@/app/interfaces/plugins-context-surface.interface';
 import type { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminClass } from '@/lib/admin-class';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsPageView, IThemeSettingsPageHost {
   @prop declare params: Promise<{ slug: string }>;
@@ -37,6 +35,8 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
   @state marketplaceVersion: string | null = null;
   @state loading = true;
   @state activeTab: ThemeSettingsTab = ThemeSettingsTab.OVERVIEW;
+  /** The Settings tab's open section (`?section=`); empty means the first. */
+  @state activeSection = '';
   @state isUpdating = false;
   @state isSaving = false;
   @state isReseeding = false;
@@ -93,6 +93,7 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     this.routeSlug = params.slug;
     this.resolved = true;
     this.activeTab = nextTab;
+    this.activeSection = String(searchParams?.section ?? '');
     void ThemeSettingsController.fetchTheme(this);
   }
 
@@ -134,11 +135,15 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     this.tempSettings = { ...this.tempSettings, [key]: value };
   }
 
-  handleTabChange(tabId: ThemeSettingsTab): void {
+  /** Opens a tab (and, on Settings, a section) and records both in the URL, so a reload or a shared link lands there. */
+  @bound handleTabChange(tabId: ThemeSettingsTab, section = ''): void {
     this.activeTab = tabId;
+    this.activeSection = section;
     const currentSearch = Platform.isBrowser ? window.location.search : '';
     const params = new URLSearchParams(currentSearch);
     params.set('tab', tabId.value);
+    if (section) params.set('section', section);
+    else params.delete('section');
     this.router.replace(`${this.pathname}?${params.toString()}`, { scroll: false });
   }
 
@@ -153,52 +158,24 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     // Narrowed HERE, once, so `ThemeSettingsRenderModel` (and every view reading `model.themeDetail`)
     // gets a non-null theme instead of re-testing it in six components.
     const themeDetail = this.themeDetail;
-    if (!themeDetail) return null;
+    // A theme's settings are a SITE's: in Platform scope the config read is refused and nothing loads.
+    // Say where the page lives instead of rendering an empty screen.
+    if (!themeDetail) return <SiteScopeGate what={this.pathname}>{null}</SiteScopeGate>;
 
     const model = ThemeSettingsRenderModel.build(this, themeDetail);
     const { adminTheme, activeTab } = model;
-    // Enum MEMBERS, not their raw strings: `activeTab === 'settings'` is always false against a
-    // `ThemeSettingsTab`, so no tab ever highlighted and clicking "Theme Builder" stored a bare string
-    // that matched neither panel — the column rendered empty.
-    const tabs = [
-      { id: ThemeSettingsTab.OVERVIEW, label: AdminI18n.t('themes.overview'), icon: FrameworkIcons.Palette },
-      { id: ThemeSettingsTab.SETTINGS, label: AdminI18n.t('themes.themeBuilder'), icon: FrameworkIcons.Box }
-    ];
-
+    const dark = adminTheme === ThemeMode.DARK;
     return (
-      <div className="w-full space-y-6 animate-in fade-in duration-500">
+      <div className="mx-auto max-w-5xl space-y-5 pb-12">
         <ThemeSettingsHeader page={this} model={model} />
-
-        <div className={`flex gap-2 p-1.5 ${AdminClass.SURFACE} w-fit backdrop-blur-xl border transition-all duration-300 ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/50 border-white/5' : 'bg-slate-100/80 border-slate-200/60 shadow-sm'}`}>
-          {tabs.map((tab) => (
-            <button
-              key={tab.id.value}
-              onClick={() => this.handleTabChange(tab.id)}
-              className={`flex items-center gap-2 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wide transition-all ${AdminClass.SURFACE} ${activeTab === tab.id ? (adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 shadow-xl shadow-indigo-500/10' : 'bg-white text-indigo-600 shadow-lg shadow-indigo-500/5 ring-1 ring-slate-200/50') : (adminTheme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300 hover:bg-slate-800/50' : 'text-slate-500 hover:text-slate-900 hover:bg-white/50')}`}
-            >
-              <tab.icon size={14} />
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
-        <div className="w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-10">
-            <div className="lg:col-span-2 space-y-6">
-              {activeTab === ThemeSettingsTab.OVERVIEW && <ThemeSettingsOverviewPanel page={this} model={model} />}
-              {activeTab === ThemeSettingsTab.SETTINGS && (
-                <div className="space-y-6">
-                  <ThemeSettingsVariablesPanel page={this} model={model} />
-                  <ThemeSettingsLayoutsPanel page={this} model={model} />
-                  <ThemeSettingsExtensionsPanel page={this} model={model} />
-                </div>
-              )}
-            </div>
-
-            <ThemeSettingsSidebar page={this} model={model} />
-          </div>
-        </div>
-
+        <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+          <ThemeDetailTabs activeTab={activeTab} onTabChange={this.handleTabChange} theme={adminTheme} />
+          {activeTab === ThemeSettingsTab.SETTINGS ? <ThemeSettingsSections page={this} model={model} /> : (
+            activeTab === ThemeSettingsTab.MAINTENANCE
+              ? <div className="p-6"><ThemeSettingsMaintenancePanel page={this} model={model} /></div>
+              : <ThemeSettingsOverviewPanel page={this} model={model} />
+          )}
+        </section>
         <ThemeSettingsDialogs page={this} model={model} />
       </div>
     );

@@ -1,8 +1,11 @@
-import type { ILoadedPlugin } from '@fromcode119/core/client';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import type { ILoadedPlugin, ISettingsTabGroup } from '@fromcode119/core/client';
 import type { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
 import { LoadedPluginHydration, SystemConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { PluginSettingsGroups } from '@/components/plugins/plugin-settings-groups';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
@@ -61,8 +64,32 @@ export class PluginDetailPageService {
     return PluginDetailTab.resolve(value);
   }
 
+  /** The page address for a tab, and for a settings group and the tab inside it; other parameters stay. */
+  static tabHref(pathname: string, current: string, tab: PluginDetailTab, group: string, section: string): string {
+    const params = new URLSearchParams(current);
+    params.set('tab', tab.value);
+    for (const [key, value] of [['group', group], ['section', section]]) {
+      if (value) params.set(key, value);
+      else params.delete(key);
+    }
+    return `${pathname}?${params.toString()}`;
+  }
+
   static async fetchPlugin(slug: string): Promise<ILoadedPlugin | null> {
     return LoadedPluginHydration.one(await PluginVersionWaitService.fetchInstalledPlugin(slug));
+  }
+
+  /**
+   * The headings the plugin puts over its settings tabs — they become this page's tabs, plus "Other
+   * settings" for any tab left outside them. None (or no settings at all) means one plain "Configuration" tab.
+   */
+  static async fetchSettingsGroups(slug: string): Promise<ISettingsTabGroup[]> {
+    try {
+      const schema = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(slug));
+      return PluginSettingsGroups.pageGroups(schema, AdminI18n.t('plugins.detail.otherSettings'));
+    } catch {
+      return [];
+    }
   }
 
   static async fetchMarketplaceItem(slug: string): Promise<IPluginMarketplaceItem | null> {
@@ -131,6 +158,20 @@ export class PluginDetailPageService {
    * Mirrors `PluginIsolationSettings.read` on the server: never the constant alone, or a plugin
    * running on a platform-configured 512MB would still be told its blank field means 256.
    */
+  /**
+   * What saving the sandbox limits tells the operator. A failed restart is NOT a failed save — the row is
+   * saved, but the live reload killed the process and it did not come back; the reason is shown, no retry.
+   */
+  static sandboxSaveNotice(result: { restartRequired: boolean; restartFailed?: boolean; reason?: string }, name: string): { type: NotificationType; title: string; message: string } {
+    if (result.restartFailed) {
+      return { type: NotificationType.ERROR, title: AdminI18n.t('plugins.detail.restartFailed'), message: AdminI18n.t('plugins.detail.sandboxLimitsForWereSaved', { name, value: result.reason || AdminI18n.t('common.unknownError') }) };
+    }
+    if (result.restartRequired) {
+      return { type: NotificationType.INFO, title: AdminI18n.t('plugins.detail.restartRequired'), message: AdminI18n.t('plugins.detail.sandboxSettingsForWereSaved', { name }) };
+    }
+    return { type: NotificationType.SUCCESS, title: AdminI18n.t('plugins.detail.resourcesUpdated'), message: AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name }) };
+  }
+
   static async fetchIsolationDefaults(): Promise<{ memoryMb: number; timeoutMs: number } | null> {
     const response = await AdminSystemSettingsClient.getAll();
     const memoryRaw = Number(response?.plugin_isolation_memory_mb);
