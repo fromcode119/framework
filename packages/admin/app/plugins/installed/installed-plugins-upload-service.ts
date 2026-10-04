@@ -86,6 +86,7 @@ export class InstalledPluginsUploadService {
           AdminI18n.t('plugins.upload.name', { value: info?.name || AdminI18n.t('common.unknown') }),
           AdminI18n.t('plugins.upload.slug', { value: info?.slug || AdminI18n.t('common.unknown') }),
           AdminI18n.t('plugins.upload.version', { value: info?.version || AdminI18n.t('common.unknown') }),
+          AdminI18n.t('plugins.upload.vendor', { value: info?.namespace || AdminI18n.t('plugins.detail.noVendorDeclared') }),
           AdminI18n.t('plugins.upload.files', { value: info?.files ?? AdminI18n.t('common.unknown') }),
           AdminI18n.t('plugins.upload.uiBundle', { value: AdminI18n.t(info?.hasUiBundle ? 'common.yes' : 'common.no') }),
         ],
@@ -112,6 +113,10 @@ export class InstalledPluginsUploadService {
             AdminI18n.t('plugins.upload.replaces', { slug: info?.slug }),
             AdminI18n.t('plugins.upload.currentVersion', { version: existing.version || AdminI18n.t('common.unknown'), state: existing.state || AdminI18n.t('common.unknown') }),
             AdminI18n.t('plugins.upload.incomingVersion', { version: info?.version || AdminI18n.t('common.unknown') }),
+            // The installer refuses this case; said here, before the operator presses Install.
+            ...(existing.namespace && existing.namespace !== String(info?.namespace || '')
+              ? [AdminI18n.t('plugins.upload.otherVendorRefused', { installed: existing.namespace, incoming: info?.namespace || AdminI18n.t('plugins.detail.noVendorDeclared') })]
+              : []),
           ]
           : [AdminI18n.t('plugins.upload.notInstalled')],
       },

@@ -26,7 +26,7 @@ export class AppearanceManager {
   ) {}
 
   list(): IAppearanceSummary[] {
-    const items: IAppearanceSummary[] = [{ slug: 'default', name: 'Default', version: '', builtIn: true }];
+    const items: IAppearanceSummary[] = [{ slug: 'default', name: 'Default', version: '', namespace: '', builtIn: true }];
     try {
       if (fs.existsSync(this.appearancesRoot)) {
         for (const child of fs.readdirSync(this.appearancesRoot)) {
@@ -40,6 +40,7 @@ export class AppearanceManager {
               slug: String(m.slug || child),
               name: String(m.name || child),
               version: String(m.version || ''),
+              namespace: String(m.namespace || '').trim(),
               builtIn: false,
               sourceUrl: m.sourceUrl ? String(m.sourceUrl) : undefined,
               workspace: AppearanceWorkspaceDeclarationReader.read(m),

@@ -14,6 +14,8 @@ export interface ITheme {
   slug: string;
   name: string;
   version: string;
+  /** The vendor theme.json declares. */
+  namespace?: string;
   description?: string;
   state: ThemeState;
   author?: string;

@@ -1035,7 +1035,9 @@
       "recentActivity": "Recent activity",
       "uninstallHint": "Removes the plugin, its configuration, caches and local state from the platform.",
       "switchInPlatformScope": "Switching it on or off for every site, and offering it to sites, is done in Platform scope.",
-      "otherSettings": "Other settings"
+      "otherSettings": "Other settings",
+      "noVendorDeclared": "no vendor declared",
+      "vendorHelp": "The vendor this plugin declares. A plugin with the same slug from another vendor is refused at install."
     },
     "process": {
       "hostUnavailable": "The extension-host container could not be reached, so plugin processes cannot start: {{reason}}",
@@ -1322,7 +1324,9 @@
       "package": "package",
       "review": "Review package contents before continuing.",
       "permissions": "What it will ask you to approve",
-      "noPermissions": "It asks for no permissions."
+      "noPermissions": "It asks for no permissions.",
+      "vendor": "Vendor: {{value}}",
+      "otherVendorRefused": "Will be refused: the installed plugin is from {{installed}}, this package is from {{incoming}}."
     },
     "consent": {
       "title": "Approve \"{{name}}\" {{version}}",
@@ -1628,7 +1632,8 @@
       "updated": "Updated \"{{slug}}\".",
       "reInstalled": "Re-installed \"{{slug}}\".",
       "installed2": "Installed \"{{slug}}\".",
-      "appearanceInstalled": "Appearance installed."
+      "appearanceInstalled": "Appearance installed.",
+      "noVendorDeclared": "no vendor declared"
     },
     "framework": {
       "openapiSpec": "OpenAPI Spec",
@@ -3429,7 +3434,15 @@
     "notActiveHint": "This site uses another theme.",
     "removeTheme": "Delete theme",
     "layoutsTitle": "Layouts",
-    "layoutDefault": "default"
+    "layoutDefault": "default",
+    "vendor": "Vendor",
+    "noVendorDeclared": "no vendor declared",
+    "vendorHelp": "The vendor this theme declares. A theme with the same slug from another vendor is refused at install.",
+    "vendorLine": "Vendor: {{vendor}}",
+    "otherVendorRefused": "Will be refused: the installed theme is from {{installed}}, this package is from {{incoming}}.",
+    "notAvailableHere": "No theme \"{{slug}}\" here",
+    "notAvailableHereHelp": "This site cannot see a theme with that name. Its themes are listed under Themes; a platform admin assigns themes to sites from Sites.",
+    "manageThemes": "Manage Themes"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",

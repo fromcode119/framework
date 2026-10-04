@@ -102,6 +102,9 @@ export class PluginDetailHeader extends PureReactor {
               <Badge variant={PluginState.resolve(plugin.state) === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
               <span>v{plugin.manifest.version}</span>
               {this.author ? <><span>·</span><span>{this.author}</span></> : null}
+              {/* The vendor: an install refuses a same-slug plugin from another one, so it is shown. */}
+              <span>·</span>
+              <span title={AdminI18n.t('plugins.detail.vendorHelp')}>{String(plugin.manifest.namespace || '').trim() || AdminI18n.t('plugins.detail.noVendorDeclared')}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">

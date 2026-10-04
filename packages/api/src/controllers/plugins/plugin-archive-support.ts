@@ -162,6 +162,8 @@ export class PluginArchiveSupport {
         version: String(manifest?.version || ''),
         description: String(manifest?.description || ''),
         author: String(manifest?.author || ''),
+        // The vendor, and the installed one's below: a different installed vendor means the install is refused.
+        namespace: String(manifest?.namespace || '').trim(),
         files: ArchiveTreeInspector.countFiles(extractedDir),
         dependencies: this.formatDependencyMap(manifest?.dependencies),
         peerDependencies: this.formatDependencyMap(manifest?.peerDependencies),
@@ -169,7 +171,7 @@ export class PluginArchiveSupport {
         hasServerCode: ArchiveTreeInspector.containsFile(extractedDir, /(^|\/)index\.(js|ts)$/i),
         // What an install would replace, in the shape the upload dialog's "Install Impact" reads.
         existing: existing
-          ? { installed: true, version: String(existing.manifest?.version || ''), state: String(existing.state || '') }
+          ? { installed: true, version: String(existing.manifest?.version || ''), state: String(existing.state || ''), namespace: String(existing.manifest?.namespace || '').trim() }
           : { installed: false },
         // What installing it would ask the operator to approve, against what is approved now.
         consent: PluginConsentSummary.of({ ...manifest, slug }, existing?.approvedCapabilities || []),

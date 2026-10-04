@@ -5,6 +5,7 @@ import { Platform, bound, prop, state } from '@fromcode119/react-class-component
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
+import { ThemeNotFound } from '@/app/themes/[slug]/components/view/theme-not-found.client';
 import { ThemeSettingsController } from '@/app/themes/[slug]/components/view/theme-settings-controller.client';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 import { ThemeSettingsHeader } from '@/app/themes/[slug]/components/view/theme-settings-header.client';
@@ -158,9 +159,16 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
     // Narrowed HERE, once, so `ThemeSettingsRenderModel` (and every view reading `model.themeDetail`)
     // gets a non-null theme instead of re-testing it in six components.
     const themeDetail = this.themeDetail;
-    // A theme's settings are a SITE's: in Platform scope the config read is refused and nothing loads.
-    // Say where the page lives instead of rendering an empty screen.
-    if (!themeDetail) return <SiteScopeGate what={this.pathname}>{null}</SiteScopeGate>;
+    // A theme's settings are a SITE's: in Platform scope the config read is refused and nothing loads,
+    // so the gate says where the page lives. Inside a site, no theme here means this site cannot see
+    // that slug — said, rather than the empty screen a bookmark used to open.
+    if (!themeDetail) {
+      return (
+        <SiteScopeGate what={this.pathname}>
+          <ThemeNotFound themeSlug={this.routeSlug} themesHref={AdminConstants.ROUTES.THEMES.ROOT} />
+        </SiteScopeGate>
+      );
+    }
 
     const model = ThemeSettingsRenderModel.build(this, themeDetail);
     const { adminTheme, activeTab } = model;

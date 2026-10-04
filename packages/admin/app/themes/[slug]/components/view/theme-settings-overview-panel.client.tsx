@@ -88,6 +88,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
         {this.row(AdminI18n.t('themes.version'), themeDetail.version)}
         {this.newerVersion ? this.row(AdminI18n.t('themes.availableVersion'), this.newerVersion) : null}
         {themeDetail.author ? this.row(AdminI18n.t('themes.author'), themeDetail.author) : null}
+        {this.row(AdminI18n.t('themes.vendor'), String(themeDetail.namespace || '').trim() || AdminI18n.t('themes.noVendorDeclared'))}
       </DetailBox>
     );
   }

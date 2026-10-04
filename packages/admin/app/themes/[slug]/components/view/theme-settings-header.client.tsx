@@ -61,6 +61,9 @@ export class ThemeSettingsHeader extends PureReactor {
               <Badge variant={active ? 'success' : 'gray'}>{AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}</Badge>
               <span>v{themeDetail.version}</span>
               {themeDetail.author ? <><span>·</span><span>{themeDetail.author}</span></> : null}
+              {/* The vendor: an install refuses a same-slug theme from another one, so it is shown. */}
+              <span>·</span>
+              <span title={AdminI18n.t('themes.vendorHelp')}>{String(themeDetail.namespace || '').trim() || AdminI18n.t('themes.noVendorDeclared')}</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">

@@ -83,6 +83,7 @@ export class InstalledThemesUploadService {
           AdminI18n.t('themes.nameLine', { name: info?.name || AdminI18n.t('themes.unknown') }),
           AdminI18n.t('themes.slugLine', { slug: info?.slug || AdminI18n.t('themes.unknown') }),
           AdminI18n.t('themes.versionLine', { version: info?.version || AdminI18n.t('themes.unknown') }),
+          AdminI18n.t('themes.vendorLine', { vendor: info?.namespace || AdminI18n.t('themes.noVendorDeclared') }),
           AdminI18n.t('themes.filesLine', { files: info?.files ?? AdminI18n.t('themes.unknown') }),
         ],
       },
@@ -110,6 +111,10 @@ export class InstalledThemesUploadService {
             AdminI18n.t('themes.thisWillReplaceInstalledTheme', { slug: info?.slug }),
             AdminI18n.t('themes.currentVersion', { version: existing.version || AdminI18n.t('themes.unknown'), state: existing.state || AdminI18n.t('themes.unknown') }),
             AdminI18n.t('themes.incomingVersion', { version: info?.version || AdminI18n.t('themes.unknown') }),
+            // The installer refuses this case; said here, before the operator presses Install.
+            ...(existing.namespace && existing.namespace !== String(info?.namespace || '')
+              ? [AdminI18n.t('themes.otherVendorRefused', { installed: existing.namespace, incoming: info?.namespace || AdminI18n.t('themes.noVendorDeclared') })]
+              : []),
           ]
           : [AdminI18n.t('themes.thisThemeIsNotCurrently')],
       },
