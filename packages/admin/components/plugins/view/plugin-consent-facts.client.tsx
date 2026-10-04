@@ -6,6 +6,9 @@ import { PluginConsentCopy } from '@/components/plugins/plugin-consent-copy';
 
 /** What else approving the plugin means: where it runs, what it creates, where it shows up. */
 export class PluginConsentFacts extends PureReactor {
+  /** The consent token for a plugin's own tables (core's `PluginCapability.DATABASE`). */
+  static readonly DATABASE = 'database';
+
   @prop declare summary: IPluginConsentSummary;
 
   render(): ReactNode {
@@ -42,9 +45,10 @@ export class PluginConsentFacts extends PureReactor {
     else if (summary.memoryLimitMb || summary.timeoutMs) {
       facts.push(AdminI18n.t('plugins.consent.facts.isolatedLimits', { memory: summary.memoryLimitMb ?? '-', timeout: summary.timeoutMs ?? '-' }));
     } else facts.push(AdminI18n.t('plugins.consent.facts.isolated'));
-    facts.push(summary.collections.length
-      ? AdminI18n.t('plugins.consent.facts.tables', { tables: summary.collections.join(', ') })
-      : AdminI18n.t('plugins.consent.facts.noTables'));
+    // A plugin's collections are known only once its code has run, so before its first approval a plugin
+    // that asks for database access lists none. "No tables" is said only when it cannot create any.
+    if (summary.collections.length) facts.push(AdminI18n.t('plugins.consent.facts.tables', { tables: summary.collections.join(', ') }));
+    else if (!summary.consent.includes(PluginConsentFacts.DATABASE)) facts.push(AdminI18n.t('plugins.consent.facts.noTables'));
     if (summary.adminScreens) facts.push(AdminI18n.t('plugins.consent.facts.adminScreens'));
     if (summary.storefrontCode) facts.push(AdminI18n.t('plugins.consent.facts.storefrontCode'));
     if (summary.storefrontWidgets) facts.push(AdminI18n.t('plugins.consent.facts.storefrontWidgets', { count: summary.storefrontWidgets }));
