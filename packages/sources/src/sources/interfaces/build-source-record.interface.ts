@@ -11,6 +11,8 @@ export interface IBuildSourceRecord extends IBuildSourceInput {
   lastCommitSha?: string;
   lastError?: string;
   version?: string;
+  /** The vendor the last built manifest declared; empty before its first build. */
+  namespace?: string;
   autoBuild?: boolean;
   autoUpdate?: boolean;
   installAfterBuild?: boolean;

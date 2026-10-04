@@ -29,7 +29,9 @@ export class AppearanceActiveCard extends PureReactor {
 
   private subtitle(item: AppearanceItem): string {
     if (item.builtIn) return AdminI18n.t('settings.appearance.builtIn');
-    return item.version ? `v${item.version}` : AdminI18n.t('settings.appearance.installed');
+    const version = item.version ? `v${item.version}` : AdminI18n.t('settings.appearance.installed');
+    // The vendor beside the version: a same-slug appearance from another vendor is refused at install.
+    return `${version} · ${item.namespace || AdminI18n.t('settings.appearance.noVendorDeclared')}`;
   }
 
   render(): ReactNode {

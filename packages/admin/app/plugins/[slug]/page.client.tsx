@@ -7,6 +7,7 @@ import { PluginDetailPageController } from '@/app/plugins/[slug]/plugin-detail-p
 import type { IPluginDetailPageValues } from '@/app/plugins/[slug]/interfaces/plugin-detail-page-values.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
+import { PluginNotFound } from '@/components/plugins/view/plugin-not-found.client';
 
 /** Hook→class bridge: reads the route param + page model, then renders the hook-free detail view. */
 export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
@@ -26,7 +27,8 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
       );
     }
 
-    if (!model.plugin) return null;
+    // A slug this site cannot see (a bookmark, a plugin not enabled here) said so, not an empty page.
+    if (!model.plugin) return <PluginNotFound pluginSlug={slug} />;
 
     return (
       <>

@@ -3,6 +3,7 @@ export class AppearanceItem {
   slug = '';
   name = '';
   version = '';
+  namespace = '';
   builtIn = false;
   sourceUrl?: string;
 
@@ -11,6 +12,7 @@ export class AppearanceItem {
     item.slug = String(row?.slug ?? '');
     item.name = String(row?.name ?? '');
     item.version = String(row?.version ?? '');
+    item.namespace = String(row?.namespace ?? '').trim();
     item.builtIn = Boolean(row?.builtIn);
     if (row?.sourceUrl) item.sourceUrl = String(row.sourceUrl);
     return item;

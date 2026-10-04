@@ -22,6 +22,7 @@ import { SiteRolesMigration } from '@core/database/migrations/056_site_roles';
 import { SignedTenantBindingMigration } from '@core/database/migrations/057_signed_tenant_binding';
 import { PushSubscriptionsMigration } from '@core/database/migrations/058_push_subscriptions';
 import { ChannelConsentsMigration } from '@core/database/migrations/059_channel_consents';
+import { SourcesNamespaceMigration } from '@core/database/migrations/060_sources_namespace';
 
 /** `MigrationLoader` requires compiled files at runtime; under vitest the set is handed over directly. */
 const MIGRATIONS = [
@@ -35,10 +36,11 @@ const MIGRATIONS = [
   new SignedTenantBindingMigration(),
   new PushSubscriptionsMigration(),
   new ChannelConsentsMigration(),
+  new SourcesNamespaceMigration(),
 ];
 
 /** The consolidated nine, then everything written after the consolidation. */
-const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55, 56, 57, 58, 59];
+const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55, 56, 57, 58, 59, 60];
 
 /**
  * Framework migrations 1–52 were consolidated into nine. Each keeps the number of one version it
@@ -109,7 +111,7 @@ describe('consolidated framework migrations', () => {
     // Only what came after the consolidation runs; nothing consolidated re-creates a table.
     expect(await db.tableExists('_system_plugins')).toBe(false);
     const recorded = await db.find('_system_migrations', {});
-    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55, 56, 57, 58, 59]);
+    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55, 56, 57, 58, 59, 60]);
   });
 
   it('refuses a database that stopped part-way, before running anything', async () => {

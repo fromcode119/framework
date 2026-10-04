@@ -1,4 +1,5 @@
 import path from 'path';
+import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 import fs from 'fs';
 import { Logger } from '@core/logging';
 import { BackupService } from '@core/management/backup-service';
@@ -90,6 +91,7 @@ export class AppearanceInstallerService {
     const slug = String(manifest?.slug || expectedSlug || '').trim();
     if (!slug) throw new Error('Invalid appearance: missing "slug" in appearance.json.');
     const targetDir = path.join(this.appearancesRoot, slug);
+    ExtensionVendorGuard.refuse(targetDir, 'appearance.json', { slug, namespace: manifest.namespace }, 'appearance');
     // Swapped in whole: a console loading this appearance never meets it half-written.
     ExtensionDirectorySwap.replaceSync(targetDir, (stagingDir) => {
       if (options.keepSource) fs.cpSync(contentDir, stagingDir, { recursive: true });

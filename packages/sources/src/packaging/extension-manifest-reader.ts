@@ -31,7 +31,7 @@ export class ExtensionManifestReader {
     { file: 'manifest.json', scope: ExtensionScope.PLUGIN },
   ];
 
-  static read(directory: string): { slug: string; type: string; name: string; version: string } | null {
+  static read(directory: string): { slug: string; type: string; name: string; version: string; namespace: string } | null {
     for (const candidate of ExtensionManifestReader.MANIFESTS) {
       const declared = ExtensionManifestReader.readFile(path.join(directory, candidate.file));
       if (!declared) continue;
@@ -44,6 +44,8 @@ export class ExtensionManifestReader {
         type: String(candidate.scope.value),
         name: String(declared.name || '').trim(),
         version: String(declared.version || '').trim(),
+        // The vendor. An install refuses a same-slug package from another one, so it is shown.
+        namespace: String(declared.namespace || '').trim(),
       };
     }
 
@@ -55,7 +57,7 @@ export class ExtensionManifestReader {
    * separately so a repository that is neither still returns nothing rather than a package name
    * dressed up as a slug.
    */
-  private static readCore(directory: string): { slug: string; type: string; name: string; version: string } | null {
+  private static readCore(directory: string): { slug: string; type: string; name: string; version: string; namespace: string } | null {
     const pkg = ExtensionManifestReader.readFile(path.join(directory, 'package.json'));
     const name = String(pkg?.name || '').trim();
     if (!name || !String(pkg?.workspaces || '')) return null;
@@ -65,6 +67,7 @@ export class ExtensionManifestReader {
       type: String(ExtensionScope.CORE.value),
       name,
       version: String(pkg?.version || '').trim(),
+      namespace: '',
     };
   }
 

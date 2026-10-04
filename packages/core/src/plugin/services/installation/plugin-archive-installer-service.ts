@@ -1,4 +1,5 @@
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
@@ -49,32 +50,9 @@ export class PluginArchiveInstallerService {
     );
   }
 
-  /**
-   * Throws when the plugin installed at `dir` comes from another vendor than `manifest`.
-   *
-   * A plugin's identity on this server is its slug: its directory, its `fcp_<slug>_*` tables, its
-   * settings, its approved capabilities and its routes all hang off it. A package from a different
-   * `namespace` that happens to share the slug would otherwise be taken for an UPDATE — it would replace
-   * the installed plugin and inherit all of that. Same vendor is an update; an installed plugin that
-   * declares no namespace cannot be told apart, so it stays replaceable as before.
-   */
+  /** Throws when the plugin installed at `dir` comes from another vendor than `manifest` (see ExtensionVendorGuard). */
   static refuseOtherVendor(dir: string, manifest: IPluginManifest): void {
-    const installedPath = path.join(dir, 'manifest.json');
-    if (!fs.existsSync(installedPath)) return;
-    let installed: IPluginManifest;
-    try {
-      installed = JSON.parse(fs.readFileSync(installedPath, 'utf8'));
-    } catch {
-      return;
-    }
-    const installedVendor = String(installed?.namespace ?? '').trim();
-    const incomingVendor = String(manifest.namespace ?? '').trim();
-    if (!installedVendor || installedVendor === incomingVendor) return;
-    throw new Error(
-      `Refusing to install plugin "${manifest.slug}" from "${incomingVendor || 'no vendor'}": a plugin with that slug from `
-      + `"${installedVendor}" is already installed, and installing over it would hand it that plugin's data, settings and routes. `
-      + 'Remove the installed plugin first, or install one with a different slug.',
-    );
+    ExtensionVendorGuard.refuse(dir, 'manifest.json', manifest, 'plugin');
   }
 
   public moveDir(src: string, dest: string) {

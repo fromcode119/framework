@@ -45,6 +45,13 @@ export abstract class BuildSourceListItemState extends AdminComponent {
     return this.autoUpdating ?? Boolean(this.build?.autoUpdate);
   }
 
+  /** The vendor the last build declared; says so when it declared none or no build has recorded it yet. */
+  get vendorLabel(): string {
+    const namespace = this.build.namespace;
+    if (namespace === undefined || namespace === null) return AdminI18n.t('sources.vendorAfterNextBuild');
+    return String(namespace).trim() || AdminI18n.t('sources.noVendorDeclared');
+  }
+
   /**
    * What this source has produced, in the terms the operator asked for it.
    *

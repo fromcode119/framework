@@ -49,6 +49,9 @@ export class BuildSourceListItem extends BuildSourceListItemActions {
               <div className="flex min-w-0 items-baseline gap-2">
                 <h4 className="truncate text-[13px] font-semibold text-slate-900 dark:text-white">{this.build.slug}</h4>
                 <span className="shrink-0 text-[10px] uppercase tracking-wide text-slate-600 dark:text-slate-400">{this.build.type}</span>
+                <span className="shrink-0 text-[11px] text-slate-600 dark:text-slate-400" title={AdminI18n.t('sources.vendorHelp')}>
+                  {this.vendorLabel}
+                </span>
                 <span className="truncate text-[11px] text-slate-600 dark:text-slate-400" title={this.packageLabel}>
                   {this.build.branch || 'main'}
                   {this.build.version ? ` · v${this.build.version}` : AdminI18n.t('sources.noBuildYet')}

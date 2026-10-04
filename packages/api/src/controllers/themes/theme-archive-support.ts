@@ -151,13 +151,15 @@ export class ThemeArchiveSupport {
         version: String(manifest?.version || ''),
         description: String(manifest?.description || ''),
         author: String(manifest?.author || ''),
+        // The vendor, and the installed one's below: a different installed vendor means the install is refused.
+        namespace: String(manifest?.namespace || '').trim(),
         dependencies: this.formatDependencyMap(manifest?.dependencies),
         hasUiBundle: this.directoryContainsSegment(themeRoot, 'ui'),
         files: ArchiveTreeInspector.countFiles(themeRoot),
         bundledPlugins: bundledEntries,
         // What an install would replace, in the shape the upload dialog's "Install Impact" reads.
         existing: existing
-          ? { installed: true, version: String(existing.version || ''), state: String(existing.state || '') }
+          ? { installed: true, version: String(existing.version || ''), state: String(existing.state || ''), namespace: String(existing.namespace || '').trim() }
           : { installed: false },
       };
     } finally {

@@ -55,6 +55,7 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       gitSecret: '',
       gitUrl: build?.gitUrl || '',
       slug: build?.slug || '',
+      namespace: build?.namespace || '',
       // The SAME ternary that put an appearance in the dialog as a Plugin, in the other place it
       // was written. Now that the kind is half of which source this is, reading it wrong here would
       // no longer be a wrong label — it would address a different source.
@@ -90,6 +91,12 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
   /** The chosen provider's definition, or null until the list arrives. */
   protected get providerDefinition(): IBuildSourceFormState['providers'][number] | null {
     return this.state.providers.find((entry) => entry.key === this.state.provider) ?? null;
+  }
+
+  /** The vendor field: what the manifest declared, or that it declares none once the repository was read. */
+  protected get vendorPlaceholder(): string {
+    if (this.state.slug && !this.state.inspecting && !this.state.inspectFailed) return AdminI18n.t('sources.noVendorDeclared');
+    return this.slugPlaceholder;
   }
 
   /** What the identity fields can say before a repository has answered — never a guess. */
