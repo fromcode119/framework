@@ -1034,7 +1034,8 @@
       "category": "Category",
       "recentActivity": "Recent activity",
       "uninstallHint": "Removes the plugin, its configuration, caches and local state from the platform.",
-      "switchInPlatformScope": "Switching it on or off for every site, and offering it to sites, is done in Platform scope."
+      "switchInPlatformScope": "Switching it on or off for every site, and offering it to sites, is done in Platform scope.",
+      "otherSettings": "Other settings"
     },
     "process": {
       "hostUnavailable": "The extension-host container could not be reached, so plugin processes cannot start: {{reason}}",

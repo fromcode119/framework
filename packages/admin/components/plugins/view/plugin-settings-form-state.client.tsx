@@ -2,6 +2,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { prop, state, ref, watch } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { PluginSettingsGroups } from '@/components/plugins/plugin-settings-groups';
 
 /**
  * What the plugin settings form knows: the schema it was given, the values over it, and whether any
@@ -58,9 +59,7 @@ export abstract class PluginSettingsFormState extends AdminComponent {
 
   /** The tabs offered now: the open group's when the plugin declares groups, else all of them. */
   protected get groupTabs(): any[] {
-    const tabs: any[] = Array.isArray(this.schema?.tabs) ? this.schema.tabs : [];
-    const grouped = Array.isArray(this.schema?.groups) && this.schema.groups.length > 0 && this.group;
-    return grouped ? tabs.filter((tab) => tab.group === this.group) : tabs;
+    return PluginSettingsGroups.tabsOf(this.schema, this.group ?? '');
   }
 
   /** The open tab: the page's `section` when it belongs to the group, else the form's own pick, else the first. */

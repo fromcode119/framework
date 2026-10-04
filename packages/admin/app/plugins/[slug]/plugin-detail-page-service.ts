@@ -5,6 +5,7 @@ import type { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadat
 import { LoadedPluginHydration, SystemConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { PluginSettingsGroups } from '@/components/plugins/plugin-settings-groups';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { PluginInstallOperationService } from '@/lib/plugin-install-operation-service';
 import { PluginVersionWaitService } from '@/lib/plugin-version-wait-service';
@@ -79,15 +80,13 @@ export class PluginDetailPageService {
   }
 
   /**
-   * The headings the plugin puts over its settings tabs — they become this page's tabs. None (or no
-   * settings at all) means one plain "Settings" tab, as before.
+   * The headings the plugin puts over its settings tabs — they become this page's tabs, plus "Other
+   * settings" for any tab left outside them. None (or no settings at all) means one plain "Configuration" tab.
    */
   static async fetchSettingsGroups(slug: string): Promise<ISettingsTabGroup[]> {
     try {
       const schema = await AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(slug));
-      const groups = Array.isArray(schema?.groups) ? schema.groups : [];
-      const used = new Set((Array.isArray(schema?.tabs) ? schema.tabs : []).map((tab: { group?: string }) => tab?.group).filter(Boolean));
-      return groups.filter((group: ISettingsTabGroup) => group?.id && used.has(group.id));
+      return PluginSettingsGroups.pageGroups(schema, AdminI18n.t('plugins.detail.otherSettings'));
     } catch {
       return [];
     }
