@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.327] - 2026-10-04
+
+### Added
+
+- **frontend**: a plugin may add per-site security headers to a site's pages ([#745](https://github.com/fromcode119/framework/pull/745))
+
+### Fixed
+
+- **admin**: don't claim a plugin creates no tables before its collections are known ([#747](https://github.com/fromcode119/framework/pull/747))
+
 ## [0.2.326] - 2026-10-04
 
 ### Fixed
