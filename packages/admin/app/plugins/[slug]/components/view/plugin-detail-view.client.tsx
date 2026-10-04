@@ -90,7 +90,7 @@ export class PluginDetailView extends AdminComponent {
     const { plugin, theme, activeTab, isCopyingError } = this;
 
     return (
-      <div className="mx-auto max-w-5xl space-y-5 pb-12">
+      <div className="w-full space-y-5 pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
         <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
         {plugin.error ? (
