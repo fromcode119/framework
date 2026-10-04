@@ -129,6 +129,13 @@ export interface IPluginManifest {
     // The framework forwards declared fields opaquely — it never knows what they mean.
     headDataPath?: string;
     headDataRecordFields?: string[];
+    /**
+     * A route of this plugin (relative to its API base) that answers, for the site being rendered,
+     * `{ headers: { <name>: <value> } }`: security headers the storefront adds to that site's pages
+     * (HSTS, Content-Security-Policy, Permissions-Policy …). Only the names in
+     * `DocumentResponseHeaders.ALLOWED` are honoured; anything else is dropped.
+     */
+    documentHeadersPath?: string;
   };
 
   // Marketplace / Organization
