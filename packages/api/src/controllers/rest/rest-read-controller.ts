@@ -7,6 +7,7 @@ import { UserCollectionScopeGuard } from '@api/services/user-collection-scope-gu
 import { CollectionArchiveReadClause } from '@api/services/collection-archive-read-clause';
 import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 import { ReadConstraintOperators } from '@api/services/read-constraint-operators';
+import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import { CoercionUtils, CollectionArchive } from '@fromcode119/core';
 
@@ -39,6 +40,7 @@ export class RestReadController {
       const partialReader = !(await this.runtime.accessPolicy.readsEverything(collection, req));
       if (partialReader) CollectionReadRedaction.assertQueryable(collection, filters, sort);
 
+      const options = CollectionReadOptions.of(req);
       const relationshipMatches = await this.resolveRelationshipSearchMatches(req, search);
       const userScope = await UserCollectionScopeGuard.scopeFor(collection, req, this.runtime.db);
       // Only a session that may see unpublished records may ask for the archived ones.
@@ -47,10 +49,11 @@ export class RestReadController {
         this.runtime.db, collection, table, effectiveFilters, search, relationshipMatches,
         CollectionArchiveReadClause.combine(this.runtime.db, UserCollectionScopeGuard.buildReadClause(userScope),
           ReadConstraintOperators.buildClause(this.runtime.db, table, rule.operators),
+          options.where?.(this.runtime.db, table),
           CollectionArchiveReadClause.build(this.runtime.db, collection, table, archivedOnly)),
         partialReader,
       );
-      const orderBy = QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
+      const orderBy = options.orderBy?.(this.runtime.db, table) ?? QueryHelper.buildOrderBy(this.runtime.db, collection, table, sort);
       const defaultLimit = collection.slug === 'settings' ? 1000 : 10;
       const parsedLimit = parseInt(String(limit), 10);
       const limitValue = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 1000) : defaultLimit;
@@ -62,11 +65,15 @@ export class RestReadController {
         ? parsedOffset
         : (safePage - 1) * limitValue;
 
+      const columns = options.fields
+        ? Object.fromEntries(['id', ...options.fields, ...CollectionReadRedaction.decidingFields(collection)].filter((field) => (table as any)[field]).map((field) => [field, true]))
+        : undefined;
       let rowsResult = await this.runtime.db.find(table, {
         where: whereClause,
         limit: limitValue,
         offset: offsetValue,
         orderBy,
+        ...(columns ? { columns } : {}),
       });
 
       if (collection.slug === '_system_record_versions' && rowsResult.length > 0) {
@@ -85,7 +92,7 @@ export class RestReadController {
         }
       }
 
-      const total = await this.runtime.db.count(table, { where: whereClause });
+      const total = options.withoutTotal ? rowsResult.length : await this.runtime.db.count(table, { where: whereClause });
       const result = {
         docs: this.forReader(collection, req, partialReader,
           this.runtime.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized })),

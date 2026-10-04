@@ -1,0 +1,40 @@
+import type { IPluginReadRouteFilter } from '@core/plugin/interfaces/plugin-read-route-filter.interface';
+import type { IPluginReadRouteSort } from '@core/plugin/interfaces/plugin-read-route-sort.interface';
+
+/**
+ * A public GET route of the plugin that the framework answers itself, from records the plugin keeps
+ * ready in one of its collections — so the request never crosses into the plugin's process.
+ *
+ * The plugin declares it in its own manifest; the framework names no plugin and knows nothing of what
+ * the records are. The read goes through the collection's ordinary public read — its access rule, the
+ * published-only rule, staff-only fields, the site's isolation — so nothing a visitor may not read
+ * through the collection can reach them this way. A request this route does not match goes to the
+ * plugin as before.
+ */
+export interface IPluginReadRoute {
+  /** The route path within the plugin, as the plugin registers it (`/products`). */
+  path: string;
+  /** Query values that must ALL be present for the framework to answer (`{ "view": "card" }`). */
+  when?: Record<string, string>;
+  /** Query keys whose presence — any value, even one that is not text — sends the request to the plugin. */
+  unless?: string[];
+  /** The plugin collection the records live in (its slug). */
+  collection: string;
+  /** The field whose value IS each returned item. */
+  document: string;
+  /** Conditions the route always applies — field equals value — whatever the request asks. */
+  where?: Record<string, string | number | boolean>;
+  /** Query parameters the route narrows by. Any other parameter is ignored. */
+  filters?: Record<string, IPluginReadRouteFilter>;
+  /**
+   * Sort names the route offers (`price` → `?sort=price`, `-price`, `price-asc`, `price-desc`). A request
+   * naming any other sort goes to the plugin. Ties break by id, newest first.
+   */
+  sorts?: Record<string, IPluginReadRouteSort>;
+  /** The order when the request names none of `sorts` (`-updated` — a declared sort name). */
+  defaultSort?: string;
+  defaultLimit?: number;
+  maxLimit?: number;
+  /** How long a shared cache may keep a visitor's answer; omitted, nothing is cached. */
+  cacheSeconds?: number;
+}

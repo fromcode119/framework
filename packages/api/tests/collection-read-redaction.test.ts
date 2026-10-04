@@ -2,6 +2,7 @@ import { CollectionReadRedaction } from '@api/services/collection-read-redaction
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
 import { RestConsoleReadController } from '@api/controllers/rest/rest-console-read-controller';
+import { CollectionReadOptions } from '@api/services/collection-read-options';
 
 /**
  * A collection opened to the public served every column of every row through the generic reads: the
@@ -138,6 +139,18 @@ describe('collection read redaction', () => {
       await new RestReadController(buildRuntime([locked]) as any)
         .find(collection, { query: {}, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any, res);
       expect(res.json.mock.calls[0][0].docs[0].content).toBe('secret body');
+    });
+
+    it('a read of some fields also reads what withholds them, so a withheld field stays withheld', async () => {
+      const runtime = buildRuntime([{ id: 1, content: 'secret body', accessPassword: 'pw' }]);
+      const res = response();
+      const req: any = { query: {}, [CollectionReadOptions.KEY]: { fields: ['content'], withoutTotal: true } };
+      await new RestReadController(runtime as any).find(collection, req, res);
+      expect(Object.keys(runtime.db.find.mock.calls[0][1].columns).sort()).toEqual(['accessPassword', 'content', 'id']);
+      expect(runtime.db.count).not.toHaveBeenCalled();
+      const doc = res.json.mock.calls[0][0].docs[0];
+      expect(doc.content).toBeNull();
+      expect(doc).not.toHaveProperty('accessPassword');
     });
   });
 

@@ -488,6 +488,10 @@ export type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget
 export { ExtensionKind } from '@core/plugin/enums/extension-kind.enum';
 export { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
 export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+export { ReadRouteMatch } from '@core/plugin/enums/read-route-match.enum';
+export type { IPluginReadRoute } from '@core/plugin/interfaces/plugin-read-route.interface';
+export type { IPluginReadRouteFilter } from '@core/plugin/interfaces/plugin-read-route-filter.interface';
+export type { IPluginReadRouteSort } from '@core/plugin/interfaces/plugin-read-route-sort.interface';
 export { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
 export { SnapshotType } from '@core/management/enums/snapshot-type.enum';
 export { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
