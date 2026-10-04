@@ -17,9 +17,9 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The page's header: where you are, which plugin, its state and version — and the actions of the tab
- * you are on (settings: export, import, save; resources: save the policy). Everything that is not an
- * everyday action (the raw definition, resetting the settings) sits in the ⋯ menu.
+ * The page's header: where you are, which plugin, its state and version — and the one action of the
+ * tab you are on (settings: save; resources: save the policy). Everything that is not an everyday action
+ * (exporting, importing or resetting the settings, the raw definition) sits in the ⋯ menu.
  */
 export class PluginDetailHeader extends PureReactor {
   @prop declare activeTab: PluginDetailTab;
@@ -52,6 +52,8 @@ export class PluginDetailHeader extends PureReactor {
     const items: IDropdownItem[] = [];
     if (this.platformActions) items.push({ label: AdminI18n.t('plugins.detail.viewDefinition'), icon: <FrameworkIcons.Code size={14} />, onClick: this.onOpenDefinition });
     if (this.activeTab === PluginDetailTab.SETTINGS) {
+      items.push({ label: AdminI18n.t('common.export'), icon: <FrameworkIcons.Download size={14} />, onClick: () => this.settingsFormRef.current?.exportSettings() });
+      items.push({ label: AdminI18n.t('common.import'), icon: <FrameworkIcons.Upload size={14} />, onClick: () => this.settingsFormRef.current?.importSettings() });
       items.push({ label: AdminI18n.t('plugins.detail.resetSettingsToDefaults'), icon: <FrameworkIcons.Refresh size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => this.settingsFormRef.current?.resetSettings() });
     }
     return items;
@@ -66,12 +68,10 @@ export class PluginDetailHeader extends PureReactor {
   }
 
   private settingsActions(): ReactNode {
-    const { settingsDirty, settingsSaving, settingsFormRef } = this;
+    const { settingsDirty, settingsSaving } = this;
     return (
       <>
         {settingsDirty ? <span className="flex items-center gap-1.5 text-xs font-semibold text-amber-500"><span className="h-2 w-2 rounded-full bg-amber-500" />{AdminI18n.t('plugins.detail.unsavedChanges')}</span> : null}
-        {this.button(<><FrameworkIcons.Download size={14} />{AdminI18n.t('common.export')}</>, () => settingsFormRef.current?.exportSettings())}
-        {this.button(<><FrameworkIcons.Upload size={14} />{AdminI18n.t('common.import')}</>, () => settingsFormRef.current?.importSettings())}
         <button type="submit" form="plugin-settings-form" disabled={settingsSaving || !settingsDirty}
           className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-indigo-600 bg-indigo-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50">
           {settingsSaving ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Check size={14} />}
