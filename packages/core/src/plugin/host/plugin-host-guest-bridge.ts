@@ -18,6 +18,7 @@ import type { PluginGuestGeneration } from '@core/plugin/host/generations/plugin
 import { PluginHostPeerSnapshot } from '@core/plugin/host/plugin-host-peer-snapshot';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
+import { PluginHostCollectionPrune } from '@core/plugin/host/plugin-host-collection-prune';
 
 /**
  * What the guest asks of the HOST, and what happens when the guest dies.
@@ -173,14 +174,13 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     }
     // The switch, in ONE synchronous step, so nothing is dispatched to a half-switched plugin: the replaced
     // process's stand-ins go, the next one serves, and what it registered while initialising is applied.
-    if (this.context) this.registrations.resetForRestart(this.context);
     // Its middleware too. Registering again replaces one of the same id, but a middleware the new process
     // no longer registers (an update that removed it) stayed, pointing at a handler the new process does
     // not have — on every request the api served, for every site running the plugin.
-    if (this.context) this.manager.middlewares.unregisterByPlugin(this.slug);
+    if (this.context) { this.registrations.resetForRestart(this.context); this.manager.middlewares.unregisterByPlugin(this.slug); }
     this.adopt(next);
     if (this.context) {
-      for (const registration of next.held.splice(0)) void this.registrations.apply(this.context, registration);
+      PluginHostCollectionPrune.watch(this.manager, this.slug, this.logger)(next.held.splice(0).map((registration) => this.registrations.apply(this.context!, registration)));
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
       // provider, a search provider, a newsletter content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the
