@@ -59,7 +59,7 @@ export class PermalinkInput extends AdminComponent {
   render(): ReactNode {
     const { onChange, disabled } = this;
     const { isEditing, useAbsolutePath } = this;
-    const { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, suffix, isCustomMode, isAbsoluteOverride } = this.compute();
+    const { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, pathValue, suffix, isCustomMode, isAbsoluteOverride } = this.compute();
 
     if (!isEditing) {
       return (
@@ -116,8 +116,9 @@ export class PermalinkInput extends AdminComponent {
             e.stopPropagation();
             const nextAbsolute = !useAbsolutePath;
             this.useAbsolutePath = nextAbsolute;
-            const normalizedCurrent = String(displayValue || '').replace(/^\/+/, '');
-            onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
+            const normalizedCurrent = String(pathValue || '').replace(/^\/+/, '');
+            // No path yet: only the mode changes — the "…" placeholder is never saved as an address.
+            if (normalizedCurrent) onChange(nextAbsolute ? `/${normalizedCurrent}` : normalizedCurrent);
           }}
           className={`w-full rounded-lg border px-3 py-2 text-left text-[11px] font-semibold transition-colors ${
             useAbsolutePath
@@ -138,7 +139,7 @@ export class PermalinkInput extends AdminComponent {
              </div>
              <input
                 autoFocus
-                value={displayValue ?? ''}
+                value={pathValue}
                 onChange={(e) => this.handleValueChange(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') this.isEditing = false;

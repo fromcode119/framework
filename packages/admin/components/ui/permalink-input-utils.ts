@@ -22,9 +22,10 @@ export class PermalinkInputUtils {
 
     const isNumericOnly = structure.includes(':id') && !structure.includes(':slug');
     const isCustomMode = !!normalizedValue;
-    // Before a record has a slug the preview ends in "…" — it used to print the English "unnamed-resource"
-    // into every new record's address on any console language.
-    const displayValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || '…'));
+    // The path as it really is — '' before a record has a slug. The preview shows "…" in its place; it used
+    // to print the English "unnamed-resource", and both were once written into the record as its address.
+    const pathValue = (isCustomMode ? normalizedValue.replace(/^\/+/, '') : '') || (isNumericOnly ? (id || '') : (slug || ''));
+    const displayValue = pathValue || '…';
 
     const now = new Date();
     const replacements: Record<string, string> = {
@@ -64,6 +65,6 @@ export class PermalinkInputUtils {
 
     const fullDisplayPrefix = `${baseUrl}${finalPrefix}`;
 
-    return { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, suffix, isCustomMode, isAbsoluteOverride };
+    return { baseUrl, finalPrefix, fullDisplayPrefix, displayValue, pathValue, suffix, isCustomMode, isAbsoluteOverride };
   }
 }
