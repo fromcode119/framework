@@ -314,7 +314,8 @@
     "required": "Required",
     "import": "Import",
     "reset": "Reset",
-    "notScheduledYet": "not scheduled yet"
+    "notScheduledYet": "not scheduled yet",
+    "more": "More actions"
   },
   "ui": {
     "table": {
@@ -1027,7 +1028,13 @@
       "stateActive": "Active",
       "stateInactive": "Inactive",
       "stateLoading": "Loading",
-      "stateError": "Error"
+      "stateError": "Error",
+      "version": "Version",
+      "availableVersion": "Available version",
+      "category": "Category",
+      "recentActivity": "Recent activity",
+      "uninstallHint": "Removes the plugin, its configuration, caches and local state from the platform.",
+      "switchInPlatformScope": "Switching it on or off for every site, and offering it to sites, is done in Platform scope."
     },
     "process": {
       "hostUnavailable": "The extension-host container could not be reached, so plugin processes cannot start: {{reason}}",
@@ -3405,7 +3412,23 @@
     "adding": "Adding...",
     "general": "General",
     "delete": "Delete",
-    "inactive": "Inactive"
+    "inactive": "Inactive",
+    "status": "Status",
+    "details": "Details",
+    "author": "Author",
+    "version": "Version",
+    "availableVersion": "Available version",
+    "maintenance": "Maintenance",
+    "layoutSection": "Layout",
+    "extensionsSection": "Extensions",
+    "versionReady": "Version {{version}} is ready",
+    "saveChanges": "Save changes",
+    "runSeedsHint": "Replays the theme's seed data — its sample pages and content — into this site.",
+    "resetThemeHint": "Clears this site's saved theme settings and replays the seed data.",
+    "notActiveHint": "This site uses another theme.",
+    "removeTheme": "Delete theme",
+    "layoutsTitle": "Layouts",
+    "layoutDefault": "default"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",

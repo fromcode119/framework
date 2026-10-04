@@ -4,6 +4,8 @@ import type { ITheme } from '@/app/themes/[slug]/interfaces/theme.interface';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemePreviewUtils } from '@/lib/theme-preview-utils';
 import { ThemePreviewSwatch } from '@/app/themes/[slug]/theme-preview-swatch';
+import { ThemeSettingsSection } from '@/app/themes/[slug]/theme-settings-section';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * The render-time derived model for the theme settings page (grouped variables/settings, preview
@@ -40,6 +42,11 @@ export class ThemeSettingsRenderModel {
   /** The theme's own colour variables, live from the editor — the Visual Preview card's only source. */
   readonly previewSwatches: ThemePreviewSwatch[];
   readonly livePreviewUrl: string;
+
+  /** The Settings tab's second row — one entry per variable group, then the layout, then the theme's settings. */
+  readonly sections: ThemeSettingsSection[];
+  /** The section `?section=` names, or the first one when it names none. */
+  readonly currentSection: ThemeSettingsSection;
 
   static build(page: IThemeSettingsPageView, themeDetail: ITheme): ThemeSettingsRenderModel {
     return new ThemeSettingsRenderModel(page, themeDetail);
@@ -86,6 +93,15 @@ export class ThemeSettingsRenderModel {
       page.pluginSettings,
       page.siteStorefrontUrl,
     );
+
+    this.sections = [
+      ...Object.entries(this.groupedVariables)
+        .filter(([, keys]) => keys.length > 0)
+        .map(([group]) => ThemeSettingsSection.forVariables(group, group === 'General' ? AdminI18n.t('themes.general') : group)),
+      ThemeSettingsSection.layout(AdminI18n.t('themes.layoutSection')),
+      ...(this.allThemeSettingKeys.length ? [ThemeSettingsSection.extensions(AdminI18n.t('themes.extensionsSection'))] : []),
+    ];
+    this.currentSection = this.sections.find((section) => section.id === page.activeSection) ?? this.sections[0];
   }
 
   /** Bucket `keys` by the group each declares, falling back to the "General" bucket. */

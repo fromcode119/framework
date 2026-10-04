@@ -1,4 +1,5 @@
 
+import { createRef } from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PluginSettingsForm } from '@/components/plugins/view/plugin-settings-form.client';
 import { vi } from 'vitest';
@@ -18,15 +19,21 @@ import { ThemeMode } from '@fromcode119/core/client';
  * reactor `Enum`, and `enumMember === 'light'` is always false.
  */
 const triggerRefresh = vi.fn();
+const onStateChange = vi.fn();
+/** The page header drives the form from outside: Save submits it by id, Export/Import/Reset go through this handle. */
+const formRef = createRef<PluginSettingsForm>();
 
 const renderForm = (props: { pluginSlug: string }) =>
   render(
     <AdminRuntimeContext.context.Provider
       value={{ theme: ThemeMode.LIGHT, plugins: { triggerRefresh }, collections: [] } as any}
     >
-      <PluginSettingsForm {...props} />
+      <PluginSettingsForm {...props} ref={formRef} formId="plugin-settings-form" onStateChange={onStateChange} />
     </AdminRuntimeContext.context.Provider>
   );
+
+/** What the header's Save button does: it is a `type="submit"` tied to the form by `form=`. */
+const save = () => fireEvent.submit(document.getElementById('plugin-settings-form') as HTMLFormElement);
 
 vi.mock('@/lib/api', () => ({
   AdminApi: {
@@ -93,9 +100,9 @@ describe('./plugin-settings-form', () => {
     // Wait for the loading to finish
     await waitFor(() => expect(screen.queryByText('Site Name')).toBeDefined());
 
-    // Check tabs
-    expect(screen.getByText('General')).toBeDefined();
-    expect(screen.getByText('Advanced')).toBeDefined();
+    // Check tabs — the open one's label is also the section heading, so ask for the tab buttons.
+    expect(screen.getByRole('button', { name: 'General' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Advanced' })).toBeDefined();
   });
 
   it('switches tabs and shows correct fields', async () => {
@@ -122,7 +129,8 @@ describe('./plugin-settings-form', () => {
     fireEvent.change(input, { target: { value: 'New Name' } });
     
     expect(input.value).toBe('New Name');
-    expect(screen.getByText(/Unsaved changes/i)).toBeDefined();
+    // The header shows "Unsaved changes" and enables Save from what the form reports.
+    expect(onStateChange).toHaveBeenLastCalledWith(true, false);
   });
 
   it('calls AdminApi.put when saving', async () => {
@@ -136,8 +144,7 @@ describe('./plugin-settings-form', () => {
     const input = screen.getByTestId('input-siteName');
     fireEvent.change(input, { target: { value: 'New Name' } });
     
-    const saveButton = screen.getByRole('button', { name: /Save Settings/i });
-    fireEvent.click(saveButton);
+    save();
     
     await waitFor(() => {
       expect(AdminApi.put).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings`), expect.objectContaining({
@@ -160,7 +167,7 @@ describe('./plugin-settings-form', () => {
 
     await waitFor(() => screen.getByTestId('input-siteName'));
     fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'New Name' } });
-    fireEvent.click(screen.getByRole('button', { name: /Save Settings/i }));
+    save();
 
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Not saved: Boom'));
     expect(triggerRefresh).not.toHaveBeenCalled();
@@ -168,7 +175,7 @@ describe('./plugin-settings-form', () => {
     logged.mockRestore();
   });
 
-  it('names the refused fields beside the save button, not only at the top of the form', async () => {
+  it('names the refused fields, even when they sit on another tab', async () => {
     (AdminApi.put as any).mockRejectedValue(Object.assign(new Error('Bad Request'), {
       status: 400,
       data: { errors: { postsPerPage: 'Too many.' } },
@@ -179,9 +186,9 @@ describe('./plugin-settings-form', () => {
 
     await waitFor(() => screen.getByTestId('input-siteName'));
     fireEvent.change(screen.getByTestId('input-siteName'), { target: { value: 'New Name' } });
-    fireEvent.click(screen.getByRole('button', { name: /Save Settings/i }));
+    save();
 
-    // The field sits on the other tab: the bar must still say which one to correct.
+    // The field sits on the other tab: the form must still say which one to correct.
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Not saved — correct: Posts Per Page'));
     logged.mockRestore();
   });
@@ -192,10 +199,8 @@ describe('./plugin-settings-form', () => {
 
     renderForm({ pluginSlug });
     
-    await waitFor(() => screen.getByText('Reset'));
-    
-    const resetButton = screen.getByText('Reset');
-    fireEvent.click(resetButton);
+    await waitFor(() => screen.getByTestId('input-siteName'));
+    formRef.current?.resetSettings();
     
     await waitFor(() => {
       expect(AdminApi.post).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/reset`));
@@ -209,10 +214,8 @@ describe('./plugin-settings-form', () => {
     window.open = vi.fn();
     renderForm({ pluginSlug });
     
-    await waitFor(() => screen.getByText('Export'));
-    
-    const exportButton = screen.getByText('Export');
-    fireEvent.click(exportButton);
+    await waitFor(() => screen.getByTestId('input-siteName'));
+    formRef.current?.exportSettings();
     
     expect(window.open).toHaveBeenCalledWith(expect.stringContaining(`/plugins/${pluginSlug}/settings/export`), '_blank');
   });

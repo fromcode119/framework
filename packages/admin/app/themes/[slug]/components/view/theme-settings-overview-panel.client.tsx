@@ -1,16 +1,20 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
-import { ThemeMode, LocalizationUtils } from '@fromcode119/core/client';
+import { ThemeMode, ThemeState } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
-import { Badge } from '@/components/ui/view/badge.client';
+import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { ThemeState } from '@fromcode119/core/client';
-import { AdminClass } from '@/lib/admin-class';
+import { DetailBox } from '@/components/view/detail-box.client';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
+import { ThemeOverviewColours } from '@/app/themes/[slug]/components/view/overview/theme-overview-colours.client';
+import { ThemeOverviewIntegrations } from '@/app/themes/[slug]/components/view/overview/theme-overview-integrations.client';
+import { ThemeOverviewLayouts } from '@/app/themes/[slug]/components/view/overview/theme-overview-layouts.client';
+import { DetailSplit } from '@/components/view/detail-split.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The Overview tab — everything about the theme that is not a setting: a newer release, whether this site
+ * uses it, what it is, its colours and the integrations it needs.
+ */
 export class ThemeSettingsOverviewPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
   declare props: Pick<ThemeSettingsOverviewPanel, 'page' | 'model'>;
@@ -18,57 +22,97 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
   @prop declare page: IThemeSettingsPageView;
   @prop declare model: ThemeSettingsRenderModel;
 
-  render(): ReactNode {
-    const page = this.page;
-    const { adminTheme, themeDetail } = this.model;
+  @bound private activate(): void { void this.page.handleActivate(); }
+  @bound private update(): void { void this.page.handleUpdate(); }
+
+  private get dark(): boolean {
+    return this.model.adminTheme === ThemeMode.DARK;
+  }
+
+  private get newerVersion(): string | null {
+    const { marketplaceVersion, themeDetail } = this.model;
+    return marketplaceVersion && marketplaceVersion !== themeDetail.version ? marketplaceVersion : null;
+  }
+
+  private updateBanner(version: string): ReactNode {
+    const dark = this.dark;
+    const updating = this.page.isUpdating;
     return (
-      <Card className={`border-0 relative overflow-hidden p-4 transition-all duration-300 ${AdminClass.SURFACE} ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-        <div className="flex items-start gap-4">
-          <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
-            <FrameworkIcons.Palette size={20} strokeWidth={1.5} />
-          </div>
-          <div className="flex-1 space-y-2">
-            <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-semibold uppercase tracking-wide text-[10px] rounded-lg">
-              {AdminI18n.t('themes.visualPackage')}
-            </Badge>
-            <p className={`text-base leading-relaxed font-medium ${adminTheme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
-              {themeDetail.description || AdminI18n.t('themes.noDescriptionProvidedForThis')}
-            </p>
-          </div>
-        </div>
+      <div className="flex flex-wrap items-center gap-3">
+        <FrameworkIcons.Download size={16} className={dark ? 'text-indigo-300' : 'text-indigo-600'} />
+        <span className={`flex-1 text-[13px] font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.versionReady', { version })}</span>
+        <button type="button" onClick={this.update} disabled={updating}
+          className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-indigo-600 px-3.5 text-[13px] font-semibold text-white hover:bg-indigo-500 disabled:opacity-60">
+          {updating ? <FrameworkIcons.Loader size={13} className="animate-spin" /> : <FrameworkIcons.Zap size={13} />}
+          {updating ? AdminI18n.t('themes.updating') : AdminI18n.t('themes.updateAvailable')}
+        </button>
+      </div>
+    );
+  }
 
-        <div className={`mt-4 pt-4 border-t ${adminTheme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'}`}>
-          <h4 className="text-[10px] font-semibold uppercase tracking-wide text-slate-400 mb-3">{AdminI18n.t('themes.layoutArchitectures')}</h4>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {themeDetail.layouts?.map((layout) => (
-              <div key={layout.name} className={`p-4 rounded-xl border transition-all ${adminTheme === ThemeMode.DARK ? 'bg-slate-800/30 border-white/5' : 'bg-slate-50/50 border-slate-100 shadow-sm'}`}>
-                <div className={`text-sm font-semibold mb-1 ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{LocalizationUtils.resolveLabelText(layout.label, AdminI18n.locale) || layout.name}</div>
-                <p className="text-[11px] text-slate-500 font-medium">{LocalizationUtils.resolveLabelText(layout.description, AdminI18n.locale) || AdminI18n.t('themes.standardPlatformOptimizedLayout')}</p>
-              </div>
-            ))}
-          </div>
-        </div>
+  private row(label: string, value: ReactNode): ReactNode {
+    const dark = this.dark;
+    return (
+      <div key={label} className="flex items-center justify-between gap-4 py-1.5 text-[13px]">
+        <span className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</span>
+        <span className={`text-right font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</span>
+      </div>
+    );
+  }
 
-        <div className={`mt-4 pt-4 border-t ${adminTheme === ThemeMode.DARK ? 'border-slate-800/80' : 'border-slate-100'} flex items-center justify-between`}>
-          <div className="space-y-1">
-            <div className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.deploymentStatus')}</div>
-            <div className="flex items-center gap-3">
-              <div className={`h-3 w-3 rounded-full ${themeDetail.state === ThemeState.ACTIVE ? 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.3)]' : 'bg-slate-500'}`} />
-              <span className={`text-sm font-semibold uppercase tracking-tight ${themeDetail.state === ThemeState.ACTIVE ? 'text-green-500' : 'text-slate-500'}`}>
-                {AdminI18n.t('themes.systemState', { state: themeDetail.state === ThemeState.ACTIVE ? AdminI18n.t('themes.stateActive') : themeDetail.state.value })}
-              </span>
-            </div>
-          </div>
-          {themeDetail.state !== ThemeState.ACTIVE && (
-            <button
-              onClick={() => void page.handleActivate()}
-              className="h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white text-[10px] font-semibold uppercase tracking-wide rounded-lg transition-all shadow-sm active:scale-95"
-            >
-              {AdminI18n.t('themes.activateEnvironment')}
+  private status(): ReactNode {
+    const dark = this.dark;
+    const active = this.model.themeDetail.state === ThemeState.ACTIVE;
+    return (
+      <DetailBox title={AdminI18n.t('themes.status')} theme={this.model.adminTheme}>
+        <div className="flex flex-wrap items-center justify-between gap-3 py-1.5 text-[13px]">
+          <span className={`flex items-center gap-2 font-medium ${active ? 'text-emerald-500' : dark ? 'text-slate-400' : 'text-slate-500'}`}>
+            <span className={`h-2 w-2 rounded-full ${active ? 'bg-emerald-500' : 'bg-slate-500'}`} />
+            {AdminI18n.t(active ? 'themes.active' : 'themes.inactive')}
+          </span>
+          {active ? null : (
+            <button type="button" onClick={this.activate} className="inline-flex h-8 items-center rounded-lg bg-indigo-600 px-3.5 text-[13px] font-semibold text-white hover:bg-indigo-500">
+              {AdminI18n.t('themes.activate')}
             </button>
           )}
         </div>
-      </Card>
+        {active ? null : <p className={`mt-2 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.notActiveHint')}</p>}
+      </DetailBox>
+    );
+  }
+
+  private details(): ReactNode {
+    const { themeDetail, adminTheme } = this.model;
+    return (
+      <DetailBox title={AdminI18n.t('themes.details')} theme={adminTheme}>
+        {this.row(AdminI18n.t('themes.version'), themeDetail.version)}
+        {this.newerVersion ? this.row(AdminI18n.t('themes.availableVersion'), this.newerVersion) : null}
+        {themeDetail.author ? this.row(AdminI18n.t('themes.author'), themeDetail.author) : null}
+      </DetailBox>
+    );
+  }
+
+  render(): ReactNode {
+    const model = this.model;
+    const version = this.newerVersion;
+    const { themeDetail, adminTheme } = model;
+    // The layout the site's pages get when they choose none: the site's own saved choice, else the theme's.
+    const defaultLayout = String(this.page.dbConfig.defaultLayout || '') || themeDetail.defaultLayout || '';
+    return (
+      <DetailSplit theme={adminTheme}
+        main={<>
+          {version ? this.updateBanner(version) : null}
+          <p className={`text-[15px] leading-relaxed ${this.dark ? 'text-slate-300' : 'text-slate-700'}`}>
+            {themeDetail.description || AdminI18n.t('themes.noDescriptionProvidedForThis')}
+          </p>
+          <ThemeOverviewColours swatches={model.previewSwatches} theme={adminTheme} />
+          <ThemeOverviewLayouts layouts={themeDetail.layouts ?? []} defaultLayout={defaultLayout} theme={adminTheme} />
+          {model.integrationRequirements.length ? <ThemeOverviewIntegrations integrations={model.integrationRequirements} theme={adminTheme} /> : null}
+        </>}
+        aside={<>
+          {this.status()}
+          {this.details()}
+        </>} />
     );
   }
 }

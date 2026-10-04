@@ -34,6 +34,9 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         onApproved={() => undefined} onFinished={() => void model.consentFinished()} />
       <PluginDetailView
         activeTab={model.activeTab}
+        settingsGroups={model.settingsGroups}
+        settingsGroup={model.settingsGroup}
+        settingsSection={model.settingsSection}
         isDeleting={model.isDeleting}
         isSaving={model.isSaving}
         isUpdating={model.isUpdating}

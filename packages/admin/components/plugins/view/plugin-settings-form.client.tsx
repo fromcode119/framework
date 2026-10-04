@@ -1,8 +1,6 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { ref } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
@@ -32,9 +30,8 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
   }
 
   /**
-   * Why the last save was refused, for the action bar. The banner says it too, but at the TOP of the
-   * form: an operator who saved from the bottom of a long tab saw nothing happen. The fields at fault are
-   * named, since they may be on another tab or scrolled out of view.
+   * Why the last save was refused. The fields at fault are named, since they may be on another tab or
+   * scrolled out of view.
    */
   private get saveRefusal(): string {
     const status = this.status;
@@ -74,58 +71,40 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     }
 
     const visibleFields = this.visibleFields;
+    const tabs = this.groupTabs;
+    const current = this.currentTabId;
+    const dark = theme === ThemeMode.DARK;
+    const currentTab = tabs.find((tab: any) => tab.id === current);
 
     return (
-      <form
-        id={this.formId}
-        className="space-y-6"
-        onSubmit={this.handleSubmit}
-      >
-        {status && (
-          <div className={`p-4 rounded-xl border flex items-center gap-3 animate-in fade-in slide-in-from-top-2 duration-300 ${
-            status.type === NotificationType.SUCCESS
-              ? 'bg-emerald-50 border-emerald-100 text-emerald-700'
-              : 'bg-rose-50 border-rose-100 text-rose-700'
-          }`}>
-            {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={18} /> : <FrameworkIcons.Alert size={18} />}
-            <p className="text-sm font-bold">{status.message}</p>
-          </div>
-        )}
-
+      <form id={this.formId} onSubmit={this.handleSubmit}>
         {/* hidden file input for import */}
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 
-        {/* Tabs — they wrap onto further rows: a plugin with many tabs ran past the panel and the last ones were clipped out of reach. */}
-        {schema.tabs && schema.tabs.length > 0 && (
-          <div className={`flex flex-wrap gap-2 p-2 rounded-xl ${
-            theme === ThemeMode.DARK ? 'bg-slate-900' : 'bg-slate-100'
-          }`}>
-            {schema.tabs.map((tab: any) => (
-              <button
-                type="button"
-                key={tab.id}
-                onClick={() => { this.activeTab = tab.id; }}
-                className={`flex-1 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                  this.activeTab === tab.id
-                    ? theme === ThemeMode.DARK
-                      ? 'bg-indigo-500 text-white'
-                      : 'bg-white text-slate-900 shadow-sm'
-                    : theme === ThemeMode.DARK
-                      ? 'text-slate-400 hover:text-white hover:bg-slate-800'
-                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
-                }`}
-              >
+        {/* The group's own tabs: a second, quieter row beneath the page's tabs. */}
+        {tabs.length > 1 ? (
+          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+            {tabs.map((tab: any) => (
+              <button type="button" key={tab.id} onClick={() => this.selectTab(tab.id)} aria-current={tab.id === current ? 'page' : undefined}
+                className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${tab.id === current
+                  ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
+                  : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
                 {tab.label}
               </button>
             ))}
           </div>
-        )}
+        ) : null}
 
-        {/* Fields */}
-        <div className={`p-8 rounded-xl border ${
-          theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'
-        }`}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-4 p-6">
+          {currentTab ? <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentTab.label}</h2> : null}
+          {status && (
+            <div className={`flex items-center gap-3 rounded-xl border p-3 ${status.type === NotificationType.SUCCESS ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+              {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
+              <p className="text-sm font-semibold">{status.message}</p>
+            </div>
+          )}
+          {this.saveRefusal ? <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">{this.saveRefusal}</p> : null}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {visibleFields.map((field: any) => {
               const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
               const resolvedField = hasSavedSecret
@@ -145,32 +124,6 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
             })}
           </div>
         </div>
-
-        {/* Action bar */}
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex flex-col gap-1">
-            {this.isDirty && (
-              <span className="text-sm font-semibold text-amber-600">{AdminI18n.t('plugins.list.unsavedChanges')}</span>
-            )}
-            {this.saveRefusal && (
-              <span role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">
-                {this.saveRefusal}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <Button type="button" variant={ButtonVariant.GHOST} onClick={this.exportSettings}>
-              {AdminI18n.t('plugins.list.export')}
-            </Button>
-            <Button type="button" variant={ButtonVariant.GHOST} onClick={this.resetSettings}>
-              {AdminI18n.t('plugins.list.reset')}
-            </Button>
-            <Button type="submit" disabled={this.saving}>
-              {this.saving ? AdminI18n.t('plugins.list.saving') : AdminI18n.t('plugins.list.saveSettings')}
-            </Button>
-          </div>
-        </div>
-
       </form>
     );
   }

@@ -1,3 +1,4 @@
+import type { ISettingsTabGroup } from '@fromcode119/core/client';
 import { AuthHooks } from '@/components/view/use-auth.client';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
@@ -22,6 +23,7 @@ import type { IPluginSandboxSettings } from '@/app/plugins/[slug]/interfaces/plu
 import { PluginDetailPageService } from '@/app/plugins/[slug]/plugin-detail-page-service';
 import { PluginAssetLoaderService } from '@/app/services/plugin-asset-loader-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginConsentRequest } from '@/components/plugins/plugin-consent-request';
 import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
 
@@ -54,6 +56,10 @@ export class PluginDetailPageController {
     const [showDefinition, setShowDefinition] = useState(false);
     const [marketplaceItem, setMarketplaceItem] = useState<IPluginMarketplaceItem | null>(null);
     const [activeTab, setActiveTab] = useState<PluginDetailTab>(PluginDetailTab.OVERVIEW);
+    // The settings group (a page tab) and the tab inside it (the row beneath), both kept in the address.
+    const [settingsGroups, setSettingsGroups] = useState<ISettingsTabGroup[]>([]);
+    const [settingsGroup, setSettingsGroup] = useState('');
+    const [settingsSection, setSettingsSection] = useState('');
     const [logs, setLogs] = useState<IPluginLogEntry[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [sandboxSettings, setSandboxSettings] = useState<IPluginSandboxSettings>(PluginDetailPageService.DEFAULT_SANDBOX_SETTINGS);
@@ -69,7 +75,7 @@ export class PluginDetailPageController {
           const [found, locks] = await Promise.all([PluginDetailPageService.fetchPlugin(slug), PlatformSettingLocks.load()]);
           setSiteScope(locks.isSiteScope());
           if (!found) {
-            router.push('/plugins');
+            router.push(AdminConstants.ROUTES.PLUGINS.INSTALLED);
             return;
           }
           setPlugin(found);
@@ -133,7 +139,14 @@ export class PluginDetailPageController {
 
     useEffect(() => {
       setActiveTab(PluginDetailPageService.parseTab(searchParams.get('tab')));
+      setSettingsGroup(String(searchParams.get('group') || ''));
+      setSettingsSection(String(searchParams.get('section') || ''));
     }, [searchParams]);
+
+    useEffect(() => {
+      if (!slug) return;
+      void PluginDetailPageService.fetchSettingsGroups(slug).then(setSettingsGroups);
+    }, [slug]);
 
     const fetchLogs = async () => {
       if (activeTab !== PluginDetailTab.OVERVIEW || !slug || !platformHere) return;
@@ -202,23 +215,9 @@ export class PluginDetailPageController {
       if (!plugin) return;
       setIsSaving(true);
       try {
-        const { restartRequired, restartFailed, reason } = await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings);
-        // No optimistic write to `plugin` here: the admin reads sandbox state from
-        // `plugin.manifest.sandbox`, and `triggerRefresh` below re-fetches the plugin (and this
-        // page's own `sandboxSettings`) from the server, which is the only place that value lives.
-        if (restartFailed) {
-          // The row IS saved — do not call this a failure — but the live reload attempt killed the
-          // guest and it did not come back up. Surface the reason; do not schedule a retry ourselves.
-          notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.restartFailed'), AdminI18n.t('plugins.detail.sandboxLimitsForWereSaved', { name: plugin.manifest.name, value: reason || AdminI18n.t('common.unknownError') }));
-        } else if (restartRequired) {
-          notify(NotificationType.INFO, AdminI18n.t('plugins.detail.restartRequired'), AdminI18n.t('plugins.detail.sandboxSettingsForWereSaved', { name: plugin.manifest.name }));
-        } else {
-          notify(
-            NotificationType.SUCCESS,
-            AdminI18n.t('plugins.detail.resourcesUpdated'),
-            AdminI18n.t('plugins.detail.sandboxLimitsForUpdated', { name: plugin.manifest.name }),
-          );
-        }
+        // No optimistic write to `plugin`: `triggerRefresh` below re-reads the sandbox state from the server.
+        const notice = PluginDetailPageService.sandboxSaveNotice(await PluginDetailPageService.saveSandbox(plugin.manifest.slug, sandboxSettings), plugin.manifest.name);
+        notify(notice.type, notice.title, notice.message);
         triggerRefresh();
       } catch (error: any) {
         console.error('[PluginDetailPage] Save sandbox error:', error);
@@ -235,7 +234,7 @@ export class PluginDetailPageController {
         await PluginDetailPageService.deletePlugin(plugin.manifest.slug);
         notify(NotificationType.SUCCESS, AdminI18n.t('plugins.detail.uninstalled'), AdminI18n.t('plugins.detail.removedFromSystem', { name: plugin.manifest.name }));
         triggerRefresh();
-        router.push('/plugins');
+        router.push(AdminConstants.ROUTES.PLUGINS.INSTALLED);
       } catch (error: any) {
         console.error('[PluginDetailPage] Delete error:', error);
         notify(NotificationType.ERROR, AdminI18n.t('plugins.detail.uninstallFailed'), error.message || AdminI18n.t('plugins.detail.anErrorOccurredWhileDeleting'));
@@ -244,11 +243,11 @@ export class PluginDetailPageController {
       }
     };
 
-    const handleTabChange = (tabId: PluginDetailTab) => {
+    const handleTabChange = (tabId: PluginDetailTab, group = '', section = '') => {
       setActiveTab(tabId);
-      const params = new URLSearchParams(searchParams.toString());
-      params.set('tab', tabId.value);
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+      setSettingsGroup(group);
+      setSettingsSection(section);
+      router.replace(PluginDetailPageService.tabHref(pathname, searchParams.toString(), tabId, group, section), { scroll: false });
     };
 
     const consentFinished = async () => {
@@ -263,6 +262,9 @@ export class PluginDetailPageController {
       consentInitial,
       consentFinished,
       activeTab,
+      settingsGroups,
+      settingsGroup,
+      settingsSection,
       siteScope: siteScope === true,
       fetchLogs,
       handleDelete,

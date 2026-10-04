@@ -22,6 +22,8 @@ export interface IThemeSettingsPageView {
 
   readonly marketplaceVersion: string | null;
   readonly activeTab: ThemeSettingsTab;
+  /** The Settings tab's open section (`?section=`); empty means the first. */
+  readonly activeSection: string;
   /** Edited theme variables, keyed by variable name. Values are always strings (colors, fonts, sizes). */
   readonly tempVariables: Record<string, string>;
   /** The site's default layout (a theme layout `name`); empty means the theme's own `defaultLayout`. */
@@ -58,4 +60,5 @@ export interface IThemeSettingsPageView {
   handleVariableChange(key: string, value: string): void;
   handleDefaultLayoutChange(value: string): void;
   handleSettingChange(key: string, value: unknown): void;
+  handleTabChange(tab: ThemeSettingsTab, section?: string): void;
 }

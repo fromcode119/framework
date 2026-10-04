@@ -88,6 +88,7 @@ export * from '@core/interfaces/route-handler-list.interface';
 export * from '@core/interfaces/secondary-panel-item-manifest.interface';
 export * from '@core/interfaces/secondary-panel-manifest.interface';
 export * from '@core/interfaces/settings-tab.interface';
+export * from '@core/interfaces/settings-tab-group.interface';
 export * from '@core/interfaces/shortcode-catalog-item.interface';
 export * from '@core/interfaces/shortcode-catalog-response.interface';
 export * from '@core/interfaces/system-migration.interface';
