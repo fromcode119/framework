@@ -9,6 +9,7 @@ import { PluginGuestApiFactory } from '@core/plugin/host/plugin-guest-api-factor
 import { PluginGuestLocals } from '@core/plugin/host/plugin-guest-locals';
 import { PluginGuestSettings } from '@core/plugin/host/plugin-guest-settings';
 import { PluginGuestMemo } from '@core/plugin/host/plugin-guest-memo';
+import { PluginGuestFetch } from '@core/plugin/host/plugin-guest-fetch';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
@@ -41,6 +42,7 @@ export class PluginGuestContextFactory {
 
   create(): PluginContext {
     const remote = this.remote;
+    const guestFetch = new PluginGuestFetch(remote);
     const register = (payload: IPluginGuestRegistration) => this.registrar.send(payload);
     const declarations = new PluginGuestDeclarations(register, (handler) => this.handlers.keepStable(handler));
     const ctx = (name: string) => declarations.namespace(name, remote.ref('context', [{ name }]));
@@ -76,7 +78,7 @@ export class PluginGuestContextFactory {
       },
       mcp: { registerTools: (tools: Array<Record<string, any>>) => this.registerTools(tools, register) },
       migrations: { run: (migrations: unknown) => this.runMigrations(migrations) },
-      fetch: (url: string, init?: Record<string, unknown>) => this.fetch(url, init),
+      fetch: (url: string, init?: Record<string, unknown>) => guestFetch.fetch(url, init),
       t: locals.t,
       i18n: locals.i18n,
       paths: locals.paths,
@@ -213,13 +215,5 @@ export class PluginGuestContextFactory {
         },
       }));
     }
-  }
-
-  /** `context.fetch` is the platform's audited HTTP client; the host performs it and the body comes back as bytes. */
-  private async fetch(url: string, init?: Record<string, unknown>): Promise<Response> {
-    const safeInit = init ? { ...init } : undefined;
-    if (safeInit && safeInit.body !== undefined && typeof safeInit.body !== 'string' && !Buffer.isBuffer(safeInit.body)) safeInit.body = JSON.stringify(safeInit.body);
-    const reply = (await this.remote.call('context', [{ name: 'fetch', args: [url, safeInit] }])) as { status: number; statusText: string; headers: Record<string, string>; body: Buffer };
-    return new Response(new Uint8Array(reply.body), { status: reply.status, statusText: reply.statusText, headers: reply.headers });
   }
 }
