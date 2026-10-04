@@ -2993,7 +2993,7 @@
     "hasOnePage": "This site has <strong>1</strong> page.",
     "hasPages": "This site has <strong>{{count}}</strong> pages.",
     "hasNoPages": "This site has <strong>no pages</strong>, so every storefront route but the home page answers 404.",
-    "rebuildingRuns": "Rebuilding runs the theme’s initial content and the default pages its plugins declare. Existing pages are matched, never duplicated, so it is safe to run again after adding a plugin or changing theme.",
+    "rebuildingRuns": "Rebuilding creates the default pages this site’s plugins declare that it does not have yet. Existing pages are matched, never duplicated, so it is safe to run again after adding a plugin. It does not replay the theme’s initial content — that would overwrite the site’s products, menus and settings; use Themes → Run Seeds for it.",
     "deletedAccount": "deleted account (id {{id}})",
     "deleteExplained": "Removes every row and file that belongs to <strong>{{slug}}</strong> and its memberships. Accounts are kept — a person may belong to other sites. An export is written to Backups → Sites <em>before</em> anything is removed; it is the only way back.",
     "adoptedOutcome": "This deployment is now site <strong>{{slug}}</strong>: {{rows}} rows across {{tables}} tables were stamped and {{members}} accounts became members.",
