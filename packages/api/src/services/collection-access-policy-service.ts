@@ -132,6 +132,10 @@ export class CollectionAccessPolicyService {
   }
 
   private async evaluateAccess(access: unknown, req: any): Promise<boolean | Record<string, unknown> | null> {
+    // A declared constant: the answer for every request, without calling a plugin's process to get it.
+    if (access === true || access === false) {
+      return access;
+    }
     if (typeof access !== 'function') {
       return null;
     }

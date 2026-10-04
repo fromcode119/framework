@@ -64,11 +64,16 @@ export interface ICollection {
       icon?: string;
     }[];
   };
+  /**
+   * Who may do what. A function decides per request (a row constraint, or true/false); a plain `true` or
+   * `false` is the same answer for every request, given without asking anyone — for an isolated plugin,
+   * without a call into its process on every read. `false` still lets administrators through.
+   */
   access?: {
-    create?: IAccess;
-    read?: IAccess;
-    update?: IAccess;
-    delete?: IAccess;
+    create?: IAccess | boolean;
+    read?: IAccess | boolean;
+    update?: IAccess | boolean;
+    delete?: IAccess | boolean;
   };
   hooks?: {
     beforeChange?: any[];

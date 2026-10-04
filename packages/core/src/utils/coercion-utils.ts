@@ -73,6 +73,9 @@ export class CoercionUtils {
   }
 
   static toIsoDateOrNull(value: unknown): string | null {
+    // A Date as it is: its text form (`String(date)`) has no milliseconds, so it came back a few
+    // hundred milliseconds off — rows read from the database carry their timestamps as Dates.
+    if (value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
     const raw = CoercionUtils.toString(value);
     if (!raw) return null;
     const parsed = new Date(raw);
