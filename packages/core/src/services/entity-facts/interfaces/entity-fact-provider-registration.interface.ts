@@ -14,4 +14,9 @@ export interface IEntityFactProviderRegistration {
   fact: string;
   /** Values keyed by record id, for the ids asked about; an id it knows nothing about is left out. */
   resolve: (ids: string[]) => Promise<Record<string, unknown>>;
+  /**
+   * Whether the provider may answer right now — its plugin active and enabled for the site asking.
+   * Checked on every question, so a plugin disabled since it registered stops answering at once.
+   */
+  answers?: () => boolean;
 }

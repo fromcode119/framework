@@ -6,7 +6,8 @@ import type { IEntityFactProviderRegistration } from '@core/services/entity-fact
  *
  * Providers are keyed by plugin + entity + fact, so a re-init replaces rather than stacks. When several
  * plugins answer the same fact, the first one that knows an id answers for it. A provider that throws
- * answers nothing; the others still do.
+ * answers nothing; the others still do. A provider whose plugin is disabled, or not enabled for the
+ * site asking, is not asked and does not count for `has`.
  */
 export class EntityFactsRegistryService {
   private readonly providers = new Map<string, IEntityFactProviderRegistration>();
@@ -17,17 +18,9 @@ export class EntityFactsRegistryService {
     const entity = String(registration?.entity || '').trim();
     const fact = String(registration?.fact || '').trim();
     if (!pluginSlug || !entity || !fact || typeof registration?.resolve !== 'function') return null;
-    const entry: IEntityFactProviderRegistration = { namespace, pluginSlug, entity, fact, resolve: registration.resolve };
+    const entry: IEntityFactProviderRegistration = { namespace, pluginSlug, entity, fact, resolve: registration.resolve, answers: registration.answers };
     this.providers.set(`${namespace}:${pluginSlug}:${entity}:${fact}`, entry);
     return entry;
-  }
-
-  unregisterByPlugin(namespace: string, pluginSlug: string): void {
-    for (const [key, entry] of this.providers.entries()) {
-      if (entry.namespace === String(namespace || '').trim() && entry.pluginSlug === String(pluginSlug || '').trim()) {
-        this.providers.delete(key);
-      }
-    }
   }
 
   /** Whether any plugin answers this fact — lets a caller say "no provider" instead of showing an empty value as if it were one. */
@@ -62,6 +55,6 @@ export class EntityFactsRegistryService {
   private matching(entity: string, fact: string): IEntityFactProviderRegistration[] {
     const e = String(entity || '').trim();
     const f = String(fact || '').trim();
-    return Array.from(this.providers.values()).filter((entry) => entry.entity === e && entry.fact === f);
+    return Array.from(this.providers.values()).filter((entry) => entry.entity === e && entry.fact === f && entry.answers?.() !== false);
   }
 }

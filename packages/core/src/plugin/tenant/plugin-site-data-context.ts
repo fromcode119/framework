@@ -30,7 +30,7 @@ export class PluginSiteDataContext {
     settings: ['register'],
     i18n: ['registerTranslations'],
     mcp: ['registerTools'],
-    entityRecords: ['register'],
+    entityRecords: ['registerProvider'],
     entityFacts: ['registerProvider'],
     catalog: ['contribute'],
     migrations: ['run'],
