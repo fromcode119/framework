@@ -30,7 +30,8 @@ export class PluginSiteDataContext {
     settings: ['register'],
     i18n: ['registerTranslations'],
     mcp: ['registerTools'],
-    entityRecords: ['register'],
+    entityRecords: ['registerProvider'],
+    entityFacts: ['registerProvider'],
     catalog: ['contribute'],
     migrations: ['run'],
     // Already fans out per site inside the framework; calling it from every site's pass would do the

@@ -22,6 +22,7 @@ import { UsersContextProxy } from '@core/plugin/context/users';
 import { PeopleContextProxy } from '@core/plugin/context/people';
 import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
+import { EntityFactsContextProxy } from '@core/plugin/context/entity-facts';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
@@ -64,9 +65,7 @@ export class PluginContextFactory {
         const separatorIndex = key.indexOf(':');
         const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
         const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
-        if (!namespace || !slug) {
-          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
-        }
+        if (!namespace || !slug) throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
 
         const dependency = pluginsFacade.get(namespace, slug);
         if (dependency === null || dependency === undefined) {
@@ -80,9 +79,7 @@ export class PluginContextFactory {
         const separatorIndex = key.indexOf(':');
         const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
         const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
-        if (!namespace || !slug) {
-          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
-        }
+        if (!namespace || !slug) throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
 
         const dependency = pluginsFacade.get(namespace, slug);
         return dependency === null || dependency === undefined ? null : dependency as TDependency;
@@ -255,6 +252,7 @@ export class PluginContextFactory {
         users: UsersContextProxy.createUsersProxy(plugin, manager),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
+        entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),
         meta: MetaContextProxy.createMetaProxy(manager),
         tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),

@@ -40,6 +40,7 @@ import type { IPluginContextNotifications } from '@core/plugin/interfaces/plugin
 import type { IPluginContextUsers } from '@core/plugin/interfaces/plugin-context-users.interface';
 import type { IPluginContextPeople } from '@core/plugin/interfaces/plugin-context-people.interface';
 import type { IPluginContextEntityRecords } from '@core/plugin/interfaces/plugin-context-entity-records.interface';
+import type { IPluginContextEntityFacts } from '@core/plugin/interfaces/plugin-context-entity-facts.interface';
 import type { IPluginContextTenants } from '@core/plugin/interfaces/plugin-context-tenants.interface';
 import type { IPluginContextSigning } from '@core/plugin/interfaces/plugin-context-signing.interface';
 import type { IPluginContextRealtime } from '@core/plugin/interfaces/plugin-context-realtime.interface';
@@ -141,6 +142,9 @@ export class PluginContext {
    * the Person 360 / partner-CRM view. namespace + slug are taken from the manifest.
    */
   declare readonly entityRecords: IPluginContextEntityRecords;
+
+  /** Facts one plugin holds about another plugin's records (a product's rating), exchanged by entity kind. */
+  declare readonly entityFacts: IPluginContextEntityFacts;
 
   /**
    * "Needs you" registry. Register a provider returning what THIS plugin considers unfinished work

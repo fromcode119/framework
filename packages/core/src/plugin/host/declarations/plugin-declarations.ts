@@ -26,6 +26,7 @@ export class PluginDeclarations {
     ['i18n', 'registerTranslationsFromDirectory'],
     ['email', 'registerCategory'],
     ['entityRecords', 'registerProvider'],
+    ['entityFacts', 'registerProvider'],
     ['integrations', 'registerType'],
     ['integrations', 'registerProvider'],
     ['sms', 'registerProvider'],

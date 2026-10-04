@@ -10,6 +10,7 @@ import { PluginDefaultPageDiagnosticService } from '@core/services/default-page-
 import { PluginDefaultPageMaterializationService } from '@core/services/default-page-contract/plugin-default-page-materialization-service';
 import { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 import { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
+import { EntityFactsRegistryService } from '@core/services/entity-facts/entity-facts-registry-service';
 import { RedirectResolverRegistryService } from '@core/services/redirect-resolver-registry-service';
 import { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
 import { SeedPageService } from '@core/services/seed-page-service';
@@ -84,6 +85,10 @@ export class ServerCoreServices {
     ServerServiceRegistry.register(
       ServerServiceKey.ENTITY_RECORDS,
       () => new PluginEntityRecordsRegistryService(),
+    );
+    ServerServiceRegistry.register(
+      ServerServiceKey.ENTITY_FACTS,
+      () => new EntityFactsRegistryService(),
     );
     ServerServiceRegistry.register(
       ServerServiceKey.ATTENTION,

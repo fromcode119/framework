@@ -82,7 +82,7 @@ export class PluginGuestContextFactory {
       paths: locals.paths,
     };
     for (const name of ['collections', 'settings', 'meta', 'signing', 'realtime', 'sms', 'geo', 'users', 'people', 'roles', 'notifications', 'email', 'media', 'recordVersions',
-      'entityRecords', 'entities', 'theme', 'ui', 'integrations', 'storage', 'cache', 'redis', 'extensions']) {
+      'entityRecords', 'entityFacts', 'entities', 'theme', 'ui', 'integrations', 'storage', 'cache', 'redis', 'extensions']) {
       context[name] = ctx(name);
     }
     context.settings = new PluginGuestSettings(context.settings as Record<string, any>).proxy();
