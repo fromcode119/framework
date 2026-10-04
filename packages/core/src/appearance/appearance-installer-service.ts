@@ -1,3 +1,4 @@
+import { MarketplaceOfferMatch } from '@core/marketplace/marketplace-offer-match';
 import path from 'path';
 import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 import fs from 'fs';
@@ -21,7 +22,7 @@ export class AppearanceInstallerService {
     private readonly client: MarketplaceClient,
   ) {}
 
-  async installAppearance(pkg: { slug: string; downloadUrl: string }): Promise<IAppearanceManifest> {
+  async installAppearance(pkg: { slug: string; downloadUrl: string; artifactSha256?: string; version?: string }): Promise<IAppearanceManifest> {
     const slug = String(pkg?.slug || '').trim();
     if (!slug) throw new Error('Appearance install requires a slug.');
     const downloadUrl = this.client.resolveDownloadUrl(pkg.downloadUrl);
@@ -29,7 +30,11 @@ export class AppearanceInstallerService {
     const tempDir = path.join(this.appearancesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir);
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `appearance "${slug}"`, sha256: pkg.artifactSha256 });
+      const contentDir = this.findManifestDir(tempDir);
+      if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the package.');
+      const incoming: IAppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));
+      MarketplaceOfferMatch.assert('appearance', { slug, version: pkg.version }, incoming);
       return this.finalize(tempDir, slug);
     } finally {
       if (fs.existsSync(tempDir)) fs.rmSync(tempDir, { recursive: true, force: true });

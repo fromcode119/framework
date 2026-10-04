@@ -1,3 +1,4 @@
+import { MarketplaceArtifactDigest } from '@core/marketplace/marketplace-artifact-digest';
 import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
@@ -96,7 +97,8 @@ export class BackupService {
    * @param url - The URL to download from
    * @param targetDir - The directory where it should be extracted
    */
-  static async downloadAndExtract(url: string, targetDir: string): Promise<void> {
+  /** `verify`: the package and its published checksum, checked before extraction (omitted for an operator-typed URL). */
+  static async downloadAndExtract(url: string, targetDir: string, verify?: { label: string; sha256: unknown }): Promise<void> {
     this.ensureBackupsDir();
 
     // Ensure target directory exists
@@ -117,6 +119,7 @@ export class BackupService {
       // Convert Web Stream to Node Stream for tar/zip
       const arrayBuffer = await response.arrayBuffer();
       const buffer = Buffer.from(arrayBuffer);
+      if (verify) MarketplaceArtifactDigest.assertMatches(buffer, verify.sha256, verify.label);
       
       const contentType = response.headers.get('content-type');
       const isZip = url.toLowerCase().includes('.zip') || 

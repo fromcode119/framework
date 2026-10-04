@@ -75,7 +75,7 @@ export class ThemeController extends BaseController {
     try {
       if (downloadUrl) {
          this.logger.info(`Installing theme "${slug}" from direct URL: ${downloadUrl}`);
-         await this.manager.installTheme({ slug, downloadUrl });
+         await this.manager.installTheme({ slug, downloadUrl }, { fromUrl: true });
          return res.json({ success: true, mode: 'direct' });
       }
 

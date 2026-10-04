@@ -214,7 +214,7 @@ services:
       # site on a domain. On a multi-tenant deployment each site answers on its OWN host, and
       # FRONTEND_URL names only one of them; this is how an operator admits the rest.
       - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS:-}
-      - MARKETPLACE_URL=${MARKETPLACE_URL:-https://marketplace.fromcode.com}
+      - MARKETPLACE_URL=${MARKETPLACE_URL:-}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
       - APPEARANCE_DIR=/app/appearance

@@ -2,61 +2,13 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { CliUtils } from '@cli/utils';
 
 export class PluginMarketplaceCommandService {
   static register(plugin: Command): void {
-    PluginMarketplaceCommandService.registerPublish(plugin);
     PluginMarketplaceCommandService.registerPack(plugin);
     PluginMarketplaceCommandService.registerSearch(plugin);
     PluginMarketplaceCommandService.registerInstall(plugin);
-  }
-
-  private static registerPublish(plugin: Command): void {
-    plugin
-      .command('publish <slug>')
-      .description('Publish a plugin to the marketplace')
-      .option('-v, --version <semver>', 'Specify version to publish')
-      .action(async (slug, options) => {
-        try {
-          console.log(chalk.blue(`\nPreparing to publish plugin: ${slug}...`));
-
-          const pluginsDir = CliUtils.getPluginsDir();
-          const pluginPath = path.join(pluginsDir, slug);
-
-          if (!fs.existsSync(pluginPath)) {
-            console.error(chalk.red(`Plugin directory not found: ${pluginPath}`));
-            return;
-          }
-
-          const marketplace = CliUtils.getMarketplaceClient();
-          const tempDir = path.resolve(process.cwd(), '.tmp');
-          await fs.ensureDir(tempDir);
-
-          console.log(chalk.gray('Packaging plugin files...'));
-          const zipPath = await marketplace.pack(pluginPath, tempDir);
-          console.log(chalk.green(`✔ Created package ${path.basename(zipPath)}`));
-
-          console.log(chalk.blue('\nUploading to Fromcode Marketplace...'));
-          const result = await marketplace.publish(zipPath);
-
-          if (result.success) {
-            console.log(chalk.green(`✔ Plugin ${slug} published successfully!`));
-
-            const marketplacePublicUrl = MarketplaceUrlService.resolvePublicBaseUrl(process.env.MARKETPLACE_URL);
-            console.log(chalk.gray(`Access it at: ${marketplacePublicUrl}/plugins/${slug}`));
-          } else {
-            throw new Error(result.message || 'Upload failed');
-          }
-
-          // Cleanup
-          await fs.remove(zipPath);
-
-        } catch (error: any) {
-          console.error(chalk.red('\nPublish failed:'), error.message);
-        }
-      });
   }
 
   private static registerPack(plugin: Command): void {

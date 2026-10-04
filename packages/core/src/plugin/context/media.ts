@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { NamingStrategy } from '@fromcode119/database';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -77,6 +78,39 @@ export class MediaContextProxy {
       async count(): Promise<number> {
         const total = await manager.db.count(SystemConstants.TABLE.MEDIA, {});
         return Number(total) || 0;
+      },
+      /**
+       * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.
+       *
+       * A plugin runs isolated and cannot open the storage itself, so a plugin that has to publish a
+       * checksum for a file it hands out (a package catalogue) had no way to compute one. The row is
+       * resolved through the same tenant-scoped read as `findById`, so an id from another site yields
+       * null, and the bytes are streamed rather than buffered.
+       */
+      /**
+       * The address a browser or another installation fetches a stored file from, or null when the id
+       * resolves to nothing here or the file is private (only the public space is served).
+       *
+       * A media row stores a path, not a URL — the URL belongs to the storage driver (local uploads, a
+       * bucket, a CDN). Without this a plugin that hands a file out had to hardcode where the driver
+       * happens to serve it.
+       */
+      async publicUrl(id: any): Promise<string | null> {
+        if (id == null || id === '') return null;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        if (!row?.path) return null;
+        const url = (manager.integrations as any).storage.publicUrl(String(row.path), String(row.visibility || 'public'));
+        return url ? String(url) : null;
+      },
+      async digest(id: any): Promise<string | null> {
+        if (id == null || id === '') return null;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        if (!row?.path) return null;
+        const storage = (manager.integrations as any).storage;
+        const stream: NodeJS.ReadableStream = await storage.stream(String(row.path), String(row.visibility || 'public'));
+        const hash = crypto.createHash('sha256');
+        for await (const chunk of stream as AsyncIterable<Buffer | string>) hash.update(chunk);
+        return hash.digest('hex');
       }
     };
   }

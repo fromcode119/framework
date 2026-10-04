@@ -1,3 +1,4 @@
+import { MarketplaceOfferMatch } from '@core/marketplace/marketplace-offer-match';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 /** ThemeInstallerService — handles theme package installation. Extracted from ThemeManager (ARC-007). */
@@ -46,15 +47,17 @@ export class ThemeInstallerService {
 
   // --- Public install methods ---
 
-  async installTheme(pkg: any): Promise<void> {
+  /** `fromUrl`: an address the operator typed, not a catalogue offer — no published checksum to hold it to. */
+  async installTheme(pkg: any, options: { fromUrl?: boolean } = {}): Promise<void> {
     const { slug, downloadUrl: rawDownloadUrl } = pkg;
     const downloadUrl = (await this.clientFor()).resolveDownloadUrl(rawDownloadUrl);
     this.logger.info(`Installing theme "${slug}" from ${downloadUrl}...`);
     const tempDir = path.join(this.themesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir);
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, options.fromUrl ? undefined : { label: `theme "${slug}"`, sha256: pkg.artifactSha256 });
       this.refuseOtherVendor(tempDir, slug);
+      if (!options.fromUrl) this.refuseOfferMismatch(tempDir, slug, pkg.version);
       // Swapped in whole: the storefront never renders from a half-written theme.
       ExtensionDirectorySwap.replaceSync(path.join(this.themesRoot, slug), (stagingDir) => this.moveDir(tempDir, stagingDir));
       await this.discoverThemes();
@@ -154,6 +157,14 @@ export class ThemeInstallerService {
    * the directory path cannot drift — a difference between them is a theme that installs correctly
    * only one of the two ways.
    */
+  /** The package must be the theme and version the catalogue offered — see MarketplaceOfferMatch. */
+  private refuseOfferMismatch(extractedDir: string, slug: string, version: unknown): void {
+    const contentDir = this.findThemeManifestDir(extractedDir);
+    if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
+    const incoming: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+    MarketplaceOfferMatch.assert('theme', { slug, version: version == null ? undefined : String(version) }, incoming);
+  }
+
   /** The Marketplace path names the slug itself; the vendor is the downloaded package's own theme.json. */
   private refuseOtherVendor(extractedDir: string, slug: string): void {
     const contentDir = this.findThemeManifestDir(extractedDir);

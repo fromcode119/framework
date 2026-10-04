@@ -48,7 +48,7 @@ export class GeneratedEnvFile {
       'NODE_ENV=development',
       localMode
         ? 'MARKETPLACE_URL=off'
-        : '# MARKETPLACE_URL=https://marketplace.fromcode.com',
+        : '# MARKETPLACE_URL=https://marketplace.example.com',
       '',
     ].join('\n');
   }

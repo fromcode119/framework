@@ -14,7 +14,8 @@ export class EnvConfig {
     API_URL: z.string().url().optional(),
     ADMIN_URL: z.string().url().optional(),
     // Accepts marketplace site URL, API/feed URL, local file path, or "off"/"false"/"disabled" to disable marketplace.
-    MARKETPLACE_URL: z.string().min(1).default('https://marketplace.fromcode.com'),
+    // No built-in host: blank means no marketplace until an operator names one (env or Settings → General).
+    MARKETPLACE_URL: z.string().default(''),
 
     // Database Configuration
     DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),

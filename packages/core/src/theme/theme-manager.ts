@@ -94,9 +94,9 @@ export class ThemeManager extends ThemeLifecycle {
     return this.updateService.getMarketplaceThemes();
   }
 
-  async installTheme(pkg: any): Promise<void> {
+  async installTheme(pkg: any, options: { fromUrl?: boolean } = {}): Promise<void> {
     // Pass themes map so the installer can update after discovery
-    await this.installer.installTheme(pkg);
+    await this.installer.installTheme(pkg, options);
     await this.refreshStorefrontRenderer(`theme "${String(pkg?.slug || '').trim() || 'unknown'}" installed`);
   }
 

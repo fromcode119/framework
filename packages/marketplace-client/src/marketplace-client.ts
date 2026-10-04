@@ -13,7 +13,7 @@ export class MarketplaceClient {
     this.disabled = MarketplaceClient.isMarketplaceDisabled(raw);
     this.marketplaceUrl = this.disabled
       ? ''
-      : MarketplaceUrlService.resolveCatalogUrl(raw || MarketplaceClientConstants.DEFAULT_MARKETPLACE_API_URL);
+      : MarketplaceUrlService.resolveCatalogUrl(raw);
     this.fetchTimeoutMs = MarketplaceClient.parseFetchTimeoutMs(process.env.MARKETPLACE_FETCH_TIMEOUT_MS);
   }
 
@@ -59,7 +59,9 @@ export class MarketplaceClient {
    */
   public async pack(pluginPath: string, outPath: string): Promise<string> {
     const fs = require('fs-extra');
-    const archiver = require('archiver');
+    // archiver 8 exports archive CLASSES; the v7 `archiver('zip', …)` factory no longer exists, so
+    // calling it threw "archiver is not a function" and `plugin pack` could not make a package.
+    const { ZipArchive } = require('archiver');
     const path = require('path');
 
     if (!fs.existsSync(pluginPath)) {
@@ -79,10 +81,10 @@ export class MarketplaceClient {
 
     return new Promise((resolve, reject) => {
       const output = fs.createWriteStream(zipPath);
-      const archive = archiver('zip', { zlib: { level: 9 } });
+      const archive = new ZipArchive({ zlib: { level: 9 } });
 
       output.on('close', () => resolve(zipPath));
-      archive.on('error', (err) => reject(err));
+      archive.on('error', (err: Error) => reject(err));
 
       archive.pipe(output);
 
@@ -93,27 +95,6 @@ export class MarketplaceClient {
 
       archive.finalize();
     });
-  }
-
-  /**
-   * Publish a plugin to the marketplace
-   */
-  public async publish(zipPath: string, token?: string): Promise<any> {
-    const fs = require('fs-extra');
-    const path = require('path');
-    if (!fs.existsSync(zipPath)) {
-      throw new Error(`ZIP file not found: ${zipPath}`);
-    }
-
-    const publishUrl = `${this.getMarketplaceApiBaseUrl()}${MarketplaceClientConstants.SUBMIT_PATH}`;
-
-    MarketplaceClientLogger.info(`[MarketplaceClient] Uploading ${path.basename(zipPath)} to ${publishUrl}...`);
-
-    // In a real implementation, we would use FormData to upload the file.
-    // For now, we simulate the upload.
-    void token;
-
-    return { success: true, message: 'Simulated upload successful' };
   }
 
   /**
@@ -133,7 +114,8 @@ export class MarketplaceClient {
 
   private static isMarketplaceDisabled(value: string): boolean {
     const normalized = String(value || '').trim().toLowerCase();
-    return ['off', 'false', 'disabled', 'no', '0'].includes(normalized);
+    // Blank is "no marketplace" as well: there is no built-in one to fall back to.
+    return !normalized || ['off', 'false', 'disabled', 'no', '0'].includes(normalized);
   }
 
   private static parseFetchTimeoutMs(value: unknown): number {

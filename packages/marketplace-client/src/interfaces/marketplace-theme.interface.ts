@@ -11,6 +11,7 @@ export interface IMarketplaceTheme {
   author: string;
   authorUrl?: string;
   downloadUrl?: string;
+  artifactSha256?: string;
   previewUrl?: string;
   dependencies?: Record<string, string>;
   labels?: string[];

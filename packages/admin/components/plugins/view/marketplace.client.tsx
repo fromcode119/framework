@@ -178,10 +178,12 @@ export class Marketplace extends AdminComponent {
                          <FrameworkIcons.Shield size={12} className="text-indigo-500" />
                          v{plugin.version}
                        </div>
+                       {plugin.author && (
                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50/50 dark:bg-slate-800/50 border border-white/5 truncate max-w-[150px]">
                          <FrameworkIcons.User size={12} className="text-indigo-500" />
-                         {plugin.author || AdminI18n.t('plugins.list.official')}
+                         {plugin.author}
                        </div>
+                       )}
                     </div>
                   </div>
                 </div>

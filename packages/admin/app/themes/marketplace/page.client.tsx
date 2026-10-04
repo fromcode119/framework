@@ -145,11 +145,13 @@ export class ThemesMarketplacePage extends AdminComponent {
                                <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
                                v{t.version}
                              </div>
+                             {t.author && (<>
                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
                              <div className="flex items-center gap-1.5">
                                <FrameworkIcons.User size={12} className="text-indigo-500/70" />
-                               <span className="truncate">{t.author || AdminI18n.t('themes.officialTheme')}</span>
+                               <span className="truncate">{t.author}</span>
                              </div>
+                             </>)}
                           </div>
                       </div>
 
