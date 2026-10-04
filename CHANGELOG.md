@@ -6,10 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.325] - 2026-10-04
+
+### Performance
+
+- **api**: stop redoing per-request work whose answer does not change ([#738](https://github.com/fromcode119/framework/pull/738))
+- **api**: a collection may declare its access as a constant ([#736](https://github.com/fromcode119/framework/pull/736))
+- **api**: derived fields are read only on request; read routes keep their index order ([#733](https://github.com/fromcode119/framework/pull/733))
+
 ## [0.2.324] - 2026-10-04
 
 ### Added
 
+- **admin**: plugin and theme pages hold everything in one card ([#732](https://github.com/fromcode119/framework/pull/732))
 - **frontend**: serve plugin-declared files under /.well-known/ ([#735](https://github.com/fromcode119/framework/pull/735))
 
 ## [0.2.323] - 2026-10-04
