@@ -120,39 +120,51 @@ export class PluginReadRoutes {
   }
 
   /**
-   * The route's fixed conditions and the declared filters the request names, ANDed. A condition on a
-   * field the table lacks matches nothing — never everything.
+   * The route's fixed conditions and the declared filters the request names, ANDed — OR any record the
+   * plugin has not prepared yet. An unprepared record is in every answer, whatever it would match once
+   * prepared (its conditions are not set yet), and `order` puts it first: while one exists the page
+   * holds it, and the plugin answers.
    */
   static filterClause(db: any, table: any, route: IPluginReadRoute, query: Record<string, unknown>): unknown {
-    const fixed = Object.entries(route.where || {}).map(([field, value]) => (table[field] ? db.eq(table[field], value) : Sql.query`1 = 0`));
+    const fixed = Object.entries(route.where || {}).map(([field, value]) => db.eq(PluginReadRoutes.column(table, route, field), value));
     const requested = Object.entries(route.filters || {})
       .map(([param, filter]) => [CoercionUtils.toString(query[param]).trim(), filter] as const)
       .filter(([value]) => value !== '')
       .map(([value, filter]) => {
-        const column = table[filter.field];
-        if (!column) return Sql.query`1 = 0`;
+        const column = PluginReadRoutes.column(table, route, filter.field);
         return ReadRouteMatch.resolve(filter.match) === ReadRouteMatch.CONTAINS
           ? Sql.query`${column} @> ${JSON.stringify([value])}::jsonb`
           : db.eq(column, value);
       });
     const chunks = [...fixed, ...requested];
     if (chunks.length === 0) return undefined;
-    return chunks.length === 1 ? chunks[0] : db.and(...chunks);
+    const unprepared = Sql.query`${PluginReadRoutes.column(table, route, route.document)} IS NULL`;
+    return db.or(chunks.length === 1 ? chunks[0] : db.and(...chunks), unprepared);
   }
 
   /**
-   * The order the request names among the route's declared sorts — `price`, `-price`, or the older
-   * `price-asc` / `price-desc` — else the route's `defaultSort`; ties by id, newest first, so a page is
-   * the same page every time it is asked for.
+   * Unprepared records first; then the order the request names among the route's declared sorts —
+   * `price`, `-price`, or the older `price-asc` / `price-desc` — else the route's `defaultSort`; ties by
+   * id, newest first, so a page is the same page every time it is asked for.
    */
-  static order(db: any, table: any, route: IPluginReadRoute, sort: unknown): unknown[] | undefined {
+  static order(db: any, table: any, route: IPluginReadRoute, sort: unknown): unknown[] {
+    const unpreparedFirst = Sql.query`(${PluginReadRoutes.column(table, route, route.document)} IS NULL) DESC`;
     const parsed = PluginReadRoutes.parseSort(sort, route) ?? PluginReadRoutes.parseSort(route.defaultSort, route);
-    if (!parsed) return undefined;
-    const declared = route.sorts?.[parsed.name];
-    const column = declared ? table[declared.field] : null;
-    if (!declared || !column) return undefined;
-    const tiebreak = declared.field !== 'id' && table.id ? [db.desc(table.id)] : [];
-    return [parsed.descending ? db.desc(column) : Sql.query`${column} asc`, ...tiebreak];
+    const field = parsed ? route.sorts![parsed.name].field : 'id';
+    const column = PluginReadRoutes.column(table, route, field);
+    const primary = !parsed || parsed.descending ? db.desc(column) : Sql.query`${column} asc`;
+    return field === 'id' ? [unpreparedFirst, primary] : [unpreparedFirst, primary, db.desc(PluginReadRoutes.column(table, route, 'id'))];
+  }
+
+  /**
+   * A field the route names, on the collection's table. One the table does not have is a manifest that
+   * does not match its collection: the read fails, it is logged, and the plugin answers — an empty
+   * answer would look like a store with nothing in it.
+   */
+  private static column(table: any, route: IPluginReadRoute, field: string): unknown {
+    const column = table[field];
+    if (!column) throw new Error(`Read route ${route.path} names "${field}", which collection ${route.collection} does not have.`);
+    return column;
   }
 
   static parseSort(value: unknown, route: IPluginReadRoute): { name: string; descending: boolean } | null {
