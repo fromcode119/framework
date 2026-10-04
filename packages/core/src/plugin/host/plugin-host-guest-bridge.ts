@@ -163,8 +163,12 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   protected async relaunch(options: { drain: boolean } = { drain: true }): Promise<void> {
     const previous = this.generation && !this.generation.channel.isClosed ? this.generation : null;
     const next = await this.launchGeneration();
+    // Held for approval: approving runs `onInit` (deferred registration). Run here too, it ran twice in one
+    // process — hooks doubled, and an api taking the process over replayed both and failed on the second.
+    const plugin = this.manager.plugins.get(this.slug);
+    const deferred = Boolean(plugin?.registrationDeferred);
     try {
-      if (this.context) {
+      if (this.context && !deferred) {
         await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onInit' }, undefined, next.channel);
         if (this.wasEnabled) await this.invoke({ kind: String(PluginInvocationKind.LIFECYCLE.value), name: 'onEnable' }, undefined, next.channel);
       }
@@ -189,14 +193,10 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
       this.manager.hooks.emit(PluginHostState.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
     }
     if (previous) void previous.retireAfter(options.drain ? this.limits.timeoutMs : 0, (socketPath) => this.proxy.inFlight(socketPath), this.logger);
-    // The new process ran `onInit` with no site bound: that pass only REGISTERS. Its per-site DATA work
-    // (defaults, backfills, a directory sync) runs now, once per site, exactly as at boot. Only boot and
-    // a deferred start used to run it, so a hot update, a crash restart or a new heap ceiling left that
-    // work undone for every site until the api restarted — while the boot warning promised it "still
-    // happens". The replay binds a per-site view of the context while it runs; the plugin's own comes back after.
-    const plugin = this.manager.plugins.get(this.slug);
+    // `onInit` ran with no site bound, so it only REGISTERED; its per-site DATA work runs now, once per site, as
+    // at boot. The replay binds a per-site view of the context while it runs; the plugin's own comes back after.
     const context = this.context;
-    if (plugin && context) await PluginSiteDataReplay.run(plugin, context, this.manager.db, this.logger);
+    if (plugin && context && !deferred) await PluginSiteDataReplay.run(plugin, context, this.manager.db, this.logger);
     if (context) this.context = context;
   }
 

@@ -38,7 +38,7 @@ describe('PluginHost.relaunch when the replacement fails', () => {
     const failing = generation(2, { label: 'failing' }, killed);
     const host = Object.create(PluginHost.prototype) as any;
     Object.assign(host, {
-      guest: current.guest, channel: current.channel, generation: current, context: {}, wasEnabled: false,
+      guest: current.guest, channel: current.channel, generation: current, context: {}, wasEnabled: false, manager: { plugins: new Map() },
       registrations: { resetForRestart() { throw new Error('must not switch'); } },
       launchGeneration: async () => failing,
       invoke: async () => { throw new Error('onInit threw'); },
