@@ -276,8 +276,8 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
   }
 
   /** Create the tenant's pages from theme + plugin contracts — delegated to TenantPagesService. */
-  async materializePages(tenantId: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
-    return this.pagesService.materializePages(tenantId);
+  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+    return this.pagesService.materializePages(tenantId, options);
   }
 
   protected async requireTenant(id: string): Promise<TenantRecord> {

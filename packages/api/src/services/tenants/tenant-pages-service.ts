@@ -74,8 +74,12 @@ export class TenantPagesService {
    * site's tenant scope. A site created without this had no pages at all: every storefront route but
    * the home page was a 404. Runs at creation and on demand (`POST /:id/pages`), so a site that gained
    * a plugin later can catch up; existing pages are matched, never duplicated.
+   *
+   * The theme's INITIAL content (`seedTheme`) runs only for a new site. A theme seed writes products,
+   * menus, partner records and plugin settings over whatever exists, so replaying it on a running site
+   * from "Rebuild pages" overwrote the operator's edits; that replay is Themes → Run Seeds, which says so.
    */
-  async materializePages(tenantId: string): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
     const tenant = await this.lookup.requireTenant(tenantId);
     PluginTenantAccess.invalidate(tenant.id);
     TenantThemeAccess.invalidate(tenant.id);
@@ -87,7 +91,7 @@ export class TenantPagesService {
         // The theme's INITIAL content first (its pages and navigation), then the plugins' default
         // pages, which match what the seed created rather than duplicating it.
         const themeSlug = (await TenantThemeAccess.choiceForAsync(tenant.id)).activeSlug;
-        if (themeSlug && !tenant.isWorkspace) {
+        if (options.seedTheme && themeSlug && !tenant.isWorkspace) {
           try {
             themeSeeded = (await this.themeManager.seedThemeForCurrentSite(themeSlug)).seeded;
           } catch (error: any) {
