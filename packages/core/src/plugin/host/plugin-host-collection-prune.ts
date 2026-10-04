@@ -17,12 +17,12 @@ export class PluginHostCollectionPrune {
   private static readonly REGISTERED_EVENT = 'collection:registered';
 
   /** Starts watching what the new process registers; call it before applying the new registrations. */
-  static watch(manager: IPluginManagerInterface, slug: string, logger: Logger): (applied: Array<Promise<unknown>>) => void {
+  static watch(manager: IPluginManagerInterface, slug: string, logger: Logger): (applied: unknown[]) => void {
     const registered = new Set<unknown>();
     const listener = (data: any) => { if (data?.pluginSlug === slug && data?.collection) registered.add(data.collection); };
     manager.hooks.on(PluginHostCollectionPrune.REGISTERED_EVENT, listener);
     return (applied) => {
-      void Promise.allSettled(applied).then((results) => {
+      void Promise.allSettled(applied.map((result) => Promise.resolve(result))).then((results) => {
         manager.hooks.off(PluginHostCollectionPrune.REGISTERED_EVENT, listener);
         if (results.some((result) => result.status === 'rejected')) return;
         for (const [key, entry] of [...manager.registeredCollections]) {
