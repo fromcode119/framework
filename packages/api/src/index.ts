@@ -172,9 +172,7 @@ export class APIServer {
 
     const jsonBodyLimit = process.env.API_JSON_BODY_LIMIT || '10mb';
     const formBodyLimit = process.env.API_FORM_BODY_LIMIT || jsonBodyLimit;
-    this.app.use(express.json({ limit: jsonBodyLimit, verify: WebhookRouteUtils.keepRawBody }));
-    // A browser's security-policy report, to a webhook path only (see WebhookRouteUtils.isReportBody).
-    this.app.use(express.json({ limit: '64kb', type: (req) => WebhookRouteUtils.isReportBody(req), verify: WebhookRouteUtils.keepRawBody }));
+    this.app.use(express.json({ limit: jsonBodyLimit, verify: WebhookRouteUtils.keepRawBody }), WebhookRouteUtils.reportBodyParser());
     this.app.use(express.urlencoded({ extended: true, limit: formBodyLimit, verify: WebhookRouteUtils.keepRawBody }));
     this.app.use(new XSSMiddleware().middleware());
     this.app.use(cookieParser());

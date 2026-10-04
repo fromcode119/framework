@@ -1,3 +1,5 @@
+import express from 'express';
+import type { RequestHandler } from 'express';
 import { RouteConstants } from '@fromcode119/core';
 
 /**
@@ -50,6 +52,11 @@ export class WebhookRouteUtils {
     const type = String(req?.headers?.['content-type'] || '').split(';')[0].trim().toLowerCase();
     return (WebhookRouteUtils.REPORT_MEDIA_TYPES as readonly string[]).includes(type)
       && WebhookRouteUtils.isWebhookPath(String(req?.path || ''));
+  }
+
+  /** The JSON parser for those reports, mounted beside the general one; a report is small, so its limit is too. */
+  static reportBodyParser(): RequestHandler {
+    return express.json({ limit: '64kb', type: (req) => WebhookRouteUtils.isReportBody(req), verify: WebhookRouteUtils.keepRawBody });
   }
 
   private static escape(segment: string): string {
