@@ -197,7 +197,16 @@ export class ApiUrlUtils {
       return configured;
     }
 
-    const registrable = getDomain(hostname, { allowPrivateDomains: true });
+    // The registrable domain is a fixed function of the hostname (the public-suffix list does not
+    // change at runtime), and this runs on almost every request: worked out once per hostname.
+    let registrable = ApiUrlUtils.registrableDomains.get(hostname);
+    if (registrable === undefined) {
+      registrable = getDomain(hostname, { allowPrivateDomains: true }) || '';
+      if (ApiUrlUtils.registrableDomains.size > 256) ApiUrlUtils.registrableDomains.clear();
+      ApiUrlUtils.registrableDomains.set(hostname, registrable);
+    }
     return registrable ? `.${registrable}` : undefined;
   }
+
+  private static readonly registrableDomains = new Map<string, string>();
 }

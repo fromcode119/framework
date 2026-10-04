@@ -29,6 +29,16 @@ describe('ApiUrlUtils.getCookieDomain', () => {
       .toBe('.demo-shop.trycloudflare.com');
   });
 
+  it('answers the same on every call once a host is known, and a later COOKIE_DOMAIN still applies', () => {
+    vi.stubEnv('COOKIE_DOMAIN', '');
+    expect(ApiUrlUtils.getCookieDomain('www.repeat-shop.example')).toBe('.repeat-shop.example');
+    expect(ApiUrlUtils.getCookieDomain('www.repeat-shop.example')).toBe('.repeat-shop.example');
+    expect(ApiUrlUtils.getCookieDomain('co.uk')).toBeUndefined();
+    expect(ApiUrlUtils.getCookieDomain('co.uk')).toBeUndefined();
+    vi.stubEnv('COOKIE_DOMAIN', '.www.repeat-shop.example');
+    expect(ApiUrlUtils.getCookieDomain('www.repeat-shop.example')).toBe('.www.repeat-shop.example');
+  });
+
   it('keeps localhost and IPs host-only', () => {
     expect(ApiUrlUtils.getCookieDomain('localhost')).toBeUndefined();
     expect(ApiUrlUtils.getCookieDomain('127.0.0.1')).toBeUndefined();
