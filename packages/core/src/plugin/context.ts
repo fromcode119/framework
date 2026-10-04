@@ -129,7 +129,7 @@ export class PluginContextFactory {
         // (async, never-throwing `verifyToken` + the synchronous `isAuthenticated`); without it every
         // member denies, so a plugin calls `context.auth.guard([...])` directly with no defensive
         // check. See AuthContextProxy.
-        auth: AuthContextProxy.createAuthProxy(manager.auth),
+        auth: AuthContextProxy.createAuthProxy(manager.auth, manager.db),
         integrations: IntegrationsContextProxy.createIntegrationsProxy(plugin, manager, security) as any,
         mcp: McpContextProxy.createMcpProxy(plugin),
 

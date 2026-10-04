@@ -1,6 +1,7 @@
 import type { IPluginContextAuth } from '@core/plugin/interfaces/plugin-context-auth.interface';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { RequestContextUtils } from '@core/context/request-context';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * The auth surface handed to a plugin.
@@ -18,6 +19,10 @@ import { RequestContextUtils } from '@core/context/request-context';
  * - `isAuthenticated(req)` is the synchronous answer for a request that already passed the
  *   framework's auth middleware, so a forgotten `await` cannot produce an always-true guard at all.
  * - `actor()` names the user a collection write is done for, from the request context the write set.
+ * - `twoFactorEnabled(token)` and `revokeSession(token)` answer about, and end, the session the plugin
+ *   was HANDED — never an arbitrary user's. An isolated plugin has no network route back to the api, so
+ *   it cannot ask the sign-in endpoints itself, and a bearer token has no business leaving the platform
+ *   on a self-call anyway.
  * - With auth not yet initialised every member fails CLOSED: guards answer 503, `verifyToken`
  *   resolves `null`, `isAuthenticated` is `false`.
  *
@@ -25,7 +30,7 @@ import { RequestContextUtils } from '@core/context/request-context';
  * changes behaviour.
  */
 export class AuthContextProxy {
-  static createAuthProxy(auth: unknown): IPluginContextAuth {
+  static createAuthProxy(auth: unknown, db?: any): IPluginContextAuth {
     if (!auth) {
       return AuthContextProxy.createUnavailableAuth();
     }
@@ -43,6 +48,12 @@ export class AuthContextProxy {
         }
         if (property === 'platformGuard') {
           return () => AuthContextProxy.platformGuard();
+        }
+        if (property === 'twoFactorEnabled') {
+          return (token: string) => AuthContextProxy.twoFactorEnabled(target, db, token);
+        }
+        if (property === 'revokeSession') {
+          return (token: string) => AuthContextProxy.revokeSession(target, db, token);
         }
         // Receiver is the TARGET, so prototype getters resolve against the real manager; methods come
         // back unbound and pick `this` up from the call site exactly as before this proxy existed.
@@ -85,6 +96,39 @@ export class AuthContextProxy {
   }
 
   /**
+   * Whether the person behind a live token has two-step sign-in turned on — the same record the sign-in
+   * form reads. `null` when the token does not verify (or the record cannot be read): the caller cannot
+   * know, and must not read that as "off".
+   */
+  static async twoFactorEnabled(auth: Record<string, unknown>, db: any, token: string): Promise<boolean | null> {
+    const user = await AuthContextProxy.verifyToken(auth, token);
+    const userId = String(user?.id ?? '').trim();
+    if (!userId || !db) return null;
+    try {
+      const row = await db.findOne(SystemConstants.TABLE.META, { key: `user:${userId}:2fa_enabled` });
+      return row?.value === 'true';
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * End the session a live token belongs to, exactly as signing out does. `true` once it is revoked;
+   * `false` when the token does not verify (already ended, expired, forged) or the write fails.
+   */
+  static async revokeSession(auth: Record<string, unknown>, db: any, token: string): Promise<boolean> {
+    const user = await AuthContextProxy.verifyToken(auth, token);
+    const jti = String(user?.jti ?? '').trim();
+    if (!jti || !db) return false;
+    try {
+      await db.update(SystemConstants.TABLE.SESSIONS, { tokenId: jti }, { isRevoked: true, updatedAt: new Date() });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Auth is not wired yet. Every answer is the denying one, so a plugin never needs a defensive
    * check around `context.auth.*`.
    */
@@ -99,6 +143,8 @@ export class AuthContextProxy {
       verifyToken: async () => null,
       isAuthenticated: () => false,
       actor: async () => null,
+      twoFactorEnabled: async () => null,
+      revokeSession: async () => false,
     };
   }
 }

@@ -36,4 +36,15 @@ isAuthenticated(request: unknown): boolean;
  * side that knows the request.
  */
 actor(): Promise<Record<string, unknown> | null>;
+/**
+ * Whether the person behind `token` has two-step sign-in turned on. Answers only about the bearer of a
+ * live token — the one the plugin was handed — so it cannot be used to probe other accounts. `null`
+ * when the token does not verify or the answer cannot be read: unknown, never "off".
+ */
+twoFactorEnabled(token: string): Promise<boolean | null>;
+/**
+ * End the session `token` belongs to, as signing out does: every later request with it is refused.
+ * `true` once revoked; `false` when the token no longer verifies or the revocation could not be written.
+ */
+revokeSession(token: string): Promise<boolean>;
 }
