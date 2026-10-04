@@ -1,3 +1,5 @@
+import express from 'express';
+import type { RequestHandler } from 'express';
 import { RouteConstants } from '@fromcode119/core';
 
 /**
@@ -35,6 +37,26 @@ export class WebhookRouteUtils {
     if (!WebhookRouteUtils.isWebhookPath(String(req?.path || ''))) return;
     req.rawBody = Buffer.from(buf);
     req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
+  }
+
+  /**
+   * The bodies a browser posts when it reports a security-policy violation (CSP `report-uri` and the
+   * Reporting API). They are JSON under their own media types, and only a webhook path parses them as
+   * such: a webhook is already outside the session's authority (no CSRF token is asked of it), and
+   * nowhere else should a cross-site post of these types be read.
+   */
+  static readonly REPORT_MEDIA_TYPES = ['application/csp-report', 'application/reports+json'] as const;
+
+  /** Body-parser `type` test: a browser report posted to a webhook path. */
+  static isReportBody(req: any): boolean {
+    const type = String(req?.headers?.['content-type'] || '').split(';')[0].trim().toLowerCase();
+    return (WebhookRouteUtils.REPORT_MEDIA_TYPES as readonly string[]).includes(type)
+      && WebhookRouteUtils.isWebhookPath(String(req?.path || ''));
+  }
+
+  /** The JSON parser for those reports, mounted beside the general one; a report is small, so its limit is too. */
+  static reportBodyParser(): RequestHandler {
+    return express.json({ limit: '64kb', type: (req) => WebhookRouteUtils.isReportBody(req), verify: WebhookRouteUtils.keepRawBody });
   }
 
   private static escape(segment: string): string {

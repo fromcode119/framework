@@ -65,3 +65,22 @@ describe('WebhookRouteUtils.keepRawBody', () => {
     expect((await run('/api/v1/plugins/example-plugin/checkout/payment-session', 'application/x-www-form-urlencoded', 'a=1')).raw).toBeNull();
   });
 });
+
+describe('browser security reports', () => {
+  const req = (path: string, type: string) => ({ path, headers: { 'content-type': type } });
+
+  it('are parsed on a plugin webhook path, under either report media type', () => {
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/plugins/security/webhooks/csp-report', 'application/csp-report'))).toBe(true);
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/plugins/security/webhooks/csp-report', 'application/reports+json; charset=utf-8'))).toBe(true);
+  });
+
+  it('are never parsed off a webhook path, where a cross-site post would carry the session', () => {
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/plugins/security/settings', 'application/csp-report'))).toBe(false);
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/auth/logout', 'application/reports+json'))).toBe(false);
+  });
+
+  it('leave every other media type to the ordinary parsers', () => {
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/plugins/security/webhooks/csp-report', 'application/json'))).toBe(false);
+    expect(WebhookRouteUtils.isReportBody(req('/api/v1/plugins/security/webhooks/csp-report', 'text/plain'))).toBe(false);
+  });
+});

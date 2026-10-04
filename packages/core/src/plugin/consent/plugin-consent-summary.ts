@@ -39,7 +39,7 @@ export class PluginConsentSummary {
       collections: [...new Set(collections)].sort(),
       adminScreens: Boolean(manifest.admin?.menu?.length || manifest.admin?.collections?.length || manifest.ui?.entry),
       storefrontWidgets: Array.isArray(manifest.ui?.widgets) ? manifest.ui!.widgets!.length : 0,
-      storefrontCode: Boolean((manifest.ui as any)?.frontendEntry || manifest.ui?.headInjections?.length || manifest.ui?.publicRoutes?.length),
+      storefrontCode: Boolean((manifest.ui as any)?.frontendEntry || manifest.ui?.headInjections?.length || manifest.ui?.publicRoutes?.length || manifest.ui?.documentHeadersPath),
       storefrontHosts: [...new Set((manifest.ui?.storefrontHosts || []).map((host) => String(host).trim().toLowerCase()).filter((host) => PluginNetworkDeclaration.isHost(host)))].sort(),
       isolated: sandbox !== false && !(sandboxConfig && (sandboxConfig as any).enabled === false),
       memoryLimitMb: typeof sandboxConfig?.memoryLimit === 'number' ? sandboxConfig.memoryLimit : null,

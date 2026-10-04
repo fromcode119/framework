@@ -84,7 +84,7 @@ export class TenantPluginPackagePolicy {
   private static readonly ADMIN_UI_KEYS = ['entry', 'adminCss'] as const;
 
   /** The `ui` keys that put code or files into the site's own pages and origin. */
-  private static readonly STOREFRONT_UI_KEYS = ['frontendEntry', 'css', 'browserEntries', 'publicRoutes', 'headInjections', 'headDataPath'] as const;
+  private static readonly STOREFRONT_UI_KEYS = ['frontendEntry', 'css', 'browserEntries', 'publicRoutes', 'headInjections', 'headDataPath', 'documentHeadersPath'] as const;
 
   /** Storefront bundles the layout would load even when the manifest does not name them. */
   private static readonly STOREFRONT_BUNDLES = [
