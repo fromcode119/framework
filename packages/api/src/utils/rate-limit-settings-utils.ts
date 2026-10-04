@@ -173,7 +173,19 @@ export class RateLimitSettingsUtils {
   }
 
   /** Safely parse the stored/default JSON blob into the provider-keyed ranges map. Malformed input matches nothing. */
+  /** Parsed ranges per stored text: read on every request, and the text changes only when an operator saves it. */
+  private static readonly parsedEdgeProviderRanges = new Map<string, Readonly<Record<string, readonly string[]>>>();
+
   private static parseEdgeProviderRanges(raw: string): Readonly<Record<string, readonly string[]>> {
+    const known = RateLimitSettingsUtils.parsedEdgeProviderRanges.get(raw);
+    if (known) return known;
+    const parsed = RateLimitSettingsUtils.parseEdgeProviderRangesNow(raw);
+    if (RateLimitSettingsUtils.parsedEdgeProviderRanges.size > 32) RateLimitSettingsUtils.parsedEdgeProviderRanges.clear();
+    RateLimitSettingsUtils.parsedEdgeProviderRanges.set(raw, parsed);
+    return parsed;
+  }
+
+  private static parseEdgeProviderRangesNow(raw: string): Readonly<Record<string, readonly string[]>> {
     if (!raw) return {};
     let parsed: unknown;
     try {

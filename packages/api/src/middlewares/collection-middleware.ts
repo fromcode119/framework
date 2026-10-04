@@ -90,7 +90,11 @@ export class CollectionMiddleware extends BaseMiddleware {
     // Resolve each relationship field's related table + searchable text columns so the list search
     // can match by the RELATED record's name (e.g. inventory by product name), not just scalar
     // columns on this table. The middleware owns the registry, so it does the relationTo resolution.
-    req.relationshipSearchTargets = this.buildRelationshipSearchTargets(collectionEntry.collection);
+    // Only a request that searches reads them (RestReadController.resolveRelationshipSearchMatches),
+    // and resolving every relationship against the registry cost every read several percent of CPU.
+    if (String(req.query?.search || '').trim()) {
+      req.relationshipSearchTargets = this.buildRelationshipSearchTargets(collectionEntry.collection);
+    }
     next();
   }
 
