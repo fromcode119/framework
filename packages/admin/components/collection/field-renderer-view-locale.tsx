@@ -24,11 +24,14 @@ export abstract class FieldRendererViewLocale extends FieldRendererViewAccess {
   // Effect 1: reset activeLocale to defaultLocale when the current locale is not in the registry.
   // Original deps: [activeLocale, defaultLocale, isLocalizedField, localeRegistry] — mapped to a
   // `@watch` on the underlying state (activeLocale) + prop (field/plugins) drivers of those values.
-  @watch('activeLocale', 'field', 'plugins')
+  // `globalSettings` is a driver too: the settings can arrive after the field is first drawn, and until the
+  // operator picks a language the field follows the site's default instead of keeping the fallback it
+  // started with.
+  @watch('activeLocale', 'field', 'plugins', 'globalSettings')
   protected syncActiveLocale(): void {
     if (!this.isLocalizedField) return;
     const exists = this.localeRegistry.some((item) => item.code === this.activeLocale);
-    if (!exists) this.activeLocale = this.defaultLocale;
+    if (!exists || (!this.localeChosen && this.activeLocale !== this.defaultLocale)) this.activeLocale = this.defaultLocale;
   }
 
   // Effect 2: outside-click listener, gated on [isLocalizedField, isLocaleMenuOpen].
@@ -127,6 +130,7 @@ export abstract class FieldRendererViewLocale extends FieldRendererViewAccess {
   }
 
   @bound protected selectLocale(code: string): void {
+    this.localeChosen = true;
     this.activeLocale = code;
     this.isLocaleMenuOpen = false;
   }

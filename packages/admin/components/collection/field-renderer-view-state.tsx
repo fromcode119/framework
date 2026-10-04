@@ -39,6 +39,8 @@ export abstract class FieldRendererViewState extends Reactor {
 
   @state activeLocale = this.defaultLocale;
   @state isLocaleMenuOpen = false;
+  /** Set once the operator picks a language; until then the field follows the site's default. */
+  protected localeChosen = false;
 
   protected outsideClickAttached = false;
 
@@ -63,8 +65,14 @@ export abstract class FieldRendererViewState extends Reactor {
     return this.localization.parseLocaleRegistry(this.registrySettings);
   }
 
+  /**
+   * The language a field's value is CONTENT in — the site's, not the console's. A record's localized
+   * fields hold what the site shows, so they open on the site's default language. They used to open on
+   * `admin_default_locale` (the console's language): on a Bulgarian site with an English console every
+   * name box opened on EN, looked empty, and new products were named in English only.
+   */
   protected get defaultLocale(): string {
-    return this.localization.resolveAdminLocale(this.registrySettings, this.localeRegistry);
+    return this.localization.resolveFrontendLocale(this.registrySettings, this.localeRegistry);
   }
 
   protected get label(): string {
