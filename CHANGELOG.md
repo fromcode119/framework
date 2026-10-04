@@ -11,6 +11,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Added
 
 - **api**: plugin read routes — answer a declared plugin list from its collection ([#722](https://github.com/fromcode119/framework/pull/722))
+- **core**: plugins can read two-step status and end the session behind a token ([#721](https://github.com/fromcode119/framework/pull/721))
 
 ### Fixed
 
