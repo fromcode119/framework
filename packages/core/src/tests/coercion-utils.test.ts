@@ -34,6 +34,12 @@ describe('CoercionUtils.toString', () => {
     expect(CoercionUtils.toIsoDateOrNull(date)).toBe('2026-08-18T09:30:00.000Z');
   });
 
+  it('keeps the milliseconds of a Date (a timestamp read from the database)', () => {
+    expect(CoercionUtils.toIsoDateOrNull(new Date('2026-10-04T07:29:47.331Z'))).toBe('2026-10-04T07:29:47.331Z');
+    expect(CoercionUtils.toIsoDateOrNull(new Date('nope'))).toBeNull();
+    expect(CoercionUtils.toIsoDateOrNull('')).toBeNull();
+  });
+
   it('keeps primitive arrays joining as before', () => {
     expect(CoercionUtils.toString([1, 2])).toBe('1,2');
   });
