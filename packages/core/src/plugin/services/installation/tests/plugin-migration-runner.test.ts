@@ -29,7 +29,7 @@ describe('PluginMigrationRunner', () => {
 
   it('confines a real plugin migration to its own tables and capabilities', async () => {
     const owner = { getColumns: vi.fn(async () => []), addColumn: vi.fn(), find: vi.fn(async () => []), execute: vi.fn() };
-    const manager = { schemaDb: owner, db: {}, audit: { logAction: vi.fn() } } as any;
+    const manager = { schemaDb: owner, db: {}, audit: { logAction: vi.fn() }, getPlugins: () => [] } as any;
     const plugin = { manifest: { slug: 'alpha', name: 'Alpha', version: '1.0.0', capabilities: ['database:write', 'database:schema'] } } as any;
     const db = PluginSchemaDatabaseProxy.create(plugin, manager) as any;
 

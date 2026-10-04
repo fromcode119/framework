@@ -89,6 +89,25 @@ export class PluginSchemaDatabaseProxy {
     throw new Error(`Security Violation: plugin "${plugin.manifest.slug}" requires the explicitly approved "${capability}" capability.`);
   }
 
+  /**
+   * The table prefix of the plugin a table belongs to, or `null` for a name outside the plugin namespaces
+   * (a system table, or a collection's own short slug the schema manager resolves itself).
+   *
+   * A physical name cannot be split at its first underscore: plugin slugs carry their own (a hyphenated
+   * slug becomes `fcp_two_words_…`), so a plugin with such a slug was refused its own tables, and a plugin
+   * whose slug is a prefix of another's (`fcp_shop_…` of `fcp_shop_extra_…`) was handed the other's.
+   * The owner is the known plugin with the LONGEST prefix the name starts with.
+   */
+  private static ownerPrefix(name: string, plugin: Pick<ILoadedPlugin, 'manifest'>, manager: IPluginManagerInterface): string | null {
+    const physical = name.startsWith('@') ? PhysicalTableNameUtils.parse(name)?.physicalName ?? '' : name;
+    if (!PhysicalTableNameUtils.hasPlatformPrefix(physical)) return null;
+    const prefixes = [plugin.manifest.slug, ...manager.getPlugins().map((loaded) => loaded.manifest.slug)]
+      .map((slug) => PhysicalTableNameUtils.createPluginPrefix(slug))
+      .filter((prefix) => prefix && physical.startsWith(prefix));
+    // A table of no known plugin is still another namespace than this plugin's own.
+    return prefixes.sort((a, b) => b.length - a.length)[0] ?? PhysicalTableNameUtils.PLATFORM_PREFIX;
+  }
+
   private static assertTableAccess(
     plugin: Pick<ILoadedPlugin, 'manifest'>,
     manager: IPluginManagerInterface,
@@ -103,10 +122,9 @@ export class PluginSchemaDatabaseProxy {
       throw new Error(`Security Violation: plugin "${plugin.manifest.slug}" called schema.${method} without a table.`);
     }
 
-    const reference = PhysicalTableNameUtils.parse(name);
-    const owner = reference?.pluginSlug ?? '';
     const system = name.startsWith('_system_') || PluginSchemaDatabaseProxy.SYSTEM_TABLES.has(name);
-    const crossPlugin = owner.length > 0 && owner !== plugin.manifest.slug;
+    const owner = PluginSchemaDatabaseProxy.ownerPrefix(name, plugin, manager);
+    const crossPlugin = owner !== null && owner !== PhysicalTableNameUtils.createPluginPrefix(plugin.manifest.slug);
     if (!system && !crossPlugin) return;
 
     if (!PluginPermissionsService.hasPermission(plugin.manifest, 'database:schema:cross-plugin')) {
