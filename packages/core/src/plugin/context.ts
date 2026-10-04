@@ -65,9 +65,7 @@ export class PluginContextFactory {
         const separatorIndex = key.indexOf(':');
         const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
         const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
-        if (!namespace || !slug) {
-          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
-        }
+        if (!namespace || !slug) throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
 
         const dependency = pluginsFacade.get(namespace, slug);
         if (dependency === null || dependency === undefined) {
@@ -81,9 +79,7 @@ export class PluginContextFactory {
         const separatorIndex = key.indexOf(':');
         const namespace = separatorIndex >= 0 ? key.slice(0, separatorIndex).trim() : '';
         const slug = separatorIndex >= 0 ? key.slice(separatorIndex + 1).trim() : '';
-        if (!namespace || !slug) {
-          throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
-        }
+        if (!namespace || !slug) throw new Error(`Invalid dependency key "${key}". Expected "namespace:slug".`);
 
         const dependency = pluginsFacade.get(namespace, slug);
         return dependency === null || dependency === undefined ? null : dependency as TDependency;
