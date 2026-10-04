@@ -8,7 +8,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
  * drops them from the rows it hands over.
  */
 export class PluginDbOnRequestFields {
-  private static readonly byCollection = new WeakMap<ICollection, string[]>();
+  private static readonly byCollection = new WeakMap<object, { count: number; names: string[] }>();
 
   static omittedFor(method: string, args: any[], manager: IPluginManagerInterface): string[] {
     if (method !== 'find' && method !== 'findOne') return [];
@@ -19,12 +19,13 @@ export class PluginDbOnRequestFields {
     const entry = manager.getCollection(PhysicalTableNameUtils.create(reference.pluginSlug, reference.tableName)) as { collection?: ICollection } | null | undefined;
     const collection = entry?.collection;
     if (!collection || !Array.isArray(collection.fields)) return [];
-    let names = PluginDbOnRequestFields.byCollection.get(collection);
-    if (!names) {
-      names = collection.fields.filter((field) => field?.readOnRequest).map((field) => String(field.name));
-      PluginDbOnRequestFields.byCollection.set(collection, names);
+    // Keyed by the `fields` array and its length: a plugin updated in place gets a new field list.
+    let known = PluginDbOnRequestFields.byCollection.get(collection.fields);
+    if (!known || known.count !== collection.fields.length) {
+      known = { count: collection.fields.length, names: collection.fields.filter((field) => field?.readOnRequest).map((field) => String(field.name)) };
+      PluginDbOnRequestFields.byCollection.set(collection.fields, known);
     }
-    return names;
+    return known.names;
   }
 
   static strip(result: unknown, omitted: readonly string[]): unknown {

@@ -58,4 +58,15 @@ describe('a plugin re-registering its own collection', () => {
     const names = manager.registeredCollections.get('fcp_shop_products').collection.fields.map((field: any) => field.name);
     expect(names).toContain('giftNote');
   });
+
+  it('takes the new access and hooks — the old ones call a process that is gone', () => {
+    const manager = buildManager();
+    const collections = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'shop' } } as any, manager, logger, security);
+    const oldRead = vi.fn(() => true);
+    collections.register({ ...products(true), access: { read: oldRead }, hooks: { afterChange: [vi.fn()] } } as any);
+    collections.register({ ...products(true), access: { read: true } } as any);
+    const collection = manager.registeredCollections.get('fcp_shop_products').collection;
+    expect(collection.access).toEqual({ read: true });
+    expect(collection.hooks).toBeUndefined();
+  });
 });

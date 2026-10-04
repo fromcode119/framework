@@ -3,6 +3,7 @@ import { CollectionAccessPolicyService } from '@api/services/collection-access-p
 import { RestReadController } from '@api/controllers/rest/rest-read-controller';
 import { RestConsoleReadController } from '@api/controllers/rest/rest-console-read-controller';
 import { CollectionReadOptions } from '@api/services/collection-read-options';
+import { CollectionReadColumns } from '@api/services/collection-read-columns';
 
 /**
  * A collection opened to the public served every column of every row through the generic reads: the
@@ -160,6 +161,13 @@ describe('collection read redaction', () => {
       const staffOne = response();
       await new RestReadController(buildRuntime([withCard]) as any).findOne(cards, { params: { id: '1' }, query: {}, user: ADMIN } as any, staffOne);
       expect(staffOne.json.mock.calls[0][0].card).toEqual({ a: 1 });
+    });
+
+    it('a field list replaced in place (a plugin updated without a restart) is read afresh', () => {
+      const cards: any = { ...collection, slug: 'fcp_example_cards2', fields: [...collection.fields] };
+      expect(CollectionReadColumns.onRequest(cards)).toEqual([]);
+      cards.fields = [...cards.fields, { name: 'card', type: 'json', readOnRequest: true }];
+      expect(CollectionReadColumns.onRequest(cards)).toEqual(['card']);
     });
 
     it('a read of some fields also reads what withholds them, so a withheld field stays withheld', async () => {

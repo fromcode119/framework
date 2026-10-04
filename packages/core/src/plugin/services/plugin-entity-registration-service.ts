@@ -92,8 +92,14 @@ export class PluginEntityRegistrationService {
    * given new options), and new ones are added. Fields it no longer declares stay until a restart:
    * another plugin may have extended this collection, and dropping a field here would hide its data.
    * Without this, an in-place update kept every changed field definition until the api restarted.
+   *
+   * Its `access` and `hooks` are replaced outright: they are the owner's alone, and an isolated
+   * plugin's are calls into the process that was just replaced — kept, every read of the collection
+   * failed ("unknown handler") until the api restarted.
    */
   refreshOwnCollectionFields(existing: ICollection, incoming: ICollection): void {
+    existing.access = incoming.access;
+    existing.hooks = incoming.hooks;
     const next = [...existing.fields];
     const indexByName = new Map(next.map((field: IField, index: number) => [field.name, index]));
     for (const field of incoming.fields) {
