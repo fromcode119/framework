@@ -3,8 +3,10 @@ import { PublicRouteProxy } from '@/lib/public-route-proxy';
 // Route files export only the class; bind the statics locally.
 import { PublicFileRoute } from '@/app/fc-public-route/[file]/route';
 import { SitemapRoute } from '@/app/sitemap.xml/route';
+import { WellKnownFileRoute } from '@/app/.well-known/[file]/route';
 const getPublicFileRoute = PublicFileRoute.GET;
 const getMainSitemap = SitemapRoute.GET;
+const getWellKnownFile = WellKnownFileRoute.GET;
 
 describe('Public route handlers', () => {
   afterEach(() => {
@@ -18,6 +20,18 @@ describe('Public route handlers', () => {
     const result = await getMainSitemap();
 
     expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('sitemap.xml');
+    expect(result).toBe(response);
+  });
+
+  it('delegates a well-known file to the shared public route proxy under its full path', async () => {
+    const response = new Response('Contact: mailto:security@example.com\n');
+    vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
+
+    const result = await getWellKnownFile(new Request('https://frontend.example.com/.well-known/security.txt'), {
+      params: Promise.resolve({ file: 'security.txt' }),
+    });
+
+    expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('.well-known/security.txt');
     expect(result).toBe(response);
   });
 
