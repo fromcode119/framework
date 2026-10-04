@@ -18,6 +18,8 @@ export interface IBuildSourceSummary {
   lastCommitSha?: string;
   lastError?: string;
   version?: string;
+  /** The vendor the last built manifest declared; empty before its first build. */
+  namespace?: string;
   /** Build when the branch moves. Off unless the operator asked for it, per source. */
   autoBuild?: boolean;
   /**

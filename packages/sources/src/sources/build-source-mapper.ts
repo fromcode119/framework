@@ -113,6 +113,9 @@ export class BuildSourceMapper {
       ? source.file_name
       : (typeof source.fileName === 'string' ? source.fileName : undefined);
     const version = typeof source.version === 'string' ? source.version : undefined;
+    // The vendor of what was last built: '' when that manifest declared none, absent (NULL) when no
+    // build has run since the column existed — two different answers, so the null is kept.
+    const namespace = typeof source.namespace === 'string' ? source.namespace.trim() : undefined;
 
     // READ path: values are passed through as stored, never re-validated. A row written before the
     // transport allow-list existed must still be listable in the admin — the refusal belongs at the
@@ -144,6 +147,7 @@ export class BuildSourceMapper {
       lastBuildStatus,
       lastCommitSha,
       lastError,
+      namespace,
       slug: (source.slug || '').trim(),
       type: this.normalizeType(source.type),
       version,

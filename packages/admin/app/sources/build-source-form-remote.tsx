@@ -125,6 +125,7 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
       inspectFailed: false,
       inspectFailure: '',
       slug: String(declared.slug),
+      namespace: String(declared.namespace ?? '').trim(),
       type: this.declaredType(declared.type),
     });
   }

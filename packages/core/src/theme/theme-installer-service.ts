@@ -1,4 +1,5 @@
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
+import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 /** ThemeInstallerService — handles theme package installation. Extracted from ThemeManager (ARC-007). */
 
 import path from 'path';
@@ -53,6 +54,7 @@ export class ThemeInstallerService {
     fs.mkdirSync(tempDir, { recursive: true });
     try {
       await BackupService.downloadAndExtract(downloadUrl, tempDir);
+      this.refuseOtherVendor(tempDir, slug);
       // Swapped in whole: the storefront never renders from a half-written theme.
       ExtensionDirectorySwap.replaceSync(path.join(this.themesRoot, slug), (stagingDir) => this.moveDir(tempDir, stagingDir));
       await this.discoverThemes();
@@ -152,6 +154,14 @@ export class ThemeInstallerService {
    * the directory path cannot drift — a difference between them is a theme that installs correctly
    * only one of the two ways.
    */
+  /** The Marketplace path names the slug itself; the vendor is the downloaded package's own theme.json. */
+  private refuseOtherVendor(extractedDir: string, slug: string): void {
+    const contentDir = this.findThemeManifestDir(extractedDir);
+    if (!contentDir) return;
+    const incoming: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+    ExtensionVendorGuard.refuse(path.join(this.themesRoot, slug), 'theme.json', { slug, namespace: incoming.namespace }, 'theme');
+  }
+
   private async place(
     sourceDir: string,
     themesMap: Map<string, IThemeManifest>,
@@ -163,6 +173,7 @@ export class ThemeInstallerService {
     if (!manifest.slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
 
     const targetDir = path.join(this.themesRoot, manifest.slug);
+    ExtensionVendorGuard.refuse(targetDir, 'theme.json', manifest, 'theme');
     if (fs.existsSync(targetDir)) {
       await BackupService.create(manifest.slug, targetDir, BackupSectionKey.THEMES);
     }

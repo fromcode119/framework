@@ -93,6 +93,14 @@ export class BuildSourceForm extends BuildSourceFormRemote {
             options={this.state.types.length ? this.state.types : BuildSourceFormState.TYPES}
           />
 
+          {/* The vendor, from the same manifest: a same-slug package from another vendor is refused. */}
+          <Input
+            label={AdminI18n.t('sources.vendor')}
+            value={this.state.namespace}
+            disabled
+            placeholder={this.vendorPlaceholder}
+          />
+
           <div className="space-y-2">
             <Input
               label={AdminI18n.t('sources.githubToken')}

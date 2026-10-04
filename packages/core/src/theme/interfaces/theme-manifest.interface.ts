@@ -12,6 +12,8 @@ export interface IThemeManifest {
    */
   ownerTenantId?: string;
   slug: string;
+  /** The vendor (`org.fromcode`). A theme with the same slug from another vendor is refused at install. */
+  namespace?: string;
   name: string;
   version: string;
   description?: string;

@@ -37,6 +37,11 @@ export interface IBuildSourceFormState {
   gitUrl: string;
   slug: string;
   /**
+   * The vendor the repository's manifest declares, read with the slug. An install refuses a same-slug
+   * package from another vendor, so the operator sees it here before the source is added.
+   */
+  namespace: string;
+  /**
    * The kind, DETECTED from the repository's manifest. One declaration, shared with the values the
    * form submits — it was spelled out separately here, and a union missing `appearance` is how a
    * correctly detected appearance could not even be held in state.

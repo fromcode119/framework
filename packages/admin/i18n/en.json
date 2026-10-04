@@ -3706,7 +3706,11 @@
     "lastBuiltLabel": "Last built:",
     "never": "never",
     "andMore": "and {{count}} more",
-    "auto": "auto"
+    "auto": "auto",
+    "vendor": "Vendor",
+    "noVendorDeclared": "No vendor declared",
+    "vendorAfterNextBuild": "vendor shown after the next build",
+    "vendorHelp": "The vendor this source's manifest declares. A package with the same slug from another vendor is refused at install."
   },
   "certificates": {
     "couldNotLoadCertificates": "Could not load certificates.",
