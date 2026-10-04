@@ -20,8 +20,9 @@ export class SourcesNamespaceMigration extends BaseMigration {
 
   async up(db: IDatabaseManager): Promise<void> {
     const { TABLE, COLUMN } = SourcesNamespaceMigration;
-    const columns = await db.getColumns(TABLE);
-    if (columns.map((name) => name.toLowerCase()).includes(COLUMN)) return;
+    const columns = (await db.getColumns(TABLE)).map((name) => name.toLowerCase());
+    // No columns at all means no table: there is nothing to add a column to (migrations 31/53 own it).
+    if (!columns.length || columns.includes(COLUMN)) return;
     const type = PortableColumnTypes.for(db.dialect);
     await db.execute(Sql.raw(`ALTER TABLE ${TABLE} ADD COLUMN ${COLUMN} ${type.shortText}`));
   }
