@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.321] - 2026-10-04
+
+### Added
+
+- **api**: plugin read routes — answer a declared plugin list from its collection ([#722](https://github.com/fromcode119/framework/pull/722))
+
+### Fixed
+
+- **core**: theme and appearance installs swap their directory in whole ([#719](https://github.com/fromcode119/framework/pull/719))
+
 ## [0.2.320] - 2026-10-03
 
 ### Fixed
