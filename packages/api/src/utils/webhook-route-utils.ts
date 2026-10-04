@@ -37,6 +37,21 @@ export class WebhookRouteUtils {
     req.rawBodyString = buf.toString((encoding as BufferEncoding) || 'utf8');
   }
 
+  /**
+   * The bodies a browser posts when it reports a security-policy violation (CSP `report-uri` and the
+   * Reporting API). They are JSON under their own media types, and only a webhook path parses them as
+   * such: a webhook is already outside the session's authority (no CSRF token is asked of it), and
+   * nowhere else should a cross-site post of these types be read.
+   */
+  static readonly REPORT_MEDIA_TYPES = ['application/csp-report', 'application/reports+json'] as const;
+
+  /** Body-parser `type` test: a browser report posted to a webhook path. */
+  static isReportBody(req: any): boolean {
+    const type = String(req?.headers?.['content-type'] || '').split(';')[0].trim().toLowerCase();
+    return (WebhookRouteUtils.REPORT_MEDIA_TYPES as readonly string[]).includes(type)
+      && WebhookRouteUtils.isWebhookPath(String(req?.path || ''));
+  }
+
   private static escape(segment: string): string {
     return String(segment).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }

@@ -73,6 +73,8 @@ export class PluginGuestHttp {
   static readonly HEADER_NEXT = 'x-fc-next';
   /** Set by the host when it forwarded the request's ORIGINAL bytes (a webhook): the guest keeps them as `req.rawBody`. */
   static readonly HEADER_RAW_BODY = 'x-fc-raw-body';
+  /** The media types a browser's security-policy report arrives as; parsed as JSON. */
+  static readonly REPORT_MEDIA_TYPES = ['application/csp-report', 'application/reports+json'] as const;
   /**
    * The visitor's address as the HOST resolved it (`NetworkAddressUtils.resolveClientIp`: `trust proxy`
    * plus the edge provider's own header). The guest exposes it as `req.clientIp`; the socket a guest sees
@@ -112,6 +114,9 @@ export class PluginGuestHttp {
     this.server.disable('x-powered-by');
     this.server.use(this.enterInvocation.bind(this));
     this.server.use(express.json({ limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    // A browser's security-policy report: JSON under its own media types. The api forwards it only to a
+    // webhook path, where it parsed it the same way.
+    this.server.use(express.json({ limit: '64kb', type: PluginGuestHttp.REPORT_MEDIA_TYPES as unknown as string[], verify: PluginGuestHttp.keepRawBody }));
     this.server.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
     this.server.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
     this.app = express.Router();
