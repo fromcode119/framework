@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.331] - 2026-10-05
+
+### Added
+
+- **arch-guard**: fail a plugin whose migrations can never run ([#748](https://github.com/fromcode119/framework/pull/748))
+
+### Fixed
+
+- **monitoring**: a private site's 503 is an answer, not an api failure ([#764](https://github.com/fromcode119/framework/pull/764))
+
 ## [0.2.330] - 2026-10-05
 
 ### Fixed
