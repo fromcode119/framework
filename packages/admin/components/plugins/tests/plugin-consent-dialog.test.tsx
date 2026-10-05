@@ -61,7 +61,7 @@ describe('the plugin consent dialog', () => {
     const approve = screen.getByRole('button', { name: /Approve and turn on/ });
 
     expect((approve as HTMLButtonElement).disabled).toBe(true);
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch'));
     expect((approve as HTMLButtonElement).disabled).toBe(false);
   });
 
@@ -70,7 +70,7 @@ describe('the plugin consent dialog', () => {
     vi.mocked(AdminApi.post).mockResolvedValue({ success: true });
     mount({ summary: summary(), onApproved });
 
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch'));
     fireEvent.click(screen.getByRole('button', { name: /Approve and turn on/ }));
 
     await waitFor(() => expect(onApproved).toHaveBeenCalledWith('courier'));
@@ -85,7 +85,7 @@ describe('the plugin consent dialog', () => {
     });
     mount({ summary: summary(), onApproved });
 
-    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('switch'));
     fireEvent.click(screen.getByRole('button', { name: /Approve and turn on/ }));
 
     await waitFor(() => expect(screen.getByText(/request changed since you opened this/)).toBeTruthy());
