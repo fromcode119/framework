@@ -25,6 +25,7 @@ import * as path from 'path';
 import { BuiltPackageService } from '@sources/packaging/built-package-service';
 import { SourceRepositoryService } from '@sources/packaging/source-repository-service';
 import { SourceBuildRunner } from '@sources/packaging/source-build-runner';
+import { StagedBuildOffer } from '@sources/packaging/staged-build-offer';
 
 /**
  * Orchestrates the full build pipeline: read from DB → git sync →
@@ -70,6 +71,12 @@ export class BuildService {
       installer,
       (identity, message) => this.buildSourceService.recordAutoUpdateFailure(identity, message),
     );
+    this.stagedBuildOffer = new StagedBuildOffer(
+      (identity) => this.buildSourceService.getRawSource(identity),
+      (identity) => this.listVersions(identity),
+      (identity) => this.resolvePackageArtifact(identity),
+      this.builtPackageInstaller,
+    );
     this.buildRunner = new SourceBuildRunner(
       db,
       this.logger,
@@ -90,6 +97,7 @@ export class BuildService {
   private readonly builtPackages: BuiltPackageService;
   private readonly repository: SourceRepositoryService;
   private readonly buildRunner: SourceBuildRunner;
+  private readonly stagedBuildOffer: StagedBuildOffer;
 
   /** The provider a row names, or null when this installation does not have it. */
   private providerFor(entry: { provider?: unknown }): ISourceProvider | null {
@@ -242,7 +250,10 @@ export class BuildService {
 
   async updateSource(identity: BuildSourceIdentity, input: any): Promise<any> {
     await this.assertPublishTarget(input);
-    return this.buildSourceService.updateSource(identity, input);
+    const before = await this.buildSourceService.getRawSource(identity);
+    const summary = await this.buildSourceService.updateSource(identity, input);
+    await this.stagedBuildOffer.afterSettingsSaved(identity, before, input);
+    return summary;
   }
 
   /** A source may only publish to a site that exists — a typo would otherwise publish nowhere, silently. */
