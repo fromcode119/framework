@@ -54,7 +54,7 @@ export class Dropdown extends DropdownPositioning {
   }
 
   render(): ReactNode {
-    const { trigger, items, header } = this;
+    const { trigger, items, header, panel } = this;
     const { isOpen, coords } = this;
 
     return (
@@ -104,7 +104,7 @@ export class Dropdown extends DropdownPositioning {
                 {header}
               </div>
             )}
-            <div className="p-1.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
+            {panel ?? <div className="p-1.5 overflow-y-auto" style={{ maxHeight: coords.maxHeight }}>
               {DropdownPositioning.groupItems(items).map((group, groupIdx) => (
                 <Fragment key={group.section ?? `group-${groupIdx}`}>
                 {group.scrolls && group.section ? (
@@ -184,7 +184,7 @@ export class Dropdown extends DropdownPositioning {
                 </div>
                 </Fragment>
               ))}
-            </div>
+            </div>}
           </div>
         </RootFramework>
       )}

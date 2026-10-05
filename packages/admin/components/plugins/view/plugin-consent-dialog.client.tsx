@@ -4,7 +4,7 @@ import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { Checkbox } from '@/components/ui/view/checkbox.client';
+import { Switch } from '@/components/ui/view/switch.client';
 import { PluginConsentEntries } from '@/components/plugins/view/plugin-consent-entries.client';
 import { PluginConsentFacts } from '@/components/plugins/view/plugin-consent-facts.client';
 import type { IPluginConsentSummary } from '@/components/plugins/interfaces/plugin-consent-summary.interface';
@@ -126,8 +126,9 @@ export class PluginConsentDialog extends AdminComponent {
               </p>
             ) : null}
 
-            <div className="mt-5">
-              <Checkbox checked={this.acknowledged} onChange={this.acknowledge} disabled={this.busy}
+            {/* The same toggle the page itself uses for "Approve & enable": a yes/no is a switch in this admin. */}
+            <div className="mt-5 border-t border-slate-100 pt-4 dark:border-slate-800">
+              <Switch checked={this.acknowledged} onChange={this.acknowledge} disabled={this.busy}
                 label={AdminI18n.t('plugins.consent.acknowledge', { name: summary.name })} />
             </div>
 

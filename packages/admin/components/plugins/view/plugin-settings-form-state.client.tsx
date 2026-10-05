@@ -23,6 +23,8 @@ export abstract class PluginSettingsFormState extends AdminComponent {
   @prop declare section?: string;
   /** Opening another tab of the group — the page keeps it in the address. Unset: the form keeps it itself. */
   @prop declare onSectionChange?: (section: string) => void;
+  /** The plugin is not running, so an empty schema means "not declared yet" rather than "nothing to set". */
+  @prop declare waiting?: boolean;
 
   @ref declare protected importInputRef: Ref<HTMLInputElement>;
 

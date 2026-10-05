@@ -1,4 +1,4 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { PluginState, ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 
@@ -125,7 +125,7 @@ export class PluginDetailView extends AdminComponent {
         <section className={`overflow-hidden rounded-2xl border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
           <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} siteScope={this.siteScope} theme={theme} />
           {activeTab === PluginDetailTab.SETTINGS ? (
-            <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" onStateChange={this.onSettingsStateChange}
+            <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange}
               group={this.settingsGroup || this.settingsGroups[0]?.id || ''} section={this.settingsSection}
               onSectionChange={(section: string) => this.onTabChange(PluginDetailTab.SETTINGS, this.settingsGroup || this.settingsGroups[0]?.id || '', section)} />
           ) : (
@@ -148,7 +148,7 @@ export class PluginDetailView extends AdminComponent {
           )}
         </section>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title={AdminI18n.t('plugins.detail.confirmUninstallation')} description={AdminI18n.t('plugins.detail.areYouSureYouWant', { name: plugin.manifest.name })} confirmLabel={AdminI18n.t('plugins.detail.uninstallPlugin')} />
-        <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />
+        <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} />
       </div>
     );
   }

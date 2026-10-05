@@ -23,6 +23,12 @@ export abstract class DropdownPositioning extends Reactor {
   @prop declare align?: HorizontalAlign;
   @prop declare header?: ReactNode;
   /**
+   * Replaces the list of items with content of the caller's own, for a menu that is really a small
+   * panel (the notifications). It brings its own padding and its own scrolling; the dropdown still
+   * owns where it opens and what closes it, and `items` is ignored while this is set.
+   */
+  @prop declare panel?: ReactNode;
+  /**
    * Lets the trigger fill its container. The wrapper is `inline-block` by default — right for a
    * button in a toolbar, wrong for the sidebar account card, which shrank to the width of the name
    * inside it and sat visibly narrower than everything around it.

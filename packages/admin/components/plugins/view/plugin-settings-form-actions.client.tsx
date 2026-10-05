@@ -11,8 +11,16 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export abstract class PluginSettingsFormActions extends PluginSettingsFormState {
   async loadSettings(): Promise<void> {
-    this.loading = true;
     this.status = null;
+    // A plugin that is not running has declared no settings yet, and asking for them is refused: the
+    // refusal was logged as a failure on every visit. Nothing is requested; the empty state says why.
+    if (this.waiting) {
+      this.schema = null;
+      this.settings = {};
+      this.loading = false;
+      return;
+    }
+    this.loading = true;
     try {
       const [schemaRes, settingsRes] = await Promise.all([
         AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(this.pluginSlug)),
@@ -43,11 +51,11 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
         this.activeTab = nextSchema.tabs[0].id;
       }
     } catch (err: any) {
-      console.error('Failed to load settings:', err);
-      // If schema fails with 404, it might mean no settings registered
+      // A 404 is the plugin saying it registered no settings: an answer, not a failure.
       if (err.status === 404) {
         this.schema = { fields: [] };
       } else {
+        console.error('Failed to load settings:', err);
         this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.failedToLoadPluginSettings') };
       }
     } finally {
