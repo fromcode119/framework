@@ -36,6 +36,7 @@ import { OopGuardCommand } from './oop-guard-command';
 import { PluginAliasCommand } from './plugin-alias-command';
 import { PluginArchitectureCommand } from './plugin-architecture-command';
 import { PluginRawSqlCommand } from './plugin-raw-sql-command';
+import { PluginMigrationOptInCommand } from './plugin-migration-opt-in-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
@@ -101,6 +102,7 @@ export class GuardRegistry {
     ['plugin-alias', PluginAliasCommand],
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-raw-sql', PluginRawSqlCommand],
+    ['plugin-migrations', PluginMigrationOptInCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
     ['sdk-runtime-exports', SdkRuntimeExportsCommand],
