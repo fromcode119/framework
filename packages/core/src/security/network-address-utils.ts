@@ -140,13 +140,30 @@ export class NetworkAddressUtils {
     const family = isIP(normalized);
     if (!family) return null;
 
+    // A fixed function of the address and the declared ranges, asked several times per request (rate
+    // limit, client address, proxy): answered once per address. The declared ranges come back as the
+    // same object while their stored text is unchanged, so a changed declaration is matched afresh.
+    const scope = extraRangesByProvider ?? NetworkAddressUtils.NO_EXTRA_RANGES;
+    let byAddress = NetworkAddressUtils.edgeMatches.get(scope);
+    if (!byAddress) NetworkAddressUtils.edgeMatches.set(scope, (byAddress = new Map()));
+    const known = byAddress.get(normalized);
+    if (known !== undefined) return known;
+    let matched: INetworkEdgeProvider | null = null;
     for (const provider of NetworkEdgeProviderRegistry.ALL) {
       const blockList = NetworkAddressUtils.edgeBlockListFor(provider);
-      if (blockList.check(normalized, family === 4 ? 'ipv4' : 'ipv6')) return provider;
-      if (NetworkAddressUtils.matchesAny(normalized, extraRangesByProvider?.[provider.key])) return provider;
+      if (blockList.check(normalized, family === 4 ? 'ipv4' : 'ipv6')
+        || NetworkAddressUtils.matchesAny(normalized, extraRangesByProvider?.[provider.key])) {
+        matched = provider;
+        break;
+      }
     }
-    return null;
+    if (byAddress.size >= 4096) byAddress.clear();
+    byAddress.set(normalized, matched);
+    return matched;
   }
+
+  private static readonly NO_EXTRA_RANGES: Readonly<Record<string, readonly string[]>> = Object.freeze({});
+  private static readonly edgeMatches = new WeakMap<object, Map<string, INetworkEdgeProvider | null>>();
 
   /**
    * The real visitor address for a request that may have transited a known edge provider (Cloudflare
