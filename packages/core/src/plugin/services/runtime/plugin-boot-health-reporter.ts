@@ -9,6 +9,7 @@ import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registr
 import { PluginHealthNotificationTemplateService } from '@core/plugin/services/health/plugin-health-notification-template-service';
 import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
 import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
+import { PluginHealthAlertMemory } from '@core/plugin/services/health/plugin-health-alert-memory';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 
 /**
@@ -68,7 +69,10 @@ export class PluginBootHealthReporter {
   }
 
 
-  /** After a discovery pass, alert admins ONCE if any plugin is held/errored. Best-effort, never throws. */
+  /**
+   * After a discovery pass, alert admins if the set of held/errored plugins is different from the one
+   * they were last told about (see `PluginHealthAlertMemory`). Best-effort, never throws.
+   */
   async reportBootPluginHealth(): Promise<void> {
     try {
       const report = PluginHealthReportService.buildReport(
@@ -79,11 +83,17 @@ export class PluginBootHealthReporter {
       );
       this.logger.info(`[plugin-health] ${report.counts.active} active, ${report.counts.held} held, ${report.counts.error} error, ${report.counts.inactive} inactive`);
       const summary = PluginBootHealthReporter.summarizeHeldPlugins(this.manager.plugins);
-      if (!summary) return;
-      const message = PluginHealthNotificationTemplateService.render(summary);
-      const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
-      await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html });
-      this.logger.warn(message.subject);
+      const memory = new PluginHealthAlertMemory(this.manager.db);
+      const current = summary ? PluginHealthAlertMemory.fingerprint(summary) : '';
+      // An unreadable memory must not silence the alert: with nothing remembered it is simply sent.
+      if (current === await memory.last().catch(() => '')) return;
+      if (summary) {
+        const message = PluginHealthNotificationTemplateService.render(summary);
+        const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
+        await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html });
+        this.logger.warn(message.subject);
+      }
+      await memory.remember(current);
     } catch (err) {
       this.logger.error('reportBootPluginHealth failed', err as any);
     }
