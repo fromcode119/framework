@@ -9,6 +9,7 @@ export interface IMarketplaceAppearance {
   screenshots?: Screenshot[];
   author: string;
   downloadUrl?: string;
+  artifactSha256?: string;
   previewUrl?: string;
   isFeatured?: boolean;
   downloads?: number;

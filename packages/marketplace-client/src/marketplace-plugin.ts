@@ -9,6 +9,7 @@ export class MarketplacePlugin {
   declare version: string;
   declare description: string;
   declare downloadUrl: string;
+  declare artifactSha256?: string;
   declare category: string;
   declare author: string;
   declare homepage?: string;

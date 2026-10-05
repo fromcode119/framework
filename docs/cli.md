@@ -47,7 +47,7 @@ Commands are grouped: `atlantis <group> <command>`.
 | Command | Description |
 |---------|-------------|
 | `plugin create [name]` | Scaffold a new plugin with the correct structure in `plugins/` |
-| `plugin build / pack / publish <slug>` | Build, tarball, or publish a plugin |
+| `plugin build / pack <slug>` | Build or tarball a plugin |
 | `plugin install <slug>` / `plugin search` | Install from / search the marketplace |
 | `theme create [name]` | Scaffold a new theme in `themes/` |
 | `theme seed` | Seed theme configuration data (also `npm run seed:theme`) |

@@ -28,6 +28,8 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
   @state plugins: IPluginEntry[] = [];
   @state installedPlugins: any[] = [];
   @state loading = true;
+  /** The catalogue address the api read, or null when no marketplace is set for this scope. */
+  @state catalogSource: string | null = null;
   @state installing: string | null = null;
   @state updatingAll = false;
   @state updateAllProgress = '';
@@ -88,6 +90,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
       if (!this.mounted) return;
       this.plugins = Object.values(grouped);
+      this.catalogSource = marketData.source ?? null;
       this.installedPlugins = Array.isArray(instData) ? instData : [];
     } catch (err) {
       // A background refetch runs while the api may be mid-restart — the settle loop needs to SEE
@@ -262,7 +265,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
           {loading ? (
             <MarketplaceLoadingGrid theme={theme} />
           ) : filtered.length === 0 ? (
-            <MarketplaceEmptyState theme={theme} />
+            <MarketplaceEmptyState theme={theme} configured={Boolean(this.catalogSource) || Boolean(this.searchQuery)} />
           ) : (
             filtered.map(plugin => {
               const installed = installedPlugins.find(p => (p.manifest?.slug || p.slug) === plugin.slug);

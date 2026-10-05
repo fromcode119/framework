@@ -123,7 +123,7 @@ export class AppearanceManager {
     if (!entry?.downloadUrl) {
       throw new Error(`Appearance "${slug}" was not found in the marketplace catalog.`);
     }
-    const manifest = await (await this.getInstaller()).installAppearance({ slug, downloadUrl: entry.downloadUrl });
+    const manifest = await (await this.getInstaller()).installAppearance({ slug, downloadUrl: entry.downloadUrl, artifactSha256: entry.artifactSha256, version: entry.version });
     this.stampSourceUrl(manifest.slug, client.resolveDownloadUrl(entry.downloadUrl));
     return manifest;
   }

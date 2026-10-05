@@ -1,3 +1,4 @@
+import { MarketplaceOfferMatch } from '@core/marketplace/marketplace-offer-match';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 import fs from 'fs';
@@ -95,7 +96,12 @@ export class PluginArchiveInstallerService {
     }
   }
 
-  async installFromZip(filePath: string): Promise<IPluginManifest> {
+  /**
+   * `expected`, when given, is what a catalogue offered: the package is refused unless its own manifest
+   * names that slug and version. A marketplace entry is typed separately from the file it points at, so
+   * without this an entry saying 1.0.1 installed a package saying 1.0.0 and offered the update forever.
+   */
+  async installFromZip(filePath: string, expected?: { slug: string; version: string }): Promise<IPluginManifest> {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-ext-'));
 
     try {
@@ -112,7 +118,7 @@ export class PluginArchiveInstallerService {
         }
       }
 
-      return await this.place(tempDir, { keepSource: false });
+      return await this.place(tempDir, { keepSource: false, expected });
     } finally {
       try {
         fs.rmSync(tempDir, { recursive: true, force: true });
@@ -143,7 +149,7 @@ export class PluginArchiveInstallerService {
    * The half of an install that is not about archives. Shared by both entry points so they cannot
    * drift — a difference between them is a plugin that installs correctly only one of the two ways.
    */
-  private async place(sourceDir: string, options: { keepSource: boolean }): Promise<IPluginManifest> {
+  private async place(sourceDir: string, options: { keepSource: boolean; expected?: { slug: string; version: string } }): Promise<IPluginManifest> {
     const contentDir = this.findManifestDir(sourceDir);
     if (!contentDir) {
       throw new Error('Invalid plugin: manifest.json not found anywhere in the package.');
@@ -151,6 +157,7 @@ export class PluginArchiveInstallerService {
 
     const manifestContent = fs.readFileSync(path.join(contentDir, 'manifest.json'), 'utf8');
     const manifest: IPluginManifest = JSON.parse(manifestContent);
+    if (options.expected) MarketplaceOfferMatch.assert('plugin', options.expected, manifest);
     PluginPackageValidator.validateInstalledPackage(contentDir, manifest);
     const targetDir = path.join(this.pluginsRoot, manifest.slug);
 

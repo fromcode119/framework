@@ -114,16 +114,19 @@ export class MarketplacePluginCard extends PureReactor {
               <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
               {AdminI18n.t('plugins.detail.marketplaceVersion', { version: plugin.version })}
             </div>
+            {/* The catalogue's own author, or no line at all — never a stand-in endorsement. */}
+            {plugin.author && (<>
             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
             <div className="flex items-center gap-1.5 min-w-0">
               <FrameworkIcons.User size={12} className="text-indigo-500/70" />
               <span className="truncate flex items-center gap-1">
-                {plugin.author || AdminI18n.t('plugins.list.officialDeveloper')}
+                {plugin.author}
                 {isVerified && (
                   <FrameworkIcons.Check size={10} className="text-emerald-500" strokeWidth={3} />
                 )}
               </span>
             </div>
+            </>)}
             {isTrending && (
               <>
                 <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />

@@ -1,3 +1,4 @@
+import { MarketplaceArtifactDigest } from '@core/marketplace/marketplace-artifact-digest';
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
@@ -144,13 +145,14 @@ export class MarketplaceInstaller {
       const fileStream = fs.createWriteStream(tempZipPath);
       // @ts-ignore - native fetch body is not exactly same as node streams but pipeline handles it in Node 18+
       await pipeline(response.body, fileStream);
+      MarketplaceArtifactDigest.assertMatches(fs.readFileSync(tempZipPath), plugin.artifactSha256, `plugin "${slug}"`);
 
       progressReporter?.({
         phase: 'extracting-package',
         message: `Extracting "${slug}" package...`,
         pluginSlug: slug,
       });
-      const manifest = await this.discovery.installFromZip(tempZipPath);
+      const manifest = await this.discovery.installFromZip(tempZipPath, { slug, version: plugin.version });
       this.manifestCache.set(slug, manifest);
       this.logger.info(`Successfully installed plugin: ${slug} (v${manifest.version})`);
       return manifest;

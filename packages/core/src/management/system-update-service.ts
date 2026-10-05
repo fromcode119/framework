@@ -91,6 +91,7 @@ export class SystemUpdateService {
           latest: marketplaceData.core.version,
           hasUpdate: semver.gt(marketplaceData.core.version, currentVersion),
           downloadUrl: marketplaceData.core.downloadUrl,
+          artifactSha256: marketplaceData.core.artifactSha256,
           lastUpdated: marketplaceData.core.lastUpdated,
           canApplyInPlace: !DeploymentKind.isImage,
         };
@@ -123,6 +124,7 @@ export class SystemUpdateService {
       latest,
       hasUpdate: semver.valid(latest) ? semver.gt(latest, currentVersion) : false,
       downloadUrl: '',
+      artifactSha256: '',
       lastUpdated: '',
       source: await FrameworkReleaseSource.repository(),
       canApplyInPlace: !DeploymentKind.isImage,
@@ -165,7 +167,7 @@ export class SystemUpdateService {
     const tempDir = this.createTemporaryUpdateDirectory(rootDir);
 
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir);
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `core v${status.latest}`, sha256: status.artifactSha256 });
       return await this.applyPreparedUpdate(tempDir, rootDir, status.latest);
     } catch (err: any) {
       this.logger.error(`Update failed: ${err.message}`);

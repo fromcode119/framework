@@ -194,7 +194,7 @@ export class PluginController extends BaseController {
   async marketplace(req: Request, res: Response) {
     try {
       const plugins = await this.manager.marketplace.fetchCatalog();
-      res.json({ plugins });
+      res.json({ plugins, source: await this.manager.marketplace.source() });
     } catch (err: any) {
       this.logger.error(`Marketplace error: ${err.message}`);
       res.status(503).json({

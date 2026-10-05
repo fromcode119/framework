@@ -1,5 +1,4 @@
 export class MarketplaceClientConstants {
-  static readonly DEFAULT_MARKETPLACE_URL = 'https://marketplace.fromcode.com';
   static readonly DEFAULT_FETCH_TIMEOUT_MS = 3000;
 
   static get MARKETPLACE_ROUTE_PATH(): string {
@@ -13,26 +12,11 @@ export class MarketplaceClientConstants {
     return `${MarketplaceClientConstants.readApiRootPath()}/${MarketplaceClientConstants.readApiVersion()}${MarketplaceClientConstants.MARKETPLACE_ROUTE_PATH}`;
   }
 
-  static get SUBMIT_PATH(): string {
-    return MarketplaceClientConstants.readPathFromEnv(
-      ['NEXT_PUBLIC_MARKETPLACE_SUBMIT_PATH', 'MARKETPLACE_SUBMIT_PATH'],
-      '/submit',
-    );
-  }
-
   static get CATALOG_FILENAME(): string {
     return MarketplaceClientConstants.readValueFromEnv(
       ['NEXT_PUBLIC_MARKETPLACE_CATALOG_FILENAME', 'MARKETPLACE_CATALOG_FILENAME'],
       'marketplace.json',
     );
-  }
-
-  static get DEFAULT_MARKETPLACE_API_URL(): string {
-    return `${MarketplaceClientConstants.DEFAULT_MARKETPLACE_URL}${MarketplaceClientConstants.API_BASE_PATH}`;
-  }
-
-  static get DEFAULT_MARKETPLACE_CATALOG_URL(): string {
-    return `${MarketplaceClientConstants.DEFAULT_MARKETPLACE_API_URL}/${MarketplaceClientConstants.CATALOG_FILENAME}`;
   }
 
   private static readValueFromEnv(names: string[], fallback: string): string {

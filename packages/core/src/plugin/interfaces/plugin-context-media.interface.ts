@@ -10,4 +10,8 @@ export interface IPluginContextMedia {
   findByIds(ids: any[]): Promise<Map<string, Record<string, any>>>;
   list(options?: { limit?: number; offset?: number }): Promise<Array<Record<string, any>>>;
   count(): Promise<number>;
+  /** Where the stored file is served from, or null when it resolves to nothing here or is private. */
+  publicUrl(id: any): Promise<string | null>;
+  /** SHA-256 (hex) of the stored file's bytes, or null when the id resolves to nothing in this site. */
+  digest(id: any): Promise<string | null>;
 }

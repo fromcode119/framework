@@ -85,15 +85,17 @@ export class MarketplaceDetailHeader extends PureReactor {
               </p>
 
               <div className="flex flex-wrap items-center gap-6 mt-4">
+                 {plugin.author && (
                  <div className="flex items-center gap-2">
                     <div className={`p-2 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>
                        <FrameworkIcons.User size={16} />
                     </div>
                     <div>
                        <div className="text-[10px] font-semibold uppercase tracking-wide text-slate-500">{AdminI18n.t('plugins.list.developer')}</div>
-                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author || AdminI18n.t('plugins.list.anonymous')}</div>
+                       <div className={`text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{plugin.author}</div>
                     </div>
                  </div>
+                 )}
                  {plugin.homepage && (
                    <div className="flex items-center gap-2">
                       <div className={`p-2 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-500'}`}>

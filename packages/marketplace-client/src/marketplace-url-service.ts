@@ -3,8 +3,9 @@ import { MarketplaceClientConstants } from '@marketplace-client/constants/market
 export class MarketplaceUrlService {
   static resolveCatalogUrl(url?: string): string {
     const raw = String(url || '').trim();
+    // Blank stays blank: there is no built-in marketplace, only the one an operator names.
     if (!raw) {
-      return MarketplaceClientConstants.DEFAULT_MARKETPLACE_CATALOG_URL;
+      return '';
     }
 
     if (!raw.startsWith('http')) {
@@ -22,7 +23,7 @@ export class MarketplaceUrlService {
   static resolveApiBaseUrl(url?: string): string {
     const raw = String(url || '').trim();
     if (!raw) {
-      return MarketplaceClientConstants.DEFAULT_MARKETPLACE_API_URL;
+      return '';
     }
 
     if (!raw.startsWith('http')) {

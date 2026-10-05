@@ -58,9 +58,11 @@ export class InstalledPluginCard extends PureReactor {
     const isolationTitle = isolated
       ? AdminI18n.t('plugins.list.runsInItsOwnProcess', { value: (plugin as any).isolationPid ? ` (pid ${(plugin as any).isolationPid})` : '' })
       : String((plugin as any).isolationReason || AdminI18n.t('plugins.process.inApi'));
+    // What the manifest declares, and nothing when it declares nothing: a missing author is not an
+    // endorsement, and "Official" printed beside a third-party package would read as one.
     const author = typeof plugin.manifest.author === 'object'
       ? (plugin.manifest.author as { name?: string }).name
-      : (plugin.manifest.author || AdminI18n.t('plugins.list.official'));
+      : plugin.manifest.author;
 
     return (
       <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
@@ -102,7 +104,7 @@ export class InstalledPluginCard extends PureReactor {
         <div className="flex items-center gap-5 shrink-0">
           <div className={`hidden lg:flex items-center gap-3 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
             <span className="tabular-nums">v{plugin.manifest.version}</span>
-            <span className="hidden xl:inline truncate max-w-[120px]">{author}</span>
+            {author && <span className="hidden xl:inline truncate max-w-[120px]">{author}</span>}
           </div>
 
           <div className="flex items-center gap-2.5">

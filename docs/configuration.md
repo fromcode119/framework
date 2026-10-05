@@ -85,4 +85,4 @@ store fit together.
 | `RATE_LIMIT_MAX` | `100` | Max requests per window |
 | `PLUGINS_DIR` | `./plugins` | Path to plugins directory |
 | `THEMES_DIR` | `./themes` | Path to themes directory |
-| `MARKETPLACE_URL` | `https://marketplace.fromcode.com` | Plugin marketplace site URL |
+| `MARKETPLACE_URL` | _(empty: no marketplace)_ | Marketplace catalogue URL. Settings → General → Marketplace URL overrides it per platform or site. |

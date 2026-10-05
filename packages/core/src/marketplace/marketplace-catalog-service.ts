@@ -57,19 +57,27 @@ export class MarketplaceCatalogService {
     // same name without colliding, and the policy already lets a site read the platform's.
     const raw = await SiteMarketplaceUrl.current(process.env.MARKETPLACE_URL);
     const normalized = raw.toLowerCase();
-    if (normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
+    // Blank is "no marketplace", not a built-in host: an address nobody configured would browse a
+    // catalogue the operator never chose and cannot see named anywhere.
+    if (!raw || normalized === 'undefined' || normalized === 'null' || normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
       this.logger.info(`Marketplace disabled for ${scope ? `site "${scope}"` : 'the platform'}.`);
       const off = { client: null, url: null };
       this.resolvedByScope.set(scope, off);
       return off;
     }
 
-    const url = MarketplaceUrlService.resolveCatalogUrl(
-      !raw || normalized === 'undefined' || normalized === 'null' ? undefined : raw,
-    );
+    const url = MarketplaceUrlService.resolveCatalogUrl(raw);
     const resolved = { client: new MarketplaceClient(url), url };
     this.resolvedByScope.set(scope, resolved);
     return resolved;
+  }
+
+  /**
+   * The catalogue address in effect for the current scope, or null when no marketplace is set — so the
+   * admin can say "none is set" instead of showing an empty list that reads like an empty catalogue.
+   */
+  public async source(): Promise<string | null> {
+    return (await this.ensureClient()).url;
   }
 
   /**
