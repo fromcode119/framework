@@ -15,10 +15,24 @@ export class ApiOutcomeCounter {
   private static total = 0;
   private static errors = 0;
   private static failing = new Map<string, number>();
+  private static refusals = new WeakSet<object>();
 
-  static record(statusCode: number, method = '', url = ''): void {
+  /**
+   * Marks a response whose 5xx status IS the answer — a private site, maintenance, a suspended tenant —
+   * so it counts as answered rather than failed. A crawler on a private site would otherwise read as
+   * the api failing half its requests.
+   */
+  static refused(res: object): void {
+    ApiOutcomeCounter.refusals.add(res);
+  }
+
+  static isRefusal(res: object): boolean {
+    return ApiOutcomeCounter.refusals.has(res);
+  }
+
+  static record(statusCode: number, method = '', url = '', refused = false): void {
     ApiOutcomeCounter.total += 1;
-    if (statusCode < 500) return;
+    if (statusCode < 500 || refused) return;
     ApiOutcomeCounter.errors += 1;
     const route = ApiOutcomeCounter.route(method, url);
     if (!route) return;

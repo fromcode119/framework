@@ -20,4 +20,15 @@ describe('ApiOutcomeCounter', () => {
     expect(first.failing.map((f) => f.route)).toEqual(['GET /r7', 'GET /r6', 'GET /r5', 'GET /r4', 'GET /r3']);
     expect(ApiOutcomeCounter.drain()).toEqual({ total: 0, errors: 0, failing: [] });
   });
+
+  it('counts a deliberate refusal as answered, not failed', () => {
+    const privateSite = {};
+    ApiOutcomeCounter.refused(privateSite);
+    ApiOutcomeCounter.record(503, 'GET', '/api/v1/system/resolve', ApiOutcomeCounter.isRefusal(privateSite));
+    ApiOutcomeCounter.record(503, 'GET', '/api/v1/system/resolve', ApiOutcomeCounter.isRefusal({}));
+    const window = ApiOutcomeCounter.drain();
+    expect(window.total).toBe(2);
+    expect(window.errors).toBe(1);
+    expect(window.failing).toEqual([{ route: 'GET /api/v1/system/resolve', count: 1 }]);
+  });
 });
