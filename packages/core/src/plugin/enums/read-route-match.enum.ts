@@ -6,6 +6,12 @@ export class ReadRouteMatch extends Enum {
   static readonly EQUALS = new ReadRouteMatch('equals');
   /** The field — a JSON array — holds the value. */
   static readonly CONTAINS = new ReadRouteMatch('contains');
+  /** The field is a number at least the value. */
+  static readonly MINIMUM = new ReadRouteMatch('min');
+  /** The field is a number at most the value. */
+  static readonly MAXIMUM = new ReadRouteMatch('max');
+  /** A switch: when the value reads as true the field must be true; any other value asks nothing. */
+  static readonly FLAG = new ReadRouteMatch('flag');
 
   private constructor(value: string) {
     super(value);

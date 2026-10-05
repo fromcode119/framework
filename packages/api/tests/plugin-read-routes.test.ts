@@ -222,6 +222,59 @@ describe('PluginReadRoutes', () => {
     expect(fixed.or[0]).toEqual({ eq: ['kind', 'shop'] });
   });
 
+  describe('range and switch filters, and records that are not fresh', () => {
+    const db: any = { eq: vi.fn((c: unknown, v: unknown) => ({ eq: [c, v] })), and: vi.fn((...a: unknown[]) => ({ and: a })), or: vi.fn((...a: unknown[]) => ({ or: a })) };
+    const ranged: any = { ...route, freshUntil: 'validUntil', filters: {
+      minPrice: { field: 'cardPrice', match: 'min', accepts: '^\\d+(\\.\\d+)?$' },
+      maxPrice: { field: 'cardPrice', match: 'max', accepts: '^\\d+(\\.\\d+)?$' },
+      inStock: { field: 'cardOrderable', match: 'flag' },
+    } };
+    const table = { cardPrice: 'card_price', cardOrderable: 'card_orderable', card: 'card', validUntil: 'valid_until' };
+    const flat = (clause: any): string => JSON.stringify(clause);
+
+    it('applies a minimum, a maximum and a switch that is on', () => {
+      const clause: any = PluginReadRoutes.filterClause(db, table, ranged, { minPrice: '10', maxPrice: '25.5', inStock: 'true' });
+      expect(flat(clause.or[0])).toContain('card_price');
+      expect(db.eq).toHaveBeenCalledWith('card_orderable', true);
+      expect(flat(clause.or[0].and)).toContain('10');
+      expect(flat(clause.or[0].and)).toContain('25.5');
+    });
+
+    it('asks nothing of a switch that is off, as the plugin\'s own list does', () => {
+      db.eq.mockClear();
+      expect(PluginReadRoutes.filterClause(db, table, ranged, { inStock: 'false' })).toBeUndefined();
+      expect(PluginReadRoutes.filterClause(db, table, ranged, { inStock: '0' })).toBeUndefined();
+      expect(db.eq).not.toHaveBeenCalled();
+    });
+
+    it('lets a value that is not a number go to the plugin (the read fails, is logged, the plugin answers)', () => {
+      expect(() => PluginReadRoutes.filterClause(db, table, ranged, { minPrice: 'cheap' })).toThrow(/not a number/);
+    });
+
+    it('declares which values it answers: a negative or a word is left to the plugin', () => {
+      for (const minPrice of ['-5', 'cheap', '1e3', '']) {
+        if (minPrice === '') { expect(PluginReadRoutes.acceptsValues(ranged, { minPrice })).toBe(true); continue; }
+        expect(PluginReadRoutes.acceptsValues(ranged, { minPrice })).toBe(false);
+      }
+      expect(PluginReadRoutes.acceptsValues(ranged, { minPrice: '12.50', maxPrice: '99' })).toBe(true);
+    });
+
+    it('counts a record past its moment, or with none, as a candidate for every request', () => {
+      const clause: any = PluginReadRoutes.filterClause(db, table, ranged, { inStock: 'true' });
+      const candidates = flat(clause.or[1]);
+      expect(candidates).toContain('valid_until');
+      expect(candidates).toContain('card');
+      expect(flat(PluginReadRoutes.filterClause(db, table, { ...ranged, freshUntil: undefined }, { inStock: 'true' }))).not.toContain('valid_until');
+    });
+
+    it('puts records that are not fresh first when sorting on a derived field', () => {
+      const dbs: any = { desc: vi.fn((c: unknown) => ({ desc: c })) };
+      const derived = PluginReadRoutes.order(dbs, { ...table, id: 'id', price: 'price' }, { ...ranged, sorts: { price: { field: 'price' } } }, '-price', new Set(['price']));
+      expect(derived).toHaveLength(3);
+      expect(flat(derived[0])).toContain('valid_until');
+    });
+  });
+
   it('a field the collection does not have fails the read, so the plugin answers — never an empty list', async () => {
     const db: any = { eq: vi.fn(), and: vi.fn(), or: vi.fn(), desc: vi.fn() };
     expect(() => PluginReadRoutes.filterClause(db, { card: 'card' }, route as any, { tag: 'new' })).toThrow(/tagKeys/);

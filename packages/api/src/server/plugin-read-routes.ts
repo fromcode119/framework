@@ -143,16 +143,29 @@ export class PluginReadRoutes {
     const requested = Object.entries(route.filters || {})
       .map(([param, filter]) => [CoercionUtils.toString(query[param]).trim(), filter] as const)
       .filter(([value]) => value !== '')
-      .map(([value, filter]) => {
-        const column = PluginReadRoutes.column(table, route, filter.field);
-        return ReadRouteMatch.resolve(filter.match) === ReadRouteMatch.CONTAINS
-          ? Sql.query`${column} @> ${JSON.stringify([value])}::jsonb`
-          : db.eq(column, value);
-      });
+      .map(([value, filter]) => PluginReadRoutes.condition(db, PluginReadRoutes.column(table, route, filter.field), ReadRouteMatch.resolve(filter.match), value))
+      .filter((condition) => condition !== null);
     const chunks = [...fixed, ...requested];
     if (chunks.length === 0) return undefined;
-    const unprepared = Sql.query`${PluginReadRoutes.column(table, route, route.document)} IS NULL`;
+    // A record is a candidate whatever the request asks when it is not prepared, or when its document has
+    // outlived the moment it was exact until: the keys it is filtered by may be as stale as the document.
+    const document = PluginReadRoutes.column(table, route, route.document);
+    const unprepared = route.freshUntil
+      ? Sql.query`(${document} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} <= now())`
+      : Sql.query`${document} IS NULL`;
     return db.or(chunks.length === 1 ? chunks[0] : db.and(...chunks), unprepared);
+  }
+
+  /** One declared filter as a condition, or `null` when the value asks nothing (a switch that is off). */
+  private static condition(db: any, column: unknown, match: ReadRouteMatch, value: string): unknown {
+    if (match === ReadRouteMatch.CONTAINS) return Sql.query`${column} @> ${JSON.stringify([value])}::jsonb`;
+    if (match === ReadRouteMatch.FLAG) return CoercionUtils.toBoolean(value, false) ? db.eq(column, true) : null;
+    if (match === ReadRouteMatch.MINIMUM || match === ReadRouteMatch.MAXIMUM) {
+      const bound = Number(value);
+      if (!Number.isFinite(bound)) throw new Error(`Read route filter value "${value}" is not a number.`);
+      return match === ReadRouteMatch.MINIMUM ? Sql.query`${column} >= ${bound}` : Sql.query`${column} <= ${bound}`;
+    }
+    return db.eq(column, value);
   }
 
   /**
@@ -171,7 +184,12 @@ export class PluginReadRoutes {
     const column = PluginReadRoutes.column(table, route, field);
     const order = [!parsed || parsed.descending ? db.desc(column) : Sql.query`${column} asc`];
     if (field !== 'id') order.push(db.desc(PluginReadRoutes.column(table, route, 'id')));
-    if (derived.has(field)) order.unshift(Sql.query`(${PluginReadRoutes.column(table, route, route.document)} IS NULL) DESC`);
+    if (derived.has(field)) {
+      const document = PluginReadRoutes.column(table, route, route.document);
+      order.unshift(route.freshUntil
+        ? Sql.query`(${document} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} <= now()) DESC`
+        : Sql.query`(${document} IS NULL) DESC`);
+    }
     return order;
   }
 
