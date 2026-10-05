@@ -6,6 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.328] - 2026-10-05
+
+### Added
+
+- **sources**: publish each build to a site; fix dropdowns opening behind dialogs ([#755](https://github.com/fromcode119/framework/pull/755))
+
+### Fixed
+
+- **admin**: dropdown lists open above dialogs ([#756](https://github.com/fromcode119/framework/pull/756))
+- **marketplace**: verify downloads, name no default host, give plugins media URLs and digests ([#751](https://github.com/fromcode119/framework/pull/751))
+- **core**: an isolated plugin's fetch keeps its timeout signal in the plugin ([#752](https://github.com/fromcode119/framework/pull/752))
+- **core**: a plugin held for approval does not run onInit when its process is replaced ([#754](https://github.com/fromcode119/framework/pull/754))
+- **core**: plugin updates — table ownership by prefix, failed migrations restore files, retired collections are forgotten ([#746](https://github.com/fromcode119/framework/pull/746))
+- **sources**: answer Sources hooks at platform scope only ([#750](https://github.com/fromcode119/framework/pull/750))
+
 ## [0.2.327] - 2026-10-04
 
 ### Added
