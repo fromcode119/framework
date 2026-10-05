@@ -72,7 +72,11 @@ export class Checkbox extends PureReactor {
         onClick={this.handleClick}
         // Generous target: the box is 16px, which is under every touch guideline. The padding is
         // negative-margined away so the extra hit area costs no layout.
-        className={`inline-flex items-center gap-2 p-1.5 -m-1.5 ${this.disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${this.className || ''}`}
+        //
+        // `align-middle` because this is an inline-level box. Its baseline is the first item's, and the
+        // box is EMPTY until it is ticked: the tick's svg gave it a new baseline, so the whole control
+        // dropped about 3px the moment it was clicked. Middle alignment does not look at the baseline.
+        className={`inline-flex items-center align-middle gap-2 p-1.5 -m-1.5 ${this.disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${this.className || ''}`}
       >
         <span className={this.boxClass}>{this.mark}</span>
         {this.label ? <span className="text-[11px] select-none">{this.label}</span> : null}

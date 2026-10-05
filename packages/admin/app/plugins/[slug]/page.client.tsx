@@ -55,9 +55,10 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         onRefreshLogs={model.fetchLogs}
         onSandboxSettingsChange={model.setSandboxSettings}
         onSaveSandbox={model.handleSaveSandbox}
-        onSettingsStateChange={(dirty: boolean, saving: boolean) => {
+        onSettingsStateChange={(dirty: boolean, saving: boolean, hasFields: boolean) => {
           model.setSettingsDirty(dirty);
           model.setSettingsSaving(saving);
+          model.setSettingsHasFields(hasFields);
         }}
         onTabChange={model.handleTabChange}
         onToggle={model.handleToggle}
@@ -67,6 +68,7 @@ export class PluginDetailPage extends Bridge<IPluginDetailPageValues> {
         settingsDirty={model.settingsDirty}
         settingsFormRef={model.settingsFormRef}
         settingsSaving={model.settingsSaving}
+        settingsHasFields={model.settingsHasFields}
         showDefinition={model.showDefinition}
         showDeleteConfirm={model.showDeleteConfirm}
         siteScope={model.siteScope}

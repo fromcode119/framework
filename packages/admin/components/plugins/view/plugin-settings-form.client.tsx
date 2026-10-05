@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
 import { PluginSettingsFormActions } from '@/components/plugins/view/plugin-settings-form-actions.client';
+import { PluginSettingsEmpty } from '@/components/plugins/view/plugin-settings-empty.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -16,11 +17,11 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class PluginSettingsForm extends PluginSettingsFormActions implements IPluginSettingsFormHandle {
   componentDidMount(): void {
     this.loadSettings();
-    this.onStateChange?.(this.isDirty, this.saving);
+    this.onStateChange?.(this.isDirty, this.saving, this.hasFields);
   }
 
-  componentDidUpdate(prev: { pluginSlug: string }): void {
-    if (prev.pluginSlug !== this.pluginSlug) {
+  componentDidUpdate(prev: { pluginSlug: string; waiting?: boolean }): void {
+    if (prev.pluginSlug !== this.pluginSlug || Boolean(prev.waiting) !== Boolean(this.waiting)) {
       this.loadSettings();
     }
   }
@@ -58,16 +59,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     }
 
     if (!schema || !schema.fields || schema.fields.length === 0) {
-      return (
-        <div className={`p-8 rounded-xl border text-center ${
-          theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-50 border-slate-200'
-        }`}>
-          <FrameworkIcons.Settings size={48} className="mx-auto mb-4 text-slate-400" />
-          <p className="text-slate-500 font-bold">
-            {AdminI18n.t('plugins.list.thisPluginHasNoConfigurable')}
-          </p>
-        </div>
-      );
+      return <PluginSettingsEmpty waiting={Boolean(this.waiting)} />;
     }
 
     const visibleFields = this.visibleFields;

@@ -1,4 +1,4 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { PluginState, ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactNode } from 'react';
 
@@ -47,7 +47,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare onRefreshLogs: () => void;
   @prop declare onSaveSandbox: () => void;
   @prop declare onSandboxSettingsChange: (value: IPluginSandboxSettings) => void;
-  @prop declare onSettingsStateChange: (dirty: boolean, saving: boolean) => void;
+  @prop declare onSettingsStateChange: (dirty: boolean, saving: boolean, hasFields: boolean) => void;
   @prop declare onTabChange: (tabId: PluginDetailTab, group?: string, section?: string) => void;
   @prop declare onToggle: () => void;
   @prop declare onUpdate: () => void;
@@ -58,6 +58,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare settingsDirty: boolean;
   @prop declare settingsFormRef: Ref<PluginSettingsForm>;
   @prop declare settingsSaving: boolean;
+  @prop declare settingsHasFields: boolean;
   @prop declare showDefinition: boolean;
   @prop declare showDeleteConfirm: boolean;
   @prop declare slug: string;
@@ -92,7 +93,7 @@ export class PluginDetailView extends AdminComponent {
     return (
       <div className="w-full space-y-5 pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
-        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
+        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} settingsSaving={this.settingsSaving} theme={theme} />
         {plugin.error ? (
           <div className={`rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
             <div className="flex items-start gap-4">
@@ -125,7 +126,7 @@ export class PluginDetailView extends AdminComponent {
         <section className={`overflow-hidden rounded-2xl border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
           <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} siteScope={this.siteScope} theme={theme} />
           {activeTab === PluginDetailTab.SETTINGS ? (
-            <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" onStateChange={this.onSettingsStateChange}
+            <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange}
               group={this.settingsGroup || this.settingsGroups[0]?.id || ''} section={this.settingsSection}
               onSectionChange={(section: string) => this.onTabChange(PluginDetailTab.SETTINGS, this.settingsGroup || this.settingsGroups[0]?.id || '', section)} />
           ) : (
@@ -148,7 +149,7 @@ export class PluginDetailView extends AdminComponent {
           )}
         </section>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title={AdminI18n.t('plugins.detail.confirmUninstallation')} description={AdminI18n.t('plugins.detail.areYouSureYouWant', { name: plugin.manifest.name })} confirmLabel={AdminI18n.t('plugins.detail.uninstallPlugin')} />
-        <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} theme={theme} />
+        <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} />
       </div>
     );
   }

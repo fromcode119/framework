@@ -31,6 +31,8 @@ export class PluginDetailHeader extends PureReactor {
   @prop declare plugin: ILoadedPlugin;
   @prop declare settingsDirty: boolean;
   @prop declare settingsFormRef: Ref<IPluginSettingsFormHandle | null>;
+  /** False for a plugin with nothing to set (or one that is not running yet): no Save, Export, Import or Reset. */
+  @prop declare settingsHasFields: boolean;
   @prop declare settingsSaving: boolean;
   @prop declare theme: ThemeMode;
 
@@ -51,7 +53,7 @@ export class PluginDetailHeader extends PureReactor {
   private get menuItems(): IDropdownItem[] {
     const items: IDropdownItem[] = [];
     if (this.platformActions) items.push({ label: AdminI18n.t('plugins.detail.viewDefinition'), icon: <FrameworkIcons.Code size={14} />, onClick: this.onOpenDefinition });
-    if (this.activeTab === PluginDetailTab.SETTINGS) {
+    if (this.activeTab === PluginDetailTab.SETTINGS && this.settingsHasFields) {
       items.push({ label: AdminI18n.t('common.export'), icon: <FrameworkIcons.Download size={14} />, onClick: () => this.settingsFormRef.current?.exportSettings() });
       items.push({ label: AdminI18n.t('common.import'), icon: <FrameworkIcons.Upload size={14} />, onClick: () => this.settingsFormRef.current?.importSettings() });
       items.push({ label: AdminI18n.t('plugins.detail.resetSettingsToDefaults'), icon: <FrameworkIcons.Refresh size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => this.settingsFormRef.current?.resetSettings() });
@@ -108,7 +110,7 @@ export class PluginDetailHeader extends PureReactor {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {activeTab === PluginDetailTab.SETTINGS ? this.settingsActions() : null}
+            {activeTab === PluginDetailTab.SETTINGS && this.settingsHasFields ? this.settingsActions() : null}
             {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
             {items.length ? (
               <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={

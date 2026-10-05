@@ -129,8 +129,9 @@ describe('./plugin-settings-form', () => {
     fireEvent.change(input, { target: { value: 'New Name' } });
     
     expect(input.value).toBe('New Name');
-    // The header shows "Unsaved changes" and enables Save from what the form reports.
-    expect(onStateChange).toHaveBeenLastCalledWith(true, false);
+    // The header shows "Unsaved changes" and enables Save from what the form reports, and offers Save,
+    // Export and Reset only when the plugin has fields (this one does).
+    expect(onStateChange).toHaveBeenLastCalledWith(true, false, true);
   });
 
   it('calls AdminApi.put when saving', async () => {
