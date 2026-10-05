@@ -68,7 +68,9 @@ export class SelectMenu extends PureReactor {
                 ...(coords.top !== undefined ? { top: coords.top } : { bottom: coords.bottom }),
                 left: coords.left,
                 width: coords.width,
-                zIndex: 9999
+                // Above the modal layer (dialogs sit at 2147483000): at 9999 a select inside a dialog — the
+                // Sources form's Provider, Branch and Type — opened its list BEHIND the dialog, unpickable.
+                zIndex: 2147483600
               }}
               className={`max-h-[300px] flex flex-col rounded-lg border shadow-2xl animate-in zoom-in-95 slide-in-from-top-2 duration-300 overflow-hidden ${
                 theme === ThemeMode.DARK
