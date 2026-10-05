@@ -1,5 +1,6 @@
 import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-kind.enum';
 import { RequestContextUtils } from '@core/context/request-context';
+import { PluginPublicApiNames } from '@core/plugin/host/plugin-public-api-names';
 
 /**
  * The object another plugin reaches as `context.plugins.namespace(ns).<slug>` when `<slug>` runs
@@ -14,6 +15,7 @@ export class PluginHostPublicApi {
     );
     return new Proxy({}, {
       get(_target, prop) {
+        if (prop === PluginPublicApiNames.KEY) return host.describeResult?.publicApiKeys ?? [];
         if (typeof prop !== 'string') return undefined;
         if (!host.describeResult?.publicApiKeys.includes(prop)) return undefined;
         return method(prop);
