@@ -1,4 +1,4 @@
-import { Logger, RequestContextUtils, TenantRegistryService, TenantResolverService } from '@fromcode119/core';
+import { ApiOutcomeCounter, Logger, RequestContextUtils, TenantRegistryService, TenantResolverService } from '@fromcode119/core';
 import { McpWirePaths } from '@fromcode119/mcp';
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
 import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
@@ -36,6 +36,7 @@ export class ApiKeyTenantGate {
           return;
         }
         if (!tenant.isActive) {
+          ApiOutcomeCounter.refused(res);
           res.status(503).json({ error: 'tenant_suspended' });
           return;
         }

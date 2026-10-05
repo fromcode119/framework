@@ -44,7 +44,7 @@ export class ServerMiddlewareSetup {
     this.app.disable('x-powered-by');
     this.app.use(new SecurityHeadersMiddleware().middleware());
     // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
-    this.app.use((req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode, req.method, req.originalUrl)); next(); });
+    this.app.use((req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode, req.method, req.originalUrl, ApiOutcomeCounter.isRefusal(res))); next(); });
     // Requests queued for a database connection look idle from everywhere else (DatabasePoolWatch).
     new DatabasePoolWatch().start();
 
@@ -103,6 +103,7 @@ export class ServerMiddlewareSetup {
       // the configured allowlist. Reflecting `req.headers.origin` here with
       // credentials would bypass that allowlist and turn maintenance responses into
       // a credential-leak vector.
+      ApiOutcomeCounter.refused(res);
       res.status(503).json({ error: 'Service Unavailable', message: 'System is currently undergoing maintenance. Please try again later.' });
     });
 
@@ -208,6 +209,7 @@ export class ServerMiddlewareSetup {
           return;
         }
         if (!tenant.isActive) {
+          ApiOutcomeCounter.refused(res);
           res.status(503).json({ error: 'tenant_suspended', host });
           return;
         }
@@ -268,6 +270,7 @@ export class ServerMiddlewareSetup {
           return;
         }
         if (!tenant.isActive) {
+          ApiOutcomeCounter.refused(res);
           res.status(503).json({ error: 'tenant_suspended' });
           return;
         }

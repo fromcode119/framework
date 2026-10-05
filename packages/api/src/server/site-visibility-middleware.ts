@@ -1,4 +1,4 @@
-import { Logger } from '@fromcode119/core';
+import { ApiOutcomeCounter, Logger } from '@fromcode119/core';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
 
 /**
@@ -52,6 +52,7 @@ export class SiteVisibilityMiddleware {
    * address is wrong. `no-store` because this answer changes the moment somebody presses Publish.
    */
   private static refuse(req: any, res: any): void {
+    ApiOutcomeCounter.refused(res);
     res.status(503)
       .set('Retry-After', '3600')
       .set('Cache-Control', 'no-store')
