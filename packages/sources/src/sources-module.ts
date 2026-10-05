@@ -64,6 +64,7 @@ export class SourcesModule {
       (event) => { void input.hooks.emit(SourcesEvents.PACKAGE_BUILT, event); },
       input.installer,
       input.buildsUnverifiedCommits,
+      input.sitePublisher,
     );
 
     SourcesModule.registerHooks(input, buildService);

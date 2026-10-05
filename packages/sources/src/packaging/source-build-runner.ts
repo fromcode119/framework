@@ -10,6 +10,7 @@ import { SourceProviders } from '@sources/providers/source-providers';
 import type { IPackageBuiltEvent } from '@sources/packaging/interfaces/package-built-event.interface';
 import type { ISourceProvider } from '@sources/providers/interfaces/source-provider.interface';
 import { PackageBuilder } from '@sources/packaging/package-builder';
+import type { SourcePackagePublication } from '@sources/packaging/source-package-publication';
 
 /**
  * Runs ONE build: fetch from the provider, pack it, record what happened, and announce it.
@@ -32,6 +33,7 @@ export class SourceBuildRunner {
     private readonly resolveSourceDirectory: (...args: any[]) => any,
     private readonly resolvePackageArtifact: (...args: any[]) => any,
     private readonly buildsUnverifiedCommits: () => Promise<boolean> = async () => false,
+    private readonly publication?: SourcePackagePublication,
   ) {}
 
   /**
@@ -138,6 +140,14 @@ export class SourceBuildRunner {
           await this.resolvePackageArtifact(identity),
           { ...entry, type, version: pkg.version },
         );
+      }
+
+      // The source's "Publish builds to site": the package goes to that site's media library and its
+      // extensions are told. The outcome is recorded either way, so the screen can say what happened.
+      const publishToSite = String(entry.publishToSite ?? '').trim();
+      if (publishToSite && this.publication) {
+        const outcome = await this.publication.publish(BuildSourceIdentity.parse(type, slug), publishToSite, pkg);
+        await this.upsertBuildRecord(slug, type, gitUrl, branch, { last_publish: outcome });
       }
 
       return { slug, type, success: true, version: pkg.version, fileName: pkg.fileName, changelog: changelog.join('\n') };

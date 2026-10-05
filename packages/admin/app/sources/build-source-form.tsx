@@ -26,6 +26,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
    */
   componentDidMount(): void {
     void this.loadProviders();
+    void this.loadSites();
     if (this.state.gitUrl.trim()) void this.loadBranches();
   }
 
@@ -116,6 +117,19 @@ export class BuildSourceForm extends BuildSourceFormRemote {
             </span>
           </div>
 
+          {/* Its own decision, not a fourth switch: where a build is handed is a destination, and the
+              list is the platform's real sites — "Off" is stated, never an empty default. Above the
+              switches, not below them: the last field's list opened under the dialog's edge. */}
+          <div className="md:col-span-2 space-y-1">
+            <Select
+              label={AdminI18n.t('sources.publishToSite')}
+              value={this.state.publishToSite}
+              options={[{ label: AdminI18n.t('sources.publishToSiteOff'), value: '' }, ...this.state.sites]}
+              onChange={(value: string) => this.setState({ publishToSite: value })}
+            />
+            <p className="text-xs text-slate-500">{AdminI18n.t('sources.publishToSiteHelp')}</p>
+          </div>
+
           {/*
             * Three switches for three different acts, none of them implying another. Building
             * produces a package; installing one that is not there yet is additive; REPLACING code
@@ -163,6 +177,7 @@ export class BuildSourceForm extends BuildSourceFormRemote {
               autoBuild: this.state.autoBuild,
               autoUpdate: this.state.autoUpdate,
               installAfterBuild: this.state.installAfterBuild,
+              publishToSite: this.state.publishToSite,
               branch: this.state.branch,
               gitSecret: this.state.gitSecret,
               gitUrl: this.state.gitUrl,

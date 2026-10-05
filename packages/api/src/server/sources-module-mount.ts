@@ -3,6 +3,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { CoreServices, PlatformSettingsService, PluginManager, SecretService, SystemConstants } from '@fromcode119/core';
 import { SourcesModule } from '@fromcode119/sources';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
+import { SitePackagePublisher } from '@api/server/site-package-publisher';
 
 /**
  * Mounting Sources — framework surface, wired like every other framework router.
@@ -63,6 +64,8 @@ export class SourcesModuleMount {
         }),
       },
       scheduler: manager.scheduler,
+      // A source's "Publish builds to site" hands each build to that one site — its media, its hooks.
+      sitePublisher: new SitePackagePublisher(manager),
       // Read per build: the switch on Settings → General reaches the next build, no restart.
       buildsUnverifiedCommits: () => PlatformSettingsService.readFlag(SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS),
     }).router;
