@@ -10,6 +10,7 @@ import { PluginGuestHandlers } from '@core/plugin/host/plugin-guest-handlers';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import { PluginGuestState } from '@core/plugin/host/plugin-guest-state';
+import { PluginPublicApiNames } from '@core/plugin/host/plugin-public-api-names';
 import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest-boot.interface';
 import type { IPluginInvocation } from '@core/plugin/host/interfaces/plugin-invocation.interface';
 import type { PluginContext } from '@core/plugin/plugin-context';
@@ -108,11 +109,19 @@ export class PluginGuest {
     return { protocol: PluginHostProtocol.identity(), described: this.described, registrations: this.registrar.snapshot(), pid: process.pid, enabled: this.enabled };
   }
 
-  /** Function-valued own properties of an object OR class (static methods included). */
+  private static readonly NOT_METHODS = new Set(['length', 'name', 'prototype', 'caller', 'arguments']);
+
+  /**
+   * Function-valued own properties of an object OR class (static methods included). A public-API proxy
+   * of an isolated plugin lists its methods itself (`PluginPublicApiNames.KEY`): every name it
+   * lists is a function, so the answer is the same and costs one read instead of one per name.
+   */
   static functionNames(api: unknown): string[] {
     if (!api || (typeof api !== 'object' && typeof api !== 'function')) return [];
+    const listed = (api as Record<symbol, unknown>)[PluginPublicApiNames.KEY];
+    if (Array.isArray(listed)) return listed.filter((key) => typeof key === 'string' && !PluginGuest.NOT_METHODS.has(key));
     return Object.getOwnPropertyNames(api)
-      .filter((key) => !['length', 'name', 'prototype', 'caller', 'arguments'].includes(key))
+      .filter((key) => !PluginGuest.NOT_METHODS.has(key))
       .filter((key) => typeof (api as Record<string, unknown>)[key] === 'function');
   }
 

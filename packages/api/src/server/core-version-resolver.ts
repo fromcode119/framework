@@ -4,8 +4,10 @@ import * as fs from 'fs';
 /**
  * The framework engine version this process is running.
  *
- * Read FRESH on every call rather than captured at boot, so a core update is reflected without
- * restarting — `/health` is how an operator checks what is actually serving.
+ * Read on every call rather than captured at boot, so a core update is reflected without restarting —
+ * `/health` is how an operator checks what is actually serving. The file is parsed again only when it has
+ * changed (its size, modification or change time), not on every poll: a monitor asks every few seconds,
+ * and re-reading and parsing a manifest each time was most of what the route cost.
  *
  * The framework ROOT package (`@fromcode119/framework`) is the canonical version, and now the ONLY
  * package that carries one: workspace packages dropped theirs, because a number stamped into 26
@@ -18,9 +20,22 @@ export class CoreVersionResolver {
   /** Where the root manifest sits, whether the process was started from the repo or from a package. */
   private static readonly CANDIDATES = ['package.json', '../../package.json'];
 
+  /** What was parsed from each manifest, and the file state it was parsed at. */
+  private static readonly parsed = new Map<string, { stamp: string; manifest: { name?: string; version?: string } | null }>();
+
   private static read(file: string): { name?: string; version?: string } | null {
     try {
-      if (fs.existsSync(file)) return JSON.parse(fs.readFileSync(file, 'utf8'));
+      const stat = fs.statSync(file, { throwIfNoEntry: false });
+      if (!stat) {
+        CoreVersionResolver.parsed.delete(file);
+        return null;
+      }
+      const stamp = `${stat.size}:${stat.mtimeMs}:${stat.ctimeMs}`;
+      const known = CoreVersionResolver.parsed.get(file);
+      if (known?.stamp === stamp) return known.manifest;
+      const manifest = JSON.parse(fs.readFileSync(file, 'utf8'));
+      CoreVersionResolver.parsed.set(file, { stamp, manifest });
+      return manifest;
     } catch {}
     return null;
   }
