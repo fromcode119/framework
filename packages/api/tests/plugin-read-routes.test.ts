@@ -85,6 +85,60 @@ describe('PluginReadRoutes', () => {
     expect(res.json).not.toHaveBeenCalled();
   });
 
+  describe('a document that is exact only until a moment', () => {
+    const timed = { ...route, freshUntil: 'validUntil' };
+    const minute = 60_000;
+    const run = async (docs: any[], routes: any[] = [timed]) => {
+      const { routes: handler, find } = build({ docs, routes });
+      const res = response();
+      const next = vi.fn();
+      handler.handle(request('/shop/items', { view: 'card' }), res, next);
+      await vi.waitFor(() => expect(res.json.mock.calls.length + next.mock.calls.length).toBeGreaterThan(0));
+      return { res, next, find };
+    };
+
+    it('reads the moment together with the document, and serves documents that have not reached it', async () => {
+      const soon = new Date(Date.now() + 5 * minute);
+      const { res, next, find } = await run([{ id: 1, card: { name: 'A' }, validUntil: soon.toISOString() }, { id: 3, card: { name: 'B' }, validUntil: soon }]);
+      expect(next).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith([{ name: 'A' }, { name: 'B' }]);
+      expect(CollectionReadOptions.of((find.mock.calls[0] as any[])[1]).fields).toEqual(['card', 'validUntil']);
+    });
+
+    it('leaves the request to the plugin when any document has outlived its moment', async () => {
+      const { res, next } = await run([
+        { id: 1, card: { name: 'A' }, validUntil: new Date(Date.now() + 5 * minute) },
+        { id: 3, card: { name: 'B' }, validUntil: new Date(Date.now() - 1000) },
+      ]);
+      expect(next).toHaveBeenCalledTimes(1);
+      expect(res.json).not.toHaveBeenCalled();
+    });
+
+    it('treats a document with no moment, or one that is not a time, as not fresh', async () => {
+      for (const validUntil of [null, undefined, '', 'soon', {}]) {
+        const { res, next } = await run([{ id: 1, card: { name: 'A' }, validUntil }]);
+        expect(next).toHaveBeenCalledTimes(1);
+        expect(res.json).not.toHaveBeenCalled();
+      }
+    });
+
+    it('does not apply to a route that declares no such field', async () => {
+      const { res, next } = await run([{ id: 1, card: { name: 'A' } }], [route]);
+      expect(next).not.toHaveBeenCalled();
+      expect(res.json).toHaveBeenCalledWith([{ name: 'A' }]);
+    });
+
+    it('answers the freshness question in one place', () => {
+      const now = 1_000_000;
+      expect(PluginReadRoutes.freshAt(now + 1, now)).toBe(true);
+      expect(PluginReadRoutes.freshAt(new Date(now + 1), now)).toBe(true);
+      expect(PluginReadRoutes.freshAt(new Date(now + 1).toISOString(), now)).toBe(true);
+      expect(PluginReadRoutes.freshAt(now, now)).toBe(false);
+      expect(PluginReadRoutes.freshAt(now - 1, now)).toBe(false);
+      expect(PluginReadRoutes.freshAt(0, now)).toBe(false);
+    });
+  });
+
   it('never shares a signed-in reader\'s answer', async () => {
     const { routes } = build();
     const res = response();

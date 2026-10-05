@@ -22,6 +22,13 @@ export interface IPluginReadRoute {
   collection: string;
   /** The field whose value IS each returned item. */
   document: string;
+  /**
+   * The field holding the moment until which each stored document is exact — for a document that depends
+   * on the clock, such as a price while a sale runs: nothing is written when the sale ends, so the stored
+   * document would go on showing it. A document past that moment, or with no moment, is treated as not
+   * prepared yet, and the plugin answers the request instead.
+   */
+  freshUntil?: string;
   /** Conditions the route always applies — field equals value — whatever the request asks. */
   where?: Record<string, string | number | boolean>;
   /** Query parameters the route narrows by. Any other parameter is ignored. */

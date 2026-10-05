@@ -105,19 +105,31 @@ export class PluginReadRoutes {
     read[CollectionReadOptions.KEY] = {
       where: (db: any, table: any) => PluginReadRoutes.filterClause(db, table, route, query),
       orderBy: (db: any, table: any) => PluginReadRoutes.order(db, table, route, query.sort, new Set(CollectionReadColumns.onRequest(collection))),
-      // The answer is the prepared document alone: no other column is read, and nothing counts the matches.
-      fields: [route.document],
+      // The answer is the prepared document (and, where it expires, the moment it does): no other column is
+      // read, and nothing counts the matches.
+      fields: route.freshUntil ? [route.document, route.freshUntil] : [route.document],
       withoutTotal: true,
     };
 
     const result: any = await this.restController.find(collection, read);
-    const items = (result?.docs || []).map((doc: Record<string, unknown>) => doc?.[route.document]);
-    // A record the plugin has not prepared yet (a fresh install, a sweep still running): the plugin
-    // answers instead, so a list never comes back short or missing a record it should hold.
+    const now = Date.now();
+    const items = (result?.docs || []).map((doc: Record<string, unknown>) => (
+      route.freshUntil && !PluginReadRoutes.freshAt(doc?.[route.freshUntil], now) ? null : doc?.[route.document]
+    ));
+    // A record the plugin has not prepared yet (a fresh install, a sweep still running) or whose document
+    // has outlived the moment it was exact until: the plugin answers instead, so a list never comes back
+    // short, missing a record it should hold, or showing what is no longer true.
     if (items.some((item: unknown) => item == null)) return next();
     const cacheSeconds = Number(route.cacheSeconds) || 0;
     res.set('Cache-Control', cacheSeconds > 0 && !(req as any).user ? `public, max-age=${cacheSeconds}` : 'private, no-store');
     res.json(items);
+  }
+
+  /** Whether a stored document is still exact at `now`: its moment is a time, and not yet passed. */
+  static freshAt(until: unknown, now: number): boolean {
+    if (until === null || until === undefined || until === '') return false;
+    const at = until instanceof Date ? until.getTime() : new Date(until as string | number).getTime();
+    return Number.isFinite(at) && at > now;
   }
 
   /**
