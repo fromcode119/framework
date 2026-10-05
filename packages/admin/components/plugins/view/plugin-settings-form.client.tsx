@@ -17,7 +17,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class PluginSettingsForm extends PluginSettingsFormActions implements IPluginSettingsFormHandle {
   componentDidMount(): void {
     this.loadSettings();
-    this.onStateChange?.(this.isDirty, this.saving);
+    this.onStateChange?.(this.isDirty, this.saving, this.hasFields);
   }
 
   componentDidUpdate(prev: { pluginSlug: string; waiting?: boolean }): void {

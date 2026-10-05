@@ -16,7 +16,8 @@ import { PluginSettingsGroups } from '@/components/plugins/plugin-settings-group
 export abstract class PluginSettingsFormState extends AdminComponent {
   @prop declare pluginSlug: string;
   @prop declare formId?: string;
-  @prop declare onStateChange?: (isDirty: boolean, saving: boolean) => void;
+  /** `hasFields`: the plugin offers something to set, so the page knows whether to offer Save, Export and Reset. */
+  @prop declare onStateChange?: (isDirty: boolean, saving: boolean, hasFields: boolean) => void;
   /** The settings group the page has open (`schema.groups`); only that group's tabs are offered. */
   @prop declare group?: string;
   /** The tab inside it the page has open; the first of the group when unset. */
@@ -54,9 +55,13 @@ export abstract class PluginSettingsFormState extends AdminComponent {
     }
   }
 
-  @watch('isDirty', 'saving')
+  get hasFields(): boolean {
+    return Boolean(this.schema?.fields?.length);
+  }
+
+  @watch('isDirty', 'saving', 'schema')
   notifyStateChange(): void {
-    this.onStateChange?.(this.isDirty, this.saving);
+    this.onStateChange?.(this.isDirty, this.saving, this.hasFields);
   }
 
   /** The tabs offered now: the open group's when the plugin declares groups, else all of them. */

@@ -52,6 +52,7 @@ export class PluginDetailPageController {
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [settingsDirty, setSettingsDirty] = useState(false);
     const [settingsSaving, setSettingsSaving] = useState(false);
+    const [settingsHasFields, setSettingsHasFields] = useState(false);
     const settingsFormRef = useRef<PluginSettingsForm>(null);
     const [showDefinition, setShowDefinition] = useState(false);
     const [marketplaceItem, setMarketplaceItem] = useState<IPluginMarketplaceItem | null>(null);
@@ -289,6 +290,8 @@ export class PluginDetailPageController {
       settingsDirty,
       settingsFormRef,
       settingsSaving,
+      setSettingsHasFields,
+      settingsHasFields,
       setShowDefinition,
       setShowDeleteConfirm,
       showDefinition,

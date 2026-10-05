@@ -47,7 +47,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare onRefreshLogs: () => void;
   @prop declare onSaveSandbox: () => void;
   @prop declare onSandboxSettingsChange: (value: IPluginSandboxSettings) => void;
-  @prop declare onSettingsStateChange: (dirty: boolean, saving: boolean) => void;
+  @prop declare onSettingsStateChange: (dirty: boolean, saving: boolean, hasFields: boolean) => void;
   @prop declare onTabChange: (tabId: PluginDetailTab, group?: string, section?: string) => void;
   @prop declare onToggle: () => void;
   @prop declare onUpdate: () => void;
@@ -58,6 +58,7 @@ export class PluginDetailView extends AdminComponent {
   @prop declare settingsDirty: boolean;
   @prop declare settingsFormRef: Ref<PluginSettingsForm>;
   @prop declare settingsSaving: boolean;
+  @prop declare settingsHasFields: boolean;
   @prop declare showDefinition: boolean;
   @prop declare showDeleteConfirm: boolean;
   @prop declare slug: string;
@@ -92,7 +93,7 @@ export class PluginDetailView extends AdminComponent {
     return (
       <div className="w-full space-y-5 pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
-        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsSaving={this.settingsSaving} theme={theme} />
+        <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} settingsSaving={this.settingsSaving} theme={theme} />
         {plugin.error ? (
           <div className={`rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
             <div className="flex items-start gap-4">

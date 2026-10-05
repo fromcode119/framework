@@ -45,6 +45,9 @@ export interface IPluginDetailPageModel {
   settingsDirty: boolean;
   settingsFormRef: RefObject<IPluginSettingsFormHandle | null>;
   settingsSaving: boolean;
+  /** The plugin offers settings to change, so Save, Export and Reset mean something. */
+  settingsHasFields: boolean;
+  setSettingsHasFields: (value: boolean) => void;
   setShowDefinition: (value: boolean) => void;
   setShowDeleteConfirm: (value: boolean) => void;
   showDefinition: boolean;
