@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.329] - 2026-10-05
+
+### Added
+
+- **api**: read routes can filter by a minimum, a maximum and a switch; records that are not fresh are always candidates ([#761](https://github.com/fromcode119/framework/pull/761))
+
+### Fixed
+
+- **api**: a read route no longer serves a stored document past the moment it stopped being exact ([#760](https://github.com/fromcode119/framework/pull/760))
+- **sources**: turning an install switch on offers the build already waiting ([#758](https://github.com/fromcode119/framework/pull/758))
+
+### Performance
+
+- **core**: a client address's edge provider is matched once, not on every pass of a request ([#753](https://github.com/fromcode119/framework/pull/753))
+- **core**: a peer's method names are read once, not looked up name by name on every request ([#759](https://github.com/fromcode119/framework/pull/759))
+
 ## [0.2.328] - 2026-10-05
 
 ### Added
