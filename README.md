@@ -80,7 +80,7 @@ stock) against each platform's own product (Payload with its official e-commerce
 
 | Operation (req/s) | Atlantis, full shop product | Payload + e-commerce plugin | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
 |:--|--:|--:|--:|--:|--:|--:|--:|
-| Product list (20) | **92.2** | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
+| Product list (20) | **80.6** | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
 | Single product | **214.6** | 98.2 | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
 | Filtered + sorted (20) | **66.8** | 30.2 | 14.9 | 10.3 | 8.9 | 10.7 | 16.2 |
 | Signed-in read (20) | **119.0** | 52.7 | 51.7 | 6.4 | 4.3 | 7.7 | 10.5 |
