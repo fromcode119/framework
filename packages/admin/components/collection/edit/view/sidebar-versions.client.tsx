@@ -33,7 +33,12 @@ export class SidebarVersions extends PureReactor {
       <ul className="mt-1 space-y-0.5">
         {shown.map((change) => (
           <li key={change.label} className="text-[11px] text-slate-600 dark:text-slate-300 break-words">
-            <span className="font-semibold">{change.label}:</span> <span className="text-slate-400 line-through">{change.from}</span> → <span>{change.to}</span>
+            <span className="font-semibold">{change.label}:</span>{' '}
+            {change.from === change.to
+              // Same text on both sides (a list of the same length, a long value cut short): it did change, and saying
+              // "[1] → [1]" does not tell the operator so.
+              ? <span>{AdminI18n.t('collection.edit.versionValueChanged')}</span>
+              : <><span className="text-slate-400 line-through">{change.from}</span> → <span>{change.to}</span></>}
           </li>
         ))}
         {changes.length > shown.length && <li className="text-[11px] text-slate-400">{AdminI18n.t('collection.edit.versionMoreChanges', { count: changes.length - shown.length })}</li>}
