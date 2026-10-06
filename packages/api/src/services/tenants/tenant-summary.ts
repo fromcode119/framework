@@ -28,8 +28,20 @@ export class TenantSummary {
     readonly appearance: string = tenant.appearance,
   ) {}
 
+  /**
+   * What creating the site did with its theme's initial content. Only a create answer carries it: it
+   * is an outcome of that one request, not a property the site keeps — a later read has nothing to say.
+   */
+  private creation: { themeSeeded: boolean; themeSeedReason: string | null; warnings: string[] } | null = null;
+
+  withCreation(outcome: { themeSeeded: boolean; themeSeedReason: string | null; warnings: string[] }): this {
+    this.creation = outcome;
+    return this;
+  }
+
   toJSON(): Record<string, unknown> {
     return {
+      ...(this.creation ? { themeSeeded: this.creation.themeSeeded, themeSeedReason: this.creation.themeSeedReason, warnings: this.creation.warnings } : {}),
       ...TenantSummary.tenantJson(this.tenant),
       memberCount: this.memberCount,
       pageCount: this.pageCount,

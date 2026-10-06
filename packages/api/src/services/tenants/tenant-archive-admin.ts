@@ -4,6 +4,7 @@ import { StandaloneImportExecutor } from '@fromcode119/core';
 import { TenantAdminState } from '@api/services/tenants/tenant-admin-state';
 import { TenantMembersService } from '@api/services/tenants/tenant-members-service';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
+import type { IMaterializePagesOutcome } from '@api/services/tenants/interfaces/materialize-pages-outcome.interface';
 import { TenantSummary } from '@api/services/tenants/tenant-summary';
 import { SiteSupport } from '@api/services/tenants/site-support';
 import { TenantSiteTables } from '@api/services/tenants/tenant-site-tables';
@@ -276,7 +277,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
   }
 
   /** Create the tenant's pages from theme + plugin contracts — delegated to TenantPagesService. */
-  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<IMaterializePagesOutcome> {
     return this.pagesService.materializePages(tenantId, options);
   }
 

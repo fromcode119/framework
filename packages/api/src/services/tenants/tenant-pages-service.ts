@@ -19,6 +19,8 @@ import {
  * Every operation that changes what exists is recorded in the backup audit table, with the actor.
  */
 import { TenantLookup } from '@api/services/tenants/tenant-lookup';
+import type { IMaterializePagesOutcome } from '@api/services/tenants/interfaces/materialize-pages-outcome.interface';
+import { PendingSiteSeed } from '@api/services/tenants/pending-site-seed';
 
 /**
  * Counting and materializing a tenant's content pages from the theme and plugin page contracts.
@@ -79,22 +81,43 @@ export class TenantPagesService {
    * menus, partner records and plugin settings over whatever exists, so replaying it on a running site
    * from "Rebuild pages" overwrote the operator's edits; that replay is Themes → Run Seeds, which says so.
    */
-  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<{ pages: number; themeSeeded: boolean; warnings: string[] }> {
+  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<IMaterializePagesOutcome> {
     const tenant = await this.lookup.requireTenant(tenantId);
+    // A new site made while sites are not yet on — the FIRST site — cannot be written for: nothing binds
+    // a write to it, so every row would be created with no owner and be hidden from the site at the next
+    // boot. Nothing is created now; the debt is recorded and the boot that turns sites on pays it.
+    if (options.seedTheme && !TenantMode.isEnabled()) {
+      await new PendingSiteSeed(this.db).mark(tenant.id);
+      return {
+        pages: 0, themeSeeded: false, warnings: [],
+        themeSeedReason: 'deferred: this is the first site, so multi-site mode starts at the next boot. The theme seed, plugin seeds and default pages are created then.',
+      };
+    }
     PluginTenantAccess.invalidate(tenant.id);
     TenantThemeAccess.invalidate(tenant.id);
     await Promise.all([PluginTenantAccess.warm(tenant.id), TenantThemeAccess.warm(tenant.id)]);
     const warnings: string[] = [];
     let themeSeeded = false;
+    // Why the theme seed did not run, whenever it did not — never a bare `false`.
+    let themeSeedReason: string | null = null;
     await RequestContextUtils.storage.run({ locale: '', tenantId: tenant.id }, () =>
       this.manager.db.withTenant(tenant.id, async () => {
         // The theme's INITIAL content first (its pages and navigation), then the plugins' default
         // pages, which match what the seed created rather than duplicating it.
         const themeSlug = (await TenantThemeAccess.choiceForAsync(tenant.id)).activeSlug;
-        if (options.seedTheme && themeSlug && !tenant.isWorkspace) {
+        if (!options.seedTheme) {
+          themeSeedReason = 'not requested: rebuilding pages only adds the missing default pages. To replay the theme seed, use Themes \u2192 Maintenance \u2192 Run seeds.';
+        } else if (tenant.isWorkspace) {
+          themeSeedReason = 'a workspace has no storefront theme';
+        } else if (!themeSlug) {
+          themeSeedReason = 'the site has no active theme';
+        } else {
           try {
-            themeSeeded = (await this.themeManager.seedThemeForCurrentSite(themeSlug)).seeded;
+            const outcome = await this.themeManager.seedThemeForCurrentSite(themeSlug);
+            themeSeeded = outcome.seeded;
+            if (!outcome.seeded) themeSeedReason = outcome.reason || `theme "${themeSlug}" did not seed`;
           } catch (error: any) {
+            themeSeedReason = `seed failed: ${error?.message || error}`;
             warnings.push(`Theme "${themeSlug}" seed failed: ${error?.message || error}`);
           }
         }
@@ -108,6 +131,6 @@ export class TenantPagesService {
         await this.manager.materializeDefaultPages();
       }));
     const pages = await this.manager.db.withTenant(tenant.id, () => this.countPages());
-    return { pages, themeSeeded, warnings };
+    return { pages, themeSeeded, themeSeedReason, warnings };
   }
 }

@@ -101,10 +101,13 @@ export class TenantAdminService extends TenantArchiveAdmin {
     if (adminEmail) await this.addMember(tenant.id, adminEmail, ['admin']);
     // Pages are a storefront's; a workspace's domain serves the console.
     // A NEW site gets the theme's initial content; later rebuilds only add missing default pages.
-    if (!tenant.isWorkspace) await this.materializePages(tenant.id, { seedTheme: true });
+    const pagesOutcome = tenant.isWorkspace ? null : await this.materializePages(tenant.id, { seedTheme: true });
     await this.record('tenant.create', tenant.slug, actor, { id: tenant.id, kind: tenant.kind.value, appearance: tenant.appearance, hosts: tenant.hosts(), plugins, theme, preset: preset?.id ?? null });
     await this.gateway.notify();
-    return this.summarize(tenant);
+    const summary = await this.summarize(tenant);
+    // The seed's outcome rides on the answer: a failed or skipped seed used to leave a site with no home
+    // page and nothing anywhere saying why.
+    return pagesOutcome ? summary.withCreation(pagesOutcome) : summary;
   }
 
   /** The workspace presets on offer: one per installed appearance that declares a `workspace` block. */
