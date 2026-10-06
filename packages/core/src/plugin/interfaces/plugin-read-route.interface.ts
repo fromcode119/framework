@@ -27,7 +27,7 @@ export interface IPluginReadRoute {
    */
   single?: boolean;
   /**
-   * The document field holds one document per language, keyed by language code, because the document is
+   * The document field holds one document per language, keyed by the short language code a request reads in (`bg`, `en` — `context.i18n.currentLocale()`; `''` when it names none), because the document is
    * worded in the language the request reads in. The answer is the request's own language's entry; there is
    * no fallback to another language, which would be an answer the plugin would not have given.
    */

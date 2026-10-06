@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ApiResponseCache, CoercionUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, RequestContextUtils, TenantMode } from '@fromcode119/core';
+import { ApiResponseCache, CoercionUtils, LocalizationUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, RequestContextUtils, TenantMode } from '@fromcode119/core';
 import type { ICollection, IPluginReadRoute, PluginManager } from '@fromcode119/core';
 import { Sql } from '@fromcode119/database';
 import type { RESTController } from '@api/controllers/rest/rest-controller';
@@ -158,7 +158,7 @@ export class PluginReadRoutes {
     const stored = doc[route.document];
     // A document worded per language answers only in the language the request reads in: another
     // language's wording is not what the plugin would have said.
-    const item = route.documentByLocale ? (stored as Record<string, unknown> | null | undefined)?.[RequestContextUtils.getLocale() ?? ''] : stored;
+    const item = route.documentByLocale ? (stored as Record<string, unknown> | null | undefined)?.[LocalizationUtils.normalizeLocaleCode(RequestContextUtils.getLocale(), { short: true })] : stored;
     if (item == null) return next();
     const cacheSeconds = Number(route.cacheSeconds) || 0;
     res.set('Cache-Control', cacheSeconds > 0 && !(req as any).user ? `public, max-age=${cacheSeconds}` : 'private, no-store');
