@@ -242,14 +242,12 @@ export class DatabaseContextProxy {
                   + '— allowed because ENFORCE_PLUGIN_DB_ISOLATION=false. Migrate to the namespace API / dedicated context API, then re-enable isolation.',
                 );
               }
-              // Audit the write per call, with the table (and the where's record id) as the
-              // resource. `insert`/`upsert`'s second arg is the PAYLOAD, never mined for an id —
-              // only update/delete carry a where. Fire-and-forget inside logWrite; a denied call
-              // above never reaches this line, so nothing is logged 'allowed' that was blocked.
+              // Audit the write per call, with the table (and the where's record id) as the resource.
+              // `insert`/`upsert`'s second arg is the PAYLOAD, never mined for an id — only update/delete carry a
+              // where. Fire-and-forget inside logWrite; a denied call never reaches here, so nothing blocked is logged 'allowed'.
               const derivedOnly = PluginDbOnRequestFields.writesOnlyDerived(prop, args, manager);
               if (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop)) {
-                // An order, a booking, a product: whatever a plugin writes can appear on a page — except the
-                // values it derives and keeps ready (see PluginDbOnRequestFields.writesOnlyDerived).
+                // An order, a booking, a product can appear on a page; the values a plugin derives (writesOnlyDerived) cannot.
                 if (!derivedOnly) SiteContentRevision.bumpCurrentSite();
                 DatabaseWriteAudit.logWrite(
                   manager,
