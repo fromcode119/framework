@@ -30,6 +30,14 @@ export class IntegrationsContextProxy {
         }
         return manager.integrations.get(typeKey);
       },
+      // A starting entry for the type's list, created only when missing. Writing a type's list is the same
+      // power as reading and building its clients, so it takes the same capability.
+      ensureEntry: async (typeKey: string, entry: { id?: string; providerKey: string; name?: string; enabled?: boolean; config?: Record<string, any> }) => {
+        if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {
+          handleViolation(`integration:${typeKey}`);
+        }
+        return manager.integrations.entrySeeder.ensure(typeKey, entry);
+      },
       instantiateWithConfig: async (typeKey: string, providerKey: string, config?: Record<string, any>) => {
         if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {
           handleViolation(`integration:${typeKey}`);

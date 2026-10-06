@@ -1,16 +1,12 @@
 import { SettingSource } from '@core/settings/enums/setting-source.enum';
-/**
- * IntegrationRegistry
- *
- * Manages integration type and provider registration, resolution and instantiation.
- * Profile/provider storage management is delegated to IntegrationProfileService.
- */
+/** IntegrationRegistry: type and provider registration, resolution and instantiation; storage is delegated. */
 
 import { Logger } from '@core/logging';
 import { CoreServices } from '@core/services';
 import { IntegrationProfileService } from '@core/integrations/integration-profile-service';
 import { IntegrationStoredProviderService } from '@core/integrations/integration-stored-provider-service';
 import { IntegrationResolverService } from '@core/integrations/integration-resolver-service';
+import { IntegrationEntrySeeder } from '@core/integrations/integration-entry-seeder';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 import type { IIntegrationResolved } from '@core/integrations/interfaces/integration-resolved.interface';
@@ -25,11 +21,14 @@ export class IntegrationRegistry {
   private readonly profileService: IntegrationProfileService;
   private readonly storedProviderService: IntegrationStoredProviderService;
   private readonly resolverService: IntegrationResolverService;
+  /** Starting entries for a type's list, created only when missing (see the class). */
+  readonly entrySeeder: IntegrationEntrySeeder;
 
   constructor(private readonly db: any, logger?: Logger) {
     this.logger = logger || new Logger({ namespace: 'integration-registry' });
     this.profileService = new IntegrationProfileService(db, this.logger, this.types);
     this.storedProviderService = new IntegrationStoredProviderService(db, this.logger, this.types, this.profileService);
+    this.entrySeeder = new IntegrationEntrySeeder(db, this.types, this.profileService, this.storedProviderService);
     this.resolverService = new IntegrationResolverService(
       this.types,
       this.storedProviderService,

@@ -35,6 +35,17 @@ export interface IPluginContextIntegrations {
   get<T = any>(typeKey: string): Promise<T>;
 
   /**
+   * Put a STARTING entry into an integration type's list — created only when no entry with that id, and no entry
+   * of that provider, exists; nothing that exists is ever changed. The provider must already be registered.
+   * `created: false` with `reason: 'no_site'` means a multi-site deployment had no site selected (a pass that
+   * belongs to nobody), so nothing was written. The operator completes the entry in Settings → Integrations.
+   */
+  ensureEntry(
+    typeKey: string,
+    entry: { id?: string; providerKey: string; name?: string; enabled?: boolean; config?: Record<string, any> },
+  ): Promise<{ created: boolean; id: string; reason?: string }>;
+
+  /**
    * Resolve and instantiate an integration from a specific provider config.
    * Stored password fields are decrypted before provider creation.
    */

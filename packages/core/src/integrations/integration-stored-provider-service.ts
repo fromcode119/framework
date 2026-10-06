@@ -244,7 +244,7 @@ export class IntegrationStoredProviderService {
     });
   }
 
-  private buildStoredConfig(
+  buildStoredConfig(
     typeKey: string,
     provider: IIntegrationProviderDefinition<any>,
     nextConfig: Record<string, any>,
@@ -289,7 +289,7 @@ export class IntegrationStoredProviderService {
    * field by field used to drop it on every admin save, and a consumer resolving the provider's plugin
    * (logistics → its courier) then reported a configured courier as "not configured".
    */
-  private static namespaceOf(
+  static namespaceOf(
     runtime: IIntegrationTypeRuntime<any> | undefined,
     providerKey: string,
     stored?: { namespace?: unknown } | null,

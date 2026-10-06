@@ -116,10 +116,9 @@ export class IntegrationManager {
     this.logger.info(`Registered provider "${provider.key}" for type "${typeKey}"`);
   }
 
-  /**
-   * Initialize all core integrations
-   * Should be called after database migrations are complete
-   */
+  public get entrySeeder() { return this.registry.entrySeeder; }
+
+  /** Initialize all core integrations; call after database migrations are complete. */
   async initialize() {
     // After migrations complete, stored integration settings should override env defaults.
     await this.refreshAll(true);
