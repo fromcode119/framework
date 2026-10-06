@@ -85,10 +85,19 @@ The 30 extra fields (10 text, 8 numbers, 6 switches, 4 dates, 2 JSON) are filled
 platforms, each rebuilt with the same fields and data. For Atlantis, 30 more fields cost 25% more CPU per list
 request (5.2 → 6.5 ms) while the answer grows 2.4× (14.2 → 34.6 KB): about 2.2 µs per extra value.
 
+## Run it yourself
+
+The runner, an example suite file and the data and method notes are in [`tools/benchmark`](../tools/benchmark/README.md):
+the same load (oha, unique query strings, median of three runs) against one system at a time, so you can put
+Atlantis and any other platform on your own hardware and compare.
+
 ## How it was measured
 
-- **One server:** 2 vCPU, 4 GB RAM. The platform under test is pinned to core 0, the load generator
-  ([oha](https://github.com/hatoo/oha), 32 connections) to core 1; every other stack is stopped.
+- **One server:** 2 vCPU, 4 GB RAM. The load generator ([oha](https://github.com/hatoo/oha), 32 connections) is
+  pinned to core 1 and every other stack is stopped. Atlantis (API, plugin host, database, cache) and Payload were
+  pinned to core 0, a single core. Strapi, Directus, Medusa and PrestaShop were **not** pinned and could use both
+  cores, which favours them. Magento, Drupal and WooCommerce were measured on 4 October; their pinning was not
+  re-checked.
 - **Reads:** a warm-up, then the median of three 15-second runs. **Create:** 15 seconds of POSTs with a unique
   slug each, median of three.
 - **Data:** 1,000 products (price, stock 100, a 520-character description), 3,625 posts where the platform has
