@@ -64,11 +64,11 @@ Full write-up: **[Why Atlantis?](docs/comparison.md)**
 
 ## ⚡ Performance
 
-Requests per second on one 2 vCPU / 4 GB server, same data, no response cache (higher is better, best in **bold**).
+Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, same data, no response cache. Higher is faster; best in **bold**.
 
 **Against the open-source backends** — the same six-field records on every platform:
 
-| Operation | Atlantis (plain record) | Payload | Directus | Strapi |
+| Operation (req/s) | Atlantis (plain record) | Payload | Directus | Strapi |
 |:--|--:|--:|--:|--:|
 | List of 20 records | **203.4** | 137.5 | 109.6 | 99.5 |
 | One record by slug | **255.9** | 217.6 | 128.8 | 115.2 |
@@ -79,7 +79,7 @@ Requests per second on one 2 vCPU / 4 GB server, same data, no response cache (h
 **Against the commerce platforms** — Atlantis' own full shop product (94 columns, tax-aware prices, variants,
 stock) against each platform's own product:
 
-| Operation | Atlantis, full shop product | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
+| Operation (req/s) | Atlantis, full shop product | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
 |:--|--:|--:|--:|--:|--:|--:|
 | Product list (20) | **92.2** | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
 | Single product | **214.6** | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |

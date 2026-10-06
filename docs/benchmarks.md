@@ -1,6 +1,6 @@
 # Benchmarks — Atlantis against the platforms people actually run
 
-Requests per second (higher is better), measured on **6 October 2026** on one 2 vCPU / 4 GB server, one platform
+**req/s** = requests per second (higher is better), measured on **6 October 2026** on one 2 vCPU / 4 GB server, one platform
 at a time, on the same data. Nine platforms: Atlantis (the framework in this repository with the shop and
 CMS plugins), Payload, Directus, Strapi, Medusa, PrestaShop, Magento 2.4, Drupal 11 + Commerce 3 and
 WordPress + WooCommerce. Best result in each row in **bold**.
@@ -9,9 +9,17 @@ WordPress + WooCommerce. Best result in each row in **bold**.
 > and [What this does not show](#what-this-does-not-show) before quoting them, and run the same load on your
 > own hardware before choosing a platform.
 
-## 1. Every platform, every operation
+## How to read the numbers
 
-| Operation | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
+Every number is **req/s — requests per second**: how many requests the server answers each second. A request is
+one thing a website or app asks for, such as "show me 20 products" or "show me this one product". **Higher is
+faster**: 200 req/s means one small server can answer about 200 people asking at the same moment, and 10 req/s
+means it starts queueing at about 10. "3×" means three times as many requests answered per second on the same
+hardware.
+
+## 1. Every platform, every operation (req/s)
+
+| Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
 |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — |
 | List of 20 records | **203.4** | 92.2 <sub>(computed per request 48.5)</sub> | 137.5 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
@@ -29,9 +37,9 @@ CMS records, which carry several times the data of a plain record. The second co
 the commerce platforms (Medusa, PrestaShop, Magento, Drupal Commerce, WooCommerce), which also return full
 commerce products. Atlantis is first in every row.
 
-## 2. The full shop product against the commerce platforms
+## 2. The full shop product against the commerce platforms (req/s)
 
-| Operation | Fromcode, full shop / CMS record | Best of the five commerce platforms | Which | Fromcode ahead by |
+| Operation (req/s) | Fromcode, full shop / CMS record | Best of the five commerce platforms | Which | Fromcode ahead by |
 |:--|--:|--:|:--|--:|
 | Product list, full (20) | **92.2** | 14.7 | PrestaShop | 6.3× |
 | Single product | **214.6** | 54.1 | PrestaShop | 4.0× |
@@ -45,9 +53,9 @@ The shop's product list and single product are answered from a page the shop pre
 the moment anything it depends on changes. Worked out on every request they are 48.5 and 107.0 requests per
 second, which is still ahead of every commerce platform in those rows (14.7 and 54.1 at best).
 
-## 3. Plain records, 6 fields — against the other open-source backends
+## 3. Plain records, 6 fields — against the other open-source backends (req/s)
 
-| Operation | Fromcode | Payload | Directus | Strapi |
+| Operation (req/s) | Fromcode | Payload | Directus | Strapi |
 |:--|--:|--:|--:|--:|
 | List of 20 records | **203.4** | 137.5 | 109.6 | 99.5 |
 | One record by slug | **255.9** | 217.6 | 128.8 | 115.2 |
@@ -58,9 +66,9 @@ second, which is still ahead of every commerce platform in those rows (14.7 and 
 Payload (draft versions on), Directus and Strapi: Postgres, production mode, public read, the same six fields
 and 1,000 rows as the Atlantis test collection.
 
-## 4. Plain records, 36 fields — 30 more fields, same data
+## 4. Plain records, 36 fields — 30 more fields, same data (req/s)
 
-| Operation | Fromcode | Payload | Directus | Strapi |
+| Operation (req/s) | Fromcode | Payload | Directus | Strapi |
 |:--|--:|--:|--:|--:|
 | List of 20 records | **147.7** | 72.2 | 80.8 | 75.1 |
 | One record by slug | **221.9** | 142.0 | 111.8 | 110.1 |
