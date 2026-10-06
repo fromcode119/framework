@@ -27,7 +27,7 @@ export class ThemeBuildCommandService {
 
   /** The theme's directory, or null once it has reported why it cannot be used. */
   private static async resolve(slug: string): Promise<{ themeDir: string; compiler: ThemeBundleCompilerType } | null> {
-    const themeDir = path.join(CliUtils.getProjectRoot(), 'themes', slug);
+    const themeDir = path.join(CliUtils.themesRoot(), slug);
     if (!fs.existsSync(themeDir)) {
       console.error(chalk.red(`Theme directory not found: ${themeDir}`));
       return null;
