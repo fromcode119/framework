@@ -490,6 +490,7 @@ export { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
 export { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 export { ReadRouteMatch } from '@core/plugin/enums/read-route-match.enum';
 export type { IPluginReadRoute } from '@core/plugin/interfaces/plugin-read-route.interface';
+export type { IPluginReadRouteParam } from '@core/plugin/interfaces/plugin-read-route-param.interface';
 export type { IPluginReadRouteFilter } from '@core/plugin/interfaces/plugin-read-route-filter.interface';
 export type { IPluginReadRouteSort } from '@core/plugin/interfaces/plugin-read-route-sort.interface';
 export { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
