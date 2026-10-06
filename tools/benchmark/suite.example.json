@@ -1,0 +1,16 @@
+{
+  "headers": ["Host: console.example.test"],
+  "auth": "Bearer <token of a user that may read and create>",
+  "reads": {
+    "list-20": "re:http://api:3000/api/v1/collections/bench_items\\?limit=20&u=[a-z0-9]{12}",
+    "single-by-slug": "re:http://api:3000/api/v1/collections/bench_items\\?slug=bench-product-10&u=[a-z0-9]{12}",
+    "filtered-sorted-20": "re:http://api:3000/api/v1/collections/bench_items\\?limit=20&stock=100&sort=-price&u=[a-z0-9]{12}"
+  },
+  "authedReads": {
+    "signed-in-list-20": "re:http://api:3000/api/v1/collections/bench_items\\?limit=20&u=[a-z0-9]{12}"
+  },
+  "write": {
+    "url": "http://api:3000/api/v1/collections/bench_items",
+    "body": { "name": "Load {n}", "slug": "load-{n}", "description": "x", "price": 12.5, "sku": "S-{n}", "stock": 5 }
+  }
+}

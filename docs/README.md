@@ -16,6 +16,9 @@ The Hooked Kernel Architecture, request flow, and the kernel subsystems — secu
 ### [Comparison — Why Atlantis?](./comparison.md)
 How Atlantis compares to WordPress, Strapi, Payload, Ghost/Directus, and NestJS/Express.
 
+### [Benchmarks](./benchmarks.md)
+Requests per second against Payload, Directus, Strapi, Medusa, PrestaShop, Magento, Drupal Commerce and WordPress + WooCommerce on the same server and data, with the method and its limits.
+
 ### [Build & CLI](./cli.md)
 Build commands, architecture-check gates, the `atlantis`/`fromcode` CLI command reference, and run modes.
 

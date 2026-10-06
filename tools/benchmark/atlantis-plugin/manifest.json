@@ -1,0 +1,12 @@
+{
+  "slug": "benchitems",
+  "namespace": "org.fromcode",
+  "name": "Bench Items",
+  "version": "0.0.3",
+  "description": "Benchmark collection with the same six fields as the other platforms' products.",
+  "author": "Fromcode",
+  "category": "testing",
+  "capabilities": ["api", "content", "database:read", "database:write", "hooks"],
+  "permissions": [],
+  "migrations": "dist/migrations"
+}
