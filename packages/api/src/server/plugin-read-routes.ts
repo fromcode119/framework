@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ApiResponseCache, CoercionUtils, LocalizationUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, RequestContextUtils, TenantMode } from '@fromcode119/core';
+import { ApiResponseCache, CoercionUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, TenantMode } from '@fromcode119/core';
 import type { ICollection, IPluginReadRoute, PluginManager } from '@fromcode119/core';
 import { Sql } from '@fromcode119/database';
 import type { RESTController } from '@api/controllers/rest/rest-controller';
 import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { CollectionReadColumns } from '@api/services/collection-read-columns';
 import { PluginReadRoutePath } from '@api/server/plugin-read-route-path';
+import { PluginReadRouteDocument } from '@api/server/plugin-read-route-document';
 
 /**
  * Answers a plugin's declared read routes (IPluginReadRoute) itself, from the records the plugin keeps
@@ -58,7 +59,8 @@ export class PluginReadRoutes {
       const fits = Object.entries(candidate.when || {}).every(([key, value]) => CoercionUtils.toString(query[key]) === String(value))
         && (candidate.unless || []).every((key) => query[key] === undefined || query[key] === null || query[key] === '')
         && (CoercionUtils.toString(query.sort) === '' || PluginReadRoutes.parseSort(query.sort, candidate) !== null)
-        && PluginReadRoutes.acceptsValues(candidate, query);
+        && PluginReadRoutes.acceptsValues(candidate, query)
+        && PluginReadRouteDocument.accepts(candidate, query);
       if (fits) params = named;
       return fits;
     });
@@ -124,7 +126,7 @@ export class PluginReadRoutes {
     const result: any = await this.restController.find(collection, read);
     const now = Date.now();
     const items = (result?.docs || []).map((doc: Record<string, unknown>) => (
-      route.freshUntil && !PluginReadRoutes.freshAt(doc?.[route.freshUntil], now) ? null : doc?.[route.document]
+      route.freshUntil && !PluginReadRoutes.freshAt(doc?.[route.freshUntil], now) ? null : PluginReadRouteDocument.pick(route, doc?.[route.document], query)
     ));
     // A record the plugin has not prepared yet (a fresh install, a sweep still running) or whose document
     // has outlived the moment it was exact until: the plugin answers instead, so a list never comes back
@@ -158,7 +160,7 @@ export class PluginReadRoutes {
     const stored = doc[route.document];
     // A document worded per language answers only in the language the request reads in: another
     // language's wording is not what the plugin would have said.
-    const item = route.documentByLocale ? (stored as Record<string, unknown> | null | undefined)?.[LocalizationUtils.normalizeLocaleCode(RequestContextUtils.getLocale(), { short: true })] : stored;
+    const item = PluginReadRouteDocument.pick(route, stored, query);
     if (item == null) return next();
     const cacheSeconds = Number(route.cacheSeconds) || 0;
     res.set('Cache-Control', cacheSeconds > 0 && !(req as any).user ? `public, max-age=${cacheSeconds}` : 'private, no-store');
