@@ -27,6 +27,7 @@ export interface IPluginManagerInterface {
   /** Null until the API bootstrap hands the ThemeManager over; a context then reports no theme. */
   themeManager: {
     getActiveThemeManifest(): { slug: string } | null;
+    getThemeDirectory?(slug: string): string;
     getThemeConfig(slug: string): Promise<any>;
     getActiveThemeConfig(): Promise<Record<string, any>>;
     getActiveThemeVariables(): Promise<Record<string, unknown>>;

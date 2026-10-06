@@ -6,6 +6,7 @@ import { PushDelivery } from '@core/push/push-delivery';
 import { PushSurface } from '@core/push/enums/push-surface.enum';
 import { PersonNotifier } from '@core/notifications/person-notifier';
 import { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
+import { FrameworkEmailLayout } from '@core/email/framework-email-layout';
 
 /**
  * Framework-owned notification dispatch. Generic cross-cutting work — "who are the platform admins"
@@ -14,6 +15,9 @@ import { NotificationCategory } from '@core/notifications/enums/notification-cat
  * A plugin supplies only the message content; the framework owns recipient resolution and delivery.
  */
 export class NotificationsContextProxy {
+  /** Sources that are the framework itself: their admin mail gets the default frame; a plugin's own html is left as designed. */
+  private static readonly FRAMED_SOURCES = ['core', 'system'];
+
   /** Persist one in-app inbox row. Framework-internal; best-effort (a missing table never throws). */
   private static async persistInApp(
     manager: IPluginManagerInterface,
@@ -140,10 +144,13 @@ export class NotificationsContextProxy {
           return { recipients: list.length, sent: 0 };
         }
 
+        const html = NotificationsContextProxy.FRAMED_SOURCES.includes(sourceSlug)
+          ? await FrameworkEmailLayout.wrap(manager, message).catch(() => message.html)
+          : message.html;
         let sent = 0;
         for (const to of list) {
           try {
-            await email.send({ to, subject: message.subject, html: message.html, text: message.text });
+            await email.send({ to, subject: message.subject, html, text: message.text });
             sent += 1;
           } catch { /* best-effort per recipient — one failure never blocks the rest */ }
         }
