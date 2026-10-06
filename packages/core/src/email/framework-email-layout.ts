@@ -34,16 +34,28 @@ export class FrameworkEmailLayout {
       logoSetting,
       async () => source.themeManager?.getActiveThemeManifest()?.slug ?? null,
     ).catch(() => '');
+    const appName = String(platformName ?? '').trim();
     const bodyHtml = String(message.html ?? '').trim();
     const data = {
-      appName: String(platformName ?? '').trim(),
+      appName,
       logoUrl,
-      subject: message.subject,
+      subject: FrameworkEmailLayout.heading(message.subject, appName),
       bodyHtml,
       paragraphs: bodyHtml ? [] : String(message.text ?? '').split(/\n{2,}/).map((part) => part.trim()).filter(Boolean),
     };
     const override = FrameworkEmailLayout.themeOverride(source.themeManager);
     return override ? Handlebars.compile(override)(data) : PluginEmailTemplateFileService.render('email-layout', 'html', data);
+  }
+
+  /**
+   * The subject as a heading. The header already carries the brand, so a leading "<Platform Name>: " or
+   * "[Product] " tag is dropped from the heading — the SUBJECT line of the mail keeps it.
+   */
+  private static heading(subject: string, appName: string): string {
+    let heading = String(subject ?? '').trim();
+    if (appName && heading.toLowerCase().startsWith(`${appName.toLowerCase()}:`)) heading = heading.slice(appName.length + 1).trim();
+    heading = heading.replace(/^\[[^\]]{1,40}\]\s*/, '').trim();
+    return heading || String(subject ?? '').trim();
   }
 
   /** The active theme's own frame, or null when it ships none. */
