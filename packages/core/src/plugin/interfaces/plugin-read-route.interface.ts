@@ -45,6 +45,8 @@ export interface IPluginReadRoute {
   anonymousCache?: boolean;
   /** Query values that must ALL be present for the framework to answer (`{ "view": "card" }`). */
   when?: Record<string, string>;
+  /** Query keys that must ALL be present, with a value, for the framework to answer (a route made for lookups). */
+  requires?: string[];
   /** Query keys whose presence — any value, even one that is not text — sends the request to the plugin. */
   unless?: string[];
   /** The plugin collection the records live in (its slug). */

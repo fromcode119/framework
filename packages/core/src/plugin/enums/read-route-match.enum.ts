@@ -10,6 +10,8 @@ export class ReadRouteMatch extends Enum {
   static readonly MINIMUM = new ReadRouteMatch('min');
   /** The field is a number at most the value. */
   static readonly MAXIMUM = new ReadRouteMatch('max');
+  /** The field equals one of a list — `?slugs=a,b` or `?slugs=a&slugs=b`, read the way a plugin reads a list. */
+  static readonly IN = new ReadRouteMatch('in');
   /** A switch: when the value reads as true the field must be true; any other value asks nothing. */
   static readonly FLAG = new ReadRouteMatch('flag');
 

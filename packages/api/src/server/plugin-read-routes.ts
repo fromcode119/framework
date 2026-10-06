@@ -7,6 +7,7 @@ import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { CollectionReadColumns } from '@api/services/collection-read-columns';
 import { PluginReadRoutePath } from '@api/server/plugin-read-route-path';
 import { PluginReadRouteDocument } from '@api/server/plugin-read-route-document';
+import { PluginReadRouteList } from '@api/server/plugin-read-route-list';
 
 /**
  * Answers a plugin's declared read routes (IPluginReadRoute) itself, from the records the plugin keeps
@@ -57,6 +58,7 @@ export class PluginReadRoutes {
       const named = PluginReadRoutePath.match(candidate, rest);
       if (named === null) return false;
       const fits = Object.entries(candidate.when || {}).every(([key, value]) => CoercionUtils.toString(query[key]) === String(value))
+        && (candidate.requires || []).every((key) => CoercionUtils.toString(query[key]).trim() !== '')
         && (candidate.unless || []).every((key) => query[key] === undefined || query[key] === null || query[key] === '')
         && (CoercionUtils.toString(query.sort) === '' || PluginReadRoutes.parseSort(query.sort, candidate) !== null)
         && PluginReadRoutes.acceptsValues(candidate, query)
@@ -73,9 +75,21 @@ export class PluginReadRoutes {
   static acceptsValues(route: IPluginReadRoute, query: Record<string, unknown>): boolean {
     return Object.entries(route.filters || {}).every(([param, filter]) => {
       const value = CoercionUtils.toString(query[param]).trim();
+      if (ReadRouteMatch.resolve(filter.match) === ReadRouteMatch.IN) return PluginReadRoutes.acceptsList(route, filter, query[param]);
       if (!filter.accepts || value === '') return true;
       return PluginReadRoutes.pattern(filter.accepts)?.test(value) ?? false;
     });
+  }
+
+  /**
+   * A list filter answers only a list it can read in full: every item is one the filter accepts, there is at
+   * least one, and no more than the route would return — a longer one is the plugin's to answer.
+   */
+  private static acceptsList(route: IPluginReadRoute, filter: { accepts?: string }, raw: unknown): boolean {
+    if (CoercionUtils.toString(raw).trim() === '') return true;
+    const items = PluginReadRouteList.items(raw);
+    const pattern = filter.accepts ? PluginReadRoutes.pattern(filter.accepts) : null;
+    return items.length > 0 && items.length <= (Number(route.maxLimit) || PluginReadRoutes.MAX_LIMIT) && (!filter.accepts || (!!pattern && items.every((item) => pattern.test(item))));
   }
 
   /** A declared pattern, compiled once; one that does not compile accepts nothing. */
@@ -190,13 +204,21 @@ export class PluginReadRoutes {
    */
   static filterClause(db: any, table: any, route: IPluginReadRoute, query: Record<string, unknown>): unknown {
     const fixed = Object.entries(route.where || {}).map(([field, value]) => db.eq(PluginReadRoutes.column(table, route, field), value));
-    const requested = Object.entries(route.filters || {})
+    const named = Object.entries(route.filters || {})
       .map(([param, filter]) => [CoercionUtils.toString(query[param]).trim(), filter] as const)
       .filter(([value]) => value !== '')
-      .map(([value, filter]) => PluginReadRoutes.condition(db, PluginReadRoutes.column(table, route, filter.field), ReadRouteMatch.resolve(filter.match), value))
-      .filter((condition) => condition !== null);
+      .map(([value, filter]) => ({ filter, condition: PluginReadRoutes.condition(db, PluginReadRoutes.column(table, route, filter.field), ReadRouteMatch.resolve(filter.match), value) }))
+      .filter((entry) => entry.condition !== null);
+    const exact = named.filter((entry) => entry.filter.exact).map((entry) => entry.condition);
+    const requested = named.filter((entry) => !entry.filter.exact).map((entry) => entry.condition);
     const chunks = [...fixed, ...requested];
-    if (chunks.length === 0) return undefined;
+    if (chunks.length === 0) return exact.length === 0 ? undefined : (exact.length === 1 ? exact[0] : db.and(...exact));
+    const base = PluginReadRoutes.orUnprepared(db, table, route, chunks);
+    return exact.length === 0 ? base : db.and(base, ...exact);
+  }
+
+  /** The conditions, or any record that is not prepared (or whose document has outlived its moment). */
+  private static orUnprepared(db: any, table: any, route: IPluginReadRoute, chunks: unknown[]): unknown {
     // A record is a candidate whatever the request asks when it is not prepared, or when its document has
     // outlived the moment it was exact until: the keys it is filtered by may be as stale as the document.
     const document = PluginReadRoutes.column(table, route, route.document);
@@ -208,6 +230,7 @@ export class PluginReadRoutes {
 
   /** One declared filter as a condition, or `null` when the value asks nothing (a switch that is off). */
   private static condition(db: any, column: unknown, match: ReadRouteMatch, value: string): unknown {
+    if (match === ReadRouteMatch.IN) return db.inArray(column, PluginReadRouteList.items(value));
     if (match === ReadRouteMatch.CONTAINS) return Sql.query`${column} @> ${JSON.stringify([value])}::jsonb`;
     if (match === ReadRouteMatch.FLAG) return CoercionUtils.toBoolean(value, false) ? db.eq(column, true) : null;
     if (match === ReadRouteMatch.MINIMUM || match === ReadRouteMatch.MAXIMUM) {
