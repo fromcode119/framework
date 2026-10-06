@@ -136,14 +136,40 @@ export class SchemaManager {
   }
 
   /** Every table in the schema — for finding ones whose plugin is not currently running. */
-  /** The columns nothing declares, their row counts taken NOW — what a platform admin decides on. */
-  async pendingDrops(): Promise<IPendingSchemaDrop[]> {
-    return this.reconciliation.pendingWithCounts();
+  /**
+   * The columns nothing declares, RE-CHECKED against the collections registered right now, with their
+   * row counts taken now — what a platform admin decides on.
+   *
+   * The stored queue is a boot-time snapshot, and a boot can take it before every plugin has registered
+   * what it adds to another's table: right after a rolling deploy the seo plugin's own columns on pages,
+   * posts and products were listed as undeclared while holding values on every row. A proposal a plugin
+   * declares by the time anyone looks is forgotten here instead of shown. A table whose plugin is not
+   * running has nothing to compare with and keeps its entry, caveat included.
+   */
+  async pendingDrops(collections: ICollection[]): Promise<IPendingSchemaDrop[]> {
+    const live: IPendingSchemaDrop[] = [];
+    for (const entry of await this.reconciliation.pending()) {
+      if (await this.stillUndeclared(entry, collections)) live.push(entry);
+      else await this.reconciliation.forget(entry.table, entry.column);
+    }
+    return this.reconciliation.withCounts(live);
   }
 
-  /** Drop one column a platform admin approved. Refused unless this deployment itself proposed it. */
-  async approveDrop(table: string, column: string): Promise<IPendingSchemaDrop> {
+  /** Drop one column a platform admin approved. Refused unless this deployment proposed it AND nothing declares it now. */
+  async approveDrop(table: string, column: string, collections: ICollection[]): Promise<IPendingSchemaDrop> {
+    const proposed = (await this.reconciliation.pending()).find((entry) => entry.table === table && entry.column === column);
+    if (proposed && !(await this.stillUndeclared(proposed, collections))) {
+      await this.reconciliation.forget(table, column);
+      throw new Error(`${table}.${column} is not awaiting approval: a plugin declares it now.`);
+    }
     return this.reconciliation.approve(table, column);
+  }
+
+  private async stillUndeclared(entry: IPendingSchemaDrop, collections: ICollection[]): Promise<boolean> {
+    const collection = collections.find((candidate) => candidate.slug === entry.table);
+    if (!collection) return true;
+    if (collection.system === true) return false;
+    return (await this.planCollection(collection)).undeclaredColumns.includes(entry.column);
   }
 
   async listTables(): Promise<string[]> {

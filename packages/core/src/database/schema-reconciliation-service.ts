@@ -154,7 +154,11 @@ export class SchemaReconciliationService {
    * asking the question is exactly when the answer should be taken.
    */
   async pendingWithCounts(): Promise<IPendingSchemaDrop[]> {
-    const entries = await this.pending();
+    return this.withCounts(await this.pending());
+  }
+
+  /** Count exactly these entries, now. Used on the entries that survived re-validation, never on the whole stored queue. */
+  async withCounts(entries: IPendingSchemaDrop[]): Promise<IPendingSchemaDrop[]> {
     for (const entry of entries) {
       const counted = await this.countAcrossTenants(entry.table, entry.column);
       // Fail closed: no trustworthy count means no numbers shown, and the admin says so rather than
@@ -201,6 +205,11 @@ export class SchemaReconciliationService {
     }
   }
 
+  /** Take one proposal off the list. Always safe: it forgets a PROPOSAL, never a column. */
+  async forget(table: string, column: string): Promise<void> {
+    await this.drops.forgetOne(table, column);
+  }
+
   /** The recorded queue, names only — no counting, no scopes. */
   async pending(): Promise<IPendingSchemaDrop[]> {
     const rows = await this.db.withPlatformAdmin(async () =>
@@ -222,7 +231,8 @@ export class SchemaReconciliationService {
     // COUNTED, not read from the queue. The stored entry carries no counts — they are taken when an
     // operator looks — so reading `pending()` here wrote "undefined of undefined row(s) held a
     // value" into the only permanent record of an irreversible drop.
-    const entry = (await this.pendingWithCounts()).find((item) => item.table === table && item.column === column);
+    const proposed = (await this.pending()).find((item) => item.table === table && item.column === column);
+    const entry = proposed ? (await this.withCounts([proposed]))[0] : undefined;
     if (!entry) {
       throw new Error(
         `${table}.${column} is not awaiting approval. Only a column this deployment actually found `
