@@ -33,6 +33,12 @@ export interface IPluginReadRoute {
    */
   documentByLocale?: boolean;
   /**
+   * With `documentByLocale`: a query parameter whose value further keys the document (`currency=EUR` is the
+   * entry `bg:EUR`). `accepts` is the pattern its value must match; a request naming one that does not is
+   * not this route's. A request that does not name the parameter is answered with the plain language entry.
+   */
+  documentVariant?: { param: string; accepts: string };
+  /**
    * Whether the answer, for an anonymous visitor, is kept like the answer of a plugin route that declares
    * `anonymousCache`: the same site revision and maximum age, never for a signed-in visitor.
    */

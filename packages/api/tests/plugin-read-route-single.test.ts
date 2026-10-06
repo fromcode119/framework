@@ -141,3 +141,54 @@ describe('a read route that answers one record', () => {
     });
   });
 });
+
+describe('a read route whose document is also keyed by a variant', () => {
+  const route: any = {
+    path: '/items/:slug', collection: 'shop-items', document: 'page', freshUntil: 'pageUntil', single: true, documentByLocale: true,
+    documentVariant: { param: 'currency', accepts: '^[A-Za-z]{3}$' },
+    params: { slug: { field: 'slug', accepts: '^[a-z-]+$' } },
+  };
+  const list: any = { path: '/items', collection: 'shop-items', document: 'page', freshUntil: 'pageUntil', documentByLocale: true, documentVariant: route.documentVariant };
+  const collection: any = { slug: 'shop-items', fields: [] };
+  const future = () => new Date(Date.now() + 60_000).toISOString();
+  const page = { bg: { name: 'Чаша' }, 'bg:EUR': { name: 'Чаша €' } };
+
+  const run = async (routeUnder: any, path: string, query: Record<string, string>, docs: any[]) => {
+    const manager: any = {
+      getPlugins: () => [{ state: PluginState.ACTIVE, manifest: { slug: 'shop', readRoutes: [routeUnder] } }],
+      registeredCollections: new Map([['x', { pluginSlug: 'shop', collection }]]),
+    };
+    const routes = new PluginReadRoutes(manager, { find: vi.fn(async () => ({ docs })) } as any);
+    const res: any = { set: vi.fn(() => res), json: vi.fn(), status: vi.fn(() => res) };
+    const next = vi.fn();
+    await RequestContextUtils.storage.run({ locale: 'bg' } as any, async () => {
+      routes.handle({ method: 'GET', path, query } as any, res, next);
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    });
+    return { res, next };
+  };
+
+  it('answers the variant\'s entry, or the plain language entry when none is named', async () => {
+    const docs = [{ id: 1, page, pageUntil: future() }];
+    expect((await run(route, '/shop/items/mug', { currency: 'eur' }, docs)).res.json).toHaveBeenCalledWith({ name: 'Чаша €' });
+    expect((await run(route, '/shop/items/mug', {}, docs)).res.json).toHaveBeenCalledWith({ name: 'Чаша' });
+  });
+
+  it('leaves a variant with no entry, or one the route does not accept, to the plugin', async () => {
+    const docs = [{ id: 1, page, pageUntil: future() }];
+    for (const currency of ['usd', 'EURO', '<x>']) {
+      const { res, next } = await run(route, '/shop/items/mug', { currency }, docs);
+      expect(res.json).not.toHaveBeenCalled();
+      expect(next).toHaveBeenCalled();
+    }
+  });
+
+  it('picks the language\'s entry of every record on a list, never the whole map', async () => {
+    const docs = [{ id: 1, page, pageUntil: future() }, { id: 2, page: { bg: { name: 'Нож' }, 'bg:EUR': { name: 'Нож €' } }, pageUntil: future() }];
+    expect((await run(list, '/shop/items', {}, docs)).res.json).toHaveBeenCalledWith([{ name: 'Чаша' }, { name: 'Нож' }]);
+    expect((await run(list, '/shop/items', { currency: 'EUR' }, docs)).res.json).toHaveBeenCalledWith([{ name: 'Чаша €' }, { name: 'Нож €' }]);
+    const missing = await run(list, '/shop/items', {}, [...docs, { id: 3, page: { en: { name: 'Knife' } }, pageUntil: future() }]);
+    expect(missing.res.json).not.toHaveBeenCalled();
+    expect(missing.next).toHaveBeenCalled();
+  });
+});
