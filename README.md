@@ -77,15 +77,15 @@ Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, sam
 | Create a record | **84.7** | 58.9 | 76.5 | 76.2 |
 
 **Against the commerce platforms** — Atlantis' own full shop product (94 columns, tax-aware prices, variants,
-stock) against each platform's own product:
+stock) against each platform's own product (Payload with its official e-commerce plugin):
 
-| Operation (req/s) | Atlantis, full shop product | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
-|:--|--:|--:|--:|--:|--:|--:|
-| Product list (20) | **92.2** | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
-| Single product | **214.6** | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
-| Filtered + sorted (20) | **66.8** | 14.9 | 10.3 | 8.9 | 10.7 | 16.2 |
-| Signed-in read (20) | **119.0** | 51.7 | 6.4 | 4.3 | 7.7 | 10.5 |
-| Create a record | **70.3** | 23.0 | 24.1 | 4.3 | 14.7 | 5.2 |
+| Operation (req/s) | Atlantis, full shop product | Payload + e-commerce plugin | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
+|:--|--:|--:|--:|--:|--:|--:|--:|
+| Product list (20) | **92.2** | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
+| Single product | **214.6** | 98.2 | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
+| Filtered + sorted (20) | **66.8** | 30.2 | 14.9 | 10.3 | 8.9 | 10.7 | 16.2 |
+| Signed-in read (20) | **119.0** | 52.7 | 51.7 | 6.4 | 4.3 | 7.7 | 10.5 |
+| Create a record | **70.3** | 44.9 | 23.0 | 24.1 | 4.3 | 14.7 | 5.2 |
 
 Atlantis is first in every row of every table, including at 36 fields per record where it stays 1.1× to 1.8×
 ahead. Every number, the method, the data and what these results do **not** show are in

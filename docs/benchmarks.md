@@ -2,7 +2,7 @@
 
 **req/s** = requests per second (higher is better), measured on **6 October 2026** on one 2 vCPU / 4 GB server, one platform
 at a time, on the same data. Nine platforms: Atlantis (the framework in this repository with the shop and
-CMS plugins), Payload, Directus, Strapi, Medusa, PrestaShop, Magento 2.4, Drupal 11 + Commerce 3 and
+CMS plugins), Payload (also with its official e-commerce plugin), Directus, Strapi, Medusa, PrestaShop, Magento 2.4, Drupal 11 + Commerce 3 and
 WordPress + WooCommerce. Best result in each row in **bold**.
 
 > These are the numbers from one server and one dataset, run by us. Read [How it was measured](#how-it-was-measured)
@@ -19,39 +19,44 @@ hardware.
 
 ## 1. Every platform, every operation (req/s)
 
-| Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
-|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
-| Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — |
-| List of 20 records | **203.4** | 92.2 <sub>(computed per request 48.5)</sub> | 137.5 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
-| Single record / product | **255.9** | 214.6 <sub>(computed per request 107.0)</sub> | 217.6 | 128.8 | 115.2 | 25.6 | 54.1 | 12.8 | 12.4 | 21.0 |
-| Page by slug | **255.9** <sub>(same operation as a single record)</sub> | 213.9 | 221.8 | 134.2 | 113.0 | — | 71.2 | 21.3 | 13.1 | 14.8 |
-| Posts list (20) | **203.4** <sub>(same operation as a list)</sub> | 124.2 | 147.3 | 101.9 | 101.9 | — | — | — | 9.6 | 7.9 |
-| Filtered + sorted (20) | **150.4** | 66.8 <sub>(card view 128.4)</sub> | 130.8 | 101.1 | 68.8 | 16.2 | 14.9 | 10.3 | 8.9 | 10.7 |
-| Signed-in read (20) | **157.4** | 119.0 | 76.5 | 103.1 | 94.6 | 10.5 | 51.7 | 6.4 | 4.3 | 7.7 |
-| Create a record | **84.7** | 70.3 | 58.9 | 76.5 | 76.2 | 5.2 | 23.0 | 24.1 | 4.3 | 14.7 |
+| Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Payload + ecommerce plugin | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
+|:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
+| Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — | — |
+| List of 20 records | **203.4** | 92.2 <sub>(computed per request 48.5)</sub> | 137.5 | 58.2 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
+| Single record / product | **255.9** | 214.6 <sub>(computed per request 107.0)</sub> | 217.6 | 98.2 | 128.8 | 115.2 | 25.6 | 54.1 | 12.8 | 12.4 | 21.0 |
+| Page by slug | **255.9** <sub>(same operation as a single record)</sub> | 213.9 | 221.8 | — | 134.2 | 113.0 | — | 71.2 | 21.3 | 13.1 | 14.8 |
+| Posts list (20) | **203.4** <sub>(same operation as a list)</sub> | 124.2 | 147.3 | — | 101.9 | 101.9 | — | — | — | 9.6 | 7.9 |
+| Filtered + sorted (20) | **150.4** | 66.8 <sub>(card view 128.4)</sub> | 130.8 | 30.2 | 101.1 | 68.8 | 16.2 | 14.9 | 10.3 | 8.9 | 10.7 |
+| Signed-in read (20) | **157.4** | 119.0 | 76.5 | 52.7 | 103.1 | 94.6 | 10.5 | 51.7 | 6.4 | 4.3 | 7.7 |
+| Create a record | **84.7** | 70.3 | 58.9 | 44.9 | 76.5 | 76.2 | 5.2 | 23.0 | 24.1 | 4.3 | 14.7 |
 
 The first Atlantis column is a plain collection with the same six fields as the other tools' products
 (`name`, `slug`, `description`, `price`, `sku`, `stock`), through Atlantis' generic REST API. The second is
 Atlantis' own **full shop product** (94 columns, tax-aware prices, variants, stock, ratings, lead time) and
 CMS records, which carry several times the data of a plain record. The second column is the like-for-like for
-the commerce platforms (Medusa, PrestaShop, Magento, Drupal Commerce, WooCommerce), which also return full
-commerce products. Atlantis is first in every row.
+the commerce setups (Payload with its official e-commerce plugin, Medusa, PrestaShop, Magento, Drupal
+Commerce, WooCommerce), which also return full commerce products. Atlantis is first in every row; in the
+page-by-slug and posts-list rows the richer CMS record (213.9 and 124.2) is 4% and 16% behind Payload's plain
+page and post, and ahead of it at equal width (first column).
 
-## 2. The full shop product against the commerce platforms (req/s)
+## 2. The full shop product against the other commerce setups (req/s)
 
-| Operation (req/s) | Fromcode, full shop / CMS record | Best of the five commerce platforms | Which | Fromcode ahead by |
+| Operation (req/s) | Fromcode, full shop / CMS record | Best of the other commerce setups | Which | Fromcode ahead by |
 |:--|--:|--:|:--|--:|
-| Product list, full (20) | **92.2** | 14.7 | PrestaShop | 6.3× |
-| Single product | **214.6** | 54.1 | PrestaShop | 4.0× |
+| Product list, full (20) | **92.2** | 58.2 | Payload + ecommerce plugin | 1.6× |
+| Single product | **214.6** | 98.2 | Payload + ecommerce plugin | 2.2× |
 | Page by slug | **213.9** | 71.2 | PrestaShop | 3.0× |
 | Posts list (20) | **124.2** | 9.6 | Drupal | 12.9× |
-| Filtered + sorted (20) | **66.8** | 16.2 | Medusa | 4.1× |
-| Signed-in read (20) | **119.0** | 51.7 | PrestaShop | 2.3× |
-| Create a record | **70.3** | 24.1 | Magento | 2.9× |
+| Filtered + sorted (20) | **66.8** | 30.2 | Payload + ecommerce plugin | 2.2× |
+| Signed-in read (20) | **119.0** | 52.7 | Payload + ecommerce plugin | 2.3× |
+| Create a record | **70.3** | 44.9 | Payload + ecommerce plugin | 1.6× |
 
-The shop's product list and single product are answered from a page the shop prepares beforehand and empties
-the moment anything it depends on changes. Worked out on every request they are 48.5 and 107.0 requests per
-second, which is still ahead of every commerce platform in those rows (14.7 and 54.1 at best).
+Payload here is its official e-commerce plugin (`@payloadcms/plugin-ecommerce`) with the product its own
+template ships: title, slug, rich-text description, gallery, categories, related products, SEO fields,
+inventory, prices and drafts. The shop's product list and single product are answered from a page the shop
+prepares beforehand and empties the moment anything it depends on changes. Worked out on every request they are
+48.5 and 107.0 req/s: the single product is still ahead of Payload's commerce product (98.2), the list is not
+(58.2).
 
 ## 3. Plain records, 6 fields — against the other open-source backends (req/s)
 
@@ -105,8 +110,9 @@ request (5.2 → 6.5 ms) while the answer grows 2.4× (14.2 → 34.6 KB): about 
 
 - Magento, Drupal, WordPress and PrestaShop have fixed commerce schemas, so they were measured at their own
   product width only; the width comparison is Atlantis, Payload, Directus and Strapi.
-- Payload with Atlantis' full shop pricing logic was not built, so there is no like-for-like Payload number for
-  the commerce product itself.
+- Payload's commerce product is the one its own plugin and template ship; it is not identical to Atlantis'
+  (Atlantis' carries tax-aware pricing, variants and lead time in one record), so the two are comparable in
+  kind, not field for field.
 - Hosted SaaS (Shopify and similar) cannot be run on this server and is not included.
 - A 2 vCPU / 4 GB server: Magento runs near its memory limit on it, and every platform would do better on a
   larger machine. The ranking is for this server and this data.
