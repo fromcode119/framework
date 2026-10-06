@@ -14,6 +14,7 @@ import { GeoLocationCard } from '@/app/settings/infrastructure/geo-location-card
 import { ApiResponseCacheCard } from '@/app/settings/infrastructure/api-response-cache-card.client';
 import { DatabasePoolCard } from '@/app/settings/infrastructure/database-pool-card.client';
 import { MonitoringCard } from '@/app/settings/infrastructure/monitoring-card.client';
+import { SchemaOrphansCard } from '@/app/settings/infrastructure/schema-orphans-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -92,6 +93,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           <DatabasePoolCard />
 
           <MonitoringCard />
+          <SchemaOrphansCard />
 
           {this.retentionCard()}
 

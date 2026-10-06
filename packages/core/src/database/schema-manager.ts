@@ -4,6 +4,7 @@ import { Logger } from '@core/logging';
 import { SystemConstants } from '@core/constants/system.constants';
 import { EntitySchemaPlanService } from '@core/database/entity-schema-plan-service';
 import { SchemaReconciliationService } from '@core/database/schema-reconciliation-service';
+import type { IPendingSchemaDrop } from '@core/database/interfaces/pending-schema-drop.interface';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import { SchemaTenantIsolationService } from '@core/database/schema-tenant-isolation-service';
@@ -135,6 +136,16 @@ export class SchemaManager {
   }
 
   /** Every table in the schema — for finding ones whose plugin is not currently running. */
+  /** The columns nothing declares, their row counts taken NOW — what a platform admin decides on. */
+  async pendingDrops(): Promise<IPendingSchemaDrop[]> {
+    return this.reconciliation.pendingWithCounts();
+  }
+
+  /** Drop one column a platform admin approved. Refused unless this deployment itself proposed it. */
+  async approveDrop(table: string, column: string): Promise<IPendingSchemaDrop> {
+    return this.reconciliation.approve(table, column);
+  }
+
   async listTables(): Promise<string[]> {
     return (await this.db.getTables()) ?? [];
   }

@@ -38,6 +38,7 @@ import { SetupStatusRouter } from '@api/routes/setup-status-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { GeoAdminRouter } from '@api/routes/geo-admin-router';
 import { MonitoringAdminRouter } from '@api/routes/monitoring-admin-router';
+import { SchemaOrphanAdminRouter } from '@api/routes/schema-orphan-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
 import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
@@ -169,6 +170,8 @@ export class ServerRoutesSetup {
     );
     // The platform monitor's Health page (Settings → Infrastructure → Monitoring). Platform admins only.
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_MONITORING}`, new MonitoringAdminRouter(this.manager, this.auth, platformAdmin).router);
+    // The database-schema review (Settings → Infrastructure): columns nothing declares, and dropping one. Platform admins only.
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_SCHEMA_ORPHANS}`, new SchemaOrphanAdminRouter(this.manager, this.auth, platformAdmin).router);
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.
     vApi.use(RouteConstants.SEGMENTS.SCIM_BASE, new ScimRouter(this.manager, this.auth).router);
     vApi.use(MEDIA, new MediaRouter(this.manager, this.auth, this.mediaManager).router);
