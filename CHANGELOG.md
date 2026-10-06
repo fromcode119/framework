@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.333] - 2026-10-06
+
+### Fixed
+
+- **core**: the schema review re-checks each column against what is registered now ([#773](https://github.com/fromcode119/framework/pull/773))
+
 ## [0.2.332] - 2026-10-06
 
 ### Added
