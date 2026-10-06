@@ -42,3 +42,15 @@ describe('FrameworkEmailLayout theme override', () => {
     expect(none).toContain('Notification Email');
   });
 });
+
+describe('FrameworkEmailLayout heading', () => {
+  it('drops a leading platform-name or product tag from the heading, not from the content', async () => {
+    const src = sourceWith({ platform_name: 'Вселенски Портал' });
+    const a = await FrameworkEmailLayout.wrap(src, { subject: 'Вселенски Портал: Telemetry Test Email', text: 'x' });
+    expect(a).toContain('>Telemetry Test Email</h1>');
+    const b = await FrameworkEmailLayout.wrap(src, { subject: '[Atlantis] 2 plugin(s) need attention', text: 'x' });
+    expect(b).toContain('>2 plugin(s) need attention</h1>');
+    const c = await FrameworkEmailLayout.wrap(src, { subject: 'Plugin "a" is not running', text: 'x' });
+    expect(c).toContain('>Plugin &quot;a&quot; is not running</h1>');
+  });
+});
