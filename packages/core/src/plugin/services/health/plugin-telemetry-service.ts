@@ -6,6 +6,7 @@ import type { FrameworkEmailSender } from '@core/email/framework-email-sender';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { IDatabaseManager } from '@fromcode119/database';
 import { PluginEmailTemplateFileService } from '@core/plugin/services/plugin-email-template-file-service';
+import { FrameworkEmailLayout } from '@core/email/framework-email-layout';
 import { createHash } from 'crypto';
 
 export class PluginTelemetryService {
@@ -129,6 +130,11 @@ export class PluginTelemetryService {
     return FrameworkEmailSenderService.resolve(this.integrations, await this.resolveAppName());
   }
 
+  /** The default operator-email frame (logo, platform name, footer) around a rendered template. */
+  private frame(email: { subject: string; html: string }): Promise<string> {
+    return FrameworkEmailLayout.wrap({ db: this.db }, email).catch(() => email.html);
+  }
+
   // --- Notification methods ---
 
   async notifyOnCriticalLog(level: string, message: string, pluginSlug?: string, context?: any): Promise<void> {
@@ -167,7 +173,7 @@ export class PluginTelemetryService {
       from: sender.identity,
       subject: email.subject,
       text: email.text,
-      html: email.html,
+      html: await this.frame(email),
     });
   }
 
@@ -251,7 +257,7 @@ export class PluginTelemetryService {
       from: sender.identity,
       subject: email.subject,
       text: email.text,
-      html: email.html,
+      html: await this.frame(email),
     });
   }
 
@@ -283,7 +289,7 @@ export class PluginTelemetryService {
       from: sender.identity,
       subject: email.subject,
       text: email.text,
-      html: email.html,
+      html: await this.frame(email),
     });
     return { sent: true, recipientsCount: recipients.length };
   }
