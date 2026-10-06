@@ -284,15 +284,8 @@ export class ApiBootstrapService {
       }
     }
 
-    const port = parseInt(process.env.PORT || '3000', 10);
-    const host = process.env.HOST || '0.0.0.0';
-    server.start(port, host);
-
-    // Sites created before this boot could write for them (the first one) still owe their content.
-    // After the server is up so plugins have settled, and not awaited: it must not hold the api back.
-    PendingSiteSeedsBoot.run(manager, themeManager).catch((error: any) => {
-      this.logger.error(`Creating pending site content failed: ${error?.message || error}`);
-    });
+    server.start(parseInt(process.env.PORT || '3000', 10), process.env.HOST || '0.0.0.0');
+    PendingSiteSeedsBoot.start(manager, themeManager);
   }
 
   private static assertProductionSecret(name: string, value: string | undefined): void {

@@ -15,6 +15,16 @@ import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
 export class PendingSiteSeedsBoot {
   private static readonly logger = new Logger({ namespace: 'site-seed' });
 
+  /**
+   * Fire-and-forget, after the server is up so plugins have settled: it must not hold the api back,
+   * and a failure is logged rather than thrown into the boot.
+   */
+  static start(manager: PluginManager, themeManager: ThemeManager): void {
+    PendingSiteSeedsBoot.run(manager, themeManager).catch((error: any) => {
+      PendingSiteSeedsBoot.logger.error(`Creating pending site content failed: ${error?.message || error}`);
+    });
+  }
+
   static async run(manager: PluginManager, themeManager: ThemeManager): Promise<void> {
     if (!TenantMode.isEnabled()) return;
     const db = ((manager as any).schemaDb ?? manager.db) as IDatabaseManager;

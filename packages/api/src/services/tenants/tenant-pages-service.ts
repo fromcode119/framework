@@ -19,15 +19,8 @@ import {
  * Every operation that changes what exists is recorded in the backup audit table, with the actor.
  */
 import { TenantLookup } from '@api/services/tenants/tenant-lookup';
+import type { IMaterializePagesOutcome } from '@api/services/tenants/interfaces/materialize-pages-outcome.interface';
 import { PendingSiteSeed } from '@api/services/tenants/pending-site-seed';
-
-export interface MaterializePagesOutcome {
-  pages: number;
-  themeSeeded: boolean;
-  /** Why the theme seed did not run; `null` when it did. */
-  themeSeedReason: string | null;
-  warnings: string[];
-}
 
 /**
  * Counting and materializing a tenant's content pages from the theme and plugin page contracts.
@@ -88,7 +81,7 @@ export class TenantPagesService {
    * menus, partner records and plugin settings over whatever exists, so replaying it on a running site
    * from "Rebuild pages" overwrote the operator's edits; that replay is Themes → Run Seeds, which says so.
    */
-  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<MaterializePagesOutcome> {
+  async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<IMaterializePagesOutcome> {
     const tenant = await this.lookup.requireTenant(tenantId);
     // A new site made while sites are not yet on — the FIRST site — cannot be written for: nothing binds
     // a write to it, so every row would be created with no owner and be hidden from the site at the next
