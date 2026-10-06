@@ -19,7 +19,7 @@ hardware.
 
 ## 1. Every platform, every operation (req/s)
 
-| Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Payload + ecommerce plugin | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
+| Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Payload + shop plugin | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
 |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — | — |
 | List of 20 records | **203.4** | 92.2 <sub>(computed per request 48.5)</sub> | 137.5 | 58.2 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
@@ -43,15 +43,15 @@ page and post, and ahead of it at equal width (first column).
 
 | Operation (req/s) | Fromcode, full shop / CMS record | Best of the other commerce setups | Which | Fromcode ahead by |
 |:--|--:|--:|:--|--:|
-| Product list, full (20) | **92.2** | 58.2 | Payload + ecommerce plugin | 1.6× |
-| Single product | **214.6** | 98.2 | Payload + ecommerce plugin | 2.2× |
+| Product list, full (20) | **92.2** | 58.2 | Payload + shop plugin | 1.6× |
+| Single product | **214.6** | 98.2 | Payload + shop plugin | 2.2× |
 | Page by slug | **213.9** | 71.2 | PrestaShop | 3.0× |
 | Posts list (20) | **124.2** | 9.6 | Drupal | 12.9× |
-| Filtered + sorted (20) | **66.8** | 30.2 | Payload + ecommerce plugin | 2.2× |
-| Signed-in read (20) | **119.0** | 52.7 | Payload + ecommerce plugin | 2.3× |
-| Create a record | **70.3** | 44.9 | Payload + ecommerce plugin | 1.6× |
+| Filtered + sorted (20) | **66.8** | 30.2 | Payload + shop plugin | 2.2× |
+| Signed-in read (20) | **119.0** | 52.7 | Payload + shop plugin | 2.3× |
+| Create a record | **70.3** | 44.9 | Payload + shop plugin | 1.6× |
 
-Payload here is its official e-commerce plugin (`@payloadcms/plugin-ecommerce`) with the product its own
+Payload here is its official e-commerce plugin (Payload's own published e-commerce package) with the product its own
 template ships: title, slug, rich-text description, gallery, categories, related products, SEO fields,
 inventory, prices and drafts. The shop's product list and single product are answered from a page the shop
 prepares beforehand and empties the moment anything it depends on changes. Worked out on every request they are
