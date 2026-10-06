@@ -207,7 +207,7 @@ export interface IDatabaseManager {
     offset?: number;
     orderBy?: any;
     columns?: Record<string, boolean>;
-    joins?: any[]; // Can be JoinClause[] or Drizzle-style joins
+    joins?: any[]; // Join clauses: `{ table, on, type }`
     /**
      * Push a LIKE/ILIKE filter to the DB. columns are OR-ed, ANDed with where.
      * Columns are canonical schema field names and are resolved against the table's real columns;

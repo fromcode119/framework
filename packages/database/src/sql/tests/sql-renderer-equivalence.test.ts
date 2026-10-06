@@ -1,33 +1,23 @@
 import { describe, expect, it } from 'vitest';
-import * as d from 'drizzle-orm';
-import { PgDialect, pgTable, pgSchema, serial, text, integer, numeric, real, boolean, timestamp, date, json, jsonb, uuid } from 'drizzle-orm/pg-core';
-import { SQLiteSyncDialect } from 'drizzle-orm/sqlite-core';
-import { MySqlDialect } from 'drizzle-orm/mysql-core';
 import { Sql } from '@database/sql/sql';
 import { SqlColumns as c } from '@database/sql/sql-columns';
 import { SqlRenderer } from '@database/sql/sql-renderer';
 import { SqlTable } from '@database/sql/sql-table';
 
 /**
- * Our SQL layer replaced Drizzle's. Every expression the framework builds must render to the statement
- * Drizzle rendered — the same text and the same bound values, encoded the same way — in each dialect.
- * Drizzle is a dev dependency for exactly this comparison.
+ * Every expression the framework builds must render to the same statement — text and bound values,
+ * encoded the same way — in each dialect. The snapshot beside this file pins them; it was written when
+ * each case still matched, byte for byte, the query library this layer replaced.
  */
 
-const theirs = pgTable('items', {
-  id: serial('id').primaryKey(), title: text('title'), stock: integer('stock'), price: numeric('price'), weight: real('weight'),
-  isActive: boolean('is_active'), at: timestamp('at', { withTimezone: true }), local: timestamp('local'), atText: timestamp('at_text', { mode: 'string' }),
-  day: date('day'), dayDate: date('day_date', { mode: 'date' }), meta: json('meta'), tags: jsonb('tags'), ref: uuid('ref'),
-});
 const ours = SqlTable.define('items', {
   id: c.serial('id').primaryKey(), title: c.text('title'), stock: c.integer('stock'), price: c.numeric('price'), weight: c.real('weight'),
   isActive: c.boolean('is_active'), at: c.timestamp('at', { withTimezone: true }), local: c.timestamp('local'), atText: c.timestamp('at_text', { mode: 'string' }),
   day: c.date('day'), dayDate: c.date('day_date', { mode: 'date' }), meta: c.json('meta'), tags: c.jsonb('tags'), ref: c.uuid('ref'),
 });
-const theirsInSchema = pgSchema('tenant_a').table('docs', { id: serial('id') });
 const oursInSchema = SqlTable.defineIn('tenant_a', 'docs', { id: c.serial('id') });
 
-/** One case: the same expression, written once against each library. */
+/** One case: an expression built from the framework's SQL helpers. */
 type Build = (s: { sql: any; t: any; ops: any; schemaTable: any }) => unknown;
 const at = new Date('2026-03-01T10:15:30.123Z');
 const cases: Array<[string, Build]> = [
@@ -66,50 +56,38 @@ const cases: Array<[string, Build]> = [
   ['append', ({ sql }) => sql`a = ${1}`.append(sql` and b = ${2}`)],
 ];
 
-const ourOps = Sql;
-const dialects: Array<[string, { sqlToQuery(q: any): { sql: string; params: unknown[] } }, SqlRenderer]> = [
-  ['postgres', new PgDialect(), SqlRenderer.POSTGRES],
-  ['sqlite', new SQLiteSyncDialect(), SqlRenderer.SQLITE],
-  ['mysql', new MySqlDialect(), SqlRenderer.MYSQL],
+const dialects: Array<[string, SqlRenderer]> = [
+  ['postgres', SqlRenderer.POSTGRES],
+  ['sqlite', SqlRenderer.SQLITE],
+  ['mysql', SqlRenderer.MYSQL],
 ];
 
-describe('our SQL renders exactly as Drizzle did', () => {
-  for (const [dialectName, drizzleDialect, renderer] of dialects) {
+describe('our SQL renders the pinned statements', () => {
+  for (const [dialectName, renderer] of dialects) {
     for (const [name, build] of cases) {
       it(`${dialectName}: ${name}`, () => {
-        const expected = drizzleDialect.sqlToQuery(build({ sql: d.sql, t: theirs, ops: d, schemaTable: theirsInSchema }) as any);
-        const actual = renderer.render(build({ sql: Sql.tag(), t: ours, ops: ourOps, schemaTable: oursInSchema }));
-        expect(actual).toEqual({ text: expected.sql, params: expected.params });
+        expect(renderer.render(build({ sql: Sql.tag(), t: ours, ops: Sql, schemaTable: oursInSchema }))).toMatchSnapshot();
       });
     }
   }
 });
 
-describe('our columns decode exactly as Drizzle\'s', () => {
+describe('our columns decode and encode the pinned values', () => {
   const samples: Record<string, unknown[]> = {
     id: [1, '7'], title: ['x', ''], stock: [3, '42'], price: ['19.90', 12.5, '100000000000.000001'], weight: [1.25, '2.5'],
     isActive: [true, false], at: ['2026-03-01 10:15:30.123+02', at], local: ['2026-03-01 10:15:30.5', at], atText: ['2026-03-01 10:15:30', at],
     day: ['2026-03-01', at], dayDate: ['2026-03-01'], meta: ['{"a":1}', { a: 1 }, 'not json', [1]], tags: ['["a"]', ['a'], 'null'], ref: ['a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11'],
   };
   for (const [key, values] of Object.entries(samples)) {
-    it(`${key}: decodes and encodes the same`, () => {
-      for (const value of values) {
-        const theirColumn: any = (theirs as any)[key];
-        const ourColumn: any = (ours as any)[key];
-        expect(ourColumn.mapFromDriverValue(value)).toStrictEqual(theirColumn.mapFromDriverValue(value));
-        if (!(typeof value === 'string' && ['at', 'local', 'day', 'dayDate'].includes(key))) {
-          expect(ourColumn.mapToDriverValue(value)).toStrictEqual(theirColumn.mapToDriverValue(value));
-        }
-      }
+    it(`${key}: decodes and encodes`, () => {
+      const column: any = (ours as any)[key];
+      const encodes = (value: unknown) => !(typeof value === 'string' && ['at', 'local', 'day', 'dayDate'].includes(key));
+      expect(values.map((value) => [column.mapFromDriverValue(value), encodes(value) ? column.mapToDriverValue(value) : undefined])).toMatchSnapshot();
     });
   }
 
-  it('declares the same names, defaults and keys', () => {
-    for (const [key, column] of Object.entries(d.getTableColumns(theirs))) {
-      const ourColumn = SqlTable.columnsOf(ours)[key];
-      expect([ourColumn.name, ourColumn.notNull, ourColumn.primary]).toEqual([column.name, column.notNull, column.primary]);
-    }
-    expect(Object.keys(SqlTable.columnsOf(ours))).toEqual(Object.keys(d.getTableColumns(theirs)));
-    expect(SqlTable.nameOf(ours)).toBe(d.getTableName(theirs));
+  it('declares the pinned names, defaults and keys', () => {
+    expect(Object.entries(SqlTable.columnsOf(ours)).map(([key, column]) => [key, column.name, column.notNull, column.primary])).toMatchSnapshot();
+    expect(SqlTable.nameOf(ours)).toBe('items');
   });
 });

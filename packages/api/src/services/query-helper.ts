@@ -8,7 +8,7 @@ export class QueryHelper {
   private static readonly searchableFieldTypes = new Set(['text', 'textarea', 'select', 'number']);
 
   /**
-   * Generates or retrieves a Drizzle table object for a given collection definition.
+   * Generates or retrieves a declared table object for a given collection definition.
    *
    * Cached by the definition's SHAPE, not its slug alone. Keyed by slug, the first shape a collection
    * was read with was served for the life of the process: a plugin updated in place adds a field and
@@ -92,7 +92,7 @@ export class QueryHelper {
       // Match relationship fields by their related record's name: `field IN (matchedRelatedIds)`,
       // resolved upstream so the list search also covers related records (e.g. inventory by product).
       // The relationship column is a jsonb column whose id is stored as TEXT (e.g. "5.0"), so a
-      // Drizzle `inArray` on the typed column mis-binds. Build a raw clause that casts per id type:
+      // An `in` on the typed column mis-binds. Build a raw clause that casts per id type:
       // numeric ids → CAST(col AS REAL) IN (numbers); otherwise CAST(col AS TEXT) IN (strings).
       if (relationshipMatches) {
         for (const [fieldName, ids] of Object.entries(relationshipMatches)) {

@@ -12,7 +12,6 @@
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22+-green?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript 5+](https://img.shields.io/badge/TypeScript-5+-blue?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-cyan?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
-[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-orange?style=for-the-badge)](https://orm.drizzle.team/)
 
 ---
 
@@ -220,7 +219,6 @@ Atlantis is [MIT licensed](LICENSE). See [SECURITY.md](SECURITY.md) for reportin
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5+-blue?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-cyan?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
-[![Drizzle ORM](https://img.shields.io/badge/Drizzle-ORM-orange?style=for-the-badge)](https://orm.drizzle.team/)
 
 Built with ❤️ by [Fromcode](https://fromcode.com).
 

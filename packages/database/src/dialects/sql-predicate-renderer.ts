@@ -47,7 +47,7 @@ export class SqlPredicateRenderer {
         throw new Error(`Invalid where clause: operator "${comparison.operator}" cannot take null (column "${comparison.column}"). Only eq/ne accept null, as IS NULL / IS NOT NULL.`);
       }
       if (comparison.isSet) {
-        // Drizzle's own inArray/notInArray REJECT an empty list at runtime. An empty set is a real
+        // A SQL `IN ()` with no values is a syntax error. An empty set is a real
         // thing to ask for, though — "any of the ids this page selected", where the page selected
         // none — so it renders as the constant it means, rather than throwing at the call site.
         if (comparison.values.length === 0) return comparison.operator === 'in' ? Sql.query`1 = 0` : Sql.query`1 = 1`;
@@ -119,7 +119,7 @@ export class SqlPredicateRenderer {
   /**
    * The fragment equivalent of `renderPatternPredicate`.
    *
-   * Drizzle's `like`/`ilike` helpers emit no ESCAPE clause, so a pattern built through them would let
+   * A plain `like`/`ilike` emits no ESCAPE clause, so a pattern built through it would let
    * a user's own `%` act as a wildcard. This keeps the escape character the raw paths use, and asks
    * the dialect for the same operator (Postgres answers ILIKE), so a search means one thing whether
    * the caller reached a typed table or a table name.

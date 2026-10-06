@@ -266,7 +266,7 @@ export class PluginController extends BaseController {
   /**
    * Recent log lines for one plugin.
    *
-   * This was written against a Drizzle-style API the manager does not have: `systemLogs` is a static
+   * This was written against an API the manager does not have: `systemLogs` is a static
    * MEMBER of the schema class, so `require('@fromcode119/database').systemLogs` was `undefined` and
    * every request 500'd with "Cannot read properties of undefined (reading 'pluginSlug')" — which is
    * why the plugin detail page could never show logs. It now reads the table the same way every other

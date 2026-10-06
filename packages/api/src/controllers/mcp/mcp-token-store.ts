@@ -85,7 +85,7 @@ export class McpTokenStore {
   private async writeIndex(entries: any[]): Promise<void> {
     // findOne -> insert/update, the pattern `ServerSettingsService` uses on this table. `upsert` is
     // NOT usable here: it resolves its conflict target with `table[options.target]`, which needs a
-    // Drizzle table OBJECT; `SystemConstants.TABLE.META` is a NAME string.
+    // declared table OBJECT; `SystemConstants.TABLE.META` is a NAME string.
     const value = JSON.stringify(entries);
     const existing = await this.db.findOne(SystemConstants.TABLE.META, { key: McpTokenStore.INDEX_KEY });
     if (existing) {

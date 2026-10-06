@@ -41,7 +41,7 @@ describe('search column naming', () => {
     return manager;
   }
 
-  /** Drizzle table object: camelCase JS keys mapped to snake_case physical columns. */
+  /** A declared table object: camelCase JS keys mapped to snake_case physical columns. */
   const referralsTable = SqlTable.define('fcp_test_referrals', {
     id: SqlColumns.integer('id'),
     affiliateCode: SqlColumns.text('affiliate_code'),

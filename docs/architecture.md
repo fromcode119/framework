@@ -66,7 +66,7 @@ API Server               Admin (Next.js)    Frontend (Next.js)
  Registry    Monitor     Layer
     │                       │
     ▼                       ▼
-Domain Plugins          Drizzle ORM
+Domain Plugins          SQL layer
 (content, commerce,     (SQLite / PostgreSQL)
  billing, ...)
 ```
@@ -128,7 +128,7 @@ Not locked to any ORM or driver:
 | **Driver Abstraction** | Database connections managed by the kernel. Plugins receive a typed `context.db` — never manage connections directly. |
 | **PostgreSQL (default)** | The database for every environment, local included. Per-site isolation is a row-level-security policy the database enforces; the app connects as a plain role, never as the owner or a superuser. |
 | **SQLite** | Single-site installs only (`DB_DIALECT=sqlite`): zero setup, no row-level security, so no multi-site mode. |
-| **Drizzle ORM** | Default query builder. Full TypeScript inference for schema and queries. |
+| **Own SQL layer** | Typed tables and one query builder shared by every dialect; statements are parameterised and rendered per dialect. |
 | **7-Phase Migrations** | Atomic migration orchestration across core and all active plugins simultaneously. Schema changes are coordinated, not scattered. |
 
 ## Multi-site Tenancy
@@ -209,7 +209,7 @@ This means every class is independently instantiable, mockable, and replaceable 
 │   ├── sdk/                # Public contract for plugins/themes — the ONLY import surface they may use
 │   │  # Infrastructure providers (kernel-managed, swappable)
 │   ├── auth/               # JWT sessions, refresh rotation, MFA/TOTP, API keys, SSO extensions
-│   ├── database/           # Driver abstraction (SQLite/PostgreSQL), Drizzle integration, proxies
+│   ├── database/           # Driver abstraction (SQLite/PostgreSQL), SQL layer, proxies
 │   ├── cache/               # CacheManager — Redis / Memcached / in-memory
 │   ├── email/               # EmailManager — SMTP / SendGrid / Mailgun / mock
 │   ├── media/               # StorageManager + media pipeline — local / S3 / Cloudinary

@@ -1,0 +1,363 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`our declared-table writes: the rows (real Postgres) > every write answers, and leaves the rows, the snapshot pins 1`] = `
+{
+  "delete by a set": true,
+  "delete nothing": false,
+  "insert, an explicit null and an unknown key": {
+    "id": 3,
+    "isActive": false,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "желязо",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  "insert, defaults for the rest": {
+    "id": 2,
+    "isActive": false,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "chair",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  "insert, every value": {
+    "id": 1,
+    "isActive": true,
+    "price": "19.90",
+    "publishedAt": 2026-03-01T10:15:30.123Z,
+    "releaseDay": "2026-03-01",
+    "slug": "lamp",
+    "stock": 4,
+    "tags": [
+      "a",
+      "b",
+    ],
+    "title": "Lamp",
+  },
+  "insert, several rows": {
+    "id": 4,
+    "isActive": false,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "desk",
+    "stock": 2,
+    "tags": [],
+    "title": null,
+  },
+  "update by a SQL fragment": {
+    "id": 2,
+    "isActive": true,
+    "price": "100000000000.000001",
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "chair",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  "update by a range, skipping an undefined value": {
+    "id": 2,
+    "isActive": true,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "chair",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  "update by id": {
+    "id": 1,
+    "isActive": true,
+    "price": "19.90",
+    "publishedAt": 2026-03-01T10:15:30.123Z,
+    "releaseDay": "2026-03-01",
+    "slug": "lamp",
+    "stock": 5,
+    "tags": {
+      "nested": {
+        "x": [
+          1,
+          2,
+        ],
+      },
+    },
+    "title": "Lamp (edited)",
+  },
+  "update with a SQL value": {
+    "id": 1,
+    "isActive": true,
+    "price": "19.90",
+    "publishedAt": 2026-03-01T10:15:30.123Z,
+    "releaseDay": "2026-03-01",
+    "slug": "lamp",
+    "stock": 6,
+    "tags": {
+      "nested": {
+        "x": [
+          1,
+          2,
+        ],
+      },
+    },
+    "title": "Lamp (edited)",
+  },
+  "upsert, conflict": {
+    "id": 1,
+    "isActive": true,
+    "price": "19.90",
+    "publishedAt": 2026-03-01T10:15:30.123Z,
+    "releaseDay": "2026-03-01",
+    "slug": "lamp",
+    "stock": 6,
+    "tags": {
+      "nested": {
+        "x": [
+          1,
+          2,
+        ],
+      },
+    },
+    "title": "Lamp v2",
+  },
+  "upsert, new row": {
+    "id": 7,
+    "isActive": false,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "table",
+    "stock": 7,
+    "tags": [],
+    "title": null,
+  },
+}
+`;
+
+exports[`our declared-table writes: the rows (real Postgres) > every write answers, and leaves the rows, the snapshot pins 2`] = `
+[
+  {
+    "id": 1,
+    "isActive": true,
+    "price": "19.90",
+    "publishedAt": 2026-03-01T10:15:30.123Z,
+    "releaseDay": "2026-03-01",
+    "slug": "lamp",
+    "stock": 6,
+    "tags": {
+      "nested": {
+        "x": [
+          1,
+          2,
+        ],
+      },
+    },
+    "title": "Lamp v2",
+  },
+  {
+    "id": 2,
+    "isActive": true,
+    "price": "100000000000.000001",
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "chair",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  {
+    "id": 3,
+    "isActive": true,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "желязо",
+    "stock": 0,
+    "tags": [],
+    "title": null,
+  },
+  {
+    "id": 4,
+    "isActive": false,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "desk",
+    "stock": 2,
+    "tags": [],
+    "title": null,
+  },
+  {
+    "id": 5,
+    "isActive": true,
+    "price": null,
+    "publishedAt": null,
+    "releaseDay": null,
+    "slug": "shelf",
+    "stock": 0,
+    "tags": [],
+    "title": "Shelf",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > delete by a set: the statement 1`] = `
+[
+  {
+    "params": [
+      "table",
+      "nothing",
+    ],
+    "text": "delete from "write_equiv" where "write_equiv"."slug" in ($1, $2) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > delete nothing: the statement 1`] = `
+[
+  {
+    "params": [
+      999,
+    ],
+    "text": "delete from "write_equiv" where "write_equiv"."id" = $1 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > insert, an explicit null and an unknown key: the statement 1`] = `
+[
+  {
+    "params": [
+      "желязо",
+      null,
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, $2, default, default, default, default, default, default, default, default) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > insert, defaults for the rest: the statement 1`] = `
+[
+  {
+    "params": [
+      "chair",
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, default, default, default, default, default, default, default, default, default) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > insert, every value: the statement 1`] = `
+[
+  {
+    "params": [
+      "lamp",
+      "Lamp",
+      4,
+      "19.90",
+      true,
+      "["a","b"]",
+      "2026-03-01",
+      "2026-03-01T10:15:30.123Z",
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, $2, $3, $4, $5, $6, $7, default, $8, default) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > insert, several rows: the statement 1`] = `
+[
+  {
+    "params": [
+      "desk",
+      2,
+      "shelf",
+      "Shelf",
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, default, $2, default, default, default, default, default, default, default), (default, $3, $4, default, default, default, default, default, default, default, default) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > update by a SQL fragment: the statement 1`] = `
+[
+  {
+    "params": [
+      "100000000000.000001",
+      "chair",
+    ],
+    "text": "update "write_equiv" set "price" = $1 where "write_equiv"."slug" = $2 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > update by a range, skipping an undefined value: the statement 1`] = `
+[
+  {
+    "params": [
+      true,
+      0,
+      1,
+    ],
+    "text": "update "write_equiv" set "is_active" = $1 where ("write_equiv"."stock" >= $2 and "write_equiv"."stock" <= $3) returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > update by id: the statement 1`] = `
+[
+  {
+    "params": [
+      "Lamp (edited)",
+      5,
+      "{"nested":{"x":[1,2]}}",
+      1,
+    ],
+    "text": "update "write_equiv" set "title" = $1, "stock" = $2, "tags" = $3 where "write_equiv"."id" = $4 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > update with a SQL value: the statement 1`] = `
+[
+  {
+    "params": [
+      "lamp",
+    ],
+    "text": "update "write_equiv" set "stock" = "write_equiv"."stock" + 1 where "write_equiv"."slug" = $1 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > upsert, conflict: the statement 1`] = `
+[
+  {
+    "params": [
+      "lamp",
+      "Lamp v2",
+      "Lamp v2",
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, $2, default, default, default, default, default, default, default, default) on conflict ("slug") do update set "title" = $3 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
+
+exports[`our declared-table writes: the statement > upsert, new row: the statement 1`] = `
+[
+  {
+    "params": [
+      "table",
+      7,
+      7,
+    ],
+    "text": "insert into "write_equiv" ("id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at") values (default, $1, default, $2, default, default, default, default, default, default, default) on conflict ("slug") do update set "stock" = $3 returning "id", "slug", "title", "stock", "price", "is_active", "tags", "release_day", "ref", "published_at", "created_at"",
+  },
+]
+`;
