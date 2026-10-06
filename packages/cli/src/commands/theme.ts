@@ -31,7 +31,7 @@ export class ThemeCommands {
           slug = await CliUtils.ask(chalk.blue(`Theme slug [${slug}]: `));
           if (!slug) slug = themeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
 
-          const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
+          const themesDir = CliUtils.themesRoot();
           const themePath = path.join(themesDir, slug);
 
           if (fs.existsSync(themePath)) {
@@ -100,7 +100,7 @@ export class ThemeCommands {
       .description('List all installed themes')
       .action(async () => {
         try {
-          const themesDir = path.join(CliUtils.getProjectRoot(), 'themes');
+          const themesDir = CliUtils.themesRoot();
           if (!fs.existsSync(themesDir)) {
             console.log(chalk.yellow('No themes directory found.'));
             return;

@@ -33,6 +33,11 @@ export class CliUtils {
     return dir;
   }
 
+  /** Where themes live, WITHOUT creating it: honours THEMES_DIR, like `atlantis build theme` does. */
+  static themesRoot(): string {
+    return ProjectPaths.getThemesDir();
+  }
+
   static getThemesDir(): string {
     const dir = ProjectPaths.getThemesDir();
     if (!fs.existsSync(dir)) fs.ensureDirSync(dir);
