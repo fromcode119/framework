@@ -28,6 +28,20 @@ export class PluginDbOnRequestFields {
     return known.names;
   }
 
+  /**
+   * Whether an `update(table, where, data)` writes ONLY `readOnRequest` fields — values the plugin derives
+   * from the record and keeps ready, never content of their own. Such a write changes nothing a page is made
+   * of (what they derive from changed earlier, and moved the site's revision then), so it must not move the
+   * revision again: it would throw away every kept answer of the site to store one more.
+   */
+  static writesOnlyDerived(method: string, args: any[], manager: IPluginManagerInterface): boolean {
+    if (method !== 'update') return false;
+    const written = Object.keys(args[2] ?? {});
+    if (written.length === 0) return false;
+    const derived = new Set(PluginDbOnRequestFields.omittedFor('findOne', [args[0]], manager));
+    return written.every((name) => derived.has(name));
+  }
+
   static strip(result: unknown, omitted: readonly string[]): unknown {
     if (omitted.length === 0 || result == null) return result;
     const drop = (row: unknown) => {
