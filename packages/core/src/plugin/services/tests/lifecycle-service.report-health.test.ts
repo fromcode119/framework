@@ -55,8 +55,8 @@ describe('PluginHealthNotificationTemplateService.render', () => {
     expect(message.text).toContain('beta');
     expect(message.text).toContain('boom');
 
-    expect(message.html).toContain('<ul>');
-    expect(message.html).toContain('<li>');
+    expect(message.html).toContain('<table');
+    expect(message.html).toContain('<tr>');
     expect(message.html).toContain('alpha');
     expect(message.html).toContain('capability_drift');
   });

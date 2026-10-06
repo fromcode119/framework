@@ -1,25 +1,20 @@
-<p>Window: {{fromIso}} -&gt; {{toIso}}</p>
-{{#if scanError}}<p><strong>The log could not be read this week, so the figures below are not a finding.</strong> {{scanError}}</p>{{/if}}
-<p>Total log entries: <strong>{{totalEntries}}</strong></p>
-<ul>
-  <li>ERROR: <strong>{{levels.error}}</strong></li>
-  <li>WARN: <strong>{{levels.warn}}</strong></li>
-  <li>INFO: <strong>{{levels.info}}</strong></li>
-  <li>DEBUG: <strong>{{levels.debug}}</strong></li>
-</ul>
-<p><strong>Top active plugins</strong></p>
+{{#if scanError}}<p style="margin:0 0 16px"><strong>The log could not be read this week, so the figures below are not a finding.</strong> {{scanError}}</p>{{/if}}
+<p style="margin:0 0 16px;color:#6b7280;font-size:13px">{{fromIso}} &rarr; {{toIso}} &middot; {{totalEntries}} log entries</p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px">
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Errors</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong>{{levels.error}}</strong></td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Warnings</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong>{{levels.warn}}</strong></td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Info</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong>{{levels.info}}</strong></td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Debug</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong>{{levels.debug}}</strong></td></tr>
+</table>
+<p style="margin:0 0 4px;font-size:13px;color:#6b7280">Most active plugins</p>
 {{#if topPlugins.length}}
-<ul>
-  {{#each topPlugins}}<li><strong>{{slug}}</strong>: {{count}}</li>{{/each}}
-</ul>
-{{else}}
-<p>(no activity)</p>
-{{/if}}
-<p><strong>Recent critical entries</strong></p>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 24px">
+  {{#each topPlugins}}<tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">{{slug}}</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top">{{count}}</td></tr>{{/each}}
+</table>
+{{else}}<p style="margin:0 0 24px">No activity.</p>{{/if}}
+<p style="margin:0 0 4px;font-size:13px;color:#6b7280">Recent critical entries</p>
 {{#if criticalEntries.length}}
-<ul>
-  {{#each criticalEntries}}<li><strong>{{timestamp}}</strong> [{{pluginSlug}}] {{level}}: {{message}}</li>{{/each}}
-</ul>
-{{else}}
-<p>(none)</p>
-{{/if}}
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 16px">
+  {{#each criticalEntries}}<tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">{{pluginSlug}}<br><span style="font-size:12px">{{timestamp}}</span></td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong>{{level}}</strong> {{message}}</td></tr>{{/each}}
+</table>
+{{else}}<p style="margin:0 0 16px">None.</p>{{/if}}

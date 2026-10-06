@@ -1,9 +1,8 @@
-<p><strong>A critical log event was captured.</strong></p>
-<ul>
-  <li><strong>Time (UTC):</strong> {{timestamp}}</li>
-  <li><strong>Level:</strong> {{level}}</li>
-  <li><strong>Plugin:</strong> {{pluginLabel}}</li>
-  <li><strong>Message:</strong> {{shortHeadline}}</li>
-</ul>
-<p><strong>Context</strong></p>
-<pre style="white-space:pre-wrap;background:#0b1020;color:#e2e8f0;padding:12px;border-radius:8px;">{{contextText}}</pre>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 20px">
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Time (UTC)</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top">{{timestamp}}</td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Level</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top"><strong style="color:#b42318">{{level}}</strong></td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Plugin</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top">{{pluginLabel}}</td></tr>
+  <tr><td style="padding:10px 16px 10px 0;border-bottom:1px solid #eef0f3;color:#6b7280;font-size:13px;width:38%;vertical-align:top">Message</td><td style="padding:10px 0;border-bottom:1px solid #eef0f3;color:#111827;font-size:14px;vertical-align:top">{{shortHeadline}}</td></tr>
+</table>
+<p style="margin:0 0 8px;font-size:13px;color:#6b7280">Context</p>
+<pre style="white-space:pre-wrap;word-break:break-word;margin:0 0 16px;background:#0b1020;color:#e2e8f0;padding:12px 14px;border-radius:8px;font-size:12px;line-height:1.5">{{contextText}}</pre>
