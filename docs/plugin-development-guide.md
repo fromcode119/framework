@@ -37,7 +37,7 @@ plugins/<name>/
 │   ├── services/         # Business logic — pure when possible
 │   ├── repositories/     # Data access — queries only
 │   └── types/            # TypeScript types, interfaces
-├── collections/          # Drizzle database schemas
+├── collections/          # Collection definitions (the database schema)
 ├── migrations/           # Schema migration files
 └── ui/                   # Frontend bundle (React components)
 ```

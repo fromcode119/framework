@@ -1,0 +1,1163 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`our SQL renders the pinned statements > mysql: a list is parenthesised 1`] = `
+{
+  "params": [
+    1,
+    "x",
+  ],
+  "text": "in (?, ?, now())",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: a schema-qualified table 1`] = `
+{
+  "params": [],
+  "text": "select \`tenant_a\`.\`docs\`.\`id\` from \`tenant_a\`.\`docs\`",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: a table and a column 1`] = `
+{
+  "params": [],
+  "text": "select \`items\`.\`title\` from \`items\`",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: aggregates 1`] = `
+{
+  "params": [],
+  "text": "count(*), count(\`items\`.\`id\`), avg(\`items\`.\`price\`), sum(\`items\`.\`stock\`), min(\`items\`.\`at\`), max(\`items\`.\`weight\`)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: an empty template 1`] = `
+{
+  "params": [],
+  "text": "",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: an undefined value renders as nothing 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: and drops undefined 1`] = `
+{
+  "params": [
+    1,
+    "a",
+  ],
+  "text": "(\`items\`.\`id\` = ? and \`items\`.\`title\` = ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: and of one is itself 1`] = `
+{
+  "params": [
+    1,
+  ],
+  "text": "\`items\`.\`id\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: append 1`] = `
+{
+  "params": [
+    1,
+    2,
+  ],
+  "text": "a = ? and b = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: between / notBetween 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+    "2026-03-01T10:15:30.123Z",
+    1,
+    5,
+  ],
+  "text": "(\`items\`.\`at\` between ? and ? and \`items\`.\`stock\` not between ? and ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: column compared with a column 1`] = `
+{
+  "params": [],
+  "text": "\`items\`.\`stock\` = \`items\`.\`id\`",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: empty inArray / notInArray 1`] = `
+{
+  "params": [],
+  "text": "(false and true)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq binds through the column 1`] = `
+{
+  "params": [
+    "["a",{"b":1}]",
+  ],
+  "text": "\`items\`.\`tags\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq on a date-mode date 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": "\`items\`.\`day_date\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq on a string-mode timestamp passes text 1`] = `
+{
+  "params": [
+    "2026-03-01 10:15:30",
+  ],
+  "text": "\`items\`.\`at_text\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq on a timestamp encodes ISO 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": "\`items\`.\`at\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq on an identifier binds raw 1`] = `
+{
+  "params": [
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": "\`created_at\` = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: eq with SQL on the right 1`] = `
+{
+  "params": [],
+  "text": "\`items\`.\`stock\` = \`items\`.\`stock\` + 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: exists 1`] = `
+{
+  "params": [],
+  "text": "(exists (select 1) and not exists (select 2))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: identifiers are quoted, quotes doubled 1`] = `
+{
+  "params": [],
+  "text": "select \`weird"name\` from \`t\`",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: inArray / notInArray 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+    "["a"]",
+    "["b"]",
+  ],
+  "text": "(\`items\`.\`id\` in (?, ?, ?) and \`items\`.\`tags\` not in (?, ?))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: join with a separator 1`] = `
+{
+  "params": [],
+  "text": "a, b, \`c\`",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: join without a separator 1`] = `
+{
+  "params": [],
+  "text": "a b",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: like / ilike patterns are bound raw 1`] = `
+{
+  "params": [
+    "%a%",
+    "b%",
+    "%C",
+    "d",
+  ],
+  "text": "(\`items\`.\`title\` like ? or \`items\`.\`title\` not like ? or \`items\`.\`title\` ilike ? or \`items\`.\`title\` not ilike ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: ne / gt / gte / lt / lte 1`] = `
+{
+  "params": [
+    "x",
+    1,
+    "1.5",
+    2.5,
+    9,
+  ],
+  "text": "(\`items\`.\`title\` <> ? and \`items\`.\`stock\` > ? and \`items\`.\`price\` >= ? and \`items\`.\`weight\` < ? and \`items\`.\`id\` <= ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: nested fragments keep numbering 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+  ],
+  "text": "a = ? and b = ? or ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: null tests 1`] = `
+{
+  "params": [],
+  "text": "(\`items\`.\`title\` is null or \`items\`.\`ref\` is not null)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: or nested in and 1`] = `
+{
+  "params": [
+    1,
+    2,
+    false,
+  ],
+  "text": "((\`items\`.\`id\` = ? or \`items\`.\`id\` = ?) and not \`items\`.\`is_active\` = ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: order expressions 1`] = `
+{
+  "params": [],
+  "text": "\`items\`.\`id\` asc, \`created_at\` desc",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: param with an encoder 1`] = `
+{
+  "params": [
+    "{"x":1}",
+    null,
+  ],
+  "text": "set ?, ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: plain text 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: raw text is never bound 1`] = `
+{
+  "params": [],
+  "text": "CREATE INDEX IF NOT EXISTS "x" ON "y" ("z")",
+}
+`;
+
+exports[`our SQL renders the pinned statements > mysql: values are bound, in order 1`] = `
+{
+  "params": [
+    1,
+    "two",
+    null,
+    true,
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": "select ?, ?, ?, ?, ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: a list is parenthesised 1`] = `
+{
+  "params": [
+    1,
+    "x",
+  ],
+  "text": "in ($1, $2, now())",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: a schema-qualified table 1`] = `
+{
+  "params": [],
+  "text": "select "tenant_a"."docs"."id" from "tenant_a"."docs"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: a table and a column 1`] = `
+{
+  "params": [],
+  "text": "select "items"."title" from "items"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: aggregates 1`] = `
+{
+  "params": [],
+  "text": "count(*), count("items"."id"), avg("items"."price"), sum("items"."stock"), min("items"."at"), max("items"."weight")",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: an empty template 1`] = `
+{
+  "params": [],
+  "text": "",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: an undefined value renders as nothing 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: and drops undefined 1`] = `
+{
+  "params": [
+    1,
+    "a",
+  ],
+  "text": "("items"."id" = $1 and "items"."title" = $2)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: and of one is itself 1`] = `
+{
+  "params": [
+    1,
+  ],
+  "text": ""items"."id" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: append 1`] = `
+{
+  "params": [
+    1,
+    2,
+  ],
+  "text": "a = $1 and b = $2",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: between / notBetween 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+    "2026-03-01T10:15:30.123Z",
+    1,
+    5,
+  ],
+  "text": "("items"."at" between $1 and $2 and "items"."stock" not between $3 and $4)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: column compared with a column 1`] = `
+{
+  "params": [],
+  "text": ""items"."stock" = "items"."id"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: empty inArray / notInArray 1`] = `
+{
+  "params": [],
+  "text": "(false and true)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq binds through the column 1`] = `
+{
+  "params": [
+    "["a",{"b":1}]",
+  ],
+  "text": ""items"."tags" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq on a date-mode date 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": ""items"."day_date" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq on a string-mode timestamp passes text 1`] = `
+{
+  "params": [
+    "2026-03-01 10:15:30",
+  ],
+  "text": ""items"."at_text" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq on a timestamp encodes ISO 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": ""items"."at" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq on an identifier binds raw 1`] = `
+{
+  "params": [
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": ""created_at" = $1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: eq with SQL on the right 1`] = `
+{
+  "params": [],
+  "text": ""items"."stock" = "items"."stock" + 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: exists 1`] = `
+{
+  "params": [],
+  "text": "(exists (select 1) and not exists (select 2))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: identifiers are quoted, quotes doubled 1`] = `
+{
+  "params": [],
+  "text": "select "weird""name" from "t"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: inArray / notInArray 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+    "["a"]",
+    "["b"]",
+  ],
+  "text": "("items"."id" in ($1, $2, $3) and "items"."tags" not in ($4, $5))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: join with a separator 1`] = `
+{
+  "params": [],
+  "text": "a, b, "c"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: join without a separator 1`] = `
+{
+  "params": [],
+  "text": "a b",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: like / ilike patterns are bound raw 1`] = `
+{
+  "params": [
+    "%a%",
+    "b%",
+    "%C",
+    "d",
+  ],
+  "text": "("items"."title" like $1 or "items"."title" not like $2 or "items"."title" ilike $3 or "items"."title" not ilike $4)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: ne / gt / gte / lt / lte 1`] = `
+{
+  "params": [
+    "x",
+    1,
+    "1.5",
+    2.5,
+    9,
+  ],
+  "text": "("items"."title" <> $1 and "items"."stock" > $2 and "items"."price" >= $3 and "items"."weight" < $4 and "items"."id" <= $5)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: nested fragments keep numbering 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+  ],
+  "text": "a = $1 and b = $2 or $3",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: null tests 1`] = `
+{
+  "params": [],
+  "text": "("items"."title" is null or "items"."ref" is not null)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: or nested in and 1`] = `
+{
+  "params": [
+    1,
+    2,
+    false,
+  ],
+  "text": "(("items"."id" = $1 or "items"."id" = $2) and not "items"."is_active" = $3)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: order expressions 1`] = `
+{
+  "params": [],
+  "text": ""items"."id" asc, "created_at" desc",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: param with an encoder 1`] = `
+{
+  "params": [
+    "{"x":1}",
+    null,
+  ],
+  "text": "set $1, $2",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: plain text 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: raw text is never bound 1`] = `
+{
+  "params": [],
+  "text": "CREATE INDEX IF NOT EXISTS "x" ON "y" ("z")",
+}
+`;
+
+exports[`our SQL renders the pinned statements > postgres: values are bound, in order 1`] = `
+{
+  "params": [
+    1,
+    "two",
+    null,
+    true,
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": "select $1, $2, $3, $4, $5",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: a list is parenthesised 1`] = `
+{
+  "params": [
+    1,
+    "x",
+  ],
+  "text": "in (?, ?, now())",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: a schema-qualified table 1`] = `
+{
+  "params": [],
+  "text": "select "tenant_a"."docs"."id" from "tenant_a"."docs"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: a table and a column 1`] = `
+{
+  "params": [],
+  "text": "select "items"."title" from "items"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: aggregates 1`] = `
+{
+  "params": [],
+  "text": "count(*), count("items"."id"), avg("items"."price"), sum("items"."stock"), min("items"."at"), max("items"."weight")",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: an empty template 1`] = `
+{
+  "params": [],
+  "text": "",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: an undefined value renders as nothing 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: and drops undefined 1`] = `
+{
+  "params": [
+    1,
+    "a",
+  ],
+  "text": "("items"."id" = ? and "items"."title" = ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: and of one is itself 1`] = `
+{
+  "params": [
+    1,
+  ],
+  "text": ""items"."id" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: append 1`] = `
+{
+  "params": [
+    1,
+    2,
+  ],
+  "text": "a = ? and b = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: between / notBetween 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+    "2026-03-01T10:15:30.123Z",
+    1,
+    5,
+  ],
+  "text": "("items"."at" between ? and ? and "items"."stock" not between ? and ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: column compared with a column 1`] = `
+{
+  "params": [],
+  "text": ""items"."stock" = "items"."id"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: empty inArray / notInArray 1`] = `
+{
+  "params": [],
+  "text": "(false and true)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq binds through the column 1`] = `
+{
+  "params": [
+    "["a",{"b":1}]",
+  ],
+  "text": ""items"."tags" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq on a date-mode date 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": ""items"."day_date" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq on a string-mode timestamp passes text 1`] = `
+{
+  "params": [
+    "2026-03-01 10:15:30",
+  ],
+  "text": ""items"."at_text" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq on a timestamp encodes ISO 1`] = `
+{
+  "params": [
+    "2026-03-01T10:15:30.123Z",
+  ],
+  "text": ""items"."at" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq on an identifier binds raw 1`] = `
+{
+  "params": [
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": ""created_at" = ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: eq with SQL on the right 1`] = `
+{
+  "params": [],
+  "text": ""items"."stock" = "items"."stock" + 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: exists 1`] = `
+{
+  "params": [],
+  "text": "(exists (select 1) and not exists (select 2))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: identifiers are quoted, quotes doubled 1`] = `
+{
+  "params": [],
+  "text": "select "weird""name" from "t"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: inArray / notInArray 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+    "["a"]",
+    "["b"]",
+  ],
+  "text": "("items"."id" in (?, ?, ?) and "items"."tags" not in (?, ?))",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: join with a separator 1`] = `
+{
+  "params": [],
+  "text": "a, b, "c"",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: join without a separator 1`] = `
+{
+  "params": [],
+  "text": "a b",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: like / ilike patterns are bound raw 1`] = `
+{
+  "params": [
+    "%a%",
+    "b%",
+    "%C",
+    "d",
+  ],
+  "text": "("items"."title" like ? or "items"."title" not like ? or "items"."title" ilike ? or "items"."title" not ilike ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: ne / gt / gte / lt / lte 1`] = `
+{
+  "params": [
+    "x",
+    1,
+    "1.5",
+    2.5,
+    9,
+  ],
+  "text": "("items"."title" <> ? and "items"."stock" > ? and "items"."price" >= ? and "items"."weight" < ? and "items"."id" <= ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: nested fragments keep numbering 1`] = `
+{
+  "params": [
+    1,
+    2,
+    3,
+  ],
+  "text": "a = ? and b = ? or ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: null tests 1`] = `
+{
+  "params": [],
+  "text": "("items"."title" is null or "items"."ref" is not null)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: or nested in and 1`] = `
+{
+  "params": [
+    1,
+    2,
+    false,
+  ],
+  "text": "(("items"."id" = ? or "items"."id" = ?) and not "items"."is_active" = ?)",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: order expressions 1`] = `
+{
+  "params": [],
+  "text": ""items"."id" asc, "created_at" desc",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: param with an encoder 1`] = `
+{
+  "params": [
+    "{"x":1}",
+    null,
+  ],
+  "text": "set ?, ?",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: plain text 1`] = `
+{
+  "params": [],
+  "text": "select 1",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: raw text is never bound 1`] = `
+{
+  "params": [],
+  "text": "CREATE INDEX IF NOT EXISTS "x" ON "y" ("z")",
+}
+`;
+
+exports[`our SQL renders the pinned statements > sqlite: values are bound, in order 1`] = `
+{
+  "params": [
+    1,
+    "two",
+    null,
+    true,
+    2026-03-01T10:15:30.123Z,
+  ],
+  "text": "select ?, ?, ?, ?, ?",
+}
+`;
+
+exports[`our columns decode and encode the pinned values > at: decodes and encodes 1`] = `
+[
+  [
+    2026-03-01T08:15:30.123Z,
+    undefined,
+  ],
+  [
+    2026-03-01T10:15:30.123Z,
+    "2026-03-01T10:15:30.123Z",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > atText: decodes and encodes 1`] = `
+[
+  [
+    "2026-03-01 10:15:30",
+    "2026-03-01 10:15:30",
+  ],
+  [
+    "2026-03-01 10:15:30.123",
+    2026-03-01T10:15:30.123Z,
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > day: decodes and encodes 1`] = `
+[
+  [
+    "2026-03-01",
+    undefined,
+  ],
+  [
+    "2026-03-01",
+    2026-03-01T10:15:30.123Z,
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > dayDate: decodes and encodes 1`] = `
+[
+  [
+    2026-03-01T00:00:00.000Z,
+    undefined,
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > declares the pinned names, defaults and keys 1`] = `
+[
+  [
+    "id",
+    "id",
+    true,
+    true,
+  ],
+  [
+    "title",
+    "title",
+    false,
+    false,
+  ],
+  [
+    "stock",
+    "stock",
+    false,
+    false,
+  ],
+  [
+    "price",
+    "price",
+    false,
+    false,
+  ],
+  [
+    "weight",
+    "weight",
+    false,
+    false,
+  ],
+  [
+    "isActive",
+    "is_active",
+    false,
+    false,
+  ],
+  [
+    "at",
+    "at",
+    false,
+    false,
+  ],
+  [
+    "local",
+    "local",
+    false,
+    false,
+  ],
+  [
+    "atText",
+    "at_text",
+    false,
+    false,
+  ],
+  [
+    "day",
+    "day",
+    false,
+    false,
+  ],
+  [
+    "dayDate",
+    "day_date",
+    false,
+    false,
+  ],
+  [
+    "meta",
+    "meta",
+    false,
+    false,
+  ],
+  [
+    "tags",
+    "tags",
+    false,
+    false,
+  ],
+  [
+    "ref",
+    "ref",
+    false,
+    false,
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > id: decodes and encodes 1`] = `
+[
+  [
+    1,
+    1,
+  ],
+  [
+    "7",
+    "7",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > isActive: decodes and encodes 1`] = `
+[
+  [
+    true,
+    true,
+  ],
+  [
+    false,
+    false,
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > local: decodes and encodes 1`] = `
+[
+  [
+    2026-03-01T10:15:30.500Z,
+    undefined,
+  ],
+  [
+    2026-03-01T10:15:30.123Z,
+    "2026-03-01T10:15:30.123Z",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > meta: decodes and encodes 1`] = `
+[
+  [
+    {
+      "a": 1,
+    },
+    ""{\\"a\\":1}"",
+  ],
+  [
+    {
+      "a": 1,
+    },
+    "{"a":1}",
+  ],
+  [
+    "not json",
+    ""not json"",
+  ],
+  [
+    [
+      1,
+    ],
+    "[1]",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > price: decodes and encodes 1`] = `
+[
+  [
+    "19.90",
+    "19.90",
+  ],
+  [
+    "12.5",
+    12.5,
+  ],
+  [
+    "100000000000.000001",
+    "100000000000.000001",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > ref: decodes and encodes 1`] = `
+[
+  [
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+    "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > stock: decodes and encodes 1`] = `
+[
+  [
+    3,
+    3,
+  ],
+  [
+    42,
+    "42",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > tags: decodes and encodes 1`] = `
+[
+  [
+    [
+      "a",
+    ],
+    ""[\\"a\\"]"",
+  ],
+  [
+    [
+      "a",
+    ],
+    "["a"]",
+  ],
+  [
+    null,
+    ""null"",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > title: decodes and encodes 1`] = `
+[
+  [
+    "x",
+    "x",
+  ],
+  [
+    "",
+    "",
+  ],
+]
+`;
+
+exports[`our columns decode and encode the pinned values > weight: decodes and encodes 1`] = `
+[
+  [
+    1.25,
+    1.25,
+  ],
+  [
+    2.5,
+    "2.5",
+  ],
+]
+`;

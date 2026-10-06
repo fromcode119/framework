@@ -3,8 +3,8 @@ import type { OneShotTenantClient } from '@database/tenant/one-shot-tenant-clien
 
 /**
  * What the executors see as "the request's client": the pg `query` surface, backed by
- * a pooled client that is taken on the first call (see TenantConnectionScope). Drizzle's
- * node-postgres driver and the raw executors only ever call `query`, so this is the whole contract.
+ * a pooled client that is taken on the first call (see TenantConnectionScope). The
+ * statement executors only ever call `query`, so this is the whole contract.
  */
 export class LazyTenantClient {
   private static readonly BEGIN = /^\s*(begin|start\s+transaction)\b/i;

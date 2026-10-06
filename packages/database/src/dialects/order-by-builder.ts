@@ -68,7 +68,7 @@ export class OrderByBuilder {
       });
     }
 
-    // Drizzle expression - pass through
+    // A SQL expression - pass through
     return [orderBy];
   }
 

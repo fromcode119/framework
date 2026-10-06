@@ -183,7 +183,7 @@ export class SiteOwnedDataMigration extends BaseMigration {
    * have, and are named.
    *
    * NO SURROUNDING TRANSACTION, deliberately. Outside a tenant scope this manager runs each statement
-   * on whatever client the POOL hands it — `executor` is the pool and `orm` is the pool-wide Drizzle
+   * on whatever client the POOL hands it — `executor` is the pool and so is every typed read
    * — so a `BEGIN` issued here would wrap nothing and would strand an open transaction on one pooled
    * client. Atomicity is bought per statement instead, which is where it is actually needed.
    *
