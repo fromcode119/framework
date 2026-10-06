@@ -5,6 +5,7 @@ import { headers } from 'next/headers';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { PublicRouteDefinition } from '@/lib/public-route-definition';
 import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
+import { RobotsConstants } from '@fromcode119/core/constants/robots.constants';
 
 export class PublicRouteProxy {
   private static readonly DEFAULT_CONTENT_TYPE = 'text/plain; charset=utf-8';
@@ -128,6 +129,8 @@ export class PublicRouteProxy {
   private static async createUpstreamRequestHeaders(): Promise<Headers | undefined> {
     const requestHeaders = await headers();
     const forwardedHeaders = new Headers();
+    // The plugin's route stands in for the site's own file here, so the api must not mark it unindexable.
+    forwardedHeaders.set(RobotsConstants.PUBLIC_FILE_HEADER, '1');
     const publicHost = PublicRouteProxy.normalizeHeaderValue(
       requestHeaders.get('x-forwarded-host') || requestHeaders.get('host'),
     );

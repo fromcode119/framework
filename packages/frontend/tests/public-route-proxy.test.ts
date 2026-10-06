@@ -62,6 +62,8 @@ describe('PublicRouteProxy', () => {
     expect(forwardedHeaders.get('host')).toBe('frontend.framework.local');
     expect(forwardedHeaders.get('x-forwarded-host')).toBe('frontend.framework.local');
     expect(forwardedHeaders.get('x-forwarded-proto')).toBe('https');
+    // The api marks a plugin route unindexable when it is requested directly; a relay says it is not one.
+    expect(forwardedHeaders.get('x-fc-public-file')).toBe('1');
     expect(response.status).toBe(200);
     expect(response.headers.get('cache-control')).toBe('public, max-age=300');
     // Served from the site's own origin: never a page that runs, whatever type the plugin answered with.

@@ -17,4 +17,12 @@ export class RobotsConstants {
 
   /** The header itself. */
   static readonly HEADER = 'X-Robots-Tag';
+
+  /**
+   * Sent by the storefront when it fetches a plugin's route to serve it as the SITE's own file
+   * (`llms.txt`, `sitemap.xml`, `/.well-known/security.txt`). The plugin's route is then not a page
+   * anyone should find, but the file it stands in for is, and the storefront relays the plugin's own
+   * `X-Robots-Tag` onto it, so the api must not stamp a refusal there.
+   */
+  static readonly PUBLIC_FILE_HEADER = 'x-fc-public-file';
 }
