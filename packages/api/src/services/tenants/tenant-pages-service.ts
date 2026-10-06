@@ -19,6 +19,7 @@ import {
  * Every operation that changes what exists is recorded in the backup audit table, with the actor.
  */
 import { TenantLookup } from '@api/services/tenants/tenant-lookup';
+import { PendingSiteSeed } from '@api/services/tenants/pending-site-seed';
 
 export interface MaterializePagesOutcome {
   pages: number;
@@ -89,6 +90,16 @@ export class TenantPagesService {
    */
   async materializePages(tenantId: string, options: { seedTheme?: boolean } = {}): Promise<MaterializePagesOutcome> {
     const tenant = await this.lookup.requireTenant(tenantId);
+    // A new site made while sites are not yet on — the FIRST site — cannot be written for: nothing binds
+    // a write to it, so every row would be created with no owner and be hidden from the site at the next
+    // boot. Nothing is created now; the debt is recorded and the boot that turns sites on pays it.
+    if (options.seedTheme && !TenantMode.isEnabled()) {
+      await new PendingSiteSeed(this.db).mark(tenant.id);
+      return {
+        pages: 0, themeSeeded: false, warnings: [],
+        themeSeedReason: 'deferred: this is the first site, so multi-site mode starts at the next boot. The theme seed, plugin seeds and default pages are created then.',
+      };
+    }
     PluginTenantAccess.invalidate(tenant.id);
     TenantThemeAccess.invalidate(tenant.id);
     await Promise.all([PluginTenantAccess.warm(tenant.id), TenantThemeAccess.warm(tenant.id)]);

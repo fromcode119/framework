@@ -7,6 +7,7 @@ import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
 import { PluginApiHost } from '@api/server/plugin-api-host';
+import { PendingSiteSeedsBoot } from '@api/services/tenants/pending-site-seeds-boot';
 
 export class ApiBootstrapService {
   private logger = new Logger({ namespace: 'api-bootstrap-service' });
@@ -286,6 +287,12 @@ export class ApiBootstrapService {
     const port = parseInt(process.env.PORT || '3000', 10);
     const host = process.env.HOST || '0.0.0.0';
     server.start(port, host);
+
+    // Sites created before this boot could write for them (the first one) still owe their content.
+    // After the server is up so plugins have settled, and not awaited: it must not hold the api back.
+    PendingSiteSeedsBoot.run(manager, themeManager).catch((error: any) => {
+      this.logger.error(`Creating pending site content failed: ${error?.message || error}`);
+    });
   }
 
   private static assertProductionSecret(name: string, value: string | undefined): void {

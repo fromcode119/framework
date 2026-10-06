@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest';
-import { PluginTenantAccess, TenantThemeAccess } from '@fromcode119/core';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { PluginTenantAccess, TenantMode, TenantThemeAccess } from '@fromcode119/core';
 import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
 
 /**
@@ -8,7 +8,11 @@ import { TenantPagesService } from '@api/services/tenants/tenant-pages-service';
  * operator's edits. Rebuilding now only adds the default pages that are missing.
  */
 describe('theme seed runs only for a new site', () => {
+  afterEach(() => { TenantMode.reset(); vi.restoreAllMocks(); });
+
   function service() {
+    // A running multi-site install: the first-site deferral has its own test.
+    TenantMode.configure({ tenantCount: 1, dialect: 'postgres', isolationSupported: true });
     vi.spyOn(PluginTenantAccess, 'invalidate').mockImplementation(() => undefined as any);
     vi.spyOn(TenantThemeAccess, 'invalidate').mockImplementation(() => undefined as any);
     vi.spyOn(PluginTenantAccess, 'warm').mockResolvedValue(undefined as any);
