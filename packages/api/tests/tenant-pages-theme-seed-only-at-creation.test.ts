@@ -39,4 +39,38 @@ describe('theme seed runs only for a new site', () => {
     expect(themeManager.seedThemeForCurrentSite).toHaveBeenCalledWith('shop-theme');
     expect(result.themeSeeded).toBe(true);
   });
+
+  it('says why a rebuild did not seed instead of a bare false', async () => {
+    const { pages } = service();
+    const result = await pages.materializePages('site-a');
+    expect(result.themeSeeded).toBe(false);
+    expect(result.themeSeedReason).toContain('not requested');
+    expect(result.warnings).toEqual([]);
+  });
+
+  it('names the reason when the theme declares no seeds', async () => {
+    const { pages, themeManager } = service();
+    themeManager.seedThemeForCurrentSite.mockResolvedValue({ seeded: false, reason: 'theme declares no seeds' });
+    const result = await pages.materializePages('site-a', { seedTheme: true });
+    expect(result.themeSeeded).toBe(false);
+    expect(result.themeSeedReason).toBe('theme declares no seeds');
+  });
+
+  it('reports a failed seed as a reason and a warning, and still materializes the default pages', async () => {
+    const { pages, themeManager, manager } = service();
+    themeManager.seedThemeForCurrentSite.mockRejectedValue(new Error('Missing required plugin: cms'));
+    const result = await pages.materializePages('site-a', { seedTheme: true });
+    expect(result.themeSeeded).toBe(false);
+    expect(result.themeSeedReason).toBe('seed failed: Missing required plugin: cms');
+    expect(result.warnings).toEqual(['Theme "shop-theme" seed failed: Missing required plugin: cms']);
+    expect(manager.materializeDefaultPages).toHaveBeenCalled();
+  });
+
+  it('says so when the site has no active theme', async () => {
+    const { pages, themeManager } = service();
+    vi.spyOn(TenantThemeAccess, 'choiceForAsync').mockResolvedValue({ activeSlug: '' } as any);
+    const result = await pages.materializePages('site-a', { seedTheme: true });
+    expect(themeManager.seedThemeForCurrentSite).not.toHaveBeenCalled();
+    expect(result.themeSeedReason).toBe('the site has no active theme');
+  });
 });
