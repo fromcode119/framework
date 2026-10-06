@@ -1,7 +1,7 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { ApiOutcomeCounter, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
+import { ApiOutcomeCounter, ApiPathUtils, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
 import { DatabasePoolWatch } from '@api/server/database-pool-watch';
 import { AuthManager } from '@fromcode119/auth';
 import { ApiConfig } from '@api/config/api-config';
@@ -16,6 +16,7 @@ import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
 import { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
+import { PluginRouteRobotsHeaderMiddleware } from '@api/middlewares/plugin-route-robots-header-middleware';
 import { ConsoleLocaleMiddleware } from '@api/middlewares/console-locale-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
@@ -69,6 +70,7 @@ export class ServerMiddlewareSetup {
     // Straight after tenant resolution, so "is a tenant bound?" is answerable, and before anything can
     // send a body — a header set after the response has begun is silently dropped.
     this.app.use(this.platformRobots.middleware());
+    this.app.use(ApiPathUtils.pluginPath(''), new PluginRouteRobotsHeaderMiddleware().middleware());
 
     this.app.use(this.auth.middleware());
     // A console request speaks the reader's console language — see the middleware.
