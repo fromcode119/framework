@@ -1,8 +1,19 @@
-<div style="font-family:system-ui,-apple-system,'Segoe UI',sans-serif;font-size:14px;line-height:1.5;color:#1a1a1a;max-width:640px">
-  {{#if logoUrl}}<p style="margin:0 0 20px"><span style="display:table;padding:8px 12px;border-radius:8px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);"><img src="{{logoUrl}}" alt="{{appName}}" height="40" style="display:block;height:40px;width:auto;border:0;" /></span></p>
-  {{else}}{{#if appName}}<p style="margin:0 0 20px;font-size:16px;font-weight:600">{{appName}}</p>{{/if}}{{/if}}
-  <h1 style="margin:0 0 16px;font-size:18px;line-height:1.3">{{subject}}</h1>
-  {{#if bodyHtml}}{{{bodyHtml}}}{{else}}{{#each paragraphs}}<p style="margin:0 0 12px">{{this}}</p>{{/each}}{{/if}}
-  <hr style="border:0;border-top:1px solid #e4e7ec;margin:24px 0 12px" />
-  <p style="margin:0;font-size:12px;color:#667085">{{#if appName}}Sent by {{appName}}. {{/if}}You receive this because you are an admin or a notification address. The addresses are set in Settings &rarr; General &rarr; Notification Email.</p>
-</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3f4f6;margin:0;padding:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,Helvetica,Arial,sans-serif">
+  <tr><td align="center" style="padding:32px 16px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px;background-color:#ffffff;border:1px solid #e5e7eb;border-radius:12px;border-collapse:separate;overflow:hidden">
+      <tr><td style="padding:24px 32px;border-bottom:1px solid #eef0f3;background-color:#ffffff">
+        {{#if logoUrl}}<span style="display:inline-block;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff)"><img src="{{logoUrl}}" alt="{{appName}}" height="36" style="display:block;height:36px;width:auto;border:0" /></span>
+        {{else}}<span style="font-size:18px;font-weight:700;letter-spacing:-0.01em;color:#111827">{{appName}}</span>{{/if}}
+      </td></tr>
+      <tr><td style="padding:32px 32px 8px;background-color:#ffffff">
+        <h1 style="margin:0 0 20px;font-size:22px;line-height:1.3;font-weight:700;color:#111827">{{subject}}</h1>
+        <div style="font-size:15px;line-height:1.65;color:#374151">
+          {{#if bodyHtml}}{{{bodyHtml}}}{{else}}{{#each paragraphs}}<p style="margin:0 0 16px">{{this}}</p>{{/each}}{{/if}}
+        </div>
+      </td></tr>
+      <tr><td style="padding:16px 32px 28px;background-color:#ffffff">
+        <p style="margin:0;padding-top:16px;border-top:1px solid #eef0f3;font-size:12px;line-height:1.6;color:#6b7280">{{#if appName}}Sent by {{appName}}. {{/if}}You receive this because you are an admin or a notification address. The addresses are set in Settings &rarr; General &rarr; Notification Email.</p>
+      </td></tr>
+    </table>
+  </td></tr>
+</table>

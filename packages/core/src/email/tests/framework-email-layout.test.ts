@@ -11,10 +11,10 @@ describe('FrameworkEmailLayout', () => {
       subject: '[Atlantis] "marketplace" is waiting for your approval',
       text: 'First paragraph.\n\nSecond <b>paragraph</b>.',
     });
-    expect(html).toContain('>Fromcode</p>');
+    expect(html).toContain('>Fromcode</span>');
     expect(html).toContain('<h1');
     expect(html).toContain('is waiting for your approval');
-    expect(html).toContain('<p style="margin:0 0 12px">First paragraph.</p>');
+    expect(html).toContain('<p style="margin:0 0 16px">First paragraph.</p>');
     expect(html).toContain('&lt;b&gt;paragraph&lt;/b&gt;');
     expect(html).toContain('Settings &rarr; General &rarr; Notification Email');
   });
