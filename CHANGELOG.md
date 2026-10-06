@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.343] - 2026-10-06
+
+### Added
+
+- **api**: a read route's per-language document also answers lists, and can be keyed by a variant such as a currency ([#795](https://github.com/fromcode119/framework/pull/795))
+
 ## [0.2.342] - 2026-10-06
 
 ### Fixed
