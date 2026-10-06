@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.342] - 2026-10-06
+
+### Fixed
+
+- **cli**: theme build, dev and list look for themes in THEMES_DIR ([#793](https://github.com/fromcode119/framework/pull/793))
+
 ## [0.2.341] - 2026-10-06
 
 _No user-facing changes._
