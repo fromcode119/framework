@@ -33,3 +33,11 @@ PrestaShop) reject unknown query parameters: give those the plain URL; they have
   at a list again, or the newest rows are your own load-test rows.
 - Compare a system at the same record width as the others. A full commerce product carries several times the data of
   a six-field record.
+
+## The Atlantis test collections
+
+`atlantis-plugin/` is a small plugin that registers the two collections the published numbers used: `benchitems-items`
+(the six fields) and `benchitems-wide` (the same six plus thirty). Copy it into your plugins directory, build it
+(`atlantis plugin build benchitems`), approve its capabilities when the platform asks, restart, and create the
+1,000 rows through the REST API (`POST /api/v1/collections/fcp_benchitems_items`). It is a benchmark fixture, not a
+product: it registers no admin screens and no routes.
