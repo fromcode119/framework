@@ -9,13 +9,17 @@ describe('SchemaOrphanAdminController', () => {
     res.json = vi.fn(() => res);
     return res;
   };
-  const controllerWith = (schemaManager: Record<string, unknown>) => new SchemaOrphanAdminController({ schemaManager });
+  const registered = new Map([['cms-pages', { collection: { slug: 'fcp_cms_pages' } }]]);
+  const controllerWith = (schemaManager: Record<string, unknown>) => new SchemaOrphanAdminController({ schemaManager, registeredCollections: registered });
 
   it('lists the undeclared columns with their counts', async () => {
     const columns = [{ table: 'fcp_a_items', column: 'old', rows: 4, nonEmpty: 0, firstSeenAt: '2026-10-01T00:00:00.000Z' }];
     const res = response();
-    await controllerWith({ pendingDrops: vi.fn(async () => columns) }).list({} as any, res);
+    const pendingDrops = vi.fn(async () => columns);
+    await controllerWith({ pendingDrops }).list({} as any, res);
     expect(res.json).toHaveBeenCalledWith({ columns });
+    // re-checked against the collections registered now, injected fields included
+    expect(pendingDrops).toHaveBeenCalledWith([{ slug: 'fcp_cms_pages' }]);
   });
 
   it('says so when the list cannot be read, instead of an empty list', async () => {
@@ -38,7 +42,7 @@ describe('SchemaOrphanAdminController', () => {
     const approveDrop = vi.fn(async () => entry);
     const res = response();
     await controllerWith({ approveDrop }).drop({ body: { table: ' fcp_a_items ', column: 'old' } } as any, res);
-    expect(approveDrop).toHaveBeenCalledWith('fcp_a_items', 'old');
+    expect(approveDrop).toHaveBeenCalledWith('fcp_a_items', 'old', [{ slug: 'fcp_cms_pages' }]);
     expect(res.json).toHaveBeenCalledWith({ dropped: entry });
   });
 

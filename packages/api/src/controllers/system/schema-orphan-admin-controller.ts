@@ -16,9 +16,14 @@ export class SchemaOrphanAdminController extends BaseController {
     super();
   }
 
+  /** What is registered NOW, injected fields included — the proposals are re-checked against it. */
+  private registered(): any[] {
+    return [...this.manager.registeredCollections.values()].map((entry: any) => entry.collection);
+  }
+
   async list(_req: Request, res: Response): Promise<void> {
     try {
-      res.json({ columns: await this.manager.schemaManager.pendingDrops() });
+      res.json({ columns: await this.manager.schemaManager.pendingDrops(this.registered()) });
     } catch (error) {
       this.logger.error('Reading the undeclared columns failed', error);
       res.status(500).json({ error: 'schema_orphans_unavailable' });
@@ -33,7 +38,7 @@ export class SchemaOrphanAdminController extends BaseController {
       return;
     }
     try {
-      res.json({ dropped: await this.manager.schemaManager.approveDrop(table, column) });
+      res.json({ dropped: await this.manager.schemaManager.approveDrop(table, column, this.registered()) });
     } catch (error: any) {  // eslint-disable-line @typescript-eslint/no-explicit-any
       if (String(error?.message || '').includes('is not awaiting approval')) {
         res.status(404).json({ error: 'not_awaiting_approval', message: error.message });
