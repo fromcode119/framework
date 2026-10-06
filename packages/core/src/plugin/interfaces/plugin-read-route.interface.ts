@@ -1,3 +1,4 @@
+import type { IPluginReadRouteParam } from '@core/plugin/interfaces/plugin-read-route-param.interface';
 import type { IPluginReadRouteFilter } from '@core/plugin/interfaces/plugin-read-route-filter.interface';
 import type { IPluginReadRouteSort } from '@core/plugin/interfaces/plugin-read-route-sort.interface';
 
@@ -14,6 +15,28 @@ import type { IPluginReadRouteSort } from '@core/plugin/interfaces/plugin-read-r
 export interface IPluginReadRoute {
   /** The route path within the plugin, as the plugin registers it (`/products`). */
   path: string;
+  /**
+   * The segments of `path` that name a record (`/products/:slug` → `{ "slug": { "field": "slug" } }`). With
+   * `params` the route answers ONE record and must say so with `single`.
+   */
+  params?: Record<string, IPluginReadRouteParam>;
+  /**
+   * The route answers one record: its document, not a list. A record that is missing, not prepared, past
+   * its `freshUntil`, or with no entry for the request's language goes to the plugin, which answers it
+   * (or says it is not there).
+   */
+  single?: boolean;
+  /**
+   * The document field holds one document per language, keyed by the short language code a request reads in (`bg`, `en` — `context.i18n.currentLocale()`; `''` when it names none), because the document is
+   * worded in the language the request reads in. The answer is the request's own language's entry; there is
+   * no fallback to another language, which would be an answer the plugin would not have given.
+   */
+  documentByLocale?: boolean;
+  /**
+   * Whether the answer, for an anonymous visitor, is kept like the answer of a plugin route that declares
+   * `anonymousCache`: the same site revision and maximum age, never for a signed-in visitor.
+   */
+  anonymousCache?: boolean;
   /** Query values that must ALL be present for the framework to answer (`{ "view": "card" }`). */
   when?: Record<string, string>;
   /** Query keys whose presence — any value, even one that is not text — sends the request to the plugin. */

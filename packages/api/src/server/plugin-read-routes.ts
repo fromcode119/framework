@@ -1,10 +1,11 @@
 import type { NextFunction, Request, Response } from 'express';
-import { CoercionUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, TenantMode } from '@fromcode119/core';
+import { ApiResponseCache, CoercionUtils, LocalizationUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, RequestContextUtils, TenantMode } from '@fromcode119/core';
 import type { ICollection, IPluginReadRoute, PluginManager } from '@fromcode119/core';
 import { Sql } from '@fromcode119/database';
 import type { RESTController } from '@api/controllers/rest/rest-controller';
 import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { CollectionReadColumns } from '@api/services/collection-read-columns';
+import { PluginReadRoutePath } from '@api/server/plugin-read-route-path';
 
 /**
  * Answers a plugin's declared read routes (IPluginReadRoute) itself, from the records the plugin keeps
@@ -30,13 +31,15 @@ export class PluginReadRoutes {
     if (!match) return next();
     // A read route that fails is a bug to see, not a visitor's error: it is logged, and the plugin
     // answers the request as it did before the route existed.
-    void this.answer(req, res, next, match.route, match.collection).catch((error: unknown) => {
+    const answer = () => void this.answer(req, res, next, match.route, match.collection, match.params).catch((error: unknown) => {
       PluginReadRoutes.logger.error(`Read route ${req.path} failed; the plugin answers instead: ${String((error as any)?.message || error)}`);
       if (!res.headersSent) next();
     });
+    if (!match.route.anonymousCache) return answer();
+    ApiResponseCache.middleware(match.plugin, () => this.manager.getPlugins().find((entry) => entry === match.plugin))(req, res, answer);
   };
 
-  private match(req: Request): { route: IPluginReadRoute; collection: ICollection } | null {
+  private match(req: Request): { route: IPluginReadRoute; collection: ICollection; plugin: any; params: Record<string, string> } | null {
     const path = req.path;
     const end = path.indexOf('/', 1);
     if (end < 0) return null;
@@ -46,16 +49,22 @@ export class PluginReadRoutes {
     if (!plugin || plugin.state !== PluginState.ACTIVE || !Array.isArray(routes) || routes.length === 0) return null;
     if (TenantMode.isEnabled() && !PluginTenantAccess.isBundledSlug(slug) && !PluginTenantAccess.isEnabledForCurrentTenant(slug)) return null;
 
-    const rest = path.slice(end).toLowerCase();
+    const rest = path.slice(end);
     const query = (req.query || {}) as Record<string, unknown>;
-    const route = routes.find((candidate) => String(candidate.path || '').toLowerCase() === rest
-      && Object.entries(candidate.when || {}).every(([key, value]) => CoercionUtils.toString(query[key]) === String(value))
-      && (candidate.unless || []).every((key) => query[key] === undefined || query[key] === null || query[key] === '')
-      && (CoercionUtils.toString(query.sort) === '' || PluginReadRoutes.parseSort(query.sort, candidate) !== null)
-      && PluginReadRoutes.acceptsValues(candidate, query));
+    let params: Record<string, string> = {};
+    const route = routes.find((candidate) => {
+      const named = PluginReadRoutePath.match(candidate, rest);
+      if (named === null) return false;
+      const fits = Object.entries(candidate.when || {}).every(([key, value]) => CoercionUtils.toString(query[key]) === String(value))
+        && (candidate.unless || []).every((key) => query[key] === undefined || query[key] === null || query[key] === '')
+        && (CoercionUtils.toString(query.sort) === '' || PluginReadRoutes.parseSort(query.sort, candidate) !== null)
+        && PluginReadRoutes.acceptsValues(candidate, query);
+      if (fits) params = named;
+      return fits;
+    });
     if (!route) return null;
     const collection = this.ownCollection(slug, route.collection);
-    return collection ? { route, collection } : null;
+    return collection ? { route, collection, plugin, params } : null;
   }
 
   /** Whether every filter value the request names is one the route declares it can answer. */
@@ -88,7 +97,8 @@ export class PluginReadRoutes {
     return null;
   }
 
-  private async answer(req: Request, res: Response, next: NextFunction, route: IPluginReadRoute, collection: ICollection): Promise<void> {
+  private async answer(req: Request, res: Response, next: NextFunction, route: IPluginReadRoute, collection: ICollection, params: Record<string, string>): Promise<void> {
+    if (route.single) return this.answerOne(req, res, next, route, collection, params);
     const query = (req.query || {}) as Record<string, unknown>;
     const max = Math.max(1, Number(route.maxLimit) || PluginReadRoutes.MAX_LIMIT);
     const requested = parseInt(CoercionUtils.toString(query.limit), 10);
@@ -123,6 +133,44 @@ export class PluginReadRoutes {
     const cacheSeconds = Number(route.cacheSeconds) || 0;
     res.set('Cache-Control', cacheSeconds > 0 && !(req as any).user ? `public, max-age=${cacheSeconds}` : 'private, no-store');
     res.json(items);
+  }
+
+  /**
+   * One record's document, for a route with named path segments. The record is the one whose fields equal
+   * the segments; nothing else is a candidate, so a record the plugin has not prepared is not mixed in
+   * with it — it is the plugin that answers, as it does for a missing record (and says it is not there).
+   */
+  private async answerOne(req: Request, res: Response, next: NextFunction, route: IPluginReadRoute, collection: ICollection, params: Record<string, string>): Promise<void> {
+    const query = (req.query || {}) as Record<string, unknown>;
+    const read = Object.create(req);
+    Object.defineProperty(read, 'query', {
+      value: { limit: '1', ...(query.locale !== undefined ? { locale: query.locale } : {}) },
+      writable: true, enumerable: true, configurable: true,
+    });
+    read[CollectionReadOptions.KEY] = {
+      where: (db: any, table: any) => PluginReadRoutes.recordClause(db, table, route, params),
+      fields: route.freshUntil ? [route.document, route.freshUntil] : [route.document],
+      withoutTotal: true,
+    };
+    const result: any = await this.restController.find(collection, read);
+    const doc = result?.docs?.[0];
+    if (!doc || (route.freshUntil && !PluginReadRoutes.freshAt(doc[route.freshUntil], Date.now()))) return next();
+    const stored = doc[route.document];
+    // A document worded per language answers only in the language the request reads in: another
+    // language's wording is not what the plugin would have said.
+    const item = route.documentByLocale ? (stored as Record<string, unknown> | null | undefined)?.[LocalizationUtils.normalizeLocaleCode(RequestContextUtils.getLocale(), { short: true })] : stored;
+    if (item == null) return next();
+    const cacheSeconds = Number(route.cacheSeconds) || 0;
+    res.set('Cache-Control', cacheSeconds > 0 && !(req as any).user ? `public, max-age=${cacheSeconds}` : 'private, no-store');
+    res.json(item);
+  }
+
+  /** The route's fixed conditions and each named segment equal to its field. */
+  static recordClause(db: any, table: any, route: IPluginReadRoute, params: Record<string, string>): unknown {
+    const fixed = Object.entries(route.where || {}).map(([field, value]) => db.eq(PluginReadRoutes.column(table, route, field), value));
+    const named = Object.entries(params).map(([name, value]) => db.eq(PluginReadRoutes.column(table, route, route.params![name].field), value));
+    const chunks = [...fixed, ...named];
+    return chunks.length === 1 ? chunks[0] : db.and(...chunks);
   }
 
   /** Whether a stored document is still exact at `now`: its moment is a time, and not yet passed. */
