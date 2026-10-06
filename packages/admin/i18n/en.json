@@ -181,6 +181,7 @@
       "loadMoreVersions": "Load More History",
       "versionCreated": "Created",
       "versionNoFieldChanges": "No field value changed",
+      "versionValueChanged": "changed",
       "versionMoreChanges": "+{{count}} more changed",
       "created": "Entry created successfully",
       "updated": "Entry updated successfully",

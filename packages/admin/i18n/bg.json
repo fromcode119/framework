@@ -218,6 +218,7 @@
       "loadMoreVersions": "Още версии",
       "versionCreated": "Създаден",
       "versionNoFieldChanges": "Няма променена стойност",
+      "versionValueChanged": "променено",
       "versionMoreChanges": "+{{count}} още променени",
       "created": "Записът е създаден.",
       "updated": "Записът е обновен.",

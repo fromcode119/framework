@@ -59,4 +59,18 @@ describe('VersionChangeSummary', () => {
     );
     expect(screen.queryByText(/^Created$/)).toBeNull();
   });
+
+  it('says "changed" when a value differs but prints the same on both sides', () => {
+    const revisions = [
+      { id: 2, version: 2, date: new Date(), user: 'a', action: 'Update', changes: { lineItems: [{ name: 'B' }] } },
+      { id: 1, version: 1, date: new Date(), user: 'a', action: 'Update', changes: { lineItems: [{ name: 'A' }] } },
+    ];
+    render(
+      <SidebarVersions revisions={revisions} revisionsLoading={false} activeVersionId={2} setSelectedRevision={vi.fn()} setFormData={vi.fn()}
+        setActiveVersionId={vi.fn()} loadMoreRevisions={vi.fn()} hasMoreRevisions={false} formData={{}} fields={[{ name: 'lineItems', label: 'Line Items' }]} />,
+    );
+    expect(screen.getByText('Line Items:')).toBeTruthy();
+    expect(screen.getByText('changed')).toBeTruthy();
+    expect(screen.queryByText('[1]')).toBeNull();
+  });
 });
