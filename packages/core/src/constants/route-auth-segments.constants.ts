@@ -142,6 +142,9 @@ export class RouteAuthSegments {
   ADMIN_GEO: '/admin/geo',
   ADMIN_MONITORING: '/admin/monitoring',
   MONITORING_CHECK: '/check',
+  /** `/system/admin/schema-orphans` — columns nothing declares, awaiting a platform admin's decision. */
+  ADMIN_SCHEMA_ORPHANS: '/admin/schema-orphans',
+  SCHEMA_ORPHANS_DROP: '/drop',
   GEO_UPDATE: '/update',
   TENANTS_ID: '/:id',
   TENANTS_ID_EXPORT: '/:id/export',
