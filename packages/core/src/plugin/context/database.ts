@@ -246,9 +246,11 @@ export class DatabaseContextProxy {
               // resource. `insert`/`upsert`'s second arg is the PAYLOAD, never mined for an id —
               // only update/delete carry a where. Fire-and-forget inside logWrite; a denied call
               // above never reaches this line, so nothing is logged 'allowed' that was blocked.
+              const derivedOnly = PluginDbOnRequestFields.writesOnlyDerived(prop, args, manager);
               if (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop)) {
-                // An order, a booking, a product: whatever a plugin writes can appear on a page.
-                SiteContentRevision.bumpCurrentSite();
+                // An order, a booking, a product: whatever a plugin writes can appear on a page — except the
+                // values it derives and keeps ready (see PluginDbOnRequestFields.writesOnlyDerived).
+                if (!derivedOnly) SiteContentRevision.bumpCurrentSite();
                 DatabaseWriteAudit.logWrite(
                   manager,
                   plugin.manifest.slug,
@@ -275,7 +277,7 @@ export class DatabaseContextProxy {
               const postProcess = (rows: any) => PluginDbOnRequestFields.strip(resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : DatabaseContextProxy.denormalizeResult(rows), omitted);
               if (asJson) return PluginDbJsonFind.run(target, callArgs, () => fn.apply(this, callArgs), postProcess, resolveLocalized ? { table, manager } : null, omitted);
               const applied = fn.apply(this, callArgs);
-              const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) ? SiteContentRevision.afterWrite(applied) : applied;
+              const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) && !derivedOnly ? SiteContentRevision.afterWrite(applied) : applied;
               if (shouldDenormalize) {
                 if (out && typeof out.then === 'function') {
                   return out.then(postProcess);
