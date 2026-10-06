@@ -22,6 +22,12 @@ export interface IPluginContextI18n {
     scope?: ExtensionKind | null,
   ): string;
   t(key: string, params?: Record<string, any>, locale?: string): string;
+  /**
+   * The language the current request reads in, as the framework's own reads of `localized` fields resolve
+   * it: the short code (`bg`, `en`), or `''` when the work names none. A value a plugin derives from such
+   * reads and keeps (a prepared page) belongs to this language and no other.
+   */
+  currentLocale(): string;
   /** The platform's configured default locale (admin Settings → Localization `default_locale`). */
   defaultLocale(): string;
   /**

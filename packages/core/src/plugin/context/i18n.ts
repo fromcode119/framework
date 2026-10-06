@@ -105,6 +105,7 @@ export class I18nContextProxy {
          *  answer the platform's locale only, so a Bulgarian site on an English platform issued English
          *  invoices. */
         defaultLocale: (): string => RequestContextUtils.getSiteLocale() || manager.i18n.getDefaultLocale(),
+        currentLocale: (): string => LocalizationUtils.normalizeLocaleCode(RequestContextUtils.getLocale(), { short: true }),
         siteClock: () => SiteClockAccess.read(RequestContextUtils.getTenantId()),
         registerTranslations: (localeOrDirectory: string = 'i18n', translations?: Record<string, any>) => {
           if (!hasCapability('i18n')) handleViolation('i18n');
