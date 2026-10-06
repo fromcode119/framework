@@ -138,6 +138,7 @@ export class EditPageSidebar extends PureReactor {
             loadMoreRevisions={loadMoreRevisions}
             hasMoreRevisions={hasMoreRevisions}
             formData={formData}
+            fields={collection?.fields ?? []}
           />
         )}
 

@@ -3,6 +3,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { VersionChangeSummary } from '@/components/collection/version-change-summary';
 
 export class SidebarVersions extends PureReactor {
   @prop declare revisions: any[];
@@ -14,6 +15,31 @@ export class SidebarVersions extends PureReactor {
   @prop declare loadMoreRevisions: () => void;
   @prop declare hasMoreRevisions: boolean;
   @prop declare formData: any;
+  /** The collection's fields, for the labels of what changed. */
+  @prop declare fields: any[];
+
+  /** What this version changed, from the version before it: a few "Field: before → after" lines. */
+  private renderChanges(index: number): ReactNode {
+    const older = this.revisions[index + 1];
+    if (!older) {
+      // The oldest version loaded: it is the creation when there is nothing further back, otherwise unknown until more is loaded.
+      return this.hasMoreRevisions ? null : <p className="text-[11px] text-slate-500 mt-1">{AdminI18n.t('collection.edit.versionCreated')}</p>;
+    }
+    const changes = VersionChangeSummary.between(this.revisions[index].changes, older.changes, this.fields);
+    if (!changes) return null;
+    if (changes.length === 0) return <p className="text-[11px] text-slate-400 mt-1">{AdminI18n.t('collection.edit.versionNoFieldChanges')}</p>;
+    const shown = changes.slice(0, 4);
+    return (
+      <ul className="mt-1 space-y-0.5">
+        {shown.map((change) => (
+          <li key={change.label} className="text-[11px] text-slate-600 dark:text-slate-300 break-words">
+            <span className="font-semibold">{change.label}:</span> <span className="text-slate-400 line-through">{change.from}</span> → <span>{change.to}</span>
+          </li>
+        ))}
+        {changes.length > shown.length && <li className="text-[11px] text-slate-400">{AdminI18n.t('collection.edit.versionMoreChanges', { count: changes.length - shown.length })}</li>}
+      </ul>
+    );
+  }
 
   render(): ReactNode {
     const {
@@ -61,6 +87,7 @@ export class SidebarVersions extends PureReactor {
                     )}
                   </div>
                   <p className="text-xs text-slate-500 font-medium truncate mt-0.5">{v.action}</p>
+                  {this.renderChanges(i)}
                   <p className="text-[11px] text-slate-400 font-medium mt-1 opacity-60">{v.date.toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })}</p>
               </div>
             </div>
