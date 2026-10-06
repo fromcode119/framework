@@ -9,16 +9,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminApi } from '@/lib/api';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-
-interface IUndeclaredColumn {
-  table: string;
-  column: string;
-  rows?: number;
-  nonEmpty?: number;
-  sample?: string;
-  firstSeenAt: string;
-  inactivePluginsAtScan?: string[];
-}
+import type { IUndeclaredColumn } from '@/app/settings/infrastructure/interfaces/undeclared-column.interface';
 
 /**
  * The database-schema review (Settings → Infrastructure): columns the database holds that nothing
