@@ -51,7 +51,7 @@ jobs:
           # documentation of the thing it guards is a guard people switch off.
           TRAILER='^[[:space:]]*(co-authored-by|signed-off-by):[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
           # A generation footer is also its own line, and only ever appears as one.
-          FOOTER='^[[:space:]]*(🤖[[:space:]]*)?generated with \[?(claude|copilot)'
+          FOOTER='^[[:space:]]*[-*>_~]*[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin|anthropic)|claude\.ai/code/session_'
           # Identity is a whole field, so it needs no anchor — a bot cannot author under a human name.
           IDENTITY='copilot|copilot-swe-agent|noreply@anthropic\.com|claude\[bot\]'
 
@@ -109,7 +109,7 @@ jobs:
           set -euo pipefail
           # ANCHORED, for the same reason the commit patterns are: the real footer is always its own
           # line, and a body that merely DESCRIBES the footer must not be blocked by it.
-          FOOTER='^[[:space:]]*[-*>]?[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin)'
+          FOOTER='^[[:space:]]*[-*>_~]*[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin|anthropic)|claude\.ai/code/session_'
           TRAILER='^[[:space:]]*co-authored-by:[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
           if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -qiE "$FOOTER|$TRAILER"; then
             echo "::error::The pull request title or body credits an AI."
