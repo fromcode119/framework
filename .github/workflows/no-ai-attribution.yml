@@ -29,6 +29,24 @@ jobs:
           # the five behind it, and every one of them lands in history on merge.
           fetch-depth: 0
 
+      # An AI coding agent pushes its work to a branch named after itself (`claude/...`, `copilot/...`,
+      # `codex/...`). The name outlives the session on the pull request page and in the merge commit,
+      # so it is refused here the way the commit and body checks refuse a footer.
+      - name: Reject AI-tool branch names
+        if: github.event_name == 'pull_request'
+        env:
+          # Through env, never interpolated into the script: a branch name is attacker-controlled text.
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+          BRANCH='^(refs/heads/)?(claude|anthropic|copilot|cursor|codex|openai|chatgpt|gemini|devin|jules|aider|windsurf|cline|kiro|opencode|amp|junie)/'
+          if printf '%s\n' "$HEAD_REF" | grep -qiE "$BRANCH"; then
+            echo "::error::The branch name marks the work as made by an AI tool."
+            echo "Rename the branch (git branch -m) and open the pull request again."
+            exit 1
+          fi
+          echo "Branch name is clean."
+
       - name: Reject AI attribution in commits
         env:
           BASE: ${{ github.event.pull_request.base.sha }}
@@ -49,11 +67,11 @@ jobs:
           # The first version of this file matched anywhere in the body and blocked its own commit,
           # whose message explains what a `Co-Authored-By` trailer is. A guard that fires on the
           # documentation of the thing it guards is a guard people switch off.
-          TRAILER='^[[:space:]]*(co-authored-by|signed-off-by):[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
+          TRAILER='^[[:space:]]*(co-authored-by|signed-off-by):[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic|codex|openai|aider|ampcode|jules|windsurf|cline|kiro|opencode|junie)'
           # A generation footer is also its own line, and only ever appears as one.
           FOOTER='^[[:space:]]*[-*>_~]*[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin|anthropic)|claude\.ai/code/session_'
           # Identity is a whole field, so it needs no anchor — a bot cannot author under a human name.
-          IDENTITY='copilot|copilot-swe-agent|noreply@anthropic\.com|claude\[bot\]'
+          IDENTITY='copilot|copilot-swe-agent|noreply@anthropic\.com|claude\[bot\]|cursoragent@cursor\.com|devin-ai-integration|noreply@openai\.com|noreply@aider\.chat|\(aider\)|amp@ampcode\.com|google-labs-jules|gemini-code-assist|codex\[bot\]|chatgpt-codex-connector'
 
           FAILED=0
           for sha in $(git rev-list $RANGE); do
@@ -110,7 +128,7 @@ jobs:
           # ANCHORED, for the same reason the commit patterns are: the real footer is always its own
           # line, and a body that merely DESCRIBES the footer must not be blocked by it.
           FOOTER='^[[:space:]]*[-*>_~]*[[:space:]]*(🤖[[:space:]]*)?generated (with|by) \[?(claude|copilot|chatgpt|gemini|cursor|devin|anthropic)|claude\.ai/code/session_'
-          TRAILER='^[[:space:]]*co-authored-by:[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic)'
+          TRAILER='^[[:space:]]*co-authored-by:[[:space:]]*.*(claude|copilot|chatgpt|gpt-[0-9]|gemini|cursor|devin|anthropic|codex|openai|aider|ampcode|jules|windsurf|cline|kiro|opencode|junie)'
           if printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -qiE "$FOOTER|$TRAILER"; then
             echo "::error::The pull request title or body credits an AI."
             printf '%s\n%s\n' "$PR_TITLE" "$PR_BODY" | grep -inE "$FOOTER|$TRAILER" | sed 's/^/    /'
