@@ -250,7 +250,7 @@ export class PluginContextFactory {
             });
           },
         },
-        users: UsersContextProxy.createUsersProxy(plugin, manager),
+        users: UsersContextProxy.createUsersProxy(plugin, manager, security),
         people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),

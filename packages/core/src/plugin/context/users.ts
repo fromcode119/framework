@@ -6,8 +6,17 @@ import { TenantMembership } from '@core/tenant/tenant-membership';
 import { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { StringUtils } from '@core/utils/string-utils';
+import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
+import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class UsersContextProxy {
+  /**
+   * What `create` requires. Not a capability of its own: every plugin that creates accounts already
+   * declares `database:write`, and a new entry would hold each of them until an operator re-approved
+   * it. The capability keeps a read-only plugin out; what a created account may BE is decided by
+   * PluginAccountRoles, which is the actual barrier against a plugin minting itself an administrator.
+   */
+  private static readonly CREATE_CAPABILITY = 'database:write';
 
   /**
    * The ids of the people who belong to THIS SITE, or `null` when there is no site to narrow to.
@@ -97,8 +106,9 @@ export class UsersContextProxy {
    * Plugins should use context.users.* instead of querying the system users table directly.
    */
   static createUsersProxy(
-    _plugin: ILoadedPlugin,
-    manager: IPluginManagerInterface
+    plugin: ILoadedPlugin,
+    manager: IPluginManagerInterface,
+    security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
     return {
       async findAdmins(options?: { limit?: number }) {
@@ -172,9 +182,16 @@ export class UsersContextProxy {
        * returns the existing user's id if the email is already taken.
        */
       async create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null> {
+        if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
         const email = String(input?.email ?? '').trim().toLowerCase();
         if (!email.includes('@')) return null;
-        const roles = Array.isArray(input?.roles) && input.roles.length ? input.roles : ['customer'];
+        const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+        // Vetted before ANY write, and for the existing-account branch too: attaching a membership with
+        // `admin` to someone else's login is the same escalation as creating one (see PluginAccountRoles).
+        const roles = await PluginAccountRoles.vet(manager.db, plugin.manifest.slug, input?.roles, tenantId).catch((error: Error) => {
+          manager.audit?.logAction?.(plugin.manifest.slug, 'Account Creation', 'roles', 'denied');
+          throw error;
+        });
 
         /**
          * Make the account a MEMBER of the site that asked for it.
@@ -190,8 +207,7 @@ export class UsersContextProxy {
          * default here is `customer` — enough to demote a site's own administrator on a second call.
          */
         const joinThisSite = async (userId: unknown): Promise<void> => {
-          const tenantId = RequestContextUtils.getTenantId();
-          if (!TenantMode.isEnabled() || !tenantId || userId == null) return;
+          if (!tenantId || userId == null) return;
           const memberships = new TenantMembershipService(manager.db);
           if ((await memberships.rolesForTenant(String(userId), tenantId)) !== null) return;
           await memberships.grant(String(userId), tenantId, roles);
