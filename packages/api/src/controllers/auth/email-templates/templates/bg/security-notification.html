@@ -1,9 +1,31 @@
-{{#if logoUrl}}<p><span style="display:table;padding:8px 12px;border-radius:8px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);"><img src="{{logoUrl}}" alt="{{appName}}" height="40" style="display:block;height:40px;width:auto;border:0;" /></span></p>{{/if}}
-<p>{{#if event.newLogin}}Засечено е ново влизане в профила ви.{{/if}}{{#if event.passwordChanged}}Паролата на профила ви е сменена успешно.{{/if}}{{#if event.passwordReset}}Паролата ви е възстановена успешно.{{/if}}{{#if event.emailChangeRequested}}Получена е заявка за смяна на имейла на профила ви.{{/if}}{{#if event.emailChanged}}Имейлът на профила ви е обновен.{{/if}}{{#if event.twoFactorEnabled}}Двуфакторното удостоверяване е включено за профила ви.{{/if}}{{#if event.twoFactorDisabled}}Двуфакторното удостоверяване е изключено за профила ви.{{/if}}</p>
-<ul>
-  {{#if facts.ipAddress}}<li>IP адрес: {{facts.ipAddress}}</li>{{/if}}
-  {{#if facts.userAgent}}<li>Браузър: {{facts.userAgent}}</li>{{/if}}
-  {{#if facts.newEmail}}<li>Нов имейл: {{facts.newEmail}}</li>{{/if}}
-  {{#if facts.previousEmail}}<li>Предишен имейл: {{facts.previousEmail}}</li>{{/if}}
-  {{#if facts.time}}<li>Час: {{facts.time}}</li>{{/if}}
-</ul>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f4f1fb;padding:24px 0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;">
+  <tr>
+    <td align="center">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(79,46,120,0.12);">
+        <tr>
+          <td style="background:linear-gradient(135deg,#5b2a9f,#7c3aed);padding:28px 32px;">
+            {{#if logoUrl}}<span style="display:table;margin:0 0 12px;padding:8px 12px;border-radius:8px;background-color:#ffffff;background-image:linear-gradient(#ffffff,#ffffff);"><img src="{{logoUrl}}" alt="{{appName}}" height="40" style="display:block;height:40px;width:auto;border:0;" /></span>{{/if}}
+            <span style="color:#ffffff;font-size:18px;font-weight:700;letter-spacing:0.04em;">{{appName}}</span>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:32px;">
+            <p style="margin:0 0 20px;font-size:16px;line-height:1.6;color:#1f2937;">{{#if event.newLogin}}Засечено е ново влизане в профила ви.{{/if}}{{#if event.passwordChanged}}Паролата на профила ви е сменена успешно.{{/if}}{{#if event.passwordReset}}Паролата ви е възстановена успешно.{{/if}}{{#if event.emailChangeRequested}}Получена е заявка за смяна на имейла на профила ви.{{/if}}{{#if event.emailChanged}}Имейлът на профила ви е обновен.{{/if}}{{#if event.twoFactorEnabled}}Двуфакторното удостоверяване е включено за профила ви.{{/if}}{{#if event.twoFactorDisabled}}Двуфакторното удостоверяване е изключено за профила ви.{{/if}}</p>
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+                {{#if facts.ipAddress}}<tr><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">IP адрес</td><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:14px;color:#1f2937;word-break:break-word;">{{facts.ipAddress}}</td></tr>{{/if}}
+                {{#if facts.userAgent}}<tr><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">Браузър</td><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:14px;color:#1f2937;word-break:break-word;">{{facts.userAgent}}</td></tr>{{/if}}
+                {{#if facts.newEmail}}<tr><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">Нов имейл</td><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:14px;color:#1f2937;word-break:break-word;">{{facts.newEmail}}</td></tr>{{/if}}
+                {{#if facts.previousEmail}}<tr><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">Предишен имейл</td><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:14px;color:#1f2937;word-break:break-word;">{{facts.previousEmail}}</td></tr>{{/if}}
+                {{#if facts.time}}<tr><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:13px;color:#6b7280;width:38%;vertical-align:top;">Час</td><td style="padding:8px 0;border-bottom:1px solid #efe9fb;font-size:14px;color:#1f2937;word-break:break-word;">{{facts.time}}</td></tr>{{/if}}
+            </table>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:18px 32px;background:#faf8ff;border-top:1px solid #efe9fb;">
+            <span style="font-size:12px;color:#9ca3af;">{{appName}} — автоматично съобщение за сигурност. Моля, не отговаряйте.</span>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>

@@ -52,7 +52,8 @@ describe('framework emails', () => {
     expect(email.text).not.toMatch(/Час: \d{4}-\d{2}-\d{2}T/);
     const login = await SecurityNotificationEmailTemplate.build({ ...common('en'), event: SecurityNotificationEvent.NEW_LOGIN, facts: { ipAddress: '10.0.0.1' } });
     expect(login.subject).toBe('Shop & Co: New login detected');
-    expect(login.html).toContain('<li>IP address: 10.0.0.1</li>');
+    expect(login.html).toContain('IP address</td>');
+    expect(login.html).toContain('10.0.0.1</td>');
   });
 
   it("every framework email carries the site's email logo at the top, and none when the site has no logo", async () => {
