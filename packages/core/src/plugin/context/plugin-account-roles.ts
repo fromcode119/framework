@@ -2,7 +2,8 @@ import { RoleCatalog } from '@core/tenant/role-catalog';
 import { StringUtils } from '@core/utils/string-utils';
 
 /**
- * The roles a PLUGIN may put on an account it creates through `context.users.create`.
+ * The roles a PLUGIN may put on an account — creating it through `context.users.create`, granting
+ * through `context.roles`, or declaring one through `context.roles.ensure`.
  *
  * The caller chooses the email, the roles, and the password — already hashed, so it is a hash the
  * plugin knows. Unvetted, that is a plugin minting an administrator login for itself: a new account
@@ -54,16 +55,40 @@ export class PluginAccountRoles {
   static async vet(db: unknown, pluginSlug: string, requested: unknown, tenantId: string | null): Promise<string[]> {
     const named = Array.isArray(requested) ? StringUtils.normalizeSlugList(requested) : [];
     const roles = named.length ? named : [...PluginAccountRoles.DEFAULT];
+    return PluginAccountRoles.vetGrant(db, pluginSlug, roles, tenantId, 'context.users.create');
+  }
+
+  /**
+   * The same test for a plugin GRANTING roles to an account that already exists — `context.roles`.
+   * Without it the gate on `create` is decorative: create a customer, then assign it `admin`.
+   * An empty list is allowed (a membership that carries no roles grants nothing).
+   */
+  static async vetGrant(db: unknown, pluginSlug: string, requested: unknown[], tenantId: string | null, operation: string): Promise<string[]> {
+    const roles = StringUtils.normalizeSlugList(requested);
 
     const byName = roles.filter((role) => PluginAccountRoles.PRIVILEGED.has(role));
-    if (byName.length) throw PluginAccountRoles.refusal(byName);
+    if (byName.length) throw PluginAccountRoles.refusal(operation, byName);
+    if (!roles.length) return roles;
 
     const catalog = await new RoleCatalog(db).list(tenantId);
     const owns = PluginAccountRoles.ownership(pluginSlug);
     const byGrant = roles.filter((role) => catalog.some((entry) => entry.slug === role && !entry.permissions.every(owns)));
-    if (byGrant.length) throw PluginAccountRoles.refusal(byGrant);
+    if (byGrant.length) throw PluginAccountRoles.refusal(operation, byGrant);
 
     return roles;
+  }
+
+  /**
+   * Whether a plugin may DECLARE this role (`context.roles.ensure`). Checked on the declaration as
+   * well as on every grant: a plugin that could define `helper` with `*` and then hand it out would
+   * need only one of the two checks to be missing. Same rule — no administrator's name, and nothing
+   * beyond the plugin's own permissions.
+   */
+  static vetDeclaration(pluginSlug: string, slug: string, permissions: unknown, operation: string): void {
+    const role = String(slug ?? '').trim().toLowerCase();
+    if (PluginAccountRoles.PRIVILEGED.has(role)) throw PluginAccountRoles.refusal(operation, [role]);
+    const owns = PluginAccountRoles.ownership(pluginSlug);
+    if (!StringUtils.normalizeSlugList(permissions ?? []).every(owns)) throw PluginAccountRoles.refusal(operation, [role]);
   }
 
   /** Whether a permission sits inside the calling plugin's own namespace, wildcards excluded. */
@@ -73,10 +98,10 @@ export class PluginAccountRoles {
     return (permission) => permission.startsWith(`${slug}:`) && !permission.includes('*');
   }
 
-  private static refusal(roles: string[]): Error {
+  private static refusal(operation: string, roles: string[]): Error {
     return new Error(
-      `context.users.create refused role(s) ${roles.map((role) => `"${role}"`).join(', ')}: a plugin may only create accounts `
-      + 'whose roles carry nothing beyond its own permissions, and never an administrator.',
+      `${operation} refused role(s) ${roles.map((role) => `"${role}"`).join(', ')}: a plugin may only declare or grant roles `
+      + 'that carry nothing beyond its own permissions, and never an administrator.',
     );
   }
 }

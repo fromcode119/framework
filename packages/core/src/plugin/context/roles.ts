@@ -7,6 +7,7 @@ import { TenantState } from '@core/enums/tenant-state.enum';
 import { SystemConstants } from '@core/constants/system.constants';
 import { StringUtils } from '@core/utils/string-utils';
 import { SiteRoleEditor } from '@core/plugin/context/site-role-editor';
+import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
 
 export class RolesContextProxy {
 
@@ -91,6 +92,21 @@ export class RolesContextProxy {
       await manager.db.update(SystemConstants.TABLE.USERS, { id: uid }, { roles: next, updatedAt: new Date() });
     };
 
+    /**
+     * Every write that GIVES a role goes through here first (see PluginAccountRoles): a plugin may hand
+     * out its own roles, never an administrator's and never a role carrying someone else's permissions.
+     * Refused before any write, and recorded against the plugin.
+     */
+    const owner = String(pluginSlug ?? '').trim();
+    const refuseAndRecord = (error: Error): never => {
+      manager.audit?.logAction?.(owner, 'Role Grant', 'roles', 'denied');
+      throw error;
+    };
+    const vetGrant = (operation: string, roles: unknown[]): Promise<string[]> => {
+      const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+      return PluginAccountRoles.vetGrant(manager.db, owner, roles, tenantId, operation).catch(refuseAndRecord);
+    };
+
     const proxy = {
       /**
        * Declares a role, recording WHICH PLUGIN declared it.
@@ -105,7 +121,11 @@ export class RolesContextProxy {
        * blank is filled — a row already attributed to someone else is never reassigned.
        */
       async ensure(slug: string, data: { name: string; description?: string; type?: string; permissions?: any[] }): Promise<void> {
-        const owner = String(pluginSlug ?? '').trim();
+        try {
+          PluginAccountRoles.vetDeclaration(owner, slug, data?.permissions, 'context.roles.ensure');
+        } catch (error) {
+          refuseAndRecord(error as Error);
+        }
         const existing = await manager.db.findOne(SystemConstants.TABLE.ROLES, { slug });
         if (!existing) {
           await manager.db.insert(SystemConstants.TABLE.ROLES, {
@@ -128,6 +148,7 @@ export class RolesContextProxy {
         const uid = Number(userId);
         if (!uid || !slug) return;
         const roleSlug = String(slug).trim().toLowerCase();
+        await vetGrant('context.roles.assignRole', [roleSlug]);
         const existing = await manager.db.findOne(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         if (!existing) {
           await manager.db.insert(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
@@ -156,7 +177,7 @@ export class RolesContextProxy {
         const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
         if (!tenantId) return;
 
-        const roleList = StringUtils.normalizeSlugList(roles);
+        const roleList = await vetGrant('context.roles.grantSiteMembership', Array.isArray(roles) ? roles : []);
         const existing = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(uid), tenant_id: tenantId });
         if (existing) {
           await manager.db.update(
@@ -236,7 +257,10 @@ export class RolesContextProxy {
       /** The roles this account holds ON THIS SITE; `null` when it is not an active member here. */
       siteRolesOf: (userId: number | string) => siteRoles.rolesOf(userId),
       /** Adds one role on this site, keeping the account's other roles here (see {@link SiteRoleEditor}). */
-      addSiteRole: (userId: number | string, slug: string) => siteRoles.add(userId, slug),
+      addSiteRole: async (userId: number | string, slug: string) => {
+        await vetGrant('context.roles.addSiteRole', [slug]);
+        return siteRoles.add(userId, slug);
+      },
       /** Takes one role away on this site; the membership and the other roles stay. */
       removeSiteRole: (userId: number | string, slug: string) => siteRoles.remove(userId, slug),
     };
