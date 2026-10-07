@@ -28,6 +28,9 @@ Every Atlantis installation as a Model Context Protocol server: security model, 
 ### [Module Documentation Index](./modules/README.md)
 Framework package documentation index.
 
+### [Importing From Other Platforms](./importing-from-other-platforms.md)
+The kernel primitives an importer plugin builds on: hook-firing record creation, guarded media ingest, add-only redirects, and the legacy password formats a migrated user can sign in with.
+
 ### [Backup And Site Transfer](./backup-and-transfer.md)
 Operator guide for the system backup API, constrained restore flow, and site-transfer bundle CLI.
 

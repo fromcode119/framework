@@ -83,7 +83,7 @@ export class PluginGuestContextFactory {
       i18n: locals.i18n,
       paths: locals.paths,
     };
-    for (const name of ['collections', 'settings', 'meta', 'signing', 'realtime', 'sms', 'geo', 'users', 'people', 'roles', 'notifications', 'email', 'media', 'recordVersions',
+    for (const name of ['collections', 'settings', 'meta', 'signing', 'realtime', 'sms', 'geo', 'users', 'people', 'roles', 'notifications', 'email', 'media', 'redirects', 'recordVersions',
       'entityRecords', 'entityFacts', 'entities', 'theme', 'ui', 'integrations', 'storage', 'cache', 'redis', 'extensions']) {
       context[name] = ctx(name);
     }

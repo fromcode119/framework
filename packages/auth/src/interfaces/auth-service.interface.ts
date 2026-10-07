@@ -5,6 +5,8 @@ import type { IUser } from '@auth/interfaces/user.interface';
 export interface IAuthService {
   hashPassword(password: string): Promise<string>;
   comparePassword(password: string, hash: string): Promise<boolean>;
+  /** True for a hash imported from another platform: after it verifies, store `hashPassword`'s instead. */
+  needsRehash(hash: string): boolean;
   generateToken(user: IUser, options?: { expiresIn?: SignOptions['expiresIn'] }): Promise<string>;
   verifyToken(token: string): Promise<IUser>;
 }

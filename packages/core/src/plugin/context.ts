@@ -30,6 +30,7 @@ import { RealtimeContextProxy } from '@core/plugin/context/realtime';
 import { SmsContextProxy } from '@core/plugin/context/sms';
 import { GeoContextProxy } from '@core/plugin/context/geo';
 import { MigrationsContextProxy } from '@core/plugin/context/migrations';
+import { RedirectsContextProxy } from '@core/plugin/context/redirects';
 import { MediaContextProxy } from '@core/plugin/context/media';
 import { RecordVersionsContextProxy } from '@core/plugin/context/record-versions';
 import { RolesContextProxy } from '@core/plugin/context/roles';
@@ -266,7 +267,8 @@ export class PluginContextFactory {
         geo: GeoContextProxy.createGeoProxy(),
         // Schema migrations run on the framework's DDL connection, never the request role.
         migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),
-        media: MediaContextProxy.createMediaProxy(manager),
+        media: MediaContextProxy.createMediaProxy(manager, security),
+        redirects: RedirectsContextProxy.createRedirectsProxy(plugin, manager, security),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager, plugin.manifest.slug),
         notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug),

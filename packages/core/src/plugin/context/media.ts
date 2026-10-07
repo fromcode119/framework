@@ -2,6 +2,9 @@ import * as crypto from 'crypto';
 import { NamingStrategy } from '@fromcode119/database';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
+import { MediaIngestBridge } from '@core/plugin/media-ingest-bridge';
+import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
+import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class MediaContextProxy {
   /** Never resolve more than this many ids in one statement, so one call cannot become an unbounded IN list. */
@@ -19,7 +22,7 @@ export class MediaContextProxy {
   }
 
   /**
-   * Read-only media proxy for plugins. Plugins must NOT query the `media` system table via context.db
+   * Media proxy for plugins — reads, plus `ingest`. Plugins must NOT query the `media` system table via context.db
    * (that path is blocked) — they resolve a media item through here. Uses the RAW manager db so the
    * framework owns the only access to the system table.
    *
@@ -28,8 +31,18 @@ export class MediaContextProxy {
    * app connects as a non-superuser role, so the tenant filter is enforced by the CONNECTION and
    * applies to every statement here. A plugin cannot resolve another tenant's media by guessing an id.
    */
-  static createMediaProxy(manager: IPluginManagerInterface) {
+  static createMediaProxy(manager: IPluginManagerInterface, security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>) {
     return {
+      /**
+       * Store a file from a public url or base64 bytes as a media record, and return it (with its
+       * `id` and public `url`). The ONE write this surface has: a plugin never touches the `media`
+       * table, so the file goes through the api's own ingest — the same address checks, size cap,
+       * type check and webp variant every other upload gets. Needs the `content` capability.
+       */
+      async ingest(input: IPluginMediaIngestInput): Promise<Record<string, unknown>> {
+        if (!security.hasCapability('content')) security.handleViolation('content');
+        return MediaIngestBridge.ingest(input);
+      },
       async findById(id: any): Promise<Record<string, any> | null> {
         if (id == null || id === '') return null;
         const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });

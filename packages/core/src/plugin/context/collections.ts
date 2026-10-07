@@ -24,6 +24,20 @@ export class CollectionsContextProxy {
 ) {
       const { hasCapability, handleViolation } = security;
 
+      // OWN collections only — same isolation as context.db. Cross-plugin writes go through the
+      // namespace API of the plugin that owns the data, never through this path.
+      const ownCollection = (collectionSlug: string, verb: string): string => {
+        if (!hasCapability('database') && !hasCapability('content')) {
+          handleViolation('content');
+        }
+        const fullSlug = PhysicalTableNameUtils.create(plugin.manifest.slug, collectionSlug);
+        const entry = manager.getCollection(fullSlug);
+        if (!entry || entry.pluginSlug !== plugin.manifest.slug) {
+          throw new Error(`Plugin "${plugin.manifest.slug}" may ${verb} only its own collections; "${collectionSlug}" is not one of them.`);
+        }
+        return fullSlug;
+      };
+
       return {
         register: (collection: ICollectionInput) => {
           if (!hasCapability('database') && !hasCapability('content')) {
@@ -71,17 +85,12 @@ export class CollectionsContextProxy {
             pluginSlug: plugin.manifest.slug 
           });
         },
+        create: async (collectionSlug: string, data: Record<string, unknown>, options?: { user?: unknown }) => {
+          const fullSlug = ownCollection(collectionSlug, 'create');
+          return CollectionWriteBridge.create(fullSlug, data, options?.user ?? null);
+        },
         update: async (collectionSlug: string, id: number | string, data: Record<string, unknown>, options?: { user?: unknown }) => {
-          if (!hasCapability('database') && !hasCapability('content')) {
-            handleViolation('content');
-          }
-          // OWN collections only — same isolation as context.db. Cross-plugin writes go through the
-          // namespace API of the plugin that owns the data, never through this path.
-          const fullSlug = PhysicalTableNameUtils.create(plugin.manifest.slug, collectionSlug);
-          const entry = manager.getCollection(fullSlug);
-          if (!entry || entry.pluginSlug !== plugin.manifest.slug) {
-            throw new Error(`Plugin "${plugin.manifest.slug}" may update only its own collections; "${collectionSlug}" is not one of them.`);
-          }
+          const fullSlug = ownCollection(collectionSlug, 'update');
           return CollectionWriteBridge.update(fullSlug, id, data, options?.user ?? null);
         },
         extend: (targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>) => {

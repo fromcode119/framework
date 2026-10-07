@@ -44,6 +44,8 @@ export type { ICoreExtensionContext } from '@core/extensions/interfaces/core-ext
 export type { ICoreExtensionState } from '@core/extensions/interfaces/core-extension-state.interface';
 export { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 export { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
+export { MediaIngestBridge } from '@core/plugin/media-ingest-bridge';
+export type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
 export { RateLimiter } from '@core/security/rate-limiter';
 export { PluginDatabaseQuota } from '@core/security/plugin-database-quota';
 export { SchemaManager } from '@core/database/schema-manager';
