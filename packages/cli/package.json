@@ -7,7 +7,7 @@
   "scripts": {
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build",
     "dev": "tsc -w",
-    "test": "tsx --test src/site-transfer-bundle.test.ts"
+    "test": "vitest run --config ../../vitest.plugins.config.ts --project mcp packages/cli"
   },
   "dependencies": {
     "@fromcode119/core": "*",
