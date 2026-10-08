@@ -8,6 +8,7 @@ import { CollectionReadColumns } from '@api/services/collection-read-columns';
 import { PluginReadRoutePath } from '@api/server/plugin-read-route-path';
 import { PluginReadRouteDocument } from '@api/server/plugin-read-route-document';
 import { PluginReadRouteList } from '@api/server/plugin-read-route-list';
+import { PluginReadRouteOrder } from '@api/server/plugin-read-route-order';
 
 /**
  * Answers a plugin's declared read routes (IPluginReadRoute) itself, from the records the plugin keeps
@@ -59,6 +60,8 @@ export class PluginReadRoutes {
       if (named === null) return false;
       const fits = Object.entries(candidate.when || {}).every(([key, value]) => CoercionUtils.toString(query[key]) === String(value))
         && (candidate.requires || []).every((key) => CoercionUtils.toString(query[key]).trim() !== '')
+        && (candidate.unlessHeaders || []).every((name) => !req.headers?.[String(name).toLowerCase()])
+        && (!candidate.limitAccepts || query.limit === undefined || (PluginReadRoutes.pattern(candidate.limitAccepts)?.test(CoercionUtils.toString(query.limit)) ?? false))
         && (candidate.unless || []).every((key) => query[key] === undefined || query[key] === null || query[key] === '')
         && (CoercionUtils.toString(query.sort) === '' || PluginReadRoutes.parseSort(query.sort, candidate) !== null)
         && PluginReadRoutes.acceptsValues(candidate, query)
@@ -241,29 +244,9 @@ export class PluginReadRoutes {
     return db.eq(column, value);
   }
 
-  /**
-   * The order the request names among the route's declared sorts — `price`, `-price`, or the older
-   * `price-asc` / `price-desc` — else the route's `defaultSort`; ties by id, newest first, so a page is
-   * the same page every time it is asked for.
-   *
-   * On a field the record holds as it is (not one the plugin derives), an unprepared record already sorts
-   * where it belongs: if none falls inside the page, the page is exactly the plugin's. Only a sort on a
-   * derived (`readOnRequest`) field puts unprepared records first — that costs a full sort, so a route
-   * should sort by real fields.
-   */
+  /** See PluginReadRouteOrder.order. */
   static order(db: any, table: any, route: IPluginReadRoute, sort: unknown, derived: ReadonlySet<string> = new Set()): unknown[] {
-    const parsed = PluginReadRoutes.parseSort(sort, route) ?? PluginReadRoutes.parseSort(route.defaultSort, route);
-    const field = parsed ? route.sorts![parsed.name].field : 'id';
-    const column = PluginReadRoutes.column(table, route, field);
-    const order = [!parsed || parsed.descending ? db.desc(column) : Sql.query`${column} asc`];
-    if (field !== 'id') order.push(db.desc(PluginReadRoutes.column(table, route, 'id')));
-    if (derived.has(field)) {
-      const document = PluginReadRoutes.column(table, route, route.document);
-      order.unshift(route.freshUntil
-        ? Sql.query`(${document} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} <= now()) DESC`
-        : Sql.query`(${document} IS NULL) DESC`);
-    }
-    return order;
+    return PluginReadRouteOrder.order(db, table, route, sort, derived, (field) => PluginReadRoutes.column(table, route, field));
   }
 
   /**
@@ -278,11 +261,7 @@ export class PluginReadRoutes {
   }
 
   static parseSort(value: unknown, route: IPluginReadRoute): { name: string; descending: boolean } | null {
-    const raw = CoercionUtils.toString(value).trim();
-    if (!raw) return null;
-    const legacy = /^([A-Za-z0-9_]+)-(asc|desc)$/.exec(raw);
-    const name = legacy ? legacy[1] : raw.replace(/^-/, '');
-    if (!route.sorts?.[name]) return null;
-    return { name, descending: legacy ? legacy[2] === 'desc' : raw.startsWith('-') };
+    return PluginReadRouteOrder.parseSort(value, route);
   }
+
 }

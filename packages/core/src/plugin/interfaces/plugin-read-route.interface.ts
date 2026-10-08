@@ -47,6 +47,8 @@ export interface IPluginReadRoute {
   when?: Record<string, string>;
   /** Query keys that must ALL be present, with a value, for the framework to answer (a route made for lookups). */
   requires?: string[];
+  /** Request headers whose presence sends the request to the plugin (a password the plugin checks, say). */
+  unlessHeaders?: string[];
   /** Query keys whose presence — any value, even one that is not text — sends the request to the plugin. */
   unless?: string[];
   /** The plugin collection the records live in (its slug). */
@@ -69,8 +71,16 @@ export interface IPluginReadRoute {
    * naming any other sort goes to the plugin. Ties break by id, newest first.
    */
   sorts?: Record<string, IPluginReadRouteSort>;
-  /** The order when the request names none of `sorts` (`-updated` — a declared sort name). */
+  /**
+   * The order when the request names none of `sorts`: a declared sort name (`-updated`), or several,
+   * comma-separated and applied in turn (`-sticky,-publishedAt`).
+   */
   defaultSort?: string;
+  /**
+   * A pattern a `?limit=` must match for the framework to answer — for a plugin that reads a limit its own
+   * way (`0`, a fraction, an empty value). Any other value is the plugin's to answer.
+   */
+  limitAccepts?: string;
   defaultLimit?: number;
   maxLimit?: number;
   /** How long a shared cache may keep a visitor's answer; omitted, nothing is cached. */
