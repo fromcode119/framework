@@ -21,4 +21,9 @@ export interface IPluginContextMedia {
   publicUrl(id: any): Promise<string | null>;
   /** SHA-256 (hex) of the stored file's bytes, or null when the id resolves to nothing in this site. */
   digest(id: any): Promise<string | null>;
+  /**
+   * A stored file's bytes (base64) with its name and type, or null when the id resolves to nothing in
+   * this site or the file is over the read limit (the admin upload limit, 25 MB).
+   */
+  read(id: any): Promise<{ filename: string; mimeType: string; size: number; base64: string } | null>;
 }
