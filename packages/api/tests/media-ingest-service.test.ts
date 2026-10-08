@@ -45,4 +45,14 @@ describe('MediaIngestService', () => {
     expect(db.insert).toHaveBeenCalledWith('media', expect.objectContaining({ filename: storedName, originalName: 'logo.png', alt: 'Logo', mimeType: 'image/png' }));
     expect(result).toEqual(expect.objectContaining({ id: 41, replaced: false, url: `/uploads/${storedName}` }));
   });
+
+  it('names a raster image by what it is, when its name says another raster format', () => {
+    const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d]);
+    const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1]);
+    expect(MediaIngestService.nameForContent('product_3891.jpg', png)).toBe('product_3891.png');
+    expect(MediaIngestService.nameForContent('photo.png', jpeg)).toBe('photo.jpg');
+    expect(MediaIngestService.nameForContent('photo.jpeg', jpeg)).toBe('photo.jpeg');
+    expect(MediaIngestService.nameForContent('notes.pdf', png)).toBe('notes.pdf');
+    expect(MediaIngestService.nameForContent('fake.jpg', Buffer.from('not an image at all'))).toBe('fake.jpg');
+  });
 });
