@@ -24,8 +24,8 @@ hardware.
 | Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — | — |
 | List of 20 records | **203.4** | 80.6 <sub>(computed per request 55–60)</sub> | 137.5 | 58.2 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
 | Single record / product | **255.9** | 214.6 <sub>(computed per request 107.0)</sub> | 217.6 | 98.2 | 128.8 | 115.2 | 25.6 | 54.1 | 12.8 | 12.4 | 21.0 |
-| Page by slug | **255.9** <sub>(same operation as a single record)</sub> | 213.9 | 221.8 | — | 134.2 | 113.0 | — | 71.2 | 21.3 | 13.1 | 14.8 |
-| Posts list (20) | **203.4** <sub>(same operation as a list)</sub> | 124.2 | 147.3 | — | 101.9 | 101.9 | — | — | — | 9.6 | 7.9 |
+| Page by slug | **255.9** <sub>(same operation as a single record)</sub> | **288.1** | 221.8 | — | 134.2 | 113.0 | — | 71.2 | 21.3 | 13.1 | 14.8 |
+| Posts list (20) | **203.4** <sub>(same operation as a list)</sub> | **219.9** | 147.3 | — | 101.9 | 101.9 | — | — | — | 9.6 | 7.9 |
 | Filtered + sorted (20) | **150.4** | 66.8 <sub>(card view 128.4)</sub> | 130.8 | 30.2 | 101.1 | 68.8 | 16.2 | 14.9 | 10.3 | 8.9 | 10.7 |
 | Signed-in read (20) | **157.4** | 119.0 | 76.5 | 52.7 | 103.1 | 94.6 | 10.5 | 51.7 | 6.4 | 4.3 | 7.7 |
 | Create a record | **84.7** | 70.3 | 58.9 | 44.9 | 76.5 | 76.2 | 5.2 | 23.0 | 24.1 | 4.3 | 14.7 |
@@ -35,9 +35,10 @@ The first Atlantis column is a plain collection with the same six fields as the 
 Atlantis' own **full shop product** (94 columns, tax-aware prices, variants, stock, ratings, lead time) and
 CMS records, which carry several times the data of a plain record. The second column is the like-for-like for
 the commerce setups (Payload with its official e-commerce plugin, Medusa, PrestaShop, Magento, Drupal
-Commerce, WooCommerce), which also return full commerce products. Atlantis is first in every row; in the
-page-by-slug and posts-list rows the richer CMS record (213.9 and 124.2) is 4% and 16% behind Payload's plain
-page and post, and ahead of it at equal width (first column).
+Commerce, WooCommerce), which also return full commerce products. Atlantis is first in every row, the richer CMS
+record included: a page by slug no longer counts every match when the answer is one page (288.1), and the post
+list is answered from entries the CMS keeps beside each post (219.9). Both were measured on a slower day than the
+Payload figures in this table; measured beside Payload in that same session, Payload answered 162.7 and 129.8.
 
 ## 2. The full shop product against the other commerce setups (req/s)
 
@@ -45,8 +46,8 @@ page and post, and ahead of it at equal width (first column).
 |:--|--:|--:|:--|--:|
 | Product list, full (20) | **80.6** | 58.2 | Payload + shop plugin | 1.4× |
 | Single product | **214.6** | 98.2 | Payload + shop plugin | 2.2× |
-| Page by slug | **213.9** | 71.2 | PrestaShop | 3.0× |
-| Posts list (20) | **124.2** | 9.6 | Drupal | 12.9× |
+| Page by slug | **288.1** | 71.2 | PrestaShop | 4.0× |
+| Posts list (20) | **219.9** | 9.6 | Drupal | 22.9× |
 | Filtered + sorted (20) | **66.8** | 30.2 | Payload + shop plugin | 2.2× |
 | Signed-in read (20) | **119.0** | 52.7 | Payload + shop plugin | 2.3× |
 | Create a record | **70.3** | 44.9 | Payload + shop plugin | 1.6× |
