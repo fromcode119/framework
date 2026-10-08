@@ -1,10 +1,13 @@
 import { ClientType } from '@fromcode119/core/client';
 import React from 'react';
-import { ApiVersionUtils, BrowserStateClient, CookieConstants, SystemConstants } from '@fromcode119/core/client';
+import { BrowserStateClient, CookieConstants, SystemConstants } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 import { ContextProviderStateService } from '@react/context/context-provider-state-service';
 import { ContextProviderConfigLoaderHooks } from '@react/context/context-provider-config-loader-hooks';
+import { ContextProviderApiUrl } from '@react/context/context-provider-api-url';
+import { ContextProviderDownload } from '@react/context/context-provider-download';
+import type { IApiDownloadOptions } from '@fromcode119/core/client';
 
 export class ContextProviderApiHooks {
   static useApiRuntime(args: {
@@ -61,18 +64,7 @@ export class ContextProviderApiHooks {
         throw new Error('[Fromcode API] Missing request path');
       }
 
-      const base = getBaseURL();
-      const version = ApiVersionUtils.normalize();
-      const normalizedPath = path.trim();
-      let url = normalizedPath;
-
-      if (!normalizedPath.startsWith('http')) {
-        const versionPrefix = ApiVersionUtils.prefix(version);
-        const relativePath = normalizedPath.startsWith(versionPrefix)
-          ? normalizedPath.slice(versionPrefix.length)
-          : normalizedPath;
-        url = `${base}${versionPrefix}${relativePath.startsWith('/') ? '' : '/'}${relativePath}`;
-      }
+      const url = ContextProviderApiUrl.resolve(getBaseURL(), path);
 
       // Read caller headers first so we can respect an explicit X-Framework-Client override.
       // NO Authorization header is built here. Every surface authenticates by its own `httpOnly`
@@ -208,7 +200,8 @@ export class ContextProviderApiHooks {
         });
       },
       delete: (path: string, options?: any) => apiFetch(path, { ...options, method: 'DELETE' }),
-    }), [apiFetch, getBaseURL]);
+      download: (path: string, options?: IApiDownloadOptions) => ContextProviderDownload.run(ContextProviderApiUrl.resolve(getBaseURL(), path), clientType, options),
+    }), [apiFetch, getBaseURL, clientType]);
 
     const { loadConfig } = ContextProviderConfigLoaderHooks.useConfigLoader({
       apiFetch,

@@ -1,4 +1,5 @@
 import { ApiRequestService } from '@core/api/api-request-service';
+import type { IApiDownloadOptions } from '@core/clients/interfaces/api-download-options.interface';
 
 export class ApiScopeClient {
   constructor(
@@ -9,6 +10,8 @@ export class ApiScopeClient {
       patch: (path: string, body?: any, options?: any) => Promise<any>;
       delete: (path: string, options?: any) => Promise<any>;
       getBaseUrl?: () => string;
+      /** Saves a file the api answers with — the surfaces that can (the console) provide it. */
+      download?: (path: string, options?: IApiDownloadOptions) => Promise<void>;
     },
     private readonly basePath: string,
   ) {}
@@ -31,6 +34,15 @@ export class ApiScopeClient {
 
   delete(path = '', options?: any): Promise<any> {
     return this.requester.delete(this.buildPath(path), options);
+  }
+
+  /**
+   * Saves a file this api hands out, sent as this surface's own requests are — a plain link loses
+   * that, and a private site's console then reads as a stranger. Refused where the surface cannot.
+   */
+  download(path = '', options?: IApiDownloadOptions): Promise<void> {
+    if (!this.requester.download) return Promise.reject(new Error('This surface cannot download files.'));
+    return this.requester.download(this.buildPath(path), options);
   }
 
   resolveUrl(path = ''): string {
