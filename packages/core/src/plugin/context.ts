@@ -24,6 +24,7 @@ import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { EntityFactsContextProxy } from '@core/plugin/context/entity-facts';
 import { MetaContextProxy } from '@core/plugin/context/meta';
+import { PluginMetaAccess } from '@core/plugin/context/plugin-meta-access';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
 import { RealtimeContextProxy } from '@core/plugin/context/realtime';
@@ -255,7 +256,7 @@ export class PluginContextFactory {
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),
-        meta: MetaContextProxy.createMetaProxy(manager),
+        meta: PluginMetaAccess.wrap(MetaContextProxy.createMetaProxy(manager), plugin.manifest.slug),
         tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),
         // Signs on the HOST: an isolated plugin has no key to decrypt the signing root with, and must not.
         signing: SigningContextProxy.createSigningProxy(manager, plugin.manifest.slug),

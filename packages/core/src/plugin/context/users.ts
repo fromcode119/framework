@@ -7,6 +7,7 @@ import { TenantMembershipService } from '@core/tenant/tenant-membership-service'
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { StringUtils } from '@core/utils/string-utils';
 import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
+import { PluginPasswordSetup } from '@core/plugin/context/plugin-password-setup';
 import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class UsersContextProxy {
@@ -229,6 +230,20 @@ export class UsersContextProxy {
         if (created?.id == null) return null;
         await joinThisSite(created.id);
         return { id: created.id };
+      },
+
+      /**
+       * A set-password token for an account this plugin looks after, in the format the framework's own
+       * reset page consumes (`/reset-password?token=…`). Refused for any account holding a role the
+       * plugin could not grant, and for a platform administrator — see PluginPasswordSetup.
+       */
+      async issuePasswordSetup(userId: unknown, options?: { ttlMinutes?: number }): Promise<{ token: string; expiresAt: string }> {
+        if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
+        const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+        return PluginPasswordSetup.issue(manager, plugin.manifest.slug, userId, tenantId, options).catch((error: Error) => {
+          manager.audit?.logAction?.(plugin.manifest.slug, 'Password Setup', 'users', 'denied');
+          throw error;
+        });
       }
     };
 
