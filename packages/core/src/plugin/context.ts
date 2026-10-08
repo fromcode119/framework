@@ -43,6 +43,7 @@ import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
+import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
@@ -273,6 +274,7 @@ export class PluginContextFactory {
         ui: UiContextProxy.createUiProxy(plugin, manager),
         runtime: {
           registerModule: (name: string, config: { keys: string[], type: RuntimeModuleKind }) => {
+            RuntimeModuleBridgeGuard.assert(security, name, config?.keys);
             manager.runtime.registerModule(name, config);
             rootLogger.info(`Plugin "${plugin.manifest.slug}" registered runtime module bridge: ${name} (${config.type})`);
           }

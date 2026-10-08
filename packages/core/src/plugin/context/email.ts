@@ -42,6 +42,19 @@ export class EmailContextProxy {
 
     const additions: Record<string, unknown> = {
       /**
+       * Re-subscribe an address to a stream THIS plugin declared — after the person opted back in.
+       *
+       * Forwarded untouched, as it was, any plugin could lift any opt-out — every other plugin's stream,
+       * or with no category the address's global one — and mail people who had unsubscribed.
+       */
+      unsuppress: async (address: string, category?: string) => {
+        const key = String(category ?? '').trim();
+        if (!key || (manager as any).emailCategories?.ownerOf(key) !== slug) {
+          throw new Error(`context.email.unsuppress refused: "${key || '(all mail)'}" is not a stream plugin "${slug}" declared.`);
+        }
+        return driver.unsuppress(address, key);
+      },
+      /**
        * Read new mail from an IMAP mailbox (a helpdesk's support address). The plugin keeps the account
        * and the last UID it has seen; the host connects — public addresses and IMAP ports only — and
        * hands back the messages. See {@link PluginInbox}.

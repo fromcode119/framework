@@ -18,10 +18,15 @@ import type { IEmailCategory } from '@core/email/interfaces/email-category.inter
 export class EmailCategoryRegistry {
   private readonly categories = new Map<string, IEmailCategory>();
 
-  /** Last registration wins, so a plugin reloaded at runtime refreshes its own entry. */
+  /**
+   * Last registration wins, so a plugin reloaded at runtime refreshes its own entry — but never another
+   * plugin's: the owner of a stream is who may re-subscribe people to it (`context.email.unsuppress`).
+   */
   register(category: IEmailCategory): void {
     const key = String(category?.key || '').trim();
     if (!key) return;
+    const holder = this.categories.get(key)?.pluginSlug;
+    if (holder && holder !== String(category?.pluginSlug || '').trim()) return;
     this.categories.set(key, {
       key,
       labelKey: String(category?.labelKey || '').trim(),
@@ -33,6 +38,11 @@ export class EmailCategoryRegistry {
   /** Every declared stream, in registration order. */
   list(): IEmailCategory[] {
     return [...this.categories.values()];
+  }
+
+  /** The plugin that declared `key`, or '' when nobody (or the framework) did. */
+  ownerOf(key: unknown): string {
+    return this.categories.get(String(key || '').trim())?.pluginSlug ?? '';
   }
 
   has(key: unknown): boolean {
