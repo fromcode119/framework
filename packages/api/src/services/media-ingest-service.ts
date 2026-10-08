@@ -1,6 +1,6 @@
 import { randomUUID } from 'crypto';
 import { lookup } from 'dns/promises';
-import type { MediaManager } from '@fromcode119/media';
+import { MediaMagicByteValidator, type MediaManager } from '@fromcode119/media';
 import { CoercionUtils, NetworkAddressUtils } from '@fromcode119/core';
 import type { IMediaIngestInput } from '@api/services/interfaces/media-ingest-input.interface';
 
@@ -30,7 +30,7 @@ export class MediaIngestService {
   /** Store the bytes and write the media row; with `existing`, repoint that row instead. */
   async ingest(input: IMediaIngestInput, maxBytes: number, existing: any = null): Promise<Record<string, unknown>> {
     const bytes = await MediaIngestService.readBytes(input, maxBytes);
-    const filename = MediaIngestService.uniqueFilename(CoercionUtils.toString(input.filename));
+    const filename = MediaIngestService.uniqueFilename(MediaIngestService.nameForContent(CoercionUtils.toString(input.filename), bytes));
 
     const stored = await this.mediaManager.upload(bytes, filename);
     const optimized = await this.mediaManager.createWebPVariant(stored.path).catch(() => null);
@@ -129,6 +129,22 @@ export class MediaIngestService {
 
   private static megabytes(maxBytes: number): string {
     return String(Math.round((maxBytes / (1024 * 1024)) * 100) / 100);
+  }
+
+  /**
+   * The name with the extension of what the bytes are, when they are a raster image under ANOTHER
+   * raster image's extension. Files fetched from old sites and CDNs are often named for a format they
+   * no longer are (a PNG served as `product.jpg`); the upload's signature check rightly refuses that
+   * pairing, so the name follows the content instead. Anything else keeps its name, and is checked
+   * against it as before.
+   */
+  static nameForContent(requested: string, bytes: Buffer): string {
+    const dot = requested.lastIndexOf('.');
+    if (dot <= 0) return requested;
+    const ext = requested.slice(dot).toLowerCase();
+    if (!MediaMagicByteValidator.canValidate(ext) || MediaMagicByteValidator.matchesExtension(ext, bytes)) return requested;
+    const actual = ['.jpg', '.png', '.gif', '.webp'].find((candidate) => MediaMagicByteValidator.matchesExtension(candidate, bytes));
+    return actual ? `${requested.slice(0, dot)}${actual}` : requested;
   }
 
   private static uniqueFilename(requested: string): string {
