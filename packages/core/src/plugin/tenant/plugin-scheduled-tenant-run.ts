@@ -2,6 +2,7 @@ import { Logger } from '@core/logging';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
+import { RequestContextUtils } from '@core/context/request-context';
 
 /**
  * Runs a plugin's SCHEDULED task once per tenant, so a timer can reach tenant data at all.
@@ -20,6 +21,10 @@ import { PerTenantRun } from '@core/tenant/per-tenant-run';
  * data must not silently halt everyone else's scheduled work — but each failure is logged against
  * the tenant it belongs to, because "the nightly task is failing" is unactionable without knowing
  * whose.
+ *
+ * Each site's run reads in that site's own language, as a request that names none does: its localized
+ * fields come back in that language and `context.i18n.currentLocale()` names it. A run used to have no
+ * reading language at all, so a localized value came back in whichever language its map held first.
  *
  * Tenants are processed SEQUENTIALLY and each tenant's connection scope is closed before the next
  * opens. Overlapping them would hold several tenant-bound pool clients at once, which is how the
@@ -73,8 +78,17 @@ export class PluginScheduledTenantRun {
         return true;
       },
       before: (tenantId) => PluginTenantAccess.warm(tenantId),
-      work: async () => { await input.handler(data); },
+      work: async () => {
+        PluginScheduledTenantRun.readInSiteLanguage();
+        await input.handler(data);
+      },
     });
   }
 
+  /** The run's reading language: the site's own, unless the run already reads in one. */
+  private static readInSiteLanguage(): void {
+    const store = RequestContextUtils.storage.getStore();
+    const siteLocale = RequestContextUtils.getSiteLocale();
+    if (store && !store.locale && siteLocale) store.locale = siteLocale;
+  }
 }
