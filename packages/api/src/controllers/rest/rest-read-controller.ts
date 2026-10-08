@@ -91,7 +91,12 @@ export class RestReadController {
         }
       }
 
-      const total = options.withoutTotal ? rowsResult.length : await this.runtime.db.count(table, { where: whereClause });
+      // A page that came back short holds the last of the matches, so the total is known without counting:
+      // the rows before it and the rows on it. Only a full page, or a page past the end, asks for the count.
+      const shortPage = rowsResult.length < limitValue && (offsetValue === 0 || rowsResult.length > 0);
+      const total = options.withoutTotal ? rowsResult.length
+        : shortPage ? offsetValue + rowsResult.length
+        : await this.runtime.db.count(table, { where: whereClause });
       const result = {
         docs: this.forReader(collection, req, partialReader,
           this.runtime.processor.filterHiddenFields(collection, rowsResult, { localeContext, rawLocalized })),
