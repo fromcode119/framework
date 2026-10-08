@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.351] - 2026-10-08
+
+### Fixed
+
+- **admin**: a plugin's pages filed under System appear in the menu ([#820](https://github.com/fromcode119/framework/pull/820))
+- **core**: an isolated plugin's fetch keeps every cookie a response sets ([#817](https://github.com/fromcode119/framework/pull/817))
+
 ## [0.2.350] - 2026-10-08
 
 ### Added
