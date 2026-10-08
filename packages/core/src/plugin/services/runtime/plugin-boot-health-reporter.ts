@@ -6,6 +6,7 @@ import { NotificationsContextProxy } from '@core/plugin/context/notifications';
 
 import { PluginCapabilityApprovalPolicy } from '@core/plugin/services/security/plugin-capability-approval-policy';
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
+import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
 import { PluginHealthNotificationTemplateService } from '@core/plugin/services/health/plugin-health-notification-template-service';
 import type { IPluginHealthNotificationData } from '@core/plugin/services/interfaces/plugin-health-notification-data.interface';
 import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
@@ -78,7 +79,7 @@ export class PluginBootHealthReporter {
       const report = PluginHealthReportService.buildReport(
         [...this.manager.plugins.values()].map((p) => ({
           slug: p.manifest.slug, state: p.state, healthStatus: p.healthStatus, heldReason: p.heldReason,
-          error: p.error, manifestCapabilities: (p.manifest.capabilities as string[]) || [], approvedCapabilities: p.approvedCapabilities || [],
+          error: p.error, manifestCapabilities: PluginConsentSet.of(p.manifest), approvedCapabilities: p.approvedCapabilities || [],
         })),
       );
       this.logger.info(`[plugin-health] ${report.counts.active} active, ${report.counts.held} held, ${report.counts.error} error, ${report.counts.inactive} inactive`);

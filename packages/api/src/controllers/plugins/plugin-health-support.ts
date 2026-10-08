@@ -1,4 +1,4 @@
-import { PluginInstalledVersionService } from '@fromcode119/core';
+import { PluginConsentSet, PluginInstalledVersionService } from '@fromcode119/core';
 import type { ILoadedPlugin } from '@fromcode119/core/interfaces/loaded-plugin.interface';
 import type { IPluginHealthEntryInput } from '@fromcode119/core/plugin/services/interfaces/plugin-health-entry-input.interface';
 
@@ -16,7 +16,8 @@ export class PluginHealthSupport {
       healthStatus: plugin.healthStatus,
       heldReason: plugin.heldReason,
       error: plugin.error,
-      manifestCapabilities: (plugin.manifest.capabilities as string[]) || [],
+      // Everything it asks for, network grants included — what its approved set is compared with.
+      manifestCapabilities: PluginConsentSet.of(plugin.manifest),
       approvedCapabilities: plugin.approvedCapabilities || [],
       // What this process loaded, against what is sitting next to the code right now. These drift
       // whenever a plugin is installed under a running api, and nothing else on this screen would
