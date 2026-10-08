@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.353] - 2026-10-08
+
+### Added
+
+- **admin**: a media field shows its image in a collection list ([#831](https://github.com/fromcode119/framework/pull/831))
+
+### Fixed
+
+- **database**: a checkbox field is a boolean column, and existing text ones are converted ([#829](https://github.com/fromcode119/framework/pull/829))
+- **plugins**: a held plugin's changes name only what changed, not the network grant it still asks for ([#830](https://github.com/fromcode119/framework/pull/830))
+
 ## [0.2.352] - 2026-10-08
 
 ### Added
