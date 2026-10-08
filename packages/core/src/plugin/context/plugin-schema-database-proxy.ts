@@ -23,6 +23,7 @@ export class PluginSchemaDatabaseProxy {
     // The schema repairs plugins used RAW SQL for, as named operations the framework validates and
     // runs. There is no `execute`: raw SQL on this owner connection could switch row-level security off.
     'ensurePointInTimeColumn',
+    'ensureBooleanColumn',
     'repairTextIdPrimaryKey',
     'ensureTimestampDefault',
     'dropColumnDefault',

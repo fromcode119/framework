@@ -114,6 +114,13 @@ export abstract class DialectCapabilityDefaults {
     );
   }
 
+  /** A driver that cannot convert a column's type REPORTS rather than throws. */
+  async ensureBooleanColumn(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
+    return SchemaReconcileOutcome.unsupported(
+      `${this.constructor.name}: this driver does not convert text boolean columns.`,
+    );
+  }
+
   /** A driver that cannot remove a column default REPORTS rather than throws. */
   async dropColumnDefault(_table: string, _column: string): Promise<SchemaReconcileOutcome> {
     return SchemaReconcileOutcome.unsupported(

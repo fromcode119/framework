@@ -151,6 +151,33 @@ export class DeclaredSchemaReconciler {
     }
   }
 
+  /**
+   * Converts an existing TEXT column the collection declares as a boolean or checkbox to BOOLEAN.
+   *
+   * Every `checkbox` field used to be stored as TEXT, so plugin code reading its rows got the string
+   * `'false'` — which is truthy. Only columns whose every value is a boolean are converted; the rest
+   * are named in the log and left exactly as they are.
+   */
+  async convertTextBooleanColumns(plan: IEntitySchemaPlan): Promise<void> {
+    const missing = new Set(plan.missingColumns.map((column) => column.columnName));
+    const columns = (plan.collection.fields || [])
+      .filter((field) => ['boolean', 'checkbox'].includes(String(field.type)))
+      .map((field) => NamingStrategy.toSnakeCase(field.name))
+      .filter((column) => !missing.has(column));
+
+    for (const column of columns) {
+      const outcome = await this.db.ensureBooleanColumn(plan.tableName, column);
+
+      if (outcome.state === SchemaReconcileState.CHANGED) {
+        this.logger.info(`${plan.tableName}.${column} was stored as text; it is now a true/false column.`);
+      } else if (outcome.state === SchemaReconcileState.FAILED) {
+        this.logger.warn(`${plan.tableName}.${column} stays text: ${outcome.reason}.`);
+      } else if (outcome.state === SchemaReconcileState.UNSUPPORTED) {
+        return;
+      }
+    }
+  }
+
   private static readonly ROW_TIMESTAMP_COLUMNS = ['created_at', 'updated_at'] as const;
 
   async ensureTimestampDefaults(plan: IEntitySchemaPlan): Promise<void> {

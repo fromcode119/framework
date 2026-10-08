@@ -155,6 +155,8 @@ export interface IDatabaseManager {
   ensureTimestampDefault(table: string, column: string): Promise<SchemaReconcileOutcome>;
   /** Converts a TEXT column declared as a date/datetime to a timezone-aware timestamp when every value parses. */
   ensurePointInTimeColumn(table: string, column: string): Promise<SchemaReconcileOutcome>;
+  /** Converts a TEXT column declared as a boolean (or checkbox) to BOOLEAN when every value is one. */
+  ensureBooleanColumn(table: string, column: string): Promise<SchemaReconcileOutcome>;
   /** Removes a column's DEFAULT when it has one. Never touches existing rows. */
   dropColumnDefault(table: string, column: string): Promise<SchemaReconcileOutcome>;
 

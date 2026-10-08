@@ -50,7 +50,7 @@ export class SqliteSchemaBuilder {
     // SQLite likewise refuses a NOT NULL column without a default on a populated table; SQLite cannot
     // drop a default afterwards, so the type's empty value stays as the column default here.
     if (field.required && field.defaultValue === undefined) {
-      const backfill = field.type === 'number' || field.type === 'boolean' ? Sql.raw('0') : field.type === 'date' ? Sql.raw('CURRENT_TIMESTAMP') : Sql.raw("''");
+      const backfill = field.type === 'number' || field.type === 'boolean' || field.type === 'checkbox' ? Sql.raw('0') : field.type === 'date' ? Sql.raw('CURRENT_TIMESTAMP') : Sql.raw("''");
       await this.host.execute(Sql.query`ALTER TABLE ${Sql.identifier(tableName)} ADD COLUMN ${columnDef} DEFAULT ${backfill}`);
     } else {
       await this.host.execute(Sql.query`ALTER TABLE ${Sql.identifier(tableName)} ADD COLUMN ${columnDef}`);
@@ -90,7 +90,8 @@ export class SqliteSchemaBuilder {
 
     switch (field.type) {
       case 'number': type = Sql.query`REAL`; break;
-      case 'boolean': type = Sql.query`INTEGER`; break;
+      case 'boolean':
+      case 'checkbox': type = Sql.query`INTEGER`; break;
       case 'json':
       case 'relationship':
       case 'upload':
