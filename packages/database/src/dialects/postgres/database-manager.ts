@@ -23,6 +23,7 @@ import { PostgresDeclaredNullabilityReconciler } from '@database/dialects/postgr
 import { PostgresColumnDefaultDropper } from '@database/dialects/postgres/column-default-dropper';
 import { PostgresTimestampDefaultReconciler } from '@database/dialects/postgres/timestamp-default-reconciler';
 import { PostgresPointInTimeColumnReconciler } from '@database/dialects/postgres/point-in-time-column-reconciler';
+import { PostgresBooleanColumnReconciler } from '@database/dialects/postgres/boolean-column-reconciler';
 import { PostgresColumnInspector } from '@database/dialects/postgres/column-inspector';
 import { PlatformPool } from '@database/tenant/platform-pool';
 import { PostgresPoolFactory } from '@database/dialects/postgres/postgres-pool-factory';
@@ -72,6 +73,9 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   private readonly timestampDefaults =
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+
+  private readonly booleanColumns =
+    new PostgresBooleanColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly pointInTimeColumns =
     new PostgresPointInTimeColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
@@ -185,6 +189,13 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   async ensurePointInTimeColumn(table: string, column: string): Promise<SchemaReconcileOutcome> {
     const outcome = await this.pointInTimeColumns.ensure(table, column);
     // The write normalizer caches each table's column types; a converted column must be re-read.
+    this.invalidateTableCache(table);
+    return outcome;
+  }
+
+  /** Converts a TEXT boolean/checkbox column to BOOLEAN when every value is one. */
+  async ensureBooleanColumn(table: string, column: string): Promise<SchemaReconcileOutcome> {
+    const outcome = await this.booleanColumns.ensure(table, column);
     this.invalidateTableCache(table);
     return outcome;
   }

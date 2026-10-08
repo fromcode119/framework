@@ -64,7 +64,8 @@ export class PostgresSchemaBuilder {
   private static emptyValueFor(field: ISchemaField): any {
     switch (field.type) {
       case 'number': return Sql.raw('0');
-      case 'boolean': return Sql.raw('false');
+      case 'boolean':
+      case 'checkbox': return Sql.raw('false');
       case 'date':
       case 'datetime': return Sql.raw('CURRENT_TIMESTAMP');
       case 'json':
@@ -94,7 +95,9 @@ export class PostgresSchemaBuilder {
 
     switch (field.type) {
       case 'number': type = Sql.query`NUMERIC`; break;
-      case 'boolean': type = Sql.query`BOOLEAN`; break;
+      // `checkbox` is the admin's boolean; it fell through to TEXT and stored 'true'/'false' strings.
+      case 'boolean':
+      case 'checkbox': type = Sql.query`BOOLEAN`; break;
       // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
       // compared as strings. Both are points in time.
       case 'date':

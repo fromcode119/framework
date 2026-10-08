@@ -79,7 +79,8 @@ export class MysqlSchemaBuilder {
 
     switch (field.type) {
       case 'number': type = Sql.query`NUMERIC`; break;
-      case 'boolean': type = Sql.query`BOOLEAN`; break;
+      case 'boolean':
+      case 'checkbox': type = Sql.query`BOOLEAN`; break;
       // `datetime` is the admin's date-AND-time field; it fell through to TEXT, so its values sorted and
       // compared as strings. Both are points in time.
       case 'date':
