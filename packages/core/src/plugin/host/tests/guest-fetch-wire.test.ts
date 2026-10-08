@@ -40,6 +40,18 @@ describe('isolated plugin context.fetch', () => {
     expect(remote.call).not.toHaveBeenCalled();
   });
 
+  it('hands the plugin every cookie the response set, not only the last', async () => {
+    const { fetch } = guest(async () => ({ ...reply, setCookies: ['SESSION=a; Path=/; HttpOnly', 'TOKEN=b; Path=/'] }));
+    const response = await fetch.fetch('https://example.com');
+    expect(response.headers.getSetCookie()).toEqual(['SESSION=a; Path=/; HttpOnly', 'TOKEN=b; Path=/']);
+    expect(response.headers.get('content-type')).toBe('text/plain');
+  });
+
+  it('still reads a reply from a host that sent cookies inside the headers object', async () => {
+    const { fetch } = guest(async () => ({ ...reply, headers: { ...reply.headers, 'set-cookie': 'SESSION=a; Path=/' } }));
+    expect((await fetch.fetch('https://example.com')).headers.getSetCookie()).toEqual(['SESSION=a; Path=/']);
+  });
+
   it('passes the host\'s error through unchanged', async () => {
     const { fetch } = guest(async () => { throw new Error('host refused'); });
     await expect(fetch.fetch('https://example.com', { signal: new AbortController().signal })).rejects.toThrow('host refused');

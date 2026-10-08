@@ -18,9 +18,19 @@ export class PluginGuestFetch {
     signal?.throwIfAborted();
     const call = this.remote.call('context', [{ name: 'fetch', args: [url, PluginGuestFetch.wire(init)] }]);
     const reply = (await (signal ? PluginGuestFetch.until(call, signal) : call)) as {
-      status: number; statusText: string; headers: Record<string, string>; body: Buffer;
+      status: number; statusText: string; headers: Record<string, string>; setCookies?: string[]; body: Buffer;
     };
-    return new Response(new Uint8Array(reply.body), { status: reply.status, statusText: reply.statusText, headers: reply.headers });
+    return new Response(new Uint8Array(reply.body), { status: reply.status, statusText: reply.statusText, headers: PluginGuestFetch.headers(reply) });
+  }
+
+  /** The reply's headers, every cookie it set restored as its own `Set-Cookie` (a host before this sent only one). */
+  static headers(reply: { headers: Record<string, string>; setCookies?: string[] }): Headers {
+    const headers = new Headers(reply.headers);
+    if (Array.isArray(reply.setCookies)) {
+      headers.delete('set-cookie');
+      for (const cookie of reply.setCookies) headers.append('set-cookie', cookie);
+    }
+    return headers;
   }
 
   /** The options as plain data: no signal, headers as an object, a non-string body as JSON. */

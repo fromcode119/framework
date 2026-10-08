@@ -179,13 +179,18 @@ export class PluginHostDispatcher {
     return arg;
   }
 
-  /** The last value must survive structured clone: a `Response` from `fetch` is read into bytes; functions cannot cross. */
+  /**
+   * The last value must survive structured clone: a `Response` from `fetch` is read into bytes; functions cannot cross.
+   * Every `Set-Cookie` crosses on its own: a headers OBJECT keeps one value per name, so a response that set
+   * two cookies reached the plugin with only the last — a sign-in that sets a session and a token lost one.
+   */
   private async portableResult(value: unknown): Promise<unknown> {
     if (value && typeof value === 'object' && typeof (value as Response).arrayBuffer === 'function' && typeof (value as Response).status === 'number') {
       const response = value as Response;
       const headers: Record<string, string> = {};
-      response.headers.forEach((v, k) => { headers[k] = v; });
-      return { status: response.status, statusText: response.statusText, headers, body: Buffer.from(await response.arrayBuffer()) };
+      response.headers.forEach((v, k) => { if (k !== 'set-cookie') headers[k] = v; });
+      const setCookies = response.headers.getSetCookie();
+      return { status: response.status, statusText: response.statusText, headers, setCookies, body: Buffer.from(await response.arrayBuffer()) };
     }
     if (typeof value === 'function') return undefined;
     if (value && typeof value === 'object' && typeof (value as any).value === 'string' && (value as any).constructor?.name?.endsWith?.('Enum')) return (value as any).value;
