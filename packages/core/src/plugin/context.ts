@@ -272,7 +272,7 @@ export class PluginContextFactory {
         redirects: RedirectsContextProxy.createRedirectsProxy(plugin, manager, security),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager, plugin.manifest.slug),
-        notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug),
+        notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug, security),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         entities: EntitiesContextProxy.createEntitiesProxy(),
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),
