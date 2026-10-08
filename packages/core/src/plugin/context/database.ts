@@ -28,6 +28,12 @@ import { PluginDbOnRequestFields } from '@core/plugin/context/plugin-db-on-reque
 
 export class DatabaseContextProxy {
   private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
+  /**
+   * Results keyed by COLUMN rather than rows of a table: their keys are denormalized too, so a plugin
+   * grouping by `sourceId` reads `group.sourceId` — it used to get `source_id` back, and a plugin that
+   * read the name it asked for read nothing, silently. Nothing else of a row's handling applies.
+   */
+  private static readonly KEYED_RESULT_METHODS = new Set(['groupCount']);
   private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns']);
   private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   private static readonly SCHEMA_METHODS = new Set(['addColumn']);
@@ -281,6 +287,9 @@ export class DatabaseContextProxy {
                   return out.then(postProcess);
                 }
                 return postProcess(out);
+              }
+              if (DatabaseContextProxy.KEYED_RESULT_METHODS.has(prop)) {
+                return out && typeof out.then === 'function' ? out.then(DatabaseContextProxy.denormalizeResult) : DatabaseContextProxy.denormalizeResult(out);
               }
               return out;
             };
