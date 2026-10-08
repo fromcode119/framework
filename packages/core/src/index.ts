@@ -151,7 +151,7 @@ export { PlatformCountrySource } from '@core/enums/platform-country-source.enum'
 export type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
 export { FormatUtils } from '@core/utils/format-utils';
 export { ApiRequestError, ApiRequestService, ApiQueryUtils, ApiPathUtils } from '@core/api';
-export { AdminUserClient, ApiScopeClient, CollectionScopeClient, SettingsScopeClient, SdkClient, AdminGlobalClient, AdminResourceClient, AdminSdkClient, BrowserStateClient, BrowserStateRuntimeBuilder, StorefrontNoticeClient, SystemAuthClient, SystemAuthSession } from '@core/clients';
+export { AdminUserClient, ApiScopeClient, CollectionScopeClient, SettingsScopeClient, SdkClient, AdminGlobalClient, AdminResourceClient, AdminSdkClient, BrowserStateClient, BrowserFileDownload, BrowserStateRuntimeBuilder, StorefrontNoticeClient, SystemAuthClient, SystemAuthSession } from '@core/clients';
 export type { IBrowserCookieOptions } from '@core/clients';
 export { RouteUtils } from '@core/utils/route-utils';
 export { UrlUtils } from '@core/utils/url-utils';

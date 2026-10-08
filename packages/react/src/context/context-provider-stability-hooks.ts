@@ -33,6 +33,7 @@ export class ContextProviderStabilityHooks {
       put: (path: string, body?: any, options?: any) => (stabilityRef.current.api as any).put(path, body, options),
       patch: (path: string, body?: any, options?: any) => (stabilityRef.current.api as any).patch(path, body, options),
       delete: (path: string, options?: any) => (stabilityRef.current.api as any).delete(path, options),
+      download: (path: string, options?: any) => (stabilityRef.current.api as any).download(path, options),
     }), [stabilityRef]); // stable: delegates through stabilityRef so api changes don't recreate this object
 
     return { stableT, stableLoadConfig, stableGetFrontendMetadata, stableApiBridge };
