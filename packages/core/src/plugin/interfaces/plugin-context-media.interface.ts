@@ -1,3 +1,5 @@
+import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
+
 /**
  * The `context.media` surface of {@link PluginContext}.
  *
@@ -5,6 +7,11 @@
  * referenced by, and 25 of these inline in one class put the file at 366 lines.
  */
 export interface IPluginContextMedia {
+  /**
+   * Store a file from a public http(s) url or base64 bytes as a media record; resolves to the record
+   * with its `id` and public `url`. Goes through the api's guarded ingest. Needs `content`.
+   */
+  ingest(input: IPluginMediaIngestInput): Promise<Record<string, unknown>>;
   findById(id: any): Promise<Record<string, any> | null>;
   /** Resolve many ids in one statement, keyed by id — the batch form of `findById`. */
   findByIds(ids: any[]): Promise<Map<string, Record<string, any>>>;

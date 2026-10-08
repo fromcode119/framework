@@ -1,6 +1,10 @@
 import type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
 import type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
 import type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
+import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source-descriptor.interface';
+import type { IPersonalDataRegisteredSource } from '@core/plugin/services/interfaces/personal-data-registered-source.interface';
+import type { IPersonalDataChoiceMap } from '@core/plugin/services/people/interfaces/personal-data-choice-map.interface';
+import type { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
 
 /**
  * The `context.people` surface of {@link PluginContext}.
@@ -16,11 +20,25 @@ export interface IPluginContextPeople {
    * Exposed here because a plugin may never touch a system table, so a data-protection plugin cannot
    * honour a DSAR over `users`/`people`/`_system_*` itself. It registers these datasets and reports
    * on them; core does the writing. See `PersonalDataErasureService`.
+   *
+   * Plugins also register THEIR personal data here (`registerSource`), so an erasure reaches it on
+   * every site. This type is the whole runtime surface — `PeopleContextProxy` builds it with
+   * `satisfies`, so a method added there without a line here no longer compiles.
    */
   personalData: {
     listDatasets(): IPersonalDataDataset[];
     exportDataset(key: string, subject: IPersonalDataSubject): Promise<Record<string, unknown>[]>;
     eraseDataset(key: string, subject: IPersonalDataSubject, strategy: string): Promise<IPersonalDataErasure>;
+    /** Register one of this plugin's personal-data datasets; the framework calls the plugin back by name. */
+    registerSource(descriptor: IPersonalDataSourceDescriptor): boolean;
+    listSources(): Array<Omit<IPersonalDataRegisteredSource, 'invoke'>>;
+    /** Run one registered source's export, by `pluginSlug:key`. */
+    exportSource(id: string, subject: IPersonalDataSubject): Promise<Record<string, unknown>[]>;
+    eraseSource(id: string, subject: IPersonalDataSubject, strategy: string): Promise<Record<string, unknown>>;
+    eraseAll(subject: IPersonalDataSubject, options?: { overrides?: IPersonalDataChoiceMap; actor?: string }): ReturnType<PersonalDataErasureService['eraseAll']>;
+    resolveStrategies(options?: { overrides?: IPersonalDataChoiceMap; actor?: string }): ReturnType<PersonalDataErasureService['resolveStrategies']>;
+    adoptSitePolicy(stored: IPersonalDataChoiceMap): Promise<boolean>;
+    unregisterSources(pluginSlug: string): void;
   };
   match(input: { userId?: any; email?: string; phone?: string }): Promise<Record<string, any> | null>;
   getById(id: any): Promise<Record<string, any> | null>;

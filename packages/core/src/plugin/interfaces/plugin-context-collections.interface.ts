@@ -16,5 +16,11 @@ export interface IPluginContextCollections {
    * for anything that must have side effects (licence minting, ledger writes, search indexing) — `context.db.update` is a
    * raw write that fires none of them. `options.user` is the acting user (e.g. the MCP caller).
    */
+  /**
+   * Create one record in THIS plugin's own collection through the same path an admin create takes —
+   * access policy, validation, collection lifecycle hooks and the first version snapshot included.
+   * Resolves to the created record as the REST API returns it.
+   */
+  create(collectionSlug: string, data: Record<string, unknown>, options?: { user?: unknown }): Promise<unknown>;
   update(collectionSlug: string, id: number | string, data: Record<string, unknown>, options?: { user?: unknown }): Promise<unknown>;
 }

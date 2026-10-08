@@ -5,7 +5,7 @@ import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { TenantPluginGuard } from '@api/middlewares/tenant-plugin-guard';
 import { PluginClientAddressMiddleware } from '@api/middlewares/plugin-client-address-middleware';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
-import { ApiVersionUtils, CollectionWriteBridge, Logger, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
+import { ApiVersionUtils, CollectionWriteBridge, Logger, MediaIngestBridge, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, GeoDatabaseUpdater } from '@fromcode119/core';
 import { CoreVersionResolver } from '@api/server/core-version-resolver';
@@ -43,6 +43,7 @@ import { CertificateAdminService } from '@api/services/certificates/certificate-
 import { AcmeChallengeRouter } from '@api/routes/acme-challenge-router';
 import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
 import { CertificatesInternalRouter } from '@api/routes/certificates-internal-router';
+import { MediaIngestService } from '@api/services/media-ingest-service';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
 import { FilesRouter } from '@api/routes/files-router';
@@ -81,6 +82,16 @@ export class ServerRoutesSetup {
       if (!collection) throw new Error(`Unknown collection "${collectionSlug}".`);
       return this.restController.update(collection, {
         body: data, query: {}, params: { id: String(id) }, user: actor, headers: {}, cookies: {},
+      });
+    });
+    // `context.media.ingest()` lands here — the same guarded store the MCP media tools use, capped at
+    // the admin upload limit.
+    MediaIngestBridge.install((input) => new MediaIngestService((this.manager as any).db, this.mediaManager).ingest(input, MediaIngestService.UPLOAD_MAX_BYTES));
+    CollectionWriteBridge.installCreate(async (collectionSlug, data, actor) => {
+      const collection = this.manager.getCollections().find((candidate) => candidate.slug === collectionSlug);
+      if (!collection) throw new Error(`Unknown collection "${collectionSlug}".`);
+      return this.restController.create(collection, {
+        body: data, query: {}, params: {}, user: actor, headers: {}, cookies: {},
       });
     });
 

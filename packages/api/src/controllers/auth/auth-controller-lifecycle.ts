@@ -101,6 +101,12 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
           ).catch(() => {});
           return res.status(401).json({ error: 'Invalid email or password' });
         }
+        // An account imported from another platform still carries that platform's hash. It just
+        // verified, so replace it with ours now; a failed upgrade must not fail the sign-in.
+        if (this.auth.needsRehash(user.password || '')) {
+          const upgraded = await this.auth.hashPassword(String(password));
+          await this.db.update(SystemConstants.TABLE.USERS, { id: user.id }, { password: upgraded, updatedAt: new Date() }).catch(() => {});
+        }
 
         const requiresEmailVerification = await this.requiresEmailVerification(user.id);
         if (requiresEmailVerification) {

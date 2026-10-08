@@ -125,6 +125,11 @@ export class AuthManager {
   }
 
   /** @inheritdoc — delegated to AuthTokenService. */
+  needsRehash(hash: string): boolean {
+    return this.tokens.needsRehash(hash);
+  }
+
+  /** @inheritdoc — delegated to AuthTokenService. */
   async generateToken(...args: Parameters<AuthTokenService['generateToken']>): Promise<string> {
     return this.tokens.generateToken(...args);
   }

@@ -13,6 +13,7 @@ import { PersonalDataErasurePolicy } from '@core/plugin/services/people/personal
 import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import type { IPersonalDataChoiceMap } from '@core/plugin/services/people/interfaces/personal-data-choice-map.interface';
 import type { IPersonalDataSourceDescriptor } from '@core/plugin/services/interfaces/personal-data-source-descriptor.interface';
+import type { IPluginContextPeople } from '@core/plugin/interfaces/plugin-context-people.interface';
 import { MetaContextProxy } from '@core/plugin/context/meta';
 import type { IPeopleAddressRef } from '@core/plugin/services/interfaces/people-address-ref.interface';
 import { PeopleRowMapper } from '@core/plugin/context/people-row-mapper';
@@ -274,7 +275,7 @@ export class PeopleContextProxy {
           PersonalDataErasurePolicy.adoptSitePolicy(manager.db, stored),
 
         unregisterSources: (pluginSlug: string) => PersonalDataRegistry.unregisterByPlugin(pluginSlug)
-      }
+      } satisfies IPluginContextPeople['personalData']
     };
   }
 

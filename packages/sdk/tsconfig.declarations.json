@@ -88,6 +88,15 @@
     "../react/src/index.ts",
     "../core/src/index.ts",
     "../core/src/client.ts",
+    // Every module an SDK entry forwards is a root here, never emitted only because another root
+    // happens to import it (tests/sdk-declaration-roots.test.ts). `plugin-server` was not, and
+    // dist/server.d.ts — BasePluginRouter, BaseController, Logger — pointed at nothing.
+    "../core/src/plugin-server/index.ts",
+    "../core/src/shared.ts",
+    "../database/src/enums/aggregate-bucket-unit.enum.ts",
+    "../database/src/enums/aggregate-function.enum.ts",
+    "../database/src/enums/sort-direction.enum.ts",
+    "../react-class-components/src/lang.ts",
     "../database/src/index.ts",
     "../mcp/src/index.ts",
     "../media/src/index.ts",

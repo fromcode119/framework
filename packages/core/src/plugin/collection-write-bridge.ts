@@ -11,14 +11,31 @@
  * bridge, which means a plugin write IS an admin save: same access policy, same validation, same
  * hooks. Fail-closed: before the api installs the writer, writes throw rather than fall back to a
  * hook-less path.
+ *
+ * `create` is the same inversion for new records: before it existed a plugin could only create
+ * through `context.db.insert`, so every record it made skipped the hooks its own admin saves fire.
  */
 export class CollectionWriteBridge {
   private static writer:
     | ((collectionSlug: string, id: number | string, data: Record<string, unknown>, actor: unknown) => Promise<unknown>)
     | null = null;
+  private static creator:
+    | ((collectionSlug: string, data: Record<string, unknown>, actor: unknown) => Promise<unknown>)
+    | null = null;
 
   static install(writer: (collectionSlug: string, id: number | string, data: Record<string, unknown>, actor: unknown) => Promise<unknown>): void {
     CollectionWriteBridge.writer = writer;
+  }
+
+  static installCreate(creator: (collectionSlug: string, data: Record<string, unknown>, actor: unknown) => Promise<unknown>): void {
+    CollectionWriteBridge.creator = creator;
+  }
+
+  static async create(collectionSlug: string, data: Record<string, unknown>, actor: unknown): Promise<unknown> {
+    if (!CollectionWriteBridge.creator) {
+      throw new Error('Collection writes are unavailable: the api installs the collection write bridge at boot, and it has not run.');
+    }
+    return CollectionWriteBridge.creator(collectionSlug, data, actor);
   }
 
   static async update(collectionSlug: string, id: number | string, data: Record<string, unknown>, actor: unknown): Promise<unknown> {

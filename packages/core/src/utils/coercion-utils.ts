@@ -37,6 +37,12 @@ export class CoercionUtils {
     return Number.isFinite(parsed) ? parsed : fallback;
   }
 
+  /**
+   * A flag from a setting, query or stored value. Returns `fallback` when the value says neither yes nor
+   * no — so the result is a `boolean` unless the caller passes `undefined` as the fallback ("unset").
+   */
+  static toBoolean(value: unknown, fallback?: boolean): boolean;
+  static toBoolean(value: unknown, fallback: boolean | undefined): boolean | undefined;
   static toBoolean(value: unknown, fallback: boolean | undefined = false): boolean | undefined {
     if (typeof value === 'boolean') return value;
     if (typeof value === 'number' && Number.isFinite(value)) return value > 0;

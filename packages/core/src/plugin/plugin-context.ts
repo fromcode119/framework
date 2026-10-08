@@ -48,6 +48,7 @@ import type { IPluginContextSms } from '@core/plugin/interfaces/plugin-context-s
 import type { IPluginContextGeo } from '@core/plugin/interfaces/plugin-context-geo.interface';
 import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 import type { IPluginContextMedia } from '@core/plugin/interfaces/plugin-context-media.interface';
+import type { IPluginContextRedirects } from '@core/plugin/interfaces/plugin-context-redirects.interface';
 import type { IPluginContextRecordVersions } from '@core/plugin/interfaces/plugin-context-record-versions.interface';
 import type { IPluginContextRoles } from '@core/plugin/interfaces/plugin-context-roles.interface';
 import type { IPluginContextTheme } from '@core/plugin/interfaces/plugin-context-theme.interface';
@@ -188,6 +189,8 @@ export class PluginContext {
    * Read-only access to the system media library. Use instead of querying SystemTable.MEDIA directly.
    */
   declare readonly media: IPluginContextMedia;
+  /** Add rules to the site's redirect store — add-only, never overwrites an existing rule. */
+  declare readonly redirects: IPluginContextRedirects;
 
   /**
    * Read-only access to framework-managed record versions (SystemTable.RECORD_VERSIONS).

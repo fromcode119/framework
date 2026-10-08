@@ -4,6 +4,7 @@ import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { MediaController } from '@api/controllers/media-controller';
+import { MediaIngestService } from '@api/services/media-ingest-service';
 import { RouteConstants } from '@fromcode119/core';
 
 /**
@@ -35,7 +36,7 @@ export class MediaRouter extends BaseRouter {
     // oversized upload cannot exhaust process memory.
     this.upload = multer({
       storage: multer.memoryStorage(),
-      limits: { fileSize: 25 * 1024 * 1024 },
+      limits: { fileSize: MediaIngestService.UPLOAD_MAX_BYTES },
     });
   }
 

@@ -56,6 +56,17 @@ export class SystemRedirectService {
     return SystemRedirectService.mapRow(row as Record<string, unknown>);
   }
 
+  /**
+   * Create the rule unless one for its From path already exists — the existing rule is returned
+   * untouched. Lets an importer run twice without duplicates or overwriting an operator's edit.
+   */
+  async ensure(input: Record<string, unknown>): Promise<{ created: boolean; redirect: Record<string, unknown> }> {
+    const fromPath = SystemRedirectService.normalizePath(input.fromPath);
+    const existing = fromPath ? await this.db.findOne(SystemRedirectService.TABLE, { from_path: fromPath }) : null;
+    if (existing) return { created: false, redirect: SystemRedirectService.mapRow(existing as Record<string, unknown>) };
+    return { created: true, redirect: await this.create(input) };
+  }
+
   async update(id: number, input: Record<string, unknown>): Promise<Record<string, unknown> | null> {
     if (!Number.isFinite(id) || id <= 0) return null;
     const patch = SystemRedirectService.normalizeInput(input, { partial: true });

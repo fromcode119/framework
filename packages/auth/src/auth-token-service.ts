@@ -4,6 +4,7 @@ import { randomUUID } from 'crypto';
 import type { SignOptions } from 'jsonwebtoken';
 import { CookieConstants, Logger, RequestSurfaceUtils, RouteConstants } from '@fromcode119/core';
 import { UserPermissionChecker } from '@auth/permission-checker';
+import { LegacyPasswordVerifier } from '@auth/passwords/legacy-password-verifier';
 import type { IUser } from '@auth/interfaces/user.interface';
 import type { ISessionValidator } from '@auth/interfaces/session-validator.interface';
 import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interface';
@@ -32,8 +33,15 @@ export class AuthTokenService {
   }
 
 
+  /** bcrypt, or — for an account imported from another platform — that platform's own hash. */
   async comparePassword(password: string, hash: string): Promise<boolean> {
+    if (LegacyPasswordVerifier.handles(hash)) return LegacyPasswordVerifier.verify(password, hash);
     return bcrypt.compare(password, hash);
+  }
+
+  /** Whether a hash that just verified must be replaced with the framework's own (it is a legacy one). */
+  needsRehash(hash: string): boolean {
+    return LegacyPasswordVerifier.handles(hash);
   }
 
 
