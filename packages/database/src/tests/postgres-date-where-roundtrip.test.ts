@@ -44,6 +44,17 @@ describe('Postgres Date equality round-trip', () => {
     expect(update!.values).toEqual(['[]', 1, readBack]);
   });
 
+  it('update() matches a null where-operand with IS NULL, and binds the rest after it', async () => {
+    const { db, calls } = managerWithCapturedQueries();
+
+    await db.update('fcp_zeta_pages', { id: 3, leaseUntil: null, content: 'old' }, { content: 'new' });
+
+    const update = calls.find((call) => call.text.startsWith('UPDATE'));
+    expect(update!.text).toContain('"id" = $2 AND "lease_until" IS NULL AND "content" = $3');
+    expect(update!.text).not.toContain('= NULL');
+    expect(update!.values).toEqual(['new', 3, 'old']);
+  });
+
   it('leaves non-Date equality untouched', async () => {
     const { db, calls } = managerWithCapturedQueries();
 

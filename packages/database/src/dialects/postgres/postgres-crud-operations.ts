@@ -104,14 +104,20 @@ export abstract class PostgresCrudOperations extends BaseDialect {
       const setClause = setColumns.map((column, index) => `"${NamingStrategy.toSnakeCase(column)}" = ${this.getParamPlaceholder(index + 1)}`).join(', ');
       // Equality on a Date operand compares at the driver's read-back precision — see
       // PostgresTimestampPredicate; this is what keeps `update(table, { id, updatedAt }, …)`
-      // optimistic locks matching the row they just read.
-      const whereClause = whereColumns.map((column, index) => `${this.equalityColumnExpression(`"${NamingStrategy.toSnakeCase(column)}"`, where[column])} = ${this.getParamPlaceholder(setColumns.length + index + 1)}`).join(' AND ');
+      // optimistic locks matching the row they just read. A null operand is IS NULL: `= NULL` is
+      // true of nothing, so an optimistic lock on a column still empty never matched its row.
+      const boundColumns = whereColumns.filter((column) => where[column] !== null);
+      const whereClause = whereColumns.map((column) => {
+        const name = `"${NamingStrategy.toSnakeCase(column)}"`;
+        if (where[column] === null) return `${name} IS NULL`;
+        return `${this.equalityColumnExpression(name, where[column])} = ${this.getParamPlaceholder(setColumns.length + boundColumns.indexOf(column) + 1)}`;
+      }).join(' AND ');
 
       const setValues = await Promise.all(
         setColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, data[column]))
       );
       const whereValues = await Promise.all(
-        whereColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, where[column]))
+        boundColumns.map((column) => this.normalizer.normalizeColumnValueForWrite(tableName, column, where[column]))
       );
       const values = [...setValues, ...whereValues];
 
