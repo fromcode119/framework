@@ -39,6 +39,7 @@ import { PluginRawSqlCommand } from './plugin-raw-sql-command';
 import { PluginMigrationOptInCommand } from './plugin-migration-opt-in-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
+import { PluginBackendTypesCommand } from './plugin-backend-types-command';
 import { McpToolSchemaCommand } from './mcp-tool-schema-command';
 import { OneContractPerFileCommand } from './one-contract-per-file-command';
 import { SdkRuntimeExportsCommand } from './sdk-runtime-exports-command';
@@ -105,6 +106,7 @@ export class GuardRegistry {
     ['plugin-migrations', PluginMigrationOptInCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
+    ['plugin-backend-types', PluginBackendTypesCommand],
     ['sdk-runtime-exports', SdkRuntimeExportsCommand],
     ['re-exports', ReExportCommand],
     ['request-coercion', RequestCoercionCommand],
