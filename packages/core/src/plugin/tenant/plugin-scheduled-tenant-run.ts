@@ -3,6 +3,7 @@ import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { RequestContextUtils } from '@core/context/request-context';
+import { SchedulerRunJournal } from '@fromcode119/scheduler';
 
 /**
  * Runs a plugin's SCHEDULED task once per tenant, so a timer can reach tenant data at all.
@@ -29,6 +30,10 @@ import { RequestContextUtils } from '@core/context/request-context';
  * Tenants are processed SEQUENTIALLY and each tenant's connection scope is closed before the next
  * opens. Overlapping them would hold several tenant-bound pool clients at once, which is how the
  * pool wedges when a handler waits on anything out-of-process.
+ *
+ * Each site's run is RECORDED inside that site (`SchedulerRunJournal`), under the pass that made it:
+ * the site's own administrator can see what this task did for them, and whether it failed, on the
+ * Jobs page — a failure used to reach only the process log.
  */
 export class PluginScheduledTenantRun {
   private static readonly logger = new Logger({ namespace: 'plugin-tenancy' });
@@ -42,7 +47,12 @@ export class PluginScheduledTenantRun {
   static wrap(input: {
     pluginSlug: string;
     taskName: string;
-    db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T>; find(table: string, options: unknown): Promise<unknown> };
+    db: {
+      withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T>;
+      find(table: string, options: unknown): Promise<unknown>;
+      insert(table: string, data: unknown): Promise<unknown>;
+      update(table: string, where: unknown, data: unknown): Promise<unknown>;
+    };
     handler: (data?: unknown) => unknown | Promise<unknown>;
   }): (data?: unknown) => Promise<void> {
     return async (data?: unknown): Promise<void> => {
@@ -80,7 +90,11 @@ export class PluginScheduledTenantRun {
       before: (tenantId) => PluginTenantAccess.warm(tenantId),
       work: async () => {
         PluginScheduledTenantRun.readInSiteLanguage();
-        await input.handler(data);
+        const parentId = SchedulerRunJournal.currentRunId();
+        await new SchedulerRunJournal(input.db as any).record(
+          { taskName: `${input.pluginSlug}:${input.taskName}`, pluginSlug: input.pluginSlug, parentId },
+          async () => { await input.handler(data); },
+        );
       },
     });
   }

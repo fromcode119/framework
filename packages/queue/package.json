@@ -12,7 +12,8 @@
     "dev": "tsc -w"
   },
   "dependencies": {
-    "bullmq": "^6.3.4"
+    "bullmq": "^6.3.4",
+    "@fromcode119/react-class-components": "*"
   },
   "devDependencies": {
     "@types/node": "^20.11.16",

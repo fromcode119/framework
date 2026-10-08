@@ -689,7 +689,8 @@
       "media": "Media",
       "activity": "Activity",
       "themes": "Themes",
-      "settings": "Settings"
+      "settings": "Settings",
+      "jobs": "Jobs"
     },
     "panel": {
       "sites-list": "All sites",
@@ -1914,7 +1915,12 @@
       "databasePoolMax": "Connections the api may hold at once",
       "databasePoolHelp": "Every site shares these. When all are in use, a request waits for one to come back, and the api log warns once requests have waited over 2 seconds. Postgres allows 100 connections in total by default, for everything that connects. A save applies at once.",
       "databasePoolSaved": "The database connection limit applies from the next request.",
-      "databasePoolUnavailable": "The database connection setting could not be loaded"
+      "databasePoolUnavailable": "The database connection setting could not be loaded",
+      "jobRunRetention": "Job run history",
+      "daysOfJobRunHistory": "Days of background job runs (Jobs page) to keep, swept daily. Blank keeps every run forever.",
+      "jobRunsOlderThanDay": "Job runs older than {{days}} day(s) will be removed.",
+      "jobRunsAreKeptForever": "Job runs are kept forever.",
+      "failedToSaveJobRunRetention": "Failed to save the job run history setting."
     },
     "integrations": {
       "noFieldsRequired": "No fields required",
@@ -3919,5 +3925,78 @@
     "searchMedia": "Search media...",
     "uploadNew": "Upload New",
     "pixels": "{{width}} × {{height}} px"
+  },
+  "jobs": {
+    "title": "Jobs",
+    "subtitleSite": "What runs on its own for this site: each scheduled task, how its last run went, and when it runs next.",
+    "subtitlePlatform": "What runs on its own across the platform: every scheduled task, each site's part of every run, and the queue.",
+    "scheduledHeading": "Scheduled tasks",
+    "scheduledHint": "Open a task to see its recent runs and the errors they ended with.",
+    "columns": {
+      "task": "Task",
+      "schedule": "Runs",
+      "lastRun": "Last run",
+      "nextRun": "Next run"
+    },
+    "ownedBy": "{{owner}}",
+    "platform": "Platform",
+    "paused": "Paused",
+    "notRunYet": "Not run yet",
+    "failedLastDay": "{{count}} failed in the last day",
+    "loading": "Loading…",
+    "failed": "The jobs could not be read.",
+    "empty": "Nothing is scheduled.",
+    "loadingRuns": "Loading runs…",
+    "runsFailed": "The runs could not be read.",
+    "noRuns": "No runs recorded yet.",
+    "recentRuns": "Recent runs: {{count}}",
+    "sitesRan": "{{count}} site(s), {{failed}} failed",
+    "status": {
+      "running": "Running",
+      "succeeded": "Done",
+      "failed": "Failed"
+    },
+    "duration": {
+      "ms": "{{value}} ms",
+      "s": "{{value}} s",
+      "m": "{{value}} min"
+    },
+    "schedule": {
+      "every": {
+        "second": "Every {{count}} seconds",
+        "minute": "Every {{count}} minutes",
+        "hour": "Every {{count}} hours",
+        "day": "Every {{count}} days",
+        "week": "Every {{count}} weeks"
+      },
+      "everyOne": {
+        "second": "Every second",
+        "minute": "Every minute",
+        "hour": "Every hour",
+        "day": "Every day",
+        "week": "Every week"
+      },
+      "hourlyAt": "Every hour at :{{minute}}",
+      "dailyAt": "Every day at {{time}}",
+      "cron": "Cron: {{expression}}"
+    },
+    "queue": {
+      "heading": "Queue",
+      "subheading": "Jobs waiting for their time or a free worker, running now, or failed.",
+      "job": "Job",
+      "state": "State",
+      "runs": "Runs",
+      "attempts": "Attempts",
+      "error": "Error",
+      "whenFree": "When a worker is free",
+      "failed": "The queue could not be read.",
+      "empty": "The queue is empty.",
+      "states": {
+        "waiting": "Waiting",
+        "delayed": "Scheduled",
+        "active": "Running",
+        "failed": "Failed"
+      }
+    }
   }
 }

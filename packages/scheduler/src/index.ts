@@ -1,21 +1,19 @@
 import { ScheduleType } from '@scheduler/enums/schedule-type.enum';
+import { IDatabaseManager } from '@fromcode119/database';
+import type { ISchedulerTaskHandler } from '@scheduler/interfaces/scheduler-task-handler.interface';
+import type { IQueueManager } from '@scheduler/interfaces/queue-manager.interface';
+import type { ISchedulerTask } from '@scheduler/interfaces/scheduler-task.interface';
+import type { ISchedulerOptions } from '@scheduler/interfaces/scheduler-options.interface';
+import { SchedulerRunClaim } from '@scheduler/scheduler-run-claim';
+import { SchedulerRunJournal } from '@scheduler/scheduler-run-journal';
+import { SchedulerInterval } from '@scheduler/scheduler-interval';
+import { SchedulerCronTimers } from '@scheduler/scheduler-cron-timers';
 
 // This package OWNS the enum; core re-exports it to plugins through the SDK.
 export { ScheduleType } from '@scheduler/enums/schedule-type.enum';
-import { IDatabaseManager } from '@fromcode119/database';
-import cron, { ScheduledTask } from 'node-cron';
-import type { ISchedulerTaskHandler } from '@scheduler/interfaces/scheduler-task-handler.interface';
 export type { IQueueManager } from '@scheduler/interfaces/queue-manager.interface';
-
-import type { IQueueManager } from '@scheduler/interfaces/queue-manager.interface';
-
-import type { ISchedulerTask } from '@scheduler/interfaces/scheduler-task.interface';
-
-import type { ISchedulerOptions } from '@scheduler/interfaces/scheduler-options.interface';
-import { SchedulerRunClaim } from '@scheduler/scheduler-run-claim';
-/** Inline scheduler table name — avoids importing from @fromcode119/sdk (circular tsconfig dep). */
-
-/** Minimal inline logger — avoids importing Logger from @fromcode119/sdk. */
+export { SchedulerRunJournal } from '@scheduler/scheduler-run-journal';
+export { SchedulerRunStatus } from '@scheduler/enums/scheduler-run-status.enum';
 
 export class SchedulerService {
   private static readonly logger = {
@@ -31,13 +29,18 @@ export class SchedulerService {
   private queueManager?: IQueueManager;
   private pulseInterval: NodeJS.Timeout | null = null;
   private handlers: Map<string, ISchedulerTaskHandler> = new Map();
-  private cronJobs: Map<string, ScheduledTask> = new Map();
+  private readonly cron: SchedulerCronTimers;
   private readonly claims: SchedulerRunClaim;
+  private readonly journal: SchedulerRunJournal;
+  /** Which plugin registered each task, for its run rows; a framework task has none. */
+  private owners: Map<string, string | null> = new Map();
 
   constructor(db: IDatabaseManager, options: ISchedulerOptions = {}) {
     this.db = db;
     this.queueManager = options.queueManager;
     this.claims = new SchedulerRunClaim(db, SchedulerService.SCHEDULER_TASKS_TABLE);
+    this.journal = new SchedulerRunJournal(db);
+    this.cron = new SchedulerCronTimers((name, slotMs) => this.runClaimedCron(name, slotMs), SchedulerService.logger);
   }
 
   /**
@@ -65,6 +68,7 @@ export class SchedulerService {
    */
   async register(name: string, schedule: string, handler: ISchedulerTaskHandler, options: { type?: ScheduleType, plugin_slug?: string } = {}) {
     this.registerHandler(name, handler);
+    this.owners.set(name, options.plugin_slug || null);
     await this.scheduleTask({
       name,
       schedule,
@@ -108,14 +112,8 @@ export class SchedulerService {
 
     // Refresh the in-memory cron job if applicable
     if (ScheduleType.resolve(task.type) === ScheduleType.CRON) {
-      if (is_active) {
-        this.setupCronJob(task.name, task.schedule);
-      } else {
-        if (this.cronJobs.has(task.name)) {
-          this.cronJobs.get(task.name)?.stop();
-          this.cronJobs.delete(task.name);
-        }
-      }
+      if (is_active) this.setupCronJob(task.name, task.schedule);
+      else this.cron.stop(task.name);
     }
   }
 
@@ -151,10 +149,7 @@ export class SchedulerService {
       clearInterval(this.pulseInterval);
       this.pulseInterval = null;
     }
-    for (const job of this.cronJobs.values()) {
-      job.stop();
-    }
-    this.cronJobs.clear();
+    this.cron.stopAll();
     SchedulerService.logger.info(`Scheduler service stopped.`);
   }
 
@@ -168,7 +163,12 @@ export class SchedulerService {
       SchedulerService.logger.warn(`No handler registered for task "${name}". Skipping.`);
       return;
     }
-    await handler(data);
+    await this.execute(name, handler, data);
+  }
+
+  /** One run of a task, recorded: the queue worker and the inline runner both come through here. */
+  private execute(name: string, handler: ISchedulerTaskHandler, data?: any): Promise<unknown> {
+    return this.journal.record({ taskName: name, pluginSlug: this.owners.get(name) ?? null }, async () => handler(data));
   }
 
   /**
@@ -186,32 +186,23 @@ export class SchedulerService {
     }
   }
 
-  /**
-   * Setup/Restart a node-cron job
-   */
+  /** Setup/Restart a node-cron job, and record when it fires next. */
   private setupCronJob(name: string, schedule: string) {
-    if (this.cronJobs.has(name)) {
-      this.cronJobs.get(name)?.stop();
+    if (this.cron.set(name, schedule)) void this.recordNextRun(name);
+  }
+
+  /**
+   * A cron task's next firing, as its timer will actually fire it. Only interval tasks used to carry a
+   * `next_run`, so every cron task read "not scheduled yet" on the dashboard while running each minute.
+   */
+  private async recordNextRun(name: string): Promise<void> {
+    const nextRun = this.cron.nextRun(name);
+    if (!nextRun) return;
+    try {
+      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name }, { next_run: nextRun });
+    } catch (error: unknown) {
+      SchedulerService.logger.warn(`Could not record the next run of "${name}": ${error instanceof Error ? error.message : String(error)}`);
     }
-
-    if (!cron.validate(schedule)) {
-      SchedulerService.logger.error(`Invalid cron expression for task "${name}": ${schedule}`);
-      return;
-    }
-
-    // Same reasoning as the pulse timer: a cron callback has no caller. runTask() catches today, but
-    // nothing structural keeps it that way, and the cost of it changing is a dead process.
-    const slotMs = SchedulerRunClaim.slotMsFor(schedule);
-    const job = cron.schedule(schedule, () => {
-      this.runClaimedCron(name, slotMs).catch((error: unknown) => {
-        SchedulerService.logger.error(
-          `Cron task "${name}" rejected: ${error instanceof Error ? error.message : String(error)}`
-        );
-      });
-    });
-
-    this.cronJobs.set(name, job);
-    SchedulerService.logger.debug(`Set up cron job for "${name}": ${schedule}`);
   }
 
   /** Runs a cron firing only if this instance claimed it (see SchedulerRunClaim). */
@@ -220,6 +211,7 @@ export class SchedulerService {
       SchedulerService.logger.debug(`Task "${name}" was claimed by another instance for this slot; skipping.`);
       return;
     }
+    await this.recordNextRun(name);
     await this.runTask(name);
   }
 
@@ -268,7 +260,7 @@ export class SchedulerService {
         SchedulerService.logger.debug(`Dispatched task "${name}" to queue.`);
       } else {
         // Run immediately
-        await handler();
+        await this.execute(name, handler);
       }
 
     } catch (error: any) {
@@ -277,20 +269,6 @@ export class SchedulerService {
   }
 
   private calculateNextRun(schedule: string): Date {
-    const now = new Date();
-    const match = schedule.match(/^([\d.]+)([smhdw])$/);
-    if (!match) return new Date(now.getTime() + 5 * 60000); // Default 5m if invalid
-
-    const amount = parseFloat(match[1]);
-    const unit = match[2];
-    const msMap: Record<string, number> = {
-      s: 1000,
-      m: 60000,
-      h: 3600000,
-      d: 86400000,
-      w: 604800000
-    };
-
-    return new Date(now.getTime() + amount * (msMap[unit] || 60000));
+    return SchedulerInterval.nextRun(schedule, new Date());
   }
 }

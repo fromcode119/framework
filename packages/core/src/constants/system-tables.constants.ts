@@ -86,6 +86,7 @@ export class SystemTables {
     RECORD_VERSIONS: '_system_record_versions',
     WEBHOOKS: '_system_webhooks',
     SCHEDULER_TASKS: '_system_scheduler_tasks',
+    SCHEDULER_RUNS: '_system_scheduler_runs',
     USERS_ROLES: '_system_users_roles',
     MIGRATIONS: '_system_migrations',
     PEOPLE: 'people',

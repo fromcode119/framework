@@ -127,6 +127,7 @@ export class SystemSettingDescriptors {
     // not write a row the sweep would ever read: refused outright with no site selected, and filed under
     // a tenant with one. Dead in both scopes on every multi-site deployment.
     [SystemConstants.META_KEY.LOG_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.JOB_RUN_RETENTION_DAYS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     // PLATFORM for the same reason as the logs window: one sweep, one process, one untenanted read.
     // No seed — an empty value is KEEP FOREVER, and a platform that started expiring its own security
     // record because a registry picked a number would be the invented default this codebase forbids.

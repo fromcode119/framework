@@ -12,6 +12,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { InfrastructureSettingsPageActions } from '@/app/settings/infrastructure/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { JobRunRetentionRow } from '@/app/settings/infrastructure/job-run-retention-row.client';
 
 /**
  * The four cards this screen is made of.
@@ -201,6 +202,8 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
               </Button>
             </div>
           </SettingRow>
+
+          <JobRunRetentionRow />
         </Card>
     );
   }

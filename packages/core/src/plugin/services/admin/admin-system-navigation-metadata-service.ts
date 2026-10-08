@@ -23,6 +23,8 @@ export class AdminSystemNavigationMetadataService {
       { label: 'Sources', path: AppPathConstants.ADMIN.SOURCES.ROOT, icon: 'GitBranch', group: 'Management', priority: 21, platformOnly: true, platformScopeOnly: true },
       { label: 'Media', path: AppPathConstants.ADMIN.MEDIA.ROOT, icon: 'Image', group: 'Core', priority: 30 },
       { label: 'Activity', path: AppPathConstants.ADMIN.ACTIVITY, icon: 'Activity', group: 'Platform', priority: 85, permission: 'system:view' },
+      // What runs on its own: scheduled tasks and their runs, the site's own inside a site, every one in the platform scope.
+      { label: 'Jobs', path: AppPathConstants.ADMIN.JOBS, icon: 'Clock', group: 'Platform', priority: 86, permission: 'system:view' },
       { label: 'Themes', path: AppPathConstants.ADMIN.THEMES.ROOT, icon: 'Palette', group: 'Platform', priority: 90 },
       { label: 'Settings', path: AppPathConstants.ADMIN.SETTINGS.ROOT, icon: 'Settings', group: 'System', priority: 95 },
     ];

@@ -81,6 +81,10 @@ export class TenantBespokePolicies {
       // `admin` guard and no tenant filter, so another site's content could be read back out of its
       // history even though the record itself is isolated.
       new JournalPolicySpec('_system_record_versions'),
+      // WHAT THE BACKGROUND JOBS DID. A plugin task runs once per site and each site's run is its own
+      // row, written inside that site; a task's whole pass, and the platform's own tasks, are written
+      // with no site bound and belong to the platform scope. A site sees the runs of its own work.
+      new JournalPolicySpec('_system_scheduler_runs'),
       // THE IN-APP INBOX, and a `journal` rather than a generic scoped table for a reason that cost
       // a rewrite: the generic predicate is strict equality, so a row whose `tenant_id` is NULL
       // matches in NO scope. `TenantAdoptionService` states the invariant — "one NULL row is a row
