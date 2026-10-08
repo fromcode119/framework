@@ -671,6 +671,12 @@
       "deviceDeclined": "Notifications were not allowed, so nothing was switched on.",
       "deviceFailed": "Could not change notifications on this device.",
       "loadFailed": "Notifications could not be loaded."
+    },
+    "workspaceConsole": {
+      "label": "Workspace console",
+      "viewing": "Viewing {{name}} as its own console",
+      "configure": "Configure in the standard console",
+      "platform": "Back to platform"
     }
   },
   "nav": {

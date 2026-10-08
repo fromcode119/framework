@@ -3,6 +3,7 @@ import { PagePermissionGate } from '@/components/view/page-permission-gate.clien
 import { ClientLayoutAuthStateHooks } from '@/app/services/client-layout-auth-state-hooks';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
+import { WorkspaceConsoleExitBar } from '@/app/components/view/workspace-console-exit-bar.client';
 import type { ReactNode } from 'react';
 import { Bridge } from '@fromcode119/react-class-components';
 import type { IAppearanceSecurityGateProps } from '@/lib/appearance/interfaces/appearance-security-gate-props.interface';
@@ -58,6 +59,9 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     return (
       <>
         <PluginLoader />
+        {/* Above the shell, not inside it: an appearance draws its own chrome and need not carry a site
+            switcher, so the way back from a workspace opened as its console is the framework's to draw. */}
+        <WorkspaceConsoleExitBar />
         <Shell nav={nav} user={shellUser}><PagePermissionGate>{children}</PagePermissionGate></Shell>
       </>
     );
