@@ -264,7 +264,7 @@ export class PluginContextFactory {
         settings: SettingsContextProxy.createSettingsProxy(plugin, manager),
         i18n: I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security),
         // Credentials at rest, on the framework's key — so a plugin never invents its own.
-        secrets: SecretsContextProxy.createSecretsProxy(),
+        secrets: SecretsContextProxy.createSecretsProxy(plugin.manifest.slug),
         // Installable versions this plugin can offer, merged into the catalogue the admin reads.
         catalog: CatalogContextProxy.createCatalogProxy(plugin, security),
         t: (key: string, params?: Record<string, any>, locale?: string) => {
