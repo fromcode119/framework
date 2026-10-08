@@ -226,9 +226,6 @@ jobs:
         env:
           GUARD_AREA: ${{ inputs.area }}
           GUARD_NAME: ${{ inputs.name }}
-          # Reported, not yet enforced: the backend typecheck is new and plugins are being brought to
-          # zero one by one. Remove this line once every plugin reports 0 — then it gates like the rest.
-          PLUGIN_BACKEND_TYPES_MODE: warn
         run: |
           if [ -n "$GUARD_AREA" ]; then
             scope="$GITHUB_WORKSPACE/$GUARD_AREA/$GUARD_NAME"
