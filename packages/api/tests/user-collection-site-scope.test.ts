@@ -143,6 +143,8 @@ describe('/collections/users inside a site', () => {
   it('lists only the site members', async () => {
     inSite('t2');
     const db = database();
+    // A full page, so the total is counted — and the count must be scoped exactly as the rows are.
+    db.find.mockImplementation(async (_table: unknown, options: any) => Array.from({ length: options.limit }, (_, i) => ({ id: i + 1 })));
     await controllerOver(db).find(users, request(), response());
 
     const where = db.find.mock.calls[0][1].where;
