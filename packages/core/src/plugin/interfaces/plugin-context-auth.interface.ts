@@ -13,7 +13,8 @@ platformGuard(): IPluginRequestHandler;
 requirePermission?(permission: string | string[]): IPluginRequestHandler;
 hashPassword(password: string): Promise<string> | string;
 comparePassword(password: string, hash: string): Promise<boolean> | boolean;
-generateToken(payload: Record<string, unknown>, options?: Record<string, unknown>): string;
+/** The permissions these roles carry (on the current site, when there is one). */
+getPermissionsForRoles(roles: string[]): Promise<string[]>;
 /**
  * Resolve the user behind a raw token. ASYNC and never throws: invalid, expired, revoked or
  * unverifiable all resolve to `null`, so the whole guard is

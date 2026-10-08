@@ -1,3 +1,4 @@
+import { vi } from 'vitest';
 import { AuthContextProxy } from '@core/plugin/context/auth';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -46,11 +47,44 @@ describe('AuthContextProxy.verifyToken', () => {
     await expect(auth.verifyToken('good')).resolves.toEqual({ id: 1, email: 'user@example.com' });
   });
 
-  it('passes every other member through, still bound to the real manager', () => {
+  it('still reaches the manager for the members it exposes', () => {
     const auth = AuthContextProxy.createAuthProxy(new ThrowingAuthManager()) as any;
 
-    expect(auth.readSecret()).toBe('test-secret');
     expect(auth.guard()).toBeInstanceOf(Function);
+  });
+});
+
+/**
+ * The surface is an explicit list. It used to pass every other property through to the manager, which
+ * handed a plugin `generateToken` (sign any payload — an admin token for any id) and the setters that
+ * replace authentication for the whole api.
+ */
+describe('AuthContextProxy exposes nothing beyond its contract', () => {
+  class FullAuthManager extends ThrowingAuthManager {
+    generateToken = vi.fn(async () => 'minted');
+    generateRefreshToken = vi.fn(async () => 'minted');
+    generateGrantToken = vi.fn(async () => 'minted');
+    setApiKeyValidator = vi.fn();
+    setSessionValidator = vi.fn();
+    setPermissionChecker = vi.fn();
+    getPermissionsForRoles = vi.fn(async () => ['content:read']);
+  }
+
+  it.each([
+    ['generateToken'], ['generateRefreshToken'], ['generateGrantToken'], ['setApiKeyValidator'],
+    ['setSessionValidator'], ['setPermissionChecker'], ['readSecret'], ['secret'], ['middleware'],
+  ])('does not hand out %s', (member) => {
+    const auth = AuthContextProxy.createAuthProxy(new FullAuthManager()) as any;
+
+    expect(auth[member]).toBeUndefined();
+  });
+
+  it('still answers what a role grants, for the isolated-plugin permission guard', async () => {
+    const manager = new FullAuthManager();
+    const auth = AuthContextProxy.createAuthProxy(manager) as any;
+
+    await expect(auth.getPermissionsForRoles(['editor'])).resolves.toEqual(['content:read']);
+    expect(manager.getPermissionsForRoles).toHaveBeenCalledWith(['editor']);
   });
 });
 

@@ -26,8 +26,11 @@ import { SystemConstants } from '@core/constants/system.constants';
  * - With auth not yet initialised every member fails CLOSED: guards answer 503, `verifyToken`
  *   resolves `null`, `isAuthenticated` is `false`.
  *
- * Everything else on the manager passes through untouched, so no existing `context.auth.*` call
- * changes behaviour.
+ * NOTHING else on the manager is reachable. This used to be a Proxy that passed every other property
+ * through, which handed a plugin the whole `AuthManager`: `generateToken` signs whatever payload it is
+ * given (an admin token for any id, valid for as long as asked), and `setApiKeyValidator` /
+ * `setSessionValidator` / `setPermissionChecker` replace authentication for the entire api. The
+ * surface is now an explicit list, so a member the manager gains later is not handed out by default.
  */
 export class AuthContextProxy {
   static createAuthProxy(auth: unknown, db?: any): IPluginContextAuth {
@@ -35,31 +38,21 @@ export class AuthContextProxy {
       return AuthContextProxy.createUnavailableAuth();
     }
 
-    return new Proxy(auth as Record<string, unknown>, {
-      get(target, property) {
-        if (property === 'verifyToken') {
-          return (token: string) => AuthContextProxy.verifyToken(target, token);
-        }
-        if (property === 'isAuthenticated') {
-          return (request: unknown) => AuthContextProxy.isAuthenticated(request);
-        }
-        if (property === 'actor') {
-          return async () => RequestContextUtils.getUser() ?? null;
-        }
-        if (property === 'platformGuard') {
-          return () => AuthContextProxy.platformGuard();
-        }
-        if (property === 'twoFactorEnabled') {
-          return (token: string) => AuthContextProxy.twoFactorEnabled(target, db, token);
-        }
-        if (property === 'revokeSession') {
-          return (token: string) => AuthContextProxy.revokeSession(target, db, token);
-        }
-        // Receiver is the TARGET, so prototype getters resolve against the real manager; methods come
-        // back unbound and pick `this` up from the call site exactly as before this proxy existed.
-        return Reflect.get(target, property, target);
-      },
-    }) as unknown as IPluginContextAuth;
+    const manager = auth as Record<string, (...args: any[]) => any>;
+    return {
+      guard: (...args: any[]) => manager.guard(...args),
+      platformGuard: () => AuthContextProxy.platformGuard(),
+      requirePermission: (permission: string | string[]) => manager.requirePermission(permission),
+      hashPassword: (password: string) => manager.hashPassword(password),
+      comparePassword: (password: string, hash: string) => manager.comparePassword(password, hash),
+      // What a role grants, for the isolated-plugin `requirePermission` (PluginGuestHttp). Read-only.
+      getPermissionsForRoles: (roles: string[]) => manager.getPermissionsForRoles(roles),
+      verifyToken: (token: string) => AuthContextProxy.verifyToken(manager, token),
+      isAuthenticated: (request: unknown) => AuthContextProxy.isAuthenticated(request),
+      actor: async () => RequestContextUtils.getUser() ?? null,
+      twoFactorEnabled: (token: string) => AuthContextProxy.twoFactorEnabled(manager, db, token),
+      revokeSession: (token: string) => AuthContextProxy.revokeSession(manager, db, token),
+    };
   }
 
   /** True only when the framework's auth middleware verified a session and attached the user. */
@@ -139,7 +132,7 @@ export class AuthContextProxy {
       requirePermission: () => (_req: any, res: any) => res.status(503).json({ error: 'auth_unavailable' }),
       hashPassword: () => { throw new Error('Auth service not initialized'); },
       comparePassword: () => { throw new Error('Auth service not initialized'); },
-      generateToken: () => { throw new Error('Auth service not initialized'); },
+      getPermissionsForRoles: async () => [],
       verifyToken: async () => null,
       isAuthenticated: () => false,
       actor: async () => null,
