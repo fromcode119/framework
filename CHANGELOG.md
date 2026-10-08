@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.350] - 2026-10-08
+
+### Added
+
+- **arch-guard**: plugin-backend-types typechecks every plugin's backend ([#816](https://github.com/fromcode119/framework/pull/816))
+
+### Fixed
+
+- **admin**: a workspace opened as its own console always has a way back ([#818](https://github.com/fromcode119/framework/pull/818))
+
 ## [0.2.349] - 2026-10-08
 
 ### Added
