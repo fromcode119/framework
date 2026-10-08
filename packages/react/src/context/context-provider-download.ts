@@ -1,4 +1,4 @@
-import { BrowserFileDownload } from '@fromcode119/core/client';
+import { BrowserFileDownload, ClientType } from '@fromcode119/core/client';
 import type { IApiDownloadOptions } from '@fromcode119/core/client';
 
 /**
@@ -7,9 +7,9 @@ import type { IApiDownloadOptions } from '@fromcode119/core/client';
  * console asking for its own file read as a stranger and was refused.
  */
 export class ContextProviderDownload {
-  static async run(url: string, clientType: string, options: IApiDownloadOptions = {}): Promise<void> {
+  static async run(url: string, clientType: ClientType, options: IApiDownloadOptions = {}): Promise<void> {
     const target = await BrowserFileDownload.target(options.filename || 'download');
-    const response = await fetch(url, { credentials: 'include', headers: { 'X-Framework-Client': clientType } });
+    const response = await fetch(url, { credentials: 'include', headers: { 'X-Framework-Client': clientType.value } });
     if (!response.ok) {
       await target?.writable.abort().catch(() => undefined);
       const payload = await response.json().catch(() => ({ error: `HTTP ${response.status}` }));
