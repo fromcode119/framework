@@ -1,4 +1,6 @@
 import { NamingStrategy } from '@fromcode119/database';
+import type { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { PluginPersonalDataGate } from '@core/plugin/context/plugin-personal-data-gate';
 import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { RequestContextUtils } from '@core/context/request-context';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
@@ -21,15 +23,17 @@ import { PeopleRowMapper } from '@core/plugin/context/people-row-mapper';
 export class PeopleContextProxy {
 
   static createPeopleProxy(
-    _plugin: ILoadedPlugin,
+    plugin: ILoadedPlugin,
     manager: IPluginManagerInterface,
-    pluginDb: any
+    pluginDb: any,
+    security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>,
   ) {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
     const addresses = new PeopleAddressService(db);
     // The framework's own personal data. Core-owned because plugins may not touch system tables.
     const personalDataService = new PersonalDataErasureService(db);
+    const gate = new PluginPersonalDataGate(plugin, manager, security);
 
     async function match(input: { userId?: any; email?: string; phone?: string }) {
       if (input?.userId != null && input.userId !== '') {
@@ -69,7 +73,7 @@ export class PeopleContextProxy {
     }
 
     const directory = new PeopleDirectoryService(
-      String(_plugin?.manifest?.slug || ''),
+      String(plugin?.manifest?.slug || ''),
       pluginDb,
       MetaContextProxy.createMetaProxy(manager),
       match,
@@ -178,8 +182,11 @@ export class PeopleContextProxy {
       // honour a DSAR over them itself. It registers these datasets; core does the writing.
       personalData: {
         listDatasets: () => personalDataService.listDatasets(),
-        exportDataset: (key: string, subject: any) => personalDataService.exportDataset(key, subject),
-        eraseDataset: (key: string, subject: any, strategy: string) => personalDataService.eraseDataset(key, subject, strategy),
+        exportDataset: async (key: string, subject: any) => { gate.forExport(); return personalDataService.exportDataset(key, subject); },
+        eraseDataset: async (key: string, subject: any, strategy: string) => {
+          await gate.forErasure(subject);
+          return personalDataService.eraseDataset(key, subject, strategy);
+        },
 
         /**
          * Declare a dataset THIS plugin holds. Data only — the methods are named, never passed, so
@@ -230,14 +237,16 @@ export class PeopleContextProxy {
         listSources: () => PersonalDataRegistry.listForCurrentTenant().map(({ invoke: _invoke, ...descriptor }) => descriptor),
 
         /** Run one registered source's export, by `pluginSlug:key`. */
-        exportSource: (id: string, subject: any) => {
+        exportSource: async (id: string, subject: any) => {
+          gate.forExport();
           const source = PersonalDataRegistry.get(id);
           if (!source) throw new Error(`Unknown personal-data source "${id}"`);
           return source.invoke.exportSubject(subject);
         },
 
         /** Run one registered source's erasure, by `pluginSlug:key`. */
-        eraseSource: (id: string, subject: any, strategy: string) => {
+        eraseSource: async (id: string, subject: any, strategy: string) => {
+          await gate.forErasure(subject);
           const source = PersonalDataRegistry.get(id);
           if (!source) throw new Error(`Unknown personal-data source "${id}"`);
           return source.invoke.eraseSubject(subject, strategy);
@@ -253,8 +262,10 @@ export class PeopleContextProxy {
          * for THIS request (a legal hold on one dataset for one subject), which leaves the site's
          * standing policy untouched. A function could not cross to an isolated guest anyway.
          */
-        eraseAll: (subject: any, options?: { overrides?: IPersonalDataChoiceMap; actor?: string }) =>
-          personalDataService.eraseAll(subject, options),
+        eraseAll: async (subject: any, options?: { overrides?: IPersonalDataChoiceMap; actor?: string }) => {
+          await gate.forErasure(subject);
+          return personalDataService.eraseAll(subject, options);
+        },
 
         /**
          * What WOULD be applied to every dataset, without touching a row — each with the layer that

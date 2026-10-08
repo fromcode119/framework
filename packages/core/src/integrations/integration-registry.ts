@@ -1,4 +1,5 @@
 import { SettingSource } from '@core/settings/enums/setting-source.enum';
+import { IntegrationRegistrationOwners } from '@core/integrations/integration-registration-owners';
 /** IntegrationRegistry: type and provider registration, resolution and instantiation; storage is delegated. */
 
 import { Logger } from '@core/logging';
@@ -17,6 +18,7 @@ import type { IIntegrationTypeRuntime } from '@core/integrations/interfaces/inte
 
 export class IntegrationRegistry {
   private readonly types = new Map<string, IIntegrationTypeRuntime<any>>();
+  private readonly owners = new IntegrationRegistrationOwners();
   private readonly logger: Logger;
   private readonly profileService: IntegrationProfileService;
   private readonly storedProviderService: IntegrationStoredProviderService;
@@ -42,9 +44,10 @@ export class IntegrationRegistry {
   // Type & provider registration
   // ---------------------------------------------------------------------------
 
-  registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>) {
+  registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>, owner: string = IntegrationRegistrationOwners.FRAMEWORK) {
     const key = this.normalize(definition.key);
     if (!key) throw new Error('Integration type key is required');
+    this.owners.claimType(key, owner, this.types.has(key));
     // A type that ships providers must name a default, or nothing can be selected. A type that ships
     // NONE is legitimate — MCP is configured entirely by its own panel and has nothing to pick between
     // — and demanding a default there forces a placeholder provider the operator cannot remove
@@ -54,14 +57,11 @@ export class IntegrationRegistry {
       throw new Error(`Integration type "${key}" must declare a defaultProvider`);
     }
 
-    const runtime: IIntegrationTypeRuntime<TInstance> = {
-      definition: { ...definition, key },
-      providers: new Map(),
-    };
+    const runtime: IIntegrationTypeRuntime<TInstance> = { definition: { ...definition, key }, providers: new Map() };
 
     this.types.set(key, runtime as IIntegrationTypeRuntime<any>);
     for (const provider of definition.providers || []) {
-      this.registerProvider(key, provider);
+      this.registerProvider(key, provider, owner);
     }
   }
 
@@ -88,7 +88,7 @@ export class IntegrationRegistry {
     return existed;
   }
 
-  registerProvider<TInstance = any>(typeKey: string, provider: IIntegrationProviderDefinition<TInstance>) {
+  registerProvider<TInstance = any>(typeKey: string, provider: IIntegrationProviderDefinition<TInstance>, owner: string = IntegrationRegistrationOwners.FRAMEWORK) {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
     if (!runtime) {
@@ -96,6 +96,7 @@ export class IntegrationRegistry {
     }
     const key = this.normalize(provider.key);
     if (!key) throw new Error(`Integration provider key is required for type "${normalizedType}"`);
+    this.owners.claimProvider(normalizedType, key, owner, runtime.providers.has(key));
     runtime.providers.set(key, { ...provider, key });
   }
 

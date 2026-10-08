@@ -58,6 +58,10 @@ export class AuthTokenService {
       jti: user.jti || randomUUID(),
     };
     if (options.tenantId) payload.tenantId = options.tenantId;
+    // Never minted into a token: `isApiKey` marks a request authenticated by the x-api-key header, and
+    // only the middleware sets it. Copied in from a request user (switching site under an API key), it
+    // would make the token skip the session check below and pass `requireApiToken`.
+    delete payload.isApiKey;
     return jwt.sign(payload, this.secret, { algorithm: 'HS256', expiresIn: options.expiresIn ?? '15m' });
   }
 
@@ -102,8 +106,14 @@ export class AuthTokenService {
 
       // Resolved ONCE: the validator is installed at runtime, so calling the accessor twice could see
       // two different values between the guard and the call.
+      //
+      // Every token is held to its session. This used to skip the check for a token claiming
+      // `isApiKey` — a claim inside the token, so whoever could mint one could exempt it. API keys never
+      // arrive as tokens (the middleware authenticates them from the header), so no token is exempt,
+      // and the claim is dropped before the user reaches the gates that read it.
       const validator = this.sessionValidator();
-      if (validator && !decoded.isApiKey) {
+      delete decoded.isApiKey;
+      if (validator) {
         if (!decoded.jti) throw new Error('Access token has no session identifier');
         const isValid = await validator(decoded.jti);
         if (!isValid) throw new Error('Session revoked or expired');

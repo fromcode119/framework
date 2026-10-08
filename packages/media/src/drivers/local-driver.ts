@@ -92,15 +92,15 @@ export class LocalStorageDriver implements IStorageDriver {
   }
 
   async read(filepath: string): Promise<Buffer> {
-    const fullPath = path.join(this.uploadDir, this.normalizePublicFilePath(filepath));
-    return fs.readFile(fullPath);
+    return fs.readFile(this.resolveContainedPath(filepath));
   }
 
   /**
    * Resolves inside `uploadDir` or throws. `normalizePublicFilePath` strips leading slashes but does
-   * nothing about `..`, so a stored path is the only thing standing between a caller and the rest of
-   * the filesystem. That is acceptable for `read`, whose one caller passes a path it just wrote; it is
-   * not acceptable for the private-file route, which exists to serve bytes to strangers.
+   * nothing about `..`, so without this a stored path is the only thing standing between a caller and
+   * the rest of the filesystem. Every path-taking method goes through it: `read` and `delete` used to
+   * `path.join` directly, and a plugin's `context.storage.remove('../../…')` unlinked files anywhere the
+   * api process could write.
    */
   private resolveContainedPath(filepath: string): string {
     const root = path.resolve(this.uploadDir);
@@ -119,8 +119,7 @@ export class LocalStorageDriver implements IStorageDriver {
   }
 
   async delete(filepath: string): Promise<void> {
-    const fullPath = path.join(this.uploadDir, this.normalizePublicFilePath(filepath));
-    await fs.unlink(fullPath);
+    await fs.unlink(this.resolveContainedPath(filepath));
   }
 
   getUrl(filepath: string): string {

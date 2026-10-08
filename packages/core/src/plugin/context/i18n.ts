@@ -29,6 +29,15 @@ export class I18nContextProxy {
         if (!fs.existsSync(translationDirectory) || !fs.statSync(translationDirectory).isDirectory()) {
           return;
         }
+        // Inside the plugin's own folder, symlinks resolved. Rejecting only a LEADING `..` let `x/../..`
+        // through, and a site-uploaded plugin could read any directory's `.json` files on the host and
+        // publish them through the public translations endpoint.
+        const root = fs.realpathSync(paths.currentPluginRoot);
+        const resolvedDirectory = fs.realpathSync(translationDirectory);
+        if (resolvedDirectory !== root && !resolvedDirectory.startsWith(`${root}${path.sep}`)) {
+          void manager.writeLog('warn', `[i18n] Refused translations directory "${normalizedDirectory}": it is outside the plugin.`, plugin.manifest.slug);
+          return;
+        }
 
         for (const fileName of fs.readdirSync(translationDirectory)) {
           const normalizedFileName = String(fileName || '').trim();
@@ -42,7 +51,9 @@ export class I18nContextProxy {
           }
 
           try {
-            const payload = JSON.parse(fs.readFileSync(path.join(translationDirectory, normalizedFileName), 'utf8'));
+            const filePath = fs.realpathSync(path.join(resolvedDirectory, normalizedFileName));
+            if (!filePath.startsWith(`${root}${path.sep}`)) continue;
+            const payload = JSON.parse(fs.readFileSync(filePath, 'utf8'));
             if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
               manager.i18n.registerTranslations(locale, plugin.manifest.slug, payload as ITranslationMap);
             }

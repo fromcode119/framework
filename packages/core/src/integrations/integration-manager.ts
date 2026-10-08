@@ -92,8 +92,9 @@ export class IntegrationManager {
   /**
    * Register a new integration type
    */
-  public registerType(definition: IIntegrationTypeDefinition) {
-    this.registry.registerType(definition);
+  /** `owner` is the registering plugin's slug; omitted, the framework registers it. */
+  public registerType(definition: IIntegrationTypeDefinition, owner?: string) {
+    this.registry.registerType(definition, owner);
     this.logger.info(`Registered integration type: ${definition.key}`);
   }
 
@@ -111,8 +112,8 @@ export class IntegrationManager {
   /**
    * Register a new provider for an existing integration type
    */
-  public registerProvider(typeKey: string, provider: IIntegrationProviderDefinition) {
-    this.registry.registerProvider(typeKey, provider);
+  public registerProvider(typeKey: string, provider: IIntegrationProviderDefinition, owner?: string) {
+    this.registry.registerProvider(typeKey, provider, owner);
     this.logger.info(`Registered provider "${provider.key}" for type "${typeKey}"`);
   }
 

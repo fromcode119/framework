@@ -3,6 +3,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 
 /**
  * A plugin's `onInit` runs at boot, where there is no site. Every tenant-scoped query made there was
@@ -17,6 +18,10 @@ describe('context.tenants', () => {
     } as any);
   };
   const proxy = () => TenantsContextProxy.createTenantsProxy({ db } as any, 'guestbook');
+  /** The sites that have this plugin switched on. */
+  const enabledOn = (ids: string[]): void => {
+    vi.spyOn(PluginTenantAccess, 'isPresentFor').mockImplementation(async (_slug, tenantId) => ids.includes(tenantId));
+  };
 
   beforeEach(() => { db = { withTenant: vi.fn(async (_id: string, fn: () => Promise<unknown>) => fn()) }; });
   afterEach(() => { vi.restoreAllMocks(); TenantMode.reset?.(); });
@@ -24,12 +29,49 @@ describe('context.tenants', () => {
   it('runs a plugin\'s work once per site, and says how many', async () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
     tenants(['a', 'b', 'c']);
+    enabledOn(['a', 'b', 'c']);
     const seen: Array<string | undefined> = [];
 
     const count = await proxy().forEach(async () => { seen.push(RequestContextUtils.getTenantId()); });
 
     expect(count).toBe(3);
     expect(seen).toEqual(['a', 'b', 'c']);
+  });
+
+  it('skips every site that has NOT enabled the plugin — its data is not this plugin\'s to touch', async () => {
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    tenants(['a', 'b', 'c']);
+    enabledOn(['b']);
+    const seen: Array<string | undefined> = [];
+
+    const count = await proxy().forEach(async () => { seen.push(RequestContextUtils.getTenantId()); });
+
+    expect(count).toBe(1);
+    expect(seen).toEqual(['b']);
+  });
+
+  it('inside a request runs once, for that site only, never fanning out to the others', async () => {
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    tenants(['a', 'b', 'c']);
+    enabledOn(['a', 'b', 'c']);
+    const seen: Array<string | undefined> = [];
+
+    const count = await RequestContextUtils.storage.run({ tenantId: 'b' } as any, () =>
+      proxy().forEach(async () => { seen.push(RequestContextUtils.getTenantId()); }));
+
+    expect(count).toBe(1);
+    expect(seen).toEqual(['b']);
+  });
+
+  it('inside a request on a site without the plugin, does nothing', async () => {
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    enabledOn(['a']);
+    const work = vi.fn(async () => undefined);
+
+    const count = await RequestContextUtils.storage.run({ tenantId: 'b' } as any, () => proxy().forEach(work));
+
+    expect(count).toBe(0);
+    expect(work).not.toHaveBeenCalled();
   });
 
   it('runs once on a single-site deployment, unscoped', async () => {

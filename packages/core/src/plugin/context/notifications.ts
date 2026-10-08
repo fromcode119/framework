@@ -1,4 +1,8 @@
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
+import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { RequestContextUtils } from '@core/context/request-context';
+import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 import { RolesContextProxy } from '@core/plugin/context/roles';
 import { SystemConstants } from '@core/constants/system.constants';
 import { MetaContextProxy } from '@core/plugin/context/meta';
@@ -62,13 +66,29 @@ export class NotificationsContextProxy {
     return stored;
   }
 
-  static createNotificationsProxy(manager: IPluginManagerInterface, sourceSlug = '') {
+  /**
+   * Whether `userId` belongs to the site this call is for. `users` is global, so without this a plugin
+   * on one site could put a bell entry — with any link — in any account's console on any other site.
+   */
+  private static async isMemberHere(manager: IPluginManagerInterface, userId: number): Promise<boolean> {
+    const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() : '';
+    if (!tenantId) return true;
+    const row = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(userId), tenant_id: tenantId }).catch(() => null);
+    return !!row && TenantMembership.from(row as Record<string, unknown>).isActive;
+  }
+
+  static createNotificationsProxy(
+    manager: IPluginManagerInterface,
+    sourceSlug = '',
+    security?: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>,
+  ) {
     return {
       /** An in-app inbox notification for one user (the console bell), pushed to their console devices too. */
       async notifyUser(
         userId: number,
         message: { title: string; body?: string; link?: string },
       ): Promise<{ success: boolean }> {
+        if (!(await NotificationsContextProxy.isMemberHere(manager, Number(userId)))) return { success: false };
         const success = await NotificationsContextProxy.alert(manager, userId, message, sourceSlug);
         return { success };
       },
@@ -98,6 +118,9 @@ export class NotificationsContextProxy {
           }
         };
 
+        // Arbitrary addresses make this a way to send the platform's mail to anyone, so they need the
+        // same capability as sending mail directly. Admin recipients below need nothing extra.
+        if ((options.extraRecipients || []).length && security && !security.hasCapability('email')) security.handleViolation('email');
         for (const extra of options.extraRecipients || []) addEmails(extra);
 
         // Framework-wide notification address(es) — admin Settings → General (`notification_email` +

@@ -17,12 +17,19 @@ import type { IPluginContextSms } from '@core/plugin/interfaces/plugin-context-s
  * it as the integration's instance, so the rest of the platform sees an ordinary sender.
  */
 export class SmsContextProxy {
+  /**
+   * Plugins that registered a text-message provider. Withdrawing a number's consent is what a carrier
+   * tells its provider ("this number replied STOP"); any other plugin doing it could silence anyone.
+   */
+  private static readonly senders = new Set<string>();
+
   static createSmsProxy(plugin: ILoadedPlugin, manager: IPluginManagerInterface): IPluginContextSms {
     return {
       registerProvider: (provider) => {
         const key = String(provider?.key ?? '').trim();
         if (!key || key === SmsIntegrationDefinition.UNCONFIGURED) throw new Error('A text-message provider needs its own key');
         const send = provider.send;
+        SmsContextProxy.senders.add(plugin.manifest.slug);
         manager.integrations.registerProvider(SmsIntegrationDefinition.KEY, {
           key,
           label: String(provider.label ?? key),
@@ -32,10 +39,13 @@ export class SmsContextProxy {
           fields: (Array.isArray(provider.fields) ? provider.fields : []).map((field: any) => ({ ...field, type: IntegrationConfigFieldType.resolve(field?.type) })), // eslint-disable-line @typescript-eslint/no-explicit-any
           namespace: plugin.manifest.namespace,
           create: (config: Record<string, unknown>) => new PluginSmsSender(plugin.manifest.slug, key, (settings, message) => send(settings, message), config ?? {}),
-        });
+        }, plugin.manifest.slug);
       },
 
       optOut: async (phone: string) => {
+        if (!SmsContextProxy.senders.has(plugin.manifest.slug)) {
+          throw new Error(`context.sms.optOut refused: plugin "${plugin.manifest.slug}" sends no text messages.`);
+        }
         const number = PhoneNumber.normalize(phone);
         if (!number) return { withdrawn: 0 };
         return { withdrawn: await new ChannelConsentStore(manager.db).revokeAddress(ConsentChannel.SMS, number) };

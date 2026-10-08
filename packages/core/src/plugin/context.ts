@@ -24,6 +24,7 @@ import { AttentionContextProxy } from '@core/plugin/context/attention';
 import { EntityRecordsContextProxy } from '@core/plugin/context/entity-records';
 import { EntityFactsContextProxy } from '@core/plugin/context/entity-facts';
 import { MetaContextProxy } from '@core/plugin/context/meta';
+import { PluginMetaAccess } from '@core/plugin/context/plugin-meta-access';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { SigningContextProxy } from '@core/plugin/context/signing';
 import { RealtimeContextProxy } from '@core/plugin/context/realtime';
@@ -41,6 +42,8 @@ import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
+import { RuntimeModuleBridgeGuard } from '@core/plugin/context/runtime-module-bridge-guard';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
@@ -58,6 +61,12 @@ export class PluginContextFactory {
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
+      const subscribe = (event: string, handler: any, wrap: (h: any) => any) => {
+        if (!security.hasCapability('hooks')) security.handleViolation('hooks');
+        (handler as any)._wrapped = wrap(handler);
+        manager.hooks.on(event, (handler as any)._wrapped);
+      };
+      const unsubscribe = (event: string, handler: any) => manager.hooks.off(event, (handler as any)._wrapped || handler);
       // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
@@ -94,26 +103,8 @@ export class PluginContextFactory {
         db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
         hooks: {
-          on: (event: string, handler: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            const wrappedHandler = async (payload: any, ev: string) => {
-              const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-              if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) return;
-              // The TENANT axis. A hook fired inside a request carries that request's tenant, so a
-              // plugin the tenant does not run never sees the event. A hook fired OUTSIDE a request
-              // (boot, a scheduler tick) has no tenant, and the gate answers false — the handler
-              // does not run "for everyone", which is the same fail-open shape closed elsewhere.
-              // Per-tenant scheduled work is not delivered by T2; a task that needs it must iterate
-              // tenants explicitly.
-              if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) return;
-              return handler(payload, ev);
-            };
-            (handler as any)._wrapped = wrappedHandler;
-            manager.hooks.on(event, wrappedHandler);
-          },
-          off: (event: string, handler: any) => {
-            manager.hooks.off(event, (handler as any)._wrapped || handler);
-          },
+          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h)),
+          off: (event: string, handler: any) => unsubscribe(event, handler),
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);
@@ -226,13 +217,8 @@ export class PluginContextFactory {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);
           },
-          on: (event: string, handler: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            manager.hooks.on(event, handler);
-          },
-          off: (event: string, handler: any) => {
-            manager.hooks.off(event, handler);
-          },
+          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forPluginEvent(plugin.manifest.slug, h)),
+          off: (event: string, handler: any) => unsubscribe(event, handler),
         },
         dependencies: {
           require: requireDependency,
@@ -250,12 +236,12 @@ export class PluginContextFactory {
             });
           },
         },
-        users: UsersContextProxy.createUsersProxy(plugin, manager),
-        people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
+        users: UsersContextProxy.createUsersProxy(plugin, manager, security),
+        people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb, security),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),
-        meta: MetaContextProxy.createMetaProxy(manager),
+        meta: PluginMetaAccess.wrap(MetaContextProxy.createMetaProxy(manager), plugin.manifest.slug),
         tenants: TenantsContextProxy.createTenantsProxy(manager, plugin.manifest.slug),
         // Signs on the HOST: an isolated plugin has no key to decrypt the signing root with, and must not.
         signing: SigningContextProxy.createSigningProxy(manager, plugin.manifest.slug),
@@ -271,7 +257,7 @@ export class PluginContextFactory {
         redirects: RedirectsContextProxy.createRedirectsProxy(plugin, manager, security),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager, plugin.manifest.slug),
-        notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug),
+        notifications: NotificationsContextProxy.createNotificationsProxy(manager, plugin.manifest.slug, security),
         theme: ThemeContextProxy.createThemeProxy(plugin, manager),
         entities: EntitiesContextProxy.createEntitiesProxy(),
         collections: CollectionsContextProxy.createCollectionsProxy(plugin, manager, rootLogger, security),
@@ -280,7 +266,7 @@ export class PluginContextFactory {
         // Credentials at rest, on the framework's key — so a plugin never invents its own.
         secrets: SecretsContextProxy.createSecretsProxy(),
         // Installable versions this plugin can offer, merged into the catalogue the admin reads.
-        catalog: CatalogContextProxy.createCatalogProxy(plugin),
+        catalog: CatalogContextProxy.createCatalogProxy(plugin, security),
         t: (key: string, params?: Record<string, any>, locale?: string) => {
           const i18n = I18nContextProxy.createI18nProxy(plugin, manager, pathContext, security);
           return i18n.t(key, params, locale);
@@ -288,6 +274,7 @@ export class PluginContextFactory {
         ui: UiContextProxy.createUiProxy(plugin, manager),
         runtime: {
           registerModule: (name: string, config: { keys: string[], type: RuntimeModuleKind }) => {
+            RuntimeModuleBridgeGuard.assert(security, name, config?.keys);
             manager.runtime.registerModule(name, config);
             rootLogger.info(`Plugin "${plugin.manifest.slug}" registered runtime module bridge: ${name} (${config.type})`);
           }

@@ -13,6 +13,9 @@ export class JobsContextProxy {
     'zadd', 'zrem', 'zrange', 'zrevrange', 'zcard', 'zscore',
   ]);
 
+  /** Commands whose EVERY argument is a key. */
+  private static readonly MULTI_KEY_COMMANDS = new Set(['del', 'exists']);
+
   static createJobsProxy(
     plugin: ILoadedPlugin,
     manager: IPluginManagerInterface,
@@ -62,9 +65,17 @@ export class JobsContextProxy {
               if (!hasCapability('redis:global')) handleViolation('redis:global');
               return original.apply(target, args);
             }
-            if (args.length > 0 && typeof args[0] === 'string') {
-              // Per SITE as well as per plugin — see PluginKeyspace.
-              args[0] = `${PluginKeyspace.prefix('redis', slug)}${args[0]}`;
+            // Per SITE as well as per plugin — see PluginKeyspace. `del` and `exists` take ANY number
+            // of keys, so every argument is one; prefixing only the first let
+            // `del('mine', 'bull:queue:…')` delete other plugins' and the queue's keys.
+            const prefix = PluginKeyspace.prefix('redis', slug);
+            const keyCount = JobsContextProxy.MULTI_KEY_COMMANDS.has(command) ? args.length : Math.min(1, args.length);
+            for (let index = 0; index < keyCount; index++) {
+              if (typeof args[index] !== 'string') {
+                if (!hasCapability('redis:global')) handleViolation('redis:global');
+                continue;
+              }
+              args[index] = `${prefix}${args[index]}`;
             }
             return original.apply(target, args);
           };

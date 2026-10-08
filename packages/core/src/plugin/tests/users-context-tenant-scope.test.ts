@@ -60,7 +60,10 @@ function managerWith(options: { limit?: number } = {}) {
 const inSite = <T>(tenantId: string, fn: () => Promise<T>): Promise<T> =>
   RequestContextUtils.storage.run({ tenantId } as any, fn);
 
-const proxy = (manager: any) => UsersContextProxy.createUsersProxy({} as any, manager);
+/** A plugin whose `database:write` was declared and approved — what these tests are about is tenancy, not consent. */
+const ALLOWED = { hasCapability: () => true, handleViolation: () => {}, handleRateLimit: () => {} } as any;
+
+const proxy = (manager: any) => UsersContextProxy.createUsersProxy({ manifest: { slug: 'shop' } } as any, manager, ALLOWED);
 
 const multiTenant = () => TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
