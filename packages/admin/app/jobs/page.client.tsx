@@ -22,7 +22,8 @@ import { JobsQueueTable } from '@/app/jobs/jobs-queue-table.client';
  */
 export class JobsPage extends AdminComponent {
   @state private tasks: any[] = [];
-  @state private scope: 'site' | 'platform' = 'site';
+  /** Whether this is the platform scope (every task, each site's part, the queue) rather than one site's. */
+  @state private platformScope = false;
   @state private loading = true;
   @state private failed = false;
   @state private openTask: string | null = null;
@@ -34,7 +35,7 @@ export class JobsPage extends AdminComponent {
   private async load(): Promise<void> {
     try {
       const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.JOBS.TASKS);
-      this.scope = response?.scope === 'platform' ? 'platform' : 'site';
+      this.platformScope = response?.scope === 'platform';
       this.tasks = (Array.isArray(response?.tasks) ? response.tasks : []).map((task: any) => ({ ...task, id: task.name }));
     } catch {
       this.failed = true;
@@ -63,7 +64,7 @@ export class JobsPage extends AdminComponent {
           theme={this.theme}
           icon={<FrameworkIcons.Clock size={18} strokeWidth={2.5} />}
           title={AdminI18n.t('jobs.title')}
-          subtitle={this.scope === 'platform' ? AdminI18n.t('jobs.subtitlePlatform') : AdminI18n.t('jobs.subtitleSite')}
+          subtitle={this.platformScope ? AdminI18n.t('jobs.subtitlePlatform') : AdminI18n.t('jobs.subtitleSite')}
         />
         <div className="w-full px-6 lg:px-12 pt-8 space-y-8">
           <section className="space-y-3">
@@ -82,7 +83,7 @@ export class JobsPage extends AdminComponent {
               />
             </div>
           </section>
-          {this.scope === 'platform' ? <JobsQueueTable /> : null}
+          {this.platformScope ? <JobsQueueTable /> : null}
         </div>
       </div>
     );
