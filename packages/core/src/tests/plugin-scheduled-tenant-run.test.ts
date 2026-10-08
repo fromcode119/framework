@@ -5,6 +5,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
+import { SiteLocaleAccess } from '@core/i18n/site-locale-access';
 
 /**
  * A scheduled task has no request, so it has no tenant, so the tenancy guard skipped every query it
@@ -67,6 +68,30 @@ describe('PluginScheduledTenantRun', () => {
 
       expect(handler).toHaveBeenCalledTimes(3);
       expect(db.withTenant.mock.calls.map((call: any[]) => call[0])).toEqual(['a', 'b', 'c']);
+    });
+
+    it('reads in each site\'s own language — localized fields and currentLocale() alike', async () => {
+      givenTenants([tenant('a'), tenant('b')]);
+      vi.spyOn(SiteLocaleAccess, 'warm').mockResolvedValue(undefined as any);
+      vi.spyOn(SiteLocaleAccess, 'get').mockImplementation((id: string) => (id === 'a' ? 'bg' : 'en') as any);
+      const seen: Array<[string | undefined, string | undefined]> = [];
+      handler.mockImplementation(async () => { seen.push([RequestContextUtils.getTenantId(), RequestContextUtils.getLocale()]); });
+
+      await run();
+
+      expect(seen).toEqual([['a', 'bg'], ['b', 'en']]);
+    });
+
+    it('leaves the language unset for a site that names none', async () => {
+      givenTenants([tenant('a')]);
+      vi.spyOn(SiteLocaleAccess, 'warm').mockResolvedValue(undefined as any);
+      vi.spyOn(SiteLocaleAccess, 'get').mockReturnValue(undefined as any);
+      let locale: string | undefined = 'unset';
+      handler.mockImplementation(async () => { locale = RequestContextUtils.getLocale(); });
+
+      await run();
+
+      expect(locale).toBeUndefined();
     });
 
     it('gives the handler a tenant the database guard will accept', async () => {
