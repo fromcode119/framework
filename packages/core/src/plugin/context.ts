@@ -252,7 +252,7 @@ export class PluginContextFactory {
           },
         },
         users: UsersContextProxy.createUsersProxy(plugin, manager, security),
-        people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb),
+        people: PeopleContextProxy.createPeopleProxy(plugin, manager, pluginDb, security),
         entityRecords: EntityRecordsContextProxy.createEntityRecordsProxy(plugin),
         entityFacts: EntityFactsContextProxy.createEntityFactsProxy(plugin),
         attention: AttentionContextProxy.createAttentionProxy(plugin),

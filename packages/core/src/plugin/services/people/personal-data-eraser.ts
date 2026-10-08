@@ -127,7 +127,9 @@ export class PersonalDataEraser {
     for (const row of rows) {
       await this.db.delete(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { id: row.id });
     }
-    await this.db.delete(SystemConstants.TABLE.USERS_ROLES, { user_id: userId }).catch(() => undefined);
+    // The role junction is GLOBAL — no site column. Clearing it on one site's request stripped the
+    // account's roles everywhere; only a deployment without sites, where it is the only scope, clears it.
+    if (!tenantId) await this.db.delete(SystemConstants.TABLE.USERS_ROLES, { user_id: userId }).catch(() => undefined);
     return { strategy, erased: rows.length, anonymised: 0, retained: 0, remaining: 0 };
   }
 

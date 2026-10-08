@@ -87,6 +87,28 @@ describe('PersonalDataErasureService — the global account', () => {
     expect(result.erased).toBe(1);
     expect(db.tables._system_tenant_memberships.map((r: any) => r.tenant_id)).toEqual(['globex']);
   });
+
+  it('leaves the GLOBAL role junction alone on one site\'s request', async () => {
+    // The junction has no site column: clearing it here stripped the account's roles on every site.
+    withTenant('acme');
+    const db = makeDb({
+      _system_tenant_memberships: [{ id: 1, user_id: '7', tenant_id: 'acme' }],
+      _system_users_roles: [{ user_id: '7', role_slug: 'editor' }],
+    });
+
+    await new PersonalDataErasureService(db).eraseDataset('roles', SUBJECT, 'delete');
+
+    expect(db.tables._system_users_roles).toHaveLength(1);
+  });
+
+  it('clears the role junction on a deployment without sites, where it is the only scope', async () => {
+    vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(undefined as any);
+    const db = makeDb({ _system_tenant_memberships: [], _system_users_roles: [{ user_id: '7', role_slug: 'editor' }] });
+
+    await new PersonalDataErasureService(db).eraseDataset('roles', SUBJECT, 'delete');
+
+    expect(db.tables._system_users_roles).toHaveLength(0);
+  });
 });
 
 describe('PersonalDataErasureService — the journals', () => {
