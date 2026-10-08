@@ -140,7 +140,7 @@ export class PluginUiTypecheck {
    * hand-written map here would be a second spelling of the entry points and would go stale the day
    * one is added. The SDK's manifest stays the single source of truth.
    */
-  private static sdkPaths(framework: string): Record<string, string[]> {
+  static sdkPaths(framework: string): Record<string, string[]> {
     const pkg = path.join(framework, 'packages/sdk');
     const exported = JSON.parse(readFileSync(path.join(pkg, 'package.json'), 'utf8'))?.exports ?? {};
 

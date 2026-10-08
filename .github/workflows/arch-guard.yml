@@ -197,6 +197,24 @@ jobs:
             npm ci --prefix "$ui" --ignore-scripts --no-audit --no-fund
           fi
 
+      # A plugin's backend imports its OWN packages (pdfkit, a parser…) from the `package.json` at its
+      # root. `plugin-backend-types` typechecks that backend against exactly what the runtime has: the
+      # host's `@fromcode119/*` (resolved from this framework checkout) plus those packages. Installed
+      # the way the platform installs a plugin — host-provided `@fromcode119/*` entries removed first
+      # (they are not on npm), no lockfile, no scripts, peers left to the host — but WITH dev
+      # dependencies, because that is where a plugin keeps its `@types/*`.
+      - name: Install the plugin's own dependencies
+        if: ${{ inputs.area == 'plugins' }}
+        env:
+          GUARD_NAME: ${{ inputs.name }}
+        run: |
+          dir="plugins/$GUARD_NAME"
+          if [ -f "$dir/package.json" ]; then
+            node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p,"utf8"));for(const f of ["dependencies","devDependencies","peerDependencies","optionalDependencies"])for(const k of Object.keys(j[f]||{}))if(k.startsWith("@fromcode119/"))delete j[f][k];fs.writeFileSync(p,JSON.stringify(j,null,2))' "$dir/package.json"
+            rm -f "$dir/package-lock.json"
+            npm install --prefix "$dir" --ignore-scripts --legacy-peer-deps --no-audit --no-fund
+          fi
+
       - name: Build the guards
         working-directory: framework
         run: npm run build --workspace=@fromcode119/arch-guard
@@ -208,6 +226,9 @@ jobs:
         env:
           GUARD_AREA: ${{ inputs.area }}
           GUARD_NAME: ${{ inputs.name }}
+          # Reported, not yet enforced: the backend typecheck is new and plugins are being brought to
+          # zero one by one. Remove this line once every plugin reports 0 — then it gates like the rest.
+          PLUGIN_BACKEND_TYPES_MODE: warn
         run: |
           if [ -n "$GUARD_AREA" ]; then
             scope="$GITHUB_WORKSPACE/$GUARD_AREA/$GUARD_NAME"
