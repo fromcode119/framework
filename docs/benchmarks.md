@@ -22,7 +22,7 @@ hardware.
 | Operation (req/s) | Fromcode — plain record | Fromcode — full shop / CMS record | Payload | Payload + shop plugin | Directus | Strapi | Medusa | PrestaShop | Magento 2.4 | Drupal 11 + Commerce | WordPress + WooCommerce |
 |:--|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|--:|
 | Product list, storefront card (20) | — | **166.0** <sub>(no equivalent elsewhere)</sub> | — | — | — | — | — | — | — | — | — |
-| List of 20 records | **203.4** | 80.6 <sub>(computed per request 48.5)</sub> | 137.5 | 58.2 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
+| List of 20 records | **203.4** | 80.6 <sub>(computed per request 55–60)</sub> | 137.5 | 58.2 | 109.6 | 99.5 | 13.7 | 14.7 | 9.8 | 9.3 | 6.2 |
 | Single record / product | **255.9** | 214.6 <sub>(computed per request 107.0)</sub> | 217.6 | 98.2 | 128.8 | 115.2 | 25.6 | 54.1 | 12.8 | 12.4 | 21.0 |
 | Page by slug | **255.9** <sub>(same operation as a single record)</sub> | 213.9 | 221.8 | — | 134.2 | 113.0 | — | 71.2 | 21.3 | 13.1 | 14.8 |
 | Posts list (20) | **203.4** <sub>(same operation as a list)</sub> | 124.2 | 147.3 | — | 101.9 | 101.9 | — | — | — | 9.6 | 7.9 |
@@ -54,9 +54,13 @@ page and post, and ahead of it at equal width (first column).
 Payload here is its official e-commerce plugin (Payload's own published e-commerce package) with the product its own
 template ships: title, slug, rich-text description, gallery, categories, related products, SEO fields,
 inventory, prices and drafts. The shop's product list and single product are answered from a page the shop
-prepares beforehand and empties the moment anything it depends on changes. Worked out on every request they are
-48.5 and 107.0 req/s: the single product is still ahead of Payload's commerce product (98.2), the list is not
-(58.2). A list in another currency is kept the same way (one run: 103.2 req/s; repeat runs 71–81, the server's run-to-run noise is about ±10%).
+prepares beforehand, empties the moment anything it depends on changes, and builds again in the background a
+minute later. A list worked out on every request — none of its pages kept — measured 55–60 req/s against Payload's
+commerce list at 49.5 in the same session on the same server (that day the server was slower than for the table
+above, which is why the two were measured together), while answering 51 KB per page of 20 to Payload's 15 KB. A
+single product worked out on every request is 107.0 req/s against Payload's 98.2. A list in another currency, or a
+lookup of related products by slug or id, is kept the same way (one run: 103.2 req/s; repeat runs 71–81, the server's
+run-to-run noise is about ±10%).
 
 ## 3. Plain records, 6 fields — against the other open-source backends (req/s)
 
