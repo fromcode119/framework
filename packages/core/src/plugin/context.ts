@@ -42,6 +42,7 @@ import { PluginsManagerResolver } from '@core/plugin/plugins-manager-resolver';
 import { PluginPathContextProxy } from '@core/plugin/context/paths';
 import { EntitiesContextProxy } from '@core/plugin/context/entities';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginEventDelivery } from '@core/plugin/context/plugin-event-delivery';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { SecretsContextProxy } from '@core/plugin/context/secrets';
 import { CatalogContextProxy } from '@core/plugin/context/catalog';
@@ -59,6 +60,12 @@ export class PluginContextFactory {
 ): PluginContext {
       const pluginLogger = rootLogger.child(plugin.manifest.slug);
       const security = ContextSecurityProxy.createSecurityHelpers(plugin, manager, rootLogger);
+      const subscribe = (event: string, handler: any, wrap: (h: any) => any) => {
+        if (!security.hasCapability('hooks')) security.handleViolation('hooks');
+        (handler as any)._wrapped = wrap(handler);
+        manager.hooks.on(event, (handler as any)._wrapped);
+      };
+      const unsubscribe = (event: string, handler: any) => manager.hooks.off(event, (handler as any)._wrapped || handler);
       // A SITE's own plugin calls no other plugin: an empty resolver answers every lookup with nothing.
       const pluginsFacade = new PluginsFacade(new PluginsManagerResolver(PluginOwners.ownerOf(plugin.manifest.slug) ? new Map() : manager.plugins));
       const pathContext = new PluginPathContextProxy(plugin, manager);
@@ -95,26 +102,8 @@ export class PluginContextFactory {
         db: pluginDb,
         api: ApiContextProxy.createApiProxy(plugin, manager, pluginLogger, security),
         hooks: {
-          on: (event: string, handler: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            const wrappedHandler = async (payload: any, ev: string) => {
-              const currentPlugin = manager.plugins.get(plugin.manifest.slug);
-              if (!currentPlugin || currentPlugin.state !== PluginState.ACTIVE) return;
-              // The TENANT axis. A hook fired inside a request carries that request's tenant, so a
-              // plugin the tenant does not run never sees the event. A hook fired OUTSIDE a request
-              // (boot, a scheduler tick) has no tenant, and the gate answers false — the handler
-              // does not run "for everyone", which is the same fail-open shape closed elsewhere.
-              // Per-tenant scheduled work is not delivered by T2; a task that needs it must iterate
-              // tenants explicitly.
-              if (!PluginTenantAccess.isEnabledForCurrentTenant(plugin.manifest.slug)) return;
-              return handler(payload, ev);
-            };
-            (handler as any)._wrapped = wrappedHandler;
-            manager.hooks.on(event, wrappedHandler);
-          },
-          off: (event: string, handler: any) => {
-            manager.hooks.off(event, (handler as any)._wrapped || handler);
-          },
+          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forHook(manager, plugin.manifest.slug, h)),
+          off: (event: string, handler: any) => unsubscribe(event, handler),
           emit: (event: string, payload: any) => {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);
@@ -227,13 +216,8 @@ export class PluginContextFactory {
             if (!security.hasCapability('hooks')) security.handleViolation('hooks');
             manager.hooks.emit(event, payload);
           },
-          on: (event: string, handler: any) => {
-            if (!security.hasCapability('hooks')) security.handleViolation('hooks');
-            manager.hooks.on(event, handler);
-          },
-          off: (event: string, handler: any) => {
-            manager.hooks.off(event, handler);
-          },
+          on: (event: string, handler: any) => subscribe(event, handler, (h) => PluginEventDelivery.forPluginEvent(plugin.manifest.slug, h)),
+          off: (event: string, handler: any) => unsubscribe(event, handler),
         },
         dependencies: {
           require: requireDependency,
