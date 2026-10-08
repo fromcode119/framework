@@ -1,5 +1,6 @@
 import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-name-utils';
-import { NamingStrategy, Sql, TableArgMethods, TableResolver } from '@fromcode119/database';
+import { Sql, TableArgMethods, TableResolver } from '@fromcode119/database';
+import { PluginDbResultNames } from '@core/plugin/context/plugin-db-result-names';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
@@ -28,12 +29,6 @@ import { PluginDbOnRequestFields } from '@core/plugin/context/plugin-db-on-reque
 
 export class DatabaseContextProxy {
   private static readonly ROW_RETURNING_METHODS = new Set(['find', 'findOne', 'insert', 'update', 'upsert']);
-  /**
-   * Results keyed by COLUMN rather than rows of a table: their keys are denormalized too, so a plugin
-   * grouping by `sourceId` reads `group.sourceId` — it used to get `source_id` back, and a plugin that
-   * read the name it asked for read nothing, silently. Nothing else of a row's handling applies.
-   */
-  private static readonly KEYED_RESULT_METHODS = new Set(['groupCount']);
   private static readonly READ_METHODS = new Set(['find', 'findOne', 'count', 'groupCount', 'aggregate', 'tableExists', 'getColumns']);
   private static readonly WRITE_METHODS = new Set(['insert', 'update', 'upsert', 'delete']);
   private static readonly SCHEMA_METHODS = new Set(['addColumn']);
@@ -107,19 +102,13 @@ export class DatabaseContextProxy {
     return next;
   }
 
-  private static denormalizeResult(result: any): any { // eslint-disable-line @typescript-eslint/no-explicit-any
-    if (result == null) return result;
-    if (Array.isArray(result)) return result.map((row) => NamingStrategy.denormalizeRecord(row));
-    return NamingStrategy.denormalizeRecord(result);
-  }
-
   /**
    * Everything a row must pass through on its way out to plugin code: names denormalized to the
    * schema's camelCase, THEN `localized: true` fields collapsed to the request's locale. The order is
    * load-bearing: {@link LocalizedReadResolver} looks fields up by their schema (camelCase) name.
    */
   private static postProcessResult(result: any, table: unknown, manager: IPluginManagerInterface): any { // eslint-disable-line @typescript-eslint/no-explicit-any
-    return LocalizedReadResolver.resolveResult(DatabaseContextProxy.denormalizeResult(result), table, manager);
+    return LocalizedReadResolver.resolveResult(PluginDbResultNames.denormalize(result), table, manager);
   }
 
   /**
@@ -278,7 +267,7 @@ export class DatabaseContextProxy {
               const scoped = DatabaseContextProxy.injectTenant(prop, includeArchived ? args : ArchivedRowFilter.apply(prop, args, manager));
               const callArgs = EnumValueCoercion.coerceArguments(scoped);
               const omitted = PluginDbOnRequestFields.omittedFor(prop, callArgs, manager);
-              const postProcess = (rows: any) => PluginDbOnRequestFields.strip(resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : DatabaseContextProxy.denormalizeResult(rows), omitted);
+              const postProcess = (rows: any) => PluginDbOnRequestFields.strip(resolveLocalized ? DatabaseContextProxy.postProcessResult(rows, table, manager) : PluginDbResultNames.denormalize(rows), omitted);
               if (asJson) return PluginDbJsonFind.run(target, callArgs, () => fn.apply(this, callArgs), postProcess, resolveLocalized ? { table, manager } : null, omitted);
               const applied = fn.apply(this, callArgs);
               const out = DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) && !derivedOnly ? SiteContentRevision.afterWrite(applied) : applied;
@@ -288,9 +277,7 @@ export class DatabaseContextProxy {
                 }
                 return postProcess(out);
               }
-              if (DatabaseContextProxy.KEYED_RESULT_METHODS.has(prop)) {
-                return out && typeof out.then === 'function' ? out.then(DatabaseContextProxy.denormalizeResult) : DatabaseContextProxy.denormalizeResult(out);
-              }
+              if (PluginDbResultNames.isKeyed(prop)) return PluginDbResultNames.keyed(out);
               return out;
             };
           }
