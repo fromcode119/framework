@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
+import { PluginSitesForEach } from '@core/plugin/tenant/plugin-sites-for-each';
 import { RequestContextUtils } from '@core/context/request-context';
-import { PerTenantRun } from '@core/tenant/per-tenant-run';
 import { CoreServices } from '@core/services/core-services';
 import { McpRegistryProvider } from '@core/mcp/mcp-registry-provider';
 import { MiddlewareStage } from '@core/enums/middleware-stage.enum';
@@ -195,10 +195,8 @@ export class PluginHostRegistrations {
    */
   private async tenantsForEach(registration: IPluginGuestRegistration, invoke: (kind: string, handlerId: string, args: unknown[], store: IRequestStore | undefined) => Promise<unknown>): Promise<number> {
     const id = String(registration.handlerId);
-    return PerTenantRun.forEach({
-      label: `guest:${id}:tenants.forEach`,
-      db: this.db as never,
-      work: async () => { await invoke('tenants', id, [], RequestContextUtils.storage.getStore()); },
+    return PluginSitesForEach.run(this.slug, this.db, `guest:${id}:tenants.forEach`, async () => {
+      await invoke('tenants', id, [], RequestContextUtils.storage.getStore());
     });
   }
 

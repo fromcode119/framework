@@ -1,5 +1,5 @@
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
-import { PerTenantRun } from '@core/tenant/per-tenant-run';
+import { PluginSitesForEach } from '@core/plugin/tenant/plugin-sites-for-each';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
@@ -22,7 +22,7 @@ export class TenantsContextProxy {
   static createTenantsProxy(manager: IPluginManagerInterface, pluginSlug: string) {
     return {
       /**
-       * Runs `work` once for every site, each inside that site's own scope.
+       * Runs `work` once for every site that has this plugin, each inside that site's own scope.
        *
        * Use it for boot-time work that touches this plugin's tables: a backfill, a default row, a
        * one-off normalisation. Inside a request it runs once, for the current site, because that is
@@ -33,11 +33,8 @@ export class TenantsContextProxy {
        *
        * Returns how many sites it ran for, so a caller can say so rather than assume.
        */
-      forEach: async (work: () => Promise<void>): Promise<number> => PerTenantRun.forEach({
-        label: `${pluginSlug}:tenants.forEach`,
-        db: manager.db as never,
-        work,
-      }),
+      forEach: async (work: () => Promise<void>): Promise<number> =>
+        PluginSitesForEach.run(pluginSlug, manager.db, `${pluginSlug}:tenants.forEach`, work),
 
       /**
        * The site this code is running for, or null outside a request (boot, a timer, a job).
