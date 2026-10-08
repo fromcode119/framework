@@ -1,6 +1,7 @@
 import { ModuleLocation } from '@extension-builder/module-location';
 import { fileURLToPath } from 'node:url';
 import { Core } from '@extension-builder/core-bridge';
+import { InstalledDependencies } from '@extension-builder/deps/installed-dependencies';
 import { execFile } from 'child_process';
 import * as path from 'path';
 import * as fs from 'fs';
@@ -259,25 +260,22 @@ export class BuildToolchain {
    * and it carries the reasoning for `--ignore-scripts` and `--legacy-peer-deps`. This class keeps
    * only the esbuild option sets, module resolution and manifest inspection.
    *
-   * The "node_modules already present" skip is preserved: these run against freshly cloned trees,
-   * and re-installing an already-populated one is pure wall-clock.
+   * A directory is installed when its `node_modules` does not match its `package.json` — see
+   * `InstalledDependencies`: Sources reuses its checkouts, so "already has node_modules" is not enough.
    */
   async installDependencies(directory: string): Promise<void> {
-    if (!BuildToolchain.needsInstall(directory)) return;
+    if (!InstalledDependencies.needsInstall(directory, false)) return;
     Core.DependencyInstaller.stripHostProvidedDependencies(directory);
     await Core.DependencyInstaller.install(directory, { omitDev: true });
+    InstalledDependencies.record(directory, false);
   }
 
   /** Same, but keeps devDependencies — a package's own `build` script usually needs them. */
   async installBuildDependencies(directory: string): Promise<void> {
-    if (!BuildToolchain.needsInstall(directory)) return;
+    if (!InstalledDependencies.needsInstall(directory, true)) return;
     Core.DependencyInstaller.stripHostProvidedDependencies(directory);
     await Core.DependencyInstaller.install(directory, { omitDev: false });
-  }
-
-  private static needsInstall(directory: string): boolean {
-    return fs.existsSync(path.join(directory, 'package.json'))
-      && !fs.existsSync(path.join(directory, 'node_modules'));
+    InstalledDependencies.record(directory, true);
   }
 
   hasBuildScript(packageJsonPath: string): boolean {
