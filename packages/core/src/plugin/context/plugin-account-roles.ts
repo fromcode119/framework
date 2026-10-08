@@ -100,7 +100,7 @@ export class PluginAccountRoles {
 
   private static refusal(operation: string, roles: string[]): Error {
     return new Error(
-      `${operation} refused role(s) ${roles.map((role) => `"${role}"`).join(', ')}: a plugin may only declare or grant roles `
+      `${operation} refused role(s) ${roles.map((role) => `"${role}"`).join(', ')}: a plugin may only declare, grant or remove roles `
       + 'that carry nothing beyond its own permissions, and never an administrator.',
     );
   }

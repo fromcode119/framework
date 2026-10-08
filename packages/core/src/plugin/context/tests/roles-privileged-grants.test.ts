@@ -148,3 +148,71 @@ describe('context.roles.ensure', () => {
     expect(db.insert).toHaveBeenCalledTimes(2);
   });
 });
+
+/**
+ * Taking a role away is held to the same rule as giving it. A plugin that cannot make an administrator
+ * must not be able to UNMAKE one either — that is a lockout of the site's own owner.
+ */
+describe('context.roles removals', () => {
+  const ownerHere = (memberships: any[]) =>
+    memberships.push({ user_id: '3', tenant_id: 'my-site', roles: ['admin'], state: 'active' });
+
+  it('removeRole refuses to strip admin, and removes the plugin’s own role', async () => {
+    const { manager, db } = managerWith();
+
+    await expect(roles(manager).removeRole(3, 'admin')).rejects.toThrow(/context\.roles\.removeRole refused role/);
+    expect(db.delete).not.toHaveBeenCalled();
+
+    await roles(manager).removeRole(5, 'shop-staff');
+    expect(db.delete).toHaveBeenCalledWith(SystemConstants.TABLE.USERS_ROLES, { userId: 5, roleSlug: 'shop-staff' });
+  });
+
+  it('removeSiteRole refuses to strip admin on the site', async () => {
+    multiTenant();
+    const { manager, db, memberships } = managerWith();
+    ownerHere(memberships);
+
+    await expect(inSite('my-site', () => roles(manager).removeSiteRole(3, 'admin'))).rejects.toThrow(/removeSiteRole/);
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('revokeSiteMembership refuses to lock out the site’s administrator', async () => {
+    multiTenant();
+    const { manager, db, memberships } = managerWith();
+    ownerHere(memberships);
+
+    await expect(inSite('my-site', () => roles(manager).revokeSiteMembership(3))).rejects.toThrow(/revokeSiteMembership/);
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('revokeSiteMembership still suspends a customer', async () => {
+    multiTenant();
+    const { manager, db, memberships } = managerWith();
+    memberships.push({ user_id: '7', tenant_id: 'my-site', roles: ['customer'], state: 'active' });
+
+    await inSite('my-site', () => roles(manager).revokeSiteMembership(7));
+
+    expect(db.update).toHaveBeenCalledWith(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: '7', tenant_id: 'my-site' }, expect.objectContaining({ state: expect.anything() }));
+  });
+
+  it('grantSiteMembership refuses to REPLACE an administrator’s roles with customer — a demotion', async () => {
+    // A portal plugin links an account by email and grants it `customer`; if that account is the site
+    // owner, the replacement would silently take their administration away.
+    multiTenant();
+    const { manager, db, memberships } = managerWith();
+    ownerHere(memberships);
+
+    await expect(inSite('my-site', () => roles(manager).grantSiteMembership(3, ['customer']))).rejects.toThrow(/"admin"/);
+    expect(db.update).not.toHaveBeenCalled();
+  });
+
+  it('grantSiteMembership still reactivates a suspended customer', async () => {
+    multiTenant();
+    const { manager, db, memberships } = managerWith();
+    memberships.push({ user_id: '7', tenant_id: 'my-site', roles: ['customer'], state: 'inactive' });
+
+    await inSite('my-site', () => roles(manager).grantSiteMembership(7, ['customer']));
+
+    expect(db.update).toHaveBeenCalled();
+  });
+});

@@ -106,6 +106,16 @@ export class RolesContextProxy {
       const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
       return PluginAccountRoles.vetGrant(manager.db, owner, roles, tenantId, operation).catch(refuseAndRecord);
     };
+    /**
+     * TAKING a role away is held to the same rule as giving it: a plugin may only remove the roles it
+     * could grant. Otherwise a plugin that cannot make anyone an administrator can still unmake one —
+     * strip the site owner's `admin`, or revoke their membership, and lock them out of their own site.
+     */
+    const vetRemoval = vetGrant;
+    const membershipRoles = async (uid: number, tenantId: string): Promise<string[] | null> => {
+      const row = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(uid), tenant_id: tenantId });
+      return row ? TenantMembership.from(row as Record<string, unknown>).roles : null;
+    };
 
     const proxy = {
       /**
@@ -178,8 +188,10 @@ export class RolesContextProxy {
         if (!tenantId) return;
 
         const roleList = await vetGrant('context.roles.grantSiteMembership', Array.isArray(roles) ? roles : []);
-        const existing = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(uid), tenant_id: tenantId });
-        if (existing) {
+        const held = await membershipRoles(uid, tenantId);
+        if (held) {
+          // This REPLACES the roles held here, so whatever it drops is a removal.
+          await vetRemoval('context.roles.grantSiteMembership', held.filter((role) => !roleList.includes(role)));
           await manager.db.update(
             SystemConstants.TABLE.TENANT_MEMBERSHIPS,
             { user_id: String(uid), tenant_id: tenantId },
@@ -206,6 +218,7 @@ export class RolesContextProxy {
         if (!uid || !TenantMode.isEnabled()) return;
         const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
         if (!tenantId) return;
+        await vetRemoval('context.roles.revokeSiteMembership', (await membershipRoles(uid, tenantId)) ?? []);
         await manager.db.update(
           SystemConstants.TABLE.TENANT_MEMBERSHIPS,
           { user_id: String(uid), tenant_id: tenantId },
@@ -218,6 +231,7 @@ export class RolesContextProxy {
         const uid = Number(userId);
         if (!uid || !slug) return;
         const roleSlug = String(slug).trim().toLowerCase();
+        await vetRemoval('context.roles.removeRole', [roleSlug]);
         await manager.db.delete(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         await syncUsersRolesJson(uid, (roles) => roles.filter((r) => r !== roleSlug));
       },
@@ -262,7 +276,10 @@ export class RolesContextProxy {
         return siteRoles.add(userId, slug);
       },
       /** Takes one role away on this site; the membership and the other roles stay. */
-      removeSiteRole: (userId: number | string, slug: string) => siteRoles.remove(userId, slug),
+      removeSiteRole: async (userId: number | string, slug: string) => {
+        await vetRemoval('context.roles.removeSiteRole', [slug]);
+        return siteRoles.remove(userId, slug);
+      },
     };
   }
 }
