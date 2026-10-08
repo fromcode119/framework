@@ -75,7 +75,6 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly booleanColumns = new PostgresBooleanColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly pointInTimeColumns =
     new PostgresPointInTimeColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
@@ -196,7 +195,6 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   async ensureBooleanColumn(table: string, column: string): Promise<SchemaReconcileOutcome> {
     try { return await this.booleanColumns.ensure(table, column); } finally { this.invalidateTableCache(table); }
   }
-
   /** Counts on THIS connection — under FORCE RLS that is the bound tenant's rows only. */
   async columnStats(table: string, column: string): Promise<IColumnStats> {
     return this.columns.stats(table, column);
