@@ -9,6 +9,7 @@ import { NavUtils } from '@/lib/nav-utils';
 import { NavItem } from '@/app/components/view/sidebar-nav-item.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
+import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
 export class SidebarNavGroups extends PureReactor {
   @prop declare isAdmin?: boolean;
   @prop declare isMini?: boolean;
@@ -27,6 +28,11 @@ export class SidebarNavGroups extends PureReactor {
   @prop declare footerSettingsIsGroup: boolean;
   @prop declare onClose?: () => void;
   @prop declare onHoverPreviewPathChange?: (path: string) => void;
+
+  /** The pages plugins filed under System, drawn in the System section below. */
+  private get systemPluginItems(): any[] {
+    return SidebarMenuService.systemPluginItems(this.groupedMenu, this.footerSettingsItem?.path ?? '');
+  }
 
   @bound handleHoverPreviewStart(path: string): void {
     this.onHoverPreviewPathChange?.(path);
@@ -127,8 +133,11 @@ export class SidebarNavGroups extends PureReactor {
         )}
 
         {/* System section: Activity is admin-only; Settings only appears if it survived nav
-            authorization (admins). Hide the whole section for scoped users who have neither. */}
-        {(isAdmin || footerSettingsItem) && (
+            authorization (admins); a plugin's pages filed under System follow them. The group is
+            drawn here by hand, not in the list above, so without this a plugin page that chose
+            System (the Migration screen) had no way in from the menu at all. Hide the whole
+            section for scoped users who have none of them. */}
+        {(isAdmin || footerSettingsItem || this.systemPluginItems.length > 0) && (
         <div className="mt-auto pt-4 space-y-1">
           {!isMini && (
             <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1">
@@ -160,6 +169,21 @@ export class SidebarNavGroups extends PureReactor {
                   onHoverPreviewEnd={this.handleHoverPreviewEnd}
                 />
               )}
+              {this.systemPluginItems.map((item, idx) => (
+                <NavItem
+                  key={`${item.pluginSlug}-${item.path}-${idx}`}
+                  icon={<Icon name={item.icon || 'Package'} size={18} />}
+                  label={AdminNavText.menuLabel(item)}
+                  href={item.path}
+                  persistenceKey={`${item.pluginSlug}:${item.path}`}
+                  active={NavUtils.isPathActive(pathname, item.path, this.systemPluginItems.map((entry) => entry.path))}
+                  onClick={onClose}
+                  children={item.children}
+                  isMini={isMini}
+                  isGroupHeader={item.isGroup}
+                  version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                />
+              ))}
             </>
           )}
         </div>

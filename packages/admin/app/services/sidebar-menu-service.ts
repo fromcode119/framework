@@ -96,6 +96,16 @@ export class SidebarMenuService {
     return { groupedMenu, groupLabels };
   }
 
+  /**
+   * The pages plugins filed under the System group. That group is drawn by hand at the foot of the
+   * sidebar (Activity, Settings), not in the list `sortGroups` returns, so these are added to it there
+   * — without them a plugin page that chose System had no way in from the menu.
+   */
+  static systemPluginItems(groupedMenu: Record<string, any[]>, settingsPath: string): any[] {
+    const own = new Set([AdminConstants.ROUTES.ACTIVITY, settingsPath].filter(Boolean).map((path) => NavUtils.normalizePath(path)));
+    return (groupedMenu['system'] || []).filter((item) => item?.pluginSlug && item.pluginSlug !== 'system' && !own.has(NavUtils.normalizePath(item.path)));
+  }
+
   static sortGroups(groupedMenu: Record<string, any[]>): string[] {
     return NavUtils.sortMenuGroups(Object.keys(groupedMenu))
       .filter((groupKey) => !NavUtils.getMenuGroupMeta(groupKey).manual);
