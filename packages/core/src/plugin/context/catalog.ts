@@ -1,5 +1,6 @@
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { CoreServices } from '@core/services/core-services';
+import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 /**
  * Plugin-facing facade over the catalogue contribution registry.
@@ -14,7 +15,7 @@ import { CoreServices } from '@core/services/core-services';
  * already been produced, never a call out to a git host.
  */
 export class CatalogContextProxy {
-  static createCatalogProxy(plugin: ILoadedPlugin) {
+  static createCatalogProxy(plugin: ILoadedPlugin, security?: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>) {
     const namespace = String(plugin?.manifest?.namespace || '').trim();
     const pluginSlug = String(plugin?.manifest?.slug || '').trim();
 
@@ -31,6 +32,11 @@ export class CatalogContextProxy {
         list: () => Promise<Array<Record<string, unknown>>> | Array<Record<string, unknown>>,
         resolveArtifact?: (slug: string, kind: string) => Promise<string | null> | string | null,
       ) {
+        // Offering a version of ANY slug — another plugin's included — and handing back the file the
+        // installer then installs, is the power to install code. Without a gate, any plugin could
+        // advertise "version 99" of a trusted plugin and have its own package installed on Update.
+        // It takes the capability that already means "may install extensions".
+        if (security && !security.hasCapability('extensions:manage')) security.handleViolation('extensions:manage');
         CoreServices.getInstance().catalogContributions.register({
           namespace,
           pluginSlug,
