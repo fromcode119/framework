@@ -2,6 +2,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/view/badge.client';
 import { CollectionListRelationshipCellValue } from '@/components/collection/list/view/relationship-cell-value.client';
+import { CollectionListMediaCellValue } from '@/components/collection/list/view/media-cell-value.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
 
@@ -32,6 +33,10 @@ export class RecordCellRenderers {
       if (booleanBadge) {
         return React.createElement(Badge, { variant: booleanBadge.variant }, booleanBadge.label);
       }
+    }
+
+    if (field?.type === 'relationship' && field.relationTo === 'media') {
+      return React.createElement(CollectionListMediaCellValue, { raw });
     }
 
     if (field?.type === 'relationship') {
