@@ -18,6 +18,7 @@ describe('PluginScheduledTenantRun', () => {
   const tenant = (id: string, isActive = true, environment = TenantEnvironment.PRODUCTION) => ({ id, slug: id, isActive, environment });
   let handler: ReturnType<typeof vi.fn>;
   let db: any;
+  let runs: Array<Record<string, unknown>>;
 
   const givenTenants = (tenants: Array<{ id: string; isActive: boolean }>): void => {
     vi.spyOn(TenantResolverService, 'shared').mockReturnValue({
@@ -34,9 +35,18 @@ describe('PluginScheduledTenantRun', () => {
 
   beforeEach(() => {
     handler = vi.fn(async () => undefined);
+    runs = [];
     db = {
       find: vi.fn(async () => []),
       withTenant: vi.fn(async (_tenantId: string, fn: () => Promise<unknown>) => fn()),
+      insert: vi.fn(async (_table: string, row: Record<string, unknown>) => {
+        runs.push({ ...row, id: runs.length + 1, tenant: RequestContextUtils.getTenantId() });
+        return { id: runs.length };
+      }),
+      update: vi.fn(async (_table: string, where: { id: number }, data: Record<string, unknown>) => {
+        Object.assign(runs[where.id - 1], data);
+        return runs[where.id - 1];
+      }),
     };
     vi.spyOn(PluginTenantAccess, 'warm').mockResolvedValue(undefined);
     vi.spyOn(PluginTenantAccess, 'isPresentFor').mockResolvedValue(true);
@@ -140,6 +150,22 @@ describe('PluginScheduledTenantRun', () => {
 
       await expect(run()).resolves.toBeUndefined();
       expect(handler).toHaveBeenCalledTimes(3);
+    });
+
+    /** What each site's run did is written down inside that site, so its own administrator can see it. */
+    it('records each site\'s run in that site, with the failure it ended with', async () => {
+      givenTenants([tenant('a'), tenant('b')]);
+      handler.mockImplementation(async () => {
+        if (RequestContextUtils.getTenantId() === 'b') throw new Error('boom');
+      });
+
+      await run();
+
+      expect(runs.map((row) => [row.tenant, row.task_name, row.status, row.error])).toEqual([
+        ['a', 'build-server:auto-build', 'succeeded', null],
+        ['b', 'build-server:auto-build', 'failed', 'boom'],
+      ]);
+      expect(runs.every((row) => typeof row.duration_ms === 'number')).toBe(true);
     });
 
     /**

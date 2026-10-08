@@ -33,6 +33,7 @@ export class AppPathConstants {
     ROOT: '/',
     MINIMAL: '/atlantis',
     ACTIVITY: '/activity',
+    JOBS: '/jobs',
     ACTIVITY_FILTER: (query: Record<string, string | number | boolean | undefined | null>) =>
       AppPathConstants.withQuery('/activity', query),
     MEDIA: {

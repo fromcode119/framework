@@ -134,6 +134,11 @@ export class SystemMetaKeys {
    */
   AUDIT_RETENTION_DAYS: 'audit_retention_days',
   /**
+   * Days of `_system_scheduler_runs` — what each background job did, and when — to keep. Empty or 0
+   * means KEEP FOREVER, as the admin field says. Read by JournalRetentionService.
+   */
+  JOB_RUN_RETENTION_DAYS: 'job_run_retention_days',
+  /**
    * Whether the platform keeps an IP-location database (DB-IP City Lite, CC BY 4.0) and answers
    * `context.geo.lookup`. `true` installs it and keeps it current monthly; anything else removes it, so
    * "off" means no location data exists on the server at all. Settings → Infrastructure.

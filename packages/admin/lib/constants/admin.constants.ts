@@ -203,6 +203,11 @@ export class AdminConstants {
     FRONTEND: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.FRONTEND),
     LOGS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_LOGS),
     AUDIT: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_AUDIT),
+    JOBS: {
+      TASKS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_JOBS),
+      RUNS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_JOBS}${RouteConstants.SEGMENTS.JOBS_RUNS}`),
+      QUEUE: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, `${RouteConstants.SEGMENTS.ADMIN_JOBS}${RouteConstants.SEGMENTS.JOBS_QUEUE}`),
+    },
     /** The signed-in person's own UI preference `key` (a saved view, their dashboard layout). */
     PREFERENCE: (key: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PREFERENCES_KEY, { key }),
     ROLES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_ROLES),

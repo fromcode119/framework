@@ -1,5 +1,6 @@
 import { IQueueAdapter } from '@queue/interfaces/queue-adapter.interface';
 import type { QueueSettings } from '@queue/queue-settings';
+import type { IQueueJobSnapshot } from '@queue/interfaces/queue-job-snapshot.interface';
 
 /**
  * The queue, as the rest of the framework sees it.
@@ -23,6 +24,11 @@ export class QueueManager {
 
   registerWorker(queueName: string, processor: (job: any) => Promise<any>, options: any = {}) {
     return this.adapter.registerWorker(queueName, processor, options);
+  }
+
+  /** What the queue holds now — the jobs an operator can otherwise not see at all. */
+  async listJobs(limit = 50): Promise<IQueueJobSnapshot[]> {
+    return this.adapter.listJobs(limit);
   }
 
   async close() {

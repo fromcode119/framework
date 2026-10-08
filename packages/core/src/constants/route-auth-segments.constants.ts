@@ -141,6 +141,10 @@ export class RouteAuthSegments {
   /** `/system/admin/geo` — the IP-location database: its state, and "update now". Platform admins only. */
   ADMIN_GEO: '/admin/geo',
   ADMIN_MONITORING: '/admin/monitoring',
+  /** `/system/admin/jobs` — the background jobs: what is scheduled, what each run did, what waits in the queue. */
+  ADMIN_JOBS: '/admin/jobs',
+  JOBS_RUNS: '/runs',
+  JOBS_QUEUE: '/queue',
   MONITORING_CHECK: '/check',
   /** `/system/admin/schema-orphans` — columns nothing declares, awaiting a platform admin's decision. */
   ADMIN_SCHEMA_ORPHANS: '/admin/schema-orphans',

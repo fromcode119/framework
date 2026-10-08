@@ -37,6 +37,7 @@ import { RoutingRouter } from '@api/routes/routing-router';
 import { SetupStatusRouter } from '@api/routes/setup-status-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { GeoAdminRouter } from '@api/routes/geo-admin-router';
+import { JobsAdminRouter } from '@api/routes/jobs-admin-router';
 import { MonitoringAdminRouter } from '@api/routes/monitoring-admin-router';
 import { SchemaOrphanAdminRouter } from '@api/routes/schema-orphan-admin-router';
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
@@ -181,6 +182,8 @@ export class ServerRoutesSetup {
     );
     // The platform monitor's Health page (Settings → Infrastructure → Monitoring). Platform admins only.
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_MONITORING}`, new MonitoringAdminRouter(this.manager, this.auth, platformAdmin).router);
+    // The Jobs page (System → Jobs): scheduled tasks and their runs for anyone with `system:view`, the queue for platform admins.
+    vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_JOBS}`, new JobsAdminRouter(this.manager, this.auth, platformAdmin).router);
     // The database-schema review (Settings → Infrastructure): columns nothing declares, and dropping one. Platform admins only.
     vApi.use(`${SYSTEM}${RouteConstants.SEGMENTS.ADMIN_SCHEMA_ORPHANS}`, new SchemaOrphanAdminRouter(this.manager, this.auth, platformAdmin).router);
     // SCIM 2.0 provisioning — token-authenticated (not session), mounted at the standard /scim/v2 base.

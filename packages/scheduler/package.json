@@ -24,7 +24,7 @@
   "dependencies": {
     "@fromcode119/database": "*",
     "@fromcode119/sdk": "*",
-    "node-cron": "^4.2.1"
+    "node-cron": "^4.6.0"
   },
   "devDependencies": {
     "@types/node-cron": "^3.0.11",

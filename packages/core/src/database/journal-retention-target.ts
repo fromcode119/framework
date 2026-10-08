@@ -33,6 +33,12 @@ export class JournalRetentionTargets {
         minimumDays: SystemConstants.AUDIT_RETENTION_MIN_DAYS,
         afterPrune: options.auditAfterPrune,
       },
+      {
+        table: SystemConstants.TABLE.SCHEDULER_RUNS,
+        timestampField: 'started_at',
+        settingKey: SystemConstants.META_KEY.JOB_RUN_RETENTION_DAYS,
+        label: 'job-runs',
+      },
     ];
   }
 }
