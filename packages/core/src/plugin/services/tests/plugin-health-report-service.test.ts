@@ -19,6 +19,26 @@ describe('PluginHealthReportService.buildReport', () => {
     expect(report.error[0].slug).toBe('beta');
   });
 
+  it('names only what changed when the plugin reaches the internet: an approved network grant it still asks for is not "removed"', () => {
+    const report = PluginHealthReportService.buildReport([
+      {
+        slug: 'migrate', state: PluginState.INACTIVE, healthStatus: PluginRegistryHealth.WARNING, heldReason: PluginHeldReason.CAPABILITY_DRIFT,
+        manifestCapabilities: ['api', 'network', 'network:any', 'scheduler'],
+        approvedCapabilities: ['api', 'network', 'network:any'],
+      },
+      {
+        slug: 'payments', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY,
+        manifestCapabilities: ['network', 'network:host:api.payments.example'],
+        approvedCapabilities: ['network', 'network:any'],
+      },
+    ]);
+    expect(report.held[0].addedCapabilities).toEqual(['scheduler']);
+    expect(report.held[0].removedCapabilities).toEqual([]);
+    const payments = report.entries.find((entry) => entry.slug === 'payments')!;
+    expect(payments.addedCapabilities).toEqual([]);
+    expect(payments.removedCapabilities).toEqual(['network:any']);
+  });
+
   it('ok=true when all active/healthy', () => {
     const report = PluginHealthReportService.buildReport([
       { slug: 'alpha', state: PluginState.ACTIVE, healthStatus: PluginRegistryHealth.HEALTHY },

@@ -4,13 +4,18 @@ import type { IPluginHealthReport } from '@core/plugin/services/interfaces/plugi
 import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 import { PluginHealthBucket } from '@core/plugin/services/enums/plugin-health-bucket.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
 
 export class PluginHealthReportService {
   static buildReport(inputs: IPluginHealthEntryInput[]): IPluginHealthReport {
     const entries: IPluginHealthEntry[] = (inputs || []).map((p) => {
       const manifestCaps = p.manifestCapabilities || [];
       const approvedCaps = p.approvedCapabilities || [];
-      const addedCapabilities = manifestCaps.filter((c) => !approvedCaps.includes(c)).sort();
+      // `manifestCapabilities` is the plugin's whole consent set (`PluginConsentSet.of`), network grants
+      // included: compared with the raw capability list, an approved `network:any` always read as
+      // "removed" on a plugin that still asks for it. Approval of any host covers each single one.
+      const held = new Set(approvedCaps.map((c) => String(c).toLowerCase()));
+      const addedCapabilities = manifestCaps.filter((c) => !PluginConsentSet.holds(held, c)).sort();
       const removedCapabilities = approvedCaps.filter((c) => !manifestCaps.includes(c)).sort();
       const isHeld = p.healthStatus === PluginRegistryHealth.WARNING || Boolean(p.heldReason);
       const isError = p.state === PluginState.ERROR || p.healthStatus === PluginRegistryHealth.ERROR;
