@@ -17,12 +17,12 @@ export class IntegrationsContextProxy {
         const providers = Array.isArray(definition?.providers)
           ? definition.providers.map((provider: any) => ({ ...provider, namespace: plugin.manifest.namespace }))
           : definition?.providers;
-        manager.integrations.registerType({ ...definition, providers });
+        manager.integrations.registerType({ ...definition, providers }, plugin.manifest.slug);
       },
       registerProvider: (typeKey: string, provider: any) => {
         // The registering plugin's namespace travels with the provider, so a saved integration entry
         // can say where its plugin lives — the admin save used to drop the only copy of it.
-        manager.integrations.registerProvider(typeKey, { ...provider, namespace: plugin.manifest.namespace });
+        manager.integrations.registerProvider(typeKey, { ...provider, namespace: plugin.manifest.namespace }, plugin.manifest.slug);
       },
       get: async (typeKey: string) => {
         if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {

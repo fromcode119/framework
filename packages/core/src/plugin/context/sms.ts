@@ -32,7 +32,7 @@ export class SmsContextProxy {
           fields: (Array.isArray(provider.fields) ? provider.fields : []).map((field: any) => ({ ...field, type: IntegrationConfigFieldType.resolve(field?.type) })), // eslint-disable-line @typescript-eslint/no-explicit-any
           namespace: plugin.manifest.namespace,
           create: (config: Record<string, unknown>) => new PluginSmsSender(plugin.manifest.slug, key, (settings, message) => send(settings, message), config ?? {}),
-        });
+        }, plugin.manifest.slug);
       },
 
       optOut: async (phone: string) => {
