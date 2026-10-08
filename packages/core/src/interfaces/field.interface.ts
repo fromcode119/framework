@@ -62,7 +62,7 @@ export interface IField {
   max?: number; // For number
   minLength?: number; // For text
   maxLength?: number; // For text
-  language?: CodeLanguage; // For code
+  language?: CodeLanguage | string; // For code; declared as a literal, compare with `CodeLanguage.resolve()`
   showTime?: boolean; // For date/datetime
   fields?: IField[]; // For array/group fields
   inputAliases?: string[];
@@ -126,7 +126,8 @@ export interface IField {
     inheritsPlatformCountry?: boolean;
     condition?: {
       field: string;
-      operator: ConditionOperator;
+      /** Declared as a literal by collections (`'equals'`); compare with `ConditionOperator.resolve()`, never `===`. */
+      operator: ConditionOperator | string;
       value?: any;
     };
     tab?: string;

@@ -1,4 +1,5 @@
 import type { IField } from '@core/interfaces/field.interface';
+import type { IJsonFieldReference } from '@core/interfaces/json-field-reference.interface';
 
 /**
  * A field as a PLUGIN declares it, before the framework normalizes it.
@@ -11,9 +12,11 @@ import type { IField } from '@core/interfaces/field.interface';
  *
  * Recursive on purpose: `fields` nests for array/group fields, and an interface may reference itself.
  */
-export interface IFieldInput extends Omit<IField, 'options' | 'relationTo' | 'fields' | 'inputAliases'> {
+export interface IFieldInput extends Omit<IField, 'options' | 'relationTo' | 'fields' | 'inputAliases' | 'withheldWhen' | 'jsonReferences'> {
   readonly options?: readonly { readonly label: string; readonly value: any }[];
   readonly relationTo?: string | readonly string[];
   readonly fields?: readonly IFieldInput[];
   readonly inputAliases?: readonly string[];
+  readonly withheldWhen?: readonly string[];
+  readonly jsonReferences?: readonly IJsonFieldReference[];
 }
