@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.352] - 2026-10-08
+
+### Added
+
+- **core**: isolated plugins can store credentials encrypted, each readable only by the plugin that stored it ([#826](https://github.com/fromcode119/framework/pull/826))
+- **api**: a read route can order by several fields, decline a request by header, and accept only a limit it reads the plugin's way ([#827](https://github.com/fromcode119/framework/pull/827))
+
+### Fixed
+
+- **database**: an update filtered on an empty column matches it ([#828](https://github.com/fromcode119/framework/pull/828))
+- **extension-builder**: reinstall when a package's dependencies change ([#823](https://github.com/fromcode119/framework/pull/823))
+
+### Performance
+
+- **api**: a list read that comes back short states its total without counting ([#825](https://github.com/fromcode119/framework/pull/825))
+
 ## [0.2.351] - 2026-10-08
 
 ### Fixed
