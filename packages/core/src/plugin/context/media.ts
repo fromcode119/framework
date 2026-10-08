@@ -9,6 +9,8 @@ import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 export class MediaContextProxy {
   /** Never resolve more than this many ids in one statement, so one call cannot become an unbounded IN list. */
   private static readonly MAX_BATCH = 500;
+  /** The largest file `read` hands over: the admin upload limit, so any file a site could upload can be read back. */
+  static readonly MAX_READ_BYTES = 25 * 1024 * 1024;
 
   /**
    * Rows leave here in the SAME shape as `context.db` rows: camelCase, one canonical name per field.
@@ -93,14 +95,6 @@ export class MediaContextProxy {
         return Number(total) || 0;
       },
       /**
-       * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.
-       *
-       * A plugin runs isolated and cannot open the storage itself, so a plugin that has to publish a
-       * checksum for a file it hands out (a package catalogue) had no way to compute one. The row is
-       * resolved through the same tenant-scoped read as `findById`, so an id from another site yields
-       * null, and the bytes are streamed rather than buffered.
-       */
-      /**
        * The address a browser or another installation fetches a stored file from, or null when the id
        * resolves to nothing here or the file is private (only the public space is served).
        *
@@ -115,6 +109,14 @@ export class MediaContextProxy {
         const url = (manager.integrations as any).storage.publicUrl(String(row.path), String(row.visibility || 'public'));
         return url ? String(url) : null;
       },
+      /**
+       * SHA-256 (hex) of a stored file's bytes, or null when the id resolves to nothing.
+       *
+       * A plugin runs isolated and cannot open the storage itself, so a plugin that has to publish a
+       * checksum for a file it hands out (a package catalogue) had no way to compute one. The row is
+       * resolved through the same tenant-scoped read as `findById`, so an id from another site yields
+       * null, and the bytes are streamed rather than buffered.
+       */
       async digest(id: any): Promise<string | null> {
         if (id == null || id === '') return null;
         const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
@@ -124,6 +126,39 @@ export class MediaContextProxy {
         const hash = crypto.createHash('sha256');
         for await (const chunk of stream as AsyncIterable<Buffer | string>) hash.update(chunk);
         return hash.digest('hex');
+      },
+      /**
+       * A stored file's bytes (base64), with its name and type, or null when the id resolves to nothing
+       * in this site or the file is larger than {@link MediaContextProxy.MAX_READ_BYTES}.
+       *
+       * A plugin that hands a site's files out — a migration package, a backup, an export — had no way
+       * to read them: it runs isolated and cannot open the storage. Same tenant-scoped row as `digest`,
+       * so another site's id yields null; base64 because the bytes cross the sandbox boundary.
+       */
+      async read(id: any): Promise<{ filename: string; mimeType: string; size: number; base64: string } | null> {
+        if (id == null || id === '') return null;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        if (!row?.path) return null;
+        const storage = (manager.integrations as any).storage;
+        const stream: NodeJS.ReadableStream = await storage.stream(String(row.path), String(row.visibility || 'public'));
+        const chunks: Buffer[] = [];
+        let size = 0;
+        for await (const chunk of stream as AsyncIterable<Buffer | string>) {
+          const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
+          size += bytes.length;
+          if (size > MediaContextProxy.MAX_READ_BYTES) {
+            (stream as any).destroy?.();
+            return null;
+          }
+          chunks.push(bytes);
+        }
+        const media = MediaContextProxy.denormalize(row) as Record<string, any>;
+        return {
+          filename: String(media.originalName || media.filename || row.path),
+          mimeType: String(media.mimeType || 'application/octet-stream'),
+          size,
+          base64: Buffer.concat(chunks, size).toString('base64'),
+        };
       }
     };
   }
