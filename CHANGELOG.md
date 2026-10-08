@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.355] - 2026-10-08
+
+### Added
+
+- a Jobs page shows what runs on its own, and every run is recorded ([#837](https://github.com/fromcode119/framework/pull/837))
+- **core**: a plugin can read the bytes of one of its site's media files ([#836](https://github.com/fromcode119/framework/pull/836))
+- a plugin screen can download a file its api hands out, as the console's own requests are sent ([#839](https://github.com/fromcode119/framework/pull/839))
+
+### Fixed
+
+- **core**: a plugin's grouped count names its groups as plugin code does ([#838](https://github.com/fromcode119/framework/pull/838))
+
 ## [0.2.354] - 2026-10-08
 
 ### Fixed
