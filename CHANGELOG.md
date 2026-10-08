@@ -6,6 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.349] - 2026-10-08
+
+### Added
+
+- **core**: kernel primitives for importing sites from other platforms ([#811](https://github.com/fromcode119/framework/pull/811))
+
+### Fixed
+
+- **core**: a site's scheduled plugin task reads in the site's own language ([#812](https://github.com/fromcode119/framework/pull/812))
+- **core**: harden the plugin context surface ([#813](https://github.com/fromcode119/framework/pull/813))
+- **ci**: the AI-attribution check refuses emphasis-style footers, session links, AI-tool branch names and more tools ([#809](https://github.com/fromcode119/framework/pull/809))
+
+### Changed
+
+- Run the CLI tests through the shared vitest config ([#810](https://github.com/fromcode119/framework/pull/810))
+
 ## [0.2.348] - 2026-10-07
 
 ### Fixed
