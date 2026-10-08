@@ -6,7 +6,7 @@ import type { ISqlRunner } from '@database/interfaces/sql-runner.interface';
  *
  * The schema builders had no case for `checkbox`, so every such field got a TEXT column holding
  * `'true'`/`'false'`. A plugin reading its own rows then got the STRING `'false'`, and a check such as
- * `row.findNetwork !== false` treated an owner's "no" as a yes.
+ * `row.enabled !== false` treated a stored "no" as a yes.
  *
  * Converted only when every non-empty value is a boolean Postgres reads (`true`/`false`, `t`/`f`,
  * `yes`/`no`, `on`/`off`, `1`/`0`, any case); blank becomes NULL. As with the date columns, the pre-check

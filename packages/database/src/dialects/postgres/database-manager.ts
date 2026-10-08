@@ -74,8 +74,7 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   private readonly timestampDefaults =
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
-  private readonly booleanColumns =
-    new PostgresBooleanColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
+  private readonly booleanColumns = new PostgresBooleanColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
 
   private readonly pointInTimeColumns =
     new PostgresPointInTimeColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
@@ -195,9 +194,7 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   /** Converts a TEXT boolean/checkbox column to BOOLEAN when every value is one. */
   async ensureBooleanColumn(table: string, column: string): Promise<SchemaReconcileOutcome> {
-    const outcome = await this.booleanColumns.ensure(table, column);
-    this.invalidateTableCache(table);
-    return outcome;
+    try { return await this.booleanColumns.ensure(table, column); } finally { this.invalidateTableCache(table); }
   }
 
   /** Counts on THIS connection — under FORCE RLS that is the bound tenant's rows only. */

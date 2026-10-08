@@ -17,11 +17,11 @@ describe('PostgresBooleanColumnReconciler', () => {
 
   it('converts a text column of true/false values, keeping its default as a boolean', async () => {
     const { run, statements } = runner('text', 0, "'true'::text");
-    const outcome = await new PostgresBooleanColumnReconciler(run).ensure('fcp_tagiqx_registry', 'find_network');
+    const outcome = await new PostgresBooleanColumnReconciler(run).ensure('fcp_alpha_devices', 'shared');
     expect(outcome.state).toBe(SchemaReconcileState.CHANGED);
-    expect(statements).toContain('ALTER TABLE "fcp_tagiqx_registry" ALTER COLUMN "find_network" DROP DEFAULT');
-    expect(statements).toContain(`ALTER TABLE "fcp_tagiqx_registry" ALTER COLUMN "find_network" TYPE BOOLEAN USING NULLIF(btrim("find_network"), '')::boolean`);
-    expect(statements).toContain('ALTER TABLE "fcp_tagiqx_registry" ALTER COLUMN "find_network" SET DEFAULT true');
+    expect(statements).toContain('ALTER TABLE "fcp_alpha_devices" ALTER COLUMN "shared" DROP DEFAULT');
+    expect(statements).toContain(`ALTER TABLE "fcp_alpha_devices" ALTER COLUMN "shared" TYPE BOOLEAN USING NULLIF(btrim("shared"), '')::boolean`);
+    expect(statements).toContain('ALTER TABLE "fcp_alpha_devices" ALTER COLUMN "shared" SET DEFAULT true');
   });
 
   it('leaves a boolean column alone, and a text column with other values as it is', async () => {
