@@ -3,7 +3,8 @@ import { ThemeMode, CollectionArchive } from '@fromcode119/core/client';
 import { EditArchiveControl } from '@/components/collection/edit/view/edit-archive-control.client';
 import type { ReactNode } from 'react';
 import Link from 'next/link';
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound, state } from '@fromcode119/react-class-components';
+import { AdminServices } from '@/lib/admin-services';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
@@ -16,6 +17,12 @@ export class EditHeader extends PureReactor {
   @prop declare collection: any;
   @prop declare pluginSlug: string;
   @prop declare slug: string;
+  /** Where this tab last showed the list (its page); read after mount, so server and client render alike. */
+  @state listHref = '';
+
+  componentDidMount(): void {
+    this.listHref = AdminServices.getInstance().uiPreference.readCollectionListHref(this.pluginSlug, this.slug);
+  }
   @prop declare id: string;
   @prop declare isNew: boolean;
   @prop declare theme: ThemeMode;
@@ -96,7 +103,7 @@ export class EditHeader extends PureReactor {
       <div className="w-full px-6 lg:px-8 py-4">
         <div className="flex items-center gap-2 mb-2">
           <Link 
-            href={`/${pluginSlug}/${slug}`}
+            href={this.listHref || `/${pluginSlug}/${slug}`}
             className={`flex items-center gap-1.5 text-[10px] font-semibold transition-all hover:-translate-x-1 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}
           >
             <FrameworkIcons.Left size={14} />

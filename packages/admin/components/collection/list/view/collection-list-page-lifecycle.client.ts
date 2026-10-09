@@ -20,12 +20,14 @@ export class CollectionListPageLifecycle {
     CollectionListPageLifecycle.redirectIfGlobal(self);
     CollectionListPageLifecycle.syncVisibleColumns(self);
     CollectionListPageLifecycle.syncStickyColumns(self);
-    CollectionListPageLifecycle.syncSortDefault(self);
+    const sortChanges = CollectionListPageLifecycle.syncSortDefault(self);
     CollectionListPageLifecycle.syncFieldFilters(self);
     CollectionListPageLifecycle.loadPluginSettings(self);
     SiteStorefrontClient.current().then((siteStorefrontUrl) => self.setState({ siteStorefrontUrl }));
     CollectionListPageLifecycle.syncPageToUrl(self);
-    self.fetchData(self.state.page);
+    // A sort about to change fetches on that change (maybeFetch); fetching now as well sent a first,
+    // unsorted request whose answer could arrive last.
+    if (!sortChanges) self.fetchData(self.state.page);
   }
 
   static onUpdate(self: any, prevProps: ICollectionListPageViewProps, prevState: ICollectionListPageViewState): void {
@@ -94,13 +96,15 @@ export class CollectionListPageLifecycle {
     }
   }
 
-  private static syncSortDefault(self: any): void {
+  /** Sets the saved sort, else the collection's default; true when that changes the current sort. */
+  private static syncSortDefault(self: any): boolean {
     const collection = CollectionListPageLifecycle.collectionOf(self);
-    if (!collection) return;
+    if (!collection) return false;
     const persisted = AdminServices.getInstance().uiPreference.readCollectionSort(self.props.pluginSlug, CollectionListPageLifecycle.resolvedSlugOf(self));
-    if (persisted) { self.updateState('sort', persisted); return; }
-    const defaultSort = (collection?.admin as any)?.defaultSort;
-    if (defaultSort) self.updateState('sort', String(defaultSort));
+    const next = persisted || String((collection?.admin as any)?.defaultSort || '');
+    if (!next || next === self.state.sort) return false;
+    self.updateState('sort', next);
+    return true;
   }
 
   private static syncFieldFilters(self: any): void {
@@ -131,7 +135,10 @@ export class CollectionListPageLifecycle {
     if (self.state.page <= 1) nextParams.delete('page');
     else nextParams.set('page', String(self.state.page));
     const nextQuery = nextParams.toString();
-    if (nextQuery !== current) self.props.router.replace(nextQuery ? `${self.props.pathname}?${nextQuery}` : self.props.pathname, { scroll: false });
+    const href = nextQuery ? `${self.props.pathname}?${nextQuery}` : self.props.pathname;
+    // Remembered for this tab, so the edit screen's way back returns to this page of the list.
+    AdminServices.getInstance().uiPreference.writeCollectionListHref(self.props.pluginSlug, self.props.slug, href);
+    if (nextQuery !== current) self.props.router.replace(href, { scroll: false });
   }
 
   private static manageColumnsMenuListener(self: any): void {
