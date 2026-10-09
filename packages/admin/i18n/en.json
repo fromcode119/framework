@@ -332,7 +332,8 @@
       "colour": "Colour",
       "pick": "Pick a colour",
       "hex": "Hex Code",
-      "confirm": "Confirm Color"
+      "confirm": "Confirm Color",
+      "notSet": "Not set"
     },
     "dependencies": {
       "installAll": "Install & Enable All",

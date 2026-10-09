@@ -115,20 +115,22 @@ export class EditHeader extends PureReactor {
           </span>
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className={`text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* The title takes the room the actions leave and ends in "…" when longer; below its minimum the
+              actions wrap under it. A long product name used to squeeze this column to one word per line. */}
+          <div className="min-w-[16rem] flex-1">
+            <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {isNew
                 ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
                 : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
               }
             </h1>
-            <p className="text-slate-500 font-medium text-xs tracking-tight mt-0.5">
+            <p className="truncate text-slate-500 font-medium text-xs tracking-tight mt-0.5">
               {isNew ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel }) : AdminI18n.t('collection.edit.editSubtitle', { name: resolvedTitleValue || singularCollectionLabel.toLowerCase() })}
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             {!isNew && (
               <div className="hidden lg:block relative group">
                  <Input 

@@ -52,7 +52,7 @@ export class EditPageSidebar extends PureReactor {
       setActiveVersionId, loadMoreRevisions, hasMoreRevisions
     } = this;
     return (
-      <div className="lg:col-span-1 space-y-6">
+      <div className="min-w-0 space-y-6">
         <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
         <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
