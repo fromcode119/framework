@@ -622,3 +622,21 @@ html.dark {
 @container (min-width: 32rem) {
   .fc-edit-fields__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ── A collection list: a table where it fits, a card per record where it does not. ──
+   Decided by the LIST's width, not the window's. The sidebar and an open sub-menu leave a 1280px
+   window with a list under 700px wide, where a table of six columns overflows and the actions pinned
+   to its right edge cover whatever columns sit under them. */
+.fc-collection-list { container-type: inline-size; }
+.fc-collection-list .fc-list-table,
+.fc-collection-list .fc-list-table-only { display: none; }
+@container (min-width: 960px) {
+  .fc-collection-list .fc-list-table { display: block; }
+  .fc-collection-list .fc-list-table-only { display: block; }
+  .fc-collection-list .fc-list-cards { display: none; }
+}
+/* Open-on-site and duplicate sit beside edit only when the list has room; the ⋯ menu always has them. */
+.fc-collection-list .fc-list-wide-action { display: none; }
+@container (min-width: 1180px) {
+  .fc-collection-list .fc-list-wide-action { display: inline-flex; }
+}

@@ -5,6 +5,8 @@ import { CollectionAccess } from '@/lib/collection-access';
 import { CollectionArchive } from '@fromcode119/core/client';
 
 import { CollectionListPageService } from '@/components/collection/list/page-service';
+import { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
+import { ListColumnDecorator } from '@/components/collection/list/list-column-decorator';
 import type { ICollectionListPageViewModel } from '@/components/collection/list/interfaces/collection-list-page-view-model.interface';
 
 /**
@@ -24,14 +26,22 @@ export class CollectionListPageViewModelBuilder {
     const statusOptions = CollectionListPageService.resolveStatusOptions(statusField);
     const allColumns = CollectionListPageService.buildAllColumns(collection);
     const selectFilterFields = CollectionListPageService.resolveSelectFilterFields(collection);
-    const quickEditFields = CollectionListPageService.resolveQuickEditFields(collection);
+    const layout = CollectionListLayout.from(collection);
+    layout.reportRefused(resolvedSlug);
+    const quickEditFields = layout.rowFields;
     const columnById = new Map(allColumns.map((col: any) => [col.id, col]));
     const ordered = self.state.visibleColumnIds.map((id: string) => columnById.get(id)).filter(Boolean);
-    const columns = ordered.length ? ordered : allColumns.slice(0, 1);
+    const access = CollectionAccess.forList(self.props.user, collection);
+    const cellContext = {
+      collection, layout, access, resolvedSlug, theme, pluginSettings: self.state.pluginSettings,
+      onSaved: () => self.fetchData(self.state.page),
+    };
+    const columns = ListColumnDecorator.decorate(ordered.length ? ordered : allColumns.slice(0, 1), cellContext);
+    const cardCells = ListColumnDecorator.cells(allColumns, cellContext);
 
     return {
       router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
-      pageSize: self.pageSize, frontendUrl, access: CollectionAccess.forList(self.props.user, collection),
+      pageSize: self.pageSize, frontendUrl, access,
       data: self.state.data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
       loadError: self.state.loadError,
       search: self.state.search, setSearch: (v: any) => self.updateState('search', v),
@@ -59,7 +69,7 @@ export class CollectionListPageViewModelBuilder {
       quickEditStatus: self.state.quickEditStatus, setQuickEditStatus: (v: any) => self.updateState('quickEditStatus', v),
       quickEditFields, deleteDialogState: self.state.deleteDialogState, setDeleteDialogState: (v: any) => self.updateState('deleteDialogState', v),
       deleteLoading: self.state.deleteLoading, setDeleteLoading: (v: any) => self.updateState('deleteLoading', v),
-      statusOptions, allColumns, selectFilterFields, columns,
+      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns,
       setLoading: (v: any) => self.updateState('loading', v),
       fetchData: (targetPage?: number) => self.fetchData(targetPage),
       handleExport: (format: ExportFormat, ids?: string[]) => self.handleExport(format, ids)

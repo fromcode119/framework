@@ -17,12 +17,12 @@ export class CollectionListPageProps {
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
-      statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access
+      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access
     } = state;
 
     const toolbarProps = {
       filterBarProps: {
-        collection, slug, theme, search, setSearch, statusFilter, setStatusFilter, statusOptions, setPage,
+        collection, slug, theme, total, search, setSearch, sort, onSort: handleSort, statusFilter, setStatusFilter, statusOptions, setPage,
         archivable, showArchived, setShowArchived,
         showColumnsMenu, setShowColumnsMenu, columnsMenuRef, allColumns, visibleColumnIds, stickyColumnIds,
         toggleColumn: (columnId: string) => CollectionListPageActions.toggleColumn({ columnId, pluginSlug, resolvedSlug, setVisibleColumnIds }),
@@ -44,6 +44,7 @@ export class CollectionListPageProps {
 
     const tableProps = {
       collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort, access,
+      layout, cardCells, pageSize,
       stickyColumnIds,
       onArchive: archivable ? (id: string, archiving: boolean) => handleArchive([id], archiving) : undefined,
       onPageChange: setPage,
@@ -52,10 +53,8 @@ export class CollectionListPageProps {
       selectedIds, setSelectedIds, quickEditExpandedId, quickEditLoadingId, quickEditSavingId, quickEditData, setQuickEditData,
       quickEditStatus, quickEditFields, pluginSettings, frontendUrl,
       permalinkStructure: settings?.permalink_structure,
-      onDelete: (id: string, event: React.MouseEvent) => {
-        event.stopPropagation();
-        setDeleteDialogState({ mode: 'single', id });
-      },
+      onDelete: (id: string) => setDeleteDialogState({ mode: 'single', id }),
+      onNavigate: (href: string) => router.push(href),
       onQuickEditOpen: (row: any, event: React.MouseEvent) => CollectionListPageActions.handleQuickEditOpen({
         row, event, resolvedSlug, quickEditExpandedId, setQuickEditExpandedId, setQuickEditStatus,
         setQuickEditLoadingId, setQuickEditData, setQuickEditInitialData

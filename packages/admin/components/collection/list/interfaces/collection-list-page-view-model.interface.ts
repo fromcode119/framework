@@ -1,3 +1,6 @@
+import type { ReactNode } from 'react';
+import type { QuickEditField } from '@/components/collection/list/quick-edit-field';
+import type { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
 import type { CollectionAccess } from '@/lib/collection-access';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
@@ -56,7 +59,11 @@ export interface ICollectionListPageViewModel {
   setQuickEditInitialData: React.Dispatch<React.SetStateAction<Record<string, any>>>;
   quickEditStatus: { type: NotificationType; message: string } | null;
   setQuickEditStatus: React.Dispatch<React.SetStateAction<{ type: NotificationType; message: string } | null>>;
-  quickEditFields: any[];
+  quickEditFields: readonly QuickEditField[];
+  /** How records read in the list, from the collection's `admin.list`. */
+  layout: CollectionListLayout;
+  /** Cell renderers by field name for the phone cards, in-place editing applied. */
+  cardCells: ReadonlyMap<string, (row: any) => ReactNode>;
   deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null;
   setDeleteDialogState: React.Dispatch<React.SetStateAction<{ mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null>>;
   deleteLoading: boolean;

@@ -1,19 +1,21 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import type { Dispatch, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
+import type { Dispatch, KeyboardEvent, ReactNode, SetStateAction } from 'react';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
+import { QuickEditField } from '@/components/collection/list/quick-edit-field';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * The form that opens under a row: the fields the collection declared in `admin.list.quickEdit.row`,
+ * each with its own control and width, saved together without leaving the list.
+ */
 export class CollectionQuickEditCard extends PureReactor {
   @prop declare row: any;
   @prop declare collection: any;
   @prop declare resolvedSlug: string;
-  @prop declare quickEditFields: any[];
+  @prop declare quickEditFields: readonly QuickEditField[];
   @prop declare quickEditData: Record<string, any>;
   @prop declare setQuickEditData: Dispatch<SetStateAction<Record<string, any>>>;
   @prop declare quickEditStatus: { type: NotificationType; message: string } | null;
@@ -24,94 +26,76 @@ export class CollectionQuickEditCard extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare pluginSettings: Record<string, any>;
 
-  render(): ReactNode {
-    const {
-      row,
-      collection,
-      resolvedSlug,
-      quickEditFields,
-      quickEditData,
-      setQuickEditData,
-      quickEditStatus,
-      isLoadingRow,
-      isSavingRow,
-      onSave,
-      onClose,
-      theme,
-      pluginSettings
-    } = this;
-    const rowId = String(row.id);
+  @bound private handleKey(event: KeyboardEvent): void {
+    if (event.key === 'Escape') this.onClose();
+    if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
+      event.preventDefault();
+      this.onSave();
+    }
+  }
 
+  private renderStatus(): ReactNode {
+    const status = this.quickEditStatus;
+    if (!status) return null;
+    const tone = status.type === NotificationType.SUCCESS
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-300 dark:border-emerald-500/30'
+      : 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-300 dark:border-rose-500/30';
+    return <div className={`mb-4 rounded-xl border px-4 py-2.5 text-[13px] font-semibold ${tone}`}>{status.message}</div>;
+  }
+
+  private renderFields(): ReactNode {
+    if (this.isLoadingRow) {
+      return <div className="py-10 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>;
+    }
+    if (!this.quickEditFields.length) {
+      return <div className="py-6 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.noFields')}</div>;
+    }
     return (
-      <Card className={`${theme === ThemeMode.DARK ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}`}>
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 dark:border-slate-800">
-          <div>
-            <h3 className={`text-base font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('collection.quickEdit.title')}</h3>
-            <p className="text-[11px] font-semibold tracking-wide text-slate-400">
-              {collection?.name || resolvedSlug} · #{rowId}
-            </p>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-3">
+        {this.quickEditFields.map((entry) => (
+          <div key={entry.name} className={`min-w-0 ${entry.spanClass}`}>
+            <FieldRenderer
+              field={entry.field}
+              value={this.quickEditData[entry.name]}
+              onChange={(nextValue) => this.setQuickEditData((prev) => ({ ...prev, [entry.name]: nextValue }))}
+              theme={this.theme as any}
+              collectionSlug={this.resolvedSlug}
+              pluginSettings={this.pluginSettings}
+              isNew={false}
+            />
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            className="p-2 rounded-lg text-slate-500 hover:text-slate-800 dark:hover:text-white transition-colors"
-          >
-            <FrameworkIcons.Close size={16} />
-          </button>
-        </div>
+        ))}
+      </div>
+    );
+  }
 
-        <div className="p-5">
-          {quickEditStatus && (
-            <div
-              className={`mb-4 rounded-xl px-4 py-3 text-sm font-semibold ${
-                quickEditStatus.type === NotificationType.SUCCESS
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-rose-50 text-rose-700 border border-rose-200'
-              }`}
+  render(): ReactNode {
+    return (
+      <div onKeyDown={this.handleKey} onClick={(event) => event.stopPropagation()} className="px-1 py-1 sm:px-2">
+        {this.renderStatus()}
+        {this.renderFields()}
+        <div className="mt-4 flex flex-col-reverse sm:flex-row sm:items-center gap-2">
+          <p className="hidden sm:block flex-1 text-[12px] font-medium text-slate-400">{AdminI18n.t('collection.quickEdit.hint')}</p>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={this.onClose}
+              className="flex-1 sm:flex-none h-9 px-4 rounded-lg border text-[13px] font-semibold bg-white border-slate-200 text-slate-700 hover:bg-slate-50 dark:bg-slate-900 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
             >
-              {quickEditStatus.message}
-            </div>
-          )}
-
-          {isLoadingRow ? (
-            <div className="py-12 text-center text-sm font-semibold text-slate-500">{AdminI18n.t('collection.quickEdit.loading')}</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {quickEditFields.map((field: any) => (
-                <FieldRenderer
-                  key={field.name}
-                  field={field}
-                  value={quickEditData[field.name]}
-                  onChange={(nextValue) =>
-                    setQuickEditData((prev) => ({
-                      ...prev,
-                      [field.name]: nextValue
-                    }))
-                  }
-                  theme={theme as any}
-                  collectionSlug={resolvedSlug}
-                  pluginSettings={pluginSettings}
-                  isNew={false}
-                />
-              ))}
-            </div>
-          )}
+              {AdminI18n.t('common.cancel')}
+            </button>
+            <button
+              type="button"
+              onClick={this.onSave}
+              disabled={this.isLoadingRow || this.isSavingRow}
+              className="flex-1 sm:flex-none h-9 px-4 rounded-lg text-[13px] font-semibold inline-flex items-center justify-center gap-1.5 bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60"
+            >
+              <FrameworkIcons.Save size={14} />
+              {AdminI18n.t(this.isSavingRow ? 'collection.quickEdit.saving' : 'collection.quickEdit.saveChanges')}
+            </button>
+          </div>
         </div>
-
-        <div className="px-5 py-4 border-t border-slate-200 dark:border-slate-800 flex items-center justify-end gap-2">
-          <Button variant={ButtonVariant.GHOST} onClick={onClose}>
-            {AdminI18n.t('common.close')}
-          </Button>
-          <Button
-            onClick={onSave}
-            isLoading={isSavingRow}
-            icon={<FrameworkIcons.Save size={14} />}
-            className="px-5"
-          >
-            {AdminI18n.t('common.save')}
-          </Button>
-        </div>
-      </Card>
+      </div>
     );
   }
 }

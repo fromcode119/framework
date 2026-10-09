@@ -2,6 +2,7 @@ import { CollectionKind } from '@core/enums/collection-kind.enum';
 import type { IAccess } from '@core/interfaces/access.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
+import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
 
 export interface ICollection {
   slug: string;
@@ -110,6 +111,8 @@ export interface ICollection {
     /** The operator cannot change rows here. See `disableCreate`. */
     disableEdit?: boolean;
     defaultColumns?: string[];
+    /** How records read in the admin list and which fields can be changed from it. */
+    list?: ICollectionListView;
     group?: string;
     icon?: string;
     hidden?: boolean | ((args: { user: any }) => boolean);

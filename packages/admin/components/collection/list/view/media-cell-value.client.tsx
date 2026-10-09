@@ -15,6 +15,8 @@ export class CollectionListMediaCellValue extends AdminComponent {
   private static readonly PREVIEWS = new Map<string, Promise<IMediaRelationPreview | null>>();
 
   @prop declare raw: any;
+  /** The larger thumbnail alone, for a phone card where the count would take the title's room. */
+  @prop declare thumbnail?: boolean;
 
   @state private preview: IMediaRelationPreview | null = null;
   private runToken = 0;
@@ -62,12 +64,12 @@ export class CollectionListMediaCellValue extends AdminComponent {
     const preview = this.preview;
     return (
       <span className="inline-flex items-center gap-2" title={preview?.filename || undefined}>
-        <span className="w-10 h-10 shrink-0 rounded-md overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400">
+        <span className={`${this.thumbnail ? 'w-14 h-14 rounded-lg' : 'w-10 h-10 rounded-md'} shrink-0 overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800 inline-flex items-center justify-center text-slate-400`}>
           {this.isImage
             ? <img src={preview!.url} alt={preview!.filename || ''} loading="lazy" className="w-full h-full object-cover" />
             : <FrameworkIcons.File size={16} />}
         </span>
-        {count > 1 ? <span className="text-[11px] font-semibold text-slate-500">+{count - 1}</span> : null}
+        {count > 1 && !this.thumbnail ? <span className="text-[11px] font-semibold text-slate-500">+{count - 1}</span> : null}
       </span>
     );
   }

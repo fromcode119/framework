@@ -28,7 +28,7 @@ export class CollectionListPageLayout extends PureReactor {
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
       <CollectionListHeader collection={this.collection} pluginSlug={this.pluginSlug} slug={this.slug} theme={this.theme} canCreate={this.tableProps.access.canCreate} includeAction={this.tableProps.access.allowsPluginAction} />
-      <div className="flex-1 w-full px-6 lg:px-12 py-12 space-y-8">
+      <div className="fc-collection-list flex-1 w-full px-3 sm:px-6 lg:px-12 py-5 sm:py-8 lg:py-10 space-y-5 sm:space-y-6">
         <Slot
           name={`admin.collection.${this.slotSlug}.list.header`}
           props={{ collection: this.collection, pluginSlug: this.pluginSlug, resolvedSlug: this.resolvedSlug, total: this.total, page: this.page, search: this.search }}

@@ -1,5 +1,6 @@
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IFieldInput } from '@core/interfaces/field-input.interface';
+import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
 
 /**
  * A collection as a PLUGIN declares it, before the framework normalizes it.
@@ -60,6 +61,7 @@ export interface ICollectionInput extends Omit<
   readonly admin?: {
     readonly useAsTitle?: string;
     readonly defaultColumns?: readonly string[];
+    readonly list?: ICollectionListView;
     readonly group?: string;
     readonly icon?: string;
     readonly hidden?: boolean | ((args: { user: any }) => boolean);

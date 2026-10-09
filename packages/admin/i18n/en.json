@@ -111,9 +111,7 @@
       "deleteOneText": "Are you sure you want to delete this record? This action is permanent and cannot be undone.",
       "deleteManyConfirm": "Delete Records",
       "deleteOneConfirm": "Delete Record",
-      "allStatuses": "All Statuses",
       "columns": "Columns",
-      "allOf": "All {{label}}",
       "usersTitle": "User Management",
       "usersDescription": "Manage system users, roles and security permissions.",
       "createUser": "Create User",
@@ -147,8 +145,24 @@
       "archiveNothing": "Nothing else was linked to these records.",
       "archiveFailed": "Archiving failed: {{message}}",
       "restoreFailed": "Restoring failed: {{message}}",
-      "showArchived": "Show archived records",
-      "hideArchived": "Showing archived records — click to go back to active ones"
+      "filters": "Filters",
+      "filterAll": "All",
+      "filterStatus": "Status",
+      "filterShow": "Show",
+      "viewActive": "Active",
+      "clearFilters": "Clear all",
+      "showResults": "Show {{count}} results",
+      "removeFilter": "Remove the {{label}} filter",
+      "sortBy": "Sort by",
+      "sortOrder": "Order",
+      "sortDescending": "Descending",
+      "sortAscending": "Ascending",
+      "inlineEditHint": "Click to change {{label}}",
+      "moreActions": "More actions",
+      "openOnSite": "Open on site",
+      "edit": "Edit",
+      "delete": "Delete",
+      "selectRecord": "Select this record"
     },
     "edit": {
       "permalinkCard": "Preview & Permalink",
@@ -265,8 +279,11 @@
       "updated": "Last Update"
     },
     "quickEdit": {
-      "title": "Quick Edit",
-      "loading": "Loading record..."
+      "loading": "Loading record...",
+      "saving": "Saving…",
+      "saveChanges": "Save changes",
+      "hint": "Enter saves · Esc closes · images and everything else are in the full editor",
+      "noFields": "Nothing in this collection can be changed from the list."
     },
     "recordsInThisCollectionAre": "Records in this collection are written by the runtime. Open the list to see the ones that exist.",
     "componentNotRegistered": "Component \"{{name}}\" not registered by any plugin.",
