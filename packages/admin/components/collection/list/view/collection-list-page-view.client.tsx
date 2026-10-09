@@ -96,10 +96,18 @@ export class CollectionListPageView extends Reactor {
     this.updateState('sort', newSort);
   }
 
+  /**
+   * Only the newest request's answer is shown. The list fetches on mount and again as soon as its sort
+   * is set from the collection's default (or the saved one); both were applied as they arrived, so a
+   * slower first answer could replace the sorted one — the list showed unsorted on some loads only.
+   */
+  private fetchSequence = 0;
+
   async fetchData(targetPage?: number): Promise<void> {
     const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
     const resolvedSlug = collection?.slug || this.slug;
     const page = targetPage ?? this.page;
+    const sequence = ++this.fetchSequence;
     this.updateState('loading', true);
     try {
       const result = await RecordOperations.fetchCollectionData({
@@ -107,16 +115,18 @@ export class CollectionListPageView extends Reactor {
         search: this.debouncedSearch, sort: this.sort,
         statusFilter: this.statusFilter, fieldFilters: this.fieldFilters, showArchived: this.showArchived
       });
+      if (sequence !== this.fetchSequence) return;
       this.loadError = '';
       this.data = result.docs;
       this.total = result.totalDocs;
     } catch (error: any) {
+      if (sequence !== this.fetchSequence) return;
       // Without this the table fell back to "No records found" — a positive claim that the collection
       // is empty, when in fact the request failed.
       console.error('Failed to fetch collection data:', error);
       this.loadError = error?.message || AdminI18n.t('collection.list.loadFailed');
     } finally {
-      this.updateState('loading', false);
+      if (sequence === this.fetchSequence) this.updateState('loading', false);
     }
   }
 

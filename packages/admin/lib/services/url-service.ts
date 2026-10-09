@@ -1,4 +1,5 @@
 import { BaseService } from '@/lib/services/base-service';
+import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 
 /**
  * Service for URL construction and manipulation utilities.
@@ -12,6 +13,15 @@ import { BaseService } from '@/lib/services/base-service';
  * ```
  */
 export class UrlService extends BaseService {
+  /**
+   * Where the site this console is bound to serves its pages (its declared storefront host), or '' in
+   * the platform scope or when unknown. A plugin screen linking to a page uses it, so the link opens on
+   * the site rather than on the console, which answers 404 for a page path.
+   */
+  storefrontUrl(): Promise<string> {
+    return SiteStorefrontClient.current();
+  }
+
   /**
    * Builds a URL from a base path and optional query parameters.
    * Handles existing query strings gracefully.

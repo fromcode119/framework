@@ -135,6 +135,22 @@ export class UiPreferenceService extends BaseService {
     this.browserState.writeLocalString(this.buildCollectionSortStorageKey(pluginSlug, collectionSlug), String(sort || '').trim());
   }
 
+  /**
+   * Where this tab last showed a collection's list — its page, kept in the address. The edit screen's
+   * way back returns there; its plain list link always opened page 1. Per tab (session), not saved.
+   */
+  readCollectionListHref(pluginSlug: string, collectionSlug: string): string {
+    return String(this.browserState.readSessionJson<string>(this.buildCollectionListHrefStorageKey(pluginSlug, collectionSlug), '') || '');
+  }
+
+  writeCollectionListHref(pluginSlug: string, collectionSlug: string, href: string): void {
+    this.browserState.writeSessionJson(this.buildCollectionListHrefStorageKey(pluginSlug, collectionSlug), String(href || ''));
+  }
+
+  private buildCollectionListHrefStorageKey(pluginSlug: string, collectionSlug: string): string {
+    return `admin.ui.list-href_${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
+  }
+
   private buildNavExpandedStorageKey(persistenceKey: string): string {
     const normalizedKey = String(persistenceKey || '').trim();
     return normalizedKey ? `${ClientRuntimeConstants.ADMIN_UI.STORAGE_PREFIXES.NAV_EXPANDED}${normalizedKey}` : '';
