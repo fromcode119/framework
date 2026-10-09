@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/view/input.client';
 import { StructuredReadOnlyBlock } from '@/components/collection/fields/view/structured-read-only-block.client';
 import { StructuredReadOnlyGroup } from '@/components/collection/fields/view/structured-read-only-group.client';
 import { StructuredReadOnlyTable } from '@/components/collection/fields/view/structured-read-only-table.client';
+import { StructuredReadOnlyList } from '@/components/collection/fields/view/structured-read-only-list.client';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -112,6 +113,10 @@ export class StructuredReadOnlyField extends Reactor {
 
     if (node.kind === StructuredNodeKind.ARRAY_TABLE) {
       return <StructuredReadOnlyTable node={node} isDark={isDark} keyLabels={this.keyLabels} />;
+    }
+
+    if (StructuredReadOnlyFieldService.isValueList(node)) {
+      return <StructuredReadOnlyList node={node} isDark={isDark} />;
     }
 
     if (node.kind === StructuredNodeKind.SCALAR) {

@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminPathUtils } from '@/lib/admin-path';
 
 export class FieldLocaleSwitcher extends PureReactor {
   @prop declare compact?: boolean;
@@ -43,13 +45,27 @@ export class FieldLocaleSwitcher extends PureReactor {
         </button>
 
         {isOpen && (
+          // `role="menu"` also lifts the input's switcher wrapper above the next field while open
+          // (`has-[[role=menu]]:z-50` there): the wrapper is its own stacking context at z-20, so
+          // raising only this menu left the next field's chip painted over it.
           <div
+            role="menu"
             className={`absolute right-0 mt-2 min-w-[220px] rounded-xl border shadow-xl z-30 p-1.5 ${
               theme === ThemeMode.DARK
                 ? 'bg-slate-950 border-slate-800'
                 : 'bg-white border-slate-200'
             }`}
           >
+            {localeRegistry.length ? null : (
+              // A site with no languages configured still saves text under a fallback code, so the chip
+              // stays; the menu says why it has nothing to switch to and where that is set.
+              <p className={`px-2.5 py-2 text-xs font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}>
+                {AdminI18n.t('ui.locale.noneConfigured')}{' '}
+                <a className="font-semibold text-indigo-600 underline dark:text-indigo-300" href={AdminPathUtils.toAdminPath('/settings/localization')}>
+                  {AdminI18n.t('ui.locale.configure')}
+                </a>
+              </p>
+            )}
             {localeRegistry.map((locale) => {
               const isActive = locale.code === activeLocale;
               return (

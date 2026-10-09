@@ -26,7 +26,7 @@ export interface IField {
   required?: boolean;
   unique?: boolean;
   defaultValue?: any;
-  options?: { label: string; value: any }[]; // For select type
+  options?: { label: string; value: any; tone?: string }[]; // For select type; `tone` = list badge colour
   relationTo?: string | string[]; // For relationship/upload type
   /**
    * A relationship to whichever collection REGISTERED itself as this entity's provider, instead of a

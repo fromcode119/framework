@@ -126,6 +126,13 @@ export class StructuredReadOnlyFieldService {
     });
   }
 
+  /** A list holding only plain values (no objects, no nested lists, nothing absent) — shown as chips. */
+  static isValueList(node: IStructuredNode): boolean {
+    return node.kind === StructuredNodeKind.ARRAY
+      && (node.items ?? []).length > 0
+      && (node.items ?? []).every((item) => item.kind === StructuredNodeKind.SCALAR);
+  }
+
   static topLevelCount(node: IStructuredNode): number {
     if (node.kind === StructuredNodeKind.OBJECT) return node.entries?.length ?? 0;
     if (node.kind === StructuredNodeKind.ARRAY || node.kind === StructuredNodeKind.ARRAY_TABLE) return node.items?.length ?? 0;

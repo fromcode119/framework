@@ -1,6 +1,7 @@
 import React from 'react';
 import type { ReactNode } from 'react';
 import { Badge } from '@/components/ui/view/badge.client';
+import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { CollectionListRelationshipCellValue } from '@/components/collection/list/view/relationship-cell-value.client';
 import { CollectionListMediaCellValue } from '@/components/collection/list/view/media-cell-value.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
@@ -26,6 +27,10 @@ export class RecordCellRenderers {
     header: string;
     raw: any;
   }): ReactNode {
+    // A select whose option names a tone shows as a badge in that tone, in any column: the collection
+    // says what "paid" or "cancelled" looks like, the list never guesses from the word.
+    const tone = this.optionTone(field, raw);
+    if (tone) return React.createElement(Badge, { variant: BadgeVariant.resolve(tone) }, this.optionLabel(field, raw) || String(raw));
     if (columnName === 'status') return this.renderStatusBadge(raw, this.optionLabel(field, raw));
 
     if (CollectionListUtils.shouldRenderBooleanBadge(field, columnName, header, raw)) {
@@ -67,6 +72,14 @@ export class RecordCellRenderers {
    * The label the field declares for a stored option value — the words the operator picked in the
    * editor, in the console's language — or '' when the value is not one of its options.
    */
+  /** The tone a select option declares for this value (`success`, `warning`, `danger`, `info`, `default`), or ''. */
+  static optionTone(field: any, raw: any): string {
+    const value = String(raw ?? '').trim();
+    if (!value || !Array.isArray(field?.options)) return '';
+    const option = field.options.find((entry: any) => String(entry?.value ?? entry ?? '') === value);
+    return option && typeof option === 'object' ? String(option.tone ?? '').trim() : '';
+  }
+
   static optionLabel(field: any, raw: any): string {
     const value = String(raw ?? '').trim();
     if (!value || !Array.isArray(field?.options)) return '';

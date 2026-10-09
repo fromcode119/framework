@@ -598,7 +598,11 @@
     "noDataForThisRange": "Няма данни за този период",
     "peak": "· връх {{value}}",
     "bytesOf": "{{loaded}} от {{total}}",
-    "rangeDays": "{{days}} дни"
+    "rangeDays": "{{days}} дни",
+    "locale": {
+      "noneConfigured": "Този сайт няма настроени езици, така че текстът се записва под резервен код.",
+      "configure": "Настройте езиците"
+    }
   },
   "shell": {
     "site": {
