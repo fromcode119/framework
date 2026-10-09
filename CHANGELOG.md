@@ -6,13 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.356] - 2026-10-09
+
+### Fixed
+
+- **admin**: decimals in number fields, status badge tones, an explained empty language menu, value lists as chips ([#841](https://github.com/fromcode119/framework/pull/841))
+
 ## [0.2.355] - 2026-10-08
 
 ### Added
 
+- a plugin screen can download a file its api hands out, as the console's own requests are sent ([#839](https://github.com/fromcode119/framework/pull/839))
 - a Jobs page shows what runs on its own, and every run is recorded ([#837](https://github.com/fromcode119/framework/pull/837))
 - **core**: a plugin can read the bytes of one of its site's media files ([#836](https://github.com/fromcode119/framework/pull/836))
-- a plugin screen can download a file its api hands out, as the console's own requests are sent ([#839](https://github.com/fromcode119/framework/pull/839))
 
 ### Fixed
 
@@ -32,8 +38,8 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **database**: a checkbox field is a boolean column, and existing text ones are converted ([#829](https://github.com/fromcode119/framework/pull/829))
 - **plugins**: a held plugin's changes name only what changed, not the network grant it still asks for ([#830](https://github.com/fromcode119/framework/pull/830))
+- **database**: a checkbox field is a boolean column, and existing text ones are converted ([#829](https://github.com/fromcode119/framework/pull/829))
 
 ## [0.2.352] - 2026-10-08
 
