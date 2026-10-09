@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.359] - 2026-10-09
+
+### Added
+
+- **admin**: collection lists read on a phone, edit in place, and keep their actions in view ([#847](https://github.com/fromcode119/framework/pull/847))
+
+### Fixed
+
+- **ci**: pull the test services from the Docker Hub mirror ([#849](https://github.com/fromcode119/framework/pull/849))
+
 ## [0.2.358] - 2026-10-09
 
 ### Fixed
