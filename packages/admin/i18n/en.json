@@ -561,7 +561,11 @@
     "noDataForThisRange": "No data for this range",
     "peak": "· peak {{value}}",
     "bytesOf": "{{loaded}} of {{total}}",
-    "rangeDays": "{{days}}d"
+    "rangeDays": "{{days}}d",
+    "locale": {
+      "noneConfigured": "This site has no languages set up, so text is saved under a fallback code.",
+      "configure": "Set up languages"
+    }
   },
   "shell": {
     "site": {

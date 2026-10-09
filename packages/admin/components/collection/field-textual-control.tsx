@@ -59,7 +59,7 @@ export class FieldTextualControl extends PureReactor {
             inputClassName={switcher ? 'pr-16' : ''}
           />
           {switcher && (
-            <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
+            <div className="absolute right-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
           )}
         </div>
       );
@@ -82,7 +82,7 @@ export class FieldTextualControl extends PureReactor {
             inputClassName={`font-mono text-[12px] ${switcher ? 'pr-16' : ''}`}
           />
           {switcher && (
-            <div className="absolute right-2 top-2 z-20">{localeSwitcher(true)}</div>
+            <div className="absolute right-2 top-2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
           )}
         </div>
       );
@@ -100,7 +100,7 @@ export class FieldTextualControl extends PureReactor {
           inputClassName={switcher ? 'pr-16' : ''}
         />
         {switcher && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">{localeSwitcher(true)}</div>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
         )}
       </div>
     );

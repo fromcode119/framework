@@ -87,7 +87,7 @@ export class FieldTextInput extends PureReactor {
           inputClassName={`${field.name === 'slug' && slugWarning ? 'border-amber-400 focus:ring-amber-400/20 ' : ''}${isLocalizedField && shouldInlineLocaleSwitcher ? 'pr-16' : ''}`}
         />
         {isLocalizedField && shouldInlineLocaleSwitcher && (
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20">{localeSwitcher(true)}</div>
+          <div className="absolute right-2 top-1/2 -translate-y-1/2 z-20 has-[[role=menu]]:z-50">{localeSwitcher(true)}</div>
         )}
         {field.name === 'slug' && slugWarning && (
           <div className="absolute top-full left-0 mt-2 flex items-center gap-2 text-xs font-medium text-amber-500 animate-in fade-in slide-in-from-top-1 px-1">

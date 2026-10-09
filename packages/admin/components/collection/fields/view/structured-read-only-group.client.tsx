@@ -2,6 +2,7 @@ import { StructuredNodeKind } from '@/components/collection/fields/enums/structu
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { StructuredReadOnlyBlock } from '@/components/collection/fields/view/structured-read-only-block.client';
+import { StructuredReadOnlyList } from '@/components/collection/fields/view/structured-read-only-list.client';
 import { StructuredReadOnlyTable } from '@/components/collection/fields/view/structured-read-only-table.client';
 import { StructuredReadOnlyFieldService } from '@/components/collection/fields/structured-read-only-field-service';
 import type { IStructuredEntry } from '@/components/collection/fields/interfaces/structured-entry.interface';
@@ -75,7 +76,9 @@ export class StructuredReadOnlyGroup extends PureReactor {
         {this.renderCaption(entry)}
         {entry.node.kind === StructuredNodeKind.ARRAY_TABLE
           ? <StructuredReadOnlyTable node={entry.node} isDark={isDark} keyLabels={keyLabels} />
-          : <StructuredReadOnlyGroup node={entry.node} depth={depth + 1} isDark={isDark} filterLower={filterLower} keyLabels={keyLabels} />}
+          : StructuredReadOnlyFieldService.isValueList(entry.node)
+            ? <StructuredReadOnlyList node={entry.node} isDark={isDark} />
+            : <StructuredReadOnlyGroup node={entry.node} depth={depth + 1} isDark={isDark} filterLower={filterLower} keyLabels={keyLabels} />}
       </div>
     );
   }
