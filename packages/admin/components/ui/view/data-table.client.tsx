@@ -42,8 +42,14 @@ export class DataTable<T extends { id: any }> extends PureReactor {
 
   /** Measured left offsets for the pinned run, checkbox column included. */
   @state stickyOffsets: number[] = [];
+  /**
+   * The scroll box's visible width. An expanded row spans the whole table, which can be wider than the
+   * screen; its content is pinned to this width so a form opened under a row is never half off-screen.
+   */
+  @state viewportWidth = 0;
 
   private headRow = this.ref<HTMLTableRowElement>();
+  private scroller = this.ref<HTMLDivElement>();
 
   private get pinnedIds(): string[] {
     return this.stickyColumnIds ?? [];
@@ -76,6 +82,8 @@ export class DataTable<T extends { id: any }> extends PureReactor {
    * how wide a column of order numbers or customer names ends up.
    */
   @bound private measureStickyOffsets(): void {
+    const viewportWidth = this.scroller.current?.clientWidth ?? 0;
+    if (viewportWidth !== this.viewportWidth) this.viewportWidth = viewportWidth;
     const row = this.headRow.current;
     if (!row) return;
 
@@ -144,7 +152,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
 
     return (
       <div className={`flex flex-col w-full h-full transition-all duration-300 ${this.loading ? 'opacity-60 pointer-events-none' : ''}`}>
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto" ref={this.scroller}>
           <table className="w-full text-left border-collapse min-w-[600px]">
             <DataTableHead
               columns={columns}
@@ -191,7 +199,11 @@ export class DataTable<T extends { id: any }> extends PureReactor {
                     />
                     {isExpanded && this.renderExpandedRow && (
                       <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
-                        <td className="px-3 py-4" colSpan={totalColumns}>{this.renderExpandedRow(row)}</td>
+                        <td className="py-4" colSpan={totalColumns}>
+                          <div className="sticky left-0 px-3" style={this.viewportWidth ? { width: this.viewportWidth } : undefined}>
+                            {this.renderExpandedRow(row)}
+                          </div>
+                        </td>
                       </tr>
                     )}
                   </Fragment>

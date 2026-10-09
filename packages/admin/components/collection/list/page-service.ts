@@ -101,19 +101,6 @@ export class CollectionListPageService {
     });
   }
 
-  static resolveQuickEditFields(collection: any): any[] {
-    if (!collection) return [];
-    return collection.fields.filter((field: any) => {
-      if (!field?.name) return false;
-      if (field.hidden || field.admin?.hidden) return false;
-      if (field.admin?.readOnly) return false;
-      if (['id', 'createdAt', 'updatedAt', 'created_at', 'updated_at'].includes(field.name)) return false;
-      if (field.type === 'ui') return false;
-      if (['json', 'array', 'richText', 'code', 'upload', 'textarea'].includes(field.type)) return false;
-      return true;
-    });
-  }
-
   static resolveVisibleColumnIds({
     allColumns,
     adminDefaultColumns,

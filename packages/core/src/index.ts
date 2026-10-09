@@ -6,6 +6,7 @@ export * from '@core/layout';
 export * from '@core/plugin/plugin-context';
 export * from '@core/screenshot';
 export * from '@core/collections/interfaces/collection-input.interface';
+export * from '@core/collections/interfaces/collection-list-view.interface';
 export * from '@core/interfaces/field-input.interface';
 export type { IPluginInstallProgress } from '@core/plugin/interfaces/plugin-install-progress.interface';
 export type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
