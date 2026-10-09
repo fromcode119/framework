@@ -102,8 +102,13 @@ export class EditPageBody extends PureReactor {
         ) : (
         <div className="flex items-start gap-3">
           <EditPageSectionNav sections={navSections} theme={theme} />
-          <div className={`flex-1 grid grid-cols-1 ${renderSidebar ? 'lg:grid-cols-3' : ''} gap-8 pb-32`}>
-          <div className={`${renderSidebar ? 'lg:col-span-2' : 'lg:col-span-1'} space-y-6`}>
+          {/* The columns follow the width the form actually has, not the window's: with the menu and a
+              plugin's sub-menu open, a 1280px window leaves the form about 700px, and a sidebar taking a
+              third of that squeezed every field into a sliver. Below the width a sidebar fits beside the
+              form, it moves under it. */}
+          <div className="fc-edit-columns">
+          <div className={`fc-edit-columns__grid ${renderSidebar ? 'fc-edit-columns__grid--sidebar' : ''}`}>
+          <div className="min-w-0 space-y-6">
             <EditPageMain
               standardMainFieldSections={standardMainFieldSections}
               fullWidthMainFieldSections={fullWidthMainFieldSections}
@@ -168,6 +173,7 @@ export class EditPageBody extends PureReactor {
               hasMoreRevisions={hasMoreRevisions}
             />
           )}
+          </div>
           </div>
         </div>
         )}
