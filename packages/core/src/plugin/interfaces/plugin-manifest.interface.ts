@@ -79,7 +79,7 @@ export interface IPluginManifest {
         type: FieldType | string;
         description?: string;
         defaultValue?: any;
-        options?: { label: string; value: any }[];
+        options?: { label: string; value: any; tone?: string }[];
         placeholder?: string;
       }[];
     };

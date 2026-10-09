@@ -13,7 +13,8 @@ import type { IJsonFieldReference } from '@core/interfaces/json-field-reference.
  * Recursive on purpose: `fields` nests for array/group fields, and an interface may reference itself.
  */
 export interface IFieldInput extends Omit<IField, 'options' | 'relationTo' | 'fields' | 'inputAliases' | 'withheldWhen' | 'jsonReferences'> {
-  readonly options?: readonly { readonly label: string; readonly value: any }[];
+  /** `tone`: how a list shows the value as a badge (`success`, `warning`, `danger`, `info`, `default`). */
+  readonly options?: readonly { readonly label: string; readonly value: any; readonly tone?: string }[];
   readonly relationTo?: string | readonly string[];
   readonly fields?: readonly IFieldInput[];
   readonly inputAliases?: readonly string[];
