@@ -73,7 +73,7 @@ export class ColorPicker extends AdminComponent {
   }
 
   render(): ReactNode {
-    const { value = '#000000', onChange, disabled, className = '', size = FieldSize.MD } = this;
+    const { value = '', onChange, disabled, className = '', size = FieldSize.MD } = this;
     const { isOpen, coords } = this;
     const theme = this.theme;
     const rawValue = ColorPickerUtils.coerceColorValue(value);
@@ -86,11 +86,19 @@ export class ColorPicker extends AdminComponent {
         onClick={() => !disabled && (this.isOpen = !isOpen)}
         className={`${UiFieldUtils.getFieldClasses(size, `flex items-center gap-3 cursor-pointer ${isOpen ? 'border-indigo-500 ring-4 ring-indigo-500/10' : ''}`)} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
       >
-        <div
-          className="w-8 h-5 rounded border border-white/10 dark:border-white/20 shadow-sm"
-          style={{ backgroundColor: pickerValue }}
-        />
-        <span className="font-mono uppercase tracking-tighter flex-1">{rawValue || pickerValue}</span>
+        {/* No value shows as not set: an empty colour used to read "#000000" with a black swatch, a
+            value nobody chose, while whatever reads the field used its own default. */}
+        {rawValue ? (
+          <div
+            className="w-8 h-5 rounded border border-white/10 dark:border-white/20 shadow-sm"
+            style={{ backgroundColor: pickerValue }}
+          />
+        ) : (
+          <div className="w-8 h-5 rounded border border-dashed border-slate-300 dark:border-slate-600" />
+        )}
+        {rawValue
+          ? <span className="font-mono uppercase tracking-tighter flex-1">{rawValue}</span>
+          : <span className="flex-1 text-slate-400">{AdminI18n.t('ui.color.notSet')}</span>}
         <FrameworkIcons.Palette size={14} className="text-slate-400" />
       </div>
 

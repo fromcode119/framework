@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.358] - 2026-10-09
+
+### Fixed
+
+- **admin**: edit pages fit the width they have, the section rail names its sections, an empty colour reads as not set ([#845](https://github.com/fromcode119/framework/pull/845))
+
 ## [0.2.357] - 2026-10-09
 
 ### Fixed

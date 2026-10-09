@@ -41,6 +41,12 @@ export class EditPageSectionNav extends Reactor {
   @state stickyTop = 130;
   /** Height available to the rail: viewport minus the sticky header above and the fixed bar below. */
   @state availableHeight = 0;
+  /**
+   * The section whose name is showing, and where. The name is drawn `position: fixed` at the hovered
+   * dot: the dot column clips its overflow (so the rail never runs under the save bar), and a name
+   * positioned inside it was clipped with it — hovering a dot showed nothing at all.
+   */
+  @state hover: { title: string; top: number; left: number } | null = null;
 
   private stickyTopValue = 130;
   private measureTimer?: ReturnType<typeof setTimeout>;
@@ -97,6 +103,15 @@ export class EditPageSectionNav extends Reactor {
     this.activeKey = key;
   }
 
+  @bound private showName(event: { currentTarget: HTMLElement }, title: string): void {
+    const rect = event.currentTarget.getBoundingClientRect();
+    this.hover = { title, top: rect.top + rect.height / 2, left: rect.right + 8 };
+  }
+
+  @bound private hideName(): void {
+    this.hover = null;
+  }
+
   render(): ReactNode {
     const { sections, theme } = this;
     const { activeKey, stickyTop } = this;
@@ -143,6 +158,11 @@ export class EditPageSectionNav extends Reactor {
                     shifting the whole stack on scroll (the "shaking" this replaced). */}
                 <button
                   onClick={() => scrollToSection(section.key)}
+                  onMouseEnter={(event) => this.showName(event, section.title)}
+                  onMouseLeave={this.hideName}
+                  onFocus={(event) => this.showName(event, section.title)}
+                  onBlur={this.hideName}
+                  aria-label={section.title}
                   style={{ position: 'relative', zIndex: 10 }}
                   className="w-2.5 h-2.5 flex items-center justify-center"
                 >
@@ -154,17 +174,6 @@ export class EditPageSectionNav extends Reactor {
                     }`}
                   />
                 </button>
-                {/* Tooltip — must escape the nav's stacking context */}
-                <div
-                  style={{ position: 'absolute', left: 20, zIndex: 9999, top: '50%', transform: 'translateY(-50%)' }}
-                  className={`pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-150 whitespace-nowrap px-2 py-1 rounded-lg text-[11px] font-medium ${
-                    isDark
-                      ? 'bg-slate-800 text-slate-200 border border-slate-700 shadow-lg'
-                      : 'bg-white text-slate-700 border border-slate-200 shadow-md'
-                  }`}
-                >
-                  {section.title}
-                </div>
               </div>
             );
           })}
@@ -178,6 +187,19 @@ export class EditPageSectionNav extends Reactor {
           <FrameworkIcons.ChevronDown size={11} strokeWidth={2.5} />
         </button>
       </div>
+      {this.hover ? (
+        <div
+          role="tooltip"
+          style={{ position: 'fixed', left: this.hover.left, top: this.hover.top, transform: 'translateY(-50%)', zIndex: 9999 }}
+          className={`pointer-events-none whitespace-nowrap px-2 py-1 rounded-lg text-[11px] font-medium ${
+            isDark
+              ? 'bg-slate-800 text-slate-200 border border-slate-700 shadow-lg'
+              : 'bg-white text-slate-700 border border-slate-200 shadow-md'
+          }`}
+        >
+          {this.hover.title}
+        </div>
+      ) : null}
     </div>
     );
   }

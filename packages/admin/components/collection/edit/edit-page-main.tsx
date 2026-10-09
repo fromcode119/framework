@@ -76,8 +76,11 @@ export class EditPageMain extends PureReactor {
             <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
           </div>
         ) : null}
-        <div className="grid grid-cols-1 gap-x-8 gap-y-6 md:grid-cols-2">
-          {section.fields.map(this.renderField)}
+        {/* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */}
+        <div className="fc-edit-fields">
+          <div className="fc-edit-fields__grid">
+            {section.fields.map(this.renderField)}
+          </div>
         </div>
       </Card>
     );

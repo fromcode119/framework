@@ -605,6 +605,24 @@ html.dark {
 .fc-import-card__passphrase-input:focus { outline: 2px solid var(--primary); outline-offset: -1px; }
 .fc-import-card__passphrase-hint { flex: 1 1 100%; font-size: 12.5px; color: var(--muted-foreground); }
 
+/* An edit page's form and sidebar, sized by the width the page actually has.
+   Viewport breakpoints (`lg:grid-cols-3`) measured the window, so with the menu and a plugin's
+   sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
+   A container query measures the area itself: the sidebar sits beside the form only when both fit. */
+.fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-bottom: 8rem; }
+@container (min-width: 56rem) {
+  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+}
+
+/* A section's fields: a `width: 'half'` field sits beside the next only when the card has room for
+   two readable controls; narrower, every field takes the row. */
+.fc-edit-fields { container-type: inline-size; }
+.fc-edit-fields__grid { display: grid; grid-template-columns: minmax(0, 1fr); column-gap: 2rem; row-gap: 1.5rem; }
+@container (min-width: 32rem) {
+  .fc-edit-fields__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 /* ── A collection list: a table where it fits, a card per record where it does not. ──
    Decided by the LIST's width, not the window's. The sidebar and an open sub-menu leave a 1280px
    window with a list under 700px wide, where a table of six columns overflows and the actions pinned
