@@ -32,6 +32,16 @@ export class NumberStepper extends PureReactor {
     return Number.isFinite(step) && step > 0 ? step : 1;
   }
 
+  /**
+   * What the browser accepts when a value is typed: the declared step, or ANY number when none is
+   * declared. Handing it the +/- size (1) made it refuse every decimal — "10,99" in a price was invalid,
+   * nearest 10 or 11 — on each number field that never named a step.
+   */
+  private get typedStep(): number | 'any' {
+    const step = Number(this.step);
+    return Number.isFinite(step) && step > 0 ? step : 'any';
+  }
+
   private clamp(value: number): number {
     let next = value;
     const min = Number(this.min);
@@ -93,7 +103,7 @@ export class NumberStepper extends PureReactor {
           error={error}
           min={min as any}
           max={max as any}
-          step={this.stepSize()}
+          step={this.typedStep as any}
           inputClassName={`${sm ? 'pr-6 text-center' : 'pr-8'} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
         />
         {/* The stepper "well" sits INSIDE the input's 1px border (inset by a pixel on both axes) rather
