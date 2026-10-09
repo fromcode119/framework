@@ -22,11 +22,14 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    # Service images come from Google's mirror of Docker Hub's official images. Pulled from Docker Hub
+    # itself they are anonymous, and the CI runners share one address: once the hourly allowance is
+    # spent, every job fails at `docker pull` before a single test runs.
     services:
       # The tenant suites need a REAL PostgreSQL: row-level security is a property of the server, and
       # the driver's own fallbacks would make a mock agree with whatever it was told.
       postgres:
-        image: postgres:16
+        image: mirror.gcr.io/library/postgres:16
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: fromcode
@@ -41,7 +44,7 @@ jobs:
       # A job surviving the process that enqueued it, a failed job being retried, and a failure being
       # audible are all properties of the broker rather than of the adapter class.
       redis:
-        image: redis:7
+        image: mirror.gcr.io/library/redis:7
         ports:
           - 6379:6379
         options: >-
@@ -53,7 +56,7 @@ jobs:
       # Every bug the MySQL read suite guards was silent: `find()` returning the first row instead of
       # the rows, `count()` answering 0 for every table. None is visible without a server.
       mysql:
-        image: mysql:8
+        image: mirror.gcr.io/library/mysql:8
         env:
           MYSQL_ROOT_PASSWORD: rootpw
         ports:
