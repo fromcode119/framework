@@ -20,7 +20,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'onArchive' | 'onNavigate' | 'access' | 'compact'>;
+  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'onArchive' | 'onNavigate' | 'onRowChanged' | 'access' | 'compact'>;
 
   @prop declare row: any;
   @prop declare collection: any;
@@ -38,9 +38,11 @@ export class CollectionListRowActions extends PureReactor {
   @prop declare onArchive?: (id: string, archiving: boolean) => void;
   /** Goes to an admin path, as a link would — the menu's items are buttons, not links. */
   @prop declare onNavigate: (href: string) => void;
+  /** Reloads the list — handed to a plugin's row action as `refresh`, for after it changed the record. */
+  @prop declare onRowChanged: () => void;
   /** What the signed-in user may do to this record — decides which actions are offered. */
   @prop declare access: CollectionAccess;
-  /** The phone card: only quick edit, edit and the menu. */
+  /** The card: the plugin's row actions, quick edit, edit and the menu — open-on-site and duplicate move into the menu. */
   @prop declare compact?: boolean;
 
   private static readonly ICON = 'inline-flex items-center justify-center w-9 h-9 rounded-lg transition-colors text-slate-400 hover:bg-indigo-50 hover:text-indigo-600 dark:text-slate-500 dark:hover:bg-indigo-500/10 dark:hover:text-indigo-400';
@@ -110,14 +112,17 @@ export class CollectionListRowActions extends PureReactor {
     const expanded = this.quickEditExpandedId === this.rowId;
     const menuItems = this.menuItems;
     return (
-      <div className="ml-auto flex flex-nowrap items-center justify-end gap-0.5 whitespace-nowrap" onClick={this.stop}>
-        {!this.compact ? (
-          <>
-            <Slot name={`admin.collection.${slotSlug}.list.table.actions`} include={access.allowsPluginAction} props={{ row, collection, pluginSlug, resolvedSlug }} />
-            <Slot name="admin.collection.list.table.actions" include={access.allowsPluginAction} props={{ row, collection, pluginSlug, resolvedSlug }} />
-            {this.renderWideOnly()}
-          </>
-        ) : null}
+      // Two groups that each stay on one line: on a narrow card the plugin's actions and the built-in
+      // icons wrap as wholes, instead of the last icon dropping alone or the row running off the card.
+      <div className={`ml-auto flex items-center justify-end gap-x-0.5 gap-y-1.5 whitespace-nowrap ${this.compact ? 'flex-wrap' : 'flex-nowrap'}`} onClick={this.stop}>
+        {/* A plugin's own row actions — "Payment received" on an order — on a card as in the table: on a
+            phone they are the fastest way to act on a record, and leaving them out hid them entirely. */}
+        <span className="inline-flex flex-nowrap items-center gap-0.5 empty:hidden">
+          <Slot name={`admin.collection.${slotSlug}.list.table.actions`} include={access.allowsPluginAction} props={{ row, collection, pluginSlug, resolvedSlug, compact: Boolean(this.compact), refresh: this.onRowChanged }} />
+          <Slot name="admin.collection.list.table.actions" include={access.allowsPluginAction} props={{ row, collection, pluginSlug, resolvedSlug, compact: Boolean(this.compact), refresh: this.onRowChanged }} />
+        </span>
+        <span className="inline-flex flex-nowrap items-center gap-0.5">
+        {!this.compact ? this.renderWideOnly() : null}
         {access.canUpdate ? (
           <button
             type="button"
@@ -140,6 +145,7 @@ export class CollectionListRowActions extends PureReactor {
             trigger={<span className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.moreActions')} aria-label={AdminI18n.t('collection.list.moreActions')}><FrameworkIcons.More size={16} /></span>}
           />
         ) : null}
+        </span>
       </div>
     );
   }

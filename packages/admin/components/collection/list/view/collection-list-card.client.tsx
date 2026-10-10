@@ -90,7 +90,9 @@ export class CollectionListCard extends PureReactor {
               ) : null}
             </div>
             {this.renderMeta()}
-            <div className="mt-2 flex items-center justify-between gap-2">
+            {/* The actions stay one group: when they do not fit beside the badge the whole group moves under it,
+                rather than its last button wrapping onto a line of its own. */}
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
               <div className="min-w-0 whitespace-nowrap">{this.cell(layout.badgeField)}</div>
               {this.actions}
             </div>

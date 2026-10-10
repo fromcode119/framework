@@ -41,6 +41,7 @@ export class CollectionListTable extends PureReactor {
   @prop declare onSort: (sort: string) => void;
   @prop declare onRowClick: (row: any) => void;
   @prop declare onNavigate: (href: string) => void;
+  @prop declare onRowChanged: () => void;
   @prop declare selectedIds: string[];
   @prop declare setSelectedIds: Dispatch<SetStateAction<string[]>>;
   @prop declare quickEditExpandedId: string | null;
@@ -80,6 +81,7 @@ export class CollectionListTable extends PureReactor {
         onDelete={this.onDelete}
         onArchive={this.onArchive}
         onNavigate={this.onNavigate}
+        onRowChanged={this.onRowChanged}
         access={this.access}
         compact={compact}
       />

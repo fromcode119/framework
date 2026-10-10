@@ -77,6 +77,22 @@ export class InlineEditValue extends PureReactor {
     this.value = value;
   }
 
+  /**
+   * A single-value select with declared options is picked, not edited: its choices show as buttons and
+   * one tap saves — a status changes in one step instead of open, choose, Save. A select drawn by its
+   * own component keeps that component.
+   */
+  private get choices(): { label: string; value: string }[] {
+    const field = this.field;
+    if (field.type !== 'select' || field.hasMany || field.admin?.component || !Array.isArray(field.options)) return [];
+    return field.options.map((option: any) => ({ label: String(option?.label ?? option?.value ?? option), value: String(option?.value ?? option) }));
+  }
+
+  @bound private pick(event: MouseEvent): void {
+    this.value = (event.currentTarget as HTMLButtonElement).value;
+    void this.save();
+  }
+
   @bound private async save(): Promise<void> {
     if (JSON.stringify(this.value) === JSON.stringify(this.initial)) return this.close();
     this.patch({ saving: true, error: '' });
@@ -108,12 +124,12 @@ export class InlineEditValue extends PureReactor {
           ref={this.panel}
           onClick={this.stop}
           onKeyDown={this.handleKey}
-          style={{ position: 'fixed', top: this.coords.top, left: this.coords.left, width: 300 }}
+          style={{ position: 'fixed', top: this.coords.top, left: this.coords.left, width: this.choices.length ? 240 : 300 }}
           className="z-[9998] rounded-xl border p-3 shadow-xl bg-white border-slate-200 shadow-slate-900/10 dark:bg-slate-900 dark:border-slate-700"
         >
           {this.loading ? (
             <p className="py-3 text-center text-[12px] font-semibold text-slate-400">{AdminI18n.t('collection.quickEdit.loading')}</p>
-          ) : (
+          ) : this.choices.length ? this.renderChoices() : (
             <FieldRenderer
               field={this.field}
               value={this.value}
@@ -126,7 +142,7 @@ export class InlineEditValue extends PureReactor {
             />
           )}
           {this.error ? <p className="mt-2 text-[12px] font-semibold text-rose-600">{this.error}</p> : null}
-          <div className="mt-3 flex items-center justify-end gap-2">
+          {this.choices.length && !this.loading ? null : <div className="mt-3 flex items-center justify-end gap-2">
             <button type="button" onClick={this.close} className="h-8 px-3 rounded-lg border text-[12px] font-semibold border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
               {AdminI18n.t('common.cancel')}
             </button>
@@ -134,9 +150,38 @@ export class InlineEditValue extends PureReactor {
               <FrameworkIcons.Check size={13} />
               {AdminI18n.t(this.saving ? 'collection.quickEdit.saving' : 'common.save')}
             </button>
-          </div>
+          </div>}
         </div>
       </RootFramework>
+    );
+  }
+
+  private renderChoices(): ReactNode {
+    const current = String(this.value ?? '');
+    return (
+      <div>
+        <p className="mb-2 text-[12px] font-semibold text-slate-500 dark:text-slate-400">{this.field.label || this.field.name}</p>
+        <div className="flex flex-col gap-1">
+          {this.choices.map((choice) => (
+            <button
+              key={choice.value}
+              type="button"
+              value={choice.value}
+              onClick={this.pick}
+              disabled={this.saving}
+              aria-pressed={choice.value === current}
+              className={`h-9 px-3 rounded-lg text-left text-[13px] font-semibold inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
+                choice.value === current
+                  ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
+                  : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
+              }`}
+            >
+              {choice.label}
+              {choice.value === current ? <FrameworkIcons.Check size={14} /> : null}
+            </button>
+          ))}
+        </div>
+      </div>
     );
   }
 
