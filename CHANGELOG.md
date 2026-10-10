@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.360] - 2026-10-10
+
+### Fixed
+
+- **core**: a plugin release's collection admin settings apply without an api restart ([#850](https://github.com/fromcode119/framework/pull/850))
+
 ## [0.2.359] - 2026-10-09
 
 ### Added
