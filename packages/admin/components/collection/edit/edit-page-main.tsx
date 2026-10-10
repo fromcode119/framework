@@ -56,25 +56,15 @@ export class EditPageMain extends PureReactor {
    * 24px still separates them clearly once each field carries its own label and description.
    */
   /**
-   * A section heading, as a caption and a rule.
-   *
-   * `Card`'s own 13px title started a third heading level: the section said "Items & totals" at 13px,
-   * a field label said "Order Items" at 12.5px, and the panel inside it said the same thing again at
-   * 9px — three sizes and three vocabularies for one thing. The caption is the separator every panel
-   * on these screens already uses, so a section and a group inside it stop competing.
-   *
-   * Rendered here rather than by changing `Card`, which other screens use for its title.
+   * A section as a card with a plain title, the way shop and content admins head their cards
+   * ("Pricing", "Shipping"). The title is a size above the field labels, so the two never compete; it
+   * replaced a 9px capitalised caption with a rule, which read as a divider rather than a heading.
    */
   private renderSection(section: { key: string; title?: string; fields: any[] }, prefix = ''): ReactNode {
     return (
       <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
         {section.title ? (
-          <div className="mb-3.5 flex items-center gap-2.5">
-            <span className="whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.09em] text-slate-400 dark:text-slate-500">
-              {section.title}
-            </span>
-            <span className="h-px flex-1 bg-slate-200 dark:bg-slate-800" />
-          </div>
+          <h2 className="mb-4 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
         ) : null}
         {/* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */}
         <div className="fc-edit-fields">

@@ -28,7 +28,7 @@ export class Card extends PureReactor {
         // thumbnail inset in a padded box. The caller's padding now replaces the default.
         className={twMerge(`${AdminClass.SURFACE} text-[var(--card-foreground)]`, noPadding ? '' : 'p-4', className)}
       >
-        {this.title && <h3 className="mb-3 text-[13px] font-semibold tracking-tight text-[var(--card-foreground)]">{this.title}</h3>}
+        {this.title && <h3 className="mb-4 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{this.title}</h3>}
         {this.children}
       </div>
     );
