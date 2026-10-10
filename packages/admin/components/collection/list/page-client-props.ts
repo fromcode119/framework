@@ -55,6 +55,7 @@ export class CollectionListPageProps {
       permalinkStructure: settings?.permalink_structure,
       onDelete: (id: string) => setDeleteDialogState({ mode: 'single', id }),
       onNavigate: (href: string) => router.push(href),
+      onRowChanged: () => fetchData(page),
       onQuickEditOpen: (row: any, event: React.MouseEvent) => CollectionListPageActions.handleQuickEditOpen({
         row, event, resolvedSlug, quickEditExpandedId, setQuickEditExpandedId, setQuickEditStatus,
         setQuickEditLoadingId, setQuickEditData, setQuickEditInitialData
