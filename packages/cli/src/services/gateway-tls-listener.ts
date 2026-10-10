@@ -34,7 +34,12 @@ export class GatewayTlsListener {
   private readonly contexts = new Map<string, SecureContext>();
   private cachedFrom: CertificateBundle | null = null;
 
-  constructor(private readonly port: number, private readonly certificates: CertificateBundleClient) {}
+  constructor(
+    private readonly port: number,
+    private readonly certificates: CertificateBundleClient,
+    /** Trusted relays, as `GatewayListener` takes them. */
+    private readonly relays: () => readonly string[] = () => [],
+  ) {}
 
   /** The configured port, or null when TLS termination is off. 0 is valid — "any free port", for tests. */
   static readPort(): number | null {
@@ -62,7 +67,7 @@ export class GatewayTlsListener {
     server.on('upgrade', handlers.upgrade);
 
     this.server = server;
-    this.listener = new GatewayListener(server, (socket) => this.secure(socket, server));
+    this.listener = new GatewayListener(server, (socket) => this.secure(socket, server), this.relays);
     this.listener.listen(this.port, () => {
       console.log(`[platform-gateway] terminating TLS on 0.0.0.0:${this.port} certificates=${this.size}`);
     });

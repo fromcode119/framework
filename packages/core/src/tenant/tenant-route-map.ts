@@ -20,10 +20,21 @@ export class TenantRouteMap {
    * endpoint would be a second thing to keep in step. Decided at boot by `SetupMode` — never here.
    */
   readonly setup: boolean;
+  /**
+   * The relays in front of the platform whose PROXY header the gateway believes (Settings → Security →
+   * Trusted relays). Carried here for the same reason as `setup`: the map is what the gateway fetches.
+   */
+  readonly relays: readonly string[];
 
-  constructor(routes: Iterable<TenantRoute>, setup = false) {
+  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = []) {
     for (const route of routes) this.byHost.set(route.host, route);
     this.setup = setup === true;
+    this.relays = [...relays];
+  }
+
+  /** This map, with the relays the operator declared. */
+  withRelays(relays: readonly string[]): TenantRouteMap {
+    return new TenantRouteMap(this.byHost.values(), this.setup, relays);
   }
 
   static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }, setup = false): TenantRouteMap {
@@ -60,6 +71,7 @@ export class TenantRouteMap {
     return new TenantRouteMap(
       list.map((entry: unknown) => TenantRoute.from(entry)).filter((route: TenantRoute | null): route is TenantRoute => route !== null),
       (raw as any)?.setup === true,
+      Array.isArray((raw as any)?.relays) ? (raw as any).relays.map((entry: unknown) => String(entry)) : [],
     );
   }
 
@@ -81,7 +93,7 @@ export class TenantRouteMap {
   }
 
   toJSON(): Record<string, unknown> {
-    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup };
+    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays] };
   }
 
   /** A public app URL or bare host → bare host. */

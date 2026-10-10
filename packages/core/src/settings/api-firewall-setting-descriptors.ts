@@ -30,6 +30,10 @@ export class ApiFirewallSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: () => SystemSettingSeedDefaults.edgeProviderRangesDefault(), description: "Each registered edge provider's published IP ranges, trusted to set that provider's real-visitor header (e.g. Cloudflare's CF-Connecting-IP). JSON, keyed by the provider's own key (\"cloudflare\", ...). Seeded with the ranges built into the code; extend a provider's entry if it publishes a new range before the platform is updated. Never remove a range here to reduce trust — that requires a code change.", group: "security" },
     },
+    [SystemConstants.META_KEY.TRUSTED_RELAYS]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '', description: "Addresses (or CIDR blocks) of the relays in front of this platform — the platform's own edge run on another server, on an address of its own. Only a connection from one of these may name the visitor; from anywhere else that claim is ignored. Empty: no relay, every visitor is the address that connected.", group: "security" },
+    },
     [SystemConstants.META_KEY.RATE_LIMIT_WINDOW]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '60000', description: "Rate limit window in milliseconds. Fixed-window: tripping the limit locks a caller out for up to this long, so keep it short.", group: "security" },

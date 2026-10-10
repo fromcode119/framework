@@ -49,6 +49,8 @@ export class ServerSettingsService {
     // Not a host, but the routing map is built differently while setup is running
     // (`TenantRouteMap.build(..., SetupMode.isActive())`), so finishing setup must reach it too.
     SystemConstants.META_KEY.SETUP_COMPLETED,
+    // Not a host either, but it travels with the map: whose PROXY header the gateway believes.
+    SystemConstants.META_KEY.TRUSTED_RELAYS,
   ];
 
   /** Returns the unsubscribe function. */

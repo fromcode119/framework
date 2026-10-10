@@ -1,6 +1,7 @@
 import http from 'http';
 import net from 'net';
 import { Duplex } from 'stream';
+import { NetworkAddressUtils } from '@fromcode119/core';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
 
 /**
@@ -26,11 +27,20 @@ export class GatewayListener {
     private readonly server: http.Server,
     /** What a connection becomes once its header is read; the TLS listener wraps it in TLS first. */
     deliver: (socket: net.Socket) => void = (socket) => server.emit('connection', socket),
+    /**
+     * The relays in front of the platform (Settings → Security → Trusted relays, from the routing map).
+     * A connection `edge` names as coming from one of them carries the relay's own PROXY header next,
+     * naming the real visitor; it is read only then, because anyone else could write one.
+     */
+    relays: () => readonly string[] = () => [],
   ) {
     this.acceptor = net.createServer({ pauseOnConnect: true }, (socket) => {
       this.open.add(socket);
       socket.once('close', () => this.open.delete(socket));
-      GatewayProxyProtocol.accept(socket, deliver);
+      GatewayProxyProtocol.accept(socket, (fromEdge) => {
+        if (NetworkAddressUtils.matchesAny(fromEdge.remoteAddress, relays())) GatewayProxyProtocol.accept(fromEdge, deliver);
+        else { deliver(fromEdge); fromEdge.resume(); }
+      }, { resume: false });
     });
     this.acceptor.on('error', (error) => console.error('[platform-gateway] listener error:', error.message));
     // A response written after stopping must not invite the client to reuse this connection.

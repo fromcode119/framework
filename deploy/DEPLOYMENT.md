@@ -120,6 +120,29 @@ EDGE_COMMAND=haproxy -f /app/deploy-edge/haproxy/haproxy.cfg
 `deploy/edge/` is mounted into the edge at `/app/deploy-edge`, so another proxy's config can live
 there too.
 
+### A relay in front of the edge
+
+A second server can stand in front of the platform, on an address of its own: it holds 80/443 and
+passes every connection, still encrypted, to this platform's edge. Use it when a shared CDN address
+is unreachable for some visitors (blocked by a network or a court order), or to keep the platform's
+own address private. The relay holds no certificates and routes nothing; it runs the platform's own
+edge (`deploy/edge/relay/docker-compose.yml`). Any proxy that passes TCP on with a PROXY protocol v2
+header can stand in for it.
+
+On the relay, `.env` beside that file:
+
+```bash
+VERSION=<the platform's version>
+EDGE_UPSTREAM_HOST=<the platform's public address>
+```
+
+On the platform, enter the relay's address in the admin: **Settings → Security → API Firewall →
+Trusted relays** (comma-separated for several). It reaches the gateway with its routing map, no restart.
+
+Only connections from those addresses may name the visitor; from anywhere else that claim is never
+read, because anyone could make it. Without the setting the platform still serves the relay's
+traffic, but sees every visitor as the relay, so per-visitor limits would treat them all as one.
+
 ### Behind your own proxy
 The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
 default. A host that already runs a reverse proxy — whichever one — routes straight to `api`, `admin`

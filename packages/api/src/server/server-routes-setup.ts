@@ -216,7 +216,7 @@ export class ServerRoutesSetup {
 
     // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
     const tenantRegistry = new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db));
-    vApi.use(new RoutingRouter(tenantRegistry).router);
+    vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache).router);
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
     vApi.use(new HostPermitRouter(tenantRegistry).router);

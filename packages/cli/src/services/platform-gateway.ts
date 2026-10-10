@@ -70,8 +70,13 @@ export class PlatformGateway {
    */
   private readonly tlsPort = GatewayTlsListener.readPort();
   private readonly certificates = new CertificateBundleClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.CERTIFICATES_PATH}`);
-  private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates);
+  private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates, () => this.relays);
   private readonly plainPolicy = new GatewayPlainListenerPolicy(this.tlsPort !== null);
+
+  /** Settings → Security → Trusted relays, from the last routing map; none before the first. */
+  private get relays(): readonly string[] {
+    return this.routing.current?.relays ?? [];
+  }
 
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
@@ -113,7 +118,7 @@ export class PlatformGateway {
     });
     server.on('upgrade', (req, socket, head) => { this.upgrade(req, socket, head); });
     this.server = server;
-    this.listener = new GatewayListener(server);
+    this.listener = new GatewayListener(server, undefined, () => this.relays);
     this.listener.listen(this.port, () => {
       void this.routing.refresh().then(() => this.logStartup());
     });

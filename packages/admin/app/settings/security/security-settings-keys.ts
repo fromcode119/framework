@@ -24,6 +24,7 @@ export class SecuritySettingsKeys {
     SystemConstants.META_KEY.RATE_LIMIT_MAX_AUTHENTICATED,
     SystemConstants.META_KEY.RATE_LIMIT_MAX_INTERNAL,
     SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS,
+    SystemConstants.META_KEY.TRUSTED_RELAYS,
     SystemConstants.META_KEY.RATE_LIMIT_WINDOW,
     SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE,
     SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES,
