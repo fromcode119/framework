@@ -20,7 +20,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'onArchive' | 'onNavigate' | 'onRowChanged' | 'access' | 'compact'>;
+  declare props: Pick<CollectionListRowActions, 'row' | 'collection' | 'pluginSlug' | 'slug' | 'slotSlug' | 'resolvedSlug' | 'theme' | 'frontendUrl' | 'permalinkStructure' | 'pluginSettings' | 'quickEditExpandedId' | 'onQuickEditOpen' | 'onDelete' | 'onArchive' | 'onNavigate' | 'onRowChanged' | 'access' | 'compact' | 'quickEditable'>;
 
   @prop declare row: any;
   @prop declare collection: any;
@@ -38,6 +38,8 @@ export class CollectionListRowActions extends PureReactor {
   @prop declare onArchive?: (id: string, archiving: boolean) => void;
   /** Goes to an admin path, as a link would — the menu's items are buttons, not links. */
   @prop declare onNavigate: (href: string) => void;
+  /** Whether the collection offers any field to quick edit; with none, the button would open an empty form. */
+  @prop declare quickEditable: boolean;
   /** Reloads the list — handed to a plugin's row action as `refresh`, for after it changed the record. */
   @prop declare onRowChanged: () => void;
   /** What the signed-in user may do to this record — decides which actions are offered. */
@@ -123,7 +125,7 @@ export class CollectionListRowActions extends PureReactor {
         </span>
         <span className="inline-flex flex-nowrap items-center gap-0.5">
         {!this.compact ? this.renderWideOnly() : null}
-        {access.canUpdate ? (
+        {access.canUpdate && this.quickEditable ? (
           <button
             type="button"
             onClick={this.openQuickEdit}

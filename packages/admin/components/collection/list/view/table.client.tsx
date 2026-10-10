@@ -82,6 +82,7 @@ export class CollectionListTable extends PureReactor {
         onArchive={this.onArchive}
         onNavigate={this.onNavigate}
         onRowChanged={this.onRowChanged}
+        quickEditable={this.quickEditFields.length > 0}
         access={this.access}
         compact={compact}
       />
