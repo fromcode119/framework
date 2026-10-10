@@ -17,6 +17,7 @@ const products = (list?: unknown) => ({
     { name: 'notes', type: 'textarea' },
     { name: 'specs', type: 'json' },
     { name: 'secret', type: 'text', admin: { hidden: true } },
+    { name: 'shippingAmount', type: 'number', admin: { renderedBy: 'price' } },
   ],
 });
 
@@ -34,7 +35,7 @@ describe('CollectionListLayout.from — what the list reads when nothing is decl
     expect(layout.trailingField).toBe('');
   });
 
-  it('edits nothing in place, and offers every simple editable field in the row form', () => {
+  it('edits nothing in place, and offers every simple editable field in the row form — not one another control draws', () => {
     expect(layout.inlineFields).toEqual([]);
     expect(layout.rowFields.map((entry) => entry.name)).toEqual(['name', 'sku', 'price', 'status', 'tags', 'summary']);
   });
@@ -61,7 +62,7 @@ describe('CollectionListLayout.from — a declared admin.list', () => {
 
   it('refuses — and says why — what cannot be edited from the list', () => {
     const layout = CollectionListLayout.from(products({
-      quickEdit: { inline: ['stock', 'secret', 'ghost'], row: [{ field: 'specs' }, { field: 'images' }, { field: 'tags', control: 'relation' }, { field: 'price', control: 'toggle' }, { field: 'sku' }] },
+      quickEdit: { inline: ['stock', 'secret', 'ghost', 'shippingAmount'], row: [{ field: 'specs' }, { field: 'images' }, { field: 'tags', control: 'relation' }, { field: 'price', control: 'toggle' }, { field: 'sku' }] },
     }));
     expect(layout.inlineFields).toEqual([]);
     expect(layout.rowFields.map((entry) => entry.name)).toEqual(['sku']);
@@ -69,6 +70,7 @@ describe('CollectionListLayout.from — a declared admin.list', () => {
       'quickEdit.inline "stock" is read-only',
       'quickEdit.inline "secret" is hidden',
       'quickEdit.inline "ghost" is not a field of this collection',
+      'quickEdit.inline "shippingAmount" is part of the price control',
       'quickEdit.row "specs" is a json field, which only the full editor can change',
       'quickEdit.row "images" is a media field, which only the full editor can change',
       'quickEdit.row "tags" holds several values, so it needs the tags control',

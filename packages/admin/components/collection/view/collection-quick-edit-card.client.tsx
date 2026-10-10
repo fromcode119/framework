@@ -26,6 +26,15 @@ export class CollectionQuickEditCard extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare pluginSettings: Record<string, any>;
 
+  /**
+   * A control that shows or computes from several fields — the order totals panel — reads the whole
+   * record and patches its siblings, as it does on the edit page. Without the record it summed
+   * nothing and showed a total of 0.00 under a subtotal of 37.
+   */
+  @bound private patchRecord(partial: Record<string, any>): void {
+    this.setQuickEditData((prev) => ({ ...prev, ...partial }));
+  }
+
   @bound private handleKey(event: KeyboardEvent): void {
     if (event.key === 'Escape') this.onClose();
     if (event.key === 'Enter' && (event.target as HTMLElement).tagName === 'INPUT') {
@@ -62,6 +71,8 @@ export class CollectionQuickEditCard extends PureReactor {
               collectionSlug={this.resolvedSlug}
               pluginSettings={this.pluginSettings}
               isNew={false}
+              record={this.quickEditData}
+              onPatch={this.patchRecord}
             />
           </div>
         ))}

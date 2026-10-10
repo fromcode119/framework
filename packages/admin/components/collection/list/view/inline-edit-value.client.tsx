@@ -30,6 +30,8 @@ export class InlineEditValue extends PureReactor {
   @state saving = false;
   @state value: any = undefined;
   @state initial: any = undefined;
+  /** The whole record, for a control that reads its siblings. */
+  @state record: Record<string, any> = {};
   @state error = '';
   @state coords = { top: 0, left: 0 };
 
@@ -61,7 +63,7 @@ export class InlineEditValue extends PureReactor {
     try {
       const record = await RecordOperations.fetchQuickEditRecord(this.resolvedSlug, String(this.row.id));
       const value = record?.[this.field.name];
-      this.patch({ value, initial: value, loading: false });
+      this.patch({ value, initial: value, record: record || {}, loading: false });
     } catch (error: any) {
       this.patch({ loading: false, error: error?.message || AdminI18n.t('collection.list.quickEditLoadFailed') });
     }
@@ -120,6 +122,7 @@ export class InlineEditValue extends PureReactor {
               collectionSlug={this.resolvedSlug}
               pluginSettings={this.pluginSettings}
               isNew={false}
+              record={this.record}
             />
           )}
           {this.error ? <p className="mt-2 text-[12px] font-semibold text-rose-600">{this.error}</p> : null}

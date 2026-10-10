@@ -27,6 +27,8 @@ export class QuickEditControl {
     if (!field) return 'is not a field of this collection';
     if (field.hidden || field.admin?.hidden) return 'is hidden';
     if (field.admin?.readOnly) return 'is read-only';
+    // Drawn inside another field's control, as on the edit page: listed on its own it showed twice.
+    if (field.admin?.renderedBy) return `is part of the ${field.admin.renderedBy} control`;
     const type = String(field.type);
     if (QuickEditControl.TOO_BIG.includes(type)) return `is a ${type} field, which only the full editor can change`;
     if (type === 'relationship' && field.relationTo === 'media') return 'is a media field, which only the full editor can change';
