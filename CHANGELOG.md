@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.362] - 2026-10-10
+
+### Added
+
+- **admin**: list values say what they are — labelled on cards, and a plugin can draw them (admin.cell) ([#855](https://github.com/fromcode119/framework/pull/855))
+- **admin**: edit pages on a phone — no empty side column, one header row, a save bar only when there is something to save ([#856](https://github.com/fromcode119/framework/pull/856))
+
 ## [0.2.361] - 2026-10-10
 
 ### Fixed
