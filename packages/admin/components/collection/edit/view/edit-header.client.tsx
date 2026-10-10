@@ -100,7 +100,7 @@ export class EditHeader extends PureReactor {
 
   return (
     <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-6 lg:px-8 py-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 md:py-4">
         <div className="flex items-center gap-2 mb-2">
           <Link 
             href={this.listHref || `/${pluginSlug}/${slug}`}
@@ -109,8 +109,9 @@ export class EditHeader extends PureReactor {
             <FrameworkIcons.Left size={14} />
             {collectionLabel}
           </Link>
-          <span className="text-slate-300">/</span>
-          <span className={`text-[10px] font-semibold ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-500'}`}>
+          {/* On a phone the back link is enough: the title right below already names the record. */}
+          <span className="hidden md:inline text-slate-300">/</span>
+          <span className={`hidden md:inline text-[10px] font-semibold ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-500'}`}>
             {isNew ? AdminI18n.t('collection.edit.newEntry') : [resolvedTitleValue, `#${id.length > 8 ? `${id.substring(0, 8)}…` : id}`].filter(Boolean).join(' · ')}
           </span>
         </div>
@@ -119,15 +120,19 @@ export class EditHeader extends PureReactor {
           {/* The title takes the room the actions leave and ends in "…" when longer; below its minimum the
               actions wrap under it. A long product name used to squeeze this column to one word per line. */}
           <div className="min-w-[16rem] flex-1">
-            <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+            <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-lg md:text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {isNew
                 ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
                 : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
               }
             </h1>
-            <p className="truncate text-slate-500 font-medium text-xs tracking-tight mt-0.5">
-              {isNew ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel }) : AdminI18n.t('collection.edit.editSubtitle', { name: resolvedTitleValue || singularCollectionLabel.toLowerCase() })}
-            </p>
+            {/* Only a new record gets a line under its title. On an existing one it said "Modify existing
+                <title>" — the title a third time, after the breadcrumb and the heading. */}
+            {isNew ? (
+              <p className="truncate text-slate-500 font-medium text-xs tracking-tight mt-0.5">
+                {AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel })}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
@@ -153,6 +158,7 @@ export class EditHeader extends PureReactor {
                 href={getPreviewUrl()}
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label={AdminI18n.t('collection.edit.preview')}
                 className={`box-border appearance-none h-10 px-4 rounded-[var(--radius)] outline-none border transition-all duration-200 shadow-sm inline-flex items-center justify-center gap-2 leading-none text-[10px] font-semibold ${
                   theme === ThemeMode.DARK 
                     ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white focus:border-indigo-500 focus:ring-0'
@@ -160,7 +166,8 @@ export class EditHeader extends PureReactor {
                 }`}
               >
                 <FrameworkIcons.Eye size={14} />
-                {AdminI18n.t('collection.edit.preview')}
+                {/* Icon only on a phone, so the whole action row fits on one line. */}
+                <span className="hidden sm:inline">{AdminI18n.t('collection.edit.preview')}</span>
               </a>
             )}
             {statusOptions.length > 0 && (
@@ -171,8 +178,8 @@ export class EditHeader extends PureReactor {
                   options={statusOptions}
                   searchable={false}
                   size={FieldSize.MD}
-                  className="w-full md:w-40 lg:w-44"
-                  triggerClassName="h-10 px-4 text-sm font-bold rounded-[var(--radius)]"
+                  className="w-32 sm:w-40 lg:w-44"
+                  triggerClassName="h-10 px-3 sm:px-4 text-sm font-bold rounded-[var(--radius)]"
                 />
               </div>
             )}
@@ -193,7 +200,7 @@ export class EditHeader extends PureReactor {
              
             {!hideHeaderPrimaryAction && this.canSave && (
               <Button 
-                className="h-10 px-6 font-semibold text-[10px] shadow-lg shadow-indigo-600/20" 
+                className="h-10 px-4 sm:px-6 font-semibold text-[12px] shadow-lg shadow-indigo-600/20" 
                 onClick={this.onSave}
                 isLoading={saving}
                 icon={<FrameworkIcons.Save size={14} />}
@@ -209,6 +216,7 @@ export class EditHeader extends PureReactor {
             {!isNew && this.canDelete && (
               <button 
                 onClick={this.onDelete}
+                aria-label={AdminI18n.t('common.delete')}
                 className={`h-10 w-10 inline-flex items-center justify-center rounded-[var(--radius)] border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === ThemeMode.DARK ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
               >
                 <FrameworkIcons.Trash size={16} />
