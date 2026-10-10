@@ -162,11 +162,11 @@ describe('./field-renderer', () => {
       />
     );
 
-    // Booleans render the BooleanToggleField switch, never a select (CLAUDE.md: boolean -> toggle).
+    // Booleans render one row — the label beside a switch — never a select (CLAUDE.md: boolean -> toggle).
     const toggle = screen.getByRole('switch');
     expect(toggle).toBeInTheDocument();
     expect(toggle).toHaveAttribute('aria-checked', 'false');
-    expect(screen.getByText('No')).toBeInTheDocument();
+    expect(screen.getByText('Required Add-on')).toBeInTheDocument();
     expect(screen.queryByTestId('mock-select')).not.toBeInTheDocument();
 
     fireEvent.click(toggle);
