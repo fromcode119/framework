@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.361] - 2026-10-10
+
+### Fixed
+
+- **admin**: a row's actions appear once, not as icons and again in the ⋯ menu ([#853](https://github.com/fromcode119/framework/pull/853))
+
 ## [0.2.360] - 2026-10-10
+
+### Added
+
+- **admin**: edit pages look like a shop admin: card titles, settings as switch rows, a sidebar that stays in view, touch-sized controls ([#851](https://github.com/fromcode119/framework/pull/851))
 
 ### Fixed
 
