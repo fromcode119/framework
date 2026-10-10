@@ -12,6 +12,12 @@ export interface IPluginContextMedia {
    * with its `id` and public `url`. Goes through the api's guarded ingest. Needs `content`.
    */
   ingest(input: IPluginMediaIngestInput): Promise<Record<string, unknown>>;
+  /**
+   * Set a stored file's description (its `alt` text, the name it is shown under) — the one field a plugin
+   * may change on a file it did not just ingest, e.g. a migration naming a file a package brought.
+   * Resolves to false when the id is not a file of this site. Needs `content`.
+   */
+  describe(id: any, input: { alt: string }): Promise<boolean>;
   findById(id: any): Promise<Record<string, any> | null>;
   /** Resolve many ids in one statement, keyed by id — the batch form of `findById`. */
   findByIds(ids: any[]): Promise<Map<string, Record<string, any>>>;

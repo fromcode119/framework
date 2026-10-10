@@ -11,6 +11,8 @@ export class MediaContextProxy {
   private static readonly MAX_BATCH = 500;
   /** The largest file `read` hands over: the admin upload limit, so any file a site could upload can be read back. */
   static readonly MAX_READ_BYTES = 25 * 1024 * 1024;
+  /** The longest description `describe` stores. */
+  private static readonly MAX_ALT_LENGTH = 500;
 
   /**
    * Rows leave here in the SAME shape as `context.db` rows: camelCase, one canonical name per field.
@@ -24,7 +26,7 @@ export class MediaContextProxy {
   }
 
   /**
-   * Media proxy for plugins — reads, plus `ingest`. Plugins must NOT query the `media` system table via context.db
+   * Media proxy for plugins — reads, plus `ingest` and `describe`. Plugins must NOT query the `media` system table via context.db
    * (that path is blocked) — they resolve a media item through here. Uses the RAW manager db so the
    * framework owns the only access to the system table.
    *
@@ -44,6 +46,21 @@ export class MediaContextProxy {
       async ingest(input: IPluginMediaIngestInput): Promise<Record<string, unknown>> {
         if (!security.hasCapability('content')) security.handleViolation('content');
         return MediaIngestBridge.ingest(input);
+      },
+      /**
+       * A second, narrow write: a file's description (`alt`) only, trimmed and capped. The row is the
+       * site's own — the connection's tenant filter applies — so an id of another site matches nothing.
+       */
+      async describe(id: any, input: { alt: string }): Promise<boolean> {
+        if (!security.hasCapability('content')) security.handleViolation('content');
+        const alt = String(input?.alt ?? '').trim().slice(0, MediaContextProxy.MAX_ALT_LENGTH);
+        if (id == null || id === '' || !alt) return false;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        if (!row) return false;
+        // Already so described: nothing to write (a re-import names thousands of files it named before).
+        if (String((row as any).alt ?? '') === alt) return true;
+        await manager.db.update(SystemConstants.TABLE.MEDIA, { id }, { alt });
+        return true;
       },
       async findById(id: any): Promise<Record<string, any> | null> {
         if (id == null || id === '') return null;
