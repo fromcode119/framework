@@ -82,6 +82,13 @@ export interface IField {
     /** Declared as a literal by collections; compare with `FieldPosition.resolve()`, never `===`. */
     position?: FieldPosition | string;
     component?: string;
+    /**
+     * A registered field component that DISPLAYS this field's value in a collection list — the table
+     * cell and the phone card — where `component` is the control that edits it. For a value only its
+     * plugin can present: a price in its currency, a duration in its unit. Rendered with
+     * `{ value, row, field }`; until the plugin's UI has loaded, the plain value shows.
+     */
+    cell?: string;
     /** A `select` that holds several of its options (stored as an array) — rendered as a multi-select. */
     multiple?: boolean;
     sourceCollection?: string;

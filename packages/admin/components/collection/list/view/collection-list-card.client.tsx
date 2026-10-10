@@ -47,7 +47,7 @@ export class CollectionListCard extends PureReactor {
       .filter(({ value }) => value !== null && value !== undefined && value !== '')
       .map(({ name }) => (
         <span key={name} className="min-w-0 truncate">
-          {this.layout.metaLabels[name] ? <span className="text-slate-400 dark:text-slate-500">{this.layout.metaLabels[name]} </span> : null}
+          {this.layout.valueLabels[name] ? <span className="text-slate-400 dark:text-slate-500">{this.layout.valueLabels[name]} </span> : null}
           {this.cell(name)}
         </span>
       ));
@@ -78,7 +78,12 @@ export class CollectionListCard extends PureReactor {
               <div className="min-w-0 line-clamp-2 text-[14px] font-semibold leading-snug text-slate-900 dark:text-slate-100">
                 {this.cell(layout.titleField) ?? `#${row.id}`}
               </div>
-              {layout.trailingField ? <div className="shrink-0 text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</div> : null}
+              {layout.trailingField ? (
+                <div className="shrink-0 text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">
+                  {layout.valueLabels[layout.trailingField] ? <span className="mr-1 text-[12px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
+                  {this.cell(layout.trailingField)}
+                </div>
+              ) : null}
             </div>
             {this.renderMeta()}
             <div className="mt-2 flex items-center justify-between gap-2">

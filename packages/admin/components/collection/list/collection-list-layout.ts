@@ -20,10 +20,11 @@ export class CollectionListLayout {
     readonly rowFields: readonly QuickEditField[],
     readonly refused: readonly string[],
     /**
-     * Labels for the meta fields whose bare value means nothing on its own — a number or a yes/no.
-     * "12" under a product could be anything; "Stock 12" cannot.
+     * Labels for the card values whose bare value means nothing on its own — a number or a yes/no, on
+     * the meta line or at the card's right. "44" beside a product could be its price, its stock or its
+     * number; "Price 44" cannot be misread.
      */
-    readonly metaLabels: Readonly<Record<string, string>> = {},
+    readonly valueLabels: Readonly<Record<string, string>> = {},
   ) {}
 
   static readonly EMPTY = new CollectionListLayout('', '', '', [], '', [], [], []);
@@ -62,12 +63,12 @@ export class CollectionListLayout {
       ? CollectionListLayout.resolveRow(list.quickEdit.row, fieldNamed, refused)
       : CollectionListLayout.automaticRow(fields);
 
-    const metaLabels: Record<string, string> = {};
-    for (const name of metaFields) {
+    const valueLabels: Record<string, string> = {};
+    for (const name of [...metaFields, trailingField].filter(Boolean)) {
       const field = fieldNamed(name);
-      if (['number', 'checkbox', 'boolean'].includes(String(field?.type))) metaLabels[name] = String(field.label || name);
+      if (['number', 'checkbox', 'boolean'].includes(String(field?.type))) valueLabels[name] = String(field.label || name);
     }
-    return new CollectionListLayout(titleField, mediaField, badgeField, metaFields, trailingField, inlineFields, rowFields, refused, metaLabels);
+    return new CollectionListLayout(titleField, mediaField, badgeField, metaFields, trailingField, inlineFields, rowFields, refused, valueLabels);
   }
 
   private static readonly REPORTED = new Set<string>();

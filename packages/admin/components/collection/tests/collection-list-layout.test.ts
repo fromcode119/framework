@@ -54,9 +54,9 @@ describe('CollectionListLayout.from — a declared admin.list', () => {
     expect(layout.refused).toEqual([]);
   });
 
-  it('labels the numbers on the meta line, and only those', () => {
-    const layout = CollectionListLayout.from(products({ meta: ['sku', 'stock'] }));
-    expect(layout.metaLabels).toEqual({ stock: 'Stock' });
+  it('labels the numbers on the meta line and at the right of the card, and only those', () => {
+    const layout = CollectionListLayout.from(products({ meta: ['sku', 'stock'], trailing: 'price' }));
+    expect(layout.valueLabels).toEqual({ stock: 'Stock', price: 'Price' });
   });
 
   it('refuses — and says why — what cannot be edited from the list', () => {

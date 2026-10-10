@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { CollectionListRelationshipCellValue } from '@/components/collection/list/view/relationship-cell-value.client';
 import { CollectionListMediaCellValue } from '@/components/collection/list/view/media-cell-value.client';
+import { PluginCellValue } from '@/components/collection/list/view/plugin-cell-value.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminServices } from '@/lib/admin-services';
 
@@ -20,13 +21,26 @@ export class RecordCellRenderers {
     columnName,
     field,
     header,
-    raw
+    raw,
+    row
   }: {
     columnName: string;
     field: any;
     header: string;
     raw: any;
+    row?: Record<string, any>;
   }): ReactNode {
+    // A field that names its own display component (`admin.cell`) is drawn by it — a price in its
+    // currency is its plugin's to format, not the list's. The plain rendering stays as its fallback.
+    if (field?.admin?.cell && row) {
+      return React.createElement(PluginCellValue, {
+        componentName: String(field.admin.cell),
+        value: raw,
+        row,
+        field,
+        fallback: this.renderCellValue({ columnName, field: { ...field, admin: { ...field.admin, cell: undefined } }, header, raw }),
+      });
+    }
     // A select whose option names a tone shows as a badge in that tone, in any column: the collection
     // says what "paid" or "cancelled" looks like, the list never guesses from the word.
     const tone = this.optionTone(field, raw);
