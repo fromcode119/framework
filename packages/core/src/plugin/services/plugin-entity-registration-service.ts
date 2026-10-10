@@ -97,9 +97,21 @@ export class PluginEntityRegistrationService {
    * plugin's are calls into the process that was just replaced — kept, every read of the collection
    * failed ("unknown handler") until the api restarted.
    */
-  refreshOwnCollectionFields(existing: ICollection, incoming: ICollection): void {
+  /**
+   * A plugin re-registering a collection it already owns — a new release of an isolated plugin, whose
+   * fresh process registers again — replaces the parts of the declaration that are its alone.
+   *
+   * `admin` is one of them: no other plugin writes it (`extend` adds fields only). It used to be left
+   * as registered at boot, so a release that changed how a collection reads in the console —
+   * `useAsTitle`, `defaultColumns`, `list` — showed nothing until the api restarted, while every
+   * version signal said the new release was live. Fields are MERGED instead, because another
+   * plugin's extension fields live in the same array and must survive the owner's refresh.
+   */
+  refreshOwnCollection(existing: ICollection, incoming: ICollection): void {
     existing.access = incoming.access;
     existing.hooks = incoming.hooks;
+    existing.admin = incoming.admin;
+    existing.displayName = incoming.displayName;
     const next = [...existing.fields];
     const indexByName = new Map(next.map((field: IField, index: number) => [field.name, index]));
     for (const field of incoming.fields) {
