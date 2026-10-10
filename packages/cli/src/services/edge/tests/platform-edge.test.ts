@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import http from 'http';
+import net from 'net';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
+import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
 
 /** A gateway: answers with its name and the visitor it was told about. */
 class GatewayFixture {
@@ -64,5 +66,50 @@ describe('PlatformEdge', () => {
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0));
     await expect(new Promise((resolve, reject) => http.get({ host: '127.0.0.1', port: edgePort, path: '/' }, resolve).on('error', reject))).rejects.toThrow();
+  });
+
+  /** A raw HTTP request through `port`, optionally preceded by a PROXY header naming `visitor`; the response body. */
+  const ask = (port: number, visitor?: string) => new Promise<string>((resolve, reject) => {
+    const socket = net.connect({ host: '127.0.0.1', port }, () => {
+      if (visitor) socket.write(GatewayProxyProtocol.header(visitor, 40_000, '127.0.0.1', port));
+      socket.write('GET / HTTP/1.1\r\nHost: example.test\r\nConnection: close\r\n\r\n');
+    });
+    let raw = '';
+    socket.on('data', (chunk) => { raw += chunk; });
+    socket.on('end', () => resolve(raw.split('\r\n\r\n').slice(1).join('\r\n\r\n')));
+    socket.on('error', reject);
+  });
+
+  it('passes on the visitor a trusted relay in front of it names', async () => {
+    const gateway = await GatewayFixture.start('g', '127.0.0.1', 0);
+    const edge = new PlatformEdge(new EdgeUpstreams('gateways', gateway.port, 200, async () => ['127.0.0.1']), [{ listen: 0, upstreamPort: gateway.port }], new Set(['127.0.0.1']));
+    const [edgePort] = await edge.start();
+    stops.push(() => edge.stop(0), () => gateway.stop(0));
+
+    expect(await ask(edgePort, '203.0.113.7')).toBe('g 203.0.113.7');
+    // The relay's own health check, or a request it sends without a header: still answered, as the relay.
+    expect(await ask(edgePort)).toBe('g 127.0.0.1');
+  });
+
+  it('never believes a header from an address that is not a trusted relay', async () => {
+    const gateway = await GatewayFixture.start('g', '127.0.0.1', 0);
+    const edge = new PlatformEdge(new EdgeUpstreams('gateways', gateway.port, 200, async () => ['127.0.0.1']), [{ listen: 0, upstreamPort: gateway.port }], new Set(['198.51.100.1']));
+    const [edgePort] = await edge.start();
+    stops.push(() => edge.stop(0), () => gateway.stop(0));
+
+    expect(await ask(edgePort, '203.0.113.7')).not.toContain('203.0.113.7');
+    expect(await ask(edgePort)).toBe('g 127.0.0.1');
+  });
+
+  it('chains: a relay edge in front of the platform edge, the visitor reaching the gateway', async () => {
+    const gateway = await GatewayFixture.start('g', '127.0.0.1', 0);
+    const platform = new PlatformEdge(new EdgeUpstreams('gateways', gateway.port, 200, async () => ['127.0.0.1']), [{ listen: 0, upstreamPort: gateway.port }], new Set(['127.0.0.1']));
+    const [platformPort] = await platform.start();
+    const relay = new PlatformEdge(new EdgeUpstreams('platform', platformPort, 200, async () => ['127.0.0.1']), [{ listen: 0, upstreamPort: platformPort }]);
+    const [relayPort] = await relay.start();
+    stops.push(() => relay.stop(0), () => platform.stop(0), () => gateway.stop(0));
+
+    // The relay sees the visitor as 127.0.0.1 and says so; the platform edge believes it and passes it on.
+    expect(await ask(relayPort)).toBe('g 127.0.0.1');
   });
 });

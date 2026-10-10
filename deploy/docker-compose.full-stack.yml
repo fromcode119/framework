@@ -110,6 +110,8 @@ services:
       - EDGE_UPSTREAM_HOST=gateway
       - EDGE_UPSTREAM_HTTP_PORT=3000
       - GATEWAY_TLS_PORT=${GATEWAY_TLS_PORT:-3443}
+      # Relays in front of this edge (deploy/edge/relay) whose PROXY header names the visitor. Empty: none.
+      - EDGE_TRUSTED_RELAYS=${EDGE_TRUSTED_RELAYS:-}
     volumes:
       - ./edge:/app/deploy-edge:ro
     # The same two settings that used to publish the gateway, so a deployment's .env keeps meaning what

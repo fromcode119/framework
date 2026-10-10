@@ -14,6 +14,12 @@ import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protoc
  * Each connection starts with a PROXY protocol v2 header naming the visitor (`GatewayProxyProtocol`),
  * or the gateway would see every visitor as this process.
  *
+ * Another relay may stand in front of this one (a second edge on its own address, so the sites stay
+ * reachable where a shared CDN address is blocked). That relay names the visitor in its own PROXY
+ * header, and this edge passes that visitor on — but ONLY for connections from the addresses listed in
+ * `EDGE_TRUSTED_RELAYS`. From anywhere else a header is not read: anyone could write one and pose as
+ * any visitor.
+ *
  * Not replaced by deploys: a rolling deploy only starts it when missing, so the ports stay held.
  */
 export class PlatformEdge {
@@ -28,6 +34,8 @@ export class PlatformEdge {
     private readonly upstreams: EdgeUpstreams,
     /** Public port → the gateway's port it forwards to. */
     private readonly routes: Array<{ listen: number; upstreamPort: number }>,
+    /** Relays in front of this edge whose PROXY header is believed (`EDGE_TRUSTED_RELAYS`). */
+    private readonly trustedRelays: ReadonlySet<string> = new Set(),
   ) {}
 
   /** From the environment: 80 → the gateway's HTTP port, 443 → its TLS port. */
@@ -38,10 +46,16 @@ export class PlatformEdge {
     };
     const host = String(process.env.EDGE_UPSTREAM_HOST || 'gateway').trim();
     const httpPort = port('EDGE_UPSTREAM_HTTP_PORT', 3000);
+    const relays = String(process.env.EDGE_TRUSTED_RELAYS || '').split(',').map((entry) => PlatformEdge.address(entry.trim())).filter(Boolean);
     return new PlatformEdge(new EdgeUpstreams(host, httpPort), [
       { listen: port('EDGE_HTTP_PORT', 80), upstreamPort: httpPort },
       { listen: port('EDGE_HTTPS_PORT', 443), upstreamPort: port('GATEWAY_TLS_PORT', 3443) },
-    ]);
+    ], new Set(relays));
+  }
+
+  /** An address as compared here: IPv4-mapped IPv6 (Node's dual-stack form) as plain IPv4. */
+  private static address(value: string): string {
+    return value.startsWith('::ffff:') && net.isIPv4(value.slice(7)) ? value.slice(7) : value;
   }
 
   async start(): Promise<number[]> {
@@ -76,6 +90,14 @@ export class PlatformEdge {
     this.open.add(client);
     client.once('close', () => this.open.delete(client));
     client.on('error', () => client.destroy());
+    if (this.trustedRelays.has(PlatformEdge.address(String(client.remoteAddress ?? '')))) {
+      GatewayProxyProtocol.accept(client, (socket) => this.forward(socket, upstreamPort), { resume: false });
+      return;
+    }
+    this.forward(client, upstreamPort);
+  }
+
+  private forward(client: net.Socket, upstreamPort: number): void {
     const header = GatewayProxyProtocol.header(String(client.remoteAddress ?? ''), client.remotePort ?? 0, String(client.localAddress ?? ''), client.localPort ?? 0);
     void this.connect(upstreamPort, header, new Set()).then((upstream) => {
       if (!upstream) { client.destroy(); return; }

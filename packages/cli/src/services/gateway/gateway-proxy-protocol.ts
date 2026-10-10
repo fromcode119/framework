@@ -24,8 +24,11 @@ export class GatewayProxyProtocol {
   /**
    * Hands `socket` to `deliver` once its header (if any) is consumed, with `remoteAddress` and
    * `remotePort` telling the visitor. A malformed header closes the connection.
+   *
+   * `resume: false` leaves the socket paused after `deliver`, for a caller that first opens a connection
+   * of its own (`PlatformEdge` relaying a relay) and would otherwise lose the bytes read meanwhile.
    */
-  static accept(socket: net.Socket, deliver: (socket: net.Socket) => void): void {
+  static accept(socket: net.Socket, deliver: (socket: net.Socket) => void, options: { resume?: boolean } = {}): void {
     let buffered = Buffer.alloc(0);
     const timer = setTimeout(() => socket.destroy(), GatewayProxyProtocol.HEADER_TIMEOUT_MS);
     const finish = (rest: Buffer): void => {
@@ -34,7 +37,7 @@ export class GatewayProxyProtocol {
       socket.removeListener('end', onEnd);
       if (rest.length) socket.unshift(rest);
       deliver(socket);
-      socket.resume();
+      if (options.resume !== false) socket.resume();
     };
     const onEnd = (): void => { clearTimeout(timer); };
     const onReadable = (): void => {
