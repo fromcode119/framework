@@ -185,7 +185,7 @@
       "unsavedIn": "Unsaved changes to",
       "noUnsaved": "No unsaved changes",
       "notSaved": "Not saved: {{reason}}",
-      "discard": "Discard Changes",
+      "discard": "Discard",
       "createEntry": "Create Entry",
       "commit": "Commit Changes",
       "viewOnly": "You can view this record. Your role does not include changing it, so it cannot be saved.",
@@ -218,7 +218,8 @@
       "duplicateLoaded": "Duplicate loaded. Review the values and save to create a new record.",
       "duplicateFailed": "Failed to load duplicate source",
       "loadFailed": "Failed to load entry",
-      "slugTaken": "This slug is already taken by \"{{name}}\"."
+      "slugTaken": "This slug is already taken by \"{{name}}\".",
+      "unsavedChanges": "Unsaved changes"
     },
     "notFound": {
       "title": "Collection Not Found",

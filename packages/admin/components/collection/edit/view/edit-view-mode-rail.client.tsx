@@ -42,11 +42,12 @@ export class EditViewModeRail extends Reactor {
   render(): ReactNode {
     const { advancedView } = this;
 
-    // 40px wide and shown at every breakpoint — "always there" includes mobile, where hiding the rail
-    // would leave no way back out of JSON view.
+    // Shown at every breakpoint — "always there" includes mobile, where hiding it would leave no way back
+    // out of JSON view. On a wide screen it is a 40px column beside the form; on a narrow one a small
+    // two-button switch above it, because a column there took a sixth of a phone's width down the whole page.
     return (
       <div
-        className="sticky top-32 z-10 flex shrink-0 flex-col gap-1 rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 dark:border-slate-800 dark:bg-slate-950"
+        className="z-10 flex shrink-0 flex-row gap-1 self-start rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 lg:sticky lg:top-32 lg:flex-col dark:border-slate-800 dark:bg-slate-950"
         role="group"
         aria-label={AdminI18n.t('collection.edit.viewMode')}
       >

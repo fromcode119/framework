@@ -44,77 +44,52 @@ export class EditFooter extends PureReactor {
   }
 
   /**
-   * OPAQUE, not translucent.
+   * The save bar, shown only while there is something to save: a new record, unsaved changes, or a save
+   * that was refused. An untouched record shows none — a permanent bar saying "No unsaved changes" took a
+   * strip of every screen, most of all a phone's, to say nothing, and repeated the header's Save.
    *
-   * This bar was `bg-white/80` over `backdrop-blur-3xl`. A z-index of 100 puts it above the page, but
-   * above a translucent thing is still visible THROUGH it — the section-nav dots showed across the
-   * bar, and so would anything else that happened to scroll behind it. Chasing the geometry of each
-   * offender is endless; a bar that actually covers what it sits on ends the whole class.
+   * It is `sticky` at the bottom of the page column rather than `fixed` to the window, so it lines up
+   * with the content by itself; fixed, it had to guess the menu's width and sat 80px off on a phone,
+   * which has no side menu. Opaque, so nothing scrolling behind it shows through.
    */
   render(): ReactNode {
+    if (!this.isDirty && !this.isNew && !this.saveError) return null;
+    const dark = this.theme === ThemeMode.DARK;
     return (
-      // `data-edit-footer` so anything sticky in the content column can measure this bar, the way the
-      // section nav already measures `data-edit-header`. The bar is 80% opaque over a 64px blur, so
-      // whatever sits behind it stays faintly VISIBLE rather than being hidden — the section-nav dots
-      // were showing through it.
-      <div data-edit-footer className={`fixed bottom-0 left-0 right-0 z-[100] border-t py-3 transition-all duration-300 ${
-        this.theme === ThemeMode.DARK
-          ? 'bg-slate-950 border-slate-800/50 shadow-[0_-20px_50px_rgba(0,0,0,0.5)]'
-          : 'bg-white border-slate-100 shadow-lg'
+      // `data-edit-footer` so anything sticky in the content column can measure this bar.
+      <div data-edit-footer className={`sticky bottom-0 z-[100] mt-auto border-t ${
+        dark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200 shadow-[0_-8px_24px_rgba(15,23,42,0.06)]'
       }`}>
-        {/* Two nested boxes, deliberately. This bar is `fixed`, so it escapes the content column and has
-            to clear the sidebar itself — that is the OUTER pl-20/lg:pl-64. The page gutter then has to
-            sit INSIDE that offset, because Tailwind emits `pl-*` after `px-*`: put both on one element
-            and `pl-64` overrides the `px-8` gutter, leaving this bar flush at the sidebar edge while the
-            header and body above it start a further 32px in. */}
-        <div className="pl-20 lg:pl-64">
-        <div className="w-full px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-3">
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2.5">
-              {/* Was "Persistence Layer // <slug>" — internal jargon that told an editor nothing.
-                  It is a save bar, so it says what will be saved and where.
-
-                  It also used to say "Unsaved changes" UNCONDITIONALLY — there was no dirty state in the
-                  edit stack at all, so an untouched record announced unsaved work the moment it opened,
-                  on every collection. A permanent warning is not a warning, and it drowned the one case
-                  that matters. Both the pulse and the wording now follow whether anything actually differs
-                  from the loaded record. */}
-              <div className={`h-2 w-2 rounded-full ${
-                this.isDirty
-                  ? 'bg-indigo-500 shadow-[0_0_12px_rgba(99,102,241,0.6)] animate-pulse'
-                  : 'bg-slate-300 dark:bg-slate-600'
-              }`} />
-              <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-400">
-                {this.isDirty
-                  ? <>{AdminI18n.t('collection.edit.unsavedIn')} <strong className="font-bold">{this.collectionName}</strong></>
-                  : <>{AdminI18n.t('collection.edit.noUnsaved')} &middot; <strong className="font-bold">{this.collectionName}</strong></>}
+        <div className="flex w-full items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className={`h-2 w-2 shrink-0 rounded-full ${this.isDirty ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
+              <span className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
+                {this.isDirty || !this.isNew
+                  ? AdminI18n.t('collection.edit.unsavedChanges')
+                  : AdminI18n.t('collection.edit.newEntry')}
               </span>
             </div>
             {this.saveError && (
-              <span role="alert" className="text-[11px] font-semibold text-rose-600 dark:text-rose-400">
+              <span role="alert" className="mt-0.5 block text-[12px] font-medium text-rose-600 dark:text-rose-400">
                 {AdminI18n.t('collection.edit.notSaved', { reason: this.saveError })}
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant={ButtonVariant.GHOST}
-              className="px-6 text-[10px] font-bold uppercase tracking-wide text-slate-400"
-              onClick={this.onDiscard}
-            >
+          <div className="flex shrink-0 items-center gap-2">
+            <Button variant={ButtonVariant.GHOST} className="h-9 px-3 text-[13px] font-medium" onClick={this.onDiscard}>
               {AdminI18n.t('collection.edit.discard')}
             </Button>
             <Button
-              className="px-8 shadow-lg shadow-indigo-600/20 text-[10px] font-bold uppercase tracking-wide"
+              className="h-9 px-4 text-[13px] font-semibold"
               onClick={this.onCommit}
               isLoading={this.saving}
-              icon={<FrameworkIcons.Save size={16} strokeWidth={3} />}
+              icon={<FrameworkIcons.Save size={14} />}
             >
-              {AdminI18n.t(this.isNew ? 'collection.edit.createEntry' : 'collection.edit.commit')}
+              {AdminI18n.t(this.isNew ? 'common.create' : 'common.save')}
             </Button>
           </div>
-        </div>
         </div>
       </div>
     );

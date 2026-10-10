@@ -37,7 +37,7 @@ export class EditPageBody extends PureReactor {
     } = edit;
 
     return (
-    <div className="flex-1 w-full px-6 lg:px-8 py-6">
+    <div className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password
@@ -84,7 +84,7 @@ export class EditPageBody extends PureReactor {
 
         {/* The view-mode rail sits OUTSIDE the branch so it is in the same place in both modes — the
             way back from JSON has to be where the way in was. */}
-        <div className="flex items-start gap-3">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
         <EditViewModeRail advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} />
         <div className="min-w-0 flex-1">
         {this.advancedView ? (
