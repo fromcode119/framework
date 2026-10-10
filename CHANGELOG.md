@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.364] - 2026-10-10
+
+### Added
+
+- **admin**: faster list actions — a status in one tap, plugin row actions on cards ([#860](https://github.com/fromcode119/framework/pull/860))
+
 ## [0.2.363] - 2026-10-10
 
 ### Fixed
