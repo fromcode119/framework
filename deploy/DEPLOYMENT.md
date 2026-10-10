@@ -140,8 +140,9 @@ On the platform, enter the relay's address in the admin: **Settings → Security
 Trusted relays** (comma-separated for several). It reaches the gateway with its routing map, no restart.
 
 Only connections from those addresses may name the visitor; from anywhere else that claim is never
-read, because anyone could make it. Without the setting the platform still serves the relay's
-traffic, but sees every visitor as the relay, so per-visitor limits would treat them all as one.
+read, because anyone could make it. **Set it before pointing any traffic at the relay:** until the
+relay's address is listed, the gateway does not read the relay's header and every connection through
+it fails.
 
 ### Behind your own proxy
 The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
