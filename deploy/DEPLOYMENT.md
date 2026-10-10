@@ -125,13 +125,12 @@ there too.
 A second server can stand in front of the platform, on an address of its own: it holds 80/443 and
 passes every connection, still encrypted, to this platform's edge. Use it when a shared CDN address
 is unreachable for some visitors (blocked by a network or a court order), or to keep the platform's
-own address private. The relay holds no certificates and routes nothing; it runs the same edge
-(`deploy/edge/relay/docker-compose.yml`).
+own address private. The relay holds no certificates and routes nothing: it is HAProxy with
+`deploy/edge/relay/haproxy.cfg` (`deploy/edge/relay/docker-compose.yml`).
 
 On the relay, `.env` beside that file:
 
 ```bash
-VERSION=<the platform's version>
 EDGE_UPSTREAM_HOST=<the platform's public address>
 ```
 
