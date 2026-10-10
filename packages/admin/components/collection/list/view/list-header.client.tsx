@@ -25,9 +25,11 @@ export class CollectionListHeader extends PureReactor {
   const displayName = CollectionListUtils.resolveCollectionLabel(collection, slug);
   const singularDisplayName = CollectionListUtils.resolveCollectionSingularLabel(collection, slug);
 
+  // Pinned only from tablet width: on a phone a pinned title and its actions kept a quarter of the
+  // screen while the list scrolled under them.
   return (
-    <div className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-6 lg:px-8 py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
+    <div className="md:sticky md:top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <Slot
             name={`admin.collection.${pluginSlug}.${slug}.header`}
