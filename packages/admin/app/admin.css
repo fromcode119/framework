@@ -635,11 +635,6 @@ html.dark {
   .fc-collection-list .fc-list-table-only { display: block; }
   .fc-collection-list .fc-list-cards { display: none; }
 }
-/* Open-on-site and duplicate sit beside edit only when the list has room; the ⋯ menu always has them. */
-.fc-collection-list .fc-list-wide-action { display: none; }
-@container (min-width: 1180px) {
-  .fc-collection-list .fc-list-wide-action { display: inline-flex; }
-}
 
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
 .fc-edit-sticky { position: sticky; align-self: start; }

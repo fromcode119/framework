@@ -14,9 +14,9 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * A record's actions. The ones used all day stay in view — quick edit, edit, and on a wide screen
- * open-on-site and duplicate — and a plugin's own row actions sit beside them. The rest, and every
- * action on a narrow screen, are in the ⋯ menu, so nothing a user may do is ever out of reach.
+ * A record's actions, each in exactly one place. In the table: open-on-site, duplicate, quick edit and
+ * edit as icons, a plugin's own row actions beside them, and archive and delete in the ⋯ menu. On a
+ * card, quick edit and edit stay in view and the menu also carries open-on-site and duplicate.
  */
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -61,8 +61,10 @@ export class CollectionListRowActions extends PureReactor {
   private get menuItems(): IDropdownItem[] {
     const items: IDropdownItem[] = [];
     const previewUrl = this.previewUrl;
-    if (previewUrl) items.push({ label: AdminI18n.t('collection.list.openOnSite'), icon: <FrameworkIcons.ExternalLink size={15} />, onClick: () => window.open(previewUrl, '_blank', 'noopener') });
-    if (this.access.canCreate) items.push({ label: AdminI18n.t('collection.list.duplicate'), icon: <Copy size={15} />, onClick: () => this.onNavigate(this.duplicateHref) });
+    // On a card these two have no icon of their own, so the menu carries them; in the table they are
+    // icons beside edit, and listing them again here showed every action twice.
+    if (this.compact && previewUrl) items.push({ label: AdminI18n.t('collection.list.openOnSite'), icon: <FrameworkIcons.ExternalLink size={15} />, onClick: () => window.open(previewUrl, '_blank', 'noopener') });
+    if (this.compact && this.access.canCreate) items.push({ label: AdminI18n.t('collection.list.duplicate'), icon: <Copy size={15} />, onClick: () => this.onNavigate(this.duplicateHref) });
     if (this.access.canUpdate && this.onArchive) {
       const archived = CollectionArchive.isArchived(this.row);
       items.push({
@@ -90,12 +92,12 @@ export class CollectionListRowActions extends PureReactor {
     return (
       <>
         {previewUrl ? (
-          <a href={previewUrl} target="_blank" rel="noopener" onClick={this.stop} className={`fc-list-wide-action ${CollectionListRowActions.ICON}`} title={AdminI18n.t('collection.list.openOnSite')} aria-label={AdminI18n.t('collection.list.openOnSite')}>
+          <a href={previewUrl} target="_blank" rel="noopener" onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.openOnSite')} aria-label={AdminI18n.t('collection.list.openOnSite')}>
             <FrameworkIcons.ExternalLink size={16} />
           </a>
         ) : null}
         {this.access.canCreate ? (
-          <Link href={this.duplicateHref} onClick={this.stop} className={`fc-list-wide-action ${CollectionListRowActions.ICON}`} title={AdminI18n.t('collection.list.duplicate')} aria-label={AdminI18n.t('collection.list.duplicate')}>
+          <Link href={this.duplicateHref} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.duplicate')} aria-label={AdminI18n.t('collection.list.duplicate')}>
             <Copy size={16} />
           </Link>
         ) : null}
