@@ -45,8 +45,10 @@ export class CollectionListCard extends PureReactor {
     return this.layout.metaFields
       .map((name) => ({ name, value: this.row[name] }))
       .filter(({ value }) => value !== null && value !== undefined && value !== '')
-      .map(({ name }) => (
-        <span key={name} className="min-w-0 truncate">
+      // Only the first part gives way when the line is too long — typically a name, which still reads
+      // shortened. A badge cut to "Pai…" says nothing, so the parts after it keep their full width.
+      .map(({ name }, index) => (
+        <span key={name} className={index === 0 ? 'min-w-0 truncate' : 'shrink-0'}>
           {this.layout.valueLabels[name] ? <span className="text-slate-400 dark:text-slate-500">{this.layout.valueLabels[name]} </span> : null}
           {this.cell(name)}
         </span>
@@ -79,9 +81,11 @@ export class CollectionListCard extends PureReactor {
                 {this.cell(layout.titleField) ?? `#${row.id}`}
               </div>
               {layout.trailingField ? (
-                <div className="shrink-0 text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">
-                  {layout.valueLabels[layout.trailingField] ? <span className="mr-1 text-[12px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
-                  {this.cell(layout.trailingField)}
+                // The label sits ABOVE the value: beside it, a long one ("Lifetime Value (LTV)") left the
+                // title a sliver of the card.
+                <div className="shrink-0 max-w-[45%] flex flex-col items-end text-right leading-tight">
+                  {layout.valueLabels[layout.trailingField] ? <span className="max-w-full truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
+                  <span className="text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
                 </div>
               ) : null}
             </div>
