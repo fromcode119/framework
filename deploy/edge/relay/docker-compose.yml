@@ -25,7 +25,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256m
+          # Measured 2026-10-10: ~240 MiB while tsx compiles the CLI at start, ~160 MiB settled.
+          memory: 384m
     logging:
       driver: json-file
       options:
