@@ -52,7 +52,7 @@ export class CollectionListPageService {
         id: columnName,
         header,
         sortable: CollectionListPageService.isSortableColumn(columnName, field, { timestamps, hasWorkflow }),
-        accessor: (row: any) => RecordCellRenderers.renderCellValue({ columnName, field, header, raw: row[columnName] })
+        accessor: (row: any) => RecordCellRenderers.renderCellValue({ columnName, field, header, raw: row[columnName], row })
       };
     });
   }
