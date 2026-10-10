@@ -7,9 +7,13 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The platform number field: a numeric input with explicit +/- stepper controls (and clamping to
- * min/max), replacing the bare browser `<input type="number">`. Used by every number field the
- * FieldRenderer draws, so it is consistent across the whole admin (default shell + appearances).
+ * The platform number field, used by every number field the FieldRenderer draws.
+ *
+ * A whole-number field (a declared whole `step`: stock, quantities) gets − and + buttons at either end of
+ * the box, each a full control's height, so a finger can hit them on a phone. Any other number — a price,
+ * a weight, a field with no step — is a plain box with the number keypad: stepping 6.90 by one is never
+ * what anyone wants, and the old pair of 10px arrows stacked in the corner was too small to tap.
+ * Typed values are clamped to min/max when the field is left.
  */
 export class NumberStepper extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -86,39 +90,51 @@ export class NumberStepper extends PureReactor {
     if (clamped !== current) this.onChange(clamped);
   }
 
-  render(): ReactNode {
+  /** − and + only where stepping by one is meaningful: a declared whole-number step. */
+  private get stepsByWholeNumbers(): boolean {
+    const step = Number(this.step);
+    return Number.isInteger(step) && step >= 1;
+  }
+
+  private renderInput(withButtons: boolean): ReactNode {
     const { value, disabled, error, placeholder, min, max } = this;
     const sm = this.size === FieldSize.SM;
-    const btn = 'flex-1 flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-500/15 active:bg-indigo-100 dark:active:bg-indigo-500/25 disabled:opacity-40 disabled:hover:bg-transparent transition-colors cursor-pointer';
+    const pad = withButtons ? (sm ? 'px-8 text-center' : 'px-10 text-center') : '';
+    return (
+      <Input
+        type="number"
+        inputMode={withButtons ? 'numeric' : 'decimal'}
+        size={sm ? FieldSize.SM : FieldSize.MD}
+        value={(typeof value === 'number' || typeof value === 'string') ? value : ''}
+        onChange={this.onType}
+        onBlur={this.onLeave}
+        placeholder={placeholder}
+        disabled={disabled}
+        error={error}
+        min={min as any}
+        max={max as any}
+        step={this.typedStep as any}
+        inputClassName={`${pad} tabular-nums [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
+      />
+    );
+  }
+
+  render(): ReactNode {
+    if (!this.stepsByWholeNumbers) return this.renderInput(false);
+    const sm = this.size === FieldSize.SM;
+    // Each button is a square the input's own height (minus its border), inside the box at either end.
+    const btn = `absolute top-px flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-colors ${sm ? 'h-[calc(2.25rem_-_2px)] w-8' : 'h-[calc(2.5rem_-_2px)] w-10'}`;
     return (
       <div className="relative">
-        <Input
-          type="number"
-          size={sm ? FieldSize.SM : FieldSize.MD}
-          value={(typeof value === 'number' || typeof value === 'string') ? value : ''}
-          onChange={this.onType}
-          onBlur={this.onLeave}
-          placeholder={placeholder}
-          disabled={disabled}
-          error={error}
-          min={min as any}
-          max={max as any}
-          step={this.typedStep as any}
-          inputClassName={`${sm ? 'pr-6 text-center' : 'pr-8'} [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
-        />
-        {/* The stepper "well" sits INSIDE the input's 1px border (inset by a pixel on both axes) rather
-            than on top of it, and inherits the shared `--radius` token — a hardcoded `rounded-r-lg` (8px)
-            cut visibly across the input's 12px curve. Height is pinned to the input's own height minus
-            the two border pixels, so an error message rendering below never stretches or shifts it. */}
-        <div className={`absolute right-px top-px flex flex-col rounded-r-[calc(var(--radius)_-_1px)] overflow-hidden border-l border-slate-200 dark:border-slate-700 ${sm ? 'h-[calc(2.25rem_-_2px)] w-5' : 'h-[calc(2.5rem_-_2px)] w-6'}`}>
-          <button type="button" tabIndex={-1} disabled={disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment} className={btn}>
-            <FrameworkIcons.ChevronUp size={sm ? 10 : 12} strokeWidth={2.75} />
-          </button>
-          <div className="h-px bg-slate-200 dark:bg-slate-700" />
-          <button type="button" tabIndex={-1} disabled={disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement} className={btn}>
-            <FrameworkIcons.ChevronDown size={sm ? 10 : 12} strokeWidth={2.75} />
-          </button>
-        </div>
+        {this.renderInput(true)}
+        <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement}
+          className={`${btn} left-px rounded-l-[calc(var(--radius)_-_1px)]`}>
+          <FrameworkIcons.Minus size={sm ? 13 : 15} strokeWidth={2.25} />
+        </button>
+        <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment}
+          className={`${btn} right-px rounded-r-[calc(var(--radius)_-_1px)]`}>
+          <FrameworkIcons.Plus size={sm ? 13 : 15} strokeWidth={2.25} />
+        </button>
       </div>
     );
   }

@@ -640,3 +640,6 @@ html.dark {
 @container (min-width: 1180px) {
   .fc-collection-list .fc-list-wide-action { display: inline-flex; }
 }
+
+/* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
+.fc-edit-sticky { position: sticky; align-self: start; }

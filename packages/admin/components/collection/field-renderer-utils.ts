@@ -81,7 +81,10 @@ export class FieldRendererUtils {
       field.type === 'json' ||
       FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ||
       field.admin?.component === 'TagField' ||
-      field.admin?.component === 'Tags'
+      field.admin?.component === 'Tags' ||
+      // A yes/no field is a row with its switch at the end; beside an input whose label sits above
+      // its box, neither lines up, so it always takes the whole row.
+      ((field.type === 'boolean' || field.type === 'checkbox') && !field.admin?.component)
         ? 'col-span-full' : '';
 
     // No box around a read-only field. It used to get `rounded-xl border bg-slate-50/70 p-2.5`,

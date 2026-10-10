@@ -53,6 +53,35 @@ export class EditPageSidebar extends PureReactor {
     } = this;
     return (
       <div className="min-w-0 space-y-6">
+        {/* The record's own settings first — status and publishing lead, as in shop and content admins —
+            then what plugins add beside it, then the address, history and versions. */}
+        {hasSidebarFields &&
+          sidebarFieldSections.map((section) => (
+            <Card key={`sidebar-section-${section.title}`} title={section.title}>
+              <div className="space-y-6">
+                {section.fields.map((field) => (
+                  <FieldRenderer
+                    key={field.name}
+                    field={field}
+                    value={formData[field.name]}
+                    onChange={(val) => handleInputChange(field.name, val)}
+                    record={formData}
+                    onPatch={handlePatch}
+                    theme={theme}
+                    collectionSlug={resolvedSlug}
+                    pluginSettings={pluginSettings}
+                    pluginSettingsSchema={pluginSettingsSchema}
+                    disabled={saving}
+                    isNew={isNew}
+                    errors={fieldErrors[field.name]}
+                    readOnlyOverrideGranted={readOnlyOverrideGranted}
+                    onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+                  />
+                ))}
+              </div>
+            </Card>
+          ))}
+
         <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
         <Slot name="admin.collection.edit.sidebar" props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
@@ -91,33 +120,6 @@ export class EditPageSidebar extends PureReactor {
         {!isNew && (
           <PageDesignCard collectionSlug={collection?.slug} recordId={id} content={formData.content} />
         )}
-
-        {hasSidebarFields &&
-          sidebarFieldSections.map((section) => (
-            <Card key={`sidebar-section-${section.title}`} title={section.title}>
-              <div className="space-y-6">
-                {section.fields.map((field) => (
-                  <FieldRenderer
-                    key={field.name}
-                    field={field}
-                    value={formData[field.name]}
-                    onChange={(val) => handleInputChange(field.name, val)}
-                    record={formData}
-                    onPatch={handlePatch}
-                    theme={theme}
-                    collectionSlug={resolvedSlug}
-                    pluginSettings={pluginSettings}
-                    pluginSettingsSchema={pluginSettingsSchema}
-                    disabled={saving}
-                    isNew={isNew}
-                    errors={fieldErrors[field.name]}
-                    readOnlyOverrideGranted={readOnlyOverrideGranted}
-                    onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-                  />
-                ))}
-              </div>
-            </Card>
-          ))}
 
         {!isNew && (
           <RecordInfo

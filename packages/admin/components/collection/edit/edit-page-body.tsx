@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
+import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
 import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
@@ -141,6 +142,7 @@ export class EditPageBody extends PureReactor {
           </div>
 
           {renderSidebar && (
+            <EditStickyColumn>
             <EditPageSidebar
               slug={slug}
               id={id}
@@ -172,6 +174,7 @@ export class EditPageBody extends PureReactor {
               loadMoreRevisions={loadMoreRevisions}
               hasMoreRevisions={hasMoreRevisions}
             />
+            </EditStickyColumn>
           )}
           </div>
           </div>

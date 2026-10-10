@@ -5,6 +5,7 @@ import { FieldRendererHeader } from '@/components/collection/field-renderer-head
 import { FieldControlRenderer } from '@/components/collection/field-control-renderer';
 import { FieldRendererFooter } from '@/components/collection/field-renderer-footer';
 import { FieldRendererViewLocale } from '@/components/collection/field-renderer-view-locale';
+import { FieldBooleanRow } from '@/components/collection/field-boolean-row';
 
 /**
  * One field of a record, rendered by whichever component its type resolves to.
@@ -40,6 +41,15 @@ export class FieldRendererView extends FieldRendererViewLocale {
     return this.isFieldReadOnly && (textual || valued) && !this.isLocalizedField;
   }
 
+  /**
+   * An editable yes/no field with no control of its own: drawn as a tick box beside its label. A locked
+   * one keeps the read-only value display and its unlock control, and a declared component keeps its own.
+   */
+  private get isPlainBoolean(): boolean {
+    const kind = String(this.field.type || '');
+    return (kind === 'boolean' || kind === 'checkbox') && !this.field.admin?.component && !this.isFieldReadOnly && !this.isLocalizedField;
+  }
+
   render(): ReactElement {
     const fieldComponents = (this.plugins as any).fieldComponents || {};
     const isLocalizedField = this.isLocalizedField;
@@ -50,6 +60,28 @@ export class FieldRendererView extends FieldRendererViewLocale {
     const resolvedCurrentText = FieldRendererUtils.resolveRenderableText(currentValue, this.activeLocale || defaultLocale);
     const ownDescription = this.field.extendedBy === 'system' ? AdminI18n.optional(`collection.systemFields.${this.field.name}.description`) : '';
     const resolvedFieldDescription = ownDescription || FieldRendererUtils.resolveRenderableText(this.field.admin?.description, this.activeLocale || defaultLocale);
+
+    if (this.isPlainBoolean) {
+      return (
+        <div className={FieldRendererUtils.wrapperClassName(this.field)}>
+          <FieldBooleanRow
+            label={label}
+            description={resolvedFieldDescription}
+            checked={FieldRendererUtils.toBooleanValue(currentValue, this.field.defaultValue)}
+            onChange={this.updateValue}
+            required={Boolean(this.field.required)}
+          />
+          <FieldRendererFooter
+            field={this.field}
+            resolvedFieldDescription=""
+            errors={this.errors}
+            provenance={this.provenance}
+            localeFallback={this.localeFallback}
+            activeLocale={this.activeLocale}
+          />
+        </div>
+      );
+    }
 
     return (
       <div className={FieldRendererUtils.wrapperClassName(this.field)}>
