@@ -136,14 +136,11 @@ VERSION=<the platform's version>
 EDGE_UPSTREAM_HOST=<the platform's public address>
 ```
 
-On the platform, in `.env`, the relay's address (comma-separated for several), then restart the edge:
+On the platform, enter the relay's address in the admin: **Settings → Security → API Firewall →
+Trusted relays** (comma-separated for several). It reaches the gateway with its routing map, no restart.
 
-```bash
-EDGE_TRUSTED_RELAYS=<the relay's public address>
-```
-
-Only connections from those addresses may name the visitor; from anywhere else a PROXY header is not
-read, because anyone could write one. Without the setting the platform still serves the relay's
+Only connections from those addresses may name the visitor; from anywhere else that claim is never
+read, because anyone could make it. Without the setting the platform still serves the relay's
 traffic, but sees every visitor as the relay, so per-visitor limits would treat them all as one.
 
 ### Behind your own proxy

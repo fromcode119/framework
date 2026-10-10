@@ -220,6 +220,13 @@ export class SystemMetaKeys {
    * second provider needs no new key here — only a new entry in the same JSON object.
    */
   RATE_LIMIT_EDGE_PROVIDER_RANGES: 'rate_limit_edge_provider_ranges',
+  /**
+   * Addresses of the relays standing in front of this platform (the platform's own edge run on another
+   * server, `deploy/edge/relay`). A connection reaching the gateway from one of these may name the
+   * visitor in its own PROXY header; from anywhere else that header is never read. Empty: no relay.
+   * Delivered to the gateway with the routing map.
+   */
+  TRUSTED_RELAYS: 'trusted_relays',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
   /**

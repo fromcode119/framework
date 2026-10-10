@@ -2,8 +2,8 @@
 # this server's 80/443 and passes every connection, still encrypted, to the platform, with a PROXY
 # protocol v2 header naming the visitor. It holds no certificates and routes nothing.
 #
-# On the platform, EDGE_TRUSTED_RELAYS must list this server's address, or the platform does not read
-# the header and sees every visitor as this server. docs: deploy/DEPLOYMENT.md, "A relay in front of the edge".
+# On the platform, Settings → Security → API Firewall → Trusted relays must list this server's address,
+# or the platform does not read the header and sees every visitor as this server. docs: deploy/DEPLOYMENT.md, "A relay in front of the edge".
 #
 # .env beside this file:
 #   VERSION=<the platform's version>

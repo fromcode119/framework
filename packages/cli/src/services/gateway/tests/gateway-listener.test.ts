@@ -31,8 +31,8 @@ describe('GatewayListener', () => {
   const listeners: GatewayListener[] = [];
   afterEach(async () => { await Promise.all(listeners.splice(0).map((listener) => listener.stop(0))); });
 
-  const start = async (handler: http.RequestListener): Promise<GatewayListener> => {
-    const listener = new GatewayListener(http.createServer(handler));
+  const start = async (handler: http.RequestListener, relays: readonly string[] = []): Promise<GatewayListener> => {
+    const listener = new GatewayListener(http.createServer(handler), undefined, () => relays);
     listeners.push(listener);
     listener.listen(0, () => undefined);
     await listener.listening;
@@ -44,6 +44,26 @@ describe('GatewayListener', () => {
     const reply = await RawClient.exchange(listener.port, Buffer.concat([GatewayProxyProtocol.header('203.0.113.7', 40123), RawClient.request()]));
     expect(reply).toMatch(/^HTTP\/1\.1 200/);
     expect(reply).toContain('from 203.0.113.7:40123');
+  });
+
+  it('believes the visitor a trusted relay names, behind the edge\'s own header', async () => {
+    const listener = await start((req, res) => res.end(`from ${req.socket.remoteAddress}`), ['198.51.100.10']);
+    const edge = GatewayProxyProtocol.header('198.51.100.10', 50000);
+    const relay = GatewayProxyProtocol.header('203.0.113.7', 40123);
+    const reply = await RawClient.exchange(listener.port, Buffer.concat([edge, relay, RawClient.request()]));
+    expect(reply).toContain('from 203.0.113.7');
+  });
+
+  it('serves a trusted relay that sends no header of its own, as the relay', async () => {
+    const listener = await start((req, res) => res.end(`from ${req.socket.remoteAddress}`), ['198.51.100.10']);
+    const reply = await RawClient.exchange(listener.port, Buffer.concat([GatewayProxyProtocol.header('198.51.100.10', 50000), RawClient.request()]));
+    expect(reply).toContain('from 198.51.100.10');
+  });
+
+  it('never reads a second header from an address that is not a trusted relay', async () => {
+    const listener = await start((req, res) => res.end(`from ${req.socket.remoteAddress}`), ['198.51.100.10']);
+    const forged = Buffer.concat([GatewayProxyProtocol.header('192.0.2.50', 50000), GatewayProxyProtocol.header('203.0.113.7', 40123), RawClient.request()]);
+    expect(await RawClient.exchange(listener.port, forged)).not.toContain('203.0.113.7');
   });
 
   it('serves a direct caller on the container network, which sends no header', async () => {

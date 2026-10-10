@@ -51,4 +51,11 @@ describe('TenantRouteMap', () => {
     expect(copy.size).toBe(map.size);
     expect(copy.resolve('api.workspace-a.test')?.target).toBe(GatewayTarget.API);
   });
+
+  it('carries the trusted relays to the gateway and back', () => {
+    const withRelays = TenantRouteMap.fromJson(JSON.parse(JSON.stringify(map.withRelays(['198.51.100.10', '2001:db8::/32']))));
+    expect(withRelays.relays).toEqual(['198.51.100.10', '2001:db8::/32']);
+    expect(withRelays.size).toBe(map.size);
+    expect(TenantRouteMap.fromJson(map.toJSON()).relays).toEqual([]);
+  });
 });

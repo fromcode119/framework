@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationUrlUtils, InternalServiceAuth, RouteConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApplicationUrlUtils, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 import { SetupMode } from '@fromcode119/core';
 
@@ -14,7 +14,11 @@ import { SetupMode } from '@fromcode119/core';
 export class RoutingRouter {
   readonly router = express.Router();
 
-  constructor(private readonly tenants: TenantRegistryService) {
+  constructor(
+    private readonly tenants: TenantRegistryService,
+    /** The platform settings cache: Settings → Security → Trusted relays travels with the map. */
+    private readonly settingsCache: Map<string, string> = new Map(),
+  ) {
     this.router.get(RouteConstants.SEGMENTS.INTERNAL_ROUTING, (req, res) => { void this.map(req, res); });
   }
 
@@ -27,7 +31,7 @@ export class RoutingRouter {
       admin: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       api: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
-    }, SetupMode.isActive());
+    }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

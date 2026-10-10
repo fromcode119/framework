@@ -28,6 +28,12 @@ export class ApiFirewallCard extends PureReactor {
     this.setSettings((prev) => ({ ...prev, [SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS]: value }));
   }
 
+  @bound
+  setTrustedRelays(event: ChangeEvent<HTMLInputElement>): void {
+    const value = event.target.value;
+    this.setSettings((prev) => ({ ...prev, [SystemConstants.META_KEY.TRUSTED_RELAYS]: value }));
+  }
+
   render(): ReactNode {
     return (
       <Card title={AdminI18n.t('settings.security.apiFirewall')}>
@@ -78,6 +84,20 @@ export class ApiFirewallCard extends PureReactor {
             value={this.settings[SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS] ?? ''}
             onChange={this.setInternalClients}
             placeholder="127.0.0.0/8, ::1, 10.0.0.0/8"
+          />
+        </SettingRow>
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.Globe}
+          title={AdminI18n.t('settings.security.trustedRelays')}
+          description={AdminI18n.t('settings.security.trustedRelaysHelp')}
+        >
+          <Input
+            className="w-80"
+            value={this.settings[SystemConstants.META_KEY.TRUSTED_RELAYS] ?? ''}
+            onChange={this.setTrustedRelays}
+            placeholder={AdminI18n.t('settings.security.trustedRelaysNone')}
           />
         </SettingRow>
 
