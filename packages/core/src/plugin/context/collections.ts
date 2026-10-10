@@ -68,7 +68,7 @@ export class CollectionsContextProxy {
 
           const existing = manager.registeredCollections.get(prefixedSlug);
           if (existing?.pluginSlug === plugin.manifest.slug) {
-            CollectionsContextProxy.entityRegistration.refreshOwnCollectionFields(existing.collection, modifiedCollection);
+            CollectionsContextProxy.entityRegistration.refreshOwnCollection(existing.collection, modifiedCollection);
           } else if (existing) {
             CollectionsContextProxy.entityRegistration.mergeCollectionFields(existing.collection, modifiedCollection);
           } else {

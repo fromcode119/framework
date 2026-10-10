@@ -8,8 +8,8 @@ import { Logger } from '@core/logging';
  *
  * READ THIS BEFORE TRUSTING THE NAME. It does **not** re-register a plugin into this process: the
  * api holds an in-process plugin's manifest and code from boot. (An ISOLATED plugin updated through
- * the installer is different — its new process re-registers its collections, and the owner's field
- * definitions are refreshed by `PluginEntityRegistrationService.refreshOwnCollectionFields`.)
+ * the installer is different — its new process re-registers its collections, and the owner's own
+ * declaration is refreshed by `PluginEntityRegistrationService.refreshOwnCollection`.)
  *
  * What it used to do was worse than nothing: it logged `Triggering reload...` and then, by its own
  * comment, "just log the intent". An operator reading that line would believe the new code was
