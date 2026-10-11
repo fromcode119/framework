@@ -15,6 +15,7 @@ import { SystemPushController } from '@api/controllers/system/system-push-contro
 import { SystemNotificationPreferencesController } from '@api/controllers/system/system-notification-preferences-controller';
 import { SystemStorefrontNoticeController } from '@api/controllers/system/system-storefront-notice-controller';
 import { SystemRedirectsController } from '@api/controllers/system/system-redirects-controller';
+import { AuditTableCatalogController } from '@api/controllers/system/audit-table-catalog-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 import { SystemPlatformRoutes } from '@api/routes/system-platform-routes';
@@ -66,6 +67,7 @@ export class SystemRouter extends SystemPlatformRoutes {
     // The redirect store service instance registered at boot is stateless beyond its db handle, so a
     // second instance over the same manager db is equivalent.
     this.redirectsController = new SystemRedirectsController(new SystemRedirectService((manager as any).db));
+    this.auditTableCatalogController = new AuditTableCatalogController(manager);
   }
 
   protected registerRoutes(): void {

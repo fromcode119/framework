@@ -1,11 +1,11 @@
 import { ThemeMode, SystemConstants } from '@fromcode119/core/client';
-import type { ChangeEvent, ReactNode, SetStateAction } from 'react';
+import type { ReactNode, SetStateAction } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/security/setting-row';
+import { SettingListRow } from '@/app/settings/security/setting-list-row';
+import { SettingListSeparator } from '@/app/settings/security/enums/setting-list-separator.enum';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -21,18 +21,6 @@ export class ApiFirewallCard extends PureReactor {
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare theme: ThemeMode;
-
-  @bound
-  setInternalClients(event: ChangeEvent<HTMLInputElement>): void {
-    const value = event.target.value;
-    this.setSettings((prev) => ({ ...prev, [SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS]: value }));
-  }
-
-  @bound
-  setTrustedRelays(event: ChangeEvent<HTMLInputElement>): void {
-    const value = event.target.value;
-    this.setSettings((prev) => ({ ...prev, [SystemConstants.META_KEY.TRUSTED_RELAYS]: value }));
-  }
 
   render(): ReactNode {
     return (
@@ -73,33 +61,29 @@ export class ApiFirewallCard extends PureReactor {
           max={1000000}
         />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS}
+          separator={SettingListSeparator.COMMA}
           icon={FrameworkIcons.Network}
           title={AdminI18n.t('settings.security.internalServiceClients')}
           description={AdminI18n.t('settings.security.addressesOrCidrBlocksYour')}
-        >
-          <Input
-            className="w-80"
-            value={this.settings[SystemConstants.META_KEY.RATE_LIMIT_INTERNAL_CLIENTS] ?? ''}
-            onChange={this.setInternalClients}
-            placeholder="127.0.0.0/8, ::1, 10.0.0.0/8"
-          />
-        </SettingRow>
+          placeholder={AdminI18n.t('settings.security.listAddressPlaceholder')}
+        />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={SystemConstants.META_KEY.TRUSTED_RELAYS}
+          separator={SettingListSeparator.COMMA}
           icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.trustedRelays')}
           description={AdminI18n.t('settings.security.trustedRelaysHelp')}
-        >
-          <Input
-            className="w-80"
-            value={this.settings[SystemConstants.META_KEY.TRUSTED_RELAYS] ?? ''}
-            onChange={this.setTrustedRelays}
-            placeholder={AdminI18n.t('settings.security.trustedRelaysNone')}
-          />
-        </SettingRow>
+          placeholder={AdminI18n.t('settings.security.trustedRelaysNone')}
+        />
 
         <SettingNumberRow
           theme={this.theme}

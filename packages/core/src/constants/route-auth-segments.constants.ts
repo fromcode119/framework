@@ -203,6 +203,7 @@ export class RouteAuthSegments {
   ADMIN_SETTINGS: '/admin/settings',
   /** Which settings belong to the PLATFORM, and whether this account may change them. */
   ADMIN_SETTINGS_PLATFORM_KEYS: '/admin/settings/platform-keys',
+  ADMIN_SETTINGS_AUDIT_TABLES: '/admin/settings/audit-tables',
   /** Every personal-data dataset with the policy in force for it, and which layer decided. */
   ADMIN_PERSONAL_DATA_POLICY: '/admin/personal-data/policy',
   ADMIN_REDIRECTS: '/admin/redirects',

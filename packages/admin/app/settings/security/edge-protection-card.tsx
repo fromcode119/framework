@@ -10,6 +10,9 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/security/setting-row';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
+import { SettingListRow } from '@/app/settings/security/setting-list-row';
+import { SettingListSeparator } from '@/app/settings/security/enums/setting-list-separator.enum';
+import { CountryCatalog } from '@/components/collection/fields/country-catalog';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -34,42 +37,13 @@ export class EdgeProtectionCard extends PureReactor {
     this.set(SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE, event.target.value);
   }
 
-  @bound
-  setBlockedCountries(event: ChangeEvent<HTMLInputElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES, event.target.value);
-  }
-
-  @bound
-  setChallengedCountries(event: ChangeEvent<HTMLInputElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES, event.target.value);
-  }
-
-  @bound
-  setBlockedAddresses(event: ChangeEvent<HTMLTextAreaElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES, event.target.value);
-  }
-
-  @bound
-  setBlockedPaths(event: ChangeEvent<HTMLTextAreaElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_PATHS, event.target.value);
-  }
-
-  @bound
-  setBlockedAgents(event: ChangeEvent<HTMLTextAreaElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS, event.target.value);
-  }
-
-  @bound
-  setExemptPaths(event: ChangeEvent<HTMLTextAreaElement>): void {
-    this.set(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS, event.target.value);
-  }
-
   private set(key: string, value: string): void {
     this.setSettings((prev) => ({ ...prev, [key]: value }));
   }
 
   render(): ReactNode {
     const keys = SystemConstants.META_KEY;
+    const countries = CountryCatalog.options();
     return (
       <Card title={AdminI18n.t('settings.security.edgeProtection')}>
         <SettingSwitchRow
@@ -82,32 +56,44 @@ export class EdgeProtectionCard extends PureReactor {
           description={AdminI18n.t('settings.security.underAttackModeHelp')}
         />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_BLOCKED_COUNTRIES}
+          separator={SettingListSeparator.COMMA}
           icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.blockedCountries')}
           description={AdminI18n.t('settings.security.blockedCountriesHelp')}
-        >
-          <Input className="w-80" value={this.settings[keys.EDGE_BLOCKED_COUNTRIES] ?? ''} onChange={this.setBlockedCountries} placeholder={AdminI18n.t('settings.security.noCountries')} />
-        </SettingRow>
+          options={countries}
+          uppercase
+          placeholder={AdminI18n.t('settings.security.noCountries')}
+        />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_CHALLENGED_COUNTRIES}
+          separator={SettingListSeparator.COMMA}
           icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.challengedCountries')}
           description={AdminI18n.t('settings.security.challengedCountriesHelp')}
-        >
-          <Input className="w-80" value={this.settings[keys.EDGE_CHALLENGED_COUNTRIES] ?? ''} onChange={this.setChallengedCountries} placeholder={AdminI18n.t('settings.security.noCountries')} />
-        </SettingRow>
+          options={countries}
+          uppercase
+          placeholder={AdminI18n.t('settings.security.noCountries')}
+        />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_BLOCKED_ADDRESSES}
+          separator={SettingListSeparator.LINE}
           icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.blockedAddresses')}
           description={AdminI18n.t('settings.security.blockedAddressesHelp')}
-        >
-          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_ADDRESSES] ?? ''} onChange={this.setBlockedAddresses} />
-        </SettingRow>
+        />
 
         <SettingSwitchRow
           theme={this.theme}
@@ -119,23 +105,27 @@ export class EdgeProtectionCard extends PureReactor {
           description={AdminI18n.t('settings.security.blockAttackPatternsHelp')}
         />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_BLOCKED_PATHS}
+          separator={SettingListSeparator.LINE}
           icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.blockedPaths')}
           description={AdminI18n.t('settings.security.blockedPathsHelp')}
-        >
-          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_PATHS] ?? ''} onChange={this.setBlockedPaths} />
-        </SettingRow>
+        />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_BLOCKED_USER_AGENTS}
+          separator={SettingListSeparator.LINE}
           icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.blockedTools')}
           description={AdminI18n.t('settings.security.blockedToolsHelp')}
-        >
-          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_USER_AGENTS] ?? ''} onChange={this.setBlockedAgents} />
-        </SettingRow>
+        />
 
         <SettingNumberRow
           theme={this.theme}
@@ -161,22 +151,25 @@ export class EdgeProtectionCard extends PureReactor {
           max={43200}
         />
 
-        <SettingRow
+        <SettingListRow
           theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_CHALLENGE_EXEMPT_PATHS}
+          separator={SettingListSeparator.LINE}
           icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.security.browserCheckExemptPaths')}
           description={AdminI18n.t('settings.security.browserCheckExemptPathsHelp')}
-        >
-          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_CHALLENGE_EXEMPT_PATHS] ?? ''} onChange={this.setExemptPaths} />
-        </SettingRow>
+        />
 
         <SettingRow
           theme={this.theme}
           icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.security.browserCheckPageTitle')}
           description={AdminI18n.t('settings.security.browserCheckPageTitleHelp')}
+          wide
         >
-          <Input className="w-80" value={this.settings[keys.EDGE_CHALLENGE_TITLE] ?? ''} onChange={this.setTitle} />
+          <Input className="w-full max-w-3xl" value={this.settings[keys.EDGE_CHALLENGE_TITLE] ?? ''} onChange={this.setTitle} />
         </SettingRow>
 
         <SettingRow
@@ -184,8 +177,9 @@ export class EdgeProtectionCard extends PureReactor {
           icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.security.browserCheckPageMessage')}
           description={AdminI18n.t('settings.security.browserCheckPageMessageHelp')}
+          wide
         >
-          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_CHALLENGE_MESSAGE] ?? ''} onChange={this.setMessage} />
+          <TextArea className="w-full max-w-3xl" size={FieldSize.MD} value={this.settings[keys.EDGE_CHALLENGE_MESSAGE] ?? ''} onChange={this.setMessage} />
         </SettingRow>
       </Card>
     );

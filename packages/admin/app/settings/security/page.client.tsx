@@ -216,7 +216,7 @@ export class SecuritySettingsPage extends AdminComponent {
           )}
 
           {activeTab === SecurityTab.DASHBOARD && this.stats && (
-            <SecurityDashboard stats={this.stats} />
+            <SecurityDashboard stats={this.stats} settings={this.settings} onOpenSettings={this.showSettingsTab} />
           )}
 
           {activeTab === SecurityTab.SETTINGS && this.settingsOutOfScope && (
