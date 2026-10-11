@@ -7,6 +7,8 @@ services:
     environment:
       - COLLECTIONS=crowdsecurity/linux crowdsecurity/sshd
       - TZ=UTC
+      # Keeps the local API responsive while the community blocklist (15,000+ entries) is written.
+      - USE_WAL=true
     volumes:
       - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
       - ./config/parsers/s02-enrich/never-block.yaml:/etc/crowdsec/parsers/s02-enrich/never-block.yaml:ro
