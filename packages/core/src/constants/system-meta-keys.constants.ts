@@ -232,6 +232,7 @@ export class SystemMetaKeys {
   EDGE_CHALLENGE_CLEARANCE_MINUTES: 'edge_challenge_clearance_minutes',
   EDGE_CHALLENGE_EXEMPT_PATHS: 'edge_challenge_exempt_paths',
   EDGE_CHALLENGE_TITLE: 'edge_challenge_title',
+  EDGE_RATE_LIMIT_PER_MINUTE: 'edge_rate_limit_per_minute',
   EDGE_CHALLENGE_MESSAGE: 'edge_challenge_message',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',

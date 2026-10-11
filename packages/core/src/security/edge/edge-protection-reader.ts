@@ -30,12 +30,14 @@ export class EdgeProtectionReader {
       if (row ? EdgeProtectionReader.isOn(row.value) : everywhere) underAttack.push(siteId);
     }
     const minutes = Number.parseInt(this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_CLEARANCE_MINUTES), 10);
+    const limit = Number.parseInt(this.platform(SystemConstants.META_KEY.EDGE_RATE_LIMIT_PER_MINUTE), 10);
     return new EdgeProtection(
       underAttack,
       Number.isFinite(minutes) && minutes > 0 ? minutes : 0,
       this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS).split(/\r?\n|,/).map((path) => path.trim()).filter(Boolean),
       this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE),
       this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE),
+      Number.isFinite(limit) && limit > 0 ? limit : 0,
     );
   }
 

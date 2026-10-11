@@ -23,6 +23,10 @@ export class EdgeProtectionSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '/api/\n/.well-known/', description: "Path prefixes the browser check never applies to, one per line: the api (apps, payment and courier webhooks) and certificate validation.", group: "security" },
     },
+    [SystemConstants.META_KEY.EDGE_RATE_LIMIT_PER_MINUTE]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '0', description: "Requests one visitor (one address) may make to any site per minute, at the gateway, before getting \"429 Too Many Requests\" for the rest of that minute. Counts pages, files and api calls together; the platform's own servers are never counted. 0 = no limit.", group: "security" },
+    },
     [SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: 'Checking your browser', description: "Heading of the browser check page.", group: "security" },

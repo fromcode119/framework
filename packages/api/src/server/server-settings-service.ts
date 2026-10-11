@@ -57,6 +57,7 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS,
     SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE,
     SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE,
+    SystemConstants.META_KEY.EDGE_RATE_LIMIT_PER_MINUTE,
   ];
 
   /** Returns the unsubscribe function. */
