@@ -125,7 +125,6 @@ export class SystemMetaKeys {
    * "off" means no location data exists on the server at all. Settings → Infrastructure.
    */
   GEO_IP_LOOKUP: 'geo_ip_lookup',
-  
   // Localization
   LOCALIZATION_LOCALES: 'localization_locales',
   ENABLED_LOCALES: 'enabled_locales',
