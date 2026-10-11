@@ -42,7 +42,7 @@ describe('EdgeProtectionReader', () => {
     const protection = await new EdgeProtectionReader(new ScopedMetaDb([]), new Map()).read([]);
     expect(protection.underAttack).toEqual([]);
     expect(protection.clearanceMinutes).toBe(720);
-    expect(protection.exemptPaths).toEqual(['/api/', '/.well-known/']);
+    expect(protection.exemptPaths).toEqual(['/api/', '/.well-known/', '/manifest.webmanifest']);
     expect(protection.title).toBe('Checking your browser');
     expect(protection.isExempt('/api/v1/health')).toBe(true);
     expect(protection.isExempt('/apiary')).toBe(false);

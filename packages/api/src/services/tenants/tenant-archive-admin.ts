@@ -39,7 +39,7 @@ export abstract class TenantArchiveAdmin extends TenantAdminState {
   }
 
   /** Export first, ALWAYS; then erase. The typed slug is the operator's confirmation. */
-  async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number }> {
+  async deleteTenant(id: string, confirmSlug: string, actor: Record<string, unknown>): Promise<{ archive: string; deleted: Record<string, number>; files: number; accounts: number }> {
     const tenant = await this.requireTenant(id);
     if (CoercionUtils.toString(confirmSlug) !== tenant.slug) {
       throw new Error(`Type the site's slug ("${tenant.slug}") to confirm deletion.`);

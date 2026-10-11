@@ -6,6 +6,29 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.372] - 2026-10-11
+
+### Added
+
+- **gateway**: requests per visitor per minute, for every site ([#879](https://github.com/fromcode119/framework/pull/879))
+- **edge**: the relay's protection, in the repo ([#878](https://github.com/fromcode119/framework/pull/878))
+
+### Fixed
+
+- **edge**: the web app manifest is never checked by default ([#876](https://github.com/fromcode119/framework/pull/876))
+
+## [0.2.371] - 2026-10-11
+
+### Fixed
+
+- **core**: deleting a site also removes the accounts that were only its ([#874](https://github.com/fromcode119/framework/pull/874))
+
+## [0.2.370] - 2026-10-11
+
+### Fixed
+
+- **database**: a session lock never goes back to the pool still held; its test orders by the lock ([#872](https://github.com/fromcode119/framework/pull/872))
+
 ## [0.2.369] - 2026-10-11
 
 ### Fixed

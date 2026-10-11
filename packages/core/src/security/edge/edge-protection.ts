@@ -6,7 +6,7 @@
  * platform's own hosts. The rest describes the check itself, the same for every site.
  */
 export class EdgeProtection {
-  static readonly NONE = new EdgeProtection([], 0, [], '', '');
+  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0);
 
   constructor(
     readonly underAttack: ReadonlyArray<string | null>,
@@ -14,6 +14,8 @@ export class EdgeProtection {
     readonly exemptPaths: readonly string[],
     readonly title: string,
     readonly message: string,
+    /** Requests per visitor per minute across every site; 0 = no limit. */
+    readonly rateLimitPerMinute: number = 0,
   ) {}
 
   /** Whether the hosts of this site (null: the platform's own) are under attack mode. */
@@ -34,6 +36,7 @@ export class EdgeProtection {
       exemptPaths: [...this.exemptPaths],
       title: this.title,
       message: this.message,
+      rateLimitPerMinute: this.rateLimitPerMinute,
     };
   }
 
@@ -41,12 +44,14 @@ export class EdgeProtection {
     const value = (raw ?? {}) as Record<string, unknown>;
     const list = (entry: unknown): unknown[] => (Array.isArray(entry) ? entry : []);
     const minutes = Number(value.clearanceMinutes);
+    const limit = Number(value.rateLimitPerMinute);
     return new EdgeProtection(
       list(value.underAttack).map((id) => (id === null ? null : String(id))),
       Number.isFinite(minutes) && minutes > 0 ? minutes : 0,
       list(value.exemptPaths).map((path) => String(path)),
       String(value.title ?? ''),
       String(value.message ?? ''),
+      Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 0,
     );
   }
 }
