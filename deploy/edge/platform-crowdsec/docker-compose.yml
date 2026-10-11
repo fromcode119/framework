@@ -1,0 +1,36 @@
+# A CrowdSec AGENT on the platform server: reads the gateway's [edge-refused] lines and reports a
+# visitor refused again and again (atlantis/edge-repeat-offender) to the CrowdSec engine on the relay,
+# which blocks it in front of every site. No engine of its own; the relay's is the one that decides.
+# docs: deploy/DEPLOYMENT.md, "Reporting refused visitors".
+#
+# .env beside this file:
+#   LOCAL_API_URL=https://<relay address>:8080
+#   AGENT_USERNAME=<machine name added on the relay>
+#   AGENT_PASSWORD=<its password>
+services:
+  crowdsec-agent:
+    image: crowdsecurity/crowdsec:v1.8.1
+    environment:
+      - DISABLE_LOCAL_API=true
+      - LOCAL_API_URL=${LOCAL_API_URL:?set LOCAL_API_URL in .env}
+      - AGENT_USERNAME=${AGENT_USERNAME:?set AGENT_USERNAME in .env}
+      - AGENT_PASSWORD=${AGENT_PASSWORD:?set AGENT_PASSWORD in .env}
+      - CACERT_FILE=/etc/crowdsec/relay-ca.pem
+      - TZ=UTC
+    volumes:
+      - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - ./config/parsers/s01-parse/atlantis-edge-refused.yaml:/etc/crowdsec/parsers/s01-parse/atlantis-edge-refused.yaml:ro
+      - ./config/scenarios/atlantis-edge-repeat-offender.yaml:/etc/crowdsec/scenarios/atlantis-edge-repeat-offender.yaml:ro
+      - ./relay-ca.pem:/etc/crowdsec/relay-ca.pem:ro
+      - ./data/config:/etc/crowdsec
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"

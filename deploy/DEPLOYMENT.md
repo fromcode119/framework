@@ -188,6 +188,27 @@ docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cs
 ``` Check a ban really blocks: add one for a test
 address with `cscli decisions add --ip <address> --duration 2m`, try it, then remove it.
 
+### Reporting refused visitors
+
+The gateway writes one `[edge-refused]` line (JSON: reason, address, host, method, path — never the
+query) for every visitor it refuses: an attack, a blocked address or country, too many requests. It
+names no tool; anything that reads container logs can act on them.
+
+`deploy/edge/platform-crowdsec/` is one such reader: a CrowdSec agent on the platform server that
+turns a visitor refused again and again (about five refusals in ten minutes, scenario
+`atlantis/edge-repeat-offender`) into a ban on the relay, in front of every site. It reports to the
+relay's CrowdSec engine over TLS, so the relay's engine must listen with a certificate on an address
+the platform server can reach, and only from it (`ufw`/nftables plus your provider's firewall):
+
+```bash
+# On the relay: a machine for the agent, and the engine's CA certificate for the agent to trust.
+docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli machines add platform-agent --password <password>
+```
+
+On the platform server, `.env` beside `deploy/edge/platform-crowdsec/docker-compose.yml` with
+`LOCAL_API_URL`, `AGENT_USERNAME`, `AGENT_PASSWORD`, the relay's CA as `relay-ca.pem`, then
+`docker compose up -d`. Check it with `cscli explain` on a copied `[edge-refused]` line.
+
 ### Behind your own proxy
 The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
 default. A host that already runs a reverse proxy — whichever one — routes straight to `api`, `admin`

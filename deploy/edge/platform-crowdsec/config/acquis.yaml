@@ -1,0 +1,7 @@
+# The gateway containers' own output, read through the Docker socket: every [edge-refused] line.
+source: docker
+container_name_regexp:
+  - "gateway-\\d+$"
+  - "gateway$"
+labels:
+  type: atlantis-gateway
