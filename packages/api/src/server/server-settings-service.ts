@@ -61,6 +61,9 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.EDGE_BLOCK_ATTACK_PATTERNS,
     SystemConstants.META_KEY.EDGE_BLOCKED_PATHS,
     SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS,
+    SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES,
+    SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES,
+    SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES,
   ];
 
   /** Returns the unsubscribe function. */

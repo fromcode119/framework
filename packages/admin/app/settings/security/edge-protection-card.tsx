@@ -35,6 +35,21 @@ export class EdgeProtectionCard extends PureReactor {
   }
 
   @bound
+  setBlockedCountries(event: ChangeEvent<HTMLInputElement>): void {
+    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES, event.target.value);
+  }
+
+  @bound
+  setChallengedCountries(event: ChangeEvent<HTMLInputElement>): void {
+    this.set(SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES, event.target.value);
+  }
+
+  @bound
+  setBlockedAddresses(event: ChangeEvent<HTMLTextAreaElement>): void {
+    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES, event.target.value);
+  }
+
+  @bound
   setBlockedPaths(event: ChangeEvent<HTMLTextAreaElement>): void {
     this.set(SystemConstants.META_KEY.EDGE_BLOCKED_PATHS, event.target.value);
   }
@@ -66,6 +81,33 @@ export class EdgeProtectionCard extends PureReactor {
           title={AdminI18n.t('settings.security.underAttackMode')}
           description={AdminI18n.t('settings.security.underAttackModeHelp')}
         />
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.Globe}
+          title={AdminI18n.t('settings.security.blockedCountries')}
+          description={AdminI18n.t('settings.security.blockedCountriesHelp')}
+        >
+          <Input className="w-80" value={this.settings[keys.EDGE_BLOCKED_COUNTRIES] ?? ''} onChange={this.setBlockedCountries} placeholder={AdminI18n.t('settings.security.noCountries')} />
+        </SettingRow>
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.Globe}
+          title={AdminI18n.t('settings.security.challengedCountries')}
+          description={AdminI18n.t('settings.security.challengedCountriesHelp')}
+        >
+          <Input className="w-80" value={this.settings[keys.EDGE_CHALLENGED_COUNTRIES] ?? ''} onChange={this.setChallengedCountries} placeholder={AdminI18n.t('settings.security.noCountries')} />
+        </SettingRow>
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.ShieldAlert}
+          title={AdminI18n.t('settings.security.blockedAddresses')}
+          description={AdminI18n.t('settings.security.blockedAddressesHelp')}
+        >
+          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_ADDRESSES] ?? ''} onChange={this.setBlockedAddresses} />
+        </SettingRow>
 
         <SettingSwitchRow
           theme={this.theme}

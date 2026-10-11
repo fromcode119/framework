@@ -1,3 +1,5 @@
+import { EdgeSiteRules } from '@core/security/edge/edge-site-rules';
+
 /**
  * What the gateway enforces in front of the apps, as the admin set it (Settings → Security → Edge
  * protection). Built by the api from the settings and carried to the gateway with the routing map.
@@ -6,7 +8,7 @@
  * platform's own hosts. The rest describes the check itself, the same for every site.
  */
 export class EdgeProtection {
-  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0, false, [], []);
+  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0, false, [], [], []);
 
   constructor(
     readonly underAttack: ReadonlyArray<string | null>,
@@ -20,7 +22,16 @@ export class EdgeProtection {
     readonly blockAttackPatterns: boolean = false,
     readonly blockedPaths: readonly string[] = [],
     readonly blockedAgents: readonly string[] = [],
+    /** Country and address rules: the platform's entry (tenantId null) and any site's own. */
+    readonly siteRules: readonly EdgeSiteRules[] = [],
   ) {}
+
+  /** The rules for this site: its own entry, else the platform's, else none. */
+  rulesFor(tenantId: string | null): EdgeSiteRules {
+    return this.siteRules.find((rules) => rules.tenantId === (tenantId ?? null))
+      ?? this.siteRules.find((rules) => rules.tenantId === null)
+      ?? new EdgeSiteRules(tenantId ?? null, [], [], []);
+  }
 
   /** Whether the hosts of this site (null: the platform's own) are under attack mode. */
   isUnderAttack(tenantId: string | null): boolean {
@@ -44,6 +55,7 @@ export class EdgeProtection {
       blockAttackPatterns: this.blockAttackPatterns,
       blockedPaths: [...this.blockedPaths],
       blockedAgents: [...this.blockedAgents],
+      siteRules: this.siteRules.map((rules) => rules.toJSON()),
     };
   }
 
@@ -62,6 +74,7 @@ export class EdgeProtection {
       value.blockAttackPatterns === true,
       list(value.blockedPaths).map((path) => String(path)),
       list(value.blockedAgents).map((agent) => String(agent)),
+      list(value.siteRules).map((rules) => EdgeSiteRules.fromJson(rules)),
     );
   }
 }

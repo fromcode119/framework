@@ -3,6 +3,7 @@ import type { TenantRouteMap } from '@fromcode119/core';
 import { GatewayChallenge } from '@cli/services/gateway/challenge/gateway-challenge';
 import { GatewayRateLimit } from '@cli/services/gateway/challenge/gateway-rate-limit';
 import { GatewayAttackFilter } from '@cli/services/gateway/challenge/gateway-attack-filter';
+import { GatewayVisitorRules } from '@cli/services/gateway/challenge/gateway-visitor-rules';
 
 /**
  * Settings → Security → Edge protection, applied by the gateway before it routes: the request's
@@ -16,13 +17,15 @@ export class GatewayEdgeCheck {
     private readonly hostOf: (req: http.IncomingMessage) => string,
     private readonly challenge: GatewayChallenge = new GatewayChallenge(),
     private readonly limit: GatewayRateLimit = new GatewayRateLimit(),
+    private readonly visitors: GatewayVisitorRules = new GatewayVisitorRules(),
   ) {}
 
   /** True when the check answered the request itself: an attack, too many requests, or the browser check. */
   async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> {
     const site = await this.site(req);
     if (site === null) return false;
-    const attack = GatewayAttackFilter.reasonFor(req, site.map.protection);
+    const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
+    const attack = visitor.action === GatewayVisitorRules.REFUSE ? visitor.reason : GatewayAttackFilter.reasonFor(req, site.map.protection);
     if (attack) {
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'blocked', reason: attack }));
@@ -34,13 +37,16 @@ export class GatewayEdgeCheck {
       res.end(JSON.stringify({ error: 'rate_limited', retryAfter: wait }));
       return true;
     }
-    return this.challenge.handle(req, res, site.map.protection, site.tenantId);
+    return this.challenge.handle(req, res, site.map.protection, site.tenantId, visitor.action === GatewayVisitorRules.CHECK);
   }
 
   /** Whether a WebSocket upgrade may pass. */
   async allowsUpgrade(req: http.IncomingMessage): Promise<boolean> {
     const site = await this.site(req);
-    return site === null || (!GatewayAttackFilter.reasonFor(req, site.map.protection) && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId));
+    if (site === null) return true;
+    const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
+    return visitor.action !== GatewayVisitorRules.REFUSE && !GatewayAttackFilter.reasonFor(req, site.map.protection)
+      && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId, visitor.action === GatewayVisitorRules.CHECK);
   }
 
   private async site(req: http.IncomingMessage) {

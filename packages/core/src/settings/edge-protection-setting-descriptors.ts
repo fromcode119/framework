@@ -39,6 +39,18 @@ export class EdgeProtectionSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: 'sqlmap\nnikto\nnuclei\nmasscan\nzgrab\nnmap\nacunetix\nwpscan\ngobuster\ndirbuster\nffuf', description: "Attack tools refused by the name they send (User-Agent, any part, any case), one per line, while attack blocking is on.", group: "security" },
     },
+    [SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES]: {
+      scope: SettingScope.INHERITED, writable: true, exposed: true,
+      seed: { value: '', description: "Visitors from these countries are refused (403), by two-letter code, one per line or comma separated (e.g. KP, RU). Found from the visitor's address with the platform's geo database. On the platform it applies to every site that has not set its own. Empty: none.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES]: {
+      scope: SettingScope.INHERITED, writable: true, exposed: true,
+      seed: { value: '', description: "Visitors from these countries always pass the browser check first, even while the site is not under attack. Two-letter codes. On the platform it applies to every site that has not set its own. Empty: none.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES]: {
+      scope: SettingScope.INHERITED, writable: true, exposed: true,
+      seed: { value: '', description: "Addresses or CIDR blocks refused (403), one per line. On the platform it applies to every site that has not set its own. Empty: none.", group: "security" },
+    },
     [SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: 'Checking your browser', description: "Heading of the browser check page.", group: "security" },

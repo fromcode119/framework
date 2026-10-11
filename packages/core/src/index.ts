@@ -274,6 +274,7 @@ export { TenantRoute } from '@core/tenant/tenant-route';
 export { TenantRouteMap } from '@core/tenant/tenant-route-map';
 export { EdgeProtection } from '@core/security/edge/edge-protection';
 export { EdgeProtectionReader } from '@core/security/edge/edge-protection-reader';
+export { EdgeSiteRules } from '@core/security/edge/edge-site-rules';
 export { HostPermissionVerdict } from '@core/enums/host-permission-verdict.enum';
 export { HostPermission } from '@core/tenant/host-permission';
 export { CertificateBundle } from '@core/certificates/certificate-bundle';

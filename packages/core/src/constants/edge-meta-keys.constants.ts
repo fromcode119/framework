@@ -14,5 +14,8 @@ export class EdgeMetaKeys {
     EDGE_BLOCK_ATTACK_PATTERNS: 'edge_block_attack_patterns',
     EDGE_BLOCKED_PATHS: 'edge_blocked_paths',
     EDGE_BLOCKED_USER_AGENTS: 'edge_blocked_user_agents',
+    EDGE_BLOCKED_COUNTRIES: 'edge_blocked_countries',
+    EDGE_CHALLENGED_COUNTRIES: 'edge_challenged_countries',
+    EDGE_BLOCKED_ADDRESSES: 'edge_blocked_addresses',
   } as const;
 }
