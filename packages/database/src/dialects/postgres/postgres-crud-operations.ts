@@ -35,18 +35,27 @@ export abstract class PostgresCrudOperations extends BaseDialect {
     return new TenantClientParking(this.pool, tenantId);
   }
 
-  /** A session-level advisory lock held on its own pooled connection while `fn` runs normally. */
+  /**
+   * A session-level advisory lock held on its own pooled connection while `fn` runs normally.
+   *
+   * A session lock belongs to the connection, not to this call: a connection returned to the pool
+   * still holding it would keep every other process waiting until that connection happens to close.
+   * So the connection goes back only when the unlock is confirmed; otherwise it is closed, which is
+   * what releases the lock.
+   */
   async withSessionLock<T>(name: string, fn: () => Promise<T>): Promise<T> {
     const client = await this.pool.connect();
+    let unlocked = false;
     try {
       await client.query('SELECT pg_advisory_lock(hashtext($1))', [name]);
       try {
         return await fn();
       } finally {
-        await client.query('SELECT pg_advisory_unlock(hashtext($1))', [name]).catch(() => undefined);
+        unlocked = await client.query('SELECT pg_advisory_unlock(hashtext($1)) AS released', [name])
+          .then((result: any) => result.rows[0]?.released === true, () => false);
       }
     } finally {
-      client.release();
+      client.release(!unlocked);
     }
   }
 

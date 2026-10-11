@@ -13,17 +13,42 @@ describe.skipIf(!ownerUrl)('withSessionLock (real Postgres)', () => {
   const b = ownerUrl ? new PostgresDatabaseManager(ownerUrl) : null;
   afterAll(async () => { await (a as any)?.pool.end(); await (b as any)?.pool.end(); });
 
+  /** Resolves once some session is queued on the advisory lock `name` without holding it. */
+  const waiterQueuedOn = async (name: string): Promise<void> => {
+    for (;;) {
+      const rows = await a!.queryRaw(
+        `SELECT count(*)::int AS waiting FROM pg_locks
+          WHERE locktype = 'advisory' AND NOT granted
+            AND classid = ((hashtext($1)::bigint >> 32) & 4294967295)::oid
+            AND objid = (hashtext($1)::bigint & 4294967295)::oid`,
+        [name],
+      );
+      if ((rows[0] as any).waiting > 0) return;
+      await new Promise((resolve) => setImmediate(resolve));
+    }
+  };
+
   it('runs one holder at a time across two pools, and releases on failure', async () => {
     a!.markAsPlatformConnection();
     b!.markAsPlatformConnection();
-    const events: string[] = [];
-    const work = (who: string) => async () => {
-      events.push(`${who}:start`);
-      await new Promise((resolve) => setTimeout(resolve, 150));
-      events.push(`${who}:end`);
-    };
     const name = `test-lock-${Date.now()}`;
-    await Promise.all([a!.withSessionLock(name, work('a')), new Promise((r) => setTimeout(r, 20)).then(() => b!.withSessionLock(name, work('b')))]);
+    const events: string[] = [];
+    // b only asks once a HOLDS the lock, and a only finishes once Postgres shows b queued behind it —
+    // so the order below is fixed by the lock itself, not by which pool opens its connection first.
+    let aHolds!: () => void;
+    const aHoldsLock = new Promise<void>((resolve) => { aHolds = resolve; });
+    const first = a!.withSessionLock(name, async () => {
+      events.push('a:start');
+      aHolds();
+      await waiterQueuedOn(name);
+      events.push('a:end');
+    });
+    await aHoldsLock;
+    const second = b!.withSessionLock(name, async () => {
+      events.push('b:start');
+      events.push('b:end');
+    });
+    await Promise.all([first, second]);
     expect(events).toEqual(['a:start', 'a:end', 'b:start', 'b:end']);
 
     await expect(a!.withSessionLock(name, async () => { throw new Error('migration failed'); })).rejects.toThrow('migration failed');
@@ -37,5 +62,27 @@ describe.skipIf(!ownerUrl)('withSessionLock (real Postgres)', () => {
       return (rows[0] as any).open;
     });
     expect(inTransaction).toBe(0);
+  });
+
+  it('closes the connection instead of pooling it when the unlock is not confirmed', async () => {
+    const name = `test-lock-unlock-${Date.now()}`;
+    const pool = (a as any).pool;
+    const connect = pool.connect.bind(pool);
+    let holder: any;
+    pool.connect = async () => {
+      holder = await connect();
+      const query = holder.query.bind(holder);
+      holder.query = (text: string, values?: unknown[]) =>
+        text.includes('pg_advisory_unlock') ? Promise.reject(new Error('connection lost')) : query(text, values);
+      return holder;
+    };
+    try {
+      await a!.withSessionLock(name, async () => undefined);
+    } finally {
+      pool.connect = connect;
+    }
+    expect(holder._ending).toBe(true);
+    // The lock that session still held went with it: another process gets it at once.
+    await expect(b!.withSessionLock(name, async () => 'free')).resolves.toBe('free');
   });
 });
