@@ -44,6 +44,7 @@ class FakeDb {
   async findOne(table: unknown, where: any) {
     if (table === '_system_roles') return PLATFORM.find((role) => role.slug === where?.slug) ?? null;
     if (table === '_system_tenant_memberships') return this.memberships.find((row) => row.user_id === where.user_id && row.tenant_id === where.tenant_id) ?? null;
+    if (table === '_system_site_roles') return this.siteRoles.find((row) => row.slug === where?.slug && row.tenant_id === where?.tenant_id) ?? null;
     return null;
   }
   async insert(table: unknown, row: any) { this.inserts.push({ table, row }); return row; }
@@ -134,6 +135,13 @@ describe('editing roles', () => {
     await inSite('acme', () => new RoleManagementService(db).deleteRole('barista', siteEditor));
     expect(db.deletes[0]).toEqual({ table: '_system_site_roles', where: { slug: 'barista', tenant_id: 'acme' } });
     expect(db.updates.find((entry) => entry.table === '_system_tenant_memberships')?.row.roles).toBe('["customer"]');
+  });
+
+  it('deletes nothing, and says so, for a role this site does not have', async () => {
+    const db = new FakeDb();
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    await expect(inSite('acme', () => new RoleManagementService(db).deleteRole('cashier', siteEditor))).resolves.toBe(false);
+    expect(db.deletes).toHaveLength(0);
   });
 
   it('refuses platform-role edits in platform scope from anyone but the platform admin', async () => {

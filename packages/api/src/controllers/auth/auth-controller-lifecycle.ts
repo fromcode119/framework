@@ -33,16 +33,18 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
     const throttleKey = this.getLoginThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || '');
     const throttleSettings = await this.getLoginThrottleSettings();
     const throttleState = await this.readLoginThrottleState(throttleKey);
+    const addressKey = this.getAddressThrottleKey(NetworkAddressUtils.resolveClientIp(req) || '');
+    const addressState = addressKey ? await this.readLoginThrottleState(addressKey) : { count: 0 };
 
     try {
       if (!email || !password) {
         return res.status(400).json({ error: 'Email and password required' });
       }
 
-      if (this.isLoginLocked(throttleState)) {
+      if (this.isLoginLocked(throttleState) || this.isLoginLocked(addressState)) {
         return res.status(429).json({
           error: 'Too many failed login attempts. Please try again later.',
-          lockedUntil: throttleState.lockedUntil || null
+          lockedUntil: (this.isLoginLocked(throttleState) ? throttleState : addressState).lockedUntil || null
         });
       }
 
@@ -79,7 +81,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
       if (user) {
         const status = await this.getUserAccountStatus(user.id);
         if (status === AccountStatus.SUSPENDED) {
-          await this.recordLoginFailure(throttleKey, throttleSettings);
+          await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           await this.manager.writeLog('WARN', `Blocked login for suspended account: ${email}`, 'system', {
             userId: user.id,
             email,
@@ -92,7 +94,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
 
         const isMatch = await this.auth.comparePassword(String(password), user.password || '');
         if (!isMatch) {
-          await this.recordLoginFailure(throttleKey, throttleSettings);
+          await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           await this.manager.writeLog(
             'WARN',
             `Failed login attempt for ${email} (Invalid Password)`,
@@ -110,7 +112,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
 
         const requiresEmailVerification = await this.requiresEmailVerification(user.id);
         if (requiresEmailVerification) {
-          await this.recordLoginFailure(throttleKey, throttleSettings);
+          await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           return res.status(403).json({
             error: 'Email not verified',
             requiresEmailVerification: true,
@@ -120,7 +122,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
 
         const forceReset = await this.getForcePasswordReset(user.id);
         if (forceReset) {
-          await this.recordLoginFailure(throttleKey, throttleSettings);
+          await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           return res.status(403).json({
             error: 'Password reset required before login.',
             requiresPasswordReset: true
@@ -161,7 +163,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
           }
 
           if (!twoFactorVerified) {
-            await this.recordLoginFailure(throttleKey, throttleSettings);
+            await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
             await this.manager.writeLog(
               'WARN',
               `Failed 2FA attempt for ${user.email}`,
@@ -215,7 +217,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         });
       }
 
-      await this.recordLoginFailure(throttleKey, throttleSettings);
+      await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
       await this.manager.writeLog(
         'WARN',
         `Failed login attempt for non-existent user: ${email}`,

@@ -125,6 +125,8 @@ export class RoleManagementService {
       if (await new RoleCatalog(this.db).isPlatformRole(slug)) {
         throw new RoleScopeError(`"${slug}" is a platform role. It is the same on every site, so it can only be deleted in platform scope.`);
       }
+      // Another site's role is invisible from here; deleting it is deleting nothing, and is said so.
+      if (!(await this.db.findOne(SystemConstants.TABLE.SITE_ROLES, { slug, tenant_id: tenantId }))) return false;
       await this.db.delete(SystemConstants.TABLE.SITE_ROLES, { slug, tenant_id: tenantId });
       const site = await SiteRoleScope.current(this.db);
       await site?.withdraw(slug);

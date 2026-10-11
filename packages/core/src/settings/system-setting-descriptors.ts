@@ -231,6 +231,10 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '30', description: "Lockout duration in minutes.", group: "security" },
     },
+    [SystemConstants.META_KEY.AUTH_LOCKOUT_ADDRESS_THRESHOLD]: { scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: '30', description: "Failed logins from one address, across all accounts, before that address is locked out.", group: "security" } },
+    [SystemConstants.META_KEY.AUTH_PASSWORD_RESET_LIMIT]: { scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: '5', description: "Password-reset emails one account, or one address, may ask for within the failed-login window.", group: "security" } },
     [SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'false', description: "Require captcha after repeated failures.", group: "security" },

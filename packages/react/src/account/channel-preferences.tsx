@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { CoercionUtils, RouteConstants, SdkClient } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { AccountClass } from '@react/account/account-class';
 
 /**
  * Account → Notifications, second half: what a person agreed to be sent besides this device's
@@ -20,6 +21,9 @@ export class AccountChannelPreferences extends PluginComponent {
   @state pushOffers = false;
   @state busy = '';
   @state error = '';
+  /** The switch waiting for the code texted to the number — set while the code box is shown. */
+  @state pending: { key: string; channel: string; category: string } | null = null;
+  @state code = '';
 
   private get system(): any { // eslint-disable-line @typescript-eslint/no-explicit-any
     return new SdkClient(this.api).getSystem();
@@ -47,15 +51,44 @@ export class AccountChannelPreferences extends PluginComponent {
     this.phone = event.target.value;
   }
 
-  private async set(key: string, channel: string, category: string, enabled: boolean): Promise<void> {
+  @bound
+  changeCode(event: { target: { value: string } }): void {
+    this.code = event.target.value;
+  }
+
+  @bound
+  confirmCode(): void {
+    const pending = this.pending;
+    if (pending) void this.set(pending.key, pending.channel, pending.category, true, this.code);
+  }
+
+  /**
+   * Turning texts on for a number not yet confirmed answers `verificationRequired`: a code was texted
+   * to it, and the same switch is sent again with that code.
+   */
+  private async set(key: string, channel: string, category: string, enabled: boolean, code = ''): Promise<void> {
     this.setState({ busy: key, error: '' });
     try {
-      await this.system.post(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, { channel, category, enabled, phone: this.phone });
+      const result = await this.system.post(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, { channel, category, enabled, phone: this.phone, code });
+      this.setState(result?.verificationRequired === true ? { pending: { key, channel, category }, code: '' } : { pending: null, code: '' });
     } catch (error: any) { // eslint-disable-line @typescript-eslint/no-explicit-any
       this.error = String(error?.data?.error || error?.message || error);
     }
     await this.load();
     this.busy = '';
+  }
+
+  private codeBox(): ReactNode {
+    if (!this.pending) return null;
+    return (
+      <div className={AccountClass.of('block')}>
+        <div className={AccountClass.of('block-label')}>{this.t('account.notifications.codeSent', { phone: this.phone }, 'We sent a code to {{phone}}. Enter it to switch texts on.')}</div>
+        <form className={AccountClass.of('inline-form')} onSubmit={(event) => { event.preventDefault(); this.confirmCode(); }}>
+          <input className={AccountClass.of('input')} value={this.code} onChange={this.changeCode} autoComplete="one-time-code" inputMode="numeric" />
+          <button className={AccountClass.of('btn')} type="submit" disabled={!this.code.trim() || Boolean(this.busy)}>{this.t('account.notifications.confirmCode', {}, 'Confirm')}</button>
+        </form>
+      </div>
+    );
   }
 
   private row(key: string, title: string, detail: string, on: boolean, change: (enabled: boolean) => void, disabled = false): ReactNode {
@@ -93,6 +126,7 @@ export class AccountChannelPreferences extends PluginComponent {
               {this.row('sms-updates', this.t('account.notifications.updatesByText', {}, 'Updates by text'), this.t('account.notifications.updatesByTextDetail', {}, 'Your orders, bookings and support replies.'), this.updates, (on) => void this.set('sms-updates', 'sms', 'updates', on))}
               {this.row('sms-offers', this.t('account.notifications.offersByText', {}, 'Offers by text'), this.t('account.notifications.offersByTextDetail', {}, 'News and offers, now and then. Reply STOP to stop them.'), this.offers, (on) => void this.set('sms-offers', 'sms', 'offers', on))}
             </ul>
+            {this.codeBox()}
           </>
         )}
       </>

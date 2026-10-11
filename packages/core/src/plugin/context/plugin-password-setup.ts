@@ -2,6 +2,7 @@ import { createHash, randomBytes } from 'crypto';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMembership } from '@core/tenant/tenant-membership';
+import { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 import { StringUtils } from '@core/utils/string-utils';
 import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
 
@@ -15,8 +16,8 @@ import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
  * instead, in exactly the format the framework's own reset page consumes.
  *
  * Only for an account the plugin could have created: one that holds nothing beyond roles the plugin may
- * grant (PluginAccountRoles), globally and on this site, and is not a platform administrator. Anyone
- * else's password is theirs to reset through "forgot password".
+ * grant (PluginAccountRoles), globally and on this site, belongs to no other site, and is not a platform
+ * administrator. Anyone else's password is theirs to reset through "forgot password".
  */
 export class PluginPasswordSetup {
   private static readonly OPERATION = 'context.users.issuePasswordSetup';
@@ -47,6 +48,14 @@ export class PluginPasswordSetup {
       held.push(...TenantMembership.from(row as Record<string, unknown>).roles);
     }
     await PluginAccountRoles.vetGrant(manager.db, pluginSlug, held, tenantId, PluginPasswordSetup.OPERATION);
+    // The roles above are only the ones visible from here. The password is one for the whole platform, so
+    // an account that also belongs to another site — where it may administer — is not this plugin's to
+    // reset, whatever it holds on this site: the rule a site's own console follows (`mayEditIdentity`).
+    const memberships = new TenantMembershipService(manager.db as never);
+    const elsewhere = tenantId
+      ? (await memberships.listSharedUserIds(tenantId, [uid])).length > 0
+      : (await memberships.listForUser(String(uid))).length > 0;
+    if (elsewhere) refuse('the account also belongs to another site');
 
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');

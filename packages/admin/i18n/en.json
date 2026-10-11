@@ -2199,6 +2199,10 @@
     },
     "security": {
       "loginProtection": "Login Protection",
+      "failedLoginsPerAddress": "Failed Logins Per Address",
+      "failedLoginsPerAddressDescription": "How many failed sign-ins from one IP address, whatever accounts they try, lock that address out for the lockout duration. Counted in the same window.",
+      "passwordResetLimit": "Password Reset Emails",
+      "passwordResetLimitDescription": "How many password-reset emails one account, or one IP address, may ask for in the failed-login window. Further requests get the same answer and send nothing.",
       "failedLoginsBeforeLockout": "Failed Logins Before Lockout",
       "howManyFailedSignIns": "How many failed sign-ins for the same email and IP lock that combination out.",
       "failedLoginWindowMinutes": "Failed Login Window (minutes)",

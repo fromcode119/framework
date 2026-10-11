@@ -51,6 +51,12 @@ export class IntegrationResolverService {
         if (!entry?.providerKey || !runtime.providers.has(entry.providerKey)) continue;
         const provider = runtime.providers.get(entry.providerKey);
         if (!provider) continue;
+        // Credentials go only to whoever held the provider when they were saved. An entry saved before
+        // this was recorded carries no `registeredBy`, and is bound the next time it is saved.
+        if (entry.registeredBy !== undefined && entry.registeredBy !== (provider.registeredBy ?? '')) {
+          this.logger.warn(`Stored "${normalizedType}" provider "${entry.providerKey}" was saved for "${entry.registeredBy || 'the framework'}", but "${provider.registeredBy || 'the framework'}" registers it now. Its credentials are not used; save it again to confirm.`);
+          continue;
+        }
         const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, entry.config || {});
         const normalizedConfig = provider.normalizeConfig
           ? await provider.normalizeConfig(resolvedConfig)

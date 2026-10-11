@@ -127,7 +127,6 @@ export class SystemMetaKeys {
    * "off" means no location data exists on the server at all. Settings → Infrastructure.
    */
   GEO_IP_LOOKUP: 'geo_ip_lookup',
-  
   // Localization
   LOCALIZATION_LOCALES: 'localization_locales',
   ENABLED_LOCALES: 'enabled_locales',
@@ -144,7 +143,6 @@ export class SystemMetaKeys {
   // "derive it from the frontend language" (`PlatformCountryUtils`), and the admin says which country
   // that produced.
   COUNTRY: 'country',
-  
   // Security & Auth
   AUTH_SECURITY_NOTIFICATIONS: 'auth_security_notifications',
   AUTH_SESSION_DURATION: 'auth_session_duration_minutes',
@@ -181,6 +179,8 @@ export class SystemMetaKeys {
   AUTH_LOCKOUT_THRESHOLD: 'auth_lockout_threshold',
   AUTH_LOCKOUT_WINDOW_MINUTES: 'auth_lockout_window_minutes',
   AUTH_LOCKOUT_DURATION_MINUTES: 'auth_lockout_duration_minutes',
+  AUTH_LOCKOUT_ADDRESS_THRESHOLD: 'auth_lockout_address_threshold',
+  AUTH_PASSWORD_RESET_LIMIT: 'auth_password_reset_limit',
   AUTH_CAPTCHA_ENABLED: 'auth_captcha_enabled',
   AUTH_CAPTCHA_THRESHOLD: 'auth_captcha_threshold',
   TWO_FACTOR_ENABLED: 'two_factor_enabled',

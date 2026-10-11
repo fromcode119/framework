@@ -84,10 +84,19 @@ export class TenantPluginRuntimePolicy {
     TenantPluginRuntimePolicy.refuse(slug, `context.hooks.${method}("${name || '*'}") — only events named "${slug.trim().toLowerCase()}:…" are its own`);
   }
 
+  /**
+   * The namespaces the framework's own events live in. A site's plugin can never own one: a plugin
+   * slugged `system` would otherwise fire `system:…` events as "its own".
+   */
+  static readonly FRAMEWORK_EVENT_NAMESPACES: ReadonlySet<string> = new Set([
+    'system', 'collection', 'auth', 'plugin', 'plugins', 'user', 'users', 'socket', 'realtime', 'tenant', 'tenants', 'settings', 'cache', 'media',
+  ]);
+
   /** `<slug>:…` or `<slug>.…` — the events a plugin fires about itself. */
   static isOwnEvent(slug: string, event: unknown): boolean {
     const name = String(event ?? '').trim().toLowerCase();
     const own = slug.trim().toLowerCase();
+    if (TenantPluginRuntimePolicy.FRAMEWORK_EVENT_NAMESPACES.has(own)) return false;
     return name.startsWith(`${own}:`) || name.startsWith(`${own}.`);
   }
 
