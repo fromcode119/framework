@@ -186,6 +186,11 @@ export class RestBulkController {
           ids: parsedIds,
           count: parsedIds.length,
         });
+        // As a single delete does: `afterDelete` for every row that went, with the row. Bulk delete
+        // skipped it, so whatever a plugin did once a record was gone never happened for "select all".
+        for (const row of Array.isArray(doomed) ? doomed : []) {
+          await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_DELETE, row);
+        }
       }
 
       if (!res) {

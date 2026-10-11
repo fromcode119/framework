@@ -161,7 +161,9 @@ export class WebSocketManager {
 
     this.hooks.on('collection:*:afterDelete', (data: any, event: string) => {
       const slug = event.split(':')[1];
-      this.broadcast(`collection:${slug}:deleted`, data);
+      // `afterDelete` now carries the whole record for plugin listeners; clients have only ever been
+      // told WHICH record went, and a deleted record's contents are not theirs to receive now.
+      this.broadcast(`collection:${slug}:deleted`, { id: data?.id });
     });
   }
 

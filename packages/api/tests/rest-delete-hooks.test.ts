@@ -62,7 +62,7 @@ describe('rest delete hooks', () => {
     await runDelete();
     const after = emitted.find((e) => /afterDelete/i.test(e.event));
     expect(after, 'afterDelete was not dispatched').toBeTruthy();
-    expect(after!.payload).toEqual({ id: 7 });
+    expect(after!.payload).toEqual(record);
   });
 
   it('still emits the past-tense notification the existing listeners rely on', async () => {

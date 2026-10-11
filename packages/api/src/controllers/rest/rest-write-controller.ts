@@ -214,7 +214,9 @@ export class RestWriteController {
         this.runtime.emitCollectionEvent(collection, 'deleted', {
           id: recordId,
         });
-        await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_DELETE, { id: recordId });
+        // The record that went, not only its id: a listener acting on a COMPLETED delete (marking the
+        // paperwork an order left behind) has nothing else to read it from. It still carries `id`.
+        await this.runtime.callCollectionHook(collection, HookEventUtils.COLLECTION_HOOK_PHASES.AFTER_DELETE, doomed ?? { id: recordId });
       }
 
       if (!res) {
