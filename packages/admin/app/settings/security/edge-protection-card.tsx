@@ -35,6 +35,16 @@ export class EdgeProtectionCard extends PureReactor {
   }
 
   @bound
+  setBlockedPaths(event: ChangeEvent<HTMLTextAreaElement>): void {
+    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_PATHS, event.target.value);
+  }
+
+  @bound
+  setBlockedAgents(event: ChangeEvent<HTMLTextAreaElement>): void {
+    this.set(SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS, event.target.value);
+  }
+
+  @bound
   setExemptPaths(event: ChangeEvent<HTMLTextAreaElement>): void {
     this.set(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS, event.target.value);
   }
@@ -56,6 +66,34 @@ export class EdgeProtectionCard extends PureReactor {
           title={AdminI18n.t('settings.security.underAttackMode')}
           description={AdminI18n.t('settings.security.underAttackModeHelp')}
         />
+
+        <SettingSwitchRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={keys.EDGE_BLOCK_ATTACK_PATTERNS}
+          icon={FrameworkIcons.Shield}
+          title={AdminI18n.t('settings.security.blockAttackPatterns')}
+          description={AdminI18n.t('settings.security.blockAttackPatternsHelp')}
+        />
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.Globe}
+          title={AdminI18n.t('settings.security.blockedPaths')}
+          description={AdminI18n.t('settings.security.blockedPathsHelp')}
+        >
+          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_PATHS] ?? ''} onChange={this.setBlockedPaths} />
+        </SettingRow>
+
+        <SettingRow
+          theme={this.theme}
+          icon={FrameworkIcons.ShieldAlert}
+          title={AdminI18n.t('settings.security.blockedTools')}
+          description={AdminI18n.t('settings.security.blockedToolsHelp')}
+        >
+          <TextArea className="w-80" size={FieldSize.MD} value={this.settings[keys.EDGE_BLOCKED_USER_AGENTS] ?? ''} onChange={this.setBlockedAgents} />
+        </SettingRow>
 
         <SettingNumberRow
           theme={this.theme}

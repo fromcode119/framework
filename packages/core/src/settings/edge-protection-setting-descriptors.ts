@@ -27,6 +27,18 @@ export class EdgeProtectionSettingDescriptors {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: '0', description: "Requests one visitor (one address) may make to any site per minute, at the gateway, before getting \"429 Too Many Requests\" for the rest of that minute. Counts pages, files and api calls together; the platform's own servers are never counted. 0 = no limit.", group: "security" },
     },
+    [SystemConstants.META_KEY.EDGE_BLOCK_ATTACK_PATTERNS]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: 'false', description: "Refuse requests that carry a known attack in their address (403): database injection (combined or always-true queries, timing tricks, probing the database's own tables), script injection (<script, javascript:, onerror=), path traversal (../) and Log4Shell (${jndi:), plus the blocked paths and blocked tools below. Every site.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_BLOCKED_PATHS]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: '/.env\n/.git/\n/.aws/\n/.ssh/\n/.DS_Store\n/wp-admin\n/wp-login.php\n/xmlrpc.php\n/phpmyadmin\n/pma/\n/cgi-bin/\n/vendor/phpunit\n/server-status\n/actuator', description: "Path prefixes refused while attack blocking is on, one per line: what scanners probe for and no site here serves.", group: "security" },
+    },
+    [SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS]: {
+      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      seed: { value: 'sqlmap\nnikto\nnuclei\nmasscan\nzgrab\nnmap\nacunetix\nwpscan\ngobuster\ndirbuster\nffuf', description: "Attack tools refused by the name they send (User-Agent, any part, any case), one per line, while attack blocking is on.", group: "security" },
+    },
     [SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
       seed: { value: 'Checking your browser', description: "Heading of the browser check page.", group: "security" },
