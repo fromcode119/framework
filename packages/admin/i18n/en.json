@@ -2231,6 +2231,8 @@
       "edgeProtection": "Edge Protection",
       "underAttackMode": "Under Attack Mode",
       "underAttackModeHelp": "Every visitor passes a short browser check, served by the gateway itself, before reaching the site. Bots that do not run a browser are stopped there. Turn it on while being flooded. Here on the platform console it covers every site that has not set its own; a site's own console can override it for that site. The exempt paths below are never checked.",
+      "visitorRequestsPerMinute": "Requests Per Visitor Per Minute",
+      "visitorRequestsPerMinuteHelp": "How many requests one visitor (one address) may make to any site in a minute, counted at the gateway: pages, images, scripts and api calls together. Past it they get \"429 Too Many Requests\" until the minute ends. One page view is often 30 to 60 requests, so keep it well above that. The platform's own servers are never counted. 0 = no limit. Applies to every site.",
       "browserCheckValidMinutes": "Browser Check Valid (Minutes)",
       "browserCheckValidMinutesHelp": "How long a visitor who passed the check is let in before being checked again. Applies to every site.",
       "browserCheckExemptPaths": "Never Checked",

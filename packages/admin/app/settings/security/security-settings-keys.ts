@@ -30,6 +30,7 @@ export class SecuritySettingsKeys {
     SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS,
     SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE,
     SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE,
+    SystemConstants.META_KEY.EDGE_RATE_LIMIT_PER_MINUTE,
     SystemConstants.META_KEY.RATE_LIMIT_WINDOW,
     SystemConstants.META_KEY.PLUGIN_DB_CALLS_PER_MINUTE,
     SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES,
