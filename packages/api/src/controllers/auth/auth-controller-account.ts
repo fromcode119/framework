@@ -5,23 +5,52 @@ import { CoercionUtils } from '@fromcode119/core';
 import { PersonalDataErasureService } from '@fromcode119/core';
 import { ReadOnlyOverrideGrantUtils } from '@api/utils/read-only-override-grant-utils';
 import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
+import { SsoIdentity } from '@api/controllers/auth/sso/sso-identity';
 
 export class AuthControllerAccount extends AuthControllerSession {
   async verifyPassword(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
 
-    const password = CoercionUtils.toString(req.body?.password);
-    if (!password) return res.status(400).json({ error: 'Password is required' });
-
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
-
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const matches = await this.auth.comparePassword(password, String(user.password || ''));
-    if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
+    const refused = await this.confirmPresence(req, user);
+    if (refused) return res.status(400).json({ error: refused });
 
     return res.json({ success: true, ...(await this.mintRequestedGrant(req, userId)) });
+  }
+
+  /**
+   * Proves the signed-in person is the one at the keyboard: by their password, or — for an account
+   * that signs in through Apple or Google and so has a password it never saw — by a fresh sign-in token
+   * from an enabled provider that names the SAME verified email. Returns the refusal to send, or null.
+   *
+   * Without the token path such an account could not delete itself or pass any password check at all,
+   * and both stores require that an app which creates accounts lets its users delete them.
+   */
+  protected async confirmPresence(req: any, user: any): Promise<string | null> {
+    const password = CoercionUtils.toString(req.body?.password);
+    if (password) {
+      const matches = await this.auth.comparePassword(password, String(user.password || ''));
+      return matches ? null : 'Current password is invalid';
+    }
+    const provider = CoercionUtils.toKey(req.body?.provider);
+    const idToken = CoercionUtils.toString(req.body?.idToken);
+    if (!provider || !idToken) return 'Password is required';
+    if (!(await this.getConfiguredSsoProviders()).includes(provider)) return 'This sign-in provider is not enabled';
+
+    let identity: SsoIdentity;
+    try {
+      identity = SsoIdentity.from(await this.manager.hooks.call('auth:sso:resolve-user', {
+        provider, idToken, accessToken: '', profile: null,
+        ip: NetworkAddressUtils.resolveClientIp(req), userAgent: req.headers?.['user-agent'],
+      }));
+    } catch (err: any) {
+      return err?.message || 'The sign-in could not be confirmed';
+    }
+    const sameAccount = identity.emailVerified && !!identity.email && identity.email === this.normalizeEmail(user.email);
+    return sameAccount ? null : 'This sign-in belongs to a different account';
   }
 
   /**
@@ -80,7 +109,8 @@ export class AuthControllerAccount extends AuthControllerSession {
   }
 
   /**
-   * GDPR erasure — the signed-in user deletes their OWN account. Password-gated, irreversible.
+   * GDPR erasure — the signed-in user deletes their OWN account. Gated by {@link confirmPresence}
+   * (password, or a fresh Apple/Google sign-in for an account without one), irreversible.
    *
    * DELEGATES to `PersonalDataErasureService`, which is the same code a DSAR erasure runs. There
    * were two implementations of "erase a person" in this codebase and they disagreed: this one
@@ -98,12 +128,10 @@ export class AuthControllerAccount extends AuthControllerSession {
   async deleteMyAccount(req: any, res: Response) {
     const userId = this.parseUserId(req.user?.id);
     if (!userId) return res.status(401).json({ error: 'Unauthorized' });
-    const password = CoercionUtils.toString(req.body?.password);
-    if (!password) return res.status(400).json({ error: 'Password is required' });
     const user = await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId });
     if (!user) return res.status(404).json({ error: 'User not found' });
-    const matches = await this.auth.comparePassword(password, String(user.password || ''));
-    if (!matches) return res.status(400).json({ error: 'Current password is invalid' });
+    const refused = await this.confirmPresence(req, user);
+    if (refused) return res.status(400).json({ error: refused });
 
     const erasure = new PersonalDataErasureService(this.db);
     const subject = { email: String(user.email ?? ''), userId };

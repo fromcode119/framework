@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express';
-import { MetaContextProxy, PushSenderKeys, PushSubscriptionStore, PushSurface } from '@fromcode119/core';
+import { ExpoPushTransport, MetaContextProxy, PushSenderKeys, PushSubscriptionStore, PushSurface } from '@fromcode119/core';
 
 /**
  * A person's own devices that accept this site's push messages.
@@ -7,7 +7,8 @@ import { MetaContextProxy, PushSenderKeys, PushSubscriptionStore, PushSurface } 
  * The person ALWAYS comes from the session, never from the request, as on the email preferences
  * screen: a device is added to, listed for and removed from the signed-in person only. A push
  * endpoint is a URL the browser hands over, so only an https URL is accepted, and it is reached later
- * only on the public internet (`PushDelivery`).
+ * only on the public internet (`PushDelivery`). The site's own mobile app registers on the `app`
+ * surface with its Expo push token instead; that token is an address at Expo, never a URL we call.
  */
 export class SystemPushController {
   private static readonly MAX_ENDPOINT_LENGTH = 2048;
@@ -37,7 +38,7 @@ export class SystemPushController {
       const userId = SystemPushController.userId(req);
       const body = (req.body ?? {}) as Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
       const surface = PushSurface.fromValue(String(body.surface ?? '')) as PushSurface | undefined;
-      const subscription = SystemPushController.subscription(body.subscription);
+      const subscription = surface === PushSurface.APP ? SystemPushController.appDevice(body.token) : SystemPushController.subscription(body.subscription);
       if (!surface || !subscription) throw Object.assign(new Error('Not a usable push subscription'), { status: 400 });
       await this.store.save(userId, surface, subscription, String(body.label ?? '').trim());
       return { success: true };
@@ -51,6 +52,12 @@ export class SystemPushController {
       await this.store.remove(SystemPushController.userId(req), endpoint);
       return { success: true };
     });
+  }
+
+  /** The app's Expo push token. It carries no browser keys: the push service holds the device's own. */
+  private static appDevice(value: unknown): { endpoint: string; p256dh: string; auth: string } | null {
+    const token = String(value ?? '').trim();
+    return ExpoPushTransport.isToken(token) && token.length <= SystemPushController.MAX_ENDPOINT_LENGTH ? { endpoint: token, p256dh: '', auth: '' } : null;
   }
 
   /** The browser's `PushSubscription.toJSON()`, accepted only as an https endpoint with two well-formed keys. */

@@ -68,4 +68,34 @@ describe('push delivery', () => {
     expect(await delivery.toPerson(9, { title: 'Hi' })).toBe(0);
     expect(calls).toEqual([]);
   });
+
+  describe('the site\'s own app on a phone', () => {
+    const appSetup = async (tickets: any[]) => {
+      const db = new Db();
+      const store = new PushSubscriptionStore(db);
+      await store.save(7, PushSurface.STOREFRONT, { ...browser(), endpoint: 'https://push.example/b' }, 'Browser');
+      await store.save(7, PushSurface.APP, { endpoint: 'ExponentPushToken[abcdefgh1234]', p256dh: '', auth: '' }, 'iPhone');
+      const calls: Array<{ url: string; init: any }> = [];
+      const fetcher = (async (url: string, init: any) => {
+        calls.push({ url, init });
+        if (!url.startsWith('https://exp.host/')) return new Response(null, { status: 201 });
+        return new Response(JSON.stringify({ data: [tickets.shift()] }), { status: 200 });
+      }) as any;
+      return { db, calls, delivery: new PushDelivery(db, meta(), fetcher) };
+    };
+
+    it('reaches a customer on the storefront and in the app, the app through Expo with the link as data', async () => {
+      const { calls, delivery } = await appSetup([{ status: 'ok', id: 't1' }]);
+      expect(await delivery.toPerson(7, { title: 'Твоят ден', body: 'Личен ден 7', link: '/today' }, PushSurface.CUSTOMER)).toBe(2);
+      const expo = calls.find((c) => c.url === 'https://exp.host/--/api/v2/push/send')!;
+      expect(JSON.parse(expo.init.body)).toEqual([{ to: 'ExponentPushToken[abcdefgh1234]', title: 'Твоят ден', body: 'Личен ден 7', data: { link: '/today' }, sound: 'default' }]);
+      expect(expo.init.redirect).toBe('error');
+    });
+
+    it('forgets an app token Expo reports as no longer registered', async () => {
+      const { db, delivery } = await appSetup([{ status: 'error', details: { error: 'DeviceNotRegistered' } }]);
+      expect(await delivery.toPerson(7, { title: 'Hi' }, PushSurface.APP)).toBe(0);
+      expect(db.rows.map((r) => r.surface)).toEqual(['storefront']);
+    });
+  });
 });

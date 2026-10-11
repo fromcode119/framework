@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import * as jwt from 'jsonwebtoken';
+import { generateKeyPairSync } from 'crypto';
 import { SsoOauthProvider } from '@api/controllers/auth/sso/enums/sso-oauth-provider.enum';
 import { SsoOauthClient } from '@api/controllers/auth/sso/sso-oauth-client';
 import { SsoUserResolverService } from '@api/controllers/auth/sso/sso-user-resolver-service';
@@ -99,5 +100,39 @@ describe('SsoUserResolverService audiences', () => {
     };
     const audiences = await (new SsoUserResolverService(manager) as any).getAudiences('google');
     expect(audiences).toEqual(['client-1']);
+  });
+});
+
+describe('SsoUserResolverService native app sign-in', () => {
+  const { privateKey, publicKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+  const managerWith = (entry: Record<string, unknown>): any => ({
+    integrations: { getConfig: vi.fn(async () => ({ storedProviders: [{ enabled: true, ...entry }] })) },
+  });
+  const resolverFor = (manager: any) => {
+    const resolver: any = new SsoUserResolverService(manager);
+    resolver.keys = { getKey: vi.fn(async () => publicKey) };
+    return resolver as SsoUserResolverService;
+  };
+  const appleToken = (aud: string) => jwt.sign(
+    { email: 'Maria@Example.com', email_verified: 'true' },
+    privateKey,
+    { algorithm: 'RS256', keyid: 'k1', issuer: 'https://appleid.apple.com', audience: aud, expiresIn: 300 },
+  );
+
+  it('accepts the mobile app client IDs listed beside the web client ID', async () => {
+    const manager = managerWith({ providerKey: 'google', config: { clientId: 'web-1', appClientIds: 'ios-1\nandroid-1, ios-1' } });
+    const audiences = await (new SsoUserResolverService(manager) as any).getAudiences('google');
+    expect(audiences).toEqual(['web-1', 'ios-1', 'android-1']);
+  });
+
+  it('signs in with an Apple identity token issued to the configured bundle ID', async () => {
+    const resolver = resolverFor(managerWith({ providerKey: 'apple', config: { clientId: 'com.example.app' } }));
+    const identity = await resolver.resolve({ provider: 'apple', idToken: appleToken('com.example.app'), profile: { name: 'Мария Петрова' } });
+    expect(identity).toEqual({ email: 'maria@example.com', firstName: 'Мария', lastName: 'Петрова', emailVerified: true });
+  });
+
+  it('refuses an Apple token issued to an app that is not listed', async () => {
+    const resolver = resolverFor(managerWith({ providerKey: 'apple', config: { clientId: 'com.example.app' } }));
+    await expect(resolver.resolve({ provider: 'apple', idToken: appleToken('com.someone.else') })).rejects.toThrow(/verification failed/);
   });
 });

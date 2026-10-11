@@ -24,4 +24,15 @@ describe('integration setup addresses', () => {
   it('keeps several sign-in providers switched on at once', () => {
     expect(SsoIntegrationDefinition.definition.allowMultipleActiveProviders).toBe(true);
   });
+
+  it('Sign in with Apple is token-only: a bundle ID and app IDs, no secret and no redirect address', () => {
+    const apple = registry.getTypeSummary('sso')?.providers.find((provider) => provider.key === 'apple');
+    expect(apple?.fields.map((field) => field.name)).toEqual(['clientId', 'appClientIds']);
+    expect(apple?.setupAddresses ?? []).toEqual([]);
+  });
+
+  it('Google also lists the client IDs of the mobile apps that sign in with it', () => {
+    const google = registry.getTypeSummary('sso')?.providers.find((provider) => provider.key === 'google');
+    expect(google?.fields.map((field) => field.name)).toContain('appClientIds');
+  });
 });

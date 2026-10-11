@@ -1,5 +1,5 @@
 import * as jwt from 'jsonwebtoken';
-import { PluginManager } from '@fromcode119/core';
+import { PluginManager, SsoProviderUtils } from '@fromcode119/core';
 import { SsoJwksKeyProvider } from '@api/controllers/auth/sso/sso-jwks-key-provider';
 
 // Provider verification metadata (issuer + JWKS endpoint). Plain literals — no domain logic, just the public
@@ -8,11 +8,11 @@ import { SsoJwksKeyProvider } from '@api/controllers/auth/sso/sso-jwks-key-provi
 /**
  * Resolves a verified user identity from a Google/Apple OIDC id-token. Registered on the
  * `auth:sso:resolve-user` hook, it verifies the token's signature (against the provider JWKS), issuer,
- * audience (the configured client IDs), and expiry, then returns `{ email, firstName, lastName, emailVerified }`
+ * audience (the configured client ID plus any mobile app client IDs), and expiry, then returns `{ email, firstName, lastName, emailVerified }`
  * for `AuthControllerSso.ssoLogin` to create/log in the user.
  *
  * Audience validation is mandatory: the accepted client IDs come from the `sso` integration config
- * (`storedProviders[].clientId` / `clientIds` / `audience`). Without a configured client ID the provider is
+ * (`storedProviders[].config.clientId` and `config.appClientIds`). Without a configured client ID the provider is
  * rejected, so a token minted for a different app can never be accepted.
  */
 export class SsoUserResolverService {
@@ -75,8 +75,9 @@ export class SsoUserResolverService {
     const match = entries.find((e: any) => String(e?.providerKey || '').trim().toLowerCase() === provider);
     // The client ID lives in the entry's CONFIG, where the Federated Login form writes it. It used to be
     // read off the entry itself, which has no such field, so every configured provider answered
-    // "missing client ID" and no id token was ever accepted.
-    const raw = [match?.config?.clientId];
+    // "missing client ID" and no id token was ever accepted. A native app's token names the app's own
+    // client ID, so the app IDs listed beside it are accepted too.
+    const raw = [match?.config?.clientId, ...SsoProviderUtils.appClientIdList(match?.config)];
     return Array.from(new Set(raw.map((v) => String(v || '').trim()).filter(Boolean)));
   }
 }

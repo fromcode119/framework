@@ -14,7 +14,7 @@ import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 /**
  * Tells a customer something outside the site, the ways THEY chose (`context.notifications.notifyPerson`).
  *
- * - Push: to their storefront devices. An update goes to every device they turned notifications on
+ * - Push: to their storefront devices and the site's app on their phone. An update goes to every device they turned notifications on
  *   for; an offer only when they also agreed to offers.
  * - Text: only with a recorded consent for that category, to the number they agreed with, and only
  *   when the site has a text-message provider set up.
@@ -61,7 +61,7 @@ export class PersonNotifier {
   private async push(userId: number, input: { title: string; body?: string; link?: string; category: NotificationCategory }): Promise<number> {
     try {
       if (input.category === NotificationCategory.OFFERS && !(await this.consents.find(userId, ConsentChannel.PUSH, NotificationCategory.OFFERS))) return 0;
-      return await new PushDelivery(this.manager.db, MetaContextProxy.createMetaProxy(this.manager)).toPerson(userId, input, PushSurface.STOREFRONT);
+      return await new PushDelivery(this.manager.db, MetaContextProxy.createMetaProxy(this.manager)).toPerson(userId, input, PushSurface.CUSTOMER);
     } catch (error) {
       PersonNotifier.logger.warn(`A notification could not be pushed: ${String((error as Error)?.message ?? error)}`);
       return 0;
