@@ -57,14 +57,18 @@ export class IntegrationFieldInput extends PureReactor {
   private renderTextArea(): ReactNode {
     const field = this.field;
     return (
-      <TextArea
-        label={`${field.label}${field.required ? ' *' : ''}`}
-        placeholder={field.placeholder}
-        value={String(this.value ?? '')}
-        onChange={this.handleTextAreaChange}
-        className="md:col-span-2"
-        size={FieldSize.MD}
-      />
+      <div className="md:col-span-2">
+        <TextArea
+          label={`${field.label}${field.required ? ' *' : ''}`}
+          placeholder={field.placeholder}
+          value={String(this.value ?? '')}
+          onChange={this.handleTextAreaChange}
+          size={FieldSize.MD}
+        />
+        {field.description && (
+          <p className="mt-1 text-[11px] text-slate-500">{field.description}</p>
+        )}
+      </div>
     );
   }
 

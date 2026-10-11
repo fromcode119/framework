@@ -42,6 +42,7 @@ export class AuthRouter extends BaseRouter {
     this.get(RouteConstants.SEGMENTS.STATUS, this.controller.getStatus);
     this.post(RouteConstants.SEGMENTS.SETUP, this.controller.setup);
     this.post(RouteConstants.SEGMENTS.REGISTER, this.controller.register);
+    this.get(RouteConstants.SEGMENTS.PASSWORD_POLICY, this.controller.getPasswordPolicy);
     this.post(RouteConstants.SEGMENTS.VERIFY_EMAIL, this.controller.verifyEmail);
     this.post(RouteConstants.SEGMENTS.RESEND_VERIFICATION, this.controller.resendVerification);
     this.post(RouteConstants.SEGMENTS.FORGOT_PASSWORD, this.controller.forgotPassword);

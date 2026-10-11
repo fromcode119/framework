@@ -48,4 +48,13 @@ describe('a person\'s push devices', () => {
     await call(controller, 'unsubscribe', { id: 3 }, { endpoint: 'https://push.test/mine' });
     expect(db.rows).toHaveLength(0);
   });
+
+  it('keeps the site app\'s Expo push token on the app surface, and refuses anything that is not one', async () => {
+    const db = new Db();
+    const controller = new SystemPushController({ db });
+    expect((await call(controller, 'subscribe', { id: 3 }, { surface: 'app', token: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]', label: 'iPhone' })).code).toBe(201);
+    expect(db.rows[0]).toMatchObject({ user_id: 3, surface: 'app', endpoint: 'ExponentPushToken[xxxxxxxxxxxxxxxxxxxxxx]' });
+    expect((await call(controller, 'subscribe', { id: 3 }, { surface: 'app', token: 'https://evil.test/x' })).code).toBe(400);
+    expect((await call(controller, 'subscribe', { id: 3 }, { surface: 'app', subscription: subscription('https://push.test/a') })).code).toBe(400);
+  });
 });

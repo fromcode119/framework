@@ -8,6 +8,15 @@
  * `Record<string, unknown>` rather than being forced into a class with no behaviour.
  */
 export class SsoProviderUtils {
+  /** Config key of the extra client IDs whose id tokens a provider accepts (native mobile apps). */
+  static readonly APP_CLIENT_IDS = 'appClientIds';
+
+  /** The listed app client IDs, one per line (commas and spaces also separate), without duplicates. */
+  static appClientIdList(config: Record<string, unknown> | null | undefined): string[] {
+    const raw = String(config?.[SsoProviderUtils.APP_CLIENT_IDS] || '');
+    return Array.from(new Set(raw.split(/[\s,]+/).map((value) => value.trim()).filter(Boolean)));
+  }
+
   /** Every OAuth/OIDC key the SSO integration understands, trimmed and coerced to a string. */
   static normalizeSsoConfig(input: Record<string, unknown>): Record<string, unknown> {
     return {
@@ -18,6 +27,7 @@ export class SsoProviderUtils {
       authorizeUrl: String(input?.authorizeUrl || '').trim(),
       tokenUrl: String(input?.tokenUrl || '').trim(),
       userInfoUrl: String(input?.userInfoUrl || '').trim(),
+      [SsoProviderUtils.APP_CLIENT_IDS]: SsoProviderUtils.appClientIdList(input).join('\n'),
     };
   }
 

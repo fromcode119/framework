@@ -42,6 +42,8 @@ export class RouteAuthSegments {
   /** Public: whose console is this host (a workspace tenant), before anyone is signed in. */
   HOST_INFO: '/host',
   SSO_PROVIDERS: '/sso/providers',
+  /** Public: the site's password rules, so a sign-up form can state them before anyone types. */
+  PASSWORD_POLICY: '/password-policy',
   SSO_LOGIN: '/sso/login',
   /** Browser redirect to a provider's sign-in page (OAuth authorization-code flow with PKCE). */
   SSO_START: '/sso/:provider/start',

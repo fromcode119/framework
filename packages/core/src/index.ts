@@ -80,6 +80,7 @@ export { PushDelivery } from '@core/push/push-delivery';
 export { PushSenderKeys } from '@core/push/push-sender-keys';
 export { PushSubscriptionStore } from '@core/push/push-subscription-store';
 export { PushSurface } from '@core/push/enums/push-surface.enum';
+export { ExpoPushTransport } from '@core/push/expo-push-transport';
 export { ChannelConsentStore } from '@core/notifications/channel-consent-store';
 export { ConsentChannel } from '@core/notifications/enums/consent-channel.enum';
 export { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
@@ -243,6 +244,7 @@ export { ProjectPaths } from '@core/config/paths';
 // Integrations
 export { IntegrationManager } from '@core/integrations/integration-manager';
 export { IntegrationRegistry } from '@core/integrations/integration-registry';
+export { SsoProviderUtils } from '@core/integrations/providers/sso-provider-utils';
 export { NpmCacheDirectory } from '@core/plugin/services/installation/npm-cache-directory';
 export { SecretService } from '@core/security/secret-service';
 export { SecretService as IntegrationSecretService } from '@core/security/secret-service';
