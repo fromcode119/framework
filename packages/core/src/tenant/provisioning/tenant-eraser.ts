@@ -9,6 +9,7 @@ import { TenantArchiveWriter } from '@core/tenant/provisioning/tenant-archive-wr
 import { TenantRegistryService } from '@core/tenant/provisioning/tenant-registry-service';
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
+import { TenantOwnAccounts } from '@core/tenant/provisioning/tenant-own-accounts';
 
 /**
  * Deletes one tenant and everything that is only its: rows in every tenant table, the files its
@@ -20,8 +21,9 @@ import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-de
  *
  * Deletion runs inside `withTenant(id)` on the owner connection: `DELETE … WHERE tenant_id = $1`
  * with RLS `USING` scoping the same rows — belt and braces around the most destructive statement in
- * the platform. Tables go in REVERSE dependency order so children leave before parents. Accounts are
- * not touched: a person may belong to other sites.
+ * the platform. Tables go in REVERSE dependency order so children leave before parents. An account
+ * goes too only when it is this site's alone (`TenantOwnAccounts`); a person who belongs to another
+ * site, or a platform admin, keeps theirs.
  */
 export class TenantEraser {
   private readonly logger = new Logger({ namespace: 'tenant-eraser' });
@@ -33,15 +35,18 @@ export class TenantEraser {
     private readonly uploadsDir: string,
   ) {}
 
-  async erase(tenant: TenantRecord, exportedTo: string): Promise<{ deleted: Record<string, number>; files: number }> {
+  async erase(tenant: TenantRecord, exportedTo: string): Promise<{ deleted: Record<string, number>; files: number; accounts: number }> {
     if (!exportedTo || !fs.existsSync(exportedTo)) {
       throw new Error(`Refusing to delete tenant "${tenant.slug}": no export archive exists at "${exportedTo}".`);
     }
     const deleted: Record<string, number> = {};
     let files: string[] = [];
+    let accounts = 0;
+    const own = new TenantOwnAccounts(this.db);
 
     await this.db.withTenant(tenant.id, async () => {
       files = await this.mediaFileNames(tenant.id);
+      const accountIds = await own.ids(tenant.id);
       await this.db.queryRaw('BEGIN');
       try {
         for (const table of [...this.tables].reverse()) {
@@ -50,6 +55,7 @@ export class TenantEraser {
           await this.db.queryRaw(TenantSql.deleteTenantRows(table.name), [tenant.id]);
           deleted[table.name] = Number(before[0]?.count ?? 0);
         }
+        accounts = await own.remove(accountIds);
         await this.db.queryRaw('COMMIT');
       } catch (error) {
         await this.db.queryRaw('ROLLBACK').catch(() => undefined);
@@ -59,8 +65,8 @@ export class TenantEraser {
 
     const removedFiles = this.removeFiles(tenant.id, files);
     await this.registry.remove(tenant.id);
-    this.logger.warn(`Tenant "${tenant.slug}" (${tenant.id}) erased: ${Object.values(deleted).reduce((a, b) => a + b, 0)} rows, ${removedFiles} files. Export: ${exportedTo}`);
-    return { deleted, files: removedFiles };
+    this.logger.warn(`Tenant "${tenant.slug}" (${tenant.id}) erased: ${Object.values(deleted).reduce((a, b) => a + b, 0)} rows, ${accounts} accounts, ${removedFiles} files. Export: ${exportedTo}`);
+    return { deleted, files: removedFiles, accounts };
   }
 
   private async mediaFileNames(tenantId: string): Promise<string[]> {
