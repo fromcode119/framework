@@ -62,7 +62,7 @@ export class EdgeProtectionCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={keys.EDGE_RATE_LIMIT_PER_MINUTE}
-          icon={FrameworkIcons.Gauge}
+          icon={FrameworkIcons.Activity}
           title={AdminI18n.t('settings.security.visitorRequestsPerMinute')}
           description={AdminI18n.t('settings.security.visitorRequestsPerMinuteHelp')}
           min={0}
