@@ -4,6 +4,7 @@ import { GatewayChallenge } from '@cli/services/gateway/challenge/gateway-challe
 import { GatewayRateLimit } from '@cli/services/gateway/challenge/gateway-rate-limit';
 import { GatewayAttackFilter } from '@cli/services/gateway/challenge/gateway-attack-filter';
 import { GatewayVisitorRules } from '@cli/services/gateway/challenge/gateway-visitor-rules';
+import { GatewayRefusalLog } from '@cli/services/gateway/challenge/gateway-refusal-log';
 
 /**
  * Settings → Security → Edge protection, applied by the gateway before it routes: the request's
@@ -18,6 +19,7 @@ export class GatewayEdgeCheck {
     private readonly challenge: GatewayChallenge = new GatewayChallenge(),
     private readonly limit: GatewayRateLimit = new GatewayRateLimit(),
     private readonly visitors: GatewayVisitorRules = new GatewayVisitorRules(),
+    private readonly refusals: GatewayRefusalLog = new GatewayRefusalLog(),
   ) {}
 
   /** True when the check answered the request itself: an attack, too many requests, or the browser check. */
@@ -27,12 +29,14 @@ export class GatewayEdgeCheck {
     const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
     const attack = visitor.action === GatewayVisitorRules.REFUSE ? visitor.reason : GatewayAttackFilter.reasonFor(req, site.map.protection);
     if (attack) {
+      this.refusals.record(req, attack);
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'blocked', reason: attack }));
       return true;
     }
     const wait = this.limit.retryAfter(req.socket.remoteAddress, site.map.protection.rateLimitPerMinute);
     if (wait > 0) {
+      this.refusals.record(req, 'rate_limited');
       res.writeHead(429, { 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': String(wait), 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ error: 'rate_limited', retryAfter: wait }));
       return true;
