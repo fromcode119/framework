@@ -141,6 +141,8 @@
       "updatesByText": "Updates by text",
       "updatesByTextDetail": "Your orders, bookings and support replies.",
       "offersByText": "Offers by text",
+      "codeSent": "We sent a code to {{phone}}. Enter it to switch texts on.",
+      "confirmCode": "Confirm",
       "offersByTextDetail": "News and offers, now and then. Reply STOP to stop them."
     }
   }

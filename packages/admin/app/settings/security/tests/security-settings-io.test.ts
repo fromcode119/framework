@@ -75,9 +75,11 @@ describe('SecuritySettingsIo', () => {
     expect(put).not.toHaveBeenCalled();
   });
 
-  it('lists the fifteen auth policy keys the API enforces', () => {
+  it('lists the seventeen auth policy keys the API enforces', () => {
     const authKeys = SecuritySettingsKeys.ALL.filter((k) => k.startsWith('auth_'));
-    expect(authKeys).toHaveLength(16); // the 15 policy keys plus the session duration already on screen
+    expect(authKeys).toHaveLength(18); // the 17 policy keys plus the session duration already on screen
+    expect(authKeys).toContain('auth_lockout_address_threshold');
+    expect(authKeys).toContain('auth_password_reset_limit');
     expect(authKeys).toContain('auth_password_min_length');
     expect(authKeys).toContain('auth_lockout_threshold');
     expect(authKeys).toContain('auth_captcha_threshold');

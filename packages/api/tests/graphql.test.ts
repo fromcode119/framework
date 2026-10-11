@@ -1,5 +1,6 @@
 import { GraphQLService } from '@api/services/graph-ql-service';
 import { graphql } from 'graphql';
+import { PluginState } from '@fromcode119/core';
 
 describe('graph-ql-service', () => {
   let service: GraphQLService;
@@ -17,7 +18,9 @@ describe('graph-ql-service', () => {
             { name: 'content', type: 'textarea' }
           ]
         }
-      ])
+      ]),
+      getCollection: vi.fn().mockReturnValue({ pluginSlug: 'blog' }),
+      getPlugins: vi.fn().mockReturnValue([{ manifest: { slug: 'blog' }, state: PluginState.ACTIVE }]),
     };
 
     mockRestController = {
@@ -51,6 +54,12 @@ describe('graph-ql-service', () => {
 
     const data = result.data as any;
     expect(data?.posts).toEqual({ id: 1, title: 'GraphQL Post' });
+  });
+
+  it('leaves out the collections of a plugin that is not active, as the REST route does', () => {
+    mockManager.getPlugins.mockReturnValue([{ manifest: { slug: 'blog' }, state: PluginState.INACTIVE }]);
+    const schema = service.generateSchema();
+    expect(schema.getQueryType()?.getFields().posts).toBeUndefined();
   });
 
   it('can fetch all items', async () => {

@@ -18,4 +18,6 @@ export interface IIntegrationProviderDefinition <TInstance = any> {
    * (logistics resolving its courier plugin) knows where the provider's plugin lives.
    */
   namespace?: string;
+  /** The plugin slug that registered this provider ('' = the framework) — stamped by the registry, never by the plugin. */
+  registeredBy?: string;
 }

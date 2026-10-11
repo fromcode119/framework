@@ -1,0 +1,1 @@
+{{code}} is your code to confirm this number for text messages. It expires in {{minutes}} minutes. If you did not ask for it, ignore this message.

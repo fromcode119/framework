@@ -9,8 +9,8 @@ import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The failed-login throttle the API applies per email + IP
- * (`AuthControllerPolicy.getLoginThrottleSettings` / `recordLoginFailure`). Accounts were already
+ * The failed-login throttle the API applies per email + IP and per address
+ * (`AuthControllerLoginThrottle`), and the limit on password-reset emails. Accounts were already
  * locking after a threshold nobody could read or move.
  */
 export class LoginProtectionCard extends PureReactor {
@@ -57,6 +57,30 @@ export class LoginProtectionCard extends PureReactor {
           description={AdminI18n.t('settings.security.howLongALockedEmail')}
           min={1}
           max={43200}
+        />
+
+        <SettingNumberRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={SystemConstants.META_KEY.AUTH_LOCKOUT_ADDRESS_THRESHOLD}
+          icon={FrameworkIcons.Lock}
+          title={AdminI18n.t('settings.security.failedLoginsPerAddress')}
+          description={AdminI18n.t('settings.security.failedLoginsPerAddressDescription')}
+          min={1}
+          max={1000}
+        />
+
+        <SettingNumberRow
+          theme={this.theme}
+          settings={this.settings}
+          setSettings={this.setSettings}
+          settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_RESET_LIMIT}
+          icon={FrameworkIcons.Mail}
+          title={AdminI18n.t('settings.security.passwordResetLimit')}
+          description={AdminI18n.t('settings.security.passwordResetLimitDescription')}
+          min={1}
+          max={100}
         />
 
         <SettingSwitchRow

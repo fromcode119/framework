@@ -3,6 +3,11 @@ import { ApplicationUrlUtils, AppPathConstants, RequestContextUtils, RequestSurf
 import { ApiConfig } from '@api/config/api-config';
 import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
+/**
+ * The base of every link the platform emails (reset, verification, email change). Only configured
+ * addresses and the host the request was routed to are used — never a header the caller writes freely,
+ * since the link carries a single-use token.
+ */
 export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrastructure {
   protected async getFrontendBaseUrl(req: Request): Promise<string> {
     // A request on a SITE is answered with that site's own address. `frontend_url` is the PLATFORM's
@@ -22,16 +27,11 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
 
     if (configured) return configured.replace(/\/+$/, '');
 
-    const refererUrl = RequestSurfaceUtils.readRefererUrl(req);
-    if (refererUrl && RequestSurfaceUtils.isFrontendPath(refererUrl.pathname)) {
-      return `${refererUrl.protocol}//${refererUrl.host}`.replace(/\/+$/, '');
-    }
-
     const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
     if (siteUrl) return siteUrl.replace(/\/+$/, '');
 
-    const requestOrigin = this.getRequestOriginBaseUrl(req);
-    if (requestOrigin) return requestOrigin.replace(/\/+$/, '');
+    const { host, proto } = this.getRequestHostAndProto(req);
+    if (host) return `${proto}://${host}`;
 
     throw new Error('Frontend base URL is not configured. Set frontend_url or provide a resolvable request origin.');
   }
@@ -43,11 +43,6 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     const configured = process.env.ADMIN_URL;
     if (configured) return this.normalizeAdminBaseUrl(configured);
 
-    const refererUrl = RequestSurfaceUtils.readRefererUrl(req);
-    if (refererUrl && RequestSurfaceUtils.isAdminPath(refererUrl.pathname)) {
-      return `${refererUrl.protocol}//${refererUrl.host}${AppPathConstants.ADMIN.ADMIN.BASE}`.replace(/\/+$/, '');
-    }
-
     const { host, proto } = this.getRequestHostAndProto(req);
     if (host) {
       return `${proto}://${host}${AppPathConstants.ADMIN.ADMIN.BASE}`;
@@ -56,11 +51,6 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
     if (siteUrl) {
       return this.joinBaseUrl(siteUrl, AppPathConstants.ADMIN.ADMIN.BASE);
-    }
-
-    const requestOrigin = this.getRequestOriginBaseUrl(req);
-    if (requestOrigin) {
-      return this.joinBaseUrl(requestOrigin, AppPathConstants.ADMIN.ADMIN.BASE);
     }
 
     throw new Error('Admin base URL is not configured. Set admin_url or provide a resolvable request origin.');
