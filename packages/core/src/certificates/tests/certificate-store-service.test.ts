@@ -9,6 +9,8 @@ import { CertificateSource } from '@core/enums/certificate-source.enum';
 import { CertificateState } from '@core/enums/certificate-state.enum';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { CertificateValidationError } from '@core/certificates/certificate-validation-error';
+import { CertificateIssuanceService } from '@core/certificates/acme/certificate-issuance-service';
+import { AcmeChallengeType } from '@core/enums/acme-challenge-type.enum';
 
 /**
  * The store, and the promise that matters most: a private key is never at rest in the clear and
@@ -183,5 +185,30 @@ describe('CertificateStoreService', () => {
     expect(byHost('other.test').next_attempt_at).toBe(later);
     expect(byHost('plain.test').next_attempt_at).toBe(later);
     expect(byHost('fine.test').next_attempt_at).toBe(later);
+  });
+
+  it('switching an uploaded certificate to Automatic makes the host due now, not when the old one expires', async () => {
+    await freshStore().upload({ host: 'site.test', certificatePem: read('good.crt'), privateKeyPem: read('good.key') });
+    expect(CertificateIssuanceService.isDue(await store.find('site.test') as CertificateRecord)).toBe(false);
+
+    const automatic = await store.setSource('site.test', CertificateSource.AUTOMATIC);
+
+    expect(automatic?.hasMaterial).toBe(true);
+    expect(CertificateIssuanceService.isDue(automatic as CertificateRecord)).toBe(true);
+  });
+
+  it('choosing the same automatic setting again does not order a second time', async () => {
+    freshStore();
+    rows.push({
+      host: 'site.test', source: 'automatic', challenge: 'http-01', wildcard: false, state: 'serving',
+      certificate_pem: read('good.crt'), private_key_enc: 'enc:v1:x', last_attempt_at: new Date().toISOString(),
+      not_after: new Date(Date.now() + 80 * 86_400_000).toISOString(),
+    });
+
+    const again = await store.setSource('site.test', CertificateSource.AUTOMATIC);
+    expect(CertificateIssuanceService.isDue(again as CertificateRecord)).toBe(false);
+
+    const wildcard = await store.setSource('site.test', CertificateSource.AUTOMATIC, { challenge: AcmeChallengeType.DNS_01, wildcard: true });
+    expect(CertificateIssuanceService.isDue(wildcard as CertificateRecord)).toBe(true);
   });
 });

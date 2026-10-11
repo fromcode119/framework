@@ -102,10 +102,18 @@ export class CertificateStoreService {
   ): Promise<CertificateRecord | null> {
     const normalized = CertificateStoreService.normalizeHost(host);
     if (!normalized) return null;
+    const challenge = options.challenge ?? AcmeChallengeType.HTTP_01;
+    const wildcard = options.wildcard ?? false;
+    const existing = await this.find(normalized);
+    const changed = !existing || existing.source !== source || existing.challenge !== challenge || existing.wildcard !== wildcard;
     await this.write(normalized, {
       source: String(source.value),
-      challenge: (options.challenge ?? AcmeChallengeType.HTTP_01).value,
-      wildcard: options.wildcard ?? false,
+      challenge: challenge.value,
+      wildcard,
+      // A NEW automatic choice has not been tried yet, whatever is stored: the issuance sweep orders a
+      // certificate for it on its next pass (`CertificateIssuanceService.isDue`). Choosing the same
+      // thing again leaves the attempt history alone, so a repeated click does not order twice.
+      ...(source === CertificateSource.AUTOMATIC && changed ? { last_attempt_at: null, next_attempt_at: null, attempts_in_window: 0 } : {}),
       // The owning site, stamped HERE because this is where a record is usually born. `upload` and
       // `storeIssued` have always stamped it; choosing "Automatic" in the admin did not, so every
       // record created that way was left unowned — and an unowned record cannot resolve its owner's
