@@ -115,5 +115,9 @@ describe('GatewayChallenge — under attack mode', () => {
     for (const away of ['//evil.test/', '/\\evil.test', '/\t/evil.test', '/\n/evil.test', 'https://evil.test/', 'javascript:alert(1)', '']) {
       expect(GatewayChallenge.safeReturn(away)).toBe('/');
     }
+    // Normalised paths that would start with two slashes stay on this site.
+    for (const sneaky of ['/.//evil.test', '/..//evil.test', '/a/..//evil.test']) {
+      expect(GatewayChallenge.safeReturn(sneaky).startsWith('//')).toBe(false);
+    }
   });
 });

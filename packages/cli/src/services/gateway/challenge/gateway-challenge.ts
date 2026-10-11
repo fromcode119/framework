@@ -141,7 +141,9 @@ export class GatewayChallenge {
     const base = new URL('http://gateway.local');
     let parsed: URL;
     try { parsed = new URL(back, base); } catch { return '/'; }
-    return parsed.origin === base.origin ? `${parsed.pathname}${parsed.search}` : '/';
+    if (parsed.origin !== base.origin) return '/';
+    // Normalising `/.//x` yields the path `//x` — another site to a browser. One leading slash only.
+    return `/${parsed.pathname.replace(/^\/+/, '')}${parsed.search}`;
   }
 
   private static hostOf(req: http.IncomingMessage): string {
