@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.367] - 2026-10-11
+
+### Fixed
+
+- **certificates**: choosing Automatic orders a certificate now ([#867](https://github.com/fromcode119/framework/pull/867))
+- **edge**: relay docs say traffic fails until it is trusted; relay memory 384m ([#865](https://github.com/fromcode119/framework/pull/865))
+
 ## [0.2.366] - 2026-10-11
 
 ### Added
