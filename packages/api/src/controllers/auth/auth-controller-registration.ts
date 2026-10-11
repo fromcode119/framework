@@ -62,10 +62,40 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     this.manager.hooks.emit('auth:user:registered', { userId: newUser.id, email: normalizedEmail, context: flowContext });
     await this.manager.writeLog('INFO', `User registered: ${normalizedEmail}`, 'system', { userId: newUser.id, email: normalizedEmail, context: flowContext, emailVerificationSent: emailSent }).catch(() => {});
 
-    if (!emailSent && process.env.NODE_ENV === 'production') return res.status(500).json({ error: 'Unable to send verification email. Please try again later.' });
-    const response: Record<string, any> = { success: true, requiresEmailVerification: true, message: 'Registration successful. Please verify your email before signing in.', user: { id: String(newUser.id), email: normalizedEmail, roles: ['customer'] } };
-    if (process.env.NODE_ENV !== 'production') { response.verificationUrl = verificationUrl; response.emailDelivery = emailSent ? 'sent' : 'failed'; }
+    // The account exists by now whether or not the email left. Answering 500 "try again" here sent the
+    // person back to a sign-up that then refused them as "already registered", with no way to get the
+    // email. Report the account as created and the delivery as failed: the verification step's
+    // "send again" (`resendVerification`) is the way forward, and it reports its own failures.
+    const response: Record<string, any> = {
+      success: true,
+      requiresEmailVerification: true,
+      emailDelivery: emailSent ? 'sent' : 'failed',
+      message: emailSent
+        ? 'Registration successful. Please verify your email before signing in.'
+        : 'Registration successful, but the verification email could not be sent. Request it again.',
+      user: { id: String(newUser.id), email: normalizedEmail, roles: ['customer'] },
+    };
+    if (process.env.NODE_ENV !== 'production') response.verificationUrl = verificationUrl;
     return res.status(201).json(response);
+  }
+
+  /**
+   * The password rules this site enforces at sign-up. A form that cannot state them leaves people to
+   * find each rule by being refused, so they are public wherever sign-up is.
+   */
+  async getPasswordPolicy(req: Request, res: Response) {
+    if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    const policy = await this.getPasswordPolicySettings();
+    return res.json({
+      minLength: policy.minLength,
+      requireUppercase: policy.requireUppercase,
+      requireLowercase: policy.requireLowercase,
+      requireNumber: policy.requireNumber,
+      requireSymbol: policy.requireSymbol,
+      breachCheck: policy.breachCheck,
+      // Always checked at sign-up (`validatePasswordAgainstPolicy`): the part of the email before the @.
+      excludesEmailName: true,
+    });
   }
 
   async verifyEmail(req: Request, res: Response) {

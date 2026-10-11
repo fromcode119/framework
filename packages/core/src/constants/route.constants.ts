@@ -39,6 +39,7 @@ export class RouteConstants {
     RouteConstants.SEGMENTS.STATUS,
     RouteConstants.SEGMENTS.SETUP,
     RouteConstants.SEGMENTS.REGISTER,
+    RouteConstants.SEGMENTS.PASSWORD_POLICY,
     RouteConstants.SEGMENTS.VERIFY_EMAIL,
     RouteConstants.SEGMENTS.RESEND_VERIFICATION,
     RouteConstants.SEGMENTS.FORGOT_PASSWORD,
