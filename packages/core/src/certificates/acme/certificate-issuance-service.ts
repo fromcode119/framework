@@ -76,13 +76,17 @@ export class CertificateIssuanceService {
   }
 
   /** Whether this row wants an attempt now. */
-  private static isDue(record: CertificateRecord): boolean {
+  static isDue(record: CertificateRecord): boolean {
     if (record.source !== CertificateSource.AUTOMATIC) return false;
     if (record.nextAttemptAt && record.nextAttemptAt.getTime() > Date.now()) return false;
     if (record.storedState === CertificateState.ISSUING) return false;
 
     const state = record.state;
     return !record.hasMaterial
+      // Switched to Automatic (or to another challenge) and not tried since: whatever it holds was
+      // not obtained for what was just chosen — an uploaded certificate valid for years would
+      // otherwise never be replaced, while the admin says the platform is ordering one.
+      || record.lastAttemptAt === null
       || state === CertificateState.RENEWAL_DUE
       || state === CertificateState.EXPIRED
       || record.storedState === CertificateState.FAILED
