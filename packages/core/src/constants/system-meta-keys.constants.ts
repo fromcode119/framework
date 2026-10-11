@@ -2,6 +2,7 @@ import { PluginIsolationMetaKeys } from '@core/constants/plugin-isolation-meta-k
 import { MonitoringMetaKeys } from '@core/constants/monitoring-meta-keys.constants';
 import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
+import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
 
 /**
  * Well-known keys in the system meta table.
@@ -119,6 +120,7 @@ export class SystemMetaKeys {
    */
   CERTIFICATE_ACME_CLOUDFLARE_TOKEN: 'certificate_acme_cloudflare_token',
   ...RetentionMetaKeys.ALL,
+  ...EdgeMetaKeys.ALL,
   /**
    * Whether the platform keeps an IP-location database (DB-IP City Lite, CC BY 4.0) and answers
    * `context.geo.lookup`. `true` installs it and keeps it current monthly; anything else removes it, so
@@ -227,13 +229,6 @@ export class SystemMetaKeys {
    * Delivered to the gateway with the routing map.
    */
   TRUSTED_RELAYS: 'trusted_relays',
-  /** Settings → Security → Edge protection: see `EdgeProtectionSettingDescriptors`. */
-  EDGE_UNDER_ATTACK: 'edge_under_attack',
-  EDGE_CHALLENGE_CLEARANCE_MINUTES: 'edge_challenge_clearance_minutes',
-  EDGE_CHALLENGE_EXEMPT_PATHS: 'edge_challenge_exempt_paths',
-  EDGE_CHALLENGE_TITLE: 'edge_challenge_title',
-  EDGE_RATE_LIMIT_PER_MINUTE: 'edge_rate_limit_per_minute',
-  EDGE_CHALLENGE_MESSAGE: 'edge_challenge_message',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
   /**

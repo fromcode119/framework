@@ -2,6 +2,7 @@ import http from 'http';
 import type { TenantRouteMap } from '@fromcode119/core';
 import { GatewayChallenge } from '@cli/services/gateway/challenge/gateway-challenge';
 import { GatewayRateLimit } from '@cli/services/gateway/challenge/gateway-rate-limit';
+import { GatewayAttackFilter } from '@cli/services/gateway/challenge/gateway-attack-filter';
 
 /**
  * Settings → Security → Edge protection, applied by the gateway before it routes: the request's
@@ -17,10 +18,16 @@ export class GatewayEdgeCheck {
     private readonly limit: GatewayRateLimit = new GatewayRateLimit(),
   ) {}
 
-  /** True when the check answered the request itself: too many requests, or the browser check. */
+  /** True when the check answered the request itself: an attack, too many requests, or the browser check. */
   async handle(req: http.IncomingMessage, res: http.ServerResponse): Promise<boolean> {
     const site = await this.site(req);
     if (site === null) return false;
+    const attack = GatewayAttackFilter.reasonFor(req, site.map.protection);
+    if (attack) {
+      res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ error: 'blocked', reason: attack }));
+      return true;
+    }
     const wait = this.limit.retryAfter(req.socket.remoteAddress, site.map.protection.rateLimitPerMinute);
     if (wait > 0) {
       res.writeHead(429, { 'Content-Type': 'application/json; charset=utf-8', 'Retry-After': String(wait), 'Cache-Control': 'no-store' });
@@ -33,7 +40,7 @@ export class GatewayEdgeCheck {
   /** Whether a WebSocket upgrade may pass. */
   async allowsUpgrade(req: http.IncomingMessage): Promise<boolean> {
     const site = await this.site(req);
-    return site === null || this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId);
+    return site === null || (!GatewayAttackFilter.reasonFor(req, site.map.protection) && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId));
   }
 
   private async site(req: http.IncomingMessage) {

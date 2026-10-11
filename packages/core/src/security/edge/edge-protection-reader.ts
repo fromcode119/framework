@@ -34,11 +34,19 @@ export class EdgeProtectionReader {
     return new EdgeProtection(
       underAttack,
       Number.isFinite(minutes) && minutes > 0 ? minutes : 0,
-      this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS).split(/\r?\n|,/).map((path) => path.trim()).filter(Boolean),
+      this.lines(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS),
       this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE),
       this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE),
       Number.isFinite(limit) && limit > 0 ? limit : 0,
+      EdgeProtectionReader.isOn(this.platform(SystemConstants.META_KEY.EDGE_BLOCK_ATTACK_PATTERNS)),
+      this.lines(SystemConstants.META_KEY.EDGE_BLOCKED_PATHS),
+      this.lines(SystemConstants.META_KEY.EDGE_BLOCKED_USER_AGENTS),
     );
+  }
+
+  /** A list setting: one entry per line (or comma), blanks dropped. */
+  private lines(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): string[] {
+    return this.platform(key).split(/\r?\n|,/).map((entry) => entry.trim()).filter(Boolean);
   }
 
   private platform(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): string {

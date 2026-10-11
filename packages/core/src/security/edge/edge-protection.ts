@@ -6,7 +6,7 @@
  * platform's own hosts. The rest describes the check itself, the same for every site.
  */
 export class EdgeProtection {
-  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0);
+  static readonly NONE = new EdgeProtection([], 0, [], '', '', 0, false, [], []);
 
   constructor(
     readonly underAttack: ReadonlyArray<string | null>,
@@ -16,6 +16,10 @@ export class EdgeProtection {
     readonly message: string,
     /** Requests per visitor per minute across every site; 0 = no limit. */
     readonly rateLimitPerMinute: number = 0,
+    /** Refuse requests carrying a known attack, a blocked path or a blocked tool. */
+    readonly blockAttackPatterns: boolean = false,
+    readonly blockedPaths: readonly string[] = [],
+    readonly blockedAgents: readonly string[] = [],
   ) {}
 
   /** Whether the hosts of this site (null: the platform's own) are under attack mode. */
@@ -37,6 +41,9 @@ export class EdgeProtection {
       title: this.title,
       message: this.message,
       rateLimitPerMinute: this.rateLimitPerMinute,
+      blockAttackPatterns: this.blockAttackPatterns,
+      blockedPaths: [...this.blockedPaths],
+      blockedAgents: [...this.blockedAgents],
     };
   }
 
@@ -52,6 +59,9 @@ export class EdgeProtection {
       String(value.title ?? ''),
       String(value.message ?? ''),
       Number.isFinite(limit) && limit > 0 ? Math.floor(limit) : 0,
+      value.blockAttackPatterns === true,
+      list(value.blockedPaths).map((path) => String(path)),
+      list(value.blockedAgents).map((agent) => String(agent)),
     );
   }
 }

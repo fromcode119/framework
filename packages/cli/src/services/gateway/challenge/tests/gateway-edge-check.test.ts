@@ -7,7 +7,7 @@ import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-c
 describe('GatewayEdgeCheck — requests per visitor', () => {
   const map = TenantRouteMap.fromJson({
     routes: [{ host: 'shop.test', target: 'frontend', tenantId: 'shop' }],
-    protection: new EdgeProtection([], 0, ['/api/'], '', '', 2).toJSON(),
+    protection: new EdgeProtection([], 0, ['/api/'], '', '', 2, true, ['/.env'], ['sqlmap']).toJSON(),
   });
   const check = new GatewayEdgeCheck(async () => map, (req) => String(req.headers.host || ''));
   let server: http.Server;
@@ -22,9 +22,9 @@ describe('GatewayEdgeCheck — requests per visitor', () => {
   });
   afterAll(() => server.close());
 
-  const get = (host: string, visitor: string): Promise<{ status: number; retryAfter?: string }> => new Promise((resolve, reject) => {
+  const get = (host: string, visitor: string, path = '/'): Promise<{ status: number; retryAfter?: string }> => new Promise((resolve, reject) => {
     const port = (server.address() as { port: number }).port;
-    http.get({ host: '127.0.0.1', port, path: '/', headers: { host, 'x-test-visitor': visitor } }, (res) => {
+    http.get({ host: '127.0.0.1', port, path, headers: { host, 'x-test-visitor': visitor } }, (res) => {
       res.resume();
       res.on('end', () => resolve({ status: res.statusCode ?? 0, retryAfter: res.headers['retry-after'] as string | undefined }));
     }).on('error', reject);
@@ -41,5 +41,11 @@ describe('GatewayEdgeCheck — requests per visitor', () => {
 
   it('leaves a host the routing map does not know to the gateway', async () => {
     for (let i = 0; i < 5; i += 1) expect((await get('unknown.test', '203.0.113.50')).status).toBe(200);
+  });
+
+  it('refuses an attack with 403 before anything else, without spending the visitor\'s budget', async () => {
+    expect((await get('shop.test', '203.0.113.30', '/.env')).status).toBe(403);
+    expect((await get('shop.test', '203.0.113.30', '/x?id=1%20union%20select%201')).status).toBe(403);
+    expect((await get('shop.test', '203.0.113.30', '/')).status).toBe(200);
   });
 });
