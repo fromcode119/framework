@@ -9,22 +9,27 @@ import { EdgeSiteRules, GeoIpLookup, NetworkAddressUtils } from '@fromcode119/co
  * database at all — is never refused for its country.
  */
 export class GatewayVisitorRules {
+  static readonly REFUSE = 'refuse';
+  /** Browser check first, even while the site is not under attack. */
+  static readonly CHECK = 'check';
+  static readonly PASS = 'pass';
+
   /** Each rule set's addresses as a `BlockList` (IPv4 and IPv6, single or CIDR), built once. */
   private readonly lists = new WeakMap<EdgeSiteRules, net.BlockList>();
 
   constructor(private readonly geo: Pick<GeoIpLookup, 'lookup'> = GeoIpLookup.shared) {}
 
-  /** `refuse` with a reason, `check` (browser check first), or `pass`. */
-  verdict(req: http.IncomingMessage, rules: EdgeSiteRules): { action: 'refuse'; reason: string } | { action: 'check' | 'pass' } {
-    if (rules.isEmpty) return { action: 'pass' };
+  /** REFUSE with a reason, CHECK, or PASS. */
+  verdict(req: http.IncomingMessage, rules: EdgeSiteRules): { action: string; reason?: string } {
+    if (rules.isEmpty) return { action: GatewayVisitorRules.PASS };
     const address = NetworkAddressUtils.normalize(req.socket.remoteAddress);
-    if (!address || NetworkAddressUtils.isPrivate(address)) return { action: 'pass' };
-    if (rules.blockedAddresses.length && this.listOf(rules).check(address, net.isIPv6(address) ? 'ipv6' : 'ipv4')) return { action: 'refuse', reason: 'blocked_address' };
-    if (!rules.blockedCountries.length && !rules.challengedCountries.length) return { action: 'pass' };
+    if (!address || NetworkAddressUtils.isPrivate(address)) return { action: GatewayVisitorRules.PASS };
+    if (rules.blockedAddresses.length && this.listOf(rules).check(address, net.isIPv6(address) ? 'ipv6' : 'ipv4')) return { action: GatewayVisitorRules.REFUSE, reason: 'blocked_address' };
+    if (!rules.blockedCountries.length && !rules.challengedCountries.length) return { action: GatewayVisitorRules.PASS };
     const country = this.geo.lookup(address)?.countryCode ?? '';
-    if (country && rules.blockedCountries.includes(country)) return { action: 'refuse', reason: 'blocked_country' };
-    if (country && rules.challengedCountries.includes(country)) return { action: 'check' };
-    return { action: 'pass' };
+    if (country && rules.blockedCountries.includes(country)) return { action: GatewayVisitorRules.REFUSE, reason: 'blocked_country' };
+    if (country && rules.challengedCountries.includes(country)) return { action: GatewayVisitorRules.CHECK };
+    return { action: GatewayVisitorRules.PASS };
   }
 
   private listOf(rules: EdgeSiteRules): net.BlockList {
