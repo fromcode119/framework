@@ -29,7 +29,7 @@ export class EdgeProtectionSettingDescriptors {
     },
     [SystemConstants.META_KEY.EDGE_BLOCK_ATTACK_PATTERNS]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: 'false', description: "Refuse requests that carry a known attack in their address (403): SQL injection (union select, ' or 1=1, sleep(), information_schema), script injection (<script, javascript:, onerror=), path traversal (../) and Log4Shell (${jndi:), plus the blocked paths and blocked tools below. Every site.", group: "security" },
+      seed: { value: 'false', description: "Refuse requests that carry a known attack in their address (403): database injection (combined or always-true queries, timing tricks, probing the database's own tables), script injection (<script, javascript:, onerror=), path traversal (../) and Log4Shell (${jndi:), plus the blocked paths and blocked tools below. Every site.", group: "security" },
     },
     [SystemConstants.META_KEY.EDGE_BLOCKED_PATHS]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
