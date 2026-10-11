@@ -30,6 +30,7 @@ export class HookEventUtils {
   } as const;
 
   private static readonly EVENT_PREFIX = 'collection';
+  private static readonly ENTITY_EVENT_PREFIX = 'entity';
   private static readonly EVENT_DELIMITER = ':';
   private static readonly EVENT_WILDCARD = '*';
 
@@ -78,6 +79,20 @@ export class HookEventUtils {
     action: CollectionHookPhase
   ): string {
     return HookEventUtils.event(HookEventUtils.collectionIdentity(collection), action);
+  }
+
+  /**
+   * The same lifecycle hook, named by the ENTITY the collection provides (`entity:order:beforeDelete`).
+   *
+   * A plugin that cares about "an order is being deleted" could only listen on every collection
+   * (`collection:*:beforeDelete`) and guess from the record's shape — anything carrying an
+   * `orderNumber` looked like an order. An invoice, a scheduled job and a shipment all carry one, so
+   * deleting any of them was reported as the order being deleted. Naming the entity is the shared
+   * vocabulary `relationToEntity` already uses: the listener names `order`, never the plugin that owns it.
+   */
+  static entityEvent(entity: string, action: CollectionHookPhase | string): string {
+    const key = String(entity || '').trim().toLowerCase();
+    return `${HookEventUtils.ENTITY_EVENT_PREFIX}${HookEventUtils.EVENT_DELIMITER}${key || HookEventUtils.EVENT_WILDCARD}${HookEventUtils.EVENT_DELIMITER}${CollectionHookPhase.resolve(action).value}`;
   }
 
   /**
