@@ -6,10 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.375] - 2026-10-11
+
+### Fixed
+
+- **admin**: security settings use list and country controls; the overview says what is in effect ([#890](https://github.com/fromcode119/framework/pull/890))
+
 ## [0.2.374] - 2026-10-11
 
 ### Added
 
+- **edge**: a CrowdSec agent that turns refused visitors into relay bans ([#886](https://github.com/fromcode119/framework/pull/886))
 - **hooks**: entity-named lifecycle hooks; afterDelete carries the deleted record ([#880](https://github.com/fromcode119/framework/pull/880))
 
 ## [0.2.373] - 2026-10-11
