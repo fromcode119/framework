@@ -1,0 +1,13 @@
+[Unit]
+Description=Per-visitor connection limits on the edge relay web ports
+After=network-pre.target
+Before=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/atlantis/edge-limits.nft
+ExecStop=/usr/sbin/nft delete table inet atlantis_edge
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,20 @@
+# Per-visitor limits on the public web ports of the edge relay. Its own table: Docker's rules and
+# SSH are never touched. Loaded by edge-limits.service.
+table inet atlantis_edge
+delete table inet atlantis_edge
+table inet atlantis_edge {
+  # Open connections per address. 200 leaves room for many people behind one carrier NAT.
+  set open_v4 { type ipv4_addr; flags dynamic; size 131072; }
+  set open_v6 { type ipv6_addr; flags dynamic; size 131072; }
+  # New connections per address per second.
+  set rate_v4 { type ipv4_addr; flags dynamic,timeout; timeout 1m; size 131072; }
+  set rate_v6 { type ipv6_addr; flags dynamic,timeout; timeout 1m; size 131072; }
+
+  chain input {
+    type filter hook input priority filter - 10; policy accept;
+    tcp dport { 80, 443 } ct state new add @open_v4 { ip saddr ct count over 200 } counter reject with tcp reset
+    tcp dport { 80, 443 } ct state new add @open_v6 { ip6 saddr ct count over 200 } counter reject with tcp reset
+    tcp dport { 80, 443 } ct state new add @rate_v4 { ip saddr limit rate over 60/second burst 120 packets } counter drop
+    tcp dport { 80, 443 } ct state new add @rate_v6 { ip6 saddr limit rate over 60/second burst 120 packets } counter drop
+  }
+}
