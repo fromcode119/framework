@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationUrlUtils, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApplicationUrlUtils, EdgeProtectionReader, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 import { SetupMode } from '@fromcode119/core';
 
@@ -18,6 +18,8 @@ export class RoutingRouter {
     private readonly tenants: TenantRegistryService,
     /** The platform settings cache: Settings → Security → Trusted relays travels with the map. */
     private readonly settingsCache: Map<string, string> = new Map(),
+    /** Settings → Security → Edge protection, read per site; null on a server with no database yet. */
+    private readonly protection: EdgeProtectionReader | null = null,
   ) {
     this.router.get(RouteConstants.SEGMENTS.INTERNAL_ROUTING, (req, res) => { void this.map(req, res); });
   }
@@ -27,11 +29,13 @@ export class RoutingRouter {
       res.status(401).json({ error: 'internal_secret_required' });
       return;
     }
-    const map = TenantRouteMap.build(await this.tenants.list(), {
+    const tenants = await this.tenants.list();
+    const built = TenantRouteMap.build(tenants, {
       admin: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       api: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
     }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
+    const map = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
     res.setHeader('Cache-Control', 'no-store');
     res.json({ ...map.toJSON(), generatedAt: new Date().toISOString() });
   }

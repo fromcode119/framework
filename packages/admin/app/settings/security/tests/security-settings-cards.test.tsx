@@ -114,7 +114,7 @@ describe('Settings -> Security controls', () => {
 
   it('renders a control for EVERY key the page loads and saves', () => {
     const { container } = renderCards();
-    const controls = container.querySelectorAll('[role="switch"], input');
+    const controls = container.querySelectorAll('[role="switch"], input, textarea');
 
     expect(controls.length).toBe(SecuritySettingsKeys.ALL.length);
   });

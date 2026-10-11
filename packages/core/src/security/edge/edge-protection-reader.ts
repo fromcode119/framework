@@ -1,0 +1,49 @@
+import { SystemConstants } from '@core/constants/system.constants';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+import { CoercionUtils } from '@core/utils/coercion-utils';
+import { EdgeProtection } from '@core/security/edge/edge-protection';
+
+/**
+ * Builds the gateway's {@link EdgeProtection} from the settings.
+ *
+ * The platform-wide values come from the api's settings cache (platform rows); each site's
+ * "under attack" switch is that site's own row, read inside the site's scope because row-level
+ * security hides it from any other. A value nobody saved falls back to the setting's declared
+ * default — the same one the admin shows.
+ */
+export class EdgeProtectionReader {
+  private static readonly TABLE = SystemConstants.TABLE.META;
+
+  constructor(
+    /** The raw database manager: `withTenant`, `findOne`. */
+    private readonly db: any,
+    private readonly platformSettings: Map<string, string>,
+  ) {}
+
+  async read(siteIds: readonly string[]): Promise<EdgeProtection> {
+    const key = SystemConstants.META_KEY.EDGE_UNDER_ATTACK;
+    const underAttack: Array<string | null> = [];
+    if (EdgeProtectionReader.isOn(this.platform(key))) underAttack.push(null);
+    for (const siteId of siteIds) {
+      const row = await this.db.withTenant(siteId, () => this.db.findOne(EdgeProtectionReader.TABLE, { key, tenant_id: siteId }));
+      if (EdgeProtectionReader.isOn(row?.value)) underAttack.push(siteId);
+    }
+    const minutes = Number.parseInt(this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_CLEARANCE_MINUTES), 10);
+    return new EdgeProtection(
+      underAttack,
+      Number.isFinite(minutes) && minutes > 0 ? minutes : 0,
+      this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS).split(/\r?\n|,/).map((path) => path.trim()).filter(Boolean),
+      this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE),
+      this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE),
+    );
+  }
+
+  private platform(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): string {
+    const saved = this.platformSettings.get(key);
+    return String(saved ?? SystemSettingRegistry.defaultValueOf(key) ?? '');
+  }
+
+  private static isOn(value: unknown): boolean {
+    return CoercionUtils.toBoolean(value, false) === true;
+  }
+}

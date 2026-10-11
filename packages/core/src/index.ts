@@ -272,6 +272,8 @@ export type { IAppearanceWorkspaceDeclaration } from '@core/appearance/interface
 export { GatewayTarget } from '@core/tenant/gateway-target';
 export { TenantRoute } from '@core/tenant/tenant-route';
 export { TenantRouteMap } from '@core/tenant/tenant-route-map';
+export { EdgeProtection } from '@core/security/edge/edge-protection';
+export { EdgeProtectionReader } from '@core/security/edge/edge-protection-reader';
 export { HostPermissionVerdict } from '@core/enums/host-permission-verdict.enum';
 export { HostPermission } from '@core/tenant/host-permission';
 export { CertificateBundle } from '@core/certificates/certificate-bundle';
