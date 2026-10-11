@@ -92,12 +92,16 @@ export class TenantAdminService extends TenantArchiveAdmin {
     this.assertPluginsInstalled(plugins);
     const theme = CoercionUtils.toString(input.theme);
     if (identity.kind.isWorkspace && theme) throw new Error('A workspace has no storefront, so it takes no theme.');
+    const adminEmail = CoercionUtils.toKey(input.adminEmail);
+    // Checked before the row exists: a refusal after it left a half-made site that blocked its own slug.
+    if (adminEmail && !(await this.db.findOne(SystemConstants.TABLE.USERS, { email: adminEmail }))) {
+      throw new Error(`No account with email "${adminEmail}" exists on this platform. Create the account first.`);
+    }
 
     const tenant = await this.registry.create(identity);
     const pluginState = new PluginTenantStateService(this.db);
     for (const slug of plugins) await pluginState.enable(tenant.id, slug);
     if (theme) await new TenantThemeStateService(this.db).activate(tenant.id, theme);
-    const adminEmail = CoercionUtils.toKey(input.adminEmail);
     if (adminEmail) await this.addMember(tenant.id, adminEmail, ['admin']);
     // Pages are a storefront's; a workspace's domain serves the console.
     // A NEW site gets the theme's initial content; later rebuilds only add missing default pages.

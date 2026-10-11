@@ -106,6 +106,12 @@ describe('site plugin runtime allowlist', () => {
     })).toThrow(/site-uploaded plugin/);
   });
 
+  it('never treats a framework event namespace as a plugin\'s own', () => {
+    expect(TenantPluginRuntimePolicy.isOwnEvent('system', 'system:cache:purge')).toBe(false);
+    expect(TenantPluginRuntimePolicy.isOwnEvent('collection', 'collection:pages:afterCreate')).toBe(false);
+    expect(TenantPluginRuntimePolicy.isOwnEvent('local-probe', 'local-probe:ready')).toBe(true);
+  });
+
   it('does not restrict a platform-installed plugin', () => {
     expect(() => TenantPluginRuntimePolicy.assertRemoteCall('local-probe', {
       root: 'ddl', steps: [{ name: 'execute', args: [] }],

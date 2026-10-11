@@ -38,6 +38,9 @@ export class AdminProxy {
       headers.set(AdminContentSecurityPolicy.HEADER, policy);
       const response = NextResponse.next({ request: { headers } });
       response.headers.set(AdminContentSecurityPolicy.HEADER, policy);
+      // The api's rule (SecurityHeadersMiddleware): HTTPS in production only, never subdomains.
+      const https = request.nextUrl.protocol === 'https:' || request.headers.get('x-forwarded-proto') === 'https';
+      if (process.env.NODE_ENV === 'production' && https) response.headers.set('Strict-Transport-Security', 'max-age=31536000');
       return AdminProxy.applyNoStoreHeaders(response);
     };
 

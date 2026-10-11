@@ -114,6 +114,8 @@ const CHANGED: ReadonlyArray<readonly [string, string]> = [
   [SystemConstants.META_KEY.AUTH_LOCKOUT_DURATION_MINUTES, '120'],
   [SystemConstants.META_KEY.AUTH_CAPTCHA_ENABLED, 'true'],
   [SystemConstants.META_KEY.AUTH_CAPTCHA_THRESHOLD, '2'],
+  [SystemConstants.META_KEY.AUTH_LOCKOUT_ADDRESS_THRESHOLD, '40'],
+  [SystemConstants.META_KEY.AUTH_PASSWORD_RESET_LIMIT, '3'],
   [SystemConstants.META_KEY.AUTH_PASSWORD_RESET_TOKEN_MINUTES, '15'],
   [SystemConstants.META_KEY.AUTH_EMAIL_CHANGE_TOKEN_MINUTES, '90'],
   [SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS, 'false'],
@@ -172,6 +174,8 @@ describe('auth policy settings — the policy HONOURS what was saved', () => {
       lockoutMinutes: 120,
       captchaEnabled: true,
       captchaThreshold: 2,
+      addressThreshold: 40,
+      passwordResetLimit: 3,
     });
   });
 

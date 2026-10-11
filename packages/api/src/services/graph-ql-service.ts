@@ -1,6 +1,6 @@
 import { GraphQLSchema, GraphQLObjectType, GraphQLString, GraphQLInt, GraphQLBoolean, GraphQLList, GraphQLNonNull, GraphQLInputObjectType } from 'graphql';
 import { ICollection, IField, FieldType } from '@fromcode119/core';
-import { PluginManager } from '@fromcode119/core';
+import { PluginManager, PluginState, PluginTenantAccess } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 
 export class GraphQLService {
@@ -8,6 +8,18 @@ export class GraphQLService {
   private inputTypeCache: Map<string, GraphQLInputObjectType> = new Map();
 
   constructor(private manager: PluginManager, private restController: RESTController) {}
+
+  /**
+   * The same gate as the REST collection route (`CollectionMiddleware`, `TenantPluginGuard`): a plugin's
+   * collection exists only while that plugin is active, and, on a site, enabled for it.
+   */
+  private isServed(collection: ICollection): boolean {
+    const owner = this.manager.getCollection(collection.slug)?.pluginSlug ?? collection.pluginSlug ?? '';
+    if (!owner || owner === 'system') return true;
+    const plugin = this.manager.getPlugins().find((candidate) => candidate.manifest.slug === owner);
+    if (!plugin || plugin.state !== PluginState.ACTIVE) return false;
+    return PluginTenantAccess.isBundledSlug(owner) || PluginTenantAccess.isEnabledForCurrentTenant(owner);
+  }
 
   public generateSchema(): GraphQLSchema {
     this.typeCache.clear();
@@ -20,6 +32,7 @@ export class GraphQLService {
 
     for (const collection of collections) {
       if (collection.admin?.hidden === true && !collection.system) continue;
+      if (!this.isServed(collection)) continue;
 
       const type = this.getOrCreateType(collection);
       const slug = collection.shortSlug || collection.slug;
