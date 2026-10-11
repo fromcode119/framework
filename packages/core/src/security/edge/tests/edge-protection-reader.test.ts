@@ -20,17 +20,22 @@ class ScopedMetaDb {
 describe('EdgeProtectionReader', () => {
   const KEY = SystemConstants.META_KEY.EDGE_UNDER_ATTACK;
 
-  it('puts under attack exactly the sites that switched it on, and the platform hosts when the platform did', async () => {
+  it('the platform switch covers every site and the platform hosts; a site\'s own value overrides it', async () => {
     const db = new ScopedMetaDb([
       { key: KEY, tenant_id: 'shop', value: 'true' },
       { key: KEY, tenant_id: 'blog', value: 'false' },
     ]);
-    const platform = new Map([[KEY, 'true']]);
-    const protection = await new EdgeProtectionReader(db, platform).read(['shop', 'blog', 'quiet']);
-    expect(protection.isUnderAttack('shop')).toBe(true);
-    expect(protection.isUnderAttack('blog')).toBe(false);
-    expect(protection.isUnderAttack('quiet')).toBe(false);
-    expect(protection.isUnderAttack(null)).toBe(true);
+    const on = await new EdgeProtectionReader(db, new Map([[KEY, 'true']])).read(['shop', 'blog', 'quiet']);
+    expect(on.isUnderAttack(null)).toBe(true);
+    expect(on.isUnderAttack('quiet')).toBe(true);
+    expect(on.isUnderAttack('shop')).toBe(true);
+    expect(on.isUnderAttack('blog')).toBe(false);
+
+    const off = await new EdgeProtectionReader(db, new Map([[KEY, 'false']])).read(['shop', 'blog', 'quiet']);
+    expect(off.isUnderAttack(null)).toBe(false);
+    expect(off.isUnderAttack('quiet')).toBe(false);
+    expect(off.isUnderAttack('shop')).toBe(true);
+    expect(off.isUnderAttack('blog')).toBe(false);
   });
 
   it('uses the declared defaults for anything nobody saved', async () => {
