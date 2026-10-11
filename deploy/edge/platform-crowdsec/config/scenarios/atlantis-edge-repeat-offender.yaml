@@ -1,0 +1,20 @@
+# A visitor the gateway keeps refusing. The gateway writes at most one line per visitor and reason a
+# minute, so five lines means repeated attacks of several kinds or minutes of flooding — never one
+# mistaken request.
+type: leaky
+name: atlantis/edge-repeat-offender
+description: "Refused again and again by the Atlantis gateway"
+filter: "evt.Meta.log_type == 'atlantis_edge_refused'"
+groupby: evt.Meta.source_ip
+capacity: 4
+leakspeed: 2m
+blackhole: 5m
+labels:
+  service: http
+  confidence: 3
+  spoofable: 0
+  classification:
+    - attack.T1595
+  behavior: "http:exploit"
+  label: "Atlantis gateway repeat offender"
+  remediation: true

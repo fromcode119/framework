@@ -1,0 +1,21 @@
+# The Atlantis gateway's refused-visitor lines: [edge-refused] {"reason","address","host","method","path","at"}
+onsuccess: next_stage
+filter: "evt.Line.Labels.type == 'atlantis-gateway' && evt.Line.Raw contains '[edge-refused] '"
+name: atlantis/edge-refused
+description: "A visitor the Atlantis gateway refused: an attack, a blocked address or country, too many requests"
+grok:
+  pattern: '\[edge-refused\] %{GREEDYDATA:refusal}'
+  apply_on: Line.Raw
+statics:
+  - target: evt.StrTime
+    expression: JsonExtract(evt.Parsed.refusal, "at")
+  - meta: log_type
+    value: atlantis_edge_refused
+  - meta: source_ip
+    expression: JsonExtract(evt.Parsed.refusal, "address")
+  - meta: reason
+    expression: JsonExtract(evt.Parsed.refusal, "reason")
+  - meta: target_fqdn
+    expression: JsonExtract(evt.Parsed.refusal, "host")
+  - meta: http_path
+    expression: JsonExtract(evt.Parsed.refusal, "path")
