@@ -62,7 +62,7 @@ describe('rest delete hooks', () => {
     await runDelete();
     const after = emitted.find((e) => /afterDelete/i.test(e.event));
     expect(after, 'afterDelete was not dispatched').toBeTruthy();
-    expect(after!.payload).toEqual({ id: 7 });
+    expect(after!.payload).toEqual(record);
   });
 
   it('still emits the past-tense notification the existing listeners rely on', async () => {
@@ -74,5 +74,23 @@ describe('rest delete hooks', () => {
     mockDb.findOne.mockResolvedValue(null);
     await runDelete();
     expect(emitted.some((e) => /beforeDelete/i.test(e.event))).toBe(false);
+  });
+
+  it('also dispatches the delete under the entity a collection provides, with the record', async () => {
+    collection.entity = 'order';
+    try {
+      await runDelete();
+      const byEntity = emitted.filter((e) => e.event === 'entity:order:beforeDelete');
+      expect(byEntity).toHaveLength(1);
+      expect(byEntity[0]!.payload).toEqual(record);
+      expect(emitted.some((e) => e.event === 'entity:order:afterDelete' && e.payload?.id === 7)).toBe(true);
+    } finally {
+      delete collection.entity;
+    }
+  });
+
+  it('dispatches no entity event for a collection that provides none', async () => {
+    await runDelete();
+    expect(emitted.some((e) => e.event.startsWith('entity:'))).toBe(false);
   });
 });

@@ -64,13 +64,18 @@ export class RestControllerRuntime {
     }
     // Identity comes from HookEventUtils, not from `collection.slug` — see collectionIdentity() for
     // why the declared slug is canonical and what silently broke while this used the physical one.
-    const event = HookEventUtils.collectionEvent(collection, phase);
+    // A collection that provides an entity (`entity: 'order'`) is heard under that name too, so a
+    // listener can follow "the order" without naming the plugin that owns it.
+    const events = [HookEventUtils.collectionEvent(collection, phase)];
+    if (collection.entity) events.push(HookEventUtils.entityEvent(collection.entity, phase));
     if (!RestControllerRuntime.STORED_ROW_PHASES.has(phase)) {
-      return await this.hooks.call(event, payload) as T;
+      let current = payload;
+      for (const event of events) current = await this.hooks.call(event, current) as T;
+      return current;
     }
     const view: Record<string, unknown> = { ...NamingStrategy.denormalizeRecord(payload) };
     if (previous) view._previousData = NamingStrategy.denormalizeRecord(previous);
-    await this.hooks.call(event, view);
+    for (const event of events) await this.hooks.call(event, view);
     return payload;
   }
 

@@ -98,4 +98,17 @@ describe('record guards', () => {
     expect(calls.filter((c) => /:beforeDelete$/.test(c.event)).map((c) => c.payload.id)).toEqual([7, 8]);
     expect(mockDb.delete).toHaveBeenCalledTimes(1);
   });
+
+  it('a bulk delete fires afterDelete for every row that went, with the row', async () => {
+    const { res } = respond();
+    await (controller as any).bulkDelete(collection, { body: { ids: [7, 8] }, query: {} }, res);
+    expect(calls.filter((c) => /:afterDelete$/.test(c.event)).map((c) => c.payload.id)).toEqual([7, 8]);
+  });
+
+  it('a refused bulk delete fires no afterDelete', async () => {
+    refuse = (event, payload) => /:beforeDelete$/.test(event) && payload.status === 'paid';
+    const { res } = respond();
+    await (controller as any).bulkDelete(collection, { body: { ids: [7, 8] }, query: {} }, res);
+    expect(calls.some((c) => /:afterDelete$/.test(c.event))).toBe(false);
+  });
 });
