@@ -6,10 +6,11 @@ import { EdgeProtection } from '@core/security/edge/edge-protection';
 /**
  * Builds the gateway's {@link EdgeProtection} from the settings.
  *
- * The platform-wide values come from the api's settings cache (platform rows); each site's
- * "under attack" switch is that site's own row, read inside the site's scope because row-level
- * security hides it from any other. A value nobody saved falls back to the setting's declared
- * default — the same one the admin shows.
+ * The platform-wide values come from the api's settings cache (platform rows). "Under attack" is
+ * inherited: a site's own row, read inside the site's scope because row-level security hides it from
+ * any other, wins; a site without one follows the platform's switch, which also covers the platform's
+ * own hosts. A value nobody saved falls back to the setting's declared default — the same one the
+ * admin shows.
  */
 export class EdgeProtectionReader {
   private static readonly TABLE = SystemConstants.TABLE.META;
@@ -22,11 +23,11 @@ export class EdgeProtectionReader {
 
   async read(siteIds: readonly string[]): Promise<EdgeProtection> {
     const key = SystemConstants.META_KEY.EDGE_UNDER_ATTACK;
-    const underAttack: Array<string | null> = [];
-    if (EdgeProtectionReader.isOn(this.platform(key))) underAttack.push(null);
+    const everywhere = EdgeProtectionReader.isOn(this.platform(key));
+    const underAttack: Array<string | null> = everywhere ? [null] : [];
     for (const siteId of siteIds) {
       const row = await this.db.withTenant(siteId, () => this.db.findOne(EdgeProtectionReader.TABLE, { key, tenant_id: siteId }));
-      if (EdgeProtectionReader.isOn(row?.value)) underAttack.push(siteId);
+      if (row ? EdgeProtectionReader.isOn(row.value) : everywhere) underAttack.push(siteId);
     }
     const minutes = Number.parseInt(this.platform(SystemConstants.META_KEY.EDGE_CHALLENGE_CLEARANCE_MINUTES), 10);
     return new EdgeProtection(

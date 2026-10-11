@@ -2230,7 +2230,7 @@
       "trustedRelaysNone": "No relay",
       "edgeProtection": "Edge Protection",
       "underAttackMode": "Under Attack Mode",
-      "underAttackModeHelp": "Every visitor passes a short browser check, served by the gateway itself, before reaching this site. Bots that do not run a browser are stopped there. Turn it on while the site is being flooded; the exempt paths below are never checked.",
+      "underAttackModeHelp": "Every visitor passes a short browser check, served by the gateway itself, before reaching the site. Bots that do not run a browser are stopped there. Turn it on while being flooded. Here on the platform console it covers every site that has not set its own; a site's own console can override it for that site. The exempt paths below are never checked.",
       "browserCheckValidMinutes": "Browser Check Valid (Minutes)",
       "browserCheckValidMinutesHelp": "How long a visitor who passed the check is let in before being checked again. Applies to every site.",
       "browserCheckExemptPaths": "Never Checked",

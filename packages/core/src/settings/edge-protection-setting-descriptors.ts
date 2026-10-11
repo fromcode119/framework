@@ -4,15 +4,16 @@ import { SystemConstants } from '@core/constants/system.constants';
 /**
  * The edge protection rows of the setting registry — Settings → Security → Edge protection.
  *
- * "Under attack" is per SITE: each site switches it for its own hosts, and the platform row covers
- * the platform's own hosts (its console, marketplace). Everything about the check itself is the
- * platform's, because one gateway serves every site.
+ * "Under attack" is INHERITED: the platform console's switch covers every site and the platform's own
+ * hosts, and a site that sets its own value (from its own console) overrides it for that site — one
+ * switch for everything during an attack, and a way to spare or single out a site. Everything about
+ * the check itself is the platform's, because one gateway serves every site.
  */
 export class EdgeProtectionSettingDescriptors {
   static readonly ALL = {
     [SystemConstants.META_KEY.EDGE_UNDER_ATTACK]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'false', description: "Under attack mode: every visitor passes a browser check at the gateway before reaching the site. Paths listed as exempt are never checked.", group: "security" },
+      scope: SettingScope.INHERITED, writable: true, exposed: true,
+      seed: { value: 'false', description: "Under attack mode: every visitor passes a browser check at the gateway before reaching the site. On the platform it applies to every site that has not set its own; a site's own value overrides it. Paths listed as exempt are never checked.", group: "security" },
     },
     [SystemConstants.META_KEY.EDGE_CHALLENGE_CLEARANCE_MINUTES]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
