@@ -25,6 +25,8 @@ services:
       - ./config/parsers/s01-parse/atlantis-edge-refused.yaml:/etc/crowdsec/parsers/s01-parse/atlantis-edge-refused.yaml:ro
       - ./config/scenarios/atlantis-edge-repeat-offender.yaml:/etc/crowdsec/scenarios/atlantis-edge-repeat-offender.yaml:ro
       - ./relay-ca.pem:/etc/crowdsec/relay-ca.pem:ro
+      # The image will not start without its data directory (hub data files for parsers/scenarios).
+      - ./data/db:/var/lib/crowdsec/data
       - ./data/config:/etc/crowdsec
       - /var/run/docker.sock:/var/run/docker.sock:ro
     restart: unless-stopped
