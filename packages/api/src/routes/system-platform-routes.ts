@@ -22,6 +22,7 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
   protected declare controller: any;
   protected declare backupController: any;
   protected declare redirectsController: any;
+  protected declare auditTableCatalogController: any;
   protected declare emailPreferencesController: any;
   protected declare emailPreferencesTokenController: any;
   protected declare pushController: any;
@@ -66,6 +67,8 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
       this.controller.getSettings);
     this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS, this.auth.requirePermission('system:manage'),
       this.controller.platformSettingKeys);
+    this.get(RouteConstants.SEGMENTS.ADMIN_SETTINGS_AUDIT_TABLES, this.auth.requirePermission('system:manage'),
+      (req: any, res: any) => this.auditTableCatalogController.list(req, res));
     this.post(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 
       this.controller.updateSettings);
     this.put(RouteConstants.SEGMENTS.ADMIN_SETTINGS, this.auth.requirePermission('system:manage'), 

@@ -118,6 +118,7 @@ export class AdminConstants {
     HEALTH: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.HEALTH),
     SETTINGS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS),
     SETTINGS_PLATFORM_KEYS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
+    SETTINGS_AUDIT_TABLES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_AUDIT_TABLES),
     PERSONAL_DATA_POLICY: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PERSONAL_DATA_POLICY),
     BACKUPS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
     BACKUP: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),

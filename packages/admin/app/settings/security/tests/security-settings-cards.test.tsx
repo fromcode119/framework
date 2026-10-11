@@ -95,16 +95,20 @@ describe('Settings -> Security controls', () => {
     expect(input?.getAttribute('type')).not.toBe('number');
   });
 
-  it('renders the trusted relays as a free-text field that says when there is none', () => {
-    renderCards();
-    const input = rowFor('Trusted Relays').querySelector('input');
+  it('renders the trusted relays as one chip per relay, and says when there is none', () => {
+    const { unmount } = render(
+      <SecuritySettingsCards settings={{ ...settings(), [SystemConstants.META_KEY.TRUSTED_RELAYS]: '46.224.79.242, 10.0.0.0/8' }} setSettings={vi.fn()} theme={ThemeMode.LIGHT} />,
+    );
+    const row = rowFor('Trusted Relays');
+    expect(row.textContent).toContain('46.224.79.242');
+    expect(row.textContent).toContain('10.0.0.0/8');
+    unmount();
 
-    expect(input).not.toBeNull();
-    expect(input?.getAttribute('type')).not.toBe('number');
-    expect(input?.getAttribute('placeholder')).toBe('No relay');
+    render(<SecuritySettingsCards settings={{ ...settings(), [SystemConstants.META_KEY.TRUSTED_RELAYS]: '' }} setSettings={vi.fn()} theme={ThemeMode.LIGHT} />);
+    expect(rowFor('Trusted Relays').querySelector('input')?.getAttribute('placeholder')).toBe('No relay');
   });
 
-  it('renders the audit exclusion list as a free-text field, since it holds a list of table names', () => {
+  it('renders the audit exclusion list as a list control, since it holds a list of table names', () => {
     renderCards();
     const input = rowFor('Tables Excluded From Write Auditing').querySelector('input');
 
