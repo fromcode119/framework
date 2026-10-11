@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.370] - 2026-10-11
+
+### Fixed
+
+- **database**: a session lock never goes back to the pool still held; its test orders by the lock ([#872](https://github.com/fromcode119/framework/pull/872))
+
 ## [0.2.369] - 2026-10-11
 
 ### Fixed
