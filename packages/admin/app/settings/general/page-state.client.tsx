@@ -29,6 +29,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'marketplace_url',
     'framework_repository',
     'sources_workspace_root',
+    'sources_keep_builds',
     'timezone',
     'time_format',
     'signup_email_subject',

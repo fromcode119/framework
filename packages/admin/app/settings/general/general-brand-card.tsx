@@ -74,6 +74,11 @@ export class GeneralBrandCard extends PureReactor {
   }
 
   @bound
+  onSourcesKeepBuildsChange(e: React.ChangeEvent<HTMLInputElement>): void {
+    this.patchSetting('sources_keep_builds', e.target.value);
+  }
+
+  @bound
   onSourcesBuildUnverifiedChange(value: boolean): void {
     this.patchSetting('sources_build_unverified_commits', value);
   }
@@ -241,6 +246,17 @@ export class GeneralBrandCard extends PureReactor {
               className="w-full md:w-64 font-bold"
               placeholder="data/sources"
             />
+          </SettingRow>
+        )}
+
+        {this.shown('sources_keep_builds') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Folder}
+            title={AdminI18n.t('settings.general.sourcesKeepBuilds')}
+            description={AdminI18n.t('settings.general.sourcesKeepBuildsDescription')}
+          >
+            <Input type="number" min={1} step={1} value={settings.sources_keep_builds} onChange={this.onSourcesKeepBuildsChange} className="w-full md:w-24 font-bold" />
           </SettingRow>
         )}
 

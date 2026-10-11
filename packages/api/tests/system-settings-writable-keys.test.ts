@@ -24,6 +24,7 @@ describe('SystemSettingsWriter — writable settings keys', () => {
     ['admin_search_indexing', SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING],
     ['framework_repository', SystemConstants.META_KEY.FRAMEWORK_REPOSITORY],
     ['sources_workspace_root', SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT],
+    ['sources_keep_builds', SystemConstants.META_KEY.SOURCES_KEEP_BUILDS],
     ['email_notifications', SystemConstants.META_KEY.EMAIL_NOTIFICATIONS],
     ['measurement_system', SystemConstants.META_KEY.MEASUREMENT_SYSTEM],
     ['timezone', SystemConstants.META_KEY.TIMEZONE],

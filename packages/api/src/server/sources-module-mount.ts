@@ -68,6 +68,11 @@ export class SourcesModuleMount {
       sitePublisher: new SitePackagePublisher(manager),
       // Read per build: the switch on Settings → General reaches the next build, no restart.
       buildsUnverifiedCommits: () => PlatformSettingsService.readFlag(SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS),
+      // Read per build, like the switch above. A blank or invalid value keeps every build.
+      keepBuilds: async () => {
+        const kept = Number(await PlatformSettingsService.getSetting(SystemConstants.META_KEY.SOURCES_KEEP_BUILDS));
+        return Number.isInteger(kept) && kept >= 1 ? kept : null;
+      },
     }).router;
   }
 }

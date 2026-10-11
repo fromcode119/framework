@@ -35,6 +35,11 @@ export interface ISourcesModuleInput {
    * turns it on. Asked on every build.
    */
   buildsUnverifiedCommits?: () => Promise<boolean>;
+  /**
+   * How many built versions of each extension stay on disk — Settings → General. Asked after every
+   * build; null (unset or not a whole number of at least 1) removes nothing.
+   */
+  keepBuilds?: () => Promise<number | null>;
   /** Hands a source's builds to the site it publishes to (its media library + hook delivery). */
   sitePublisher?: ISitePackagePublisher;
   /** Runs the auto-build timer. */
