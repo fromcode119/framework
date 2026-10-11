@@ -68,7 +68,7 @@ export class TenantDeleteCli {
 
     const outcome = await new TenantEraser(db, registry, tables, uploadsDir).erase(tenant, archivePath);
     const rows = Object.values(outcome.deleted).reduce((total, count) => total + count, 0);
-    console.log(`[tenant-delete] deleted "${tenant.slug}": ${rows} row(s) across ${Object.keys(outcome.deleted).length} table(s), ${outcome.files} file(s).`);
+    console.log(`[tenant-delete] deleted "${tenant.slug}": ${rows} row(s) across ${Object.keys(outcome.deleted).length} table(s), ${outcome.accounts} account(s) of this site alone, ${outcome.files} file(s).`);
     console.log(`[tenant-delete] the archive above is the only copy — keep it until you are sure.`);
     return 0;
   }
