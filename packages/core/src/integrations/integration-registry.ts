@@ -97,7 +97,7 @@ export class IntegrationRegistry {
     const key = this.normalize(provider.key);
     if (!key) throw new Error(`Integration provider key is required for type "${normalizedType}"`);
     this.owners.claimProvider(normalizedType, key, owner, runtime.providers.has(key));
-    runtime.providers.set(key, { ...provider, key });
+    runtime.providers.set(key, { ...provider, key, registeredBy: String(owner ?? '').trim() });
   }
 
   // ---------------------------------------------------------------------------
