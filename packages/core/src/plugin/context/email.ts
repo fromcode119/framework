@@ -19,8 +19,8 @@ import type { IInboxAccount, IInboxFetchOptions } from '@fromcode119/email';
  * private string constant (`'review-invitation'`) into something a preferences screen can enumerate and
  * name, without that screen having to know which plugins exist.
  *
- * Everything else forwards to the driver untouched, so `send`, `suppress`, `unsuppress` and
- * `isSuppressed` keep working exactly as before — the Proxy adds, it does not wrap behaviour.
+ * The driver's own members a plugin may call are listed by name — `send`, `suppress`, `isSuppressed` —
+ * and nothing else of the driver is reachable.
  */
 export class EmailContextProxy {
   /** The framework-owned preferences page. Kept here so no plugin hardcodes the path. */
@@ -117,13 +117,14 @@ export class EmailContextProxy {
       },
     };
 
-    return new Proxy(driver ?? {}, {
-      get(target, prop, receiver) {
-        if (typeof prop === 'string' && prop in additions) return additions[prop];
-        const value = Reflect.get(target, prop, receiver);
-        // Methods must keep their `this` — the driver holds the db handle the suppression list uses.
-        return typeof value === 'function' ? value.bind(target) : value;
-      },
-    });
+    // An explicit member list, never the driver itself. The driver is an object graph — it holds the
+    // database handle its suppression list uses — and a plugin's remote calls walk properties, so
+    // forwarding "everything else" handed every plugin with `email` whatever the driver happened to hold.
+    return {
+      ...additions,
+      send: (options: unknown) => driver.send(options),
+      suppress: (address: string, category?: string) => driver.suppress(address, category),
+      isSuppressed: (address: string, category?: string) => driver.isSuppressed(address, category),
+    };
   }
 }

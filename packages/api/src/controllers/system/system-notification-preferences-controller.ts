@@ -1,12 +1,14 @@
 import type { Request, Response } from 'express';
 import { ChannelConsentStore, ConsentChannel, NotificationCategory, PersonNotifier, PhoneNumber, SystemConstants } from '@fromcode119/core';
+import { PhoneVerificationService } from '@api/services/phone-verification-service';
 
 /**
  * What a person agreed to be sent outside the site — texts for updates and for offers, and offers as
  * notifications. The person is ALWAYS the session's, as on the email preferences screen.
  *
  * Texts are offered only when the site has a provider set up, and an agreement to them keeps the
- * number it was given for, in international form — the number is never guessed from a local one.
+ * number it was given for, in international form — the number is never guessed from a local one, and
+ * is first confirmed with a code texted to it.
  */
 export class SystemNotificationPreferencesController {
   private static readonly SOURCE = 'account:notifications';
@@ -51,9 +53,23 @@ export class SystemNotificationPreferencesController {
       }
       let address = '';
       if (channel === ConsentChannel.SMS) {
-        if (!(await new PersonNotifier(this.manager).sender()).configured) throw Object.assign(new Error('Text messages are not available on this site'), { status: 409 });
+        const sender = await new PersonNotifier(this.manager).sender();
+        if (!sender.configured) throw Object.assign(new Error('Text messages are not available on this site'), { status: 409 });
         address = PhoneNumber.normalize(body.phone);
         if (!address) throw Object.assign(new Error('Enter your number with its country code, for example +359 88 123 4567'), { status: 400 });
+        // A number is agreed to only once its holder has shown they have it (PhoneVerificationService). One
+        // already confirmed for this person's other kind of text needs no second code.
+        const confirmed = (await this.consents.forPerson(userId)).some((row) => row.channel === ConsentChannel.SMS.value && row.address === address);
+        if (!confirmed) {
+          const verification = new PhoneVerificationService(this.manager);
+          if (!String(body.code ?? '').trim()) {
+            await verification.start(userId, address, sender);
+            return { verificationRequired: true, phone: address };
+          }
+          if (!(await verification.confirm(userId, address, String(body.code)))) {
+            throw Object.assign(new Error('That code is not right, or it has expired. Ask for a new one.'), { status: 400 });
+          }
+        }
       }
       await this.consents.grant(userId, channel, category, address, SystemNotificationPreferencesController.SOURCE);
       return { success: true };

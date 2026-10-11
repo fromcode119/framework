@@ -67,7 +67,8 @@ export class SystemUserController {
 
   async deleteRole(req: Request, res: Response) {
     try {
-      await this.runtime.users.deleteRole(CoercionUtils.toString(req.params.slug), await this.roleEditor(req));
+      const deleted = await this.runtime.users.deleteRole(CoercionUtils.toString(req.params.slug), await this.roleEditor(req));
+      if (!deleted) return res.status(404).json({ error: 'Role not found' });
       res.json({ success: true });
     } catch (error: any) {
       if (error instanceof RoleScopeError) return res.status(error.statusCode).json({ error: error.message });
@@ -229,23 +230,36 @@ export class SystemUserController {
     }
   }
 
+  // A site's administrator manages second factors for the site's OWN members. Every one of these took any
+  // account number on the platform, the same gap `denyOutsideScope` closes for the account itself.
   async getTwoFactorStatus(req: Request, res: Response) {
+    if (await this.denyTwoFactorOutsideScope(req, res)) return;
     return this.runtime.twoFactor.getTwoFactorStatus(req, res);
   }
 
   async setup2FA(req: Request, res: Response) {
+    if (await this.denyTwoFactorOutsideScope(req, res)) return;
     return this.runtime.twoFactor.setup2FA(req, res);
   }
 
   async verify2FA(req: Request, res: Response) {
+    if (await this.denyTwoFactorOutsideScope(req, res)) return;
     return this.runtime.twoFactor.verify2FA(req, res);
   }
 
   async regenerateRecoveryCodes(req: Request, res: Response) {
+    if (await this.denyTwoFactorOutsideScope(req, res)) return;
     return this.runtime.twoFactor.regenerateRecoveryCodes(req, res);
   }
 
   async disable2FA(req: Request, res: Response) {
+    if (await this.denyTwoFactorOutsideScope(req, res)) return;
     return this.runtime.twoFactor.disable2FA(req, res);
+  }
+
+  private async denyTwoFactorOutsideScope(req: Request, res: Response): Promise<boolean> {
+    const id = RequestParamUtils.relationId(req, res, 'user');
+    if (id === null) return true;
+    return this.denyOutsideScope(req, res, id);
   }
 }

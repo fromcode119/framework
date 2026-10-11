@@ -9,14 +9,14 @@ import { AccountChannelPreferences } from '@react/account/channel-preferences';
  * offering a switch that would do nothing.
  */
 describe('Account → Notifications: texts and offers', () => {
-  const mount = (preferences: Record<string, unknown>, refuse = '') => {
+  const mount = (preferences: Record<string, unknown>, refuse = '', answer: Record<string, unknown> = { success: true }) => {
     const posts: Array<{ path: string; body: any }> = [];
     const api = {
       get: vi.fn(async () => preferences),
       post: vi.fn(async (path: string, body: any) => {
         posts.push({ path, body });
         if (refuse) throw Object.assign(new Error('refused'), { data: { error: refuse } });
-        return { success: true };
+        return answer;
       }),
     };
     const t = (_key: string, _params?: unknown, fallback?: string) => fallback ?? '';
@@ -42,8 +42,21 @@ describe('Account → Notifications: texts and offers', () => {
     const updates = screen.getByText('Updates by text').closest('li')!.querySelector('input[type=checkbox]')!;
     fireEvent.click(updates);
     await waitFor(() => expect(posts).toHaveLength(1));
-    expect(posts[0].body).toEqual({ channel: 'sms', category: 'updates', enabled: true, phone: '0881234567' });
+    expect(posts[0].body).toEqual({ channel: 'sms', category: 'updates', enabled: true, phone: '0881234567', code: '' });
     await screen.findByText('Enter your number with its country code');
+  });
+
+  it('asks for the code texted to a new number, and sends the same switch again with it', async () => {
+    const { posts, api } = mount({ sms: { available: true, phone: '', updates: false, offers: false }, push: { offers: false } }, '', { verificationRequired: true, phone: '+359881234567' });
+    fireEvent.change(await screen.findByLabelText('Mobile number'), { target: { value: '+359881234567' } });
+    fireEvent.click(screen.getByText('Updates by text').closest('li')!.querySelector('input[type=checkbox]')!);
+    await screen.findByText('We sent a code to {{phone}}. Enter it to switch texts on.');
+    api.post.mockImplementation(async (path: string, body: any) => { posts.push({ path, body }); return { success: true }; });
+    fireEvent.change(document.querySelector('input[autocomplete=one-time-code]')!, { target: { value: '123456' } });
+    fireEvent.click(screen.getByText('Confirm'));
+    await waitFor(() => expect(posts).toHaveLength(2));
+    expect(posts[1].body).toEqual({ channel: 'sms', category: 'updates', enabled: true, phone: '+359881234567', code: '123456' });
+    await waitFor(() => expect(screen.queryByText('Confirm')).toBeNull());
   });
 
   it('turning offers as notifications on and off records each choice', async () => {
