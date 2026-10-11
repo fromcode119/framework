@@ -142,7 +142,6 @@ export class SystemMetaKeys {
   // "derive it from the frontend language" (`PlatformCountryUtils`), and the admin says which country
   // that produced.
   COUNTRY: 'country',
-  
   // Security & Auth
   AUTH_SECURITY_NOTIFICATIONS: 'auth_security_notifications',
   AUTH_SESSION_DURATION: 'auth_session_duration_minutes',
