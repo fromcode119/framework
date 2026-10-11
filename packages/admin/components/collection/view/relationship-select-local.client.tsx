@@ -11,7 +11,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RelationshipSelectLocal extends AdminComponent {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<RelationshipSelectLocal, 'field' | 'value' | 'onChange' | 'themeMode' | 'onPatch'>;
+  declare props: Pick<RelationshipSelectLocal, 'field' | 'value' | 'onChange' | 'themeMode' | 'onPatch' | 'disabled'>;
 
   @prop declare field: any;
   @prop declare value: any;
@@ -19,6 +19,8 @@ export class RelationshipSelectLocal extends AdminComponent {
   @prop declare themeMode: ThemeMode;
   /** Patch sibling fields live when a related record is picked (schema `admin.autofill`). */
   @prop declare onPatch?: (partial: Record<string, any>) => void;
+  /** A locked (read-only) field shows the related record but cannot be repointed until it is unlocked. */
+  @prop declare disabled?: boolean;
 
   @state private search = '';
   @state private options: SelectOption[] = [];
@@ -137,6 +139,7 @@ export class RelationshipSelectLocal extends AdminComponent {
         searchable
         onSearchChange={(v: string) => { this.search = v; }}
         theme={themeMode}
+        disabled={this.disabled}
         clearable={Boolean(field.admin?.clearable)}
       />
     );

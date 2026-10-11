@@ -1,7 +1,9 @@
+import type { ReactNode } from 'react';
 import { ThemeMode } from '@fromcode119/core/client';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
+import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
 
 // Mock usePlugins
 vi.mock('@fromcode119/react', async () => {
@@ -50,8 +52,8 @@ vi.mock('@/components/ui/view/input.client', () => ({
 }));
 
 vi.mock('@/components/ui/view/select.client', () => ({
-  Select: ({ onChange, value, options }: any) => (
-    <select data-testid="mock-select" value={value} onChange={(e) => onChange(e.target.value)}>
+  Select: ({ onChange, value, options, disabled }: any) => (
+    <select data-testid="mock-select" value={value} disabled={disabled} onChange={(e) => onChange(e.target.value)}>
       {options.map((opt: any) => (
         <option key={opt.value} value={opt.value}>{opt.label}</option>
       ))}
@@ -195,6 +197,20 @@ describe('./field-renderer', () => {
       name: 'invoiceNumber',
       label: 'Invoice Number'
     });
+  });
+
+  it('locks a read-only relationship so the related record cannot be repointed until unlocked', () => {
+    const field = { name: 'referredBy', type: 'relationship', relationTo: 'users', label: 'Invited by', admin: { readOnly: true } };
+    const runtime = { globalSettings: {}, collections: [], plugins: { collections: [] } } as any;
+    const inRuntime = (node: ReactNode) => <AdminRuntimeContext.context.Provider value={runtime}>{node}</AdminRuntimeContext.context.Provider>;
+    const { unmount } = render(inRuntime(
+      <FieldRenderer field={field as any} value="" onChange={vi.fn()} theme={ThemeMode.LIGHT} collectionSlug="profiles" onReadOnlyOverrideRequest={vi.fn()} />
+    ));
+    expect(screen.getByTestId('mock-select')).toBeDisabled();
+    expect(screen.getByTitle('Unlock "Invited by" to edit')).toBeInTheDocument();
+    unmount();
+    render(inRuntime(<FieldRenderer field={{ ...field, admin: {} } as any} value="" onChange={vi.fn()} theme={ThemeMode.LIGHT} collectionSlug="profiles" />));
+    expect(screen.getByTestId('mock-select')).not.toBeDisabled();
   });
 
   it('shows a read-only value as text rather than in an input', () => {

@@ -120,6 +120,7 @@ export class FieldControlRenderer extends PureReactor {
             onChange={updateValue}
             themeMode={theme}
             onPatch={onPatch || (() => {})}
+            disabled={isFieldReadOnly}
           />
         )
       ) : field.type === 'relationship' || field.admin?.component === 'TagField' || field.admin?.component === 'Tags' ? (
