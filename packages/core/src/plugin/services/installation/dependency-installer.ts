@@ -43,9 +43,9 @@ export class DependencyInstaller {
    * an install that sees them 404s and fails the whole extension. Strip them, and drop the lockfile
    * so a plain `install` resolves the real third-party deps only.
    *
-   * This rewrites `package.json`, which IS inside the integrity hash — that is tolerable only
-   * because it runs before the extension is stamped. Never extend it to strip devDependencies: on
-   * an already-stamped extension that would disable it at the next boot.
+   * This rewrites `package.json`, which IS inside the integrity hash. Before an extension is
+   * stamped (a build) that is harmless; on a stamped one (every boot) the caller must put the file
+   * back once the install is done, as `PluginDependencyInstallerService` does.
    */
   static stripHostProvidedDependencies(directory: string): void {
     const packageJsonPath = path.join(directory, 'package.json');

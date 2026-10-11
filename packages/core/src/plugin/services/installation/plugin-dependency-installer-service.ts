@@ -23,15 +23,29 @@ export class PluginDependencyInstallerService {
     // install below 404 (`npm ci`/`install`), which would fail the whole plugin (and any plugin that
     // depends on it). Strip them + drop the lockfile so a plain `npm install` resolves the plugin's
     // REAL third-party deps only.
+    //
+    // This runs on every boot, on an extension that is ALREADY stamped, and `package.json` is inside
+    // its integrity hash: a plugin that declares the SDK (as a plugin repository should, for its own
+    // tests) was rewritten here and then refused at the integrity check — disabled by its first boot.
+    // The strip therefore lasts only as long as the install; the file goes back exactly as it was.
+    const manifestPath = this.getPackageJsonPath(pluginPath);
+    const original = fs.readFileSync(manifestPath, 'utf8');
     DependencyInstaller.stripHostProvidedDependencies(pluginPath);
+    try {
+      const fingerprint = this.createFingerprint(pluginPath);
+      if (!this.shouldInstall(pluginPath, fingerprint)) {
+        return;
+      }
 
-    const fingerprint = this.createFingerprint(pluginPath);
-    if (!this.shouldInstall(pluginPath, fingerprint)) {
-      return;
+      await this.installDependencies(pluginPath);
+      this.writeState(pluginPath, fingerprint);
+    } finally {
+      this.restoreManifest(manifestPath, original);
     }
+  }
 
-    await this.installDependencies(pluginPath);
-    this.writeState(pluginPath, fingerprint);
+  private restoreManifest(manifestPath: string, original: string): void {
+    if (fs.readFileSync(manifestPath, 'utf8') !== original) fs.writeFileSync(manifestPath, original);
   }
 
   private shouldInstall(pluginPath: string, fingerprint: string): boolean {
