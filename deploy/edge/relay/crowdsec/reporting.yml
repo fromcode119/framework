@@ -1,0 +1,22 @@
+# Lets the platform server report refused visitors to this engine (deploy/edge/platform-crowdsec/):
+# the local API speaks TLS and is also published on REPORT_ADDRESS, the relay's public address. Put in
+# the .env beside this file:
+#   COMPOSE_FILE=docker-compose.yml:reporting.yml
+#   REPORT_ADDRESS=<relay public address>
+# and the certificates in ./tls (ca.pem, lapi.pem, lapi.key) — docs: deploy/DEPLOYMENT.md,
+# "Reporting refused visitors". Only the platform server may reach that port: edge-report-guard.nft
+# plus your provider's firewall.
+services:
+  crowdsec:
+    environment:
+      - USE_TLS=true
+      - CACERT_FILE=/etc/crowdsec/tls/ca.pem
+      - LAPI_CERT_FILE=/etc/crowdsec/tls/lapi.pem
+      - LAPI_KEY_FILE=/etc/crowdsec/tls/lapi.key
+      # The engine's own agent and cscli reach the API over TLS too, so through an address its
+      # certificate names.
+      - LOCAL_API_URL=https://127.0.0.1:8080
+    volumes:
+      - ./tls:/etc/crowdsec/tls:ro
+    ports:
+      - ${REPORT_ADDRESS:?set REPORT_ADDRESS in .env}:8080:8080

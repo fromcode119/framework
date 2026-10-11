@@ -7,7 +7,10 @@ Before=network-online.target
 Type=oneshot
 RemainAfterExit=yes
 ExecStart=/usr/sbin/nft -f /etc/atlantis/edge-limits.nft
+# Only on a relay that takes reports from the platform server (the leading - skips a missing file).
+ExecStart=-/usr/sbin/nft -f /etc/atlantis/edge-report-guard.nft
 ExecStop=/usr/sbin/nft delete table inet atlantis_edge
+ExecStop=-/usr/sbin/nft delete table inet atlantis_edge_report
 
 [Install]
 WantedBy=multi-user.target

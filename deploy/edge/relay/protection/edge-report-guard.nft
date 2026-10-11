@@ -1,0 +1,16 @@
+# Only the platform server may reach the relay's CrowdSec API (port 8080) from outside — the port
+# reporting.yml publishes. Set REPORT_SOURCE to the platform server's address, then
+# `systemctl restart edge-limits`. Not needed (and not loaded) on a relay that does not take reports.
+define REPORT_SOURCE = 192.0.2.10
+
+table inet atlantis_edge_report
+delete table inet atlantis_edge_report
+table inet atlantis_edge_report {
+  chain prerouting {
+    # Ahead of Docker's port forwarding (dstnat, -100): a published port never reaches the input hook.
+    type filter hook prerouting priority -150; policy accept;
+    iifname "lo" accept
+    tcp dport 8080 ip saddr != $REPORT_SOURCE counter drop
+    meta nfproto ipv6 tcp dport 8080 counter drop
+  }
+}

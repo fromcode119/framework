@@ -185,7 +185,9 @@ override (a ban for one is refused):
 ```bash
 docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli allowlists create never-block -d "platform servers and operator"
 docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli allowlists add never-block <address> <address>
-``` Check a ban really blocks: add one for a test
+```
+
+Check a ban really blocks: add one for a test
 address with `cscli decisions add --ip <address> --duration 2m`, try it, then remove it.
 
 ### Reporting refused visitors
@@ -198,16 +200,45 @@ names no tool; anything that reads container logs can act on them.
 turns a visitor refused again and again (about five refusals in ten minutes, scenario
 `atlantis/edge-repeat-offender`) into a ban on the relay, in front of every site. It reports to the
 relay's CrowdSec engine over TLS, so the relay's engine must listen with a certificate on an address
-the platform server can reach, and only from it (`ufw`/nftables plus your provider's firewall):
+the platform server can reach, and only from it.
+
+On the relay, a private CA and a certificate for the engine that names both the address the platform
+server dials and `127.0.0.1` (the engine's own agent and the firewall bouncer):
 
 ```bash
-# On the relay: a machine for the agent, and the engine's CA certificate for the agent to trust.
+cd deploy/edge/relay/crowdsec && mkdir -p tls && cd tls
+openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -days 3650 \
+  -subj "/CN=edge crowdsec CA" -keyout ca.key -out ca.pem
+openssl req -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 -nodes -subj "/CN=crowdsec-lapi" \
+  -keyout lapi.key -out lapi.csr
+printf 'subjectAltName=IP:<relay address>,IP:127.0.0.1\nextendedKeyUsage=serverAuth\n' > ext.cnf
+openssl x509 -req -in lapi.csr -CA ca.pem -CAkey ca.key -CAcreateserial -days 3650 -extfile ext.cnf -out lapi.pem
+rm lapi.csr ext.cnf
+```
+
+Then, beside `docker-compose.yml`, a `.env` with `COMPOSE_FILE=docker-compose.yml:reporting.yml` and
+`REPORT_ADDRESS=<relay address>`, and `docker compose up -d`. From now on the bouncer speaks TLS too: in
+`/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` set `api_url: https://127.0.0.1:8080/` and
+`ca_cert_path` to the `ca.pem` above, then restart it. Close the port to everyone but the platform
+server — in your provider's firewall, and on the relay itself:
+
+```bash
+cp deploy/edge/relay/protection/edge-report-guard.nft /etc/atlantis/   # set REPORT_SOURCE in it
+cp deploy/edge/relay/protection/edge-limits.service /etc/systemd/system/ && systemctl daemon-reload
+systemctl restart edge-limits
+```
+
+A machine for the agent:
+
+```bash
 docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli machines add platform-agent --password <password>
 ```
 
 On the platform server, `.env` beside `deploy/edge/platform-crowdsec/docker-compose.yml` with
-`LOCAL_API_URL`, `AGENT_USERNAME`, `AGENT_PASSWORD`, the relay's CA as `relay-ca.pem`, then
-`docker compose up -d`. Check it with `cscli explain` on a copied `[edge-refused]` line.
+`LOCAL_API_URL=https://<relay address>:8080`, `AGENT_USERNAME`, `AGENT_PASSWORD`, the relay's `ca.pem`
+as `relay-ca.pem`, then `docker compose up -d`. `cscli lapi status` in the agent must answer
+"You can successfully interact with Local API". Check the scenario with `cscli explain` on a copied
+`[edge-refused]` line.
 
 ### Behind your own proxy
 The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
