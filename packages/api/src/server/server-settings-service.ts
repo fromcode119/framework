@@ -51,6 +51,12 @@ export class ServerSettingsService {
     SystemConstants.META_KEY.SETUP_COMPLETED,
     // Not a host either, but it travels with the map: whose PROXY header the gateway believes.
     SystemConstants.META_KEY.TRUSTED_RELAYS,
+    // Edge protection travels with it too, so switching "under attack" takes effect at once.
+    SystemConstants.META_KEY.EDGE_UNDER_ATTACK,
+    SystemConstants.META_KEY.EDGE_CHALLENGE_CLEARANCE_MINUTES,
+    SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS,
+    SystemConstants.META_KEY.EDGE_CHALLENGE_TITLE,
+    SystemConstants.META_KEY.EDGE_CHALLENGE_MESSAGE,
   ];
 
   /** Returns the unsubscribe function. */

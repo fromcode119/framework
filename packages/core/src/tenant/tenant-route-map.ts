@@ -1,4 +1,5 @@
 import { GatewayTarget } from '@core/tenant/gateway-target';
+import { EdgeProtection } from '@core/security/edge/edge-protection';
 import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantRoute } from '@core/tenant/tenant-route';
 import type { TenantRecord } from '@core/tenant/tenant-record';
@@ -25,16 +26,24 @@ export class TenantRouteMap {
    * Trusted relays). Carried here for the same reason as `setup`: the map is what the gateway fetches.
    */
   readonly relays: readonly string[];
+  /** What the gateway enforces in front of each site (Settings → Security → Edge protection). */
+  readonly protection: EdgeProtection;
 
-  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = []) {
+  constructor(routes: Iterable<TenantRoute>, setup = false, relays: readonly string[] = [], protection: EdgeProtection = EdgeProtection.NONE) {
     for (const route of routes) this.byHost.set(route.host, route);
     this.setup = setup === true;
     this.relays = [...relays];
+    this.protection = protection;
   }
 
   /** This map, with the relays the operator declared. */
   withRelays(relays: readonly string[]): TenantRouteMap {
-    return new TenantRouteMap(this.byHost.values(), this.setup, relays);
+    return new TenantRouteMap(this.byHost.values(), this.setup, relays, this.protection);
+  }
+
+  /** This map, with the edge protection the operator set. */
+  withProtection(protection: EdgeProtection): TenantRouteMap {
+    return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection);
   }
 
   static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }, setup = false): TenantRouteMap {
@@ -72,6 +81,7 @@ export class TenantRouteMap {
       list.map((entry: unknown) => TenantRoute.from(entry)).filter((route: TenantRoute | null): route is TenantRoute => route !== null),
       (raw as any)?.setup === true,
       Array.isArray((raw as any)?.relays) ? (raw as any).relays.map((entry: unknown) => String(entry)) : [],
+      EdgeProtection.fromJson((raw as any)?.protection),
     );
   }
 
@@ -93,7 +103,7 @@ export class TenantRouteMap {
   }
 
   toJSON(): Record<string, unknown> {
-    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays] };
+    return { routes: [...this.byHost.values()].map((route) => route.toJSON()), setup: this.setup, relays: [...this.relays], protection: this.protection.toJSON() };
   }
 
   /** A public app URL or bare host → bare host. */

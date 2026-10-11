@@ -227,6 +227,12 @@ export class SystemMetaKeys {
    * Delivered to the gateway with the routing map.
    */
   TRUSTED_RELAYS: 'trusted_relays',
+  /** Settings → Security → Edge protection: see `EdgeProtectionSettingDescriptors`. */
+  EDGE_UNDER_ATTACK: 'edge_under_attack',
+  EDGE_CHALLENGE_CLEARANCE_MINUTES: 'edge_challenge_clearance_minutes',
+  EDGE_CHALLENGE_EXEMPT_PATHS: 'edge_challenge_exempt_paths',
+  EDGE_CHALLENGE_TITLE: 'edge_challenge_title',
+  EDGE_CHALLENGE_MESSAGE: 'edge_challenge_message',
   RATE_LIMIT_WINDOW: 'rate_limit_window',
   PLUGIN_DB_CALLS_PER_MINUTE: 'plugin_db_calls_per_minute',
   /**

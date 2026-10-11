@@ -9,6 +9,7 @@ import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
+import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -70,13 +71,9 @@ export class PlatformGateway {
    */
   private readonly tlsPort = GatewayTlsListener.readPort();
   private readonly certificates = new CertificateBundleClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.CERTIFICATES_PATH}`);
-  private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates, () => this.relays);
+  private readonly edge = new GatewayEdgeCheck(() => this.routing.resolveMap(), (req) => PlatformGateway.hostOf(req));
+  private readonly tls: GatewayTlsListener | null = this.tlsPort === null ? null : new GatewayTlsListener(this.tlsPort, this.certificates, () => this.routing.current?.relays ?? []);
   private readonly plainPolicy = new GatewayPlainListenerPolicy(this.tlsPort !== null);
-
-  /** Settings → Security → Trusted relays, from the last routing map; none before the first. */
-  private get relays(): readonly string[] {
-    return this.routing.current?.relays ?? [];
-  }
 
   constructor(private readonly routing: RoutingMapClient = new RoutingMapClient(`${process.env.API_TARGET_URL || 'http://api:3000'}${PlatformGateway.ROUTING_PATH}`)) {}
 
@@ -118,7 +115,7 @@ export class PlatformGateway {
     });
     server.on('upgrade', (req, socket, head) => { this.upgrade(req, socket, head); });
     this.server = server;
-    this.listener = new GatewayListener(server, undefined, () => this.relays);
+    this.listener = new GatewayListener(server, undefined, () => this.routing.current?.relays ?? []); // Trusted relays
     this.listener.listen(this.port, () => {
       void this.routing.refresh().then(() => this.logStartup());
     });
@@ -144,8 +141,8 @@ export class PlatformGateway {
   }
 
   private upgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
-    void this.targetFor(req).then((target) => {
-      if (!target) { socket.destroy(); return; }
+    void this.targetFor(req).then(async (target) => {
+      if (!target || !(await this.edge.allowsUpgrade(req))) { socket.destroy(); return; }
       this.proxy.ws(req, socket, head, { target });
     });
   }
@@ -180,6 +177,7 @@ export class PlatformGateway {
       const api = this.targets[GatewayTarget.API.value];
       if (api) { this.forward(req, res, api); return; }
     }
+    if (await this.edge.handle(req, res)) return; // Settings → Security → Edge protection
     const target = await this.targetFor(req);
     if (!target) {
       res.writeHead(404, { 'Content-Type': 'application/json; charset=utf-8' });

@@ -5,6 +5,7 @@ import { SystemSettingSeedDefaults } from '@core/settings/system-setting-seed-de
 import { LocalizationSettingDescriptors } from '@core/settings/localization-setting-descriptors';
 import { SignupEmailSettingDescriptors } from '@core/settings/signup-email-setting-descriptors';
 import { ApiFirewallSettingDescriptors } from '@core/settings/api-firewall-setting-descriptors';
+import { EdgeProtectionSettingDescriptors } from '@core/settings/edge-protection-setting-descriptors';
 import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-cache-setting-descriptors';
 import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
@@ -244,6 +245,8 @@ export class SystemSettingDescriptors {
     },
     // Settings → Security → API Firewall — see ApiFirewallSettingDescriptors.
     ...ApiFirewallSettingDescriptors.ALL,
+    // Settings → Security → Edge protection — see EdgeProtectionSettingDescriptors.
+    ...EdgeProtectionSettingDescriptors.ALL,
     // Settings → Infrastructure → API response cache — see ApiResponseCacheSettingDescriptors.
     ...ApiResponseCacheSettingDescriptors.ALL,
     // Settings → Infrastructure → Database connections — see DatabasePoolSettingDescriptors.

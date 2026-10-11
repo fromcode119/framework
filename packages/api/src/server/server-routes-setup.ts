@@ -7,7 +7,7 @@ import { PluginClientAddressMiddleware } from '@api/middlewares/plugin-client-ad
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { ApiVersionUtils, CollectionWriteBridge, Logger, MediaIngestBridge, PluginManager, SitePreviewGrantService, TenantMembershipService, TenantRegistryService, TenantResolverService, ThemeManager} from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
-import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, GeoDatabaseUpdater } from '@fromcode119/core';
+import { AcmeChallengeStore, AcmeCloudflareTokenStore, CertificateStoreService, EdgeProtectionReader, GeoDatabaseUpdater } from '@fromcode119/core';
 import { CoreVersionResolver } from '@api/server/core-version-resolver';
 import { SourcesModuleMount } from '@api/server/sources-module-mount';
 import { MediaManager } from '@fromcode119/media';
@@ -216,7 +216,7 @@ export class ServerRoutesSetup {
 
     // The platform gateway's host → app map (T6). Secret-only; see RoutingRouter.
     const tenantRegistry = new TenantRegistryService((this.manager as any).db, TenantResolverService.shared((this.manager as any).db));
-    vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache).router);
+    vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache, new EdgeProtectionReader((this.manager as any).db, this.settingsCache)).router);
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
     vApi.use(new HostPermitRouter(tenantRegistry).router);
