@@ -12,7 +12,9 @@ services:
       - ./config/parsers/s02-enrich/never-block.yaml:/etc/crowdsec/parsers/s02-enrich/never-block.yaml:ro
       - ./data/db:/var/lib/crowdsec/data
       - ./data/config:/etc/crowdsec
-      - /var/log/auth.log:/var/log/host/auth.log:ro
+      # The directory, not the file: log rotation replaces auth.log, and a single-file mount would keep
+      # following the old one — detection would stop at the first rotation without a word.
+      - /var/log:/var/log/host:ro
     ports:
       - 127.0.0.1:8080:8080
     restart: unless-stopped

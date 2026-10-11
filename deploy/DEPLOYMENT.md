@@ -176,7 +176,16 @@ docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cs
 ```
 
 Put that key in `/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` as `api_key`, set `api_url`,
-then `systemctl restart crowdsec-firewall-bouncer`. Check a ban really blocks: add one for a test
+then `systemctl restart crowdsec-firewall-bouncer`.
+
+The never-block parser list covers only what CrowdSec itself detects. The community blocklist is
+separate, so also put the same addresses in an allowlist, which no decision from any source can
+override (a ban for one is refused):
+
+```bash
+docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli allowlists create never-block -d "platform servers and operator"
+docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli allowlists add never-block <address> <address>
+``` Check a ban really blocks: add one for a test
 address with `cscli decisions add --ip <address> --duration 2m`, try it, then remove it.
 
 ### Behind your own proxy
