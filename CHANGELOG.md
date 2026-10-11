@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.369] - 2026-10-11
+
+### Fixed
+
+- **edge**: under attack is inherited, so the platform console can switch it ([#871](https://github.com/fromcode119/framework/pull/871))
+
 ## [0.2.368] - 2026-10-11
 
 ### Added
