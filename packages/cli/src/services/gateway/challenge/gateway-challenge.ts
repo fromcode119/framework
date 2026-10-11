@@ -131,10 +131,17 @@ export class GatewayChallenge {
     return left.length === right.length && crypto.timingSafeEqual(left, right);
   }
 
-  /** Only a path on this same host — never another site. */
-  private static safeReturn(value: string | null): string {
+  /**
+   * Only a path on this same host — never another site. Parsed as a URL, because a browser drops tabs
+   * and newlines and reads a backslash as a slash: `/<tab>/evil.test` is `//evil.test` to it.
+   */
+  static safeReturn(value: string | null): string {
     const back = String(value || '/');
-    return back.startsWith('/') && !back.startsWith('//') && !back.startsWith('/\\') ? back : '/';
+    if (!back.startsWith('/') || /[\u0000-\u001f\u007f\\]/.test(back)) return '/';
+    const base = new URL('http://gateway.local');
+    let parsed: URL;
+    try { parsed = new URL(back, base); } catch { return '/'; }
+    return parsed.origin === base.origin ? `${parsed.pathname}${parsed.search}` : '/';
   }
 
   private static hostOf(req: http.IncomingMessage): string {

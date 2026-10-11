@@ -109,4 +109,11 @@ describe('GatewayChallenge — under attack mode', () => {
       expect(browser.toString('hex')).toBe(crypto.createHash('sha256').update(input).digest('hex'));
     }
   });
+
+  it('sends the visitor back only to a path on the same site, however the address is disguised', () => {
+    expect(GatewayChallenge.safeReturn('/products?page=2')).toBe('/products?page=2');
+    for (const away of ['//evil.test/', '/\\evil.test', '/\t/evil.test', '/\n/evil.test', 'https://evil.test/', 'javascript:alert(1)', '']) {
+      expect(GatewayChallenge.safeReturn(away)).toBe('/');
+    }
+  });
 });
