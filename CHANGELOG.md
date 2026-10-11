@@ -6,10 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.374] - 2026-10-11
+
+### Added
+
+- **hooks**: entity-named lifecycle hooks; afterDelete carries the deleted record ([#880](https://github.com/fromcode119/framework/pull/880))
+
 ## [0.2.373] - 2026-10-11
 
 ### Added
 
+- **gateway**: one structured log line per refused visitor ([#885](https://github.com/fromcode119/framework/pull/885))
+- **gateway**: country and address rules per site ([#884](https://github.com/fromcode119/framework/pull/884))
 - **gateway**: block attack patterns, for every site ([#883](https://github.com/fromcode119/framework/pull/883))
 
 ### Fixed
