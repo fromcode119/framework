@@ -27,7 +27,7 @@ export class GatewayEdgeCheck {
     const site = await this.site(req);
     if (site === null) return false;
     const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
-    const attack = visitor.action === 'refuse' ? visitor.reason : GatewayAttackFilter.reasonFor(req, site.map.protection);
+    const attack = visitor.action === GatewayVisitorRules.REFUSE ? visitor.reason : GatewayAttackFilter.reasonFor(req, site.map.protection);
     if (attack) {
       this.refusals.record(req, attack);
       res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
@@ -41,7 +41,7 @@ export class GatewayEdgeCheck {
       res.end(JSON.stringify({ error: 'rate_limited', retryAfter: wait }));
       return true;
     }
-    return this.challenge.handle(req, res, site.map.protection, site.tenantId, visitor.action === 'check');
+    return this.challenge.handle(req, res, site.map.protection, site.tenantId, visitor.action === GatewayVisitorRules.CHECK);
   }
 
   /** Whether a WebSocket upgrade may pass. */
@@ -49,8 +49,8 @@ export class GatewayEdgeCheck {
     const site = await this.site(req);
     if (site === null) return true;
     const visitor = this.visitors.verdict(req, site.map.protection.rulesFor(site.tenantId));
-    return visitor.action !== 'refuse' && !GatewayAttackFilter.reasonFor(req, site.map.protection)
-      && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId, visitor.action === 'check');
+    return visitor.action !== GatewayVisitorRules.REFUSE && !GatewayAttackFilter.reasonFor(req, site.map.protection)
+      && this.challenge.allowsUpgrade(req, site.map.protection, site.tenantId, visitor.action === GatewayVisitorRules.CHECK);
   }
 
   private async site(req: http.IncomingMessage) {
