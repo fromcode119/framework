@@ -117,6 +117,13 @@ export class RolesContextProxy {
       return row ? TenantMembership.from(row as Record<string, unknown>).roles : null;
     };
 
+    // The account roles below are platform-wide, so on a site they are given or taken only from the site's
+    // own members — a plugin on one site never reaches an account that belongs only to another.
+    const assertSiteMember = async (operation: string, uid: number): Promise<void> => {
+      const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() : '';
+      if (tenantId && !(await membershipRoles(uid, tenantId))) throw new Error(`${operation} refused account ${uid}: not a member of this site`);
+    };
+
     const proxy = {
       /**
        * Declares a role, recording WHICH PLUGIN declared it.
@@ -159,6 +166,7 @@ export class RolesContextProxy {
         if (!uid || !slug) return;
         const roleSlug = String(slug).trim().toLowerCase();
         await vetGrant('context.roles.assignRole', [roleSlug]);
+        await assertSiteMember('context.roles.assignRole', uid);
         const existing = await manager.db.findOne(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         if (!existing) {
           await manager.db.insert(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
@@ -232,6 +240,7 @@ export class RolesContextProxy {
         if (!uid || !slug) return;
         const roleSlug = String(slug).trim().toLowerCase();
         await vetRemoval('context.roles.removeRole', [roleSlug]);
+        await assertSiteMember('context.roles.removeRole', uid);
         await manager.db.delete(SystemConstants.TABLE.USERS_ROLES, { userId: uid, roleSlug });
         await syncUsersRolesJson(uid, (roles) => roles.filter((r) => r !== roleSlug));
       },

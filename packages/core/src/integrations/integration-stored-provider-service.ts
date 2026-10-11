@@ -38,10 +38,7 @@ export class IntegrationStoredProviderService {
     const normalizedProviderId = this.profileService.normalize(String(options.providerId || ''));
     const existing = normalizedProviderId ? existingProviders.find((entry) => entry.id === normalizedProviderId) : null;
     const storedConfig = this.buildStoredConfig(normalizedType, provider, config || {}, existing?.config || {});
-    // AWAIT: a provider hook can belong to an ISOLATED plugin, where it is a stand-in that returns a
-    // promise. In-process these were synchronous, and the un-awaited promise then flowed on as the
-    // "config" — validation read `username` off a Promise, found nothing, and every courier call died with
-    // "requires field username" while the credentials sat correctly in the tenant's own row.
+    // AWAIT: an isolated plugin's hook is a stand-in returning a promise (see IntegrationResolverService).
     const normalizedConfig = provider.normalizeConfig
       ? await provider.normalizeConfig(this.resolveRuntimeConfig(provider, storedConfig))
       : this.resolveRuntimeConfig(provider, storedConfig);
@@ -58,6 +55,7 @@ export class IntegrationStoredProviderService {
       providerKey: normalizedProvider,
       config: storedConfig,
       ...IntegrationStoredProviderService.namespaceOf(runtime, normalizedProvider, existing),
+      registeredBy: provider.registeredBy ?? '',
       enabled: options.makeActive ? true : nextEnabled,
       createdAt: existing?.createdAt || nowIso,
       updatedAt: nowIso,
@@ -287,14 +285,16 @@ export class IntegrationStoredProviderService {
    * Where the provider's plugin lives: the namespace its REGISTRATION carries (stamped by the framework
    * when the plugin registered it), else a namespace an older entry already stored. Rebuilding entries
    * field by field used to drop it on every admin save, and a consumer resolving the provider's plugin
-   * (logistics → its courier) then reported a configured courier as "not configured".
+   * (logistics → its courier) then reported a configured courier as "not configured". A stored entry's
+   * `registeredBy` (whose credentials these are) is carried through the same way.
    */
   static namespaceOf(
     runtime: IIntegrationTypeRuntime<any> | undefined,
     providerKey: string,
-    stored?: { namespace?: unknown } | null,
-  ): { namespace?: string } {
+    stored?: { namespace?: unknown; registeredBy?: unknown } | null,
+  ): { namespace?: string; registeredBy?: string } {
     const namespace = String(runtime?.providers.get(providerKey)?.namespace || stored?.namespace || '').trim();
-    return namespace ? { namespace } : {};
+    const registeredBy = stored?.registeredBy === undefined || stored?.registeredBy === null ? undefined : String(stored.registeredBy).trim();
+    return { ...(namespace ? { namespace } : {}), ...(registeredBy === undefined ? {} : { registeredBy }) };
   }
 }

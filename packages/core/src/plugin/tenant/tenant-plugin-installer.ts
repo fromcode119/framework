@@ -9,6 +9,7 @@ import { PluginOwners } from '@core/plugin/tenant/plugin-owners';
 import { TenantPluginQuota } from '@core/plugin/tenant/tenant-plugin-quota';
 import { TenantPluginRunRules } from '@core/plugin/tenant/tenant-plugin-run-rules';
 import { TenantPluginPackagePolicy } from '@core/plugin/tenant/tenant-plugin-package-policy';
+import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-runtime-policy';
 import { TenantPluginRefusal } from '@core/plugin/tenant/tenant-plugin-refusal';
 import { TenantPluginRefusalReason } from '@core/plugin/tenant/enums/tenant-plugin-refusal-reason.enum';
 import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
@@ -139,6 +140,9 @@ export class TenantPluginInstaller {
     const slug = String(manifest?.slug ?? '').trim().toLowerCase();
     if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {
       throw new TenantPluginRefusal(TenantPluginRefusalReason.INVALID, `Invalid plugin slug "${slug}". Use lowercase letters, digits and dashes.`);
+    }
+    if (TenantPluginRuntimePolicy.FRAMEWORK_EVENT_NAMESPACES.has(slug)) {
+      throw new TenantPluginRefusal(TenantPluginRefusalReason.INVALID, `"${slug}" is a name the platform itself uses. Give your plugin a different slug.`);
     }
     return { ...manifest, slug };
   }

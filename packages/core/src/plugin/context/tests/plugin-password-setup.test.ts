@@ -20,7 +20,16 @@ const ROLES = [
 function managerWith(users: any[], memberships: any[] = []) {
   const meta = new Map<string, string>();
   const db = {
-    find: vi.fn(async (table: string) => (table === SystemConstants.TABLE.ROLES ? ROLES : [])),
+    find: vi.fn(async (table: string, query?: any) => {
+      if (table === SystemConstants.TABLE.ROLES) return ROLES;
+      if (table === SystemConstants.TABLE.TENANT_MEMBERSHIPS) {
+        const wanted = query?.where?.user_id;
+        const ids: string[] = wanted?.in ?? (wanted === undefined ? null : [wanted]);
+        return ids ? memberships.filter((m) => ids.includes(m.user_id)) : memberships;
+      }
+      if (table === SystemConstants.TABLE.USERS && query?.where?.is_platform_admin) return users.filter((u) => u.is_platform_admin);
+      return [];
+    }),
     findOne: vi.fn(async (table: string, where: any) => {
       if (table === SystemConstants.TABLE.USERS) return users.find((u) => u.id === where.id) ?? null;
       if (table === SystemConstants.TABLE.TENANT_MEMBERSHIPS) {
@@ -98,6 +107,31 @@ describe('context.users.issuePasswordSetup', () => {
     const { manager } = managerWith([{ id: 4, email: 'elsewhere@other.test', roles: ['customer'] }]);
 
     await expect(RequestContextUtils.storage.run({ tenantId: 'my-site' } as any, () => users(manager).issuePasswordSetup(4))).rejects.toThrow(/not a member/);
+  });
+
+  it('refuses a customer of this site whose account also belongs to another site', async () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const { manager, meta } = managerWith(
+      [{ id: 5, email: 'shared@site.test', roles: [] }],
+      [
+        { user_id: '5', tenant_id: 'my-site', roles: ['customer'], state: 'active' },
+        { user_id: '5', tenant_id: 'other-site', roles: ['admin'], state: 'active' },
+      ],
+    );
+
+    await expect(RequestContextUtils.storage.run({ tenantId: 'my-site' } as any, () => users(manager).issuePasswordSetup(5))).rejects.toThrow(/another site/);
+    expect(meta.size).toBe(0);
+  });
+
+  it('still issues for a customer that belongs to this site alone', async () => {
+    TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
+    const { manager, meta } = managerWith(
+      [{ id: 6, email: 'mine@site.test', roles: [] }],
+      [{ user_id: '6', tenant_id: 'my-site', roles: ['customer'], state: 'active' }],
+    );
+
+    await RequestContextUtils.storage.run({ tenantId: 'my-site' } as any, () => users(manager).issuePasswordSetup(6));
+    expect(meta.has('user:6:password_reset_token_hash')).toBe(true);
   });
 
   it('needs the same capability as creating the account', async () => {

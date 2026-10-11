@@ -5,6 +5,7 @@ import { Request, Response } from 'express';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
+import { TenantUserScope } from '@api/services/request/tenant-user-scope';
 import { CoercionUtils } from '@fromcode119/core';
 import { SecurityNotificationEvent } from '@api/controllers/auth/enums/security-notification-event.enum';
 import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-error.enum';
@@ -56,6 +57,9 @@ export class AuthControllerSso extends AuthControllerRegistration {
     const genericMessage = 'If an account exists, a password reset link has been sent.';
 
     try {
+      if (await this.passwordResetLimitReached(email, NetworkAddressUtils.resolveClientIp(req) || '')) {
+        return res.json({ success: true, message: genericMessage });
+      }
       const user = await this.db.findOne(SystemConstants.TABLE.USERS, { email });
       if (!user) {
         return res.json({ success: true, message: genericMessage });
@@ -102,7 +106,12 @@ export class AuthControllerSso extends AuthControllerRegistration {
       const user = userId != null
         ? await this.db.findOne(SystemConstants.TABLE.USERS, { id: userId })
         : (email ? await this.db.findOne(SystemConstants.TABLE.USERS, { email }) : null);
-      if (!user) return res.status(404).json({ error: 'User not found' });
+      // The rule for editing the account (`TenantUserScope`): a site resets only the passwords it owns alone.
+      const scope = user ? await TenantUserScope.of(req, this.db) : null;
+      if (!user || !scope?.allows(Number(user.id))) return res.status(404).json({ error: 'User not found' });
+      if (!scope.mayEditIdentity(Number(user.id))) {
+        return res.status(403).json({ error: 'identity_managed_by_platform', message: 'This person\'s sign-in account is not managed by this site, so its password cannot be reset here.' });
+      }
 
       const targetEmail = this.normalizeEmail(user.email);
       if (!targetEmail) return res.status(400).json({ error: 'User has no email address' });
