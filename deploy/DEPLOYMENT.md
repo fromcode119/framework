@@ -144,6 +144,41 @@ read, because anyone could make it. **Set it before pointing any traffic at the 
 relay's address is listed, the gateway does not read the relay's header and every connection through
 it fails.
 
+### Protecting the relay
+
+The relay passes traffic on still encrypted, so it protects the platform where that needs no
+decryption: per-visitor connection limits and a blocklist of known attackers. Requests themselves
+(browser check, "under attack" mode) are the gateway's — Settings → Security → Edge protection.
+
+Files in `deploy/edge/relay/`:
+
+- `protection/90-edge.conf` — kernel settings for many connections (`/etc/sysctl.d/`).
+- `protection/edge-limits.nft` + `edge-limits.service` — at most 200 open and 60 new connections per
+  second per address on 80/443, in a table of its own that leaves Docker's rules and SSH alone.
+- `crowdsec/` — CrowdSec: the community blocklist plus SSH brute-force detection. Edit
+  `config/parsers/s02-enrich/never-block.yaml` first: your servers and your own address.
+
+On the relay, as root:
+
+```bash
+cp deploy/edge/relay/protection/90-edge.conf /etc/sysctl.d/ && sysctl -p /etc/sysctl.d/90-edge.conf
+mkdir -p /etc/atlantis && cp deploy/edge/relay/protection/edge-limits.nft /etc/atlantis/
+cp deploy/edge/relay/protection/edge-limits.service /etc/systemd/system/ && systemctl enable --now edge-limits
+(cd deploy/edge/relay/crowdsec && docker compose up -d)
+```
+
+The firewall half of CrowdSec runs on the host, from CrowdSec's signed apt repository
+(`packagecloud.io/crowdsec/crowdsec`, package `crowdsec-firewall-bouncer-nftables`). Give it a key from
+the engine and point it at `http://127.0.0.1:8080/`:
+
+```bash
+docker compose -f deploy/edge/relay/crowdsec/docker-compose.yml exec crowdsec cscli bouncers add relay-firewall
+```
+
+Put that key in `/etc/crowdsec/bouncers/crowdsec-firewall-bouncer.yaml` as `api_key`, set `api_url`,
+then `systemctl restart crowdsec-firewall-bouncer`. Check a ban really blocks: add one for a test
+address with `cscli decisions add --ip <address> --duration 2m`, try it, then remove it.
+
 ### Behind your own proxy
 The `gateway` and `edge` services sit behind a `single-domain` profile and are **not** started by
 default. A host that already runs a reverse proxy — whichever one — routes straight to `api`, `admin`

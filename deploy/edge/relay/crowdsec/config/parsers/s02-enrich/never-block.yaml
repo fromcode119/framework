@@ -1,0 +1,10 @@
+# Addresses CrowdSec must never block: the platform server, the relay itself, your other servers and
+# the address you administer from. Replace the examples before starting CrowdSec.
+name: atlantis/never-block
+description: "Never block the platform's own servers or its operator"
+whitelist:
+  reason: "platform infrastructure and operator"
+  ip:
+    - "192.0.2.10"   # the platform server
+    - "192.0.2.20"   # this relay
+    - "198.51.100.5" # the operator

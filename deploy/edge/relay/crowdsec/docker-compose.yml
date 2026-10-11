@@ -1,0 +1,27 @@
+# CrowdSec for the relay: the community blocklist of known attackers plus local detection (SSH
+# brute force). Its decisions are enforced in the host firewall by crowdsec-firewall-bouncer-nftables,
+# which reads them from this engine on 127.0.0.1:8080. docs: deploy/DEPLOYMENT.md, "Protecting the relay".
+services:
+  crowdsec:
+    image: crowdsecurity/crowdsec:v1.8.1
+    environment:
+      - COLLECTIONS=crowdsecurity/linux crowdsecurity/sshd
+      - TZ=UTC
+    volumes:
+      - ./config/acquis.yaml:/etc/crowdsec/acquis.yaml:ro
+      - ./config/parsers/s02-enrich/never-block.yaml:/etc/crowdsec/parsers/s02-enrich/never-block.yaml:ro
+      - ./data/db:/var/lib/crowdsec/data
+      - ./data/config:/etc/crowdsec
+      - /var/log/auth.log:/var/log/host/auth.log:ro
+    ports:
+      - 127.0.0.1:8080:8080
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384m
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
