@@ -31,13 +31,13 @@ export class GatewayChallenge {
    * True when this answered the request itself: the check page, a verification, or a refusal of a
    * non-GET request without a pass. False lets the request through.
    */
-  handle(req: http.IncomingMessage, res: http.ServerResponse, protection: EdgeProtection, tenantId: string | null): boolean {
+  handle(req: http.IncomingMessage, res: http.ServerResponse, protection: EdgeProtection, tenantId: string | null, force = false): boolean {
     const url = new URL(req.url || '/', 'http://gateway.local');
     if (url.pathname === GatewayChallenge.VERIFY_PATH) {
       this.verify(req, res, url, protection);
       return true;
     }
-    if (this.lets(req, protection, tenantId, url.pathname)) return false;
+    if (this.lets(req, protection, tenantId, url.pathname, force)) return false;
     if (req.method !== 'GET' && req.method !== 'HEAD') {
       GatewayChallenge.send(res, 403, 'application/json; charset=utf-8', JSON.stringify({ error: 'browser_check_required' }));
       return true;
@@ -47,12 +47,13 @@ export class GatewayChallenge {
   }
 
   /** Whether a WebSocket upgrade may pass: the same rule, but an upgrade cannot show a page. */
-  allowsUpgrade(req: http.IncomingMessage, protection: EdgeProtection, tenantId: string | null): boolean {
-    return this.lets(req, protection, tenantId, new URL(req.url || '/', 'http://gateway.local').pathname);
+  allowsUpgrade(req: http.IncomingMessage, protection: EdgeProtection, tenantId: string | null, force = false): boolean {
+    return this.lets(req, protection, tenantId, new URL(req.url || '/', 'http://gateway.local').pathname, force);
   }
 
-  private lets(req: http.IncomingMessage, protection: EdgeProtection, tenantId: string | null, pathname: string): boolean {
-    return !protection.isUnderAttack(tenantId) || protection.isExempt(pathname) || this.hasPass(req);
+  /** `force`: check this visitor even though the site is not under attack (a country always checked). */
+  private lets(req: http.IncomingMessage, protection: EdgeProtection, tenantId: string | null, pathname: string, force = false): boolean {
+    return !(force || protection.isUnderAttack(tenantId)) || protection.isExempt(pathname) || this.hasPass(req);
   }
 
   private challenge(req: http.IncomingMessage, res: http.ServerResponse, protection: EdgeProtection, back: string): void {

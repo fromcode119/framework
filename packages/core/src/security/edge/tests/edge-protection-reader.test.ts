@@ -55,4 +55,23 @@ describe('EdgeProtectionReader', () => {
     expect(map.relays).toEqual(['198.51.100.1']);
     expect(TenantRouteMap.fromJson({}).protection.isUnderAttack(null)).toBe(false);
   });
+
+  it('country and address rules: the platform\'s for every site, a site\'s own list replacing that one list only', async () => {
+    const db = new ScopedMetaDb([
+      { key: SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES, tenant_id: 'shop', value: 'ru' },
+    ]);
+    const platform = new Map([
+      [SystemConstants.META_KEY.EDGE_BLOCKED_COUNTRIES, 'KP, xx-bad'],
+      [SystemConstants.META_KEY.EDGE_CHALLENGED_COUNTRIES, 'BR'],
+      [SystemConstants.META_KEY.EDGE_BLOCKED_ADDRESSES, '198.51.100.0/24'],
+    ]);
+    const protection = await new EdgeProtectionReader(db, platform).read(['shop', 'blog']);
+    expect(protection.rulesFor('blog').blockedCountries).toEqual(['KP']);
+    expect(protection.rulesFor('shop').blockedCountries).toEqual(['RU']);
+    expect(protection.rulesFor('shop').challengedCountries).toEqual(['BR']);
+    expect(protection.rulesFor('shop').blockedAddresses).toEqual(['198.51.100.0/24']);
+    expect(protection.rulesFor(null).blockedCountries).toEqual(['KP']);
+    const empty = await new EdgeProtectionReader(new ScopedMetaDb([]), new Map()).read(['shop']);
+    expect(empty.rulesFor('shop').isEmpty).toBe(true);
+  });
 });
