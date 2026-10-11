@@ -21,7 +21,7 @@ export class EdgeProtectionSettingDescriptors {
     },
     [SystemConstants.META_KEY.EDGE_CHALLENGE_EXEMPT_PATHS]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '/api/\n/.well-known/', description: "Path prefixes the browser check never applies to, one per line: the api (apps, payment and courier webhooks) and certificate validation.", group: "security" },
+      seed: { value: '/api/\n/.well-known/\n/manifest.webmanifest', description: "Path prefixes the browser check never applies to, one per line: the api (apps, payment and courier webhooks), certificate validation, and the web app manifest (browsers fetch it without cookies, so it can never carry a pass).", group: "security" },
     },
     [SystemConstants.META_KEY.EDGE_RATE_LIMIT_PER_MINUTE]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
