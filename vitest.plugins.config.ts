@@ -149,6 +149,7 @@ export default defineConfig({
             // line is a package that was green by default for exactly that reason.
             glob('packages/extension-builder/**/*.test.ts'),
             glob('packages/sources/**/*.test.ts'),
+            glob('packages/marketplace-client/**/*.test.ts'),
             glob('packages/sdk/**/*.test.ts'),
             glob('packages/email/**/*.test.ts'),
           ],
