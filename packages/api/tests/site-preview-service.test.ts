@@ -71,4 +71,16 @@ describe('SitePreviewService', () => {
     expect(await service({ platformAdmin: true }).issueLink('acme', '7', 'http')).toMatch(/^http:\/\//);
     expect(await service({ platformAdmin: true }).issueLink('acme', '7', '')).toMatch(/^https:\/\//);
   });
+
+  it('carries the page to land on, so a draft\'s Preview opens that draft rather than the home page', async () => {
+    const url = await service({ platformAdmin: true }).issueLink('acme', '7', 'https', '/blog/a-draft?preview=1');
+    expect(new URL(url).searchParams.get('next')).toBe('/blog/a-draft?preview=1');
+  });
+
+  it('adds no landing page for the home page or for anything that is not a path on the site', async () => {
+    for (const landing of ['', '/', 'https://evil.example', '//evil.example/x', '/\\evil.example']) {
+      const url = await service({ platformAdmin: true }).issueLink('acme', '7', 'https', landing);
+      expect(new URL(url).searchParams.has('next')).toBe(false);
+    }
+  });
 });

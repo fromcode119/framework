@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { BaseController, CoercionUtils, CookieConstants, Logger, RequestContextUtils, SitePreviewGrantService } from '@fromcode119/core';
 import { SitePreviewService } from '@api/services/tenants/site-preview-service';
+import { SitePreviewLandingPath } from '@api/services/tenants/site-preview-landing-path';
 
 /**
  * The two halves of letting a site's own people look at it before it is published.
@@ -28,6 +29,7 @@ export class SitePreviewController extends BaseController {
       CoercionUtils.toString(req.params.id),
       userId,
       SitePreviewController.schemeOf(req),
+      CoercionUtils.toString(req.body?.path),
     );
 
     if (!url) {
@@ -46,8 +48,9 @@ export class SitePreviewController extends BaseController {
   /**
    * Storefront surface: spend the token, keep the cookie, land on the site.
    *
-   * 303 EITHER WAY, with no reason given. On success the browser arrives at the home page already
-   * carrying the session; on failure it arrives at the same place with no cookie and meets the
+   * 303 EITHER WAY, with no reason given. On success the browser arrives at the page the link was
+   * minted for (the home page unless it named one) already carrying the session; on failure it
+   * arrives at the home page with no cookie and meets the
    * holding page, which is the honest answer — the site really is not published and this browser
    * really cannot see it. Saying which of expired/spent/wrong-site it was would describe somebody
    * else's link to whoever found it.
@@ -88,7 +91,10 @@ export class SitePreviewController extends BaseController {
       });
     }
 
-    res.redirect(303, '/');
+    // Back to the page the operator asked for (a draft's own address), or the home page. Only a
+    // granted session goes anywhere but home: a refused link lands where a stranger would.
+    const landing = session ? SitePreviewLandingPath.normalize(req.query?.[SitePreviewLandingPath.QUERY_KEY]) : SitePreviewLandingPath.HOME;
+    res.redirect(303, landing);
   }
 
   /** The scheme this request actually reached the platform on, gateway included. */
