@@ -166,7 +166,7 @@ export class APIServer {
       this.app,
       (this.manager as any).db,
       (this.manager as any).projectRoot || process.cwd(),
-      this.mediaManager,
+      this.mediaManager, (token) => this.auth.verifyToken(token), // the console's session names its site
     );
     this.logger.info(`Serving static uploads from: ${uploadsConfig.uploadDir} at ${uploadsConfig.publicPath}`);
 
