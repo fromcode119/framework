@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.376] - 2026-10-12
+
+### Added
+
+- **auth**: native app sign-in with Apple and Google, password-less account deletion, app push ([#892](https://github.com/fromcode119/framework/pull/892))
+
+### Fixed
+
+- **sources**: keep only the newest builds of each extension ([#889](https://github.com/fromcode119/framework/pull/889))
+- **admin**: a read-only relationship field is locked like every other read-only field ([#895](https://github.com/fromcode119/framework/pull/895))
+- **plugins**: a boot-time dependency install leaves the stamped package.json as it was ([#893](https://github.com/fromcode119/framework/pull/893))
+- **edge**: report refused visitors to the relay over TLS ([#894](https://github.com/fromcode119/framework/pull/894))
+
 ## [0.2.375] - 2026-10-11
 
 ### Fixed
