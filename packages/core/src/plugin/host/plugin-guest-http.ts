@@ -281,6 +281,10 @@ export class PluginGuestHttp {
     }
     (req as any).tenantId = tenantId ?? undefined;
     (req as any).clientIp = clientIp;
+    // The guest's own socket is the host's, not the visitor's: `req.ip` must be the visitor's address the
+    // host resolved, or every per-address limit a plugin keeps (NetworkAddressUtils.resolveClientIp)
+    // sees nothing and silently never applies.
+    Object.defineProperty(req, 'ip', { value: clientIp || undefined, configurable: true, enumerable: true });
     PluginGuestRemote.invocation.run({ token, tenantId, ...cacheScope, channel: this.channelFor(connectionId) }, () => {
       RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
     });
