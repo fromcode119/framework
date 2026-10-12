@@ -14,7 +14,6 @@ import { SecurityDashboard } from '@/app/settings/security/security-dashboard';
 import { SecuritySettingsCards } from '@/app/settings/security/security-settings-cards';
 import { SecuritySettingsIo } from '@/app/settings/security/security-settings-io';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
-import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SecuritySettingsKeys } from '@/app/settings/security/security-settings-keys';
@@ -168,16 +167,16 @@ export class SecuritySettingsPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
             <>
-              <div className={`flex gap-1 p-1 ${AdminClass.SURFACE} bg-slate-100 dark:bg-slate-900`}>
+              <div className="flex p-1 bg-slate-100 dark:bg-slate-800/50 rounded-lg">
                 {this.canManagePlatform && <button
                   onClick={this.showDashboardTab}
-                  className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${activeTab === SecurityTab.DASHBOARD ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   {AdminI18n.t('settings.security.dashboard')}
                 </button>}
                 <button
                   onClick={this.showSettingsTab}
-                  className={`px-4 py-1.5 text-[10px] font-semibold tracking-wide rounded-lg transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-800 text-indigo-600 shadow-sm shadow-indigo-500/10' : 'text-slate-500 hover:text-slate-900 dark:hover:text-slate-300'}`}
+                  className={`px-3 py-1.5 rounded-lg text-[10px] font-semibold tracking-wide transition-all ${activeTab === SecurityTab.SETTINGS ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   {AdminI18n.t('settings.security.settings')}
                 </button>
