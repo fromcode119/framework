@@ -8,6 +8,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 import { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
+import { NetworkAddressUtils } from '@core/security/network-address-utils';
 
 /**
  * A plugin learns the visitor's address from the PLATFORM, never from a header the visitor wrote.
@@ -54,10 +55,10 @@ describe('the visitor address a sandboxed plugin sees', () => {
     expect(seen[PluginGuestHttp.HEADER_TENANT]).toBe('site');
   });
 
-  it('the guest exposes it as req.clientIp and keeps no private header on the request', async () => {
+  it('the guest exposes it as req.clientIp and req.ip, and keeps no private header on the request', async () => {
     const guestSocket = socket('guest');
     const guest = new PluginGuestHttp(guestSocket, {} as any);
-    guest.app.get('/who', (req: any, res) => res.json({ clientIp: req.clientIp, header: req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? null }));
+    guest.app.get('/who', (req: any, res) => res.json({ clientIp: req.clientIp, ip: req.ip, resolved: NetworkAddressUtils.resolveClientIp(req), header: req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? null }));
     await guest.listen();
     closers.push(() => guest.close());
 
@@ -71,7 +72,8 @@ describe('the visitor address a sandboxed plugin sees', () => {
       req.end();
     });
 
-    expect(seen).toEqual({ clientIp: '203.0.113.9', header: null });
+    // `req.ip` is the visitor too, so a plugin's per-address limit counts the visitor, not the host.
+    expect(seen).toEqual({ clientIp: '203.0.113.9', ip: '203.0.113.9', resolved: '203.0.113.9', header: null });
   });
   it('a SITE\'s plugin never receives the caller\'s credentials, and can neither set a cookie nor serve a page in the host\'s origin', async () => {
     // Its routes answer on the shared admin host too: a platform administrator calling one would hand
