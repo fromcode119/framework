@@ -2,7 +2,8 @@ import { ExtensionScope } from '@fromcode119/core/client';
 import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import { SourcesApi } from '@/app/sources/sources-api';
 import { SitesClient } from '@/lib/tenants/sites-client';
-import { BuildSourceFormState } from '@/app/sources/build-source-form-state';
+import { bound } from '@fromcode119/react-class-components';
+import { BuildSourceFormState } from '@/app/sources/components/view/build-source-form-state.client';
 
 /**
  * Asking the repository itself what it contains, before a source for it exists.
@@ -80,7 +81,11 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
       return;
     }
 
-    this.setState({ branchesLoading: true });
+    // A new URL is a new repository: what the last one declared must not survive into it. Left in
+    // place, a failed read kept showing the previous repository's name, and Create sent that slug
+    // with this URL. An edit keeps its identity — it is the source being edited.
+    if (this.isEdit) this.setState({ branchesLoading: true });
+    else this.setState({ branchesLoading: true, slug: '', namespace: '' });
     // try/finally, not a catch on the promise: a call that throws BEFORE returning one skips the
     // catch entirely, and the field then sits on "Reading branches…" for the rest of the session.
     let response: any = null;
@@ -96,9 +101,10 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
     const branches: string[] = Array.isArray(response?.branches) ? response.branches : [];
     // Only adopt a branch the remote actually reported; never invent one. The one thing that must
     // survive a failed read is a branch this source is ALREADY tracking: clearing it turned a
-    // temporary inability to reach the remote into a saved change to what gets built.
+    // temporary inability to reach the remote into a saved change to what gets built. A source being
+    // created tracks nothing yet, so a branch left from the previous URL is not kept for this one.
     const branch = branches.length === 0
-      ? this.state.branch
+      ? (this.isEdit ? this.state.branch : '')
       : (branches.includes(this.state.branch)
         ? this.state.branch
         : (branches.includes('main') ? 'main' : branches[0]));
@@ -167,6 +173,7 @@ export abstract class BuildSourceFormRemote extends BuildSourceFormState {
     return served ? value : String(ExtensionScope.PLUGIN.value);
   }
 
+  @bound
   protected onBranchChange(branch: string): void {
     this.setState({ branch });
     void this.inspect(branch);

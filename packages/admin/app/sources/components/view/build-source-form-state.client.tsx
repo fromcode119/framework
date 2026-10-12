@@ -1,5 +1,4 @@
 import { ExtensionScope } from '@fromcode119/core/client';
-import { Select } from '@/components/ui/view/select.client';
 import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import type { IBuildSourceFormProps } from '@/app/sources/interfaces/build-source-form-props.interface';
@@ -54,6 +53,7 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
       inspecting: false,
       inspectFailed: false,
       inspectFailure: '',
+      advancedOpen: false,
       gitSecret: '',
       gitUrl: build?.gitUrl || '',
       slug: build?.slug || '',
@@ -95,15 +95,10 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
     return this.state.providers.find((entry) => entry.key === this.state.provider) ?? null;
   }
 
-  /** The vendor field: what the manifest declared, or that it declares none once the repository was read. */
-  protected get vendorPlaceholder(): string {
-    if (this.state.slug && !this.state.inspecting && !this.state.inspectFailed) return AdminI18n.t('sources.noVendorDeclared');
-    return this.slugPlaceholder;
-  }
-
-  /** What the identity fields can say before a repository has answered — never a guess. */
+  /** What the identity line can say before a repository has answered — never a guess. */
   protected get slugPlaceholder(): string {
     if (this.state.inspecting) return AdminI18n.t('sources.readingTheRepository');
+    if (this.state.branchFailure) return this.state.branchFailure;
     // "Declares no manifest" only when the repository was READ and says nothing; any other failure
     // (refused token, a page opened for another site, an unreachable remote) is the server's own words.
     if (this.state.inspectFailure) return this.state.inspectFailure;
@@ -119,7 +114,8 @@ export abstract class BuildSourceFormState extends AdminComponent<IBuildSourceFo
   protected get branchPlaceholder(): string {
     if (this.state.branchesLoading) return AdminI18n.t('sources.readingBranches');
     if (!this.state.gitUrl.trim()) return AdminI18n.t('sources.enterARepositoryUrlFirst');
-    if (this.state.branchFailure) return this.state.branchFailure;
+    // The reason itself is on the identity line, where it wraps; a select cannot show a sentence.
+    if (this.state.branchFailure) return AdminI18n.t('sources.noBranchesCouldBeRead');
     if (!this.state.branchesAttempted) return AdminI18n.t('sources.readingBranches');
     if (this.state.branches.length === 0) return AdminI18n.t('sources.noBranchesCouldBeRead');
     return AdminI18n.t('sources.selectABranch');

@@ -32,7 +32,7 @@ export class BuildSourceDialog extends AdminComponent {
           onClick={onClose}
           type="button"
         />
-        <div className="relative z-[81] w-full max-w-3xl">
+        <div className="relative z-[81] w-full max-w-xl">
           <div className="overflow-hidden rounded-[2rem] border border-slate-200 bg-white shadow-2xl dark:border-slate-800 dark:bg-slate-900">
             <div className="flex items-start justify-between gap-4 border-b border-slate-200 px-6 py-5 dark:border-slate-800">
               <div>

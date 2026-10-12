@@ -1,60 +1,33 @@
-import { bound, Platform } from '@fromcode119/react-class-components';
+import { bound } from '@fromcode119/react-class-components';
 import { SourcesApi } from '@/app/sources/sources-api';
-import { BuildSourceListItemState } from '@/app/sources/build-source-list-item-state';
+import { SourceVersionsState } from '@/app/sources/components/view/source-versions-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * What a row can do: list the versions it has staged, install one, download the package, and turn
+ * What the version panel can do: read the versions a source has staged, install one, and turn
  * automatic updates on or off.
  *
  * Installing REPLACES code that is serving, which is why it is a deliberate choice of version rather
  * than a button that takes the newest.
  */
-export abstract class BuildSourceListItemActions extends BuildSourceListItemState {
+export abstract class SourceVersionsActions extends SourceVersionsState {
   /**
-   * Fetches the package through the authenticated client and hands the browser the bytes.
-   *
-   * The archive is made when it is asked for, so this can take a moment on the first press — the
-   * button says so rather than appearing to do nothing.
-   */
-  @bound
-  async download(): Promise<void> {
-    if (!Platform.hasWindow || this.downloading) return;
-    this.downloading = true;
-    try {
-      const { blob, filename } = await SourcesApi.downloadPackage(String(this.build.type ?? ''), this.build.slug);
-      const objectUrl = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = objectUrl;
-      link.download = filename;
-      link.style.display = 'none';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.setTimeout(() => window.URL.revokeObjectURL(objectUrl), 1000);
-    } finally {
-      this.downloading = false;
-    }
-  }
-
-  /**
-   * Opens the version list, fetching it the first time.
+   * Reads the versions when the row opens.
    *
    * Not part of the polled list payload: it reads the staging directory of every source on the box,
    * and the list refreshes on a timer. One row, when asked.
    */
-  @bound
-  async toggleVersions(): Promise<void> {
-    this.versionsOpen = !this.versionsOpen;
-    if (!this.versionsOpen || this.versions || this.loadingVersions) return;
-
-    this.loadingVersions = true;
-    this.versionError = '';
+  async componentDidMount(): Promise<void> {
     try {
       await this.loadVersions();
     } finally {
       this.loadingVersions = false;
     }
+  }
+
+  @bound
+  chooseVersion(version: string): void {
+    this.chosenVersion = version;
   }
 
   /** Puts the chosen version in place, then shows what is installed now rather than assuming. */
@@ -66,7 +39,7 @@ export abstract class BuildSourceListItemActions extends BuildSourceListItemStat
     this.installing = version;
     this.versionError = '';
     try {
-      const answer = await SourcesApi.installVersion(String(this.build.type ?? ''), this.build.slug, version);
+      const answer = await SourcesApi.installVersion(this.type, this.slug, version);
       this.versions = {
         installed: answer?.installed ?? null,
         built: answer?.built ?? null,
@@ -87,7 +60,7 @@ export abstract class BuildSourceListItemActions extends BuildSourceListItemStat
   /** Reads the three facts fresh. Separate from the toggle so both open and failure can call it. */
   protected async loadVersions(): Promise<void> {
     try {
-      const answer = await SourcesApi.versions(String(this.build.type ?? ''), this.build.slug);
+      const answer = await SourcesApi.versions(this.type, this.slug);
       this.versions = {
         installed: answer?.installed ?? null,
         built: answer?.built ?? null,
@@ -116,7 +89,7 @@ export abstract class BuildSourceListItemActions extends BuildSourceListItemStat
     this.savingAutoUpdate = true;
     this.versionError = '';
     try {
-      await SourcesApi.update(String(this.build.type ?? ''), this.build.slug, next
+      await SourcesApi.update(this.type, this.slug, next
         ? { autoUpdate: true, installAfterBuild: true }
         : { autoUpdate: false });
       this.autoUpdating = next;

@@ -1,223 +1,111 @@
-import { SourcesApi } from '@/app/sources/sources-api';
-import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import type { ReactNode } from 'react';
-import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
-import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { GitBranch, Hammer, Play, RefreshCw } from 'lucide-react';
-import { BuildOverviewHistory } from '@/app/sources/build-overview-history';
-import { BuildOverviewStats } from '@/app/sources/build-overview-stats';
-import { BuildSourceDialog } from '@/app/sources/build-source-dialog';
-import { BuildSourceForm } from '@/app/sources/build-source-form';
-import type { IBuildSourceFormValues } from '@/app/sources/interfaces/build-source-form-values.interface';
-import type { IBuildOverviewState } from '@/app/sources/interfaces/build-overview-state.interface';
+import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { ListToolbar } from '@/components/ui/list-toolbar/view/list-toolbar.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { SourcesPageActions } from '@/app/sources/sources-page-actions.client';
+import { SourcesTable } from '@/app/sources/components/view/sources-table.client';
+import { BuildSourceDialog } from '@/app/sources/components/view/build-source-dialog.client';
+import { BuildSourceForm } from '@/app/sources/components/view/build-source-form.client';
 import { SourceEditorMode } from '@/app/sources/enums/source-editor-mode.enum';
-import { SourceUpdateSummary } from '@/app/sources/source-update-summary';
-import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
-export class BuildOverview extends AdminComponent {
-  @state builds: any[] = [];
-  // Holds `<kind>/<slug>`, not a slug: the same slug can name a plugin AND a theme, and a
-  // slug-only comparison spun the Delete button on both rows.
-  @state deletingKey: string | null = null;
-  @state editingBuild: any | null = null;
-  @state editorMode: SourceEditorMode | null = null;
-  @state error: string = '';
-  /** A failed save, shown INSIDE the dialog: the page banner sits behind its overlay, out of sight. */
-  @state editorError: string = '';
-  @state loading: boolean = true;
-  @state savingSource: boolean = false;
-  @state triggerKey: string | null = null;
-  @state triggering: boolean = false;
-  @state checking: boolean = false;
+/**
+ * The Sources screen: the repositories this platform builds from, as one searchable, filterable
+ * table. The top of the chain — what it holds and does is in `SourcesPageState` and its actions.
+ */
+export class BuildOverview extends SourcesPageActions {
   static slots = ['admin.plugin.sources.content', 'admin.plugin.sources.overview', 'admin.plugin.sources.page.sources'];
-  private interval: ReturnType<typeof setInterval> | null = null;
 
-  componentDidMount(): void {
-    this.loadBuilds();
-    this.interval = setInterval(() => this.loadBuilds(), 10000);
+  private get emptyMessage(): string {
+    return this.builds.length ? AdminI18n.t('sources.noSourcesMatch') : AdminI18n.t('sources.useAddSourceToTrack');
   }
 
-  componentWillUnmount(): void {
-    if (this.interval) clearInterval(this.interval);
+  private renderHeaderActions(): ReactNode {
+    return (
+      <div className="flex items-center gap-2">
+        <Button disabled={this.checking} icon={<RefreshCw size={14} className={this.checking ? 'animate-spin' : ''} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE}>
+          {this.checking ? AdminI18n.t('sources.checking') : AdminI18n.t('sources.checkUpdates')}
+        </Button>
+        <Button disabled={this.triggering} icon={<Play size={14} />} onClick={this.buildAll} variant={ButtonVariant.SECONDARY}>
+          {this.triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll')}
+        </Button>
+        <Button icon={<GitBranch size={14} />} onClick={this.openCreate} variant={ButtonVariant.PRIMARY}>
+          {AdminI18n.t('sources.addSource')}
+        </Button>
+      </div>
+    );
   }
 
-  async loadBuilds(): Promise<void> {
-    try {
-      const res = await SourcesApi.list({ silent: true });
-      this.builds = res?.builds || [];
-      this.error = '';
-    } catch (err: any) {
-      this.error = err?.message || AdminI18n.t('sources.failedToLoadBuilds');
-    } finally {
-      this.loading = false;
-    }
+  private renderEditor(): ReactNode {
+    if (!this.editorMode) return null;
+    const editing = this.editorMode === SourceEditorMode.EDIT;
+    return (
+      <BuildSourceDialog
+        title={editing ? AdminI18n.t('sources.edit2', { name: this.editingBuild?.slug || AdminI18n.t('sources.source') }) : AdminI18n.t('sources.addSource')}
+        description={editing ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave') : AdminI18n.t('sources.pasteARepositoryUrl')}
+        onClose={this.closeEditor}
+      >
+        <BuildSourceForm build={this.editingBuild} busy={this.savingSource} mode={this.editorMode} onCancel={this.closeEditor} onSubmit={this.saveSource} />
+        {this.editorError ? (
+          <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
+            {this.editorError}
+          </div>
+        ) : null}
+      </BuildSourceDialog>
+    );
   }
 
-  closeEditor(): void {
-    this.editingBuild = null;
-    this.editorMode = null;
-    this.editorError = '';
-  }
-
-  async handleCheckUpdates(): Promise<void> {
-    this.checking = true;
-    try {
-      const check = await SourcesApi.checkUpdates();
-      await this.loadBuilds();
-      const summary = new SourceUpdateSummary(check, this.builds);
-      this.runtime.notify.addNotification({
-        title: summary.title,
-        message: summary.message,
-        type: summary.hasUpdates ? NotificationType.INFO : NotificationType.SUCCESS,
-      });
-    } catch (err: any) {
-      this.error = err?.message || AdminI18n.t('sources.updateCheckFailed');
-    } finally {
-      this.checking = false;
-    }
-  }
-
-  async handleDelete(build: any): Promise<void> {
-    const { type, slug } = BuildOverview.identify(build);
-    if (!window.confirm(AdminI18n.t('sources.areYouSureYouWant', { type: type, slug: slug }))) {
-      return;
-    }
-    this.deletingKey = `${type}/${slug}`;
-    try {
-      await SourcesApi.remove(type, slug);
-      await this.loadBuilds();
-      if (this.editingBuild?.slug === slug && this.editingBuild?.type === type) this.closeEditor();
-    } catch (err: any) {
-      this.error = err?.message || AdminI18n.t('sources.failedToDelete', { slug: slug });
-    } finally {
-      this.deletingKey = null;
-    }
-  }
-
-  async handleSaveSource(values: IBuildSourceFormValues): Promise<void> {
-    this.savingSource = true;
-    this.editorError = '';
-    try {
-      if (this.editorMode === SourceEditorMode.EDIT && this.editingBuild?.slug) {
-        const { type, slug } = BuildOverview.identify(this.editingBuild);
-        // The kind is not sent: it is half of WHICH source this is, and changing it would move the
-        // clone directory, the staging root and the installer. That is a new source, not an edit.
-        const { type: _kind, ...editable } = values as unknown as Record<string, unknown>;
-        await SourcesApi.update(type, slug, editable);
-      } else {
-        await SourcesApi.create({ ...values });
-      }
-      this.closeEditor();
-      await this.loadBuilds();
-    } catch (err: any) {
-      this.editorError = err?.message || AdminI18n.t('sources.failedToSaveBuildSource');
-    } finally {
-      this.savingSource = false;
-    }
-  }
-
-  async handleTriggerAll(): Promise<void> {
-    this.triggering = true;
-    try {
-      await SourcesApi.buildAll();
-      await this.loadBuilds();
-    } catch (err: any) {
-      this.error = err?.message || AdminI18n.t('sources.buildTriggerFailed');
-    } finally {
-      this.triggering = false;
-    }
-  }
-
-  async handleTriggerOne(build: any): Promise<void> {
-    const { type, slug } = BuildOverview.identify(build);
-    this.triggerKey = `${type}/${slug}`;
-    try {
-      await SourcesApi.buildOne(type, slug);
-      await this.loadBuilds();
-    } catch (err: any) {
-      this.error = err?.message || AdminI18n.t('sources.buildFailedFor', { slug: slug });
-    } finally {
-      this.triggerKey = null;
-    }
-  }
-
-  /** A row's identity, in the one shape every call site here needs. */
-  private static identify(build: any): { type: string; slug: string } {
-    return { type: String(build?.type ?? ''), slug: String(build?.slug ?? '') };
+  private renderRemoveConfirm(): ReactNode {
+    const row = this.removing;
+    return (
+      <ConfirmDialog
+        isOpen={row !== null}
+        onClose={this.cancelRemove}
+        onConfirm={this.confirmRemove}
+        title={AdminI18n.t('sources.removeSourceTitle', { slug: row?.slug ?? '' })}
+        description={AdminI18n.t('sources.areYouSureYouWant', { type: row?.type ?? '', slug: row?.slug ?? '' })}
+        confirmLabel={AdminI18n.t('sources.remove')}
+        variant={ButtonVariant.DANGER}
+        isLoading={this.removeBusy}
+      />
+    );
   }
 
   render(): ReactNode {
-    const { builds, checking, deletingKey, editingBuild, editorMode, error, loading, savingSource, triggerKey, triggering } = this;
-    const editorTitle = editorMode === SourceEditorMode.EDIT ? AdminI18n.t('sources.edit2', { name: editingBuild?.slug || AdminI18n.t('sources.source') }) : AdminI18n.t('sources.addBuildSource');
-    const editorDescription = editorMode === SourceEditorMode.EDIT
-      ? AdminI18n.t('sources.updateRepositoryDetailsHereLeave')
-      : AdminI18n.t('sources.trackAPluginOrTheme');
-
+    const matching = this.matchingRows;
     return (
       <PlatformScopeGate what={AdminI18n.t('sources.sources')}>
-      <>
-        {/*
-          * No padding on the ROOT. The sticky header is a direct child so it spans the full content
-          * column and sits flat against the divider, the way every other screen's header does
-          * (see plugins/layout.client.tsx). With padding here the bar was inset on all sides and
-          * read as a floating panel — the one header in the admin shaped like a card.
-          */}
+        {/* No padding on the root: the sticky header spans the content column like every other screen's. */}
         <div className="w-full">
-          <CompactPageHeader
-            title={AdminI18n.t('sources.sources')}
-            subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')}
-            icon={<Hammer size={20} />}
-            actions={(
-              <div className="flex items-center gap-2">
-                <Button icon={<GitBranch size={14} />} onClick={() => { this.editorMode = SourceEditorMode.CREATE; this.editingBuild = null; }} variant={ButtonVariant.PRIMARY}>
-                  {AdminI18n.t('sources.addSource')}
-                </Button>
-                <Button disabled={checking} icon={<RefreshCw size={14} className={checking ? 'animate-spin' : ''} />} onClick={() => this.handleCheckUpdates()} variant={ButtonVariant.OUTLINE}>
-                  {checking ? AdminI18n.t('sources.checking') : AdminI18n.t('sources.checkUpdates')}
-                </Button>
-                <Button disabled={triggering} icon={<Play size={14} />} onClick={() => this.handleTriggerAll()} variant={ButtonVariant.SECONDARY}>
-                  {triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll')}
-                </Button>
-              </div>
-            )}
-          />
-
+          <CompactPageHeader title={AdminI18n.t('sources.sources')} subtitle={AdminI18n.t('sources.theRepositoriesThisPlatformBuilds')} icon={<Hammer size={20} />} actions={this.renderHeaderActions()} />
           <div className="space-y-4 p-4 lg:p-6">
-          {error ? (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
-              {error}
-            </div>
-          ) : null}
-
-          <BuildOverviewStats builds={builds} loading={loading} />
-
-          <BuildOverviewHistory
-            builds={builds}
-            deletingKey={deletingKey}
-            loading={loading}
-            onDelete={(build: any) => this.handleDelete(build)}
-            onEdit={(nextBuild: any) => { this.editingBuild = nextBuild; this.editorMode = SourceEditorMode.EDIT; }}
-            onTrigger={(build: any) => this.handleTriggerOne(build)}
-            triggerKey={triggerKey}
-          />
+            {this.error ? (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">{this.error}</div>
+            ) : null}
+            <ListToolbar search={this.search} onSearch={this.setSearch} placeholder={AdminI18n.t('sources.searchSources')} theme={this.theme} filters={this.filters} total={matching.length} />
+            <SourcesTable
+              rows={this.pageRows}
+              loading={this.loading}
+              emptyMessage={this.loading ? AdminI18n.t('sources.loadingBuildStatus') : this.emptyMessage}
+              openId={this.openId}
+              page={this.currentPage}
+              limit={BuildOverview.PAGE_SIZE}
+              totalDocs={matching.length}
+              buildingId={this.buildingId}
+              onPageChange={this.setPage}
+              onToggle={this.toggleRow}
+              onBuild={this.buildOne}
+              onEdit={this.openEdit}
+              onRemove={this.requestRemove}
+            />
           </div>
         </div>
-
-        {editorMode ? (
-          <BuildSourceDialog description={editorDescription} onClose={() => this.closeEditor()} title={editorTitle}>
-            <BuildSourceForm build={editingBuild} busy={savingSource} mode={editorMode} onCancel={() => this.closeEditor()} onSubmit={(values) => this.handleSaveSource(values)} />
-            {this.editorError ? (
-              <div role="alert" ref={(el) => el?.scrollIntoView({ block: 'nearest' })} className="mt-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 dark:border-rose-900/60 dark:bg-rose-950/40 dark:text-rose-300">
-                {this.editorError}
-              </div>
-            ) : null}
-          </BuildSourceDialog>
-        ) : null}
-      </>
+        {this.renderEditor()}
+        {this.renderRemoveConfirm()}
       </PlatformScopeGate>
     );
   }
