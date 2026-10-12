@@ -113,4 +113,25 @@ describe('tenant-scoped uploads static', () => {
     const res = await request(app).get('/uploads/nothing.txt').set('Host', 'a.test');
     expect(res.status).toBe(404);
   });
+
+  it('serves the shared console the file of the site its session is in', async () => {
+    // The console's host names no site; the admin's session does.
+    const console = express();
+    console.use('/uploads', new TenantUploadsStatic({}, {}, async (req) => (String(req.headers.cookie).includes('site-a') ? 'site-a' : null)).middleware());
+
+    const inSite = await request(console).get('/uploads/own.txt').set('Host', 'console.test').set('Cookie', 'fc_token=site-a');
+    const noSession = await request(console).get('/uploads/own.txt').set('Host', 'console.test');
+
+    expect(inSite.text).toBe('A');
+    expect(noSession.status).toBe(404);
+  });
+
+  it('never lets a session override the site a host names', async () => {
+    const shop = express();
+    shop.use('/uploads', new TenantUploadsStatic({}, {}, async () => 'site-a').middleware());
+
+    const res = await request(shop).get('/uploads/own.txt').set('Host', 'b.test');
+
+    expect(res.text).toBe('B');
+  });
 });

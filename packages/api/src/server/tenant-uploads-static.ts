@@ -34,6 +34,8 @@ export class TenantUploadsStatic {
   constructor(
     private readonly database: unknown,
     private readonly options: Parameters<typeof express.static>[1],
+    /** The site an admin session is in, for a host that names none — the shared console. */
+    private readonly sessionSite?: (req: Request) => Promise<string | null>,
   ) {}
 
   /** The pair of handlers to mount, tenant-first. */
@@ -81,7 +83,9 @@ export class TenantUploadsStatic {
 
     try {
       const tenant = await TenantResolverService.shared(this.database).resolveByHost(host);
-      return ProjectPaths.siteUploadsDir(root, String(tenant?.id ?? ''));
+      // The console's host names no site; its session does (see UploadsSessionSite).
+      const siteId = tenant?.id ?? (this.sessionSite ? await this.sessionSite(req) : null);
+      return ProjectPaths.siteUploadsDir(root, String(siteId ?? ''));
     } catch (error: unknown) {
       // Serving the shared parent is what every request got before this existed, so a failed lookup
       // degrades to the old behaviour rather than to a broken image.

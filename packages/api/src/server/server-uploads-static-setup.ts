@@ -3,6 +3,7 @@ import { MediaManager } from '@fromcode119/media';
 import { ApiConfig } from '@api/config/api-config';
 import { ServerUploadsConfigService } from '@api/server/server-uploads-config-service';
 import { TenantUploadsStatic } from '@api/server/tenant-uploads-static';
+import { UploadsSessionSite } from '@api/server/uploads-session-site';
 import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 
 /** Serving the uploads directory: per-SITE, with the shared parent behind it. */
@@ -33,9 +34,15 @@ export class ServerUploadsStaticSetup {
     db: unknown,
     projectRoot: string,
     mediaManager: MediaManager | undefined,
+    verifyToken?: (token: string) => Promise<unknown>,
   ): { uploadDir: string; publicPath: string } {
     const config = ServerUploadsConfigService.resolve(projectRoot, mediaManager);
-    const uploadsStatic = new TenantUploadsStatic(db as never, ServerUploadsStaticSetup.OPTIONS).middleware();
+    const sessionSite = verifyToken ? new UploadsSessionSite(verifyToken) : null;
+    const uploadsStatic = new TenantUploadsStatic(
+      db as never,
+      ServerUploadsStaticSetup.OPTIONS,
+      sessionSite ? (req) => sessionSite.siteFor(req) : undefined,
+    ).middleware();
     app.use(config.publicPath, uploadsStatic);
     if (config.publicPath !== ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL) {
       app.use(ApiConfig.getInstance().storage.DEFAULT_PUBLIC_URL, uploadsStatic);
