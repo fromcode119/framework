@@ -88,9 +88,13 @@ export class MarketplaceClient {
 
       archive.pipe(output);
 
+      // `dist/` is part of the package: a plugin's compiled migrations live in `dist/migrations`, which
+      // its manifest names and the installer requires, and the integrity checksum covers it. Leaving
+      // it out made every packed plugin with migrations fail to install. Only the archives this
+      // command writes (into a `dist/` when run from the plugin's folder) stay out.
       archive.glob('**/*', {
         cwd: pluginPath,
-        ignore: ['node_modules/**', '.git/**', 'dist/**', '*.zip', '.DS_Store'],
+        ignore: ['node_modules/**', '.git/**', '**/*.zip', '.DS_Store'],
       });
 
       archive.finalize();

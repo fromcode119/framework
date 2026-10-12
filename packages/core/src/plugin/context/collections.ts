@@ -10,6 +10,7 @@ import { PhysicalTableNameUtils } from '@fromcode119/database/physical-table-nam
 import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-entity-registration-service';
 import { PluginEntityProviderRegistry } from '@core/services/entities/plugin-entity-provider-registry';
 import { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
+import { OwnCollectionRefresh } from '@core/plugin/context/own-collection-refresh';
 
 export class CollectionsContextProxy {
   private static readonly entityRegistration = new PluginEntityRegistrationService();
@@ -66,10 +67,17 @@ export class CollectionsContextProxy {
           const prefixedSlug = registration.physicalSlug;
           const shortSlug = registration.shortSlug;
 
+          const announce = () => manager.emit('collection:registered', {
+            collection: manager.registeredCollections.get(prefixedSlug)?.collection,
+            pluginSlug: plugin.manifest.slug
+          });
           const existing = manager.registeredCollections.get(prefixedSlug);
+          PluginRegistry.registerEntity(plugin.manifest.slug, shortSlug, prefixedSlug);
           if (existing?.pluginSlug === plugin.manifest.slug) {
-            CollectionsContextProxy.entityRegistration.refreshOwnCollection(existing.collection, modifiedCollection);
-          } else if (existing) {
+            // A hot update: new fields join once their columns exist (OwnCollectionRefresh).
+            return OwnCollectionRefresh.apply(manager.schemaManager, CollectionsContextProxy.entityRegistration, existing.collection, modifiedCollection, rootLogger, announce);
+          }
+          if (existing) {
             CollectionsContextProxy.entityRegistration.mergeCollectionFields(existing.collection, modifiedCollection);
           } else {
             manager.registeredCollections.set(prefixedSlug, {
@@ -77,13 +85,7 @@ export class CollectionsContextProxy {
               pluginSlug: plugin.manifest.slug
             });
           }
-
-          PluginRegistry.registerEntity(plugin.manifest.slug, shortSlug, prefixedSlug);
-
-          manager.emit('collection:registered', { 
-            collection: manager.registeredCollections.get(prefixedSlug)?.collection, 
-            pluginSlug: plugin.manifest.slug 
-          });
+          announce();
         },
         create: async (collectionSlug: string, data: Record<string, unknown>, options?: { user?: unknown }) => {
           const fullSlug = ownCollection(collectionSlug, 'create');
