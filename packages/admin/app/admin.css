@@ -636,5 +636,14 @@ html.dark {
   .fc-collection-list .fc-list-cards { display: none; }
 }
 
+/* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 960px.
+   `cards={false}` opts a table out — the collection list above draws its own cards. */
+.fc-data-table { container-type: inline-size; }
+.fc-data-table .fc-data-table-rows { display: none; }
+@container (min-width: 960px) {
+  .fc-data-table .fc-data-table-rows { display: block; }
+  .fc-data-table .fc-data-table-cards { display: none; }
+}
+
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
 .fc-edit-sticky { position: sticky; align-self: start; }
