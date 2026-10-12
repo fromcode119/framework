@@ -129,6 +129,7 @@ export class CollectionListTable extends PureReactor {
         }`}>
           <div className="fc-list-table">
             <DataTable
+              cards={false}
               columns={this.columns}
               stickyColumnIds={this.stickyColumnIds}
               data={this.data || []}

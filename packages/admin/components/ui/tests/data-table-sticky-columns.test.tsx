@@ -33,9 +33,11 @@ const ROWS = [
   { id: '2', orderNumber: '#568', customer: 'Grace', total: '12.00' },
 ];
 
+// The table alone: below 960px the same rows also render as cards (data-table-cards.test.tsx), which
+// would put every action in the DOM twice.
 function renderTable(props: Record<string, any> = {}) {
   return render(
-    <DataTable columns={COLUMNS as any} data={ROWS as any} {...props} />,
+    <DataTable columns={COLUMNS as any} data={ROWS as any} cards={false} {...props} />,
   );
 }
 

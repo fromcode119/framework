@@ -5,6 +5,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { DataTablePagination } from '@/components/ui/view/data-table-pagination.client';
 import { DataTableHead } from '@/components/ui/view/data-table-head.client';
 import { DataTableRow } from '@/components/ui/view/data-table-row.client';
+import { DataTableCards } from '@/components/ui/view/data-table-cards.client';
 import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 import { Column } from '@/components/ui/column';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -12,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy' | 'stickyColumnIds' | 'stickyActions'>;
+  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy' | 'stickyColumnIds' | 'stickyActions' | 'cards'>;
 
   @prop declare columns: Column<T>[];
   @prop declare data: T[];
@@ -39,6 +40,12 @@ export class DataTable<T extends { id: any }> extends PureReactor {
    * table otherwise pushes Edit and Delete off-screen and the row cannot be acted on at all.
    */
   @prop declare stickyActions?: boolean;
+  /**
+   * Below 960px of the table's OWN width each row becomes a card (see DataTableCards) — the default, the
+   * same switch the collection lists make. `false` keeps the table at every width, for a caller that draws
+   * its own narrow layout.
+   */
+  @prop declare cards?: boolean;
 
   /** Measured left offsets for the pinned run, checkbox column included. */
   @state stickyOffsets: number[] = [];
@@ -151,8 +158,26 @@ export class DataTable<T extends { id: any }> extends PureReactor {
     if (groupBy) for (const row of data) { const key = groupBy(row) || '—'; groupCounts[key] = (groupCounts[key] || 0) + 1; }
 
     return (
-      <div className={`flex flex-col w-full h-full transition-all duration-300 ${this.loading ? 'opacity-60 pointer-events-none' : ''}`}>
-        <div className="overflow-x-auto" ref={this.scroller}>
+      <div className={`flex flex-col w-full h-full transition-all duration-300 ${this.cards !== false ? 'fc-data-table' : ''} ${this.loading ? 'opacity-60 pointer-events-none' : ''}`}>
+        {this.cards !== false ? (
+          <div className="fc-data-table-cards">
+            <DataTableCards
+              columns={columns}
+              data={data}
+              loading={this.loading}
+              emptyMessage={this.emptyMessage}
+              selectable={selectable}
+              selectedIds={selectedIds}
+              onToggleOne={this.toggleOne}
+              onRowClick={this.onRowClick}
+              actions={this.actions}
+              expandedRowId={this.expandedRowId}
+              renderExpandedRow={this.renderExpandedRow}
+              groupBy={groupBy}
+            />
+          </div>
+        ) : null}
+        <div className="overflow-x-auto fc-data-table-rows" ref={this.scroller}>
           <table className="w-full text-left border-collapse min-w-[600px]">
             <DataTableHead
               columns={columns}
