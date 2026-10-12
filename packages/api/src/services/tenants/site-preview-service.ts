@@ -1,4 +1,5 @@
 import { ApiPathUtils, SitePreviewGrantService, SystemConstants, TenantMembershipService, TenantRecord, TenantResolverService } from '@fromcode119/core';
+import { SitePreviewLandingPath } from '@api/services/tenants/site-preview-landing-path';
 
 /**
  * Handing one of a site's own people a link that lets them look at it before it is published.
@@ -27,8 +28,11 @@ export class SitePreviewService {
    * Returns '' when the caller may not ask, when the site does not exist, or when it has no host to
    * send them to. The caller turns that into a 403/404 — the decision is not made here, but the
    * refusal is, so there is one place that knows the rule.
+   *
+   * `landingPath` is the page to open after the exchange (the admin's Preview of one draft); the
+   * home page when it is missing or is not a path on the site itself.
    */
-  async issueLink(tenantId: string, userId: string, scheme: string): Promise<string> {
+  async issueLink(tenantId: string, userId: string, scheme: string, landingPath: string = SitePreviewLandingPath.HOME): Promise<string> {
     const site = await this.tenants.resolveById(String(tenantId ?? '').trim());
     if (!site) return '';
     if (!(await this.mayPreview(site, userId))) return '';
@@ -42,7 +46,11 @@ export class SitePreviewService {
     const path = ApiPathUtils.versioned(
       ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.SITE_PREVIEW_EXCHANGE, { token }),
     );
-    return `${SitePreviewService.normalizeScheme(scheme)}://${host}${path}`;
+    const landing = SitePreviewLandingPath.normalize(landingPath);
+    const query = landing === SitePreviewLandingPath.HOME
+      ? ''
+      : `?${SitePreviewLandingPath.QUERY_KEY}=${encodeURIComponent(landing)}`;
+    return `${SitePreviewService.normalizeScheme(scheme)}://${host}${path}${query}`;
   }
 
   /** Platform admin, or an administrator of this specific site. Nothing else. */

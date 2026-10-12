@@ -47,10 +47,11 @@ export class SitesClient {
    *
    * The admin cannot simply navigate to the site: its session cookie is host-scoped, so the
    * storefront sees an anonymous visitor and answers the holding page. This asks the api to mint a
-   * one-time token, and the storefront exchanges it for a cookie of its own on arrival.
+   * one-time token, and the storefront exchanges it for a cookie of its own on arrival. `path` is the
+   * page to land on (one draft); the home page when omitted.
    */
-  static async previewLink(id: string): Promise<string> {
-    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.SITE_PREVIEW_SESSION(id), {});
+  static async previewLink(id: string, path: string = ''): Promise<string> {
+    const response = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.SITE_PREVIEW_SESSION(id), path ? { path } : {});
     return CoercionUtils.toString(response?.url);
   }
 

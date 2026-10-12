@@ -12,6 +12,7 @@ import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { SitePreviewLauncher } from '@/lib/tenants/site-preview-launcher';
 
 export class EditHeader extends PureReactor {
   @prop declare collection: any;
@@ -69,6 +70,18 @@ export class EditHeader extends PureReactor {
   @bound onSave(e: any): void {
     this.handleSubmit(e, this.changeSummary);
     this.setChangeSummary('');
+  }
+
+  /**
+   * Preview goes through the site's preview link, not straight to the page: on a site's own host the
+   * console session is never sent, so a draft opened directly answers "Page not found". The href stays
+   * so the address is visible and copyable; the click is what opens it with access.
+   */
+  @bound onPreviewClick(e: any): void {
+    e.preventDefault();
+    void SitePreviewLauncher.openRecord(this.getPreviewUrl()).catch((error) => {
+      console.error('Opening the preview failed:', error);
+    });
   }
 
   @bound onDelete(): void {
@@ -156,6 +169,7 @@ export class EditHeader extends PureReactor {
             {showPreview && (
               <a 
                 href={getPreviewUrl()}
+                onClick={this.onPreviewClick}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={AdminI18n.t('collection.edit.preview')}

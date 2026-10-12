@@ -4,7 +4,8 @@ import { TenantConnectionScope } from '@fromcode119/database';
 import { ContentPreviewAccessUtils, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { CoercionUtils } from '@fromcode119/core';
+import { CoercionUtils, RequestContextUtils } from '@fromcode119/core';
+import { SitePreviewViewer } from '@api/services/tenants/site-preview-viewer';
 
 export class SystemRuntimeController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -176,9 +177,10 @@ export class SystemRuntimeController {
 
       // Preview is decided by the SESSION, never by the query string. `?preview=1`/`?draft=1` used to
       // be OR-ed in here, so any anonymous visitor could read every draft by asking for one.
+      const viewer = await this.contentViewer(req);
       const result = await this.runtime.resolution.resolveSlug(slug, {
-        user: (req as any).user,
-        preview: ContentPreviewAccessUtils.canPreviewUnpublished((req as any).user),
+        user: viewer,
+        preview: ContentPreviewAccessUtils.canPreviewUnpublished(viewer),
         locale: req.query.locale as string,
         fallback_locale: req.query.fallback_locale as string,
         locale_mode: req.query.locale_mode as string,
@@ -265,5 +267,17 @@ export class SystemRuntimeController {
     } catch (error: any) {
       res.status(400).json({ error: error?.message || 'Failed to send telemetry test email' });
     }
+  }
+
+  /**
+   * Who this resolve reads as: the signed-in user, or — on a site's own host, where the console session
+   * never arrives — the administrator whose preview session this browser holds. Without the second,
+   * every admin Preview of a draft answered "Page not found".
+   */
+  private async contentViewer(req: Request): Promise<unknown> {
+    const user = (req as any).user;
+    if (user) return user;
+    const tenantId = CoercionUtils.toString(RequestContextUtils.getTenantId());
+    return new SitePreviewViewer(this.runtime.db).of(tenantId, req);
   }
 }
