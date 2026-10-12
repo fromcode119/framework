@@ -34,7 +34,7 @@ export class ServerUploadsStaticSetup {
     db: unknown,
     projectRoot: string,
     mediaManager: MediaManager | undefined,
-    verifyToken?: (token: string) => Promise<{ tenantId?: unknown }>,
+    verifyToken?: (token: string) => Promise<unknown>,
   ): { uploadDir: string; publicPath: string } {
     const config = ServerUploadsConfigService.resolve(projectRoot, mediaManager);
     const sessionSite = verifyToken ? new UploadsSessionSite(verifyToken) : null;

@@ -20,7 +20,7 @@ export class UploadsSessionSite {
   private static readonly MAX_ENTRIES = 500;
   private readonly cache = new Map<string, { site: string | null; until: number }>();
 
-  constructor(private readonly verify: (token: string) => Promise<{ tenantId?: unknown }>) {}
+  constructor(private readonly verify: (token: string) => Promise<unknown>) {}
 
   async siteFor(req: Request): Promise<string | null> {
     const token = UploadsSessionSite.adminToken(req);
@@ -29,7 +29,7 @@ export class UploadsSessionSite {
     if (cached && cached.until > Date.now()) return cached.site;
 
     const site = await this.verify(token)
-      .then((user) => String(user?.tenantId ?? '').trim() || null)
+      .then((user) => CoercionUtils.toString((user as { tenantId?: unknown } | null)?.tenantId).trim() || null)
       .catch(() => null);
     if (this.cache.size >= UploadsSessionSite.MAX_ENTRIES) this.cache.clear();
     this.cache.set(token, { site, until: Date.now() + UploadsSessionSite.TTL_MS });
