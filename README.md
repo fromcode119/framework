@@ -144,6 +144,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 | Guide | Covers |
 |---|---|
 | [Installation](docs/installation.md) | Every install path: Docker Compose, production server, local dev, Coolify, manual images |
+| [Deploying the framework](deploy/DEPLOYMENT.md) | Prebuilt images, rolling releases, the edge, a relay in front of it, and protecting and reporting at the edge |
 | [Configuration](docs/configuration.md) | Every environment variable — core, database, cache/queue/storage/email, multi-site, rate limiting |
 | [Architecture](docs/architecture.md) | Hooked kernel design, request flow, kernel subsystems, repository structure |
 | [Comparison — Why Atlantis?](docs/comparison.md) | Feature-by-feature vs. WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express |
@@ -155,6 +156,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 | [Site Visibility and Preview](docs/site-visibility-and-preview.md) | Private/unlisted/public sites, previewing before launch |
 | [Running Plugins You Don't Fully Trust](docs/untrusted-plugins.md) | What stops a bad plugin from taking over the server, and the operator's checklist |
 | [Backup and Site Transfer](docs/backup-and-transfer.md) | System backups, restore, site-transfer bundles |
+| [Importing From Other Platforms](docs/importing-from-other-platforms.md) | What an import plugin can use to bring a site over from WordPress, Shopify and others |
 | [Full documentation index](docs/README.md) | Every guide, including the module and package docs |
 
 ---
@@ -173,7 +175,9 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 🔧 **Built-in MCP Server** — Every installation is an [MCP](https://modelcontextprotocol.io) server for AI agents, gated by scoped tokens minted in the admin.
 - 🏢 **Multi-site, one platform** — Many customer sites from one deployment, isolated twice: by the application and by PostgreSQL row-level security.
 - 👁️ **Private until you publish** — A new site is closed by default; **Preview** opens visibility to a site's own people without an account or a role.
-- 🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table; creating a site is live within a second.
+- 🌐 **Framework-owned edge** — The platform gateway routes every hostname from the site table; creating a site is live within a second. It can terminate TLS itself (`GATEWAY_TLS_PORT`) with the certificates kept in the admin, so no separate reverse proxy is needed.
+- 🧱 **Edge protection at the gateway** — The gateway screens every request before any app sees it: an **under attack** mode that answers visitors with a short browser check, **blocking of attack patterns** (scanner paths and attack tools, editable lists), a **requests-per-visitor-per-minute** limit, and **blocked countries and addresses** (single addresses or CIDR ranges). One set of switches in the platform console covers every site; a site's own console can override them. All off or empty by default (**Settings → Security → Edge protection**).
+- 🛰️ **A relay in front of the platform** — A second server on its own address can run the platform's edge and pass connections on still encrypted, for when a shared CDN address is blocked for some visitors or to keep the platform's address private. Declare it under **Settings → Security → API Firewall → Trusted relays**; ready connection limits and a CrowdSec setup for it ship in `deploy/edge/relay`. The gateway writes one `[edge-refused]` log line per refused visitor, and an optional CrowdSec agent turns repeat offenders into bans on the relay ([the relay](deploy/DEPLOYMENT.md#a-relay-in-front-of-the-edge)).
 - 🔒 **TLS certificates in the admin** — A certificate is a record in the platform, with automatic expiry warnings.
 - 📇 **Contact details hidden from harvesters** — Email addresses and phone numbers (international numbers, and anything in a `tel:` link) leave the server encoded: in the page text, in `mailto:`/`tel:` links, and in the page data scripts carry. The browser puts them back just before hydration, so visitors see and click them as normal and the page still hydrates from its server render — unlike a CDN's email obfuscation, which rewrites the HTML after rendering and breaks hydration. Automatic for every theme and plugin, one switch per site (**Settings → Security → Contact Details**).
 - 🗑️ **Erasure is a kernel capability** — Every plugin declares its own personal-data datasets; "delete my account" reaches all of them.
@@ -184,9 +188,14 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 - 🧱 **Plugin process isolation** — An isolated plugin runs in its own OS process with a heap ceiling and a per-call deadline; a crash takes down only that plugin.
 - 🧯 **A bad plugin breaks one site, not the server** — A plugin a site uploads runs as its own user with no network, no secrets and only a short list of SDK calls, held to CPU, memory, disk and process limits, in a sandbox container of its own that can run under gVisor ([what to do](#-running-plugins-you-dont-fully-trust)).
 - 🔁 **Rolling updates, zero gap** — A release replaces the api, admin, storefront and gateway one at a time: the new container starts beside the old one, takes traffic once it answers, and the old one drains its in-flight requests before it stops. No failed request, no maintenance window ([how](deploy/DEPLOYMENT.md#how-a-release-replaces-the-running-platform)).
-- ⚖️ **Built-in edge load balancer** — The platform's own `edge` holds ports 80/443 and spreads connections across every running gateway (least-busy first, health-checked every second, a refusing gateway is skipped and the request retried on another), passing the visitor's real address on with the PROXY protocol. Prefer HAProxy or another proxy? Point `EDGE_IMAGE`/`EDGE_COMMAND` at it — a ready HAProxy config ships in `deploy/edge/haproxy` ([the edge](deploy/DEPLOYMENT.md#the-edge)).
+- ⚖️ **Built-in edge load balancer** — The platform's own `edge` holds ports 80/443 and spreads connections across every running gateway (least-busy first, health-checked every second, a refusing gateway is skipped and the request retried on another), passing the visitor's real address on with the PROXY protocol. The default edge comes from the gateway image (`atlantis system edge`). Prefer HAProxy, nginx, Traefik, Envoy or Caddy-l4? Point `EDGE_IMAGE`/`EDGE_COMMAND` at it — a ready HAProxy config ships in `deploy/edge/haproxy` ([the edge](deploy/DEPLOYMENT.md#the-edge)).
 - 🔌 **Plugins survive deploys** — Plugin processes live in the optional `extension-host` container; a new api takes the running processes over instead of restarting them, and the admin shows where each one runs and what it registered.
 - 📦 **Backups + Site Transfer** — Managed system backups and a repository-root site-transfer bundle command.
+- 📥 **Import from other platforms** — The kernel gives an import plugin what it needs to bring a site over: record creation through the admin's own path, media ingest from a URL, add-only redirects, and sign-in for imported customers' old password hashes, upgraded to bcrypt on first sign-in ([how](docs/importing-from-other-platforms.md)).
+- 📱 **Native app sign-in** — A site's own iOS or Android app can sign customers in with Apple or Google (with each app's own client ID), let accounts created that way delete themselves without a password, as the app stores require, and receive push notifications.
+- ⏱️ **Jobs page** — **System → Jobs** lists every scheduled task the platform and its extensions run, and records each run: status, duration and the error it failed with.
+- 🪝 **Entity-named lifecycle hooks** — A collection that declares an `entity` also fires `entity:<entity>:<phase>` (e.g. `entity:order:afterDelete`), and `afterDelete` carries the deleted record, bulk deletes included.
+- 🔑 **Per-plugin encrypted credentials** — `context.secrets` stores a plugin's credentials encrypted; a value opens only for the plugin that stored it, isolated or not.
 - 🌍 **Built-in i18n** — Per-field localization, admin UI labels, and plugin data, with no external libraries.
 - 🕘 **Version History Everywhere** — Every admin edit of any plugin's record is snapshotted, with one-click restore.
 - 🔀 **Framework-owned Redirects** — Redirect rules and canonical paths live in the kernel, no plugin required.
@@ -224,7 +233,7 @@ The full guide — every protection, every limit, and what no platform can do fo
 
 Atlantis uses a Hooked Kernel Architecture: the kernel provides base orchestration while plugins
 register into lifecycle phases (`Discovery → Boot → Route → Hook`). Requests enter through the platform's
-`edge` (a TCP load balancer across gateway replicas), then a platform gateway that routes by hostname to the API, Admin, or Frontend, all built on a shared kernel core
+`edge` (a TCP load balancer across gateway replicas, optionally behind a relay on another server), then a platform gateway that screens them and routes by hostname to the API, Admin, or Frontend, all built on a shared kernel core
 (`packages/core` + `packages/sdk`) that owns security, the database layer, and multi-site isolation.
 
 **→ [Full architecture guide](docs/architecture.md)** — diagrams, kernel subsystems, and the
