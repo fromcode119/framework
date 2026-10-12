@@ -115,9 +115,9 @@ export class PackageBuilder {
   /**
    * Every version of this extension still staged on disk, newest first.
    *
-   * Nothing prunes these: a build clears its OWN version's directory and leaves the rest, so the
-   * versions an installation has built accumulate and are already installable — which is what makes
-   * going back to one a listing problem rather than a rebuild.
+   * A build clears its OWN version's directory and leaves the newest few others
+   * (`StagedVersionPruner`, Settings → General), so the recent versions stay installable — which is
+   * what makes going back to one a listing problem rather than a rebuild.
    *
    * Derived from the directories rather than from a build record, because the record holds ONE
    * version — the latest — and the whole point here is the others.

@@ -66,6 +66,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       framework_repository: String(settings.framework_repository ?? '').trim(),
       sources_workspace_root: String(settings.sources_workspace_root ?? '').trim(),
       sources_build_unverified_commits: Boolean(settings.sources_build_unverified_commits),
+      sources_keep_builds: String(settings.sources_keep_builds ?? '').trim(),
       domain_aliases: JSON.stringify(Array.isArray(settings.domain_aliases) ? settings.domain_aliases : []),
       timezone: String(settings.timezone ?? '').trim(),
       frontend_auth_enabled: Boolean(settings.frontend_auth_enabled),

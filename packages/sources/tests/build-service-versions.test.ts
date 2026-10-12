@@ -7,8 +7,8 @@ import { SourcesCollectionRegistry } from '@sources/sources/sources-tables';
 /**
  * Going back to a version this installation already built.
  *
- * Nothing prunes a staged package: a build clears its OWN version's directory and leaves every
- * other, so the versions still installable are simply the ones still on disk. That makes a downgrade
+ * A build clears its OWN version's directory and leaves the newest few others (StagedVersionPruner),
+ * so the versions still installable are simply the ones still on disk. That makes a downgrade
  * a listing problem rather than a rebuild — and makes the listing the thing that must be right.
  *
  * The other half is that "built" and "installed" are recorded in DIFFERENT places. A source reported

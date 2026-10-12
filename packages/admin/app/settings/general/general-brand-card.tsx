@@ -4,7 +4,6 @@ import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
-import { Switch } from '@/components/ui/view/switch.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
@@ -15,6 +14,7 @@ import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { GeneralEmailLogoRow } from '@/app/settings/general/general-email-logo-row';
+import { GeneralSourcesRows } from '@/app/settings/general/general-sources-rows';
 
 export class GeneralBrandCard extends PureReactor {
   /**
@@ -66,16 +66,6 @@ export class GeneralBrandCard extends PureReactor {
   @bound
   onFrameworkRepositoryChange(e: React.ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('framework_repository', e.target.value);
-  }
-
-  @bound
-  onSourcesWorkspaceRootChange(e: React.ChangeEvent<HTMLInputElement>): void {
-    this.patchSetting('sources_workspace_root', e.target.value);
-  }
-
-  @bound
-  onSourcesBuildUnverifiedChange(value: boolean): void {
-    this.patchSetting('sources_build_unverified_commits', value);
   }
 
   @bound
@@ -228,32 +218,7 @@ export class GeneralBrandCard extends PureReactor {
           </SettingRow>
         )}
 
-        {this.shown('sources_workspace_root') && (
-          <SettingRow
-            theme={theme}
-            icon={FrameworkIcons.Folder}
-            title={AdminI18n.t('settings.general.sourcesWorkspace')}
-            description={<AdminRichText k="settings.general.sourcesWorkspaceDescription" />}
-          >
-            <Input
-              value={settings.sources_workspace_root}
-              onChange={this.onSourcesWorkspaceRootChange}
-              className="w-full md:w-64 font-bold"
-              placeholder="data/sources"
-            />
-          </SettingRow>
-        )}
-
-        {this.shown('sources_build_unverified_commits') && (
-          <SettingRow
-            theme={theme}
-            icon={FrameworkIcons.ShieldAlert}
-            title={AdminI18n.t('settings.general.sourcesBuildUnverified')}
-            description={AdminI18n.t('settings.general.sourcesBuildUnverifiedDescription')}
-          >
-            <Switch checked={settings.sources_build_unverified_commits === true} onChange={this.onSourcesBuildUnverifiedChange} />
-          </SettingRow>
-        )}
+        <GeneralSourcesRows platformLocks={this.platformLocks} settings={settings} setSettings={this.setSettings} theme={theme} />
 
         {this.shown('domain_aliases') && (
           <SettingRow

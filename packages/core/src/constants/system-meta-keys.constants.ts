@@ -290,6 +290,8 @@ export class SystemMetaKeys {
   FRAMEWORK_REPOSITORY: 'framework_repository',
   SOURCES_WORKSPACE_ROOT: 'sources_workspace_root',
   /** Sources builds a commit GitHub did not merge. Off unless an operator turns it on (Settings → General). */
-  SOURCES_BUILD_UNVERIFIED_COMMITS: 'sources_build_unverified_commits'
+  SOURCES_BUILD_UNVERIFIED_COMMITS: 'sources_build_unverified_commits',
+  /** How many built versions of each extension Sources keeps on disk; older ones are removed after a build. */
+  SOURCES_KEEP_BUILDS: 'sources_keep_builds'
   } as const;
 }

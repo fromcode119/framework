@@ -293,6 +293,7 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.FRAMEWORK_REPOSITORY]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    [SystemConstants.META_KEY.SOURCES_KEEP_BUILDS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true, seed: { value: '3', description: "Built versions of each extension Sources keeps.", group: "Settings" } },
   };
 
 

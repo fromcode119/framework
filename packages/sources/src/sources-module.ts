@@ -10,6 +10,7 @@ import { CatalogContributionService } from '@sources/catalog/catalog-contributio
 import { SourceProviders } from '@sources/providers/source-providers';
 import { LegacyWorkspaceAdoption } from '@sources/settings/legacy-workspace-adoption';
 import { PackageBuilder } from '@sources/packaging/package-builder';
+import { StagedVersionPruner } from '@sources/packaging/staged-version-pruner';
 import { SourcesEvents } from '@sources/events/sources-events';
 import { SourcesRouter } from '@sources/http/sources-router';
 import { BuildPackageArtifactHook } from '@sources/events/hooks/build-package-artifact-hook';
@@ -56,12 +57,17 @@ export class SourcesModule {
       path.join(workspaceRoot, 'core'),
     );
     const sourceDir = path.join(workspaceRoot, 'source');
+    const pruner = new StagedVersionPruner(packageBuilder, input.keepBuilds ?? (async () => null), (message) => SourcesModule.logger.info(message));
     const buildService = new BuildService(
       input.db,
       (key) => SourceProviders.find(key, sourceDir),
       packageBuilder,
       buildSourceService,
-      (event) => { void input.hooks.emit(SourcesEvents.PACKAGE_BUILT, event); },
+      (event) => {
+        void input.hooks.emit(SourcesEvents.PACKAGE_BUILT, event);
+        void pruner.prune(event.type, event.slug, event.version)
+          .catch((error) => SourcesModule.logger.warn(`Older builds of ${event.slug} were not removed: ${error?.message ?? error}`));
+      },
       input.installer,
       input.buildsUnverifiedCommits,
       input.sitePublisher,
