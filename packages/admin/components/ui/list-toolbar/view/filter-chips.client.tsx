@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
-import { ListFilter } from '@/components/collection/list/list-filter';
+import { ListFilter } from '@/components/ui/list-toolbar/list-filter';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
@@ -35,7 +35,7 @@ export class FilterChips extends PureReactor {
             <button
               type="button"
               onClick={() => filter.reset()}
-              aria-label={AdminI18n.t('collection.list.removeFilter', { label: filter.label })}
+              aria-label={AdminI18n.t('ui.listToolbar.removeFilter', { label: filter.label })}
               className="w-5 h-5 rounded-full inline-flex items-center justify-center hover:bg-indigo-100 dark:hover:bg-indigo-500/25"
             >
               <FrameworkIcons.X size={12} />
@@ -43,7 +43,7 @@ export class FilterChips extends PureReactor {
           </span>
         ))}
         <button type="button" onClick={this.clearAll} className="shrink-0 whitespace-nowrap text-[12px] font-semibold text-slate-500 hover:text-indigo-600 dark:text-slate-400">
-          {AdminI18n.t('collection.list.clearFilters')}
+          {AdminI18n.t('ui.listToolbar.clearFilters')}
         </button>
       </div>
     );

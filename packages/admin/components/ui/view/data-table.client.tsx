@@ -224,7 +224,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
                     />
                     {isExpanded && this.renderExpandedRow && (
                       <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
-                        <td className="py-4" colSpan={totalColumns}>
+                        <td className="px-0 py-4" colSpan={totalColumns}>
                           <div className="sticky left-0 px-3" style={this.viewportWidth ? { width: this.viewportWidth } : undefined}>
                             {this.renderExpandedRow(row)}
                           </div>

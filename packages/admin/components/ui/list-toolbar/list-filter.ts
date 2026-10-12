@@ -1,7 +1,7 @@
 /**
- * One filter of a collection list: what it is called, the values it offers, the one in force, and how
- * to change it. The status filter, each select field's filter and the archived view are all one of
- * these, so the panel and the chips treat them alike.
+ * One filter of a list: what it is called, the values it offers, the one in force, and how to change
+ * it. A collection list's status, select-field and archived filters are all one of these, and so are
+ * the type and status filters of a screen like Sources, so the panel and the chips treat them alike.
  */
 export class ListFilter {
   constructor(
