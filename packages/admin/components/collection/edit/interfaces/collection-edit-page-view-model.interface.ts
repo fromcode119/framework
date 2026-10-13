@@ -51,8 +51,8 @@ export interface ICollectionEditPageViewModel {
   handleHardRestore: (version: number) => Promise<void>;
   getPreviewUrl: () => string;
   sidebarFieldSections: Array<{ title: string; fields: any[] }>;
-  standardMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
-  fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
+  standardMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
+  fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
   navSections: Array<{ key: string; title: string }>;
   handleInputChange: (name: string, value: any) => void;
   handlePatch: (partial: Record<string, any>) => void;

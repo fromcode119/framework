@@ -198,6 +198,9 @@
       "selectRecord": "Избери този запис"
     },
     "edit": {
+      "sectionShow": "Покажи",
+      "sectionHide": "Скрий",
+      "sectionFieldCount": "Полета: {{count}}",
       "permalinkCard": "Преглед и адрес",
       "permalinkHint": "Щракнете върху пътя, за да промените автоматично създадения адрес.",
       "settings": "Настройки",

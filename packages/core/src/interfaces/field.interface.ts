@@ -118,6 +118,14 @@ export interface IField {
      */
     renderedBy?: string;
     /**
+     * The section this field sits in starts COLLAPSED on the edit form: its card shows the title, how
+     * many fields it holds and a Show button, and one click opens it. For values an operator rarely
+     * reads but must be able to see — what the runtime computed from the record. Not `hidden`: the
+     * section and its fields are always one click away, and a section holding a field with an error
+     * opens by itself. Any field of the section declaring it collapses the section.
+     */
+    sectionCollapsed?: boolean;
+    /**
      * Suppress the field's own label row.
      *
      * For a control that prints its own heading — a summary that already names each line it holds —

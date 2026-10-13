@@ -79,6 +79,7 @@ export class ColorPicker extends AdminComponent {
     const rawValue = ColorPickerUtils.coerceColorValue(value);
     const normalizedValue = ColorPickerUtils.normalizeHexColor(rawValue);
     const pickerValue = normalizedValue || '#000000';
+    const swatch = ColorPickerUtils.swatchColor(rawValue);
 
     return (
     <div className={`relative ${className}`} ref={this.containerRef}>
@@ -88,10 +89,10 @@ export class ColorPicker extends AdminComponent {
       >
         {/* No value shows as not set: an empty colour used to read "#000000" with a black swatch, a
             value nobody chose, while whatever reads the field used its own default. */}
-        {rawValue ? (
+        {swatch ? (
           <div
             className="w-8 h-5 rounded border border-white/10 dark:border-white/20 shadow-sm"
-            style={{ backgroundColor: pickerValue }}
+            style={{ backgroundColor: swatch }}
           />
         ) : (
           <div className="w-8 h-5 rounded border border-dashed border-slate-300 dark:border-slate-600" />

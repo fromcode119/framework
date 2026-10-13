@@ -126,15 +126,18 @@ export class CollectionEditDerivations {
     return ordered;
   }
 
-  private static groupMain(mainFields: any[]): Array<{ key: string; title?: string; fields: any[] }> {
-    const ordered: Array<{ key: string; title?: string; fields: any[] }> = [];
+  private static groupMain(mainFields: any[]): Array<{ key: string; title?: string; fields: any[]; collapsed: boolean }> {
+    const ordered: Array<{ key: string; title?: string; fields: any[]; collapsed: boolean }> = [];
     const indexByKey = new Map<string, number>();
     mainFields.forEach((field: any) => {
       const sectionTitle = typeof field?.admin?.section === 'string' ? field.admin.section.trim() : '';
       const key = sectionTitle || '__default__';
+      // Only a titled section can collapse: its title is what stays on screen to open it by.
+      const collapses = Boolean(sectionTitle) && field?.admin?.sectionCollapsed === true;
       const existing = indexByKey.get(key);
-      if (existing === undefined) { indexByKey.set(key, ordered.length); ordered.push({ key, title: sectionTitle || undefined, fields: [field] }); return; }
+      if (existing === undefined) { indexByKey.set(key, ordered.length); ordered.push({ key, title: sectionTitle || undefined, fields: [field], collapsed: collapses }); return; }
       ordered[existing].fields.push(field);
+      if (collapses) ordered[existing].collapsed = true;
     });
     return ordered;
   }
