@@ -118,4 +118,18 @@ export class MediaService extends BaseService {
   getThumbnailUrl(url: string, size: number = 200): string {
     return this.optimizeImage(url, { width: size, height: size });
   }
+
+  /**
+   * Puts a file into the media library, exactly as the media picker's own upload does, and answers the
+   * stored item's id and address. For a console page that brings its own images (a plugin's starter
+   * set), so it never needs the media table or an upload path of its own.
+   */
+  async upload(file: Blob, filename: string): Promise<{ id: string; url: string }> {
+    const formData = new FormData();
+    formData.append('file', file, filename);
+    const result = await AdminApi.upload(AdminConstants.ENDPOINTS.MEDIA.UPLOAD, formData);
+    const item = result?.doc ?? result;
+    if (!item?.id) throw new Error('The media library did not keep the file');
+    return { id: String(item.id), url: String(item.url ?? item.path ?? '') };
+  }
 }
