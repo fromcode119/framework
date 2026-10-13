@@ -132,7 +132,7 @@ export class MarketplaceInstaller {
         message: `Downloading "${slug}" from marketplace...`,
         pluginSlug: slug,
       });
-      const response = await fetch(downloadUrl);
+      const response = await fetch(downloadUrl, { headers: client.requestHeaders(downloadUrl) });
       
       if (!response.ok) {
         throw new Error(`Failed to download plugin: ${response.statusText}`);

@@ -3,11 +3,13 @@ import { MarketplaceClientConstants } from '@marketplace-client/constants/market
 /**
  * Turns the marketplace address an operator typed into the addresses this installation requests.
  *
- * The address may carry a QUERY (`https://market.example?key=…`). A marketplace that admits only
- * the installations it knows identifies them by it, so the query belongs to the address, not to
- * one request: it is carried on the catalogue request and on every download from the same host.
- * The path arithmetic below works on the address WITHOUT it — appending a path after a query would
- * put the path inside the query value.
+ * The address may carry a QUERY (`https://market.example?key=…`). The query belongs to the address,
+ * not to one request, so the catalogue address keeps it. The path arithmetic below works on the
+ * address WITHOUT it — appending a path after a query would put the path inside the query value.
+ *
+ * Its `key` is a credential, by which a marketplace that admits only the installations it knows
+ * identifies this one. It never travels in a requested URL: `requestUrl` drops it and
+ * `requestHeaders` carries it, for the marketplace's own host only. Other parameters stay in the URL.
  */
 export class MarketplaceUrlService {
   static resolveCatalogUrl(url?: string): string {
@@ -39,10 +41,10 @@ export class MarketplaceUrlService {
   }
 
   /**
-   * Carry the marketplace address's query onto a download address — ONLY when the download is on the
-   * marketplace's own host. A catalogue entry may point at a package elsewhere, and the query is the
-   * marketplace's credential: handing it to another host would give it away. Parameters the download
-   * address already names are kept as they are.
+   * Carry the marketplace address's query — all but its key — onto a download address, ONLY when the
+   * download is on the marketplace's own host. A catalogue entry may point at a package elsewhere, and
+   * the address's parameters are the marketplace's business. Parameters the download address already
+   * names are kept as they are.
    */
   static withMarketplaceQuery(downloadUrl: string, marketplaceUrl?: string): string {
     const target = MarketplaceUrlService.parse(downloadUrl);
@@ -53,11 +55,37 @@ export class MarketplaceUrlService {
 
     let changed = false;
     source.searchParams.forEach((value, name) => {
-      if (target.searchParams.has(name)) return;
+      if (name === MarketplaceClientConstants.KEY_PARAM || target.searchParams.has(name)) return;
       target.searchParams.append(name, value);
       changed = true;
     });
     return changed ? target.toString() : downloadUrl;
+  }
+
+  /** The address as it is requested: without the key, which goes in a header instead. */
+  static requestUrl(url: string): string {
+    const parsed = MarketplaceUrlService.parse(url);
+    if (!parsed || !parsed.searchParams.has(MarketplaceClientConstants.KEY_PARAM)) {
+      return url;
+    }
+
+    parsed.searchParams.delete(MarketplaceClientConstants.KEY_PARAM);
+    return parsed.toString();
+  }
+
+  /**
+   * The headers a request to `targetUrl` carries: the marketplace address's key, when there is one and
+   * the target is on the marketplace's own host. Any other host gets none.
+   */
+  static requestHeaders(targetUrl: string, marketplaceUrl?: string): Record<string, string> {
+    const target = MarketplaceUrlService.parse(targetUrl);
+    const source = MarketplaceUrlService.parse(marketplaceUrl);
+    const key = source?.searchParams.get(MarketplaceClientConstants.KEY_PARAM)?.trim() ?? '';
+    if (!target || !source || !key || target.origin !== source.origin) {
+      return {};
+    }
+
+    return { [MarketplaceClientConstants.KEY_HEADER]: key };
   }
 
   /**

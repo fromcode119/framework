@@ -30,7 +30,7 @@ export class AppearanceInstallerService {
     const tempDir = path.join(this.appearancesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `appearance "${slug}"`, sha256: pkg.artifactSha256 });
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `appearance "${slug}"`, sha256: pkg.artifactSha256 }, this.client.requestHeaders(downloadUrl));
       const contentDir = this.findManifestDir(tempDir);
       if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the package.');
       const incoming: IAppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));

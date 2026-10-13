@@ -1,5 +1,12 @@
 export class MarketplaceClientConstants {
   static readonly DEFAULT_FETCH_TIMEOUT_MS = 3000;
+  /**
+   * The query parameter of a marketplace address that names this installation to the marketplace
+   * (`https://market.example/?key=…`). It is a credential: requests carry it in KEY_HEADER, never in
+   * the URL, so proxies and access logs on the way do not record it.
+   */
+  static readonly KEY_PARAM = 'key';
+  static readonly KEY_HEADER = 'X-Marketplace-Key';
 
   static get MARKETPLACE_ROUTE_PATH(): string {
     return MarketplaceClientConstants.readPathFromEnv(

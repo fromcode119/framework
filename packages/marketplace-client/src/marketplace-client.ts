@@ -31,7 +31,10 @@ export class MarketplaceClient {
         const timeout = setTimeout(() => controller.abort(), this.fetchTimeoutMs);
         let response: Response;
         try {
-          response = await fetch(this.marketplaceUrl, { signal: controller.signal });
+          response = await fetch(MarketplaceUrlService.requestUrl(this.marketplaceUrl), {
+            signal: controller.signal,
+            headers: this.requestHeaders(this.marketplaceUrl),
+          });
         } finally {
           clearTimeout(timeout);
         }
@@ -102,14 +105,20 @@ export class MarketplaceClient {
   }
 
   /**
-   * Resolve a download URL relative to the marketplace, carrying the marketplace address's query when
-   * the download is on the marketplace's own host (see MarketplaceUrlService.withMarketplaceQuery).
+   * Resolve a download URL relative to the marketplace, carrying the marketplace address's query — all
+   * but the key — when the download is on the marketplace's own host. Fetch it with
+   * `requestHeaders(url)`, which carries the key.
    */
   public resolveDownloadUrl(url: string): string {
     if (!this.marketplaceUrl.startsWith('http')) return url;
 
     const resolved = url.startsWith('http') ? url : new URL(url, this.getMarketplaceApiBaseUrl() + '/').toString();
     return MarketplaceUrlService.withMarketplaceQuery(resolved, this.marketplaceUrl);
+  }
+
+  /** The headers a request to `url` carries: this marketplace's key, for its own host only. */
+  public requestHeaders(url: string): Record<string, string> {
+    return MarketplaceUrlService.requestHeaders(url, this.marketplaceUrl);
   }
 
   private getMarketplaceApiBaseUrl(): string {
