@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.387] - 2026-10-13
+
+### Added
+
+- **marketplace-client**: a marketplace address can carry a key; requests send it as a header ([#920](https://github.com/fromcode119/framework/pull/920))
+
+### Fixed
+
+- **admin**: a plugin named like an admin page under /plugins can open its own page ([#921](https://github.com/fromcode119/framework/pull/921))
+
 ## [0.2.386] - 2026-10-13
 
 ### Fixed
