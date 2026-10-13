@@ -48,9 +48,6 @@ export class MarketplaceInstaller {
     // downloads dependencies too, and every one of them must come from the SAME catalogue the plugin
     // was found in.
     const { client } = await this.ensureClient();
-    if (!client) {
-      throw new Error('Marketplace is disabled.');
-    }
 
     if (visited.has(slug)) {
       this.logger.debug(`Skipping already processed dependency: ${slug}`);
@@ -110,6 +107,13 @@ export class MarketplaceInstaller {
         ? await this.discovery.installFromDirectory(localPath)
         : await this.discovery.installFromZip(localPath);
       return manifest;
+    }
+
+    // Only a download needs a marketplace. An offer from this installation was installed above, so an
+    // installation with no marketplace set could update the plugins it built itself — and, with none
+    // set, refuses the remote kind with the same words it always used.
+    if (!client) {
+      throw new Error('Marketplace is disabled.');
     }
 
     this.logger.info(`Downloading and installing plugin: ${slug} v${plugin.version}`);
