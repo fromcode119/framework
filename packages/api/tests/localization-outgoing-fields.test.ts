@@ -20,4 +20,12 @@ describe('LocalizationService outgoing data', () => {
     expect(svc.transformOutgoingData(collection, { id: 2, title: '{"bg":"Кутия"}', tags: '["x"]' }, options))
       .toEqual({ id: 2, title: 'Кутия', tags: ['x'] });
   });
+
+  it('shows a record written only outside the reader\'s languages instead of nothing', () => {
+    const svc = new LocalizationService({} as any);
+    const english = { localeContext: { chain: ['en'], defaultLocale: 'en' }, rawLocalized: false };
+    expect(svc.transformOutgoingData(collection, { id: 3, title: '{"bg":"Сън"}' }, english)).toEqual({ id: 3, title: 'Сън' });
+    expect(svc.transformOutgoingData(collection, { id: 4, title: '{"bg":"Сън","en":"Sleep"}' }, english)).toEqual({ id: 4, title: 'Sleep' });
+    expect(svc.transformOutgoingData(collection, { id: 5, title: '{"bg":""}' }, english)).toEqual({ id: 5, title: null });
+  });
 });

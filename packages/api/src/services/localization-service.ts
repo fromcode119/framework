@@ -186,8 +186,10 @@ export class LocalizationService {
             }
           }
           
+          // A record written only in a language outside the chain (a Bulgarian-only topic read by an
+          // English console) still shows its copy rather than nothing, as plugin reads already do.
           if (foundValue === null) {
-            foundValue = localeMap[options.localeContext.defaultLocale] || null;
+            foundValue = Object.values(localeMap).find((candidate) => CoreServices.getInstance().localization.isMeaningful(candidate)) ?? null;
           }
           
           value = foundValue;
