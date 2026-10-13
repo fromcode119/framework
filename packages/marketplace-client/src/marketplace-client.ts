@@ -102,14 +102,14 @@ export class MarketplaceClient {
   }
 
   /**
-   * Resolve a download URL relative to the marketplace
+   * Resolve a download URL relative to the marketplace, carrying the marketplace address's query when
+   * the download is on the marketplace's own host (see MarketplaceUrlService.withMarketplaceQuery).
    */
   public resolveDownloadUrl(url: string): string {
-    if (url.startsWith('http')) return url;
     if (!this.marketplaceUrl.startsWith('http')) return url;
 
-    const baseUrl = this.getMarketplaceApiBaseUrl();
-    return new URL(url, baseUrl + '/').toString();
+    const resolved = url.startsWith('http') ? url : new URL(url, this.getMarketplaceApiBaseUrl() + '/').toString();
+    return MarketplaceUrlService.withMarketplaceQuery(resolved, this.marketplaceUrl);
   }
 
   private getMarketplaceApiBaseUrl(): string {
