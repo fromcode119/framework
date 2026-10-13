@@ -58,7 +58,7 @@ export class PageDesignCard extends Reactor {
             : AdminI18n.t('collection.pageDesign.replaced', { plugin: design.pluginName })}
         </p>
         <a
-          href={AdminPathUtils.toAdminPath(`/plugins/${design.pluginSlug}`)}
+          href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.PLUGINS.DETAIL(design.pluginSlug))}
           className="mt-3 inline-block text-[12px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
         >
           {AdminI18n.t('collection.pageDesign.open', { plugin: design.pluginName })}

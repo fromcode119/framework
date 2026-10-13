@@ -57,6 +57,8 @@ export class PluginsLayout extends AdminComponent {
   }
 
   private get isPluginDetail(): boolean {
+    // A plugin's page lives under `installed/<slug>`; `/plugins/<slug>` is the older address of it.
+    if (this.pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.INSTALLED}/`)) return true;
     return (
       this.pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.ROOT}/`) &&
       !this.pathname.startsWith(AdminConstants.ROUTES.PLUGINS.INSTALLED) &&

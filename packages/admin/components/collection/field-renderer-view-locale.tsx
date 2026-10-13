@@ -1,6 +1,7 @@
 import type { ReactNode, RefObject } from 'react';
 import { bound, watch } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FieldProvenance } from '@/lib/collection/field-provenance';
 import { FieldLocaleSwitcher } from '@/components/collection/field-locale-switcher';
 import { FieldRendererViewAccess } from '@/components/collection/field-renderer-view-access';
@@ -181,7 +182,7 @@ export abstract class FieldRendererViewLocale extends FieldRendererViewAccess {
       this.currentValue,
       this.record ?? {},
       this.pluginSettings ?? {},
-      this.pluginSlug ? AdminPathUtils.toAdminPath(`/plugins/${this.pluginSlug}/settings`) : '',
+      this.pluginSlug ? AdminPathUtils.toAdminPath(AdminConstants.ROUTES.PLUGINS.SETTINGS(this.pluginSlug)) : '',
       this.pluginSettingsSchema,
     );
   }

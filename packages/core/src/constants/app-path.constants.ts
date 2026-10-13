@@ -69,9 +69,13 @@ export class AppPathConstants {
       HEALTH: '/plugins/health',
       MARKETPLACE: '/plugins/marketplace',
       MARKETPLACE_DETAIL: (slug: string) => `/plugins/marketplace/${slug}`,
-      DETAIL: (slug: string) => `/plugins/${slug}`,
-      SETTINGS: (slug: string) => `/plugins/${slug}/settings`,
-      SETTINGS_TAB: (slug: string) => AppPathConstants.withQuery(`/plugins/${slug}`, { tab: 'settings' }),
+      // Under `installed/`, never straight under `/plugins/`: the admin's own pages there (`installed`,
+      // `health`, `marketplace`) are static routes, which win over a slug — so a plugin whose slug
+      // matched one of them could never open its own page. `/plugins/<slug>` still resolves for
+      // every other slug, so existing links keep working.
+      DETAIL: (slug: string) => `/plugins/installed/${slug}`,
+      SETTINGS: (slug: string) => `/plugins/installed/${slug}/settings`,
+      SETTINGS_TAB: (slug: string) => AppPathConstants.withQuery(`/plugins/installed/${slug}`, { tab: 'settings' }),
     },
     SETTINGS: {
       ROOT: '/settings',
