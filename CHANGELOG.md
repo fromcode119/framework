@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.385] - 2026-10-13
+
+### Added
+
+- **admin**: media service can upload a file for a console page ([#916](https://github.com/fromcode119/framework/pull/916))
+- **admin**: sections that start collapsed; colour swatch paints any CSS colour ([#915](https://github.com/fromcode119/framework/pull/915))
+
 ## [0.2.384] - 2026-10-13
 
 ### Fixed
