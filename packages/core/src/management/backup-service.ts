@@ -93,20 +93,11 @@ export class BackupService {
   }
 
   /**
-   * Downloads from a URL and extracts to the target directory
-   * @param url - The URL to download from
-   * @param targetDir - The directory where it should be extracted
+   * Downloads `url` and extracts it into `targetDir`. `verify`: the package and its published checksum,
+   * checked before extraction (omitted for an operator-typed URL). `headers`: sent with the download —
+   * a marketplace's key travels here, never in the URL.
    */
-  /**
-   * `verify`: the package and its published checksum, checked before extraction (omitted for an operator-typed URL).
-   * `headers`: sent with the download — a marketplace's key travels here, never in the URL.
-   */
-  static async downloadAndExtract(
-    url: string,
-    targetDir: string,
-    verify?: { label: string; sha256: unknown },
-    headers: Record<string, string> = {},
-  ): Promise<void> {
+  static async downloadAndExtract(url: string, targetDir: string, verify?: { label: string; sha256: unknown }, headers: Record<string, string> = {}): Promise<void> {
     this.ensureBackupsDir();
 
     // Ensure target directory exists
