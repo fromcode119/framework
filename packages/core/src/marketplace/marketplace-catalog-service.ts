@@ -12,6 +12,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { CoreServices } from '@core/services/core-services';
 import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
+import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { SystemConstants } from '@core/constants/system.constants';
 import { MarketplaceInstaller } from '@core/marketplace/marketplace-installer';
@@ -158,7 +159,10 @@ export class MarketplaceCatalogService {
         const rows = await contributor.list();
         for (const row of rows || []) {
           const entry = CatalogEntry.from(row);
-          if (entry) entries.push(entry.toCatalogPlugin() as unknown as MarketplacePlugin);
+          // The same registry carries themes and appearances. This is the PLUGIN catalogue, merged
+          // by slug: a theme sharing a plugin's name replaced the plugin's offer here, so its update
+          // never showed and an install could have fetched the theme's package.
+          if (entry && entry.kind === ExtensionScope.PLUGIN.value) entries.push(entry.toCatalogPlugin() as unknown as MarketplacePlugin);
         }
       } catch (err: any) {
         this.logger.warn(`Catalog contributor ${contributor.canonicalKey} failed: ${err?.message || err}`);
