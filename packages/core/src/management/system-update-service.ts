@@ -167,7 +167,7 @@ export class SystemUpdateService {
     const tempDir = this.createTemporaryUpdateDirectory(rootDir);
 
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `core v${status.latest}`, sha256: status.artifactSha256 });
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `core v${status.latest}`, sha256: status.artifactSha256 }, this.client.requestHeaders(downloadUrl));
       return await this.applyPreparedUpdate(tempDir, rootDir, status.latest);
     } catch (err: any) {
       this.logger.error(`Update failed: ${err.message}`);

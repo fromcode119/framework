@@ -122,7 +122,7 @@ export class MarketplaceCatalogService {
       if (!client || !url) {
         return [];
       }
-      this.logger.debug(`Fetching marketplace catalog from: ${url}`);
+      this.logger.debug(`Fetching marketplace catalog from: ${MarketplaceUrlService.redact(url)}`);
       const data = await client.fetch();
       const plugins = data.plugins || [];
       // "Successfully fetched 0 plugins" was logged after a 503, because the client swallows the
@@ -131,7 +131,7 @@ export class MarketplaceCatalogService {
       // reported as what it is; whether it is a real emptiness or a swallowed error, it is not a
       // success worth claiming.
       if (plugins.length === 0) {
-        this.logger.warn(`Marketplace at ${url} returned no plugins — it may be unreachable or retired.`);
+        this.logger.warn(`Marketplace at ${MarketplaceUrlService.redact(url)} returned no plugins — it may be unreachable or retired.`);
         return [];
       }
       this.logger.info(`Successfully fetched ${plugins.length} plugins from marketplace.`);

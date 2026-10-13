@@ -6,7 +6,7 @@ import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plu
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import { CoreServices } from '@core/services/core-services';
-import { MarketplaceClient, MarketplacePlugin } from '@fromcode119/marketplace-client';
+import { MarketplaceClient, MarketplacePlugin, MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { pipeline } from 'stream/promises';
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
@@ -126,13 +126,13 @@ export class MarketplaceInstaller {
     const tempZipPath = path.join(tempDir, `${slug}-${Date.now()}.zip`);
 
     try {
-      this.logger.debug(`Downloading from ${downloadUrl}...`);
+      this.logger.debug(`Downloading from ${MarketplaceUrlService.redact(downloadUrl)}...`);
       progressReporter?.({
         phase: 'downloading-package',
         message: `Downloading "${slug}" from marketplace...`,
         pluginSlug: slug,
       });
-      const response = await fetch(downloadUrl);
+      const response = await fetch(downloadUrl, { headers: client.requestHeaders(downloadUrl) });
       
       if (!response.ok) {
         throw new Error(`Failed to download plugin: ${response.statusText}`);

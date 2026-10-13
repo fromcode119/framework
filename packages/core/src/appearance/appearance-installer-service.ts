@@ -5,7 +5,7 @@ import fs from 'fs';
 import { Logger } from '@core/logging';
 import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
-import { MarketplaceClient } from '@fromcode119/marketplace-client';
+import { MarketplaceClient, MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
 import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 
@@ -26,11 +26,11 @@ export class AppearanceInstallerService {
     const slug = String(pkg?.slug || '').trim();
     if (!slug) throw new Error('Appearance install requires a slug.');
     const downloadUrl = this.client.resolveDownloadUrl(pkg.downloadUrl);
-    this.logger.info(`Installing appearance "${slug}" from ${downloadUrl}...`);
+    this.logger.info(`Installing appearance "${slug}" from ${MarketplaceUrlService.redact(downloadUrl)}...`);
     const tempDir = path.join(this.appearancesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `appearance "${slug}"`, sha256: pkg.artifactSha256 });
+      await BackupService.downloadAndExtract(downloadUrl, tempDir, { label: `appearance "${slug}"`, sha256: pkg.artifactSha256 }, this.client.requestHeaders(downloadUrl));
       const contentDir = this.findManifestDir(tempDir);
       if (!contentDir) throw new Error('Invalid appearance: appearance.json not found in the package.');
       const incoming: IAppearanceManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'appearance.json'), 'utf8'));
@@ -44,7 +44,7 @@ export class AppearanceInstallerService {
   async installFromUrl(url: string): Promise<IAppearanceManifest> {
     const trimmed = String(url || '').trim();
     if (!trimmed) throw new Error('Appearance install requires a URL.');
-    this.logger.info(`Installing appearance from URL ${trimmed}...`);
+    this.logger.info(`Installing appearance from URL ${MarketplaceUrlService.redact(trimmed)}...`);
     const tempDir = path.join(this.appearancesRoot, `.tmp-url-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {

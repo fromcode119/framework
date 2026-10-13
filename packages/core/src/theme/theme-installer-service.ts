@@ -10,7 +10,7 @@ import { Logger } from '@core/logging';
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
-import { MarketplaceClient } from '@fromcode119/marketplace-client';
+import { MarketplaceClient, MarketplaceUrlService } from '@fromcode119/marketplace-client';
 import { Seeder } from '@core/database/seeder';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { ProjectPaths } from '@core/config/paths';
@@ -50,12 +50,18 @@ export class ThemeInstallerService {
   /** `fromUrl`: an address the operator typed, not a catalogue offer — no published checksum to hold it to. */
   async installTheme(pkg: any, options: { fromUrl?: boolean } = {}): Promise<void> {
     const { slug, downloadUrl: rawDownloadUrl } = pkg;
-    const downloadUrl = (await this.clientFor()).resolveDownloadUrl(rawDownloadUrl);
-    this.logger.info(`Installing theme "${slug}" from ${downloadUrl}...`);
+    const client = await this.clientFor();
+    const downloadUrl = client.resolveDownloadUrl(rawDownloadUrl);
+    this.logger.info(`Installing theme "${slug}" from ${MarketplaceUrlService.redact(downloadUrl)}...`);
     const tempDir = path.join(this.themesRoot, `.tmp-install-${slug}-${Date.now()}`);
     fs.mkdirSync(tempDir, { recursive: true });
     try {
-      await BackupService.downloadAndExtract(downloadUrl, tempDir, options.fromUrl ? undefined : { label: `theme "${slug}"`, sha256: pkg.artifactSha256 });
+      await BackupService.downloadAndExtract(
+        downloadUrl,
+        tempDir,
+        options.fromUrl ? undefined : { label: `theme "${slug}"`, sha256: pkg.artifactSha256 },
+        client.requestHeaders(downloadUrl),
+      );
       this.refuseOtherVendor(tempDir, slug);
       if (!options.fromUrl) this.refuseOfferMismatch(tempDir, slug, pkg.version);
       // Swapped in whole: the storefront never renders from a half-written theme.
