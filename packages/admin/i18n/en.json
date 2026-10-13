@@ -161,6 +161,9 @@
       "selectRecord": "Select this record"
     },
     "edit": {
+      "sectionShow": "Show",
+      "sectionHide": "Hide",
+      "sectionFieldCount": "{{count}} fields",
       "permalinkCard": "Preview & Permalink",
       "permalinkHint": "Click the path component to override the automatically generated slug.",
       "settings": "Settings",

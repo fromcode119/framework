@@ -45,4 +45,16 @@ export class ColorPickerUtils {
     if (!match) return '';
     return value.startsWith('#') ? value : `#${value}`;
   }
+
+  /**
+   * The colour the swatch paints for a stored value: a hex code, or any other colour CSS accepts
+   * (`pink`, `rgb(…)`, `hsl(…)`), since that is what the storefront paints with. Empty when the value
+   * is not a colour, so the swatch never shows one that was not chosen — it used to paint every
+   * non-hex value black.
+   */
+  static swatchColor(value: string): string {
+    const hex = ColorPickerUtils.normalizeHexColor(value);
+    if (hex) return hex;
+    return value && globalThis.CSS?.supports('color', value) ? value : '';
+  }
 }

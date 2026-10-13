@@ -1,13 +1,15 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
+import { FrameworkIcons } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Card } from '@/components/ui/view/card.client';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 
 export class EditPageMain extends PureReactor {
-  @prop declare standardMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
-  @prop declare fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[] }>;
+  @prop declare standardMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
+  @prop declare fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
   @prop declare theme: ThemeMode;
   @prop declare resolvedSlug: string;
   @prop declare formData: Record<string, any>;
@@ -23,6 +25,9 @@ export class EditPageMain extends PureReactor {
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handlePatch: (partial: Record<string, any>) => void;
   @prop declare handleReadOnlyOverrideRequest: (target: { name: string; label: string }) => void;
+
+  /** Collapsed sections (`admin.sectionCollapsed`) the operator has opened on this page. */
+  @state openSections: Record<string, boolean> = {};
 
   @bound renderField(field: any): ReactNode {
     return (
@@ -60,19 +65,51 @@ export class EditPageMain extends PureReactor {
    * ("Pricing", "Shipping"). The title is a size above the field labels, so the two never compete; it
    * replaced a 9px capitalised caption with a rule, which read as a divider rather than a heading.
    */
-  private renderSection(section: { key: string; title?: string; fields: any[] }, prefix = ''): ReactNode {
+  private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = ''): ReactNode {
+    const collapsible = Boolean(section.title) && section.collapsed === true;
+    // A field with an error must be seen, so its section opens by itself.
+    const hasError = section.fields.some((field: any) => Boolean(this.fieldErrors?.[field.name]));
+    const open = !collapsible || hasError || this.openSections[section.key] === true;
     return (
       <Card key={`${prefix}${section.key}`} id={`section-${section.key}`}>
-        {section.title ? (
+        {collapsible ? this.renderToggle(section, open) : section.title ? (
           <h2 className="mb-4 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
         ) : null}
-        {/* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */}
-        <div className="fc-edit-fields">
-          <div className="fc-edit-fields__grid">
-            {section.fields.map(this.renderField)}
+        {open ? (
+          /* Two fields side by side only when the CARD is wide enough for two — see .fc-edit-fields. */
+          <div className="fc-edit-fields">
+            <div className="fc-edit-fields__grid">
+              {section.fields.map(this.renderField)}
+            </div>
           </div>
-        </div>
+        ) : null}
       </Card>
+    );
+  }
+
+  /**
+   * The title row of a collapsible section: the title, how many fields it holds, and Show / Hide, all
+   * one button. Collapsed, the row still says what is inside, so nothing is out of sight unannounced.
+   */
+  private renderToggle(section: { key: string; title?: string; fields: any[] }, open: boolean): ReactNode {
+    const Chevron = open ? FrameworkIcons.ChevronDown : FrameworkIcons.ChevronRight;
+    return (
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => this.openSections = { ...this.openSections, [section.key]: !open }}
+        className={`flex w-full items-center gap-2 text-left ${open ? 'mb-4' : ''}`}
+      >
+        <Chevron size={15} className="shrink-0 text-slate-400" />
+        <h2 className="min-w-0 flex-1 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>
+        <span className="shrink-0 text-[12px] text-slate-500">
+          {AdminI18n.t('collection.edit.sectionFieldCount', { count: section.fields.length })}
+          {' · '}
+          <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+            {AdminI18n.t(open ? 'collection.edit.sectionHide' : 'collection.edit.sectionShow')}
+          </span>
+        </span>
+      </button>
     );
   }
 
