@@ -24,16 +24,22 @@ export class BuildOverview extends SourcesPageActions {
     return this.builds.length ? AdminI18n.t('sources.noSourcesMatch') : AdminI18n.t('sources.useAddSourceToTrack');
   }
 
+  /**
+   * On a phone the two secondary actions show their icon only, as the collection list's Filters
+   * button does: three labelled buttons wrapped each label onto two lines. The primary keeps its words.
+   */
   private renderHeaderActions(): ReactNode {
+    const checkLabel = this.checking ? AdminI18n.t('sources.checking') : AdminI18n.t('sources.checkUpdates');
+    const buildLabel = this.triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll');
     return (
       <div className="flex items-center gap-2">
-        <Button disabled={this.checking} icon={<RefreshCw size={14} className={this.checking ? 'animate-spin' : ''} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE}>
-          {this.checking ? AdminI18n.t('sources.checking') : AdminI18n.t('sources.checkUpdates')}
+        <Button disabled={this.checking} icon={<RefreshCw size={14} className={this.checking ? 'animate-spin' : ''} />} onClick={this.checkUpdates} variant={ButtonVariant.OUTLINE} title={checkLabel} aria-label={checkLabel} className="whitespace-nowrap">
+          <span className="hidden sm:inline">{checkLabel}</span>
         </Button>
-        <Button disabled={this.triggering} icon={<Play size={14} />} onClick={this.buildAll} variant={ButtonVariant.SECONDARY}>
-          {this.triggering ? AdminI18n.t('sources.building2') : AdminI18n.t('sources.buildAll')}
+        <Button disabled={this.triggering} icon={<Play size={14} />} onClick={this.buildAll} variant={ButtonVariant.SECONDARY} title={buildLabel} aria-label={buildLabel} className="whitespace-nowrap">
+          <span className="hidden sm:inline">{buildLabel}</span>
         </Button>
-        <Button icon={<GitBranch size={14} />} onClick={this.openCreate} variant={ButtonVariant.PRIMARY}>
+        <Button icon={<GitBranch size={14} />} onClick={this.openCreate} variant={ButtonVariant.PRIMARY} className="whitespace-nowrap">
           {AdminI18n.t('sources.addSource')}
         </Button>
       </div>

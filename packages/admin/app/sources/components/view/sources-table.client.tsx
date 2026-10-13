@@ -4,6 +4,7 @@ import { DataTable } from '@/components/ui/view/data-table.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import { Column } from '@/components/ui/column';
+import { AdminClass } from '@/lib/admin-class';
 import { BuildStatusBadge } from '@/app/sources/components/view/build-status-badge.client';
 import { SourceRowActions } from '@/app/sources/components/view/source-row-actions.client';
 import { SourceDetails } from '@/app/sources/components/view/source-details.client';
@@ -89,7 +90,10 @@ export class SourcesTable extends PureReactor {
   }
 
   render(): ReactNode {
+    // The admin's surface, as Jobs and every collection list sit on: without it the rows and phone
+    // cards floated on the page background and read as transparent.
     return (
+      <div className={`${AdminClass.SURFACE} overflow-hidden`}>
       <DataTable
         columns={this.columns}
         data={this.rows}
@@ -105,6 +109,7 @@ export class SourcesTable extends PureReactor {
         totalDocs={this.totalDocs}
         onPageChange={this.onPageChange}
       />
+      </div>
     );
   }
 }
