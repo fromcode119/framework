@@ -37,6 +37,14 @@ export class ReactExportSourceBuilder {
     // link that is not the plugin's; without the name here that plugin's whole bundle fails at load.
     'TokenEmailPreferencesPanel',
     'ThemeOverrideRegistrar',
+    // The theme runtime. Themes read these off the runtime bridge; the names are here because anything the
+    // bridge carries must also be importable by name (a parity test holds the two lists together).
+    'ThemeRuntimeContext',
+    'ThemeComponent',
+    'ThemeProvider',
+    'ThemeLayoutShell',
+    'ThemeEditorSession',
+    'NullPluginsFacade',
     'RecordsHub',
     'RootFramework',
     'CollectionQueryUtils',

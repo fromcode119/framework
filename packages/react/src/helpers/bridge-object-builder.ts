@@ -16,6 +16,12 @@ import { SystemShortcodes } from '@react/system-shortcodes';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import { PluginRuntimeProvider } from '@react/view/plugin-runtime-provider.client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { ThemeRuntimeContext } from '@react/theme-runtime/theme-runtime-context';
+import { ThemeComponent } from '@react/theme-runtime/theme-component';
+import { ThemeProvider } from '@react/theme-runtime/theme-provider';
+import { ThemeLayoutShell } from '@react/theme-runtime/theme-layout-shell';
+import { ThemeEditorSession } from '@react/theme-runtime/theme-editor-session';
+import { NullPluginsFacade } from '@react/theme-runtime/null-plugins-facade';
 
 export class BridgeObjectBuilder {
   // buildRegisterMethods() is REMOVED — ContextBridge now owns args directly via
@@ -183,6 +189,14 @@ export class BridgeObjectBuilder {
       ThemeFrontendLayoutRegistrar,
       LayoutTargetKind,
       ThemeOverrideRegistrar,
+      // The theme runtime. A theme bundle reads these off `window.__fromcodeRuntimeModules['@fromcode119/react']`,
+      // which is this object: an export that is in the package index but not here is `undefined` in the browser.
+      ThemeRuntimeContext,
+      ThemeComponent,
+      ThemeProvider,
+      ThemeLayoutShell,
+      ThemeEditorSession,
+      NullPluginsFacade,
       RecordVersions,
       PluginCapability,
       MiddlewareStage,
