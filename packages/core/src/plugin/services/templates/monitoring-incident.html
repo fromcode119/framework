@@ -5,7 +5,7 @@
     {{#unless isResolved}}<p style="margin:0 0 12px">A plugin that is held waits for an admin to re-approve it in Admin &rarr; Plugins; a plugin in error shows why there.</p>{{/unless}}
   {{/if}}
   {{#if isSiteDown}}
-    <p style="margin:0 0 12px"><strong>The site "{{subject}}" is down.</strong> <code>{{url}}</code> {{#if status}}answered with a server error ({{status}}){{else}}did not answer{{#if error}} ({{error}}){{/if}}{{/if}}.</p>
+    <p style="margin:0 0 12px"><strong>The site "{{subject}}" is down.</strong> <code>{{url}}</code> {{#if status}}answered with a server error ({{status}}){{else}}did not answer{{#if error}} ({{error}}){{/if}}{{/if}}{{#if attempts}}, {{attempts}} attempts in a row{{/if}}.</p>
   {{/if}}
   {{#if isDiskFull}}
     <p style="margin:0 0 12px"><strong>The server disk is {{percent}}% full</strong> ({{usedGib}} of {{totalGib}} GiB). The alert threshold is {{threshold}}%.</p>

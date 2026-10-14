@@ -1,5 +1,6 @@
 import { Logger } from '@fromcode119/core';
 import { DatabasePoolRegistry } from '@fromcode119/database';
+import { InFlightRequests } from '@api/server/in-flight-requests';
 
 /**
  * Says when requests are queued for a database connection.
@@ -8,7 +9,8 @@ import { DatabasePoolRegistry } from '@fromcode119/database';
  * the container's load it looks like nothing is happening — which is exactly how the storefront's
  * 12-second timeouts looked. Sampled twice a second. A pool briefly full is normal, so it warns only
  * once requests have been queued for two seconds running, then at most every five seconds, naming
- * each pool's counters and the setting that sizes it.
+ * each pool's counters and the setting that sizes it, and which sites and routes the requests in flight
+ * are on — a pool full of one scanner's requests reads very differently from one full of storefront renders.
  */
 export class DatabasePoolWatch {
   static readonly SAMPLE_MS = 500;
@@ -36,7 +38,7 @@ export class DatabasePoolWatch {
     if (this.waitingSamples < DatabasePoolWatch.SUSTAINED_SAMPLES || now - this.lastReport < DatabasePoolWatch.REPORT_EVERY_MS) return null;
     this.lastReport = now;
     const line = pools.map((pool) => `${pool.name}: ${pool.waiting} waiting, ${pool.total} of ${pool.max} open, ${pool.idle} idle`).join('; ');
-    this.logger.warn(`Requests have waited over 2 s for a database connection (${line}) — Settings → Infrastructure → Database connections`);
+    this.logger.warn(`Requests have waited over 2 s for a database connection (${line}) — Settings → Infrastructure → Database connections. ${InFlightRequests.summary()}`);
     return line;
   }
 }
