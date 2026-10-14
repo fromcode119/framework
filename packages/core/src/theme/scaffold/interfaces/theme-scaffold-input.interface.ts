@@ -4,4 +4,6 @@ export interface IThemeScaffoldInput {
   slug: string;
   name: string;
   description: string;
+  /** The version `theme.json` starts at. Default `0.1.0`. */
+  version?: string;
 }

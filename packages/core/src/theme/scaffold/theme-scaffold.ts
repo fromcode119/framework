@@ -1,4 +1,3 @@
-import { ThemeScaffoldContextFiles } from '@core/theme/scaffold/theme-scaffold-context-files';
 import { ThemeScaffoldLayoutFiles } from '@core/theme/scaffold/theme-scaffold-layout-files';
 import { ThemeScaffoldProjectFiles } from '@core/theme/scaffold/theme-scaffold-project-files';
 import { ThemeScaffoldStyleFiles } from '@core/theme/scaffold/theme-scaffold-style-files';
@@ -27,7 +26,6 @@ export class ThemeScaffold {
     }
     return {
       ...ThemeScaffoldProjectFiles.files(input),
-      ...ThemeScaffoldContextFiles.files(input.slug),
       ...ThemeScaffoldLayoutFiles.files(input.slug),
       ...ThemeScaffoldStyleFiles.files(input.slug),
     };

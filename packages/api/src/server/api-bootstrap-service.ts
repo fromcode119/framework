@@ -1,8 +1,8 @@
 import dotenv from 'dotenv';
+import { ExtensionThemeBuilder } from '@api/services/themes/extension-theme-builder';
 import { AuthManager } from '@fromcode119/auth';
-import { AppearanceManager, HotReloadService, ProcessSignal, ProcessSignals, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
+import { AppearanceManager, BootstrapSecretsService, DatabaseConnectionFileService, SetupMode, HotReloadService, ProcessSignal, ProcessSignals, LocalizationUtils, Logger, PluginManager, PlatformSettingsService, ServerCoreServices, SettingChangeInvalidators, SiteBaseUrl, SiteClockAccess, SiteContentRevision, HookEventUtils, SiteLocaleAccess, SiteMarketplaceUrl, SystemConstants, SystemRedirectService, SystemUpdateService, ThemeManager, TenantMembershipService } from '@fromcode119/core';
 import { FrameworkAccountPageContractService } from '@api/services/framework-account-page-contract-service';
-import { BootstrapSecretsService, DatabaseConnectionFileService, SetupMode } from '@fromcode119/core';
 import { UnconfiguredApiServer } from '@api/server/unconfigured-api-server';
 import { AuthEmailThemeOverride } from '@api/controllers/auth/email-templates/auth-email-theme-override';
 import { PluginsChangedSignal } from '@api/services/plugins-changed-signal';
@@ -194,7 +194,7 @@ export class ApiBootstrapService {
     // is what a CLI or a boot-time caller should get anyway.
     SiteBaseUrl.registerDatabase((manager as any).db);
 
-    const themeManager = new ThemeManager((manager as any).db);
+    const themeManager = new ThemeManager((manager as any).db, undefined, new ExtensionThemeBuilder());
     // The plugin manager resolves every plugin's `context.theme.*` through this reference, and plugins
     // read it during `discoverPlugins()` below (the forms plugin builds its default contact form from the
     // theme's `contactFormDefaults` in onInit). Without this hand-off `context.theme` was `{}` for every

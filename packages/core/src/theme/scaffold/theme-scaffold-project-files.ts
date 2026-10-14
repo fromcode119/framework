@@ -27,7 +27,7 @@ export class ThemeScaffoldProjectFiles {
     return {
       slug: input.slug,
       name: input.name,
-      version: '0.1.0',
+      version: input.version || '0.1.0',
       description: input.description,
       // `ui.entry` and `ui.css` are what the build writes into ui/; nothing exists until `atlantis build theme`.
       ui: { entry: 'bundle.js', css: [`${input.slug}-theme.css`] },
@@ -71,7 +71,7 @@ export class ThemeScaffoldProjectFiles {
     return {
       name: `${input.slug}-theme`,
       private: true,
-      version: '0.1.0',
+      version: input.version || '0.1.0',
       type: 'module',
       description: input.description,
       overrides: { react: '19.0.0', 'react-dom': '19.0.0' },

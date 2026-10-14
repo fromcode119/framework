@@ -33,6 +33,7 @@ export type { IPluginManagerInterface } from '@core/plugin/context/interfaces/pl
 export { ThemeManager } from '@core/theme/theme-manager';
 export { ThemeScaffold } from '@core/theme/scaffold/theme-scaffold';
 export type { IThemeScaffoldInput } from '@core/theme/scaffold/interfaces/theme-scaffold-input.interface';
+export type { IThemeBuilder } from '@core/theme/interfaces/theme-builder.interface';
 export { StorefrontContentSecurityPolicy } from '@core/theme/storefront-content-security-policy';
 export { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 export { AppearanceManager } from '@core/appearance/appearance-manager';

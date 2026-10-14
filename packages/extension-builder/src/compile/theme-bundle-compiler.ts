@@ -96,23 +96,21 @@ export class ThemeBundleCompiler {
   }
 
   /**
-   * A theme's components import their runtime deps from the theme's OWN
-   * node_modules, and a fresh clone has none — mirror of `ensure_build_dependencies` in
-   * build-plugins.sh. Skipped when the theme declares no dependencies.
+   * A theme's components import their runtime deps from the theme's OWN node_modules, and a fresh
+   * clone has none — mirror of `ensure_build_dependencies` in build-plugins.sh. Skipped when the theme
+   * declares no dependencies.
+   *
+   * Through core's `DependencyInstaller`, the one copy of how this platform runs npm. This used to be a
+   * raw `npm install` of its own, which skipped everything that copy exists for: lifecycle scripts of
+   * third-party packages ran unreviewed, and a theme listing `vitest` (every theme does) crashed npm's
+   * dependency resolver ("Cannot read properties of null (reading 'edgesOut')") — so a theme created
+   * from the scaffold could not be built on a machine that had not installed it by hand. Dev
+   * dependencies (types, tests, lint) are not needed to bundle, so they are not installed.
    */
   private async installThemeDependencies(themeDir: string): Promise<void> {
     if (!fs.existsSync(path.join(themeDir, 'package.json'))) return;
     if (fs.existsSync(path.join(themeDir, 'node_modules'))) return;
-    const installArgs = fs.existsSync(path.join(themeDir, 'package-lock.json'))
-      ? ['ci', '--no-audit', '--no-fund']
-      : ['install', '--no-audit', '--no-fund'];
-    // Same npm-cache rule as the plugin installer: HOME is not writable in a container, so npm
-    // cannot use its default cache and every theme build died with EACCES before fetching anything.
-    await ThemeBundleCompiler.execFileAsync('npm', installArgs, {
-      cwd: themeDir,
-      timeout: 600_000,
-      env: { ...process.env, ...Core.NpmCacheDirectory.environmentFor(themeDir) },
-    });
+    await Core.DependencyInstaller.install(themeDir, { omitDev: true });
   }
 
   /**

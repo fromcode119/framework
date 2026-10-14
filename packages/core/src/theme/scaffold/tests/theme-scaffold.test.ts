@@ -56,6 +56,15 @@ describe('ThemeScaffold', () => {
     }
   });
 
+  /** The runtime (component base, hook boundary, layout shell) is the SDK's; copying it into each theme is what this removed. */
+  it('builds on the SDK runtime and does not copy it into the theme', () => {
+    const all = files();
+
+    expect(Object.keys(all).filter((path) => path.startsWith('src/context/') || path.endsWith('layout-shell.tsx'))).toEqual([]);
+    expect(all['src/layouts/page-layout.tsx']).toContain('ThemeLayoutShell');
+    expect(all['src/components/app.tsx']).toContain("import { ThemeComponent } from '@fromcode119/sdk/react'");
+  });
+
   it('refuses a slug that is not a safe folder name', () => {
     for (const bad of ['', '../escape', 'Has Space', 'UPPER', 'a/b', '-lead']) {
       expect(() => files(bad)).toThrow();
