@@ -70,7 +70,7 @@ describe('DeployService rollback to a release without the edge', () => {
       up: async () => 0,
       apiLogs: async () => '',
     };
-    const versions: any = { current: async () => 'v0.2.209', set: async () => undefined };
+    const versions: any = { current: async () => 'v0.2.209', set: async () => undefined, handUpdatesToThisCli: async () => undefined };
     let probes = 0;
     const probe: any = { waitFor: async () => ++probes > 1 };
     const sync = async (version: string) => { declaresEdge = version !== 'v0.2.209'; return []; };

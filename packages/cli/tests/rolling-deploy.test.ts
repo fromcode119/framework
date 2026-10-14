@@ -300,7 +300,7 @@ describe('DeployService on a failed rolling deploy', () => {
     // A new api container reports whichever version `.env` named when it was started.
     const probeContainer = stack.probeContainer;
     stack.probeContainer = async (id: string, script: string) => (await probeContainer(id, script)).replace('0.2.196', target);
-    const versions: any = { current: async () => '0.2.195', set: async (v: string) => { target = v; }, rememberReplaced: async () => undefined, rollbackTarget: async () => '' };
+    const versions: any = { current: async () => '0.2.195', set: async (v: string) => { target = v; }, rememberReplaced: async () => undefined, handUpdatesToThisCli: async () => undefined, rollbackTarget: async () => '' };
     const probe: any = { waitFor: async (v: string) => v === target };
     const rolling = (s: any) => new RollingDeploy(s, async () => undefined, 0);
     const service = new DeployService({ name: 'probe' } as any, StackFixture.shell(4_486_000_000), stack, versions, probe, rolling);
