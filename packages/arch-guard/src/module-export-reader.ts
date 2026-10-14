@@ -7,10 +7,10 @@ import type { IModuleExport } from './interfaces/module-export.interface';
  * regex — a class, interface or function can be named almost anything, preceded by a decorator, or
  * appear only as TEXT inside a comment or a template-literal codegen string, and a pattern loose
  * enough to catch the real declarations is loose enough to also fire on a string that merely mentions
- * the word. `ThemeScaffoldFiles`/`ThemeEntryGenerator`/`PluginScaffoldCommandService` each write a
+ * the word. `ThemeScaffold*Files`/`ThemeEntryGenerator`/`PluginScaffoldCommandService` each write a
  * `export class …` INSIDE a template literal that becomes another file's source; a lexical scan reads
  * that text and reports a second class in the wrong file, which is exactly the false positive
- * `ThemeScaffoldFiles`'s own docblock records having nearly been split over. The compiler already
+ * a scaffold template once nearly caused by being split at a boundary inside a string literal. The compiler already
  * resolves exactly which top-level statements are real declarations; asking it is both simpler and
  * correct where a regex or a naive text match would need constant patching.
  */
