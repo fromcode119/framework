@@ -18,6 +18,7 @@ import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-polic
 import { ThemeBundledPluginInstaller } from '@core/theme/theme-bundled-plugin-installer';
 import { ThemeTenantPlacement } from '@core/theme/theme-tenant-placement';
 import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
+import { SiteContentRevision } from '@core/tenant/site-content-revision';
 
 export class ThemeInstallerService {
   private readonly bundledPlugins: ThemeBundledPluginInstaller;
@@ -242,6 +243,9 @@ export class ThemeInstallerService {
     this.logger.info(`Executing seeds for theme "${manifest.slug}" from ${seedPath}...`);
     try { await this.seeder.seed(seedPath); }
     catch (err: any) { this.logger.error(`Failed to execute seeds for theme "${manifest.slug}": ${err.message}`); throw err; }
+    // A seed writes pages and menus outside the request paths that bump the revision, so a page the
+    // storefront had already answered (a 404 before the seed) stayed cached as "not found".
+    SiteContentRevision.bumpCurrentSite();
   }
 
   // --- Private file helpers ---
