@@ -74,6 +74,8 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
     const facade = new PluginsFacade({
       has: (targetNamespace: string, slug: string): boolean => registry.hasPluginApi?.(targetNamespace, slug) ?? false,
       resolve: (targetNamespace: string, slug: string): unknown => registry.getPluginApi?.(targetNamespace, slug),
+      // The browser registry is looked up by slug only; "who offers X" (`offering`) is answered server-side.
+      slugs: (): string[] => [],
     });
     return facade.namespace(namespace);
   }

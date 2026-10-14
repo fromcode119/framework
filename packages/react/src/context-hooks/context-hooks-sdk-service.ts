@@ -62,6 +62,11 @@ export class ContextHooksSdkService {
         resolve(targetNamespace: string, slug: string): unknown {
           return getPluginApi(targetNamespace, slug);
         },
+        // The browser registry holds only the APIs plugins expose to the browser, looked up by slug; it does
+        // not answer "who offers X" (`offering`), which is a server-side question.
+        slugs(): string[] {
+          return [];
+        },
       });
 
       return resolver.namespace(namespace);
