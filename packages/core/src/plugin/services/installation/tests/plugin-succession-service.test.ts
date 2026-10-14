@@ -1,7 +1,7 @@
 import fs from 'fs';
 import os from 'os';
 import path from 'path';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 
@@ -120,5 +120,18 @@ describe('a renamed plugin taking over', () => {
     fs.rmSync(path.join(rootDir, 'zen-myself'), { recursive: true, force: true });
     expect([...PluginSuccessionService.replacedOnDisk(rootDir)]).toEqual([]);
     expect([...PluginSuccessionService.replacedOnDisk(path.join(rootDir, 'missing'))]).toEqual([]);
+  });
+
+  it('finishes the hand-over when the data folder cannot be moved', async () => {
+    const db = seeded();
+    const rename = vi.spyOn(fs, 'renameSync').mockImplementation(() => { throw new Error('EACCES: permission denied'); });
+    const exists = vi.spyOn(fs, 'existsSync').mockImplementation((target) => String(target).endsWith(`${path.sep}affirmations`));
+    try {
+      expect(await new PluginSuccessionService(db as never).adopt(manifest(), root())).toEqual(['affirmations']);
+      expect(db.rows('_system_plugins').map((row) => row.slug)).toContain('zen-myself');
+    } finally {
+      rename.mockRestore();
+      exists.mockRestore();
+    }
   });
 });
