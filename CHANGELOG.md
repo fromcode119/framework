@@ -6,12 +6,28 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.393] - 2026-10-14
+
+### Added
+
+- Docker installs update themselves ([#937](https://github.com/fromcode119/framework/pull/937))
+
+### Fixed
+
+- **cli**: deploy-CLI targets keep their updater off; harden the .env rewrite ([#939](https://github.com/fromcode119/framework/pull/939))
+- **frontend**: a site with no head-data provider gets no invented site name ([#936](https://github.com/fromcode119/framework/pull/936))
+
 ## [0.2.392] - 2026-10-14
 
 ### Fixed
 
 - **admin**: a one-site install opens inside its site ([#934](https://github.com/fromcode119/framework/pull/934))
 - **core**: the update screen shows what each pending release changed ([#932](https://github.com/fromcode119/framework/pull/932))
+- **admin**: the update screen tells a local Docker install how to update ([#931](https://github.com/fromcode119/framework/pull/931))
+
+### Reverted
+
+- the update screen no longer tells people to run docker compose by hand ([#933](https://github.com/fromcode119/framework/pull/933))
 
 ## [0.2.391] - 2026-10-14
 
