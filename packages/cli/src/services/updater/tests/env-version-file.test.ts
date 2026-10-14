@@ -42,4 +42,12 @@ describe('EnvVersionFile', () => {
     expect(fs.readFileSync(file, 'utf8')).toBe('COMPOSE_PROJECT_NAME=site\nVERSION=v0.2.392\n');
     expect(fs.statSync(file).mode & 0o777).toBe(0o640);
   });
+
+  it('leaves no temporary copy of the file behind', () => {
+    const file = make('VERSION=v0.2.391\n', 0o600);
+
+    new EnvVersionFile(file).write('v0.2.392');
+
+    expect(fs.readdirSync(path.dirname(file))).toEqual(['.env']);
+  });
 });
