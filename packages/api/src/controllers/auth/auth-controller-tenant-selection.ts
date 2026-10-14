@@ -19,11 +19,9 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
   /**
    * The session claim saying its holder STEPPED OUT to the platform on purpose.
    *
-   * An account with exactly one site enters it at login (`LoginTenantChoice`), and the console enters it
-   * again whenever it finds a session outside it (`ClientLayoutSiteStateHooks`) — a session minted before
-   * the site existed otherwise stayed on the platform for good, with none of the site's plugin pages in
-   * its menu and nothing saying why. Leaving on purpose must not be undone the same way, so leaving
-   * writes this claim; selecting a site drops it.
+   * An account with exactly one site enters it at login and whenever the console finds a session outside
+   * it (`ClientLayoutSiteStateHooks`). Leaving on purpose must not be undone that way: leaving writes
+   * this claim, selecting a site drops it.
    */
   static readonly PLATFORM_CHOSEN_CLAIM = 'platformChosen';
 
