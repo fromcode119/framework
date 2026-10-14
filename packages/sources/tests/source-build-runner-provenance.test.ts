@@ -61,4 +61,25 @@ describe('SourceBuildRunner — only what GitHub merged is built', () => {
     expect(result.success).toBe(true);
     expect(build).toHaveBeenCalledTimes(1);
   });
+
+  it('installs a renamed plugin by the slug its built manifest declares, not the source it was added under', async () => {
+    const checkout = pushedCheckout();
+    const install = vi.fn(async () => undefined);
+    const build = vi.fn(async () => ({ slug: 'zen-myself', version: '0.2.0', fileName: null, manifest: {}, artifactSha256: null }));
+    const provider = { fetch: vi.fn(async () => ({ directory: checkout.dir, revision: checkout.sha })), changesSince: vi.fn(async () => []) };
+    const instance = new SourceBuildRunner(
+      {} as any, { info: vi.fn(), warn: vi.fn(), error: vi.fn() }, 'builds',
+      { build } as any, { install } as any, vi.fn(),
+      () => provider as any, () => 'plugins', () => null,
+      async () => true,
+    );
+    (instance as any).upsertBuildRecord = vi.fn(async () => undefined);
+    const artifact = vi.fn(async (identity: { slug: string }) => ({ slug: identity.slug }));
+    (instance as any).resolvePackageArtifact = artifact;
+
+    await instance.buildOne(ExtensionScope.PLUGIN, { slug: 'affirmations', gitUrl: 'https://github.com/o/affirmations.git', branch: 'main', installAfterBuild: true });
+
+    expect(artifact.mock.calls[0][0]).toMatchObject({ slug: 'zen-myself' });
+    expect((install.mock.calls[0] as unknown[])[0]).toMatchObject({ slug: 'zen-myself' });
+  });
 });
