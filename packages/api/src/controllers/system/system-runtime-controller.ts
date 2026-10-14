@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { TenantConnectionScope } from '@fromcode119/database';
-import { ContentPreviewAccessUtils, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
+import { ContentPreviewAccessUtils, DeploymentKind, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
+import { SelfUpdateScreenService } from '@api/services/system/self-update-screen-service';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { CoercionUtils, RequestContextUtils } from '@fromcode119/core';
@@ -88,7 +89,7 @@ export class SystemRuntimeController {
 
   async checkUpdate(req: Request, res: Response) {
     try {
-      res.json(await SystemUpdateService.checkUpdate());
+      res.json(await new SelfUpdateScreenService(this.runtime.db).describe(await SystemUpdateService.checkUpdate()));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -96,7 +97,7 @@ export class SystemRuntimeController {
 
   async applyUpdate(req: Request, res: Response) {
     try {
-      res.json(await SystemUpdateService.applyUpdate());
+      res.json(DeploymentKind.isImage ? await new SelfUpdateScreenService(this.runtime.db).request() : await SystemUpdateService.applyUpdate());
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }

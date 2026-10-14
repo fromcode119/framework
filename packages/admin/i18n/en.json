@@ -2384,10 +2384,26 @@
       "noNotesWereWrittenFor": "No notes were written for this release.",
       "recommendedUpdate": "v{{version}} Recommended Update",
       "installCore": "Install Core v{{version}}",
-      "deployInstead": "This installation runs from a published image, so it cannot update its own files — deploy <code>v{{version}}</code> instead:",
       "lastRegistrySync": "Last Registry Sync: {{at}}",
       "releasesSinceOne": "1 release since this one",
-      "releasesSinceMany": "{{count}} releases since this one"
+      "releasesSinceMany": "{{count}} releases since this one",
+      "selfUpdate": {
+        "automatic": "Install updates automatically",
+        "automaticExplained": "New versions are installed as they are released. A version marked breaking always waits for the Install button.",
+        "notRunning": "The updater service is not running on this installation, so updates cannot be installed from here. Start the stack again with the current compose files to add it.",
+        "turnedOff": "Updates are turned off for this installation in its .env (ATLANTIS_UPDATER=off): it is updated another way.",
+        "updating": "Updating to v{{to}}: {{step}}…",
+        "failed": "The update to v{{to}} did not start: {{error}}",
+        "rolledBack": "The update to v{{to}} was undone, the previous version is running: {{error}}",
+        "heldBreaking": "v{{version}} is marked breaking, so it is not installed automatically. Read its notes, then press the Install button.",
+        "succeeded": "Updated to v{{to}}.",
+        "ready": "The updater is running and checks for new versions every minute.",
+        "saveFailed": "The setting could not be saved",
+        "requestedTitle": "Update requested",
+        "requested": "The updater installs v{{version}} within a minute. Progress is shown on this page.",
+        "unknown": "New versions could not be checked just now (the release source did not answer). The updater tries again in a few minutes.",
+        "heldFailed": "The update to v{{version}} could not be kept, so the previous version is running and v{{version}} is not tried again automatically. {{error}} Press the Install button to try it again."
+      }
     },
     "components": {
       "unknown": "Unknown",

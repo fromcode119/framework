@@ -17,8 +17,8 @@ import { AppEnv } from '@/lib/env';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
+import { SelfUpdatePanel } from '@/app/settings/updates/self-update-panel.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
 export class UpdatesPage extends AdminComponent {
   @state status: any = null;
@@ -96,11 +96,25 @@ export class UpdatesPage extends AdminComponent {
   }
 
   @bound
+  takeStatus(check: any): void {
+    this.status = check;
+  }
+
+  @bound
   async handleUpdate(): Promise<void> {
     this.updating = true;
     try {
-      this.notify(NotificationType.INFO, AdminI18n.t('settings.updates.updateStarted'), AdminI18n.t('settings.updates.creatingSystemBackupAndApplying'));
+      // An image installation is updated by its updater service, which takes no file backup.
+      if (!this.status?.selfUpdate) this.notify(NotificationType.INFO, AdminI18n.t('settings.updates.updateStarted'), AdminI18n.t('settings.updates.creatingSystemBackupAndApplying'));
       const data = await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.UPDATE_APPLY);
+      if (data?.requested) {
+        // An image installation: the updater does it. The panel follows its reports.
+        this.notify(NotificationType.INFO, AdminI18n.t('settings.updates.selfUpdate.requestedTitle'), AdminI18n.t(data.updaterRunning ? 'settings.updates.selfUpdate.requested' : 'settings.updates.selfUpdate.notRunning', { version: data.requested }));
+        this.showConfirm = false;
+        this.updating = false;
+        await this.fetchStatus();
+        return;
+      }
       this.notify(NotificationType.SUCCESS, AdminI18n.t('settings.updates.updateComplete'), AdminI18n.t('settings.updates.systemUpdatedToVThe', { version: data.version }));
       this.showConfirm = false;
 
@@ -244,13 +258,8 @@ export class UpdatesPage extends AdminComponent {
                         real paragraph only when the marketplace core payload carries release notes. */}
                     <PendingReleaseList releases={this.status?.releases || []} />
 
-                    {/*
-                      * An installation that runs from a published image cannot rewrite its own
-                      * files, so it is told what the upgrade IS rather than offered a button that
-                      * fails on `EACCES` — and would be undone by the next `compose up` even if the
-                      * permissions allowed it.
-                      */}
-                    {this.canApplyInPlace ? (
+                    {/* An image installation's button asks its updater service; any other installs in place. */}
+                    {this.canApplyInPlace || this.status?.selfUpdate ? (
                       <button
                         onClick={this.openConfirm}
                         disabled={updating}
@@ -258,17 +267,15 @@ export class UpdatesPage extends AdminComponent {
                       >
                         {updating ? AdminI18n.t('settings.updates.applyingUpdate') : AdminI18n.t('settings.updates.installCore', { version: latestVersion })}
                       </button>
-                    ) : (
-                      <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
-                        <AdminRichText k="settings.updates.deployInstead" vars={{ version: latestVersion }} />
-                        <code className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</code>
-                      </p>
-                    )}
+                    ) : null}
                   </div>
                 )}
               </div>
             </div>
           </Card>
+
+          {/* Below the card, not in it: the card clips a decorative glow, and focusing a control inside scrolled it sideways. */}
+          {status?.selfUpdate && <SelfUpdatePanel selfUpdate={status.selfUpdate} onChanged={this.fetchStatus} onPolled={this.takeStatus} />}
 
           {status?.lastUpdated && (
             <div className="text-center text-[10px] font-bold tracking-tight text-slate-500 opacity-40">

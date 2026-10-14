@@ -1,9 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { FrameworkReleaseSource } from '@core/management/framework-release-source';
+import { ReleaseFetchCache } from '@core/management/release-fetch-cache';
 
 /** What the update screen lists between the installed version and the newest, and where the notes come from. */
 describe('FrameworkReleaseSource.pending notes', () => {
-  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); ReleaseFetchCache.clear(); });
 
   const CHANGELOG = '# Changelog\n\n## [0.2.391] - 2026-10-14\n\n### Fixed\n\n- **admin**: the switch shows the platform state ([#929](https://x/929))\n\n## [0.2.390] - 2026-10-14\n\n### Fixed\n\n- **monitoring**: confirm a site is down before alerting ([#927](https://x/927))\n';
   const tags = [{ name: 'v0.2.391', commit: { sha: 'a' } }, { name: 'v0.2.390', commit: { sha: 'b' } }, { name: 'v0.2.389', commit: { sha: 'c' } }];

@@ -3,6 +3,7 @@ import { PlatformSettingsService } from '@core/management/platform-settings-serv
 import { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
 import { SystemConstants } from '@core/constants/system.constants';
 import { ChangelogNotes } from '@core/management/changelog-notes';
+import { ReleaseFetchCache } from '@core/management/release-fetch-cache';
 
 /**
  * Where the framework's own releases come from when no marketplace is configured.
@@ -58,7 +59,7 @@ export class FrameworkReleaseSource {
     const repository = await FrameworkReleaseSource.repository();
     if (!repository) return '';
 
-    const tags = await FrameworkReleaseSource.fetchTags(repository);
+    const tags = await FrameworkReleaseSource.fetchTags(repository) ?? [];
     return FrameworkReleaseSource.highest(tags.map((tag) => String(tag?.name || '')));
   }
 
@@ -85,11 +86,11 @@ export class FrameworkReleaseSource {
    * changelog does not mention falls back to the RELEASE COMMIT's own message; a release that said
    * nothing in either place shows nothing, never a generated summary and never a stand-in.
    */
-  static async pending(currentVersion: string): Promise<Array<{ version: string; notes: string }>> {
+  static async pending(currentVersion: string): Promise<Array<{ version: string; notes: string; breaking: boolean }>> {
     const repository = await FrameworkReleaseSource.repository();
     if (!repository || !semver.valid(currentVersion)) return [];
 
-    const tags = await FrameworkReleaseSource.fetchTags(repository);
+    const tags = await FrameworkReleaseSource.fetchTags(repository) ?? [];
     const newer = tags
       .filter((tag) => {
         const version = FrameworkReleaseSource.normalize(String(tag?.name || ''));
@@ -112,6 +113,7 @@ export class FrameworkReleaseSource {
         version,
         notes: ChangelogNotes.section(changelog, version)
           || await FrameworkReleaseSource.notesFor(repository, String((tag?.commit as any)?.sha || '')),
+        breaking: ChangelogNotes.isBreaking(changelog, version),
       };
     }));
 
@@ -131,14 +133,25 @@ export class FrameworkReleaseSource {
     return message.split('\n').slice(1).join('\n').trim();
   }
 
-  private static async fetchTags(repository: string): Promise<Array<Record<string, unknown>>> {
+  /** The repository's tags, or `null` when GitHub did not answer — never an empty list standing in for one. */
+  private static async fetchTags(repository: string): Promise<Array<Record<string, unknown>> | null> {
     const url = `${FrameworkReleaseSource.TAGS_API}/${repository}/tags?per_page=${FrameworkReleaseSource.PAGE_SIZE}`;
     const tags = await FrameworkReleaseSource.readJson(url);
-    return Array.isArray(tags) ? tags : [];
+    return Array.isArray(tags) ? tags : null;
+  }
+
+  /** Whether the release source answered the last time it was asked (remembered, not re-asked). */
+  static async reachable(): Promise<boolean> {
+    const repository = await FrameworkReleaseSource.repository();
+    return Boolean(repository) && (await FrameworkReleaseSource.fetchTags(repository)) !== null;
   }
 
   /** One place that talks to the API, so the timeout and the "unreachable means empty" rule are one rule. */
   private static async readJson(url: string): Promise<unknown> {
+    return ReleaseFetchCache.remember(`json:${url}`, () => FrameworkReleaseSource.fetchJson(url));
+  }
+
+  private static async fetchJson(url: string): Promise<unknown> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FrameworkReleaseSource.TIMEOUT_MS);
     try {
@@ -157,13 +170,17 @@ export class FrameworkReleaseSource {
 
   /** A text file, or `''` when it cannot be read — the same "unreachable means empty" rule as `readJson`. */
   private static async readText(url: string): Promise<string> {
+    return (await ReleaseFetchCache.remember(`text:${url}`, () => FrameworkReleaseSource.fetchText(url))) ?? '';
+  }
+
+  private static async fetchText(url: string): Promise<string | null> {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), FrameworkReleaseSource.TIMEOUT_MS);
     try {
       const response = await fetch(url, { signal: controller.signal });
-      return response.ok ? await response.text() : '';
+      return response.ok ? await response.text() : null;
     } catch {
-      return '';
+      return null;
     } finally {
       clearTimeout(timer);
     }

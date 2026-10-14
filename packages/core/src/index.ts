@@ -423,6 +423,7 @@ export { PluginSignatureService } from '@core/security/plugin-signature-service'
 // Management (Server-only)
 export { PlatformSettingsService } from '@core/management/platform-settings-service';
 export { DeployMode } from '@core/management/enums/deploy-mode.enum';
+export { UpdaterState } from '@core/management/enums/updater-state.enum';
 export { DeployCapacity } from '@core/management/deploy-capacity';
 export { ProcessRestartService } from '@core/management/process-restart-service';
 export { ApplicationRestartService } from '@core/management/application-restart-service';
@@ -463,6 +464,9 @@ export { RegistryManifestSchema } from '@core/management/registry-manifest-schem
 export { MigrationCoordinator } from '@core/management/migration-coordinator';
 export { HotReloadService } from '@core/management/hot-reload-service';
 export { SystemUpdateService } from '@core/management/system-update-service';
+export { SelfUpdatePlanner } from '@core/management/self-update-planner';
+export { DeploymentKind } from '@core/management/deployment-kind';
+export { AutomaticUpdatePolicy } from '@core/management/automatic-update-policy';
 
 // Base Classes for Plugin Development
 export { BaseRepository, BaseService, BaseController } from '@core/base';
