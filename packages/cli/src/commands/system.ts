@@ -7,6 +7,7 @@ import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bu
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { PlatformGateway } from '@cli/services/platform-gateway';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
+import { UpdaterService } from '@cli/services/updater/updater-service';
 import { BootstrapSecretsService } from '@fromcode119/core';
 
 export class SystemCommands {
@@ -95,6 +96,17 @@ export class SystemCommands {
             console.log(`[platform-gateway] ${signal}: no longer accepting; finishing requests in flight`);
             void gateway.stop(PlatformGateway.STOP_GRACE_MS).then(() => process.exit(0));
           });
+        }
+      });
+
+    system
+      .command('updater')
+      .description('The platform updater: installs new platform versions as Settings → Updates decides (container entrypoint)')
+      .action(async () => {
+        const updater = await UpdaterService.fromEnvironment();
+        updater.start();
+        for (const signal of ['SIGTERM', 'SIGINT'] as const) {
+          process.once(signal, () => { updater.stop(); process.exit(0); });
         }
       });
 

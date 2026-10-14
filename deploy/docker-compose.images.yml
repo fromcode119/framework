@@ -51,3 +51,34 @@ services:
   gateway:
     build: !reset null
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
+
+  # Installs new platform versions on this machine, as Settings → Updates decides: automatically, or when
+  # an operator presses Update now; a release marked breaking always waits for the button. It swaps the
+  # containers above for the new version's, waits for the api to report that version, and puts the old
+  # ones back if it does not. It needs the Docker socket to do that, and this deployment's folder to
+  # record the version in `.env` so a later `docker compose up` starts the same one.
+  #
+  # ATLANTIS_UPDATER=off in `.env` stops it for a deployment that is updated some other way (a deploy
+  # pipeline); the update screen then says so.
+  updater:
+    image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
+    command: ./node_modules/.bin/tsx packages/cli/src/bin.ts system updater
+    user: root
+    environment:
+      - ATLANTIS_UPDATER=${ATLANTIS_UPDATER:-on}
+      - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
+      - UPDATER_API_URL=http://api:3000/api/v1
+      - UPDATER_ENV_FILE=/app/deploy-project/.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ../data:/app/data:ro
+      - .:/app/deploy-project
+    depends_on:
+      - api
+    networks:
+      - framework
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M

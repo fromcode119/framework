@@ -34,6 +34,8 @@ import { MediaRouter } from '@api/routes/media-router';
 import { McpRouter } from '@api/routes/mcp-routes';
 import { HostPermitRouter } from '@api/routes/host-permit-router';
 import { RoutingRouter } from '@api/routes/routing-router';
+import { UpdaterRouter } from '@api/routes/updater-router';
+import { UpdaterStatusStore } from '@api/services/system/updater-status-store';
 import { SetupStatusRouter } from '@api/routes/setup-status-router';
 import { CertificateAdminRouter } from '@api/routes/certificate-admin-router';
 import { GeoAdminRouter } from '@api/routes/geo-admin-router';
@@ -220,6 +222,7 @@ export class ServerRoutesSetup {
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
     vApi.use(new HostPermitRouter(tenantRegistry).router);
+    vApi.use(new UpdaterRouter(new UpdaterStatusStore((this.manager as any).db)).router);
     // The certificates and private keys whatever terminates TLS loads. Secret-only, never cached,
     // and it must never be published through the edge — see CertificatesInternalRouter.
     vApi.use(new CertificatesInternalRouter(new CertificateStoreService((this.manager as any).db)).router);

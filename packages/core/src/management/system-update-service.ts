@@ -26,6 +26,11 @@ export class SystemUpdateService {
     return new MarketplaceClient(url || undefined);
   }
 
+  /** The version this installation runs. */
+  static installedVersion(): string {
+    return this.resolveInstalledVersion();
+  }
+
   private static resolveInstalledVersion(): string {
     const rootDir = ProjectPaths.getProjectRoot();
     // The framework ROOT package (@fromcode119/framework) is the canonical engine version — it is what

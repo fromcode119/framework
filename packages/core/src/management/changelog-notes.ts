@@ -22,6 +22,15 @@ export class ChangelogNotes {
     return body.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   }
 
+  /** Whether that version's section marks a change BREAKING — the generator writes `**BREAKING**` for a `feat!:` commit. */
+  static isBreaking(changelog: string, version: string): boolean {
+    const lines = String(changelog || '').split('\n');
+    const start = lines.findIndex((line) => line.startsWith(`## [${String(version).replace(/^v/, '')}]`));
+    if (start === -1) return false;
+    const end = lines.findIndex((line, index) => index > start && line.startsWith('## '));
+    return lines.slice(start + 1, end === -1 ? undefined : end).some((line) => line.includes('**BREAKING**'));
+  }
+
   /** One changelog line as plain text: headings lose their marks, bullets keep theirs, links keep their words. */
   private static plain(line: string): string {
     return line

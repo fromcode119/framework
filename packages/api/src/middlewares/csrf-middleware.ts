@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { CookieConstants, Logger, RequestSurfaceUtils } from '@fromcode119/core';
 import { RequestCookieService } from '@api/services/request/request-cookie-service';
 import { ApiUrlUtils } from '@api/utils/url';
+import { InternalRouteUtils } from '@api/utils/internal-route-utils';
 import { McpRouteUtils } from '@api/utils/mcp-route-utils';
 import { WebhookRouteUtils } from '@api/utils/webhook-route-utils';
 import { BaseMiddleware } from '@api/middlewares/base-middleware';
@@ -71,6 +72,13 @@ export class CSRFMiddleware extends BaseMiddleware {
     // session cookies), so there is no cookie-borne authority for a cross-site post to ride on. Left
     // in, a machine client that forgot its key was told "Invalid CSRF token" instead of 401.
     if (McpRouteUtils.isMcpPath(req.path)) {
+        return next();
+    }
+
+    // 4c. Skip for a service of this deployment calling an `/internal` route with the shared secret (the
+    // updater's report). The secret is a header no browser attaches by itself, so there is no cookie-borne
+    // authority for a cross-site post to ride on — the same reason as the MCP surface above.
+    if (InternalRouteUtils.isAuthorizedInternal(req)) {
         return next();
     }
 

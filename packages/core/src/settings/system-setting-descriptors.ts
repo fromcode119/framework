@@ -9,10 +9,10 @@ import { EdgeProtectionSettingDescriptors } from '@core/settings/edge-protection
 import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-cache-setting-descriptors';
 import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
+import { UpdateSettingDescriptors } from '@core/settings/update-setting-descriptors';
 
 /**
- * What every system setting DECLARES: its scope, whether it is writable, whether it may be exposed,
- * and what to seed.
+ * What every system setting DECLARES: its scope, whether it is writable, may be exposed, what to seed.
  *
  * Split out of `SystemSettingRegistry`, which was 447 lines — a 297-line declaration table and the
  * handful of methods that read it. The table is the half that grows, because every new setting adds
@@ -255,8 +255,8 @@ export class SystemSettingDescriptors {
     ...ApiResponseCacheSettingDescriptors.ALL,
     // Settings → Infrastructure → Database connections — see DatabasePoolSettingDescriptors.
     ...DatabasePoolSettingDescriptors.ALL,
-    // Settings → Infrastructure → Monitoring — see MonitoringSettingDescriptors.
-    ...MonitoringSettingDescriptors.ALL,
+    // Settings → Infrastructure → Monitoring and Settings → Updates — see each class.
+    ...MonitoringSettingDescriptors.ALL, ...UpdateSettingDescriptors.ALL,
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Empty means every plugin write is audited. Name a high-volume table here — telemetry, event streams — when its writes would otherwise drown the trail. Seeded empty on purpose: which tables those are depends on what is installed, so it is yours to state.", group: "security" },

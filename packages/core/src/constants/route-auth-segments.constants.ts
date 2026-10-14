@@ -158,6 +158,9 @@ export class RouteAuthSegments {
   TENANTS_ID_MEMBERS_LIST: '/:id/members',
   INTERNAL: '/internal',
   INTERNAL_ROUTING: '/internal/routing',
+  /** The updater service asks what to install, and reports how it went. Secret-only, like the routing map. */
+  INTERNAL_UPDATER_PLAN: '/internal/updater/plan',
+  INTERNAL_UPDATER_STATUS: '/internal/updater/status',
   /** 'Is this host one of yours?' — what an edge asks before it issues a certificate for it. */
   INTERNAL_HOST_PERMIT: '/internal/hosts/permit',
   /**
