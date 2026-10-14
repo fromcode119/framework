@@ -166,11 +166,20 @@ export class PluginSuccessionService {
     });
   }
 
-  /** The plugin's own files (`data/plugins/<slug>`), when it kept any. */
+  /**
+   * The plugin's own files (`data/plugins/<slug>`), when it kept any — best effort, AFTER the data has
+   * moved. A folder that cannot be renamed (it belongs to the plugin's sandbox user, and the process
+   * installing may not be allowed to touch it) must not fail the install: the registry already names the
+   * successor, so throwing here left neither plugin running. It is said, and the folder stays where it is.
+   */
   private moveDataDirectory(from: string, to: string, ownerTenantId?: string | null): void {
     const source = ProjectPaths.getPluginDataDir(from, undefined, ownerTenantId);
     const target = ProjectPaths.getPluginDataDir(to, undefined, ownerTenantId);
-    if (fs.existsSync(source) && !fs.existsSync(target)) fs.renameSync(source, target);
+    try {
+      if (fs.existsSync(source) && !fs.existsSync(target)) fs.renameSync(source, target);
+    } catch (error) {
+      PluginSuccessionService.logger.warn(`"${to}" took over from "${from}", but its data folder could not be moved and stays at ${source}: ${error instanceof Error ? error.message : String(error)}`);
+    }
   }
 
   /** A registry row of a plugin that has been installed — not the placeholder sandbox staging writes first. */
