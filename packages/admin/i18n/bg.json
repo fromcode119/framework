@@ -2572,6 +2572,7 @@
       "recommendedUpdate": "v{{version}} Препоръчително обновление",
       "installCore": "Инсталирай ядро v{{version}}",
       "deployInstead": "Тази инсталация работи от публикуван образ, затова не може да обнови собствените си файлове — внедрете <code>v{{version}}</code>:",
+      "deployLocal": "Работите с Docker на този компютър? В папката deploy задайте <code>VERSION=v{{version}}</code> във файла <code>.env</code> и изпълнете:",
       "lastRegistrySync": "Последна синхронизация с регистъра: {{at}}",
       "releasesSinceOne": "1 версия след тази",
       "releasesSinceMany": "{{count}} версии след тази"
