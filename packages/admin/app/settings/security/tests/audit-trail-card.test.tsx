@@ -22,4 +22,17 @@ describe('Settings -> Security -> Audit Trail', () => {
     expect(screen.getByText('fcp_analytics_events')).toBeDefined();
     expect(screen.getByText('Add by name…')).toBeDefined();
   });
+
+  it('sets nothing when the card is gone before the table list arrives', async () => {
+    let answer: (value: unknown) => void = () => undefined;
+    vi.spyOn(AdminApi, 'get').mockReturnValue(new Promise((resolve) => { answer = resolve; }) as never);
+    const setState = vi.spyOn(AuditTrailCard.prototype as any, 'setState');
+    const { unmount } = render(
+      <AuditTrailCard settings={{}} setSettings={vi.fn()} theme={ThemeMode.LIGHT} />,
+    );
+    unmount();
+    answer({ tables: [{ table: 'fcp_cms_pages', plugin: 'cms', collection: 'pages' }] });
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(setState).not.toHaveBeenCalled();
+  });
 });
