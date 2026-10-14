@@ -17,6 +17,17 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
   static readonly WORKSPACE_MODES = ['appearance', 'configure'];
 
   /**
+   * The session claim saying its holder STEPPED OUT to the platform on purpose.
+   *
+   * An account with exactly one site enters it at login (`LoginTenantChoice`), and the console enters it
+   * again whenever it finds a session outside it (`ClientLayoutSiteStateHooks`) — a session minted before
+   * the site existed otherwise stayed on the platform for good, with none of the site's plugin pages in
+   * its menu and nothing saying why. Leaving on purpose must not be undone the same way, so leaving
+   * writes this claim; selecting a site drops it.
+   */
+  static readonly PLATFORM_CHOSEN_CLAIM = 'platformChosen';
+
+  /**
    * The tenants this account may enter. Empty on a single-tenant deployment, where tenancy is off
    * entirely and there is nothing to choose between.
    */
@@ -79,7 +90,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
    * scope — and is a real destination, not a missing argument: `scopeSessionToTenant` already returns
    * the account's unscoped roles for it, and `generateToken` simply omits the claim.
    */
-  protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string | undefined, workspaceMode?: string): Promise<string> {
+  protected async reissueSessionForTenant(req: Request, res: Response, user: any, tenantId: string | undefined, workspaceMode?: string, platformChosen = false): Promise<string> {
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;
     // `req.user` is a DECODED token, so it already carries the claims jwt issued — `exp`, `iat`,
@@ -91,8 +102,8 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     // is supplied, so a `tenantId` carried over from the token being replaced would survive
     // `tenantId: undefined` untouched. Stepping out of a site would then re-mint the site you were
     // already in — which is exactly what it did until this line.
-    const { exp, iat, nbf, workspaceMode: previousMode, tenantId: previousTenantId, ...identity } = user as Record<string, unknown>;
-    void exp; void iat; void nbf; void previousMode; void previousTenantId;
+    const { exp, iat, nbf, workspaceMode: previousMode, tenantId: previousTenantId, [AuthControllerTenantSelection.PLATFORM_CHOSEN_CLAIM]: previousChoice, ...identity } = user as Record<string, unknown>;
+    void exp; void iat; void nbf; void previousMode; void previousTenantId; void previousChoice;
     // Re-resolve from the ACCOUNT, never from the token being replaced: that token's roles are already
     // scoped to whichever site the session was in, and narrowing a narrowed set would let one site's
     // roles decide what the next site grants.
@@ -107,6 +118,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     // default console to configure it. A per-session claim, never a tenant setting: the workspace's
     // own admins can never obtain it, because on their host the appearance is locked (T6 §3.3).
     if (workspaceMode) (identity as Record<string, unknown>).workspaceMode = workspaceMode;
+    if (platformChosen && !tenantId) (identity as Record<string, unknown>)[AuthControllerTenantSelection.PLATFORM_CHOSEN_CLAIM] = true;
     const token = await this.auth.generateToken(
       identity as any,
       { expiresIn: `${sessionDurationMinutes}m`, tenantId },
@@ -170,6 +182,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
       current,
       locked: workspace !== null,
       mode: String(user?.workspaceMode || '') || null,
+      platformChosen: user?.[AuthControllerTenantSelection.PLATFORM_CHOSEN_CLAIM] === true,
       storefrontUrl,
       tenants,
       siteOwnedWrites: SiteOwnedWrites.possible(req),
@@ -282,7 +295,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
       return res.status(403).json({ error: 'platform_admin_required' });
     }
 
-    await this.reissueSessionForTenant(req, res, user, undefined);
+    await this.reissueSessionForTenant(req, res, user, undefined, undefined, true);
     return res.json({ ok: true, tenantId: null });
   }
 }

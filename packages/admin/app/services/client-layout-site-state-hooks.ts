@@ -21,6 +21,10 @@ import type { IUser } from '@/components/interfaces/user.interface';
  *   • tenancy off, or a site already selected — nothing to ask.
  *   • a PLATFORM admin — works above sites (Sites, Plugins, Themes are platform surfaces) and picks
  *     a site from the header when it wants one. Blocking it would lock the platform out of itself.
+ *     With exactly ONE site, though, there is nothing to pick: the session enters it, as login does,
+ *     unless it stepped out to the platform on purpose (`platformChosen`). Otherwise a session minted
+ *     before the site existed stayed outside it — every plugin page missing from the menu, nothing
+ *     saying why.
  *   • no reachable site — there is nothing to choose; the account is told so instead of being shown
  *     an admin where every screen fails.
  *   • otherwise — choose, then the membership's roles apply for that site.
@@ -35,7 +39,7 @@ export class ClientLayoutSiteStateHooks {
     const platformAdmin = PlatformAccess.canManagePlatform(user);
 
     React.useEffect(() => {
-      if (!user || isAuthPage || platformAdmin) {
+      if (!user || isAuthPage) {
         setLoaded(null);
         return;
       }
@@ -43,6 +47,11 @@ export class ClientLayoutSiteStateHooks {
       AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE)
         .then((response: any) => {
           if (!live) return;
+          if (platformAdmin) {
+            ClientLayoutSiteStateHooks.enterOnlySite(response);
+            setLoaded(null);
+            return;
+          }
           setMultiTenant(response?.multiTenant === true);
           setCurrent(response?.current ?? null);
           setTenants(TenantOption.fromList(response?.tenants));
@@ -62,5 +71,21 @@ export class ClientLayoutSiteStateHooks {
        */
       mustChooseSite: loaded === true && multiTenant && !current,
     };
+  }
+
+  /** A platform admin outside every site, on an install with exactly one, enters it — the login rule. */
+  static enterOnlySite(response: any): void {
+    const only = ClientLayoutSiteStateHooks.onlySiteToEnter(response);
+    if (!only) return;
+    AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId: only })
+      .then(() => window.location.reload())
+      .catch(() => undefined);
+  }
+
+  /** The site to enter, or `''`: tenancy on, no site bound, not stepped out on purpose, exactly one site. */
+  static onlySiteToEnter(response: any): string {
+    if (response?.multiTenant !== true || response?.current || response?.locked || response?.platformChosen === true) return '';
+    const tenants = TenantOption.fromList(response?.tenants);
+    return tenants.length === 1 ? tenants[0].id : '';
   }
 }
