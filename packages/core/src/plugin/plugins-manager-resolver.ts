@@ -86,6 +86,14 @@ export class PluginsManagerResolver implements IPluginApiResolver {
     return null;
   }
 
+  slugs(namespace: string): string[] {
+    const normalizedNamespace = String(namespace || '').trim().toLowerCase();
+    return [...this.plugins.values()]
+      .filter((plugin) => String(plugin.manifest.namespace || '').trim().toLowerCase() === normalizedNamespace)
+      .map((plugin) => String(plugin.manifest.slug || '').trim().toLowerCase())
+      .filter((slug) => this.resolve(normalizedNamespace, slug) !== undefined);
+  }
+
   resolve(namespace: string, slug: string): unknown {
     const normalizedNamespace = String(namespace || '').trim().toLowerCase();
     const normalizedSlug = String(slug || '').trim().toLowerCase();
