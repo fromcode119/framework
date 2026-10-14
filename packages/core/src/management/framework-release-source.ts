@@ -2,6 +2,7 @@ import semver from 'semver';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
 import { SystemConstants } from '@core/constants/system.constants';
+import { ChangelogNotes } from '@core/management/changelog-notes';
 
 /**
  * Where the framework's own releases come from when no marketplace is configured.
@@ -26,6 +27,9 @@ export class FrameworkReleaseSource {
    * publishes, so tags are what it reads.
    */
   private static readonly TAGS_API = 'https://api.github.com/repos';
+
+  /** Raw files of a tag — the CHANGELOG.md the notes are read from. Public repository, no token. */
+  private static readonly RAW_FILES = 'https://raw.githubusercontent.com';
 
   /** One page is a decade of releases at this cadence, and ordering is by semver, not by position. */
   private static readonly PAGE_SIZE = 100;
@@ -76,9 +80,10 @@ export class FrameworkReleaseSource {
    * Every version newer than the installed one, newest first, each with what changed in it.
    *
    * "Update to v0.2.16" tells an operator nothing about what they are agreeing to, and one release
-   * behind is not the same decision as five. The notes are the RELEASE COMMIT's own message — the
-   * text written when the version was cut — never a generated summary and never a stand-in: a
-   * release whose commit says nothing shows nothing.
+   * behind is not the same decision as five. The notes are the project's own CHANGELOG.md section for
+   * that version — one request for the newest tag's file covers every version before it. A version the
+   * changelog does not mention falls back to the RELEASE COMMIT's own message; a release that said
+   * nothing in either place shows nothing, never a generated summary and never a stand-in.
    */
   static async pending(currentVersion: string): Promise<Array<{ version: string; notes: string }>> {
     const repository = await FrameworkReleaseSource.repository();
@@ -93,11 +98,22 @@ export class FrameworkReleaseSource {
           && semver.gt(version, currentVersion);
       })
       .slice(0, FrameworkReleaseSource.MAX_PENDING);
+    if (!newer.length) return [];
 
-    const described = await Promise.all(newer.map(async (tag) => ({
-      version: FrameworkReleaseSource.normalize(String(tag?.name || '')),
-      notes: await FrameworkReleaseSource.notesFor(repository, String((tag?.commit as any)?.sha || '')),
-    })));
+    const newest = [...newer].sort((a, b) => semver.rcompare(
+      FrameworkReleaseSource.normalize(String(a?.name || '')),
+      FrameworkReleaseSource.normalize(String(b?.name || '')),
+    ))[0];
+    const changelog = await FrameworkReleaseSource.readText(`${FrameworkReleaseSource.RAW_FILES}/${repository}/${String(newest?.name || '')}/CHANGELOG.md`);
+
+    const described = await Promise.all(newer.map(async (tag) => {
+      const version = FrameworkReleaseSource.normalize(String(tag?.name || ''));
+      return {
+        version,
+        notes: ChangelogNotes.section(changelog, version)
+          || await FrameworkReleaseSource.notesFor(repository, String((tag?.commit as any)?.sha || '')),
+      };
+    }));
 
     return described.sort((a, b) => semver.rcompare(a.version, b.version));
   }
@@ -134,6 +150,20 @@ export class FrameworkReleaseSource {
       return await response.json();
     } catch {
       return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  /** A text file, or `''` when it cannot be read — the same "unreachable means empty" rule as `readJson`. */
+  private static async readText(url: string): Promise<string> {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), FrameworkReleaseSource.TIMEOUT_MS);
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      return response.ok ? await response.text() : '';
+    } catch {
+      return '';
     } finally {
       clearTimeout(timer);
     }

@@ -8,9 +8,10 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * "Install v0.2.16" asked an operator to agree to a number. Being one release behind is a different
  * decision from being five, and the reason to take a release is in what it says it fixed.
  *
- * The text is the release commit's own message, rendered verbatim. A release whose commit said
- * nothing shows nothing — there is no generated summary and no stand-in sentence, because an invented
- * changelog is worse than an absent one: it is a claim about code that nobody made.
+ * The text is that version's section of the project's CHANGELOG.md (or, failing that, its release
+ * commit's message), as plain text. A release that said nothing in either place shows nothing — there is
+ * no generated summary and no stand-in sentence, because an invented changelog is worse than an absent
+ * one: it is a claim about code that nobody made.
  */
 export class PendingReleaseList extends PureReactor {
   @prop declare releases: Array<{ version: string; notes: string }>;
