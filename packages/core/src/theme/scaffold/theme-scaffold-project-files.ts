@@ -1,3 +1,4 @@
+import { PlatformFeature } from '@core/theme/enums/platform-feature.enum';
 import type { IThemeScaffoldInput } from '@core/theme/scaffold/interfaces/theme-scaffold-input.interface';
 
 /**
@@ -57,6 +58,8 @@ export class ThemeScaffoldProjectFiles {
         { name: 'page.wide', label: 'Wide page', description: 'Full-width sections with no side margins, for landing and home pages.' },
       ],
       defaultLayout: 'page.default',
+      // What the theme's source imports from the SDK; a platform without it refuses the theme instead of loading a broken one.
+      requires: [PlatformFeature.THEME_RUNTIME.value],
       blocks: [],
       slots: [],
       capabilities: ['content', 'i18n', 'theming'],

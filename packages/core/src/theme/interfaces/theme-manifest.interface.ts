@@ -27,6 +27,8 @@ export interface IThemeManifest {
   }[];
   slots?: string[]; // Defined slot names this theme provides
   overrides?: { name: string; component: string; priority?: number }[]; // Component overrides
+  /** Platform features this theme needs (`PlatformFeature` values). A platform without one refuses the theme. */
+  requires?: string[];
   dependencies?: Record<string, string>; // Plugins required by this theme
   bundledPlugins?: string[]; // Relative paths to plugin .zip or .tar.gz archives bundled inside the theme package
   seeds?: string; // Path to seed file

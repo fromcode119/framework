@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { ThemeScaffold } from '@core/theme/scaffold/theme-scaffold';
+import { ThemeRequirements } from '@core/theme/theme-requirements';
 
 const files = (slug = 'my-shop') => ThemeScaffold.files({ slug, name: 'My Shop', description: 'A shop.' });
 
@@ -35,6 +36,13 @@ describe('ThemeScaffold', () => {
       expect(content, path).not.toContain('__SLUG__');
       expect(content, path).not.toMatch(/\bshop-page\b(?<!my-shop-page)/);
     }
+  });
+
+  it('declares that it needs the SDK theme runtime it imports, so an older platform refuses it', () => {
+    const manifest = JSON.parse(files()['theme.json']);
+
+    expect(manifest.requires).toEqual(['theme-runtime']);
+    expect(ThemeRequirements.missing(manifest)).toEqual([]);
   });
 
   it('lists the layouts in theme.json and in the catalogue under the same keys', () => {

@@ -7,6 +7,7 @@ import path from 'path';
 import fs from 'fs';
 import AdmZip from 'adm-zip';
 import { Logger } from '@core/logging';
+import { ThemeRequirements } from '@core/theme/theme-requirements';
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
@@ -189,6 +190,7 @@ export class ThemeInstallerService {
     if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
     const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
     if (!manifest.slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
+    ThemeRequirements.assertMet(manifest);
 
     const targetDir = path.join(this.themesRoot, manifest.slug);
     ExtensionVendorGuard.refuse(targetDir, 'theme.json', manifest, 'theme');

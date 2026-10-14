@@ -32,6 +32,8 @@ export { PluginManager } from '@core/plugin/plugin-manager';
 export type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 export { ThemeManager } from '@core/theme/theme-manager';
 export { ThemeScaffold } from '@core/theme/scaffold/theme-scaffold';
+export { ThemeRequirements } from '@core/theme/theme-requirements';
+export { PlatformFeature } from '@core/theme/enums/platform-feature.enum';
 export type { IThemeScaffoldInput } from '@core/theme/scaffold/interfaces/theme-scaffold-input.interface';
 export type { IThemeBuilder } from '@core/theme/interfaces/theme-builder.interface';
 export { StorefrontContentSecurityPolicy } from '@core/theme/storefront-content-security-policy';
