@@ -141,7 +141,7 @@ export class SourceBuildRunner {
         const identity = built;
         await this.builtPackageInstaller.install(
           identity,
-          await this.resolvePackageArtifact(identity),
+          await this.resolvePackageArtifact(BuildSourceIdentity.parse(type, slug), pkg.slug),
           { ...entry, type, version: pkg.version },
         );
       }

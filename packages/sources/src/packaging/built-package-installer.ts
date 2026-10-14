@@ -67,7 +67,9 @@ export class BuiltPackageInstaller {
     } catch (err: any) {
       const message = BuildErrorRedactionService.redact(err?.message || String(err));
       this.logger.error(`Install failed for ${identity.key}: ${message}`);
-      await this.recordFailure(identity, message).catch(() => undefined);
+      // Recorded on the SOURCE's row (the package's slug differs for a renamed plugin, and has no row).
+      const sourceSlug = String(source.slug ?? '').trim();
+      await this.recordFailure(sourceSlug ? BuildSourceIdentity.parse(identity.type, sourceSlug) : identity, message).catch(() => undefined);
     }
   }
 

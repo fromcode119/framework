@@ -74,12 +74,14 @@ describe('SourceBuildRunner — only what GitHub merged is built', () => {
       async () => true,
     );
     (instance as any).upsertBuildRecord = vi.fn(async () => undefined);
-    const artifact = vi.fn(async (identity: { slug: string }) => ({ slug: identity.slug }));
+    const artifact = vi.fn(async (identity: { slug: string }, packageSlug: string) => ({ source: identity.slug, packageSlug }));
     (instance as any).resolvePackageArtifact = artifact;
 
     await instance.buildOne(ExtensionScope.PLUGIN, { slug: 'affirmations', gitUrl: 'https://github.com/o/affirmations.git', branch: 'main', installAfterBuild: true });
 
-    expect(artifact.mock.calls[0][0]).toMatchObject({ slug: 'zen-myself' });
+    // The build record is the source's; the staged package is the manifest's.
+    expect(artifact.mock.calls[0][0]).toMatchObject({ slug: 'affirmations' });
+    expect(artifact.mock.calls[0][1]).toBe('zen-myself');
     expect((install.mock.calls[0] as unknown[])[0]).toMatchObject({ slug: 'zen-myself' });
   });
 });
