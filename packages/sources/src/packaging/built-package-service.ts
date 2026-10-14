@@ -54,7 +54,12 @@ export class BuiltPackageService {
    * — it produces a staged directory whose location the builder owns. The archive exists only once
    * somebody has asked to download it.
    */
-  async resolvePackageArtifact(identity: BuildSourceIdentity): Promise<IBuiltPackageArtifact | null> {
+  /**
+   * @param packageSlug the slug the built package's own manifest declares, when the caller knows it: the
+   * record is the SOURCE's, but the package is staged under the manifest's slug, and a plugin renamed in
+   * its repository keeps the source it was added under.
+   */
+  async resolvePackageArtifact(identity: BuildSourceIdentity, packageSlug: string = identity.slug): Promise<IBuiltPackageArtifact | null> {
     const entry = await this.db.findOne(this.buildsSlug, identity.where);
     if (!entry) {
       return null;
@@ -76,7 +81,7 @@ export class BuiltPackageService {
       // The package itself. Asked of the builder rather than rebuilt from the kind's name: joining
       // `/themes/<file>` onto the process's cwd once named `/app/themes/<file>` for an archive that
       // lives in the WORKSPACE. Null when no successful build has recorded a version.
-      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, identity.slug, version) : null,
+      stagedDir: version ? this.packageBuilder.stagingDirFor(resolvedType, packageSlug, version) : null,
       // The archive, if one has been written. Core only ever has this.
       filePath: fileName ? path.join(this.packageBuilder.outputDirFor(resolvedType), fileName) : null,
       fileName,
