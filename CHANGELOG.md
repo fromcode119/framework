@@ -6,6 +6,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.396] - 2026-10-14
+
+### Added
+
+- **core**: a theme can declare the platform features it needs, and a platform without them refuses it ([#948](https://github.com/fromcode119/framework/pull/948))
+- themes share one runtime from the SDK; the assistant's theme scaffold builds before it activates ([#947](https://github.com/fromcode119/framework/pull/947))
+- **cli**: `theme create` scaffolds a theme that builds and renders today ([#946](https://github.com/fromcode119/framework/pull/946))
+
+### Fixed
+
+- **sources**: install a build by the slug its manifest declares ([#949](https://github.com/fromcode119/framework/pull/949))
+
 ## [0.2.395] - 2026-10-14
 
 ### Added
