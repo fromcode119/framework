@@ -30,26 +30,28 @@ export class PluginSuccessionService {
    */
   constructor(private readonly db: IDatabaseManager, private readonly retire: (slug: string) => Promise<void> = async () => undefined) {}
 
-  /** The slugs the plugins in `roots` say they replace, read from each `manifest.json` before anything is staged. */
-  static replacedOnDisk(roots: string[]): Set<string> {
-    const manifests: IPluginManifest[] = [];
-    for (const root of roots) {
-      let dirs: string[] = [];
-      try { dirs = fs.readdirSync(root); } catch { continue; }
-      for (const dir of dirs) {
-        try {
-          manifests.push(JSON.parse(fs.readFileSync(path.join(root, dir, 'manifest.json'), 'utf8')) as IPluginManifest);
-        } catch {
-          // Not a plugin directory, or one whose manifest the scanner reports on its own.
-        }
+  /**
+   * The slugs the plugins in ONE plugin root say they replace, read from each `manifest.json` before
+   * anything is staged. Per root, because a root is one owner's (the platform's, or one site's): a plugin
+   * can only keep a plugin of its own owner from loading, never another site's or the platform's.
+   */
+  static replacedOnDisk(root: string): Set<string> {
+    const replaced = new Set<string>();
+    let dirs: string[] = [];
+    try { dirs = fs.readdirSync(root); } catch { return replaced; }
+    for (const dir of dirs) {
+      try {
+        const manifest = JSON.parse(fs.readFileSync(path.join(root, dir, 'manifest.json'), 'utf8')) as IPluginManifest;
+        for (const slug of manifest.replaces ?? []) if (slug !== manifest.slug) replaced.add(slug);
+      } catch {
+        // Not a plugin directory, or one whose manifest the scanner reports on its own.
       }
     }
-    return PluginSuccessionService.replacedBy(manifests);
+    return replaced;
   }
 
-  /** The plugins `manifests` were renamed from: not to be loaded beside the plugin that replaced them. */
-  static replacedBy(manifests: IPluginManifest[]): Set<string> {
-    return new Set(manifests.flatMap((manifest) => (manifest.replaces ?? []).filter((slug) => slug !== manifest.slug)));
+  private static sameOwner(a: unknown, b: unknown): boolean {
+    return String(a ?? '').trim() === String(b ?? '').trim();
   }
 
   /** Moves whatever `manifest` replaces onto its slug; a no-op for every manifest without `replaces`. */
@@ -69,7 +71,15 @@ export class PluginSuccessionService {
     const tables = await this.db.withExclusiveLock(`plugin-succession:${from}`, async () => {
       const placeholder = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: to });
       if (PluginSuccessionService.installed(placeholder)) return null;
-      if (!await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: from })) return null;
+      const predecessor = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: from });
+      if (!predecessor) return null;
+      // Only the same owner's plugin: a site's plugin may succeed that site's plugin, a platform plugin a
+      // platform plugin. A manifest is written by whoever uploads it, so without this one site's upload
+      // could declare it replaces a platform plugin and take its tables.
+      if (!PluginSuccessionService.sameOwner(predecessor.owner_tenant_id, (manifest as { ownerTenantId?: string }).ownerTenantId)) {
+        PluginSuccessionService.logger.warn(`"${to}" says it replaces "${from}", which another owner installed; nothing was moved.`);
+        return null;
+      }
       // Staging the new plugin's sandbox already wrote a row holding only its isolation user; the old
       // row, with its version, approvals and its own user, is the one that carries on.
       if (placeholder) await this.db.delete(SystemConstants.TABLE.PLUGINS, { slug: to });

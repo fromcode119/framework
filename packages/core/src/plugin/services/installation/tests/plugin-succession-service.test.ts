@@ -79,6 +79,19 @@ describe('a renamed plugin taking over', () => {
     expect(await new PluginSuccessionService(seeded() as never).adopt(manifest({ replaces: undefined }))).toEqual([]);
   });
 
+  it('never takes over a plugin another owner installed', async () => {
+    const platform = seeded();
+    const siteUpload = manifest({ ownerTenantId: 'site-a' } as Partial<IPluginManifest>);
+    expect(await new PluginSuccessionService(platform as never).adopt(siteUpload)).toEqual([]);
+    expect(platform.renamed).toEqual([]);
+    expect(platform.rows('_system_plugins').map((row) => row.slug)).toContain('affirmations');
+
+    const site = seeded();
+    site.rows('_system_plugins')[0].owner_tenant_id = 'site-a';
+    expect(await new PluginSuccessionService(site as never).adopt(manifest())).toEqual([]);
+    expect(await new PluginSuccessionService(site as never).adopt(siteUpload)).toEqual(['affirmations']);
+  });
+
   it('stops a running plugin of the old name before moving its tables', async () => {
     const order: string[] = [];
     const db = seeded();
@@ -95,7 +108,8 @@ describe('a renamed plugin taking over', () => {
       fs.writeFileSync(path.join(root, dir, 'manifest.json'), JSON.stringify(body));
     }
     fs.mkdirSync(path.join(root, 'not-a-plugin'));
-    expect([...PluginSuccessionService.replacedOnDisk([root, path.join(root, 'missing')])]).toEqual(['affirmations']);
+    expect([...PluginSuccessionService.replacedOnDisk(root)]).toEqual(['affirmations']);
+    expect([...PluginSuccessionService.replacedOnDisk(path.join(root, 'missing'))]).toEqual([]);
     fs.rmSync(root, { recursive: true, force: true });
   });
 });

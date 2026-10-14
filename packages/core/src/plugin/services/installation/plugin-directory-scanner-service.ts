@@ -71,14 +71,14 @@ export class PluginDirectoryScannerService {
     const errored: { manifest: any, path: string, error: string }[] = [];
     const seenSlugs = new Set<string>();
     const seenPaths = new Set<string>();
-    // A plugin another one replaces is not staged at all: staging gives it a sandbox user, and with it a
-    // registry row the plugin that took over its data would then find again (PluginSuccessionService).
-    const replaced = PluginSuccessionService.replacedOnDisk(roots);
 
     for (const root of roots) {
       if (!fs.existsSync(root)) continue;
       const isBundledRoot = root === bundledRoot;
       const rootOwnerTenantId = rootOwners.get(root);
+      // A plugin another one in this root replaces is not staged at all: staging gives it a sandbox user,
+      // and with it a registry row the plugin that took over its data would find again (PluginSuccessionService).
+      const replaced = PluginSuccessionService.replacedOnDisk(root);
       // Guarded because a SITE's root now feeds this loop, and those are written by upload rather than
       // curated. A throw here would end discovery for every root still queued behind it.
       let pluginDirs: string[] = [];

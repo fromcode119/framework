@@ -44,11 +44,9 @@ export class PluginDiscoveryCoordinatorService {
       }
     }
 
-    // A plugin renamed by another is not loaded beside it; its data moves to the new name before any
-    // migration or table sync of the new one runs, so the new one boots as an update, not a fresh install.
-    const replaced = PluginSuccessionService.replacedBy(discovered.map(d => d.plugin.manifest));
-    for (const slug of replaced) if (discovered.some(d => d.plugin.manifest.slug === slug)) this.logger.info(`Not loading "${slug}": another plugin replaces it.`);
-    const current = discovered.filter(d => !replaced.has(d.plugin.manifest.slug));
+    // A renamed plugin's data moves to the new name before any migration or table sync of it runs, so it
+    // boots as an update, not a fresh install. (The scanner already left the replaced plugin unstaged.)
+    const current = discovered;
     for (const stage of current) await this.succession.adopt(stage.plugin.manifest);
 
     try {
