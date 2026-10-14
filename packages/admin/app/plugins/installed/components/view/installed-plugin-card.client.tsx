@@ -11,6 +11,7 @@ import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginSwitchState } from '@/app/plugins/installed/plugin-switch-state';
 
 export class InstalledPluginCard extends PureReactor {
   @prop declare hasImageError: boolean;
@@ -31,25 +32,14 @@ export class InstalledPluginCard extends PureReactor {
     const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
     const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
     const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
-    // TWO AXES on a multi-tenant deployment, and the switch drives the TENANT one.
-    //
-    //   plugin.state       — the PLATFORM axis: installed, loadable, healthy, not held. Changing it
-    //                        affects every customer, so only a platform admin may.
-    //   enabledForTenant   — does the site currently open in this admin run it.
-    //
-    // The switch must show and set the tenant axis, or an operator flips it and the badge disagrees.
+    // TWO AXES on a deployment that can host sites — see PluginSwitchState. The switch shows the site's
+    // answer when a site is bound and the platform's otherwise, which is the only case it is rendered in.
     // A platform problem (Error/Held) still wins the badge: it explains why the switch cannot help.
-    const multiTenant = (plugin as any).multiTenant === true;
-    const enabledForTenant = (plugin as any).enabledForTenant === true;
-    const availableOnPlatform = plugin.state === PluginState.ACTIVE;
-    const switchedOn = multiTenant ? enabledForTenant : availableOnPlatform;
-    // Installed and healthy, but this site does not run it — a state that only exists per tenant and
-    // is NOT the same as "inactive on the platform".
-    const notOnThisSite = multiTenant && availableOnPlatform && !enabledForTenant;
+    const { perSite, availableOnPlatform, switchedOn, notOnThisSite, locked } = new PluginSwitchState(plugin as any);
 
     const statusLabel = hasRuntimeError ? AdminI18n.t('plugins.list.error') : isHeld ? heldLabel
       : notOnThisSite ? AdminI18n.t('plugins.list.offHere')
-      : multiTenant ? AdminI18n.t(enabledForTenant ? 'plugins.list.statusActive' : 'plugins.list.statusUnavailable')
+      : perSite ? AdminI18n.t(switchedOn ? 'plugins.list.statusActive' : 'plugins.list.statusUnavailable')
       : AdminI18n.t(availableOnPlatform ? 'plugins.list.statusActive' : 'plugins.list.statusInactive');
     const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber'
       : notOnThisSite ? 'gray'
@@ -123,12 +113,12 @@ export class InstalledPluginCard extends PureReactor {
             {/* Not rendered at all for a tenant admin: enablement is an operator action (T2 §8), and a
                 control that would only ever 403 is a bug, not a hint. */}
             {canManage ? (
-              <span title={multiTenant && !availableOnPlatform
+              <span title={locked
                 ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
-                : multiTenant ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
+                : perSite ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
                 <Switch
                   checked={switchedOn}
-                  disabled={multiTenant && !availableOnPlatform}
+                  disabled={locked}
                   onChange={(_: boolean) => onToggle(plugin.manifest.slug, switchedOn)}
                   className="scale-75 origin-right shrink-0"
                 />
