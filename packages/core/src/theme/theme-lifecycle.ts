@@ -1,4 +1,5 @@
 import fs from 'fs';
+import { ThemeRequirements } from '@core/theme/theme-requirements';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantThemeAccess } from '@core/theme/tenant-theme-access';
@@ -39,6 +40,7 @@ export abstract class ThemeLifecycle extends ThemeDiscovery {
   async activateTheme(slug: string) {
     const manifest = this.themes.get(slug);
     if (!manifest) throw new Error(`Theme "${slug}" not found.`);
+    ThemeRequirements.assertMet(manifest);
 
     // MULTI-TENANT: activation is a SITE action. It writes the tenant's row, materializes the tenant's
     // default pages on this (tenant-bound) connection, and touches no file — so it needs no storefront

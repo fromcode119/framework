@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import { ThemeRequirements } from '@core/theme/theme-requirements';
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
 import { ProjectPaths } from '@core/config/paths';
 import { TenantThemePackagePolicy } from '@core/theme/tenant-theme-package-policy';
@@ -39,6 +40,7 @@ export class ThemeTenantPlacement {
     const contentDir = this.findThemeManifestDir(sourceDir);
     if (!contentDir) throw new Error('Invalid theme: theme.json not found anywhere in the package.');
     const manifest: IThemeManifest = JSON.parse(fs.readFileSync(path.join(contentDir, 'theme.json'), 'utf8'));
+    ThemeRequirements.assertMet(manifest);
     const slug = String(manifest.slug ?? '').trim();
     if (!slug) throw new Error('Invalid theme: missing "slug" in theme.json.');
     if (!/^[a-z0-9][a-z0-9-]*$/.test(slug)) {

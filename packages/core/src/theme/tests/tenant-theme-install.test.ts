@@ -60,6 +60,14 @@ afterEach(() => {
 });
 
 describe('installing a theme uploaded by a site', () => {
+  it('refuses a theme that needs a platform feature this platform lacks, and places nothing', async () => {
+    const themesRoot = tempDir('fc-themes-');
+    const zip = themeZip({ slug: 'acme-two', requires: ['later-a'] });
+
+    await expect(installerOn(themesRoot).installForTenant(zip, 'acme', new Map(), QUOTA)).rejects.toThrow('later-a');
+    expect(fs.existsSync(path.join(themesRoot, 'tenants'))).toBe(false);
+  });
+
   it('puts the files under that site’s own directory, and nowhere else', async () => {
     const themesRoot = tempDir('fc-themes-');
     const zip = themeZip({ slug: 'acme-one' });
