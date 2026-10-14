@@ -30,8 +30,16 @@ export class AuditTrailCard extends Reactor {
 
   @state tables: IOption[] = [];
 
+  /** The table list arrives after a request; a card already gone by then must not set state. */
+  private unmounted = false;
+
+  componentWillUnmount(): void {
+    this.unmounted = true;
+  }
+
   async componentDidMount(): Promise<void> {
     const data = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.SETTINGS_AUDIT_TABLES).catch(() => null);
+    if (this.unmounted) return;
     const rows: Array<{ table: string; plugin: string; collection: string }> = Array.isArray(data?.tables) ? data.tables : [];
     this.tables = rows.map((row) => ({
       value: row.table,
