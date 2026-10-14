@@ -88,7 +88,7 @@ export class PluginManagerServiceFactory {
       (slug: string) => lifecycle.refreshAfterHotUpdate(slug),
       (manifest) => PluginSchemaDatabaseProxy.create({ manifest }, manager) as IDatabaseManager,
       (slug: string, manifest) => lifecycle.approval.holdIfUnapproved(slug, manifest),
-      (manifest) => succession.adopt(manifest),
+      (manifest, pluginPath: string) => succession.adopt(manifest, pluginPath),
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)

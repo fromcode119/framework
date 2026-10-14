@@ -27,7 +27,19 @@ class FakeDatabase {
   async withPlatformAdmin<T>(fn: () => Promise<T>) { return fn(); }
 }
 
-const manifest = (extra: Partial<IPluginManifest> = {}) => ({ slug: 'zen-myself', name: 'Zen Myself', version: '0.2.0', replaces: ['affirmations'], ...extra }) as IPluginManifest;
+const manifest = (extra: Partial<IPluginManifest> = {}) => ({ slug: 'zen-myself', name: 'Zen Myself', version: '0.2.0', ...extra }) as IPluginManifest;
+
+/** A plugin root holding the old plugin (naming its successor, unless `handsOver` is false) and the new one. */
+const root = (handsOver = true): string => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'succession-'));
+  const write = (name: string, body: object) => {
+    fs.mkdirSync(path.join(dir, name));
+    fs.writeFileSync(path.join(dir, name, 'manifest.json'), JSON.stringify(body));
+  };
+  write('affirmations', handsOver ? { slug: 'affirmations', replacedBy: 'zen-myself' } : { slug: 'affirmations' });
+  write('zen-myself', { slug: 'zen-myself' });
+  return path.join(dir, 'zen-myself');
+};
 
 const seeded = () => {
   const db = new FakeDatabase();
@@ -47,7 +59,7 @@ const seeded = () => {
 describe('a renamed plugin taking over', () => {
   it('moves the tables, registry, settings, sites, ledger and permissions to the new name', async () => {
     const db = seeded();
-    expect(await new PluginSuccessionService(db as never).adopt(manifest())).toEqual(['affirmations']);
+    expect(await new PluginSuccessionService(db as never).adopt(manifest(), root())).toEqual(['affirmations']);
     expect(db.rows('fcp_zen_myself_topics')).toHaveLength(2);
     expect(db.rows('fcp_zen_myself_profiles')).toHaveLength(1);
     // Another plugin whose slug only begins like the old one keeps its table.
@@ -64,32 +76,33 @@ describe('a renamed plugin taking over', () => {
   it('replaces the placeholder row sandbox staging writes for the new name, keeping the old row', async () => {
     const db = seeded();
     db.rows('_system_plugins').push({ slug: 'zen-myself', isolation_uid: 20005 });
-    await new PluginSuccessionService(db as never).adopt(manifest());
+    await new PluginSuccessionService(db as never).adopt(manifest(), root());
     expect(db.rows('_system_plugins').filter((row) => row.slug === 'zen-myself')).toEqual([{ slug: 'zen-myself', version: '0.1.44', state: 'active' }]);
   });
 
   it('does nothing once the new name is installed, or when the old one never was', async () => {
     const installed = seeded();
     installed.rows('_system_plugins').push({ slug: 'zen-myself', version: '0.2.0' });
-    expect(await new PluginSuccessionService(installed as never).adopt(manifest())).toEqual([]);
+    expect(await new PluginSuccessionService(installed as never).adopt(manifest(), root())).toEqual([]);
     expect(installed.renamed).toEqual([]);
 
     const fresh = new FakeDatabase();
-    expect(await new PluginSuccessionService(fresh as never).adopt(manifest())).toEqual([]);
-    expect(await new PluginSuccessionService(seeded() as never).adopt(manifest({ replaces: undefined }))).toEqual([]);
+    expect(await new PluginSuccessionService(fresh as never).adopt(manifest(), root())).toEqual([]);
+    // The old plugin never named a successor: a new plugin cannot claim its data.
+    expect(await new PluginSuccessionService(seeded() as never).adopt(manifest(), root(false))).toEqual([]);
   });
 
   it('never takes over a plugin another owner installed', async () => {
     const platform = seeded();
     const siteUpload = manifest({ ownerTenantId: 'site-a' } as Partial<IPluginManifest>);
-    expect(await new PluginSuccessionService(platform as never).adopt(siteUpload)).toEqual([]);
+    expect(await new PluginSuccessionService(platform as never).adopt(siteUpload, root())).toEqual([]);
     expect(platform.renamed).toEqual([]);
     expect(platform.rows('_system_plugins').map((row) => row.slug)).toContain('affirmations');
 
     const site = seeded();
     site.rows('_system_plugins')[0].owner_tenant_id = 'site-a';
-    expect(await new PluginSuccessionService(site as never).adopt(manifest())).toEqual([]);
-    expect(await new PluginSuccessionService(site as never).adopt(siteUpload)).toEqual(['affirmations']);
+    expect(await new PluginSuccessionService(site as never).adopt(manifest(), root())).toEqual([]);
+    expect(await new PluginSuccessionService(site as never).adopt(siteUpload, root())).toEqual(['affirmations']);
   });
 
   it('stops a running plugin of the old name before moving its tables', async () => {
@@ -97,19 +110,15 @@ describe('a renamed plugin taking over', () => {
     const db = seeded();
     const rename = db.renameTable.bind(db);
     db.renameTable = async (from, to) => { order.push('rename'); return rename(from, to); };
-    await new PluginSuccessionService(db as never, async (slug) => { order.push(`retire:${slug}`); }).adopt(manifest());
+    await new PluginSuccessionService(db as never, async (slug) => { order.push(`retire:${slug}`); }).adopt(manifest(), root());
     expect(order[0]).toBe('retire:affirmations');
   });
 
-  it('reads what the plugins on disk replace before anything is staged', () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'succession-'));
-    for (const [dir, body] of [['zen-myself', { slug: 'zen-myself', replaces: ['affirmations'] }], ['affirmations', { slug: 'affirmations' }]] as const) {
-      fs.mkdirSync(path.join(root, dir));
-      fs.writeFileSync(path.join(root, dir, 'manifest.json'), JSON.stringify(body));
-    }
-    fs.mkdirSync(path.join(root, 'not-a-plugin'));
-    expect([...PluginSuccessionService.replacedOnDisk(root)]).toEqual(['affirmations']);
-    expect([...PluginSuccessionService.replacedOnDisk(path.join(root, 'missing'))]).toEqual([]);
-    fs.rmSync(root, { recursive: true, force: true });
+  it('hides an old plugin only once the successor it names is installed beside it', () => {
+    const rootDir = path.dirname(root());
+    expect([...PluginSuccessionService.replacedOnDisk(rootDir)]).toEqual(['affirmations']);
+    fs.rmSync(path.join(rootDir, 'zen-myself'), { recursive: true, force: true });
+    expect([...PluginSuccessionService.replacedOnDisk(rootDir)]).toEqual([]);
+    expect([...PluginSuccessionService.replacedOnDisk(path.join(rootDir, 'missing'))]).toEqual([]);
   });
 });

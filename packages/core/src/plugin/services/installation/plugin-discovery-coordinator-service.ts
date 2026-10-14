@@ -47,7 +47,7 @@ export class PluginDiscoveryCoordinatorService {
     // A renamed plugin's data moves to the new name before any migration or table sync of it runs, so it
     // boots as an update, not a fresh install. (The scanner already left the replaced plugin unstaged.)
     const current = discovered;
-    for (const stage of current) await this.succession.adopt(stage.plugin.manifest);
+    for (const stage of current) await this.succession.adopt(stage.plugin.manifest, stage.path);
 
     try {
       const sorted = this.discovery.resolveDependencies(current.map(d => d.plugin));

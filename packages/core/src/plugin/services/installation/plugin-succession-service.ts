@@ -10,8 +10,10 @@ import { Logger } from '@core/logging';
 /**
  * A plugin taking over from the plugin it was renamed from.
  *
- * A manifest that says `"replaces": ["old-slug"]` is the same product under a new name. Before the new
- * slug is registered or migrated for the first time, everything the platform keeps under the old one is
+ * A plugin whose manifest says `"replacedBy": "new-slug"` hands itself over: the plugin of that slug is
+ * the same product under a new name. Once the successor is installed beside it (same owner), and before
+ * the new slug is registered or migrated for the first time, everything the platform keeps under the old
+ * one is
  * moved to it: the plugin's tables (`fcp_<old>_*` → `fcp_<new>_*`, with their indexes and policies), its
  * registry row — and with it, through the foreign keys, its settings on every site and its scheduled
  * tasks — which sites have it switched on, its migration ledger, and the permissions roles hold on it.
@@ -31,35 +33,42 @@ export class PluginSuccessionService {
   constructor(private readonly db: IDatabaseManager, private readonly retire: (slug: string) => Promise<void> = async () => undefined) {}
 
   /**
-   * The slugs the plugins in ONE plugin root say they replace, read from each `manifest.json` before
-   * anything is staged. Per root, because a root is one owner's (the platform's, or one site's): a plugin
-   * can only keep a plugin of its own owner from loading, never another site's or the platform's.
+   * The hand-overs declared in ONE plugin root: old slug → the slug its own manifest says `replacedBy`,
+   * kept only when that successor is installed in the same root. The OLD plugin names its successor, so
+   * no plugin can claim another's data by naming it; and a root is one owner's (the platform's, or one
+   * site's), so a hand-over never crosses owners. An old plugin whose successor is not there yet runs on.
    */
-  static replacedOnDisk(root: string): Set<string> {
-    const replaced = new Set<string>();
+  static handOvers(root: string): Map<string, string> {
+    const manifests: IPluginManifest[] = [];
     let dirs: string[] = [];
-    try { dirs = fs.readdirSync(root); } catch { return replaced; }
+    try { dirs = fs.readdirSync(root); } catch { return new Map(); }
     for (const dir of dirs) {
       try {
-        const manifest = JSON.parse(fs.readFileSync(path.join(root, dir, 'manifest.json'), 'utf8')) as IPluginManifest;
-        for (const slug of manifest.replaces ?? []) if (slug !== manifest.slug) replaced.add(slug);
+        manifests.push(JSON.parse(fs.readFileSync(path.join(root, dir, 'manifest.json'), 'utf8')) as IPluginManifest);
       } catch {
         // Not a plugin directory, or one whose manifest the scanner reports on its own.
       }
     }
-    return replaced;
+    const present = new Set(manifests.map((manifest) => manifest.slug));
+    return new Map(manifests
+      .filter((manifest) => manifest.replacedBy && manifest.replacedBy !== manifest.slug && present.has(manifest.replacedBy))
+      .map((manifest) => [manifest.slug, String(manifest.replacedBy)]));
+  }
+
+  /** The plugins of `root` handed over to a successor installed beside them: not staged, not loaded. */
+  static replacedOnDisk(root: string): Set<string> {
+    return new Set(PluginSuccessionService.handOvers(root).keys());
   }
 
   private static sameOwner(a: unknown, b: unknown): boolean {
     return String(a ?? '').trim() === String(b ?? '').trim();
   }
 
-  /** Moves whatever `manifest` replaces onto its slug; a no-op for every manifest without `replaces`. */
-  async adopt(manifest: IPluginManifest): Promise<string[]> {
+  /** Moves onto `manifest`'s slug every plugin beside it (in `pluginPath`'s root) that names it as `replacedBy`. */
+  async adopt(manifest: IPluginManifest, pluginPath: string): Promise<string[]> {
     const adopted: string[] = [];
-    for (const predecessor of manifest.replaces ?? []) {
-      if (predecessor === manifest.slug) continue;
-      if (await this.take(predecessor, manifest)) adopted.push(predecessor);
+    for (const [predecessor, successor] of PluginSuccessionService.handOvers(path.dirname(pluginPath))) {
+      if (successor === manifest.slug && await this.take(predecessor, manifest)) adopted.push(predecessor);
     }
     return adopted;
   }
@@ -73,11 +82,9 @@ export class PluginSuccessionService {
       if (PluginSuccessionService.installed(placeholder)) return null;
       const predecessor = await this.db.findOne(SystemConstants.TABLE.PLUGINS, { slug: from });
       if (!predecessor) return null;
-      // Only the same owner's plugin: a site's plugin may succeed that site's plugin, a platform plugin a
-      // platform plugin. A manifest is written by whoever uploads it, so without this one site's upload
-      // could declare it replaces a platform plugin and take its tables.
+      // Only the same owner's plugin, checked against the registry as well as the root it was found in.
       if (!PluginSuccessionService.sameOwner(predecessor.owner_tenant_id, (manifest as { ownerTenantId?: string }).ownerTenantId)) {
-        PluginSuccessionService.logger.warn(`"${to}" says it replaces "${from}", which another owner installed; nothing was moved.`);
+        PluginSuccessionService.logger.warn(`"${from}" names "${to}" as its successor, but another owner installed it; nothing was moved.`);
         return null;
       }
       // Staging the new plugin's sandbox already wrote a row holding only its isolation user; the old
