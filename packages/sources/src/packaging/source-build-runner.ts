@@ -133,8 +133,12 @@ export class SourceBuildRunner {
 
       // Every successful build, manual or scheduled, offers itself to the installer. What happens
       // next is the source's own two settings; this is just the one place a build ends.
+      // The package is staged under the slug its OWN manifest declares, which is not always the source's
+      // slug: a plugin renamed in its repository (`replacedBy`) keeps the source it was added under. So the
+      // artifact is looked up, installed and published by the built package's slug.
+      const built = BuildSourceIdentity.parse(type, pkg.slug);
       if (BuiltPackageInstaller.readFlag(entry.installAfterBuild ?? entry.install_after_build)) {
-        const identity = BuildSourceIdentity.parse(type, slug);
+        const identity = built;
         await this.builtPackageInstaller.install(
           identity,
           await this.resolvePackageArtifact(identity),
@@ -146,7 +150,7 @@ export class SourceBuildRunner {
       // extensions are told. The outcome is recorded either way, so the screen can say what happened.
       const publishToSite = String(entry.publishToSite ?? '').trim();
       if (publishToSite && this.publication) {
-        const outcome = await this.publication.publish(BuildSourceIdentity.parse(type, slug), publishToSite, pkg);
+        const outcome = await this.publication.publish(built, publishToSite, pkg);
         await this.upsertBuildRecord(slug, type, gitUrl, branch, { last_publish: outcome });
       }
 
