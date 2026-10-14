@@ -81,13 +81,15 @@ export class ResolvedContentMetadata {
    */
   static async buildSiteMetadata(): Promise<Metadata> {
     const head = await ResolvedContentMetadata.fetchSite();
-    const siteName = head?.siteName || head?.title || 'Home';
+    // No head-data provider (or one with no name set): no brand name at all. Inventing one
+    // ('Home') put a name nobody configured into every title — "Home | Home" on a home page.
+    const siteName = head?.siteName || head?.title || '';
     const images = head?.ogImage ? [head.ogImage] : undefined;
     return {
-      title: { default: siteName, template: `%s | ${siteName}` },
+      title: siteName ? { default: siteName, template: `%s | ${siteName}` } : undefined,
       description: head?.description || undefined,
-      openGraph: { siteName, title: siteName, description: head?.description || undefined, type: 'website', images },
-      twitter: { card: 'summary_large_image', title: siteName, description: head?.description || undefined, images },
+      openGraph: { siteName: siteName || undefined, title: siteName || undefined, description: head?.description || undefined, type: 'website', images },
+      twitter: { card: 'summary_large_image', title: siteName || undefined, description: head?.description || undefined, images },
       icons: { icon: '/favicon.ico', shortcut: '/favicon.ico', apple: '/apple-touch-icon.png' },
     };
   }
