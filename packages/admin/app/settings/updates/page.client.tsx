@@ -262,6 +262,13 @@ export class UpdatesPage extends AdminComponent {
                       <p className="text-[11px] font-medium leading-relaxed text-slate-600 dark:text-slate-300">
                         <AdminRichText k="settings.updates.deployInstead" vars={{ version: latestVersion }} />
                         <code className="mt-1 block font-mono text-[11px] text-slate-500">atlantis deploy v{latestVersion}</code>
+                        {/* `atlantis deploy` drives a server over ssh. A Docker install on this computer has no
+                            such target — it is updated with the two compose commands the deployment guide gives. */}
+                        <span className="mt-3 block">
+                          <AdminRichText k="settings.updates.deployLocal" vars={{ version: latestVersion }} />
+                        </span>
+                        <code className="mt-1 block font-mono text-[11px] text-slate-500">docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml pull</code>
+                        <code className="block font-mono text-[11px] text-slate-500">docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up -d</code>
                       </p>
                     )}
                   </div>
