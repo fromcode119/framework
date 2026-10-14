@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import type { IVersionFile } from '@cli/services/updater/interfaces/version-file.interface';
@@ -27,21 +28,37 @@ export class EnvVersionFile implements IVersionFile {
     const index = lines.findIndex((entry) => entry.startsWith(`${EnvVersionFile.KEY}=`));
     const line = `${EnvVersionFile.KEY}=${version}`;
     if (index === -1) lines.push(line); else lines[index] = line;
-    const temporary = path.join(path.dirname(this.file), `.env.updater-${process.pid}`);
-    // `.env` can hold secrets, and the updater runs as root: the replacement keeps the original's
-    // permissions and owner, and is never readable by anyone else while it is being written.
-    const original = EnvVersionFile.statOf(this.file);
-    fs.writeFileSync(temporary, `${lines.join('\n').replace(/\n+$/, '')}\n`, { mode: 0o600 });
-    fs.chmodSync(temporary, original ? original.mode & 0o777 : 0o600);
-    if (original) {
-      try { fs.chownSync(temporary, original.uid, original.gid); } catch { /* not root: the file is already ours */ }
+    // `.env` can hold secrets, and the updater runs as root. The replacement is created exclusively under
+    // an unguessable name and never through a link; its owner and permissions are the original's, set on
+    // the open file before a byte is written, so no copy is ever readable by anyone the original was not.
+    const original = EnvVersionFile.lstatOf(this.file);
+    const temporary = path.join(path.dirname(this.file), `.env.updater-${crypto.randomBytes(8).toString('hex')}`);
+    const flags = fs.constants.O_WRONLY | fs.constants.O_CREAT | fs.constants.O_EXCL | fs.constants.O_NOFOLLOW;
+    const fd = fs.openSync(temporary, flags, 0o600);
+    try {
+      if (original?.isFile()) {
+        try { fs.fchownSync(fd, original.uid, original.gid); } catch { /* not root: the file is already ours */ }
+        fs.fchmodSync(fd, original.mode & 0o777);
+      }
+      fs.writeFileSync(fd, `${lines.join('\n').replace(/\n+$/, '')}\n`);
+      fs.fsyncSync(fd);
+    } catch (error) {
+      fs.closeSync(fd);
+      fs.rmSync(temporary, { force: true });
+      throw error;
     }
-    fs.renameSync(temporary, this.file);
+    fs.closeSync(fd);
+    try {
+      fs.renameSync(temporary, this.file);
+    } catch (error) {
+      fs.rmSync(temporary, { force: true });
+      throw error;
+    }
   }
 
-  private static statOf(file: string): fs.Stats | null {
+  private static lstatOf(file: string): fs.Stats | null {
     try {
-      return fs.statSync(file);
+      return fs.lstatSync(file);
     } catch {
       return null;
     }

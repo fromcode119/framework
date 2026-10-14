@@ -9,6 +9,8 @@ import { RemoteShell } from '@cli/services/deploy/remote-shell';
  */
 export class DeploymentVersionStore {
   private static readonly ROLLBACK_FILE = '.previous-version';
+  /** The `.env` switch the updater service reads (`docker-compose.images.yml`). */
+  static readonly UPDATER_KEY = 'ATLANTIS_UPDATER';
 
   constructor(private readonly shell: RemoteShell) {}
 
@@ -21,6 +23,18 @@ export class DeploymentVersionStore {
     // Appends when the key is absent, so a target whose .env predates versioned deploys still works.
     await this.shell.runOrThrow(
       `if grep -qE '^VERSION=' .env; then sed -i 's|^VERSION=.*|VERSION=${version}|' .env; else printf 'VERSION=%s\\n' '${version}' >> .env; fi`,
+    );
+  }
+
+  /**
+   * A target this CLI deploys is updated by this CLI, not by the platform's own updater service: two
+   * deployers on one box race, and the updater restarts each app where this CLI rolls with no gap. So a
+   * `.env` that says nothing about the updater is told `ATLANTIS_UPDATER=off`. An explicit value — an
+   * operator who wants the box to update itself — is left exactly as it is.
+   */
+  async handUpdatesToThisCli(): Promise<void> {
+    await this.shell.runOrThrow(
+      `grep -qE '^${DeploymentVersionStore.UPDATER_KEY}=' .env || { [ -z "$(tail -c1 .env)" ] || echo >> .env; printf '%s=off\\n' '${DeploymentVersionStore.UPDATER_KEY}' >> .env; }`,
     );
   }
 
