@@ -2385,7 +2385,6 @@
       "recommendedUpdate": "v{{version}} Recommended Update",
       "installCore": "Install Core v{{version}}",
       "deployInstead": "This installation runs from a published image, so it cannot update its own files — deploy <code>v{{version}}</code> instead:",
-      "deployLocal": "Running Docker on this computer instead? In the deploy folder, set <code>VERSION=v{{version}}</code> in <code>.env</code>, then run:",
       "lastRegistrySync": "Last Registry Sync: {{at}}",
       "releasesSinceOne": "1 release since this one",
       "releasesSinceMany": "{{count}} releases since this one"
