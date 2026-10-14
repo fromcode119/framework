@@ -1,3 +1,4 @@
+import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { Logger } from '@core/logging';
 import { MigrationCoordinator } from '@core/management/migration-coordinator';
@@ -23,6 +24,7 @@ export class PluginDiscoveryCoordinatorService {
     private discovery: DiscoveryService,
     private coordinator: MigrationCoordinator,
     private lifecycle: LifecycleService,
+    private succession: PluginSuccessionService,
   ) {}
 
   async discoverPlugins(): Promise<void> {
@@ -42,13 +44,18 @@ export class PluginDiscoveryCoordinatorService {
       }
     }
 
+    // A renamed plugin's data moves to the new name before any migration or table sync of it runs, so it
+    // boots as an update, not a fresh install. (The scanner already left the replaced plugin unstaged.)
+    const current = discovered;
+    for (const stage of current) await this.succession.adopt(stage.plugin.manifest, stage.path);
+
     try {
-      const sorted = this.discovery.resolveDependencies(discovered.map(d => d.plugin));
+      const sorted = this.discovery.resolveDependencies(current.map(d => d.plugin));
       await this.coordinator.coordinate(sorted.map(p => p.manifest));
 
       for (const plugin of sorted) {
         const slug = plugin.manifest.slug;
-        const stage = discovered.find(d => d.plugin.manifest.slug === slug);
+        const stage = current.find(d => d.plugin.manifest.slug === slug);
 
         if (!stage) {
           this.logger.warn(`Plugin metadata found for ${slug} but path discovery failed.`);

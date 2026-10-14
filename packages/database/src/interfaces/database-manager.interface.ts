@@ -177,6 +177,12 @@ export interface IDatabaseManager {
    * plugin migration never hand-writes SQL on the owner connection. See `PortableSchemaOperations`.
    */
   createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void>;
+  /**
+   * Renames `from` to `to` with its rows. Where the engine names a table's own objects after it (Postgres:
+   * indexes, sequences, constraints, row-level policies), those starting with `from` are renamed to match,
+   * so nothing created later under the new name collides with a leftover of the old one.
+   */
+  renameTable(from: string, to: string): Promise<void>;
   dropTableIfExists(table: string): Promise<void>;
   dropColumnIfExists(table: string, column: string): Promise<void>;
   /** Fills `target` from `source` (or its JSON key) where `target` is still NULL. Never overwrites. */

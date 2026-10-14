@@ -22,7 +22,7 @@ export class PluginGuestPeerNamespace {
    */
   static build(
     namespace: string,
-    state: { hasPeer(ns: string, slug: string): boolean; peerKeys(): string[] },
+    state: { hasPeer(ns: string, slug: string): boolean; peerKeys(): string[]; peerFunctions(ns: string, slug: string): string[] },
     remote: PluginGuestRemote,
     log?: (message: string) => void,
   ): Record<string, unknown> {
@@ -79,6 +79,11 @@ export class PluginGuestPeerNamespace {
         return peerRef(name);
       },
       getNamespace: () => namespace,
+      // Answered from the peer set the guest holds, with each peer's function names — synchronous, as in-process.
+      offering: (method: unknown) => state.peerKeys()
+        .filter((key) => key.startsWith(`${namespace}:`))
+        .map((key) => key.slice(namespace.length + 1))
+        .filter((slug) => state.peerFunctions(namespace, slug).includes(String(method ?? ''))),
       // Async in-process too, so a remote chain has the same shape a caller already awaits.
       call: (...args: unknown[]) => facadeCall('call', args),
       callOperation: (...args: unknown[]) => facadeCall('callOperation', args),

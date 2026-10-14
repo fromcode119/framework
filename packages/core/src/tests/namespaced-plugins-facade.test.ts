@@ -24,7 +24,16 @@ describe('NamespacedPluginsFacade', () => {
     resolve(targetNamespace: string, slug: string) {
       return targetNamespace === namespace && slug === 'gamma' ? lumenApi : null;
     },
+    slugs(targetNamespace: string) {
+      return targetNamespace === namespace ? ['gamma', 'delta'] : [];
+    },
   };
+
+  it('lists the plugins that offer a method, without the caller naming them', () => {
+    const facade = new NamespacedPluginsFacade(resolver, namespace);
+    expect(facade.offering('resolveCheckoutAdjustments')).toEqual(['gamma']);
+    expect(facade.offering('noSuchMethod')).toEqual([]);
+  });
 
   it('returns null from call when the plugin method is unavailable', async () => {
     const facade = new NamespacedPluginsFacade(resolver, namespace);

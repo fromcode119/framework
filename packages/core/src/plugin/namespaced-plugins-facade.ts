@@ -30,6 +30,15 @@ export class NamespacedPluginsFacade {
     return api;
   }
 
+  /**
+   * The plugins in this namespace whose public API has `methodName` — how a plugin finds the providers
+   * of something without naming them (and without them naming it): each provider exposes the method,
+   * the consumer asks who does.
+   */
+  offering(methodName: string): string[] {
+    return this.resolver.slugs(this.namespaceValue).filter((slug) => this.hasMethod(slug, methodName));
+  }
+
   hasMethod(slug: string, methodName: string): boolean {
     const api = this.get<Record<string, unknown>>(slug);
     return typeof api?.[methodName] === 'function';

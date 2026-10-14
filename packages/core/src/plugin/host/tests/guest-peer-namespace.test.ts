@@ -18,11 +18,17 @@ describe('the guest namespace proxy', () => {
     const state = {
       hasPeer: (_ns: string, slug: string) => peers.includes(slug),
       peerKeys: () => peers.map((slug) => `org.fromcode:${slug}`),
+      peerFunctions: (_ns: string, slug: string) => (slug === 'numbers' ? ['contentReadings'] : ['other']),
     };
     const remote = { ref: vi.fn((root: string, chain: unknown[]) => ({ __ref: true, root, chain })) };
     // Moved out of PluginGuestContextFactory when that file passed its size limit; same behaviour.
     return PluginGuestPeerNamespace.build('org.fromcode', state, remote) as any;
   };
+
+  it('offering() lists the peers exposing a method, synchronously, from what the guest already knows', () => {
+    expect(build(['numbers', 'billing']).offering('contentReadings')).toEqual(['numbers']);
+    expect(build(['billing']).offering('contentReadings')).toEqual([]);
+  });
 
   it('answers has() as a METHOD, synchronously', () => {
     const ns = build(['billing']);

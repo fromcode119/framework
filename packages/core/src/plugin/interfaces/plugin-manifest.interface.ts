@@ -26,6 +26,13 @@ export interface IPluginManifest {
   repository?: string;
   updateUrl?: string; // External URL to check for updates
   
+  /**
+   * The slug this plugin was renamed to. Once a plugin of that slug is installed beside it (same owner),
+   * the platform moves everything kept under this slug — tables, settings, sites, permissions, migration
+   * ledger — to the successor and stops loading this one (see PluginSuccessionService).
+   */
+  replacedBy?: string;
+
   // Dependencies
   dependencies?: Record<string, string>; // pluginSlug -> semver
   peerDependencies?: Record<string, string>;

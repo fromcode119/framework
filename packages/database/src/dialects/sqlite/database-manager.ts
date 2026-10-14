@@ -276,6 +276,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
   async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
     return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
   }
+  async renameTable(from: string, to: string): Promise<void> { return this.portableSchema.renameTable(from, to); }
   async dropTableIfExists(table: string): Promise<void> { return this.portableSchema.dropTableIfExists(table); }
   async dropColumnIfExists(table: string, column: string): Promise<void> { return this.portableSchema.dropColumnIfExists(table, column); }
   async copyColumnValues(table: string, target: string, source: string, jsonKey?: string): Promise<void> {

@@ -1,3 +1,4 @@
+import { PostgresTableRename } from '@database/dialects/postgres/postgres-table-rename';
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
 import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
@@ -233,6 +234,11 @@ export abstract class PostgresCrudOperations extends BaseDialect {
   private readonly portableSchema = new PortableSchemaOperations((statement) => this.queryRaw(statement), (quotedColumn, key) => `${quotedColumn}->'${key}'`);
   async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
     return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
+  }
+  /** The table, then every index, sequence, constraint and policy of it named after it — see PostgresTableRename. */
+  async renameTable(from: string, to: string): Promise<void> {
+    await this.portableSchema.renameTable(from, to);
+    await PostgresTableRename.renameDependents(this, from, to);
   }
   async dropTableIfExists(table: string): Promise<void> { return this.portableSchema.dropTableIfExists(table); }
   async dropColumnIfExists(table: string, column: string): Promise<void> { return this.portableSchema.dropColumnIfExists(table, column); }

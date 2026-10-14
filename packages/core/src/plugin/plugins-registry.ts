@@ -15,6 +15,11 @@ export class PluginsRegistry implements IPluginApiResolver {
     return this.entries.get(PluginsRegistry.createKey(namespace, slug));
   }
 
+  slugs(namespace: string): string[] {
+    const prefix = `${String(namespace || '').trim().toLowerCase()}:`;
+    return [...this.entries.keys()].filter((key) => key.startsWith(prefix)).map((key) => key.slice(prefix.length));
+  }
+
   private static createKey(namespace: string, slug: string): string {
     const normalizedNamespace = String(namespace || '').trim().toLowerCase();
     const normalizedSlug = String(slug || '').trim().toLowerCase();

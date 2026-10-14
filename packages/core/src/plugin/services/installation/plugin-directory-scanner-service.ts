@@ -1,3 +1,4 @@
+import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
@@ -75,6 +76,9 @@ export class PluginDirectoryScannerService {
       if (!fs.existsSync(root)) continue;
       const isBundledRoot = root === bundledRoot;
       const rootOwnerTenantId = rootOwners.get(root);
+      // A plugin another one in this root replaces is not staged at all: staging gives it a sandbox user,
+      // and with it a registry row the plugin that took over its data would find again (PluginSuccessionService).
+      const replaced = PluginSuccessionService.replacedOnDisk(root);
       // Guarded because a SITE's root now feeds this loop, and those are written by upload rather than
       // curated. A throw here would end discovery for every root still queued behind it.
       let pluginDirs: string[] = [];
@@ -128,6 +132,10 @@ export class PluginDirectoryScannerService {
               continue;
             }
             seenSlugs.add(manifest.slug);
+            if (replaced.has(manifest.slug)) {
+              this.logger.info(`Not loading "${manifest.slug}": another plugin replaces it.`);
+              continue;
+            }
             PluginOwners.record(manifest.slug, rootOwnerTenantId);
 
             let mainFile = manifest.main || manifest.entry || PluginPackageLayout.SERVER_ENTRY;

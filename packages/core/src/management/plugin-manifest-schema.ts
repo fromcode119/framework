@@ -35,6 +35,8 @@ export class PluginManifestSchema {
   tags: z.array(z.string()).optional().default([]),
 
   // Dependencies
+  // The slug this plugin was renamed to — see PluginSuccessionService.
+  replacedBy: z.string().regex(/^[a-z0-9-]+$/, 'A successor slug must be lowercase alphanumeric with hyphens').optional(),
   dependencies: z.record(z.string(), z.string()).optional().default({}),
   peerDependencies: z.record(z.string(), z.string()).optional().default({}),
 

@@ -42,6 +42,8 @@ export class PluginInstallationService {
     },
     /** New files ask for more than was approved: stop and hold it for approval. True when held (PluginApprovalGate). */
     private readonly holdIfUnapproved: (slug: string, manifest: IPluginManifest) => Promise<boolean> = async () => false,
+    /** A renamed plugin takes over its old name's data before its first migration (PluginSuccessionService). */
+    private readonly adoptPredecessors: (manifest: IPluginManifest, pluginPath: string) => Promise<unknown> = async () => undefined,
   ) {
     this.migrations = new PluginMigrationRunner(migrationManager, migrationDatabaseFor);
     this.rollback = new PluginInstallRollback(pluginsRoot, logger);
@@ -203,6 +205,7 @@ export class PluginInstallationService {
     // lowercased slug, ownerTenantId stamped from the directory rather than the manifest's own.
     const manifest = InstalledPluginManifestService.read(pluginPath);
 
+    await this.adoptPredecessors(manifest, pluginPath);
     // Given the install's start, a failed migration puts the files this install replaced back.
     const migrate = () => this.migrations.run(slug, pluginPath, manifest, options.progressReporter);
     await (options.startedAt === undefined ? migrate() : this.rollback.runOrRestore(slug, options.startedAt, migrate));

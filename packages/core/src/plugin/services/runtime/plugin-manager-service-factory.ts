@@ -1,3 +1,4 @@
+import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import { ProjectPaths } from '@core/config/paths';
 import { MarketplaceCatalogService } from '@core/marketplace/marketplace-catalog-service';
 import { CoreExtensionManager } from '@core/extensions/extension-manager';
@@ -46,6 +47,12 @@ export class PluginManagerServiceFactory {
     const marketplace = new MarketplaceCatalogService(discovery);
     const admin = new AdminMetadataService();
     const lifecycle = new LifecycleService(manager, registry, discovery, manager.schemaManager);
+    // A renamed plugin takes over its old name's data; a running plugin of the old name is stopped first, unrecorded.
+    const succession = new PluginSuccessionService(manager.schemaDb, async (slug: string) => {
+      await lifecycle.disable(slug, { persistState: false, ignoreDependents: true });
+      await manager.pluginHosts?.stop(slug);
+      manager.plugins.delete(slug);
+    });
     const adminRuntime = new PluginAdminRuntimeService(
       manager.logger,
       manager.db,
@@ -81,6 +88,7 @@ export class PluginManagerServiceFactory {
       (slug: string) => lifecycle.refreshAfterHotUpdate(slug),
       (manifest) => PluginSchemaDatabaseProxy.create({ manifest }, manager) as IDatabaseManager,
       (slug: string, manifest) => lifecycle.approval.holdIfUnapproved(slug, manifest),
+      (manifest, pluginPath: string) => succession.adopt(manifest, pluginPath),
     );
 
     // Telemetry & scaffold services (email getter deferred so integrations are ready)
@@ -111,6 +119,7 @@ export class PluginManagerServiceFactory {
       discovery,
       deps.coordinator,
       lifecycle,
+      succession,
     );
     const shutdownService = new PluginManagerShutdownService(manager, manager.logger);
     const archiveInstaller = new PluginExtensionArchiveInstaller(
