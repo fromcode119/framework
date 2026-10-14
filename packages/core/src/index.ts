@@ -31,6 +31,8 @@ export type { IApiPermissionCheck } from '@core/plugin/context/interfaces/api-pe
 export { PluginManager } from '@core/plugin/plugin-manager';
 export type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 export { ThemeManager } from '@core/theme/theme-manager';
+export { ThemeScaffold } from '@core/theme/scaffold/theme-scaffold';
+export type { IThemeScaffoldInput } from '@core/theme/scaffold/interfaces/theme-scaffold-input.interface';
 export { StorefrontContentSecurityPolicy } from '@core/theme/storefront-content-security-policy';
 export { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 export { AppearanceManager } from '@core/appearance/appearance-manager';

@@ -2,10 +2,10 @@ import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
+import { ThemeScaffold } from '@fromcode119/core';
 import { CliUtils } from '@cli/utils';
 import { ThemeSeedCommandService } from '@cli/services/theme-seed-command-service';
 import { ThemeBuildCommandService } from '@cli/services/theme-build-command-service';
-import { ThemeScaffoldFiles } from '@cli/commands/theme-scaffold-files';
 import { ExtensionBuildCommandService } from '@cli/commands/extension-build-command-service';
 
 export class ThemeCommands {
@@ -14,82 +14,36 @@ export class ThemeCommands {
 
     theme
       .command('create [name]')
-      .description('Create a new theme scaffold')
+      .description('Create a new theme: a theme that builds and renders, with its colours and fonts as editable settings')
       .action(async (name) => {
         try {
-          let themeName = name;
-          if (!themeName) {
-            themeName = await CliUtils.ask(chalk.blue('Theme name: '));
-          }
-
+          const themeName = String(name || await CliUtils.ask(chalk.blue('Theme name: '))).trim();
           if (!themeName) {
             console.error(chalk.red('Theme name is required!'));
             return;
           }
 
-          let slug = themeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-          slug = await CliUtils.ask(chalk.blue(`Theme slug [${slug}]: `));
-          if (!slug) slug = themeName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+          const suggested = ThemeScaffold.slugFor(themeName);
+          const slug = String(await CliUtils.ask(chalk.blue(`Theme slug [${suggested}]: `)) || suggested).trim();
+          // Asked, not invented: a made-up description would be shown to operators as if someone wrote it.
+          const description = String(await CliUtils.ask(chalk.blue('One-line description (optional): '))).trim();
 
-          const themesDir = CliUtils.themesRoot();
-          const themePath = path.join(themesDir, slug);
-
+          const themePath = path.join(CliUtils.themesRoot(), slug);
           if (fs.existsSync(themePath)) {
             console.error(chalk.red(`Theme directory already exists: ${themePath}`));
             return;
           }
 
+          const files: Record<string, string> = ThemeScaffold.files({ slug, name: themeName, description });
           console.log(chalk.green(`\nCreating theme "${themeName}" in ${themePath}...`));
+          for (const [relativePath, content] of Object.entries(files)) {
+            const target = path.join(themePath, relativePath);
+            await fs.ensureDir(path.dirname(target));
+            await fs.writeFile(target, content);
+          }
 
-          // A theme ships NO hand-written entry file. `ThemeEntryGenerator.resolveEntry` GENERATES
-          // `src/theme-entry.generated.jsx` from theme.json's "build" block (styles/components/
-          // eagerComponents globs) unless the theme hand-authors `src/index.jsx` — which this scaffold
-          // does not, so it declares its glob patterns instead. The generated entry hands its component
-          // maps to the boot class named in "build.boot" (default `@theme/theme-boot` → `ThemeBoot`),
-          // so the one file this scaffold DOES write by hand is `src/theme-boot.ts`.
-          await fs.ensureDir(themePath);
-          await fs.ensureDir(path.join(themePath, 'src/styles'));
-
-          const colors = {
-            primary: '#3b82f6',
-            secondary: '#10b981',
-          };
-
-          const themeJson = {
-            slug,
-            name: themeName,
-            version: '1.0.0',
-            description: `Custom theme ${themeName}`,
-            author: 'Me',
-            screenshot: 'screenshot.png',
-            config: { colors },
-            // `ui.entry`/`ui.css` are the BUILD OUTPUT the Vite theme build emits — `bundle.js` and
-            // `<slug>-theme.css` (see `ThemeViteConfig`'s asset naming). Declared here so the admin can
-            // resolve them once the theme is built; nothing on disk yet.
-            ui: {
-              entry: 'bundle.js',
-              css: [`${slug}-theme.css`],
-            },
-            // Glob patterns `ThemeEntryGenerator` reads to generate the Vite entry. Empty until this
-            // theme declares real layouts/block renderers — an empty scaffold ships no invented ones.
-            build: {
-              styles: ['./styles/*.css'],
-              components: [],
-              eagerComponents: [],
-            },
-            // No third-party UI library declared yet, so no chunk to split out — everything unclaimed
-            // lands in the generic `vendor` chunk (see `ThemeViteConfig`). Add an entry here (and to this
-            // theme's own package.json `dependencies`) once one is.
-            vendorChunks: {},
-          };
-
-          await fs.writeJson(path.join(themePath, 'theme.json'), themeJson, { spaces: 2 });
-
-          await fs.writeFile(path.join(themePath, 'src/styles/theme.css'), ThemeScaffoldFiles.css(colors));
-          await fs.writeFile(path.join(themePath, 'src/theme-boot.ts'), ThemeScaffoldFiles.themeBoot(slug));
-
-          console.log(chalk.green('\nTheme scaffolded successfully!'));
-
+          console.log(chalk.green(`\nTheme scaffolded (${Object.keys(files).length} files). Next:`));
+          console.log(chalk.gray(`  atlantis build theme ${slug}`));
         } catch (error) {
           console.error(chalk.red('Error creating theme:'), error);
         }
