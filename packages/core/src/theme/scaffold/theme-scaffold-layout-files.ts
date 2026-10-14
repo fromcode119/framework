@@ -1,7 +1,8 @@
 /**
  * The page frame: the layout catalogue, the layout bound to each width, the app shell, the boot and the
- * theme's configuration. The page layout already renders the framework's own surfaces (the account,
- * sign-in and sign-up, email preferences) so a new theme does not have to learn that contract by trial.
+ * theme's configuration. The runtime every theme needs (the component base, the hook boundary, the layout
+ * shell) comes from the SDK, so none of it is copied here. The page layout already renders the framework's
+ * own surfaces (the account, sign-in and sign-up, email preferences).
  */
 export class ThemeScaffoldLayoutFiles {
   /** Path (inside the theme) to file content, for a theme called `slug`. */
@@ -24,7 +25,7 @@ export class ThemeLayoutCatalog {
     {
       key: 'page.default',
       label: 'Standard page',
-      description: 'Content in a comfortable reading width.',
+      description: 'Content in a comfortable reading width, with the header and footer.',
       width: 'contained',
     },
     {
@@ -38,46 +39,11 @@ export class ThemeLayoutCatalog {
   static readonly DEFAULT_KEY = 'page.default';
 }
 `,
-      'src/layouts/layout-shell.tsx': `import type { ReactNode } from 'react';
-import { Bridge, ContextHooks, PageStyleProvider, Slot, prop } from '@fromcode119/sdk/react';
-import { ThemeProvider } from '@theme/context/theme-context';
-import { ThemeEditorSessionService } from '@theme/lib/site/theme-editor-session-service';
-
-/**
- * What every layout is wrapped in: the page style provider, the theme runtime, and, for CMS editor
- * sessions only, the editor's app-shell slot (a plain visitor keeps a tree whose identity never changes).
- * A Bridge because the style variants are reachable only through a hook.
- */
-export class LayoutShell extends Bridge<{ themeStyleVariants: unknown }> {
-  @prop declare page: any;
-
-  @prop declare children: ReactNode;
-
-  protected read(): { themeStyleVariants: unknown } {
-    return { themeStyleVariants: ContextHooks.usePlugins().themeStyleVariants };
-  }
-
-  private get body(): ReactNode {
-    return ThemeEditorSessionService.isEditorSessionRequest()
-      ? <Slot name="frontend.editor.app-shell" props={{ page: this.page, children: this.children }} fallback={this.children} />
-      : this.children;
-  }
-
-  protected present({ themeStyleVariants }: { themeStyleVariants: unknown }): ReactNode {
-    return (
-      <PageStyleProvider page={this.page} themeStyleVariants={themeStyleVariants}>
-        <ThemeProvider>{this.body}</ThemeProvider>
-      </PageStyleProvider>
-    );
-  }
-}
-`,
       'src/layouts/page-layout.tsx': `import type { ReactNode } from 'react';
 import { Reactor } from '@fromcode119/sdk/react';
-import { AccountShell, AuthMode, AuthShell, TokenEmailPreferencesPanel } from '@fromcode119/sdk/react';
+import { AccountShell, AuthMode, AuthShell, ThemeLayoutShell, TokenEmailPreferencesPanel } from '@fromcode119/sdk/react';
 import { AccountRouteUtils } from '@fromcode119/sdk';
 import { App } from '@theme/components/app';
-import { LayoutShell } from '@theme/layouts/layout-shell';
 
 /**
  * The one page structure: the site chrome around the page's content. For the pages the framework itself
@@ -116,9 +82,9 @@ export class PageLayout extends Reactor {
   render(): ReactNode {
     const { children, page, width } = this.props;
     return (
-      <LayoutShell page={page}>
+      <ThemeLayoutShell page={page}>
         <App page={page} width={width}>{this.content(page, children)}</App>
-      </LayoutShell>
+      </ThemeLayoutShell>
     );
   }
 
@@ -158,7 +124,7 @@ export class ThemeLayouts {
 }
 `,
       'src/components/preview-page-ground.tsx': `import type { ReactNode } from 'react';
-import { ThemeComponent } from '@theme/context/theme-component';
+import { ThemeComponent } from '@fromcode119/sdk/react';
 
 /**
  * The ground around a block previewed in the admin (\`cms.preview.surface\`). On the site every block sits
@@ -215,7 +181,7 @@ export class ThemeBoot {
 }
 `,
       'src/components/app.tsx': `import type { ReactNode } from 'react';
-import { ThemeComponent } from '@theme/context/theme-component';
+import { ThemeComponent } from '@fromcode119/sdk/react';
 
 /** The site chrome around every page. Add the header, menu and footer here. */
 export class App extends ThemeComponent {
@@ -229,6 +195,11 @@ export class App extends ThemeComponent {
       </div>
     );
   }
+}
+`,
+      'src/constants/theme-identity.ts': `/** What this theme is called everywhere it must name itself. One place, so a rename is one edit. */
+export class ThemeIdentity {
+  static readonly SLUG = '${slug}';
 }
 `,
     };

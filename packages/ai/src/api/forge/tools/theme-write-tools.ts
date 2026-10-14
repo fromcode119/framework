@@ -209,7 +209,7 @@ export class ThemeWriteTools {
             activate: McpSchema.boolean({ description: 'Activate after the operation. Defaults to true.' }),
           }, ['name']),
       readOnly: false,
-      description: 'Create a new theme scaffold on disk and optionally activate it.',
+      description: 'Create a new theme on disk, build it, and optionally activate it. A theme that fails to build is kept but not activated; the result says which step failed.',
       handler: async (input, context) => {
         if (context?.dryRun === true) {
           return {

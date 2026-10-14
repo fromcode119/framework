@@ -75,6 +75,16 @@ export { LazyComponentLoaderService } from '@react/lazy-component-loader-service
 export { LazyLoadClass } from '@react/lazy-load-class';
 export { PageStyleContext } from '@react/page-style-context';
 export { PageStyleProvider } from '@react/page-style-provider';
+// The theme runtime every theme builds on: the hook boundary, the component base, the layout shell. Themes
+// used to copy these files; they are the platform's contract, so they live here once.
+export { ThemeRuntimeContext } from '@react/theme-runtime/theme-runtime-context';
+export { ThemeComponent } from '@react/theme-runtime/theme-component';
+export { ThemeProvider } from '@react/theme-runtime/theme-provider';
+export { ThemeLayoutShell } from '@react/theme-runtime/theme-layout-shell';
+export { ThemeEditorSession } from '@react/theme-runtime/theme-editor-session';
+export { NullPluginsFacade } from '@react/theme-runtime/null-plugins-facade';
+export type { IThemeRuntimeValue } from '@react/theme-runtime/interfaces/theme-runtime-value.interface';
+export type { IThemeProviderValues } from '@react/theme-runtime/interfaces/theme-provider-values.interface';
 // Class-consumable contexts (for hook-free framework/admin components via `static contextType`).
 export { PluginContextRegistry } from '@react/plugin-context';
 export { SettingsContext } from '@react/context/settings-context';

@@ -12,6 +12,8 @@ import { ProjectPaths } from '@core/config/paths';
 import { ThemeInstallerService } from '@core/theme/theme-installer-service';
 import { TenantThemeQuota } from '@core/theme/tenant-theme-quota';
 import { ThemeScaffoldService } from '@core/theme/theme-scaffold-service';
+import type { IThemeBuilder } from '@core/theme/interfaces/theme-builder.interface';
+import type { IScaffoldThemeInput } from '@core/theme/interfaces/scaffold-theme-input.interface';
 import { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-default-page-contract-override-loader';
 import { PluginDefaultPageMaterializationRuntimeService } from '@core/services/default-page-contract/plugin-default-page-materialization-runtime-service';
 import { ThemeConfigService } from '@core/theme/theme-config-service';
@@ -38,7 +40,7 @@ export class ThemeManager extends ThemeLifecycle {
   protected configService: ThemeConfigService;
   private updateService: ThemeUpdateService;
 
-  constructor(protected db: any, protected pluginManager?: any) {
+  constructor(protected db: any, protected pluginManager?: any, private readonly themeBuilder: IThemeBuilder | null = null) {
     super();
     this.themesRoot = ProjectPaths.getThemesDir();
     this.seeder = new Seeder(db);
@@ -57,6 +59,7 @@ export class ThemeManager extends ThemeLifecycle {
       (slug) => this.themes.has(slug),
       () => this.discoverThemes(),
       (slug) => this.activateTheme(slug),
+      () => this.themeBuilder,
     );
     this.overrideLoader = new ThemeDefaultPageContractOverrideLoader();
     this.configService = new ThemeConfigService(db, this.themes);
@@ -173,7 +176,6 @@ export class ThemeManager extends ThemeLifecycle {
     await StorefrontRendererRefreshService.afterExtensionsChanged(reason, this.logger);
   }
 
-
   /** The tenant this request acts for, or a thrown error — theme activation is never ambiguous about whose site. */
   protected requireTenant(action: string): string {
     const tenantId = RequestContextUtils.getTenantId();
@@ -236,9 +238,7 @@ export class ThemeManager extends ThemeLifecycle {
     return ThemeActiveSiteConfig.variables(this.getActiveThemeManifest(), this.configService);
   }
 
-  async scaffoldTheme(input: {
-    slug: string; name: string; description?: string; version?: string; activate?: boolean;
-  }): Promise<{ slug: string; name: string; path: string; activated: boolean; activationError: string | null; manifest: any }> {
+  async scaffoldTheme(input: IScaffoldThemeInput) {
     return this.scaffolder.scaffoldTheme(input);
   }
 
