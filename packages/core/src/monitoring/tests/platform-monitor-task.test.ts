@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { PlatformHealthChecks } from '@core/monitoring/platform-health-checks';
 import { PlatformMonitorTask } from '@core/monitoring/platform-monitor-task';
 import { HostResourceService } from '@core/management/host-resource-service';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
@@ -68,10 +69,15 @@ describe('PlatformMonitorTask', () => {
 
   it('treats a held plugin as unhealthy, and a 5xx or unreachable site as down — but not a 404', async () => {
     plugins.get('cms').heldReason = { value: 'capability_drift' };
-    (globalThis.fetch as any).mockResolvedValueOnce({ status: 503 });
-    const { opened } = await task().run();
+    // Down only after it fails twice: the first answer is 503, and so is the second, after the pause.
+    (globalThis.fetch as any).mockResolvedValueOnce({ status: 503 }).mockResolvedValueOnce({ status: 503 });
+    vi.useFakeTimers();
+    const pending = task().run();
+    await vi.advanceTimersByTimeAsync(PlatformHealthChecks.PROBE_RETRY_DELAY_MS);
+    const { opened } = await pending;
+    vi.useRealTimers();
     expect(opened.map((i) => i.key).sort()).toEqual(['plugin-unhealthy:cms', 'site-down:shop']);
-    expect(opened.find((i) => i.key === 'site-down:shop')!.values).toMatchObject({ url: 'https://shop.example/', status: 503 });
+    expect(opened.find((i) => i.key === 'site-down:shop')!.values).toMatchObject({ url: 'https://shop.example/', status: 503, attempts: 2 });
     (globalThis.fetch as any).mockResolvedValueOnce({ status: 404 });
     const second = await task().run();
     expect(second.resolved.map((i) => i.key)).toEqual(['site-down:shop']);

@@ -23,9 +23,10 @@ describe('PlatformHealthChecks site probes', () => {
     vi.spyOn(EnvUtils, 'isProduction').mockReturnValue(true);
     const sites = ['a', 'down1', 'b', 'c', 'down2', 'd'].map((slug) => ({ id: slug, slug, primaryHost: `${slug}.example`, isWorkspace: false, isReadable: true }));
 
-    const found = await new PlatformHealthChecks({ plugins: new Map() }, async () => sites as any).run();
+    const found = await new PlatformHealthChecks({ plugins: new Map() }, async () => sites as any, 0).run();
 
     expect(peak).toBe(PlatformHealthChecks.PROBES_AT_ONCE);
     expect(found.map((incident) => incident.key).sort()).toEqual(['site-down:down1', 'site-down:down2']);
+    expect(found.map((incident) => (incident.values as any).attempts)).toEqual([PlatformHealthChecks.PROBE_ATTEMPTS, PlatformHealthChecks.PROBE_ATTEMPTS]);
   });
 });

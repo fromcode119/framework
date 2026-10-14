@@ -20,8 +20,20 @@ export class PlatformHealthChecks {
   private static readonly MIN_API_SAMPLE = 20;
   /** How many sites' home pages are fetched at the same time. */
   static readonly PROBES_AT_ONCE = 2;
+  /**
+   * A site is reported down only when it fails to answer this many times in a row. One stalled
+   * connection — a slow name lookup, a busy moment — is not an outage, and each false one paged the
+   * operator and opened an incident that closed itself five minutes later.
+   */
+  static readonly PROBE_ATTEMPTS = 2;
+  /** The pause before a failed probe is asked again. */
+  static readonly PROBE_RETRY_DELAY_MS = 5_000;
 
-  constructor(private readonly manager: any, private readonly sites: () => Promise<TenantRecord[]>) {}
+  constructor(
+    private readonly manager: any,
+    private readonly sites: () => Promise<TenantRecord[]>,
+    private readonly probeRetryDelayMs: number = PlatformHealthChecks.PROBE_RETRY_DELAY_MS,
+  ) {}
 
   async run(): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
     const found = [...this.plugins(), ...(await this.sitesDown())];
@@ -61,7 +73,7 @@ export class PlatformHealthChecks {
       while (next < watched.length) {
         const site = watched[next++];
         const url = `${scheme}://${site.primaryHost}/`;
-        const problem = await PlatformHealthChecks.probe(url);
+        const problem = await this.probeConfirmed(url);
         results[watched.indexOf(site)] = problem ? { key: `${MonitoringIncidentKind.SITE_DOWN.value}:${site.id}`, kind: MonitoringIncidentKind.SITE_DOWN.value, subject: site.slug, values: { url, ...problem } } : null;
       }
     };
@@ -70,8 +82,23 @@ export class PlatformHealthChecks {
   }
 
   /**
-   * What is wrong with a site's home page — the status it answered with, or why it did not answer — or
-   * null when it answered. A 404 is an empty site, not a down one.
+   * What is wrong with a site's home page after every attempt, or null as soon as one answers. The
+   * problem reported is the LAST one, with how many attempts it took, so the alert says it was asked
+   * more than once.
+   */
+  private async probeConfirmed(url: string): Promise<Record<string, string | number> | null> {
+    let problem: Record<string, string | number> | null = null;
+    for (let attempt = 1; attempt <= PlatformHealthChecks.PROBE_ATTEMPTS; attempt++) {
+      problem = await PlatformHealthChecks.probe(url);
+      if (!problem) return null;
+      if (attempt < PlatformHealthChecks.PROBE_ATTEMPTS) await new Promise((resolve) => setTimeout(resolve, this.probeRetryDelayMs));
+    }
+    return { ...problem!, attempts: PlatformHealthChecks.PROBE_ATTEMPTS };
+  }
+
+  /**
+   * What is wrong with a site's home page on one attempt — the status it answered with, or why it did
+   * not answer — or null when it answered. A 404 is an empty site, not a down one.
    */
   private static async probe(url: string): Promise<Record<string, string | number> | null> {
     try {
