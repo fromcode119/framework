@@ -38,6 +38,11 @@ export class PortableSchemaOperations {
     );
   }
 
+  /** Renames a table. The engine carries its rows, keys and indexes along; their own names stay as they were. */
+  async renameTable(from: string, to: string): Promise<void> {
+    await this.run(`ALTER TABLE ${PortableSchemaOperations.quote(from, 'table')} RENAME TO ${PortableSchemaOperations.quote(to, 'table')}`);
+  }
+
   async dropTableIfExists(table: string): Promise<void> {
     await this.run(`DROP TABLE IF EXISTS ${PortableSchemaOperations.quote(table, 'table')}`);
   }

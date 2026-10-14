@@ -1,3 +1,4 @@
+import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import { Logger } from '@core/logging';
 import { MigrationCoordinator } from '@core/management/migration-coordinator';
@@ -23,6 +24,7 @@ export class PluginDiscoveryCoordinatorService {
     private discovery: DiscoveryService,
     private coordinator: MigrationCoordinator,
     private lifecycle: LifecycleService,
+    private succession: PluginSuccessionService,
   ) {}
 
   async discoverPlugins(): Promise<void> {
@@ -42,13 +44,20 @@ export class PluginDiscoveryCoordinatorService {
       }
     }
 
+    // A plugin renamed by another is not loaded beside it; its data moves to the new name before any
+    // migration or table sync of the new one runs, so the new one boots as an update, not a fresh install.
+    const replaced = PluginSuccessionService.replacedBy(discovered.map(d => d.plugin.manifest));
+    for (const slug of replaced) if (discovered.some(d => d.plugin.manifest.slug === slug)) this.logger.info(`Not loading "${slug}": another plugin replaces it.`);
+    const current = discovered.filter(d => !replaced.has(d.plugin.manifest.slug));
+    for (const stage of current) await this.succession.adopt(stage.plugin.manifest);
+
     try {
-      const sorted = this.discovery.resolveDependencies(discovered.map(d => d.plugin));
+      const sorted = this.discovery.resolveDependencies(current.map(d => d.plugin));
       await this.coordinator.coordinate(sorted.map(p => p.manifest));
 
       for (const plugin of sorted) {
         const slug = plugin.manifest.slug;
-        const stage = discovered.find(d => d.plugin.manifest.slug === slug);
+        const stage = current.find(d => d.plugin.manifest.slug === slug);
 
         if (!stage) {
           this.logger.warn(`Plugin metadata found for ${slug} but path discovery failed.`);

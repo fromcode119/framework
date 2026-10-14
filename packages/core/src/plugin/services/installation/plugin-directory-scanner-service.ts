@@ -1,3 +1,4 @@
+import { PluginSuccessionService } from '@core/plugin/services/installation/plugin-succession-service';
 import fs from 'fs';
 import path from 'path';
 import { z } from 'zod';
@@ -70,6 +71,9 @@ export class PluginDirectoryScannerService {
     const errored: { manifest: any, path: string, error: string }[] = [];
     const seenSlugs = new Set<string>();
     const seenPaths = new Set<string>();
+    // A plugin another one replaces is not staged at all: staging gives it a sandbox user, and with it a
+    // registry row the plugin that took over its data would then find again (PluginSuccessionService).
+    const replaced = PluginSuccessionService.replacedOnDisk(roots);
 
     for (const root of roots) {
       if (!fs.existsSync(root)) continue;
@@ -128,6 +132,10 @@ export class PluginDirectoryScannerService {
               continue;
             }
             seenSlugs.add(manifest.slug);
+            if (replaced.has(manifest.slug)) {
+              this.logger.info(`Not loading "${manifest.slug}": another plugin replaces it.`);
+              continue;
+            }
             PluginOwners.record(manifest.slug, rootOwnerTenantId);
 
             let mainFile = manifest.main || manifest.entry || PluginPackageLayout.SERVER_ENTRY;
