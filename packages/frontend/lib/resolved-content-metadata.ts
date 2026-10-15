@@ -129,6 +129,17 @@ export class ResolvedContentMetadata {
   }
 
   /**
+   * One declared record field as a query value. A picked image or other related record arrives as
+   * its id — a NUMBER — and used to be dropped as "not a string", so a post's chosen share image
+   * never reached the head and every share card showed the site default instead.
+   */
+  private static resolveRecordField(content: Record<string, unknown> | null, field: string): string {
+    const value = content?.[field];
+    if (typeof value === 'number') return Number.isFinite(value) ? String(value) : '';
+    return ResolvedContentMetadata.resolveStringField(content, field);
+  }
+
+  /**
    * Per-request memoized head-data fetch (React `cache()`), keyed by the full
    * query string (a primitive, so layout `fetchSite` and page `buildEnriched` dedupe
    * whenever they build the identical query). Per-request only — no cross-request
@@ -221,7 +232,7 @@ export class ResolvedContentMetadata {
     if (params.title) query.set('title', params.title);
     if (params.description) query.set('description', params.description);
     for (const field of provider.recordFields) {
-      const value = ResolvedContentMetadata.resolveStringField(params.record ?? null, field);
+      const value = ResolvedContentMetadata.resolveRecordField(params.record ?? null, field);
       if (value) query.set(field, value);
     }
     return ResolvedContentMetadata.headDataCache(query.toString());
