@@ -130,7 +130,6 @@ export class IntegrationManager {
    */
   async get<T = any>(typeKey: string, preferStored: boolean = true): Promise<T> {
     const normalized = this.normalizeKey(typeKey);
-    
     // Fast path for core integrations
     if (normalized === 'email') return this.email as any;
     if (normalized === 'storage') return this.storage as any;
@@ -169,11 +168,12 @@ export class IntegrationManager {
   async instantiateWithConfig<T = any>(
     typeKey: string,
     providerKey: string,
-    config: Record<string, any> = {}
+    config: Record<string, any> = {},
+    options: { providerId?: string } = {},
   ): Promise<{ instance: T; resolved: any }> {
-    const normalized = this.normalizeKey(typeKey);
-    return this.registry.instantiateWithConfig<T>(normalized, providerKey, config, {
+    return this.registry.instantiateWithConfig<T>(this.normalizeKey(typeKey), providerKey, config, {
       context: { projectRoot: this.projectRoot, logger: this.logger },
+      providerId: options.providerId,
     });
   }
 
@@ -186,7 +186,6 @@ export class IntegrationManager {
     await this.refreshStorage(preferStored);
     await this.refreshCache(preferStored);
     await this.refreshQueue(preferStored);
-    
     // Clear dynamic instances so they are re-instantiated on next get()
     this.instances.clear();
   }

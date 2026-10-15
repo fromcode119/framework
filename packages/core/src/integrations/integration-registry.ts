@@ -8,6 +8,7 @@ import { IntegrationProfileService } from '@core/integrations/integration-profil
 import { IntegrationStoredProviderService } from '@core/integrations/integration-stored-provider-service';
 import { IntegrationResolverService } from '@core/integrations/integration-resolver-service';
 import { IntegrationEntrySeeder } from '@core/integrations/integration-entry-seeder';
+import { IntegrationMaskedSecretRestorer } from '@core/integrations/integration-masked-secret-restorer';
 import type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 import type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
 import type { IIntegrationResolved } from '@core/integrations/interfaces/integration-resolved.interface';
@@ -185,7 +186,7 @@ export class IntegrationRegistry {
     typeKey: string,
     providerKey: string,
     config: Record<string, any> = {},
-    options: { context?: { projectRoot?: string; logger?: Logger } } = {},
+    options: { context?: { projectRoot?: string; logger?: Logger }; providerId?: string } = {},
   ): Promise<{ instance: TInstance; resolved: IIntegrationResolved<TInstance> }> {
     const normalizedType = this.normalize(typeKey);
     const runtime = this.types.get(normalizedType);
@@ -195,11 +196,11 @@ export class IntegrationRegistry {
     if (!provider) {
       throw new Error(`Integration "${normalizedType}" provider "${normalizedProvider}" is not registered`);
     }
-    const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, config || {});
-    // AWAIT: a provider hook can belong to an ISOLATED plugin, where it is a stand-in that returns a
-    // promise. In-process these were synchronous, and the un-awaited promise then flowed on as the
-    // "config" — validation read `username` off a Promise, found nothing, and every courier call died with
-    // "requires field username" while the credentials sat correctly in the tenant's own row.
+    const restored = await IntegrationMaskedSecretRestorer.restore(this.storedProviderService, normalizedType, normalizedProvider, provider, config || {}, options.providerId);
+    const resolvedConfig = this.storedProviderService.resolveRuntimeConfig(provider, restored);
+    // AWAIT: a provider hook can belong to an ISOLATED plugin, where it is a stand-in returning a promise
+    // (in-process these were synchronous, and the un-awaited promise flowed on as the "config", so every
+    // courier call died with "requires field username" while the credentials sat correctly in the row).
     const normalizedConfig = provider.normalizeConfig ? await provider.normalizeConfig(resolvedConfig) : resolvedConfig;
     this.profileService.validateProviderConfig(normalizedType, provider, normalizedConfig);
     const instance = await provider.create(normalizedConfig, options.context);
