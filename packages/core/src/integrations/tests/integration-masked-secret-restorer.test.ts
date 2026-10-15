@@ -9,7 +9,7 @@ import { SecretService } from '@core/security/secret-service';
  * secret", for the entry the plugin names.
  */
 const MASK = SecretService.getSavedSecretMask();
-const provider: any = { key: 'econt', label: 'Econt', registeredBy: 'logistics-econt', fields: [{ name: 'username', type: 'text' }, { name: 'password', type: 'password' }] };
+const provider: any = { key: 'acme-courier', label: 'Acme Courier', registeredBy: 'courier-plugin', fields: [{ name: 'username', type: 'text' }, { name: 'password', type: 'password' }] };
 
 describe('a masked secret handed back for a saved provider', () => {
   let sealedA = '';
@@ -21,20 +21,20 @@ describe('a masked secret handed back for a saved provider', () => {
   });
 
   const entries = (): any[] => [
-    { id: 'econt-default', providerKey: 'econt', enabled: true, registeredBy: 'logistics-econt', config: { username: 'a@example.com', password: sealedA } },
-    { id: 'econt-second', providerKey: 'econt', enabled: false, registeredBy: 'logistics-econt', config: { username: 'b@example.com', password: sealedB } },
+    { id: 'acme-default', providerKey: 'acme-courier', enabled: true, registeredBy: 'courier-plugin', config: { username: 'a@example.com', password: sealedA } },
+    { id: 'acme-second', providerKey: 'acme-courier', enabled: false, registeredBy: 'courier-plugin', config: { username: 'b@example.com', password: sealedB } },
   ];
   const stored = (list: any[]) => ({ readStoredProvidersInternal: async () => list }) as unknown as IntegrationStoredProviderService;
   const masked = (username: string) => ({ username, password: MASK });
-  const restore = (list: any[], config: Record<string, any>, providerId?: string, p: any = provider) => IntegrationMaskedSecretRestorer.restore(stored(list), 'shipping_provider', 'econt', p, config, providerId);
+  const restore = (list: any[], config: Record<string, any>, providerId?: string, p: any = provider) => IntegrationMaskedSecretRestorer.restore(stored(list), 'shipping_provider', 'acme-courier', p, config, providerId);
 
   it('is the named entry\'s own stored secret, so a second account is not mixed up with the first', async () => {
-    expect((await restore(entries(), masked('b@example.com'), 'econt-second')).password).toBe(sealedB);
-    expect((await restore(entries(), masked('a@example.com'), 'ECONT-DEFAULT')).password).toBe(sealedA);
+    expect((await restore(entries(), masked('b@example.com'), 'acme-second')).password).toBe(sealedB);
+    expect((await restore(entries(), masked('a@example.com'), 'ACME-DEFAULT')).password).toBe(sealedA);
   });
 
   it('is decrypted to the real password by the framework\'s own runtime step', async () => {
-    const restored = await restore(entries(), masked('b@example.com'), 'econt-second');
+    const restored = await restore(entries(), masked('b@example.com'), 'acme-second');
     const runtime = new IntegrationStoredProviderService({} as any, {} as any, new Map(), {} as any).resolveRuntimeConfig(provider, restored);
     expect(runtime.password).toBe('password-of-account-b');
   });
@@ -46,12 +46,12 @@ describe('a masked secret handed back for a saved provider', () => {
 
   it('stays the placeholder for an unknown entry, and goes only to the plugin that registered the provider', async () => {
     expect((await restore(entries(), masked('a@example.com'), 'no-such-entry')).password).toBe(MASK);
-    expect((await restore(entries(), masked('a@example.com'), 'econt-default', { ...provider, registeredBy: 'another-plugin' })).password).toBe(MASK);
+    expect((await restore(entries(), masked('a@example.com'), 'acme-default', { ...provider, registeredBy: 'another-plugin' })).password).toBe(MASK);
   });
 
   it('leaves a config that carries a real value alone, and never touches a field that is not secret', async () => {
     const config = { username: 'a@example.com', password: 'typed-by-the-plugin' };
-    expect(await restore(entries(), config, 'econt-default')).toEqual(config);
-    expect((await restore(entries(), { username: MASK, password: MASK }, 'econt-default')).username).toBe(MASK);
+    expect(await restore(entries(), config, 'acme-default')).toEqual(config);
+    expect((await restore(entries(), { username: MASK, password: MASK }, 'acme-default')).username).toBe(MASK);
   });
 });
