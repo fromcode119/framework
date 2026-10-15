@@ -139,9 +139,8 @@ export class AuthControllerSso extends AuthControllerRegistration {
   }
 
   async resetPassword(req: Request, res: Response) {
-    if (!(await this.isFrontendAuthEnabledForRequest(req))) {
-      return res.status(404).json({ error: 'Not found' });
-    }
+    // Reached from a link in an email or from the page that link opens: it works on every site, whether or
+    // not the website itself offers sign-in, since the account it acts on may live in an app.
 
     const token = CoercionUtils.toString(req.body?.token);
     const newPassword = CoercionUtils.toString(req.body?.newPassword) || CoercionUtils.toString(req.body?.password);

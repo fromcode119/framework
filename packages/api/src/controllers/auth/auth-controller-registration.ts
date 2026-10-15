@@ -99,7 +99,8 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   }
 
   async verifyEmail(req: Request, res: Response) {
-    if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    // Reached from a link in an email or from the page that link opens: it works on every site, whether or
+    // not the website itself offers sign-in, since the account it acts on may live in an app.
     const token = CoercionUtils.toString(req.body?.token) || CoercionUtils.toString(req.query?.token);
     if (!token) return res.status(400).json({ error: 'Verification token is required' });
     const result = await this.consumeEmailVerificationToken(token);
@@ -110,7 +111,8 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   }
 
   async resendVerification(req: Request, res: Response) {
-    if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    // Reached from a link in an email or from the page that link opens: it works on every site, whether or
+    // not the website itself offers sign-in, since the account it acts on may live in an app.
     const { captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
     if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
