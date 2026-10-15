@@ -233,3 +233,27 @@ jobs:
             scope=framework
           fi
           node packages/arch-guard/dist/arch-guard-cli.cjs ci --scope "$scope"
+
+      # The extension's OWN tests. The guards read an extension; they do not run it, and no other check did:
+      # five tests on two plugins failed on main in one day, because the extension repositories ran guards
+      # only and the framework's own suite does not reach across to them.
+      #
+      # `vitest` is the framework's; a plugin or theme declares no copy of its own. What its tests import
+      # (`@fromcode119/sdk`, and every library the host provides) is resolved from the framework checkout
+      # beside it: Node walks up from `<area>/<name>` and finds `<area>/node_modules`, linked here to the
+      # framework's. An extension with no `vitest.config.ts` has no tests to run. `!cancelled()` so a failing
+      # guard does not hide a failing test, or the other way round: both are reported.
+      - name: Run the extension's tests
+        if: ${{ !cancelled() && inputs.area != '' }}
+        env:
+          TEST_AREA: ${{ inputs.area }}
+          TEST_NAME: ${{ inputs.name }}
+        run: |
+          set -euo pipefail
+          cd "$GITHUB_WORKSPACE/$TEST_AREA/$TEST_NAME"
+          if [ ! -f vitest.config.ts ]; then
+            echo "$TEST_NAME has no vitest.config.ts: no tests to run."
+            exit 0
+          fi
+          ln -sfn "$GITHUB_WORKSPACE/framework/node_modules" "$GITHUB_WORKSPACE/$TEST_AREA/node_modules"
+          "$GITHUB_WORKSPACE/framework/node_modules/.bin/vitest" run --config vitest.config.ts --passWithNoTests
