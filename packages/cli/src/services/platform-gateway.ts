@@ -96,6 +96,9 @@ export class PlatformGateway {
       // writing into a finished response.
       res.destroy();
     });
+    // An HTTP/2 visitor is answered over HTTP/2, which forbids the upstream's connection-level headers.
+    this.proxy.on('proxyRes', (proxyRes, req) => { PlatformGateway.toHttp2(proxyRes, req); });
+
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
@@ -124,7 +127,11 @@ export class PlatformGateway {
     // is routed identically however it arrived — the only difference is which socket it came in on.
     if (this.tls) {
       this.tls.start({
-        request: (req, res) => { void this.handle(req, res); },
+        request: (req, res) => {
+          PlatformGateway.fromHttp2(req);
+          res.on('error', (error: Error) => console.warn('[platform-gateway] response error:', error.message));
+          void this.handle(req, res);
+        },
         upgrade: (req, socket, head) => { this.upgrade(req, socket, head); },
       });
       void this.certificates.refresh();
@@ -136,7 +143,7 @@ export class PlatformGateway {
    * sends new connections to the gateway replacing this one, so a deploy fails no request.
    */
   async stop(graceMs: number): Promise<void> {
-    await Promise.all([this.listener?.stop(graceMs), this.tls?.listener?.stop(graceMs)]);
+    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
     this.agent.destroy();
   }
 
@@ -284,6 +291,32 @@ export class PlatformGateway {
     const map = this.routing.current;
     console.log(`[platform-gateway] listening on http://0.0.0.0:${this.port} mode=${this.routing.enabled ? 'host-routing' : 'single-domain'} hosts=${map?.size ?? 0}`);
     for (const [name, target] of Object.entries(this.targets)) if (target) console.log(`[platform-gateway]   ${name} → ${target}`);
+  }
+
+  /** Connection-level headers HTTP/2 does not allow (RFC 9113 §8.2.2). */
+  static readonly HTTP1_ONLY_HEADERS = ['connection', 'keep-alive', 'proxy-connection', 'transfer-encoding', 'upgrade'];
+
+  /**
+   * An HTTP/2 request names its host in `:authority`, not `Host`, and carries pseudo-headers
+   * (`:method`, `:path`, ...) an HTTP/1.1 upstream refuses. Rewritten in place before routing, so
+   * every request reaches routing and the upstream in the same shape however it arrived.
+   */
+  static fromHttp2(req: http.IncomingMessage): void {
+    if (req.httpVersionMajor !== 2) return;
+    const headers = req.headers as Record<string, string | string[] | undefined>;
+    // `url` and `method` are read FROM `:path` and `:method` on an HTTP/2 request: kept as the
+    // request's own values first, or dropping the pseudo-headers would leave it with neither.
+    const { url, method } = req;
+    Object.defineProperty(req, 'url', { value: url, writable: true, configurable: true });
+    Object.defineProperty(req, 'method', { value: method, writable: true, configurable: true });
+    if (!headers.host && headers[':authority']) headers.host = String(headers[':authority']);
+    for (const name of Object.keys(headers)) if (name.startsWith(':')) delete headers[name];
+  }
+
+  /** The upstream's answer made sendable over HTTP/2: its connection-level headers dropped. */
+  static toHttp2(proxyRes: http.IncomingMessage, req: http.IncomingMessage): void {
+    if (req.httpVersionMajor !== 2) return;
+    for (const header of PlatformGateway.HTTP1_ONLY_HEADERS) delete proxyRes.headers[header];
   }
 
   private static hostOf(req: http.IncomingMessage): string {
