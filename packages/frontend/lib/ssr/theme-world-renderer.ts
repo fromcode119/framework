@@ -46,6 +46,7 @@ export class ThemeWorldRenderer {
     const body = ThemeSsrContentTree.build({
       runtime, content, className: contentClassName, style: contentStyle, notFoundPath, locale,
       transform: ThemeServerRegistry.contentTransform(signature),
+      recipeComponent: ThemeWorldRenderer.recipeComponent(runtime, content, themeSlug),
     });
     const translation = { t: contextValue.t, locale, setLocale: () => undefined };
     const tree = runtime.provide(
@@ -131,5 +132,18 @@ export class ThemeWorldRenderer {
       globals[RENDER_PATH] = previous.path;
       globals[RENDER_ORIGIN] = previous.origin;
     }
+  }
+
+  /**
+   * The default page design a `recipe` page resolves to — the same lookup `DefaultPageDesignRenderer`
+   * makes in the browser, against the registry the plugin bundles filled in this process. Null when
+   * the page has no recipe or nothing is registered for it.
+   */
+  static recipeComponent(runtime: ThemeSsrRuntime, content: unknown, themeSlug: string): unknown {
+    const recipe = String((content as Record<string, unknown> | null)?.recipe || '').trim();
+    if (!recipe) return null;
+    const core = runtime.frameworkCore;
+    const resolved = core.CoreServices.getInstance().defaultDesignRuntimeBridge.resolvePageTarget(recipe, themeSlug || undefined);
+    return resolved?.status === core.LayoutResolutionStatus.RESOLVED ? resolved.winner ?? null : null;
   }
 }

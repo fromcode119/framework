@@ -13,9 +13,12 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
  * mixing the two is the dead-dispatcher crash `ThemeSsrRuntime` exists to prevent. The shared decisions
  * (`ContentRenderingUtils`) ARE imported, so only the element shape is restated — keep them in step.
  *
- * A page with a `recipe` renders through `DefaultPageDesignRenderer`, which resolves its component from
- * a core singleton that only the Next bundle populates. There is no server equivalent, so those pages
- * get the empty (height-reserved) box and fill in on hydration exactly as before.
+ * A page with a `recipe` renders through `DefaultPageDesignRenderer` in the browser, which resolves its
+ * component from the default-design registry the plugin bundles fill. The caller resolves the same
+ * registration on the server (`recipeComponent`) and it renders here with the same props and boundary;
+ * with none resolved the page gets the empty (height-reserved) box and fills in after mount. A recipe
+ * page is never hydrated in place (`StorefrontHydrator` hands it over with `ServerMarkupHandoff`), so
+ * the browser twin keeps its empty box without a parity cost.
  */
 export class ThemeSsrContentTree {
   static build(args: {
@@ -29,14 +32,28 @@ export class ThemeSsrContentTree {
     locale?: string;
     /** The content transformers this render's bundles registered (`ThemeServerRegistry.contentTransform`). */
     transform: (content: unknown, currentContent: unknown) => unknown;
+    /** The component a `recipe` page's default design resolved to on the server, when one did. */
+    recipeComponent?: unknown;
   }): unknown {
-    const { runtime, content, className, style, notFoundPath, locale, transform } = args;
+    const { runtime, content, className, style, notFoundPath, locale, transform, recipeComponent } = args;
     const { createElement } = runtime.react;
     const wrapper = { className, style: style ?? undefined };
     const entry = content as Record<string, unknown> | null;
 
     if (notFoundPath !== undefined) return createElement('div', wrapper, ThemeSsrContentTree.buildNotFound(runtime, notFoundPath, locale));
-    if (entry?.recipe) return createElement('div', wrapper);
+    if (entry?.recipe) {
+      if (!recipeComponent) return createElement('div', wrapper);
+      return createElement(
+        'div',
+        wrapper,
+        createElement(
+          runtime.frameworkReact.PluginMountErrorBoundary,
+          { key: 'design', slotName: 'default-page-design', componentName: String(entry.recipe) },
+          createElement(recipeComponent, { content: ContentRenderingUtils.buildRenderableContent(entry, transform), entry }),
+        ),
+        createElement(runtime.frameworkReact.Slot, { key: 'footer', name: StorefrontContentContract.FOOTER_SLOT, props: { content: entry } }),
+      );
+    }
 
     const Slot = runtime.frameworkReact.Slot;
     const renderable = ContentRenderingUtils.buildRenderableContent(entry, transform);
