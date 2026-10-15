@@ -7,6 +7,7 @@ import { CollectionReadOptions } from '@api/services/collection-read-options';
 import { CollectionReadColumns } from '@api/services/collection-read-columns';
 import { PluginReadRoutePath } from '@api/server/plugin-read-route-path';
 import { PluginReadRouteDocument } from '@api/server/plugin-read-route-document';
+import { PluginReadRoutePrepared } from '@api/server/plugin-read-route-prepared';
 import { PluginReadRouteList } from '@api/server/plugin-read-route-list';
 import { PluginReadRouteOrder } from '@api/server/plugin-read-route-order';
 
@@ -136,14 +137,14 @@ export class PluginReadRoutes {
       orderBy: (db: any, table: any) => PluginReadRoutes.order(db, table, route, query.sort, new Set(CollectionReadColumns.onRequest(collection))),
       // The answer is the prepared document (and, where it expires, the moment it does): no other column is
       // read, and nothing counts the matches.
-      fields: route.freshUntil ? [route.document, route.freshUntil] : [route.document],
+      fields: PluginReadRoutePrepared.fieldsRead(route),
       withoutTotal: true,
     };
 
     const result: any = await this.restController.find(collection, read);
     const now = Date.now();
     const items = (result?.docs || []).map((doc: Record<string, unknown>) => (
-      route.freshUntil && !PluginReadRoutes.freshAt(doc?.[route.freshUntil], now) ? null : PluginReadRouteDocument.pick(route, doc?.[route.document], query)
+      !PluginReadRoutePrepared.usable(route, doc, now) ? null : PluginReadRouteDocument.pick(route, doc?.[route.document], query)
     ));
     // A record the plugin has not prepared yet (a fresh install, a sweep still running) or whose document
     // has outlived the moment it was exact until: the plugin answers instead, so a list never comes back
@@ -168,12 +169,12 @@ export class PluginReadRoutes {
     });
     read[CollectionReadOptions.KEY] = {
       where: (db: any, table: any) => PluginReadRoutes.recordClause(db, table, route, params),
-      fields: route.freshUntil ? [route.document, route.freshUntil] : [route.document],
+      fields: PluginReadRoutePrepared.fieldsRead(route),
       withoutTotal: true,
     };
     const result: any = await this.restController.find(collection, read);
     const doc = result?.docs?.[0];
-    if (!doc || (route.freshUntil && !PluginReadRoutes.freshAt(doc[route.freshUntil], Date.now()))) return next();
+    if (!doc || !PluginReadRoutePrepared.usable(route, doc, Date.now())) return next();
     const stored = doc[route.document];
     // A document worded per language answers only in the language the request reads in: another
     // language's wording is not what the plugin would have said.
@@ -194,9 +195,7 @@ export class PluginReadRoutes {
 
   /** Whether a stored document is still exact at `now`: its moment is a time, and not yet passed. */
   static freshAt(until: unknown, now: number): boolean {
-    if (until === null || until === undefined || until === '') return false;
-    const at = until instanceof Date ? until.getTime() : new Date(until as string | number).getTime();
-    return Number.isFinite(at) && at > now;
+    return PluginReadRoutePrepared.freshAt(until, now);
   }
 
   /**
@@ -224,10 +223,7 @@ export class PluginReadRoutes {
   private static orUnprepared(db: any, table: any, route: IPluginReadRoute, chunks: unknown[]): unknown {
     // A record is a candidate whatever the request asks when it is not prepared, or when its document has
     // outlived the moment it was exact until: the keys it is filtered by may be as stale as the document.
-    const document = PluginReadRoutes.column(table, route, route.document);
-    const unprepared = route.freshUntil
-      ? Sql.query`(${document} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} IS NULL OR ${PluginReadRoutes.column(table, route, route.freshUntil)} <= now())`
-      : Sql.query`${document} IS NULL`;
+    const unprepared = Sql.query`(${PluginReadRoutePrepared.unpreparedSql(route, (field) => PluginReadRoutes.column(table, route, field))})`;
     return db.or(chunks.length === 1 ? chunks[0] : db.and(...chunks), unprepared);
   }
 

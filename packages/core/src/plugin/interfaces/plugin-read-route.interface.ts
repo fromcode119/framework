@@ -64,6 +64,13 @@ export interface IPluginReadRoute {
   freshUntil?: string;
   /** Conditions the route always applies — field equals value — whatever the request asks. */
   where?: Record<string, string | number | boolean>;
+  /**
+   * Field values a stored document must carry to count as prepared (`{ "postRelease": "0.1.86" }`). A
+   * record whose document was kept by another release is NOT filtered out — it is treated as not prepared,
+   * so the plugin answers and stores it again. Putting the release in `where` instead made every list
+   * come back EMPTY right after a release, because every stored document still named the previous one.
+   */
+  preparedBy?: Record<string, string | number | boolean>;
   /** Query parameters the route narrows by. Any other parameter is ignored. */
   filters?: Record<string, IPluginReadRouteFilter>;
   /**
