@@ -14,6 +14,8 @@ import { VerifyEmailCopyService } from '@/app/verify-email/verify-email-copy-ser
 
 export class VerifyEmailPage extends Reactor {
   @prop declare initialLocale: string;
+  @prop declare siteSignIn: boolean;
+  @prop declare siteRegistration: boolean;
 
   @state token = '';
   @state emailForResend = '';
@@ -183,6 +185,7 @@ export class VerifyEmailPage extends Reactor {
             verifyingLabel={copy.verifying}
             verifyButtonLabel={copy.verifyButton}
             goToLoginLabel={copy.goToLogin}
+            siteSignIn={this.siteSignIn}
             verificationErrorNote={copy.verificationErrorNote}
             onTokenChange={this.onTokenChange}
             onVerify={this.onVerify}
@@ -201,16 +204,19 @@ export class VerifyEmailPage extends Reactor {
             resendButtonLabel={copy.resendButton}
             openVerificationLinkLabel={copy.openVerificationLink}
             goToLoginLabel={copy.goToLogin}
+            siteSignIn={this.siteSignIn}
             onEmailChange={this.onEmailChange}
             onSubmit={this.resend}
           />
 
-          <p className="fc-auth-footer fc-auth__switch">
-            {copy.noAccount}{' '}
-            <Link href="/register" className="fc-auth-footer-link fc-auth__link">
-              {copy.register}
-            </Link>
-          </p>
+          {this.siteRegistration ? (
+            <p className="fc-auth-footer fc-auth__switch">
+              {copy.noAccount}{' '}
+              <Link href="/register" className="fc-auth-footer-link fc-auth__link">
+                {copy.register}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </main>
     );

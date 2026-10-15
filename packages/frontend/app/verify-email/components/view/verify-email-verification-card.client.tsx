@@ -12,6 +12,8 @@ export class VerifyEmailVerificationCard extends PureReactor {
   @prop declare verifyingLabel: string;
   @prop declare verifyButtonLabel: string;
   @prop declare goToLoginLabel: string;
+  /** The site's own sign-in page exists: without it the account is used elsewhere (an app) and no link is shown. */
+  @prop declare siteSignIn: boolean;
   @prop declare verificationErrorNote: string;
   @prop declare onTokenChange: (value: string) => void;
   @prop declare onVerify: () => void;
@@ -51,7 +53,7 @@ export class VerifyEmailVerificationCard extends PureReactor {
           </div>
         ) : null}
 
-        {this.status === VerificationStatus.SUCCESS ? (
+        {this.siteSignIn && this.status === VerificationStatus.SUCCESS ? (
           <p className="fc-auth-card-link-row">
             <Link href="/login" className="fc-auth-inline-link fc-auth__link">
               {this.goToLoginLabel}

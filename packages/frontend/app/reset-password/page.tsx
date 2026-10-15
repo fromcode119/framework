@@ -1,5 +1,4 @@
 import { connection } from 'next/server';
-import { notFound } from 'next/navigation';
 import { ResetPasswordPage as ResetPasswordClient } from '@/app/reset-password/components/view/reset-password-client.client';
 import { DynamicContentClient } from '@/app/components/view/dynamic-content-client.client';
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
@@ -11,7 +10,6 @@ export class ResetPasswordPageRoute {
   /** The themed page's own title, description and canonical — see `ThemedRouteMetadata`. */
   static async generateMetadata({ searchParams }: { searchParams?: (Record<string, string | string[] | undefined> | Promise<Record<string, string | string[] | undefined>>) } = {}) {
     await connection();
-    if (!(await FrontendAuthUtils.isFrontendAuthEnabled())) return {};
     return ThemedRouteMetadata.build('reset-password', searchParams);
   }
 
@@ -22,10 +20,10 @@ export class ResetPasswordPageRoute {
   }) {
     // Opt into dynamic rendering without a route-segment `export const`.
     await connection();
-    const authEnabled = await FrontendAuthUtils.isFrontendAuthEnabled();
-    if (!authEnabled) {
-      notFound();
-    }
+    // A reset or email-change link lands here wherever the account is used (the site, an app, the console),
+    // so the page is there even when the site offers no sign-in of its own; only its link to the site's
+    // own forgot-password page is not.
+    const siteSignIn = await FrontendAuthUtils.isFrontendAuthEnabled();
     // Prefer a themed content page (slug 'reset-password') so the active theme fully brands + translates
     // the reset flow; fall back to the framework default client when no themed page is seeded. The
     // themed page reads the `?token=` itself, so the token is preserved through this delegation.
@@ -42,6 +40,6 @@ export class ResetPasswordPageRoute {
     } catch {
       // fall through to the framework default
     }
-    return <ResetPasswordClient locale={locale} />;
+    return <ResetPasswordClient locale={locale} siteSignIn={siteSignIn} />;
   }
 }

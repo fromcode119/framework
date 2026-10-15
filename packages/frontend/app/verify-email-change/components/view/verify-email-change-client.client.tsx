@@ -9,6 +9,8 @@ import { FrontendTokenRedemption } from '@/lib/frontend-token-redemption';
 export class VerifyEmailChangePage extends Reactor {
   /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
   @prop declare locale?: string;
+  /** The site's own sign-in pages exist; without them the account is used elsewhere and no link is shown. */
+  @prop declare siteSignIn?: boolean;
   @state token = '';
   @state status: VerificationStatus = VerificationStatus.IDLE;
   @state message = '';
@@ -79,12 +81,14 @@ export class VerifyEmailChangePage extends Reactor {
             ) : null}
           </div>
 
-          <p className="fc-auth__switch">
-            {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.needPasswordHelp')}{' '}
-            <Link href="/forgot-password" className="fc-auth__link">
-              {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.resetPassword')}
-            </Link>
-          </p>
+          {this.siteSignIn ? (
+            <p className="fc-auth__switch">
+              {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.needPasswordHelp')}{' '}
+              <Link href="/forgot-password" className="fc-auth__link">
+                {FrontendCopy.t(this.locale, 'frontend.verifyEmailChangeClient.resetPassword')}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </main>
     );

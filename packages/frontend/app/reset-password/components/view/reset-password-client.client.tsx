@@ -9,6 +9,8 @@ import { FrontendAuthRequestHeaders } from '@/lib/frontend-auth-request-headers'
 export class ResetPasswordPage extends Reactor {
   /** The page's locale, resolved on the server; the document's `lang` when a view renders only in the browser. */
   @prop declare locale?: string;
+  /** The site's own sign-in pages exist; without them the account is used elsewhere and no link is shown. */
+  @prop declare siteSignIn?: boolean;
   @state token = '';
   @state newPassword = '';
   @state confirmPassword = '';
@@ -145,12 +147,14 @@ export class ResetPasswordPage extends Reactor {
             </button>
           </form>
 
-          <p className="fc-auth__switch">
-            {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.needANewToken')}{' '}
-            <Link href="/forgot-password" className="fc-auth__link">
-              {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.requestResetLink')}
-            </Link>
-          </p>
+          {this.siteSignIn ? (
+            <p className="fc-auth__switch">
+              {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.needANewToken')}{' '}
+              <Link href="/forgot-password" className="fc-auth__link">
+                {FrontendCopy.t(this.locale, 'frontend.resetPasswordClient.requestResetLink')}
+              </Link>
+            </p>
+          ) : null}
         </div>
       </main>
     );
