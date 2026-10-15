@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.401] - 2026-10-15
+
+### Added
+
+- **frontend**: a plugin's default page design renders on the server ([#961](https://github.com/fromcode119/framework/pull/961))
+
+### Fixed
+
+- **core**: a downloaded package is read as a zip or a tarball by its own bytes ([#960](https://github.com/fromcode119/framework/pull/960))
+
 ## [0.2.400] - 2026-10-15
 
 ### Fixed
