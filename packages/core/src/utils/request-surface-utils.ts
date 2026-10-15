@@ -15,6 +15,8 @@ export class RequestSurfaceUtils {
   static readonly CLIENTS = {
     ADMIN_UI: 'admin-ui',
     FRONTEND_UI: 'frontend-ui',
+    /** A native app a site serves: it calls the site's own address, yet it is not the site's website. */
+    APP: 'app',
   } as const;
 
   static get ADMIN_BASE_PATH(): string {
@@ -90,7 +92,7 @@ export class RequestSurfaceUtils {
     if (client === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) {
       return true;
     }
-    if (client === RequestSurfaceUtils.CLIENTS.ADMIN_UI) {
+    if (client === RequestSurfaceUtils.CLIENTS.ADMIN_UI || client === RequestSurfaceUtils.CLIENTS.APP) {
       return false;
     }
 
