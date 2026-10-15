@@ -35,7 +35,13 @@ export class DiscoveryService {
     return this.scanner.discoverPlugins(existingPlugins, installedState);
   }
 
-  public resolveDependencies(plugins: IAtlantisPlugin[]): IAtlantisPlugin[] {
+  /**
+   * Plugins in the order their dependencies need. `reportMissing` is for a list that IS everything installed
+   * (discovery): a dependency absent from it is then not installed, and worth a warning. A subset (one site's
+   * plugins) cannot say that, since a dependency left out of it is installed and simply not enabled there; it
+   * is sorted by the dependencies it does contain and nothing is claimed about the rest.
+   */
+  public resolveDependencies(plugins: IAtlantisPlugin[], options: { reportMissing?: boolean } = {}): IAtlantisPlugin[] {
     const adj: Map<string, string[]> = new Map();
     const inDegree: Map<string, number> = new Map();
     const pluginMap: Map<string, IAtlantisPlugin> = new Map();
@@ -53,9 +59,8 @@ export class DiscoveryService {
             adj.get(depSlug)!.push(p.manifest.slug);
             inDegree.set(p.manifest.slug, (inDegree.get(p.manifest.slug) || 0) + 1);
           } else {
-            // Log missing dependency but don't block sorting here
-            // validation should happen elsewhere or we can throw here
-            this.logger.warn(`Plugin "${p.manifest.slug}" depends on "${depSlug}" but it's not installed.`);
+            // Don't block sorting on a missing dependency; validation happens elsewhere.
+            if (options.reportMissing !== false) this.logger.warn(`Plugin "${p.manifest.slug}" depends on "${depSlug}" but it's not installed.`);
           }
         });
       }

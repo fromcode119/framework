@@ -95,11 +95,16 @@ export class PluginManagerQueryService {
       .find((plugin) => plugin?.manifest?.slug === name)?.manifest?.version);
   }
 
-  /** Returns plugins in topological order based on their dependencies. */
+  /**
+   * Returns plugins in topological order based on their dependencies. A list handed in is a subset (the
+   * plugins one site runs, the active ones): it says nothing about what is installed, so it is sorted without
+   * a warning for each dependency it leaves out. This runs on every page's metadata request; the warning made
+   * hundreds of log lines an hour for a dependency that was installed and merely not enabled on that site.
+   */
   getSortedPlugins(pluginsToSort?: ILoadedPlugin[]): ILoadedPlugin[] {
     const list = pluginsToSort || Array.from(this.plugins.values());
     try {
-      return this.discovery.resolveDependencies(list as any) as ILoadedPlugin[];
+      return this.discovery.resolveDependencies(list as any, { reportMissing: !pluginsToSort }) as ILoadedPlugin[];
     } catch (err: any) {
       this.logger.warn(`Topological sort failed: ${err.message}. Returning unsorted list.`);
       return list;
