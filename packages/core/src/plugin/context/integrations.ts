@@ -39,11 +39,11 @@ export class IntegrationsContextProxy {
         }
         return manager.integrations.entrySeeder.ensure(typeKey, entry);
       },
-      instantiateWithConfig: async (typeKey: string, providerKey: string, config?: Record<string, any>) => {
+      instantiateWithConfig: async (typeKey: string, providerKey: string, config?: Record<string, any>, options?: { providerId?: string }) => {
         if (!hasCapability(`integration:${typeKey}`) && !hasCapability('integrations')) {
           handleViolation(`integration:${typeKey}`);
         }
-        return manager.integrations.instantiateWithConfig(typeKey, providerKey, config || {});
+        return manager.integrations.instantiateWithConfig(typeKey, providerKey, config || {}, { providerId: options?.providerId });
       }
     };
   }

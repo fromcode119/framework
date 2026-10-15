@@ -48,10 +48,16 @@ export interface IPluginContextIntegrations {
   /**
    * Resolve and instantiate an integration from a specific provider config.
    * Stored password fields are decrypted before provider creation.
+   *
+   * A plugin reads a saved entry with its secrets masked, so a config built from one carries the placeholder
+   * where the password is. Name the entry (`providerId`) and each placeholder is replaced by that entry's own
+   * stored secret, for the plugin that registered the provider; without it, only when the provider has exactly
+   * one saved entry.
    */
   instantiateWithConfig<T = any>(
     typeKey: string,
     providerKey: string,
-    config?: Record<string, any>
+    config?: Record<string, any>,
+    options?: { providerId?: string },
   ): Promise<{ instance: T; resolved: any }>;
 }
