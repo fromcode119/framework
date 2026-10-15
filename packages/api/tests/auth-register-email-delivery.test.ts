@@ -14,7 +14,7 @@ describe('sign-up when the confirmation email cannot be sent', () => {
     const instance: any = Object.create(AuthControllerLifecycle.prototype);
     Object.assign(instance, {
       isFrontendAuthEnabledForRequest: vi.fn(async () => true),
-      isFrontendRegistrationEnabled: vi.fn(async () => true),
+      isFrontendRegistrationEnabledForRequest: vi.fn(async () => true),
       validatePasswordAgainstPolicy: vi.fn(async () => null),
       db: { findOne: vi.fn(async () => null), insert: vi.fn(async () => ({ id: 41 })) },
       auth: { hashPassword: vi.fn(async () => 'hash') },

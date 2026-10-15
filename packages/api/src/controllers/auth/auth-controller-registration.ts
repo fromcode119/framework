@@ -30,7 +30,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   async register(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
-    if (!(await this.isFrontendRegistrationEnabled())) return res.status(404).json({ error: 'Not found' });
+    if (!(await this.isFrontendRegistrationEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
     if (this.parseUserId((req as any)?.user?.id)) return res.status(409).json({ error: 'You are already signed in' });
 
     const { email, password, firstName, lastName, context } = req.body || {};
@@ -185,7 +185,12 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, true);
   }
 
-  protected async isFrontendRegistrationEnabled(): Promise<boolean> {
+  /**
+   * The site's sign-up switch is about its own website, like the sign-in switch above: an app or another
+   * client the site serves creates its accounts through the same endpoint whatever the website offers.
+   */
+  protected async isFrontendRegistrationEnabledForRequest(req: Request): Promise<boolean> {
+    if (!this.isFrontendRequestContext(req)) return true;
     return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, true);
   }
 

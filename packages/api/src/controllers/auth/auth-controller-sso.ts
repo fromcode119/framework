@@ -257,7 +257,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
 
     let user = await this.db.findOne(SystemConstants.TABLE.USERS, { email: identity.email });
     if (!user) {
-      if (!(await this.isFrontendRegistrationEnabled())) return SsoSignInError.REGISTRATION_CLOSED;
+      if (!(await this.isFrontendRegistrationEnabledForRequest(req))) return SsoSignInError.REGISTRATION_CLOSED;
       const hashedPassword = await this.auth.hashPassword(randomBytes(24).toString('hex'));
       user = await this.db.insert(SystemConstants.TABLE.USERS, {
         email: identity.email, password: hashedPassword, roles: ['customer'],
@@ -273,7 +273,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     if ((await this.getUserAccountStatus(user.id)) !== AccountStatus.ACTIVE) return SsoSignInError.ACCOUNT_INACTIVE;
     // An account from ANOTHER site signing in here would join this site as a customer — that is signing
     // up, so it follows this site's registration setting exactly as a new account does.
-    if (!(await this.belongsToStorefrontSite(req, user.id)) && !(await this.isFrontendRegistrationEnabled())) {
+    if (!(await this.belongsToStorefrontSite(req, user.id)) && !(await this.isFrontendRegistrationEnabledForRequest(req))) {
       return SsoSignInError.REGISTRATION_CLOSED;
     }
     await this.setEmailVerified(user.id, true);
