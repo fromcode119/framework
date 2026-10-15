@@ -18,6 +18,7 @@ import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
 import { RenderableContentTransformerRegistry } from '@fromcode119/react/renderable-content-transformer-registry';
 import { ThemeSsrContentTree } from '@/lib/ssr/theme-ssr-content-tree';
 import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
+import { ThemeWorldRenderer } from '@/lib/ssr/theme-world-renderer';
 import { StorefrontContentContract } from '@/lib/storefront-content-contract';
 import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
 import { StorefrontPageTree } from '@/runtime/view/storefront-page-tree.client';
@@ -239,6 +240,34 @@ describe('StorefrontPageTree parity with ThemeSsrContentTree', () => {
     const html = ParityFixture.server(ParityFixture.recipeContent);
     expect(html).toBe('<div class="w-full" style="min-height:100svh"></div>');
     expect(ParityFixture.client(ParityFixture.recipeContent)).toBe(html);
+  });
+
+  it('recipe content resolved on the server — its default design inside the box, with the footer slot', () => {
+    const Design = function Design(props: { entry?: { slug?: string } }): React.ReactElement {
+      return createElement('article', { className: 'design', 'data-entry': props.entry?.slug }, 'policy');
+    };
+    const tree = ThemeSsrContentTree.build({
+      runtime: ParityFixture.runtime, content: ParityFixture.recipeContent, className: ParityFixture.className,
+      style: ParityFixture.style, transform: ParityFixture.transform, recipeComponent: Design,
+    });
+    expect(ParityFixture.runtime.renderToString(tree)).toBe('<div class="w-full" style="min-height:100svh"><article class="design" data-entry="shop">policy</article></div>');
+  });
+
+  it('a recipe resolves to the design a plugin bundle registered in the runtime core, and to nothing otherwise', () => {
+    const core = ParityFixture.runtime.frameworkCore;
+    const bridge = core.CoreServices.getInstance().defaultDesignRuntimeBridge;
+    const Design = function Design(): React.ReactElement { return createElement('article', null, 'policy'); };
+    expect(ThemeWorldRenderer.recipeComponent(ParityFixture.runtime, ParityFixture.recipeContent, 'parity-theme')).toBeNull();
+    bridge.registerPluginDefaults({
+      namespace: 'org.test', pluginSlug: 'beta',
+      layouts: [{ namespace: 'org.test', pluginSlug: 'beta', targetKind: core.LayoutTargetKind.PAGE, targetKey: 'beta.store-index', component: Design, required: true }],
+    });
+    try {
+      expect(ThemeWorldRenderer.recipeComponent(ParityFixture.runtime, ParityFixture.recipeContent, 'parity-theme')).toBe(Design);
+      expect(ThemeWorldRenderer.recipeComponent(ParityFixture.runtime, ParityFixture.stringContent, 'parity-theme')).toBeNull();
+    } finally {
+      bridge.unregisterByPlugin('org.test', 'beta');
+    }
   });
 
   it('empty content — the prose body with the display title', () => {

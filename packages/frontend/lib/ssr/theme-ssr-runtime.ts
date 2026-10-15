@@ -49,6 +49,12 @@ export class ThemeSsrRuntime {
    * are the same context object.
    */
   readonly frameworkReact: any; // eslint-disable-line @typescript-eslint/no-explicit-any
+  /**
+   * `@fromcode119/core/client` as the plugin and theme bundles resolve it — the SAME module instance, so
+   * the registrations their storefront entries make (a plugin's default page designs, through
+   * `PluginFrontendLayoutRegistrar`) are readable here. The Next bundle's own copy is a different one.
+   */
+  readonly frameworkCore: any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
   private static instance: Promise<ThemeSsrRuntime> | null = null;
 
@@ -58,10 +64,12 @@ export class ThemeSsrRuntime {
     react: any, // eslint-disable-line @typescript-eslint/no-explicit-any
     renderToString: (element: unknown) => string,
     frameworkReact: any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    frameworkCore: any, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) {
     this.react = react;
     this.renderToString = renderToString;
     this.frameworkReact = frameworkReact;
+    this.frameworkCore = frameworkCore;
     this.contextBridge = frameworkReact.ContextBridge;
   }
 
@@ -112,8 +120,9 @@ export class ThemeSsrRuntime {
     const react = frameworkRequire('react');
     const reactDomServer = frameworkRequire('react-dom/server');
     const frameworkReact = appRequire('@fromcode119/react');
+    const frameworkCore = frameworkRequire('@fromcode119/core/client');
 
-    return new ThemeSsrRuntime(react, reactDomServer.renderToString, frameworkReact);
+    return new ThemeSsrRuntime(react, reactDomServer.renderToString, frameworkReact, frameworkCore);
   }
 
   /**
