@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.398] - 2026-10-14
+
+### Fixed
+
+- **plugins**: a data folder that cannot be moved never fails a hand-over ([#954](https://github.com/fromcode119/framework/pull/954))
+- **react**: the theme runtime is on the runtime bridge ([#953](https://github.com/fromcode119/framework/pull/953))
+
 ## [0.2.397] - 2026-10-14
 
 ### Fixed
