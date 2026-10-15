@@ -7,6 +7,7 @@ import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, 
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener-policy';
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
+import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
@@ -96,6 +97,7 @@ export class PlatformGateway {
       // writing into a finished response.
       res.destroy();
     });
+    this.proxy.on('proxyRes', (proxyRes, req) => { GatewayHttp2Adapter.toHttp2(proxyRes, req); });
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
@@ -136,7 +138,7 @@ export class PlatformGateway {
    * sends new connections to the gateway replacing this one, so a deploy fails no request.
    */
   async stop(graceMs: number): Promise<void> {
-    await Promise.all([this.listener?.stop(graceMs), this.tls?.listener?.stop(graceMs)]);
+    await Promise.all([this.listener?.stop(graceMs), this.tls?.stop(graceMs)]);
     this.agent.destroy();
   }
 

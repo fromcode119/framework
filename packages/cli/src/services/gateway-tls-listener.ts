@@ -1,10 +1,13 @@
 import http from 'http';
+import http2 from 'http2';
 import net from 'net';
 import { Duplex } from 'stream';
 import tls, { SecureContext } from 'tls';
 import { CertificateBundle } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
+import { GatewayTlsConnections } from '@cli/services/gateway/gateway-tls-connections';
+import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 
 /**
  * Terminates TLS for the platform, answering each handshake with the certificate stored for the name
@@ -22,8 +25,9 @@ import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 export class GatewayTlsListener {
   static readonly ENV_PORT = 'GATEWAY_TLS_PORT';
 
-  server: http.Server | null = null;
-  /** Accepts for `server`: reads the PROXY header from `edge`, and stops gracefully. */
+  /** Its open connections, which is what a graceful stop works through. */
+  readonly connections = new GatewayTlsConnections();
+  /** Accepts for this listener: reads the PROXY header from `edge`, and stops gracefully. */
   listener: GatewayListener | null = null;
 
   /**
@@ -57,38 +61,64 @@ export class GatewayTlsListener {
     request: (req: http.IncomingMessage, res: http.ServerResponse) => void;
     upgrade: (req: http.IncomingMessage, socket: Duplex, head: Buffer) => void;
   }): void {
-    // HTTP over TLS sockets this listener builds itself (`secure`), rather than an `https.Server`: the
-    // TLS socket is made here, where the visitor from `edge`'s PROXY header is known and can be set on it.
-    const server = http.createServer(handlers.request);
-    server.on('clientError', (error: Error, socket) => {
-      console.warn(`[platform-gateway] tls client error: ${error.message}`);
-      socket.destroy();
-    });
-    server.on('upgrade', handlers.upgrade);
-
-    this.server = server;
-    this.listener = new GatewayListener(server, (socket) => this.secure(socket, server), this.relays);
+    this.listener = new GatewayListener(this.connections, (socket) => this.secure(socket, handlers), this.relays);
     this.listener.listen(this.port, () => {
       console.log(`[platform-gateway] terminating TLS on 0.0.0.0:${this.port} certificates=${this.size}`);
     });
   }
 
-  /** One accepted connection, terminated here: the certificate for the name asked for, or a refusal. */
-  private secure(socket: net.Socket, server: http.Server): void {
+  /** Stops gracefully: no new connections, HTTP/2 sessions told to go away, in-flight requests finished. */
+  async stop(graceMs: number): Promise<void> {
+    await this.listener?.stop(graceMs);
+  }
+
+  /**
+   * One accepted connection, terminated here: the certificate for the name asked for, or a refusal.
+   *
+   * HTTP/2 for every client that offers it (all current browsers), HTTP/1.1 for the rest and for
+   * WebSockets — negotiated in the handshake (ALPN). Over HTTP/1.1 a browser opens at most six
+   * connections per host, so a page's fonts, images and scripts queue behind each other; over HTTP/2
+   * they share one connection.
+   *
+   * Node's secure HTTP/2 server does the handshake, created for THIS connection: it is the one place
+   * the visitor from `edge`'s PROXY header is known, and the TLS socket Node makes is reachable only
+   * from the server that made it. The socket is fed as a replaying stream (see
+   * `GatewayListener.replaying`), so bytes read ahead with the header still reach the handshake.
+   */
+  private secure(socket: net.Socket, handlers: {
+    request: (req: http.IncomingMessage, res: http.ServerResponse) => void;
+    upgrade: (req: http.IncomingMessage, socket: Duplex, head: Buffer) => void;
+  }): void {
     const visitor = { address: socket.remoteAddress, port: socket.remotePort };
-    const secure = new tls.TLSSocket(GatewayListener.replaying(socket), {
-      isServer: true,
+    const server = http2.createSecureServer({
+      allowHTTP1: true,
+      ALPNProtocols: ['h2', 'http/1.1'],
       SNICallback: (servername, callback) => { void this.contextFor(servername, callback); },
+    }, ((req: http.IncomingMessage, res: http.ServerResponse) => {
+      this.connections.track(req, res);
+      // A visitor that goes away mid-response must not become an unhandled 'error' that ends the process.
+      res.on('error', (error: Error) => console.warn('[platform-gateway] response error:', error.message));
+      GatewayHttp2Adapter.fromHttp2(req);
+      handlers.request(req, res);
+    }) as unknown as (req: http2.Http2ServerRequest, res: http2.Http2ServerResponse) => void);
+
+    server.on('secureConnection', (secure: tls.TLSSocket) => {
+      Object.defineProperty(secure, 'remoteAddress', { value: visitor.address, configurable: true });
+      Object.defineProperty(secure, 'remotePort', { value: visitor.port, configurable: true });
+      if (secure.alpnProtocol !== 'h2') this.connections.addPlain(secure);
     });
-    secure.on('error', (error: Error) => {
+    server.on('session', (session: http2.ServerHttp2Session) => {
+      this.connections.addSession(session);
+      session.on('error', (error: Error) => console.warn(`[platform-gateway] h2 session error: ${error.message}`));
+    });
+    server.on('upgrade', handlers.upgrade);
+    server.on('tlsClientError', (error: Error, secure: tls.TLSSocket) => {
       // Every refused handshake lands here, including ordinary internet scanning. Logged at warn
       // without the peer's input echoed back.
       console.warn(`[platform-gateway] tls handshake refused: ${error.message}`);
       secure.destroy();
     });
-    Object.defineProperty(secure, 'remoteAddress', { value: visitor.address, configurable: true });
-    Object.defineProperty(secure, 'remotePort', { value: visitor.port, configurable: true });
-    server.emit('connection', secure);
+    server.emit('connection', GatewayListener.replaying(socket));
   }
 
   /**

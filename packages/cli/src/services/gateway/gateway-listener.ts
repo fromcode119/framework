@@ -3,6 +3,7 @@ import net from 'net';
 import { Duplex } from 'stream';
 import { NetworkAddressUtils } from '@fromcode119/core';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
+import type { IGatewayConnectionHost } from '@cli/services/gateway/interfaces/gateway-connection-host.interface';
 
 /**
  * One of the gateway's ports: accepts connections itself, reads the PROXY header (`GatewayProxyProtocol`),
@@ -24,7 +25,8 @@ export class GatewayListener {
   private markListening: () => void = () => undefined;
 
   constructor(
-    private readonly server: http.Server,
+    /** What the accepted connections are served by — an HTTP server, or the TLS listener's connections. */
+    private readonly server: IGatewayConnectionHost,
     /** What a connection becomes once its header is read; the TLS listener wraps it in TLS first. */
     deliver: (socket: net.Socket) => void = (socket) => server.emit('connection', socket),
     /**
