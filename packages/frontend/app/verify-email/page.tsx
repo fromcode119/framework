@@ -1,5 +1,4 @@
 import { connection } from 'next/server';
-import { notFound } from 'next/navigation';
 import { LocalizationUtils } from '@fromcode119/core/client';
 import { VerifyEmailPage as VerifyEmailClient } from '@/app/verify-email/components/view/verify-email-client.client';
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
@@ -14,10 +13,10 @@ export class VerifyEmailPageRoute {
   }) {
     // Opt into dynamic rendering without a route-segment `export const`.
     await connection();
-    const authEnabled = await FrontendAuthUtils.isFrontendAuthEnabled();
-    if (!authEnabled) {
-      notFound();
-    }
+    // The link in a sign-up email lands here wherever the account was made (the site, an app, the console),
+    // so the page is there even when the site offers no sign-in of its own; only its links to it are not.
+    const siteSignIn = await FrontendAuthUtils.isFrontendAuthEnabled();
+    const siteRegistration = siteSignIn && await FrontendAuthUtils.isFrontendRegistrationEnabled();
     const resolvedSearchParams = await QueryParamUtils.resolveSearchParams(searchParams);
     const defaultLocale = await FrontendLocaleService.readDefaultLocale();
     const requestedLocale = LocalizationUtils.normalizeLocaleCode(
@@ -25,6 +24,6 @@ export class VerifyEmailPageRoute {
       || QueryParamUtils.readSearchValue(resolvedSearchParams, 'lang'),
       { short: true },
     );
-    return <VerifyEmailClient initialLocale={requestedLocale || defaultLocale} />;
+    return <VerifyEmailClient initialLocale={requestedLocale || defaultLocale} siteSignIn={siteSignIn} siteRegistration={siteRegistration} />;
   }
 }

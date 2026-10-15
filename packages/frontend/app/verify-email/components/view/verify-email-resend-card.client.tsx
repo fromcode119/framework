@@ -16,6 +16,8 @@ export class VerifyEmailResendCard extends PureReactor {
   @prop declare resendButtonLabel: string;
   @prop declare openVerificationLinkLabel: string;
   @prop declare goToLoginLabel: string;
+  /** The site's own sign-in page exists: without it the account is used elsewhere (an app) and no link is shown. */
+  @prop declare siteSignIn: boolean;
   @prop declare onEmailChange: (value: string) => void;
   @prop declare onSubmit: (event: FormEvent) => void;
 
@@ -65,7 +67,7 @@ export class VerifyEmailResendCard extends PureReactor {
                 </a>
               </p>
             ) : null}
-            {this.resendStatus === VerificationStatus.SUCCESS ? (
+            {this.siteSignIn && this.resendStatus === VerificationStatus.SUCCESS ? (
               <p className="fc-auth-card-link-row">
                 <Link href="/login" className="fc-auth-inline-link fc-auth__link">
                   {this.goToLoginLabel}

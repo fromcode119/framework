@@ -30,7 +30,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   async register(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
-    if (!(await this.isFrontendRegistrationEnabled())) return res.status(404).json({ error: 'Not found' });
+    if (!(await this.isFrontendRegistrationEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
     if (this.parseUserId((req as any)?.user?.id)) return res.status(409).json({ error: 'You are already signed in' });
 
     const { email, password, firstName, lastName, context } = req.body || {};
@@ -99,7 +99,8 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   }
 
   async verifyEmail(req: Request, res: Response) {
-    if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    // Reached from a link in an email or from the page that link opens: it works on every site, whether or
+    // not the website itself offers sign-in, since the account it acts on may live in an app.
     const token = CoercionUtils.toString(req.body?.token) || CoercionUtils.toString(req.query?.token);
     if (!token) return res.status(400).json({ error: 'Verification token is required' });
     const result = await this.consumeEmailVerificationToken(token);
@@ -110,7 +111,8 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   }
 
   async resendVerification(req: Request, res: Response) {
-    if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
+    // Reached from a link in an email or from the page that link opens: it works on every site, whether or
+    // not the website itself offers sign-in, since the account it acts on may live in an app.
     const { captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
     if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
@@ -185,7 +187,12 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, true);
   }
 
-  protected async isFrontendRegistrationEnabled(): Promise<boolean> {
+  /**
+   * The site's sign-up switch is about its own website, like the sign-in switch above: an app or another
+   * client the site serves creates its accounts through the same endpoint whatever the website offers.
+   */
+  protected async isFrontendRegistrationEnabledForRequest(req: Request): Promise<boolean> {
+    if (!this.isFrontendRequestContext(req)) return true;
     return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, true);
   }
 

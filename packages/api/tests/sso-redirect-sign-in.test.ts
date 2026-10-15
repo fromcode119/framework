@@ -48,7 +48,7 @@ const controller = (db = new DatabaseStub()) => {
   const self = instance as any;
   vi.spyOn(self, 'getSettingBoolean').mockResolvedValue(true);
   vi.spyOn(self, 'isFrontendAuthEnabledForRequest').mockResolvedValue(true);
-  vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(true);
+  vi.spyOn(self, 'isFrontendRegistrationEnabledForRequest').mockResolvedValue(true);
   vi.spyOn(self, 'getUserAccountStatus').mockResolvedValue(AccountStatus.ACTIVE);
   for (const name of ['setUserAccountStatus', 'setForcePasswordReset', 'pushPasswordHistory', 'upsertMeta', 'setEmailVerified']) {
     vi.spyOn(self, name).mockResolvedValue(undefined);
@@ -122,7 +122,7 @@ describe('the account a provider identity signs into', () => {
 
   it('does not create an account where registration is closed', async () => {
     const { self, db } = controller();
-    vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(false);
+    vi.spyOn(self, 'isFrontendRegistrationEnabledForRequest').mockResolvedValue(false);
     const outcome = await self.resolveSsoAccount(request(), new SsoIdentity('new@example.com', true), 'google');
     expect(outcome).toBe(SsoSignInError.REGISTRATION_CLOSED);
     expect(db.inserted).toHaveLength(0);
@@ -130,7 +130,7 @@ describe('the account a provider identity signs into', () => {
 
   it("refuses an existing account from ANOTHER site where this site's registration is closed — joining is signing up", async () => {
     const { self } = controller(new DatabaseStub([existing]));
-    vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(false);
+    vi.spyOn(self, 'isFrontendRegistrationEnabledForRequest').mockResolvedValue(false);
     vi.spyOn(self, 'belongsToStorefrontSite').mockResolvedValue(false);
     const join = vi.spyOn(self, 'joinStorefrontSite').mockResolvedValue(undefined);
     const outcome = await self.resolveSsoAccount(request(), new SsoIdentity('owner@example.com', true), 'google');
@@ -141,7 +141,7 @@ describe('the account a provider identity signs into', () => {
 
   it("still signs in a member of this site where registration is closed", async () => {
     const { self } = controller(new DatabaseStub([existing]));
-    vi.spyOn(self, 'isFrontendRegistrationEnabled').mockResolvedValue(false);
+    vi.spyOn(self, 'isFrontendRegistrationEnabledForRequest').mockResolvedValue(false);
     vi.spyOn(self, 'belongsToStorefrontSite').mockResolvedValue(true);
     vi.spyOn(self, 'joinStorefrontSite').mockResolvedValue(undefined);
     expect(await self.resolveSsoAccount(request(), new SsoIdentity('owner@example.com', true), 'google')).toBe(existing);
