@@ -7,6 +7,7 @@ import { CertificateBundle } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { GatewayTlsConnections } from '@cli/services/gateway/gateway-tls-connections';
+import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 
 /**
  * Terminates TLS for the platform, answering each handshake with the certificate stored for the name
@@ -95,6 +96,9 @@ export class GatewayTlsListener {
       SNICallback: (servername, callback) => { void this.contextFor(servername, callback); },
     }, ((req: http.IncomingMessage, res: http.ServerResponse) => {
       this.connections.track(req, res);
+      // A visitor that goes away mid-response must not become an unhandled 'error' that ends the process.
+      res.on('error', (error: Error) => console.warn('[platform-gateway] response error:', error.message));
+      GatewayHttp2Adapter.fromHttp2(req);
       handlers.request(req, res);
     }) as unknown as (req: http2.Http2ServerRequest, res: http2.Http2ServerResponse) => void);
 

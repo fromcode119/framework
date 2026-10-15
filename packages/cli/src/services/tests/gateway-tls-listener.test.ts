@@ -12,7 +12,7 @@ import { InternalServiceAuth } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
-import { PlatformGateway } from '@cli/services/platform-gateway';
+import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter';
 
 /**
  * REAL handshakes against a real listener, because every promise this class makes is a handshake
@@ -171,7 +171,7 @@ describe('GatewayTlsListener — HTTP/2', () => {
     await new Promise<void>((resolve) => upstream!.listen(0, '127.0.0.1', resolve));
     const target = `http://127.0.0.1:${(upstream.address() as net.AddressInfo).port}`;
     const proxy = httpProxy.createProxyServer({});
-    proxy.on('proxyRes', (proxyRes, req) => { PlatformGateway.toHttp2(proxyRes, req); });
+    proxy.on('proxyRes', (proxyRes, req) => { GatewayHttp2Adapter.toHttp2(proxyRes, req); });
 
     const bundle = {
       certificates: [{
@@ -185,7 +185,7 @@ describe('GatewayTlsListener — HTTP/2', () => {
       (async () => ({ ok: true, json: async () => bundle })) as unknown as typeof fetch);
     listener = new GatewayTlsListener(0, client);
     listener.start({
-      request: (req, res) => { PlatformGateway.fromHttp2(req); proxy.web(req, res, { target }); },
+      request: (req, res) => { proxy.web(req, res, { target }); },
       upgrade: (_r, s) => s.destroy(),
     });
     await listener.listener!.listening;
