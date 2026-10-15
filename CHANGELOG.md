@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.404] - 2026-10-15
+
+### Fixed
+
+- **core**: sorting a site's plugins no longer warns about dependencies it does not enable ([#967](https://github.com/fromcode119/framework/pull/967))
+
 ## [0.2.403] - 2026-10-15
 
 ### Added
