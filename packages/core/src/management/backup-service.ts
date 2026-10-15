@@ -1,4 +1,5 @@
 import { MarketplaceArtifactDigest } from '@core/marketplace/marketplace-artifact-digest';
+import { DownloadedArchiveFormat } from '@core/management/downloaded-archive-format';
 import fs from 'fs';
 import path from 'path';
 import * as tar from 'tar';
@@ -120,12 +121,11 @@ export class BackupService {
       const buffer = Buffer.from(arrayBuffer);
       if (verify) MarketplaceArtifactDigest.assertMatches(buffer, verify.sha256, verify.label);
       
+      // The package's own bytes decide; the address and content-type only hint at a payload that is neither.
       const contentType = response.headers.get('content-type');
-      const isZip = url.toLowerCase().includes('.zip') || 
-                    url.includes('/zip/') || 
-                    response.url.toLowerCase().includes('.zip') ||
-                    contentType === 'application/zip' || 
-                    contentType === 'application/x-zip-compressed';
+      const hintedZip = [url, response.url].some((address) => address.toLowerCase().includes('.zip'))
+        || url.includes('/zip/') || contentType === 'application/zip' || contentType === 'application/x-zip-compressed';
+      const isZip = DownloadedArchiveFormat.isZip(buffer) || (!DownloadedArchiveFormat.isGzip(buffer) && hintedZip);
 
       const tempFile = path.join(this.getBackupsDir(), `download-${Date.now()}${isZip ? '.zip' : '.tar.gz'}`);
       fs.writeFileSync(tempFile, buffer);
