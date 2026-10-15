@@ -1,6 +1,7 @@
 import { CoercionUtils } from '@fromcode119/core';
 import type { IPluginReadRoute } from '@fromcode119/core';
 import { Sql } from '@fromcode119/database';
+import { PluginReadRoutePrepared } from '@api/server/plugin-read-route-prepared';
 
 /**
  * The order of a read route's answer: the sort the request names among the route's declared sorts —
@@ -27,10 +28,7 @@ export class PluginReadRouteOrder {
     }
     if (!fields.includes('id')) order.push(db.desc(column('id')));
     if (fields.some((field) => derived.has(field))) {
-      const document = column(route.document);
-      order.unshift(route.freshUntil
-        ? Sql.query`(${document} IS NULL OR ${column(route.freshUntil)} IS NULL OR ${column(route.freshUntil)} <= now()) DESC`
-        : Sql.query`(${document} IS NULL) DESC`);
+      order.unshift(Sql.query`(${PluginReadRoutePrepared.unpreparedSql(route, column)}) DESC`);
     }
     return order;
   }
