@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.405] - 2026-10-16
+
+### Fixed
+
+- **frontend**: email confirmation and password reset links open on sites without website sign-in ([#970](https://github.com/fromcode119/framework/pull/970))
+
 ## [0.2.404] - 2026-10-15
 
 ### Fixed
