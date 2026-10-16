@@ -1,3 +1,4 @@
+import type { IRowProtection } from '@database/interfaces/row-protection.interface';
 import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
@@ -114,6 +115,12 @@ export interface IDatabaseManager {
    * row-level security is Postgres-only and has no portable form, so it belongs beside the driver.
    */
   readonly tenantIsolation: ITenantIsolation;
+
+  /** Whether this driver can keep rows as written with triggers (see IRowProtection). FALSE unless implemented. */
+  supportsRowProtection(): boolean;
+
+  /** Write-once columns and undeletable rows, enforced by the database. Refuses on a driver without it. */
+  readonly rowProtection: IRowProtection;
 
   /**
    * What the database says about its own tables — columns, types, sequences, foreign keys.

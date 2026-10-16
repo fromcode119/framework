@@ -49,6 +49,8 @@ export class TenantEraser {
       const accountIds = await own.ids(tenant.id);
       await this.db.queryRaw('BEGIN');
       try {
+        // Rows a collection keeps as written may go only here, with the site, after its export exists.
+        if (this.db.supportsRowProtection()) await this.db.rowProtection.allowWithinTransaction();
         for (const table of [...this.tables].reverse()) {
           if (!table.hasTenantColumn) continue;
           const before = await this.db.queryRaw(TenantSql.countTenantRows(table.name), [tenant.id]);

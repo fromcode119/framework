@@ -1,3 +1,4 @@
+import { SchemaRowProtection } from '@core/database/schema-row-protection';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import { IDatabaseManager, TenantColumn } from '@fromcode119/database';
 import { Logger } from '@core/logging';
@@ -51,6 +52,7 @@ export class SchemaManager {
       // table that predates tenancy is scoped the first time it is seen — and the statements are
       // all IF NOT EXISTS / idempotent, so repeating them is free.
       await this.tenantIsolation.applyTenantIsolation(tableName, { system: collection.system === true });
+      await SchemaRowProtection.apply(this.db, tableName, collection, this.logger);
 
       this.declared.warnUnsupportedIndexes(plan);
       await this.declared.persistSchemaFingerprint(plan);
