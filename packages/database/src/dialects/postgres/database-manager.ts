@@ -1,3 +1,5 @@
+import { PostgresRowProtection } from '@database/dialects/postgres/protection/postgres-row-protection';
+import type { IRowProtection } from '@database/interfaces/row-protection.interface';
 import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { Client, type Pool } from 'pg';
@@ -62,25 +64,21 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   public readonly tenantIsolation: ITenantIsolation =
     new PostgresTenantIsolation((sqlText, values) => this.queryRaw(sqlText, values));
 
+  /** Write-once columns and undeletable rows, on the same connection as every other statement. */
+  public readonly rowProtection: IRowProtection = new PostgresRowProtection((sqlText, values) => this.queryRaw(sqlText, values));
   private readonly declaredUniques =
     new PostgresDeclaredUniqueReconciler((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly declaredNullability =
     new PostgresDeclaredNullabilityReconciler((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly columnDefaults =
     new PostgresColumnDefaultDropper((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly timestampDefaults =
     new PostgresTimestampDefaultReconciler((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly booleanColumns = new PostgresBooleanColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
   private readonly pointInTimeColumns =
     new PostgresPointInTimeColumnReconciler((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly columns =
     new PostgresColumnInspector((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly textIdRepair =
     new PostgresTextIdPrimaryKeyRepair((sqlText, values) => this.queryRaw(sqlText, values));
 
@@ -150,6 +148,8 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
   supportsTenantIsolation(): boolean {
     return true;
   }
+
+  supportsRowProtection(): boolean { return true; }
 
   /** Holds one pooled client with `app.tenant_id` set, so row-level security applies to every
    * statement `fn` issues. See TenantConnectionScope for why this is not `SET LOCAL`. */

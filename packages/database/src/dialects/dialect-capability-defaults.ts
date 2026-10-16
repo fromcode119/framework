@@ -4,6 +4,8 @@ import { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
 import { RefusingTenantIsolation } from '@database/tenant/refusing-tenant-isolation';
+import { RefusingRowProtection } from '@database/protection/refusing-row-protection';
+import type { IRowProtection } from '@database/interfaces/row-protection.interface';
 import { BlindSchemaIntrospection } from '@database/introspection/blind-schema-introspection';
 import type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
 import type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
@@ -66,6 +68,13 @@ export abstract class DialectCapabilityDefaults {
    * security overrides this with a real one.
    */
   readonly tenantIsolation: ITenantIsolation = new RefusingTenantIsolation(this.constructor.name);
+
+  /** No triggers, no protection: say so rather than pretend (see RefusingRowProtection). */
+  supportsRowProtection(): boolean {
+    return false;
+  }
+
+  readonly rowProtection: IRowProtection = new RefusingRowProtection(this.constructor.name);
 
   readonly introspection: ISchemaIntrospection = new BlindSchemaIntrospection();
 

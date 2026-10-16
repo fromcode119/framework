@@ -2,6 +2,7 @@ import { CollectionKind } from '@core/enums/collection-kind.enum';
 import type { IAccess } from '@core/interfaces/access.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
+import type { ICollectionProtection } from '@core/collections/interfaces/collection-protection.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
 
 export interface ICollection {
@@ -32,6 +33,8 @@ export interface ICollection {
   entity?: string;
   /** Records can be archived and restored instead of deleted. See {@link ICollectionArchive}. */
   archive?: ICollectionArchive;
+  /** Rows the database keeps as written. See {@link ICollectionProtection}. */
+  protect?: ICollectionProtection;
   fields: IField[];
   indexes?: {
     name?: string;

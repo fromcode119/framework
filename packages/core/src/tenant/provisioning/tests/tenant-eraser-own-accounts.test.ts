@@ -19,6 +19,8 @@ afterEach(() => fs.rmSync(root, { recursive: true, force: true }));
 const eraserWith = (accountIds: number[]) => {
   const statements: string[] = [];
   const db = {
+    supportsRowProtection: () => true,
+    rowProtection: { allowWithinTransaction: vi.fn(async () => { statements.push("SET LOCAL fromcode.protected_rows_override = 'on'"); }) },
     withTenant: vi.fn(async (_id: string, work: () => Promise<void>) => work()),
     queryRaw: vi.fn(async (sql: string) => {
       statements.push(sql.replace(/\s+/g, ' ').trim());
@@ -43,6 +45,9 @@ describe('deleting a site', () => {
     const at = (text: string) => statements.findIndex((sql) => sql.includes(text));
     expect(at('SELECT DISTINCT u.id')).toBeLessThan(at('BEGIN'));
     expect(at('BEGIN')).toBeLessThan(at('DELETE FROM "_system_tenant_memberships"'));
+    // Rows kept as written may go only here, and only inside this transaction.
+    expect(at('BEGIN')).toBeLessThan(at("SET LOCAL fromcode.protected_rows_override = 'on'"));
+    expect(at("SET LOCAL fromcode.protected_rows_override = 'on'")).toBeLessThan(at('DELETE FROM "_system_tenant_memberships"'));
     expect(at('DELETE FROM "_system_tenant_memberships"')).toBeLessThan(at('DELETE FROM "users"'));
     expect(at('DELETE FROM "users"')).toBeLessThan(at('COMMIT'));
     expect(outcome.accounts).toBe(2);

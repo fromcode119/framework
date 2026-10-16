@@ -42,6 +42,8 @@ export type { IColumnStats } from '@database/interfaces/column-stats.interface';
 export type { IScopedUniqueRules } from '@database/interfaces/scoped-unique-rules.interface';
 export type { ITenantBlindUniqueRule } from '@database/interfaces/tenant-blind-unique-rule.interface';
 export type { ITenantIsolation } from '@database/interfaces/tenant-isolation.interface';
+export type { IRowProtection } from '@database/interfaces/row-protection.interface';
+export { RowProtectionSql } from '@database/dialects/postgres/protection/row-protection-sql';
 export type { ISchemaIntrospection } from '@database/interfaces/schema-introspection.interface';
 export type { IForeignKeyReference } from '@database/interfaces/foreign-key-reference.interface';
 export { TenantPolicySpec } from '@database/tenant/policies/tenant-policy-spec';
