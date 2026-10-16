@@ -102,6 +102,7 @@
     "autoprefixer": "^10.4.24",
     "concurrently": "^8.2.2",
     "http-proxy": "^1.18.1",
+    "jsqr": "^1.4.0",
     "postcss": "^8.5.6",
     "rollup-plugin-external-globals": "^0.13.0",
     "terser": "^5.51.2",
