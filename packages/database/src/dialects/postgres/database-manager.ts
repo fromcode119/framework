@@ -66,7 +66,6 @@ export class PostgresDatabaseManager extends PostgresCrudOperations implements I
 
   /** Write-once columns and undeletable rows, on the same connection as every other statement. */
   public readonly rowProtection: IRowProtection = new PostgresRowProtection((sqlText, values) => this.queryRaw(sqlText, values));
-
   private readonly declaredUniques =
     new PostgresDeclaredUniqueReconciler((sqlText, values) => this.queryRaw(sqlText, values));
   private readonly declaredNullability =
