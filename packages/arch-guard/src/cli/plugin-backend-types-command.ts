@@ -35,7 +35,7 @@ export class PluginBackendTypesCommand extends ArchorCommand {
     const selected = argv.length
       ? argv.map((slug) => byName.get(slug) as string)
       : GuardScope.isExtension()
-        ? GuardScope.areas().map((entry) => entry.dir).filter((dir) => PluginBackendTypecheck.hasBackend(dir))
+        ? GuardScope.areas().filter((entry) => entry.area === 'plugins').map((entry) => entry.dir).filter((dir) => PluginBackendTypecheck.hasBackend(dir))
         : [...byName.values()];
 
     console.log('Plugin backend typecheck (real tsc — esbuild does NOT check types):');
