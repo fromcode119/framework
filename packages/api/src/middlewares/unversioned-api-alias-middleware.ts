@@ -1,6 +1,7 @@
 import type express from 'express';
 import { ApiVersionUtils } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
+import { LegacyApiPathUsage } from '@api/middlewares/legacy-api-path-usage';
 
 /**
  * Serves every api route at both the versioned and the bare path, whichever one the routes are mounted at.
@@ -42,6 +43,8 @@ export class UnversionedApiAliasMiddleware {
     return (req: express.Request, _res: express.Response, next: express.NextFunction): void => {
       const rewritten = UnversionedApiAliasMiddleware.rewrite(req.url);
       if (rewritten !== req.url) {
+        // Only the legacy direction is worth naming: it is an address someone outside still holds.
+        if (ApiVersionUtils.prefix() === ApiVersionUtils.API_BASE_PATH) LegacyApiPathUsage.record(req.method, req.url, req.headers['user-agent'], req.headers.referer);
         req.url = rewritten;
         req.originalUrl = rewritten;
       }
