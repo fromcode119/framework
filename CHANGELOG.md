@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.407] - 2026-10-17
+
+### Fixed
+
+- **core**: the API response cache keeps an answer plain and replays gzip only with its encoding ([#975](https://github.com/fromcode119/framework/pull/975))
+
 ## [0.2.406] - 2026-10-16
 
 ### Added
