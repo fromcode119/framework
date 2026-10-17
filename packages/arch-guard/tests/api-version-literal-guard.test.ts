@@ -8,8 +8,8 @@ import { ApiVersionLiteralGuard } from '../src/api-version-literal-guard';
 describe('ApiVersionLiteralGuard', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'api-version-literal-'));
   afterAll(() => fs.rmSync(dir, { recursive: true, force: true }));
-  const scan = (source: string): number[] => {
-    const file = path.join(dir, `f${Math.random().toString(36).slice(2)}.ts`);
+  const scan = (source: string, ext = 'ts'): number[] => {
+    const file = path.join(dir, `f${Math.random().toString(36).slice(2)}.${ext}`);
     fs.writeFileSync(file, source);
     return ApiVersionLiteralGuard.scan(file);
   };
@@ -24,6 +24,12 @@ describe('ApiVersionLiteralGuard', () => {
     "source: '/((?!api/v1/themes/).*)'",
   ])('flags %s', (line) => {
     expect(scan(line)).toEqual([1]);
+  });
+
+  it('flags a stylesheet url() and a manifest template with the version written in', () => {
+    expect(scan("  src: url('/api/v1/themes/x/ui/fonts/a.woff2') format('woff2');", 'css')).toEqual([1]);
+    expect(scan('{ "urlTemplate": "/api/v1/plugins/cms/img?src={value}" }', 'json')).toEqual([1]);
+    expect(scan('{ "urlTemplate": "{api}/plugins/cms/img?src={value}" }', 'json')).toEqual([]);
   });
 
   it.each([

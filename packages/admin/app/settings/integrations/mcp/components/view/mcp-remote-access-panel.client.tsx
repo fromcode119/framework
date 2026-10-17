@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { state } from '@fromcode119/react-class-components';
-import { SystemConstants } from '@fromcode119/core/client';
+import { ApiPathUtils, SystemConstants } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -123,7 +123,7 @@ export class McpRemoteAccessPanel extends AdminComponent {
               checked={this.enabled}
               disabled={this.saving}
               label={AdminI18n.t('settings.integrations.hostedMcpEndpoint')}
-              description={this.enabled ? AdminI18n.t('settings.integrations.remoteClientsMayConnectTo') : AdminI18n.t('settings.integrations.disabledTheEndpointAnswers403')}
+              description={this.enabled ? AdminI18n.t('settings.integrations.remoteClientsMayConnectTo', { path: ApiPathUtils.versioned('/mcp') }) : AdminI18n.t('settings.integrations.disabledTheEndpointAnswers403')}
               onChange={(next: boolean) => { void this.setEnabled(next); }}
             />
             <div className="space-y-2 border-t border-slate-200 pt-4 dark:border-slate-700">

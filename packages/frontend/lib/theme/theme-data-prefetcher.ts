@@ -115,11 +115,14 @@ export class ThemeDataPrefetcher {
    * ```json
    * "lcp": {
    *   "imagePath": "items.0.imageUrl",
-   *   "urlTemplate": "/api/v1/plugins/content/img?src={value}&w={width}&q=60",
+   *   "urlTemplate": "{api}/plugins/content/img?src={value}&w={width}&q=60",
    *   "widths": [360, 520, 680, 800],
    *   "sizes": "(max-width: 48em) 100vw, (max-width: 62em) 92vw, 50vw"
    * }
    * ```
+   *
+   * `{api}` is the api prefix this deployment serves (`ApiVersionUtils.prefix()`), so a theme never spells
+   * it — a literal `/api/v1/...` template preloaded one URL while the page then requested another.
    */
   static extractLcpImageUrl(
     prefetchData: Record<string, unknown>,
@@ -146,7 +149,7 @@ export class ThemeDataPrefetcher {
       }
       const encodedValue = encodeURIComponent(uploadPath);
       const buildUrl = (w: number): string => {
-        const path = lcp.urlTemplate.replace('{value}', encodedValue).replace('{width}', String(w));
+        const path = lcp.urlTemplate.replace('{api}', ApiVersionUtils.prefix()).replace('{value}', encodedValue).replace('{width}', String(w));
         return path.startsWith('http') ? path : `${publicApiBase}${path}`;
       };
 

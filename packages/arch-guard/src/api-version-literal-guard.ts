@@ -10,6 +10,9 @@ import { GuardScope } from './cli/guard-scope';
  * matching the moment the prefix changes. The api serves `/api/...` and `/api/v1/...` alike, which
  * is exactly why a stale literal would go unnoticed until the alias is retired.
  *
+ * Stylesheets and manifests (`theme.json`, `appearance.json`) are scanned too: a font `url()` or an LCP
+ * `urlTemplate` with the version written in it is the same second answer.
+ *
  * GATES the framework. An extension tree is REPORTED only, until each one has moved to its own
  * route-service / client resolver; then it gates too.
  */
@@ -56,7 +59,7 @@ export class ApiVersionLiteralGuard {
       if (ApiVersionLiteralGuard.SKIP.has(entry.name) && !(entry.name === 'ui' && dir.includes(`${path.sep}src`))) continue;
       const full = path.join(dir, entry.name);
       if (entry.isDirectory()) ApiVersionLiteralGuard.sources(full, out);
-      else if (/\.(tsx?|mjs|cjs)$/.test(entry.name) && !/\.d\.ts$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) out.push(full);
+      else if (/\.(tsx?|mjs|cjs|css|less|json)$/.test(entry.name) && !/^(package|package-lock|tsconfig.*)\.json$/.test(entry.name) && !/\.d\.ts$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) out.push(full);
     }
     return out;
   }
