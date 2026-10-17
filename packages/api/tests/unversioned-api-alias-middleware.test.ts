@@ -61,7 +61,7 @@ describe('UnversionedApiAliasMiddleware', () => {
   });
 
   it('rewrites url and originalUrl before calling next', () => {
-    const req: any = { url: '/api/v1/users', originalUrl: '/api/v1/users' };
+    const req: any = { method: 'GET', url: '/api/v1/users', originalUrl: '/api/v1/users', headers: {} };
     const next = vi.fn();
     new UnversionedApiAliasMiddleware().middleware()(req, {} as any, next);
     expect(req.url).toBe('/api/users');
