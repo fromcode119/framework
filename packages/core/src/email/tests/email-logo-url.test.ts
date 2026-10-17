@@ -40,9 +40,9 @@ describe('the site email logo', () => {
     vi.spyOn(SiteBaseUrl, 'forCurrentSite').mockResolvedValue('https://shop.example');
     const theme = async () => 'aurora';
     expect(await EmailLogoUrl.resolve(db({}), 'theme:logo-horizontal.png', theme))
-      .toBe('https://shop.example/api/v1/themes/aurora/ui/logo-horizontal.png');
+      .toBe('https://shop.example/api/themes/aurora/ui/logo-horizontal.png');
     expect(await EmailLogoUrl.resolve(db({}), 'theme:images/logo-black.png', theme))
-      .toBe('https://shop.example/api/v1/themes/aurora/ui/images/logo-black.png');
+      .toBe('https://shop.example/api/themes/aurora/ui/images/logo-black.png');
   });
 
   it('is empty for a theme file with no active theme, or a path that climbs out of ui/', async () => {
@@ -68,6 +68,6 @@ describe('the site email logo', () => {
       db: db({ '_system_meta:email_logo': { key: 'email_logo', value: 'theme:images/logo-black.png' } }),
     };
     const email = EmailContextProxy.createEmailProxy({ manifest: { slug: 'epsilon' } } as any, manager, async () => 'aurora');
-    expect(await email.logoUrl()).toBe('https://shop.example/api/v1/themes/aurora/ui/images/logo-black.png');
+    expect(await email.logoUrl()).toBe('https://shop.example/api/themes/aurora/ui/images/logo-black.png');
   });
 });
