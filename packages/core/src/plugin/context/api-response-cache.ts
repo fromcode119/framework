@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
+import zlib from 'zlib';
 import { CookieConstants } from '@core/constants/cookie.constants';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SiteContentRevision } from '@core/tenant/site-content-revision';
@@ -28,6 +29,11 @@ import type { IStoredApiResponse } from '@core/plugin/context/interfaces/stored-
  * user, any method but GET, and any route that did not opt in. Only a plain 200 JSON answer whose
  * handler set no cookie is kept — a cookie the framework already put on the response before the route
  * (the visitor's CSRF token) belongs to that visitor, is not kept, and is set again on every hit. A disabled plugin, or one a site does not run, is never answered from it.
+ *
+ * WHAT IS KEPT IS THE PLAIN ANSWER. The JSON compression middleware gzips `res.json` before it reaches
+ * `res.end`, so the bytes seen here can be gzip. They are kept decoded, with the gzip beside them, and a
+ * hit sends the gzip only to a client that accepts it, with its `Content-Encoding` — never gzip bytes
+ * labelled as plain JSON, which a server-side reader cannot parse at all.
  *
  * In memory, per api process, bounded by size with the least recently used first out.
  */
@@ -93,7 +99,10 @@ export class ApiResponseCache {
         ApiResponseCache.entries.set(key, stored);
         for (const [name, value] of stored.headers) res.setHeader(name, value);
         res.setHeader(ApiResponseCache.STATUS_HEADER, 'hit');
-        res.status(stored.status).end(stored.body);
+        const gzip = Boolean(stored.gzipped) && String(req.headers['accept-encoding'] ?? '').toLowerCase().includes('gzip');
+        if (stored.gzipped) res.vary('Accept-Encoding');
+        if (gzip) res.setHeader('Content-Encoding', 'gzip');
+        res.status(stored.status).end(gzip && stored.gzipped ? stored.gzipped : stored.body);
         return;
       }
       if (stored) ApiResponseCache.drop(key);
@@ -175,14 +184,26 @@ export class ApiResponseCache {
       const value = res.getHeader(name);
       if (value !== undefined) headers.push([name, String(value)]);
     }
-    const body = Buffer.concat(chunks, size);
+    const sent = Buffer.concat(chunks, size);
+    const encoding = String(res.getHeader('content-encoding') ?? '').toLowerCase();
+    // Only plain or gzip answers are understood; anything else is not kept rather than kept wrong.
+    if (encoding && encoding !== 'gzip') return;
+    let body = sent;
+    if (encoding === 'gzip') {
+      try {
+        body = zlib.gunzipSync(sent);
+      } catch {
+        return;
+      }
+    }
+    const entry: IStoredApiResponse = { body, status: 200, headers, storedAt: Date.now(), ...(encoding === 'gzip' ? { gzipped: sent } : {}) };
     ApiResponseCache.drop(key);
-    ApiResponseCache.entries.set(key, { body, status: 200, headers, storedAt: Date.now() });
-    ApiResponseCache.bytes += body.length;
-    for (const [oldest, entry] of ApiResponseCache.entries) {
+    ApiResponseCache.entries.set(key, entry);
+    ApiResponseCache.bytes += ApiResponseCache.weight(entry);
+    for (const [oldest, kept] of ApiResponseCache.entries) {
       if (ApiResponseCache.bytes <= ApiResponseCache.MAX_BYTES) break;
       ApiResponseCache.entries.delete(oldest);
-      ApiResponseCache.bytes -= entry.body.length;
+      ApiResponseCache.bytes -= ApiResponseCache.weight(kept);
     }
   }
 
@@ -190,6 +211,11 @@ export class ApiResponseCache {
     const entry = ApiResponseCache.entries.get(key);
     if (!entry) return;
     ApiResponseCache.entries.delete(key);
-    ApiResponseCache.bytes -= entry.body.length;
+    ApiResponseCache.bytes -= ApiResponseCache.weight(entry);
+  }
+
+  /** The memory one kept answer holds: its plain bytes and, when it has them, its gzip. */
+  private static weight(entry: IStoredApiResponse): number {
+    return entry.body.length + (entry.gzipped?.length ?? 0);
   }
 }
