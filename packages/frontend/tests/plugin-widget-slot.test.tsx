@@ -28,7 +28,7 @@ describe('plugin widgets in a slot', () => {
     expect(markup).toContain('<iframe');
     expect(markup).toContain('sandbox="allow-scripts allow-forms allow-popups"');
     expect(markup).not.toContain('allow-same-origin');
-    expect(markup).toContain('src="/api/v1/plugins/reviews-box/widget"');
+    expect(markup).toContain('src="/api/plugins/reviews-box/widget"');
     expect(markup).toMatch(/referrerpolicy="no-referrer"/i);
     expect(markup).toContain('height="240"');
     expect(markup).toContain('title="Reviews"');
@@ -38,7 +38,7 @@ describe('plugin widgets in a slot', () => {
   });
 
   it('appear only in the slot they name', () => {
-    expect(render(createElement(Slot, { name: 'footer' }), true, plugins)).toContain('src="/api/v1/plugins/reviews-box/news"');
+    expect(render(createElement(Slot, { name: 'footer' }), true, plugins)).toContain('src="/api/plugins/reviews-box/news"');
     expect(render(createElement(Slot, { name: 'header' }), true, plugins)).not.toContain('<iframe');
   });
 
