@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import express from 'express';
+import zlib from 'zlib';
 import type { AddressInfo } from 'net';
 import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 import { RequestContextUtils } from '@core/context/request-context';
@@ -65,6 +66,29 @@ describe('ApiResponseCache', () => {
     }
     expect(h.built).toBe(6);
     expect((await h.get()).cache).toBe('hit');
+  });
+
+  it('an answer sent gzipped is replayed plain to a reader that does not take gzip, and gzipped with its encoding to one that does', async () => {
+    // What the JSON compression middleware does to `res.json` before the bytes reach `res.end`.
+    h.answer = (req, res) => {
+      res.setHeader('Content-Type', 'application/json; charset=utf-8');
+      res.setHeader('Content-Encoding', 'gzip');
+      res.vary('Accept-Encoding');
+      res.end(zlib.gzipSync(Buffer.from(JSON.stringify({ built: h.built, path: req.path }))));
+    };
+    const first = await h.get('/shop/products', { 'accept-encoding': 'gzip' });
+    expect(first.cache).toBe('miss');
+
+    const plain = await fetch(h.base + '/shop/products', { headers: { 'accept-encoding': 'identity' } });
+    expect(plain.headers.get(ApiResponseCache.STATUS_HEADER)).toBe('hit');
+    expect(plain.headers.get('content-encoding')).toBeNull();
+    expect(JSON.parse(Buffer.from(await plain.arrayBuffer()).toString('utf8'))).toEqual({ built: 1, path: '/shop/products' });
+
+    const gzipped = await fetch(h.base + '/shop/products', { headers: { 'accept-encoding': 'gzip' } });
+    expect(gzipped.headers.get(ApiResponseCache.STATUS_HEADER)).toBe('hit');
+    expect(gzipped.headers.get('content-encoding')).toBe('gzip');
+    expect(await gzipped.json()).toEqual({ built: 1, path: '/shop/products' });
+    expect(h.built).toBe(1);
   });
 
   it('a harmless cookie (consent, cart id) does not bypass; the route promised not to read one', async () => {
