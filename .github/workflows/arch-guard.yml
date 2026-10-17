@@ -215,6 +215,24 @@ jobs:
             npm install --prefix "$dir" --ignore-scripts --legacy-peer-deps --no-audit --no-fund
           fi
 
+      # A theme's tests render its components, which import the theme's OWN UI stack (`@emotion/react`,
+      # `@chakra-ui/react`…) from its `package.json`. The framework names no UI library, so its
+      # `node_modules` (linked in for the tests below) never has them, and every such test failed with
+      # "Cannot find package". Installed the way a theme is shipped: host-provided packages removed first —
+      # `@fromcode119/*`, and `react`/`react-dom`, which must stay ONE copy, the framework's (the same
+      # singletons the SSR build keeps external) — no lockfile, no scripts, peers left to the host.
+      - name: Install the theme's own dependencies
+        if: ${{ inputs.area == 'themes' }}
+        env:
+          GUARD_NAME: ${{ inputs.name }}
+        run: |
+          dir="themes/$GUARD_NAME"
+          if [ -f "$dir/package.json" ]; then
+            node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p,"utf8"));const host=(k)=>k.startsWith("@fromcode119/")||k==="react"||k==="react-dom";for(const f of ["dependencies","devDependencies","peerDependencies","optionalDependencies"])for(const k of Object.keys(j[f]||{}))if(host(k))delete j[f][k];fs.writeFileSync(p,JSON.stringify(j,null,2))' "$dir/package.json"
+            rm -f "$dir/package-lock.json"
+            npm install --prefix "$dir" --ignore-scripts --legacy-peer-deps --no-audit --no-fund
+          fi
+
       - name: Build the guards
         working-directory: framework
         run: npm run build --workspace=@fromcode119/arch-guard
