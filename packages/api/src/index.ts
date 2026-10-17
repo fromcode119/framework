@@ -17,6 +17,7 @@ import { CoreCollections } from '@api/collections/core';
 import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 import { XSSMiddleware } from '@api/middlewares/xss-middleware';
 import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middleware';
+import { UnversionedApiAliasMiddleware } from '@api/middlewares/unversioned-api-alias-middleware';
 import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
@@ -130,6 +131,8 @@ export class APIServer {
       if (EnvUtils.isDevelopment()) return true;
       return NetworkAddressUtils.isPrivate(ip);
     });
+    // First, so every later middleware and router sees `/api/...` as the versioned path it aliases.
+    this.app.use(new UnversionedApiAliasMiddleware().middleware());
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
     await this.setupSettingsSync();
