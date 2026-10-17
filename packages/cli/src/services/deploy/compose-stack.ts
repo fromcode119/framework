@@ -1,3 +1,4 @@
+import { ApiPathUtils, RouteConstants } from '@fromcode119/core';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
 import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
 
@@ -101,7 +102,7 @@ export class ComposeStack {
    * as the release, and can serve a cached answer from the version being replaced.
    */
   async health(port: number): Promise<string> {
-    const probe = `fetch('http://localhost:${port}/api/v1/health').then(r=>r.text()).then(t=>process.stdout.write(t))`;
+    const probe = `fetch('http://localhost:${port}${ApiPathUtils.versioned(RouteConstants.SEGMENTS.HEALTH)}').then(r=>r.text()).then(t=>process.stdout.write(t))`;
     const result = await this.shell.run(`docker compose ${await this.flags()} exec -T api node -e "${probe}"`);
     return result.stdout.trim();
   }

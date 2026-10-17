@@ -2,6 +2,8 @@
 // re-export the `Reactor` class component, which React refuses in a server graph — one barrel import
 // 500s every admin request. `admin-proxy.ts` carries the same warning; this module is bound by it.
 import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
+import { ApiPathUtils } from '@fromcode119/core/api/api-path-utils';
+import { RouteConstants } from '@fromcode119/core/constants/route.constants';
 import { RobotsConstants } from '@fromcode119/core/constants/robots.constants';
 
 /**
@@ -76,7 +78,7 @@ export class AdminIndexingPolicy {
   private static hostEndpoint(): string {
     const base = String(process.env.API_URL || '').trim()
       || ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
-    return ApplicationUrlUtils.joinApiPath(base.replace(/\/+$/, ''), 'api/v1/auth/host');
+    return ApplicationUrlUtils.joinApiPath(base.replace(/\/+$/, ''), ApiPathUtils.authPath(RouteConstants.SEGMENTS.HOST_INFO));
   }
 
   private static remember(allowed: boolean): boolean {

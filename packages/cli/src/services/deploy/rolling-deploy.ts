@@ -2,7 +2,7 @@ import chalk from 'chalk';
 import { ComposeStack } from '@cli/services/deploy/compose-stack';
 import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
-import { SystemConstants } from '@fromcode119/core';
+import { ApiPathUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 
 /**
  * Replaces the apps one at a time, each new copy serving before the old one stops.
@@ -161,7 +161,7 @@ export class RollingDeploy {
   /** The api by its health report (the version, not just a 200); the Next apps by answering at all. */
   private async answers(service: string, id: string, version: string): Promise<boolean> {
     if (service === 'api') {
-      const body = await this.stack.probeContainer(id, `fetch('http://localhost:${ReleaseHealthProbe.API_PORT}/api/v1/health').then(r=>r.text()).then(t=>process.stdout.write(t))`);
+      const body = await this.stack.probeContainer(id, `fetch('http://localhost:${ReleaseHealthProbe.API_PORT}${ApiPathUtils.versioned(RouteConstants.SEGMENTS.HEALTH)}').then(r=>r.text()).then(t=>process.stdout.write(t))`);
       return ReleaseHealthProbe.reports(body, version);
     }
     return /^\d{3}$/.test(await this.stack.probeContainer(id, RollingDeploy.httpAnswerScript(3000)));

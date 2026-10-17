@@ -1,5 +1,6 @@
 import express from 'express';
 import {
+  ApiVersionUtils,
   ApplicationUrlUtils,
   DatabaseConnectionFileService,
   InternalServiceAuth,
@@ -39,7 +40,7 @@ export class UnconfiguredApiServer {
     this.app.use(express.json());
     this.app.set('trust proxy', true);
 
-    const prefix = `/api/${String(process.env.API_VERSION_PREFIX || 'v1')}`;
+    const prefix = ApiVersionUtils.prefix();
     this.app.get(`${prefix}${RouteConstants.SEGMENTS.HEALTH}`, (_req, res) => {
       res.json({ status: 'setup_required', phase: SetupMode.currentPhase().value });
     });

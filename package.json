@@ -47,6 +47,7 @@
     "check:peer-surface": "node packages/arch-guard/dist/arch-guard-cli.cjs peer-surface",
     "check:block-registry-drift": "node packages/arch-guard/dist/arch-guard-cli.cjs block-registry-drift",
     "check:ssr-static-imports": "node packages/arch-guard/dist/arch-guard-cli.cjs ssr-static-imports",
+    "check:api-version-literals": "node packages/arch-guard/dist/arch-guard-cli.cjs api-version-literals",
     "check:app-typecheck": "node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:app-typecheck:warn": "APP_TYPECHECK_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs app-typecheck",
     "check:plugin-architecture:warn": "ARCH_LEGACY_MODE=warn ARCH_LAYER_MODE=warn ARCH_SIZE_MODE=warn node packages/arch-guard/dist/arch-guard-cli.cjs plugin-architecture",

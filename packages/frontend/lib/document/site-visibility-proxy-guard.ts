@@ -1,6 +1,6 @@
 import { ResponseDrain } from '@/lib/server-api/response-drain';
 import { ServerApiConfig } from '@/lib/server-api/server-api-config';
-import { CoercionUtils, CookieConstants } from '@fromcode119/core/client';
+import { ApiPathUtils, CoercionUtils, CookieConstants } from '@fromcode119/core/client';
 import type { ISiteProxyVerdict } from '@/lib/document/interfaces/site-proxy-verdict.interface';
 /**
  * Answers for a site that has not been published, before any page runs.
@@ -72,7 +72,7 @@ export class SiteVisibilityProxyGuard {
 
       // Bounded like every other server-side api call: unbounded, a stalled api held every page
       // request here for as long as it took, though this guard fails open by design.
-      const response = await fetch(`${apiBase.replace(/\/+$/, '')}/api/v1/system/frontend`, {
+      const response = await fetch(`${apiBase.replace(/\/+$/, '')}${ApiPathUtils.systemFrontendPath()}`, {
         headers,
         cache: 'no-store',
         signal: AbortSignal.timeout(ServerApiConfig.SERVER_FETCH_TIMEOUT_MS),

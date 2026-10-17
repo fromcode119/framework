@@ -1,6 +1,7 @@
 import React from 'react';
 import { RuntimeConstants } from '@core/constants/runtime.constants';
 import { EnvUtils } from '@core/utils/env-utils';
+import { ApiPathUtils } from '@core/api/api-path-utils';
 
 /**
  * Lazy-loading cache of `publicSettings` from /api/v1/system/frontend.
@@ -69,7 +70,7 @@ export class PublicSettings {
 
   private static async fetchFromApi(apiBaseUrl?: string): Promise<Record<string, unknown>> {
     const base = PublicSettings.resolveApiBaseUrl(apiBaseUrl);
-    const url = `${base.replace(/\/+$/, '')}/api/v1/system/frontend`;
+    const url = `${base.replace(/\/+$/, '')}${ApiPathUtils.systemFrontendPath()}`;
     const response = await fetch(url, { credentials: 'include' });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const json = await response.json();
