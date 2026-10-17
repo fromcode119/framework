@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.409] - 2026-10-17
+
+### Added
+
+- **api**: serve every versioned route at the bare /api path too ([#978](https://github.com/fromcode119/framework/pull/978))
+
+### Fixed
+
+- **arch-guard**: plugin-backend-types checks only plugins in an extension scope ([#982](https://github.com/fromcode119/framework/pull/982))
+- **auth**: every client answers to a sign-up switch the site owns ([#980](https://github.com/fromcode119/framework/pull/980))
+
 ## [0.2.408] - 2026-10-17
 
 ### Fixed
