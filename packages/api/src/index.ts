@@ -7,7 +7,7 @@ import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, RealtimeRoomClient, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
-import { SystemConstants, ApplicationUrlUtils, EnvUtils, LocalizationUtils, NetworkAddressUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
+import { SystemConstants, ApplicationUrlUtils, LocalizationUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
 import { CacheFactory, CacheManager } from '@fromcode119/cache';
@@ -17,7 +17,7 @@ import { CoreCollections } from '@api/collections/core';
 import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 import { XSSMiddleware } from '@api/middlewares/xss-middleware';
 import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middleware';
-import { UnversionedApiAliasMiddleware } from '@api/middlewares/unversioned-api-alias-middleware';
+import { ServerRequestEntrySetup } from '@api/server/server-request-entry-setup';
 import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
@@ -122,17 +122,7 @@ export class APIServer {
     // Not awaited: an unreachable Redis must not hold up boot; signals start once it answers.
     if (redisUrl) void ProcessSignals.use(new RedisProcessSignalTransport(redisUrl)).catch((err) => this.logger.error(`Process signals unavailable; caches stay local to this process: ${err}`));
     
-    // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
-    // proxy connects from a PRIVATE subnet address (compose/Coolify networks live in 172.16/12 etc.),
-    // not loopback — trusting only 127.0.0.1 made req.ip resolve to the proxy for every request, so ALL
-    // visitors shared a single anonymous rate-limit bucket (100 req/15min for the whole storefront).
-    // Trusting loopback + RFC1918 ranges restores per-visitor IPs from the edge proxy's X-Forwarded-For.
-    this.app.set('trust proxy', (ip: string) => {
-      if (EnvUtils.isDevelopment()) return true;
-      return NetworkAddressUtils.isPrivate(ip);
-    });
-    // First, so every later middleware and router sees `/api/...` as the versioned path it aliases.
-    this.app.use(new UnversionedApiAliasMiddleware().middleware());
+    ServerRequestEntrySetup.apply(this.app);
     
     // Core settings must be synced BEFORE CORS and other middlewares to ensure they have access to latest config
     await this.setupSettingsSync();
