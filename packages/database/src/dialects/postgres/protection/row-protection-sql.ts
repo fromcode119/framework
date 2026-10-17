@@ -5,7 +5,10 @@
  * is refused, as is a DELETE or TRUNCATE where deletes are not allowed.
  *
  * The only way past it is the transaction-local setting `fromcode.protected_rows_override = 'on'`, which
- * the framework sets in exactly one place: erasing a whole site after its export was written.
+ * the framework sets in exactly one place: erasing a whole site after its export was written. Any role
+ * can set a custom setting for its own session, so the setting alone proves nothing: it is honoured only
+ * when the role running the statement OWNS the table (the schema-owning connection the eraser runs on).
+ * The request role is not the owner, so it cannot unlock protected rows by setting the flag itself.
  */
 export class RowProtectionSql {
   static readonly FUNCTION = 'fc_protect_written_rows';
@@ -18,7 +21,8 @@ DECLARE
   old_value jsonb;
   new_value jsonb;
 BEGIN
-  IF current_setting('${RowProtectionSql.OVERRIDE_SETTING}', true) = 'on' THEN
+  IF current_setting('${RowProtectionSql.OVERRIDE_SETTING}', true) = 'on'
+     AND pg_has_role(current_user, (SELECT relowner FROM pg_class WHERE oid = TG_RELID), 'USAGE') THEN
     IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
     IF TG_OP = 'TRUNCATE' THEN RETURN NULL; END IF;
     RETURN NEW;

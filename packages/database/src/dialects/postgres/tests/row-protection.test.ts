@@ -34,4 +34,8 @@ describe('Postgres row protection', () => {
     expect(RowProtectionSql.overrideStatement()).toBe("SET LOCAL fromcode.protected_rows_override = 'on'");
     expect(RowProtectionSql.functionStatement()).toContain("current_setting('fromcode.protected_rows_override', true) = 'on'");
   });
+
+  it('honours the override only for the role that owns the table, not for whoever sets the flag', () => {
+    expect(RowProtectionSql.functionStatement()).toContain("AND pg_has_role(current_user, (SELECT relowner FROM pg_class WHERE oid = TG_RELID), 'USAGE') THEN");
+  });
 });
