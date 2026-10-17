@@ -6,14 +6,14 @@ describe('LegacyApiPathUsage', () => {
   afterEach(() => { LegacyApiPathUsage.flush(); vi.unstubAllEnvs(); });
 
   it('keeps the path shape and drops ids, tokens and query strings', () => {
-    expect(LegacyApiPathUsage.shape('/api/v1/plugins/numerology/share/3f9ab2c4d5e6f708a9b0c1d2e3f4a5b6c7d8e9f0?x=1'))
-      .toBe('/api/v1/plugins/numerology/share/:id');
+    expect(LegacyApiPathUsage.shape('/api/v1/plugins/box/share/3f9ab2c4d5e6f708a9b0c1d2e3f4a5b6c7d8e9f0?x=1'))
+      .toBe('/api/v1/plugins/box/share/:id');
     expect(LegacyApiPathUsage.shape('/api/v1/orders/764')).toBe('/api/v1/orders/:id');
     expect(LegacyApiPathUsage.shape('/api/v1/auth/sso/google/callback?code=secret&state=s')).toBe('/api/v1/auth/sso/google/callback');
   });
 
   it('names the client by its product token', () => {
-    expect(LegacyApiPathUsage.client('Stripe/1.0 (+https://stripe.com/docs/webhooks)')).toBe('Stripe/1.0');
+    expect(LegacyApiPathUsage.client('PaymentsHook/1.0 (+https://example.com/hooks)')).toBe('PaymentsHook/1.0');
     expect(LegacyApiPathUsage.client('okhttp/4.12.0')).toBe('okhttp/4.12.0');
     expect(LegacyApiPathUsage.client('Mozilla/5.0 (Macintosh) AppleWebKit Chrome/130 Safari/537')).toBe('browser');
     expect(LegacyApiPathUsage.client('Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')).toBe('Googlebot');
@@ -23,10 +23,10 @@ describe('LegacyApiPathUsage', () => {
   it('writes one line per caller with its count, then starts over', () => {
     LegacyApiPathUsage.record('get', '/api/v1/auth/sso/google/callback?code=a', 'Mozilla/5.0 Chrome', 'https://accounts.google.com/');
     LegacyApiPathUsage.record('GET', '/api/v1/auth/sso/google/callback?code=b', 'Mozilla/5.0 Chrome', 'https://accounts.google.com/x');
-    LegacyApiPathUsage.record('POST', '/api/v1/plugins/ecommerce/webhooks/stripe', 'Stripe/1.0', undefined);
+    LegacyApiPathUsage.record('POST', '/api/v1/plugins/box/webhooks/payments', 'PaymentsHook/1.0', undefined);
     expect(LegacyApiPathUsage.flush()).toEqual([
       '2x GET /api/v1/auth/sso/google/callback client=browser from=accounts.google.com',
-      '1x POST /api/v1/plugins/ecommerce/webhooks/stripe client=Stripe/1.0 from=none',
+      '1x POST /api/v1/plugins/box/webhooks/payments client=PaymentsHook/1.0 from=none',
     ]);
     expect(LegacyApiPathUsage.flush()).toEqual([]);
   });

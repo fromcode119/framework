@@ -41,14 +41,14 @@ export class LegacyApiPathUsage {
     return lines;
   }
 
-  /** `/api/v1/plugins/numerology/share/3f9a…?x=1` → `/api/v1/plugins/numerology/share/:id`. */
+  /** `/api/v1/plugins/box/share/3f9a…?x=1` → `/api/v1/plugins/box/share/:id`. */
   static shape(path: string): string {
     return String(path || '').split('?')[0].split('/').map((segment) => (
       /^\d+$/.test(segment) || /^[0-9a-f]{16,}$/i.test(segment) || /^[0-9a-f-]{32,}$/i.test(segment) ? ':id' : segment
     )).join('/');
   }
 
-  /** The user agent's product token — `Google-…`, `Stripe/1.0`, `okhttp`, `Expo` — or `browser` / `none`. */
+  /** The user agent's product token — `Google-…`, `PaymentsHook/1.0`, `okhttp`, `Expo` — or `browser` / `none`. */
   static client(userAgent: unknown): string {
     const ua = String(userAgent ?? '').trim();
     if (!ua) return 'none';
