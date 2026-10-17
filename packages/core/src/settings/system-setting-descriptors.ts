@@ -10,6 +10,7 @@ import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-
 import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
 import { UpdateSettingDescriptors } from '@core/settings/update-setting-descriptors';
+import { CustomerSignInSettingDescriptors } from '@core/settings/customer-sign-in-setting-descriptors';
 
 /**
  * What every system setting DECLARES: its scope, whether it is writable, may be exposed, what to seed.
@@ -271,14 +272,8 @@ export class SystemSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'auto', description: "Homepage route target.", group: "Routing" },
     },
-    [SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'true', description: "Enable frontend auth flows.", group: "security" },
-    },
-    [SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: 'true', description: "Allow new customer self-registration.", group: "security" },
-    },
+    // Settings → General → Frontend Auth — see CustomerSignInSettingDescriptors.
+    ...CustomerSignInSettingDescriptors.ALL,
     [SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'true', description: "Keep email addresses and phone numbers out of the storefront's HTML so harvesters find none; visitors still see and use them.", group: "security" },

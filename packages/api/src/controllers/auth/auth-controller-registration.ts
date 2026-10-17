@@ -182,18 +182,31 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
   // --- Frontend context helpers (used by subclass too) ---
 
+  /**
+   * Which surface a request comes from is only what the request SAYS it is, so every surface answers to
+   * a switch the site owns: the website to the website switches, an app to the app switches. The admin
+   * console alone is not gated here — its own password reset must work whatever the site offers its
+   * customers, and it creates no accounts (`register` is gated by the registration switch below).
+   */
   protected async isFrontendAuthEnabledForRequest(req: Request): Promise<boolean> {
-    if (!this.isFrontendRequestContext(req)) return true;
-    return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, true);
+    if (this.isFrontendRequestContext(req)) return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED, true);
+    if (RequestSurfaceUtils.isAdminRequestContext(req)) return true;
+    return this.getSettingBoolean(SystemConstants.META_KEY.APP_AUTH_ENABLED, true);
   }
 
   /**
-   * The site's sign-up switch is about its own website, like the sign-in switch above: an app or another
-   * client the site serves creates its accounts through the same endpoint whatever the website offers.
+   * Sign-up is never open to a request just because it does not call itself the website: the website
+   * follows the website switch, and every other client — whatever header it sends — the app switch.
+   * The admin console creates no accounts by itself (people are invited), and an admin request takes
+   * its site from the session rather than the host, so without a session it would read — and sign up
+   * at — the platform: it is refused outright.
    */
   protected async isFrontendRegistrationEnabledForRequest(req: Request): Promise<boolean> {
-    if (!this.isFrontendRequestContext(req)) return true;
-    return this.getSettingBoolean(SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED, true);
+    if (!this.isFrontendRequestContext(req) && RequestSurfaceUtils.isAdminRequestContext(req)) return false;
+    const key = this.isFrontendRequestContext(req)
+      ? SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED
+      : SystemConstants.META_KEY.APP_REGISTRATION_ENABLED;
+    return this.getSettingBoolean(key, true);
   }
 
   protected isFrontendRequestContext(req: Request): boolean {

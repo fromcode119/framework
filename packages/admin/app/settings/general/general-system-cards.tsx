@@ -94,6 +94,16 @@ export class GeneralSystemCards extends PureReactor {
     this.setSettings((prev) => ({ ...prev, frontend_registration_enabled: val }));
   }
 
+  @bound
+  protected changeAppAuthEnabled(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, app_auth_enabled: val, app_registration_enabled: val ? prev.app_registration_enabled : false }));
+  }
+
+  @bound
+  protected changeAppRegistrationEnabled(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, app_registration_enabled: val }));
+  }
+
   render(): ReactNode {
     const settings = this.settings;
     const theme = this.theme;
@@ -222,7 +232,7 @@ export class GeneralSystemCards extends PureReactor {
           </Card>
         )}
 
-        {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled') && (
+        {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled', 'app_auth_enabled', 'app_registration_enabled') && (
           <Card title={AdminI18n.t('settings.general.frontendAuth')}>
             {this.shown('frontend_auth_enabled') && (
               <SettingRow
@@ -249,6 +259,35 @@ export class GeneralSystemCards extends PureReactor {
                   checked={settings.frontend_registration_enabled}
                   onChange={this.changeFrontendRegistrationEnabled}
                   disabled={!settings.frontend_auth_enabled}
+                />
+              </SettingRow>
+            )}
+
+            {this.shown('app_auth_enabled') && (
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Lock}
+                title={AdminI18n.t('settings.general.appAuthentication')}
+                description={AdminI18n.t('settings.general.enableAppAuthenticationRoutes')}
+              >
+                <Switch
+                  checked={settings.app_auth_enabled}
+                  onChange={this.changeAppAuthEnabled}
+                />
+              </SettingRow>
+            )}
+
+            {this.shown('app_registration_enabled') && (
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Users}
+                title={AdminI18n.t('settings.general.appRegistration')}
+                description={AdminI18n.t('settings.general.allowNewCustomerAppRegistration')}
+              >
+                <Switch
+                  checked={settings.app_registration_enabled}
+                  onChange={this.changeAppRegistrationEnabled}
+                  disabled={!settings.app_auth_enabled}
                 />
               </SettingRow>
             )}

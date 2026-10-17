@@ -237,12 +237,13 @@ export class SystemMetaKeys {
    * high-volume analytics tables so telemetry does not drown the trail. Admin Settings → Security.
    */
   AUDIT_DB_WRITE_EXCLUDED_TABLES: 'audit_db_write_excluded_tables',
-  
   // Routing & Features
   PERMALINK_STRUCTURE: 'permalink_structure',
   ROUTING_HOME_TARGET: 'routing_home_target',
   FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
+  APP_AUTH_ENABLED: 'app_auth_enabled',
+  APP_REGISTRATION_ENABLED: 'app_registration_enabled',
   CONTACT_DETAIL_PROTECTION: 'contact_detail_protection',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
