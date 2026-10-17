@@ -34,7 +34,12 @@ describe('the sign-up and sign-in switches', () => {
     expect(app.getSettingBoolean).toHaveBeenCalledWith(META.APP_REGISTRATION_ENABLED, true);
   });
 
-  it.each(['app', 'admin-ui', undefined])('refuses sign-up from a %s client when the app switch is off', async (client) => {
+  it('refuses sign-up from the admin console whatever any switch says', async () => {
+    const admin = controller(false, {});
+    expect(await admin.isFrontendRegistrationEnabledForRequest(request('admin-ui'))).toBe(false);
+  });
+
+  it.each(['app', undefined])('refuses sign-up from a %s client when the app switch is off', async (client) => {
     const caller = controller(false, { [META.APP_REGISTRATION_ENABLED]: false });
     expect(await caller.isFrontendRegistrationEnabledForRequest(request(client))).toBe(false);
   });

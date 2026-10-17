@@ -197,8 +197,12 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   /**
    * Sign-up is never open to a request just because it does not call itself the website: the website
    * follows the website switch, and every other client — whatever header it sends — the app switch.
+   * The admin console creates no accounts by itself (people are invited), and an admin request takes
+   * its site from the session rather than the host, so without a session it would read — and sign up
+   * at — the platform: it is refused outright.
    */
   protected async isFrontendRegistrationEnabledForRequest(req: Request): Promise<boolean> {
+    if (!this.isFrontendRequestContext(req) && RequestSurfaceUtils.isAdminRequestContext(req)) return false;
     const key = this.isFrontendRequestContext(req)
       ? SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED
       : SystemConstants.META_KEY.APP_REGISTRATION_ENABLED;

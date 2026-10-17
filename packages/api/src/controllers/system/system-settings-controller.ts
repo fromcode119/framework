@@ -37,12 +37,30 @@ export class SystemSettingsController {
   async getSettings(_req: Request, res: Response) {
     try {
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
-      res.json(SystemSettingsExposureUtils.toExposableSettingsMap(settings, { parseJson: true }));
+      const inherited = await this.platformSwitchFallbacks(settings);
+      res.json(SystemSettingsExposureUtils.toExposableSettingsMap([...inherited, ...settings], { parseJson: true }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   }
 
+  /**
+   * A site's on/off setting it has no row for answers with the platform's row — the resolution the api
+   * applies when it acts on it (`AuthControllerSharedInfrastructure.readMetaRow`). A switch has no blank
+   * state to say "inherited", so leaving it out showed OFF for a setting that was ON, and Save then wrote
+   * that OFF. Text settings are left out: their blank field already names what it falls back to.
+   */
+  private async platformSwitchFallbacks(siteRows: Array<{ key?: string }>): Promise<any[]> {
+    if (!RequestContextUtils.getTenantId()) return [];
+    const defaults = SystemSettingRegistry.exposedDefaults();
+    const own = new Set(siteRows.map((row) => String(row?.key ?? '')));
+    const missing = Object.keys(defaults).filter((key) => !own.has(key)
+      && SystemSettingRegistry.isDeclaredSiteScoped(key) && ['true', 'false'].includes(String(defaults[key])));
+    if (missing.length === 0) return [];
+    const db = this.runtime.db;
+    const platform = await db.withPlatformAdmin(() => Promise.all(missing.map((key) => db.findOne(SystemConstants.TABLE.META, { key }))));
+    return platform.filter(Boolean);
+  }
 
   /**
    * Which settings belong to the PLATFORM, and whether this account may change them.
