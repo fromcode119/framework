@@ -1,5 +1,5 @@
 import os from 'os';
-import { AutomaticUpdatePolicy, BootstrapSecretsService, UpdaterState } from '@fromcode119/core';
+import { ApiVersionUtils, AutomaticUpdatePolicy, BootstrapSecretsService, UpdaterState } from '@fromcode119/core';
 import { SelfUpdateRun } from '@cli/services/updater/self-update-run';
 import { UpdaterApiClient } from '@cli/services/updater/updater-api-client';
 import { DockerEngineClient } from '@cli/services/updater/docker-engine-client';
@@ -45,7 +45,7 @@ export class UpdaterService {
     if (!project) throw new Error('The updater must run as a service of the platform\'s compose project.');
     return new UpdaterService(
       engine,
-      new UpdaterApiClient(process.env[UpdaterService.ENV_API] || 'http://api:3000/api/v1'),
+      new UpdaterApiClient(process.env[UpdaterService.ENV_API] || `http://api:3000${ApiVersionUtils.prefix()}`),
       new EnvVersionFile(process.env[UpdaterService.ENV_FILE] || '/app/deploy-project/.env'),
       project,
     );

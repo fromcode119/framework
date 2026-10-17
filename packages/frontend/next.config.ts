@@ -166,7 +166,7 @@ const nextConfig = {
         // (fonts, images, bundles — the API sets their own cache policy; stamping `no-cache` on
         // them made every returning visitor re-download the theme's fonts). HTML/data routes
         // stay private/no-cache (they can contain user-gated content).
-        source: '/((?!_next/static/|fc-runtime/|api/v1/themes/|api/v1/plugins/[^/]+/ui/).*)',
+        source: '/((?!_next/static/|fc-runtime/|api/(?:v[0-9]+/)?themes/|api/(?:v[0-9]+/)?plugins/[^/]+/ui/).*)',
         headers: [{ key: 'Cache-Control', value: 'private, no-cache' }],
       },
     ];

@@ -10,7 +10,7 @@ import { McpStdioServer } from '@mcp-server/mcp-stdio-server';
  * process on the machine could read it.
  */
 export class McpServerLauncher {
-  static readonly USAGE = 'atlantis-mcp: ATLANTIS_API_URL (full api base, e.g. https://api.example.com/api/v1) and ATLANTIS_API_TOKEN are required. ATLANTIS_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
+  static readonly USAGE = 'atlantis-mcp: ATLANTIS_API_URL (full api base, e.g. https://api.example.com/api) and ATLANTIS_API_TOKEN are required. ATLANTIS_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
 
   /** Wires a ready server from the environment. Throws the usage message when either value is missing. */
   static create(env: Record<string, string | undefined>): McpStdioServer {

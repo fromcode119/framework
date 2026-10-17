@@ -7,6 +7,7 @@ import { TranslationContext } from '@react/context/translation-context';
 import { PluginContextRegistry } from '@react/plugin-context';
 import { ContextHooksPluginStateService } from '@react/context-hooks/context-hooks-plugin-state-service';
 import { ContextHooksSdkService } from '@react/context-hooks/context-hooks-sdk-service';
+import { ApiPathUtils } from '@fromcode119/core/client';
 
 export class ContextHooks {
   static usePlugins() {
@@ -111,7 +112,7 @@ export class ContextHooks {
     useEffect(() => {
       let cancelled = false;
       setLoading(true);
-      apiRef.current.get(`/api/v1/${slug}`)
+      apiRef.current.get(ApiPathUtils.versioned(slug))
         .then((data: any) => { if (!cancelled) { setItems(data?.docs ?? []); setLoading(false); } })
         .catch((err: any) => { if (!cancelled) { setError(err instanceof Error ? err : new Error(String(err))); setLoading(false); } });
       return () => { cancelled = true; };
