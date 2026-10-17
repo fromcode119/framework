@@ -37,7 +37,7 @@ const site = (visibility: string): TenantRecord => TenantRecord.from({
   id: 'acme', slug: 'acme', primary_host: 'acme.test', host_aliases: '[]', state: 'active', visibility,
 });
 
-const request = (overrides: Record<string, unknown> = {}): any => ({ path: '/api/v1/content', cookies: {}, ...overrides });
+const request = (overrides: Record<string, unknown> = {}): any => ({ path: '/api/content', cookies: {}, ...overrides });
 
 describe('SiteVisibilityGate', () => {
   it('serves a public site to anyone', async () => {
@@ -70,12 +70,12 @@ describe('SiteVisibilityGate', () => {
 
   it('answers the preview exchange itself on a closed site — the request that lifts the refusal', async () => {
     // Without this the operator's link would be refused by the very gate it exists to get past.
-    const req = request({ path: '/api/v1/system/site-preview/exchange/abc' });
+    const req = request({ path: '/api/system/site-preview/exchange/abc' });
     expect(await new SiteVisibilityGate(new FakeDb()).allows(site('private'), req)).toBe(true);
   });
 
   it('does not treat an arbitrary path that merely contains the exchange text as the exchange', async () => {
-    const req = request({ path: '/api/v1/content/api/v1/system/site-preview/exchange/abc' });
+    const req = request({ path: '/api/content/api/system/site-preview/exchange/abc' });
     expect(await new SiteVisibilityGate(new FakeDb()).allows(site('private'), req)).toBe(false);
   });
 });

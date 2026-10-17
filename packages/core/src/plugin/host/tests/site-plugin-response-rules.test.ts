@@ -21,9 +21,9 @@ describe('what a site plugin may answer', () => {
 
   it('names a site plugin\'s own route, and nothing else', () => {
     PluginOwners.record('box', 'site-a');
-    expect(SitePluginResponseRules.sitePluginOf('/api/v1/plugins/box/widget?x=1')).toBe('box');
-    expect(SitePluginResponseRules.sitePluginOf('/api/v1/plugins/platform-one/x')).toBeNull();
-    expect(SitePluginResponseRules.sitePluginOf('/api/v1/auth/login')).toBeNull();
-    expect(SitePluginResponseRules.sitePluginOf('/api/v1/auth/login?next=/api/v1/plugins/box/')).toBeNull();
+    expect(SitePluginResponseRules.sitePluginOf('/api/plugins/box/widget?x=1')).toBe('box');
+    expect(SitePluginResponseRules.sitePluginOf('/api/plugins/platform-one/x')).toBeNull();
+    expect(SitePluginResponseRules.sitePluginOf('/api/auth/login')).toBeNull();
+    expect(SitePluginResponseRules.sitePluginOf('/api/auth/login?next=/api/plugins/box/')).toBeNull();
   });
 });

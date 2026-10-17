@@ -64,7 +64,7 @@ const request = (query: Record<string, string> = {}, cookies: Record<string, str
   cookies,
   headers: { host: 'shop.example', 'user-agent': 'test' },
   get: (name: string) => (name.toLowerCase() === 'host' ? 'shop.example' : undefined),
-  path: `/api/v1/auth/sso/${provider}/callback`,
+  path: `/api/auth/sso/${provider}/callback`,
   protocol: 'https',
   secure: true,
   ip: '127.0.0.1',
@@ -83,7 +83,7 @@ const redirectedTo = (res: any): URL => new URL(res.redirect.mock.calls[0][1], '
 
 /** A started sign-in: the cookie `start` would have set, for `provider`, returning to `returnTo`. */
 const startedCookie = async (provider = 'google', returnTo = '/account', errorTo = '/login') => {
-  const state = SsoOauthState.begin(returnTo, errorTo, `https://shop.example/api/v1/auth/sso/${provider}/callback`);
+  const state = SsoOauthState.begin(returnTo, errorTo, `https://shop.example/api/auth/sso/${provider}/callback`);
   const grant = await grants.generateGrantToken({ userId: provider, purpose: SsoOauthState.PURPOSE, scope: state.scope(provider, null) });
   return { state, cookie: state.serialize(grant) };
 };
@@ -170,12 +170,12 @@ describe('the redirect round trip', () => {
     await instance.ssoStart(request({ returnTo: '/checkout', errorTo: '/login' }) as any, res as any);
 
     const [redirectUri, state, challenge] = client.authorizationUrl.mock.calls[0] as any[];
-    expect(redirectUri).toBe('https://shop.example/api/v1/auth/sso/google/callback');
+    expect(redirectUri).toBe('https://shop.example/api/auth/sso/google/callback');
     expect(state).toBeTruthy();
     expect(challenge).toBeTruthy();
     const [name, value, options] = res.cookie.mock.calls[0];
     expect(name).toBe(CookieConstants.SSO_STATE);
-    expect(options).toMatchObject({ httpOnly: true, path: '/api/v1/auth/sso/google/callback' });
+    expect(options).toMatchObject({ httpOnly: true, path: '/api/auth/sso/google/callback' });
     expect(SsoOauthState.parse(value)?.state.returnTo).toBe('/checkout');
     expect(res.redirect).toHaveBeenCalledWith(302, 'https://provider.example/authorize?x=1');
   });
@@ -249,7 +249,7 @@ describe('the redirect round trip', () => {
     const res = response();
     await instance.ssoCallback(request({ state: state.state, code: 'the-code' }, { [CookieConstants.SSO_STATE]: cookie }) as any, res as any);
 
-    expect(client.identify).toHaveBeenCalledWith('the-code', 'https://shop.example/api/v1/auth/sso/google/callback', state.verifier);
+    expect(client.identify).toHaveBeenCalledWith('the-code', 'https://shop.example/api/auth/sso/google/callback', state.verifier);
     const handoff = res.cookie.mock.calls.find((call: any[]) => call[0] === CookieConstants.SSO_HANDOFF);
     expect(handoff?.[2]).toMatchObject({ httpOnly: false, domain: undefined });
     expect(JSON.parse(Buffer.from(handoff?.[1], 'base64url').toString('utf8'))).toEqual({ id: '7', email: 'owner@example.com', roles: ['customer'] });
@@ -267,7 +267,7 @@ describe('the redirect URI', () => {
     // Arriving from the provider, the request carries no storefront referer to work the address out from.
     vi.spyOn(self, 'getFrontendBaseUrl').mockResolvedValue('http://internal-api:3000');
     await instance.ssoCallback(request({ state: state.state, code: 'c' }, { [CookieConstants.SSO_STATE]: cookie }) as any, response() as any);
-    expect(client.identify).toHaveBeenCalledWith('c', 'https://shop.example/api/v1/auth/sso/google/callback', state.verifier);
+    expect(client.identify).toHaveBeenCalledWith('c', 'https://shop.example/api/auth/sso/google/callback', state.verifier);
   });
 });
 

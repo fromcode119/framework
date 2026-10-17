@@ -17,24 +17,24 @@ describe('ServerCorsSetup widget origin', () => {
     vi.spyOn(TenantResolverService, 'shared').mockReturnValue({ resolveByHost: async () => null } as any);
     const server = express();
     new ServerCorsSetup(server, new Map(), logger as any, {}).setup();
-    server.post('/api/v1/plugins/box/vote', (_req, res) => { res.json({ ok: true }); });
-    server.post('/api/v1/auth/login', (_req, res) => { res.json({ ok: true }); });
+    server.post('/api/plugins/box/vote', (_req, res) => { res.json({ ok: true }); });
+    server.post('/api/auth/login', (_req, res) => { res.json({ ok: true }); });
     return server;
   };
 
   it('lets a site plugin\'s widget call its own routes, without credentials', async () => {
     PluginOwners.record('box', 'site-a');
-    const preflight = await request(app()).options('/api/v1/plugins/box/vote').set('Origin', 'null').set('Access-Control-Request-Method', 'POST');
+    const preflight = await request(app()).options('/api/plugins/box/vote').set('Origin', 'null').set('Access-Control-Request-Method', 'POST');
     expect(preflight.headers['access-control-allow-origin']).toBe('null');
     expect(preflight.headers['access-control-allow-credentials']).toBeUndefined();
-    const call = await request(app()).post('/api/v1/plugins/box/vote').set('Origin', 'null');
+    const call = await request(app()).post('/api/plugins/box/vote').set('Origin', 'null');
     expect(call.headers['access-control-allow-origin']).toBe('null');
     expect(call.headers['access-control-allow-credentials']).toBeUndefined();
   });
 
   it('grants a null origin nothing else, and logs no error for it', async () => {
     logger.error.mockClear();
-    for (const path of ['/api/v1/auth/login', '/api/v1/plugins/platform-one/x']) {
+    for (const path of ['/api/auth/login', '/api/plugins/platform-one/x']) {
       const res = await request(app()).options(path).set('Origin', 'null').set('Access-Control-Request-Method', 'POST');
       expect(res.headers['access-control-allow-origin']).toBeUndefined();
     }

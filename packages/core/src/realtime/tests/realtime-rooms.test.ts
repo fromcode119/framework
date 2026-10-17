@@ -61,7 +61,7 @@ describe('realtime rooms', () => {
     const port = (server.address() as any).port;
     return {
       async connect(query: string) {
-        const ws = new WebSocket(`ws://127.0.0.1:${port}/api/v1/socket?${query}`);
+        const ws = new WebSocket(`ws://127.0.0.1:${port}/api/socket?${query}`);
         const seen: string[] = [];
         ws.on('message', (data) => {
           const message = JSON.parse(String(data));
@@ -150,8 +150,8 @@ describe('realtime rooms', () => {
     await expect(onSite('alpha', () => realtime.emit('conversation-1', 'message', { body: 'x'.repeat(70_000) }))).rejects.toThrow(/limited/);
   });
 
-  it('the socket lives under the versioned api path — the one prefix every host hands to the api', () => {
+  it('the socket lives under the api path — the one prefix every host hands to the api', () => {
     expect(RealtimeRoomClient.socketPath()).toBe(`${ApiVersionUtils.prefix()}/socket`);
-    expect(RealtimeRoomClient.socketPath()).toMatch(/^\/api\/v\d+\/socket$/);
+    expect(RealtimeRoomClient.socketPath()).toMatch(/^\/api(\/v\d+)?\/socket$/);
   });
 });

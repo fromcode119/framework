@@ -91,20 +91,20 @@ describe('PlatformMonitorTask', () => {
 
   it('names the routes behind an api error incident, most failing first, with ids folded', async () => {
     ApiOutcomeCounter.drain();
-    for (let i = 0; i < 16; i += 1) ApiOutcomeCounter.record(503, 'GET', `/api/v1/plugins/shop/orders/${i}?token=secret`);
-    for (let i = 0; i < 8; i += 1) ApiOutcomeCounter.record(500, 'post', '/api/v1/system/admin/monitoring/check');
-    ApiOutcomeCounter.record(200, 'GET', '/api/v1/health');
+    for (let i = 0; i < 16; i += 1) ApiOutcomeCounter.record(503, 'GET', `/api/plugins/shop/orders/${i}?token=secret`);
+    for (let i = 0; i < 8; i += 1) ApiOutcomeCounter.record(500, 'post', '/api/system/admin/monitoring/check');
+    ApiOutcomeCounter.record(200, 'GET', '/api/health');
     const { opened } = await task().run();
     expect(opened).toEqual([expect.objectContaining({
       key: 'api-errors',
-      values: expect.objectContaining({ errors: 24, total: 25, percent: 96, routes: 'GET /api/v1/plugins/shop/orders/:id (16); POST /api/v1/system/admin/monitoring/check (8)' }),
+      values: expect.objectContaining({ errors: 24, total: 25, percent: 96, routes: 'GET /api/plugins/shop/orders/:id (16); POST /api/system/admin/monitoring/check (8)' }),
     })]);
   });
 
   it('syncs external providers only when the addresses change, and retries a sync that failed', async () => {
     await task().run();
     await task().run();
-    expect(synced).toEqual([['https://console.example/api/v1/health', 'https://shop.example/']]);
+    expect(synced).toEqual([['https://console.example/api/health', 'https://shop.example/']]);
     sites.push({ id: 'blog', slug: 'blog', primaryHost: 'blog.example', isWorkspace: false, isReadable: true });
     failSync = true;
     await task().run();
@@ -117,6 +117,6 @@ describe('PlatformMonitorTask', () => {
   it('never lists a private site or a workspace for outside monitoring', async () => {
     const hidden = [...sites, { id: 'p', slug: 'p', primaryHost: 'p.example', isWorkspace: false, isReadable: false }, { id: 'w', slug: 'w', primaryHost: 'w.example', isWorkspace: true, isReadable: true }];
     const targets = await new PlatformMonitorTask({ db, plugins }, async () => hidden as any).targets();
-    expect(targets.map((t) => t.url)).toEqual(['https://console.example/api/v1/health', 'https://shop.example/']);
+    expect(targets.map((t) => t.url)).toEqual(['https://console.example/api/health', 'https://shop.example/']);
   });
 });

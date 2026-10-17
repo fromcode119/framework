@@ -28,14 +28,14 @@ describe('AdminIndexingPolicy', () => {
     expect(await AdminIndexingPolicy.allowed()).toBe(false);
   });
 
-  it('asks the api under its /api/v1 mount — /v1 is the 404 page, which reads as "refuse"', async () => {
+  it('asks the api under its /api mount — a path without it is the 404 page, which reads as "refuse"', async () => {
     const fetcher = answering({ searchIndexing: true });
     vi.stubGlobal('fetch', fetcher);
     process.env.API_URL = 'http://api:3000';
 
     await AdminIndexingPolicy.allowed();
 
-    expect(fetcher).toHaveBeenCalledWith('http://api:3000/api/v1/auth/host', expect.anything());
+    expect(fetcher).toHaveBeenCalledWith('http://api:3000/api/auth/host', expect.anything());
   });
 
   it('allows only an explicit true', async () => {

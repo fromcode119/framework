@@ -18,7 +18,7 @@
 	# secret header or to a caller on a private address, and Caddy reaches it over the internal
 	# network by container name. Published publicly it becomes a way to enumerate your customers.
 	on_demand_tls {
-		ask http://api:3000/api/v1/internal/hosts/permit
+		ask http://api:3000/api/internal/hosts/permit
 	}
 
 	email you@example.com

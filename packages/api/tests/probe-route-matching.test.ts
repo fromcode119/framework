@@ -10,23 +10,23 @@ describe('TenantExemptRouteUtils.isProbeRoute', () => {
 
   it('matches the framework health and ready probes, versioned or not', () => {
     expect(isProbe('/health')).toBe(true);
-    expect(isProbe('/api/v1/health')).toBe(true);
+    expect(isProbe('/api/health')).toBe(true);
     expect(isProbe('/ready')).toBe(true);
-    expect(isProbe('/api/v1/ready')).toBe(true);
-    expect(isProbe('/api/v1/health/')).toBe(true);
+    expect(isProbe('/api/ready')).toBe(true);
+    expect(isProbe('/api/health/')).toBe(true);
   });
 
   it('does NOT match a plugin route that merely ends in /health', () => {
     // `context.api.health(...)` is a first-class part of the plugin API, so the old suffix match
     // exempted EVERY plugin health probe from tenancy: it ran with no tenant bound, and the tenant
     // gate then refused it. Found while verifying T2, on the first such route that was tried.
-    expect(isProbe('/api/v1/plugins/eta/health')).toBe(false);
-    expect(isProbe('/api/v1/plugins/beta/health')).toBe(false);
-    expect(isProbe('/api/v1/plugins/anything/ready')).toBe(false);
+    expect(isProbe('/api/plugins/eta/health')).toBe(false);
+    expect(isProbe('/api/plugins/beta/health')).toBe(false);
+    expect(isProbe('/api/plugins/anything/ready')).toBe(false);
   });
 
   it('does not match a content path that happens to end in the same word', () => {
-    expect(isProbe('/api/v1/pages/health')).toBe(false);
-    expect(isProbe('/api/v1/collections/articles/health')).toBe(false);
+    expect(isProbe('/api/pages/health')).toBe(false);
+    expect(isProbe('/api/collections/articles/health')).toBe(false);
   });
 });

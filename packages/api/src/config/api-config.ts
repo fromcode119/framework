@@ -48,7 +48,7 @@ export class ApiConfig {
    */
   get prefixes() {
     return {
-      BASE: '/api' as const,
+      get BASE() { return ApiVersionUtils.API_BASE_PATH; },
       get VERSIONED() { return ApiVersionUtils.prefix(); }
     };
   }

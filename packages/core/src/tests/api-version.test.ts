@@ -10,8 +10,8 @@ describe('ApiVersionUtils', () => {
     delete process.env.API_URL;
   });
 
-  it('defaults to /api/v1 when no version env is set', () => {
-    expect(ApiVersionUtils.prefix()).toBe('/api/v1');
+  it('defaults to /api, with no version segment, when no version env is set', () => {
+    expect(ApiVersionUtils.prefix()).toBe('/api');
   });
 
   it('uses API_VERSION_PREFIX when provided', () => {

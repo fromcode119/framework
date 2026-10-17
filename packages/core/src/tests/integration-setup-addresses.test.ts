@@ -13,12 +13,12 @@ describe('integration setup addresses', () => {
   it('each SSO provider declares its redirect URI', () => {
     const summary = registry.getTypeSummary('sso');
     const google = summary?.providers.find((provider) => provider.key === 'google');
-    expect(google?.setupAddresses).toEqual([expect.objectContaining({ path: '/api/v1/auth/sso/google/callback' })]);
+    expect(google?.setupAddresses).toEqual([expect.objectContaining({ path: '/api/auth/sso/google/callback' })]);
   });
 
   it('the type list the admin reads carries them too', () => {
     const sso = registry.listTypes().find((type) => type.key === 'sso');
-    expect(sso?.providers.find((provider) => provider.key === 'github')?.setupAddresses?.[0]?.path).toBe('/api/v1/auth/sso/github/callback');
+    expect(sso?.providers.find((provider) => provider.key === 'github')?.setupAddresses?.[0]?.path).toBe('/api/auth/sso/github/callback');
   });
 
   it('keeps several sign-in providers switched on at once', () => {

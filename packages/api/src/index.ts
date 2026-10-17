@@ -18,6 +18,7 @@ import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 import { XSSMiddleware } from '@api/middlewares/xss-middleware';
 import { ErrorResponseMiddleware } from '@api/middlewares/error-response-middleware';
 import { ServerRequestEntrySetup } from '@api/server/server-request-entry-setup';
+import { UnversionedApiAliasMiddleware } from '@api/middlewares/unversioned-api-alias-middleware';
 import { RateLimitMiddleware } from '@api/middlewares/rate-limit-middleware';
 import { SchedulerService } from '@fromcode119/scheduler';
 import { GraphQLService } from '@api/services/graph-ql-service';
@@ -258,7 +259,7 @@ export class APIServer {
 
       // Under the api's own path, so every host reaches it — a site's storefront hands only `/api/*`
       // to the api, and a visitor in a live chat is on the storefront.
-      if (url.pathname !== RealtimeRoomClient.socketPath() || !wss) {
+      if (UnversionedApiAliasMiddleware.rewrite(url.pathname) !== RealtimeRoomClient.socketPath() || !wss) {
         socket.destroy();
         return;
       }

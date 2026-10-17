@@ -9,5 +9,9 @@
  */
 export class ApiVersionDefaults {
   static readonly BASE_PATH = '/api';
-  static readonly VERSION = 'v1';
+  /**
+   * No version segment: routes live at `/api/...`. A deployment that wants one sets `API_VERSION_PREFIX`
+   * (e.g. `v2`); a legacy `/api/v<N>/...` request keeps working either way (`UnversionedApiAliasMiddleware`).
+   */
+  static readonly VERSION = '';
 }

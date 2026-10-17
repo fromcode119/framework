@@ -67,7 +67,7 @@ services:
     environment:
       - ATLANTIS_UPDATER=${ATLANTIS_UPDATER:-on}
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
-      - UPDATER_API_URL=http://api:3000/api/v1
+      - UPDATER_API_URL=http://api:3000/api
       - UPDATER_ENV_FILE=/app/deploy-project/.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
