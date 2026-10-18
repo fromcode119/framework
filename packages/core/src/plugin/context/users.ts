@@ -20,7 +20,6 @@ export class UsersContextProxy {
    * PluginAccountRoles, which is the actual barrier against a plugin minting itself an administrator.
    */
   private static readonly CREATE_CAPABILITY = 'database:write';
-
   /**
    * The ids of the people who belong to THIS SITE, or `null` when there is no site to narrow to.
    *
