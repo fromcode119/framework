@@ -55,6 +55,8 @@ export class AuthRouter extends BaseRouter {
     // sends it back to callback. Both are public: the visitor is signing in.
     this.get(RouteConstants.SEGMENTS.SSO_START, this.controller.ssoStart);
     this.get(RouteConstants.SEGMENTS.SSO_CALLBACK, this.controller.ssoCallback);
+    // A sign-in link a plugin emailed: public, the visitor is signing in.
+    this.get(RouteConstants.SEGMENTS.SIGN_IN_LINK, this.controller.signInWithLink);
     
     // Login/logout
     this.post(RouteConstants.SEGMENTS.LOGIN, this.controller.login);

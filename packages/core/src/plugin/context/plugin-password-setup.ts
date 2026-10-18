@@ -32,30 +32,7 @@ export class PluginPasswordSetup {
     tenantId: string | null,
     options: { ttlMinutes?: number } = {},
   ): Promise<{ token: string; expiresAt: string }> {
-    const uid = Number(userId);
-    const refuse = (why: string): never => { throw new Error(`${PluginPasswordSetup.OPERATION} refused account ${String(userId)}: ${why}`); };
-    if (!Number.isFinite(uid) || uid <= 0) refuse('no such account');
-
-    const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id: uid });
-    const email = String(user?.email ?? '').trim().toLowerCase();
-    if (!user || !email.includes('@')) refuse('no such account');
-    if (user.is_platform_admin === true || user.is_platform_admin === 1) refuse('a platform administrator');
-
-    const held = StringUtils.normalizeSlugList(user.roles);
-    if (tenantId) {
-      const row = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(uid), tenant_id: tenantId });
-      if (!row) refuse('not a member of this site');
-      held.push(...TenantMembership.from(row as Record<string, unknown>).roles);
-    }
-    await PluginAccountRoles.vetGrant(manager.db, pluginSlug, held, tenantId, PluginPasswordSetup.OPERATION);
-    // The roles above are only the ones visible from here. The password is one for the whole platform, so
-    // an account that also belongs to another site — where it may administer — is not this plugin's to
-    // reset, whatever it holds on this site: the rule a site's own console follows (`mayEditIdentity`).
-    const memberships = new TenantMembershipService(manager.db as never);
-    const elsewhere = tenantId
-      ? (await memberships.listSharedUserIds(tenantId, [uid])).length > 0
-      : (await memberships.listForUser(String(uid))).length > 0;
-    if (elsewhere) refuse('the account also belongs to another site');
+    const { uid, email } = await PluginPasswordSetup.vetAccount(manager, pluginSlug, userId, tenantId, PluginPasswordSetup.OPERATION);
 
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');
@@ -73,6 +50,45 @@ export class PluginPasswordSetup {
       await PluginPasswordSetup.upsert(manager, hashKey, tokenHash);
     });
     return { token, expiresAt };
+  }
+
+  /**
+   * The account a plugin may act on for sign-in purposes: one it could have created. Shared with
+   * PluginSignInLink, which signs the same accounts in by email.
+   */
+  static async vetAccount(
+    manager: IPluginManagerInterface,
+    pluginSlug: string,
+    userId: unknown,
+    tenantId: string | null,
+    operation: string,
+  ): Promise<{ uid: number; email: string }> {
+    const uid = Number(userId);
+    const refuse = (why: string): never => { throw new Error(`${operation} refused account ${String(userId)}: ${why}`); };
+    if (!Number.isFinite(uid) || uid <= 0) refuse('no such account');
+
+    const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id: uid });
+    const email = String(user?.email ?? '').trim().toLowerCase();
+    if (!user || !email.includes('@')) refuse('no such account');
+    if (user.is_platform_admin === true || user.is_platform_admin === 1) refuse('a platform administrator');
+
+    const held = StringUtils.normalizeSlugList(user.roles);
+    if (tenantId) {
+      const row = await manager.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, { user_id: String(uid), tenant_id: tenantId });
+      if (!row) refuse('not a member of this site');
+      held.push(...TenantMembership.from(row as Record<string, unknown>).roles);
+    }
+    await PluginAccountRoles.vetGrant(manager.db, pluginSlug, held, tenantId, operation);
+    // The roles above are only the ones visible from here. The password is one for the whole platform, so
+    // an account that also belongs to another site — where it may administer — is not this plugin's to
+    // reset, whatever it holds on this site: the rule a site's own console follows (`mayEditIdentity`).
+    const memberships = new TenantMembershipService(manager.db as never);
+    const elsewhere = tenantId
+      ? (await memberships.listSharedUserIds(tenantId, [uid])).length > 0
+      : (await memberships.listForUser(String(uid))).length > 0;
+    if (elsewhere) refuse('the account also belongs to another site');
+
+    return { uid, email };
   }
 
   private static minutes(requested: unknown): number {

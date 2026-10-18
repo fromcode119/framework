@@ -12,10 +12,16 @@ export interface IPluginContextUsers {
   /** List users (safe profiles, newest first). */
   list(options?: { limit?: number }): Promise<Array<{ id: any; email: string; username: string; firstName: string; lastName: string; roles: string[] }>>;
   /** Create a user (idempotent on email). Pass an ALREADY-HASHED password (context.auth.hashPassword). */
-  create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null>;
+  create(input: { email: string; password?: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any; created: boolean } | null>;
   /**
    * A set-password token for an account this plugin looks after, for the framework's own
    * `/reset-password?token=…` page. Only for accounts holding nothing beyond roles the plugin may grant.
    */
   issuePasswordSetup(userId: unknown, options?: { ttlMinutes?: number }): Promise<{ token: string; expiresAt: string }>;
+  /**
+   * A sign-in link token for an account this plugin looks after (same eligibility as issuePasswordSetup).
+   * The link is `<site>` + the versioned `SystemConstants.API_PATH.AUTH.SIGN_IN_LINK` + `?token=…`;
+   * opening it signs the person in on this site and redirects to `next`. TTL 5 minutes to 3 days.
+   */
+  issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string; path: string }>;
 }

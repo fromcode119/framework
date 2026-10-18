@@ -19,6 +19,7 @@ export { VersionChangeSummary } from '@core/collections/version-change-summary';
 export { ApiAccessGate } from '@core/plugin/context/api-access-gate';
 export { AccessLevel } from '@core/plugin/context/enums/access-level.enum';
 export { ApiPermissionRequirement } from '@core/plugin/context/api-permission-requirement';
+export { PluginSignInLink } from '@core/plugin/context/plugin-sign-in-link';
 export { LoadedPluginHydration } from '@core/plugin/services/runtime/loaded-plugin-hydration';
 export { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registry-health.enum';
 export { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
