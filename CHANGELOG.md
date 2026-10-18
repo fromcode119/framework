@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.414] - 2026-10-18
+
+### Added
+
+- **auth**: sign-in links for plugin-created accounts ([#992](https://github.com/fromcode119/framework/pull/992))
+
+### Fixed
+
+- **theme**: build, ship and load theme page-contract overrides ([#995](https://github.com/fromcode119/framework/pull/995))
+
 ## [0.2.413] - 2026-10-18
 
 ### Added
