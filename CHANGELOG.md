@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.413] - 2026-10-18
+
+### Added
+
+- **api**: a theme or plugin file at a legacy /api/v1 address answers 301 ([#993](https://github.com/fromcode119/framework/pull/993))
+
 ## [0.2.412] - 2026-10-17
 
 ### Added
