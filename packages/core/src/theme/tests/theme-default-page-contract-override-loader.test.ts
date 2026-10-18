@@ -64,7 +64,7 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
     temporaryDirectories.push(themeDirectory);
     fs.writeFileSync(
       path.join(themeDirectory, 'page-contract-overrides.mjs'),
-      "export class Overrides { static getOverrides() { return [{ contract: { namespace: 'n', pluginSlug: 'lms', key: 'course-learn' }, themeLayout: 'course.detail' }]; } }\n",
+      "export class Overrides { static getOverrides() { return [{ contract: { namespace: 'n', pluginSlug: 'sample', key: 'course-learn' }, themeLayout: 'course.detail' }]; } }\n",
       'utf8',
     );
 
