@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import { ApiPathUtils, CoercionUtils, CookieConstants, RequestContextUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
-import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
+import { AuthControllerAnonymous } from '@api/controllers/auth/auth-controller-anonymous';
 import { SsoOauthProvider } from '@api/controllers/auth/sso/enums/sso-oauth-provider.enum';
 import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-error.enum';
 import { SsoOauthClientFactory } from '@api/controllers/auth/sso/sso-oauth-client-factory';
@@ -18,7 +18,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
  *
  * The address a site registers with a provider is `<site>/api/v1/auth/sso/<provider>/callback`.
  */
-export class AuthControllerSsoOauth extends AuthControllerSso {
+export class AuthControllerSsoOauth extends AuthControllerAnonymous {
   private static readonly HANDOFF_SECONDS = 60;
 
   async ssoStart(req: Request, res: Response) {

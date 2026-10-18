@@ -46,6 +46,7 @@ export class RouteConstants {
     RouteConstants.SEGMENTS.RESET_PASSWORD,
     RouteConstants.SEGMENTS.SSO_PROVIDERS,
     RouteConstants.SEGMENTS.SSO_LOGIN,
+    RouteConstants.SEGMENTS.ANONYMOUS,
     RouteConstants.SEGMENTS.SSO_START,
     RouteConstants.SEGMENTS.SSO_CALLBACK,
     RouteConstants.SEGMENTS.SIGN_IN_LINK,

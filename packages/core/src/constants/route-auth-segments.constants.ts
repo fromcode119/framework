@@ -45,6 +45,9 @@ export class RouteAuthSegments {
   /** Public: the site's password rules, so a sign-up form can state them before anyone types. */
   PASSWORD_POLICY: '/password-policy',
   SSO_LOGIN: '/sso/login',
+  /** An app starting someone without an account, and that person adding an email or a provider later. */
+  ANONYMOUS: '/anonymous',
+  ANONYMOUS_LINK: '/anonymous/link',
   /** Browser redirect to a provider's sign-in page (OAuth authorization-code flow with PKCE). */
   SSO_START: '/sso/:provider/start',
   /** Where the provider sends the browser back; the address a site registers with the provider. */

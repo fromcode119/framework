@@ -15,6 +15,7 @@ import { SiteClock } from '@/lib/site-clock';
 import { TimeFormat, TimeFormatUtils } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { GeneralSignInCard } from '@/app/settings/general/general-sign-in-card';
 
 export class GeneralSystemCards extends PureReactor {
   /** Which of these belong to the PLATFORM — asked of the server, never listed here. */
@@ -78,30 +79,6 @@ export class GeneralSystemCards extends PureReactor {
   @bound
   protected changeEmailNotifications(val: boolean): void {
     this.setSettings((prev) => ({ ...prev, email_notifications: val }));
-  }
-
-  @bound
-  protected changeFrontendAuthEnabled(val: boolean): void {
-    this.setSettings((prev) => ({
-      ...prev,
-      frontend_auth_enabled: val,
-      frontend_registration_enabled: val ? prev.frontend_registration_enabled : false
-    }));
-  }
-
-  @bound
-  protected changeFrontendRegistrationEnabled(val: boolean): void {
-    this.setSettings((prev) => ({ ...prev, frontend_registration_enabled: val }));
-  }
-
-  @bound
-  protected changeAppAuthEnabled(val: boolean): void {
-    this.setSettings((prev) => ({ ...prev, app_auth_enabled: val, app_registration_enabled: val ? prev.app_registration_enabled : false }));
-  }
-
-  @bound
-  protected changeAppRegistrationEnabled(val: boolean): void {
-    this.setSettings((prev) => ({ ...prev, app_registration_enabled: val }));
   }
 
   render(): ReactNode {
@@ -232,67 +209,7 @@ export class GeneralSystemCards extends PureReactor {
           </Card>
         )}
 
-        {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled', 'app_auth_enabled', 'app_registration_enabled') && (
-          <Card title={AdminI18n.t('settings.general.frontendAuth')}>
-            {this.shown('frontend_auth_enabled') && (
-              <SettingRow
-                theme={theme}
-                icon={FrameworkIcons.Lock}
-                title={AdminI18n.t('settings.general.frontendAuthentication')}
-                description={AdminI18n.t('settings.general.enablePublicCustomerAuthenticationRoutes')}
-              >
-                <Switch
-                  checked={settings.frontend_auth_enabled}
-                  onChange={this.changeFrontendAuthEnabled}
-                />
-              </SettingRow>
-            )}
-
-            {this.shown('frontend_registration_enabled') && (
-              <SettingRow
-                theme={theme}
-                icon={FrameworkIcons.Users}
-                title={AdminI18n.t('settings.general.frontendRegistration')}
-                description={AdminI18n.t('settings.general.allowNewCustomerSelfRegistration')}
-              >
-                <Switch
-                  checked={settings.frontend_registration_enabled}
-                  onChange={this.changeFrontendRegistrationEnabled}
-                  disabled={!settings.frontend_auth_enabled}
-                />
-              </SettingRow>
-            )}
-
-            {this.shown('app_auth_enabled') && (
-              <SettingRow
-                theme={theme}
-                icon={FrameworkIcons.Lock}
-                title={AdminI18n.t('settings.general.appAuthentication')}
-                description={AdminI18n.t('settings.general.enableAppAuthenticationRoutes')}
-              >
-                <Switch
-                  checked={settings.app_auth_enabled}
-                  onChange={this.changeAppAuthEnabled}
-                />
-              </SettingRow>
-            )}
-
-            {this.shown('app_registration_enabled') && (
-              <SettingRow
-                theme={theme}
-                icon={FrameworkIcons.Users}
-                title={AdminI18n.t('settings.general.appRegistration')}
-                description={AdminI18n.t('settings.general.allowNewCustomerAppRegistration')}
-              >
-                <Switch
-                  checked={settings.app_registration_enabled}
-                  onChange={this.changeAppRegistrationEnabled}
-                  disabled={!settings.app_auth_enabled}
-                />
-              </SettingRow>
-            )}
-          </Card>
-        )}
+        <GeneralSignInCard platformLocks={this.platformLocks} settings={settings} setSettings={this.setSettings} theme={theme} />
       </>
     );
   }

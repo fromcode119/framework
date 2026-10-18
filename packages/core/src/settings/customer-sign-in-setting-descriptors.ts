@@ -28,5 +28,12 @@ export class CustomerSignInSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'true', description: "Allow new customers to register from apps this site serves.", group: "security" },
     },
+    // Whether an app may start someone without an account: the app gets an account with no email that
+    // only that phone can sign in to, and the person can add an email or Google/Apple to it later. Off
+    // until the site turns it on; it is sign-up, so it also needs app registration.
+    [SystemConstants.META_KEY.APP_ANONYMOUS_ENABLED]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: 'false', description: "Let apps start people without an account (they can add one later).", group: "security" },
+    },
   };
 }

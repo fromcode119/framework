@@ -73,6 +73,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       frontend_registration_enabled: Boolean(settings.frontend_registration_enabled),
       app_auth_enabled: Boolean(settings.app_auth_enabled),
       app_registration_enabled: Boolean(settings.app_registration_enabled),
+      app_anonymous_enabled: Boolean(settings.app_anonymous_enabled),
       signup_email_branded: Boolean(settings.signup_email_branded),
       ...Object.fromEntries(GeneralSignupEmailCard.COPY_ROWS.map((row) => [row.key, String(settings[row.key] ?? '').trim()])),
       [GeneralSignupEmailCard.ACCENT_KEY]: String(settings[GeneralSignupEmailCard.ACCENT_KEY] ?? '').trim(),

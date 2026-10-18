@@ -79,6 +79,8 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
       platformAdmin,
       siteAdmin,
       multiTenant,
+      // An account an app started without one: the app offers to add an email or a provider to it.
+      anonymous: await this.isAnonymousAccount(Number(user.id)),
     };
     const sessionDurationMinutes = await this.getSessionDurationMinutes();
     const maxAgeMs = sessionDurationMinutes * 60 * 1000;

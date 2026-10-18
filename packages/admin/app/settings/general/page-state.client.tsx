@@ -49,6 +49,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'frontend_registration_enabled',
     'app_auth_enabled',
     'app_registration_enabled',
+    'app_anonymous_enabled',
     'signup_email_branded',
     'sources_build_unverified_commits',
   ] as const;

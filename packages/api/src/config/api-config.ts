@@ -164,6 +164,8 @@ export class ApiConfig {
         EMAIL_CHANGE_CONFIRM: withVersion(SystemConstants.API_PATH.AUTH.EMAIL_CHANGE_CONFIRM),
         SSO_PROVIDERS: withVersion(SystemConstants.API_PATH.AUTH.SSO_PROVIDERS),
         SSO_LOGIN: withVersion(SystemConstants.API_PATH.AUTH.SSO_LOGIN),
+        ANONYMOUS: withVersion(SystemConstants.API_PATH.AUTH.ANONYMOUS),
+        ANONYMOUS_LINK: withVersion(SystemConstants.API_PATH.AUTH.ANONYMOUS_LINK),
         SSO_START: withVersion(SystemConstants.API_PATH.AUTH.SSO_START),
         SSO_CALLBACK: withVersion(SystemConstants.API_PATH.AUTH.SSO_CALLBACK),
         LOGIN: withVersion(SystemConstants.API_PATH.AUTH.LOGIN),

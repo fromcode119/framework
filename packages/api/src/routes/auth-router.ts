@@ -51,6 +51,8 @@ export class AuthRouter extends BaseRouter {
     // SSO endpoints
     this.get(RouteConstants.SEGMENTS.SSO_PROVIDERS, this.controller.getSsoProviders);
     this.post(RouteConstants.SEGMENTS.SSO_LOGIN, this.controller.ssoLogin);
+    this.post(RouteConstants.SEGMENTS.ANONYMOUS, this.controller.anonymousSignIn);
+    this.post(RouteConstants.SEGMENTS.ANONYMOUS_LINK, this.auth.guard(), this.controller.linkAnonymous);
     // Redirect sign-in (OAuth authorization code + PKCE): the browser navigates to start, the provider
     // sends it back to callback. Both are public: the visitor is signing in.
     this.get(RouteConstants.SEGMENTS.SSO_START, this.controller.ssoStart);
