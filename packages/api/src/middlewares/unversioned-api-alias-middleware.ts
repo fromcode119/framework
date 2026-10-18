@@ -1,5 +1,5 @@
 import type express from 'express';
-import { ApiVersionUtils } from '@fromcode119/core';
+import { ApiVersionUtils, RequestSurfaceUtils } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
 import { LegacyApiPathUsage } from '@api/middlewares/legacy-api-path-usage';
 
@@ -35,16 +35,32 @@ export class UnversionedApiAliasMiddleware {
     return Object.values(ApiConfig.getInstance().probeRoutes).some((probe) => path === `${base}${probe}`);
   }
 
+  /**
+   * A theme or plugin FILE (image, font, script) asked for at its legacy address is answered with a
+   * permanent redirect rather than served in place. Crawlers and link previews (Facebook, Google) keep
+   * the address they first saw and only replace it when told it moved; a silent alias leaves them asking
+   * for the old one forever. API calls stay silent: a redirect can lose a request body, and an app or a
+   * webhook sender may not follow one.
+   */
+  static isMovedAsset(method: string, path: string): boolean {
+    return (method === 'GET' || method === 'HEAD') && RequestSurfaceUtils.isExtensionAssetPath(path);
+  }
+
   private static escape(value: string): string {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   middleware() {
-    return (req: express.Request, _res: express.Response, next: express.NextFunction): void => {
+    return (req: express.Request, res: express.Response, next: express.NextFunction): void => {
       const rewritten = UnversionedApiAliasMiddleware.rewrite(req.url);
       if (rewritten !== req.url) {
         // Only the legacy direction is worth naming: it is an address someone outside still holds.
-        if (ApiVersionUtils.prefix() === ApiVersionUtils.API_BASE_PATH) LegacyApiPathUsage.record(req.method, req.url, req.headers['user-agent'], req.headers.referer);
+        const legacy = ApiVersionUtils.prefix() === ApiVersionUtils.API_BASE_PATH;
+        if (legacy) LegacyApiPathUsage.record(req.method, req.url, req.headers['user-agent'], req.headers.referer);
+        if (legacy && UnversionedApiAliasMiddleware.isMovedAsset(req.method, rewritten)) {
+          res.redirect(301, rewritten);
+          return;
+        }
         req.url = rewritten;
         req.originalUrl = rewritten;
       }
