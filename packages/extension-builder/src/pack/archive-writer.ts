@@ -151,8 +151,10 @@ export class ArchiveWriter {
       // Re-add what the blanket `**/*.mjs` exclusion above would otherwise take with it. `ui-ssr`
       // holds the server render bundle the frontend imports; `seed.mjs` is a theme's seed data.
       archive.glob('ui-ssr/**/*.mjs', { cwd: sourceDir, dot: false });
-      const seed = path.join(sourceDir, Core.ThemePackageLayout.SEED_ARTIFACT);
-      if (fs.existsSync(seed)) archive.file(seed, { name: Core.ThemePackageLayout.SEED_ARTIFACT });
+      for (const artifact of [Core.ThemePackageLayout.SEED_ARTIFACT, Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT]) {
+        const file = path.join(sourceDir, artifact);
+        if (fs.existsSync(file)) archive.file(file, { name: artifact });
+      }
 
       archive.finalize();
     });

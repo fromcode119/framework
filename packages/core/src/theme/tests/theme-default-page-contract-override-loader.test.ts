@@ -59,6 +59,20 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
     expect(reloadedOverrides[0].aliases).toEqual(['/gamma']);
   });
 
+  it('prefers the built artifact an installed theme ships at its root', async () => {
+    const themeDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-overrides-built-'));
+    temporaryDirectories.push(themeDirectory);
+    fs.writeFileSync(
+      path.join(themeDirectory, 'page-contract-overrides.mjs'),
+      "export class Overrides { static getOverrides() { return [{ contract: { namespace: 'n', pluginSlug: 'sample', key: 'course-learn' }, themeLayout: 'course.detail' }]; } }\n",
+      'utf8',
+    );
+
+    const overrides = await new ThemeDefaultPageContractOverrideLoader().load(themeDirectory);
+
+    expect(overrides[0].themeLayout).toBe('course.detail');
+  });
+
   it('returns an empty list when the theme does not provide overrides', async () => {
     const themeDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-overrides-empty-'));
     temporaryDirectories.push(themeDirectory);

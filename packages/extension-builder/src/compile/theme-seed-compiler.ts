@@ -18,14 +18,27 @@ export class ThemeSeedCompiler {
   static readonly STEP = 'theme-seed-compiler';
 
   static async compile(themeDir: string, outputPath: string): Promise<BuildStepResult> {
+    return ThemeSeedCompiler.compileEntry(themeDir, Core.ThemePackageLayout.SEED_SOURCE, outputPath, ThemeSeedCompiler.STEP);
+  }
+
+  /** The theme's page-contract overrides, built with the same options as the seed. */
+  static async compileOverrides(themeDir: string, outputPath: string): Promise<BuildStepResult> {
+    return ThemeSeedCompiler.compileEntry(
+      themeDir, Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_SOURCE, outputPath, ThemeSeedCompiler.OVERRIDES_STEP,
+    );
+  }
+
+  static readonly OVERRIDES_STEP = 'theme-page-contract-overrides-compiler';
+
+  private static async compileEntry(themeDir: string, source: string, outputPath: string, step: string): Promise<BuildStepResult> {
     // Sweep any copy an earlier build left in the SOURCE tree. `clean_pack_directory` deliberately
     // spares `seed.mjs`, so a stale one here would be packaged in preference to the fresh build.
     for (const stale of [Core.ThemePackageLayout.SEED_ARTIFACT, 'seed.cjs']) {
       fs.rmSync(path.join(themeDir, stale), { force: true });
     }
 
-    const entry = path.join(themeDir, Core.ThemePackageLayout.SEED_SOURCE);
-    if (!fs.existsSync(entry)) return BuildStepResult.skipped(ThemeSeedCompiler.STEP, `no ${Core.ThemePackageLayout.SEED_SOURCE}`);
+    const entry = path.join(themeDir, source);
+    if (!fs.existsSync(entry)) return BuildStepResult.skipped(step, `no ${source}`);
 
     fs.mkdirSync(path.dirname(outputPath), { recursive: true });
     fs.rmSync(outputPath, { force: true });
@@ -49,9 +62,9 @@ export class ThemeSeedCompiler {
         logLevel: 'warning',
       });
     } catch (error) {
-      return BuildStepResult.failure(ThemeSeedCompiler.STEP, String(error));
+      return BuildStepResult.failure(step, String(error));
     }
 
-    return BuildStepResult.ok(ThemeSeedCompiler.STEP);
+    return BuildStepResult.ok(step);
   }
 }
