@@ -36,4 +36,14 @@ describe('ThemeSeedCompiler', () => {
     expect(result.failed).toBe(false);
     expect(result.skippedReason).toContain('src/seed.ts');
   });
+
+  it('builds the page-contract overrides from src/seeds with the @theme alias', async () => {
+    const dir = themeWithSeed();
+    mkdirSync(join(dir, 'src', 'seeds'), { recursive: true });
+    writeFileSync(join(dir, 'src', 'seeds', 'theme-default-page-contract-overrides.ts'), 'import { Pages } from "@theme/pages";\nexport class O { static getOverrides() { return Pages.list(); } }\n');
+    const out = join(dir, 'build', 'page-contract-overrides.mjs');
+    const result = await ThemeSeedCompiler.compileOverrides(dir, out);
+    expect(result.failed).toBe(false);
+    expect(readFileSync(out, 'utf8')).toContain('SEEDED_MARKER');
+  });
 });

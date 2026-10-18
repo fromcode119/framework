@@ -108,6 +108,7 @@ export class ExtensionBuildPipeline {
     // PackCleaner deliberately spares `seed.mjs` and would otherwise have nothing to spare.
     if (input.kind === ExtensionKind.THEME) {
       results.push(ExtensionBuildPipeline.stageThemeSeed(packDir, ExtensionBuildPipeline.seedOutputPath(workspace, input.slug)));
+      results.push(ExtensionBuildPipeline.stageThemeOverrides(packDir, ExtensionBuildPipeline.overridesOutputPath(workspace, input.slug)));
     }
 
     PackCleaner.clean(packDir);
@@ -159,6 +160,7 @@ export class ExtensionBuildPipeline {
         // writes it to dist/packages/build/themes/<slug>/ for the same reason, and the path matches so, and a `build/` directory
         // left in the source tree would be picked up and packaged.
         () => ThemeSeedCompiler.compile(workspace.sourceDir, ExtensionBuildPipeline.seedOutputPath(workspace, slug)),
+        () => ThemeSeedCompiler.compileOverrides(workspace.sourceDir, ExtensionBuildPipeline.overridesOutputPath(workspace, slug)),
       ];
     }
 
@@ -261,6 +263,18 @@ export class ExtensionBuildPipeline {
     manifest.seeds = Core.ThemePackageLayout.SEED_ARTIFACT;
     fs.writeFileSync(manifestPath, `${JSON.stringify(manifest, null, 2)}\n`);
     return BuildStepResult.ok(step);
+  }
+
+  /** Copies the built page-contract overrides into the package root, where the loader reads them. */
+  private static stageThemeOverrides(packDir: string, builtOverrides: string): BuildStepResult {
+    const step = 'theme-page-contract-overrides-staging';
+    if (!fs.existsSync(builtOverrides)) return BuildStepResult.skipped(step, 'no built overrides to stage');
+    fs.copyFileSync(builtOverrides, path.join(packDir, Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT));
+    return BuildStepResult.ok(step);
+  }
+
+  private static overridesOutputPath(workspace: ExtensionWorkspace, slug: string): string {
+    return path.join(path.dirname(ExtensionBuildPipeline.seedOutputPath(workspace, slug)), Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT);
   }
 
   private static seedOutputPath(workspace: ExtensionWorkspace, slug: string): string {

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { pathToFileURL } from 'url';
+import { ThemePackageLayout } from '@core/theme/theme-package-layout';
 import type { IThemeDefaultPageContractOverride } from '@core/default-page-contract/interfaces/theme-default-page-contract-override.interface';
 
 export class ThemeDefaultPageContractOverrideLoader {
@@ -17,7 +18,17 @@ export class ThemeDefaultPageContractOverrideLoader {
     return this.readOverrides(moduleExports);
   }
 
+  /**
+   * An installed theme ships the BUILT artifact at its root; a mounted source theme (local dev) has
+   * only `src/seeds/*.ts`. The legacy `seeds/` directory is still read for third-party themes.
+   */
   private resolveOverrideModulePath(themeDirectory: string): string | null {
+    const shipped = [
+      path.resolve(themeDirectory, ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT),
+      path.resolve(themeDirectory, ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_SOURCE),
+    ].find((candidate) => fs.existsSync(candidate));
+    if (shipped) return shipped;
+
     const basePath = path.resolve(themeDirectory, ThemeDefaultPageContractOverrideLoader.SEARCH_DIR);
     const candidates = [
       `${ThemeDefaultPageContractOverrideLoader.FILE_BASENAME}.js`,

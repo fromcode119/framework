@@ -96,7 +96,8 @@ export class PackCleaner {
     // theme without a seed.
     if (name.endsWith('.mjs')) {
       const inUiSsr = path.relative(root, full).split(path.sep).includes('ui-ssr');
-      return name !== Core.ThemePackageLayout.SEED_ARTIFACT && !inUiSsr;
+      const shipped = [Core.ThemePackageLayout.SEED_ARTIFACT, Core.ThemePackageLayout.PAGE_CONTRACT_OVERRIDES_ARTIFACT];
+      return !shipped.includes(name) && !inUiSsr;
     }
 
     return false;

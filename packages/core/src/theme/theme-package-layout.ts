@@ -47,6 +47,16 @@ export class ThemePackageLayout {
   static readonly SEED_ARTIFACT = 'seed.mjs';
 
   /**
+   * A theme's default-page contract overrides (which layout, slug or title a plugin's default page
+   * takes in this theme): compiled like the seed and shipped at the package root. An installed theme
+   * has no TypeScript runtime, so the source alone was never loadable there.
+   */
+  static readonly PAGE_CONTRACT_OVERRIDES_SOURCE = 'src/seeds/theme-default-page-contract-overrides.ts';
+
+  /** The built overrides' filename inside the package. */
+  static readonly PAGE_CONTRACT_OVERRIDES_ARTIFACT = 'page-contract-overrides.mjs';
+
+  /**
    * The head-script artifact a theme serves, or `''` when it has none.
    *
    * An explicit `ui.headScript` still wins, exactly as an explicit manifest value wins in
