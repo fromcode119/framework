@@ -81,6 +81,7 @@ export class SystemApiPaths {
       SSO_LOGIN: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_LOGIN),
       SSO_START: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_START),
       SSO_CALLBACK: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SSO_CALLBACK),
+      SIGN_IN_LINK: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SIGN_IN_LINK),
       SESSIONS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS),
       MY_SESSIONS: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS_ME),
       REVOKE_SESSION: SystemApiPaths.joinPath(SystemApiPaths.AUTH_BASE, SystemApiPaths.ROUTE_SEGMENTS.SESSIONS_ID_REVOKE),

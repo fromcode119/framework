@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
@@ -8,6 +9,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { StringUtils } from '@core/utils/string-utils';
 import { PluginAccountRoles } from '@core/plugin/context/plugin-account-roles';
 import { PluginPasswordSetup } from '@core/plugin/context/plugin-password-setup';
+import { PluginSignInLink } from '@core/plugin/context/plugin-sign-in-link';
 import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
 export class UsersContextProxy {
@@ -179,10 +181,11 @@ export class UsersContextProxy {
       /**
        * Create a user through the framework (plugins must NOT insert into the `users` system table via
        * context.db — that path is blocked). The caller passes an ALREADY-HASHED password (hash it with
-       * context.auth.hashPassword); the framework owns the only write to the users table. Idempotent:
-       * returns the existing user's id if the email is already taken.
+       * context.auth.hashPassword), or none: an account that signs in by link (`issueSignInLink`) gets an
+       * unguessable password nobody knows. The framework owns the only write to the users table.
+       * Idempotent: returns the existing user's id if the email is already taken, with `created: false`.
        */
-      async create(input: { email: string; password: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any } | null> {
+      async create(input: { email: string; password?: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any; created: boolean } | null> {
         if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
         const email = String(input?.email ?? '').trim().toLowerCase();
         if (!email.includes('@')) return null;
@@ -217,11 +220,14 @@ export class UsersContextProxy {
         const existing = await manager.db.findOne(SystemConstants.TABLE.USERS, { email });
         if (existing?.id != null) {
           await joinThisSite(existing.id);
-          return { id: existing.id };
+          return { id: existing.id, created: false };
         }
+        const password = input?.password
+          ? String(input.password)
+          : await manager.auth.hashPassword(randomBytes(24).toString('hex'));
         const row: any = await manager.db.insert(SystemConstants.TABLE.USERS, {
           email,
-          password: String(input?.password ?? ''),
+          password,
           roles,
           firstName: input?.firstName ? String(input.firstName) : null,
           lastName: input?.lastName ? String(input.lastName) : null,
@@ -229,7 +235,7 @@ export class UsersContextProxy {
         const created = Array.isArray(row) ? row[0] : row;
         if (created?.id == null) return null;
         await joinThisSite(created.id);
-        return { id: created.id };
+        return { id: created.id, created: true };
       },
 
       /**
@@ -242,6 +248,20 @@ export class UsersContextProxy {
         const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
         return PluginPasswordSetup.issue(manager, plugin.manifest.slug, userId, tenantId, options).catch((error: Error) => {
           manager.audit?.logAction?.(plugin.manifest.slug, 'Password Setup', 'users', 'denied');
+          throw error;
+        });
+      },
+
+      /**
+       * A sign-in link for an account this plugin looks after: opening
+       * `<site>/api/v1/auth/sign-in-link?token=…` signs the person in on this site and redirects to
+       * `next` (a path on this site). Same eligibility as `issuePasswordSetup` — see PluginSignInLink.
+       */
+      async issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string }> {
+        if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
+        const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+        return PluginSignInLink.issue(manager, plugin.manifest.slug, userId, tenantId, options).catch((error: Error) => {
+          manager.audit?.logAction?.(plugin.manifest.slug, 'Sign-in Link', 'users', 'denied');
           throw error;
         });
       }

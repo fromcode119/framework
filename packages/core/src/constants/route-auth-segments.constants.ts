@@ -49,6 +49,8 @@ export class RouteAuthSegments {
   SSO_START: '/sso/:provider/start',
   /** Where the provider sends the browser back; the address a site registers with the provider. */
   SSO_CALLBACK: '/sso/:provider/callback',
+  /** Public: a sign-in link from an email (`context.users.issueSignInLink`) — signs the visitor in and redirects. */
+  SIGN_IN_LINK: '/sign-in-link',
   SECURITY: '/security',
   PROFILE: '/profile',
   ME_PERSON: '/me/person',
