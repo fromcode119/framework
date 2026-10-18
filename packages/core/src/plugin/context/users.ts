@@ -113,6 +113,14 @@ export class UsersContextProxy {
     manager: IPluginManagerInterface,
     security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>
   ) {
+    const issueVetted = <T>(label: string, issue: (tenantId: string | null) => Promise<T>): Promise<T> => {
+      if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
+      const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
+      return issue(tenantId).catch((error: Error) => {
+        manager.audit?.logAction?.(plugin.manifest.slug, label, 'users', 'denied');
+        throw error;
+      });
+    };
     return {
       async findAdmins(options?: { limit?: number }) {
         const limit = Math.max(1, Math.min(500, options?.limit ?? 200));
@@ -181,9 +189,8 @@ export class UsersContextProxy {
       /**
        * Create a user through the framework (plugins must NOT insert into the `users` system table via
        * context.db — that path is blocked). The caller passes an ALREADY-HASHED password (hash it with
-       * context.auth.hashPassword), or none: an account that signs in by link (`issueSignInLink`) gets an
-       * unguessable password nobody knows. The framework owns the only write to the users table.
-       * Idempotent: returns the existing user's id if the email is already taken, with `created: false`.
+       * context.auth.hashPassword), or none for a link-only account. The framework owns the only write
+       * to the users table. Idempotent: an existing email returns its id with `created: false`.
        */
       async create(input: { email: string; password?: string; roles?: string[]; firstName?: string; lastName?: string }): Promise<{ id: any; created: boolean } | null> {
         if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
@@ -244,26 +251,12 @@ export class UsersContextProxy {
        * plugin could not grant, and for a platform administrator — see PluginPasswordSetup.
        */
       async issuePasswordSetup(userId: unknown, options?: { ttlMinutes?: number }): Promise<{ token: string; expiresAt: string }> {
-        if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
-        const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
-        return PluginPasswordSetup.issue(manager, plugin.manifest.slug, userId, tenantId, options).catch((error: Error) => {
-          manager.audit?.logAction?.(plugin.manifest.slug, 'Password Setup', 'users', 'denied');
-          throw error;
-        });
+        return issueVetted('Password Setup', (tenantId) => PluginPasswordSetup.issue(manager, plugin.manifest.slug, userId, tenantId, options));
       },
 
-      /**
-       * A sign-in link for an account this plugin looks after: opening
-       * `<site>/api/v1/auth/sign-in-link?token=…` signs the person in on this site and redirects to
-       * `next` (a path on this site). Same eligibility as `issuePasswordSetup` — see PluginSignInLink.
-       */
+      /** A link that signs the account in on this site, then lands on `next` — see PluginSignInLink. */
       async issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string }> {
-        if (!security.hasCapability(UsersContextProxy.CREATE_CAPABILITY)) security.handleViolation(UsersContextProxy.CREATE_CAPABILITY);
-        const tenantId = TenantMode.isEnabled() ? String(RequestContextUtils.getTenantId() ?? '').trim() || null : null;
-        return PluginSignInLink.issue(manager, plugin.manifest.slug, userId, tenantId, options).catch((error: Error) => {
-          manager.audit?.logAction?.(plugin.manifest.slug, 'Sign-in Link', 'users', 'denied');
-          throw error;
-        });
+        return issueVetted('Sign-in Link', (tenantId) => PluginSignInLink.issue(manager, plugin.manifest.slug, userId, tenantId, options));
       }
     };
 

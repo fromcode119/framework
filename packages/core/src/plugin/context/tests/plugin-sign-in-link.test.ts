@@ -39,7 +39,7 @@ function managerWith(users: any[]) {
 
 const ALLOWED = { hasCapability: () => true, handleViolation: () => {}, handleRateLimit: () => {} } as any;
 const users = (manager: any, security = ALLOWED) =>
-  UsersContextProxy.createUsersProxy({ manifest: { slug: 'lms' } } as any, manager, security);
+  UsersContextProxy.createUsersProxy({ manifest: { slug: 'reader-club' } } as any, manager, security);
 
 afterEach(() => TenantMode.reset());
 
