@@ -67,13 +67,34 @@ export class PlatformMonitorTask {
   async targets(): Promise<IMonitoringTarget[]> {
     const scheme = EnvUtils.isProduction() ? 'https' : 'http';
     const targets: IMonitoringTarget[] = [];
+    const themed = await this.sitesWithTheme();
     for (const site of await this.sites()) {
       if (site.isWorkspace || !site.isReadable || !site.primaryHost) continue;
-      targets.push({ key: site.id, label: site.slug, url: `${scheme}://${site.primaryHost}/` });
+      const origin = `${scheme}://${site.primaryHost}`;
+      // A site with no theme has no website: its home page is a 404 by design (a private marketplace
+      // answers nothing without a key), so watching `/` reported it down forever. Watch the api that
+      // serves it instead — the same health check the platform target uses, on the site's own host.
+      const url = !themed || themed.has(site.id) ? `${origin}/` : ApiPathUtils.absoluteUrl(origin, ApiPathUtils.versioned(SystemApiPaths.ALL.SYSTEM.HEALTH));
+      targets.push({ key: site.id, label: site.slug, url });
     }
     const adminUrl = String(await PlatformSettingsService.getSetting(SystemConstants.META_KEY.ADMIN_URL) ?? '');
     if (adminUrl) targets.push({ key: 'platform', label: 'platform', url: ApiPathUtils.absoluteUrl(adminUrl, ApiPathUtils.versioned(SystemApiPaths.ALL.SYSTEM.HEALTH)) });
     return targets.sort((a, b) => a.key.localeCompare(b.key));
+  }
+
+  /**
+   * The sites with an active theme, read across every site with the platform-admin marker; null when the
+   * read failed, and then every site keeps its home-page check rather than all silently becoming
+   * api-only targets.
+   */
+  private async sitesWithTheme(): Promise<Set<string> | null> {
+    try {
+      const rows = await this.manager.db.withPlatformAdmin(() => this.manager.db.find(SystemConstants.TABLE.TENANT_THEMES, { where: { state: 'active' } }));
+      return new Set((rows ?? []).map((row: { tenant_id?: unknown }) => String(row?.tenant_id ?? '')));
+    } catch (error: any) {
+      this.logger.warn(`Could not read which sites have a theme; watching every site's home page: ${error?.message || error}`);
+      return null;
+    }
   }
 
   private async syncTargets(active: Array<{ key: string; provider: { syncTargets?: (targets: IMonitoringTarget[]) => Promise<void> } }>): Promise<void> {

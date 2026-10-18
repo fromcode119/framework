@@ -14,6 +14,9 @@ class MetaTable {
   async findOne(_table: string, where: { key: string }) { return this.rows.get(where.key) ?? null; }
   async update(_table: string, where: { key: string }, patch: any) { Object.assign(this.rows.get(where.key), patch); }
   async insert(_table: string, row: any) { this.rows.set(row.key, { ...row }); }
+  /** `_system_tenant_themes`: which sites have an active theme. */
+  activeThemes: Array<{ tenant_id: string; state: string }> = [{ tenant_id: 'shop', state: 'active' }, { tenant_id: 'blog', state: 'active' }];
+  async find(_table: string, query: { where: { state: string } }) { return this.activeThemes.filter((row) => row.state === query.where.state); }
 }
 
 describe('PlatformMonitorTask', () => {
@@ -112,6 +115,19 @@ describe('PlatformMonitorTask', () => {
     await task().run();
     expect(synced[1]).toContain('https://blog.example/');
     sites.pop();
+  });
+
+  it('watches a site with no theme through its api health, since its home page is a 404 by design', async () => {
+    const withMarket = [...sites, { id: 'market', slug: 'market', primaryHost: 'market.example', isWorkspace: false, isReadable: true }];
+    const targets = await new PlatformMonitorTask({ db, plugins }, async () => withMarket as any).targets();
+    expect(targets.map((t) => t.url)).toEqual(['https://market.example/api/health', 'https://console.example/api/health', 'https://shop.example/']);
+  });
+
+  it('keeps every home-page check when it cannot tell which sites have a theme', async () => {
+    db.find = async () => { throw new Error('db down'); };
+    const withMarket = [...sites, { id: 'market', slug: 'market', primaryHost: 'market.example', isWorkspace: false, isReadable: true }];
+    const targets = await new PlatformMonitorTask({ db, plugins }, async () => withMarket as any).targets();
+    expect(targets.map((t) => t.url)).toContain('https://market.example/');
   });
 
   it('never lists a private site or a workspace for outside monitoring', async () => {
