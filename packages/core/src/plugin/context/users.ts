@@ -254,7 +254,7 @@ export class UsersContextProxy {
       },
 
       /** A link that signs the account in on this site, then lands on `next` — see PluginSignInLink. */
-      async issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string }> {
+      async issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string; path: string }> {
         return issueVetted('Sign-in Link', (tenantId) => PluginSignInLink.issue(manager, plugin.manifest.slug, userId, tenantId, options));
       }
     };

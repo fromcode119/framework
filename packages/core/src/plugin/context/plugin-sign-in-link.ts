@@ -2,6 +2,8 @@ import { createHash, randomBytes } from 'crypto';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { PluginPasswordSetup } from '@core/plugin/context/plugin-password-setup';
+import { ApiPathUtils } from '@core/api/api-path-utils';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 
 /**
  * A sign-in link for an account a PLUGIN looks after — `context.users.issueSignInLink`.
@@ -46,7 +48,7 @@ export class PluginSignInLink {
     userId: unknown,
     tenantId: string | null,
     options: { ttlMinutes?: number; next?: string } = {},
-  ): Promise<{ token: string; expiresAt: string }> {
+  ): Promise<{ token: string; expiresAt: string; path: string }> {
     const { uid, email } = await PluginPasswordSetup.vetAccount(manager, pluginSlug, userId, tenantId, PluginSignInLink.OPERATION);
 
     const token = randomBytes(32).toString('hex');
@@ -64,7 +66,12 @@ export class PluginSignInLink {
       await PluginSignInLink.upsert(manager, PluginSignInLink.tokenKey(tokenHash), payload);
       await PluginSignInLink.upsert(manager, PluginSignInLink.userKey(uid), tokenHash);
     });
-    return { token, expiresAt };
+    return { token, expiresAt, path: PluginSignInLink.path(token) };
+  }
+
+  /** The site-relative address that consumes a link — prefix it with the site's own base URL. */
+  static path(token: string): string {
+    return `${ApiPathUtils.versioned(SystemApiPaths.ALL.AUTH.SIGN_IN_LINK)}?token=${encodeURIComponent(token)}`;
   }
 
   private static minutes(requested: unknown): number {
