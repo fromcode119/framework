@@ -145,12 +145,12 @@ export class ServerMiddlewareSetup {
   private runWithTenant(req: any, res: any, locale: string, next: any): void {
     // Not tenant traffic, and none of it can return a tenant's row: liveness/readiness probes, the
     // extension assets the operator installed once for the whole platform, the ACME challenge a
-    // certificate authority asks for before a host is known, and the platform's own robots.txt.
-    // Exempted by PATH ONLY, and each entry carries its proof in `TenantExemptRouteUtils` — every
-    // route that can return a row stays behind tenant resolution.
+    // certificate authority asks for before a host is known, the platform's own robots.txt, and a
+    // plugin's platform routes. Exempted by PATH ONLY, each with its proof in `TenantExemptRouteUtils`.
     if (TenantExemptRouteUtils.isProbeRoute(req) || TenantExemptRouteUtils.isPublicAssetRoute(req)
       || TenantExemptRouteUtils.isAcmeChallengeRoute(req)
-      || TenantExemptRouteUtils.isPlatformRobotsRoute(req)) {
+      || TenantExemptRouteUtils.isPlatformRobotsRoute(req)
+      || TenantExemptRouteUtils.isPlatformPluginRoute(req)) {
       RequestContextUtils.storage.run({ locale }, () => next());
       return;
     }
@@ -284,7 +284,7 @@ export class ServerMiddlewareSetup {
           return;
         }
 
-        await this.parts().binder().bind(req, res, locale, tenant, next, 'admin');
+        await this.parts().binder().bind(req, res, locale, tenant, next, TenantRequestBinder.ADMIN_SURFACE);
       })
       .catch((error: unknown) => {
         this.logger.error('Admin tenant resolution failed', error);

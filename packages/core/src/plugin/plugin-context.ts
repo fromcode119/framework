@@ -45,6 +45,7 @@ import type { IPluginContextTenants } from '@core/plugin/interfaces/plugin-conte
 import type { IPluginContextSigning } from '@core/plugin/interfaces/plugin-context-signing.interface';
 import type { IPluginContextRealtime } from '@core/plugin/interfaces/plugin-context-realtime.interface';
 import type { IPluginContextSms } from '@core/plugin/interfaces/plugin-context-sms.interface';
+import type { IPluginContextPlatform } from '@core/plugin/interfaces/plugin-context-platform.interface';
 import type { IPluginContextGeo } from '@core/plugin/interfaces/plugin-context-geo.interface';
 import type { IPluginContextMeta } from '@core/plugin/interfaces/plugin-context-meta.interface';
 import type { IPluginContextMedia } from '@core/plugin/interfaces/plugin-context-media.interface';
@@ -175,6 +176,7 @@ export class PluginContext {
   declare readonly realtime: IPluginContextRealtime;
   /** For a plugin that PROVIDES text messages. See {@link IPluginContextSms}. */
   declare readonly sms: IPluginContextSms;
+  declare readonly platform: IPluginContextPlatform;
   declare readonly geo: IPluginContextGeo;
   /**
    * Run this plugin's schema migrations on the FRAMEWORK's DDL connection.

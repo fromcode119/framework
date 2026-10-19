@@ -27,7 +27,7 @@ export class SettingsContextProxy {
    * opened (no key on this server, or sealed under another one) comes back empty, never as ciphertext
    * the plugin would mistake for the secret.
    */
-  private static openSecrets(settings: Record<string, any>, schema: any): Record<string, any> {
+  static openSecrets(settings: Record<string, any>, schema: any): Record<string, any> {
     if (!schema?.fields) return settings;
     const opened = { ...settings };
     for (const field of schema.fields) {
@@ -87,7 +87,11 @@ export class SettingsContextProxy {
             for (const field of schema.fields) {
               if (!SettingsContextProxy.isSecretField(field)) continue;
               const incoming = settingsToSave[field.name];
-              if (!incoming || SecretService.isSavedSecretMask(incoming)) {
+              // `null` clears the secret (a disconnected account's token); '' and the mask keep it,
+              // because a form that never showed the secret sends exactly those.
+              if (incoming === null) {
+                settingsToSave[field.name] = '';
+              } else if (!incoming || SecretService.isSavedSecretMask(incoming)) {
                 settingsToSave[field.name] = existingSettings[field.name] ?? '';
               } else if (!SecretService.isEncryptedValue(incoming)) {
                 settingsToSave[field.name] = SecretService.encrypt(String(incoming));

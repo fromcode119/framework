@@ -94,6 +94,18 @@ describe('AdminSchemaLocalizer', () => {
     expect(out.fields[0].admin.description).toBe('Пред номера.');
   });
 
+  it('fills a translated description with the values the schema declares for it', () => {
+    const words: Record<string, string> = { 'meta.admin.settings.fields.appId.description': 'Добавете този адрес: {{redirectUri}} ({{missing}})' };
+    const out = new AdminSchemaLocalizer((plugin, key) => words[`${plugin}.${key}`] || '').settings('meta', {
+      fields: [
+        { name: 'appId', admin: { description: 'Add this address: https://p.example/cb', descriptionValues: { redirectUri: 'https://p.example/cb' } } },
+        { name: 'other', admin: { description: 'Keeps {{redirectUri}} as written.' } },
+      ],
+    });
+    expect(out.fields[0].admin.description).toBe('Добавете този адрес: https://p.example/cb ({{missing}})');
+    expect(out.fields[1].admin.description).toBe('Keeps {{redirectUri}} as written.');
+  });
+
   it('translates plugin menu entries and groups, and leaves the framework\'s own to the console', () => {
     const out = localizer.menu([
       { label: 'Dashboard', path: '/', pluginSlug: 'system', group: 'Core' },

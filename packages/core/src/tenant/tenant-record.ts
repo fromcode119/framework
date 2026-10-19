@@ -71,6 +71,11 @@ export class TenantRecord {
     return this.hosts().filter((host) => this.roleFor(host) === TenantHostRole.API);
   }
 
+  /** The hosts DECLARED to answer as this tenant's console. */
+  adminHosts(): string[] {
+    return this.hosts().filter((host) => this.roleFor(host) === TenantHostRole.ADMIN);
+  }
+
   /** The hosts that serve this tenant's storefront, primary first — by role, never by name. */
   storefrontHosts(): string[] {
     return this.hosts().filter((host) => this.roleFor(host) === TenantHostRole.STOREFRONT);

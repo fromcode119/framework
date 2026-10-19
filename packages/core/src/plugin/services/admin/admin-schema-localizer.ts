@@ -164,7 +164,7 @@ export class AdminSchemaLocalizer {
       if (field.admin) {
         next.admin = {
           ...field.admin,
-          description: this.text(pluginSlug, `${key}.description`, field.admin.description),
+          description: AdminSchemaLocalizer.fill(this.text(pluginSlug, `${key}.description`, field.admin.description), field.admin.descriptionValues),
           // A relationship or tag field declares its placeholder here, not at the top level; it was left in
           // the schema's English ("Search products by name…") on a Bulgarian console.
           ...(field.admin.placeholder ? { placeholder: this.text(pluginSlug, `${key}.placeholder`, field.admin.placeholder) } : {}),
@@ -222,6 +222,16 @@ export class AdminSchemaLocalizer {
     // Only a plain string is translated: a locale map, a number or nothing is left exactly as declared.
     if (!declared || declared !== String(declared)) return declared;
     return this.lookup(pluginSlug, key) || declared;
+  }
+
+  /**
+   * A description naming a value only the running platform knows (an address to paste elsewhere) says
+   * `{{name}}` in the dictionary and declares the value in `admin.descriptionValues`; the declared
+   * description already carries it, so only a translation needs filling.
+   */
+  private static fill<T>(text: T | string, values: Record<string, unknown> | undefined): T | string {
+    if (!values || text !== String(text)) return text;
+    return String(text).replace(/\{\{(\w+)\}\}/g, (match, name: string) => (name in values ? String(values[name]) : match));
   }
 
   private static collectionKey(collection: Record<string, any>): string {

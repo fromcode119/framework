@@ -39,3 +39,30 @@ describe('TenantRequestBinder request locale', () => {
     expect(await BinderLocaleFixture.localeFor('admin', false)).toEqual({ context: 'en', req: 'en' });
   });
 });
+
+describe('TenantRequestBinder console origin', () => {
+  afterEach(() => vi.restoreAllMocks());
+
+  const originFor = async (surface: string, headers: Record<string, string>): Promise<string | undefined> => {
+    vi.spyOn(PluginTenantAccess, 'warm').mockResolvedValue(undefined as never);
+    vi.spyOn(TenantThemeAccess, 'warm').mockResolvedValue(undefined as never);
+    vi.spyOn(IntegrationTenantAccess, 'warm').mockResolvedValue(undefined as never);
+    vi.spyOn(SiteLocaleAccess, 'warm').mockResolvedValue(undefined as never);
+    const db = { withTenant: async <T>(_id: string, fn: () => Promise<T>) => fn() };
+    const res = { on: (_event: string, done: () => void) => done() };
+    let origin: string | undefined;
+    await new TenantRequestBinder(db, { error: () => undefined })
+      .bind({ headers } as never, res, 'en', { id: 'site-a' } as never, () => { origin = RequestContextUtils.getAdminOrigin(); }, surface);
+    return origin;
+  };
+
+  it('records the console the operator is on, for a request from the admin', async () => {
+    expect(await originFor(TenantRequestBinder.ADMIN_SURFACE, { origin: 'https://console.example.com' })).toBe('https://console.example.com');
+    expect(await originFor(TenantRequestBinder.ADMIN_SURFACE, { referer: 'http://console.example.test:8105/plugins/x?tab=1' })).toBe('http://console.example.test:8105');
+  });
+
+  it('records none for a visitor on the site, or a header that names no web address', async () => {
+    expect(await originFor(TenantRequestBinder.STOREFRONT_SURFACE, { origin: 'https://shop.example.com' })).toBeUndefined();
+    expect(await originFor(TenantRequestBinder.ADMIN_SURFACE, { origin: 'null' })).toBeUndefined();
+  });
+});

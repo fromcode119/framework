@@ -33,6 +33,13 @@ export interface IPluginManifest {
    */
   replacedBy?: string;
 
+  /**
+   * The plugin has a PLATFORM part: routes registered with `{ platform: true }` answer only where no
+   * site or workspace is bound (the platform's own host, or a single-site install), and
+   * `context.platform` holds settings no site can read. Refused for a site-uploaded plugin.
+   */
+  platform?: boolean;
+
   // Dependencies
   dependencies?: Record<string, string>; // pluginSlug -> semver
   peerDependencies?: Record<string, string>;

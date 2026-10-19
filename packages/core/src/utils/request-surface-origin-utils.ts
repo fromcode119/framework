@@ -1,3 +1,5 @@
+import { RequestSurfaceHelper } from '@core/request-surface-helper';
+
 export class RequestSurfaceOriginUtils {
   static hasAdminOriginSignal(
     requestLike: {
@@ -29,6 +31,21 @@ export class RequestSurfaceOriginUtils {
   ): boolean {
     return RequestSurfaceOriginUtils.readAbsoluteUrlCandidates(requestLike, readHeader, readAbsoluteUrl)
       .some((url) => isFrontendAbsoluteUrl(url));
+  }
+
+  /**
+   * The origin the browser that sent this request is on: its `Origin` header, else its `Referer`'s.
+   *
+   * Only ever the browser's own statement of where it is — never the Host the request arrived on,
+   * which behind the gateway can be the api's address rather than the page the operator has open.
+   * '' when neither header names an http(s) address.
+   */
+  static readBrowserOrigin(requestLike: { headers?: Record<string, unknown>; get?: (name: string) => string | undefined }): string {
+    for (const header of ['origin', 'referer']) {
+      const url = RequestSurfaceHelper.readAbsoluteUrl(RequestSurfaceHelper.readHeader(requestLike, header));
+      if (url && (url.protocol === 'https:' || url.protocol === 'http:')) return url.origin;
+    }
+    return '';
   }
 
   /**

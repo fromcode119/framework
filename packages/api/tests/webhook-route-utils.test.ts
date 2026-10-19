@@ -17,6 +17,11 @@ describe('WebhookRouteUtils.isWebhookPath', () => {
     expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/delta-shipping/webhooks')).toBe(true);
   });
 
+  it('matches a plugin PLATFORM webhook, one provider app for every site', () => {
+    expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/gamma/platform/webhooks/meta')).toBe(true);
+    expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/gamma/platform/connect')).toBe(false);
+  });
+
   it('does not match other plugin routes or the admin webhook management pages', () => {
     expect(WebhookRouteUtils.isWebhookPath('/api/v1/plugins/gamma/checkout/payment-session')).toBe(false);
     expect(WebhookRouteUtils.isWebhookPath('/api/v1/admin/webhooks/3/test')).toBe(false);

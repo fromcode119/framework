@@ -62,4 +62,13 @@ describe('context.settings — secret fields', () => {
     const sealedElsewhere = SecretService.encryptWith('other-deployment', 'another-passphrase');
     expect(await proxyOver({ webhookSecret: sealedElsewhere }).get()).toMatchObject({ webhookSecret: '' });
   });
+
+  it('keeps a secret on an empty update, and clears it only on null', async () => {
+    const proxy = proxyOver({});
+    await proxy.update({ webhookSecret: 'kept' });
+    await proxy.update({ webhookSecret: '' });
+    expect(await proxy.get()).toMatchObject({ webhookSecret: 'kept' });
+    await proxy.update({ webhookSecret: null });
+    expect(await proxy.get()).toMatchObject({ webhookSecret: '' });
+  });
 });

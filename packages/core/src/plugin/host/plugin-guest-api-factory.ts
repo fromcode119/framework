@@ -10,6 +10,7 @@ import type { IPluginGuestBoot } from '@core/plugin/host/interfaces/plugin-guest
 import type { IPluginGuestRegistration } from '@core/plugin/host/interfaces/plugin-guest-registration.interface';
 import type { IPluginContextApi } from '@core/plugin/interfaces/plugin-context-api.interface';
 import type { IMiddlewareConfig } from '@core/interfaces/middleware-config.interface';
+import { PluginPlatformRoute } from '@core/plugin/context/plugin-platform-route';
 import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-guest-registration-kind.enum';
 
 /**
@@ -48,9 +49,11 @@ export class PluginGuestApiFactory {
   private mount(method: string, path: string, handlers: any[]): void {
     let access: unknown;
     let anonymousCache = false;
+    let platform = false;
     if (method !== 'use' && ApiAccessGate.isDescriptor(handlers[0])) {
       access = PluginGuestApiFactory.portableAccess(handlers[0].access);
       anonymousCache = handlers[0].anonymousCache === true;
+      platform = handlers[0].platform === true;
       handlers = handlers.slice(1);
     }
     if (path.includes('..')) throw new Error(`Security Violation: Plugin "${this.boot.slug}" attempted invalid API path: ${path}`);
@@ -59,9 +62,12 @@ export class PluginGuestApiFactory {
     if (PluginGuestApiFactory.reservedPaths.includes(first)) {
       throw new Error(`Conflict: Plugin "${this.boot.slug}" attempted to register a reserved system path: /${first}.`);
     }
+    // Checked here too so the plugin fails at the line that registered it; the HOST checks again
+    // against the manifest it loaded, and that check is the one that holds.
+    PluginPlatformRoute.assertRegistration(this.boot.slug, (this.boot.manifest as any)?.platform === true, cleanPath, platform ? { access: access as any, platform } : undefined, method);
     const fullPath = `/${this.boot.slug}/${cleanPath}`;
     (this.http.app as any)[method](fullPath, ...handlers);
-    const registration: IPluginGuestRegistration = { kind: method === 'use' ? 'use' : 'route', method, path: fullPath, access, anonymousCache };
+    const registration: IPluginGuestRegistration = { kind: method === 'use' ? 'use' : 'route', method, path: fullPath, access, anonymousCache, platform };
     void this.registrar.send(registration);
   }
 

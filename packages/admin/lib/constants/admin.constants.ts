@@ -90,6 +90,8 @@ export class AdminConstants {
     SETTINGS_RESET: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_RESET, { slug }),
     SETTINGS_EXPORT: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_EXPORT, { slug }),
     SETTINGS_IMPORT: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_SETTINGS_IMPORT, { slug }),
+    PLATFORM_SETTINGS: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_PLATFORM_SETTINGS, { slug }),
+    PLATFORM_SETTINGS_SCHEMA: (slug: string) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.PLUGINS.BASE, RouteConstants.SEGMENTS.PLUGINS_SLUG_PLATFORM_SETTINGS_SCHEMA, { slug }),
   },
   THEMES: {
     LIST: AdminApiPaths.v(SystemConstants.API_PATH.THEMES.BASE),

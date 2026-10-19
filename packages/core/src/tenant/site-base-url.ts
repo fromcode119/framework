@@ -87,15 +87,18 @@ export class SiteBaseUrl {
    * because that is the host the gateway sends to the api — a link to the site's own domain would
    * arrive at the FRONTEND. The storefront on a host whose role is `storefront`: a site may declare
    * its primary host as its console, and a shop link built from the primary host then opened the
-   * console. With no host declared for the app the primary host is the answer, as it always was —
+   * console. The console on a host whose role is `admin`, for the same reason. With no host declared
+   * for the app the primary host is the answer, as it always was —
    * single-host deployments serve everything under it, and a workspace has no storefront at all.
    */
   private static hostFor(
-    tenant: { primaryHost?: string; apiHosts?: () => string[]; storefrontHosts?: () => string[] } | null,
+    tenant: { primaryHost?: string; apiHosts?: () => string[]; adminHosts?: () => string[]; storefrontHosts?: () => string[] } | null,
     app: string,
   ): string {
     if (!tenant) return '';
-    const declared = app === ApplicationUrlUtils.API_APP ? tenant.apiHosts?.() : tenant.storefrontHosts?.();
+    const declared = app === ApplicationUrlUtils.API_APP ? tenant.apiHosts?.()
+      : app === ApplicationUrlUtils.ADMIN_APP ? tenant.adminHosts?.()
+        : tenant.storefrontHosts?.();
     return (declared ?? [])[0] || String(tenant.primaryHost ?? '').trim();
   }
 

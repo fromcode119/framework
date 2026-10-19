@@ -18,6 +18,8 @@ export class PluginDetailTabs extends PureReactor {
   @prop declare theme: ThemeMode;
   /** In a site only its own tabs are offered; the platform's (Security, Resources) live in Platform scope. */
   @prop declare siteScope: boolean;
+  /** The plugin declares a platform part (`manifest.platform`), so it has platform settings to offer. */
+  @prop declare platformPart: boolean;
 
   private icon(name: string | undefined): ComponentType<{ size?: number }> {
     const icons = FrameworkIcons as unknown as Record<string, ComponentType<{ size?: number }>>;
@@ -55,7 +57,8 @@ export class PluginDetailTabs extends PureReactor {
         {groups.length
           ? groups.map((group) => this.tab(`group-${group.id}`, group.label, this.icon(group.icon), settingsActive && current === group.id, () => onTabChange(PluginDetailTab.SETTINGS, group.id)))
           : this.tab('settings', AdminI18n.t('plugins.detail.configuration'), FrameworkIcons.Settings, settingsActive, () => onTabChange(PluginDetailTab.SETTINGS))}
-        {platform ? this.tab('permissions', AdminI18n.t('plugins.detail.security'), FrameworkIcons.Shield, activeTab === PluginDetailTab.PERMISSIONS, () => onTabChange(PluginDetailTab.PERMISSIONS), 'ml-auto') : null}
+        {platform && this.platformPart ? this.tab('platform-settings', AdminI18n.t('plugins.detail.platformSettings'), FrameworkIcons.Globe, activeTab === PluginDetailTab.PLATFORM_SETTINGS, () => onTabChange(PluginDetailTab.PLATFORM_SETTINGS), 'ml-auto') : null}
+        {platform ? this.tab('permissions', AdminI18n.t('plugins.detail.security'), FrameworkIcons.Shield, activeTab === PluginDetailTab.PERMISSIONS, () => onTabChange(PluginDetailTab.PERMISSIONS), this.platformPart ? '' : 'ml-auto') : null}
         {platform ? this.tab('resources', AdminI18n.t('plugins.detail.resourceLimits'), FrameworkIcons.Zap, activeTab === PluginDetailTab.RESOURCES, () => onTabChange(PluginDetailTab.RESOURCES)) : null}
       </nav>
     );

@@ -41,6 +41,8 @@ export class RouteEndpointSegments {
   PLUGINS_SLUG_SETTINGS_RESET: '/:slug/settings/reset',
   PLUGINS_SLUG_SETTINGS_EXPORT: '/:slug/settings/export',
   PLUGINS_SLUG_SETTINGS_IMPORT: '/:slug/settings/import',
+  PLUGINS_SLUG_PLATFORM_SETTINGS: '/:slug/platform-settings',
+  PLUGINS_SLUG_PLATFORM_SETTINGS_SCHEMA: '/:slug/platform-settings/schema',
   PLUGINS_SLUG_UI_WILDCARD: '/:slug/ui/*assetPath',
   PLUGINS_SLUG: '/:slug',
 

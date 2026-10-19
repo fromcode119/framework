@@ -231,4 +231,15 @@ describe('a site’s storefront host follows its declared roles', () => {
 
     expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('https://team.customer.example');
   });
+
+  it('answers the host declared as the console for an admin link, not the storefront', async () => {
+    multiTenant();
+    withUrls('https://platform.example', '');
+    wire(record({
+      host_aliases: '["portal.customer.example"]',
+      host_roles: '{"portal.customer.example":"admin"}',
+    }));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.ADMIN_APP)).toBe('https://portal.customer.example');
+  });
 });

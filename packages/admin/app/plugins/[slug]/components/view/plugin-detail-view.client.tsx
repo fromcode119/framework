@@ -124,11 +124,16 @@ export class PluginDetailView extends AdminComponent {
           </div>
         ) : null}
         <section className={`overflow-hidden rounded-2xl border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-          <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} siteScope={this.siteScope} theme={theme} />
+          <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
           {activeTab === PluginDetailTab.SETTINGS ? (
             <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange}
               group={this.settingsGroup || this.settingsGroups[0]?.id || ''} section={this.settingsSection}
               onSectionChange={(section: string) => this.onTabChange(PluginDetailTab.SETTINGS, this.settingsGroup || this.settingsGroups[0]?.id || '', section)} />
+          ) : activeTab === PluginDetailTab.PLATFORM_SETTINGS ? (
+            <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSPlatformSettings')}>
+              <PluginSettingsForm key="platform-settings" ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" platform
+                waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange} />
+            </PlatformScopeGate>
           ) : (
             <div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
               {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview isUpdating={this.isUpdating} loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onOpenSecurity={() => this.onTabChange(PluginDetailTab.PERMISSIONS)} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} siteScope={this.siteScope} theme={theme} />}

@@ -3,6 +3,7 @@ import { prop, state, ref, watch } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginSettingsGroups } from '@/components/plugins/plugin-settings-groups';
+import { AdminConstants } from '@/lib/constants/admin.constants';
 
 /**
  * What the plugin settings form knows: the schema it was given, the values over it, and whether any
@@ -26,6 +27,8 @@ export abstract class PluginSettingsFormState extends AdminComponent {
   @prop declare onSectionChange?: (section: string) => void;
   /** The plugin is not running, so an empty schema means "not declared yet" rather than "nothing to set". */
   @prop declare waiting?: boolean;
+  /** The plugin's PLATFORM settings (one value per installation) instead of this site's. */
+  @prop declare platform?: boolean;
 
   @ref declare protected importInputRef: Ref<HTMLInputElement>;
 
@@ -40,6 +43,16 @@ export abstract class PluginSettingsFormState extends AdminComponent {
   @state status: { type: NotificationType; message: string } | null = null;
 
   protected statusTimer?: ReturnType<typeof setTimeout>;
+
+  protected get settingsEndpoint(): string {
+    const endpoints = AdminConstants.ENDPOINTS.PLUGINS;
+    return this.platform ? endpoints.PLATFORM_SETTINGS(this.pluginSlug) : endpoints.SETTINGS(this.pluginSlug);
+  }
+
+  protected get schemaEndpoint(): string {
+    const endpoints = AdminConstants.ENDPOINTS.PLUGINS;
+    return this.platform ? endpoints.PLATFORM_SETTINGS_SCHEMA(this.pluginSlug) : endpoints.SETTINGS_SCHEMA(this.pluginSlug);
+  }
 
   protected get triggerRefresh(): () => void {
     return this.runtime.plugins.triggerRefresh;
