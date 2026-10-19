@@ -24,6 +24,12 @@ describe('VersionChangeSummary', () => {
     ]);
   });
 
+  it('does not report a blank field the form saved as "" or [] as a change', () => {
+    const older = { status: 'issued', notes: null, attachments: null };
+    const newer = { status: 'issued', notes: '', attachments: [] };
+    expect(VersionChangeSummary.between(newer, older, fields)).toEqual([]);
+  });
+
   it('reads snake_case and camelCase as the same field', () => {
     const changes = VersionChangeSummary.between({ total_amount: 0 }, { totalAmount: 30 }, fields);
     expect(changes).toEqual([{ label: 'Total', from: '30', to: '0' }]);

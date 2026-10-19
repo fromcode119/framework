@@ -12,6 +12,17 @@ export class ContextProviderStateService {
 
   static readonly GET_ERROR_TTL_MS = 15000;
 
+  /**
+   * A write has changed what the server answers, so every read remembered before it is stale. Without
+   * this, a player that enrolled a reader and read its enrollments again got the pre-enrollment list
+   * back from the cache and treated the new student as a guest.
+   */
+  static forgetGetResponses(): void {
+    ContextProviderStateService.cachedGetResponses.clear();
+    ContextProviderStateService.cachedGetErrors.clear();
+    ContextProviderStateService.inFlightGetRequests.clear();
+  }
+
   static createEmptySecondaryPanelState(): ISecondaryPanelState {
     return {
       version: 1,

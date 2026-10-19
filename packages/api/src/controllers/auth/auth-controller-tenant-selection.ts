@@ -133,7 +133,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     const cookieName = this.getSessionCookieName(req);
     const cookieOptions = this.getCookieOptions(req, false, maxAgeMs);
     this.clearCookieVariants(res, cookieName, this.getCookieOptions(req, true), true, ApiUrlUtils.getCookieDomain(req));
-    res.cookie(cookieName, token, cookieOptions);
+    this.writeSessionCookie(res, cookieName, token, cookieOptions);
     // The session ROW is the server's own record of which site this session is in, and it is what an
     // operator's support question is answered from. A swallowed failure here leaves the token saying
     // one thing and the row saying another, with nothing anywhere to say they disagreed — the same

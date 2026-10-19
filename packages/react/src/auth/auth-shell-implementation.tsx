@@ -43,8 +43,10 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
   componentDidMount(): void {
     // Reset (a token link) is a fresh set-password action even for a signed-in visitor — never short it.
     if (this.state.mode !== AuthMode.RESET) {
+      // The marker can arrive without this host's cached user: the server writes it with the session,
+      // domain-wide, so a sign-in finished on another host of the site leaves only the marker here.
       const user = this.session.readStoredUser();
-      if (user) void this.confirmStoredSession(user);
+      if (user || this.session.hasStoredSession()) void this.confirmStoredSession(user);
     }
     if (Platform.isBrowser) {
       this.boundPopState = () => this.setState({ mode: this.props.mode || AuthShellImplementation.readModeFromUrl() });
@@ -64,7 +66,7 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
       const res = await new SdkClient(this.api).getAuth().get(RouteConstants.SEGMENTS.ME_PERSON, { silent: true });
       const person = res?.person ?? res?.data?.person ?? null;
       if (person && (person.id || person.userId || person.email)) {
-        this.setState({ signedInUser: user });
+        this.setState({ signedInUser: user || person });
         return;
       }
       this.session.clearSession();

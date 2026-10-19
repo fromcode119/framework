@@ -135,7 +135,7 @@ export class AuthControllerPolicy extends AuthControllerTenantSelection {
     // contaminate each other and there is nothing "conflicting" to clear. Logging in on the storefront
     // used to delete `fc_token`/`fc_user`, i.e. signing in as a customer silently ended the operator's
     // admin session in the other tab. A login issues its own cookie and touches no other surface.
-    res.cookie(sessionCookieName, token, cookieOptions);
+    this.writeSessionCookie(res, sessionCookieName, token, cookieOptions);
 
     // The token above carries the real roles; the admin is told what an inspector may SEE.
     return { token, user: InspectorAccess.presentToAdmin(userResponse), availableTenants };

@@ -85,6 +85,9 @@ export { UrlUtils } from '@fromcode119/core/client';
 export { ApplicationUrlUtils } from '@fromcode119/core/client';
 export { ApplicationHostUtils } from '@fromcode119/core/client';
 export { RuntimeLocationUtils } from '@fromcode119/core/client';
+// The page's own address, also while the server renders it — read this instead of `window.location` when the
+// server and the browser must render the same thing.
+export { RenderLocationUtils } from '@fromcode119/core/client';
 export { PublicAssetUrlUtils } from '@fromcode119/core/client';
 // A plugin that ships a storefront editor registers the query params that activate it here; themes and
 // the framework ask `EditorSessionParams.isEditorSession()` instead of keeping a list of their own.
