@@ -130,6 +130,13 @@ export interface IPluginManifest {
      * the theme's own and the site itself (StorefrontContentSecurityPolicy).
      */
     storefrontHosts?: string[];
+    /**
+     * The name of one of this plugin's `public` settings holding further storefront hosts the SITE's
+     * operator allows (`"customScriptHosts"`): a list of host strings, or of rows with a `host` field.
+     * Added to `storefrontHosts` for that site only, so an operator who embeds a script from a host no
+     * manifest names can let it load, and can see in the admin exactly which hosts that allows.
+     */
+    storefrontHostsSetting?: string;
     publicRoutes?: IPublicRouteManifest[];
     // Head-data provider contract: the plugin's own API path serving resolved head data,
     // plus the record field names it wants forwarded from the resolved content record.

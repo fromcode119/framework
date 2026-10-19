@@ -7,7 +7,7 @@ import { PluginNetworkDeclaration } from '@core/plugin/consent/plugin-network-de
  * A site's theme runs as the site's own front end, so its scripts cannot be sandboxed away from the
  * page; what can be limited is where they reach. Scripts, styles, images, fonts, frames and requests
  * may come from the site itself, the hosts the theme declares and the storefront hosts of the plugins
- * this site runs; forms post only to the site. A platform theme is curated and gets no policy here.
+ * this site runs (plus any its operator allowed through a plugin's `storefrontHostsSetting`); forms post only to the site. A platform theme is curated and gets no policy here.
  *
  * Inline code stays allowed: the storefront itself inlines its runtime config and boot scripts, and a
  * theme's inline code is still bound by where it may connect. What no policy can stop is a script
@@ -18,8 +18,15 @@ export class StorefrontContentSecurityPolicy {
    * @param plugins the site's active plugins as the storefront receives them (a site's own plugin
    *   carries only widgets, so no hosts)
    * @param extraOrigins origins the storefront itself uses besides its own, such as the api's public URL
+   * @param pluginSettings the site's public plugin settings keyed by slug, read for a plugin's
+   *   `storefrontHostsSetting` (the hosts this site's operator allows for it)
    */
-  static of(theme: IThemeManifest | null, plugins: Array<{ ui?: { storefrontHosts?: unknown } }>, extraOrigins: string[] = []): string | null {
+  static of(
+    theme: IThemeManifest | null,
+    plugins: Array<{ slug?: string; ui?: { storefrontHosts?: unknown; storefrontHostsSetting?: unknown } }>,
+    extraOrigins: string[] = [],
+    pluginSettings: Record<string, Record<string, unknown> | undefined> = {},
+  ): string | null {
     if (!theme?.ownerTenantId) return null;
     const hosts = new Set<string>();
     const add = (value: unknown) => {
@@ -30,6 +37,9 @@ export class StorefrontContentSecurityPolicy {
     for (const plugin of plugins) {
       const declared = plugin.ui?.storefrontHosts;
       if (Array.isArray(declared)) declared.forEach(add);
+      const setting = plugin.ui?.storefrontHostsSetting;
+      const allowed = setting && plugin.slug ? pluginSettings[plugin.slug]?.[String(setting)] : undefined;
+      if (Array.isArray(allowed)) allowed.forEach((entry) => add((entry as { host?: unknown } | null)?.host ?? entry));
     }
     const origins = extraOrigins.map((origin) => StorefrontContentSecurityPolicy.originOf(origin)).filter(Boolean);
     const sources = ["'self'", ...[...hosts].sort().map((host) => `https://${host}`), ...new Set(origins)].join(' ');
