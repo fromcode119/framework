@@ -231,4 +231,46 @@ describe('a site’s storefront host follows its declared roles', () => {
 
     expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.FRONTEND_APP)).toBe('https://team.customer.example');
   });
+
+  it('answers the host declared as the console for an admin link, not the storefront', async () => {
+    multiTenant();
+    withUrls('https://platform.example', '');
+    wire(record({
+      host_aliases: '["portal.customer.example"]',
+      host_roles: '{"portal.customer.example":"admin"}',
+    }));
+
+    expect(await SiteBaseUrl.forSite('my-site', ApplicationUrlUtils.ADMIN_APP)).toBe('https://portal.customer.example');
+  });
+});
+
+describe('the console an operator reports being on', () => {
+  const hosts: Record<string, any> = {
+    'shop.customer.example': { id: 'my-site', isWorkspace: false },
+    'console.agency.example': { id: 'agency', isWorkspace: true },
+    'other.customer.example': { id: 'other-site', isWorkspace: false },
+  };
+  const wireHosts = () => {
+    SiteBaseUrl.registerDatabase({} as never);
+    vi.spyOn(TenantResolverService, 'shared').mockReturnValue({ resolveByHost: async (host: string) => hosts[host] ?? null } as never);
+  };
+
+  it('is kept for the platform console, the site itself and a workspace', async () => {
+    multiTenant();
+    process.env.ADMIN_URL = 'https://console.platform.example';
+    wireHosts();
+    expect(await SiteBaseUrl.consoleOrigin('https://console.platform.example', 'my-site')).toBe('https://console.platform.example');
+    expect(await SiteBaseUrl.consoleOrigin('https://shop.customer.example', 'my-site')).toBe('https://shop.customer.example');
+    expect(await SiteBaseUrl.consoleOrigin('https://console.agency.example', 'my-site')).toBe('https://console.agency.example');
+  });
+
+  it('is refused for a foreign host, another site, a downgraded scheme or garbage', async () => {
+    multiTenant();
+    process.env.ADMIN_URL = 'https://console.platform.example';
+    wireHosts();
+    expect(await SiteBaseUrl.consoleOrigin('https://evil.example', 'my-site')).toBe('');
+    expect(await SiteBaseUrl.consoleOrigin('https://other.customer.example', 'my-site')).toBe('');
+    expect(await SiteBaseUrl.consoleOrigin('http://shop.customer.example', 'my-site')).toBe('');
+    expect(await SiteBaseUrl.consoleOrigin('not a url', 'my-site')).toBe('');
+  });
 });

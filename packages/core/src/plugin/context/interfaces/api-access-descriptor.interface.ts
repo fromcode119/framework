@@ -14,4 +14,9 @@ export interface IApiAccessDescriptor {
    * cookie must not.
    */
   anonymousCache?: boolean;
+  /**
+   * The route belongs to the plugin's PLATFORM part: its path must start with `platform/`, the
+   * manifest must declare `platform: true`, and it answers only where no site or workspace is bound.
+   */
+  platform?: boolean;
 }

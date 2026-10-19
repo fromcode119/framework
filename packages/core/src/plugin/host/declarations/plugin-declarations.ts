@@ -32,6 +32,8 @@ export class PluginDeclarations {
     ['sms', 'registerProvider'],
     ['ui', 'registerHeadInjection'],
     ['people', 'registerSource'],
+    ['platform', 'registerSettings'],
+    ['platform', 'onDelivery'],
   ];
 
   /**

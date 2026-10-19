@@ -6,6 +6,8 @@ export class PluginDetailTab extends Enum {
   static readonly SETTINGS = new PluginDetailTab('settings');
   static readonly PERMISSIONS = new PluginDetailTab('permissions');
   static readonly RESOURCES = new PluginDetailTab('resources');
+  /** The plugin's PLATFORM settings (`context.platform.registerSettings`) — Platform scope only. */
+  static readonly PLATFORM_SETTINGS = new PluginDetailTab('platform-settings');
 
   private constructor(value: string) {
     super(value);

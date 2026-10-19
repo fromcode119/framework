@@ -23,8 +23,8 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
     this.loading = true;
     try {
       const [schemaRes, settingsRes] = await Promise.all([
-        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_SCHEMA(this.pluginSlug)),
-        AdminApi.get(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(this.pluginSlug)),
+        AdminApi.get(this.schemaEndpoint),
+        AdminApi.get(this.settingsEndpoint),
       ]);
 
       const nextSchema = schemaRes;
@@ -70,7 +70,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
     this.status = null;
 
     try {
-      await AdminApi.put(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS(this.pluginSlug), this.settings);
+      await AdminApi.put(this.settingsEndpoint, this.settings);
       this.isDirty = false;
       this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsSavedSuccessfully') };
       this.triggerRefresh();

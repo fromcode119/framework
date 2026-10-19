@@ -79,6 +79,11 @@ export interface IField {
     hidden?: boolean;
     readOnly?: boolean;
     description?: string;
+    /**
+     * Values only the running platform knows, named `{{name}}` in this field's TRANSLATED description
+     * (an address to paste elsewhere). `description` itself already carries them.
+     */
+    descriptionValues?: Record<string, string>;
     /** Declared as a literal by collections; compare with `FieldPosition.resolve()`, never `===`. */
     position?: FieldPosition | string;
     component?: string;

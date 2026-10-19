@@ -87,6 +87,8 @@ export class SystemTables {
     WEBHOOKS: '_system_webhooks',
     SCHEDULER_TASKS: '_system_scheduler_tasks',
     SCHEDULER_RUNS: '_system_scheduler_runs',
+    PLUGIN_PLATFORM_SETTINGS: '_system_plugin_platform_settings',
+    PLUGIN_CLAIMS: '_system_plugin_claims',
     USERS_ROLES: '_system_users_roles',
     MIGRATIONS: '_system_migrations',
     PEOPLE: 'people',

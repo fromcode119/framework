@@ -34,7 +34,7 @@ export class PluginHostRegistrations {
    * of the plugin — an upgrade, or the move to a newer extension-host — that declares the same route
    * differently updates it here; the platform gate and the response cache read it per request.
    */
-  private readonly descriptors = new Map<string, { access: AccessLevel | ApiPermissionRequirement | undefined; anonymousCache: boolean }>();
+  private readonly descriptors = new Map<string, { access: AccessLevel | ApiPermissionRequirement | undefined; anonymousCache: boolean; platform: boolean }>();
   /** Declared routes a catch-all forwarder steps aside for (see PluginHostDeclaredRoutes). */
   private readonly declared: PluginHostDeclaredRoutes;
   private readonly hooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
@@ -117,7 +117,8 @@ export class PluginHostRegistrations {
       mounted.anonymousCache = anonymousCache;
       return;
     }
-    const descriptor = { access, anonymousCache };
+    // `platform` is fixed by the path (PluginPlatformRoute), so a redeclaration cannot flip it.
+    const descriptor = { access, anonymousCache, platform: registration.platform === true };
     this.descriptors.set(key, descriptor);
     this.routes.add(key);
     this.declared.add(method, String(registration.path));

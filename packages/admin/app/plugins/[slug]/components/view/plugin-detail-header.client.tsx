@@ -110,7 +110,7 @@ export class PluginDetailHeader extends PureReactor {
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {activeTab === PluginDetailTab.SETTINGS && this.settingsHasFields ? this.settingsActions() : null}
+            {(activeTab === PluginDetailTab.SETTINGS || (activeTab === PluginDetailTab.PLATFORM_SETTINGS && this.platformActions)) && this.settingsHasFields ? this.settingsActions() : null}
             {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
             {items.length ? (
               <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={

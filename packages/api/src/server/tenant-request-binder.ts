@@ -1,4 +1,4 @@
-import { IntegrationTenantAccess, PluginTenantAccess, RequestContextUtils, SiteLocaleAccess, TenantThemeAccess } from '@fromcode119/core';
+import { IntegrationTenantAccess, PluginTenantAccess, RequestContextUtils, RequestSurfaceOriginUtils, SiteLocaleAccess, TenantThemeAccess } from '@fromcode119/core';
 import type { TenantRecord } from '@fromcode119/core';
 
 /**
@@ -14,6 +14,8 @@ import type { TenantRecord } from '@fromcode119/core';
 export class TenantRequestBinder {
   /** The surface a visitor's request on the site's own host arrives by (`ServerMiddlewareSetup`). */
   static readonly STOREFRONT_SURFACE = 'storefront';
+  /** The surface an operator's request from the admin console arrives by (`ServerMiddlewareSetup`). */
+  static readonly ADMIN_SURFACE = 'admin';
 
   constructor(
     private readonly db: { withTenant<T>(tenantId: string, fn: () => Promise<T>): Promise<T> },
@@ -58,7 +60,10 @@ export class TenantRequestBinder {
       ? (siteLocale || locale)
       : locale;
     req.locale = requestLocale;
-    RequestContextUtils.storage.run({ locale: requestLocale, tenantId: tenant.id, siteLocale }, () => {
+    // Which console the operator is on, so a round trip that leaves it (an OAuth dialog) can come back
+    // to it rather than to a host of the site — see IRequestStore.adminOrigin.
+    const adminOrigin = surface === TenantRequestBinder.ADMIN_SURFACE ? RequestSurfaceOriginUtils.readBrowserOrigin(req) || undefined : undefined;
+    RequestContextUtils.storage.run({ locale: requestLocale, tenantId: tenant.id, siteLocale, adminOrigin }, () => {
       this.db.withTenant(tenant.id, () => new Promise<void>((resolve) => {
         res.on('finish', resolve);
         res.on('close', resolve);

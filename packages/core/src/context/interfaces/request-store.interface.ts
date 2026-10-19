@@ -26,5 +26,15 @@ export interface IRequestStore {
    * for (a scheduled run, a boot task): there is no actor then, and none is invented.
    */
   user?: Record<string, unknown>;
+  /**
+   * The console origin (`scheme://host[:port]`) the operator's browser is on, for an admin-console
+   * request — read from the browser's own `Origin` (or `Referer`) header when the request was bound.
+   *
+   * A site can be worked on from the platform console with the site picked in the scope switch, from
+   * a workspace's console, or from the site's own console host; the tenant record cannot tell which
+   * one this operator used. A link that must bring them BACK (an OAuth round trip) needs that answer.
+   * Absent for storefront, api-key and background work.
+   */
+  adminOrigin?: string;
   [key: string]: any;
 }

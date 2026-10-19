@@ -22,6 +22,12 @@ export class RequestContextUtils {
     return locale.length > 0 ? locale : undefined;
   }
 
+  /** The console origin this admin request came from, or undefined — see {@link IRequestStore.adminOrigin}. */
+  static getAdminOrigin(): string | undefined {
+    const origin = String(RequestContextUtils.storage.getStore()?.adminOrigin ?? '').trim();
+    return origin.length > 0 ? origin : undefined;
+  }
+
   /** The user the current work is done for, or undefined — see {@link IRequestStore.user}. */
   static getUser(): Record<string, unknown> | undefined {
     return RequestContextUtils.storage.getStore()?.user;

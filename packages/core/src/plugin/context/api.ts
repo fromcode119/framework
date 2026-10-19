@@ -15,6 +15,7 @@ import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { AsyncRouteGuard } from '@core/base/async-route-guard';
 import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
+import { PluginPlatformRoute } from '@core/plugin/context/plugin-platform-route';
 
 export class ApiContextProxy {
   private static readonly apiLimiter = new RateLimiter(1000, 60000);
@@ -58,6 +59,7 @@ export class ApiContextProxy {
         if (ApiContextProxy.reservedPaths.includes(firstSegment)) {
           throw new Error(`Conflict: Plugin "${plugin.manifest.slug}" attempted to register a reserved system path: /${firstSegment}.`);
         }
+        PluginPlatformRoute.assertRegistration(plugin.manifest.slug, plugin.manifest.platform === true, cleanPath, descriptor, method);
 
         const fullPath = `/${plugin.manifest.slug}/${cleanPath}`;
 
@@ -81,6 +83,18 @@ export class ApiContextProxy {
                 error: `Plugin "${plugin.manifest.slug}" is disabled`,
                 code: 'PLUGIN_DISABLED'
               });
+            }
+            // A PLATFORM route answers for no single tenant, so the tenant axis below does not apply;
+            // it is refused instead whenever a tenant IS bound (PluginPlatformRoute).
+            if (descriptor?.platform === true) {
+              const refusal = PluginPlatformRoute.refusal(currentPlugin);
+              if (refusal) return res.status(refusal.status).json({ error: refusal.error, code: refusal.code });
+              return await handler(req, res, next);
+            }
+            // The middleware exempted this path from tenant resolution because it names the reserved
+            // segment; only a declared platform route may answer it.
+            if (PluginPlatformRoute.isPlatformRequest(req.originalUrl)) {
+              return res.status(404).json({ error: 'Not found', code: 'NOT_A_PLATFORM_ROUTE' });
             }
             // The TENANT axis. Routes are registered once at boot for every installed plugin, and
             // this gate runs on every request — which is exactly why turning a plugin on or off for

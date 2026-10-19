@@ -1,4 +1,4 @@
-import { ApiPathUtils, RequestSurfaceUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
+import { ApiPathUtils, PluginPlatformRoute, RequestSurfaceUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 import { ApiConfig } from '@api/config/api-config';
 
 /**
@@ -68,6 +68,23 @@ export class TenantExemptRouteUtils {
    */
   static isPlatformRobotsRoute(req: any): boolean {
     return TenantExemptRouteUtils.pathOf(req) === RouteConstants.SEGMENTS.ROBOTS;
+  }
+
+  /**
+   * A plugin's PLATFORM route — `api/v1/plugins/<slug>/platform/...`: a provider webhook or OAuth
+   * callback that answers for every site at once, so no host can name its tenant.
+   *
+   * NO TENANT ROW CAN REACH IT. Only a route declared `{ platform: true }` may sit under that
+   * segment, only a plugin whose manifest declares `platform: true` may declare one (a site-uploaded
+   * plugin cannot), and the plugin API refuses it whenever a tenant IS bound (`PluginPlatformRoute`).
+   * With no tenant bound every tenant query fails closed, so the handler cannot read a site's
+   * records; it hands work to the owning site through `context.platform.deliver`, which the
+   * framework routes and runs inside that site's isolation.
+   *
+   * Anchored PREFIX — the slug and the rest of the path vary — on the reserved segment, never a suffix.
+   */
+  static isPlatformPluginRoute(req: any): boolean {
+    return PluginPlatformRoute.isExemptRequest(req?.originalUrl);
   }
 
   /**

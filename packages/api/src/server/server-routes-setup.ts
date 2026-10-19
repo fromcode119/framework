@@ -129,7 +129,7 @@ export class ServerRoutesSetup {
     vApi.use(PLUGINS, new PluginClientAddressMiddleware().middleware());
     vApi.use(PLUGINS, pluginAssetRouter);
     vApi.use(PLUGINS, new PluginRouter(this.manager, this.auth, platformAdmin).router);
-    vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth, tenantPlugin).router);
+    vApi.use(PLUGINS, new PluginSettingsRouter(this.manager, this.auth, tenantPlugin, platformAdmin).router);
     // Before every plugin's own routes: a declared read route is answered without the plugin's process.
     vApi.use(PLUGINS, new PluginReadRoutes(this.manager, this.restController).handle);
     vApi.use(PLUGINS, this.pluginRouter);

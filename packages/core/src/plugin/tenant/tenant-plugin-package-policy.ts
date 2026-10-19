@@ -44,7 +44,7 @@ export class TenantPluginPackagePolicy {
 
   /** Manifest keys that ask the platform to change its schema, its admin, or other plugins. */
   private static readonly FORBIDDEN_MANIFEST_KEYS = [
-    'migrations', 'seeds', 'collections', 'dependencies', 'admin', 'uiEntryPoint', 'runtimeModules',
+    'migrations', 'seeds', 'collections', 'dependencies', 'admin', 'uiEntryPoint', 'runtimeModules', 'platform',
   ] as const;
 
   /** Directories that only ever hold schema or admin code. */
@@ -146,6 +146,7 @@ export class TenantPluginPackagePolicy {
       return `declares "${key}" — a site's plugin adds nothing to the admin, where it would run with the rights of whoever opens it.`;
     }
     if (key === 'dependencies') return 'depends on other plugins — a site\'s plugin stands alone.';
+    if (key === 'platform') return 'declares a platform part — a site\'s plugin cannot answer for the platform or every other site.';
     return `declares "${key}" — a site's plugin does not change the database every site shares.`;
   }
 

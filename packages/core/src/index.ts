@@ -133,6 +133,7 @@ export { AdminSiteHeaderConstants } from '@core/constants/admin-site-header.cons
 export { PluginToggleScopeConstants } from '@core/constants/plugin-toggle-scope.constants';
 export { AppPathConstants } from '@core/constants/app-path.constants';
 export { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
+export { RequestSurfaceOriginUtils } from '@core/utils/request-surface-origin-utils';
 export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
 export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
@@ -369,6 +370,8 @@ export { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 export { SiteBaseUrl } from '@core/tenant/site-base-url';
 export { SiteContentRevision } from '@core/tenant/site-content-revision';
 export { ApiResponseCache } from '@core/plugin/context/api-response-cache';
+export { PluginPlatformRoute } from '@core/plugin/context/plugin-platform-route';
+export { PluginPlatformSettings } from '@core/plugin/platform/plugin-platform-settings';
 export { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 export { TenantIdentity } from '@core/tenant/provisioning/tenant-identity';
 export { TenantImportIdentity } from '@core/tenant/provisioning/tenant-import-identity';

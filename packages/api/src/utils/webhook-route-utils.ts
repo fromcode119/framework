@@ -1,17 +1,19 @@
 import express from 'express';
 import type { RequestHandler } from 'express';
-import { RouteConstants } from '@fromcode119/core';
+import { PluginPlatformRoute, RouteConstants } from '@fromcode119/core';
 
 /**
  * Which request paths are inbound webhooks. Two shapes exist: the framework's own `/webhooks/...` and a
  * plugin's `/api/v1/plugins/<slug>/webhooks/...` (a payment provider's callback, a courier's tracking push).
  * Both carry their own signature scheme, so both are exempt from CSRF and keep the raw request bytes for
  * HMAC verification. Matching only the root shape left every plugin webhook 403 "Invalid CSRF token".
+ * A plugin's PLATFORM webhook (`/api/v1/plugins/<slug>/platform/webhooks/...`, one provider app for every
+ * site) is the same kind of route one segment deeper.
  */
 export class WebhookRouteUtils {
   static readonly BASE_PATH = RouteConstants.SEGMENTS.WEBHOOKS;
   private static readonly PLUGIN_WEBHOOK_PATTERN = new RegExp(
-    `${WebhookRouteUtils.escape(RouteConstants.SEGMENTS.PLUGINS)}/[^/]+${WebhookRouteUtils.escape(RouteConstants.SEGMENTS.WEBHOOKS)}(/|$)`,
+    `${WebhookRouteUtils.escape(RouteConstants.SEGMENTS.PLUGINS)}/[^/]+(?:/${PluginPlatformRoute.SEGMENT})?${WebhookRouteUtils.escape(RouteConstants.SEGMENTS.WEBHOOKS)}(/|$)`,
   );
 
   static isWebhookPath(pathname: string): boolean {

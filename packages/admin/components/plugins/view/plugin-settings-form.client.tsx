@@ -99,8 +99,13 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {visibleFields.map((field: any) => {
               const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
+              // A read-only secret is written by the plugin, not typed here: keep what the plugin says writes
+              // it, and only add that a value is held — "leave blank to keep" would describe an input it lacks.
+              const savedNote = field.admin?.readOnly
+                ? [field.admin?.description, AdminI18n.t('plugins.list.savedSecurelyReadOnly')].filter(Boolean).join(' ')
+                : AdminI18n.t('plugins.list.savedSecurelyLeaveBlankTo');
               const resolvedField = hasSavedSecret
-                ? { ...field, admin: { ...(field.admin || {}), description: AdminI18n.t('plugins.list.savedSecurelyLeaveBlankTo') } }
+                ? { ...field, admin: { ...(field.admin || {}), description: savedNote } }
                 : field;
               return (
                 <FieldRenderer
