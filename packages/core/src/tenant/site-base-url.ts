@@ -81,6 +81,34 @@ export class SiteBaseUrl {
   }
 
   /**
+   * `origin` when it is a console of THIS deployment the site may be operated from, otherwise ''.
+   *
+   * The browser reports which console an operator is on, and a round trip that leaves the console
+   * (an OAuth dialog) returns there. A header is the caller's to write, so it is only believed when it
+   * names a console the platform itself declares: the platform's own console address, a host of the
+   * site, or a host of a workspace. Anything else would make the return leg an open redirect.
+   */
+  static async consoleOrigin(origin: string, tenantId: string): Promise<string> {
+    let url: URL;
+    try { url = new URL(String(origin ?? '').trim()); } catch { return ''; }
+    const candidate = url.origin.toLowerCase();
+    const platform = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP);
+    if (platform && SiteBaseUrl.originOf(platform) === candidate) return url.origin;
+
+    const id = String(tenantId ?? '').trim();
+    const scheme = SiteBaseUrl.declaredScheme(ApplicationUrlUtils.ADMIN_APP);
+    if (!TenantMode.isEnabled() || !id || !SiteBaseUrl.database || url.protocol !== `${scheme}:`) return '';
+    try {
+      const resolver = TenantResolverService.shared(SiteBaseUrl.database);
+      const owner = await resolver.resolveByHost(url.host) ?? await resolver.resolveByHost(url.hostname);
+      return owner && (owner.id === id || owner.isWorkspace) ? url.origin : '';
+    } catch (error: unknown) {
+      SiteBaseUrl.logger.warn(`Could not check the console origin for site "${id}". ${error instanceof Error ? error.message : String(error)}`);
+      return '';
+    }
+  }
+
+  /**
    * The host to address this site by, for this app.
    *
    * Each app is reached on a host DECLARED to serve it. The api on a host whose role is `api`,
@@ -119,6 +147,11 @@ export class SiteBaseUrl {
       if (scheme) return scheme;
     }
     return '';
+  }
+
+  /** `https://console.example.com` out of a configured base URL, or ''. */
+  private static originOf(baseUrl: string): string {
+    try { return new URL(baseUrl).origin.toLowerCase(); } catch { return ''; }
   }
 
   /** `https` out of `https://console.example.com`, or '' when there is nothing to read it from. */

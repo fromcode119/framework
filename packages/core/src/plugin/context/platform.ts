@@ -61,8 +61,10 @@ export class PlatformContextProxy {
         const back = String(returnTo ?? '/').trim() || '/';
         if (!back.startsWith('/') || back.startsWith('//')) throw new Error(`plugin "${slug}": returnTo must be a path on this site`);
         // Back to the console the operator is on — the platform's, a workspace's or the site's own; the
-        // site's record cannot say which. Only a path is taken from the caller, so this is no open redirect.
-        const consoleOrigin = RequestContextUtils.getAdminOrigin() || await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.ADMIN_APP);
+        // site's record cannot say which. The browser's word for it is kept only when it names a console
+        // this deployment declares (SiteBaseUrl.consoleOrigin), so neither half of the return is the caller's.
+        const reported = await SiteBaseUrl.consoleOrigin(RequestContextUtils.getAdminOrigin() ?? '', tenantId ?? '');
+        const consoleOrigin = reported || await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.ADMIN_APP);
         const ticket = PluginPlatformTicket.mint({ slug, tenantId, returnTo: `${consoleOrigin}${back}` });
         const base = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
         const route = ApiPathUtils.pluginPath(slug, `${PluginPlatformRoute.SEGMENT}/${String(path ?? '').replace(/^\/+/, '')}`);
