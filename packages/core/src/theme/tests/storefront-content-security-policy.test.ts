@@ -26,4 +26,19 @@ describe('the storefront policy for a site\'s own theme', () => {
     expect(policy).not.toContain('not a host');
     expect(policy).not.toMatch(/img-src[^;]*https:(\s|;|$)/);
   });
+
+  it('adds the hosts a site\'s operator allowed through a plugin setting, for that plugin only', () => {
+    const policy = StorefrontContentSecurityPolicy.of(
+      theme({ ownerTenantId: 't1' }),
+      [
+        { slug: 'stats', ui: { storefrontHostsSetting: 'scriptHosts' } },
+        { slug: 'other', ui: {} },
+      ],
+      [],
+      { stats: { scriptHosts: [{ host: 'cdn.stats.example' }, 'Edge.Stats.Example', { host: 'javascript:alert(1)' }] }, other: { scriptHosts: ['evil.example'] } },
+    )!;
+
+    const script = policy.split('; ').find((directive) => directive.startsWith('script-src'));
+    expect(script).toBe("script-src 'self' https://cdn.stats.example https://edge.stats.example 'unsafe-inline'");
+  });
 });
