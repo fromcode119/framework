@@ -184,7 +184,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     if (this.context) { this.registrations.resetForRestart(this.context); this.manager.middlewares.unregisterByPlugin(this.slug); }
     this.adopt(next);
     if (this.context) {
-      PluginHostCollectionPrune.watch(this.manager, this.slug, this.logger)(next.held.splice(0).map((registration) => this.registrations.apply(this.context!, registration)));
+      PluginHostCollectionPrune.applyAll(this.manager, this.slug, this.logger, next.held.splice(0), (registration) => this.registrations.apply(this.context!, registration));
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
       // provider, a search provider, a newsletter content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the

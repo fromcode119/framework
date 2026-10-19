@@ -231,12 +231,12 @@ export class PluginInstallationService {
       await this.registry.savePluginState(slug, desiredState, existingPlugin.approvedCapabilities, manifest.version);
       const held = await this.holdIfUnapproved(slug, manifest);
 
-      // T5: an isolated plugin is its own process — swap in a new one on the new files, live. Only a
-      // plugin that runs inside the api process still needs the api restarted to load new code.
-      if (await this.reloadHost(slug, manifest)) {
-        existingPlugin.manifest = manifest;
-        // Only a boot or an activation used to sync tables and create default pages: a release adding a
-        // field broke every read of it, and one adding a required page left it 404 until a restart.
+      // T5: an isolated plugin is its own process — swapped live; one inside the api process needs a restart.
+      // The new process registers as it starts, checked against THIS manifest (`platform` routes): set it first.
+      const previousManifest = existingPlugin.manifest;
+      existingPlugin.manifest = manifest;
+      if (await this.reloadHost(slug, manifest).catch((error) => { existingPlugin.manifest = previousManifest; throw error; })) {
+        // Sync tables + default pages now: a release adding a field or a required page otherwise waits for a boot.
         if (desiredState === PluginState.ACTIVE && !held) await this.refreshActivePlugin(slug);
         options.progressReporter?.({
           phase: 'plugin-reloaded',
@@ -246,6 +246,7 @@ export class PluginInstallationService {
         return;
       }
 
+      existingPlugin.manifest = previousManifest; // still the old code until the api restarts
       if (options.deferRestart) {
         this.restartOwed = true;
         // A batch driver restarts ONCE at the end; restarting here would abort the rest of the batch.

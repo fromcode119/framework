@@ -16,6 +16,21 @@ import type { Logger } from '@core/logging';
 export class PluginHostCollectionPrune {
   private static readonly REGISTERED_EVENT = 'collection:registered';
 
+  /**
+   * Applies the new process's registrations and watches them. Every one is applied even when one throws
+   * at once: stopping there left the asynchronous failures already started with nobody awaiting them — an
+   * unhandled rejection per failed swap. The first immediate failure is thrown once all were applied.
+   */
+  static applyAll<T>(manager: IPluginManagerInterface, slug: string, logger: Logger, registrations: T[], apply: (registration: T) => unknown): void {
+    const watch = PluginHostCollectionPrune.watch(manager, slug, logger);
+    const thrown: unknown[] = [];
+    const applied = registrations.map((registration) => {
+      try { return apply(registration); } catch (error) { thrown.push(error); return Promise.reject(error); }
+    });
+    watch(applied);
+    if (thrown.length) throw thrown[0];
+  }
+
   /** Starts watching what the new process registers; call it before applying the new registrations. */
   static watch(manager: IPluginManagerInterface, slug: string, logger: Logger): (applied: unknown[]) => void {
     const registered = new Set<unknown>();
