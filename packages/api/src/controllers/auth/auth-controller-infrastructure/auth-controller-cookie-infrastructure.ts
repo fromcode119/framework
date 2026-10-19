@@ -11,11 +11,29 @@ export class AuthControllerCookieInfrastructure extends AuthControllerEmailInfra
     const legacyDomain = ApiUrlUtils.getCookieDomain(req);
     this.clearCookieVariants(res, CookieConstants.AUTH_TOKEN, cookieOptions, false, legacyDomain);
     this.clearCookieVariants(res, CookieConstants.CLIENT_AUTH_TOKEN, cookieOptions, false, legacyDomain);
+    this.clearCookieVariants(res, CookieConstants.CLIENT_SESSION_MARKER, cookieOptions, false, legacyDomain);
     // NOT the CSRF token: it grants nothing by itself and is required while signed OUT, so clearing
     // it here expired the token CSRFMiddleware had just set on this very response and made the next
     // POST — a login, or a fresh install's setup — fail with 403.
     this.clearCookieVariants(res, CookieConstants.AUTH_USER, cookieOptions, false, legacyDomain);
     this.clearCookieVariants(res, CookieConstants.ADMIN_EXPORT_AUTH_TOKEN, cookieOptions, false, legacyDomain);
+  }
+
+  /**
+   * Sets a session cookie and, for a STOREFRONT session, the readable "there is a session" marker in
+   * the SAME scope.
+   *
+   * The credential is domain-wide (`COOKIE_DOMAIN`) so every host of the site is signed in, but the
+   * marker used to be written only by the browser, host-only, on the page the sign-in finished on. A
+   * site served on both its apex and `www` then had one host that knew it was signed in and one whose
+   * UI read the visitor as signed OUT while the server still accepted their cookie — an emailed sign-in
+   * link landing on the apex left `www` asking for the email again. The marker holds no credential.
+   */
+  protected writeSessionCookie(res: Response, name: string, token: string, cookieOptions: Record<string, any>) {
+    res.cookie(name, token, cookieOptions);
+    if (name === CookieConstants.CLIENT_AUTH_TOKEN) {
+      res.cookie(CookieConstants.CLIENT_SESSION_MARKER, '1', { ...cookieOptions, httpOnly: false });
+    }
   }
 
   /**

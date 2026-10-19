@@ -24,12 +24,21 @@ export class VersionChangeSummary {
     const changes: IVersionFieldChange[] = [];
     for (const name of names) {
       if (VersionChangeSummary.SYSTEM_KEYS.has(name.toLowerCase())) continue;
-      const was = JSON.stringify(before[name] ?? null);
-      const now = JSON.stringify(after[name] ?? null);
+      const was = JSON.stringify(VersionChangeSummary.blankAsNull(before[name]));
+      const now = JSON.stringify(VersionChangeSummary.blankAsNull(after[name]));
       if (was === now) continue;
       changes.push({ label: labels.get(name.toLowerCase()) ?? name, from: VersionChangeSummary.show(before[name]), to: VersionChangeSummary.show(after[name]) });
     }
     return changes;
+  }
+
+  /**
+   * A field nobody filled reads as null in an older version and as "" or [] once the form saved it. All three
+   * show as "—" and none of them is a change anyone made.
+   */
+  private static blankAsNull(value: unknown): unknown {
+    if (value === undefined || value === '' || (Array.isArray(value) && value.length === 0)) return null;
+    return value;
   }
 
   /** camelCase and snake_case spell the same field the same way: `total_amount` and `totalAmount` are one. */

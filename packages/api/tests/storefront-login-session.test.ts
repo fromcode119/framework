@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import jwt from 'jsonwebtoken';
-import { SystemConstants, TenantMode } from '@fromcode119/core';
+import { CookieConstants, SystemConstants, TenantMode } from '@fromcode119/core';
 import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-policy';
 
 /**
@@ -92,5 +92,19 @@ describe('a customer signing in on a storefront', () => {
     const { token } = await probe(db).issue(storefrontRequest('shop'), response(), { id: 8, email: 'stranger@example.com', roles: ['customer'] });
 
     expect((jwt.verify(token, SECRET) as any).tenantId).toBeUndefined();
+  });
+
+  it('leaves the readable session marker in the same scope as the session cookie', async () => {
+    // A site served on its apex and on www shares one domain-wide session; a marker written only on the
+    // host the sign-in finished on left the other host showing the visitor as signed out.
+    const db = new DatabaseStub([{ user_id: '7', tenant_id: 'shop', roles: '["customer"]', state: 'active' }]);
+    const res = response();
+    await probe(db).issue(storefrontRequest('shop'), res, { id: 7, email: 'buyer@example.com', roles: ['customer'] });
+
+    const session = res.cookie.mock.calls.find((call: any[]) => call[0] === CookieConstants.CLIENT_AUTH_TOKEN);
+    const marker = res.cookie.mock.calls.find((call: any[]) => call[0] === CookieConstants.CLIENT_SESSION_MARKER);
+    expect(session?.[2]).toMatchObject({ httpOnly: true });
+    expect(marker?.[1]).toBe('1');
+    expect(marker?.[2]).toEqual({ ...session?.[2], httpOnly: false });
   });
 });

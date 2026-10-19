@@ -125,7 +125,10 @@ export class ContextProviderApiHooks {
         !String(fetchOptions.cache || '').toLowerCase().includes('no-store');
 
       if (!canDedupe) {
-        return execute();
+        if (!isUnsafeMethod) return execute();
+        const data = await execute();
+        ContextProviderStateService.forgetGetResponses();
+        return data;
       }
 
       const dedupeKey = `${url}|${fetchOptions.credentials || 'include'}|${hasSession ? 'auth' : 'anon'}`;
