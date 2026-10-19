@@ -41,4 +41,23 @@ describe('PluginHostCollectionPrune', () => {
 
     expect(manager.registeredCollections.size).toBe(3);
   });
+
+  it('applies every registration when one throws at once, and leaves no rejection unawaited', async () => {
+    const { manager } = setup();
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+    const applied: string[] = [];
+    const apply = (name: string) => {
+      applied.push(name);
+      if (name === 'route') throw new Error('route refused');
+      return name === 'settings' ? Promise.reject(new Error('settings refused')) : Promise.resolve();
+    };
+    expect(() => PluginHostCollectionPrune.applyAll(manager, 'shop', logger, ['settings', 'route', 'hook'], apply)).toThrow('route refused');
+    await flush();
+    process.off('unhandledRejection', unhandled);
+
+    expect(applied).toEqual(['settings', 'route', 'hook']);
+    expect(unhandled).not.toHaveBeenCalled();
+    expect(manager.registeredCollections.size).toBe(3);
+  });
 });
