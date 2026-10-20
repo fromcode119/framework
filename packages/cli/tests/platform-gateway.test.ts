@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { TenantRecord, TenantRouteMap } from '@fromcode119/core';
+import { ApiVersionUtils, TenantRecord, TenantRouteMap } from '@fromcode119/core';
+import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
 import { PlatformGateway } from '@cli/services/platform-gateway';
 
 const targets = { api: 'http://api:3000', admin: 'http://admin:3000', frontend: 'http://frontend:3000' };
@@ -106,5 +107,25 @@ describe('PlatformGateway setup mode', () => {
     expect(TenantRouteMap.fromJson({ routes: [], setup: true }).setup).toBe(true);
     expect(TenantRouteMap.fromJson({ routes: [] }).setup).toBe(false);
     expect(new TenantRouteMap([], true).toJSON().setup).toBe(true);
+  });
+});
+
+describe('GatewayApiHostPath.upstream', () => {
+  it('serves the api at the root of a host that IS the api — the api still sees its base path', () => {
+    expect(GatewayApiHostPath.upstream(map, 'api.platform.test', '/plugins/chi/platform/webhooks/meta?hub.mode=subscribe')).toBe(`${ApiVersionUtils.API_BASE_PATH}/plugins/chi/platform/webhooks/meta?hub.mode=subscribe`);
+    expect(GatewayApiHostPath.upstream(map, 'api.platform.test', '/health')).toBe(`${ApiVersionUtils.API_BASE_PATH}/health`);
+  });
+
+  it('leaves a path that already names the api alone, so every existing /api client keeps working', () => {
+    expect(GatewayApiHostPath.upstream(map, 'api.platform.test', `${ApiVersionUtils.API_BASE_PATH}/plugins/chi/gw`)).toBe(`${ApiVersionUtils.API_BASE_PATH}/plugins/chi/gw`);
+    expect(GatewayApiHostPath.upstream(map, 'api.platform.test', '/uploads/2026/09/logo.png')).toBe('/uploads/2026/09/logo.png');
+    expect(GatewayApiHostPath.upstream(map, 'api.platform.test', '/plugins/chi/ui/bundle.js')).toBe('/plugins/chi/ui/bundle.js');
+  });
+
+  it('never touches a console, a storefront, an unknown host or a deployment without a map', () => {
+    expect(GatewayApiHostPath.upstream(map, 'admin.platform.test', '/plugins/chi/settings')).toBe('/plugins/chi/settings');
+    expect(GatewayApiHostPath.upstream(map, 'acme.test', '/shop')).toBe('/shop');
+    expect(GatewayApiHostPath.upstream(map, 'stranger.test', '/plugins/x')).toBe('/plugins/x');
+    expect(GatewayApiHostPath.upstream(null, 'api.platform.test', '/plugins/x')).toBe('/plugins/x');
   });
 });

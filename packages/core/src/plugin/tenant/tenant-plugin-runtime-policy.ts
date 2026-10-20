@@ -13,7 +13,7 @@ export class TenantPluginRuntimePolicy {
     ['i18n', new Set(['registerTranslations', 'siteClock'])],
     ['paths', new Set(['readCurrentPluginJson', 'readCurrentPluginTemplate', 'readCurrentPluginText', 'resolveActiveThemeRoot', 'resolveActiveThemeSlug'])],
     ['settings', new Set(['get', 'register', 'update'])],
-    ['tenants', new Set(['baseUrls', 'current', 'isMultiSite'])],
+    ['tenants', new Set(['apiUrl', 'baseUrls', 'current', 'isMultiSite'])],
     ['theme', new Set(['getActiveConfig', 'getActiveSlug', 'getCurrentPluginSettings', 'getVariables'])],
   ]);
 

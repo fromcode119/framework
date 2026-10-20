@@ -67,6 +67,13 @@ export class TenantsContextProxy {
       }),
 
       /**
+       * The absolute address of one of this plugin's api endpoints (`ApiPathUtils.pluginPath(...)`)
+       * for an address that LEAVES the platform — an OAuth redirect, a webhook. On a host that is the
+       * api it carries no api base path (`https://api.example.com/plugins/<slug>/...`).
+       */
+      apiUrl: async (apiPath: string): Promise<string> => SiteBaseUrl.apiUrlForCurrentSite(apiPath),
+
+      /**
        * Whether this deployment serves more than one site.
        *
        * For a plugin deciding whether work is worth fanning out — NOT for deciding whether to scope

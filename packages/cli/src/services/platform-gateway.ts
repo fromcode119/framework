@@ -11,6 +11,7 @@ import { GatewayHttp2Adapter } from '@cli/services/gateway/gateway-http2-adapter
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
+import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -52,8 +53,7 @@ export class PlatformGateway {
 
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly retries = new GatewayRetryPolicy();
-  /** Where each in-flight request was sent, so a retry goes to the same app. */
-  private readonly targetOf = new WeakMap<http.IncomingMessage, string>();
+  private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -65,7 +65,6 @@ export class PlatformGateway {
   server: http.Server | null = null;
   /** Accepts for `server`: reads the PROXY header from `edge`, and stops gracefully. */
   listener: GatewayListener | null = null;
-
   /**
    * TLS termination, when this deployment asked for it. Null is the default and means the gateway
    * behaves exactly as it always has: something in front of it holds the certificates.
@@ -194,9 +193,10 @@ export class PlatformGateway {
     this.proxy.web(req, res, { target });
   }
 
-  /** The upstream for this request, or null for a host the platform does not serve. */
+  /** The upstream for this request, or null for an unknown host. An api host's root path is put under the api base. */
   async targetFor(req: http.IncomingMessage): Promise<string | null> {
     const map = await this.routing.resolveMap();
+    req.url = GatewayApiHostPath.upstream(map, PlatformGateway.hostOf(req), req.url || '/');
     return PlatformGateway.resolveTarget(map, PlatformGateway.hostOf(req), req.url || '/', this.targets);
   }
 
