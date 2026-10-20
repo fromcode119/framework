@@ -33,8 +33,7 @@ export class RequestSurfaceUtils {
 
   static get API_BASE_PATHS(): string[] {
     return [
-      RouteConstants.SEGMENTS.AUTH,
-      RouteConstants.SEGMENTS.SYSTEM,
+      RouteConstants.SEGMENTS.AUTH, RouteConstants.SEGMENTS.SYSTEM,
       RouteConstants.SEGMENTS.PLUGINS,
       RouteConstants.SEGMENTS.THEMES,
       RouteConstants.SEGMENTS.MEDIA,
