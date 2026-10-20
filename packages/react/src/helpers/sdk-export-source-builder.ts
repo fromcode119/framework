@@ -59,7 +59,7 @@ export class SdkExportSourceBuilder {
     'CoreServices',
     'MediaRelationService',
     'SystemApiPaths',
-    // Installed plugins import it as a value in the browser (cms, ecommerce, numerology, astrology):
+    // Installed plugin bundles import it as a value in the browser:
     // dropping it from this list killed their bundles on load with "does not provide an export named
     // 'SystemConstants'". Browser code in the framework reads the narrower constants; plugins still may.
     'SystemConstants',
