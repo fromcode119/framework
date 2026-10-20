@@ -61,12 +61,18 @@ export class AdminApiRouteProxy {
     return ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '';
   }
 
+  /**
+   * `redirect: 'manual'`: an api redirect is the BROWSER's to follow. Followed here, the proxy fetched
+   * the target itself and answered with its page at the `/api` address — a plugin route that ends in a
+   * redirect to the console (a provider sign-in coming back) showed that page under the wrong URL,
+   * without the cookies the redirect set for the browser.
+   */
   private static buildRequestInit(request: Request): RequestInit {
     const method = request.method.toUpperCase();
     const headers = ProxyHeaderRules.forUpstreamRequest(request);
 
     if (method === 'GET' || method === 'HEAD') {
-      return { method, headers, cache: 'no-store' };
+      return { method, headers, cache: 'no-store', redirect: 'manual' };
     }
 
     return {
@@ -74,6 +80,7 @@ export class AdminApiRouteProxy {
       headers,
       body: request.body,
       cache: 'no-store',
+      redirect: 'manual',
       duplex: 'half',
     } as RequestInit;
   }

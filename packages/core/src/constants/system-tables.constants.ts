@@ -89,6 +89,7 @@ export class SystemTables {
     SCHEDULER_RUNS: '_system_scheduler_runs',
     PLUGIN_PLATFORM_SETTINGS: '_system_plugin_platform_settings',
     PLUGIN_CLAIMS: '_system_plugin_claims',
+    PLUGIN_PLATFORM_HANDOFFS: '_system_plugin_platform_handoffs',
     USERS_ROLES: '_system_users_roles',
     MIGRATIONS: '_system_migrations',
     PEOPLE: 'people',

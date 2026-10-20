@@ -36,5 +36,12 @@ export interface IRequestStore {
    * Absent for storefront, api-key and background work.
    */
   adminOrigin?: string;
+  /**
+   * The id of the account whose session made this request — recorded after authentication
+   * (`SessionUserContextMiddleware`), whatever the request goes on to do. Unlike {@link user} it is not
+   * an actor for collection hooks: it answers "who is at this browser", for work that must be finished
+   * by the same person who started it (a `context.platform` connection). Absent when nobody is signed in.
+   */
+  sessionUserId?: string;
   [key: string]: any;
 }

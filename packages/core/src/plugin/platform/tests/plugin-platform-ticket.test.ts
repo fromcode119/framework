@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { PluginPlatformTicket } from '@core/plugin/platform/plugin-platform-ticket';
+import { SecretService } from '@core/security/secret-service';
 
 /**
  * The ticket is the only thing that tells a plugin's platform part whose an account is. It must open only
@@ -9,11 +10,30 @@ describe('PluginPlatformTicket', () => {
   beforeEach(() => { process.env.SECRET_KEY = 'test-key-for-platform-ticket'; });
   afterEach(() => { delete process.env.SECRET_KEY; });
 
-  const input = { slug: 'replies', tenantId: '42', returnTo: 'https://site.example/admin/replies' };
+  const input = {
+    slug: 'replies',
+    tenantId: '42',
+    userId: '7',
+    returnTo: 'https://site.example/admin/replies',
+    completeUrl: 'https://site.example/api/v1/plugins/replies/connection/complete',
+  };
 
-  it('opens for the plugin it was sealed for, carrying the site and the way back', () => {
+  it('opens for the plugin it was sealed for, carrying the site, the account and the way back', () => {
     const opened = PluginPlatformTicket.open('replies', PluginPlatformTicket.mint(input));
-    expect(opened).toMatchObject({ slug: 'replies', tenantId: '42', returnTo: input.returnTo });
+    expect(opened).toMatchObject({ slug: 'replies', tenantId: '42', userId: '7', returnTo: input.returnTo, completeUrl: input.completeUrl });
+  });
+
+  it('gets a fresh nonce each time it is minted', () => {
+    const first = PluginPlatformTicket.open('replies', PluginPlatformTicket.mint(input));
+    const second = PluginPlatformTicket.open('replies', PluginPlatformTicket.mint(input));
+    expect(first?.nonce).toMatch(/^[0-9a-f]{32}$/);
+    expect(first?.nonce).not.toBe(second?.nonce);
+  });
+
+  it('refuses a sealed ticket that names no account (minted before tickets did)', () => {
+    const { userId: _userId, completeUrl: _completeUrl, ...legacy } = input;
+    const sealed = SecretService.encrypt(JSON.stringify({ ...legacy, exp: Date.now() + 60_000, nonce: 'abc' }));
+    expect(PluginPlatformTicket.open('replies', Buffer.from(sealed, 'utf8').toString('base64url'))).toBeNull();
   });
 
   it('keeps an untenanted installation untenanted', () => {

@@ -38,18 +38,20 @@ export class ApiRouteProxy {
     return `${url.pathname}${url.search}`;
   }
 
+  /** `redirect: 'manual'`: an api redirect is the browser's to follow — see the admin's AdminApiRouteProxy. */
   private static buildRequestInit(request: Request): RequestInit {
     const method = request.method.toUpperCase();
     const headers = ProxyHeaderRules.forUpstreamRequest(request);
 
     if (method === 'GET' || method === 'HEAD') {
-      return { method, headers };
+      return { method, headers, redirect: 'manual' };
     }
 
     return {
       method,
       headers,
       body: request.body,
+      redirect: 'manual',
       duplex: 'half',
     } as RequestInit;
   }

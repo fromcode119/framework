@@ -21,6 +21,7 @@ export class PluginPlatformRoute {
   static readonly NOT_PLATFORM = 'PLUGIN_NOT_PLATFORM';
   static readonly INSIDE_TENANT = 'PLATFORM_ROUTE_INSIDE_TENANT';
   static readonly NEEDS_TENANT = 'PLATFORM_CALL_NEEDS_TENANT';
+  static readonly NEEDS_ACCOUNT = 'PLATFORM_CALL_NEEDS_ACCOUNT';
 
   /** Slugs that registered at least one platform route — the only ones whose prefix is exempted. */
   private static readonly declared = new Set<string>();
