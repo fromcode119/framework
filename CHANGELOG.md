@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.424] - 2026-10-20
+
+### Fixed
+
+- **core**: mask query values and userinfo in audited resources ([#1017](https://github.com/fromcode119/framework/pull/1017))
+- **core**: keep the plan's own reason on default-page entries ([#1015](https://github.com/fromcode119/framework/pull/1015))
+
+### Performance
+
+- **frontend**: drop unused core constants from the storefront runtime ([#1016](https://github.com/fromcode119/framework/pull/1016))
+
 ## [0.2.423] - 2026-10-20
 
 ### Fixed
