@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.423] - 2026-10-20
+
+### Fixed
+
+- **security**: close audit findings from 2026-10-20 ([#1013](https://github.com/fromcode119/framework/pull/1013))
+
 ## [0.2.422] - 2026-10-20
 
 ### Added
@@ -22,9 +28,9 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Added
 
-- **core**: `context.tenants.baseUrls()` also gives the console's address ([#1007](https://github.com/fromcode119/framework/pull/1007))
+- **core**: context.tenants.baseUrls() also gives the console's address ([#1007](https://github.com/fromcode119/framework/pull/1007))
 
-## [0.2.419] - 2026-10-19
+## [0.2.419] - 2026-10-20
 
 ### Fixed
 
