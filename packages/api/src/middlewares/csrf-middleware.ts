@@ -12,6 +12,17 @@ export class CSRFMiddleware extends BaseMiddleware {
   private logger = new Logger({ namespace: 'security' });
   private readonly cookies = new RequestCookieService();
 
+  /** Cookies that authenticate a request by themselves — what a cross-site post could ride on. */
+  private static readonly SESSION_COOKIES = [
+    CookieConstants.AUTH_TOKEN,
+    CookieConstants.CLIENT_AUTH_TOKEN,
+    CookieConstants.ADMIN_EXPORT_AUTH_TOKEN,
+  ];
+
+  private carriesSessionCookie(req: Request): boolean {
+    return CSRFMiddleware.SESSION_COOKIES.some((name) => this.cookies.hasCookie(req, name));
+  }
+
   async handle(req: Request, res: Response, next: NextFunction): Promise<void> {
     // 1. Generate CSRF token if not present in cookies OR if we need to ensure domain-scoping
     // We explicitly ensure it's on the root domain on health/status checks or if missing
@@ -51,15 +62,13 @@ export class CSRFMiddleware extends BaseMiddleware {
         return next();
     }
 
-    // 3. Skip for non-cookie authentication (Authorization header or API Key)
-    // These are safe from CSRF as browsers never auto-attach them.
-    // An arbitrary custom header is NOT authentication. A browser on another allowlisted tenant
-    // origin can pass CORS preflight, attach shared-domain cookies, and choose that header itself.
-    // Cookie-authenticated clients must therefore present the CSRF token even when they identify as
-    // admin-ui/frontend-ui or use X-Requested-With.
-    const clientHeader = req.get('X-Framework-Client');
-
-    if (req.headers.authorization || req.headers['x-api-key']) {
+    // 3. Skip for non-cookie authentication (Authorization header or API key) — but ONLY when the
+    // request carries no session cookie. The header alone proves nothing: a cross-site page can send an
+    // arbitrary `Authorization: x` value, the authenticator rejects it and falls back to the session
+    // cookie the browser attached, and the post would then ride that cookie with no CSRF check. With
+    // no credential cookie present there is no ambient authority to ride on, so the header client is
+    // safe to pass.
+    if ((req.headers.authorization || req.headers['x-api-key']) && !this.carriesSessionCookie(req)) {
         return next();
     }
 
@@ -83,6 +92,7 @@ export class CSRFMiddleware extends BaseMiddleware {
     }
 
     // 5. Validate token
+    const clientHeader = req.get('X-Framework-Client');
     const headerToken = String(req.headers['x-csrf-token'] || '');
 
     // Extract all cookies matching the configured CSRF cookie name from the raw header

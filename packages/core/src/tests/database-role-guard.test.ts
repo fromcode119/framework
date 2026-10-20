@@ -26,6 +26,11 @@ describe('DatabaseRoleGuard', () => {
     await expect(DatabaseRoleGuard.assertNotPrivileged(db)).rejects.toThrow(/owner/i);
   });
 
+  it('refuses a role with BYPASSRLS — it skips every policy without being a superuser', async () => {
+    const db = new FakeDb({ is_superuser: false, bypasses_rls: true, owns_tables: false });
+    await expect(DatabaseRoleGuard.assertNotPrivileged(db)).rejects.toThrow(/BYPASSRLS/);
+  });
+
   it('refuses when it cannot determine the role, rather than assuming it is safe', async () => {
     const db = new FakeDb(undefined);
     await expect(DatabaseRoleGuard.assertNotPrivileged(db)).rejects.toThrow(/could not determine/i);
