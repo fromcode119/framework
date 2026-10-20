@@ -4,6 +4,7 @@ import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 
 /**
  * A plugin's `onInit` runs at boot, where there is no site. Every tenant-scoped query made there was
@@ -93,5 +94,10 @@ describe('context.tenants', () => {
   it('reports whether the deployment serves more than one site', async () => {
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
     await expect(proxy().isMultiSite()).resolves.toBe(true);
+  });
+
+  it('gives the console address too, the only one a platform-wide integration can be registered at', async () => {
+    vi.spyOn(ApplicationUrlUtils, 'readAppBaseUrlFromEnvironment').mockImplementation((app: string) => (app === ApplicationUrlUtils.ADMIN_APP ? 'https://console.example.test' : app === ApplicationUrlUtils.API_APP ? 'https://api.example.test' : ''));
+    await expect(proxy().baseUrls()).resolves.toEqual({ frontend: '', api: 'https://api.example.test', admin: 'https://console.example.test' });
   });
 });
