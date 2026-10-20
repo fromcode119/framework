@@ -235,16 +235,6 @@ export class PluginDefaultPageBackfillEntryFactory extends PluginDefaultPageEntr
     };
   }
 
-  appendReason(existingReasons: string[], nextReason: string): string[] {
-    return Array.from(
-      new Set(
-        [...(existingReasons || []), nextReason]
-          .map((reason) => String(reason || '').trim())
-          .filter(Boolean),
-      ),
-    );
-  }
-
   private createSnapshotConflictReasons(existingReasons: string[], matchSource?: string): string[] {
     const reasons = matchSource
       ? this.appendReason(existingReasons, `matched-by-${matchSource}`)

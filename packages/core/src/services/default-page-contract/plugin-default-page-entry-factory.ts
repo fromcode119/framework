@@ -29,6 +29,21 @@ export abstract class PluginDefaultPageEntryFactory extends BaseService {
   }
 
   /**
+   * The contract's reasons PLUS this plan's own. Never a fallback: an inherited reason such as
+   * `materialized` must not hide why the plan decided what it did — a required route reported as
+   * `(materialized, skipped)` names no cause, while `multiple-existing-pages-matched` does.
+   */
+  appendReason(existingReasons: string[], nextReason: string): string[] {
+    return Array.from(
+      new Set(
+        [...(existingReasons || []), nextReason]
+          .map((reason) => String(reason || '').trim())
+          .filter(Boolean),
+      ),
+    );
+  }
+
+  /**
    * A singleton route whose path carries `:parameters` — one CONTRACT, many pages at runtime.
    *
    * Such a contract cannot be materialized to a single page, because there is no single path for it
