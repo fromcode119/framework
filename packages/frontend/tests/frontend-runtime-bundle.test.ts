@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { gzipSync } from 'node:zlib';
@@ -12,13 +12,13 @@ import { FrontendRuntimeViteConfig } from '@/lib/bundling/frontend-runtime-vite-
  *   - it exists and carries `react-dom/client` (`hydrateRoot`);
  *   - it contains NO server code — the failure mode that killed the previous islands attempt was a
  *     second alias/stub list drifting until the bundle pulled `node-cron`;
- *   - its size is ratcheted against `docs/website-mockup/lighthouse/runtime-size.json`.
+ *   - its gzip size is ratcheted against `runtime-size.json` beside this test, committed with the code.
  *
  * The bundle is a build ARTIFACT: this suite fails, deliberately, when it has not been built.
  */
 class RuntimeBundleFixture {
   static readonly frameworkRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-  static readonly sizeFile = path.resolve(RuntimeBundleFixture.frameworkRoot, '../../docs/website-mockup/lighthouse/runtime-size.json');
+  static readonly sizeFile = path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'runtime-size.json');
   /** A growth beyond this fraction of the recorded gzip size fails the ratchet. */
   static readonly TOLERANCE = 0.10;
   /**
@@ -61,15 +61,8 @@ class RuntimeBundleFixture {
     return { raw: buffer.length, gzip: gzipSync(buffer, { level: 9 }).length };
   }
 
-  static readRecorded(): { raw: number; gzip: number } | null {
-    if (!existsSync(RuntimeBundleFixture.sizeFile)) return null;
+  static readRecorded(): { raw: number; gzip: number } {
     return JSON.parse(readFileSync(RuntimeBundleFixture.sizeFile, 'utf8')) as { raw: number; gzip: number };
-  }
-
-  static record(sizes: { raw: number; gzip: number }): void {
-    mkdirSync(path.dirname(RuntimeBundleFixture.sizeFile), { recursive: true });
-    const record = { ...sizes, file: path.basename(RuntimeBundleFixture.bundleFile), recordedAt: new Date().toISOString().slice(0, 10) };
-    writeFileSync(RuntimeBundleFixture.sizeFile, `${JSON.stringify(record, null, 2)}\n`, 'utf8');
   }
 }
 
@@ -145,16 +138,14 @@ describe('storefront runtime bundle', () => {
     dom.window.close();
   });
 
-  it('stays within the size ratchet (docs/website-mockup/lighthouse/runtime-size.json)', () => {
+  it('stays within the size ratchet (tests/runtime-size.json)', () => {
+    expect(existsSync(RuntimeBundleFixture.sizeFile), `missing baseline ${RuntimeBundleFixture.sizeFile}`).toBe(true);
     const sizes = RuntimeBundleFixture.sizes;
     const recorded = RuntimeBundleFixture.readRecorded();
-    if (!recorded || sizes.gzip < recorded.gzip) {
-      // First run, or the bundle shrank: the ratchet moves DOWN. A deliberate growth is accepted by
-      // editing the file by hand — never by the test.
-      RuntimeBundleFixture.record(sizes);
-      return;
-    }
     const limit = Math.round(recorded.gzip * (1 + RuntimeBundleFixture.TOLERANCE));
+    const floor = Math.round(recorded.gzip * (1 - RuntimeBundleFixture.TOLERANCE));
     expect(sizes.gzip, `runtime bundle grew to ${sizes.gzip} B gzip (raw ${sizes.raw} B); recorded ${recorded.gzip} B, limit ${limit} B`).toBeLessThanOrEqual(limit);
+    // The ratchet moves down by hand, like the typecheck baselines: a real shrink must be recorded.
+    expect(sizes.gzip, `runtime bundle shrank to ${sizes.gzip} B gzip (raw ${sizes.raw} B) — lower runtime-size.json`).toBeGreaterThanOrEqual(floor);
   });
 });

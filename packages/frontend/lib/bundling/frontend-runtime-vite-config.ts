@@ -163,6 +163,9 @@ export class FrontendRuntimeViteConfig {
           // The database stand-in exports only a default proxy; the named imports server-only modules write
           // against it become `undefined` instead of a build error — nothing in the browser calls them.
           shimMissingExports: true,
+          // Core declares `"sideEffects": false`, but it is aliased to its SOURCE here, so Rollup never
+          // reads that package.json and keeps every module a barrel re-exports. Honour the declaration.
+          treeshake: { moduleSideEffects: (id: string) => !id.includes('/packages/core/src/') },
           output: {
             entryFileNames: 'runtime-[hash].js',
             compact: true,

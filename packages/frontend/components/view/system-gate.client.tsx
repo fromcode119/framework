@@ -3,7 +3,7 @@ import React from 'react';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { Override } from '@fromcode119/react/view/override.client';
-import { SystemConstants } from '@fromcode119/core/client';
+import { SystemApiPaths } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
 import { SystemStatus } from '@/components/enums/system-status.enum';
 import { SystemStatusUtils } from '@/lib/system-status-utils';
@@ -23,7 +23,7 @@ export class SystemGate extends Reactor {
 
   async componentDidMount(): Promise<void> {
     try {
-      const healthPath = SystemConstants.API_PATH.SYSTEM.HEALTH;
+      const healthPath = SystemApiPaths.ALL.SYSTEM.HEALTH;
 
       // 1. Check system health and maintenance status (Whitelisted)
       let maintenance = false;

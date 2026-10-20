@@ -6,7 +6,8 @@ import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants
 import { RequestSurfaceHelper } from '@core/request-surface-helper';
 import { RequestSurfaceOriginUtils } from '@core/utils/request-surface-origin-utils';
 import { RouteConstants } from '@core/constants/route.constants';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
+import { StorageConstants } from '@core/constants/storage.constants';
 
 export class RequestSurfaceUtils {
   /** One spelling, declared with the client constants so the browser sends exactly what this reads. */
@@ -24,7 +25,7 @@ export class RequestSurfaceUtils {
       || AppPathConstants.ADMIN.ADMIN.BASE;
   }
 
-  static readonly ADMIN_SYSTEM_BASE_PATH = `${SystemConstants.API_PATH.SYSTEM.BASE}${RouteConstants.SEGMENTS.ADMIN_BASE}`;
+  static readonly ADMIN_SYSTEM_BASE_PATH = `${SystemApiPaths.ALL.SYSTEM.BASE}${RouteConstants.SEGMENTS.ADMIN_BASE}`;
 
   static get ADMIN_API_BASE_PATH(): string {
     return ApiPathUtils.adminApiBasePath();
@@ -32,12 +33,11 @@ export class RequestSurfaceUtils {
 
   static get API_BASE_PATHS(): string[] {
     return [
-      RouteConstants.SEGMENTS.AUTH,
-      RouteConstants.SEGMENTS.SYSTEM,
+      RouteConstants.SEGMENTS.AUTH, RouteConstants.SEGMENTS.SYSTEM,
       RouteConstants.SEGMENTS.PLUGINS,
       RouteConstants.SEGMENTS.THEMES,
       RouteConstants.SEGMENTS.MEDIA,
-      SystemConstants.STORAGE.DEFAULT_PUBLIC_URL,
+      StorageConstants.ALL.DEFAULT_PUBLIC_URL,
       RouteConstants.SEGMENTS.VERSIONS,
       RequestSurfaceUtils.ADMIN_API_BASE_PATH,
     ];
@@ -184,7 +184,7 @@ export class RequestSurfaceUtils {
       return false;
     }
     return RequestSurfaceHelper.hasPathPrefix(normalizedPath, ApiVersionUtils.API_BASE_PATH)
-      || RequestSurfaceHelper.hasPathPrefix(normalizedPath, SystemConstants.STORAGE.DEFAULT_PUBLIC_URL)
+      || RequestSurfaceHelper.hasPathPrefix(normalizedPath, StorageConstants.ALL.DEFAULT_PUBLIC_URL)
       || RequestSurfaceUtils.isExtensionAssetPath(normalizedPath);
   }
 

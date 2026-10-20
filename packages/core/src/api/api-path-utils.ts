@@ -1,6 +1,6 @@
 import { ApiVersionUtils } from '@core/api-version';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 import { RouteConstants } from '@core/constants/route.constants';
 
 export class ApiPathUtils {
@@ -51,7 +51,7 @@ export class ApiPathUtils {
   }
 
   static authPath(path = ''): string {
-    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.AUTH.BASE, path));
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemApiPaths.ALL.AUTH.BASE, path));
   }
 
   /**
@@ -62,19 +62,19 @@ export class ApiPathUtils {
    * a scope here; a caller picking someone else's is a silent 404, never a build error.
    */
   static filesPath(path = ''): string {
-    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.FILES.BASE, path));
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemApiPaths.ALL.FILES.BASE, path));
   }
 
   static systemPath(path = ''): string {
-    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.SYSTEM.BASE, path));
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemApiPaths.ALL.SYSTEM.BASE, path));
   }
 
   static systemFrontendPath(): string {
-    return ApiPathUtils.versioned(SystemConstants.API_PATH.SYSTEM.FRONTEND);
+    return ApiPathUtils.versioned(SystemApiPaths.ALL.SYSTEM.FRONTEND);
   }
 
   static systemI18nPath(): string {
-    return ApiPathUtils.versioned(SystemConstants.API_PATH.SYSTEM.I18N);
+    return ApiPathUtils.versioned(SystemApiPaths.ALL.SYSTEM.I18N);
   }
 
   static adminApiBasePath(): string {
@@ -92,15 +92,15 @@ export class ApiPathUtils {
   }
 
   static pluginPath(slug: string, path = ''): string {
-    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.PLUGINS.BASE, slug, path));
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemApiPaths.ALL.PLUGINS.BASE, slug, path));
   }
 
   static themePath(slug: string, path = ''): string {
-    return ApiPathUtils.versioned(ApiPathUtils.join(SystemConstants.API_PATH.THEMES.BASE, slug, path));
+    return ApiPathUtils.versioned(ApiPathUtils.join(SystemApiPaths.ALL.THEMES.BASE, slug, path));
   }
 
   static pluginUiAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.PLUGINS.UI, { slug }));
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemApiPaths.ALL.PLUGINS.UI, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 
@@ -108,14 +108,14 @@ export class ApiPathUtils {
    * Matcher for a SERVED theme-UI asset path (`…/themes/<slug>/ui/<rest>`), with the slug and the asset
    * path as capture groups.
    *
-   * Derived from the ROUTE template (`SystemConstants.API_PATH.THEMES.UI`) rather than written out, so it
+   * Derived from the ROUTE template (`SystemApiPaths.ALL.THEMES.UI`) rather than written out, so it
    * cannot drift from the route that produces these URLs — `:slug` becomes a segment capture and the
    * trailing wildcard becomes a path capture. Two call sites hand-wrote this regex before: the image
    * optimizer's second confined root and the optimizable-path check. Built once.
    */
   static themeUiAssetMatcher(): RegExp {
     if (!ApiPathUtils.themeUiAssetRegex) {
-      const pattern = String(SystemConstants.API_PATH.THEMES.UI || '')
+      const pattern = String(SystemApiPaths.ALL.THEMES.UI || '')
         .replace(/[.+?^${}()|[\]\\]/g, '\\$&')
         .replace(':slug', '([^/]+)')
         .replace(/\*[A-Za-z0-9_]*$/, '(.+)');
@@ -138,12 +138,12 @@ export class ApiPathUtils {
   }
 
   static themeUiAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.UI, { slug }));
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemApiPaths.ALL.THEMES.UI, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 
   static themePublicAssetPath(slug: string, asset = ''): string {
-    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemConstants.API_PATH.THEMES.PUBLIC, { slug }));
+    const basePath = ApiPathUtils.withoutWildcard(ApiPathUtils.fillPath(SystemApiPaths.ALL.THEMES.PUBLIC, { slug }));
     return asset ? ApiPathUtils.versioned(ApiPathUtils.join(basePath, asset)) : ApiPathUtils.versioned(basePath);
   }
 

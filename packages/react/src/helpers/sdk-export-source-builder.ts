@@ -58,7 +58,7 @@ export class SdkExportSourceBuilder {
     'RuntimeBridge',
     'CoreServices',
     'MediaRelationService',
-    'SystemConstants',
+    'SystemApiPaths',
     'ClientRuntimeConstants',
     'CookieConstants',
     // `IBrowserCookieOptions.sameSite` is typed as this enum, so any plugin that writes a cookie

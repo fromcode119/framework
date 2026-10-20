@@ -45,6 +45,9 @@ export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 export { SystemConstants } from '@core/constants/system.constants';
+// The API path catalog on its own: browser code reaches paths through this, so the storefront runtime
+// does not carry every system table and settings key that `SystemConstants` also holds.
+export { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 export { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
 // Pure string composition over RouteConstants — no server imports, safe on the client, and the one
 // authority both the router and every link builder read from.

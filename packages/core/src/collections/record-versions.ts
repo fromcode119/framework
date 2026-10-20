@@ -1,10 +1,10 @@
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemTables } from '@core/constants/system-tables.constants';
 import { FieldType } from '@core/enums/field-type.enum';
 
 export class RecordVersions {
   static readonly collection: ICollection = {
-    slug: SystemConstants.TABLE.RECORD_VERSIONS,
+    slug: SystemTables.ALL.RECORD_VERSIONS,
     shortSlug: 'versions',
     displayName: 'Record Versions',
     system: true,

@@ -1,5 +1,5 @@
 import { Reactor } from '@fromcode119/react-class-components';
-import { SystemConstants } from '@fromcode119/core/client';
+import { SystemApiPaths } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import { AccountSlotRegistrar } from '@/components/account/account-slot-registrar';
 import { ContextBridge } from '@fromcode119/react/context-bridge';
@@ -49,7 +49,7 @@ export class ThemeInitializer extends Reactor {
     // A provider seeded from the document (islands runtime) is READY at mount and already holds this
     // payload; fetching it again would only re-set identical state. Unseeded (admin, Next storefront)
     // it is never ready at mount, so the load runs exactly as before.
-    if (!this.plugins.isReady) this.plugins.loadConfig(SystemConstants.API_PATH.SYSTEM.FRONTEND);
+    if (!this.plugins.isReady) this.plugins.loadConfig(SystemApiPaths.ALL.SYSTEM.FRONTEND);
     this.applyThemeVariables();
   }
 

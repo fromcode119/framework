@@ -1,5 +1,5 @@
 import React from 'react';
-import { SystemConstants } from '@fromcode119/core/client';
+import { SystemApiPaths } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { IMenuItem } from '@react/interfaces/menu-item.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
@@ -51,7 +51,7 @@ export class ContextProviderI18nHooks {
       latestLocaleRef.current = requested;
       try {
         const encodedLocale = encodeURIComponent(requested);
-        const data = await api.get(`${SystemConstants.API_PATH.SYSTEM.I18N}?locale=${encodedLocale}`, { silent: true });
+        const data = await api.get(`${SystemApiPaths.ALL.SYSTEM.I18N}?locale=${encodedLocale}`, { silent: true });
         if (latestLocaleRef.current !== requested) return;
         // Replace: this holds ONLY the server (active-locale) translations. Plugin/theme UI
         // translations registered via registerTranslations live in `registeredTranslations` (per
