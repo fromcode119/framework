@@ -15,6 +15,13 @@ describe('SdkExportSourceBuilder', () => {
     expect(source).toContain('export const ThemeFrontendLayoutRegistrar =');
   });
 
+  it('keeps SystemConstants beside SystemApiPaths — installed plugin bundles import it by name', () => {
+    const source = SdkExportSourceBuilder.build("window.__modules__['@fromcode119/react']");
+
+    expect(source).toContain('export const SystemConstants =');
+    expect(source).toContain('export const SystemApiPaths =');
+  });
+
   it('parenthesizes complex accessors so named exports resolve to properties', () => {
     const source = SdkExportSourceBuilder.build("window.__modules__ && window.__modules__['@fromcode119/react']");
 
