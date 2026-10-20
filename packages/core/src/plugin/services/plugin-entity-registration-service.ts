@@ -112,13 +112,12 @@ export class PluginEntityRegistrationService {
     existing.hooks = incoming.hooks;
     existing.admin = incoming.admin;
     existing.displayName = incoming.displayName;
-    const next = [...existing.fields];
-    const indexByName = new Map(next.map((field: IField, index: number) => [field.name, index]));
-    for (const field of incoming.fields) {
-      const index = indexByName.get(field.name);
-      if (index === undefined) next.push(field);
-      else next[index] = field;
-    }
+    // The release's own order first — a field it adds sits where it was declared, not after every
+    // field the api already had (an update put a new select under the last field of the form until the
+    // api restarted). What the release does not declare keeps its place after them, as at boot: the
+    // framework's own fields and another plugin's extension fields.
+    const declared = new Set(incoming.fields.map((field: IField) => field.name));
+    const next = [...incoming.fields, ...existing.fields.filter((field: IField) => !declared.has(field.name))];
     // A NEW array, not the old one edited: caches keyed by the fields array (the data processor's
     // password/array field lists) recompute only for a new identity or length — a field turned into
     // a password in place would otherwise keep being returned raw.
