@@ -40,4 +40,14 @@ describe('PluginEntityRegistrationService.refreshOwnCollection', () => {
     expect(existing.fields.map((field: any) => field.name)).toEqual(['name', 'price', 'origin']);
     expect((existing.fields[0] as any).localized).toBe(true);
   });
+
+  it('puts a field the release adds where the release declares it', () => {
+    const existing = registered();
+    new PluginEntityRegistrationService().refreshOwnCollection(existing, {
+      slug: 'products',
+      admin: {},
+      fields: [{ name: 'name', type: 'text' }, { name: 'sku', type: 'text' }, { name: 'price', type: 'number' }],
+    } as any);
+    expect(existing.fields.map((field: any) => field.name)).toEqual(['name', 'sku', 'price', 'origin']);
+  });
 });
