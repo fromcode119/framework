@@ -57,6 +57,7 @@ vi.mock('@/components/collection/view/field-renderer.client', () => ({
   FieldRenderer: ({ field, value, onChange }: any) => (
     <div data-testid={`field-${field.name}`}>
       <label>{field.label || field.name}</label>
+      <p data-testid={`description-${field.name}`}>{field.admin?.description}</p>
       <input 
         value={value || ''} 
         onChange={(e) => onChange(e.target.value)} 
@@ -192,6 +193,19 @@ describe('./plugin-settings-form', () => {
     // The field sits on the other tab: the form must still say which one to correct.
     await waitFor(() => expect(screen.getByRole('alert').textContent).toBe('Not saved — correct: Posts Per Page'));
     logged.mockRestore();
+  });
+
+  it('keeps a saved secret\'s own description and adds that the value is held', async () => {
+    (AdminApi.get as any).mockImplementation((url: string) => url.includes('schema')
+      ? Promise.resolve({ fields: [{ name: 'verifyToken', label: 'Verify token', type: 'password', admin: { description: 'Callback URL: https://console.example.test/hook' } }] })
+      : Promise.resolve({ settings: { verifyToken: 'held' } }));
+
+    renderForm({ pluginSlug });
+
+    const description = await waitFor(() => screen.getByTestId('description-verifyToken'));
+    expect(description.textContent).toContain('Callback URL: https://console.example.test/hook');
+    expect(description.textContent).not.toBe('Callback URL: https://console.example.test/hook');
+    expect((screen.getByTestId('input-verifyToken') as HTMLInputElement).value).toBe('');
   });
 
   it('calls AdminApi.post when resetting', async () => {
