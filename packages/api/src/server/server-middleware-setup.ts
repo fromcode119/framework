@@ -19,6 +19,7 @@ import { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-mid
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 import { PluginRouteRobotsHeaderMiddleware } from '@api/middlewares/plugin-route-robots-header-middleware';
 import { ConsoleLocaleMiddleware } from '@api/middlewares/console-locale-middleware';
+import { SessionUserContextMiddleware } from '@api/middlewares/session-user-context-middleware';
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
@@ -41,8 +42,7 @@ export class ServerMiddlewareSetup {
   ) {}
 
   setup() {
-    // First, so every response carries them — including an error or a refusal sent by a later
-    // middleware. The class existed and was exported, but nothing mounted it: no api response had them.
+    // First, so every response carries them — including an error or a refusal sent by a later middleware.
     this.app.disable('x-powered-by');
     this.app.use(new SecurityHeadersMiddleware().middleware());
     // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
@@ -75,7 +75,8 @@ export class ServerMiddlewareSetup {
     this.app.use(ApiPathUtils.pluginPath(''), new PluginRouteRobotsHeaderMiddleware().middleware());
 
     this.app.use(this.auth.middleware());
-    // A console request speaks the reader's console language — see the middleware.
+    // Who is signed in, and which console language they read — see each middleware.
+    this.app.use(new SessionUserContextMiddleware().middleware());
     this.app.use(new ConsoleLocaleMiddleware(this.manager).middleware());
 
     // IMMEDIATELY after auth, and before anything that can return content: the first point in the

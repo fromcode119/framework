@@ -28,6 +28,12 @@ export class RequestContextUtils {
     return origin.length > 0 ? origin : undefined;
   }
 
+  /** The id of the account signed in on this request, or undefined — see {@link IRequestStore.sessionUserId}. */
+  static getSessionUserId(): string | undefined {
+    const userId = String(RequestContextUtils.storage.getStore()?.sessionUserId ?? '').trim();
+    return userId.length > 0 ? userId : undefined;
+  }
+
   /** The user the current work is done for, or undefined — see {@link IRequestStore.user}. */
   static getUser(): Record<string, unknown> | undefined {
     return RequestContextUtils.storage.getStore()?.user;
