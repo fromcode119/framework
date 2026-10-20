@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import type { NextFunction, Request, RequestHandler, Response } from 'express';
 import { Logger, ProjectPaths, TenantMode, TenantResolverService } from '@fromcode119/core';
@@ -46,9 +47,29 @@ export class TenantUploadsStatic {
 
       // The shared parent always runs last, so a file that predates per-site directories still
       // resolves. `express.static` calls `next()` when it finds nothing, which is what chains these.
-      const chain = tenantDir ? [this.staticFor(tenantDir), this.staticFor(root)] : [this.staticFor(root)];
+      // The shared parent CONTAINS every site's directory, so it must never answer a path inside
+      // `tenants/` — otherwise `/uploads/tenants/<another site>/…` falls through to it and serves
+      // that site's file. A site reaches its own files through its own handler only.
+      const shared = TenantUploadsStatic.isInsideSiteDirectories(req.path) ? [] : [this.staticFor(root)];
+      const chain = tenantDir ? [this.staticFor(tenantDir), ...shared] : shared;
       this.run(chain, req, res, next);
     };
+  }
+
+  /**
+   * Whether a request path (relative to the uploads mount) points into the per-site directories.
+   * Decoded and normalised the way `express.static` will resolve it, so `%2e%2e` or `a/../tenants/…`
+   * cannot slip past. A path that cannot be decoded is treated as inside, and served by nothing.
+   */
+  static isInsideSiteDirectories(requestPath: string): boolean {
+    let decoded: string;
+    try {
+      decoded = decodeURIComponent(String(requestPath || ''));
+    } catch {
+      return true;
+    }
+    const first = path.posix.normalize(`/${decoded.replace(/\\/g, '/')}`).split('/').filter(Boolean)[0] ?? '';
+    return ProjectPaths.isTenantArtifactsDir(first);
   }
 
   /** Runs the handlers in order, falling through to `next` when none of them served the file. */

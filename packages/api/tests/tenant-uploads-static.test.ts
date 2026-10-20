@@ -32,6 +32,7 @@ vi.mock('@fromcode119/core', async () => {
     ProjectPaths: {
       getUploadsRoot: () => (globalThis as any).__uploadsRoot,
       siteUploadsDir: (root: string, id: string) => actual.ProjectPaths.siteUploadsDir(root, id),
+      isTenantArtifactsDir: (name: string) => actual.ProjectPaths.isTenantArtifactsDir(name),
     },
     SystemConstants: { STORAGE: { TENANTS_SUBDIR: 'tenants' } },
     Logger: class { info() {} warn() {} error() {} },
@@ -84,6 +85,20 @@ describe('tenant-scoped uploads static', () => {
 
     const res = await request(app).get('/uploads/secret.txt').set('Host', 'b.test');
 
+    expect(res.status).toBe(404);
+  });
+
+  it.each([
+    '/uploads/tenants/site-a/own.txt',
+    '/uploads/%74enants/site-a/own.txt',
+    '/uploads/x/../tenants/site-a/own.txt',
+  ])('does NOT serve another site’s file by naming its directory: %s', async (url) => {
+    const res = await request(app).get(url).set('Host', 'b.test');
+    expect(res.status).toBe(404);
+  });
+
+  it('does NOT serve a site file by its directory to a host that names no site', async () => {
+    const res = await request(app).get('/uploads/tenants/site-a/own.txt').set('Host', 'unknown.test');
     expect(res.status).toBe(404);
   });
 

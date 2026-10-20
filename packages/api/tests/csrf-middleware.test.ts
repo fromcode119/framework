@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { CookieConstants } from '@fromcode119/core';
 import { CSRFMiddleware } from '@api/middlewares/csrf-middleware';
 
 describe('CSRFMiddleware', () => {
@@ -30,6 +31,25 @@ describe('CSRFMiddleware', () => {
     await new CSRFMiddleware().handle(req, res, next);
 
     expect(next).toHaveBeenCalledOnce();
+  });
+
+  it.each([
+    ['an Authorization header', { authorization: 'x' }],
+    ['an x-api-key header', { 'x-api-key': 'x' }],
+  ])('still needs the CSRF token when %s rides along with a session cookie', async (_label, extra) => {
+    const req: any = {
+      method: 'POST', path: '/v1/plugins/example/settings',
+      headers: { ...extra, cookie: `${CookieConstants.AUTH_TOKEN}=session-jwt` },
+      cookies: {}, get(name: string) { return this.headers[name.toLowerCase()]; },
+    };
+    const res: any = { cookie: vi.fn(), status: vi.fn(), json: vi.fn() };
+    res.status.mockReturnValue(res);
+    const next = vi.fn();
+
+    await new CSRFMiddleware().handle(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(403);
+    expect(next).not.toHaveBeenCalled();
   });
 
   /** The updater service reports to `/internal/updater/status` with the deployment secret, never a cookie. */

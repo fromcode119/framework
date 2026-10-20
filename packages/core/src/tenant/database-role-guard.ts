@@ -24,6 +24,7 @@ export class DatabaseRoleGuard {
     const result = await db.execute(Sql.query`
       SELECT
         (SELECT rolsuper FROM pg_roles WHERE rolname = current_user) AS is_superuser,
+        (SELECT rolbypassrls FROM pg_roles WHERE rolname = current_user) AS bypasses_rls,
         EXISTS (
           SELECT 1 FROM pg_tables WHERE schemaname = 'public' AND tableowner = current_user
         ) AS owns_tables
@@ -41,6 +42,13 @@ export class DatabaseRoleGuard {
         'DatabaseRoleGuard: the application is connected as a SUPERUSER, which bypasses row-level '
         + 'security and disables tenant isolation entirely. Connect as the non-owner runtime role '
         + '(DATABASE_URL), and run migrations as the owner (DATABASE_MIGRATION_URL).',
+      );
+    }
+    if (row.bypasses_rls === true) {
+      throw new Error(
+        'DatabaseRoleGuard: the application role has BYPASSRLS, which skips every row-level security '
+        + 'policy and disables tenant isolation entirely. Run `ALTER ROLE <runtime role> NOBYPASSRLS`, '
+        + 'or connect as a role without it (DATABASE_URL).',
       );
     }
     if (row.owns_tables === true) {

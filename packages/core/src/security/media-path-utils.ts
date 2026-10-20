@@ -47,8 +47,14 @@ export class MediaPathUtils {
     const match = pathname.match(ApiPathUtils.themeUiAssetMatcher());
     if (!match) return null;
 
-    const root = path.resolve(String(themesDir || ''));
-    const resolved = path.resolve(root, match[1], SystemConstants.THEME_DIR.UI, match[2]);
+    const themesRoot = path.resolve(String(themesDir || ''));
+    const themeRoot = path.resolve(themesRoot, match[1]);
+    // The slug names ONE directory directly under the themes root — `..` or a nested path is not a theme.
+    if (path.dirname(themeRoot) !== themesRoot) return null;
+    // Confined to that theme's `ui`, not merely the themes root: `<a>/ui/../../<b>/ui/x` resolves inside
+    // the themes root and would otherwise read another theme's files.
+    const root = path.join(themeRoot, SystemConstants.THEME_DIR.UI);
+    const resolved = path.resolve(root, match[2]);
     if (!resolved.startsWith(root + path.sep)) return null;
     return resolved;
   }
