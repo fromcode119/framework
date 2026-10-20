@@ -51,4 +51,15 @@ describe('isolated guest context.tenants', () => {
       { name: 'baseUrls', args: [] },
     ]);
   });
+
+  it('forwards apiUrl to the host with its path', async () => {
+    const { tenants, remote } = guestTenants();
+
+    await (tenants as any).apiUrl('/api/plugins/chi/webhook');
+
+    expect(remote.call).toHaveBeenCalledWith('context', [
+      { name: 'tenants' },
+      { name: 'apiUrl', args: ['/api/plugins/chi/webhook'] },
+    ]);
+  });
 });

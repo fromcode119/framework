@@ -1,3 +1,4 @@
+import { ApiVersionUtils } from '@core/api-version';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
@@ -78,6 +79,52 @@ export class SiteBaseUrl {
       );
       return '';
     }
+  }
+
+  /**
+   * The absolute address of an api endpoint for the current site — `apiPath` as `ApiPathUtils` builds
+   * it (`/api/plugins/<slug>/...`).
+   *
+   * A host DECLARED to be the api serves the api at its root (the gateway puts the base path back), so
+   * there the base path is left out: `https://api.example.com/plugins/<slug>/...`. That is a site's
+   * `api` host, or the platform's own api address when it is a host of its own — the one place a
+   * platform-wide integration (an OAuth redirect, a webhook) is registered with no site bound. Anywhere
+   * else the api lives under the base path on that app's origin, and the address keeps it. '' when this
+   * deployment declares no api address at all: a relative webhook URL is no address.
+   */
+  static async apiUrlForCurrentSite(apiPath: string): Promise<string> {
+    const tenantId = String(RequestContextUtils.getTenantId() ?? '').trim();
+    const scheme = SiteBaseUrl.declaredScheme(ApplicationUrlUtils.API_APP);
+    const siteApiHost = await SiteBaseUrl.declaredApiHost(tenantId);
+    if (scheme && siteApiHost) return ApplicationUrlUtils.joinApiPath(`${scheme}://${siteApiHost}`, SiteBaseUrl.atApiRoot(apiPath));
+    const site = await SiteBaseUrl.forSite(tenantId, ApplicationUrlUtils.API_APP);
+    if (site) return ApplicationUrlUtils.joinApiPath(site, apiPath);
+
+    const platform = SiteBaseUrl.originOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP));
+    if (!platform) return '';
+    const shared = [ApplicationUrlUtils.ADMIN_APP, ApplicationUrlUtils.FRONTEND_APP]
+      .some((app) => SiteBaseUrl.originOf(ApplicationUrlUtils.readAppBaseUrlFromEnvironment(app)) === platform);
+    return ApplicationUrlUtils.joinApiPath(platform, shared ? apiPath : SiteBaseUrl.atApiRoot(apiPath));
+  }
+
+  /** The first host the site declares for the api, or '' — the primary-host fallback is not one. */
+  private static async declaredApiHost(tenantId: string): Promise<string> {
+    if (!TenantMode.isEnabled() || !tenantId || !SiteBaseUrl.database) return '';
+    try {
+      const tenant = await TenantResolverService.shared(SiteBaseUrl.database).resolveById(tenantId);
+      return tenant?.apiHosts?.()[0] ?? '';
+    } catch (error: unknown) {
+      SiteBaseUrl.logger.warn(`Could not resolve the api host for site "${tenantId}". ${error instanceof Error ? error.message : String(error)}`);
+      return '';
+    }
+  }
+
+  /** `/api/plugins/x` → `/plugins/x`: the same endpoint, as a host that is the api serves it. */
+  private static atApiRoot(apiPath: string): string {
+    const base = ApiVersionUtils.API_BASE_PATH.replace(/\/+$/, '');
+    const path = `/${String(apiPath ?? '').trim().replace(/^\/+/, '')}`;
+    if (!base || (path !== base && !path.startsWith(`${base}/`))) return path;
+    return path.slice(base.length) || '/';
   }
 
   /**

@@ -71,6 +71,7 @@ export class PluginGuestContextFactory {
         // host this site is reached on. Omitting it did not degrade — it threw `is not a function` the
         // first time a guest asked, which is how a plugin that mails a link found out.
         baseUrls: () => remote.call('context', [{ name: 'tenants' }, { name: 'baseUrls', args: [] }]),
+        apiUrl: (apiPath: string) => remote.call('context', [{ name: 'tenants' }, { name: 'apiUrl', args: [apiPath] }]),
       },
       jobs: {
         add: (name: string, data: unknown, options?: unknown) => remote.call('context', [{ name: 'jobs' }, { name: 'add', args: PluginGuestRemote.portable([name, data, options]) }]),

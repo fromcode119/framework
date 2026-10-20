@@ -34,4 +34,12 @@ export interface IPluginContextTenants {
    * platform-wide integration (an OAuth redirect, a webhook) can be registered at.
    */
   baseUrls(): Promise<{ frontend: string; api: string; admin: string }>;
+
+  /**
+   * The absolute address of an api endpoint (`ApiPathUtils.pluginPath(slug, path)`) for the site this
+   * code runs for — or, with no site bound, the platform's. On a host that is the api the base path is
+   * left out (`https://api.example.com/plugins/<slug>/...`); elsewhere it is kept. '' when no api
+   * address is declared.
+   */
+  apiUrl(apiPath: string): Promise<string>;
 }

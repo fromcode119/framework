@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
@@ -99,5 +100,43 @@ describe('context.tenants', () => {
   it('gives the console address too, the only one a platform-wide integration can be registered at', async () => {
     vi.spyOn(ApplicationUrlUtils, 'readAppBaseUrlFromEnvironment').mockImplementation((app: string) => (app === ApplicationUrlUtils.ADMIN_APP ? 'https://console.example.test' : app === ApplicationUrlUtils.API_APP ? 'https://api.example.test' : ''));
     await expect(proxy().baseUrls()).resolves.toEqual({ frontend: '', api: 'https://api.example.test', admin: 'https://console.example.test' });
+  });
+
+  describe('apiUrl', () => {
+    const urls = (map: Record<string, string>) => vi.spyOn(ApplicationUrlUtils, 'readAppBaseUrlFromEnvironment').mockImplementation((app: string) => map[app] ?? '');
+
+    it('on the platform\'s own api host leaves the api base path out — the host already says api', async () => {
+      urls({ [ApplicationUrlUtils.ADMIN_APP]: 'https://console.example.test', [ApplicationUrlUtils.API_APP]: 'https://api.example.test' });
+      await expect(proxy().apiUrl('/api/plugins/chi/platform/webhooks/meta')).resolves.toBe('https://api.example.test/plugins/chi/platform/webhooks/meta');
+    });
+
+    it('keeps the base path when the api shares the console\'s host', async () => {
+      urls({ [ApplicationUrlUtils.ADMIN_APP]: 'https://example.test', [ApplicationUrlUtils.API_APP]: 'https://example.test' });
+      await expect(proxy().apiUrl('/api/plugins/chi/hook')).resolves.toBe('https://example.test/api/plugins/chi/hook');
+    });
+
+    it('for a site uses its declared api host at the root, and its primary host under the base path otherwise', async () => {
+      vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+      urls({ [ApplicationUrlUtils.API_APP]: 'https://api.example.test' });
+      SiteBaseUrl.registerDatabase({});
+      const sites: Record<string, any> = {
+        a: { primaryHost: 'shop-a.test', apiHosts: () => ['api.shop-a.test'] },
+        b: { primaryHost: 'shop-b.test', apiHosts: () => [] },
+      };
+      vi.spyOn(TenantResolverService, 'shared').mockReturnValue({ resolveById: async (id: string) => sites[id] } as any);
+      try {
+        await RequestContextUtils.storage.run({ tenantId: 'a' } as any, async () => {
+          await expect(proxy().apiUrl('/api/plugins/chi/hook')).resolves.toBe('https://api.shop-a.test/plugins/chi/hook');
+        });
+        await RequestContextUtils.storage.run({ tenantId: 'b' } as any, async () => {
+          await expect(proxy().apiUrl('/api/plugins/chi/hook')).resolves.toBe('https://shop-b.test/api/plugins/chi/hook');
+        });
+      } finally { SiteBaseUrl.reset(); }
+    });
+
+    it('answers nothing when no api address is declared', async () => {
+      urls({});
+      await expect(proxy().apiUrl('/api/plugins/chi/hook')).resolves.toBe('');
+    });
   });
 });
