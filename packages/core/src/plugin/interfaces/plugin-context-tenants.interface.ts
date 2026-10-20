@@ -30,6 +30,8 @@ export interface IPluginContextTenants {
   /**
    * The absolute base URLs of the site this code is running for — use them for any link that leaves
    * the platform. Outside a request, or on a single-site deployment, the platform's configured URLs.
+   * `admin` is the console's: where no site is bound it is the platform console, the one address a
+   * platform-wide integration (an OAuth redirect, a webhook) can be registered at.
    */
-  baseUrls(): Promise<{ frontend: string; api: string }>;
+  baseUrls(): Promise<{ frontend: string; api: string; admin: string }>;
 }

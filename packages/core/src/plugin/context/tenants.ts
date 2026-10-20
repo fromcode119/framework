@@ -55,13 +55,15 @@ export class TenantsContextProxy {
        * them, and got a 404. A legally required unsubscribe link was one of them.
        *
        * `frontend` is where a person goes; `api` is where a link that hits an endpoint goes, which
-       * on a site with an `api.` alias is a different host. Outside a request, on a single-site
-       * deployment, or when the site cannot be resolved, both are the platform's configured URLs —
-       * exactly what every caller got before.
+       * on a site with an `api.` alias is a different host. `admin` is the console's — the platform
+       * console where no site is bound, which on a multi-site deployment has no frontend of its own.
+       * Outside a request, on a single-site deployment, or when the site cannot be resolved, all three
+       * are the platform's configured URLs — exactly what every caller got before.
        */
-      baseUrls: async (): Promise<{ frontend: string; api: string }> => ({
+      baseUrls: async (): Promise<{ frontend: string; api: string; admin: string }> => ({
         frontend: await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP),
         api: await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.API_APP),
+        admin: await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.ADMIN_APP),
       }),
 
       /**
