@@ -1,5 +1,5 @@
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 import { RuntimeConstants } from '@core/constants/runtime.constants';
 import type { IFrontendRuntimeMetadata } from '@core/interfaces/frontend-runtime-metadata.interface';
 import { EnvUtils } from '@core/utils/env-utils';
@@ -85,7 +85,7 @@ export class RuntimeBridge {
     if (!metadata.activeTheme && ensureLoaded) {
       const bridge = RuntimeBridge.getBridge<any>();
       if (typeof bridge.loadConfig === 'function') {
-        await bridge.loadConfig(SystemConstants.API_PATH.SYSTEM.FRONTEND);
+        await bridge.loadConfig(SystemApiPaths.ALL.SYSTEM.FRONTEND);
         metadata = read();
       }
     }

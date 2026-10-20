@@ -1,4 +1,4 @@
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 import { EnvUtils } from '@core/utils/env-utils';
 import { StorefrontNoticeParam } from '@core/storefront-notice/storefront-notice-param';
 import type { StorefrontNoticeDisplay } from '@core/storefront-notice/storefront-notice-display';
@@ -45,7 +45,7 @@ export class StorefrontNoticeClient {
     if (!value) return null;
     const query = `?token=${encodeURIComponent(value)}&display=${encodeURIComponent(String(display.value))}`;
     try {
-      const response = await this.requester.get(`${SystemConstants.API_PATH.SYSTEM.STOREFRONT_NOTICE}${query}`, { silent: true, noDedupe: true });
+      const response = await this.requester.get(`${SystemApiPaths.ALL.SYSTEM.STOREFRONT_NOTICE}${query}`, { silent: true, noDedupe: true });
       const notice = response?.notice;
       return notice && String(notice.title || '').trim() ? { tone: String(notice.tone || ''), title: String(notice.title), body: String(notice.body || '') } : null;
     } catch {

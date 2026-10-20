@@ -1,6 +1,6 @@
 import { ClientType } from '@fromcode119/core/client';
 import React from 'react';
-import { BrowserStateClient, CookieConstants, SystemConstants } from '@fromcode119/core/client';
+import { BrowserStateClient, CookieConstants, SystemApiPaths } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 import { ContextProviderStateService } from '@react/context/context-provider-state-service';
@@ -95,7 +95,7 @@ export class ContextProviderApiHooks {
         });
 
         if (!response.ok) {
-          if (response.status === 404 && url.includes(SystemConstants.API_PATH.SYSTEM.RESOLVE)) {
+          if (response.status === 404 && url.includes(SystemApiPaths.ALL.SYSTEM.RESOLVE)) {
             return null;
           }
 
@@ -253,7 +253,7 @@ export class ContextProviderApiHooks {
         // which on the storefront origin is the visitor's, never the admin's (`fc_token` is only
         // accepted on the admin surface). Operator preview is an SSR concern: the storefront's
         // server render forwards the admin session for a `preview=1` navigation.
-        return await api.get(`${SystemConstants.API_PATH.SYSTEM.RESOLVE}${query}`, { silent: true });
+        return await api.get(`${SystemApiPaths.ALL.SYSTEM.RESOLVE}${query}`, { silent: true });
       } catch {
         return null;
       }

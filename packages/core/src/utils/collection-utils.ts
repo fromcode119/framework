@@ -1,5 +1,5 @@
 import { ApiVersionUtils } from '@core/api-version';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 import type { ICollectionListPathOptions } from '@core/collections/interfaces/collection-list-path-options.interface';
 
 /**
@@ -12,7 +12,7 @@ import type { ICollectionListPathOptions } from '@core/collections/interfaces/co
  */
 export class CollectionUtils {
   private static basePath(): string {
-    return `${ApiVersionUtils.prefix()}${SystemConstants.API_PATH.COLLECTIONS.BASE}`;
+    return `${ApiVersionUtils.prefix()}${SystemApiPaths.ALL.COLLECTIONS.BASE}`;
   }
 
   static listPath(slug: string, options: ICollectionListPathOptions = {}): string {

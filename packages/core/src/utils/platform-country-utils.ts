@@ -1,4 +1,4 @@
-import { SystemConstants } from '@core/constants/system.constants';
+import { LocalizationMetaKeys } from '@core/constants/localization-meta-keys.constants';
 import { PlatformCountrySource } from '@core/enums/platform-country-source.enum';
 import type { IPlatformCountry } from '@core/interfaces/platform-country.interface';
 
@@ -17,11 +17,11 @@ import type { IPlatformCountry } from '@core/interfaces/platform-country.interfa
  */
 export class PlatformCountryUtils {
   /** The framework system-setting key (also present on the admin field renderer's `globalSettings`). */
-  static readonly SETTING_KEY = SystemConstants.META_KEY.COUNTRY;
+  static readonly SETTING_KEY = LocalizationMetaKeys.ALL.COUNTRY;
   /** The languages consulted when no country is set, first match wins. */
   static readonly LANGUAGE_KEYS: readonly string[] = [
-    SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE,
-    SystemConstants.META_KEY.DEFAULT_LOCALE,
+    LocalizationMetaKeys.ALL.FRONTEND_DEFAULT_LOCALE,
+    LocalizationMetaKeys.ALL.DEFAULT_LOCALE,
   ];
 
   /** An ISO 3166-1 alpha-2 code, uppercased; anything else (including UN M.49 areas like `001`) is ''. */

@@ -3,6 +3,8 @@ import { RouteConstants } from '@core/constants/route.constants';
 import { SystemMetaKeys } from '@core/constants/system-meta-keys.constants';
 import { SystemTables } from '@core/constants/system-tables.constants';
 import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
+import { StorageConstants } from '@core/constants/storage.constants';
+import { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 /**
  * System-reserved database tables.
@@ -125,22 +127,7 @@ export class SystemConstants {
     TENANTS_SUBDIR: 'tenants',
   };
 
-  static readonly STORAGE = {
-  UPLOAD_DIR_ENV: 'STORAGE_UPLOAD_DIR',
-  PUBLIC_URL_ENV: 'STORAGE_PUBLIC_URL',
-  DEFAULT_UPLOADS_SUBDIR: 'public/uploads',
-  /** Per-tenant file subdirectory under the uploads root. Single-tenant installs never use it. */
-  TENANTS_SUBDIR: 'tenants',
-  DEFAULT_PUBLIC_URL: '/uploads',
-  /**
-   * Where PRIVATE files live. The default deliberately sits OUTSIDE `public/`: the uploads dir is
-   * handed to `express.static` twice, and those mounts are registered before cookies, CSRF, auth and
-   * the rate limiter — so anything reachable from them is anonymous and unthrottled by construction.
-   * A private file under that tree would be public no matter what guards its route carries.
-   */
-  PRIVATE_DIR_ENV: 'STORAGE_PRIVATE_DIR',
-  DEFAULT_PRIVATE_SUBDIR: 'storage/private'
-  } as const;
+  static readonly STORAGE = StorageConstants.ALL;
 
   /**
    * The shortest audit-retention window the platform will accept, in days.
@@ -157,8 +144,8 @@ export class SystemConstants {
    * Route prefix strings used for internal permission checks.
    */
   static readonly PUBLIC_ROUTE_PREFIXES = {
-  PLUGIN_ASSETS: `${SystemConstants.ROUTE_SEGMENTS.PLUGINS}/`,
-  THEME_ASSETS: `${SystemConstants.ROUTE_SEGMENTS.THEMES}/`
+    PLUGIN_ASSETS: PublicRouteConstants.PLUGIN_ASSETS_PREFIX,
+    THEME_ASSETS: PublicRouteConstants.THEME_ASSETS_PREFIX,
   } as const;
 
 }

@@ -1,14 +1,14 @@
 import { ApiPathUtils } from '@core/api';
 import { ApiVersionUtils } from '@core/api-version';
 import { ApplicationHostUtils } from '@core/utils/application-host-utils';
-import { SystemConstants } from '@core/constants/system.constants';
+import { StorageConstants } from '@core/constants/storage.constants';
 import { PublicRouteConstants } from '@core/constants/public-route.constants';
 import { RuntimeBridge } from '@core/runtime-bridge';
 import { EnvUtils } from '@core/utils/env-utils';
 import { OptimizedImageUrlUtils } from '@core/utils/optimized-image-url-utils';
 
 export class PublicAssetUrlUtils {
-  static readonly uploadBasePath = String(SystemConstants.STORAGE.DEFAULT_PUBLIC_URL).trim();
+  static readonly uploadBasePath = String(StorageConstants.ALL.DEFAULT_PUBLIC_URL).trim();
 
   static resolveApiBaseUrl(): string {
     return RuntimeBridge.resolveApiBaseUrl();

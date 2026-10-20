@@ -1,5 +1,5 @@
 import { ApiPathUtils } from '@core/api/api-path-utils';
-import { SystemConstants } from '@core/constants/system.constants';
+import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 
 export class AdminUserClient {
   constructor(
@@ -23,7 +23,7 @@ export class AdminUserClient {
     }
 
     const payload = await this.requester.get(
-      ApiPathUtils.versioned(SystemConstants.API_PATH.SYSTEM.ADMIN_USERS),
+      ApiPathUtils.versioned(SystemApiPaths.ALL.SYSTEM.ADMIN_USERS),
       options,
     );
     const users = AdminUserClient.extractUsers(payload);
@@ -77,7 +77,7 @@ export class AdminUserClient {
 
   private static buildUserPath(userId: number): string {
     return ApiPathUtils.versioned(
-      ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_USER, { id: userId }),
+      ApiPathUtils.fillPath(SystemApiPaths.ALL.SYSTEM.ADMIN_USER, { id: userId }),
     );
   }
 

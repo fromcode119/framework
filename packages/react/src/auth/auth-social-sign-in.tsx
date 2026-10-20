@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
-import { ApiPathUtils, RuntimeBridge, SystemConstants } from '@fromcode119/core/client';
+import { ApiPathUtils, RuntimeBridge, SystemApiPaths } from '@fromcode119/core/client';
 import { AuthFormBase } from '@react/auth/auth-form-base';
 import { AuthSocialProvider } from '@react/auth/auth-social-provider';
 import type { IAuthSocialSignInState } from '@react/auth/interfaces/auth-social-sign-in-state.interface';
@@ -30,7 +30,7 @@ export class AuthSocialSignIn extends AuthFormBase<Record<string, never>, IAuthS
 
   /** Where the provider link starts: the site's own API, with where to go after and where to report a refusal. */
   private startUrl(provider: AuthSocialProvider): string {
-    const path = ApiPathUtils.versioned(ApiPathUtils.fillPath(SystemConstants.API_PATH.AUTH.SSO_START, { provider: provider.key }));
+    const path = ApiPathUtils.versioned(ApiPathUtils.fillPath(SystemApiPaths.ALL.AUTH.SSO_START, { provider: provider.key }));
     const query = new URLSearchParams({ returnTo: this.afterAuthPath, errorTo: this.currentPathWithoutError });
     return `${ApiPathUtils.absoluteUrl(RuntimeBridge.resolveApiBaseUrl(), path)}?${query.toString()}`;
   }

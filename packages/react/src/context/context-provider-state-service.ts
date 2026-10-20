@@ -1,4 +1,4 @@
-import { SystemConstants } from '@fromcode119/core/client';
+import { SystemApiPaths } from '@fromcode119/core/client';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 
 export class ContextProviderStateService {
@@ -62,7 +62,7 @@ export class ContextProviderStateService {
   }
 
   static getFrontendConfigPath(): string {
-    const path = SystemConstants?.API_PATH?.SYSTEM?.FRONTEND;
+    const path = SystemApiPaths.ALL.SYSTEM.FRONTEND;
     if (!path) {
       throw new Error('[Fromcode API] Missing SYSTEM.FRONTEND path constant');
     }
