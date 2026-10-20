@@ -67,7 +67,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
         PluginDefaultPageContractMaterializationStatus.DEFERRED,
         undefined,
         undefined,
-        this.createReasons(contract.reasons, 'parameterized-route-deferred'),
+        this.appendReason(contract.reasons, 'parameterized-route-deferred'),
       );
     }
 
@@ -79,7 +79,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
         PluginDefaultPageContractMaterializationStatus.DEFERRED,
         undefined,
         undefined,
-        this.createReasons(contract.reasons, 'per-record-document-deferred'),
+        this.appendReason(contract.reasons, 'per-record-document-deferred'),
       );
     }
 
@@ -93,7 +93,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
         PluginDefaultPageContractMaterializationStatus.AMBIGUOUS,
         undefined,
         undefined,
-        this.createReasons(contract.reasons, 'multiple-existing-pages-matched'),
+        this.appendReason(contract.reasons, 'multiple-existing-pages-matched'),
       );
     }
 
@@ -105,7 +105,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
         PluginDefaultPageContractMaterializationStatus.READY,
         matches[0].matchedPageId,
         undefined,
-        this.createReasons(contract.reasons, `matched-by-${matches[0].source}`),
+        this.appendReason(contract.reasons, `matched-by-${matches[0].source}`),
       );
     }
 
@@ -117,7 +117,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
         PluginDefaultPageContractMaterializationStatus.BLOCKED,
         undefined,
         undefined,
-        this.createReasons(contract.reasons, 'adopt-only-no-match'),
+        this.appendReason(contract.reasons, 'adopt-only-no-match'),
       );
     }
 
@@ -128,7 +128,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
       PluginDefaultPageContractMaterializationStatus.READY,
       undefined,
       this.createCreatePayload(contract),
-      this.createReasons(contract.reasons, 'no-existing-page-match'),
+      this.appendReason(contract.reasons, 'no-existing-page-match'),
     );
   }
 

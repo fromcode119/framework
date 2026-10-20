@@ -416,6 +416,19 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(entry.reasons).toEqual(['adopt-only-no-match']);
   });
 
+  it('keeps the plan reason when the contract already carries one', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract({ reasons: ['materialized'] })],
+      existingPages: [
+        { id: 5, slug: 'catalog', customPermalink: '/catalog' },
+        { id: 6, slug: 'catalog-copy', customPermalink: '/catalog' },
+      ],
+    }).entries;
+
+    expect(entry.status).toBe(PluginDefaultPageContractMaterializationStatus.AMBIGUOUS);
+    expect(entry.reasons).toEqual(['materialized', 'multiple-existing-pages-matched']);
+  });
+
   it('does not mutate resolved contract inputs or page snapshots', () => {
     const resolvedContracts = [createResolvedContract()];
     const existingPages: IPluginDefaultPageContractPageSnapshot[] = [
