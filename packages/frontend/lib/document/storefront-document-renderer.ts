@@ -130,6 +130,21 @@ export class StorefrontDocumentRenderer {
     });
   }
 
+  /**
+   * The translations the document carries. Every active plugin's dictionary was ~480 KB of the HTML
+   * on a shop site — more than the page itself — so a server-rendered page inlines only the namespaces
+   * its render read; hydration needs exactly those, and the provider loads the rest once mounted.
+   * Without a server render the browser paints from scratch, so it gets the whole set as before.
+   */
+  private static inlineTranslations(all: Record<string, unknown>, namespaces: string[] | undefined): { translations: Record<string, unknown>; translationsComplete: boolean } {
+    if (!namespaces) return { translations: all, translationsComplete: true };
+    const translations: Record<string, unknown> = {};
+    for (const namespace of namespaces) {
+      if (namespace in all) translations[namespace] = all[namespace];
+    }
+    return { translations, translationsComplete: false };
+  }
+
   private static async document(args: {
     content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string;
@@ -169,7 +184,7 @@ export class StorefrontDocumentRenderer {
       pageKind: args.pageKind.value,
       notFoundPath: args.notFoundPath || '',
       frontend: frontend || {},
-      translations,
+      ...StorefrontDocumentRenderer.inlineTranslations(translations, markup?.translationNamespaces),
     };
     const html = DocumentMarkupRenderer.render(DocumentView.render, {
       lang: locale, page, site, theme, markup, headInjections, bodyStartInjections, schema, pageDocPrefetch, runtimeConfig,

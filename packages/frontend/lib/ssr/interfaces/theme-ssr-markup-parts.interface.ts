@@ -10,4 +10,5 @@ export interface IThemeSsrMarkupParts {
   pluginStyles: Array<{ key: string; css: string }>;
   rendersContentSlot: boolean;
   usedPlugins: string[];
+  translationNamespaces: string[];
 }

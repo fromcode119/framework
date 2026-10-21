@@ -44,6 +44,9 @@ export class ThemeSsrMarkup {
   /** Plugins whose slot/override components this render mounted (`PluginUsageTracker`), sorted. */
   readonly usedPlugins: string[];
 
+  /** Translation namespaces this render read (`ServerTranslator.namespaces`) — what the document inlines. */
+  readonly translationNamespaces: string[];
+
   private constructor(
     bodyHtml: string,
     styleGroups: ThemeSsrStyleGroup[],
@@ -51,6 +54,7 @@ export class ThemeSsrMarkup {
     pluginStyles: ThemeSsrPluginStyle[],
     rendersContentSlot: boolean,
     usedPlugins: string[] = [],
+    translationNamespaces: string[] = [],
   ) {
     this.bodyHtml = bodyHtml;
     this.styleGroups = styleGroups;
@@ -58,6 +62,7 @@ export class ThemeSsrMarkup {
     this.pluginStyles = pluginStyles;
     this.rendersContentSlot = rendersContentSlot;
     this.usedPlugins = usedPlugins;
+    this.translationNamespaces = translationNamespaces;
   }
 
   private static readonly STYLE_TAG = /<style data-emotion="([^"]*)"[^>]*>([\s\S]*?)<\/style>/g;
@@ -68,7 +73,7 @@ export class ThemeSsrMarkup {
 
   private static readonly HREF_ATTRIBUTE = /href="([^"]*)"/;
 
-  static from(html: string, rendersContentSlot = false, usedPlugins: string[] = []): ThemeSsrMarkup {
+  static from(html: string, rendersContentSlot = false, usedPlugins: string[] = [], translationNamespaces: string[] = []): ThemeSsrMarkup {
     const groups: ThemeSsrStyleGroup[] = [];
     const byKey = new Map<string, number>();
 
@@ -109,7 +114,7 @@ export class ThemeSsrMarkup {
       return '';
     });
 
-    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot, usedPlugins);
+    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot, usedPlugins, translationNamespaces);
   }
 
   /** Reverses HTML attribute escaping (the five entities React emits for attribute values). */
@@ -137,6 +142,7 @@ export class ThemeSsrMarkup {
       pluginStyles: this.pluginStyles.map((style) => ({ key: style.key, css: style.css })),
       rendersContentSlot: this.rendersContentSlot,
       usedPlugins: [...this.usedPlugins],
+      translationNamespaces: [...this.translationNamespaces],
     };
   }
 
@@ -148,6 +154,7 @@ export class ThemeSsrMarkup {
       (parts.pluginStyles || []).map((style) => new ThemeSsrPluginStyle(style.key, style.css)),
       Boolean(parts.rendersContentSlot),
       [...(parts.usedPlugins || [])],
+      [...(parts.translationNamespaces || [])],
     );
   }
 }

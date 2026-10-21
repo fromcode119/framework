@@ -10,6 +10,15 @@ import { FrontendI18nService } from '@fromcode119/react/context/frontend-i18n-se
 export class ServerTranslator {
   private readonly dictionary: Record<string, unknown>;
 
+  /**
+   * Top-level namespaces this render read — through `t` or straight off `translations`. The document
+   * inlines only these, so the browser hydrates against exactly the copy the server painted without
+   * carrying every active plugin's dictionary; the provider loads the full set after hydration.
+   */
+  private readonly read = new Set<string>();
+
+  private readonly tracked: Record<string, unknown>;
+
   constructor(
     serverTranslations: Record<string, unknown>,
     registeredByLocale: Record<string, Record<string, unknown>>,
@@ -22,14 +31,27 @@ export class ServerTranslator {
       locale,
       themeByLocale,
     );
+    const read = this.read;
+    this.tracked = new Proxy(this.dictionary, {
+      get(target, property, receiver) {
+        if (typeof property === 'string') read.add(property);
+        return Reflect.get(target, property, receiver);
+      },
+    });
   }
 
   /** The merged dictionary, published on the context as `translations`. */
   get effective(): Record<string, unknown> {
-    return this.dictionary;
+    return this.tracked;
+  }
+
+  /** The namespaces read so far, sorted. */
+  get namespaces(): string[] {
+    return [...this.read].sort();
   }
 
   @bound translate(key: string, params: Record<string, unknown> = {}, defaultValue?: string): string {
+    this.read.add(String(key || '').split('.')[0]);
     return FrontendI18nService.translate(this.dictionary, key, params, defaultValue);
   }
 }
