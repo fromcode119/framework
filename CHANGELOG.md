@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.430] - 2026-10-21
+
+### Performance
+
+- **frontend**: boot the storefront runtime on visitor intent ([#1030](https://github.com/fromcode119/framework/pull/1030))
+
 ## [0.2.429] - 2026-10-21
 
 ### Performance
