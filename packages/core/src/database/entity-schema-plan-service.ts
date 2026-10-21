@@ -1,4 +1,5 @@
 import { createHash } from 'crypto';
+import type { IDeclaredIndex } from '@core/database/interfaces/declared-index.interface';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
@@ -40,7 +41,7 @@ export class EntitySchemaPlanService {
       undeclaredColumns: exists
         ? existingColumns.filter((column) => !this.isAccountedFor(column, collection))
         : [],
-      unsupportedIndexes: this.resolveUnsupportedIndexes(collection),
+      declaredIndexes: this.resolveDeclaredIndexes(collection, collection.slug),
     };
   }
 
@@ -98,10 +99,22 @@ export class EntitySchemaPlanService {
     return (collection.fields || []).filter((field) => field.name !== 'id');
   }
 
-  private resolveUnsupportedIndexes(collection: ICollection): string[] {
+  /**
+   * The indexes the collection declares, as the database will name them: snake_case columns, and a
+   * name that is unique across the schema (Postgres index names are schema-wide, so an unnamed index
+   * is prefixed with its TABLE, never a bare field list).
+   */
+  private resolveDeclaredIndexes(collection: ICollection, tableName: string): IDeclaredIndex[] {
     return (collection.indexes || [])
       .filter((index) => index.fields.length > 0)
-      .map((index) => index.name || `${collection.slug}_${index.fields.join('_')}_idx`);
+      .map((index) => {
+        const columns = index.fields.map((field) => this.toColumnName(field));
+        return {
+          name: index.name || `${tableName}_${columns.join('_')}_idx`,
+          columns,
+          unique: Boolean(index.unique),
+        };
+      });
   }
 
   private stableStringify(value: unknown): string {

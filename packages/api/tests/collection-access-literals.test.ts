@@ -37,3 +37,27 @@ describe('collection access declared as a constant', () => {
     expect(read).toHaveBeenCalledTimes(1);
   });
 });
+
+describe('collection with no access.read', () => {
+  const policy = new CollectionAccessPolicyService();
+  const undeclared: any = { slug: 'fcp_example_notes', fields: [], access: {} };
+
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('is administrators-only by default, with the flag unset', async () => {
+    vi.stubEnv('ENFORCE_COLLECTION_READ_AUTHZ', '');
+    await expect(policy.resolveReadConstraints(undeclared, { user: null })).rejects.toMatchObject({ statusCode: 401 });
+    await expect(policy.resolveReadConstraints(undeclared, { user: { id: 3, roles: ['customer'] } })).rejects.toMatchObject({ statusCode: 403 });
+    await expect(policy.resolveReadConstraints(undeclared, { user: { id: 1, roles: ['admin'] } })).resolves.toEqual({});
+  });
+
+  it('is open only when the deployment sets ENFORCE_COLLECTION_READ_AUTHZ=false', async () => {
+    vi.stubEnv('ENFORCE_COLLECTION_READ_AUTHZ', 'false');
+    await expect(policy.resolveReadConstraints(undeclared, { user: null })).resolves.toEqual({});
+  });
+
+  it('a declared read: true stays public under the default', async () => {
+    vi.stubEnv('ENFORCE_COLLECTION_READ_AUTHZ', '');
+    await expect(policy.resolveReadConstraints({ ...undeclared, access: { read: true } }, { user: null })).resolves.toEqual({});
+  });
+});

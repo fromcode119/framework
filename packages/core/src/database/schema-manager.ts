@@ -48,13 +48,15 @@ export class SchemaManager {
         await this.updateTable(plan);
       }
 
+      // Before isolation: the sweep scopes a declared unique index per tenant under its own name.
+      await this.declared.ensureDeclaredIndexes(plan);
+
       // Bring the table under tenant isolation. Runs on every sync, not only on creation, so a
       // table that predates tenancy is scoped the first time it is seen — and the statements are
       // all IF NOT EXISTS / idempotent, so repeating them is free.
       await this.tenantIsolation.applyTenantIsolation(tableName, { system: collection.system === true });
       await SchemaRowProtection.apply(this.db, tableName, collection, this.logger);
 
-      this.declared.warnUnsupportedIndexes(plan);
       await this.declared.persistSchemaFingerprint(plan);
     } catch (error) {
       this.logger.error(`Failed to sync schema for ${tableName}: ${error}`);

@@ -70,6 +70,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [{ name: 'slug' }],
             },
           },
@@ -131,6 +132,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [],
             },
           },
@@ -185,6 +187,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'beta-products',
               shortSlug: 'catalog',
+              access: { read: true },
               fields: [{ name: 'slug' }],
             },
           },
@@ -251,6 +254,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [{ name: 'slug' }, { name: 'customPermalink' }],
             },
           },
@@ -262,6 +266,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'beta-products',
               shortSlug: 'catalog',
+              access: { read: true },
               fields: [{ name: 'slug' }, { name: 'page' }],
             },
           },
@@ -326,6 +331,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [{ name: 'slug' }, { name: 'customPermalink' }],
             },
           },
@@ -337,6 +343,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'synthetic-catalog',
               shortSlug: 'catalog',
+              access: { read: true },
               fields: [{ name: 'slug' }],
             },
           },
@@ -398,7 +405,7 @@ describe('ResolutionService default page contract routing', () => {
         db: { find: vi.fn().mockResolvedValue([]) },
         getPlugins: vi.fn().mockReturnValue([{ state: PluginState.ACTIVE, manifest: { slug: 'policy-module' } }]),
         registeredCollections: new Map([
-          ['pages', { pluginSlug: 'system', collection: { slug: 'pages', shortSlug: 'pages', fields: [{ name: 'slug' }, { name: 'customPermalink' }] } }],
+          ['pages', { pluginSlug: 'system', collection: { slug: 'pages', shortSlug: 'pages', access: { read: true }, fields: [{ name: 'slug' }, { name: 'customPermalink' }] } }],
         ]),
       };
       vi.spyOn(CoreServices, 'getInstance').mockReturnValue({
@@ -483,6 +490,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [{ name: 'slug' }, { name: 'customPermalink' }],
             },
           },
@@ -551,6 +559,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'pages',
               shortSlug: 'pages',
+              access: { read: true },
               fields: [{ name: 'slug' }, { name: 'customPermalink' }],
             },
           },
@@ -608,6 +617,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'beta-products',
               shortSlug: 'catalog',
+              access: { read: true },
               fields: [{ name: 'slug' }],
             },
           },
@@ -671,6 +681,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'tracker-events',
               shortSlug: 'site-events',
+              access: { read: true },
               fields: [{ name: 'path' }],
             },
           },
@@ -682,6 +693,7 @@ describe('ResolutionService default page contract routing', () => {
             collection: {
               slug: 'upsilon-courses',
               shortSlug: 'courses',
+              access: { read: true },
               fields: [{ name: 'slug' }],
             },
           },

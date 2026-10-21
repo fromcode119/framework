@@ -23,6 +23,7 @@ describe('rest-controller', () => {
 
   const mockCollection: any = {
     slug: 'posts',
+    access: { read: true },
     fields: [
       { name: 'title', type: 'text' },
       { name: 'content', type: 'text' }

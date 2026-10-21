@@ -197,15 +197,32 @@ export class DeclaredSchemaReconciler {
     }
   }
 
-  warnUnsupportedIndexes(plan: IEntitySchemaPlan): void {
-    if (plan.unsupportedIndexes.length === 0) {
-      return;
+  /**
+   * Create the indexes a collection declares and the table does not carry.
+   *
+   * `indexes` was fingerprinted and then ignored: a plugin declared `unique: true` over
+   * `(user_id, lesson_id)` and the database never enforced it. `createIndexIfMissing` is the
+   * dialect-portable, idempotent form (the one migrations use), so re-running a sync is free.
+   *
+   * Run BEFORE tenant isolation is applied: the isolation sweep rewrites a stand-alone unique index
+   * to `(cols…, tenant_id)` under the SAME name, so a declared unique holds per site and the next
+   * sync finds the scoped index by name and leaves it alone.
+   *
+   * REPORTS RATHER THAN THROWS: a unique over rows that already hold duplicates cannot be built, and
+   * refusing to sync the plugin over it is worse than saying so.
+   */
+  async ensureDeclaredIndexes(plan: IEntitySchemaPlan): Promise<void> {
+    for (const index of plan.declaredIndexes) {
+      try {
+        await this.db.createIndexIfMissing(plan.tableName, index.name, index.columns, { unique: index.unique });
+      } catch (error) {
+        this.logger.warn(
+          `Could not create the declared ${index.unique ? 'UNIQUE ' : ''}index "${index.name}" on `
+          + `${plan.tableName} (${index.columns.join(', ')}): ${error instanceof Error ? error.message : String(error)}.`
+          + (index.unique ? ' Existing duplicate rows are the usual cause; uniqueness stays unenforced until they are resolved.' : '')
+        );
+      }
     }
-
-    this.logger.warn(
-      `Collection "${plan.tableName}" declares indexes that are tracked in metadata but not auto-created yet: ` +
-      plan.unsupportedIndexes.join(', ')
-    );
   }
 
   /**

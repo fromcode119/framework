@@ -1,4 +1,5 @@
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { IDeclaredIndex } from '@core/database/interfaces/declared-index.interface';
 import type { IEntitySchemaColumnPlan } from '@core/database/interfaces/entity-schema-column-plan.interface';
 
 export interface IEntitySchemaPlan {
@@ -28,5 +29,7 @@ export interface IEntitySchemaPlan {
    * automatically; dropping a column is irreversible and one of those 58 held live data.
    */
   undeclaredColumns: string[];
-  unsupportedIndexes: string[];
+
+  /** Indexes the collection declares, to be created if the table lacks them. */
+  declaredIndexes: IDeclaredIndex[];
 }
