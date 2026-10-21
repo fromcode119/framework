@@ -15,7 +15,7 @@ import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
  *  - the early-interaction buffer, which holds taps made before the runtime boots (EarlyInteractionBuffer);
  *  - the page metadata (title, description, canonical, robots, Open Graph, Twitter, icons);
  *  - the theme's contribution (`ThemeHeadModel`): preconnect/preload hints as `<link>`s, declared head
- *    links, theme variables + inlined CSS, prefetch script, entry meta, the modulepreload injector;
+ *    links, theme variables + inlined CSS, prefetch script, entry meta, the stylesheet injector — no theme-entry `modulepreload`, since the runtime boots on intent;
  *  - the server-rendered theme's lifted head: plugin default sheets FIRST (they must sit ahead of the
  *    theme's stylesheet — same order the plugin gives them in the browser with `head.prepend`), then the
  *    emotion groups with `data-emotion` VERBATIM so emotion's browser cache adopts them, then the LCP
@@ -75,9 +75,10 @@ export class DocumentHeadView {
         {theme.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: theme.inlinedBootScript }} /> : null}
         {theme.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: theme.prefetchScript }} /> : null}
         {theme.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={theme.versionedEntryUrl} /> : null}
-        {/* The theme entry and its chunks, hinted at PARSE time — see `ThemeHeadModel.modulePreloadLinks`
-            for why these are no longer created by a script after `load`. */}
-        {theme.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" fetchPriority="low" />)}
+        {/* No `modulepreload` for the theme entry here: this document boots its runtime on the visitor's
+            first intent (`RuntimeBootTrigger`), so a parse-time hint only spends the first round trips on
+            script nothing on the first paint uses. Lantern counts every byte requested before FCP/LCP,
+            low priority or not — on a phone the hint alone cost the page ~10 points. */}
         {theme.injectorScript ? <script dangerouslySetInnerHTML={{ __html: theme.injectorScript }} /> : null}
       </>
     );
