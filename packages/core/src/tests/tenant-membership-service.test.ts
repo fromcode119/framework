@@ -22,6 +22,7 @@ function fakeDb(options: {
     )),
     findOne: vi.fn(async (table: string, where: any) => {
       if (table === 'users') return { id: where.id, is_platform_admin: options.platformAdmin === true };
+      if (table === '_system_tenants') return TENANTS.find((t) => t.id === where.id) ?? null;
       return memberships.find((m) => m.user_id === where.user_id && m.tenant_id === where.tenant_id) ?? null;
     }),
     insert: vi.fn(async () => ({})),
@@ -73,6 +74,13 @@ describe('TenantMembershipService', () => {
     const service = new TenantMembershipService(fakeDb({ memberships: [], platformAdmin: true }));
     expect((await service.listForUser('1')).map((t) => t.id).sort()).toEqual(['t1', 't2']);
     expect(await service.hasAccess('1', 't2')).toBe(true);
+  });
+
+  it('refuses a platform admin an id that matches no tenant, instead of binding it to nothing', async () => {
+    const service = new TenantMembershipService(fakeDb({ memberships: [], platformAdmin: true }));
+    expect(await service.hasAccess('1', 'no-such-tenant')).toBe(false);
+    // A slug is not an id: selecting by slug must not quietly open an empty site either.
+    expect(await service.hasAccess('1', 'acme')).toBe(false);
   });
 
   it('marks a platform admin\'s tenants as PLATFORM access, not membership', async () => {

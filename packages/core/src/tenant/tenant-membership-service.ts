@@ -169,7 +169,12 @@ export class TenantMembershipService {
     const tenant = CoercionUtils.toString(tenantId);
     if (!id || !tenant) return false;
 
-    if (await this.isPlatformAdmin(id)) return true;
+    // A platform admin may enter every site — every site that EXISTS. Without this check any string
+    // was "a site" for them: selecting a mistyped id answered ok and bound the session to nothing,
+    // so every list read as empty, as if the site had lost its data.
+    if (await this.isPlatformAdmin(id)) {
+      return Boolean(await this.db.findOne(SystemConstants.TABLE.TENANTS, { id: tenant }));
+    }
 
     const row = await this.db.findOne(SystemConstants.TABLE.TENANT_MEMBERSHIPS, {
       user_id: id, tenant_id: tenant,
