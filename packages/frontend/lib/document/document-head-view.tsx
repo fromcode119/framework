@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import type { ReactElement, ReactNode } from 'react';
 import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
 import { EarlyInteractionBuffer } from '@/lib/document/early-interaction-buffer';
+import { RuntimeBootTrigger } from '@/lib/document/runtime-boot-trigger';
 import { MetadataHeadView } from '@/lib/document/metadata-head-view';
 import type { ThemeHeadModel } from '@/lib/document/theme-head-model';
 import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
@@ -20,8 +21,8 @@ import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
  *    emotion groups with `data-emotion` VERBATIM so emotion's browser cache adopts them, then the LCP
  *    image preloads;
  *  - plugin head injections;
- *  - the runtime injector: one classic `<script>` appended after `load`, the only JavaScript delivery
- *    this document has.
+ *  - the runtime injector (`RuntimeBootTrigger`): one classic `<script>` appended on the first sign of
+ *    visitor intent or after an idle fallback, the only JavaScript delivery this document has.
  */
 export class DocumentHeadView {
   static render({ page, site, theme, markup, injections, runtimeScriptPath, layoutInlineCss }: {
@@ -45,7 +46,7 @@ export class DocumentHeadView {
         {theme ? DocumentHeadView.themeHead(theme) : null}
         {markup ? DocumentHeadView.liftedHead(markup) : null}
         {injections}
-        {runtimeScriptPath ? <script dangerouslySetInnerHTML={{ __html: DocumentHeadView.runtimeInjector(runtimeScriptPath) }} /> : null}
+        {runtimeScriptPath ? <script dangerouslySetInnerHTML={{ __html: RuntimeBootTrigger.inlineScript(runtimeScriptPath) }} /> : null}
       </head>
     );
   }
@@ -97,14 +98,5 @@ export class DocumentHeadView {
         ))}
       </>
     );
-  }
-
-  /**
-   * Appends the runtime script after `load` (idle slice, 1.5 s floor) — the same deferral the App
-   * Router's `FrontendRuntimeScheduler` applies. A classic script, not a module: the import map is still
-   * written by the runtime itself, and a module script would have to run after it.
-   */
-  private static runtimeInjector(scriptPath: string): string {
-    return `(function(){var s=function(){var e=document.createElement('script');e.src=${JSON.stringify(scriptPath)};e.async=true;document.head.appendChild(e);};var d=function(){if(window.requestIdleCallback){window.requestIdleCallback(s,{timeout:1500});}else{setTimeout(s,200);}};if(document.readyState==='complete'){d();}else{addEventListener('load',d,{once:true});}})();`;
   }
 }
