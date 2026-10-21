@@ -90,4 +90,28 @@ describe('RuntimeLocationUtils', () => {
     process.env.ADMIN_URL = originalAdminUrl;
     process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = originalNextPublicAdminBasePath;
   });
+
+  /**
+   * A console on a host of its own (`portal.<site>`, served at the root) has no `admin.` host and no
+   * admin path. Storefront code a plugin bundle carries — the analytics tracker — recorded every
+   * console page as site traffic there. The console's document names itself, and that settles it.
+   */
+  it('treats a document the console marked as the admin on any host', () => {
+    withAdminUrl('https://admin.example.test', () => {
+      vi.stubGlobal('document', { documentElement: { getAttribute: (name: string) => (name === RuntimeLocationUtils.RUNTIME_ATTRIBUTE ? 'admin' : null) } });
+      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/library/13' } });
+
+      expect(RuntimeLocationUtils.isAdminRuntime()).toBe(true);
+      expect(RuntimeLocationUtils.isFrontendRuntime()).toBe(false);
+    });
+  });
+
+  it('keeps an unmarked storefront page out of the admin', () => {
+    withAdminUrl('https://admin.example.test', () => {
+      vi.stubGlobal('document', { documentElement: { getAttribute: () => null } });
+      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/library/13' } });
+
+      expect(RuntimeLocationUtils.isAdminRuntime()).toBe(false);
+    });
+  });
 });
