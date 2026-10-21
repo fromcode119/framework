@@ -3,6 +3,13 @@ import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 import { EnvUtils } from '@core/utils/env-utils';
 
 export class RuntimeLocationUtils {
+  /**
+   * The attribute the console's own document carries on `<html>`, naming the app that rendered it.
+   * A console on a host of its own (`portal.example.com`, served at the root) has no `admin.` host
+   * and no admin path, so the address alone cannot say it is the console — the document can.
+   */
+  static readonly RUNTIME_ATTRIBUTE = 'data-fromcode-runtime';
+
   static getCurrentPathname(): string {
     return RuntimeLocationUtils.readCurrentUrl()?.pathname || '';
   }
@@ -20,13 +27,14 @@ export class RuntimeLocationUtils {
       return false;
     }
 
-    return ApplicationUrlUtils.hasHostRole(currentUrl, ApplicationUrlUtils.ADMIN_APP)
+    return RuntimeLocationUtils.readDeclaredRuntime() === ApplicationUrlUtils.ADMIN_APP
+      || ApplicationUrlUtils.hasHostRole(currentUrl, ApplicationUrlUtils.ADMIN_APP)
       || RequestSurfaceUtils.isAdminPath(currentUrl.pathname);
   }
 
   static isFrontendRuntime(): boolean {
     const currentUrl = RuntimeLocationUtils.readCurrentUrl();
-    if (!currentUrl) {
+    if (!currentUrl || RuntimeLocationUtils.readDeclaredRuntime() === ApplicationUrlUtils.ADMIN_APP) {
       return false;
     }
 
@@ -49,6 +57,10 @@ export class RuntimeLocationUtils {
       return normalizedPath;
     }
     return normalizedPath === '/' ? normalizedBasePath : `${normalizedBasePath}${normalizedPath}`;
+  }
+
+  private static readDeclaredRuntime(): string {
+    return String(document.documentElement?.getAttribute(RuntimeLocationUtils.RUNTIME_ATTRIBUTE) || '').trim().toLowerCase();
   }
 
   private static readCurrentUrl(): URL | null {

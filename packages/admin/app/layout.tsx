@@ -7,6 +7,8 @@ import { AuthProvider } from '@/components/view/auth-context.client';
 import { NotificationProvider } from '@/components/view/notification-context.client';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
+import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
+import { RuntimeLocationUtils } from '@fromcode119/core/utils/runtime-location-utils';
 
 /**
  * Admin root layout. Document metadata is rendered as real `<title>`/`<meta>`/`<link>` tags rather than
@@ -16,6 +18,9 @@ import { AppEnv } from '@/lib/env';
  * Every admin page renders PER REQUEST (`connection()`): each carries a fresh script nonce for its
  * Content-Security-Policy (`AdminContentSecurityPolicy`), which a page prerendered at build time could
  * not — its scripts would carry none and the policy would refuse all of them.
+ *
+ * `<html>` names the console as the app that rendered it, so storefront code a plugin bundle carries
+ * (a tracker, a vendor tag) knows it is in the console on ANY host — not only an `admin.` one.
  */
 export class RootLayout {
   private static get faviconPath(): string {
@@ -29,7 +34,7 @@ export class RootLayout {
   static async render({ children }: Readonly<{ children: ReactNode }>): Promise<ReactNode> {
     await connection();
     return (
-      <html lang="en" suppressHydrationWarning>
+      <html lang="en" suppressHydrationWarning {...{ [RuntimeLocationUtils.RUNTIME_ATTRIBUTE]: ApplicationUrlUtils.ADMIN_APP }}>
         <head>
           <title>{`${AppEnv.APP_NAME} Admin`}</title>
           <meta
