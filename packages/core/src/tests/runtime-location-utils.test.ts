@@ -99,7 +99,7 @@ describe('RuntimeLocationUtils', () => {
   it('treats a document the console marked as the admin on any host', () => {
     withAdminUrl('https://admin.example.test', () => {
       vi.stubGlobal('document', { documentElement: { getAttribute: (name: string) => (name === RuntimeLocationUtils.RUNTIME_ATTRIBUTE ? 'admin' : null) } });
-      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/lms/courses/13' } });
+      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/library/13' } });
 
       expect(RuntimeLocationUtils.isAdminRuntime()).toBe(true);
       expect(RuntimeLocationUtils.isFrontendRuntime()).toBe(false);
@@ -109,7 +109,7 @@ describe('RuntimeLocationUtils', () => {
   it('keeps an unmarked storefront page out of the admin', () => {
     withAdminUrl('https://admin.example.test', () => {
       vi.stubGlobal('document', { documentElement: { getAttribute: () => null } });
-      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/lms/courses/13' } });
+      vi.stubGlobal('window', { location: { href: 'https://portal.example.test/library/13' } });
 
       expect(RuntimeLocationUtils.isAdminRuntime()).toBe(false);
     });
