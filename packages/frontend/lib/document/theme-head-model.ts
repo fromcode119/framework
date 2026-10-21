@@ -56,7 +56,8 @@ export class ThemeHeadModel {
    * second and a half after the page finishes loading. Chrome fetches a module preload at HIGH priority,
    * though, so the head links carry `fetchpriority="low"` — otherwise the theme entry (140 KB on a shop
    * theme) shares the first round trips with the fonts and the LCP image, and first paint waits on
-   * script nothing paints with. It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
+   * script nothing paints with. Only the App Router layout (`ThemeAssets`) emits them: the islands
+   * document boots on intent and emits none (see `DocumentHeadView`). It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
    * that one React 19 rewrites without `crossOrigin`, so the bundle downloads twice.
    */
   get modulePreloadLinks(): string[] {
