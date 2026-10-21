@@ -14,6 +14,20 @@ import type { IAuthLoginFormState } from '@react/auth/interfaces/auth-login-form
 export class AuthLoginForm extends AuthFormBase<IAuthFormProps, IAuthLoginFormState> {
   state: IAuthLoginFormState = { email: '', password: '', loading: false, error: '' };
 
+  /** English defaults for each `?signInLinkError=` code the emailed sign-in link comes back with; a locale pack translates `auth.login.linkErrors.<code>`. */
+  private static readonly LINK_ERRORS: Record<string, string> = {
+    invalid: 'This sign-in link is no longer valid. Use the newest link we emailed you, or ask for a new one from the page you signed up on.',
+    inactive: 'This account is not active.',
+    twoFactor: 'This account uses two-step verification. Please sign in with your email and password.',
+  };
+
+  componentDidMount(): void {
+    const code = this.browserState.readQueryParamFromWindow('signInLinkError');
+    if (!code) return;
+    const known = code in AuthLoginForm.LINK_ERRORS ? code : 'invalid';
+    this.setState({ error: this.tr(`auth.login.linkErrors.${known}`, AuthLoginForm.LINK_ERRORS[known]) });
+  }
+
   private async handleSubmit(event?: FormEvent): Promise<void> {
     event?.preventDefault();
     const email = this.state.email.trim();
