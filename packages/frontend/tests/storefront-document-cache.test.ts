@@ -4,7 +4,7 @@ import { StorefrontDocumentCache } from '@/lib/document/storefront-document-cach
 const params = (query = '') => new URLSearchParams(query);
 const frontend = (revision: string, extra: Record<string, unknown> = {}) => ({ contentRevision: revision, activeTheme: { slug: 't', version: '1' }, ...extra });
 const keyOf = (overrides: Partial<Parameters<typeof StorefrontDocumentCache.key>[0]> = {}) => StorefrontDocumentCache.key({
-  host: 'shop.example', pathname: '/', searchParams: params(), locale: '', encoding: 'br', frontend: frontend('a.0.1'), ...overrides,
+  origin: 'https://shop.example', pathname: '/', searchParams: params(), locale: '', encoding: 'br', frontend: frontend('a.0.1'), ...overrides,
 });
 const html = (text: string, status = 200, extra: Record<string, string> = {}) => new Response(text, { status, headers: { 'Content-Type': 'text/html; charset=utf-8', ...extra } });
 
@@ -38,7 +38,9 @@ describe('StorefrontDocumentCache: what makes an entry stale', () => {
     expect(keyOf({ pathname: '/blog' })).not.toBe(base);
     expect(keyOf({ locale: 'bg' })).not.toBe(base);
     expect(keyOf({ encoding: 'gzip' })).not.toBe(base);
-    expect(keyOf({ host: 'other.example' })).not.toBe(base);
+    expect(keyOf({ origin: 'https://other.example' })).not.toBe(base);
+    // The warm-up renders over plain http; its absolute URLs must never reach an https visitor.
+    expect(keyOf({ origin: 'http://shop.example' })).not.toBe(base);
   });
 
   it('has no key without a content revision, so an older api is never cached', () => {

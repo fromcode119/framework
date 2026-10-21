@@ -14,7 +14,10 @@ import type { IStoredDocument } from '@/lib/interfaces/stored-document.interface
  *    write that can reach a page: an order, a booking, a saved collection, a setting;
  *  - a fingerprint of that whole payload, so a theme or plugin update, a visibility change or a
  *    public setting starts new keys by itself;
- *  - the host, the path, the query, the locale cookie and the response encoding.
+ *  - the origin (scheme AND host), the path, the query, the locale cookie and the response encoding.
+ *    The document embeds absolute asset URLs built from the origin, so the deploy warm-up's plain-http
+ *    render of a host must never be the entry an https visitor is served — its `http://` image URLs
+ *    were the LCP image on https pages.
  *
  * WHO IS NEVER SERVED FROM IT: anyone holding a session or preview cookie, any request with a query
  * beyond the locale parameters (editor sessions, previews and plugin-specific links arrive that way),
@@ -47,12 +50,12 @@ export class StorefrontDocumentCache {
   }
 
   /** The key for one URL, as one site, in one language and encoding, at one revision. */
-  static key(args: { host: string; pathname: string; searchParams: URLSearchParams; locale: string; encoding: string; frontend: Record<string, unknown> | null }): string | null {
+  static key(args: { origin: string; pathname: string; searchParams: URLSearchParams; locale: string; encoding: string; frontend: Record<string, unknown> | null }): string | null {
     const revision = String(args.frontend?.contentRevision ?? '');
     if (!revision) return null;
     const fingerprint = createHash('sha1').update(JSON.stringify(args.frontend)).digest('base64url');
     const query = [...args.searchParams.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('&');
-    return [args.host.toLowerCase(), args.pathname, query, args.locale, args.encoding, revision, fingerprint].join('|');
+    return [args.origin.toLowerCase(), args.pathname, query, args.locale, args.encoding, revision, fingerprint].join('|');
   }
 
   static read(key: string): Response | null {
