@@ -44,8 +44,8 @@ export class ThemeSsrMarkup {
   /** Plugins whose slot/override components this render mounted (`PluginUsageTracker`), sorted. */
   readonly usedPlugins: string[];
 
-  /** Translation namespaces this render read (`ServerTranslator.namespaces`) — what the document inlines. */
-  readonly translationNamespaces: string[];
+  /** Translation key paths this render read (`ServerTranslator.paths`) — what the document inlines. */
+  readonly translationPaths: string[];
 
   private constructor(
     bodyHtml: string,
@@ -54,7 +54,7 @@ export class ThemeSsrMarkup {
     pluginStyles: ThemeSsrPluginStyle[],
     rendersContentSlot: boolean,
     usedPlugins: string[] = [],
-    translationNamespaces: string[] = [],
+    translationPaths: string[] = [],
   ) {
     this.bodyHtml = bodyHtml;
     this.styleGroups = styleGroups;
@@ -62,7 +62,7 @@ export class ThemeSsrMarkup {
     this.pluginStyles = pluginStyles;
     this.rendersContentSlot = rendersContentSlot;
     this.usedPlugins = usedPlugins;
-    this.translationNamespaces = translationNamespaces;
+    this.translationPaths = translationPaths;
   }
 
   private static readonly STYLE_TAG = /<style data-emotion="([^"]*)"[^>]*>([\s\S]*?)<\/style>/g;
@@ -73,7 +73,7 @@ export class ThemeSsrMarkup {
 
   private static readonly HREF_ATTRIBUTE = /href="([^"]*)"/;
 
-  static from(html: string, rendersContentSlot = false, usedPlugins: string[] = [], translationNamespaces: string[] = []): ThemeSsrMarkup {
+  static from(html: string, rendersContentSlot = false, usedPlugins: string[] = [], translationPaths: string[] = []): ThemeSsrMarkup {
     const groups: ThemeSsrStyleGroup[] = [];
     const byKey = new Map<string, number>();
 
@@ -114,7 +114,7 @@ export class ThemeSsrMarkup {
       return '';
     });
 
-    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot, usedPlugins, translationNamespaces);
+    return new ThemeSsrMarkup(bodyHtml, groups, imagePreloads, pluginStyles, rendersContentSlot, usedPlugins, translationPaths);
   }
 
   /** Reverses HTML attribute escaping (the five entities React emits for attribute values). */
@@ -142,7 +142,7 @@ export class ThemeSsrMarkup {
       pluginStyles: this.pluginStyles.map((style) => ({ key: style.key, css: style.css })),
       rendersContentSlot: this.rendersContentSlot,
       usedPlugins: [...this.usedPlugins],
-      translationNamespaces: [...this.translationNamespaces],
+      translationPaths: [...this.translationPaths],
     };
   }
 
@@ -154,7 +154,7 @@ export class ThemeSsrMarkup {
       (parts.pluginStyles || []).map((style) => new ThemeSsrPluginStyle(style.key, style.css)),
       Boolean(parts.rendersContentSlot),
       [...(parts.usedPlugins || [])],
-      [...(parts.translationNamespaces || [])],
+      [...(parts.translationPaths || [])],
     );
   }
 }

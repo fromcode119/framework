@@ -68,7 +68,7 @@ export class ServerPluginContext {
       translations: translator.effective,
       locale,
       t: translator.translate,
-      translationNamespaces: () => translator.namespaces,
+      translationPaths: () => translator.paths,
       setLocale: noop,
 
       refreshVersion: 0,
