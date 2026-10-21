@@ -86,6 +86,7 @@ export class FrontendRuntimeEntry {
       config: config.frontend,
       registrations,
       translations: config.translations,
+      translationsComplete: config.translationsComplete,
       locale: config.locale,
       pluginApiStore,
       events,

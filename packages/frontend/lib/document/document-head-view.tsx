@@ -76,7 +76,7 @@ export class DocumentHeadView {
         {theme.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={theme.versionedEntryUrl} /> : null}
         {/* The theme entry and its chunks, hinted at PARSE time — see `ThemeHeadModel.modulePreloadLinks`
             for why these are no longer created by a script after `load`. */}
-        {theme.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" />)}
+        {theme.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" fetchPriority="low" />)}
         {theme.injectorScript ? <script dangerouslySetInnerHTML={{ __html: theme.injectorScript }} /> : null}
       </>
     );

@@ -52,10 +52,11 @@ export class ThemeHeadModel {
    * did not finish mounting until about SIX SECONDS in. Everything the theme's own script does — the
    * scroll reveals, the accent word — waited that long with it.
    *
-   * `modulepreload` in the head is the right tool and does not need protecting from: the browser gives
-   * it a low priority by definition, so it does not compete with the LCP image or the stylesheet, and
-   * it starts the download at parse time instead of a second and a half after the page finishes
-   * loading. It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
+   * `modulepreload` in the head is the right tool: it starts the download at parse time instead of a
+   * second and a half after the page finishes loading. Chrome fetches a module preload at HIGH priority,
+   * though, so the head links carry `fetchpriority="low"` — otherwise the theme entry (140 KB on a shop
+   * theme) shares the first round trips with the fonts and the LCP image, and first paint waits on
+   * script nothing paints with. It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
    * that one React 19 rewrites without `crossOrigin`, so the bundle downloads twice.
    */
   get modulePreloadLinks(): string[] {

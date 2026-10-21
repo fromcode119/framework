@@ -96,7 +96,8 @@ export class ThemeWorldRenderer {
     // the server markup until a display-slot component registered — which, on a site running no plugin
     // that fills that slot, never happened, so the plugin's design never replaced the empty box.
     const rendersContentSlot = !(content as Record<string, unknown> | null)?.recipe && Boolean(contentSlot?.length);
-    const markup = ThemeSsrMarkup.from(html, rendersContentSlot, usedPlugins);
+    const translationPaths = (contextValue.translationPaths as () => string[])();
+    const markup = ThemeSsrMarkup.from(html, rendersContentSlot, usedPlugins, translationPaths);
     return markup.hasBody ? markup : null;
   }
 

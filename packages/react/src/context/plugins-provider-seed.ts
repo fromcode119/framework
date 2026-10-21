@@ -116,11 +116,16 @@ export class PluginsProviderSeed {
     config: Record<string, any>;
     registrations: PreBootRegistrationSeed;
     translations: Record<string, any>;
+    /**
+     * False when the document inlined only the namespaces its server render read: the provider then
+     * loads the full dictionary once mounted instead of treating the seed as this locale's whole set.
+     */
+    translationsComplete?: boolean;
     locale: string;
     pluginApiStore: PluginApiRegistryStore;
     events: Map<string, Set<(data: any) => void>>;
   }): PluginsProviderSeed {
-    const { config, registrations, translations, locale, pluginApiStore, events } = args;
+    const { config, registrations, translations, translationsComplete = true, locale, pluginApiStore, events } = args;
     const plugins: any[] = Array.isArray(config.plugins) ? config.plugins : [];
     const activeTheme = config.activeTheme ?? null;
     const seeded = registrations.withThemeVariables({ ...(activeTheme?.variables || {}), ...registrations.themeVariables });
@@ -144,7 +149,7 @@ export class PluginsProviderSeed {
       pluginApiStore,
       events,
       loadedConfigPaths: new Set([ContextProviderStateService.getFrontendConfigPath()]),
-      seededTranslationsLocale: normalizedLocale,
+      seededTranslationsLocale: translationsComplete ? normalizedLocale : '',
     });
   }
 

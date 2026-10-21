@@ -130,6 +130,32 @@ export class StorefrontDocumentRenderer {
     });
   }
 
+  /**
+   * The translations the document carries. Every active plugin's dictionary was ~480 KB of the HTML
+   * on a shop site — more than the page itself — so a server-rendered page inlines only the key
+   * paths its render read; hydration needs exactly those, and the provider loads the rest once
+   * mounted. Without a server render the browser paints from scratch, so it gets the whole set.
+   */
+  private static inlineTranslations(all: Record<string, unknown>, paths: string[] | undefined): { translations: Record<string, unknown>; translationsComplete: boolean } {
+    if (!paths) return { translations: all, translationsComplete: true };
+    const translations: Record<string, unknown> = {};
+    const taken: string[] = [];
+    // Sorted, so a subtree comes before the keys inside it and those keys are skipped — writing into
+    // a subtree copied by reference would edit the cached dictionary.
+    for (const path of [...paths].sort()) {
+      if (taken.some((prefix) => path.startsWith(`${prefix}.`))) continue;
+      const parts = path.split('.');
+      let source: unknown = all;
+      for (const part of parts) source = source && typeof source === 'object' ? (source as Record<string, unknown>)[part] : undefined;
+      if (source === undefined) continue;
+      let target = translations;
+      for (const part of parts.slice(0, -1)) target = (target[part] ??= {}) as Record<string, unknown>;
+      target[parts[parts.length - 1]] = source;
+      taken.push(path);
+    }
+    return { translations, translationsComplete: false };
+  }
+
   private static async document(args: {
     content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string;
@@ -169,7 +195,7 @@ export class StorefrontDocumentRenderer {
       pageKind: args.pageKind.value,
       notFoundPath: args.notFoundPath || '',
       frontend: frontend || {},
-      translations,
+      ...StorefrontDocumentRenderer.inlineTranslations(translations, markup?.translationPaths),
     };
     const html = DocumentMarkupRenderer.render(DocumentView.render, {
       lang: locale, page, site, theme, markup, headInjections, bodyStartInjections, schema, pageDocPrefetch, runtimeConfig,

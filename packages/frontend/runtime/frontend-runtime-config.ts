@@ -46,6 +46,9 @@ export class FrontendRuntimeConfig {
   /** The document locale's server translations (`/system/i18n?locale=`). */
   readonly translations: Record<string, unknown>;
 
+  /** False when `translations` holds only the namespaces the server render read. */
+  readonly translationsComplete: boolean;
+
   private constructor(raw: Record<string, unknown>) {
     this.apiUrl = CoercionUtils.toString(raw.apiUrl);
     this.locale = CoercionUtils.toString(raw.locale);
@@ -56,6 +59,7 @@ export class FrontendRuntimeConfig {
     this.notFoundPath = CoercionUtils.toString(raw.notFoundPath);
     this.frontend = raw.frontend && typeof raw.frontend === 'object' ? (raw.frontend as Record<string, any>) : {};
     this.translations = raw.translations && typeof raw.translations === 'object' ? (raw.translations as Record<string, unknown>) : {};
+    this.translationsComplete = CoercionUtils.toBoolean(raw.translationsComplete, true);
     this.usedPlugins = Array.isArray(raw.usedPlugins) ? raw.usedPlugins.map((slug) => CoercionUtils.toString(slug)).filter(Boolean) : [];
   }
 
