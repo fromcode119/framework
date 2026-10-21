@@ -10,6 +10,7 @@ import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-
 import type { IField } from '@core/interfaces/field.interface';
 import { SchemaTenantIsolationService } from '@core/database/schema-tenant-isolation-service';
 import { DeclaredSchemaReconciler } from '@core/database/declared-schema-reconciler';
+import { DeclaredIndexEnsurer } from '@core/database/declared-index-ensurer';
 
 export class SchemaManager {
   private logger = new Logger({ namespace: 'schema-manager' });
@@ -18,11 +19,13 @@ export class SchemaManager {
 
   private readonly tenantIsolation: SchemaTenantIsolationService;
   private readonly declared: DeclaredSchemaReconciler;
+  private readonly indexes: DeclaredIndexEnsurer;
 
   constructor(private db: IDatabaseManager) {
     this.reconciliation = new SchemaReconciliationService(db);
     this.tenantIsolation = new SchemaTenantIsolationService(db, this.logger);
     this.declared = new DeclaredSchemaReconciler(db, this.logger);
+    this.indexes = new DeclaredIndexEnsurer(db, this.logger);
   }
 
   async syncCollection(collection: ICollection): Promise<void> {
@@ -48,8 +51,9 @@ export class SchemaManager {
         await this.updateTable(plan);
       }
 
-      // Before isolation: the sweep scopes a declared unique index per tenant under its own name.
-      await this.declared.ensureDeclaredIndexes(plan);
+      // Before isolation: a deployment that gains its first tenant later has the sweep scope a declared
+      // unique index per tenant under its own name; one that has tenants now is created scoped.
+      await this.indexes.ensure(plan, { system: collection.system === true });
 
       // Bring the table under tenant isolation. Runs on every sync, not only on creation, so a
       // table that predates tenancy is scoped the first time it is seen — and the statements are

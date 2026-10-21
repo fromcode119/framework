@@ -12,6 +12,7 @@ export type { IDynamicTableOptions } from '@database/interfaces/dynamic-table-op
 // Core types and interfaces
 export type { ISchemaField } from '@database/interfaces/schema-field.interface';
 export type { IIndexColumn } from '@database/interfaces/index-column.interface';
+export type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 export type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 export type { IJsonRows } from '@database/interfaces/json-rows.interface';
 export type { IJoinClause } from '@database/interfaces/join-clause.interface';

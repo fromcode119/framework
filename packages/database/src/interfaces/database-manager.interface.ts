@@ -2,6 +2,7 @@ import type { IRowProtection } from '@database/interfaces/row-protection.interfa
 import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 import type { DatabaseRolePlan } from '@database/roles/database-role-plan';
 import type { DatabaseRoleOutcome } from '@database/roles/database-role-outcome';
 import type { SchemaReconcileOutcome } from '@database/schema-reconcile-outcome';
@@ -183,7 +184,7 @@ export interface IDatabaseManager {
    * The schema statements a MIGRATION needs, built by the framework from validated identifiers so a
    * plugin migration never hand-writes SQL on the owner connection. See `PortableSchemaOperations`.
    */
-  createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void>;
+  createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean; where?: IIndexCondition[] }): Promise<void>;
   /**
    * Renames `from` to `to` with its rows. Where the engine names a table's own objects after it (Postgres:
    * indexes, sequences, constraints, row-level policies), those starting with `from` are renamed to match,

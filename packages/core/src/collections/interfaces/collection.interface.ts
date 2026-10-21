@@ -1,9 +1,11 @@
+import type { IIndexWhere } from '@core/collections/interfaces/index-where.interface';
 import { CollectionKind } from '@core/enums/collection-kind.enum';
 import type { IAccess } from '@core/interfaces/access.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 import type { ICollectionProtection } from '@core/collections/interfaces/collection-protection.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
+
 
 export interface ICollection {
   slug: string;
@@ -36,10 +38,23 @@ export interface ICollection {
   /** Rows the database keeps as written. See {@link ICollectionProtection}. */
   protect?: ICollectionProtection;
   fields: IField[];
+  /**
+   * Indexes the platform CREATES on this collection's own table (idempotent, by name) — no
+   * `database:schema` capability is involved, a plugin only ever indexes its own collections.
+   *
+   * - `fields`: one or more field names, in index order (a composite index is just several).
+   * - `unique: true`: enforced PER SITE — `tenant_id` is put first on a multi-site deployment, so two
+   *   sites may hold the same key. If the table already holds duplicates the index is skipped, the
+   *   conflicting key groups are logged, and no row is touched.
+   * - `where`: makes it a PARTIAL index over the rows that match every entry. A value is a scalar
+   *   (equals), `null` (IS NULL), or `{ not: scalar | null }`. Not available on MySQL.
+   * - `name`: optional; defaults to `<table>_<columns>_idx`.
+   */
   indexes?: {
     name?: string;
     fields: string[];
     unique?: boolean;
+    where?: IIndexWhere;
   }[];
   inputAliases?: {
     field: string;

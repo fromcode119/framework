@@ -97,6 +97,15 @@ export interface ITenantIsolation {
    */
   distinctOwners(table: string): Promise<string[]>;
 
+  /**
+   * Runs `read` while the owner can see EVERY site's rows of `table`, then puts isolation back.
+   *
+   * For the one question that is about the table rather than any site — which rows would break a
+   * unique index being built over it. FORCE is lifted for the duration and restored whatever happens;
+   * the runtime role stays bound by its policy throughout.
+   */
+  readAsOwner<T>(table: string, read: () => Promise<T>): Promise<T>;
+
   /** Rows with no owner — invisible to every tenant, so they must be said out loud. */
   countUnassigned(table: string): Promise<number>;
 

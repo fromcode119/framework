@@ -1,5 +1,6 @@
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import Database from 'better-sqlite3';
 import { Sql } from '@database/sql/sql';
@@ -273,7 +274,7 @@ export class SqliteDatabaseManager extends BaseDialect implements IDatabaseManag
 
   /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
   private readonly portableSchema = new PortableSchemaOperations((statement) => this.execute(statement));
-  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean; where?: IIndexCondition[] }): Promise<void> {
     return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
   }
   async renameTable(from: string, to: string): Promise<void> { return this.portableSchema.renameTable(from, to); }

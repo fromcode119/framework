@@ -1,6 +1,7 @@
 import { PostgresTableRename } from '@database/dialects/postgres/postgres-table-rename';
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 import type { ITenantScopeLease } from '@database/interfaces/tenant-scope-lease.interface';
 import { TenantClientParking } from '@database/tenant/tenant-client-parking';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
@@ -232,7 +233,7 @@ export abstract class PostgresCrudOperations extends BaseDialect {
 
   /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
   private readonly portableSchema = new PortableSchemaOperations((statement) => this.queryRaw(statement), (quotedColumn, key) => `${quotedColumn}->'${key}'`);
-  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean; where?: IIndexCondition[] }): Promise<void> {
     return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
   }
   /** The table, then every index, sequence, constraint and policy of it named after it — see PostgresTableRename. */

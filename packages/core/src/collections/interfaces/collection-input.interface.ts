@@ -1,4 +1,5 @@
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { IIndexWhere } from '@core/collections/interfaces/index-where.interface';
 import type { IFieldInput } from '@core/interfaces/field-input.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
 
@@ -25,6 +26,7 @@ export interface ICollectionInput extends Omit<
     readonly name?: string;
     readonly fields: readonly string[];
     readonly unique?: boolean;
+    readonly where?: IIndexWhere;
   }[];
 
   readonly inputAliases?: readonly {

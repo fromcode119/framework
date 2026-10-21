@@ -1,5 +1,6 @@
 import { PortableSchemaOperations } from '@database/dialects/portable-schema-operations';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 import type { IAggregateOptions } from '@database/interfaces/aggregate-options.interface';
 import type { ISchemaCollection } from '@database/interfaces/schema-collection.interface';
 import type { ISchemaField } from '@database/interfaces/schema-field.interface';
@@ -163,7 +164,10 @@ export abstract class MysqlCrudOperations extends BaseDialect {
 
   /** Validated schema statements a migration would otherwise hand-write — see PortableSchemaOperations. */
   private readonly portableSchema = new PortableSchemaOperations((statement) => this.execute(statement));
-  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean }): Promise<void> {
+  async createIndexIfMissing(table: string, indexName: string, columns: Array<string | IIndexColumn>, options?: { unique?: boolean; where?: IIndexCondition[] }): Promise<void> {
+    if (options?.where?.length) {
+      throw new Error(`MySQL has no partial indexes; "${indexName}" on ${table} declares a where condition.`);
+    }
     return this.portableSchema.createIndexIfMissing(table, indexName, columns, options);
   }
   async renameTable(from: string, to: string): Promise<void> { return this.portableSchema.renameTable(from, to); }
