@@ -105,6 +105,14 @@ export class MediaManager {
       '.gif': 'image/gif',
       '.svg': 'image/svg+xml',
       '.pdf': 'application/pdf',
+      '.doc': 'application/msword',
+      '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      '.xls': 'application/vnd.ms-excel',
+      '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      '.ppt': 'application/vnd.ms-powerpoint',
+      '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      '.odt': 'application/vnd.oasis.opendocument.text',
+      '.ods': 'application/vnd.oasis.opendocument.spreadsheet',
       '.mp4': 'video/mp4'
     };
     let payload = file;
@@ -117,7 +125,7 @@ export class MediaManager {
     // extension alone, so without this check arbitrary content could be stored
     // and served as an image.
     if (MediaMagicByteValidator.canValidate(ext) && !MediaMagicByteValidator.matchesExtension(ext, file)) {
-      throw new Error(`Rejected upload "${filename}": file content does not match the ${ext} image format`);
+      throw new Error(`Rejected upload "${filename}": file content does not match the ${ext} format`);
     }
 
     // SVG is an active document format (stored XSS vector) — sanitize before storage.

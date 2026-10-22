@@ -18,6 +18,7 @@ export interface IPluginContextMedia {
    * Resolves to false when the id is not a file of this site. Needs `content`.
    */
   describe(id: any, input: { alt: string }): Promise<boolean>;
+  remove(id: any): Promise<boolean>;
   findById(id: any): Promise<Record<string, any> | null>;
   /** Resolve many ids in one statement, keyed by id — the batch form of `findById`. */
   findByIds(ids: any[]): Promise<Map<string, Record<string, any>>>;
