@@ -90,6 +90,7 @@ const sharedAlias = {
   '@fromcode119/auth': path.resolve(frameworkRoot, 'packages/auth/src/index.ts'),
   // Same stale-dist rule: core imports the queue, and both must be exercised from source.
   '@fromcode119/queue': path.resolve(frameworkRoot, 'packages/queue/src/index.ts'),
+  '@fromcode119/media': path.resolve(frameworkRoot, 'packages/media/src/index.ts'),
   // mcp-server BEFORE mcp: a Vite string alias matches by PREFIX, so the bare mcp entry would
   // otherwise swallow '@fromcode119/mcp-server' ids. Both point at SOURCE (stale-dist rule above).
   '@fromcode119/mcp-server': path.resolve(frameworkRoot, 'packages/mcp-server/src/index.ts'),

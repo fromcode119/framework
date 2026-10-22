@@ -142,11 +142,15 @@ export class MediaIngestService {
    * pairing, so the name follows the content instead. Anything else keeps its name, and is checked
    * against it as before.
    */
+  private static readonly RASTER_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
+
   static nameForContent(requested: string, bytes: Buffer): string {
     const dot = requested.lastIndexOf('.');
     if (dot <= 0) return requested;
     const ext = requested.slice(dot).toLowerCase();
-    if (!MediaMagicByteValidator.canValidate(ext) || MediaMagicByteValidator.matchesExtension(ext, bytes)) return requested;
+    // Only a raster image is renamed to the raster format it really is. A document whose bytes are an
+    // image is not "a misnamed image" — it is refused by the upload's content check.
+    if (!MediaIngestService.RASTER_EXTENSIONS.includes(ext) || MediaMagicByteValidator.matchesExtension(ext, bytes)) return requested;
     const actual = ['.jpg', '.png', '.gif', '.webp'].find((candidate) => MediaMagicByteValidator.matchesExtension(candidate, bytes));
     return actual ? `${requested.slice(0, dot)}${actual}` : requested;
   }

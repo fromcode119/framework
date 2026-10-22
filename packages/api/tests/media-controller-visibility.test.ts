@@ -83,7 +83,7 @@ describe('media-controller visibility', () => {
     };
 
     const req = (visibility?: string) => ({
-      file: { buffer: Buffer.from('x'), originalname: 'f.pdf' },
+      file: { buffer: Buffer.from('%PDF-1.7\n%âãÏÓ\n', 'latin1'), originalname: 'f.pdf' },
       body: visibility === undefined ? {} : { visibility },
     }) as any;
 
