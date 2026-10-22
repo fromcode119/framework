@@ -1,5 +1,6 @@
 import { SortDirection } from '@database/enums/sort-direction.enum';
 import type { IIndexColumn } from '@database/interfaces/index-column.interface';
+import type { IIndexCondition } from '@database/interfaces/index-condition.interface';
 
 /**
  * The schema statements a migration used to hand-write through `execute`, as validated operations.
@@ -23,7 +24,7 @@ export class PortableSchemaOperations {
     table: string,
     indexName: string,
     columns: Array<string | IIndexColumn>,
-    options?: { unique?: boolean },
+    options?: { unique?: boolean; where?: IIndexCondition[] },
   ): Promise<void> {
     const list = columns.map((column) => {
       if (typeof column === 'string') return PortableSchemaOperations.quote(column, 'column');
@@ -34,8 +35,29 @@ export class PortableSchemaOperations {
     const unique = options?.unique ? 'UNIQUE ' : '';
     await this.run(
       `CREATE ${unique}INDEX IF NOT EXISTS ${PortableSchemaOperations.quote(indexName, 'index')} `
-      + `ON ${PortableSchemaOperations.quote(table, 'table')} (${list.join(', ')})`,
+      + `ON ${PortableSchemaOperations.quote(table, 'table')} (${list.join(', ')})`
+      + PortableSchemaOperations.partialClause(options?.where),
     );
+  }
+
+  /** ` WHERE a = 'x' AND b IS NULL` — identifiers checked, literals escaped, nothing interpolated as given. */
+  private static partialClause(conditions?: IIndexCondition[]): string {
+    if (!conditions || conditions.length === 0) return '';
+    const parts = conditions.map((condition) => {
+      const column = PortableSchemaOperations.quote(condition.column, 'column');
+      if (condition.value === null) return `${column} IS ${condition.negate ? 'NOT ' : ''}NULL`;
+      return `${column} ${condition.negate ? '<>' : '='} ${PortableSchemaOperations.literal(condition.value)}`;
+    });
+    return ` WHERE ${parts.join(' AND ')}`;
+  }
+
+  private static literal(value: string | number | boolean): string {
+    if (typeof value === 'boolean') return value ? 'TRUE' : 'FALSE';
+    if (typeof value === 'number') {
+      if (!Number.isFinite(value)) throw new Error(`Refusing a non-finite number in an index condition: ${value}`);
+      return String(value);
+    }
+    return `'${String(value).replace(/'/g, "''")}'`;
   }
 
   /** Renames a table. The engine carries its rows, keys and indexes along; their own names stay as they were. */

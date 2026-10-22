@@ -2,4 +2,6 @@
 export interface ITenantBlindUniqueRule {
   name: string;
   columns: string[];
+  /** A partial index's WHERE, as the catalog renders it. Absent for a constraint or a whole-table index. */
+  predicate?: string;
 }

@@ -1,9 +1,14 @@
 import { createHash } from 'crypto';
+import type { IIndexCondition } from '@fromcode119/database';
+import type { IDeclaredIndex } from '@core/database/interfaces/declared-index.interface';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
+import type { IIndexWhere } from '@core/collections/interfaces/index-where.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-plan.interface';
 
 export class EntitySchemaPlanService {
+  private static readonly IDENTIFIER_LIMIT = 63;
+
   buildPlan(collection: ICollection, exists: boolean, existingColumns: string[]): IEntitySchemaPlan {
     const existing = new Set(existingColumns.map((column) => column.toLowerCase()));
 
@@ -40,7 +45,7 @@ export class EntitySchemaPlanService {
       undeclaredColumns: exists
         ? existingColumns.filter((column) => !this.isAccountedFor(column, collection))
         : [],
-      unsupportedIndexes: this.resolveUnsupportedIndexes(collection),
+      declaredIndexes: this.resolveDeclaredIndexes(collection, collection.slug),
     };
   }
 
@@ -60,6 +65,7 @@ export class EntitySchemaPlanService {
         name: index.name || '',
         fields: [...index.fields].sort(),
         unique: Boolean(index.unique),
+        ...(index.where ? { where: index.where } : {}),
       })),
     };
 
@@ -98,10 +104,48 @@ export class EntitySchemaPlanService {
     return (collection.fields || []).filter((field) => field.name !== 'id');
   }
 
-  private resolveUnsupportedIndexes(collection: ICollection): string[] {
+  /**
+   * The indexes the collection declares, as the database will name them: snake_case columns, and a
+   * name that is unique across the schema (Postgres index names are schema-wide, so an unnamed index
+   * is prefixed with its TABLE, never a bare field list).
+   */
+  private resolveDeclaredIndexes(collection: ICollection, tableName: string): IDeclaredIndex[] {
     return (collection.indexes || [])
       .filter((index) => index.fields.length > 0)
-      .map((index) => index.name || `${collection.slug}_${index.fields.join('_')}_idx`);
+      .map((index) => {
+        const columns = index.fields.map((field) => this.toColumnName(field));
+        const where = this.resolveIndexConditions(index.where);
+        const suffix = where.length > 0 ? `_where_${where.map((condition) => condition.column).join('_')}` : '';
+        return {
+          name: EntitySchemaPlanService.fitIdentifier(index.name || `${tableName}_${columns.join('_')}${suffix}_idx`),
+          columns,
+          unique: Boolean(index.unique),
+          ...(where.length > 0 ? { where } : {}),
+        };
+      });
+  }
+
+  /** `{ status: 'active', endedAt: null, kind: { not: 'x' } }` as conditions on snake_case columns. */
+  private resolveIndexConditions(where: IIndexWhere | undefined): IIndexCondition[] {
+    return Object.entries(where || {}).map(([field, value]) => {
+      const negated = value !== null && typeof value === 'object';
+      return {
+        column: this.toColumnName(field),
+        value: negated ? (value as { not: IIndexCondition['value'] }).not : (value as IIndexCondition['value']),
+        ...(negated ? { negate: true } : {}),
+      };
+    });
+  }
+
+  /**
+   * Postgres cuts an identifier at 63 bytes and does so silently, so two long names can collapse into
+   * one and the second index is then skipped as "already there". Over the limit, keep the head and
+   * add a hash of the whole name: still deterministic, so the next sync finds the same index.
+   */
+  private static fitIdentifier(name: string): string {
+    if (name.length <= EntitySchemaPlanService.IDENTIFIER_LIMIT) return name;
+    const digest = createHash('sha1').update(name).digest('hex').slice(0, 8);
+    return `${name.slice(0, EntitySchemaPlanService.IDENTIFIER_LIMIT - 9)}_${digest}`;
   }
 
   private stableStringify(value: unknown): string {

@@ -24,6 +24,7 @@ import { I18nKeyResolutionCommand } from './i18n-key-resolution-command';
 import { IgnoredSourceCommand } from './ignored-source-command';
 import { ImportsCommand } from './imports-command';
 import { JsonFieldControlCommand } from './json-field-control-command';
+import { CollectionReadAccessCommand } from './collection-read-access-command';
 import { RenderedByTargetCommand } from './rendered-by-target-command';
 import { PluginScriptCommand } from './plugin-script-command';
 import { LooseScriptCommand } from './loose-script-command';
@@ -85,6 +86,7 @@ export class GuardRegistry {
     ['ui-key-resolution', UiKeyResolutionCommand],
     ['ignored-sources', IgnoredSourceCommand],
     ['json-field-controls', JsonFieldControlCommand],
+    ['collection-read-access', CollectionReadAccessCommand],
     ['rendered-by-targets', RenderedByTargetCommand],
     ['plugin-scripts', PluginScriptCommand],
     ['loose-scripts', LooseScriptCommand],

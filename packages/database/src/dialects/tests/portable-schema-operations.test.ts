@@ -63,4 +63,32 @@ describe('PortableSchemaOperations', () => {
     await expect(ops.createIndexIfMissing('fcp_shop_items', 'idx', [])).rejects.toThrow(/no columns/);
     expect(issued).toEqual([]);
   });
+
+  it('renders a partial index predicate from checked identifiers and escaped literals', async () => {
+    const issued: string[] = [];
+    const ops = new PortableSchemaOperations(async (statement) => { issued.push(statement); });
+    await ops.createIndexIfMissing('fcp_a_visits', 'idx_open', ['visitor_hash'], {
+      unique: true,
+      where: [
+        { column: 'ended_at', value: null },
+        { column: 'kind', value: "o'brien", negate: true },
+        { column: 'tries', value: 3 },
+        { column: 'live', value: true },
+        { column: 'closed_by', value: null, negate: true },
+      ],
+    });
+    expect(issued).toEqual([
+      'CREATE UNIQUE INDEX IF NOT EXISTS "idx_open" ON "fcp_a_visits" ("visitor_hash") '
+      + 'WHERE "ended_at" IS NULL AND "kind" <> \'o\'\'brien\' AND "tries" = 3 AND "live" = TRUE AND "closed_by" IS NOT NULL',
+    ]);
+    await expect(ops.createIndexIfMissing('t', 'i', ['a'], { where: [{ column: 'a"; DROP', value: 1 }] })).rejects.toThrow(/unsafe SQL identifier/);
+    await expect(ops.createIndexIfMissing('t', 'i', ['a'], { where: [{ column: 'a', value: Number.NaN }] })).rejects.toThrow(/non-finite/);
+  });
+
+  it('builds a partial unique index on SQLite that enforces only the rows it covers', async () => {
+    const db = await sqlite();
+    await db.createIndexIfMissing('fcp_shop_items', 'idx_items_partial', ['new_key'], { unique: true, where: [{ column: 'old_key', value: null }] });
+    await db.execute(`INSERT INTO fcp_shop_items (new_key, old_key) VALUES ('k', 'x'), ('k', 'y'), ('z', NULL)`);
+    await expect(db.execute(`INSERT INTO fcp_shop_items (new_key, old_key) VALUES ('z', NULL)`)).rejects.toThrow(/UNIQUE/i);
+  });
 });

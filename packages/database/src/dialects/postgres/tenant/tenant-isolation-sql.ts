@@ -156,9 +156,10 @@ export class TenantIsolationSql {
   static tenantBlindUniqueIndexesStatement(): string {
     return 'SELECT i.relname AS "name", '
       + '(SELECT array_agg(a.attname ORDER BY k.ord) FROM unnest(x.indkey::int2[]) WITH ORDINALITY k(attnum, ord) '
-      + ' JOIN pg_attribute a ON a.attrelid = x.indrelid AND a.attnum = k.attnum) AS "columns" '
+      + ' JOIN pg_attribute a ON a.attrelid = x.indrelid AND a.attnum = k.attnum) AS "columns", '
+      + 'pg_get_expr(x.indpred, x.indrelid) AS "predicate" '
       + 'FROM pg_index x JOIN pg_class i ON i.oid = x.indexrelid '
-      + 'WHERE x.indrelid = quote_ident($1)::regclass AND x.indisunique AND NOT x.indisprimary AND x.indexprs IS NULL AND x.indpred IS NULL '
+      + 'WHERE x.indrelid = quote_ident($1)::regclass AND x.indisunique AND NOT x.indisprimary AND x.indexprs IS NULL '
       + 'AND NOT EXISTS (SELECT 1 FROM pg_constraint c WHERE c.conindid = x.indexrelid) '
       + 'AND NOT EXISTS (SELECT 1 FROM unnest(x.indkey::int2[]) k JOIN pg_attribute a ON a.attrelid = x.indrelid AND a.attnum = k WHERE a.attname = $2)';
   }
@@ -176,11 +177,17 @@ export class TenantIsolationSql {
     return `ALTER TABLE "${name}" DROP CONSTRAINT "${con}", ADD CONSTRAINT "${con}" UNIQUE (${cols})`;
   }
 
-  static scopeUniqueIndexStatements(table: string, index: string, columns: string[]): string[] {
+  /**
+   * A stand-alone unique index, rewritten to lead with the tenant column — the same shape a declared
+   * unique index is created in. A PARTIAL index keeps its predicate (`predicate` is the catalog's own
+   * rendering of it, never caller text), so the rows it covers do not change.
+   */
+  static scopeUniqueIndexStatements(table: string, index: string, columns: string[], predicate?: string): string[] {
     const name = SqlIdentifier.assert(table, 'TenantIsolationSql');
     const idx = SqlIdentifier.assert(index, 'TenantIsolationSql');
-    const cols = [...columns, TenantColumn.NAME].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
-    return [`DROP INDEX IF EXISTS "${idx}"`, `CREATE UNIQUE INDEX "${idx}" ON "${name}" (${cols})`];
+    const cols = [TenantColumn.NAME, ...columns].map((column) => `"${SqlIdentifier.assert(column, 'TenantIsolationSql')}"`).join(', ');
+    const where = predicate ? ` WHERE ${predicate}` : '';
+    return [`DROP INDEX IF EXISTS "${idx}"`, `CREATE UNIQUE INDEX "${idx}" ON "${name}" (${cols})${where}`];
   }
 
   /**

@@ -197,17 +197,6 @@ export class DeclaredSchemaReconciler {
     }
   }
 
-  warnUnsupportedIndexes(plan: IEntitySchemaPlan): void {
-    if (plan.unsupportedIndexes.length === 0) {
-      return;
-    }
-
-    this.logger.warn(
-      `Collection "${plan.tableName}" declares indexes that are tracked in metadata but not auto-created yet: ` +
-      plan.unsupportedIndexes.join(', ')
-    );
-  }
-
   /**
    * The fingerprint is a PLATFORM fact, so it is written as the platform's row.
    *

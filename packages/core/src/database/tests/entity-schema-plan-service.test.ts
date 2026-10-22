@@ -44,7 +44,7 @@ describe('EntitySchemaPlanService', () => {
     const service = new EntitySchemaPlanService();
     const plan = service.buildPlan(collection, false, []);
 
-    expect(plan.unsupportedIndexes).toEqual(['plugin_products_title_idx']);
+    expect(plan.declaredIndexes).toEqual([{ name: 'plugin_products_title_idx', columns: ['title'], unique: true }]);
   });
   /**
    * A field declared `unique` after its table already existed produced no DDL at all — the plan

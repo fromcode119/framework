@@ -75,7 +75,7 @@ export class PostgresTenantIsolation implements ITenantIsolation {
       [table, TenantColumn.NAME],
     );
     for (const rule of PostgresTenantIsolation.rulesOf(indexes)) {
-      await this.runAll(TenantIsolationSql.scopeUniqueIndexStatements(table, rule.name, rule.columns));
+      await this.runAll(TenantIsolationSql.scopeUniqueIndexStatements(table, rule.name, rule.columns, rule.predicate));
       scoped.indexes.push(rule);
     }
 
@@ -124,6 +124,16 @@ export class PostgresTenantIsolation implements ITenantIsolation {
     } finally {
       // Restored whatever happened. Leaving FORCE off would let the OWNER read across sites from then
       // on, which is a different and worse fault than the one being checked for.
+      await this.run(restore);
+    }
+  }
+
+  async readAsOwner<T>(table: string, read: () => Promise<T>): Promise<T> {
+    const { relax, restore } = TenantOwnershipSql.distinctOwnerStatements(table);
+    await this.run(relax);
+    try {
+      return await read();
+    } finally {
       await this.run(restore);
     }
   }
@@ -185,7 +195,11 @@ export class PostgresTenantIsolation implements ITenantIsolation {
   /** Rows from the catalog, minus the ones whose column list came back empty. */
   private static rulesOf(rows: Array<Record<string, unknown>>): ITenantBlindUniqueRule[] {
     return (rows ?? [])
-      .map((row) => ({ name: String(row?.name ?? ''), columns: PostgresTenantIsolation.columnList(row?.columns) }))
+      .map((row) => ({
+        name: String(row?.name ?? ''),
+        columns: PostgresTenantIsolation.columnList(row?.columns),
+        ...(row?.predicate ? { predicate: String(row.predicate) } : {}),
+      }))
       .filter((rule) => rule.name !== '' && rule.columns.length > 0);
   }
 

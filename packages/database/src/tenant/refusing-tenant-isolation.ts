@@ -62,6 +62,10 @@ export class RefusingTenantIsolation implements ITenantIsolation {
     return this.refuse('count the sites owning rows in', table);
   }
 
+  async readAsOwner<T>(table: string): Promise<T> {
+    return this.refuse('read as the owner', table);
+  }
+
   async countUnassigned(table: string): Promise<number> {
     return this.refuse('count unassigned rows in', table);
   }

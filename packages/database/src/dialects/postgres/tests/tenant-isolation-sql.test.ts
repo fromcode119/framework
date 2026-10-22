@@ -112,13 +112,20 @@ describe('TenantIsolationSql — taking a tenant-less deployment back out of iso
     expect(statement).not.toContain('_tenant_isolation');
   });
 
-  it('rewrites a tenant-blind UNIQUE constraint as (cols…, tenant_id), keeping default NULL semantics', () => {
+  it('rewrites a tenant-blind UNIQUE constraint as (cols…, tenant_id) and a unique index as (tenant_id, cols…), keeping default NULL semantics', () => {
     expect(TenantIsolationSql.scopeUniqueConstraintStatement('fcp_zeta_pages', 'fcp_zeta_pages_slug_key', ['slug']))
       .toBe('ALTER TABLE "fcp_zeta_pages" DROP CONSTRAINT "fcp_zeta_pages_slug_key", ADD CONSTRAINT "fcp_zeta_pages_slug_key" UNIQUE ("slug", "tenant_id")');
     expect(TenantIsolationSql.scopeUniqueIndexStatements('fcp_eta_meta', 'idx_fcp_eta_meta_content_unique', ['content_type', 'content_id'])).toEqual([
       'DROP INDEX IF EXISTS "idx_fcp_eta_meta_content_unique"',
-      'CREATE UNIQUE INDEX "idx_fcp_eta_meta_content_unique" ON "fcp_eta_meta" ("content_type", "content_id", "tenant_id")',
+      'CREATE UNIQUE INDEX "idx_fcp_eta_meta_content_unique" ON "fcp_eta_meta" ("tenant_id", "content_type", "content_id")',
     ]);
+    // A partial index keeps the rows it covers: the catalog's own predicate rides along.
+    expect(TenantIsolationSql.scopeUniqueIndexStatements('fcp_eta_meta', 'idx_open', ['visitor_hash'], '(ended_at IS NULL)')).toEqual([
+      'DROP INDEX IF EXISTS "idx_open"',
+      'CREATE UNIQUE INDEX "idx_open" ON "fcp_eta_meta" ("tenant_id", "visitor_hash") WHERE (ended_at IS NULL)',
+    ]);
+    expect(TenantIsolationSql.tenantBlindUniqueIndexesStatement()).toContain('pg_get_expr(x.indpred');
+    expect(TenantIsolationSql.tenantBlindUniqueIndexesStatement()).not.toContain('indpred IS NULL');
   });
 
   it('finds tenant-blind uniques by catalog, never by a hand-kept list, and skips what a FOREIGN KEY depends on', () => {
