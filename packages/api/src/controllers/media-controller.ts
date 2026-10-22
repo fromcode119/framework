@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { BaseController, PluginManager, Logger, MediaVisibility, SystemConstants } from '@fromcode119/core';
+import { BaseController, PluginManager, Logger, MediaFileRemoval, MediaVisibility, SystemConstants } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { IDatabaseManager, Schema } from '@fromcode119/database';
 import { ApiUrlUtils } from '@api/utils/url';
@@ -39,30 +39,35 @@ export class MediaController extends BaseController {
   private async planVisibilityChange(
     mediaId: number,
     target: MediaVisibility,
-  ): Promise<{ patch: Record<string, any>; original: { path: string; space: MediaVisibility } | null; error?: string; status: number }> {
+  ): Promise<{ patch: Record<string, any>; leftovers: Array<{ path: string; space: MediaVisibility }>; error?: string; status: number }> {
     const row = await this.db.findOne(SystemConstants.TABLE.MEDIA, { id: mediaId });
-    if (!row) return { patch: {}, original: null, error: 'Media not found', status: 404 };
+    if (!row) return { patch: {}, leftovers: [], error: 'Media not found', status: 404 };
 
-    const current = MediaVisibility.resolve(row.visibility ?? row.visibility);
-    if (current === target) return { patch: {}, original: null, status: 200 };
+    const current = MediaVisibility.resolve(row.visibility);
+    if (current === target) return { patch: {}, leftovers: [], status: 200 };
 
     // `has(space)` rather than a `supportsPrivate` flag: spaces are an open set, so asking whether the
     // one we need exists scales to a third without another boolean.
     if (!this.mediaManager.has(target.value)) {
       // Refused rather than recorded: marking a file private while it stays in the public tree is the
       // exact lie this feature exists to prevent.
-      return { patch: {}, original: null, error: 'Private storage is not configured on this install', status: 400 };
+      return { patch: {}, leftovers: [], error: 'Private storage is not configured on this install', status: 400 };
     }
 
     const currentPath = String(row.path || '');
     const filename = String(row.original_name || row.originalName || row.filename || 'file');
     const newPath = await this.transfers.copyToSpace(currentPath, current, target, filename);
 
-    return {
-      patch: { visibility: target.value, path: newPath, filename: newPath },
-      original: { path: currentPath, space: current },
-      status: 200,
-    };
+    const patch: Record<string, any> = { visibility: target.value, path: newPath, filename: newPath };
+    const leftovers = [{ path: currentPath, space: current }];
+    // The webp variant always lives in the PUBLIC space. Moving only the original left a full-size copy
+    // of a "private" image reachable by url — so going private drops the variant with it.
+    const variant = String(row.optimized_path || '');
+    if (target.isPrivate && variant) {
+      Object.assign(patch, { optimizedPath: null, optimizedSize: null, optimizedWidth: null, optimizedHeight: null });
+      leftovers.push({ path: variant, space: MediaVisibility.PUBLIC });
+    }
+    return { patch, leftovers, status: 200 };
   }
 
   /**
@@ -117,20 +122,20 @@ export class MediaController extends BaseController {
       // The original location is carried in a LOCAL, never on `this` — one controller instance serves
       // every request, so per-request state on the object would let two concurrent updates delete each
       // other's files.
-      let original: { path: string; space: MediaVisibility } | null = null;
+      let leftovers: Array<{ path: string; space: MediaVisibility }> = [];
 
       if (visibility !== undefined) {
         const move = await this.planVisibilityChange(Number(id), MediaVisibility.resolve(visibility));
         if (move.error) return res.status(move.status).json({ error: move.error });
         Object.assign(patch, move.patch);
-        original = move.original;
+        leftovers = move.leftovers;
       }
 
       const updated = await this.db.update(Schema.media, { id: Number(id) }, patch);
 
-      if (original && updated) {
-        // The row now points at the new copy, so the original is safe to drop.
-        await this.transfers.removeFromSpace(original.path, original.space);
+      if (updated) {
+        // The row now points at the new copy, so the old copies are safe to drop.
+        for (const leftover of leftovers) await this.transfers.removeFromSpace(leftover.path, leftover.space);
       }
 
       res.json(updated);
@@ -153,10 +158,7 @@ export class MediaController extends BaseController {
       const file: any = await this.db.findOne(Schema.media, { id: Number(id) });
       if (!file) return res.status(404).json({ error: 'File not found' });
 
-      await this.mediaManager.remove(file.path);
-      if (file.optimizedPath) {
-        try { await this.mediaManager.remove(file.optimizedPath); } catch { /* ignore if missing */ }
-      }
+      await MediaFileRemoval.removeBytes(this.mediaManager, file);
       await this.db.delete(Schema.media, { id: Number(id) });
       
       res.json({ success: true });
@@ -202,6 +204,11 @@ export class MediaController extends BaseController {
     try {
       const file: any = await this.db.findOne(Schema.media, { id: Number(id) });
       if (!file) return res.status(404).json({ error: 'File not found' });
+
+      // The variant is written to the public space, so making one would publish a private image.
+      if (MediaVisibility.resolve(file.visibility).isPrivate) {
+        return res.status(400).json({ error: 'Private files are not optimized: the optimized copy would be public' });
+      }
 
       const supportedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
       if (!supportedTypes.includes(file.mimeType)) {

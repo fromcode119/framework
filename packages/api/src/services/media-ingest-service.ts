@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { lookup } from 'dns/promises';
 import { MediaMagicByteValidator, type MediaManager } from '@fromcode119/media';
-import { CoercionUtils, NetworkAddressUtils } from '@fromcode119/core';
+import { CoercionUtils, MediaVisibility, NetworkAddressUtils } from '@fromcode119/core';
 import type { IMediaIngestInput } from '@api/services/interfaces/media-ingest-input.interface';
 
 /**
@@ -32,8 +32,11 @@ export class MediaIngestService {
     const bytes = await MediaIngestService.readBytes(input, maxBytes);
     const filename = MediaIngestService.uniqueFilename(MediaIngestService.nameForContent(CoercionUtils.toString(input.filename), bytes));
 
-    const stored = await this.mediaManager.upload(bytes, filename);
-    const optimized = await this.mediaManager.createWebPVariant(stored.path).catch(() => null);
+    // The visibility value IS the storage-space name. A private file gets no webp variant: the variant
+    // is written to the public space, which would publish the very bytes the caller asked to keep.
+    const visibility = MediaVisibility.resolve(input.visibility);
+    const stored = await this.mediaManager.upload(bytes, filename, { space: visibility.value });
+    const optimized = visibility.isPrivate ? null : await this.mediaManager.createWebPVariant(stored.path).catch(() => null);
 
     const record = {
       filename,
@@ -43,6 +46,7 @@ export class MediaIngestService {
       width: stored.width ?? null,
       height: stored.height ?? null,
       path: stored.path,
+      visibility: visibility.value,
       alt: CoercionUtils.toString(input.alt) || existing?.alt || null,
       optimizedPath: optimized?.path ?? null,
       optimizedSize: optimized?.size ?? null,
@@ -54,7 +58,7 @@ export class MediaIngestService {
     // compiles to Postgres `now()`, which SQLite does not have — the string path routes through the
     // dialect, which owns the timestamps on both databases (same as MediaController).
     // `url` is OUTPUT, not part of the row — it is the address the caller's next step needs.
-    const urls = { url: stored.url || this.mediaManager.publicUrl(stored.path) || null, optimizedUrl: optimized?.url ?? null };
+    const urls = { url: stored.url || this.mediaManager.publicUrl(stored.path, visibility.value) || null, optimizedUrl: optimized?.url ?? null };
     if (existing) {
       await this.db.update('media', { id: existing.id }, record);
       return { id: existing.id, replaced: true, ...record, ...urls };

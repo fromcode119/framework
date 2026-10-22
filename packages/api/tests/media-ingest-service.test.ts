@@ -46,6 +46,23 @@ describe('MediaIngestService', () => {
     expect(result).toEqual(expect.objectContaining({ id: 41, replaced: false, url: `/uploads/${storedName}` }));
   });
 
+  it('stores a private file in the private space, with no url and no public variant', async () => {
+    const db = { insert: vi.fn(async () => ({ id: 42 })), update: vi.fn() };
+    const mediaManager = {
+      upload: vi.fn(async (_bytes: Buffer, filename: string) => ({ url: '', path: filename, size: 3, mimeType: 'application/pdf', provider: 'local', space: 'private' })),
+      createWebPVariant: vi.fn(),
+      publicUrl: vi.fn(() => ''),
+    } as any;
+
+    const result = await new MediaIngestService(db, mediaManager).ingest({ filename: 'cv.pdf', base64: 'AAAA', visibility: 'private' }, limit);
+
+    expect(mediaManager.upload).toHaveBeenCalledWith(expect.any(Buffer), expect.any(String), { space: 'private' });
+    expect(mediaManager.createWebPVariant).not.toHaveBeenCalled();
+    expect(mediaManager.publicUrl).toHaveBeenCalledWith(expect.any(String), 'private');
+    expect(db.insert).toHaveBeenCalledWith('media', expect.objectContaining({ visibility: 'private', optimizedPath: null }));
+    expect(result).toEqual(expect.objectContaining({ id: 42, url: null }));
+  });
+
   it('names a raster image by what it is, when its name says another raster format', () => {
     const png = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0x0d]);
     const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 0x4a, 0x46, 0x49, 0x46, 0, 1]);

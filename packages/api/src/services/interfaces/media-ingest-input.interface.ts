@@ -8,4 +8,6 @@ export interface IMediaIngestInput {
   base64?: string;
   sourceUrl?: string;
   alt?: string;
+  /** `MediaVisibility` value; absent reads as public. */
+  visibility?: string;
 }

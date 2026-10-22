@@ -109,6 +109,7 @@ export type { ICapabilityMetadata } from '@core/interfaces/capability-metadata.i
 export { Logger } from '@core/logging';
 export { LogLevel } from '@core/enums/log-level.enum';
 export { MediaVisibility } from '@core/enums/media-visibility.enum';
+export { MediaFileRemoval } from '@core/media/media-file-removal';
 export { PrivateStorageDriverFactory } from '@core/integrations/providers/private-storage-driver-factory';
 export { FileGrantRepository } from '@core/files/file-grant-repository';
 export { FileActivityRepository } from '@core/files/file-activity-repository';

@@ -3,6 +3,7 @@ import { NamingStrategy } from '@fromcode119/database';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
 import { MediaIngestBridge } from '@core/plugin/media-ingest-bridge';
+import { MediaFileRemoval } from '@core/media/media-file-removal';
 import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
 import type { ContextSecurityProxy } from '@core/plugin/context/utils';
 
@@ -60,6 +61,21 @@ export class MediaContextProxy {
         // Already so described: nothing to write (a re-import names thousands of files it named before).
         if (String((row as any).alt ?? '') === alt) return true;
         await manager.db.update(SystemConstants.TABLE.MEDIA, { id }, { alt });
+        return true;
+      },
+      /**
+       * Delete a file: its bytes (from whichever space they live in) and its row. For a file the plugin
+       * itself stored — an uploaded attachment whose submission is being erased. Without this, erasing a
+       * person's data left their file on disk forever. Same tenant-scoped row as every other call here,
+       * so another site's id matches nothing. Needs the `content` capability, as `ingest` does.
+       */
+      async remove(id: any): Promise<boolean> {
+        if (!security.hasCapability('content')) security.handleViolation('content');
+        if (id == null || id === '') return false;
+        const row = await manager.db.findOne(SystemConstants.TABLE.MEDIA, { id });
+        if (!row) return false;
+        await MediaFileRemoval.removeBytes((manager.integrations as any).storage, MediaContextProxy.denormalize(row) as Record<string, any>);
+        await manager.db.delete(SystemConstants.TABLE.MEDIA, { id });
         return true;
       },
       async findById(id: any): Promise<Record<string, any> | null> {
