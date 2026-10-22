@@ -6,16 +6,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.431] - 2026-10-22
+
+### Fixed
+
+- **core**: create declared collection indexes; undeclared collection reads are admin-only by default ([#1035](https://github.com/fromcode119/framework/pull/1035))
+- **frontend**: redirect the home document's own slug to / ([#1036](https://github.com/fromcode119/framework/pull/1036))
+- **frontend**: key a cached storefront document by its origin, not its host ([#1034](https://github.com/fromcode119/framework/pull/1034))
+
 ## [0.2.430] - 2026-10-21
-
-### Performance
-
-- **frontend**: boot the storefront runtime on visitor intent ([#1030](https://github.com/fromcode119/framework/pull/1030))
-- **frontend**: drop the theme-entry modulepreload from the islands head ([#1033](https://github.com/fromcode119/framework/pull/1033))
 
 ### Fixed
 
 - **core**: recognise the console on a host of its own ([#1032](https://github.com/fromcode119/framework/pull/1032))
+
+### Performance
+
+- **frontend**: drop the theme-entry modulepreload from the islands head ([#1033](https://github.com/fromcode119/framework/pull/1033))
+- **frontend**: boot the storefront runtime on visitor intent ([#1030](https://github.com/fromcode119/framework/pull/1030))
 
 ## [0.2.429] - 2026-10-21
 
