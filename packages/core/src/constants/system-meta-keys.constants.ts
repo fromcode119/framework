@@ -280,6 +280,8 @@ export class SystemMetaKeys {
   SOURCES_BUILD_UNVERIFIED_COMMITS: 'sources_build_unverified_commits',
   /** How many built versions of each extension Sources keeps on disk; older ones are removed after a build. */
   SOURCES_KEEP_BUILDS: 'sources_keep_builds',
+  /** Minutes between Sources' checks of its sources for new commits; 0 turns the automatic checks off. */
+  SOURCES_CHECK_INTERVAL_MINUTES: 'sources_check_interval_minutes',
   /** Settings → Updates: automatic switch, the "Update now" request, and the updater's last report. */
   FRAMEWORK_AUTO_UPDATE: 'framework_auto_update', FRAMEWORK_UPDATE_REQUEST: 'framework_update_request', FRAMEWORK_UPDATE_STATUS: 'framework_update_status'
   } as const;

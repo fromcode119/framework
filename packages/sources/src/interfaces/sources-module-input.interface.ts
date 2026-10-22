@@ -37,11 +37,20 @@ export interface ISourcesModuleInput {
   buildsUnverifiedCommits?: () => Promise<boolean>;
   /**
    * How many built versions of each extension stay on disk — Settings → General. Asked after every
-   * build; null (unset or not a whole number of at least 1) removes nothing.
+   * build; null (0, or not a whole number) removes nothing.
    */
   keepBuilds?: () => Promise<number | null>;
+  /**
+   * How often the auto-build timer checks the sources for new commits — Settings → General. `read`
+   * answers the minutes, or null (0, or not a whole number) for no automatic checks; `onChange` calls
+   * back after the setting is saved, so a new interval takes over without a restart.
+   */
+  checkInterval?: { read(): Promise<number | null>; onChange(listener: () => void): void };
   /** Hands a source's builds to the site it publishes to (its media library + hook delivery). */
   sitePublisher?: ISitePackagePublisher;
   /** Runs the auto-build timer. */
-  scheduler?: { register(name: string, schedule: string, handler: () => Promise<void>): Promise<void> };
+  scheduler?: {
+    register(name: string, schedule: string, handler: () => Promise<void>): Promise<void>;
+    deactivate(name: string): Promise<void>;
+  };
 }

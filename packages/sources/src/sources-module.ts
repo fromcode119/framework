@@ -36,7 +36,6 @@ import type { ISourcesModuleInput } from '@sources/interfaces/sources-module-inp
  * through a published event rather than an import.
  */
 export class SourcesModule {
-  private static readonly DEFAULT_SCHEDULE = '*/15 * * * *';
   private static readonly logger = new Logger({ namespace: 'sources' });
 
   /**
@@ -46,6 +45,8 @@ export class SourcesModule {
    * the caller, because they are this module's business and a caller that had to remember them is a
    * caller that will one day forget one.
    */
+  private static readonly TIMER = 'sources:auto-build';
+
   static install(input: ISourcesModuleInput): SourcesRouter {
     const workspaceRoot = SourcesModule.resolveWorkspaceRoot(input);
     SourcesModule.logger.info(`Build workspace: ${workspaceRoot}`);
@@ -143,19 +144,33 @@ export class SourcesModule {
   }
 
   /**
-   * The timer behind each source's "Build automatically".
+   * The timer behind each source's "Build automatically", every Settings → General "Check for new
+   * commits every" minutes. Saving that setting schedules it again at once.
    *
    * Registered unconditionally: it was once gated behind an environment variable no admin screen
-   * mentioned and nothing set, so the toggle could never fire a build on any deployment.
+   * mentioned and nothing set, so the toggle could never fire a build on any deployment. Its interval
+   * was a fixed 15 minutes in code until it became that setting.
    */
   private static async registerTimer(input: ISourcesModuleInput, buildService: BuildService): Promise<void> {
     if (!input.scheduler) return;
+    input.checkInterval?.onChange(() => { void SourcesModule.scheduleTimer(input, buildService); });
+    await SourcesModule.scheduleTimer(input, buildService);
+  }
 
+  private static async scheduleTimer(input: ISourcesModuleInput, buildService: BuildService): Promise<void> {
+    const scheduler = input.scheduler;
+    if (!scheduler) return;
     try {
-      await input.scheduler.register('sources:auto-build', SourcesModule.DEFAULT_SCHEDULE, async () => {
+      const minutes = await input.checkInterval?.read() ?? null;
+      if (minutes === null) {
+        await scheduler.deactivate(SourcesModule.TIMER);
+        SourcesModule.logger.info('Auto-build checks are off (Settings → General).');
+        return;
+      }
+      await scheduler.register(SourcesModule.TIMER, `${minutes}m`, async () => {
         await buildService.checkAndBuildUpdates();
       });
-      SourcesModule.logger.info(`Auto-build scheduled (${SourcesModule.DEFAULT_SCHEDULE}).`);
+      SourcesModule.logger.info(`Auto-build checks every ${minutes} min.`);
     } catch (error: unknown) {
       SourcesModule.logger.warn(`Could not schedule auto-build: ${String((error as Error)?.message ?? error)}`);
     }

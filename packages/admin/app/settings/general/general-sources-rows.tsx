@@ -10,8 +10,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 
 /**
- * The platform's Sources settings: where builds are made, how many built versions of each extension
- * stay on disk, and whether a commit GitHub did not merge may be built. Each row shows only where the
+ * The platform's Sources settings: where builds are made, how often sources are checked for new
+ * commits, how many built versions of each extension stay on disk, and whether a commit GitHub did not merge may be built. Each row shows only where the
  * platform lets this administrator see it.
  */
 export class GeneralSourcesRows extends PureReactor {
@@ -27,6 +27,11 @@ export class GeneralSourcesRows extends PureReactor {
   @bound
   protected onWorkspaceRootChange(e: ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('sources_workspace_root', e.target.value);
+  }
+
+  @bound
+  protected onCheckIntervalChange(e: ChangeEvent<HTMLInputElement>): void {
+    this.patchSetting('sources_check_interval_minutes', e.target.value);
   }
 
   @bound
@@ -54,6 +59,17 @@ export class GeneralSourcesRows extends PureReactor {
           </SettingRow>
         )}
 
+        {platformLocks.shown('sources_check_interval_minutes') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Clock}
+            title={AdminI18n.t('settings.general.sourcesCheckInterval')}
+            description={AdminI18n.t('settings.general.sourcesCheckIntervalDescription')}
+          >
+            <Input type="number" min={0} step={1} value={settings.sources_check_interval_minutes} onChange={this.onCheckIntervalChange} className="w-full md:w-24 font-bold" />
+          </SettingRow>
+        )}
+
         {platformLocks.shown('sources_keep_builds') && (
           <SettingRow
             theme={theme}
@@ -61,7 +77,7 @@ export class GeneralSourcesRows extends PureReactor {
             title={AdminI18n.t('settings.general.sourcesKeepBuilds')}
             description={AdminI18n.t('settings.general.sourcesKeepBuildsDescription')}
           >
-            <Input type="number" min={1} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} className="w-full md:w-24 font-bold" />
+            <Input type="number" min={0} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} className="w-full md:w-24 font-bold" />
           </SettingRow>
         )}
 

@@ -30,6 +30,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'framework_repository',
     'sources_workspace_root',
     'sources_keep_builds',
+    'sources_check_interval_minutes',
     'timezone',
     'time_format',
     'signup_email_subject',
