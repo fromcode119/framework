@@ -19,6 +19,19 @@ export class HomePageResolver {
     return await this.resolveHomeTarget(locale, fallbackLocale);
   }
 
+  /**
+   * The canonical path of a document reached at a slug: `'/'` when it is the very document the root
+   * serves (same type, same id), `''` otherwise. Without it the home page is published twice — at `/`
+   * and at its own slug — whatever that slug is.
+   */
+  static async homeCanonicalPath(doc: unknown, type: string | undefined, locale: string, fallbackLocale: string): Promise<string> {
+    const id = (doc as { id?: unknown } | null)?.id;
+    if (id === undefined || id === null) return '';
+    const home = await this.resolveHomeTarget(locale, fallbackLocale);
+    const homeId = (home.content as { id?: unknown } | null)?.id;
+    return homeId === id && (home.resolution?.type || '') === (type || '') ? '/' : '';
+  }
+
   private static async readSettingValue(key: string): Promise<string> {
     return FrontendPublicSettings.readSettingValue(key);
   }

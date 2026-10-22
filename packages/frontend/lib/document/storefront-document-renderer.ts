@@ -4,6 +4,7 @@ import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { notFound, permanentRedirect, redirect } from 'next/navigation';
 import { LocaleUrlStrategy, LocalizationUtils, SystemConstants } from '@fromcode119/core/client';
 import { HomePageResolver } from '@/app/home-page-resolver';
+import { QueryParamUtils } from '@/lib/query-param-utils';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
 import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
 import { DocumentCompression } from '@/lib/document/document-compression';
@@ -63,7 +64,7 @@ export class StorefrontDocumentRenderer {
     const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy);
     if (resolution?.doc) {
       const canonicalTarget = CanonicalPathRedirect.resolveTarget({
-        canonicalPath: resolution.canonicalPath, requestSlug: slug, pathLocale, strategy: routingConfig.strategy, searchParams: request.searchParams,
+        canonicalPath: resolution.canonicalPath || await HomePageResolver.homeCanonicalPath(resolution.doc, resolution.type, locale, LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(request.searchParams, 'fallback_locale'))), requestSlug: slug, pathLocale, strategy: routingConfig.strategy, searchParams: request.searchParams,
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
       return StorefrontDocumentRenderer.document({
