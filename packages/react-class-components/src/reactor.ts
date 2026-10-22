@@ -25,9 +25,6 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
   private static __uidSeq = 0;
   private static readonly __metaCache = new WeakMap<Function, { stateFields: string[]; watchers: WatcherDescriptor[] }>();
   private __mounted = false;
-  // Set on unmount: a write that lands afterwards (an awaited load finishing late) is dropped, not sent to
-  // React, which may already be torn down with its environment.
-  private __unmounted = false;
   private __unmountWrapped = false;
   private __uid?: string;
   private readonly __cleanups: Array<() => void> = [];
@@ -84,7 +81,6 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
     type StateHost = {
       state?: Record<string, unknown>;
       __mounted?: boolean;
-      __unmounted?: boolean;
       __pendingState?: Record<string, unknown>;
       setState: (s: object, callback?: () => void) => void;
     };
@@ -107,7 +103,6 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
           // and the component NEVER RE-RENDERED. `@state` was silently dead on every PureReactor
           // (a plain Reactor was fine only because it defines no shouldComponentUpdate). The pending
           // overlay is a SEPARATE object for exactly that reason: it never touches `this.state`.
-          if (this.__unmounted) return;
           if (this.__mounted) {
             (this.__pendingState ??= {})[key] = value;
             // Drop the overlay entry once React has committed, so `this.state` is authoritative again
@@ -283,7 +278,8 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
       const originalWillUnmount = self['componentWillUnmount']?.bind(this);
       self['componentWillUnmount'] = (): void => {
         originalWillUnmount?.();
-        this.__unmounted = true;
+        // A write landing after unmount (a load finishing late) then never reaches a torn-down React.
+        this.__mounted = false;
       };
     }
 
