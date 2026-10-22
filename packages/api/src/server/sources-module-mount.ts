@@ -1,6 +1,6 @@
 import express from 'express';
 import { AuthManager } from '@fromcode119/auth';
-import { CoreServices, PlatformSettingsService, PluginManager, SecretService, SystemConstants } from '@fromcode119/core';
+import { CoreServices, PlatformSettingsService, PluginManager, SecretService, SettingChangeInvalidators, SystemConstants } from '@fromcode119/core';
 import { SourcesModule } from '@fromcode119/sources';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { SitePackagePublisher } from '@api/server/site-package-publisher';
@@ -68,11 +68,19 @@ export class SourcesModuleMount {
       sitePublisher: new SitePackagePublisher(manager),
       // Read per build: the switch on Settings → General reaches the next build, no restart.
       buildsUnverifiedCommits: () => PlatformSettingsService.readFlag(SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS),
-      // Read per build, like the switch above. A blank or invalid value keeps every build.
-      keepBuilds: async () => {
-        const kept = Number(await PlatformSettingsService.getSetting(SystemConstants.META_KEY.SOURCES_KEEP_BUILDS));
-        return Number.isInteger(kept) && kept >= 1 ? kept : null;
+      // Read per build, like the switch above. 0 (or an invalid value) keeps every build.
+      keepBuilds: async () => SourcesModuleMount.wholeNumber(SystemConstants.META_KEY.SOURCES_KEEP_BUILDS),
+      // Read when the timer is scheduled, and again after every save of it. 0 turns the checks off.
+      checkInterval: {
+        read: () => SourcesModuleMount.wholeNumber(SystemConstants.META_KEY.SOURCES_CHECK_INTERVAL_MINUTES),
+        onChange: (listener) => { SettingChangeInvalidators.register([SystemConstants.META_KEY.SOURCES_CHECK_INTERVAL_MINUTES], listener); },
       },
     }).router;
+  }
+
+  /** A whole-number Sources setting of at least 1, or null for 0, blank or anything else. */
+  private static async wholeNumber(key: string): Promise<number | null> {
+    const value = Number(await PlatformSettingsService.getSetting(key));
+    return Number.isInteger(value) && value >= 1 ? value : null;
   }
 }

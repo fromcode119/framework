@@ -98,23 +98,36 @@ export class SchedulerService {
       updated_at: new Date()
     };
 
+    const type = ScheduleType.resolve(task.type);
     if (existing.length > 0) {
-      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, data);
+      // A changed interval starts counting from now: the next_run left by the old one could be hours out
+      // (or, from a cron schedule, not an interval's at all), so a shorter interval would wait it out.
+      const row = existing[0];
+      const rescheduled = row.schedule !== task.schedule || ScheduleType.resolve(row.type) !== type || !row.next_run;
+      const next = type === ScheduleType.INTERVAL && rescheduled ? { next_run: this.calculateNextRun(task.schedule) } : {};
+      await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name: task.name }, { ...data, ...next });
       SchedulerService.logger.debug(`Updated scheduler task schedule: ${task.name}`);
     } else {
       await this.db.insert(SchedulerService.SCHEDULER_TASKS_TABLE, {
         ...data,
         created_at: new Date(),
-        next_run: ScheduleType.resolve(task.type) === ScheduleType.INTERVAL ? this.calculateNextRun(task.schedule) : null
+        next_run: type === ScheduleType.INTERVAL ? this.calculateNextRun(task.schedule) : null
       });
       SchedulerService.logger.debug(`Scheduled new task: ${task.name}`);
     }
 
-    // Refresh the in-memory cron job if applicable
-    if (ScheduleType.resolve(task.type) === ScheduleType.CRON) {
-      if (is_active) this.setupCronJob(task.name, task.schedule);
-      else this.cron.stop(task.name);
-    }
+    // Refresh the in-memory cron job; a task that is no longer cron must not keep firing on its old timer.
+    if (type === ScheduleType.CRON && is_active) this.setupCronJob(task.name, task.schedule);
+    else this.cron.stop(task.name);
+  }
+
+  /**
+   * Stops a task from running on its schedule, keeping its row (and run history) for when it is
+   * scheduled again. Nothing happens for a task that was never scheduled.
+   */
+  async deactivate(name: string): Promise<void> {
+    this.cron.stop(name);
+    await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name }, { is_active: false, next_run: null, updated_at: new Date() });
   }
 
   /**
