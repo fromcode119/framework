@@ -1,4 +1,4 @@
-import type { IIndexNegatedValue } from './index-negated-value.interface';
+import type { IIndexNegatedValue } from '@core/collections/interfaces/index-negated-value.interface';
 
 /**
  * The rows a PARTIAL index covers: field -> a literal (equals), `null` (IS NULL) or `{ not: … }`.
