@@ -275,6 +275,12 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
         this.__watchers?.seed(this.state as Record<string, unknown>);
         originalDidMount?.();
       };
+      const originalWillUnmount = self['componentWillUnmount']?.bind(this);
+      self['componentWillUnmount'] = (): void => {
+        originalWillUnmount?.();
+        // A write landing after unmount (a load finishing late) then never reaches a torn-down React.
+        this.__mounted = false;
+      };
     }
 
     if (meta.watchers.length > 0) {
