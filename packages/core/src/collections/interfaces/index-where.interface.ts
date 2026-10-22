@@ -1,7 +1,4 @@
-/** `{ not: value }` — the rows where the column is NOT that value (`{ not: null }` is IS NOT NULL). */
-export interface IIndexNegatedValue {
-  not: string | number | boolean | null;
-}
+import type { IIndexNegatedValue } from './index-negated-value.interface';
 
 /**
  * The rows a PARTIAL index covers: field -> a literal (equals), `null` (IS NULL) or `{ not: … }`.

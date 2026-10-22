@@ -6,7 +6,7 @@ import { SchemaManager } from '@core/database/schema-manager';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 
 const collection: ICollection = {
-  slug: 'fcp_lms_progress',
+  slug: 'fcp_sample_progress',
   fields: [
     { name: 'userId', type: 'number' },
     { name: 'lessonId', type: 'number' },
@@ -14,7 +14,7 @@ const collection: ICollection = {
   ],
   indexes: [
     { fields: ['userId', 'lessonId'], unique: true },
-    { name: 'fcp_lms_progress_status', fields: ['status'] },
+    { name: 'fcp_sample_progress_status', fields: ['status'] },
     { fields: [] },
   ],
 };
@@ -25,8 +25,8 @@ describe('declared collection indexes', () => {
   it('plans snake_case columns and schema-unique names, skipping empty declarations', () => {
     const plan = new EntitySchemaPlanService().buildPlan(collection, true, []);
     expect(plan.declaredIndexes).toEqual([
-      { name: 'fcp_lms_progress_user_id_lesson_id_idx', columns: ['user_id', 'lesson_id'], unique: true },
-      { name: 'fcp_lms_progress_status', columns: ['status'], unique: false },
+      { name: 'fcp_sample_progress_user_id_lesson_id_idx', columns: ['user_id', 'lesson_id'], unique: true },
+      { name: 'fcp_sample_progress_status', columns: ['status'], unique: false },
     ]);
   });
 
@@ -37,9 +37,9 @@ describe('declared collection indexes', () => {
 
     expect(db.createIndexIfMissing).toHaveBeenCalledTimes(2);
     expect(db.createIndexIfMissing).toHaveBeenCalledWith(
-      'fcp_lms_progress', 'fcp_lms_progress_user_id_lesson_id_idx', ['user_id', 'lesson_id'], { unique: true, where: undefined });
+      'fcp_sample_progress', 'fcp_sample_progress_user_id_lesson_id_idx', ['user_id', 'lesson_id'], { unique: true, where: undefined });
     expect(db.createIndexIfMissing).toHaveBeenCalledWith(
-      'fcp_lms_progress', 'fcp_lms_progress_status', ['status'], { unique: false, where: undefined });
+      'fcp_sample_progress', 'fcp_sample_progress_status', ['status'], { unique: false, where: undefined });
   });
 
   it('is idempotent: a second sync issues the same IF-MISSING calls and changes nothing', async () => {
@@ -66,11 +66,11 @@ describe('declared collection indexes', () => {
       const plan = new EntitySchemaPlanService().buildPlan(collection, true, []);
       await new DeclaredIndexEnsurer(db, logger()).ensure(plan);
 
-      expect(calls).toEqual(['column', 'fcp_lms_progress_user_id_lesson_id_idx', 'fcp_lms_progress_status']);
+      expect(calls).toEqual(['column', 'fcp_sample_progress_user_id_lesson_id_idx', 'fcp_sample_progress_status']);
       expect(db.createIndexIfMissing).toHaveBeenCalledWith(
-        'fcp_lms_progress', 'fcp_lms_progress_user_id_lesson_id_idx', ['tenant_id', 'user_id', 'lesson_id'], { unique: true, where: undefined });
+        'fcp_sample_progress', 'fcp_sample_progress_user_id_lesson_id_idx', ['tenant_id', 'user_id', 'lesson_id'], { unique: true, where: undefined });
       expect(db.createIndexIfMissing).toHaveBeenCalledWith(
-        'fcp_lms_progress', 'fcp_lms_progress_status', ['status'], { unique: false, where: undefined });
+        'fcp_sample_progress', 'fcp_sample_progress_status', ['status'], { unique: false, where: undefined });
     });
 
     it('a refused unique lists the conflicting key groups (read with isolation lifted), skips it, and still builds the next index', async () => {
@@ -93,11 +93,11 @@ describe('declared collection indexes', () => {
       await expect(new DeclaredIndexEnsurer(db, log).ensure(plan)).resolves.toBeUndefined();
 
       expect(db.createIndexIfMissing).toHaveBeenCalledTimes(2);
-      expect(readAsOwner).toHaveBeenCalledWith('fcp_lms_progress', expect.any(Function));
+      expect(readAsOwner).toHaveBeenCalledWith('fcp_sample_progress', expect.any(Function));
       expect(db.aggregate.mock.calls[0][1].groupBy).toEqual(['tenant_id', 'user_id', 'lesson_id']);
       expect(log.warn).toHaveBeenCalledTimes(1);
       const message = log.warn.mock.calls[0][0] as string;
-      expect(message).toMatch(/UNIQUE index "fcp_lms_progress_user_id_lesson_id_idx".*NOT created and is skipped/);
+      expect(message).toMatch(/UNIQUE index "fcp_sample_progress_user_id_lesson_id_idx".*NOT created and is skipped/);
       expect(message).toContain('1 key group(s) hold duplicate rows: (tenant_id=a, user_id=1, lesson_id=2) x3');
       expect(message).toContain('No row was changed');
       expect(db.delete).not.toHaveBeenCalled();
