@@ -71,12 +71,22 @@ describe('starting without an account in an app', () => {
     expect(meta.get('user:1:anonymous')).toBe('true');
   });
 
-  it('starts at most five a network address an hour', async () => {
+  it('starts at most twenty a network address an hour', async () => {
     const { instance, users } = controller(open);
     const codes: number[] = [];
-    for (let i = 0; i < 6; i += 1) { const res = response(); await instance.anonymousSignIn(request({}, '10.0.0.3'), res); codes.push(res.statusCode); }
-    expect(codes).toEqual([201, 201, 201, 201, 201, 429]);
-    expect(users).toHaveLength(5);
+    for (let i = 0; i < 21; i += 1) { const res = response(); await instance.anonymousSignIn(request({}, '10.0.0.3'), res); codes.push(res.statusCode); }
+    expect(codes.filter((code) => code === 201)).toHaveLength(20);
+    expect(codes[20]).toBe(429);
+    expect(users).toHaveLength(20);
+  });
+
+  it('tells the app beforehand whether it may start someone this way', async () => {
+    const closed = response();
+    await controller({}).instance.anonymousAvailability(request(), closed);
+    expect(closed.body).toEqual({ available: false });
+    const allowed = response();
+    await controller(open).instance.anonymousAvailability(request(), allowed);
+    expect(allowed.body).toEqual({ available: true });
   });
 
   it('adds an email to the same account and stops it being anonymous', async () => {

@@ -13,7 +13,8 @@ import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-erro
  * domain, so no mail is ever sent to it — and a long random password that only the app holds. The app
  * keeps both on the phone and signs in with them like anyone else when its session runs out, so the
  * person keeps everything without ever having typed a thing. Only where the site lets apps start people
- * this way and lets them sign up at all; a few per network address an hour.
+ * this way and lets them sign up at all; a limited number per network address an hour. `anonymousAvailability`
+ * tells the app beforehand whether it may.
  *
  * `linkAnonymous` turns that account into a normal one, keeping its id and so everything stored for it:
  * an email and password (verified by email, as at sign-up), or a provider's verified email. An email that
@@ -21,9 +22,15 @@ import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-erro
  */
 export class AuthControllerAnonymous extends AuthControllerSso {
   private static readonly DOMAIN = 'anonymous.invalid';
-  private static readonly PER_ADDRESS_PER_HOUR = 5;
+  // Phones on a mobile network share a few public addresses, so the limit allows a crowd, not a script.
+  private static readonly PER_ADDRESS_PER_HOUR = 20;
   private static readonly WINDOW_MS = 60 * 60 * 1000;
   private static readonly starts = new Map<string, number[]>();
+
+  /** Public: whether this app may start someone without an account, so it offers that only where it works. */
+  async anonymousAvailability(req: Request, res: Response) {
+    return res.json({ available: await this.mayStartAnonymously(req) });
+  }
 
   async anonymousSignIn(req: Request, res: Response) {
     if (!(await this.mayStartAnonymously(req))) return res.status(404).json({ error: 'Not found' });
