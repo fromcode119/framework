@@ -11,6 +11,7 @@ import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
 import { RouteSegmentUtils } from '@/lib/route-segment-utils';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { HomePageResolver } from '@/app/home-page-resolver';
 import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
 import { ResolvedContentMetadata } from '@/lib/resolved-content-metadata';
 import { StructuredDataScriptsView } from '@/components/structured-data-scripts';
@@ -133,7 +134,7 @@ export class DynamicContentPageRoute {
       // the visitor to the path its owning plugin declares BEFORE rendering: painting the page here
       // would publish the same document twice, each copy claiming to be the original.
       const canonicalTarget = CanonicalPathRedirect.resolveTarget({
-        canonicalPath: resolution.canonicalPath,
+        canonicalPath: resolution.canonicalPath || await HomePageResolver.homeCanonicalPath(resolution.doc, resolution.type, locale, fallbackLocale),
         requestSlug: slug,
         pathLocale,
         strategy: routingConfig.strategy,
