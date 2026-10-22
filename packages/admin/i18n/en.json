@@ -1606,6 +1606,8 @@
       "enableAppAuthenticationRoutes": "Let apps this site serves use sign-up, forgot password and Google/Apple sign-in, independently of the website switches above.",
       "appRegistration": "App Registration",
       "allowNewCustomerAppRegistration": "Allow new customers to create an account from an app this site serves. Turn off if the site has no app.",
+      "appAnonymous": "Start without an account in apps",
+      "appAnonymousDescription": "Apps can start people without an account; their phone alone signs in to it, and they can add an email or Google/Apple later without losing anything.",
       "brandIdentity": "Brand & Identity",
       "platformName": "Platform Name",
       "thePublicIdentifierForYour": "The public identifier for your portal and administrative interface.",

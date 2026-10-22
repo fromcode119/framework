@@ -18,6 +18,15 @@ export class AuthControllerAccountState extends AuthControllerInfrastructure {
     return `user:${userId}:password_changed_at`;
   }
 
+  /** Set on an account an app started without one (`/auth/anonymous`) until the person adds an email or provider. */
+  protected getAnonymousKey(userId: number) {
+    return `user:${userId}:anonymous`;
+  }
+
+  protected async isAnonymousAccount(userId: number): Promise<boolean> {
+    return (await this.getMetaValue(this.getAnonymousKey(userId))) === 'true';
+  }
+
   protected async readPasswordHistory(userId: number): Promise<string[]> {
     const row = await this.readMetaRow(this.getPasswordHistoryKey(userId));
     if (!row?.value) return [];

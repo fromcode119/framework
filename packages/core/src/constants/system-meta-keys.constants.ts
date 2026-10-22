@@ -28,7 +28,6 @@ export class SystemMetaKeys {
    * any interface saying so. A site that genuinely should use platform mail says so here, once.
    */
   EMAIL_PLATFORM_FALLBACK: 'email_platform_fallback',
-
   MAINTENANCE_MODE: 'maintenance_mode',
   /** Hosted MCP transport (Streamable HTTP at POST /mcp). Off unless the operator enables it — Settings → Integrations → MCP. */
   MCP_REMOTE_ENABLED: 'mcp_remote_enabled',
@@ -230,6 +229,7 @@ export class SystemMetaKeys {
   FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
   APP_AUTH_ENABLED: 'app_auth_enabled',
   APP_REGISTRATION_ENABLED: 'app_registration_enabled',
+  APP_ANONYMOUS_ENABLED: 'app_anonymous_enabled',
   CONTACT_DETAIL_PROTECTION: 'contact_detail_protection',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
