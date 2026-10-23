@@ -40,7 +40,9 @@ export class PluginLifecycleController extends BaseController {
     const isolated = Boolean(this.manager.pluginHosts.get(slug));
     try {
       await PluginsChangedSignal.around(slug, () => this.manager.finalizeInstalledPlugin(slug));
-      res.json({ success: true, restartScheduled: !isolated });
+      // A release that asks for a capability the operator has not approved is loaded but held, not run.
+      const held = Boolean(this.manager.getPlugins().find((plugin) => plugin.manifest.slug === slug)?.heldReason);
+      res.json({ success: true, held, restartScheduled: !isolated && !held });
     } catch (err: any) {
       this.logger.error(`Could not load the installed version of "${slug}": ${err?.message ?? err}`);
       res.status(500).json({ error: err?.message || 'The installed version could not be loaded.' });

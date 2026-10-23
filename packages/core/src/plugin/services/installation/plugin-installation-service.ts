@@ -269,7 +269,21 @@ export class PluginInstallationService {
     }
 
     // A plugin in ERROR keeps its (old-code) process and enabling reuses it: swap it onto the new files first.
-    if (existingPlugin?.state === PluginState.ERROR) await this.reloadHost(slug, manifest);
+    // It also takes the NEW manifest: kept on the old one, consent was checked against the old
+    // capabilities, so a release that adds one (the usual fix for a "Missing capability" error)
+    // ran unapproved and failed again — the fix could never be loaded.
+    if (existingPlugin?.state === PluginState.ERROR) {
+      existingPlugin.manifest = manifest;
+      if (await this.holdIfUnapproved(slug, manifest)) {
+        options.progressReporter?.({
+          phase: 'completed',
+          message: `Plugin "${slug}" was replaced and waits for approval of its changed capabilities.`,
+          pluginSlug: slug,
+        });
+        return;
+      }
+      await this.reloadHost(slug, manifest);
+    }
     options.progressReporter?.({
       phase: 'refreshing-plugin-registry',
       message: `Refreshing plugin registry for "${slug}"...`,

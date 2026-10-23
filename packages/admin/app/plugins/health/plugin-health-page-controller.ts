@@ -14,10 +14,11 @@ export class PluginHealthPageController {
 
   /**
    * Serve the version installed on disk. `restartScheduled` is true when the plugin runs inside the api,
-   * which then restarts itself to load the new code; an isolated plugin is swapped in place.
+   * which then restarts itself to load the new code; an isolated plugin is swapped in place. `held` is
+   * true when the release asks for capabilities that still need the operator's approval.
    */
-  static async loadInstalled(slug: string): Promise<{ restartScheduled: boolean }> {
-    const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.LOAD_INSTALLED(slug), {}) as { restartScheduled?: boolean };
-    return { restartScheduled: result?.restartScheduled === true };
+  static async loadInstalled(slug: string): Promise<{ restartScheduled: boolean; held: boolean }> {
+    const result = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.LOAD_INSTALLED(slug), {}) as { restartScheduled?: boolean; held?: boolean };
+    return { restartScheduled: result?.restartScheduled === true, held: result?.held === true };
   }
 }
