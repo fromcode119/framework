@@ -1,4 +1,4 @@
-import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes, scryptSync } from 'crypto';
 
 export class SecretService {
   private static readonly ENCRYPTED_PREFIX = 'enc:v1:';
@@ -64,7 +64,9 @@ export class SecretService {
   static encryptWith(value: string, passphrase: string): string {
     const normalizedValue = String(value || '');
     if (!normalizedValue) return '';
-    return SecretService.sealWith(normalizedValue, SecretService.deriveKey(passphrase));
+    const salt = randomBytes(16);
+    const sealed = SecretService.sealWith(normalizedValue, SecretService.deriveKey(passphrase, salt));
+    return `${SecretService.ENCRYPTED_PREFIX}${salt.toString('base64')}:${sealed.slice(SecretService.ENCRYPTED_PREFIX.length)}`;
   }
 
   static decrypt(value: unknown): string {
@@ -89,7 +91,13 @@ export class SecretService {
     const normalizedValue = String(value || '');
     if (!normalizedValue) return '';
     if (!SecretService.isEncryptedValue(normalizedValue)) return normalizedValue;
-    return SecretService.openWith(normalizedValue, SecretService.deriveKey(passphrase));
+    const parts = normalizedValue.slice(SecretService.ENCRYPTED_PREFIX.length).split(':');
+    // A salted seal carries its salt first; three parts is a seal made before salting, keyed by a plain hash.
+    if (parts.length === 4) {
+      const [saltBase64, ...rest] = parts;
+      return SecretService.openWith(`${SecretService.ENCRYPTED_PREFIX}${rest.join(':')}`, SecretService.deriveKey(passphrase, Buffer.from(saltBase64, 'base64')));
+    }
+    return SecretService.openWith(normalizedValue, SecretService.legacyPassphraseKey(passphrase));
   }
 
   private static sealWith(value: string, key: Buffer): string {
@@ -115,11 +123,23 @@ export class SecretService {
     return decrypted.toString('utf8');
   }
 
-  /** A passphrase becomes a key the same way the deployment's own secret does. */
-  private static deriveKey(passphrase: string): Buffer {
+  /**
+   * A passphrase is chosen by a person, so it is stretched with scrypt under a random salt kept beside the
+   * ciphertext: a leaked archive cannot be opened by hashing a dictionary once and trying every row.
+   */
+  private static deriveKey(passphrase: string, salt: Buffer): Buffer {
+    return scryptSync(SecretService.requirePassphrase(passphrase), salt, 32, { N: 2 ** 15, r: 8, p: 1, maxmem: 64 * 1024 * 1024 });
+  }
+
+  /** Opens archives sealed before salting; nothing new is sealed this way. */
+  private static legacyPassphraseKey(passphrase: string): Buffer {
+    return createHash('sha256').update(SecretService.requirePassphrase(passphrase)).digest();
+  }
+
+  private static requirePassphrase(passphrase: string): string {
     const normalized = String(passphrase || '').trim();
     if (!normalized) throw new Error('A transfer passphrase is required to seal or open a secret for transit.');
-    return createHash('sha256').update(normalized).digest();
+    return normalized;
   }
 
   static maskIfPresent(value: unknown): string {
