@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.439] - 2026-10-23
+
+### Fixed
+
+- **admin**: send held-plugin approval to Platform scope from inside a site ([#1051](https://github.com/fromcode119/framework/pull/1051))
+- **security**: salt and stretch transfer passphrases with scrypt ([#1055](https://github.com/fromcode119/framework/pull/1055))
+- **themes**: upgrade a theme Sources staged as a package directory ([#1054](https://github.com/fromcode119/framework/pull/1054))
+
 ## [0.2.438] - 2026-10-23
 
 ### Added
