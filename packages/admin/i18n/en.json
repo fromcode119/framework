@@ -709,6 +709,15 @@
       "viewing": "Viewing {{name}} as its own console",
       "configure": "Configure in the standard console",
       "platform": "Back to platform"
+    },
+    "siteChanged": {
+      "text": "Another tab moved this console to {{now}}. This tab was opened for {{opened}}.",
+      "back": "Back to {{opened}}",
+      "continue": "Continue on {{now}}",
+      "mode": {
+        "appearance": "{{site}} (its own console)",
+        "configure": "{{site}} (standard console)"
+      }
     }
   },
   "nav": {
