@@ -1,10 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SystemConstants } from '@fromcode119/core';
+import { PersonalDataErasureService, SystemConstants } from '@fromcode119/core';
 import { AuthControllerAnonymous } from '@api/controllers/auth/auth-controller-anonymous';
 
 /**
  * An app may start someone without an account only where the site allows it, and that person can later
- * add an email to the same account — never to an address someone else already has.
+ * add an email to the same account; an address that already has an account takes the guest's records
+ * over once the person proves it is theirs.
  */
 describe('starting without an account in an app', () => {
   const META = SystemConstants.META_KEY;
@@ -25,10 +26,10 @@ describe('starting without an account in an app', () => {
     Object.assign(instance, {
       isFrontendRequestContext: vi.fn(() => false),
       getSettingBoolean: vi.fn(async (key: string, fallback: boolean) => settings[key] ?? fallback),
-      auth: { hashPassword: vi.fn(async (value: string) => `hash:${value}`) },
+      auth: { hashPassword: vi.fn(async (value: string) => `hash:${value}`), comparePassword: vi.fn(async (value: string, hash: string) => hash === `hash:${value}`) },
       db: {
         insert: vi.fn(async (_table: string, row: Record<string, unknown>) => { const made = { id: users.length + 1, ...row }; users.push(made); return made; }),
-        findOne: vi.fn(async (_table: string, where: Record<string, unknown>) => (existingEmails.includes(String(where.email)) ? { id: 99 } : null)),
+        findOne: vi.fn(async (_table: string, where: Record<string, unknown>) => (existingEmails.includes(String(where.email)) ? { id: 99, email: where.email, password: 'hash:Right-pass-1' } : (where.id ? { id: where.id, email: 'anon@anonymous.invalid' } : null))),
         update: vi.fn(async () => ({})),
       },
       manager: { hooks: { emit: vi.fn(), call: vi.fn() }, writeLog: vi.fn(async () => undefined) },
@@ -36,6 +37,9 @@ describe('starting without an account in an app', () => {
       upsertMeta: vi.fn(async (key: string, value: string) => { meta.set(key, value); }),
       deleteMeta: vi.fn(async (key: string) => { meta.delete(key); }),
       getMetaValue: vi.fn(async (key: string) => meta.get(key) ?? null),
+      getLoginThrottleKey: vi.fn(() => 'k'), getLoginThrottleSettings: vi.fn(async () => ({})), readLoginThrottleState: vi.fn(async () => ({ count: 0 })),
+      isLoginLocked: vi.fn(() => false), recordLoginFailure: vi.fn(), clearLoginThrottleState: vi.fn(), readMetaRow: vi.fn(async () => null),
+      requiresEmailVerification: vi.fn(async () => false), getUserAccountStatus: vi.fn(async () => 'active'), revokeAllSessionsForUser: vi.fn(),
       validatePasswordAgainstPolicy: vi.fn(async () => null),
       issueEmailVerificationToken: vi.fn(async () => ({ token: 't' })), buildEmailVerificationUrl: vi.fn(async () => 'https://x/verify'), sendVerificationEmail: vi.fn(async () => true),
       issueLoginSession: vi.fn(async (_req: unknown, _res: unknown, user: { id: number }) => ({ token: 'jwt', user: { id: String(user.id) } })),
@@ -99,12 +103,29 @@ describe('starting without an account in an app', () => {
     expect(meta.has('user:7:anonymous')).toBe(false);
   });
 
-  it('refuses an email that already has an account, and an account that is not anonymous', async () => {
-    const taken = controller(open, ['ana@example.com']);
-    taken.meta.set('user:7:anonymous', 'true');
+  it('merges into an account that already has the email once its password is given', async () => {
+    const erase = vi.spyOn(PersonalDataErasureService.prototype, 'eraseAll').mockResolvedValue({} as never);
+    const wrong = controller(open, ['ana@example.com']);
+    wrong.meta.set('user:7:anonymous', 'true');
     const res = response();
-    await taken.instance.linkAnonymous(request({ email: 'ana@example.com', password: 'Secret-pass-1' }, '10.0.0.5', { id: '7' }), res);
+    await wrong.instance.linkAnonymous(request({ email: 'ana@example.com', password: 'Wrong-pass-1' }, '10.0.0.5', { id: '7' }), res);
     expect(res.statusCode).toBe(409);
+    expect(wrong.instance.recordLoginFailure).toHaveBeenCalled();
+    expect(wrong.instance.manager.hooks.call).not.toHaveBeenCalled();
+
+    const right = controller(open, ['ana@example.com']);
+    right.meta.set('user:7:anonymous', 'true');
+    const res2 = response();
+    await right.instance.linkAnonymous(request({ email: 'ana@example.com', password: 'Right-pass-1' }, '10.0.0.5', { id: '7' }), res2);
+    expect(right.instance.manager.hooks.call).toHaveBeenCalledWith('auth:user:merging', { fromUserId: 7, intoUserId: 99 });
+    expect(erase).toHaveBeenCalledWith(expect.objectContaining({ userId: 7 }));
+    expect(right.instance.revokeAllSessionsForUser).toHaveBeenCalledWith(7);
+    expect(right.meta.has('user:7:anonymous')).toBe(false);
+    expect(res2.body).toMatchObject({ success: true, merged: true, token: 'jwt', user: { id: '99' } });
+    erase.mockRestore();
+  });
+
+  it('refuses an account that is not anonymous', async () => {
     const normal = controller(open);
     const res2 = response();
     await normal.instance.linkAnonymous(request({ email: 'b@example.com', password: 'Secret-pass-1' }, '10.0.0.6', { id: '8' }), res2);

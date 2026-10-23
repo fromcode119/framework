@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 import { randomBytes } from 'crypto';
-import { CoercionUtils, NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
+import { CoercionUtils, NetworkAddressUtils, PersonalDataErasureService, SystemConstants } from '@fromcode119/core';
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { AuthControllerSso } from '@api/controllers/auth/auth-controller-sso';
 import { SsoIdentity } from '@api/controllers/auth/sso/sso-identity';
@@ -18,7 +18,9 @@ import { SsoSignInError } from '@api/controllers/auth/sso/enums/sso-sign-in-erro
  *
  * `linkAnonymous` turns that account into a normal one, keeping its id and so everything stored for it:
  * an email and password (verified by email, as at sign-up), or a provider's verified email. An email that
- * already has an account is refused rather than merged — the person signs in to that account instead.
+ * already has an account is MERGED into it once the person proves it is theirs (its password, or the
+ * provider's verified email): plugins move the guest's records over on `auth:user:merging`, the guest
+ * account is erased and locked, and the person is signed in to the existing account.
  */
 export class AuthControllerAnonymous extends AuthControllerSso {
   private static readonly DOMAIN = 'anonymous.invalid';
@@ -70,9 +72,10 @@ export class AuthControllerAnonymous extends AuthControllerSso {
     const password = CoercionUtils.toString(req.body?.password);
     const firstName = CoercionUtils.toString(req.body?.firstName).trim() || null;
     if (!email || !this.isValidEmail(email) || email.endsWith(`@${AuthControllerAnonymous.DOMAIN}`)) return res.status(400).json({ error: 'A valid email is required' });
+    const existing = await this.db.findOne(SystemConstants.TABLE.USERS, { email });
+    if (existing) return this.mergeByPassword(req, res, userId, existing, password);
     const passwordError = await this.validatePasswordAgainstPolicy(password, { userId, email });
     if (passwordError) return res.status(400).json({ error: passwordError });
-    if (await this.db.findOne(SystemConstants.TABLE.USERS, { email })) return res.status(409).json({ error: 'Email is already registered' });
 
     const hashed = await this.auth.hashPassword(password);
     await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { email, password: hashed, firstName, updatedAt: new Date() });
@@ -105,12 +108,50 @@ export class AuthControllerAnonymous extends AuthControllerSso {
     if (!identity.emailVerified || !identity.email || !this.isValidEmail(identity.email)) {
       return res.status(SsoSignInError.UNVERIFIED_EMAIL.status).json({ error: SsoSignInError.UNVERIFIED_EMAIL.value });
     }
-    if (await this.db.findOne(SystemConstants.TABLE.USERS, { email: identity.email })) return res.status(409).json({ error: 'Email is already registered' });
+    const existing = await this.db.findOne(SystemConstants.TABLE.USERS, { email: identity.email });
+    if (existing) return this.mergeInto(req, res, userId, existing);
     await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { email: identity.email, firstName: identity.firstName, lastName: identity.lastName, updatedAt: new Date() });
     await this.setEmailVerified(userId, true);
     await this.deleteMeta(this.getAnonymousKey(userId));
     await this.manager.writeLog('INFO', `Anonymous app account linked to ${identity.email} via ${provider}`, 'system', { userId, provider }).catch(() => {});
     return res.json({ success: true, requiresEmailVerification: false, user: { id: String(userId), email: identity.email, anonymous: false } });
+  }
+
+  /** The existing account's password is the proof, throttled like a sign-in; an account with two-step sign-in is not merged by password alone. */
+  private async mergeByPassword(req: Request, res: Response, fromUserId: number, target: any, password: string) {
+    const email = this.normalizeEmail(target.email);
+    const throttleKey = this.getLoginThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || '');
+    const throttleSettings = await this.getLoginThrottleSettings();
+    if (this.isLoginLocked(await this.readLoginThrottleState(throttleKey))) return res.status(429).json({ error: 'Too many failed login attempts. Please try again later.' });
+    if (!password || !(await this.auth.comparePassword(password, String(target.password || '')))) {
+      await this.recordLoginFailure(throttleKey, throttleSettings);
+      return res.status(409).json({ error: 'Email is already registered', merge: 'wrong_password' });
+    }
+    await this.clearLoginThrottleState(throttleKey);
+    if ((await this.readMetaRow(`user:${target.id}:2fa_enabled`))?.value === 'true') return res.status(409).json({ error: 'two_factor_required' });
+    if (await this.requiresEmailVerification(target.id)) return res.status(403).json({ error: 'Email not verified', requiresEmailVerification: true });
+    return this.mergeInto(req, res, fromUserId, target);
+  }
+
+  /** Hands the guest's records to the existing account, closes the guest and signs the person in to that account. */
+  private async mergeInto(req: Request, res: Response, fromUserId: number, target: any) {
+    const intoUserId = this.parseUserId(target.id);
+    if (!intoUserId || intoUserId === fromUserId) return res.status(409).json({ error: 'Email is already registered' });
+    if (await this.isAnonymousAccount(intoUserId)) return res.status(409).json({ error: 'Email is already registered' });
+    if (await this.getUserAccountStatus(intoUserId) === AccountStatus.SUSPENDED) return res.status(403).json({ error: 'Account is suspended. Please contact support.' });
+
+    await this.manager.hooks.call('auth:user:merging', { fromUserId, intoUserId });
+    const guest = await this.db.findOne(SystemConstants.TABLE.USERS, { id: fromUserId });
+    await new PersonalDataErasureService(this.db).eraseAll({ email: String(guest?.email ?? ''), userId: fromUserId });
+    const lockedHash = await this.auth.hashPassword(`merged-${fromUserId}-${randomBytes(16).toString('hex')}`);
+    await this.db.update(SystemConstants.TABLE.USERS, { id: fromUserId }, { password: lockedHash, updatedAt: new Date() });
+    await this.deleteMeta(this.getAnonymousKey(fromUserId));
+    await this.revokeAllSessionsForUser(fromUserId);
+    this.manager.hooks.emit('auth:user:merged', { fromUserId, intoUserId });
+    await this.manager.writeLog('INFO', `Anonymous app account ${fromUserId} merged into ${intoUserId}`, 'system', { fromUserId, intoUserId }).catch(() => {});
+
+    const login = await this.issueLoginSession(req, res, target);
+    return res.json({ success: true, merged: true, requiresEmailVerification: false, token: login.token, user: login.user });
   }
 
   /** Apps only (never the website or the console), and only where the site allows sign-up and anonymous starts. */
