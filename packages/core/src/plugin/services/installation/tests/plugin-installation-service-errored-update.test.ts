@@ -31,7 +31,7 @@ describe('PluginInstallationService.finalizeInstalledPlugin — updating a plugi
     vi.restoreAllMocks();
   });
 
-  function setup(state: PluginState) {
+  function setup(state: PluginState, held = false) {
     const existing = { slug, path: path.join(pluginsRoot, slug), state, manifest: { slug, name: 'Sample Counter', version: '0.1.35' }, approvedCapabilities: [] } as unknown as ILoadedPlugin;
     const order: string[] = [];
     const reloadHost = vi.fn(async () => { order.push('reload'); return true; });
@@ -50,9 +50,19 @@ describe('PluginInstallationService.finalizeInstalledPlugin — updating a plugi
       enable,
       reloadHost,
       vi.fn(async () => undefined),
+      undefined,
+      vi.fn(async () => held),
     );
-    return { service, reloadHost, order };
+    return { service, reloadHost, order, existing };
   }
+
+  it('takes the new manifest and holds the plugin when the release asks for a new capability', async () => {
+    const { service, reloadHost, order, existing } = setup(PluginState.ERROR, true);
+    await service.finalizeInstalledPlugin(slug, { enable: true });
+    expect(existing.manifest.version).toBe('0.1.36');
+    expect(reloadHost).not.toHaveBeenCalled();
+    expect(order).toEqual([]);
+  });
 
   it('swaps the process onto the new files before the plugin is activated again', async () => {
     const { service, reloadHost, order } = setup(PluginState.ERROR);

@@ -1264,6 +1264,8 @@
       "approvalFailed": "Approval Failed",
       "runsInsideTheApiSo": "{{slug}} runs inside the API, so the API is restarting to load the installed version. The admin is unavailable for a few seconds.",
       "installedVersionLoaded": "Installed version loaded",
+      "installedVersionHeld": "Installed version waits for approval",
+      "installedVersionAsksForApproval": "{{slug}}'s installed version asks for capabilities you have not approved. Review them to turn it on.",
       "sProcessWasReplacedOn": "{{slug}}'s process was replaced on the installed version. Nothing else was restarted.",
       "couldNotLoadTheInstalled": "Could not load the installed version",
       "pluginHealthReportsTheRegistry": "Plugin health reports the registry of the container every site runs on — which plugins are active, held or failing for the whole platform. Only a platform admin can see or act on it. Your own site's plugins, and each one's settings, are under Plugins.",

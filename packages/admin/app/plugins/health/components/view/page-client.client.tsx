@@ -72,6 +72,13 @@ export class PluginHealthPageClient extends AdminComponent {
     this.busySlug = slug;
     try {
       const outcome = await PluginHealthPageController.loadInstalled(slug);
+      if (outcome.held) {
+        notify(NotificationType.INFO, AdminI18n.t('plugins.list.installedVersionHeld'), AdminI18n.t('plugins.list.installedVersionAsksForApproval', { slug: slug }));
+        await this.fetchReport();
+        this.runtime.plugins?.triggerRefresh?.();
+        this.approveEnable(slug);
+        return;
+      }
       if (outcome.restartScheduled) {
         notify(NotificationType.INFO, 'API restarting', AdminI18n.t('plugins.list.runsInsideTheApiSo', { slug: slug }));
         return;
