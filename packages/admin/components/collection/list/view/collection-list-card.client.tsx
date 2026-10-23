@@ -13,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * collection made editable in place is editable here too.
  */
 export class CollectionListCard extends PureReactor {
-  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'expanded' | 'onOpen' | 'selected' | 'onToggle'>;
+  declare props: Pick<CollectionListCard, 'row' | 'layout' | 'cells' | 'actions' | 'expanded' | 'onOpen' | 'selected' | 'onToggle' | 'handle' | 'className'>;
 
   @prop declare row: any;
   @prop declare layout: CollectionListLayout;
@@ -26,6 +26,10 @@ export class CollectionListCard extends PureReactor {
   @prop declare selected: boolean;
   /** Adds the record to, or takes it out of, the selection the bulk actions work on. */
   @prop declare onToggle: (id: string) => void;
+  /** The grip the record is dragged by, in a list with an order field. */
+  @prop declare handle?: ReactNode;
+  /** Extra classes — where a dragged record will land. */
+  @prop declare className?: string;
 
   @bound private open(): void {
     this.onOpen(this.row);
@@ -69,11 +73,12 @@ export class CollectionListCard extends PureReactor {
     const { layout, row } = this;
     const hasMedia = Boolean(layout.mediaField) && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length > 0;
     return (
-      <div className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.expanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''}`}>
+      <div data-row-id={String(row.id)} className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.expanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${this.className || ''}`}>
         <div className={`flex gap-3 pl-3 pr-4 py-3 cursor-pointer ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`} onClick={this.open}>
           <button type="button" onClick={this.toggle} aria-pressed={this.selected} aria-label={AdminI18n.t('collection.list.selectRecord')} className="shrink-0 self-start p-1 -m-0.5">
             <Checkbox checked={this.selected} presentational />
           </button>
+          {this.handle ? <div className="shrink-0 self-start">{this.handle}</div> : null}
           {hasMedia ? <div className="shrink-0"><CollectionListMediaCellValue raw={row[layout.mediaField]} thumbnail /></div> : null}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3">

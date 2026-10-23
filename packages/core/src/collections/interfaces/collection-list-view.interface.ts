@@ -16,5 +16,15 @@ export interface ICollectionListView {
   readonly meta?: readonly string[];
   /** One value shown at the right of the phone card — a price, a total, a date. */
   readonly trailing?: string;
+  /**
+   * A single select, or a relationship to one record, that sorts the records into sections — one per
+   * option or related record, in its order, under its name. Records with no value come last.
+   */
+  readonly groupBy?: string;
+  /**
+   * A number field holding the operator's own order. The list shows the records in it, all on one page,
+   * and the operator drags them into place; the numbers are written by the list, never typed.
+   */
+  readonly order?: string;
   readonly quickEdit?: ICollectionQuickEdit;
 }

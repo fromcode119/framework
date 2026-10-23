@@ -20,6 +20,7 @@ import { ClientLayoutSiteStateHooks } from '@/app/services/client-layout-site-st
 import { SiteChooser } from '@/app/components/view/site-chooser.client';
 import { WorkspaceAccessDenied } from '@/app/components/view/workspace-access-denied.client';
 import { ReadOnlyAccessNotice } from '@/app/components/view/read-only-access-notice.client';
+import { SiteChangedElsewhereBar } from '@/app/components/view/site-changed-elsewhere-bar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 
@@ -197,6 +198,7 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
         <main className="relative flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out" onMouseEnter={navigationState.handleMainContentMouseEnter}>
           <ClientLayoutHeader onMenuClick={() => navigationState.setSidebarOpen(true)} />
           {authState.user?.readOnly ? ReadOnlyAccessNotice.render() : null}
+          <SiteChangedElsewhereBar />
           {/* The horizontal clip lives on the CONTENT wrapper, not on <main>: wrapping the header in it
               cut off the account button's shadow at the right edge (a wide table still cannot scroll the
               page sideways, because the clip still covers everything the pages render). */}

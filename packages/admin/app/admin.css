@@ -636,6 +636,14 @@ html.dark {
   .fc-collection-list .fc-list-cards { display: none; }
 }
 
+/* A list arranged by hand (`admin.list.order`): the grip a record is dragged by, and the line that
+   shows where it will land — above or below the record under the pointer. */
+.fc-reorder-handle { touch-action: none; user-select: none; }
+tr.fc-drop-before > td, div.fc-drop-before { box-shadow: inset 0 2px 0 0 rgb(99 102 241); }
+tr.fc-drop-after > td, div.fc-drop-after { box-shadow: inset 0 -2px 0 0 rgb(99 102 241); }
+/* A group's heading under the pointer: the record joins that group, at its start. */
+tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 241); background: rgb(99 102 241 / 0.08); }
+
 /* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 960px.
    `cards={false}` opts a table out — the collection list above draws its own cards. */
 .fc-data-table { container-type: inline-size; }

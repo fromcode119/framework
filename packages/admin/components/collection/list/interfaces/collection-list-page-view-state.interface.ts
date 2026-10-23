@@ -1,3 +1,4 @@
+import type { ListGroup } from '@/components/collection/list/list-group';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 
 export interface ICollectionListPageViewState {
@@ -25,4 +26,5 @@ export interface ICollectionListPageViewState {
   quickEditStatus: { type: NotificationType; message: string } | null;
   deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null;
   deleteLoading: boolean;
+  groups: ListGroup[];
 }

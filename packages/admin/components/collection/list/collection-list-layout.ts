@@ -25,6 +25,16 @@ export class CollectionListLayout {
      * number; "Price 44" cannot be misread.
      */
     readonly valueLabels: Readonly<Record<string, string>> = {},
+    /**
+     * `admin.list.groupBy`: a select, or a relationship to one record, whose value sorts the records
+     * into sections, each under its option's or record's name, in that option's or record's order.
+     */
+    readonly groupField: string = '',
+    /**
+     * `admin.list.order`: a number field holding the operator's own order. The list shows records in
+     * it and lets them be dragged into place; the numbers are written for the operator, never typed.
+     */
+    readonly orderField: string = '',
   ) {}
 
   static readonly EMPTY = new CollectionListLayout('', '', '', [], '', [], [], []);
@@ -63,12 +73,36 @@ export class CollectionListLayout {
       ? CollectionListLayout.resolveRow(list.quickEdit.row, fieldNamed, refused)
       : CollectionListLayout.automaticRow(fields);
 
+    const groupField = CollectionListLayout.resolveGroup(declared('groupBy', list.groupBy), fieldNamed, refused);
+    const orderField = CollectionListLayout.resolveOrder(declared('order', list.order), fieldNamed, refused);
+
     const valueLabels: Record<string, string> = {};
     for (const name of [...metaFields, trailingField].filter(Boolean)) {
       const field = fieldNamed(name);
       if (['number', 'checkbox', 'boolean'].includes(String(field?.type))) valueLabels[name] = String(field.label || name);
     }
-    return new CollectionListLayout(titleField, mediaField, badgeField, metaFields, trailingField, inlineFields, rowFields, refused, valueLabels);
+    return new CollectionListLayout(titleField, mediaField, badgeField, metaFields, trailingField, inlineFields, rowFields, refused, valueLabels, groupField, orderField);
+  }
+
+  /** The list is arranged by hand: records carry an order the operator sets by dragging. */
+  get arranged(): boolean {
+    return Boolean(this.orderField);
+  }
+
+  private static resolveGroup(name: string, fieldNamed: (name: string) => any, refused: string[]): string {
+    if (!name) return '';
+    const field = fieldNamed(name);
+    if (field.type === 'select' && !field.hasMany) return name;
+    if (field.type === 'relationship' && !field.hasMany && !Array.isArray(field.relationTo)) return name;
+    refused.push(`groupBy "${name}" must be a single select or a relationship to one collection`);
+    return '';
+  }
+
+  private static resolveOrder(name: string, fieldNamed: (name: string) => any, refused: string[]): string {
+    if (!name) return '';
+    if (fieldNamed(name).type === 'number') return name;
+    refused.push(`order "${name}" must be a number field`);
+    return '';
   }
 
   private static readonly REPORTED = new Set<string>();

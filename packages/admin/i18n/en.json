@@ -158,7 +158,11 @@
       "openOnSite": "Open on site",
       "edit": "Edit",
       "delete": "Delete",
-      "selectRecord": "Select this record"
+      "selectRecord": "Select this record",
+      "noGroup": "No group",
+      "reorderHandle": "Drag to reorder — or focus and use the arrow keys",
+      "reorderEnable": "Show the list in its own order to reorder it",
+      "reorderFailed": "The new order could not be saved"
     },
     "edit": {
       "sectionShow": "Show",
@@ -705,6 +709,15 @@
       "viewing": "Viewing {{name}} as its own console",
       "configure": "Configure in the standard console",
       "platform": "Back to platform"
+    },
+    "siteChanged": {
+      "text": "Another tab moved this console to {{now}}. This tab was opened for {{opened}}.",
+      "back": "Back to {{opened}}",
+      "continue": "Continue on {{now}}",
+      "mode": {
+        "appearance": "{{site}} (its own console)",
+        "configure": "{{site}} (standard console)"
+      }
     }
   },
   "nav": {

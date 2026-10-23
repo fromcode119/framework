@@ -17,7 +17,8 @@ export class CollectionListPageProps {
       quickEditExpandedId, setQuickEditExpandedId, quickEditLoadingId, setQuickEditLoadingId, quickEditSavingId, setQuickEditSavingId,
       quickEditData, setQuickEditData, quickEditInitialData, setQuickEditInitialData, quickEditStatus, setQuickEditStatus,
       quickEditFields, deleteDialogState, setDeleteDialogState, deleteLoading, setDeleteLoading,
-      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access
+      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns, setLoading, fetchData, handleExport, frontendUrl, pageSize, access,
+      arrangement, arranged, handleArrange, enterArrangeMode
     } = state;
 
     const toolbarProps = {
@@ -46,6 +47,7 @@ export class CollectionListPageProps {
       collection, pluginSlug, slug, slotSlug, resolvedSlug, theme, total, page, search, columns, data, loading, loadError, sort, access,
       layout, cardCells, pageSize,
       stickyColumnIds,
+      arrangement, arranged, onArrange: handleArrange, onArrangeMode: enterArrangeMode,
       onArchive: archivable ? (id: string, archiving: boolean) => handleArchive([id], archiving) : undefined,
       onPageChange: setPage,
       onSort: handleSort,
