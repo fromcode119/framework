@@ -48,6 +48,11 @@ describe('context.settings — secret fields', () => {
     expect(settings).toMatchObject({ apiEndpoint: 'https://api.example.test', webhookSecret: 'hook-secret', legacyAccessToken: 'token-value' });
   });
 
+  it('opens a sealed value whose field the schema no longer declares', async () => {
+    const settings = await proxyOver({ removedApiKey: SecretService.encrypt('moved-key') }).get();
+    expect(settings.removedApiKey).toBe('moved-key');
+  });
+
   it('round-trips: what update() seals, get() opens', async () => {
     const proxy = proxyOver({});
     await proxy.update({ webhookSecret: 'typed-by-operator', apiEndpoint: 'x' });
