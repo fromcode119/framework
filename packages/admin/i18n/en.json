@@ -1311,6 +1311,7 @@
       "inspecting": "Inspecting...",
       "uploadZipTarGz": "Upload (.zip/.tar.gz)",
       "installingPluginsForEverySite": "Installing plugins for every site, updating and removing them, and switching on any the platform does not offer to sites,",
+      "approvingHeldPlugins": "Approving what a held plugin asks for",
       "dragAndDropPluginZip": "Drag and drop plugin `.zip` or `.tar.gz` here, or click to upload.",
       "tryADifferentSearchTerm2": "Try a different search term or upload a new plugin.",
       "destroyPlugin": "Destroy Plugin",
