@@ -13,7 +13,7 @@ import { Column } from '@/components/ui/column';
  * still highlights with the row it belongs to instead of sitting there as a white gap.
  */
 export class DataTableRow<T extends { id: any }> extends PureReactor {
-  declare props: Pick<DataTableRow<T>, 'row' | 'columns' | 'selectable' | 'selected' | 'onToggleOne' | 'onRowClick' | 'actions' | 'stickyCount' | 'stickyOffsets' | 'stickyActions'>;
+  declare props: Pick<DataTableRow<T>, 'row' | 'columns' | 'selectable' | 'selected' | 'onToggleOne' | 'onRowClick' | 'actions' | 'stickyCount' | 'stickyOffsets' | 'stickyActions' | 'className'>;
 
   @prop declare row: T;
   @prop declare columns: Column<T>[];
@@ -25,6 +25,8 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
   @prop declare stickyCount: number;
   @prop declare stickyOffsets: number[];
   @prop declare stickyActions?: boolean;
+  /** Extra classes for the row — a list marks where a dragged record will land with one. */
+  @prop declare className?: string;
 
   private get pinnedClass(): string {
     // Opaque base + opaque restatements of the row states, so a pinned cell tracks its row.
@@ -47,7 +49,8 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
 
     return (
       <tr
-        className={`group transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${this.onRowClick ? 'cursor-pointer' : ''} ${selected ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''}`}
+        data-row-id={String(row.id)}
+        className={`group transition-all duration-200 cursor-default hover:bg-slate-50/80 dark:hover:bg-slate-800/30 ${this.onRowClick ? 'cursor-pointer' : ''} ${selected ? 'bg-indigo-50/30 dark:bg-indigo-500/5' : ''} ${this.className || ''}`}
         onClick={this.handleRowClick}
       >
         {selectable && (

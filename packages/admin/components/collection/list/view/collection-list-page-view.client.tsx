@@ -20,6 +20,10 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationContextStore } from '@/components/view/notification-context-store.client';
 import type { INotificationContextType } from '@/components/interfaces/notification-context-type.interface';
 import { ArchiveOperations } from '@/components/collection/list/archive-operations';
+import { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
+import { ListGroup } from '@/components/collection/list/list-group';
+import { ListGroupSource } from '@/components/collection/list/list-group-source';
+import { ListRecordChange } from '@/components/collection/list/list-record-change';
 
 export class CollectionListPageView extends Reactor {
   static contextType = NotificationContextStore.context;
@@ -65,8 +69,19 @@ export class CollectionListPageView extends Reactor {
   @state quickEditStatus: { type: NotificationType; message: string } | null = null;
   @state deleteDialogState: { mode: 'single'; id: string } | { mode: 'bulk'; ids: string[] } | null = null;
   @state deleteLoading = false;
+  /** The sections of a list with `admin.list.groupBy`, in their own order. */
+  @state groups: ListGroup[] = [];
 
-  readonly pageSize = 10;
+  /**
+   * A list arranged by hand (`admin.list.groupBy` / `admin.list.order`) shows its records on one page:
+   * a group split across pages, or a drag that cannot reach the record on the next page, is no
+   * arrangement at all. Anything else pages by ten.
+   */
+  get pageSize(): number {
+    const layout = CollectionListLayout.from(AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug));
+    return layout.groupField || layout.orderField ? 200 : 10;
+  }
+
   @ref declare columnsMenuRef: Ref<HTMLDivElement>;
   private searchTimer: any = null;
   private onClickOutside: ((event: MouseEvent) => void) | null = null;
@@ -128,6 +143,56 @@ export class CollectionListPageView extends Reactor {
     } finally {
       if (sequence === this.fetchSequence) this.updateState('loading', false);
     }
+  }
+
+  private groupSequence = 0;
+
+  async loadGroups(): Promise<void> {
+    const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
+    const layout = CollectionListLayout.from(collection);
+    const sequence = ++this.groupSequence;
+    if (!layout.groupField) {
+      this.groups = [];
+      return;
+    }
+    try {
+      const groups = await ListGroupSource.load(collection, layout, this.collections);
+      if (sequence === this.groupSequence) this.groups = groups;
+    } catch (error) {
+      // The records still show, under each group's id instead of its name.
+      console.error('Failed to load list groups:', error);
+    }
+  }
+
+  /**
+   * Saves a drag: the records move at once, each change is written, and the list is read back so it
+   * shows what was stored — including after a write that failed.
+   */
+  async handleArrange(changes: ListRecordChange[]): Promise<void> {
+    const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
+    const resolvedSlug = collection?.slug || this.slug;
+    const byId = new Map(changes.map((change) => [change.id, change.data]));
+    this.data = this.data.map((row) => (byId.has(String(row.id)) ? { ...row, ...byId.get(String(row.id)) } : row));
+    try {
+      for (const change of changes) await RecordOperations.saveQuickEditRecord(resolvedSlug, change.id, change.data);
+    } catch (error: any) {
+      this.context?.notify(NotificationType.ERROR, AdminI18n.t('collection.list.reorderFailed'), error?.message || AdminI18n.t('common.unknownError'));
+    }
+    await this.fetchData(this.page);
+  }
+
+  /** Shows every record in its own order — the only view in which a drag says where a record goes. */
+  enterArrangeMode(): void {
+    const collection = AdminCollectionUtils.resolveCollection(this.collections, this.pluginSlug, this.slug);
+    const layout = CollectionListLayout.from(collection);
+    if (!layout.orderField) return;
+    if (this.sort !== layout.orderField) this.handleSort(layout.orderField);
+    this.search = '';
+    this.debouncedSearch = '';
+    this.statusFilter = 'all';
+    this.showArchived = false;
+    this.fieldFilters = Object.fromEntries(Object.keys(this.fieldFilters).map((name) => [name, 'all']));
+    this.page = 1;
   }
 
   /** Archive or restore `ids`, then say what else the archive reached through the collection's keys. */

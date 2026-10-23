@@ -2,6 +2,8 @@ import type { ReactNode } from 'react';
 import type { QuickEditField } from '@/components/collection/list/quick-edit-field';
 import type { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
 import type { CollectionAccess } from '@/lib/collection-access';
+import type { ListArrangement } from '@/components/collection/list/list-arrangement';
+import type { ListRecordChange } from '@/components/collection/list/list-record-change';
 import { ExportFormat } from '@/components/collection/list/enums/export-format.enum';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type React from 'react';
@@ -15,6 +17,12 @@ export interface ICollectionListPageViewModel {
   resolvedSlug: string;
   slotSlug: string;
   pageSize: number;
+  /** Present when the collection declares `admin.list.groupBy` or `admin.list.order`. */
+  arrangement: ListArrangement | null;
+  /** Sorted by the order field and neither searched nor filtered — a drag can be saved. */
+  arranged: boolean;
+  handleArrange: (changes: ListRecordChange[]) => Promise<void>;
+  enterArrangeMode: () => void;
   frontendUrl: string;
   /** What the signed-in user may do to these records. */
   access: CollectionAccess;

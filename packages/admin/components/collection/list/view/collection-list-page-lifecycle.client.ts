@@ -7,6 +7,7 @@ import { CollectionListUtils } from '@/components/collection/list/utils';
 import type { ICollectionListPageViewProps } from '@/components/collection/list/interfaces/collection-list-page-view-props.interface';
 import type { ICollectionListPageViewState } from '@/components/collection/list/interfaces/collection-list-page-view-state.interface';
 import { RecordOperations } from '@/components/collection/list/record-operations';
+import { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
 
 /**
  * Imperative lifecycle/effect logic for the collection list page, extracted from the former
@@ -23,6 +24,7 @@ export class CollectionListPageLifecycle {
     const sortChanges = CollectionListPageLifecycle.syncSortDefault(self);
     CollectionListPageLifecycle.syncFieldFilters(self);
     CollectionListPageLifecycle.loadPluginSettings(self);
+    self.loadGroups();
     SiteStorefrontClient.current().then((siteStorefrontUrl) => self.setState({ siteStorefrontUrl }));
     CollectionListPageLifecycle.syncPageToUrl(self);
     // A sort about to change fetches on that change (maybeFetch); fetching now as well sent a first,
@@ -43,6 +45,7 @@ export class CollectionListPageLifecycle {
       CollectionListPageLifecycle.syncSortDefault(self);
       CollectionListPageLifecycle.syncFieldFilters(self);
       CollectionListPageLifecycle.loadPluginSettings(self);
+      self.loadGroups();
     }
 
     const searchParamsChanged = prevProps.searchParams.toString() !== self.props.searchParams.toString();
@@ -96,12 +99,15 @@ export class CollectionListPageLifecycle {
     }
   }
 
-  /** Sets the saved sort, else the collection's default; true when that changes the current sort. */
+  /**
+   * Sets the saved sort, else the collection's default, else its order field (a list arranged by hand
+   * opens in that arrangement); true when that changes the current sort.
+   */
   private static syncSortDefault(self: any): boolean {
     const collection = CollectionListPageLifecycle.collectionOf(self);
     if (!collection) return false;
     const persisted = AdminServices.getInstance().uiPreference.readCollectionSort(self.props.pluginSlug, CollectionListPageLifecycle.resolvedSlugOf(self));
-    const next = persisted || String((collection?.admin as any)?.defaultSort || '');
+    const next = persisted || String((collection?.admin as any)?.defaultSort || '') || CollectionListLayout.from(collection).orderField;
     if (!next || next === self.state.sort) return false;
     self.updateState('sort', next);
     return true;

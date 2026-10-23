@@ -8,12 +8,13 @@ import { DataTableRow } from '@/components/ui/view/data-table-row.client';
 import { DataTableCards } from '@/components/ui/view/data-table-cards.client';
 import { StickyColumnLayout } from '@/components/ui/sticky-column-layout';
 import { Column } from '@/components/ui/column';
+import { DataTableSection } from '@/components/ui/data-table-section';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** Generic paginated, sortable, selectable data table. Pure presentational class. */
 export class DataTable<T extends { id: any }> extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy' | 'stickyColumnIds' | 'stickyActions' | 'cards'>;
+  declare props: Pick<DataTable<T>, 'columns' | 'data' | 'loading' | 'totalDocs' | 'limit' | 'page' | 'onPageChange' | 'onSort' | 'currentSort' | 'onRowClick' | 'actions' | 'emptyMessage' | 'selectable' | 'selectedIds' | 'onSelectionChange' | 'expandedRowId' | 'renderExpandedRow' | 'groupBy' | 'stickyColumnIds' | 'stickyActions' | 'cards' | 'rowClassName' | 'sections' | 'sectionClassName'>;
 
   @prop declare columns: Column<T>[];
   @prop declare data: T[];
@@ -46,6 +47,15 @@ export class DataTable<T extends { id: any }> extends PureReactor {
    * its own narrow layout.
    */
   @prop declare cards?: boolean;
+  /** Extra classes per row (see DataTableRow.className). */
+  @prop declare rowClassName?: (row: T) => string;
+  /**
+   * The rows split into headed sections, in place of `data` + `groupBy`. A section with no rows still
+   * shows its heading (count 0). Each heading carries `data-row-id={section.id}`.
+   */
+  @prop declare sections?: readonly DataTableSection<T>[];
+  /** Extra classes per section heading. */
+  @prop declare sectionClassName?: (section: DataTableSection<T>) => string;
 
   /** Measured left offsets for the pinned run, checkbox column included. */
   @state stickyOffsets: number[] = [];
@@ -146,16 +156,81 @@ export class DataTable<T extends { id: any }> extends PureReactor {
     );
   }
 
+  private renderHeading(key: string, id: string | undefined, label: string, count: number, totalColumns: number, className = ''): ReactNode {
+    return (
+      <tr key={`heading:${key}`} data-row-id={id} className={`bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 ${className}`}>
+        <td colSpan={totalColumns} className="px-3 py-2">
+          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</span>
+          <span className="ml-2 text-[11px] font-semibold text-slate-400">{count}</span>
+        </td>
+      </tr>
+    );
+  }
+
+  private renderRow(row: T, index: number, columns: Column<T>[], totalColumns: number, selectedIds: string[]): ReactNode {
+    const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
+    const isExpanded = this.expandedRowId != null && String(this.expandedRowId) === String(row.id);
+    return (
+      <Fragment key={rowKey}>
+        <DataTableRow
+          row={row}
+          columns={columns}
+          selectable={this.selectable}
+          selected={selectedIds.includes(String(row.id))}
+          onToggleOne={this.toggleOne}
+          onRowClick={this.onRowClick}
+          actions={this.actions}
+          stickyCount={this.pinnedCount}
+          stickyOffsets={this.stickyOffsets}
+          stickyActions={this.isActionsPinned}
+          className={this.rowClassName?.(row)}
+        />
+        {isExpanded && this.renderExpandedRow && (
+          <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
+            <td className="px-0 py-4" colSpan={totalColumns}>
+              <div className="sticky left-0 px-3" style={this.viewportWidth ? { width: this.viewportWidth } : undefined}>
+                {this.renderExpandedRow(row)}
+              </div>
+            </td>
+          </tr>
+        )}
+      </Fragment>
+    );
+  }
+
+  private renderBody(data: T[], columns: Column<T>[], totalColumns: number, selectedIds: string[]): ReactNode {
+    const sections = this.sections;
+    if (sections) {
+      if (!sections.length && !this.loading) return this.renderEmpty(totalColumns);
+      return sections.map((section) => (
+        <Fragment key={`section:${section.id}`}>
+          {this.renderHeading(section.id, section.id, section.label, section.rows.length, totalColumns, this.sectionClassName?.(section))}
+          {section.rows.map((row, index) => this.renderRow(row, index, columns, totalColumns, selectedIds))}
+        </Fragment>
+      ));
+    }
+    if (data.length === 0 && !this.loading) return this.renderEmpty(totalColumns);
+    const groupBy = this.groupBy;
+    const groupCounts: Record<string, number> = {};
+    if (groupBy) for (const row of data) { const key = groupBy(row) || '—'; groupCounts[key] = (groupCounts[key] || 0) + 1; }
+    return data.map((row, index) => {
+      const groupKey = groupBy ? (groupBy(row) || '—') : null;
+      const showGroupHeader = groupKey !== null && (index === 0 || groupKey !== (groupBy!(data[index - 1]) || '—'));
+      return (
+        <Fragment key={`row:${String(row.id || index)}`}>
+          {showGroupHeader && this.renderHeading(groupKey!, undefined, groupKey!, groupCounts[groupKey!], totalColumns)}
+          {this.renderRow(row, index, columns, totalColumns, selectedIds)}
+        </Fragment>
+      );
+    });
+  }
+
   render(): ReactNode {
-    const data = this.data;
+    const data = this.sections ? this.sections.flatMap((section) => section.rows) : this.data;
     const columns = this.orderedColumns;
     const selectable = this.selectable;
     const selectedIds = this.selectedIds ?? [];
-    const groupBy = this.groupBy;
     const totalColumns = columns.length + (this.actions ? 1 : 0) + (selectable ? 1 : 0);
-
-    const groupCounts: Record<string, number> = {};
-    if (groupBy) for (const row of data) { const key = groupBy(row) || '—'; groupCounts[key] = (groupCounts[key] || 0) + 1; }
 
     return (
       <div className={`flex flex-col w-full h-full transition-all duration-300 ${this.cards !== false ? 'fc-data-table' : ''} ${this.loading ? 'opacity-60 pointer-events-none' : ''}`}>
@@ -173,7 +248,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
               actions={this.actions}
               expandedRowId={this.expandedRowId}
               renderExpandedRow={this.renderExpandedRow}
-              groupBy={groupBy}
+              groupBy={this.groupBy}
             />
           </div>
         ) : null}
@@ -194,46 +269,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
               stickyActions={this.isActionsPinned}
             />
             <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
-              {data.length === 0 && !this.loading ? this.renderEmpty(totalColumns) : data.map((row, index) => {
-                const rowKey = String(row.id || (row as any).key || (row as any).slug || index);
-                const isExpanded = this.expandedRowId != null && String(this.expandedRowId) === String(row.id);
-                const groupKey = groupBy ? (groupBy(row) || '—') : null;
-                const showGroupHeader = groupKey !== null && (index === 0 || groupKey !== (groupBy!(data[index - 1]) || '—'));
-
-                return (
-                  <Fragment key={rowKey}>
-                    {showGroupHeader && (
-                      <tr className="bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800">
-                        <td colSpan={totalColumns} className="px-3 py-2">
-                          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{groupKey}</span>
-                          <span className="ml-2 text-[11px] font-semibold text-slate-400">{groupCounts[groupKey!]}</span>
-                        </td>
-                      </tr>
-                    )}
-                    <DataTableRow
-                      row={row}
-                      columns={columns}
-                      selectable={selectable}
-                      selected={selectedIds.includes(String(row.id))}
-                      onToggleOne={this.toggleOne}
-                      onRowClick={this.onRowClick}
-                      actions={this.actions}
-                      stickyCount={this.pinnedCount}
-                      stickyOffsets={this.stickyOffsets}
-                      stickyActions={this.isActionsPinned}
-                    />
-                    {isExpanded && this.renderExpandedRow && (
-                      <tr className="bg-indigo-50/20 dark:bg-indigo-500/5">
-                        <td className="px-0 py-4" colSpan={totalColumns}>
-                          <div className="sticky left-0 px-3" style={this.viewportWidth ? { width: this.viewportWidth } : undefined}>
-                            {this.renderExpandedRow(row)}
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </Fragment>
-                );
-              })}
+              {this.renderBody(data, columns, totalColumns, selectedIds)}
             </tbody>
           </table>
         </div>

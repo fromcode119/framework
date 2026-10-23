@@ -1,8 +1,8 @@
 import type { CollectionAccess } from '@/lib/collection-access';
 import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import type { Dispatch, MouseEvent, ReactNode, SetStateAction } from 'react';
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import type { Dispatch, MouseEvent, PointerEvent, ReactNode, SetStateAction } from 'react';
+import { PureReactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 
 import { CollectionQuickEditCard } from '@/components/collection/view/collection-quick-edit-card.client';
@@ -11,6 +11,11 @@ import { CollectionListRowActions } from '@/components/collection/list/view/row-
 import { CollectionListCards } from '@/components/collection/list/view/collection-list-cards.client';
 import { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
 import { QuickEditField } from '@/components/collection/list/quick-edit-field';
+import { ListArrangement } from '@/components/collection/list/list-arrangement';
+import { ListRecordChange } from '@/components/collection/list/list-record-change';
+import { CollectionListReorderHandle } from '@/components/collection/list/view/reorder-handle.client';
+import { PointerReorderDrag } from '@/lib/pointer-reorder-drag';
+import { DataTableSection } from '@/components/ui/data-table-section';
 
 /**
  * The records: a table where the list is wide enough, a card per record where it is not (the switch
@@ -62,6 +67,91 @@ export class CollectionListTable extends PureReactor {
   @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
   @prop declare onQuickEditSave: () => void;
   @prop declare onQuickEditClose: () => void;
+  /** Present when the collection declares `admin.list.groupBy` or `admin.list.order`. */
+  @prop declare arrangement: ListArrangement | null;
+  /** The list shows every record in its own order, so dragging one means something. */
+  @prop declare arranged: boolean;
+  @prop declare onArrange: (changes: ListRecordChange[]) => void;
+  /** Puts the list into its own order — sorted by the order field, unsearched, unfiltered. */
+  @prop declare onArrangeMode: () => void;
+
+  @state private dragId = '';
+  @state private overId = '';
+  @state private dropAfter = false;
+
+  private readonly drag = new PointerReorderDrag(
+    'data-row-id',
+    (dragId, overId, after) => {
+      this.dragId = dragId;
+      this.overId = overId;
+      this.dropAfter = after;
+    },
+    (dragId, overId, after) => this.arrange(dragId, overId, after),
+    false,
+  );
+
+  private arrange(dragId: string, overId: string, after: boolean): void {
+    if (!this.arrangement) return;
+    const changes = this.arrangement.move(this.data || [], dragId, overId, after);
+    if (changes.length) this.onArrange(changes);
+  }
+
+  @bound private pressHandle(rowId: string, event: PointerEvent): void {
+    this.drag.start(rowId, event);
+  }
+
+  @bound private stepRow(rowId: string, up: boolean): void {
+    const sections = this.sections;
+    const target = sections ? this.arrangement!.step(sections, rowId, up) : this.stepUngrouped(rowId, up);
+    if (target) this.arrange(rowId, target.overId, target.after);
+  }
+
+  /** One step in a list with an order field but no groups: swap with the neighbour. */
+  private stepUngrouped(rowId: string, up: boolean): { overId: string; after: boolean } | null {
+    if (!this.arrangement) return null;
+    return this.arrangement.step([new DataTableSection('', '', this.data || [])], rowId, up);
+  }
+
+  /**
+   * The records split by group, when the list is grouped. While the list is in its own order every group
+   * shows, empty ones included, so a record can be dragged into a group that has none yet.
+   */
+  private get sections(): DataTableSection<any>[] | undefined {
+    if (!this.arrangement?.groupField) return undefined;
+    return this.arrangement.sections(this.data || [], this.arranged);
+  }
+
+  @bound private sectionClass(section: DataTableSection<any>): string {
+    return this.dragId && section.id === this.overId ? 'fc-drop-into' : '';
+  }
+
+  @bound private renderHandle(row: any): ReactNode {
+    return (
+      <CollectionListReorderHandle
+        rowId={String(row.id)}
+        enabled={this.arranged}
+        onPress={this.pressHandle}
+        onStep={this.stepRow}
+        onEnable={this.onArrangeMode}
+      />
+    );
+  }
+
+  @bound private rowClass(row: any): string {
+    const id = String(row.id);
+    if (id === this.dragId) return 'opacity-50';
+    if (id === this.overId) return this.dropAfter ? 'fc-drop-after' : 'fc-drop-before';
+    return '';
+  }
+
+  private get reorderable(): boolean {
+    return Boolean(this.arrangement?.orderField);
+  }
+
+  private get tableColumns(): any[] {
+    if (!this.reorderable) return this.columns;
+    return [{ id: '__reorder', header: '', className: 'w-8', accessor: this.renderHandle }, ...this.columns];
+  }
 
   private actionsFor(row: any, compact: boolean): ReactNode {
     return (
@@ -120,6 +210,7 @@ export class CollectionListTable extends PureReactor {
   }
 
   render(): ReactNode {
+    const sections = this.sections;
     const slotProps = { collection: this.collection, pluginSlug: this.pluginSlug, resolvedSlug: this.resolvedSlug, total: this.total, page: this.page, search: this.search };
     return (
       <>
@@ -130,7 +221,7 @@ export class CollectionListTable extends PureReactor {
           <div className="fc-list-table">
             <DataTable
               cards={false}
-              columns={this.columns}
+              columns={this.tableColumns}
               stickyColumnIds={this.stickyColumnIds}
               data={this.data || []}
               loading={this.loading}
@@ -148,6 +239,9 @@ export class CollectionListTable extends PureReactor {
               expandedRowId={this.quickEditExpandedId}
               actions={this.tableActions}
               renderExpandedRow={this.renderQuickEdit}
+              sections={sections}
+              sectionClassName={this.sectionClass}
+              rowClassName={this.rowClass}
             />
           </div>
           <div className="fc-list-cards">
@@ -166,6 +260,10 @@ export class CollectionListTable extends PureReactor {
               renderExpanded={this.renderQuickEdit}
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}
+              sections={sections}
+              sectionClassName={this.sectionClass}
+              renderHandle={this.reorderable ? this.renderHandle : undefined}
+              rowClassName={this.rowClass}
             />
           </div>
         </div>

@@ -7,6 +7,9 @@ import { CollectionArchive } from '@fromcode119/core/client';
 import { CollectionListPageService } from '@/components/collection/list/page-service';
 import { CollectionListLayout } from '@/components/collection/list/collection-list-layout';
 import { ListColumnDecorator } from '@/components/collection/list/list-column-decorator';
+import { ListRecordChange } from '@/components/collection/list/list-record-change';
+import { ListArrangement } from '@/components/collection/list/list-arrangement';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { ICollectionListPageViewModel } from '@/components/collection/list/interfaces/collection-list-page-view-model.interface';
 
 /**
@@ -38,11 +41,18 @@ export class CollectionListPageViewModelBuilder {
     };
     const columns = ListColumnDecorator.decorate(ordered.length ? ordered : allColumns.slice(0, 1), cellContext);
     const cardCells = ListColumnDecorator.cells(allColumns, cellContext);
+    const arrangement = layout.groupField || layout.orderField
+      ? new ListArrangement(layout.groupField, layout.orderField, self.state.groups, AdminI18n.t('collection.list.noGroup'))
+      : null;
+    const byOrder = Boolean(layout.orderField) && self.state.sort === layout.orderField;
+    const data = arrangement ? arrangement.arrange(self.state.data, byOrder) : self.state.data;
+    const unfiltered = !self.state.debouncedSearch && self.state.statusFilter === 'all' && !self.state.showArchived
+      && Object.values(self.state.fieldFilters || {}).every((value) => value === 'all');
 
     return {
       router, settings, theme, columnsMenuRef: self.columnsMenuRef, collection, resolvedSlug, slotSlug,
       pageSize: self.pageSize, frontendUrl, access,
-      data: self.state.data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
+      data, pluginSettings: self.state.pluginSettings, total: self.state.total, loading: self.state.loading,
       loadError: self.state.loadError,
       search: self.state.search, setSearch: (v: any) => self.updateState('search', v),
       page: self.state.page, setPage: (v: any) => self.updateState('page', v),
@@ -69,7 +79,10 @@ export class CollectionListPageViewModelBuilder {
       quickEditStatus: self.state.quickEditStatus, setQuickEditStatus: (v: any) => self.updateState('quickEditStatus', v),
       quickEditFields, deleteDialogState: self.state.deleteDialogState, setDeleteDialogState: (v: any) => self.updateState('deleteDialogState', v),
       deleteLoading: self.state.deleteLoading, setDeleteLoading: (v: any) => self.updateState('deleteLoading', v),
-      layout, cardCells, statusOptions, allColumns, selectFilterFields, columns,
+      layout, cardCells, statusOptions,
+      arrangement, arranged: byOrder && unfiltered,
+      handleArrange: (changes: ListRecordChange[]) => self.handleArrange(changes),
+      enterArrangeMode: () => self.enterArrangeMode(), allColumns, selectFilterFields, columns,
       setLoading: (v: any) => self.updateState('loading', v),
       fetchData: (targetPage?: number) => self.fetchData(targetPage),
       handleExport: (format: ExportFormat, ids?: string[]) => self.handleExport(format, ids)
