@@ -115,6 +115,8 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
                   field={resolvedField}
                   value={this.settings[field.name]}
                   onChange={(value) => this.handleFieldChange(field.name, value)}
+                  record={this.settings}
+                  onPatch={(partial) => Object.entries(partial).forEach(([name, next]) => this.handleFieldChange(name, next))}
                   theme={theme}
                   collectionSlug={`settings-${this.pluginSlug}`}
                   errors={this.errors[field.name] ? (Array.isArray(this.errors[field.name]) ? (this.errors[field.name] as string[]) : [this.errors[field.name] as string]) : undefined}
