@@ -1,3 +1,4 @@
+import fs from 'fs';
 import { CatalogSource, CoercionUtils, CoreServices, ExtensionScope, ThemeManager, Logger } from '@fromcode119/core';
 import { ThemeInstallSource } from '@api/controllers/themes/enums/theme-install-source.enum';
 
@@ -23,7 +24,10 @@ export class ThemeMarketplaceInstall {
     const localPath = await ThemeMarketplaceInstall.localPackage(pkg, slug);
     if (localPath) {
       this.logger.info(`Installing theme "${slug}" from this installation: ${localPath}`);
-      await this.manager.installFromZip(localPath);
+      // Sources stages a build as an unpacked package directory, not an archive; reading it as a
+      // zip threw EISDIR, so the Upgrade button failed for every theme Sources built.
+      if (fs.statSync(localPath).isDirectory()) await this.manager.installFromDirectory(localPath);
+      else await this.manager.installFromZip(localPath);
       return ThemeInstallSource.LOCAL;
     }
     await this.manager.installTheme(pkg);
