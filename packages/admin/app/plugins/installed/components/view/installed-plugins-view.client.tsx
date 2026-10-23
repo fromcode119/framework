@@ -116,11 +116,14 @@ export class InstalledPluginsView extends Reactor {
                   <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-amber-100/90' : 'text-amber-700'}`}>
                     {AdminI18n.t(this.heldPluginsCount === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: this.heldPluginsCount })}
                   </p>
+                  {/* Approval changes what the plugin may do on every site, so the server only takes it in
+                      Platform scope; inside a site the dialog could only end in a refusal. */}
+                  {this.siteScope ? <div className="mt-3"><PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate></div> : null}
                 </div>
-                <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+                {this.siteScope ? null : <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                   {this.isActivating ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
                   <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
-                </button>
+                </button>}
               </div>
             </div>
           ) : null}
