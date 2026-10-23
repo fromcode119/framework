@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.438] - 2026-10-23
+
+### Added
+
+- **admin**: group lists into sections and reorder records by dragging ([#1052](https://github.com/fromcode119/framework/pull/1052))
+
+### Fixed
+
+- **admin**: give plugin settings fields their siblings ([#1050](https://github.com/fromcode119/framework/pull/1050))
+
 ## [0.2.437] - 2026-10-23
 
 ### Fixed
