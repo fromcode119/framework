@@ -268,35 +268,21 @@ export class PluginInstallationService {
       return;
     }
 
-    // A plugin in ERROR keeps its (old-code) process and enabling reuses it: swap it onto the new files first.
-    // It also takes the NEW manifest: kept on the old one, consent was checked against the old
-    // capabilities, so a release that adds one (the usual fix for a "Missing capability" error)
-    // ran unapproved and failed again — the fix could never be loaded.
+    // A plugin in ERROR keeps its old-code process: swap it onto the new files first, under the NEW
+    // manifest — checked against the old one, a release adding a capability could never be loaded.
     if (existingPlugin?.state === PluginState.ERROR) {
       existingPlugin.manifest = manifest;
       if (await this.holdIfUnapproved(slug, manifest)) {
-        options.progressReporter?.({
-          phase: 'completed',
-          message: `Plugin "${slug}" was replaced and waits for approval of its changed capabilities.`,
-          pluginSlug: slug,
-        });
+        options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" waits for approval of its changed capabilities.`, pluginSlug: slug });
         return;
       }
       await this.reloadHost(slug, manifest);
     }
-    options.progressReporter?.({
-      phase: 'refreshing-plugin-registry',
-      message: `Refreshing plugin registry for "${slug}"...`,
-      pluginSlug: slug,
-    });
+    options.progressReporter?.({ phase: 'refreshing-plugin-registry', message: `Refreshing plugin registry for "${slug}"...`, pluginSlug: slug });
     await this.discoverPlugins();
 
     if (options.enable) {
-      options.progressReporter?.({
-        phase: 'enabling-plugin',
-        message: `Activating "${slug}"...`,
-        pluginSlug: slug,
-      });
+      options.progressReporter?.({ phase: 'enabling-plugin', message: `Activating "${slug}"...`, pluginSlug: slug });
       // A plugin that asks for anything is installed, not run, until an admin approves it.
       await this.enablePlugin(slug).catch(async (error) => {
         if (!PluginConsentRequiredError.is(error)) throw error;
@@ -304,10 +290,6 @@ export class PluginInstallationService {
       });
     }
 
-    options.progressReporter?.({
-      phase: 'completed',
-      message: `Plugin "${slug}" is ready.`,
-      pluginSlug: slug,
-    });
+    options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" is ready.`, pluginSlug: slug });
   }
 }
