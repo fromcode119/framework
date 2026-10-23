@@ -28,14 +28,16 @@ export class SettingsContextProxy {
    * the plugin would mistake for the secret.
    */
   static openSecrets(settings: Record<string, any>, schema: any): Record<string, any> {
-    if (!schema?.fields) return settings;
+    // Opened by VALUE, not by the schema: a secret saved under a field the plugin has since removed (its
+    // value moved somewhere else) is still the plugin's own, and the plugin reading it to move it needs the
+    // plaintext — otherwise the ciphertext is copied and sealed again as if it were the credential.
     const opened = { ...settings };
-    for (const field of schema.fields) {
-      if (!SettingsContextProxy.isSecretField(field) || !SecretService.isEncryptedValue(opened[field.name])) continue;
+    for (const name of Object.keys(opened)) {
+      if (!SecretService.isEncryptedValue(opened[name])) continue;
       try {
-        opened[field.name] = SecretService.decrypt(opened[field.name]);
+        opened[name] = SecretService.decrypt(opened[name]);
       } catch {
-        opened[field.name] = '';
+        opened[name] = '';
       }
     }
     return opened;
