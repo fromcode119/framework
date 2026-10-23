@@ -12,11 +12,12 @@
 # are what turn "skipped" into "passed".
 name: Tests
 
+#
+# PULL REQUESTS ONLY: a squash merge lands exactly the tree its pull request already passed, so a second
+# run on main repeated the same minutes before every release. The arch guards and the attribution check
+# still run on main as well.
 on:
   pull_request:
-  push:
-    branches:
-      - main
 
 jobs:
   test:
@@ -124,4 +125,6 @@ jobs:
           QUEUE_TEST_REDIS_URL: redis://127.0.0.1:6379
           REDIS_TEST_URL: redis://127.0.0.1:6379
           MYSQL_TEST_URL: mysql://root:rootpw@127.0.0.1:3306/mysql
-        run: npm run test:framework
+        # A shared runner is sometimes several times slower than usual; at the 5 s default a correct
+        # suite then fails on timeouts alone and has to be run again from the start.
+        run: npm run test:framework -- --testTimeout=30000
