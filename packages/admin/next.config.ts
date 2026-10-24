@@ -2,7 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { NextConfigEnvironment } from '../../config/next-config-environment';
 import { NextConfigAliases } from '../../config/next-config-aliases';
-import { ConsoleMountConstants } from '../core/src/constants/console-mount.constants';
+import { ConsoleAssetConstants } from '../core/src/constants/console-asset.constants';
 import type { INextWebpackConfig } from '../../config/interfaces/next-webpack-config.interface';
 import type { INextWebpackContext } from '../../config/interfaces/next-webpack-context.interface';
 
@@ -32,9 +32,9 @@ class AdminNextConfig {
     return {
   basePath: adminBasePath,
   // A console mounted on a site's own host shares that host with the storefront, which serves its own
-  // `/_next`; the admin's assets live under a root the storefront never uses (see ConsoleMountConstants).
+  // `/_next`; the admin's assets live under a root the storefront never uses (see ConsoleAssetConstants).
   // Next strips this relative prefix itself, so every host serves them the same way.
-  assetPrefix: `${adminBasePath}${ConsoleMountConstants.ASSET_PREFIX}`,
+  assetPrefix: `${adminBasePath}${ConsoleAssetConstants.PREFIX}`,
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
   // Names the framework to every visitor and helps nobody.

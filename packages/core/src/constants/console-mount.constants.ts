@@ -1,5 +1,5 @@
-// Relative, not `@core/…`: the admin's next.config reads ASSET_PREFIX, and a config file gets no path aliases.
 import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+import { ConsoleAssetConstants } from '@core/constants/console-asset.constants';
 
 /**
  * A console mounted on a PATH of a site's own host (`shop.example.com/backend`), the site form's
@@ -15,12 +15,8 @@ export class ConsoleMountConstants {
   /** Request header the gateway sets to the mount path (`/backend`) on a mounted request; absent otherwise. */
   static readonly HEADER = 'x-fc-console-mount' as const;
 
-  /**
-   * Where the admin's built assets (`/_next/*`) are fetched from. A storefront host serves its own
-   * `/_next`, so on that host the admin's must live under a root the storefront never uses. The
-   * admin's `assetPrefix` is this path (under its base path), and the gateway hands it to the admin.
-   */
-  static readonly ASSET_PREFIX = '/_fc-console' as const;
+  /** Where the admin's built assets are served on a mounted console — see `ConsoleAssetConstants`. */
+  static readonly ASSET_PREFIX = ConsoleAssetConstants.PREFIX;
 
   /** `<html>` attribute carrying the mount to browser code that runs outside React. */
   static readonly ATTRIBUTE = `${ClientRuntimeConstants.ATTRIBUTE_PREFIX}console-mount` as const;
