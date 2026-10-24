@@ -28,13 +28,13 @@ export class AdminWebManifestRoute {
   static readonly dynamic = 'force-dynamic';
 
   static async GET(): Promise<NextResponse> {
-    return NextResponse.json(await AdminWebManifestRoute.manifest(), {
+    return NextResponse.json(await AdminWebManifestRoute.document(), {
       headers: { 'Content-Type': 'application/manifest+json; charset=utf-8', 'Cache-Control': 'no-store' },
     });
   }
 
   /** Build the manifest document from the framework's own app config. */
-  static async manifest(): Promise<MetadataRoute.Manifest> {
+  private static async document(): Promise<MetadataRoute.Manifest> {
     const name = String(AppEnv.APP_NAME || 'Admin');
     const mount = ConsoleMountUtils.sanitize((await headers()).get(ConsoleMountConstants.HEADER));
     const icon = AdminPathUtils.toBrowserPath(AppEnv.PWA_ICON_PATH, mount);
