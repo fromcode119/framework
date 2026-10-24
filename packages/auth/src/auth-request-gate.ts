@@ -253,29 +253,7 @@ export class AuthRequestGate {
       }
 
       const permissions = Array.isArray(permission) ? permission : [permission];
-      // Against the roles IN EFFECT for this request — which on a multi-tenant deployment are the
-      // account's roles on the site it is acting in (narrowed by `applyTenantRoles` above), not the
-      // account's global ones. Resolving globally here is what made a site administrator's `admin`
-      // role decorative: `guard(['admin'])` let it through and every permission-gated screen behind
-      // that guard refused it, because the account is a plain customer everywhere else.
-      //
-      // An EMPTY list is an answer, not a gap: a member whose membership carries no roles holds nothing
-      // on that site. Falling back to the account's global roles whenever the list was empty handed such
-      // a member whatever the account held anywhere — a global `admin`, measured on a site where the
-      // membership said []. Only a user with no role list at all is looked up globally.
-      const effectiveRoles: string[] | null = Array.isArray(req.user.roles) ? req.user.roles : null;
-      const userId = parseInt(req.user.id);
-
-      let hasPermission = false;
-      for (const perm of permissions) {
-        const granted = effectiveRoles
-          ? await this.permissionChecker()!.hasPermissionForRoles(effectiveRoles, perm)
-          : await this.permissionChecker()!.hasPermission(userId, perm);
-        if (granted) {
-          hasPermission = true;
-          break;
-        }
-      }
+      const hasPermission = await this.holdsPermission(req, permissions);
 
       if (!hasPermission) {
         this.logger.warn(`Permission denied for user ${req.user.email}: requires ${permissions.join(' OR ')}`);
@@ -287,5 +265,30 @@ export class AuthRequestGate {
 
       next();
     };
+  }
+
+  /** The check behind {@link requirePermission}, for a route open to every member that answers a manager more. Fails closed. */
+  async holdsPermission(req: any, permissions: string[]): Promise<boolean> {
+    if (!req?.user || !this.permissionChecker()) return false;
+    // Against the roles IN EFFECT for this request — which on a multi-tenant deployment are the
+    // account's roles on the site it is acting in (narrowed by `applyTenantRoles` above), not the
+    // account's global ones. Resolving globally here is what made a site administrator's `admin`
+    // role decorative: `guard(['admin'])` let it through and every permission-gated screen behind
+    // that guard refused it, because the account is a plain customer everywhere else.
+    //
+    // An EMPTY list is an answer, not a gap: a member whose membership carries no roles holds nothing
+    // on that site. Falling back to the account's global roles whenever the list was empty handed such
+    // a member whatever the account held anywhere — a global `admin`, measured on a site where the
+    // membership said []. Only a user with no role list at all is looked up globally.
+    const effectiveRoles: string[] | null = Array.isArray(req.user.roles) ? req.user.roles : null;
+    const userId = parseInt(req.user.id);
+
+    for (const perm of permissions) {
+      const granted = effectiveRoles
+        ? await this.permissionChecker()!.hasPermissionForRoles(effectiveRoles, perm)
+        : await this.permissionChecker()!.hasPermission(userId, perm);
+      if (granted) return true;
+    }
+    return false;
   }
 }

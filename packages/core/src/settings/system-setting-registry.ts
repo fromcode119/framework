@@ -31,6 +31,7 @@ export class SystemSettingRegistry {
   private static platformKeysCache: string[] | null = null;
   private static writableKeysCache: Set<string> | null = null;
   private static exposedKeysCache: Set<string> | null = null;
+  private static memberKeysCache: Set<string> | null = null;
 
   /** The descriptor for a declared key. Throws for anything not in `META_KEY` — never guesses. */
   static describe(key: typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY]): ISystemSettingDescriptor {
@@ -71,6 +72,18 @@ export class SystemSettingRegistry {
       );
     }
     return SystemSettingRegistry.exposedKeysCache;
+  }
+
+  /** The exposed keys the console reads for every signed-in member — see `ISystemSettingDescriptor.members`. */
+  static memberKeys(): Set<string> {
+    if (!SystemSettingRegistry.memberKeysCache) {
+      SystemSettingRegistry.memberKeysCache = new Set(
+        Object.entries(SystemSettingRegistry.REGISTRY)
+          .filter(([, descriptor]) => descriptor.exposed && (descriptor as ISystemSettingDescriptor).members === true)
+          .map(([key]) => key),
+      );
+    }
+    return SystemSettingRegistry.memberKeysCache;
   }
 
 

@@ -48,8 +48,12 @@ export class SystemMetadataController {
       const settings = await this.runtime.db.find(SystemConstants.TABLE.META);
       // This route is `auth.guard()` — ANY authenticated user, including a storefront customer.
       // Only declared, operator-visible settings may leave here; the raw table also holds every
-      // user's TOTP secret/recovery codes and the SCIM + API machine tokens.
-      metadata.settings = SystemSettingsExposureUtils.toExposableSettingsMap(settings);
+      // user's TOTP secret/recovery codes and the SCIM + API machine tokens. And of the declared ones,
+      // a member who may not manage settings gets only what the console reads to display itself — the
+      // firewall, rate limits and deployment settings stay with the settings screen's `system:manage`.
+      metadata.settings = await this.runtime.auth.holdsPermission(req, ['system:manage'])
+        ? SystemSettingsExposureUtils.toExposableSettingsMap(settings)
+        : SystemSettingsExposureUtils.toMemberSettingsMap(settings);
       // Plugin collection names, field labels and menu entries in the console's language, from each
       // plugin's own dictionary; whatever a plugin has not translated goes out as declared.
       // The person's own console language, else the site's default (AdminConsoleLocale). This payload

@@ -34,6 +34,19 @@ export class SystemSettingsExposureUtils {
   }
 
   /**
+   * The settings for someone who may not manage them: only what the console reads for every member
+   * (`ISystemSettingDescriptor.members`). The console's boot document reaches any signed-in member, so
+   * handing it every exposed row gave a site's member the platform's firewall rules, rate limits and
+   * deployment settings.
+   */
+  static toMemberSettingsMap(rows: unknown): Record<string, unknown> {
+    const members = SystemSettingRegistry.memberKeys();
+    return Object.fromEntries(
+      Object.entries(SystemSettingsExposureUtils.toExposableSettingsMap(rows)).filter(([key]) => members.has(key)),
+    );
+  }
+
+  /**
    * Reduce raw `_system_meta` rows to the exposable settings map. `parseJson` opts into parsing
    * `{`/`[` values back into objects (what the admin settings screen expects); the metadata endpoint
    * passes the stored strings through untouched.

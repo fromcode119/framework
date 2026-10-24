@@ -1,4 +1,4 @@
-import { AuthControllerLoginThrottle } from '@api/controllers/auth/auth-controller-login-throttle';
+import { AuthControllerBoundScopeLook } from '@api/controllers/auth/auth-controller-bound-scope-look';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { Request, Response } from 'express';
 import { ApplicationUrlUtils, NetworkAddressUtils, PlatformSettingsService, SiteBaseUrl, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
@@ -12,7 +12,7 @@ import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
  * for that tenant, which is what stops a token issued for one site being replayed against another.
  * Leaving returns to the platform scope the same way.
  */
-export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
+export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook {
   /** How a platform admin opens a workspace from the shared host: as its appearance, or the default console. */
   static readonly WORKSPACE_MODES = ['appearance', 'configure'];
 
@@ -182,6 +182,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
       mode: String(user?.workspaceMode || '') || null,
       platformChosen: user?.[AuthControllerTenantSelection.PLATFORM_CHOSEN_CLAIM] === true,
       storefrontUrl,
+      ...(await this.boundLook(current ? tenants.find((tenant) => tenant.id === current) : undefined)),
       tenants,
       siteOwnedWrites: SiteOwnedWrites.possible(req),
     });

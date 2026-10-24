@@ -20,6 +20,14 @@ export interface ISystemSettingDescriptor {
    */
   exposed: boolean;
   /**
+   * Does the console need this value for EVERY signed-in member, not only for someone who may manage
+   * settings? `exposed` says a row may reach an admin client at all; the console's boot document goes to
+   * any member of the site, so it carries only the settings the console itself reads to draw its pages —
+   * language, region, clock, permalink and site addresses, appearance. Everything else (firewall, rate
+   * limits, deployment, updates) stays on the settings screens, behind `system:manage`.
+   */
+  members?: boolean;
+  /**
    * What to write when this setting has never been saved, and how to describe it.
    *
    * Optional on purpose: 49 of the declared keys seed a row and the rest do not, and "no seed" is a

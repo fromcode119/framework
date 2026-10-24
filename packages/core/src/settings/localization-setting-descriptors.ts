@@ -11,39 +11,39 @@ import type { ISystemSettingDescriptor } from '@core/settings/interfaces/system-
 export class LocalizationSettingDescriptors {
   static readonly ALL = {
     [SystemConstants.META_KEY.LOCALIZATION_LOCALES]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: '[{"code":"en","name":"English","enabled":true}]', description: "Available locales.", group: "Localization" },
     },
     [SystemConstants.META_KEY.ENABLED_LOCALES]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'en', description: "Enabled locale codes.", group: "Localization" },
     },
     [SystemConstants.META_KEY.DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'en', description: "Default locale.", group: "Localization" },
     },
-    [SystemConstants.META_KEY.FALLBACK_LOCALE]: { scope: SettingScope.SITE, writable: true, exposed: true },
+    [SystemConstants.META_KEY.FALLBACK_LOCALE]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     // INHERITED: the console's language is also the PLATFORM's to choose — with no site selected the
     // console still speaks some language, and a stored value no control could change is exactly the
     // hidden setting this registry exists to prevent. Each site may choose its own; one that has not
     // speaks the platform's.
     [SystemConstants.META_KEY.ADMIN_DEFAULT_LOCALE]: {
-      scope: SettingScope.INHERITED, writable: true, exposed: true,
+      scope: SettingScope.INHERITED, writable: true, exposed: true, members: true,
       seed: { value: 'en', description: "Default admin language.", group: "Localization" },
     },
     [SystemConstants.META_KEY.FRONTEND_DEFAULT_LOCALE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'en', description: "Default frontend language.", group: "Localization" },
     },
     [SystemConstants.META_KEY.LOCALE_URL_STRATEGY]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'query', description: "Locale URL strategy.", group: "Localization" },
     },
     // Not seeded: blank is a real answer (derive from the frontend language), and a seeded country would
     // be exactly the invented default every module used to hardcode.
-    [SystemConstants.META_KEY.COUNTRY]: { scope: SettingScope.SITE, writable: true, exposed: true },
+    [SystemConstants.META_KEY.COUNTRY]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     [SystemConstants.META_KEY.MEASUREMENT_SYSTEM]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'metric', description: "Units for physical dimensions and weight (metric cm/kg | imperial in/lb).", group: "Localization" },
     },
   } satisfies Partial<Record<typeof SystemConstants.META_KEY[keyof typeof SystemConstants.META_KEY], ISystemSettingDescriptor>>;

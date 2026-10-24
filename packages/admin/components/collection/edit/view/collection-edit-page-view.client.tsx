@@ -16,6 +16,9 @@ import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/c
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
+import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
+import { CollectionEditControllerBuilder } from '@/components/collection/edit/view/collection-edit-controller-builder.client';
 
 export class CollectionEditPageView extends Reactor {
   @prop declare pluginSlug: string;
@@ -27,6 +30,8 @@ export class CollectionEditPageView extends Reactor {
   @prop declare settings: any;
   @prop declare theme: any;
   @prop declare user: any;
+  /** The selected admin appearance; one that draws its own record editor replaces the body below. */
+  @prop declare appearanceId: string;
 
   @state pluginSettings: Record<string, any> = {};
   /** The bound site's storefront, for the Preview link; '' until known. See SiteStorefrontClient. */
@@ -139,6 +144,21 @@ export class CollectionEditPageView extends Reactor {
       );
     }
     const canSave = edit.isNew ? access.canCreate : access.canUpdate;
+    const AppearanceEditor = AdminPageRegistry.shared.resolve(this.appearanceId, AdminPageKeys.COLLECTION_EDIT);
+    const dialogs = (
+      <EditPageDialogs
+        readOnlyOverrideTarget={edit.readOnlyOverrideTarget} setReadOnlyOverrideTarget={edit.setReadOnlyOverrideTarget}
+        openReadOnlyOverridePasswordPrompt={edit.openReadOnlyOverridePasswordPrompt}
+        readOnlyOverridePasswordTarget={edit.readOnlyOverridePasswordTarget} setReadOnlyOverridePasswordTarget={edit.setReadOnlyOverridePasswordTarget}
+        handleReadOnlyOverridePasswordConfirm={edit.handleReadOnlyOverridePasswordConfirm} readOnlyOverrideVerifying={edit.readOnlyOverrideVerifying}
+        showDeleteConfirm={edit.showDeleteConfirm} setShowDeleteConfirm={edit.setShowDeleteConfirm} handleDelete={edit.handleDelete} deleting={edit.deleting}
+      />
+    );
+    if (AppearanceEditor) {
+      // The appearance lays the record out; saving, deleting and its confirmation stay this page's.
+      const controller = CollectionEditControllerBuilder.build(edit, { listHref: `/${pluginSlug}/${slug}`, canSave, canDelete: access.canDelete });
+      return <>{<AppearanceEditor edit={controller} />}{dialogs}</>;
+    }
 
     return (
       <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
@@ -178,13 +198,7 @@ export class CollectionEditPageView extends Reactor {
           />
         )}
 
-        <EditPageDialogs
-          readOnlyOverrideTarget={edit.readOnlyOverrideTarget} setReadOnlyOverrideTarget={edit.setReadOnlyOverrideTarget}
-          openReadOnlyOverridePasswordPrompt={edit.openReadOnlyOverridePasswordPrompt}
-          readOnlyOverridePasswordTarget={edit.readOnlyOverridePasswordTarget} setReadOnlyOverridePasswordTarget={edit.setReadOnlyOverridePasswordTarget}
-          handleReadOnlyOverridePasswordConfirm={edit.handleReadOnlyOverridePasswordConfirm} readOnlyOverrideVerifying={edit.readOnlyOverrideVerifying}
-          showDeleteConfirm={edit.showDeleteConfirm} setShowDeleteConfirm={edit.setShowDeleteConfirm} handleDelete={edit.handleDelete} deleting={edit.deleting}
-        />
+        {dialogs}
       </div>
     );
   }
