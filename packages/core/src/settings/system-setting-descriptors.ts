@@ -64,7 +64,7 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.ADMIN_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().adminUrl, description: "This deployment's admin console address — one console serves every site.", group: "General" },
+      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().adminUrl, description: "The platform console's address — it opens the console of every site.", group: "General" },
     },
     [SystemConstants.META_KEY.API_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
