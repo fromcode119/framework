@@ -5,11 +5,12 @@ import { ConsoleMountConstants } from '@fromcode119/core/constants/console-mount
 import { ConsoleMountUtils } from '@fromcode119/core/utils/console-mount-utils';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
+import { AdminConsoleBrand } from '@/lib/admin-console-brand';
 
 /**
  * PWA web app manifest (served at /manifest.webmanifest) — makes the ADMIN app installable on a phone
  * home screen and run standalone. DOMAIN-AGNOSTIC and DEPLOYMENT-CONFIGURABLE: identity (name/icon/colors)
- * comes from the framework's own app config (`AppEnv.*`), never a plugin or appearance — and every value is
+ * comes from the framework's own app config (`AppEnv.*`), never a plugin — and every value is
  * env-overridable so a platform rebrands the install experience WITHOUT patching framework source. The
  * framework's own brand mark + palette are the defaults, so an unconfigured deployment is unchanged.
  * `start_url: '/'` opens the
@@ -22,6 +23,8 @@ import { AppEnv } from '@/lib/env';
  * A route handler rather than Next's `manifest.ts` metadata convention: that one also injects its own
  * `<link rel="manifest">` at the root path, beside the mounted link the layout writes, so a console at a
  * site's path fetched a manifest from the storefront and logged a 404 on every page.
+ *
+ * A site that wears an appearance installs under that appearance's name and icon (`AdminConsoleBrand`).
  */
 export class AdminWebManifestRoute {
   /** Per request: the addresses depend on the mount the gateway names. */
@@ -35,9 +38,11 @@ export class AdminWebManifestRoute {
 
   /** Build the manifest document from the framework's own app config. */
   private static async document(): Promise<MetadataRoute.Manifest> {
-    const name = String(AppEnv.APP_NAME || 'Admin');
-    const mount = ConsoleMountUtils.sanitize((await headers()).get(ConsoleMountConstants.HEADER));
-    const icon = AdminPathUtils.toBrowserPath(AppEnv.PWA_ICON_PATH, mount);
+    const requestHeaders = await headers();
+    const mount = ConsoleMountUtils.sanitize(requestHeaders.get(ConsoleMountConstants.HEADER));
+    const brand = await AdminConsoleBrand.forHost(requestHeaders.get('x-forwarded-host') || requestHeaders.get('host') || '');
+    const name = brand?.name || String(AppEnv.APP_NAME || 'Admin');
+    const icon = brand?.icon ? ConsoleMountUtils.prefix(brand.icon, mount) : AdminPathUtils.toBrowserPath(AppEnv.PWA_ICON_PATH, mount);
     return {
       name,
       short_name: name,

@@ -10,6 +10,8 @@ export interface IAppearanceSummary {
   builtIn: boolean;
   /** The package URL it was installed from, if any — lets the UI offer a one-click update (re-install). */
   sourceUrl?: string;
+  /** The icon file its manifest declares, inside its `ui/` folder. */
+  icon?: string;
   /** The workspace this appearance declares, when it is a product console (see the manifest). */
   workspace?: IAppearanceWorkspaceDeclaration;
 }

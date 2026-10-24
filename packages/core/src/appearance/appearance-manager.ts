@@ -43,6 +43,7 @@ export class AppearanceManager {
               namespace: String(m.namespace || '').trim(),
               builtIn: false,
               sourceUrl: m.sourceUrl ? String(m.sourceUrl) : undefined,
+              icon: String(m.icon || '').trim() || undefined,
               workspace: AppearanceWorkspaceDeclarationReader.read(m),
             });
           } catch {
