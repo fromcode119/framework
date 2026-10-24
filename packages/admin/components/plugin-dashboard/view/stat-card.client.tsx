@@ -1,4 +1,5 @@
 import type { IStatItem } from '@/components/plugin-dashboard/interfaces/stat-item.interface';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { StatColor } from '@/components/plugin-dashboard/enums/stat-color.enum';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
@@ -89,7 +90,7 @@ export class StatCard extends PureReactor {
     );
 
     if (stat.href) {
-      return <a href={stat.href} className={cardClass}>{inner}</a>;
+      return <AdminLink href={stat.href} className={cardClass}>{inner}</AdminLink>;
     }
     return <div className={cardClass}>{inner}</div>;
   }

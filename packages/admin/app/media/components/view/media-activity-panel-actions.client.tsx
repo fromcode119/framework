@@ -49,7 +49,7 @@ export abstract class MediaActivityPanelActions extends MediaActivityPanelState 
   /** Back to everything: drop the scope from state AND from the URL, so reload agrees with the screen. */
   @bound protected async handleClearScope(): Promise<void> {
     this.shareId = null;
-    window.history.pushState(null, '', AdminPathUtils.toAdminPath('/media/activity'));
+    window.history.pushState(null, '', AdminPathUtils.toBrowserPath('/media/activity'));
     await this.load();
   }
 

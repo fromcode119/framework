@@ -5,6 +5,7 @@ import type { ICollectionField } from '@/components/collection/interfaces/collec
 import type { FieldProvenance } from '@/lib/collection/field-provenance';
 import { FieldProvenanceKind } from '@/lib/collection/enums/field-provenance-kind.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 export class FieldRendererFooter extends PureReactor {
   @prop declare field: ICollectionField;
@@ -45,9 +46,9 @@ export class FieldRendererFooter extends PureReactor {
         {`${AdminI18n.t('ui.field.emptyUses')} `}
         <span className={UiFieldUtils.TEXT.PROVENANCE_VALUE}>{p.effectiveValue}</span>
         {` ${AdminI18n.t('ui.field.from')} `}
-        <a className={UiFieldUtils.TEXT.PROVENANCE_LINK} href={p.settingsHref}>
+        <AdminLink className={UiFieldUtils.TEXT.PROVENANCE_LINK} href={p.settingsHref}>
           {p.settingsTab ? `${AdminI18n.t('ui.field.pluginSettings')} → ${p.settingsTab}` : AdminI18n.t('ui.field.pluginSettings')}
-        </a>
+        </AdminLink>
         {` → “${p.settingLabel}”.`}
       </p>
     );

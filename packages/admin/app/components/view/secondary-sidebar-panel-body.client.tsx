@@ -1,5 +1,5 @@
 import type { KeyboardEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Icon } from '@/components/view/icon.client';
 import { NavUtils } from '@/lib/nav-utils';
@@ -40,7 +40,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
             {groupItems.map((item) => {
               const isActive = NavUtils.isPathActive(this.pathname, item.path, allPaths);
               return (
-                <Link
+                <AdminLink
                   key={item.canonicalId}
                   href={item.path}
                   data-secondary-link="true"
@@ -57,7 +57,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
                       <span className={`mt-0.5 block text-[10px] ${isActive ? 'text-indigo-100' : 'text-slate-400'}`}>{item.description}</span>
                     )}
                   </span>
-                </Link>
+                </AdminLink>
               );
             })}
           </section>

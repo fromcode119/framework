@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { bound, prop, state } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -192,7 +192,7 @@ export class SiteAccessCard extends AdminComponent {
                     <span className={`text-sm font-semibold tracking-tight ${this.isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.name}</span>
                     <p className={`text-xs leading-snug truncate ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>
                       {blocked
-                        ? <Link className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</Link>
+                        ? <AdminLink className="text-amber-600 dark:text-amber-400 no-underline" href={SiteAccessCard.stateHref(plugin)}>{SiteAccessCard.stateLabel(plugin)} →</AdminLink>
                         : (plugin.description || AdminI18n.t('sites.runsOnThisSiteWhen'))}
                     </p>
                   </div>

@@ -1,5 +1,6 @@
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { SidebarSiteItems } from '@/app/components/view/sidebar-site-items';
 
 /**
  * Stepping out of a site, into the platform scope.
@@ -10,19 +11,35 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
  */
 export class TenantScopeClient {
   /**
-   * Leave the selected site. Resolves `true` when the session actually changed.
+   * Leave the selected site. Resolves `null` when the session actually changed, otherwise the
+   * server's refusal in words an operator can act on.
    *
-   * The caller reloads rather than re-rendering: the site's data must not linger in a console that is
-   * no longer on that site.
+   * The refusal is returned, never swallowed: a console whose host is bound to one site refuses
+   * every leave, and a button that silently does nothing is a dead control.
    */
-  static async leave(): Promise<boolean> {
+  static async leave(): Promise<string | null> {
     return AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_LEAVE, {})
-      .then(() => true)
-      .catch(() => false);
+      .then(() => null)
+      .catch((error: unknown) => SidebarSiteItems.reasonFor(error));
   }
 
-  /** Leave and reload, which is what every caller wants. */
-  static async leaveAndReload(): Promise<void> {
-    if (await TenantScopeClient.leave()) window.location.reload();
+  /**
+   * Leave and reload, which is what every caller wants. The caller reloads rather than re-rendering:
+   * the site's data must not linger in a console that is no longer on that site. Resolves the refusal
+   * when there was one, so the caller can say why nothing happened.
+   */
+  static async leaveAndReload(): Promise<string | null> {
+    const failure = await TenantScopeClient.leave();
+    if (!failure) window.location.reload();
+    return failure;
+  }
+
+  /**
+   * Whether this console's HOST binds it to one site — a site's own console host or path. There is
+   * no platform scope to step out to from such a console, so nothing should offer one.
+   */
+  static async hostLocksSite(): Promise<boolean> {
+    const response = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
+    return response?.locked === true;
   }
 }

@@ -16,6 +16,7 @@ import { MediaShareEditForm } from '@/app/media/components/view/media-share-edit
 import { MediaShareActivity } from '@/app/media/components/view/media-share-activity.client';
 import { MediaShareFiles } from '@/app/media/components/view/media-share-files.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 /**
  * Everything that has been sent out, as a whole.
@@ -230,7 +231,7 @@ export class MediaSharesPanel extends AdminComponent {
               <div className="flex items-center gap-1 flex-shrink-0">
                 {/* This send's own analytics: the Activity screen scoped to it — graph, refusals, timeline. */}
                 <Button
-                  as="a"
+                  as={AdminLink}
                   href={AdminPathUtils.toAdminPath(`/media/activity?share=${share.id}`)}
                   variant={ButtonVariant.GHOST}
                   icon={<FrameworkIcons.Activity size={13} />}

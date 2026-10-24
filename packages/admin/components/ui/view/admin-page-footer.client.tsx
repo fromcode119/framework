@@ -1,7 +1,7 @@
 import { FooterAccent } from '@/components/ui/enums/footer-accent.enum';
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 
 export class AdminPageFooter extends PureReactor {
@@ -38,9 +38,9 @@ export class AdminPageFooter extends PureReactor {
             {links.map((link, index) => (
               <Fragment key={link.href}>
                 {index > 0 && <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />}
-                <Link href={link.href} className="hover:text-indigo-500 transition-colors">
+                <AdminLink href={link.href} className="hover:text-indigo-500 transition-colors">
                   {link.label}
-                </Link>
+                </AdminLink>
               </Fragment>
             ))}
           </div>

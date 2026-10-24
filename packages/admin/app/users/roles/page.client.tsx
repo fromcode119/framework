@@ -6,7 +6,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
@@ -113,11 +113,11 @@ export class RolesPage extends AdminComponent {
           title={AdminI18n.t('users.roles')}
           subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
           actions={!this.canCreate ? null :
-            <Link href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
+            <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_NEW}>
               <Button className="px-4 h-9 rounded-lg font-semibold text-xs text-white" icon={<FrameworkIcons.Plus size={15} strokeWidth={2} />}>
                 {AdminI18n.t('users.createRole')}
               </Button>
-            </Link>
+            </AdminLink>
           }
         />
 

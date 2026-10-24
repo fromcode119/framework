@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -25,11 +25,11 @@ export class ThemeNotFound extends PureReactor {
         <h1 className="text-4xl font-bold tracking-tighter text-slate-900 dark:text-white mb-4">{AdminI18n.t('themes.notAvailableHere', { slug: this.themeSlug })}</h1>
         <p className="text-slate-500 font-semibold text-center max-w-sm leading-relaxed mb-8 px-6">{AdminI18n.t('themes.notAvailableHereHelp')}</p>
         <div className="flex items-center gap-4">
-          <Link href={this.themesHref}>
+          <AdminLink href={this.themesHref}>
             <Button variant={ButtonVariant.PRIMARY} className="rounded-xl px-10 py-5 font-bold tracking-tight text-[13px]" icon={<FrameworkIcons.Palette size={18} />}>
               {AdminI18n.t('themes.manageThemes')}
             </Button>
-          </Link>
+          </AdminLink>
           <Button variant={ButtonVariant.GHOST} onClick={() => window.history.back()} className="rounded-xl px-8 font-bold tracking-tight text-[13px]" icon={<FrameworkIcons.Left size={16} />}>
             {AdminI18n.t('plugins.list.goBack')}
           </Button>

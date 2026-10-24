@@ -74,4 +74,14 @@ describe('WorkspaceHostService — an admin host names its own tenant', () => {
   it('resolves to nothing for a host no tenant claims', async () => {
     expect(await service(tenant({ kind: 'workspace' })).resolve(request('nobody.example.com'))).toBeNull();
   });
+
+  /** A console path puts the console on the storefront host itself; its requests pin the site. */
+  it('pins a site with a console path for the console\'s own requests on its storefront host', async () => {
+    const site = tenant({ console_path: '/backend' });
+    const admin = { headers: { host: 'shop.example.com', 'x-framework-client': 'admin-ui' }, get: (name: string) => ({ host: 'shop.example.com', 'x-framework-client': 'admin-ui' } as Record<string, string>)[name.toLowerCase()] };
+
+    expect((await service(site).resolve(admin))?.id).toBe('shop');
+    expect(await service(site).resolve(request('shop.example.com'))).toBeNull();
+    expect(await service(tenant({})).resolve(admin)).toBeNull();
+  });
 });

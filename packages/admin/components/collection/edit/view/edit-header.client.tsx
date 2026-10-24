@@ -2,7 +2,7 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode, CollectionArchive } from '@fromcode119/core/client';
 import { EditArchiveControl } from '@/components/collection/edit/view/edit-archive-control.client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop, bound, state } from '@fromcode119/react-class-components';
 import { AdminServices } from '@/lib/admin-services';
 import { Slot } from '@fromcode119/react';
@@ -115,13 +115,13 @@ export class EditHeader extends PureReactor {
     <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
       <div className="w-full px-4 sm:px-6 lg:px-8 py-3 md:py-4">
         <div className="flex items-center gap-2 mb-2">
-          <Link 
+          <AdminLink 
             href={this.listHref || `/${pluginSlug}/${slug}`}
             className={`flex items-center gap-1.5 text-[10px] font-semibold transition-all hover:-translate-x-1 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}
           >
             <FrameworkIcons.Left size={14} />
             {collectionLabel}
-          </Link>
+          </AdminLink>
           {/* On a phone the back link is enough: the title right below already names the record. */}
           <span className="hidden md:inline text-slate-300">/</span>
           <span className={`hidden md:inline text-[10px] font-semibold ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-500'}`}>

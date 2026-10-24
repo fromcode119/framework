@@ -1,4 +1,4 @@
-import { TenantHostRole } from '@fromcode119/core';
+import { RequestSurfaceUtils, TenantHostRole } from '@fromcode119/core';
 import type { TenantRecord, TenantResolverService } from '@fromcode119/core';
 import { RequestTenantService } from '@api/services/request/request-tenant-service';
 
@@ -19,6 +19,10 @@ import { RequestTenantService } from '@api/services/request/request-tenant-servi
  * A workspace's hosts still answer here with no configuration at all: `roleFor` falls back to the
  * tenant's kind, and a workspace's default IS admin. A storefront host, and the platform's own admin
  * host, resolve to nothing and the request falls back to the session-token rule.
+ *
+ * A site with a CONSOLE PATH serves its console on its storefront hosts too (`shop.example.com/admin`),
+ * so there the console's own requests pin the site as well: the host is still the site's, only the
+ * surface differs. The storefront's requests on the same host keep the session rule.
  */
 export class WorkspaceHostService {
   constructor(private readonly tenants: TenantResolverService) {}
@@ -26,7 +30,9 @@ export class WorkspaceHostService {
   async resolve(req: any): Promise<TenantRecord | null> {
     for (const host of RequestTenantService.hostCandidates(req)) {
       const tenant = await this.tenants.resolveByHost(host);
-      if (tenant && tenant.roleFor(host) === TenantHostRole.ADMIN) return tenant;
+      if (!tenant) continue;
+      if (tenant.roleFor(host) === TenantHostRole.ADMIN) return tenant;
+      if (tenant.consolePath && RequestSurfaceUtils.isAdminRequestContext(req)) return tenant;
     }
     return null;
   }

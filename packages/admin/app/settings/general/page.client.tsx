@@ -9,6 +9,7 @@ import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
 import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
+import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { GeneralSettingsPageActions } from '@/app/settings/general/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -21,7 +22,9 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class GeneralSettingsPage extends GeneralSettingsPageActions {
   async componentDidMount(): Promise<void> {
     await this.loadSettings();
-    this.platformLocks = await PlatformSettingLocks.load();
+    const [locks, hostLocksSite] = await Promise.all([PlatformSettingLocks.load(), TenantScopeClient.hostLocksSite()]);
+    this.platformLocks = locks;
+    this.hostLocksSite = hostLocksSite;
   }
 
   /**
@@ -38,7 +41,9 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
     return (
       <div className="fc-scope-notice">
         <span className="fc-scope-notice__text">{notice}</span>
-        {offerSwitch ? (
+        {offerSwitch && this.hostLocksSite ? (
+          <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
+        ) : offerSwitch ? (
           <Button
             onClick={this.openPlatformScope}
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}

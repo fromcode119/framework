@@ -1,6 +1,7 @@
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 import { EnvUtils } from '@core/utils/env-utils';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 
 export class RuntimeLocationUtils {
   /**
@@ -14,11 +15,16 @@ export class RuntimeLocationUtils {
     return RuntimeLocationUtils.readCurrentUrl()?.pathname || '';
   }
 
+  /**
+   * `path` as the browser must request it: under the admin base path and, on a console mounted at a
+   * site's console path, under that mount too (`ConsoleMountUtils`; idempotent, so an address that
+   * already went through here is returned unchanged).
+   */
   static toAdminPath(path: string): string {
-    return RuntimeLocationUtils.prefixBasePath(
+    return ConsoleMountUtils.prefix(RuntimeLocationUtils.prefixBasePath(
       path,
       RuntimeLocationUtils.resolveCurrentAdminBasePath(),
-    );
+    ));
   }
 
   static isAdminRuntime(): boolean {
@@ -92,7 +98,8 @@ export class RuntimeLocationUtils {
    * No pathname to read (server-side rendering) falls back to the declared value, as before.
    */
   private static resolveCurrentAdminBasePath(): string {
-    const pathname = RuntimeLocationUtils.getCurrentPathname();
+    // The mount is in the address bar but not in the console's own routes — compare without it.
+    const pathname = ConsoleMountUtils.strip(RuntimeLocationUtils.getCurrentPathname());
     if (!pathname) {
       return RuntimeLocationUtils.getAdminBasePath();
     }

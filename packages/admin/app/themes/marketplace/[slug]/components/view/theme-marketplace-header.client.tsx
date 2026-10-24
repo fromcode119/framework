@@ -4,7 +4,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import type { IMarketplaceTheme } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -29,12 +29,12 @@ export class ThemeMarketplaceHeader extends PureReactor {
     const { theme, adminTheme, allVersions, selectedVersion, installedTheme, hasUpdate, installing, onSelectVersion, onInstall } = this;
     return (
       <div className="flex items-center gap-4">
-        <Link
+        <AdminLink
           href="/themes"
           className={`h-9 w-9 rounded-lg flex items-center justify-center transition-all duration-300 shadow-sm ${adminTheme === ThemeMode.DARK ? 'bg-slate-900 text-slate-400 hover:text-white ring-1 ring-white/10' : 'bg-white text-slate-500 hover:text-indigo-600 hover:shadow-md'}`}
         >
           <FrameworkIcons.Left size={18} strokeWidth={2.5} />
-        </Link>
+        </AdminLink>
         <div className="flex-1 min-w-0">
           <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-semibold uppercase tracking-wide text-[10px] rounded-lg mb-1">
             {AdminI18n.t('themes.marketplacePremium')}

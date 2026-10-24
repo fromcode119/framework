@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -64,10 +64,10 @@ export class PersonAccountPanel extends PureReactor {
               : <span className="text-[11px] text-slate-400">{AdminI18n.t('users.noRoles')}</span>}
           </div>
         </div>
-        <Link href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}
+        <AdminLink href={AdminConstants.ROUTES.USERS.DETAIL(account.id)}
           className="inline-flex items-center gap-1.5 text-[12px] font-bold text-indigo-600 hover:text-indigo-700">
           {AdminI18n.t('users.openUserRecord')} <FrameworkIcons.Right size={14} />
-        </Link>
+        </AdminLink>
       </div>
     );
   }

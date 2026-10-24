@@ -79,7 +79,8 @@ export class SiteChangedElsewhereBar extends AdminComponent {
     const opened = this.opened;
     if (!opened) return;
     if (opened.site === null) {
-      await TenantScopeClient.leaveAndReload();
+      const failure = await TenantScopeClient.leaveAndReload();
+      if (failure) this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
       return;
     }
     const body = opened.mode ? { tenantId: opened.site, mode: opened.mode } : { tenantId: opened.site };

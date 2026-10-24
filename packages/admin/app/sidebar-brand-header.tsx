@@ -6,8 +6,11 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { ConsoleMountContext } from '@/components/view/console-mount-context.client';
 export class SidebarBrandHeader extends PureReactor {
-  private static readonly BRAND_MARK_PATH = AdminPathUtils.toAdminPath(AppEnv.BRAND_MARK_PATH);
+  /** The console mount, so the mark resolves on a console served from a site's console path. */
+  static contextType = ConsoleMountContext.context;
+  declare context: string;
   @prop declare isMini: boolean | undefined;
   @prop declare platformName: string;
   @prop declare onClose: (() => void) | undefined;
@@ -20,7 +23,7 @@ export class SidebarBrandHeader extends PureReactor {
       <div className={`px-4 py-3.5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
         <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
           <div className={`flex h-9 w-9 items-center justify-center overflow-hidden ${AdminClass.SURFACE}`}>
-            <img src={SidebarBrandHeader.BRAND_MARK_PATH} alt={AdminI18n.t('shell.brand.markAlt', { name: platformName })} className="h-7 w-7 rounded-lg" />
+            <img src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_MARK_PATH, this.context)} alt={AdminI18n.t('shell.brand.markAlt', { name: platformName })} className="h-7 w-7 rounded-lg" />
           </div>
           {!isMini && (
             <div className={`flex flex-col`}>

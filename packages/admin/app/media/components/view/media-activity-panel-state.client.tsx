@@ -5,6 +5,7 @@ import { AdminPathUtils } from '@/lib/admin-path';
 import { TimezoneUtils } from '@/lib/timezone';
 import { MediaActivityRangeMode } from '@/app/media/enums/media-activity-range-mode.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 /**
  * Which window of media activity is being looked at, and what came back for it.
@@ -71,12 +72,12 @@ export abstract class MediaActivityPanelState extends AdminComponent {
   protected shareLink(shareId: unknown, title: string): ReactNode {
     if (!shareId) return <span>{title || AdminI18n.t('media.untitledShare')}</span>;
     return (
-      <a
+      <AdminLink
         className="hover:underline text-indigo-500"
         href={AdminPathUtils.toAdminPath(`/media/shared?share=${Number(shareId)}`)}
       >
         {title || AdminI18n.t('media.untitledShare')}
-      </a>
+      </AdminLink>
     );
   }
 }

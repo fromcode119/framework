@@ -5,6 +5,8 @@ import { TimezoneUtils } from '@/lib/timezone';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
+import { NotificationType } from '@/components/enums/notification-type.enum';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
  * What the general settings screen knows: the values being edited, and which of them this scope may
@@ -75,6 +77,8 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
    * server, never listed here — see {@link PlatformSettingLocks}. Nothing is locked until it answers.
    */
   @state platformLocks: PlatformSettingLocks = PlatformSettingLocks.none();
+  /** The console's host binds it to this site, so there is no platform scope to offer from here. */
+  @state hostLocksSite = false;
   @state loadError: string | null = null;
 
   protected get timezoneOptions(): { label: string; value: string }[] {
@@ -103,6 +107,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
    */
   @bound
   async openPlatformScope(): Promise<void> {
-    await TenantScopeClient.leaveAndReload();
+    const failure = await TenantScopeClient.leaveAndReload();
+    if (failure) this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
   }
 }

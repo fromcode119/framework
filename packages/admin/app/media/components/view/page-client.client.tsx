@@ -138,7 +138,7 @@ export class MediaPageClient extends AdminComponent implements IMediaPageHost {
         // The URL follows the view, so reload and back keep the tab. `shares` is the internal name the
         // Shared view has always had; the URL says what the tab says.
         const segment = value === 'shares' ? 'shared' : value;
-        window.history.pushState(null, '', AdminPathUtils.toAdminPath(`/media/${segment}`));
+        window.history.pushState(null, '', AdminPathUtils.toBrowserPath(`/media/${segment}`));
       },
       hasMore: this.hasMore,
       loadingMore: this.loadingMore,

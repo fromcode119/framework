@@ -1,7 +1,7 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
@@ -34,7 +34,7 @@ export class CollectionCreateDisabled extends PureReactor {
         <p className="text-slate-500 text-center max-w-md leading-relaxed mb-8">
           {this.description || AdminI18n.t('collection.recordsInThisCollectionAre')}
         </p>
-        <Button variant={ButtonVariant.PRIMARY} as={Link} href={this.listHref} icon={<FrameworkIcons.Layout size={16} />}>
+        <Button variant={ButtonVariant.PRIMARY} as={AdminLink} href={this.listHref} icon={<FrameworkIcons.Layout size={16} />}>
           {AdminI18n.t('collection.backTo', { title: this.title })}
         </Button>
       </div>

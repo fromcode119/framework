@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Button } from '@/components/ui/view/button.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { Card } from '@/components/ui/view/card.client';
@@ -28,7 +28,7 @@ export class UserSecurityView extends PureReactor {
   }
 
   if (!model.user) {
-    return <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1><Link href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToUsers')}</Button></Link></div>;
+    return <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1><AdminLink href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToUsers')}</Button></AdminLink></div>;
   }
 
   return (

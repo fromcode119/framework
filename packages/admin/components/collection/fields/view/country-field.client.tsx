@@ -6,6 +6,7 @@ import { CountryCatalog } from '@/components/collection/fields/country-catalog';
 import { PlatformCountryDescription } from '@/lib/settings/platform-country-description';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 /**
  * Built-in, framework-owned country picker. Renders the complete ISO 3166-1 catalog as a searchable
@@ -49,7 +50,7 @@ export class CountryField extends PureReactor {
         {inherits && !value && (
           <p className="mt-1.5 text-xs text-slate-500">
             {AdminI18n.t('ui.country.inEffect', { description: PlatformCountryDescription.describe(platform) })}{' '}
-            <a className="underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>{AdminI18n.t('ui.country.settingsLink')}</a>
+            <AdminLink className="underline" href={AdminPathUtils.toAdminPath('/settings/localization')}>{AdminI18n.t('ui.country.settingsLink')}</AdminLink>
           </p>
         )}
       </div>

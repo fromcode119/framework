@@ -1,5 +1,5 @@
 import type { MouseEvent, ReactElement, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { NavUtils } from '@/lib/nav-utils';
@@ -148,7 +148,7 @@ export class NavItemView extends Reactor {
           onMouseEnter={!isMini ? () => onHoverPreviewStart?.(href) : undefined}
           onMouseLeave={!isMini ? onHoverPreviewEnd : undefined}
         >
-          <Link
+          <AdminLink
             href={isGroupHeader ? '#' : href}
             onClick={this.handleClick}
             // Collapsed, the icon is the ONLY thing on screen: an 8px label truncated to "Dashboar.."
@@ -193,7 +193,7 @@ export class NavItemView extends Reactor {
                 onClick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); this.expanded = !expanded; }}
               />
             )}
-          </Link>
+          </AdminLink>
         </div>
 
         {hasChildren && expanded && !isMini && (
@@ -201,7 +201,7 @@ export class NavItemView extends Reactor {
             {children.map((child) => {
               const isSubActive = NavUtils.normalizePath(child.path) === activeChildPath;
               return (
-                <Link
+                <AdminLink
                   key={child.path}
                   href={child.path}
                   onClick={onClick}
@@ -215,7 +215,7 @@ export class NavItemView extends Reactor {
                     <span className="absolute left-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
                   )}
                   <span className="whitespace-nowrap tracking-[-0.01em]">{AdminNavText.menuLabel(child)}</span>
-                </Link>
+                </AdminLink>
               );
             })}
           </div>

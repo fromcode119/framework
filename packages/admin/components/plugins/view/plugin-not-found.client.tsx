@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PluginUnavailableReason } from '@/components/plugins/view/plugin-unavailable-reason.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -29,7 +29,7 @@ export class PluginNotFound extends PureReactor {
       <PluginUnavailableReason pluginSlug={pluginSlug} />
 
       <div className="flex items-center gap-4">
-        <Link href="/plugins">
+        <AdminLink href="/plugins">
           <Button
             variant={ButtonVariant.PRIMARY}
             className="rounded-xl px-10 py-5 font-bold tracking-tight text-[13px] shadow-2xl shadow-rose-500/20 bg-rose-500 hover:bg-rose-600 border-none transition-all hover:scale-105 active:scale-95"
@@ -37,7 +37,7 @@ export class PluginNotFound extends PureReactor {
           >
             {AdminI18n.t('plugins.list.managePlugins')}
           </Button>
-        </Link>
+        </AdminLink>
         <Button
           variant={ButtonVariant.GHOST}
           onClick={() => window.history.back()}

@@ -2,7 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import React from 'react';
 
 import type { ReactElement, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
@@ -117,7 +117,7 @@ export class PluginsLayout extends AdminComponent {
                   const isActive = tab.href === AdminConstants.ROUTES.PLUGINS.INSTALLED ? isInstalled : (tab.href === AdminConstants.ROUTES.PLUGINS.HEALTH ? isHealth : (tab.href === AdminConstants.ROUTES.PLUGINS.MARKETPLACE ? isMarketplace : false));
 
                   return (
-                    <Link
+                    <AdminLink
                       key={tab.href}
                       href={tab.href}
                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
@@ -132,7 +132,7 @@ export class PluginsLayout extends AdminComponent {
                     >
                       {React.cloneElement(tab.icon as ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
                       <span className="uppercase tracking-wide text-[10px] font-bold">{tab.label}</span>
-                    </Link>
+                    </AdminLink>
                   );
                 })}
               </div>

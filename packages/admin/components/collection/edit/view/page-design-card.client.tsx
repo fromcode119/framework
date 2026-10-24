@@ -5,6 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 /**
  * Names the plugin whose design fills this storefront page while its Content Blocks are empty.
@@ -57,12 +58,12 @@ export class PageDesignCard extends Reactor {
             ? AdminI18n.t('collection.pageDesign.blank', { plugin: design.pluginName })
             : AdminI18n.t('collection.pageDesign.replaced', { plugin: design.pluginName })}
         </p>
-        <a
+        <AdminLink
           href={AdminPathUtils.toAdminPath(AdminConstants.ROUTES.PLUGINS.DETAIL(design.pluginSlug))}
           className="mt-3 inline-block text-[12px] font-semibold text-indigo-600 hover:text-indigo-500 dark:text-indigo-400"
         >
           {AdminI18n.t('collection.pageDesign.open', { plugin: design.pluginName })}
-        </a>
+        </AdminLink>
       </Card>
     );
   }

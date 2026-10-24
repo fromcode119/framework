@@ -12,6 +12,7 @@ import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
+import { GatewayConsoleMount } from '@cli/services/gateway/gateway-console-mount';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -54,6 +55,7 @@ export class PlatformGateway {
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly retries = new GatewayRetryPolicy();
   private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
+  private readonly mountOf = new WeakMap<http.IncomingMessage, string>(); // a console on a site path
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -96,7 +98,11 @@ export class PlatformGateway {
       // writing into a finished response.
       res.destroy();
     });
-    this.proxy.on('proxyRes', (proxyRes, req) => { GatewayHttp2Adapter.toHttp2(proxyRes, req); });
+    this.proxy.on('proxyRes', (proxyRes, req) => {
+      const mount = this.mountOf.get(req);
+      if (mount && proxyRes.headers.location) proxyRes.headers.location = GatewayConsoleMount.rewriteLocation(proxyRes.headers.location, mount, PlatformGateway.hostOf(req));
+      GatewayHttp2Adapter.toHttp2(proxyRes, req);
+    });
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
@@ -193,11 +199,20 @@ export class PlatformGateway {
     this.proxy.web(req, res, { target });
   }
 
-  /** The upstream for this request, or null for an unknown host. An api host's root path is put under the api base. */
+  /**
+   * The upstream for this request, or null for an unknown host. An api host's root path is put under
+   * the api base; a site's console path is removed and named to the admin in a header.
+   */
   async targetFor(req: http.IncomingMessage): Promise<string | null> {
     const map = await this.routing.resolveMap();
-    req.url = GatewayApiHostPath.upstream(map, PlatformGateway.hostOf(req), req.url || '/');
-    return PlatformGateway.resolveTarget(map, PlatformGateway.hostOf(req), req.url || '/', this.targets);
+    const host = PlatformGateway.hostOf(req);
+    req.url = GatewayApiHostPath.upstream(map, host, req.url || '/');
+    const mounted = GatewayConsoleMount.resolve(map, host, req.url);
+    GatewayConsoleMount.applyHeader(req, mounted?.mount ?? null);
+    if (!mounted) return PlatformGateway.resolveTarget(map, host, req.url, this.targets);
+    this.mountOf.set(req, mounted.mount);
+    req.url = mounted.url;
+    return GatewayConsoleMount.targetFor(mounted, this.targets);
   }
 
   /** Pure routing rule, testable without sockets: map by host first, path rules when there is no map. */

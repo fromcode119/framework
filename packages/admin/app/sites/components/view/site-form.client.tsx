@@ -1,5 +1,5 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { RuntimeLocationUtils, ThemeMode } from '@fromcode119/core/client';
@@ -84,6 +84,17 @@ export class SiteForm extends PureReactor {
 
   @bound onEnvironment(value: string): void {
     this.emit({ environment: value });
+  }
+
+  @bound onConsolePath(e: ChangeEvent<HTMLInputElement>): void {
+    this.emit({ consolePath: e.target.value });
+  }
+
+  /** The address the hint shows: the path as typed on this site's primary host. */
+  private get consolePathExample(): string {
+    const host = this.values.primaryHost.trim() || AdminI18n.t('sites.slugExample');
+    const raw = this.values.consolePath.trim() || AdminI18n.t('sites.consolePathPlaceholder');
+    return `${host}${raw.startsWith('/') ? raw : `/${raw}`}`;
   }
 
   private togglePlugin(slug: string, checked: boolean): void {
@@ -200,7 +211,7 @@ export class SiteForm extends PureReactor {
             <Explanation>
               <p>
                 {AdminI18n.t('sites.workspaceNeverListed')}{' '}
-                <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</Link>.
+                <AdminLink href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</AdminLink>.
               </p>
             </Explanation>
           ) : (
@@ -238,6 +249,21 @@ export class SiteForm extends PureReactor {
           isWorkspace={values.isWorkspace}
           onChange={(hostRoles: Record<string, string>) => this.emit({ hostRoles })}
         />
+        {/* The second place a site's console can live, beside a host whose role is Console: a path on
+            the storefront hosts themselves. A workspace IS a console on its hosts, so it has none. */}
+        {values.isWorkspace ? null : (
+          <div className="fc-site-form__block">
+            <Input
+              label={AdminI18n.t('sites.consolePath')}
+              value={values.consolePath}
+              onChange={this.onConsolePath}
+              placeholder={AdminI18n.t('sites.consolePathPlaceholder')}
+              spellCheck={false}
+              autoCapitalize="off"
+            />
+            <p className="fc-site-form__hint">{AdminI18n.t('sites.consolePathHint', { example: this.consolePathExample })}</p>
+          </div>
+        )}
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it
              cannot change without rewriting them all. Shown as the fact it is, rather than as a greyed
@@ -284,9 +310,9 @@ export class SiteForm extends PureReactor {
                     {/* A plugin the platform cannot run says so HERE. Ticking it otherwise claims the
                         site runs something that is disabled — which is what "Toggle Failed" was. */}
                     {plugin.runnable === false ? (
-                      <Link className="fc-site-form__plugin-state" href={SiteForm.stateHref(plugin)}>
+                      <AdminLink className="fc-site-form__plugin-state" href={SiteForm.stateHref(plugin)}>
                         {SiteForm.stateLabel(plugin)} →
-                      </Link>
+                      </AdminLink>
                     ) : null}
                   </div>
                 ))}

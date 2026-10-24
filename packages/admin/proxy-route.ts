@@ -19,6 +19,8 @@ export class AdminProxyRoute {
    * - _next/static (static files)
    * - _next/image (image optimization files)
    * - _next/webpack-hmr (hot module replacement)
+   * - _fc-console (the same built assets under the admin's assetPrefix, ConsoleMountConstants.ASSET_PREFIX —
+   *   a literal because Next reads this matcher statically)
    * - icons-registry (framework internal icons)
    * - internal (server-to-server endpoints — see below)
    * - favicon.ico (favicon file)
@@ -36,7 +38,7 @@ export class AdminProxyRoute {
    */
   static readonly config = {
     matcher: [
-      '/((?!api|_next/static|_next/image|_next/webpack-hmr|icons-registry|internal|favicon.ico|robots.txt|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
+      '/((?!api|_fc-console|_next/static|_next/image|_next/webpack-hmr|icons-registry|internal|favicon.ico|robots.txt|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf|webmanifest)).*)',
     ],
   };
 }

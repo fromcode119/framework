@@ -61,6 +61,7 @@ export class TenantRegistryService {
       visibility: String(identity.visibility.value),
       environment: String(identity.environment.value),
       appearance: identity.appearance,
+      console_path: identity.consolePath || null,
       created_at: new Date(),
       updated_at: new Date(),
     });
@@ -71,7 +72,7 @@ export class TenantRegistryService {
   }
 
   /** The kind never changes after creation (it decides routing and login); the appearance of a workspace may. */
-  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown }): Promise<TenantRecord> {
+  async update(id: string, patch: { slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown; consolePath?: unknown }): Promise<TenantRecord> {
     const current = await this.get(id);
     if (!current) throw new Error(`Tenant "${id}" does not exist.`);
     const identity = TenantIdentity.from({
@@ -89,6 +90,8 @@ export class TenantRegistryService {
       appearance: patch.appearance ?? current.appearance,
       // Unstated means UNCHANGED, like visibility and environment above.
       hostRoles: patch.hostRoles ?? current.hostRoles,
+      // Unstated means UNCHANGED; an explicit '' clears it.
+      consolePath: patch.consolePath ?? current.consolePath,
     });
     await this.assertAvailable(identity, current.id);
     await this.db.update(SystemConstants.TABLE.TENANTS, { id: current.id }, {
@@ -108,6 +111,7 @@ export class TenantRegistryService {
       // far and then dropped, leaving its control dead for months.
       environment: String(identity.environment.value),
       appearance: identity.appearance,
+      console_path: identity.consolePath || null,
       updated_at: new Date(),
     });
     this.invalidate(current.id);

@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { DetailBox } from '@/components/view/detail-box.client';
@@ -29,9 +29,9 @@ export class ThemeOverviewIntegrations extends PureReactor {
             <Badge variant={integration.required === false ? 'gray' : 'warning'}>
               {integration.required === false ? AdminI18n.t('themes.optional') : AdminI18n.t('themes.required')}
             </Badge>
-            <Link href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)} className="text-[13px] font-medium text-indigo-500 hover:underline">
+            <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(integration.type)} className="text-[13px] font-medium text-indigo-500 hover:underline">
               {AdminI18n.t('themes.openIntegrationSettings')}
-            </Link>
+            </AdminLink>
           </div>
         ))}
       </DetailBox>

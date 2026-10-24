@@ -62,7 +62,9 @@ export class TenantRouteMap {
         // nothing on any screen saying so. `roleFor` answers from what the operator set, falling
         // back to the tenant's own kind.
         const target = TenantRouteMap.targetFor(tenant.roleFor(host));
-        routes.push(new TenantRoute(host, target, tenant.id));
+        // A storefront host may also carry the tenant's console on a path the operator chose.
+        const consolePath = target === GatewayTarget.FRONTEND ? tenant.consolePath : '';
+        routes.push(new TenantRoute(host, target, tenant.id, consolePath));
       }
     }
     return new TenantRouteMap(routes, setup);

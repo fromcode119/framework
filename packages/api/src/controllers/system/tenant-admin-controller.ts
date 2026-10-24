@@ -231,6 +231,7 @@ export class TenantAdminController extends BaseController {
       // What each host answers with, where the operator chose. Carried through like every other
       // field: a value the form sends and this method drops is a control that does nothing.
       hostRoles: tenant.hostRoles,
+      consolePath: tenant.consolePath,
       state: tenant.state,
       kind: tenant.kind,
       appearance: tenant.appearance,

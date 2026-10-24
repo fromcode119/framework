@@ -1,5 +1,5 @@
 import type { FormEvent, ReactElement } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminApi } from '@/lib/api';
@@ -131,9 +131,9 @@ export class ResetPasswordPage extends AdminComponent {
             <button onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
               {AdminI18n.t('login.backToLogin')}
             </button>
-            <Link href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
+            <AdminLink href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
               {AdminI18n.t('login.reset.needLink')}
-            </Link>
+            </AdminLink>
           </div>
         </div>
       </div>

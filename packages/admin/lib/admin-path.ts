@@ -4,6 +4,7 @@
 import { Platform } from '@fromcode119/react-class-components/lang';
 import { RouteConstants } from '@fromcode119/core/constants/route.constants';
 import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-utils';
+import { ConsoleMountUtils } from '@fromcode119/core/utils/console-mount-utils';
 
 /**
  * Admin path resolution utilities.
@@ -60,6 +61,32 @@ export class AdminPathUtils {
     return `${base}${normalizedPath}${suffix}`;
   }
 
+  /**
+   * `path` as the BROWSER must request it, for anything the router does not carry: a `fetch`, a
+   * service worker scope, `history.pushState`, a plain `<a href>`, `location.assign`. On a console
+   * mounted at a site's console path that is the admin path under the mount; elsewhere it is
+   * `toAdminPath`. Idempotent. Pass `mount` where there is no document to read it from (a server
+   * render reads it from the request — see `ConsoleMountContext`).
+   */
+  static toBrowserPath(path: string, mount: string = ConsoleMountUtils.current()): string {
+    return ConsoleMountUtils.prefix(AdminPathUtils.toAdminPath(path), mount);
+  }
+
+  /**
+   * The scope the console's service worker registers for: the console root as the browser sees it,
+   * ending in `/`. A worker may not claim more than its script's directory, and a bare `/backend`
+   * would also match a storefront's `/backend-sale`.
+   */
+  static workerScope(mount: string = ConsoleMountUtils.current()): string {
+    const root = AdminPathUtils.toBrowserPath('/', mount);
+    return root.endsWith('/') ? root : `${root}/`;
+  }
+
+  /** The admin route a browser pathname names: the mount, then the base path, taken off. */
+  static fromBrowserPath(pathname: string, mount: string = ConsoleMountUtils.current()): string {
+    return AdminPathUtils.stripBase(ConsoleMountUtils.strip(pathname || '/', mount));
+  }
+
   // ---------------------------------------------------------------------------
   // Private static helpers (implementation details — not part of public API)
   // ---------------------------------------------------------------------------
@@ -72,7 +99,7 @@ export class AdminPathUtils {
 
   private static inferAdminBasePathFromWindow(): string {
     if (!Platform.isBrowser) return '';
-    const pathname = window.location.pathname || '';
+    const pathname = ConsoleMountUtils.strip(window.location.pathname || '');
     // Use centralized constant instead of hardcoded string
     const defaultBase = RouteConstants.SEGMENTS.ADMIN_BASE;
     if (pathname === defaultBase || pathname.startsWith(`${defaultBase}/`)) return defaultBase;

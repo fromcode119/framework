@@ -20,9 +20,10 @@ export class PwaRegister extends Reactor {
     // `<origin>/sw.js` — a 404 ("A bad HTTP response code (404) was received when fetching the
     // script"), while the file is served at `<origin>/admin/sw.js`. The manifest <link> in
     // layout.tsx already goes through toAdminPath; this had been missed.
-    // `scope` must be the admin base too, or the worker would claim the whole origin.
-    const scriptUrl = AdminPathUtils.toAdminPath(AdminServiceWorkerConstants.SCRIPT_PATH);
-    const scope = AdminPathUtils.toAdminPath('/');
+    // `scope` must be the admin base too, or the worker would claim the whole origin. Both are BROWSER
+    // paths: on a console mounted at a site's console path the worker lives under the mount.
+    const scriptUrl = AdminPathUtils.toBrowserPath(AdminServiceWorkerConstants.SCRIPT_PATH);
+    const scope = AdminPathUtils.workerScope();
     navigator.serviceWorker.register(scriptUrl, { scope }).catch(() => { /* ignore */ });
   }
 

@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -70,7 +70,7 @@ export class CollectionListHeader extends PureReactor {
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.SM}
-              as={Link}
+              as={AdminLink}
               href={`/${pluginSlug}/${slug}/new`}
               className="h-9 px-4 rounded-lg font-semibold tracking-wide text-xs text-white"
               icon={<FrameworkIcons.Plus size={15} />}

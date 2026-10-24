@@ -4,7 +4,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 
 export class MarketplaceEmptyState extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -25,9 +25,9 @@ export class MarketplaceEmptyState extends PureReactor {
           {AdminI18n.t(this.configured ? 'plugins.list.tryADifferentSearchTerm' : 'plugins.list.noMarketplaceSetHelp')}
         </p>
         {!this.configured && (
-          <Link href={AdminConstants.ROUTES.SETTINGS.GENERAL} className="inline-block mt-4 text-sm font-semibold text-indigo-500 hover:text-indigo-400">
+          <AdminLink href={AdminConstants.ROUTES.SETTINGS.GENERAL} className="inline-block mt-4 text-sm font-semibold text-indigo-500 hover:text-indigo-400">
             {AdminI18n.t('plugins.list.openGeneralSettings')}
-          </Link>
+          </AdminLink>
         )}
       </div>
     );

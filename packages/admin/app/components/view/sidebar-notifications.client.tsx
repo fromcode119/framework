@@ -35,8 +35,8 @@ export class SidebarNotifications extends AdminComponent {
 
   private get device(): PushDevice {
     return new PushDevice({
-      workerUrl: AdminPathUtils.toAdminPath(AdminServiceWorkerConstants.SCRIPT_PATH),
-      scope: AdminPathUtils.toAdminPath('/'),
+      workerUrl: AdminPathUtils.toBrowserPath(AdminServiceWorkerConstants.SCRIPT_PATH),
+      scope: AdminPathUtils.workerScope(),
       surface: 'console',
       requests: {
         publicKey: async () => CoercionUtils.toString((await AdminApi.get(AdminNotificationEndpoints.PUSH_KEY, { noDedupe: true }))?.publicKey),

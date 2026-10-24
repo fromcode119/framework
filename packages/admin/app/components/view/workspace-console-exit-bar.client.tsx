@@ -62,11 +62,8 @@ export class WorkspaceConsoleExitBar extends AdminComponent {
   }
 
   private async leave(): Promise<void> {
-    if (!(await TenantScopeClient.leave())) {
-      this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), AdminI18n.t('shell.site.switchFailedNoReason'));
-      return;
-    }
-    window.location.reload();
+    const failure = await TenantScopeClient.leaveAndReload();
+    if (failure) this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
   }
 
   render(): ReactNode {

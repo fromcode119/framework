@@ -1,7 +1,7 @@
 import type { CollectionAccess } from '@/lib/collection-access';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { MouseEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Slot, FrameworkIcons } from '@fromcode119/react';
 import { Archive, ArchiveRestore, Copy, SlidersHorizontal } from 'lucide-react';
@@ -101,9 +101,9 @@ export class CollectionListRowActions extends PureReactor {
           </a>
         ) : null}
         {this.access.canCreate ? (
-          <Link href={this.duplicateHref} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.duplicate')} aria-label={AdminI18n.t('collection.list.duplicate')}>
+          <AdminLink href={this.duplicateHref} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.duplicate')} aria-label={AdminI18n.t('collection.list.duplicate')}>
             <Copy size={16} />
-          </Link>
+          </AdminLink>
         ) : null}
       </>
     );
@@ -137,9 +137,9 @@ export class CollectionListRowActions extends PureReactor {
             <SlidersHorizontal size={16} />
           </button>
         ) : null}
-        <Link href={`/${pluginSlug}/${this.slug}/${row.id}`} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.edit')} aria-label={AdminI18n.t('collection.list.edit')}>
+        <AdminLink href={`/${pluginSlug}/${this.slug}/${row.id}`} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.edit')} aria-label={AdminI18n.t('collection.list.edit')}>
           <FrameworkIcons.Edit size={16} />
-        </Link>
+        </AdminLink>
         {menuItems.length ? (
           <Dropdown
             align={HorizontalAlign.RIGHT}

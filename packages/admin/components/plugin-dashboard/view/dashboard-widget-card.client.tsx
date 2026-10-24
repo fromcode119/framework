@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SectionCard } from '@/components/plugin-dashboard/view/section-card.client';
@@ -51,9 +52,9 @@ export class DashboardWidgetCard extends Reactor {
 
   render(): ReactNode {
     const link = this.href ? (
-      <a href={this.href} className="inline-flex items-center gap-1 text-[12px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
+      <AdminLink href={this.href} className="inline-flex items-center gap-1 text-[12px] font-semibold text-indigo-600 hover:text-indigo-700 dark:text-indigo-400">
         {this.linkLabel || AdminI18n.t('dashboard.widgets.open')} <FrameworkIcons.ArrowRight size={13} />
-      </a>
+      </AdminLink>
     ) : undefined;
     return (
       <SectionCard title={this.title} subtitle={this.subtitle} icon={this.icon} actions={link} noPadding={this.noPadding}>

@@ -129,6 +129,7 @@ export type { ILoggerOptions } from '@core/interfaces/logger-options.interface';
 // ── Constants ────────────────────────────────────────────────────────────────
 export { SystemConstants } from '@core/constants/system.constants';
 export { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+export { ConsoleMountConstants } from '@core/constants/console-mount.constants';
 export { CookieConstants } from '@core/constants/cookie.constants';
 export { AdminSiteHeaderConstants } from '@core/constants/admin-site-header.constants';
 export { PluginToggleScopeConstants } from '@core/constants/plugin-toggle-scope.constants';
@@ -136,6 +137,7 @@ export { AppPathConstants } from '@core/constants/app-path.constants';
 export { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 export { RequestSurfaceOriginUtils } from '@core/utils/request-surface-origin-utils';
 export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
+export { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 export { RouteConstants } from '@core/constants/route.constants';

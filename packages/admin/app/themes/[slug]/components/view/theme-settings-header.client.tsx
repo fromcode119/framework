@@ -1,7 +1,7 @@
 import { ThemeSettingsTab } from '@/app/themes/[slug]/enums/theme-settings-tab.enum';
 import { ThemeMode, ThemeState } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
@@ -45,7 +45,7 @@ export class ThemeSettingsHeader extends PureReactor {
     return (
       <div>
         <div className={`mb-2 flex items-center gap-1.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-          <Link href={AdminConstants.ROUTES.THEMES.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('themes.installed')}</Link>
+          <AdminLink href={AdminConstants.ROUTES.THEMES.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('themes.installed')}</AdminLink>
           <span>/</span>
           <span>{themeDetail.name}</span>
         </div>

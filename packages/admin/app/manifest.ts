@@ -1,4 +1,7 @@
 import type { MetadataRoute } from 'next';
+import { headers } from 'next/headers';
+import { ConsoleMountConstants } from '@fromcode119/core/constants/console-mount.constants';
+import { ConsoleMountUtils } from '@fromcode119/core/utils/console-mount-utils';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 
@@ -12,18 +15,21 @@ import { AppEnv } from '@/lib/env';
  * console root; the active appearance/role then routes the user to the right landing (a partner to their portal,
  * an admin to the dashboard) — the framework does not assume any plugin's routes exist. Full "Add to Home Screen"
  * install requires HTTPS in production; the manifest + responsive shell work over http too.
+ * On a console mounted at a site's console path every address carries the mount the gateway names, so
+ * the installed app opens — and stays scoped to — that path.
  */
 export class AdminWebManifest {
   /** Build the manifest document from the framework's own app config. */
-  static manifest(): MetadataRoute.Manifest {
+  static async manifest(): Promise<MetadataRoute.Manifest> {
     const name = String(AppEnv.APP_NAME || 'Admin');
-    const icon = AdminPathUtils.toAdminPath(AppEnv.PWA_ICON_PATH);
+    const mount = ConsoleMountUtils.sanitize((await headers()).get(ConsoleMountConstants.HEADER));
+    const icon = AdminPathUtils.toBrowserPath(AppEnv.PWA_ICON_PATH, mount);
     return {
       name,
       short_name: name,
       description: `${name} — manage your platform on the go.`,
-      start_url: AdminPathUtils.toAdminPath('/'),
-      scope: AdminPathUtils.toAdminPath('/'),
+      start_url: AdminPathUtils.toBrowserPath('/', mount),
+      scope: AdminPathUtils.toBrowserPath('/', mount),
       display: 'standalone',
       orientation: 'portrait-primary',
       background_color: AppEnv.PWA_BACKGROUND_COLOR,
