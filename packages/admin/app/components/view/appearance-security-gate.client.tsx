@@ -10,6 +10,7 @@ import { Bridge } from '@fromcode119/react-class-components';
 import type { IAppearanceSecurityGateProps } from '@/lib/appearance/interfaces/appearance-security-gate-props.interface';
 import type { IAppearanceSecurityGateValues } from '@/lib/appearance/interfaces/appearance-security-gate-values.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PlatformAccess } from '@/lib/tenants/platform-access';
 
 /**
  * Shared AUTH gate for appearance shells (authentication only — NOT authorization). Runs the same auth
@@ -55,7 +56,7 @@ export class AppearanceSecurityGate extends Bridge<IAppearanceSecurityGateValues
     // nav the default shell does, without touching ClientLayoutShell. The gate owns the authed user, so it
     // supplies the user model to the presentation shell (falling back to any caller-provided user).
     const shellUser = authState.user
-      ? { email: authState.user.email, roles: authState.user.roles }
+      ? { email: authState.user.email, roles: authState.user.roles, canManagePlatform: PlatformAccess.canManagePlatform(authState.user) }
       : user;
     return (
       <>

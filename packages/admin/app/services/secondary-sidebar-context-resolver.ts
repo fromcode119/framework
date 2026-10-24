@@ -19,11 +19,7 @@ export class SecondarySidebarContextResolver {
     const routeItems = [...contextualItems, ...(input.secondaryPanel.globalItems || [])];
     const activeSourcePath = this.resolveActiveSourcePath(routeItems, input.pathname, activeMenuEntry?.path || '');
     const routeScopedItems = this.filterBySourcePaths(routeItems, input.pathname, activeSourcePath);
-    // A panel entry is also held to the page rule: an entry for a screen the user's role does not open
-    // would lead only to "your role does not include this page".
-    const viewer = { roles: input.userRoles, permissions: input.userCapabilities };
-    const items = this.filterAccessibleItems(routeScopedItems, input.userRoles, input.userCapabilities)
-      .filter((item) => AdminPageAccessService.isAllowed(item.path, input.menuItems, viewer));
+    const items = SecondarySidebarContextResolver.accessibleItems(routeScopedItems, input.menuItems, input.userRoles, input.userCapabilities);
 
     return {
       activeContextId: contextId,
@@ -137,7 +133,19 @@ export class SecondarySidebarContextResolver {
     return `${namespace}:${slug}`;
   }
 
-  private filterAccessibleItems(items: ISecondaryPanelItem[], userRoles: string[], userCapabilities: string[]): ISecondaryPanelItem[] {
+  /**
+   * The panel entries this person may open: each entry's own role/capability requirement, then the page
+   * rule, because an entry for a screen the user's role does not open would lead only to "your role does
+   * not include this page". Public so every surface that shows panel entries (the default sidebar and an
+   * appearance shell's nav) applies the same rule.
+   */
+  static accessibleItems(items: ISecondaryPanelItem[], menuItems: IMenuItem[], userRoles: string[], userCapabilities: string[]): ISecondaryPanelItem[] {
+    const viewer = { roles: userRoles, permissions: userCapabilities };
+    return SecondarySidebarContextResolver.filterAccessibleItems(items, userRoles, userCapabilities)
+      .filter((item) => AdminPageAccessService.isAllowed(item.path, menuItems, viewer));
+  }
+
+  private static filterAccessibleItems(items: ISecondaryPanelItem[], userRoles: string[], userCapabilities: string[]): ISecondaryPanelItem[] {
     const normalizedRoles = new Set((userRoles || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean));
     const normalizedCapabilities = new Set((userCapabilities || []).map((entry) => String(entry || '').trim().toLowerCase()).filter(Boolean));
 

@@ -12,7 +12,10 @@ import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearanc
 export interface IAppearanceShellProps {
   children: React.ReactNode;
   nav?: {
+    /** The primary menu, already limited to the screens this person may open. */
     items: IAppearanceNavItem[];
+    /** Every secondary-panel entry (all contexts + global), held to the same access rules. */
+    panelItems?: IAppearanceNavItem[];
     activePath: string;
   };
   user?: IAppearanceShellUser;

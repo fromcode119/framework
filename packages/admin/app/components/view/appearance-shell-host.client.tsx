@@ -7,7 +7,7 @@ import { AppearanceSurfacePolicy } from '@/lib/appearance/appearance-surface-pol
 import { ClientLayoutShell } from '@/app/components/view/client-layout-shell.client';
 import { AppearanceSecurityGate } from '@/app/components/view/appearance-security-gate.client';
 import { AppearanceRouteBlockedShell } from '@/app/components/view/appearance-route-blocked-shell.client';
-import type { IAppearanceNavItem } from '@/lib/appearance/interfaces/appearance-nav-item.interface';
+import type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearance-shell-user.interface';
 
 /**
@@ -24,7 +24,7 @@ import type { IAppearanceShellUser } from '@/lib/appearance/interfaces/appearanc
  */
 export class AppearanceShellHost extends AdminComponent {
   @prop declare children: ReactNode;
-  @prop declare nav?: { items: IAppearanceNavItem[]; activePath: string };
+  @prop declare nav?: IAppearanceShellProps['nav'];
   @prop declare user?: IAppearanceShellUser;
 
   render(): ReactNode {

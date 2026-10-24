@@ -1,7 +1,7 @@
 import { AuthControllerLoginThrottle } from '@api/controllers/auth/auth-controller-login-throttle';
 import { WorkspaceHostService } from '@api/services/request/workspace-host-service';
 import { Request, Response } from 'express';
-import { ApplicationUrlUtils, NetworkAddressUtils, PlatformSettingsService, SiteBaseUrl, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { ApplicationUrlUtils, NetworkAddressUtils, PlatformSettingsService, SiteBaseUrl, SystemConstants, TenantKind, TenantMembershipService, TenantMode } from '@fromcode119/core';
 import { ApiUrlUtils } from '@api/utils/url';
 import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 
@@ -175,6 +175,7 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
     // '' when it cannot be answered — the caller keeps its own fallback rather than getting the
     // platform's host passed off as the site's.
     const storefrontUrl = current ? await SiteBaseUrl.forSite(current, ApplicationUrlUtils.FRONTEND_APP) : '';
+    const bound = current ? tenants.find((tenant) => tenant.id === current) : undefined;
     return res.json({
       multiTenant: true,
       current,
@@ -182,9 +183,42 @@ export class AuthControllerTenantSelection extends AuthControllerLoginThrottle {
       mode: String(user?.workspaceMode || '') || null,
       platformChosen: user?.[AuthControllerTenantSelection.PLATFORM_CHOSEN_CLAIM] === true,
       storefrontUrl,
+      appearance: bound ? await this.boundAppearance(bound) : '',
+      shadows: bound ? await this.boundShadows(bound) : '',
       tenants,
       siteOwnedWrites: SiteOwnedWrites.possible(req),
     });
+  }
+
+  /**
+   * The console the bound scope wears, for EVERY member who may enter it.
+   *
+   * A site's appearance is its own `admin_appearance` setting, and the only other place the admin could
+   * read it is `/system/admin/settings`, which needs `system:manage`. A member holding a narrower role
+   * (one plugin's screens, say) was refused that read and got the default console instead of the site's
+   * own. Answered here from the site's own row only, the same read the Sites page makes, so a site with
+   * none says '' (the built-in console) and never the platform's choice. A workspace's is its kind lock.
+   */
+  protected async boundAppearance(tenant: { id: string; kind: string; appearance: string }): Promise<string> {
+    if (TenantKind.parse(tenant.kind)?.isWorkspace) return tenant.appearance;
+    const row = await this.db.withTenant(tenant.id, () => this.db
+      .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_APPEARANCE })
+      .catch(() => null));
+    return String((row as any)?.value ?? '').trim();
+  }
+
+  /**
+   * The bound site's own `admin_shadows` setting, for the same reason as its appearance: the console
+   * a member wears is drawn flat or elevated by the site, and the settings route that also carries it
+   * needs `system:manage`. '' when the site has none (elevated) and for a workspace, which has no such
+   * setting of its own.
+   */
+  protected async boundShadows(tenant: { id: string; kind: string }): Promise<string> {
+    if (TenantKind.parse(tenant.kind)?.isWorkspace) return '';
+    const row = await this.db.withTenant(tenant.id, () => this.db
+      .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_SHADOWS })
+      .catch(() => null));
+    return String((row as any)?.value ?? '').trim();
   }
 
   /**

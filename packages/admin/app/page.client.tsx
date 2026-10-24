@@ -69,6 +69,10 @@ export class AdminPage extends AdminComponent {
     this.prevRefreshVersion = this.runtime.plugins?.refreshVersion;
 
     if (isAuthLoading || !user) return;
+    // An appearance that draws its own dashboard owns the landing: it reads only what its own screens
+    // read, so neither the redirect below (built for the statistics THIS page needs) nor those fetches
+    // apply. Redirecting sent every scoped member past the appearance's Overview.
+    if (this.pageBody(AdminPageKeys.DASHBOARD)) return;
 
     // A scoped console user (a staff member, an editor) who cannot read the statistics this page is
     // built from goes to the first screen their menu offers instead.

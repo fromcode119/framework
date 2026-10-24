@@ -117,7 +117,9 @@ export class EditPageSidebar extends PureReactor {
           </Card>
         )}
 
-        {!isNew && (
+        {/* Only the storefront pages collection can show a plugin's design; asking for any other record
+            needs content access a plugin-only role does not hold, and the answer is always "none". */}
+        {!isNew && collection?.storefrontPages === true && (
           <PageDesignCard collectionSlug={collection?.slug} recordId={id} content={formData.content} />
         )}
 

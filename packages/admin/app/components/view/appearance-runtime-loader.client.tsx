@@ -15,6 +15,7 @@ import { TenantOption } from '@/lib/tenants/tenant-option';
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import { SessionAppearanceChoice } from '@/lib/appearance/session-appearance-choice';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { SystemConstants } from '@fromcode119/core/client';
 
 /**
  * Loads the active external appearance's runtime bundle BEFORE rendering the admin tree, so the
@@ -73,17 +74,32 @@ export class AppearanceRuntimeLoader extends Reactor {
         WorkspaceAppearanceLock.clear();
       }
       if (!isAuthRoute && !workspace) {
-        try {
-          const settings = await AdminSystemSettingsClient.getAll();
-          desired = String((settings as Record<string, unknown>)?.admin_appearance || '').trim() || deploymentDefault;
-          SurfaceElevationService.sync(settings as Record<string, unknown>);
-        } catch {
-          /* settings fetch failed — fall back to the first-paint hint */
+        const available = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
+        const site = AppearanceRuntimeLoader.boundSite(available);
+        if (site) {
+          // A SITE wears its own `admin_appearance` and `admin_shadows`. Both travel with the session's
+          // scope answer, which every member of the site may read; `/system/admin/settings` needs
+          // `system:manage`, so a member holding a narrower role was refused it (a 403 on every load)
+          // and got the default console.
+          SessionAppearanceChoice.clear();
+          desired = String(available?.appearance ?? '').trim() || deploymentDefault;
+          SurfaceElevationService.sync({
+            [SystemConstants.META_KEY.ADMIN_APPEARANCE]: desired,
+            ...(String(available?.shadows ?? '') ? { [SystemConstants.META_KEY.ADMIN_SHADOWS]: available.shadows } : {}),
+          });
+        } else {
+          try {
+            const settings = await AdminSystemSettingsClient.getAll();
+            desired = String((settings as Record<string, unknown>)?.admin_appearance || '').trim() || deploymentDefault;
+            SurfaceElevationService.sync(settings as Record<string, unknown>);
+          } catch {
+            /* settings fetch failed — fall back to the first-paint hint */
+          }
+          // On the shared admin host a PLATFORM admin opens a workspace tenant either as its
+          // appearance or in the default console to configure it — a per-session choice made in the
+          // site switcher and carried by the session, never by a setting.
+          desired = AppearanceRuntimeLoader.workspaceSessionChoice(available, desired);
         }
-        // On the shared admin host a PLATFORM admin opens a workspace tenant either as its
-        // appearance or in the default console to configure it — a per-session choice made in the
-        // site switcher and carried by the session, never by a setting.
-        desired = await AppearanceRuntimeLoader.workspaceSessionChoice(desired);
       }
       try {
         BrandTokenStyleService.install((await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.FRONTEND) as Record<string, unknown>)?.cssVariables);
@@ -123,11 +139,17 @@ export class AppearanceRuntimeLoader extends Reactor {
       this.resolved = true;
   }
 
-  private static async workspaceSessionChoice(fallback: string): Promise<string> {
-    const available = await AdminApi.get(AdminConstants.ENDPOINTS.AUTH.TENANTS_AVAILABLE).catch(() => null);
+  /** The bound scope when it is a SITE (not a workspace, not the platform), else null. */
+  private static boundSite(available: any): TenantOption | null {
+    if (!available || available.multiTenant !== true) return null;
+    const current = TenantOption.fromList(available.tenants).find((tenant) => tenant.id === available.current);
+    return current && !current.isWorkspace ? current : null;
+  }
+
+  private static workspaceSessionChoice(available: any, fallback: string): string {
     if (!available || available.multiTenant !== true) { SessionAppearanceChoice.clear(); return fallback; }
     const current = TenantOption.fromList(available.tenants).find((tenant) => tenant.id === available.current);
-    if (!current || !current.isWorkspace) { SessionAppearanceChoice.clear(); return fallback; }
+    if (!current) { SessionAppearanceChoice.clear(); return fallback; }
     const chosen = String(available.mode || '') === 'appearance' ? (current.appearance || 'default') : 'default';
     SessionAppearanceChoice.set(chosen);
     return chosen;
