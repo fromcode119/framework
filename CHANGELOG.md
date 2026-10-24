@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.444] - 2026-10-24
+
+### Fixed
+
+- **admin**: name and icon a site's console from its appearance on the server ([#1065](https://github.com/fromcode119/framework/pull/1065))
+
 ## [0.2.443] - 2026-10-24
 
 ### Fixed
