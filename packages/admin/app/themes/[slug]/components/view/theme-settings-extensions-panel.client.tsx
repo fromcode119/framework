@@ -1,7 +1,7 @@
 import { ThemeConfigFieldType, ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -62,9 +62,9 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         )}
                       </div>
                       {schema?.integrationType && (
-                        <Link href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600">
+                        <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600">
                           {AdminI18n.t('themes.openIntegration')}
-                        </Link>
+                        </AdminLink>
                       )}
                     </div>
 

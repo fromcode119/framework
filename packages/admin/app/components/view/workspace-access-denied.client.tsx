@@ -6,6 +6,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AuthUtils } from '@/lib/auth-utils';
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminPathUtils } from '@/lib/admin-path';
 
 /**
  * "You are signed in, but not here."
@@ -35,7 +36,7 @@ export class WorkspaceAccessDenied extends AdminComponent {
   @bound
   private signOut(): void {
     AuthUtils.purgeAuth();
-    window.location.href = AdminConstants.ROUTES.AUTH.LOGIN;
+    window.location.href = AdminPathUtils.toBrowserPath(AdminConstants.ROUTES.AUTH.LOGIN);
   }
 
   render(): ReactElement {

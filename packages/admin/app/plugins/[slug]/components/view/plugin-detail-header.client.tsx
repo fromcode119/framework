@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
@@ -90,7 +90,7 @@ export class PluginDetailHeader extends PureReactor {
     return (
       <div>
         <div className={`mb-2 flex items-center gap-1.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-          <Link href={AdminConstants.ROUTES.PLUGINS.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('plugins.detail.installed')}</Link>
+          <AdminLink href={AdminConstants.ROUTES.PLUGINS.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('plugins.detail.installed')}</AdminLink>
           <span>/</span>
           <span>{plugin.manifest.name}</span>
         </div>

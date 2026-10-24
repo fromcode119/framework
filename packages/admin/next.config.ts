@@ -2,6 +2,7 @@ import path from 'node:path';
 import fs from 'node:fs';
 import { NextConfigEnvironment } from '../../config/next-config-environment';
 import { NextConfigAliases } from '../../config/next-config-aliases';
+import { ConsoleAssetConstants } from '../core/src/constants/console-asset.constants';
 import type { INextWebpackConfig } from '../../config/interfaces/next-webpack-config.interface';
 import type { INextWebpackContext } from '../../config/interfaces/next-webpack-context.interface';
 
@@ -30,6 +31,10 @@ class AdminNextConfig {
 
     return {
   basePath: adminBasePath,
+  // A console mounted on a site's own host shares that host with the storefront, which serves its own
+  // `/_next`; the admin's assets live under a root the storefront never uses (see ConsoleAssetConstants).
+  // Next strips this relative prefix itself, so every host serves them the same way.
+  assetPrefix: `${adminBasePath}${ConsoleAssetConstants.PREFIX}`,
   allowedDevOrigins: NextConfigEnvironment.getAllowedDevOrigins(),
   reactStrictMode: true,
   // Names the framework to every visitor and helps nobody.
@@ -146,7 +151,7 @@ class AdminNextConfig {
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
       {
-        source: '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
+        source: '/((?!_fc-console|_next/static|_next/image|favicon.ico|.*\\.(?:js|css|json|png|jpg|jpeg|gif|svg|woff|woff2|ttf|otf)).*)',
         headers: [
           { key: 'Cache-Control', value: 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0' },
           { key: 'Pragma', value: 'no-cache' },

@@ -23,6 +23,7 @@ import { SiteDomainsCard } from '@/app/sites/[id]/site-domains-card.client';
 import { SiteMembersCard } from '@/app/sites/[id]/site-members-card.client';
 import { SiteDangerCard } from '@/app/sites/[id]/site-danger-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminPathUtils } from '@/lib/admin-path';
 
 /** One site: identity and state, its members, its exports, and the one irreversible action. */
 export class SiteDetailPageClient extends AdminComponent {
@@ -159,7 +160,7 @@ export class SiteDetailPageClient extends AdminComponent {
     this.entering = true;
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId: this.id });
-      window.location.assign(AdminConstants.ROUTES.ROOT);
+      window.location.assign(AdminPathUtils.toBrowserPath(AdminConstants.ROUTES.ROOT));
     } catch (err: any) {
       this.entering = false;
       this.runtime.notify.addNotification({ title: AdminI18n.t('sites.couldNotOpenTheSite'), message: err?.message || AdminI18n.t('sites.theSiteCouldNotBe3'), type: NotificationType.ERROR });

@@ -8,6 +8,7 @@ import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminRouteUtils } from '@/lib/admin-route-utils';
+import { AdminPathUtils } from '@/lib/admin-path';
 import { BrandTokenStyleService } from '@/lib/theme/brand-token-style-service';
 import { AdminClass } from '@/lib/admin-class';
 import { HostInfoClient } from '@/lib/tenants/host-info-client';
@@ -56,7 +57,7 @@ export class AppearanceRuntimeLoader extends Reactor {
       // on the login screen), so there is nothing to resolve before anyone signs in. A WORKSPACE domain
       // is different — see the `isAuthRoute` early return below.
       const isAuthRoute = AdminRouteUtils.isUnauthenticatedAuthRoute(
-        !Platform.isBrowser ? '' : (window.location.pathname || ''),
+        !Platform.isBrowser ? '' : AdminPathUtils.fromBrowserPath(window.location.pathname || ''),
       );
 
       const deploymentDefault = String(AppEnv.ADMIN_APPEARANCE || '').trim();

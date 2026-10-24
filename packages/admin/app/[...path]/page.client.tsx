@@ -4,7 +4,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { prop, state } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PluginMountErrorFallback } from '@/components/view/plugin-mount-error-fallback';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -89,9 +89,9 @@ export class DynamicPluginPage extends AdminComponent {
                     <p className="text-slate-500 text-sm max-w-sm mt-2">
                        <AdminRichText k="shell.pluginPage.noComponent" vars={{ path: pathname, plugin: pluginSlug }} classes={{ code: 'text-indigo-500 font-mono' }} />
                     </p>
-                    <Link href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20">
+                    <AdminLink href="/plugins" className="mt-6 px-6 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow-lg shadow-indigo-600/20">
                        {AdminI18n.t('shell.pluginPage.backToMarketplace')}
-                    </Link>
+                    </AdminLink>
                  </div>
                }/>
              </div>

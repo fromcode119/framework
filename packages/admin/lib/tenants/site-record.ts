@@ -31,6 +31,8 @@ export class SiteRecord {
     readonly pageCount: number,
     /** Export archives for this site, newest first, each with the id the download route takes. */
     readonly exports: Array<{ id: string; filename: string; sizeBytes: number; modifiedAt: string }>,
+    /** Where the site's console also answers on its own storefront hosts (`/admin`); `''` for nowhere. */
+    readonly consolePath: string,
   ) {}
 
   get isWorkspace(): boolean {
@@ -88,6 +90,7 @@ export class SiteRecord {
         sizeBytes: CoercionUtils.toNumber(e?.sizeBytes),
         modifiedAt: CoercionUtils.toString(e?.modifiedAt),
       })) : [],
+      CoercionUtils.toString(input.consolePath),
     );
   }
 

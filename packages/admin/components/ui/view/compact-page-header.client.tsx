@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
@@ -30,7 +30,7 @@ export class CompactPageHeader extends PureReactor {
     if (!backHref && !onBack) return null;
     const cls = 'h-9 w-9 flex items-center justify-center rounded-lg border shrink-0 transition-colors border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800';
     const inner = <FrameworkIcons.Left size={16} strokeWidth={2} />;
-    if (backHref) return <Link href={backHref} className={cls}>{inner}</Link>;
+    if (backHref) return <AdminLink href={backHref} className={cls}>{inner}</AdminLink>;
     return <button type="button" onClick={onBack} className={cls}>{inner}</button>;
   }
 

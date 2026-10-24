@@ -2,7 +2,8 @@ import type { ReactNode } from 'react';
 import { Reactor, state } from '@fromcode119/react-class-components';
 
 import { AppEnv } from '@/lib/env';
-import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
+import { AdminPathUtils } from '@/lib/admin-path';
+import { ConsoleMountContext } from '@/components/view/console-mount-context.client';
 import { HostInfoClient } from '@/lib/tenants/host-info-client';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
@@ -13,6 +14,9 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * the platform's welcome — the domain already belongs to that customer (T6).
  */
 export class LoginPageHeader extends Reactor {
+  /** The console mount, so the deployment's brand logo resolves on a console served from a site's console path. */
+  static contextType = ConsoleMountContext.context;
+  declare context: string;
   @state workspace: { slug: string; appearance: string } | null = null;
 
   componentDidMount(): void {
@@ -48,12 +52,12 @@ export class LoginPageHeader extends Reactor {
         {this.showsPlatformBrand ? (
           <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
             <img
-              src={LoginPageConstants.BRAND_LOGO_LIGHT_PATH}
+              src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_LIGHT_PATH, this.context)}
               alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
               className="h-auto w-[220px] dark:hidden"
             />
             <img
-              src={LoginPageConstants.BRAND_LOGO_DARK_PATH}
+              src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_DARK_PATH, this.context)}
               alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
               className="hidden h-auto w-[220px] dark:block"
             />

@@ -23,7 +23,7 @@ export class AdminApiSessionGuardService {
     if (!Platform.isBrowser) {
       return;
     }
-    if (AdminPathUtils.stripBase(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {
+    if (AdminPathUtils.fromBrowserPath(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {
       return;
     }
     if (url.includes(AdminConstants.ENDPOINTS.AUTH.SECURITY) || String(method || 'GET').toUpperCase() !== 'GET') {

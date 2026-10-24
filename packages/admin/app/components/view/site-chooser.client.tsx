@@ -8,6 +8,7 @@ import { AuthUtils } from '@/lib/auth-utils';
 import type { TenantOption } from '@/lib/tenants/tenant-option';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { AdminPathUtils } from '@/lib/admin-path';
 
 /**
  * "Which site are you working in?" — the step between signing in and the admin, for an account that
@@ -47,7 +48,7 @@ export class SiteChooser extends AdminComponent {
   @bound
   private signOut(): void {
     AuthUtils.purgeAuth();
-    window.location.href = AdminConstants.ROUTES.AUTH.LOGIN;
+    window.location.href = AdminPathUtils.toBrowserPath(AdminConstants.ROUTES.AUTH.LOGIN);
   }
 
   private renderSite(site: TenantOption): ReactElement {

@@ -3,7 +3,7 @@ import { GatewayRetryPolicy } from '@cli/services/gateway-retry-policy';
 import { RefusedAddressLookup } from '@cli/services/refused-address-lookup';
 import { Duplex } from 'stream';
 import httpProxy from 'http-proxy';
-import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RequestSurfaceUtils, RouteConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApiPathUtils, GatewayTarget, InternalServiceAuth, RouteConstants } from '@fromcode119/core';
 import { CertificateBundleClient } from '@cli/services/certificate-bundle-client';
 import { GatewayPlainListenerPolicy } from '@cli/services/gateway-plain-listener-policy';
 import { GatewayTlsListener } from '@cli/services/gateway-tls-listener';
@@ -12,6 +12,8 @@ import { GatewayListener } from '@cli/services/gateway/gateway-listener';
 import { RoutingMapClient } from '@cli/services/routing-map-client';
 import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-check';
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
+import { GatewayConsoleMount } from '@cli/services/gateway/gateway-console-mount';
+import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -54,6 +56,7 @@ export class PlatformGateway {
   private readonly proxy = httpProxy.createProxyServer({ ws: true, xfwd: true, agent: this.agent });
   private readonly retries = new GatewayRetryPolicy();
   private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
+  private readonly mountOf = new WeakMap<http.IncomingMessage, string>(); // a console on a site path
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -96,7 +99,11 @@ export class PlatformGateway {
       // writing into a finished response.
       res.destroy();
     });
-    this.proxy.on('proxyRes', (proxyRes, req) => { GatewayHttp2Adapter.toHttp2(proxyRes, req); });
+    this.proxy.on('proxyRes', (proxyRes, req) => {
+      const mount = this.mountOf.get(req);
+      if (mount && proxyRes.headers.location) proxyRes.headers.location = GatewayConsoleMount.rewriteLocation(proxyRes.headers.location, mount, PlatformGateway.hostOf(req));
+      GatewayHttp2Adapter.toHttp2(proxyRes, req);
+    });
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
@@ -193,59 +200,20 @@ export class PlatformGateway {
     this.proxy.web(req, res, { target });
   }
 
-  /** The upstream for this request, or null for an unknown host. An api host's root path is put under the api base. */
+  /**
+   * The upstream for this request, or null for an unknown host. An api host's root path is put under
+   * the api base; a site's console path is removed and named to the admin in a header.
+   */
   async targetFor(req: http.IncomingMessage): Promise<string | null> {
     const map = await this.routing.resolveMap();
-    req.url = GatewayApiHostPath.upstream(map, PlatformGateway.hostOf(req), req.url || '/');
-    return PlatformGateway.resolveTarget(map, PlatformGateway.hostOf(req), req.url || '/', this.targets);
-  }
-
-  /** Pure routing rule, testable without sockets: map by host first, path rules when there is no map. */
-  static resolveTarget(map: TenantRouteMap | null, host: string, pathname: string, targets: Record<string, string>): string | null {
-    if (map) {
-      // NOT YET SET UP: no tenants and no admin domain, so there is no host to recognise and the
-      // fail-closed 404 below would leave a fresh install with no host that answers at all. While
-      // that is true — and `SetupMode` decides it once at boot, from an empty database, on a timer —
-      // any host falls through to the SAME path rules a deployment without a routing map uses. It is
-      // not a new routing rule, just the existing one applied for as long as nobody has claimed this
-      // platform. The api refuses the setup endpoint itself once the window closes or someone else
-      // claims it; the gateway only decides who gets to ask.
-      if (map.setup) return PlatformGateway.resolveForSetup(pathname, targets);
-
-      const route = map.resolve(host);
-      if (!route) return null;
-      // An app host — a workspace console OR a site's storefront — calls the api on ITS OWN origin
-      // (`/api/*`, uploads, plugin and theme assets): same site, so its session cookie and CORS need
-      // nothing special, and the api reads the tenant from the Host. That last part is the point: on a
-      // multi-site deployment the host is the only thing that says WHICH site a call belongs to, and a
-      // storefront sent to one shared api host loses it — the courier integration then read the
-      // platform-level record instead of the shop's. Only these paths; the app owns `/media`,
-      // `/plugins/<slug>/settings` and every storefront page.
-      if (RequestSurfaceUtils.isApiPathOnAppHost(pathname)) return targets[GatewayTarget.API.value] || null;
-      return targets[route.target.value] || null;
-    }
-    return PlatformGateway.resolveByPath(pathname, targets);
-  }
-
-  /**
-   * While nobody has claimed this platform, every host leads to the CONSOLE.
-   *
-   * Not the generic path rule: that sends `/` to the frontend, and during setup there are no sites —
-   * the operator would open the host they were given and land on nothing at all. The only two
-   * things that can usefully answer yet are the wizard and the api it posts to.
-   */
-  private static resolveForSetup(pathname: string, targets: Record<string, string>): string | null {
-    if (RequestSurfaceUtils.isApiPath(pathname)) return targets[GatewayTarget.API.value] || null;
-    return targets[GatewayTarget.ADMIN.value] || null;
-  }
-
-  /** The single-domain rule: decide by PATH, because no host here means anything yet. */
-  private static resolveByPath(pathname: string, targets: Record<string, string>): string | null {
-    if (RequestSurfaceUtils.isApiPath(pathname)) return targets[GatewayTarget.API.value];
-    if (RequestSurfaceUtils.isAdminPath(pathname)) return targets[GatewayTarget.ADMIN.value];
-    if (targets[GatewayTarget.FRONTEND.value]) return targets[GatewayTarget.FRONTEND.value];
-    if (pathname === '/' || pathname.startsWith('/?')) return targets[GatewayTarget.API.value];
-    return targets[GatewayTarget.ADMIN.value];
+    const host = PlatformGateway.hostOf(req);
+    req.url = GatewayApiHostPath.upstream(map, host, req.url || '/');
+    const mounted = GatewayConsoleMount.resolve(map, host, req.url);
+    GatewayConsoleMount.applyHeader(req, mounted?.mount ?? null);
+    if (!mounted) return GatewayRouteRules.resolveTarget(map, host, req.url, this.targets);
+    this.mountOf.set(req, mounted.mount);
+    req.url = mounted.url;
+    return GatewayConsoleMount.targetFor(mounted, this.targets);
   }
 
   private async reload(req: http.IncomingMessage, res: http.ServerResponse): Promise<void> {

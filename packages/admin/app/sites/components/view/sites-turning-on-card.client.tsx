@@ -9,6 +9,7 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginRuntimeWaitService } from '@/lib/plugin-runtime-wait-service';
 import { RestartApiAction } from '@/app/settings/infrastructure/restart-api-action.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminPathUtils } from '@/lib/admin-path';
 
 /**
  * Shown after the FIRST site is created, imported or adopted, while the api restarts to turn sites on.
@@ -33,9 +34,9 @@ export class SitesTurningOnCard extends AdminComponent {
     }
     try {
       await AdminApi.post(AdminConstants.ENDPOINTS.AUTH.TENANTS_SELECT, { tenantId: this.props.tenantId });
-      window.location.assign(AdminConstants.ROUTES.ROOT);
+      window.location.assign(AdminPathUtils.toBrowserPath(AdminConstants.ROUTES.ROOT));
     } catch {
-      window.location.assign(this.props.fallbackHref);
+      window.location.assign(AdminPathUtils.toBrowserPath(this.props.fallbackHref));
     }
   }
 

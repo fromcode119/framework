@@ -1,7 +1,7 @@
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons, RecordsHub } from '@fromcode119/react';
@@ -63,7 +63,7 @@ export class PersonEditPage extends PersonEditPageActions {
         <SiteScopeGate what={AdminI18n.t('users.people2', { routeId: this.routeId })}>
           <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4">
             <p className="font-bold text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
-            <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">{AdminI18n.t('users.backToPeople')}</Link>
+            <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">{AdminI18n.t('users.backToPeople')}</AdminLink>
           </div>
         </SiteScopeGate>
       );
@@ -104,7 +104,7 @@ export class PersonEditPage extends PersonEditPageActions {
                   <Button variant={ButtonVariant.SECONDARY} type="button" isLoading={sendingReset} onClick={() => this.sendPasswordReset()}
                     className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px]">{AdminI18n.t('users.sendPasswordResetEmail')}</Button>
                 ) : null}
-                <Link href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</Link>
+                <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="h-10 px-6 rounded-xl font-bold tracking-tight text-[12px] flex items-center text-slate-500 hover:text-slate-700">{AdminI18n.t('users.cancel')}</AdminLink>
               </div>
             </form>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />

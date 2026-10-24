@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserProfileHeader extends PureReactor {
@@ -28,7 +28,7 @@ export class UserProfileHeader extends PureReactor {
         subtitle={`${user.email} · ID: ${user.id}`}
         actions={
           <>
-            <Link href={AdminConstants.ROUTES.USERS.EDIT(userId)}>
+            <AdminLink href={AdminConstants.ROUTES.USERS.EDIT(userId)}>
               <Button
                 variant={ButtonVariant.SECONDARY}
                 className="px-4 h-9 rounded-lg font-semibold text-xs"
@@ -36,25 +36,25 @@ export class UserProfileHeader extends PureReactor {
               >
                 {AdminI18n.t('users.editProfile')}
               </Button>
-            </Link>
+            </AdminLink>
             {this.selfService ? (
-              <Link href={AdminConstants.ROUTES.USERS.SECURITY(userId)}>
+              <AdminLink href={AdminConstants.ROUTES.USERS.SECURITY(userId)}>
                 <Button
                   className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
                   {AdminI18n.t('users.security')}
                 </Button>
-              </Link>
+              </AdminLink>
             ) : (
-              <Link href={AdminConstants.ROUTES.USERS.ROLES(userId)}>
+              <AdminLink href={AdminConstants.ROUTES.USERS.ROLES(userId)}>
                 <Button
                   className="px-4 h-9 rounded-lg font-semibold text-xs text-white"
                   icon={<FrameworkIcons.Shield size={15} />}
                 >
                   {AdminI18n.t('users.configureRbac')}
                 </Button>
-              </Link>
+              </AdminLink>
             )}
           </>
         }

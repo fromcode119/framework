@@ -1,4 +1,5 @@
 import { WorkspaceAppearanceLock } from '@/lib/appearance/workspace-appearance-lock';
+import { AdminLink } from '@/components/view/admin-link.client';
 import type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 import type { ReactNode } from 'react';
 import { prop } from '@fromcode119/react-class-components';
@@ -56,13 +57,13 @@ export class AppearanceRouteBlockedShell extends AdminComponent {
             {AdminI18n.t('shell.blocked.body', { label })}
           </p>
           <div className="mt-6 flex flex-col gap-2">
-            <a href={AppPathConstants.ADMIN.ROOT} className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
+            <AdminLink href={AppPathConstants.ADMIN.ROOT} className="inline-flex items-center justify-center rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-700 dark:bg-white dark:text-slate-900 dark:hover:bg-slate-200">
               {AdminI18n.t('shell.blocked.back', { label })}
-            </a>
+            </AdminLink>
             {this.isSuperAdmin && !WorkspaceAppearanceLock.locked && (
-              <a href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE} className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              <AdminLink href={AppPathConstants.ADMIN.SETTINGS.APPEARANCE} className="inline-flex items-center justify-center rounded-lg border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
                 {AdminI18n.t('shell.blocked.switch')}
-              </a>
+              </AdminLink>
             )}
           </div>
         </div>

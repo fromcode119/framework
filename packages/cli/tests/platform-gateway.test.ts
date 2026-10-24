@@ -2,48 +2,49 @@ import { describe, expect, it } from 'vitest';
 import { ApiVersionUtils, TenantRecord, TenantRouteMap } from '@fromcode119/core';
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
 import { PlatformGateway } from '@cli/services/platform-gateway';
+import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
 
 const targets = { api: 'http://api:3000', admin: 'http://admin:3000', frontend: 'http://frontend:3000' };
 const site = TenantRecord.from({ id: 'acme', slug: 'acme', primary_host: 'acme.test', host_aliases: '["api.acme.test"]', state: 'active', kind: 'site' });
 const workspace = TenantRecord.from({ id: 'workspace-a', slug: 'workspace-a', primary_host: 'workspace-a.test', host_aliases: '[]', state: 'active', kind: 'workspace', appearance: 'workspace-a' });
 const map = TenantRouteMap.build([site, workspace], { admin: 'admin.platform.test', api: 'api.platform.test', frontend: 'frontend.platform.test' });
 
-describe('PlatformGateway.resolveTarget', () => {
+describe('GatewayRouteRules.resolveTarget', () => {
   it('routes by host from the tenant table: site → frontend, workspace → admin, api. alias → api', () => {
-    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/', targets)).toBe(targets.frontend);
-    expect(PlatformGateway.resolveTarget(map, 'workspace-a.test', '/alpha/affiliates', targets)).toBe(targets.admin);
-    expect(PlatformGateway.resolveTarget(map, 'api.acme.test', '/api/v1/plugins/chi/gw', targets)).toBe(targets.api);
-    expect(PlatformGateway.resolveTarget(map, 'admin.platform.test', '/', targets)).toBe(targets.admin);
+    expect(GatewayRouteRules.resolveTarget(map, 'acme.test', '/', targets)).toBe(targets.frontend);
+    expect(GatewayRouteRules.resolveTarget(map, 'workspace-a.test', '/alpha/affiliates', targets)).toBe(targets.admin);
+    expect(GatewayRouteRules.resolveTarget(map, 'api.acme.test', '/api/v1/plugins/chi/gw', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, 'admin.platform.test', '/', targets)).toBe(targets.admin);
   });
 
   it('a workspace console reaches the api on its own origin: /api and asset paths on an admin host go to the api', () => {
-    expect(PlatformGateway.resolveTarget(map, 'workspace-a.test', '/api/v1/auth/host', targets)).toBe(targets.api);
-    expect(PlatformGateway.resolveTarget(map, 'workspace-a.test', '/plugins/alpha/ui/bundle.js', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, 'workspace-a.test', '/api/v1/auth/host', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, 'workspace-a.test', '/plugins/alpha/ui/bundle.js', targets)).toBe(targets.api);
     // A SITE's storefront reaches the api on its own host too, so the site's name survives the call.
-    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/api/v1/system/frontend', targets)).toBe(targets.api);
-    expect(PlatformGateway.resolveTarget(map, 'acme.test', '/shop/cosmic-box', targets)).toBe(targets.frontend);
-    expect(PlatformGateway.resolveTarget(map, 'workspace-a.test', '/uploads/2026/09/logo.png', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, 'acme.test', '/api/v1/system/frontend', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, 'acme.test', '/shop/cosmic-box', targets)).toBe(targets.frontend);
+    expect(GatewayRouteRules.resolveTarget(map, 'workspace-a.test', '/uploads/2026/09/logo.png', targets)).toBe(targets.api);
   });
 
   it('the admin keeps its own pages on an admin host: /media and /plugins/<slug>/settings are not api paths', () => {
     for (const host of ['admin.platform.test', 'workspace-a.test']) {
-      expect(PlatformGateway.resolveTarget(map, host, '/media', targets)).toBe(targets.admin);
-      expect(PlatformGateway.resolveTarget(map, host, '/plugins/chi/settings', targets)).toBe(targets.admin);
-      expect(PlatformGateway.resolveTarget(map, host, '/plugins/installed', targets)).toBe(targets.admin);
-      expect(PlatformGateway.resolveTarget(map, host, '/themes', targets)).toBe(targets.admin);
-      expect(PlatformGateway.resolveTarget(map, host, '/plugins/zeta/ui/bundle.js', targets)).toBe(targets.api);
-      expect(PlatformGateway.resolveTarget(map, host, '/api/v1/system/admin/metadata', targets)).toBe(targets.api);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/media', targets)).toBe(targets.admin);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/plugins/chi/settings', targets)).toBe(targets.admin);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/plugins/installed', targets)).toBe(targets.admin);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/themes', targets)).toBe(targets.admin);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/plugins/zeta/ui/bundle.js', targets)).toBe(targets.api);
+      expect(GatewayRouteRules.resolveTarget(map, host, '/api/v1/system/admin/metadata', targets)).toBe(targets.api);
     }
   });
 
   it('answers a host nobody owns with nothing — fail-closed, like the api', () => {
-    expect(PlatformGateway.resolveTarget(map, 'stranger.test', '/', targets)).toBeNull();
+    expect(GatewayRouteRules.resolveTarget(map, 'stranger.test', '/', targets)).toBeNull();
   });
 
   it('without a routing map it is the single-domain gateway it always was: path rules', () => {
-    expect(PlatformGateway.resolveTarget(null, 'platform.test', '/api/v1/health', targets)).toBe(targets.api);
-    expect(PlatformGateway.resolveTarget(null, 'platform.test', '/admin/sites', targets)).toBe(targets.admin);
-    expect(PlatformGateway.resolveTarget(null, 'platform.test', '/shop', targets)).toBe(targets.frontend);
+    expect(GatewayRouteRules.resolveTarget(null, 'platform.test', '/api/v1/health', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(null, 'platform.test', '/admin/sites', targets)).toBe(targets.admin);
+    expect(GatewayRouteRules.resolveTarget(null, 'platform.test', '/shop', targets)).toBe(targets.frontend);
   });
 });
 
@@ -91,16 +92,16 @@ describe('PlatformGateway setup mode', () => {
 
     // The CONSOLE, not the frontend: during setup there are no sites, so the generic path rule would
     // land the operator on nothing at all.
-    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/', targets)).toBe(targets.admin);
-    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/setup', targets)).toBe(targets.admin);
-    expect(PlatformGateway.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBe(targets.api);
+    expect(GatewayRouteRules.resolveTarget(map, '203.0.113.5', '/', targets)).toBe(targets.admin);
+    expect(GatewayRouteRules.resolveTarget(map, '203.0.113.5', '/setup', targets)).toBe(targets.admin);
+    expect(GatewayRouteRules.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBe(targets.api);
   });
 
   it('REFUSES that same unknown host the moment setup is no longer open', () => {
     const map = TenantRouteMap.fromJson({ routes: [], setup: false });
 
-    expect(PlatformGateway.resolveTarget(map, '203.0.113.5', '/', targets)).toBeNull();
-    expect(PlatformGateway.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBeNull();
+    expect(GatewayRouteRules.resolveTarget(map, '203.0.113.5', '/', targets)).toBeNull();
+    expect(GatewayRouteRules.resolveTarget(map, 'anything.example', '/api/v1/auth/setup', targets)).toBeNull();
   });
 
   it('carries the flag across the JSON the gateway actually fetches', () => {

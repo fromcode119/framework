@@ -7,7 +7,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Loader } from '@/components/ui/view/loader.client';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { UserProfileHeader } from '@/app/users/[id]/components/view/user-profile-header.client';
 import { UserProfileSidebar } from '@/app/users/[id]/components/view/user-profile-sidebar.client';
@@ -83,9 +83,9 @@ export class UserProfilePage extends AdminComponent {
       return (
         <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4">
           <h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1>
-          <Link href={AdminConstants.ROUTES.USERS.LIST}>
+          <AdminLink href={AdminConstants.ROUTES.USERS.LIST}>
             <Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToDatabase')}</Button>
-          </Link>
+          </AdminLink>
         </div>
       );
     }
@@ -142,11 +142,11 @@ export class UserProfilePage extends AdminComponent {
                  </div>
                  {selfService ? null : (
                  <div className="mt-8 pt-6 border-t border-slate-800/10 flex justify-end">
-                    <Link href={AdminConstants.ROUTES.USERS.ROLES(id)}>
+                    <AdminLink href={AdminConstants.ROUTES.USERS.ROLES(id)}>
                       <Button variant={ButtonVariant.GHOST} className="text-[10px] font-bold tracking-tight text-indigo-500 uppercase">
                         {AdminI18n.t('users.manageAssignments')}
                       </Button>
-                    </Link>
+                    </AdminLink>
                  </div>
                  )}
               </Card>

@@ -6,7 +6,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RolesAuditSidebar extends PureReactor {
@@ -56,9 +56,9 @@ export class RolesAuditSidebar extends PureReactor {
 
           <div className={`mt-3 flex items-center justify-between border-t pt-3 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
             <span className="text-[10px] text-slate-400">v{health?.version || '—'}{health?.maintenance ? ` · ${AdminI18n.t('users.maintenance')}` : ''}</span>
-            <Link href={AdminConstants.ROUTES.ACTIVITY}>
+            <AdminLink href={AdminConstants.ROUTES.ACTIVITY}>
               <Button variant={ButtonVariant.GHOST} size={FieldSize.SM} className="text-[10px] text-slate-500">{AdminI18n.t('users.viewLogs')}</Button>
-            </Link>
+            </AdminLink>
           </div>
         </Card>
       </div>

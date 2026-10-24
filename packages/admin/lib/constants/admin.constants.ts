@@ -26,11 +26,11 @@ export class AdminConstants {
   static readonly ROUTES = AppPathConstants.ADMIN;
 
   static readonly ADMIN_URLS = {
-  PATH: (path: string) => AdminPathUtils.toAdminPath(path),
+  PATH: (path: string) => AdminPathUtils.toBrowserPath(path),
   AUTH: {
-    LOGIN: () => AdminPathUtils.toAdminPath(AdminConstants.ROUTES.AUTH.LOGIN),
+    LOGIN: () => AdminPathUtils.toBrowserPath(AdminConstants.ROUTES.AUTH.LOGIN),
     LOGIN_SESSION_EXPIRED: () =>
-      AdminPathUtils.toAdminPath(AdminApiPaths.withQuery(AdminConstants.ROUTES.AUTH.LOGIN, { reason: 'session_expired' })),
+      AdminPathUtils.toBrowserPath(AdminApiPaths.withQuery(AdminConstants.ROUTES.AUTH.LOGIN, { reason: 'session_expired' })),
   },
 } as const;
 

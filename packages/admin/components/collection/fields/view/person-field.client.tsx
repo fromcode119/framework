@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { Button } from '@/components/ui/view/button.client';
@@ -132,7 +132,7 @@ export class PersonField extends Reactor {
           <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{AdminI18n.t('ui.person.source', { id: person.id })}</div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <Link href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[11.5px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</Link>
+          <AdminLink href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[11.5px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</AdminLink>
           {this.readOnly ? null : (
             <Button type="button" size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.unlink}>{AdminI18n.t('ui.person.choose')}</Button>
           )}

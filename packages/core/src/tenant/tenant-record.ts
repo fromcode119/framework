@@ -32,11 +32,16 @@ export class TenantRecord {
    * NAME of a host — see {@link TenantHostRole} for the magic this replaced.
    */
   readonly hostRoles: Readonly<Record<string, string>>;
+  /**
+   * The path on this tenant's storefront hosts where its console answers (`/admin`, `/backend`);
+   * `''` = none, the console lives only on its admin-role hosts. Set on the site's form.
+   */
+  readonly consolePath: string;
 
   private constructor(input: {
     id: string; slug: string; primaryHost: string; hostAliases: string[]; state: string; kind: TenantKind;
     visibility: TenantVisibility; environment: TenantEnvironment; appearance: string;
-    hostRoles: Record<string, string>;
+    hostRoles: Record<string, string>; consolePath: string;
   }) {
     this.id = input.id;
     this.slug = input.slug;
@@ -48,6 +53,7 @@ export class TenantRecord {
     this.environment = input.environment;
     this.appearance = input.appearance;
     this.hostRoles = Object.freeze({ ...input.hostRoles });
+    this.consolePath = input.consolePath;
   }
 
   get isWorkspace(): boolean {
@@ -137,6 +143,8 @@ export class TenantRecord {
       environment: TenantEnvironment.find(row?.environment) ?? TenantEnvironment.PRODUCTION,
       appearance: CoercionUtils.toString(row?.appearance),
       hostRoles: TenantRecord.parseHostRoles(row?.host_roles),
+      // Migration 067 adds it nullable; NULL means no console path, exactly as before it existed.
+      consolePath: CoercionUtils.toString(row?.console_path),
     });
   }
 

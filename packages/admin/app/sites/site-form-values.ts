@@ -23,6 +23,8 @@ export class SiteFormValues {
     readonly appearance: string,
     /** Workspace only: the preset the operator picked, if any (it fills plugins + appearance, visibly). */
     readonly preset: string,
+    /** Site only: the path on its own hosts where its console also answers, `''` for none. */
+    readonly consolePath: string,
   ) {}
 
   static empty(): SiteFormValues {
@@ -31,11 +33,11 @@ export class SiteFormValues {
     // A new site is PRODUCTION: every site created through this form is a real one, and a shop born
     // silently muted would not be noticed until a customer said an order confirmation never arrived.
     // The import path sets `non-production` explicitly instead of relying on this.
-    return new SiteFormValues('', '', true, '', '', {}, 'active', '', '', [], 'site', 'private', 'production', '', '');
+    return new SiteFormValues('', '', true, '', '', {}, 'active', '', '', [], 'site', 'private', 'production', '', '', '');
   }
 
   static fromSite(site: SiteRecord): SiteFormValues {
-    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.hostRoles, site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.environment, site.appearance, '');
+    return new SiteFormValues(site.slug, site.id, false, site.primaryHost, site.hostAliases.join(', '), site.hostRoles, site.state, '', site.theme ?? '', site.plugins, site.kind, site.visibility, site.environment, site.appearance, '', site.consolePath);
   }
 
   get isWorkspace(): boolean {
@@ -59,6 +61,7 @@ export class SiteFormValues {
       patch.environment ?? this.environment,
       patch.appearance ?? this.appearance,
       patch.preset ?? this.preset,
+      patch.consolePath ?? this.consolePath,
     );
   }
 
@@ -80,6 +83,7 @@ export class SiteFormValues {
       slug: this.slug.trim(), id: this.id.trim() || undefined, primaryHost: this.primaryHost.trim(), hostAliases: this.aliasList,
       adminEmail: this.adminEmail.trim() || undefined, theme: this.isWorkspace ? undefined : (this.theme || undefined), plugins: this.plugins,
       kind: this.kind, visibility: this.visibility, environment: this.environment, appearance: this.isWorkspace ? this.appearance : undefined, preset: this.isWorkspace && this.preset ? this.preset : undefined,
+      consolePath: this.isWorkspace ? undefined : (this.consolePath.trim() || undefined),
     };
   }
 
@@ -103,7 +107,9 @@ export class SiteFormValues {
       // its own `admin_appearance` setting — different persistence, same field here. Only a site
       // also has a storefront theme.
       appearance: this.appearance,
-      ...(this.isWorkspace ? {} : { theme: this.theme }),
+      // Sent as `''` when cleared, so emptying the field takes the console off the path. A workspace
+      // is a console on its own hosts and takes none.
+      ...(this.isWorkspace ? {} : { theme: this.theme, consolePath: this.consolePath.trim() }),
     };
   }
 

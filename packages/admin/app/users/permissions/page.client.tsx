@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { state } from '@fromcode119/react-class-components';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -90,7 +90,7 @@ export class PermissionsPage extends AdminComponent {
                   {everything.length > 0 ? <> {everything.length === 1
                     ? AdminI18n.t('users.holdsEverythingOne', { roles: everything.map((role) => role.name).join(', ') })
                     : AdminI18n.t('users.holdsEverythingMany', { roles: everything.map((role) => role.name).join(', ') })}</> : null}
-                  {' '}{AdminI18n.t('users.toGivePermissionsOut')} <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>{AdminI18n.t('users.editARole')}</Link>.
+                  {' '}{AdminI18n.t('users.toGivePermissionsOut')} <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_LIST}>{AdminI18n.t('users.editARole')}</AdminLink>.
                 </span>
               </div>
             )}

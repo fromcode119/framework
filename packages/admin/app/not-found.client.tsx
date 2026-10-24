@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { bound } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -46,13 +46,13 @@ export class NotFound extends AdminComponent {
             <span>{AdminI18n.t('common.goBack')}</span>
           </button>
 
-          <Link
+          <AdminLink
             href="/"
             className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold transition-all shadow-lg shadow-indigo-600/20"
           >
             <FrameworkIcons.Home size={18} />
             <span>{AdminI18n.t('nav.items.dashboard')}</span>
-          </Link>
+          </AdminLink>
         </div>
       </div>
     );

@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RolesListCard extends PureReactor {
@@ -63,7 +63,7 @@ export class RolesListCard extends PureReactor {
                     </span>
                   ) : (
                     <div className="flex items-center gap-1.5">
-                      <Button as={Link} href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)} variant={ButtonVariant.GHOST} size={FieldSize.ICON} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600">
+                      <Button as={AdminLink} href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)} variant={ButtonVariant.GHOST} size={FieldSize.ICON} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600">
                         <FrameworkIcons.Edit size={14} />
                       </Button>
                       <Button variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={() => this.onRequestDelete(role)} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-600">

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { prop } from '@fromcode119/react-class-components';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
@@ -39,7 +39,7 @@ export class PagePermissionGate extends AdminComponent {
           {required === '*'
             ? AdminI18n.t('ui.view.thisPageIsForAdministrators')
             : <AdminRichText k="ui.view.roleLacksPage" vars={{ required: `<code>${required}</code>` }} />}{' '}
-          {home ? <Link href={home}>{AdminI18n.t('ui.view.openYourOwnPageInstead')}</Link> : null}
+          {home ? <AdminLink href={home}>{AdminI18n.t('ui.view.openYourOwnPageInstead')}</AdminLink> : null}
         </span>
       </div>
     );

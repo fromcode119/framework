@@ -2,7 +2,7 @@ import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -40,7 +40,7 @@ export class EditCollectionNotFound extends PureReactor {
           </Button>
           <Button
             variant={ButtonVariant.PRIMARY}
-            as={Link}
+            as={AdminLink}
             href="/"
             className="rounded-xl px-10 py-5 font-bold uppercase tracking-wide text-[10px] shadow-2xl shadow-indigo-500/30"
             icon={<FrameworkIcons.Layout size={18} />}

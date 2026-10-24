@@ -1,6 +1,6 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -40,7 +40,7 @@ export class InstalledThemeCard extends PureReactor {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</Link>
+            <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</AdminLink>
             {updateVersion ? <Badge variant={BadgeVariant.WARNING} className="shrink-0">{AdminI18n.t('themes.update')}</Badge> : null}
             {ownedBySite ? <Badge variant="gray" className="shrink-0">{AdminI18n.t('themes.thisSiteS')}</Badge> : null}
           </div>
@@ -57,8 +57,8 @@ export class InstalledThemeCard extends PureReactor {
           ) : null}
           {isActive ? (
             <>
-              <Link href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">{AdminI18n.t('themes.manage')}</Link>
-              <Link href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title={AdminI18n.t('themes.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
+              <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">{AdminI18n.t('themes.manage')}</AdminLink>
+              <AdminLink href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title={AdminI18n.t('themes.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></AdminLink>
               <button onClick={() => onDisable(theme.slug)} title={AdminI18n.t('themes.disable')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/20' : 'text-amber-600 hover:bg-amber-50'}`}><FrameworkIcons.Close size={15} /></button>
             </>
           ) : (

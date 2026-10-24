@@ -3,6 +3,9 @@ import { TenantKind } from '@core/tenant/tenant-kind';
 import { TenantHostRole } from '@core/tenant/tenant-host-role';
 import { TenantVisibility } from '@core/enums/tenant-visibility.enum';
 import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
+import { ApiVersionUtils } from '@core/api-version';
+import { StorageConstants } from '@core/constants/storage.constants';
+import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
 
 /**
  * The operator-chosen identity of a tenant: id, slug, hosts, state — validated ONCE, here, before it
@@ -18,6 +21,7 @@ export class TenantIdentity {
   private static readonly SLUG = /^[a-z0-9][a-z0-9-]{0,62}$/;
   private static readonly HOST = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$/;
   private static readonly APPEARANCE = /^[a-z0-9][a-z0-9-]{0,62}$/;
+  private static readonly CONSOLE_PATH = /^(\/[a-z0-9][a-z0-9-]{0,62}){1,4}$/;
 
   private constructor(
     readonly id: string,
@@ -36,6 +40,11 @@ export class TenantIdentity {
      * that was just removed would sit in the row for ever, describing nothing.
      */
     readonly hostRoles: Record<string, string>,
+    /**
+     * Where this tenant's console answers on its own storefront hosts (`/admin`, `/team/console`), or
+     * `''` for nowhere: the console is then reached only on the hosts whose role says so.
+     */
+    readonly consolePath: string,
   ) {}
 
   /** Every host this tenant answers on, primary first, deduped. */
@@ -43,7 +52,7 @@ export class TenantIdentity {
     return [...new Set([this.primaryHost, ...this.hostAliases])];
   }
 
-  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown }): TenantIdentity {
+  static from(input: { id?: unknown; slug?: unknown; primaryHost?: unknown; hostAliases?: unknown; state?: unknown; kind?: unknown; visibility?: unknown; environment?: unknown; appearance?: unknown; hostRoles?: unknown; consolePath?: unknown }): TenantIdentity {
     const slug = CoercionUtils.toKey(input.slug);
     if (!TenantIdentity.SLUG.test(slug)) {
       throw new Error(`Tenant slug "${slug}" must be lowercase letters, digits and dashes, starting with a letter or digit.`);
@@ -77,7 +86,40 @@ export class TenantIdentity {
     const environment = TenantEnvironment.find(input.environment) ?? TenantEnvironment.PRODUCTION;
     const appearance = TenantIdentity.appearanceFor(kind, input.appearance);
     const hostRoles = TenantIdentity.rolesFor([primaryHost, ...aliases], input.hostRoles);
-    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, environment, appearance, hostRoles);
+    const consolePath = TenantIdentity.consolePathFor(input.consolePath);
+    // A workspace's hosts already ARE its console; a path on them would name nothing.
+    if (consolePath && kind.isWorkspace) throw new Error('A workspace is served as a console on its own hosts, so it takes no console path.');
+    return new TenantIdentity(id, slug, primaryHost, aliases, state, kind, visibility, environment, appearance, hostRoles, consolePath);
+  }
+
+  /**
+   * The console path, normalised to `/segment[/segment…]`, lowercase, no trailing slash; `''` for none.
+   *
+   * A segment may not start with `_` (that space is the apps' own: `/_next`, `/_fc-console`), and the
+   * path may not sit on a root the storefront host already hands to the api — a console mounted there
+   * would answer in place of the uploads, the api or an extension's assets.
+   */
+  static consolePathFor(value: unknown): string {
+    const raw = CoercionUtils.toKey(value).replace(/\/+$/, '');
+    if (!raw) return '';
+    const path = raw.startsWith('/') ? raw : `/${raw}`;
+    if (!TenantIdentity.CONSOLE_PATH.test(path)) {
+      throw new Error(`Console path "${path}" must be one or more segments of lowercase letters, digits and dashes, like /admin.`);
+    }
+    const root = `/${path.split('/')[1]}`;
+    if (TenantIdentity.reservedConsoleRoots().includes(root)) {
+      throw new Error(`Console path "${path}" starts with ${root}, which this host already serves; choose another path.`);
+    }
+    return path;
+  }
+
+  /** The first segments a storefront host already sends somewhere else, from the constants that route them. */
+  private static reservedConsoleRoots(): string[] {
+    return [
+      ApiVersionUtils.API_BASE_PATH,
+      StorageConstants.ALL.DEFAULT_PUBLIC_URL,
+      ...Object.keys(RequestSurfaceUtils.EXTENSION_ASSET_DIRS),
+    ].map((prefix) => `/${String(prefix).split('/').filter(Boolean)[0] || ''}`);
   }
 
   /**

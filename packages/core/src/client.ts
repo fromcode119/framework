@@ -106,6 +106,8 @@ export { InternalServiceAuth } from '@core/security/internal-service-auth';
 export { ProcessRestartService } from '@core/management/process-restart-service';
 export { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
 export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
+export { ConsoleMountConstants } from '@core/constants/console-mount.constants';
+export { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 export { PublicAssetUrlUtils } from '@core/utils/public-asset-url-utils';
 export { ApiVersionUtils } from '@core/api-version';
 export { LocalizationUtils } from '@core/localization';

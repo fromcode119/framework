@@ -7,7 +7,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UsersPageHeader extends PureReactor {
@@ -23,7 +23,7 @@ export class UsersPageHeader extends PureReactor {
         actions={
           <>
             <Slot name="admin.users.list.header.actions" />
-            <Link href={AdminConstants.ROUTES.USERS.NEW}>
+            <AdminLink href={AdminConstants.ROUTES.USERS.NEW}>
               <Button
                 variant={ButtonVariant.SECONDARY}
                 className="h-9 px-4 rounded-lg font-semibold tracking-tight text-xs border-slate-200 dark:border-slate-800"
@@ -31,15 +31,15 @@ export class UsersPageHeader extends PureReactor {
               >
                 {AdminI18n.t('users.createUser')}
               </Button>
-            </Link>
-            <Link href={AdminConstants.ROUTES.USERS.ROLE_LIST}>
+            </AdminLink>
+            <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_LIST}>
               <Button
                 className="h-9 px-4 rounded-lg font-semibold tracking-tight text-xs text-white"
                 icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
               >
                 {AdminI18n.t('users.manageRoles')}
               </Button>
-            </Link>
+            </AdminLink>
           </>
         }
       />

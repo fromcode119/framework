@@ -1,6 +1,6 @@
 import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -66,13 +66,13 @@ export class InstalledPluginCard extends PureReactor {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} className="no-underline">
+            <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} className="no-underline">
               <span className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</span>
-            </Link>
+            </AdminLink>
             {hasUpdate && (
-              <Link href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[9px] font-bold uppercase tracking-wide leading-none">
+              <AdminLink href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[9px] font-bold uppercase tracking-wide leading-none">
                 <FrameworkIcons.Loader size={8} className="animate-spin" />{AdminI18n.t('plugins.list.update')}
-              </Link>
+              </AdminLink>
             )}
             {plugin.healthStatus === PluginRegistryHealth.ERROR && (
               <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.detail.security')}</Badge>
@@ -127,8 +127,8 @@ export class InstalledPluginCard extends PureReactor {
           </div>
 
           <div className={`flex items-center gap-0.5 pl-3 border-l ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <Link href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.open')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></Link>
-          <Link href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></Link>
+          <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.open')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></AdminLink>
+          <AdminLink href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></AdminLink>
           {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.remove')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
           </div>
         </div>

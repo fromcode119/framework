@@ -1,11 +1,12 @@
 import type { ChangeEvent, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Explanation } from '@/components/ui/view/explanation.client';
 import { RuntimeLocationUtils, ThemeMode } from '@fromcode119/core/client';
 import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { SiteHostsFields } from '@/app/sites/components/view/site-hosts-fields.client';
 import { SiteHostRoles } from '@/app/sites/components/view/site-host-roles.client';
+import { SiteConsolePathField } from '@/app/sites/components/view/site-console-path-field.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
@@ -92,7 +93,6 @@ export class SiteForm extends PureReactor {
     this.emit({ plugins: [...next] });
   }
 
-  /** What only a workspace has: the console it is locked to, and an optional declared preset. */
   /** Above this many rows a flat list stops being readable, so it gains a filter. */
   private static readonly SEARCH_THRESHOLD = 12;
 
@@ -130,6 +130,7 @@ export class SiteForm extends PureReactor {
     this.pluginSearch = e.target.value;
   }
 
+  /** What only a workspace has: the console it is locked to, and an optional declared preset. */
   private renderWorkspaceChoices(inventory: SiteInventory, values: SiteFormValues): ReactNode {
     return (
       <>
@@ -179,9 +180,7 @@ export class SiteForm extends PureReactor {
             ]}
           />
           <Input label={AdminI18n.t('sites.slug')} value={values.slug} onChange={this.onSlug} placeholder={AdminI18n.t('sites.slugExample')} />
-          {this.isNew
-            ? <Input label={AdminI18n.t('sites.id')} value={values.id} onChange={this.onId} placeholder={AdminI18n.t('sites.slugExample')} />
-            : null}
+          {this.isNew ? <Input label={AdminI18n.t('sites.id')} value={values.id} onChange={this.onId} placeholder={AdminI18n.t('sites.slugExample')} /> : null}
           <SiteHostsFields values={values} onChange={this.emit} />
           {this.isNew ? (
             <Input label={AdminI18n.t('sites.firstAdministratorEmailOfAn')} value={values.adminEmail} onChange={this.onAdminEmail} placeholder="owner@acme.example.com" />
@@ -200,7 +199,7 @@ export class SiteForm extends PureReactor {
             <Explanation>
               <p>
                 {AdminI18n.t('sites.workspaceNeverListed')}{' '}
-                <Link href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</Link>.
+                <AdminLink href={RuntimeLocationUtils.toAdminPath('/settings/general')}>{AdminI18n.t('sites.settingsGeneralIndexPlatformHosts')}</AdminLink>.
               </p>
             </Explanation>
           ) : (
@@ -238,6 +237,7 @@ export class SiteForm extends PureReactor {
           isWorkspace={values.isWorkspace}
           onChange={(hostRoles: Record<string, string>) => this.emit({ hostRoles })}
         />
+        {values.isWorkspace ? null : <SiteConsolePathField values={values} onChange={this.emit} />}
         {this.isNew ? null : (
           /* The id is the row-level-security discriminator stamped into every row this site owns, so it
              cannot change without rewriting them all. Shown as the fact it is, rather than as a greyed
@@ -284,9 +284,9 @@ export class SiteForm extends PureReactor {
                     {/* A plugin the platform cannot run says so HERE. Ticking it otherwise claims the
                         site runs something that is disabled — which is what "Toggle Failed" was. */}
                     {plugin.runnable === false ? (
-                      <Link className="fc-site-form__plugin-state" href={SiteForm.stateHref(plugin)}>
+                      <AdminLink className="fc-site-form__plugin-state" href={SiteForm.stateHref(plugin)}>
                         {SiteForm.stateLabel(plugin)} →
-                      </Link>
+                      </AdminLink>
                     ) : null}
                   </div>
                 ))}

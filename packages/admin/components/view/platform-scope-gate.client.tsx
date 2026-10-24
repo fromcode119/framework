@@ -7,6 +7,7 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { NotificationType } from '@/components/enums/notification-type.enum';
 
 /**
  * A screen that belongs to the PLATFORM, refusing to render inside a site.
@@ -31,15 +32,20 @@ export class PlatformScopeGate extends AdminComponent {
 
   @state private locks = PlatformSettingLocks.none();
   @state private resolved = false;
+  /** The console's host binds it to this site: there is no platform scope to step out to from here. */
+  @state private hostLocked = false;
 
   async componentDidMount(): Promise<void> {
-    this.locks = await PlatformSettingLocks.load();
+    const [locks, hostLocked] = await Promise.all([PlatformSettingLocks.load(), TenantScopeClient.hostLocksSite()]);
+    this.locks = locks;
+    this.hostLocked = hostLocked;
     this.resolved = true;
   }
 
   @bound
   async openPlatformScope(): Promise<void> {
-    await TenantScopeClient.leaveAndReload();
+    const failure = await TenantScopeClient.leaveAndReload();
+    if (failure) this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
   }
 
   private get canManagePlatform(): boolean {
@@ -56,7 +62,9 @@ export class PlatformScopeGate extends AdminComponent {
         <span className="fc-scope-notice__text">
           {AdminI18n.t('ui.scopeGate.text', { what: this.what })}
         </span>
-        {this.canManagePlatform ? (
+        {this.hostLocked ? (
+          <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
+        ) : this.canManagePlatform ? (
           <Button
             onClick={this.openPlatformScope}
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}

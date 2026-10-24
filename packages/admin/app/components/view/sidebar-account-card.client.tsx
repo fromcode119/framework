@@ -88,7 +88,8 @@ export class SidebarAccountCard extends AdminComponent {
   /** Step out of every site into the platform scope. */
   private async leave(): Promise<void> {
     if (this.currentSite === null) return;
-    await TenantScopeClient.leaveAndReload();
+    const failure = await TenantScopeClient.leaveAndReload();
+    if (failure) this.runtime.notify.notify(NotificationType.ERROR, AdminI18n.t('shell.site.switch'), failure);
   }
 
   /** The row's second line: the site being edited on a multi-site install, the role otherwise. */

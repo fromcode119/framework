@@ -2,7 +2,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import React from 'react';
 
 import type { ReactElement, ReactNode } from 'react';
-import Link from 'next/link';
+import { AdminLink } from '@/components/view/admin-link.client';
 import { prop } from '@fromcode119/react-class-components';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -87,7 +87,7 @@ export class ThemesLayout extends AdminComponent {
                   const isActive = tab.href === AdminConstants.ROUTES.THEMES.INSTALLED ? isInstalled : isMarketplace;
 
                   return (
-                    <Link
+                    <AdminLink
                       key={tab.href}
                       href={tab.href}
                       className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
@@ -102,7 +102,7 @@ export class ThemesLayout extends AdminComponent {
                     >
                       {React.cloneElement(tab.icon as ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
                       <span className="uppercase tracking-wide text-[11px]">{tab.label}</span>
-                    </Link>
+                    </AdminLink>
                   );
                 })}
               </div>
@@ -134,7 +134,7 @@ export class ThemesLayout extends AdminComponent {
 
               <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
                  {/* "Theme Documentation" pointed at docs.fromcode.com, which does not resolve. */}
-                 <Link href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">{AdminI18n.t('themes.marketplaceHealth')}</Link>
+                 <AdminLink href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">{AdminI18n.t('themes.marketplaceHealth')}</AdminLink>
               </div>
             </div>
           </div>
