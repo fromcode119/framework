@@ -87,6 +87,9 @@ export * from '@/lib/appearance/admin-page-registry';
 export type { IAppearanceShellProps } from '@/lib/appearance/interfaces/appearance-shell-props.interface';
 /** What an appearance's own sign-in is given: values, setters and `submit` — never a way to mint a session. */
 export type { ILoginController } from '@/lib/appearance/interfaces/login-controller.interface';
+/** What an appearance's own record editor is given: the layout, a field renderer bound to the record, save and delete. */
+export type { ICollectionEditController } from '@/lib/appearance/interfaces/collection-edit-controller.interface';
+export type { ICollectionEditSection } from '@/lib/appearance/interfaces/collection-edit-section.interface';
 export type { IAdminAppearanceManifest } from '@/lib/appearance/interfaces/admin-appearance-manifest.interface';
 export type { IAppearanceSurfaces } from '@/lib/appearance/interfaces/appearance-surfaces.interface';
 export * from '@/lib/appearance/appearance-surface-policy';

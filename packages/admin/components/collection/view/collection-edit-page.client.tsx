@@ -6,6 +6,8 @@ import { Bridge, prop } from '@fromcode119/react-class-components';
 
 import { ThemeHooks } from '@/components/view/use-theme.client';
 import { AuthHooks } from '@/components/view/use-auth.client';
+import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
+import { AdminAppearanceConstants } from '@/lib/appearance/constants/admin-appearance.constants';
 import { CollectionEditPageView } from '@/components/collection/edit/view/collection-edit-page-view.client';
 import type { ICollectionEditPageValues } from '@/components/collection/interfaces/collection-edit-page-values.interface';
 
@@ -26,11 +28,12 @@ export class CollectionEditPage extends Bridge<ICollectionEditPageValues> {
       settings: ContextHooks.useGlobalSettings(),
       theme: ThemeHooks.useTheme().theme,
       user: AuthHooks.useAuth().user,
+      appearanceId: use(AdminRuntimeContext.context)?.activeAppearanceId ?? AdminAppearanceConstants.DEFAULT_APPEARANCE_ID,
     };
   }
 
   protected present(values: ICollectionEditPageValues): ReactNode {
-    const { route, router, searchParams, collections, settings, theme, user } = values;
+    const { route, router, searchParams, collections, settings, theme, user, appearanceId } = values;
     return (
       <CollectionEditPageView
         pluginSlug={route.pluginSlug}
@@ -42,6 +45,7 @@ export class CollectionEditPage extends Bridge<ICollectionEditPageValues> {
         settings={settings}
         theme={theme}
         user={user}
+        appearanceId={appearanceId}
       />
     );
   }

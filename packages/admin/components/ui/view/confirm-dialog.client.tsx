@@ -38,7 +38,9 @@ export class ConfirmDialog extends PureReactor {
   render(): ReactNode {
     const confirmLabel = this.confirmLabel ?? AdminI18n.t('common.confirm');
     const cancelLabel = this.cancelLabel ?? AdminI18n.t('common.cancel');
-    const variant = this.variant ?? 'danger';
+    // A caller (or a plugin bundle) may pass the plain string; compared against the member, 'danger' never
+    // matched and every delete confirmation came up as an ordinary primary action.
+    const variant = ButtonVariant.resolve(this.variant ?? ButtonVariant.DANGER);
     const isLoading = this.isLoading ?? false;
 
     if (!this.isOpen) return null;
@@ -58,7 +60,7 @@ export class ConfirmDialog extends PureReactor {
             <div className={`p-2.5 rounded-lg flex-shrink-0 ${
               variant === ButtonVariant.DANGER
                 ? 'bg-rose-50 text-rose-600 dark:bg-rose-500/10 dark:text-rose-500'
-                : 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-500'
+                : 'bg-[var(--muted)] text-[var(--primary)]'
             }`}>
               <FrameworkIcons.Warning size={24} />
             </div>
@@ -81,7 +83,7 @@ export class ConfirmDialog extends PureReactor {
           <div className="mt-5 flex flex-col sm:flex-row gap-2">
             <Button
               variant={ButtonVariant.GHOST}
-              className="flex-1"
+              className="w-full sm:w-auto sm:flex-1"
               onClick={this.onClose}
               disabled={isLoading}
             >
@@ -89,7 +91,7 @@ export class ConfirmDialog extends PureReactor {
             </Button>
             <Button
               variant={variant === ButtonVariant.DANGER ? ButtonVariant.DANGER : ButtonVariant.PRIMARY}
-              className="flex-1"
+              className="w-full sm:w-auto sm:flex-1"
               onClick={this.onConfirm}
               isLoading={isLoading}
             >

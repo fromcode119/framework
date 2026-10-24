@@ -37,7 +37,7 @@ export class Button extends PureReactor {
       as: _as,
       ...props
     } = this.props as Record<string, any>;
-  const variant = this.variant ?? ButtonVariant.PRIMARY;
+  const variant = ButtonVariant.resolve(this.variant ?? ButtonVariant.PRIMARY);
   const size = this.size ?? FieldSize.MD;
   const children = this.children;
   const className = this.className ?? '';
@@ -72,7 +72,7 @@ export class Button extends PureReactor {
 
   return (
     <Component
-      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[ButtonVariant.resolve(variant).value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-[var(--radius)] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--ring)] focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 ${variants[variant.value]} ${sizes[FieldSize.resolve(size).value]} ${className}`}
       {...props}
     >
       {isLoading ? (
