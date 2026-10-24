@@ -51,15 +51,15 @@ export class SystemSettingDescriptors {
 
     [SystemConstants.META_KEY.SETUP_COMPLETED]: { scope: SettingScope.PLATFORM, writable: false, exposed: true },
     [SystemConstants.META_KEY.SITE_NAME]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'Fromcode', description: "Public site name used in emails and frontend.", group: "General" },
     },
     [SystemConstants.META_KEY.SITE_URL]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      scope: SettingScope.PLATFORM, writable: true, exposed: true, members: true,
       seed: { value: () => SystemSettingSeedDefaults.urlDefaults().siteUrl, description: "Used only when Frontend URL is blank, as the same frontend address. Leave blank on a multi-site platform.", group: "General" },
     },
     [SystemConstants.META_KEY.FRONTEND_URL]: {
-      scope: SettingScope.PLATFORM, writable: true, exposed: true,
+      scope: SettingScope.PLATFORM, writable: true, exposed: true, members: true,
       seed: { value: () => SystemSettingSeedDefaults.urlDefaults().frontendUrl, description: "This deployment's frontend address. On a multi-site platform leave blank — a value here replaces every site's own domain in emails, sitemaps and links.", group: "General" },
     },
     [SystemConstants.META_KEY.ADMIN_URL]: {
@@ -91,18 +91,18 @@ export class SystemSettingDescriptors {
       seed: { value: '[]', description: "Additional trusted domains kept active during migrations.", group: "General" },
     },
     [SystemConstants.META_KEY.TIMEZONE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'UTC', description: "Default system timezone.", group: "General" },
     },
     // `locale` is the declared default: a site's times follow its language (24-hour for Bulgarian).
     [SystemConstants.META_KEY.TIME_FORMAT]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'locale', description: "12- or 24-hour clock; 'locale' follows the site's language.", group: "General" },
     },
-    [SystemConstants.META_KEY.ADMIN_APPEARANCE]: { scope: SettingScope.SITE, writable: true, exposed: true },
-    [SystemConstants.META_KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true },
+    [SystemConstants.META_KEY.ADMIN_APPEARANCE]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
+    [SystemConstants.META_KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     [SystemConstants.META_KEY.PLATFORM_NAME]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: 'Atlantis', description: "The identity of your platform instance.", group: "General" },
     }, // candidate for PLATFORM (Phase 2)
     [SystemConstants.META_KEY.PLATFORM_DOMAIN]: {
@@ -265,7 +265,7 @@ export class SystemSettingDescriptors {
 
     // Routing & Features
     [SystemConstants.META_KEY.PERMALINK_STRUCTURE]: {
-      scope: SettingScope.SITE, writable: true, exposed: true,
+      scope: SettingScope.SITE, writable: true, exposed: true, members: true,
       seed: { value: '/:slug', description: "Default URL structure for content.", group: "General" },
     },
     [SystemConstants.META_KEY.ROUTING_HOME_TARGET]: {

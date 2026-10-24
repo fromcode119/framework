@@ -2,13 +2,13 @@ import { PluginState } from '@fromcode119/core';
 import { SystemController } from '@api/controllers/system/system-controller';
 
 describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
-  const createController = (metadata: any) => {
+  const createController = (metadata: any, options: { settings?: any[]; managesSettings?: boolean } = {}) => {
     const manager: any = {
       hooks: { on: vi.fn() },
       getAdminMetadata: vi.fn().mockResolvedValue(metadata),
       getRuntimeModules: vi.fn().mockReturnValue({}),
       db: {
-        find: vi.fn().mockResolvedValue([]),
+        find: vi.fn().mockResolvedValue(options.settings ?? []),
       },
     };
     const themeManager: any = {
@@ -16,9 +16,25 @@ describe('SystemController.getAdminMetadata secondaryPanel propagation', () => {
       getThemes: vi.fn().mockReturnValue([]),
     };
     const restController: any = {};
-    const auth: any = {};
-    return { controller: new SystemController(manager, themeManager, restController, auth), manager };
+    const auth: any = { holdsPermission: vi.fn().mockResolvedValue(options.managesSettings === true) };
+    return { controller: new SystemController(manager, themeManager, restController, auth), manager, auth };
   };
+
+  // Any signed-in member reaches this route. The platform's operating settings (the edge firewall, rate
+  // limits, where the api runs) belong to whoever may manage settings, not to a reviewer on one site.
+  it('gives a member only the settings the console displays, and a settings manager all of them', async () => {
+    const settings = [{ key: 'site_name', value: 'Acme' }, { key: 'trusted_relays', value: '10.0.0.1' }, { key: 'deploy_mode', value: 'docker' }];
+    const run = async (managesSettings: boolean) => {
+      const { controller, auth } = createController({ plugins: [], menu: [] }, { settings, managesSettings });
+      const res: any = { json: vi.fn(), set: vi.fn().mockReturnThis(), status: vi.fn().mockReturnThis() };
+      await controller.getAdminMetadata({} as any, res);
+      expect(auth.holdsPermission).toHaveBeenCalledWith(expect.anything(), ['system:manage']);
+      return res.json.mock.calls[0][0].settings;
+    };
+
+    expect(await run(false)).toEqual({ site_name: 'Acme' });
+    expect(await run(true)).toEqual(expect.objectContaining({ site_name: 'Acme', trusted_relays: '10.0.0.1', deploy_mode: 'docker' }));
+  });
 
   it('preserves secondaryPanel when present in manager metadata payload', async () => {
     const payload = {

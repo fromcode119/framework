@@ -81,3 +81,27 @@ describe('SystemSettingsExposureUtils.toExposableSettingsMap', () => {
     expect(SystemSettingsExposureUtils.toExposableSettingsMap(undefined)).toEqual({});
   });
 });
+
+describe('SystemSettingsExposureUtils.toMemberSettingsMap', () => {
+  const platformOnly = ['api_url', 'deploy_mode', 'trusted_relays', 'rate_limit_trusted_cidrs', 'database_pool_max'];
+
+  it('declares only what the console reads to display itself as member settings', () => {
+    const members = SystemSettingRegistry.memberKeys();
+    expect(members.has(SystemConstants.META_KEY.SITE_NAME)).toBe(true);
+    expect(members.has(SystemConstants.META_KEY.TIMEZONE)).toBe(true);
+    for (const key of members) expect(SystemSettingsExposureUtils.isExposable(key)).toBe(true);
+    for (const key of members) expect(key).not.toMatch(/^(rate_limit_|edge_|framework_|sources_|monitoring_|database_)/);
+  });
+
+  it('gives a member the display settings and none of the platform\'s operating settings', () => {
+    const exposedPlatformKeys = platformOnly.filter((key) => SystemSettingsExposureUtils.isExposable(key));
+    expect(exposedPlatformKeys.length).toBeGreaterThan(0);
+    const rows = [
+      { key: SystemConstants.META_KEY.SITE_NAME, value: 'Acme' },
+      ...exposedPlatformKeys.map((key) => ({ key, value: 'internal' })),
+    ];
+
+    expect(SystemSettingsExposureUtils.toMemberSettingsMap(rows)).toEqual({ [SystemConstants.META_KEY.SITE_NAME]: 'Acme' });
+    expect(Object.keys(SystemSettingsExposureUtils.toExposableSettingsMap(rows))).toEqual(expect.arrayContaining(exposedPlatformKeys));
+  });
+});

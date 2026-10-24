@@ -179,4 +179,9 @@ export class AuthManager {
     return this.gate.requirePermission(...args);
   }
 
+  /** @see AuthRequestGate.holdsPermission */
+  holdsPermission(...args: Parameters<AuthRequestGate["holdsPermission"]>): ReturnType<AuthRequestGate["holdsPermission"]> {
+    return this.gate.holdsPermission(...args);
+  }
+
 }

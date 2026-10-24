@@ -31,7 +31,7 @@ export class SystemControllerRuntime {
     readonly manager: PluginManager,
     readonly themeManager: ThemeManager,
     readonly restController: RESTController,
-    auth: AuthManager
+    readonly auth: AuthManager
   ) {
     const dbWrapper = (manager as any).db;
     this.db = dbWrapper;
