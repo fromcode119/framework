@@ -1,12 +1,13 @@
 import type { MetadataRoute } from 'next';
 import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
 import { ConsoleMountConstants } from '@fromcode119/core/constants/console-mount.constants';
 import { ConsoleMountUtils } from '@fromcode119/core/utils/console-mount-utils';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
 
 /**
- * PWA web app manifest (served by Next at /manifest.webmanifest) — makes the ADMIN app installable on a phone
+ * PWA web app manifest (served at /manifest.webmanifest) — makes the ADMIN app installable on a phone
  * home screen and run standalone. DOMAIN-AGNOSTIC and DEPLOYMENT-CONFIGURABLE: identity (name/icon/colors)
  * comes from the framework's own app config (`AppEnv.*`), never a plugin or appearance — and every value is
  * env-overridable so a platform rebrands the install experience WITHOUT patching framework source. The
@@ -17,10 +18,23 @@ import { AppEnv } from '@/lib/env';
  * install requires HTTPS in production; the manifest + responsive shell work over http too.
  * On a console mounted at a site's console path every address carries the mount the gateway names, so
  * the installed app opens — and stays scoped to — that path.
+ *
+ * A route handler rather than Next's `manifest.ts` metadata convention: that one also injects its own
+ * `<link rel="manifest">` at the root path, beside the mounted link the layout writes, so a console at a
+ * site's path fetched a manifest from the storefront and logged a 404 on every page.
  */
-export class AdminWebManifest {
+export class AdminWebManifestRoute {
+  /** Per request: the addresses depend on the mount the gateway names. */
+  static readonly dynamic = 'force-dynamic';
+
+  static async GET(): Promise<NextResponse> {
+    return NextResponse.json(await AdminWebManifestRoute.document(), {
+      headers: { 'Content-Type': 'application/manifest+json; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
+
   /** Build the manifest document from the framework's own app config. */
-  static async manifest(): Promise<MetadataRoute.Manifest> {
+  private static async document(): Promise<MetadataRoute.Manifest> {
     const name = String(AppEnv.APP_NAME || 'Admin');
     const mount = ConsoleMountUtils.sanitize((await headers()).get(ConsoleMountConstants.HEADER));
     const icon = AdminPathUtils.toBrowserPath(AppEnv.PWA_ICON_PATH, mount);
