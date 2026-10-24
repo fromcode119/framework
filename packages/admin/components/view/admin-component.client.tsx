@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import { Reactor } from '@fromcode119/react-class-components';
 // Value import, NOT `import type`: ThemeMode.LIGHT is dereferenced at runtime below.
-import { AppPathConstants, ConsoleMountUtils, ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode } from '@fromcode119/core/client';
 import { AdminRuntimeContext } from '@/components/view/admin-runtime-context.client';
 import type { IAdminRuntimeValue } from '@/components/interfaces/admin-runtime-value.interface';
 import type { IThemeContextType } from '@/components/interfaces/theme-context-type.interface';
@@ -98,15 +98,6 @@ export abstract class AdminComponent<P = Record<string, unknown>, S = Record<str
   /** Active admin appearance id (selection result) — lets classes branch on the chosen appearance. */
   protected get activeAppearanceId(): string {
     return this.context?.activeAppearanceId ?? AdminAppearanceConstants.DEFAULT_APPEARANCE_ID;
-  }
-
-  /**
-   * The URL of a file the active appearance ships in its `ui/` folder (a logo, a mark), as the browser
-   * must request it — under the console path when the console is mounted at one, so an appearance never
-   * writes a root `/appearances/...` path that the site's own pages would answer instead.
-   */
-  protected appearanceAsset(file: string): string {
-    return ConsoleMountUtils.prefix(AppPathConstants.ADMIN.APPEARANCES.UI_ASSET(this.activeAppearanceId, file));
   }
 
   /**
