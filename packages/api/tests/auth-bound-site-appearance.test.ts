@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PlatformSettingsService, SystemConstants, TenantMode } from '@fromcode119/core';
+import { AppearanceManager, PlatformSettingsService, SystemConstants, TenantMode } from '@fromcode119/core';
 import { AuthControllerTenantSelection } from '@api/controllers/auth/auth-controller-tenant-selection';
 
 /**
@@ -27,7 +27,11 @@ class MetaStub {
 class AppearanceProbe extends AuthControllerTenantSelection {
   read(tenant: { id: string; kind: string; appearance: string }) { return this.boundAppearance(tenant); }
   shadows(tenant: { id: string; kind: string }) { return this.boundShadows(tenant); }
+  brand(appearance: string) { return this.boundBrand(appearance); }
 }
+
+const installed = (items: Array<Record<string, unknown>>) =>
+  vi.spyOn(AppearanceManager.prototype, 'list').mockReturnValue(items as any);
 
 const KEY = SystemConstants.META_KEY.ADMIN_APPEARANCE;
 const SHADOWS = SystemConstants.META_KEY.ADMIN_SHADOWS;
@@ -64,10 +68,43 @@ describe('the login on a console host', () => {
   }
 
   it("wears a site's own appearance on its console path, not the built-in console", async () => {
-    expect(await hostInfo({ id: 'rb', slug: 'rb', kind: { value: 'site' }, appearance: '' })).toEqual({ id: 'rb', slug: 'rb', appearance: 'replybird' });
+    installed([{ slug: 'replybird', name: 'Replybird', icon: 'mark.png', builtIn: false }]);
+    expect(await hostInfo({ id: 'rb', slug: 'rb', kind: { value: 'site' }, appearance: '' })).toEqual({
+      id: 'rb', slug: 'rb', appearance: 'replybird',
+      brand: { name: 'Replybird', icon: '/appearances/replybird/ui/mark.png' },
+    });
   });
 
   it("wears a workspace's kind lock", async () => {
     expect((await hostInfo({ id: 'ws', slug: 'ws', kind: { value: 'workspace' }, appearance: 'locked' })).appearance).toBe('locked');
+  });
+});
+
+/**
+ * The console's page head is written on the server, before any appearance code runs. It named the
+ * platform until the appearance loaded and swapped it, and never swapped the icons at all. The host
+ * route now names the worn appearance's own `name` and declared `icon`.
+ */
+describe('the brand of the bound appearance', () => {
+  it("is the installed appearance's name and its icon's admin path", () => {
+    installed([{ slug: 'replybird', name: 'Replybird', icon: 'mark.png', builtIn: false }]);
+    expect(probe.brand('replybird')).toEqual({ name: 'Replybird', icon: '/appearances/replybird/ui/mark.png' });
+  });
+
+  it('names the appearance with no icon when it declares none', () => {
+    installed([{ slug: 'plain', name: 'Plain', builtIn: false }]);
+    expect(probe.brand('plain')).toEqual({ name: 'Plain', icon: '' });
+  });
+
+  it.each(['../secret.png', 'sub/mark.png', '.hidden'])('refuses an icon that is not a plain file in ui/ (%s)', (icon) => {
+    installed([{ slug: 'x', name: 'X', icon, builtIn: false }]);
+    expect(probe.brand('x')).toEqual({ name: 'X', icon: '' });
+  });
+
+  it("is null for the built-in console, an appearance that is not installed, and no appearance — the platform's own identity stays", () => {
+    installed([{ slug: 'default', name: 'Default', builtIn: true }]);
+    expect(probe.brand('default')).toBeNull();
+    expect(probe.brand('gone')).toBeNull();
+    expect(probe.brand('')).toBeNull();
   });
 });

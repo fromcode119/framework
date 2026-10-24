@@ -42,6 +42,7 @@ export { ThemeDefaultPageContractOverrideLoader } from '@core/theme/theme-defaul
 export { AppearanceManager } from '@core/appearance/appearance-manager';
 export { AppearanceInstallerService } from '@core/appearance/appearance-installer-service';
 export type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
+export type { IAppearanceBrand } from '@core/appearance/interfaces/appearance-brand.interface';
 export type { IAppearanceManifest } from '@core/appearance/interfaces/appearance-manifest.interface';
 export type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
 export { CoreExtensionManager } from '@core/extensions/extension-manager';

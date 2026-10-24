@@ -1,5 +1,6 @@
 import { AuthControllerLoginThrottle } from '@api/controllers/auth/auth-controller-login-throttle';
-import { SystemConstants, TenantKind } from '@fromcode119/core';
+import { AppearanceManager, AppPathConstants, Logger, SystemConstants, TenantKind } from '@fromcode119/core';
+import type { IAppearanceBrand } from '@fromcode119/core';
 
 /** What the bound scope's console looks like — readable by every member who may enter it. */
 export class AuthControllerBoundScopeLook extends AuthControllerLoginThrottle {
@@ -38,5 +39,24 @@ export class AuthControllerBoundScopeLook extends AuthControllerLoginThrottle {
       .findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.ADMIN_SHADOWS })
       .catch(() => null));
     return String((row as any)?.value ?? '').trim();
+  }
+
+  /**
+   * The name and icon of the appearance a site wears, for the console's page head. The admin draws
+   * the tab title and icons on the server, before an appearance's code has loaded, so without this a
+   * site's console painted under the platform's name and icon and swapped them a moment later.
+   * `null` for the built-in console and for an appearance that is not installed: the platform's own
+   * identity stays. An icon must be a plain file in the appearance's `ui/` folder — a path that
+   * climbs out of it is not one.
+   */
+  protected boundBrand(appearance: string): IAppearanceBrand | null {
+    const slug = String(appearance || '').trim();
+    if (!slug) return null;
+    const installed = new AppearanceManager(new Logger({ namespace: 'appearance' })).list()
+      .find((item) => item.slug === slug && !item.builtIn);
+    if (!installed) return null;
+    const file = String(installed.icon || '').trim();
+    const plain = /^[A-Za-z0-9._-]+$/.test(file) && !file.startsWith('.');
+    return { name: installed.name, icon: plain ? AppPathConstants.ADMIN.APPEARANCES.UI_ASSET(slug, file) : '' };
   }
 }

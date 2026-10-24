@@ -101,6 +101,8 @@ export class AppPathConstants {
       ROOT: RouteConstants.SEGMENTS.APPEARANCES,
       UI_BUNDLE: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.BUNDLE),
       UI_STYLESHEET: (id: string) => AppPathConstants.appearanceAsset(id, AppPathConstants.APPEARANCE_ASSETS.STYLESHEET),
+      /** Any other file the appearance ships in its `ui/` folder — its icon, say. */
+      UI_ASSET: (id: string, file: string) => AppPathConstants.appearanceAsset(id, file),
     },
     /** Tenant provisioning — platform admins only. */
     SITES: {

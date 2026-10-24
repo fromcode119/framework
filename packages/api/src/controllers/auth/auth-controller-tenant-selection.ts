@@ -199,7 +199,7 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
     const appearance = workspace ? await this.boundAppearance({ id: workspace.id, kind: workspace.kind.value, appearance: workspace.appearance }) : '';
     return res.json({
       multiTenant: TenantMode.isEnabled(),
-      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance } : null,
+      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance, brand: this.boundBrand(appearance) } : null,
       // Whether crawlers may index this console. Carried on the one response the admin already asks
       // for before anyone signs in, because the answer is needed to serve `robots.txt` and the
       // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read
