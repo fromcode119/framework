@@ -195,9 +195,13 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
    */
   async hostInfo(req: Request, res: Response) {
     const workspace = WorkspaceHostService.of(req);
+    // The appearance the bound scope's members wear, read the same way as `tenants/available`. A site
+    // serving its console on a path keeps its appearance in its own `admin_appearance` setting, not on
+    // the tenant row, so the row alone signed every site-console visitor in on the built-in console.
+    const appearance = workspace ? await this.boundAppearance({ id: workspace.id, kind: workspace.kind.value, appearance: workspace.appearance }) : '';
     return res.json({
       multiTenant: TenantMode.isEnabled(),
-      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance: workspace.appearance } : null,
+      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance } : null,
       // Whether crawlers may index this console. Carried on the one response the admin already asks
       // for before anyone signs in, because the answer is needed to serve `robots.txt` and the
       // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read

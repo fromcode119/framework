@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SystemConstants } from '@fromcode119/core';
+import { PlatformSettingsService, SystemConstants, TenantMode } from '@fromcode119/core';
 import { AuthControllerTenantSelection } from '@api/controllers/auth/auth-controller-tenant-selection';
 
 /**
@@ -51,5 +51,23 @@ describe('the appearance of the bound scope', () => {
     expect(await probe.shadows({ id: 'rb', kind: 'site' })).toBe('false');
     expect(await probe.shadows({ id: 'bare', kind: 'site' })).toBe('');
     expect(await probe.shadows({ id: 'ws', kind: 'workspace' })).toBe('');
+  });
+});
+
+describe('the login on a console host', () => {
+  async function hostInfo(tenant: Record<string, unknown>) {
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    vi.spyOn(PlatformSettingsService, 'readFlag').mockResolvedValue(false);
+    const json = vi.fn();
+    await probe.hostInfo({ workspaceTenant: tenant } as any, { json } as any);
+    return json.mock.calls[0][0].workspace;
+  }
+
+  it("wears a site's own appearance on its console path, not the built-in console", async () => {
+    expect(await hostInfo({ id: 'rb', slug: 'rb', kind: { value: 'site' }, appearance: '' })).toEqual({ id: 'rb', slug: 'rb', appearance: 'replybird' });
+  });
+
+  it("wears a workspace's kind lock", async () => {
+    expect((await hostInfo({ id: 'ws', slug: 'ws', kind: { value: 'workspace' }, appearance: 'locked' })).appearance).toBe('locked');
   });
 });
