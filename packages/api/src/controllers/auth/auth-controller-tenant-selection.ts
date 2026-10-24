@@ -195,16 +195,16 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
    */
   async hostInfo(req: Request, res: Response) {
     const workspace = WorkspaceHostService.of(req);
+    // A site keeps its appearance in its own `admin_appearance` setting, not on the tenant row.
+    const appearance = workspace ? await this.boundAppearance({ id: workspace.id, kind: workspace.kind.value, appearance: workspace.appearance }) : '';
     return res.json({
       multiTenant: TenantMode.isEnabled(),
-      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance: workspace.appearance } : null,
+      workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance } : null,
       // Whether crawlers may index this console. Carried on the one response the admin already asks
       // for before anyone signs in, because the answer is needed to serve `robots.txt` and the
       // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read
       // by the very requests that need it. It reveals nothing the robots.txt would not.
-      searchIndexing: await PlatformSettingsService.readFlag(
-        SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING,
-      ),
+      searchIndexing: await PlatformSettingsService.readFlag(SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING),
     });
   }
 

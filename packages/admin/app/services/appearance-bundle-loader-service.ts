@@ -1,5 +1,6 @@
 import { Platform } from '@fromcode119/react-class-components';
 import { AppPathConstants } from '@fromcode119/core/client';
+import { ConsoleMountUtils } from '@fromcode119/core/utils/console-mount-utils';
 import { AdminAppearanceRegistry } from '@/lib/appearance/admin-appearance-registry';
 import { GlobalReadinessService } from '@/lib/global-readiness-service';
 
@@ -27,7 +28,7 @@ export class AppearanceBundleLoaderService {
     link.id = linkId;
     link.rel = 'stylesheet';
     // Cache-bust per full page load so a rebuilt appearance CSS is always fetched fresh (never stale).
-    link.href = `${origin}${AppPathConstants.ADMIN.APPEARANCES.UI_STYLESHEET(id)}?v=${Date.now()}`;
+    link.href = `${origin}${ConsoleMountUtils.prefix(AppPathConstants.ADMIN.APPEARANCES.UI_STYLESHEET(id))}?v=${Date.now()}`;
     document.head.appendChild(link);
   }
 
@@ -48,7 +49,8 @@ export class AppearanceBundleLoaderService {
     AppearanceBundleLoaderService.injectStylesheet(origin, desired);
     const attempts = 2;
     for (let attempt = 1; attempt <= attempts; attempt++) {
-      const url = `${origin}${AppPathConstants.ADMIN.APPEARANCES.UI_BUNDLE(desired)}?v=${Date.now()}-${attempt}`;
+      // A console served on a site's path reaches its appearance files under that path too.
+      const url = `${origin}${ConsoleMountUtils.prefix(AppPathConstants.ADMIN.APPEARANCES.UI_BUNDLE(desired))}?v=${Date.now()}-${attempt}`;
       try {
         await import(/* webpackIgnore: true */ url);
       } catch (error) {
