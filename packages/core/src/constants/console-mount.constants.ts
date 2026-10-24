@@ -1,5 +1,5 @@
 // Relative, not `@core/…`: the admin's next.config reads ASSET_PREFIX, and a config file gets no path aliases.
-import { ClientRuntimeConstants } from './client-runtime.constants';
+import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
 
 /**
  * A console mounted on a PATH of a site's own host (`shop.example.com/backend`), the site form's

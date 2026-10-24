@@ -1,4 +1,4 @@
-import React from 'react';
+import { Context } from '@fromcode119/react-class-components';
 
 /**
  * The console path this document is mounted at (`/backend`), or `''` when the console is not mounted
@@ -7,5 +7,5 @@ import React from 'react';
  * between the two, and React does not repair a mismatched attribute on hydration.
  */
 export class ConsoleMountContext {
-  static readonly context = React.createContext<string>('');
+  static readonly context = new Context<string>('').raw;
 }
