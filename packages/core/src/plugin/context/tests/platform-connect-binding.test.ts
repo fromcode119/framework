@@ -38,6 +38,7 @@ describe('context.platform connect binding', () => {
     process.env.SECRET_KEY = 'test-key-for-platform-binding';
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
     vi.spyOn(SiteBaseUrl, 'consoleOrigin').mockResolvedValue('https://a.example');
+    vi.spyOn(SiteBaseUrl, 'consoleMount').mockResolvedValue('');
     vi.spyOn(ApplicationUrlUtils, 'readAppBaseUrlFromEnvironment').mockReturnValue('https://api.example');
     db = new PlatformTables();
     ctx = PlatformContextProxy.createPlatformProxy({ db } as any, { manifest: { slug: 'replies', platform: true } });
@@ -71,6 +72,15 @@ describe('context.platform connect binding', () => {
     const done = await as('1', '7', () => ctx.complete(handoffOf(claimed.continueTo)));
     expect(done).toEqual({ valid: true, granted: ['page-x'], refused: [], payload: { token: 'page-token' }, returnTo: 'https://a.example/admin/replies' });
     expect(await as('1', '7', () => ctx.claims())).toEqual(['page-x']);
+  });
+
+  it('comes back through the site\'s console path, where the console session is', async () => {
+    vi.spyOn(SiteBaseUrl, 'consoleMount').mockResolvedValue('/admin');
+    const ticket = ticketOf(await link());
+    const claimed = await platform(() => ctx.claim(ticket, ['page-x'], {}));
+    expect(claimed.continueTo.startsWith(`https://a.example/admin${ApiPathUtils.pluginPath('replies', 'connection/complete')}?handoff=`)).toBe(true);
+    const done = await as('1', '7', () => ctx.complete(handoffOf(claimed.continueTo)));
+    expect(done.returnTo).toBe('https://a.example/admin/replies');
   });
 
   it('grants nothing on the platform side, and a ticket only once', async () => {

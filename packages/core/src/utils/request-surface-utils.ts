@@ -3,6 +3,7 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { ApiVersionUtils } from '@core/api-version';
 import { AppPathConstants } from '@core/constants/app-path.constants';
 import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 import { RequestSurfaceHelper } from '@core/request-surface-helper';
 import { RequestSurfaceOriginUtils } from '@core/utils/request-surface-origin-utils';
 import { RouteConstants } from '@core/constants/route.constants';
@@ -51,13 +52,10 @@ export class RequestSurfaceUtils {
     baseUrl?: unknown;
     get?: (name: string) => string | undefined;
   }): boolean {
+    if (ConsoleMountUtils.isMountedRequest(requestLike)) return true;
     const client = RequestSurfaceUtils.readClientHeader(requestLike);
-    if (client === RequestSurfaceUtils.CLIENTS.ADMIN_UI) {
-      return true;
-    }
-    if (client === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) {
-      return false;
-    }
+    if (client === RequestSurfaceUtils.CLIENTS.ADMIN_UI) return true;
+    if (client === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) return false;
 
     if (RequestSurfaceOriginUtils.hasAdminOriginSignal(
       requestLike,
@@ -88,6 +86,7 @@ export class RequestSurfaceUtils {
     baseUrl?: unknown;
     get?: (name: string) => string | undefined;
   }): boolean {
+    if (ConsoleMountUtils.isMountedRequest(requestLike)) return false;
     const client = RequestSurfaceUtils.readClientHeader(requestLike);
     if (client === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) {
       return true;

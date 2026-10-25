@@ -5,6 +5,7 @@ import { SiteBaseUrl } from '@core/tenant/site-base-url';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { TenantRecord } from '@core/tenant/tenant-record';
+import { TenantHostRole } from '@core/tenant/tenant-host-role';
 
 /**
  * The absolute address a link in an EMAIL should point at.
@@ -272,5 +273,43 @@ describe('the console an operator reports being on', () => {
     expect(await SiteBaseUrl.consoleOrigin('https://other.customer.example', 'my-site')).toBe('');
     expect(await SiteBaseUrl.consoleOrigin('http://shop.customer.example', 'my-site')).toBe('');
     expect(await SiteBaseUrl.consoleOrigin('not a url', 'my-site')).toBe('');
+  });
+});
+
+describe('the console path a site serves its console on', () => {
+  const site = (consolePath: string, storefrontHosts: string[]) => ({
+    id: 'my-site',
+    isWorkspace: false,
+    consolePath,
+    roleFor: (host: string) => (storefrontHosts.includes(host) ? TenantHostRole.STOREFRONT : TenantHostRole.ADMIN),
+  });
+  const wireHost = (record: any) => {
+    SiteBaseUrl.registerDatabase({} as never);
+    vi.spyOn(TenantResolverService, 'shared').mockReturnValue({ resolveByHost: async () => record } as never);
+  };
+
+  it('is named for the site’s own storefront host, so an OAuth return reaches the console session', async () => {
+    multiTenant();
+    wireHost(site('/admin', ['shop.customer.example']));
+    expect(await SiteBaseUrl.consoleMount('https://shop.customer.example', 'my-site')).toBe('/admin');
+  });
+
+  it('is nothing on a dedicated console host, another site, a workspace or a site without one', async () => {
+    multiTenant();
+    wireHost(site('/admin', ['shop.customer.example']));
+    expect(await SiteBaseUrl.consoleMount('https://console.customer.example', 'my-site')).toBe('');
+    expect(await SiteBaseUrl.consoleMount('https://shop.customer.example', 'other-site')).toBe('');
+    expect(await SiteBaseUrl.consoleMount('not a url', 'my-site')).toBe('');
+    vi.restoreAllMocks();
+    wireHost({ ...site('/admin', ['shop.customer.example']), isWorkspace: true });
+    expect(await SiteBaseUrl.consoleMount('https://shop.customer.example', 'my-site')).toBe('');
+    vi.restoreAllMocks();
+    wireHost(site('', ['shop.customer.example']));
+    expect(await SiteBaseUrl.consoleMount('https://shop.customer.example', 'my-site')).toBe('');
+  });
+
+  it('is nothing on a single-site deployment', async () => {
+    wireHost(site('/admin', ['shop.customer.example']));
+    expect(await SiteBaseUrl.consoleMount('https://shop.customer.example', 'my-site')).toBe('');
   });
 });

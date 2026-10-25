@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 
 describe('RequestSurfaceUtils', () => {
   it('tells extension assets from admin pages under the same root', () => {
@@ -26,6 +27,14 @@ describe('RequestSurfaceUtils', () => {
       headers: { 'x-framework-client': 'admin-ui' },
       url: '/api/v1/auth/login',
     })).toBe(true);
+  });
+
+  it('a request through a site console path is the console, even with no client header', () => {
+    const returned = { headers: { 'x-fc-console-mount': '/admin', host: 'shop.example.com' }, url: '/api/plugins/replies/connection/complete' };
+    expect(RequestSurfaceUtils.isAdminRequestContext(returned)).toBe(true);
+    expect(RequestSurfaceUtils.isFrontendRequestContext(returned)).toBe(false);
+    expect(ConsoleMountUtils.isMountedRequest({ headers: { 'x-fc-console-mount': 'not a path' } })).toBe(false);
+    expect(ConsoleMountUtils.isMountedRequest({ headers: {} })).toBe(false);
   });
 
   it('classifies frontend requests from the framework client header', () => {

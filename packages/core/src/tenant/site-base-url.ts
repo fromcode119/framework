@@ -4,6 +4,8 @@ import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
+import { TenantHostRole } from '@core/tenant/tenant-host-role';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 
 /**
  * The absolute base URL of the SITE this code is running for.
@@ -151,6 +153,31 @@ export class SiteBaseUrl {
       return owner && (owner.id === id || owner.isWorkspace) ? url.origin : '';
     } catch (error: unknown) {
       SiteBaseUrl.logger.warn(`Could not check the console origin for site "${id}". ${error instanceof Error ? error.message : String(error)}`);
+      return '';
+    }
+  }
+
+  /**
+   * The path the site `tenantId` serves its console on at `origin` (`/admin`), or '' when the console
+   * there is at the root.
+   *
+   * A site's "Console path" puts its console on its own storefront hosts (`shop.example.com/admin`).
+   * An address the console must come back to from outside — the end of an OAuth dialog — has to name
+   * that path: without it the browser lands on the storefront, which neither shows the console nor
+   * carries its session. A host declared as the console, a workspace's host and the platform's own
+   * console serve it at the root.
+   */
+  static async consoleMount(origin: string, tenantId: string): Promise<string> {
+    let url: URL;
+    try { url = new URL(String(origin ?? '').trim()); } catch { return ''; }
+    const id = String(tenantId ?? '').trim();
+    if (!TenantMode.isEnabled() || !id || !SiteBaseUrl.database) return '';
+    try {
+      const owner = await TenantResolverService.shared(SiteBaseUrl.database).resolveByHost(url.hostname);
+      if (!owner || owner.id !== id || owner.isWorkspace || owner.roleFor(url.hostname) !== TenantHostRole.STOREFRONT) return '';
+      return ConsoleMountUtils.sanitize(owner.consolePath);
+    } catch (error: unknown) {
+      SiteBaseUrl.logger.warn(`Could not read the console path for site "${id}". ${error instanceof Error ? error.message : String(error)}`);
       return '';
     }
   }

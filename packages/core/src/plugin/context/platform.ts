@@ -2,6 +2,7 @@ import { ApiPathUtils } from '@core/api/api-path-utils';
 import { RequestContextUtils } from '@core/context/request-context';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { SiteBaseUrl } from '@core/tenant/site-base-url';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { PluginPlatformRoute } from '@core/plugin/context/plugin-platform-route';
 import { PluginPlatformClaims } from '@core/plugin/platform/plugin-platform-claims';
@@ -82,12 +83,16 @@ export class PlatformContextProxy {
         // this deployment declares (SiteBaseUrl.consoleOrigin), so neither half of the return is the caller's.
         const reported = await SiteBaseUrl.consoleOrigin(RequestContextUtils.getAdminOrigin() ?? '', tenantId ?? '');
         const consoleOrigin = reported || await SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.ADMIN_APP);
+        // A console on a path of the site's own host (`shop.example.com/admin`) is reached back only
+        // through that path: the storefront at the root carries no console session, so the operator
+        // who started the connection would read as nobody and be refused.
+        const mount = await SiteBaseUrl.consoleMount(consoleOrigin, tenantId ?? '');
         const ticket = PluginPlatformTicket.mint({
           slug,
           tenantId,
           userId,
-          returnTo: `${consoleOrigin}${back}`,
-          completeUrl: `${consoleOrigin}${ApiPathUtils.pluginPath(slug, finish)}`,
+          returnTo: `${consoleOrigin}${ConsoleMountUtils.prefix(back, mount)}`,
+          completeUrl: `${consoleOrigin}${ConsoleMountUtils.prefix(ApiPathUtils.pluginPath(slug, finish), mount)}`,
         });
         const base = ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
         const route = ApiPathUtils.pluginPath(slug, `${PluginPlatformRoute.SEGMENT}/${String(path ?? '').replace(/^\/+/, '')}`);
