@@ -1,5 +1,6 @@
 import { ConsoleMountConstants } from '@core/constants/console-mount.constants';
 import { EnvUtils } from '@core/utils/env-utils';
+import { RequestSurfaceHelper } from '@core/request-surface-helper';
 
 /**
  * Putting a mounted console's path back in front of the addresses it writes (see
@@ -46,5 +47,16 @@ export class ConsoleMountUtils {
     if (path === mount) return true;
     const next = path.charAt(mount.length);
     return path.startsWith(mount) && (next === '/' || next === '?' || next === '#');
+  }
+
+  /**
+   * A request that came in through a site's console path (`shop.example.com/admin/...`). The gateway
+   * names the mount in its own header and drops any copy a client sent, so the header is the gateway's
+   * word, not the browser's. It matters where nothing else says "console": a top-level navigation back
+   * from a provider (an OAuth return) carries no client header and the storefront's host, yet it belongs
+   * to the console session that started it.
+   */
+  static isMountedRequest(requestLike: { headers?: Record<string, unknown>; get?: (name: string) => string | undefined }): boolean {
+    return ConsoleMountUtils.sanitize(RequestSurfaceHelper.readHeader(requestLike, ConsoleMountConstants.HEADER)) !== '';
   }
 }

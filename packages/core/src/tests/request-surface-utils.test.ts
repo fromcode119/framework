@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { RequestSurfaceUtils } from '@core/utils/request-surface-utils';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 
 describe('RequestSurfaceUtils', () => {
   it('tells extension assets from admin pages under the same root', () => {
@@ -32,8 +33,8 @@ describe('RequestSurfaceUtils', () => {
     const returned = { headers: { 'x-fc-console-mount': '/admin', host: 'shop.example.com' }, url: '/api/plugins/replies/connection/complete' };
     expect(RequestSurfaceUtils.isAdminRequestContext(returned)).toBe(true);
     expect(RequestSurfaceUtils.isFrontendRequestContext(returned)).toBe(false);
-    expect(RequestSurfaceUtils.isConsoleMountRequest({ headers: { 'x-fc-console-mount': 'not a path' } })).toBe(false);
-    expect(RequestSurfaceUtils.isConsoleMountRequest({ headers: {} })).toBe(false);
+    expect(ConsoleMountUtils.isMountedRequest({ headers: { 'x-fc-console-mount': 'not a path' } })).toBe(false);
+    expect(ConsoleMountUtils.isMountedRequest({ headers: {} })).toBe(false);
   });
 
   it('classifies frontend requests from the framework client header', () => {
