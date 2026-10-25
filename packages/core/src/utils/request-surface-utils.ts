@@ -3,6 +3,8 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { ApiVersionUtils } from '@core/api-version';
 import { AppPathConstants } from '@core/constants/app-path.constants';
 import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
+import { ConsoleMountConstants } from '@core/constants/console-mount.constants';
+import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 import { RequestSurfaceHelper } from '@core/request-surface-helper';
 import { RequestSurfaceOriginUtils } from '@core/utils/request-surface-origin-utils';
 import { RouteConstants } from '@core/constants/route.constants';
@@ -51,6 +53,9 @@ export class RequestSurfaceUtils {
     baseUrl?: unknown;
     get?: (name: string) => string | undefined;
   }): boolean {
+    if (RequestSurfaceUtils.isConsoleMountRequest(requestLike)) {
+      return true;
+    }
     const client = RequestSurfaceUtils.readClientHeader(requestLike);
     if (client === RequestSurfaceUtils.CLIENTS.ADMIN_UI) {
       return true;
@@ -88,6 +93,9 @@ export class RequestSurfaceUtils {
     baseUrl?: unknown;
     get?: (name: string) => string | undefined;
   }): boolean {
+    if (RequestSurfaceUtils.isConsoleMountRequest(requestLike)) {
+      return false;
+    }
     const client = RequestSurfaceUtils.readClientHeader(requestLike);
     if (client === RequestSurfaceUtils.CLIENTS.FRONTEND_UI) {
       return true;
@@ -115,6 +123,20 @@ export class RequestSurfaceUtils {
 
     return RequestSurfaceHelper.readPathCandidates(requestLike)
       .some((path) => RequestSurfaceUtils.isFrontendPath(path));
+  }
+
+  /**
+   * A request that came in through a site's console path (`shop.example.com/admin/...`). The gateway
+   * names the mount in its own header and drops any copy a client sent, so the header is the gateway's
+   * word, not the browser's. It matters where nothing else says "console": a top-level navigation back
+   * from a provider (an OAuth return) carries no client header and the storefront's host, yet it belongs
+   * to the console session that started it.
+   */
+  static isConsoleMountRequest(requestLike: {
+    headers?: Record<string, unknown>;
+    get?: (name: string) => string | undefined;
+  }): boolean {
+    return ConsoleMountUtils.sanitize(RequestSurfaceHelper.readHeader(requestLike, ConsoleMountConstants.HEADER)) !== '';
   }
 
   static isAdminPath(value: unknown): boolean {

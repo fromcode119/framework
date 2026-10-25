@@ -28,6 +28,14 @@ describe('RequestSurfaceUtils', () => {
     })).toBe(true);
   });
 
+  it('a request through a site console path is the console, even with no client header', () => {
+    const returned = { headers: { 'x-fc-console-mount': '/admin', host: 'shop.example.com' }, url: '/api/plugins/replies/connection/complete' };
+    expect(RequestSurfaceUtils.isAdminRequestContext(returned)).toBe(true);
+    expect(RequestSurfaceUtils.isFrontendRequestContext(returned)).toBe(false);
+    expect(RequestSurfaceUtils.isConsoleMountRequest({ headers: { 'x-fc-console-mount': 'not a path' } })).toBe(false);
+    expect(RequestSurfaceUtils.isConsoleMountRequest({ headers: {} })).toBe(false);
+  });
+
   it('classifies frontend requests from the framework client header', () => {
     expect(RequestSurfaceUtils.isFrontendRequestContext({
       headers: { 'x-framework-client': 'frontend-ui' },
