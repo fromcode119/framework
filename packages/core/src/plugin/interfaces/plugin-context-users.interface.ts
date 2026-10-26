@@ -23,5 +23,5 @@ export interface IPluginContextUsers {
    * The link is `<site>` + the versioned `SystemConstants.API_PATH.AUTH.SIGN_IN_LINK` + `?token=…`;
    * opening it signs the person in on this site and redirects to `next`. TTL 5 minutes to 3 days.
    */
-  issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string; path: string }>;
+  issueSignInLink(userId: unknown, options?: { ttlMinutes?: number; next?: string }): Promise<{ token: string; expiresAt: string | null; path: string }>;
 }

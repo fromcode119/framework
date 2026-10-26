@@ -15,13 +15,17 @@ import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
  *
  * Only for an account the plugin could have created — the same rule as `issuePasswordSetup`. The link is
  * bound to the site it was issued on, and it keeps working until it expires: mail scanners open links
- * before the person does, and a single-use link would be spent by the scanner.
+ * before the person does, and a single-use link would be spent by the scanner. `ttlMinutes: 0` asks for a
+ * link that never expires (`expiresAt: null`); it still stops working when a newer link is issued for the
+ * account, so the plugin's "send me a new link" retires a forwarded one.
  */
 export class PluginSignInLink {
   static readonly OPERATION = 'context.users.issueSignInLink';
   static readonly MIN_MINUTES = 5;
   static readonly MAX_MINUTES = 3 * 24 * 60;
   static readonly DEFAULT_MINUTES = 24 * 60;
+  /** `ttlMinutes` value that asks for a link with no expiry. */
+  static readonly NEVER_EXPIRES = 0;
 
   static tokenKey(tokenHash: string): string {
     return `auth:sign_in_token:${tokenHash}`;
@@ -48,12 +52,13 @@ export class PluginSignInLink {
     userId: unknown,
     tenantId: string | null,
     options: { ttlMinutes?: number; next?: string } = {},
-  ): Promise<{ token: string; expiresAt: string; path: string }> {
+  ): Promise<{ token: string; expiresAt: string | null; path: string }> {
     const { uid, email } = await PluginPasswordSetup.vetAccount(manager, pluginSlug, userId, tenantId, PluginSignInLink.OPERATION);
 
     const token = randomBytes(32).toString('hex');
     const tokenHash = PluginSignInLink.hash(token);
-    const expiresAt = new Date(Date.now() + PluginSignInLink.minutes(options.ttlMinutes) * 60 * 1000).toISOString();
+    const minutes = PluginSignInLink.minutes(options.ttlMinutes);
+    const expiresAt = minutes === null ? null : new Date(Date.now() + minutes * 60 * 1000).toISOString();
     const payload = JSON.stringify({ userId: uid, email, tenantId, next: PluginSignInLink.safeNext(options.next), expiresAt });
 
     // One live link per account: a new one retires the previous.
@@ -74,9 +79,23 @@ export class PluginSignInLink {
     return `${ApiPathUtils.versioned(SystemApiPaths.ALL.AUTH.SIGN_IN_LINK)}?token=${encodeURIComponent(token)}`;
   }
 
-  private static minutes(requested: unknown): number {
+  /** Has this stored link run out? A link stored with `expiresAt: null` never does. */
+  static isExpired(expiresAt: unknown, now = Date.now()): boolean {
+    if (expiresAt === null) return false;
+    return new Date(String(expiresAt)).getTime() < now;
+  }
+
+  /** Is the stored expiry readable — `null` (never) or a date? Anything else is a damaged record. */
+  static isReadableExpiry(expiresAt: unknown): boolean {
+    if (expiresAt === null) return true;
+    return !Number.isNaN(new Date(String(expiresAt ?? '')).getTime());
+  }
+
+  private static minutes(requested: unknown): number | null {
+    if (requested === undefined || requested === null || requested === '') return PluginSignInLink.DEFAULT_MINUTES;
     const value = Number(requested);
     if (!Number.isFinite(value)) return PluginSignInLink.DEFAULT_MINUTES;
+    if (value === PluginSignInLink.NEVER_EXPIRES) return null;
     return Math.min(PluginSignInLink.MAX_MINUTES, Math.max(PluginSignInLink.MIN_MINUTES, Math.round(value)));
   }
 

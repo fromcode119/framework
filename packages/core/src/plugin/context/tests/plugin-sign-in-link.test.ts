@@ -78,6 +78,15 @@ describe('context.users.issueSignInLink', () => {
     expect(Date.parse(long.expiresAt) - before).toBeLessThanOrEqual(3 * 24 * 60 * 60 * 1000 + 1000);
   });
 
+  it('issues a link that never expires when asked for zero minutes', async () => {
+    const { manager, meta } = managerWith([{ id: 7, email: 'r@site.test', roles: ['customer'] }]);
+
+    const { token, expiresAt } = await users(manager).issueSignInLink(7, { ttlMinutes: PluginSignInLink.NEVER_EXPIRES, next: '/learn' });
+
+    expect(expiresAt).toBeNull();
+    expect(JSON.parse(String(meta.get(PluginSignInLink.tokenKey(PluginSignInLink.hash(token))))).expiresAt).toBeNull();
+  });
+
   it('refuses an administrator and writes nothing', async () => {
     const { manager, meta } = managerWith([{ id: 1, email: 'owner@site.test', roles: ['admin'] }]);
 
@@ -90,6 +99,21 @@ describe('context.users.issueSignInLink', () => {
     const denied = { hasCapability: () => false, handleViolation: (cap: string) => { throw new Error(`Missing "${cap}"`); }, handleRateLimit: () => {} } as any;
 
     await expect(users(manager, denied).issueSignInLink(7)).rejects.toThrow(/database:write/);
+  });
+});
+
+describe('PluginSignInLink expiry', () => {
+  it('treats null as never expiring and a past date as expired', () => {
+    expect(PluginSignInLink.isExpired(null)).toBe(false);
+    expect(PluginSignInLink.isExpired(new Date(Date.now() - 1000).toISOString())).toBe(true);
+    expect(PluginSignInLink.isExpired(new Date(Date.now() + 60000).toISOString())).toBe(false);
+  });
+
+  it('reads null or a date, and nothing else', () => {
+    expect(PluginSignInLink.isReadableExpiry(null)).toBe(true);
+    expect(PluginSignInLink.isReadableExpiry(new Date().toISOString())).toBe(true);
+    expect(PluginSignInLink.isReadableExpiry(undefined)).toBe(false);
+    expect(PluginSignInLink.isReadableExpiry('soon')).toBe(false);
   });
 });
 

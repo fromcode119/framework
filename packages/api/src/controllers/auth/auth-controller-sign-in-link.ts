@@ -9,8 +9,8 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
  * `GET /auth/sign-in-link?token=…` — the link a plugin emailed (`context.users.issueSignInLink`).
  *
  * Signs the person in on the site the link was issued for and redirects to the path the plugin named.
- * The link is not spent on use (mail scanners open links first); it stops working when it expires or a
- * newer one is issued. An expired link still names the page it was for, so it lands there with
+ * The link is not spent on use (mail scanners open links first); it stops working when it expires (a link
+ * issued with no expiry never does) or a newer one is issued. An expired link still names the page it was for, so it lands there with
  * `signInLinkError=expired` and that page offers a fresh link; the person has no password to use instead.
  * Any other refusal lands on the sign-in page with `signInLinkError`, never a JSON page.
  */
@@ -26,9 +26,8 @@ export class AuthControllerSignInLink extends AuthControllerSsoOauth {
     let payload: any = null;
     try { payload = row?.value ? JSON.parse(String(row.value)) : null; } catch { payload = null; }
     const userId = Number(payload?.userId || 0);
-    const expiresAt = new Date(String(payload?.expiresAt || 0)).getTime();
-    if (!userId || Number.isNaN(expiresAt)) return this.refuseLink(res, login, 'invalid');
-    if (expiresAt < Date.now()) return this.refuseLink(res, PluginSignInLink.safeNext(payload?.next), 'expired');
+    if (!userId || !PluginSignInLink.isReadableExpiry(payload?.expiresAt)) return this.refuseLink(res, login, 'invalid');
+    if (PluginSignInLink.isExpired(payload?.expiresAt)) return this.refuseLink(res, PluginSignInLink.safeNext(payload?.next), 'expired');
     // A link issued on one site does not sign anyone in on another.
     const here = String(RequestContextUtils.getTenantId() ?? '').trim() || null;
     if ((payload?.tenantId ?? null) !== here) return this.refuseLink(res, login, 'invalid');
