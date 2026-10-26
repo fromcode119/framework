@@ -1,3 +1,5 @@
+import { RuntimeBootHintConstants } from '@fromcode119/core/client';
+
 /**
  * Decides WHEN the storefront runtime script is appended to an islands document.
  *
@@ -11,7 +13,9 @@
  * So the runtime boots on the visitor's FIRST sign of intent — a pointer, a key, a touch, a scroll —
  * which is the moment its work becomes useful, or once the page has sat idle for
  * {@link IDLE_FALLBACK_MS}, so a visitor who only reads still gets every interactive surface, consent
- * banner and analytics beacon. A tap that arrives before the runtime is ready is held and replayed by
+ * banner and analytics beacon. A page whose main surface cannot render until the runtime runs (it carries
+ * `RuntimeBootHintConstants.ATTRIBUTE`, e.g. a course player still loading the reader's access) boots as
+ * soon as the document has parsed instead: there, waiting only keeps the visitor on a loading state. A tap that arrives before the runtime is ready is held and replayed by
  * `EarlyInteractionBuffer`, so nothing the visitor does is lost.
  *
  * {@link bootstrap} is serialised with `Function.prototype.toString()`, like `EarlyInteractionBuffer`:
@@ -27,7 +31,7 @@ export class RuntimeBootTrigger {
   /** The idle slice the fallback then waits for, at most. */
   static readonly IDLE_TIMEOUT_MS = 2000;
 
-  static bootstrap(scriptPath: string, events: readonly string[], fallbackMs: number, idleTimeoutMs: number): void {
+  static bootstrap(scriptPath: string, events: readonly string[], fallbackMs: number, idleTimeoutMs: number, bootNowSelector: string): void {
     let booted = false;
     const boot = (): void => {
       if (booted) return;
@@ -45,13 +49,18 @@ export class RuntimeBootTrigger {
         else boot();
       }, fallbackMs);
     };
-    if (document.readyState === 'complete') fallback();
-    else addEventListener('load', fallback, { once: true });
+    const parsed = (): void => {
+      if (document.querySelector(bootNowSelector)) boot();
+      else if (document.readyState === 'complete') fallback();
+      else addEventListener('load', fallback, { once: true });
+    };
+    if (document.readyState === 'loading') addEventListener('DOMContentLoaded', parsed, { once: true });
+    else parsed();
   }
 
   /** The IIFE for the inline `<script>`. */
   static inlineScript(scriptPath: string): string {
-    const args = [scriptPath, RuntimeBootTrigger.INTENT_EVENTS, RuntimeBootTrigger.IDLE_FALLBACK_MS, RuntimeBootTrigger.IDLE_TIMEOUT_MS]
+    const args = [scriptPath, RuntimeBootTrigger.INTENT_EVENTS, RuntimeBootTrigger.IDLE_FALLBACK_MS, RuntimeBootTrigger.IDLE_TIMEOUT_MS, `[${RuntimeBootHintConstants.ATTRIBUTE}]`]
       .map((value) => JSON.stringify(value)).join(',');
     return `(function ${RuntimeBootTrigger.bootstrap.toString()})(${args});`;
   }

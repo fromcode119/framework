@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { RuntimeBootHintConstants } from '@fromcode119/core/client';
 import { RuntimeBootTrigger } from '@/lib/document/runtime-boot-trigger';
 
 /**
@@ -17,6 +18,7 @@ const install = (): void => {
 beforeEach(() => {
   vi.useFakeTimers();
   document.head.innerHTML = '';
+  document.body.innerHTML = '';
 });
 
 afterEach(() => {
@@ -41,6 +43,16 @@ describe('RuntimeBootTrigger', () => {
     install();
     vi.advanceTimersByTime(RuntimeBootTrigger.IDLE_FALLBACK_MS + RuntimeBootTrigger.IDLE_TIMEOUT_MS);
     vi.runAllTimers();
+    expect(runtimeScripts()).toBe(1);
+  });
+
+  it('boots at once when the document carries a surface waiting on the runtime', () => {
+    document.body.innerHTML = `<section ${RuntimeBootHintConstants.ATTRIBUTE}>Loading…</section>`;
+    install();
+    expect(runtimeScripts()).toBe(1);
+
+    vi.runAllTimers();
+    window.dispatchEvent(new Event('pointerdown'));
     expect(runtimeScripts()).toBe(1);
   });
 });
