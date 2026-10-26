@@ -1,5 +1,5 @@
 import { Reactor } from '@fromcode119/react-class-components';
-import { PluginsFacade } from '@fromcode119/core/client';
+import { PluginsFacade, RuntimeBootHintConstants } from '@fromcode119/core/client';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import type { PluginRuntimeValue } from '@react/plugin-runtime-value';
 import { PluginNavigation } from '@react/plugin-navigation';
@@ -49,6 +49,15 @@ export abstract class PluginComponent<P = Record<string, unknown>, S = Record<st
   protected get t(): ITranslationContextValue['t'] {
     return this.context?.translation?.t
       ?? ((key: string, _params?: Record<string, unknown>, defaultValue?: string) => defaultValue || key);
+  }
+
+  /**
+   * Spread onto the root of a state that cannot show anything until the browser runtime runs — a loading
+   * state waiting on the reader's own data. The storefront otherwise delays the runtime until the visitor
+   * interacts or the page sits idle, which would leave this state on screen for seconds.
+   */
+  protected get bootNowAttributes(): Record<string, string> {
+    return { [RuntimeBootHintConstants.ATTRIBUTE]: '' };
   }
 
   protected get globalSettings(): Record<string, any> {

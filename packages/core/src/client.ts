@@ -60,6 +60,7 @@ export { CookieSameSite } from '@core/clients/enums/cookie-same-site.enum';
 export { AppPathConstants } from '@core/constants/app-path.constants';
 export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
+export { RuntimeBootHintConstants } from '@core/constants/runtime-boot-hint.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 export { RouteConstants } from '@core/constants/route.constants';
 export { AccountRouteUtils } from '@core/utils/account-route-utils';
