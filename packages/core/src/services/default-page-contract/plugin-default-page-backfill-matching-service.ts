@@ -44,12 +44,26 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
     });
   }
 
+  /** The contract's own route, without aliases and hints — see {@link findMatches}. */
+  buildPrimaryCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
+    return this.seedPageService.buildPageLookupCandidates([], {
+      customPermalink: contract.effectiveSlug,
+      slug: contract.effectiveSlug,
+    });
+  }
+
+  /**
+   * A page on the contract's own route outranks a page that only sits on one of its aliases: a site
+   * can give an alias route a landing page of its own, and ranking the two level reports the contract
+   * ambiguous although the page on its route is plainly the one.
+   */
   findMatches(
     lookupCandidates: string[],
+    primaryCandidates: string[],
     pages: IPluginDefaultPageContractBackfillCandidatePage[],
   ): IPluginDefaultPageContractBackfillPageMatch[] {
     const allMatches = pages
-      .map((page) => this.getPageMatch(page, lookupCandidates))
+      .map((page) => this.getPageMatch(page, primaryCandidates, 0) || this.getPageMatch(page, lookupCandidates, 2))
       .filter((match): match is IPluginDefaultPageContractBackfillPageMatch => Boolean(match));
 
     if (!allMatches.length) {
@@ -66,11 +80,12 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
   private getPageMatch(
     page: IPluginDefaultPageContractBackfillCandidatePage,
     lookupCandidates: string[],
+    basePriority: number,
   ): IPluginDefaultPageContractBackfillPageMatch | undefined {
     if (this.hasCandidateMatch(lookupCandidates, page.customPermalinkCandidates)) {
       return {
         matchedPageId: page.id,
-        priority: 0,
+        priority: basePriority,
         source: PluginDefaultPageContractBackfillMatchSource.CUSTOM_PERMALINK,
       };
     }
@@ -78,7 +93,7 @@ export class PluginDefaultPageBackfillMatchingService extends BaseService {
     if (this.hasCandidateMatch(lookupCandidates, page.slugCandidates)) {
       return {
         matchedPageId: page.id,
-        priority: 1,
+        priority: basePriority + 1,
         source: PluginDefaultPageContractBackfillMatchSource.SLUG,
       };
     }

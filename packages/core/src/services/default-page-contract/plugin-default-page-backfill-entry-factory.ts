@@ -59,7 +59,7 @@ export class PluginDefaultPageBackfillEntryFactory extends PluginDefaultPageEntr
       );
     }
 
-    const matches = this.matchingService.findMatches(lookupCandidates, pages);
+    const matches = this.matchingService.findMatches(lookupCandidates, this.matchingService.buildPrimaryCandidates(contract), pages);
     const existingAssociation = associations.byCanonicalKey.get(contract.canonicalKey);
 
     if (existingAssociation) {

@@ -193,12 +193,27 @@ describe('PluginDefaultPageMaterializationService', () => {
     expect(plan.summary.byAction['create-missing']).toBe(0);
   });
 
+  it('adopts the page on the contract route over pages that only sit on its aliases', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract({ effectiveAliases: ['/browse', '/offers'] })],
+      existingPages: [
+        { id: 10, slug: 'browse', customPermalink: '/browse' },
+        { id: 11, slug: 'offers', customPermalink: '/offers' },
+        { id: 9, slug: 'catalog', customPermalink: '/catalog' },
+      ],
+    }).entries;
+
+    expect(entry.action).toBe(PluginDefaultPageContractMaterializationAction.ADOPT_EXISTING);
+    expect(entry.status).toBe(PluginDefaultPageContractMaterializationStatus.READY);
+    expect(entry.matchedPageId).toBe(9);
+  });
+
   it('marks a contract ambiguous when multiple pages match the same best-priority candidates', () => {
     const [entry] = service.createPlan({
-      resolvedContracts: [createResolvedContract()],
+      resolvedContracts: [createResolvedContract({ adoptionHints: [] })],
       existingPages: [
-        { id: 1, customPermalink: '/catalog' },
-        { id: 2, customPermalink: '/browse' },
+        { id: 1, customPermalink: '/browse' },
+        { id: 2, customPermalink: '/browse/' },
       ],
     }).entries;
 
