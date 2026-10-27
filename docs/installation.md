@@ -129,7 +129,7 @@ npm run dev:local:api
 
 | Surface | URL |
 |---------|-----|
-| **API** | `http://localhost:3000/api/v1` |
+| **API** | `http://localhost:3000/api` |
 | **Admin Panel** | `http://localhost:3000/admin` |
 | **Frontend** | `http://localhost:3000` |
 

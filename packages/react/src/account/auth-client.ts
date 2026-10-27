@@ -1,7 +1,7 @@
 import { SdkClient } from '@fromcode119/core/client';
 
 /**
- * Resolves the framework auth scope client (`/api/v1/auth/*`) from the plugin runtime api client.
+ * Resolves the framework auth scope client (`/api/auth/*`) from the plugin runtime api client.
  * The SDK client owns the base URL and CSRF injection, so account panels never touch raw fetch,
  * hardcoded paths or cookies.
  */

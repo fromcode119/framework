@@ -22,7 +22,7 @@ describe('PluginHostOutage — a plugin whose process is not running', () => {
 
   it("lets every request that is not the plugin's through its middleware — the platform keeps working", () => {
     // `/plugins/billing/runtime` is the PLATFORM's endpoint about the plugin — it must answer while it is down.
-    for (const url of ['/api/v1/auth/me', '/api/v1/collections/pages', '/api/v1/plugins/other/health', '/api/v1/collections/billing-wallets-archive', '/api/v1/plugins/billing/runtime']) {
+    for (const url of ['/api/auth/me', '/api/collections/pages', '/api/plugins/other/health', '/api/collections/billing-wallets-archive', '/api/plugins/billing/runtime']) {
       const exchange = run(url, middleware);
       expect(exchange.passed, url).toBe(true);
       expect(exchange.status, url).toBeNull();
@@ -30,13 +30,13 @@ describe('PluginHostOutage — a plugin whose process is not running', () => {
   });
 
   it("refuses the plugin's own collections and routes, and says why", () => {
-    for (const url of ['/api/v1/collections/billing-wallets', '/api/v1/collections/billing-wallets/7?depth=1', '/api/v1/collections/fcp_billing_wallets']) {
+    for (const url of ['/api/collections/billing-wallets', '/api/collections/billing-wallets/7?depth=1', '/api/collections/fcp_billing_wallets']) {
       const exchange = run(url, middleware);
       expect(exchange.passed, url).toBe(false);
       expect(exchange.status, url).toBe(503);
       expect(exchange.body.error).toBe('Plugin "billing" is not running: extension-host unreachable');
     }
-    const route = run('/api/v1/plugins/billing/health');
+    const route = run('/api/plugins/billing/health');
     expect(route.status).toBe(503);
     expect(route.passed).toBe(false);
   });

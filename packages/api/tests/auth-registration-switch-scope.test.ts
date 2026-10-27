@@ -20,7 +20,7 @@ describe('the sign-up and sign-in switches', () => {
   const request = (client?: string): any => ({
     headers: client ? { 'x-framework-client': client } : {},
     get(name: string) { return this.headers[name.toLowerCase()]; },
-    originalUrl: '/api/v1/auth/register', url: '/api/v1/auth/register', path: '/api/v1/auth/register',
+    originalUrl: '/api/auth/register', url: '/api/auth/register', path: '/api/auth/register',
   });
 
   it('closes sign-up on the website when the website switch is off', async () => {

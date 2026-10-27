@@ -18,7 +18,7 @@ import { RouteConstants } from '@fromcode119/core';
  * @example
  * ```typescript
  * const mediaRouter = new MediaRouter(pluginManager, authManager, mediaManager);
- * app.use('/api/v1/media', mediaRouter.router);
+ * app.use('/api/media', mediaRouter.router);
  * ```
  */
 export class MediaRouter extends BaseRouter {

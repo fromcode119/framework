@@ -142,7 +142,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 authorization: `Bearer ${token}`,
                 'x-framework-client': 'frontend-ui',
             },
-            url: '/api/v1/plugins/example/settings',
+            url: '/api/plugins/example/settings',
         };
         const next = vi.fn();
 
@@ -163,7 +163,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 authorization: `Bearer ${token}`,
                 'x-framework-client': 'frontend-ui',
             },
-            url: '/api/v1/plugins/example/settings',
+            url: '/api/plugins/example/settings',
         };
         const next = vi.fn();
 
@@ -182,7 +182,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 'x-framework-client': 'admin-ui',
                 cookie: `${CookieConstants.CLIENT_AUTH_TOKEN}=${validToken}`
             },
-            url: '/api/v1/system/admin/metadata'
+            url: '/api/system/admin/metadata'
         };
         const res: any = {};
         const next = vi.fn();
@@ -203,7 +203,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 referer: 'https://domain.com/admin/login',
                 cookie: `${CookieConstants.AUTH_TOKEN}=${validToken}`
             },
-            url: '/api/v1/auth/login'
+            url: '/api/auth/login'
         };
         const res: any = {};
         const next = vi.fn();
@@ -225,7 +225,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 referer: 'https://domain.com/account/security',
                 cookie: `${CookieConstants.CLIENT_AUTH_TOKEN}=${validToken}`
             },
-            url: '/api/v1/auth/status'
+            url: '/api/auth/status'
         };
         const res: any = {};
         const next = vi.fn();
@@ -256,7 +256,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 'x-framework-client': 'frontend-ui',
                 cookie: `${CookieConstants.CLIENT_AUTH_TOKEN}=${expiredToken(['customer'])}`,
             },
-            url: '/api/v1/auth/status',
+            url: '/api/auth/status',
             get: () => undefined,
         };
         const res: any = { clearCookie: (name: string) => cleared.push(name) };
@@ -274,7 +274,7 @@ describe('AuthManager Middleware Conflict Fix', () => {
                 'x-framework-client': 'admin-ui',
                 cookie: `${CookieConstants.AUTH_TOKEN}=${expiredToken(['admin'])}`,
             },
-            url: '/api/v1/auth/status',
+            url: '/api/auth/status',
             get: () => undefined,
         };
         const res: any = { clearCookie: (name: string) => cleared.push(name) };

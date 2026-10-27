@@ -40,7 +40,7 @@ function buildApp(bind?: { tenantId: string; tenant: unknown }, adminAppearance?
   const app = express();
   app.use(express.json());
   if (bind) app.use((req: any, _res, next) => { req.tenantId = bind.tenantId; req.tenant = bind.tenant; next(); });
-  app.use('/api/v1/appearances', new AppearanceRouter(auth, platformAdmin, metaWith(adminAppearance)).router);
+  app.use('/api/appearances', new AppearanceRouter(auth, platformAdmin, metaWith(adminAppearance)).router);
   return app;
 }
 
@@ -53,7 +53,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
     const response = await request(buildApp({ tenantId: 'site-a', tenant: { isWorkspace: false } }, 'aurora'))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     expect(response.status).toBe(200);
     expect(slugsOf(response.body)).toEqual(['aurora', 'default']);
@@ -63,7 +63,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
     const response = await request(buildApp({ tenantId: 'site-a', tenant: { isWorkspace: false } }))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     // No appearance set yet — it still gets the built-in default to choose, not nothing at all.
     expect(slugsOf(response.body)).toEqual(['default']);
@@ -73,7 +73,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
     const response = await request(buildApp({ tenantId: 'ws-a', tenant: { isWorkspace: true, appearance: 'nocturne' } }))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     // Not `default` as well: a workspace cannot switch to it — the settings write answers 403.
     expect(slugsOf(response.body)).toEqual(['nocturne']);
@@ -83,7 +83,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
     const response = await request(buildApp({ tenantId: 'ws-a', tenant: { isWorkspace: true, appearance: '' } }))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     expect(slugsOf(response.body)).toEqual(['default']);
   });
@@ -92,7 +92,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
     const response = await request(buildApp({ tenantId: 'site-a', tenant: { isWorkspace: false } }, 'aurora'))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     expect(response.body.appearances.every((entry: any) => entry.sourceUrl === undefined)).toBe(true);
   });
@@ -100,7 +100,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
   it('still answers the full inventory in PLATFORM scope, where the operator installs and assigns', async () => {
     TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
-    const response = await request(buildApp()).get('/api/v1/appearances');
+    const response = await request(buildApp()).get('/api/appearances');
 
     expect(slugsOf(response.body)).toEqual(['aurora', 'default', 'nocturne']);
     expect(response.body.appearances.find((entry: any) => entry.slug === 'aurora').sourceUrl)
@@ -109,7 +109,7 @@ describe('the appearance list never recites the platform inventory to a tenant',
 
   it('leaves a SINGLE-TENANT deployment alone', async () => {
     const response = await request(buildApp({ tenantId: 'site-a', tenant: { isWorkspace: false } }, 'aurora'))
-      .get('/api/v1/appearances');
+      .get('/api/appearances');
 
     expect(slugsOf(response.body)).toEqual(['aurora', 'default', 'nocturne']);
   });

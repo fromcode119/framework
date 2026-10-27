@@ -6,7 +6,7 @@ import { ThemeCssScoper } from '@react/context/theme-css-scoper';
  * `h1…h6 { font-family: Cinzel, serif }` repainted every block card title in the console.
  */
 describe('ThemeCssScoper', () => {
-  const url = 'https://console.example.test/api/v1/themes/demo/ui/demo-theme.css?v=1';
+  const url = 'https://console.example.test/api/themes/demo/ui/demo-theme.css?v=1';
   const scopeOf = (css: string) => ThemeCssScoper.scope(css, url);
   const scopedBody = (css: string) => {
     const out = scopeOf(css);
@@ -39,7 +39,7 @@ describe('ThemeCssScoper', () => {
     const scopeAt = out.indexOf('@scope');
     expect(out.indexOf('@font-face')).toBeLessThan(scopeAt);
     expect(out.indexOf('@keyframes')).toBeLessThan(scopeAt);
-    expect(out).toContain('url(https://console.example.test/api/v1/themes/demo/ui/fonts/x.woff2)');
+    expect(out).toContain('url(https://console.example.test/api/themes/demo/ui/fonts/x.woff2)');
     expect(out.slice(scopeAt)).toMatch(/@media \(min-width: 600px\) \{\s*:scope \{ padding: 1px \}\s*\.a \{ b: c \}\s*\}/);
   });
 

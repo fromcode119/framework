@@ -34,7 +34,7 @@ import { SystemPlatformRoutes } from '@api/routes/system-platform-routes';
  * @example
  * ```typescript
  * const systemRouter = new SystemRouter(pluginManager, themeManager, authManager, restController);
- * app.use('/api/v1/system', systemRouter.router);
+ * app.use('/api/system', systemRouter.router);
  * ```
  */
 export class SystemRouter extends SystemPlatformRoutes {

@@ -25,7 +25,7 @@ export class ThemeCssUrlRewriter {
   /**
    * `target` against the stylesheet's URL. The stylesheet's URL is ROOT-RELATIVE when the deployment
    * has no absolute api URL — the storefront then proxies the api on its own host, so production serves
-   * `/api/v1/themes/<slug>/ui/…` with no origin. `new URL` refuses a base without one, the old code
+   * `/api/themes/<slug>/ui/…` with no origin. `new URL` refuses a base without one, the old code
    * caught that and left `url(fonts/x.woff2)` as it was, and every page resolved it against itself:
    * each font 404'd and the site rendered in fallbacks. A root-relative base resolves to a
    * root-relative result, which is right on whatever host serves the page.

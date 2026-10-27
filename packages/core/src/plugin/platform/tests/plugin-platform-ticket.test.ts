@@ -15,7 +15,7 @@ describe('PluginPlatformTicket', () => {
     tenantId: '42',
     userId: '7',
     returnTo: 'https://site.example/admin/replies',
-    completeUrl: 'https://site.example/api/v1/plugins/replies/connection/complete',
+    completeUrl: 'https://site.example/api/plugins/replies/connection/complete',
   };
 
   it('opens for the plugin it was sealed for, carrying the site, the account and the way back', () => {

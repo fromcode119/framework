@@ -4,19 +4,19 @@ This guide covers the framework-owned backup management APIs and the initial sit
 
 ## Admin Backup API
 
-Authorized operators now have a dedicated system backup API surface under `/api/v1/system/admin/backups`.
+Authorized operators now have a dedicated system backup API surface under `/api/system/admin/backups`.
 
-- `GET /api/v1/system/admin/backups`
+- `GET /api/system/admin/backups`
   Returns grouped backup metadata with stable ids for system, plugin, theme, and database backups.
-- `POST /api/v1/system/admin/backups/system`
+- `POST /api/system/admin/backups/system`
   Creates a new full system snapshot using the shared core backup service.
-- `GET /api/v1/system/admin/backups/:id/download`
+- `GET /api/system/admin/backups/:id/download`
   Streams a selected backup archive after `system:backup:view` validation.
-- `DELETE /api/v1/system/admin/backups/:id`
+- `DELETE /api/system/admin/backups/:id`
   Deletes a managed backup archive beneath `backups/` after `system:backup:manage` validation.
-- `POST /api/v1/system/admin/backups/:id/restore/preview`
+- `POST /api/system/admin/backups/:id/restore/preview`
   Validates the backup id and target kind and returns the required confirmation challenge.
-- `POST /api/v1/system/admin/backups/:id/restore/execute`
+- `POST /api/system/admin/backups/:id/restore/execute`
   Revalidates the target, checks the typed confirmation text, creates a safety snapshot, and performs the restore.
 
 Restore targets are constrained to `system`, `plugin:<slug>`, and `theme:<slug>`. Raw destination paths are never accepted from the client.

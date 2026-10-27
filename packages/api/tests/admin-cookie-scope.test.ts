@@ -18,9 +18,9 @@ describe('admin session cookie scope', () => {
     headers,
     get: (name: string) => headers[name.toLowerCase()],
     hostname: 'admin.example.test',
-    path: '/api/v1/auth/login',
-    originalUrl: '/api/v1/auth/login',
-    url: '/api/v1/auth/login',
+    path: '/api/auth/login',
+    originalUrl: '/api/auth/login',
+    url: '/api/auth/login',
   }) as any;
 
   it('recognises an admin console request', () => {

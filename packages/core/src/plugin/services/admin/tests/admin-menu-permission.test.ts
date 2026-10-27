@@ -63,7 +63,7 @@ describe('plugin route gate', () => {
     const gate = ApiAccessGate.build(undefined)!;
     const run = (roles: string[]) => new Promise<number>((resolve) => {
       const res: any = { status: (code: number) => ({ json: () => resolve(code) }) };
-      gate({ originalUrl: '/api/v1/plugins/shop/orders', user: { id: 5, roles } } as any, res, () => resolve(200));
+      gate({ originalUrl: '/api/plugins/shop/orders', user: { id: 5, roles } } as any, res, () => resolve(200));
     });
     expect(await run(['shop-manager'])).toBe(200);
     expect(await run(['customer'])).toBe(403);

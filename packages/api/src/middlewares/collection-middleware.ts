@@ -34,7 +34,7 @@ export class CollectionMiddleware extends BaseMiddleware {
       return;
     }
 
-    // Special case: If requested via /api/v1/collections/:slug, the router might
+    // Special case: If requested via /api/collections/:slug, the router might
     // have captured "collections" as a plugin slug if mounted broadly.
     // We treat "collections" as an instruction the user wants a global lookup.
     if (requestedPluginSlug === 'collections') {
@@ -61,9 +61,9 @@ export class CollectionMiddleware extends BaseMiddleware {
       return;
     }
 
-    // Security: If accessed via a plugin-scoped route (e.g. /api/v1/:pluginSlug/:slug),
+    // Security: If accessed via a plugin-scoped route (e.g. /api/:pluginSlug/:slug),
     // ensure the collection actually belongs to that plugin to prevent cross-plugin data access.
-    // NOTE: For /api/v1/collections/:slug, requestedPluginSlug will be undefined, so this check is skipped.
+    // NOTE: For /api/collections/:slug, requestedPluginSlug will be undefined, so this check is skipped.
     if (targetPluginSlug && collectionEntry.pluginSlug?.toLowerCase() !== targetPluginSlug) {
        // Also allow if the slug matches the full prefixed name, indicating the caller is using the full identifier
        if (targetSlug !== collectionEntry.collection.slug?.toLowerCase()) {

@@ -19,9 +19,9 @@ describe('a middleware that names the paths it guards', () => {
     const ran: string[] = [];
     manager.register({ id: 'guard', stage: MiddlewareStage.resolve('post_auth'), pathIncludes: ['/collections/ledger-wallets'], handler: (req: any, _res: any, next: any) => { ran.push(`guard ${req.originalUrl}`); next(); } });
     manager.register({ id: 'all', stage: MiddlewareStage.resolve('post_auth'), handler: (req: any, _res: any, next: any) => { ran.push(`all ${req.originalUrl}`); next(); } });
-    expect(await dispatch(manager, '/api/v1/plugins/shop/products')).toBe(true);
-    expect(await dispatch(manager, '/api/v1/collections/ledger-wallets/3')).toBe(true);
-    expect(ran).toEqual(['all /api/v1/plugins/shop/products', 'guard /api/v1/collections/ledger-wallets/3', 'all /api/v1/collections/ledger-wallets/3']);
+    expect(await dispatch(manager, '/api/plugins/shop/products')).toBe(true);
+    expect(await dispatch(manager, '/api/collections/ledger-wallets/3')).toBe(true);
+    expect(ran).toEqual(['all /api/plugins/shop/products', 'guard /api/collections/ledger-wallets/3', 'all /api/collections/ledger-wallets/3']);
   });
 
   it('a plugin in its own process sends the paths with the middleware', () => {

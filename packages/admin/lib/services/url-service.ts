@@ -7,7 +7,7 @@ import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
  * @example
  * ```typescript
  * const services = AdminServices.getInstance();
- * const url = services.url.build('/api/v1/products', { page: '2', limit: '20' });
+ * const url = services.url.build('/api/products', { page: '2', limit: '20' });
  * const ok  = services.url.isExternal('https://example.com'); // true
  * const q   = services.url.parseQuery('?page=1&limit=20'); // { page: '1', limit: '20' }
  * ```

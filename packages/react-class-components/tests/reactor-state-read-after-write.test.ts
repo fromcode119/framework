@@ -14,7 +14,7 @@ import { PureReactor } from '../src/pure-reactor';
  *     this.routeSlug = params.slug;      // post-mount write -> setState, not yet committed
  *     void Controller.fetch(this);       // reads this.routeSlug -> '' (the initialiser)
  *
- * and shipped a request to `/api/v1/themes//config` — a 404 that took out the whole theme page.
+ * and shipped a request to `/api/themes//config` — a 404 that took out the whole theme page.
  *
  * The fix must NOT be "mutate `this.state` in place first": that is what the setter used to do, and it
  * made the change invisible to `PureReactor.shouldComponentUpdate` (which compares `this.state` to

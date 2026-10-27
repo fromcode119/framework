@@ -29,7 +29,7 @@ their own site; the platform admin may mint an **all-sites** token and pick the 
 `x-fc-site` header. The stdio server exposes two local tools, `sites.list` and `sites.select`, and
 `ATLANTIS_SITE` preselects one at launch; selecting a site re-announces the tool list, because the site
 decides which plugins' tools exist. A workspace's console can also reach the hosted endpoint on its own
-domain (`https://<workspace-domain>/api/v1/mcp`).
+domain (`https://<workspace-domain>/api/mcp`).
 
 ## Tool surface
 
@@ -56,7 +56,7 @@ configuration.
       "command": "node",
       "args": ["packages/mcp-server/dist/bin.js"],
       "env": {
-        "ATLANTIS_API_URL": "http://localhost:3000/api/v1",
+        "ATLANTIS_API_URL": "http://localhost:3000/api",
         "ATLANTIS_API_TOKEN": "<token from Settings → Integrations → MCP>"
       }
     }
@@ -73,7 +73,7 @@ Restart Claude Code and run `/mcp` — the fromcode server lists its tools. From
 admin first, then:
 
 ```bash
-claude mcp add --transport http fromcode https://api.<your-domain>/api/v1/mcp \
+claude mcp add --transport http fromcode https://api.<your-domain>/api/mcp \
   --header "x-api-key: <token>"
 ```
 

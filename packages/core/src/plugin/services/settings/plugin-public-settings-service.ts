@@ -3,7 +3,7 @@ import { PluginConfigValueService } from '@core/plugin/services/settings/plugin-
 
 /**
  * Resolves the subset of each active plugin's settings that may be published to the
- * public, unauthenticated storefront (`/api/v1/system/frontend` → `runtime.globalSettings`).
+ * public, unauthenticated storefront (`/api/system/frontend` → `runtime.globalSettings`).
  *
  * Security model (fail-closed):
  *  - A field is published ONLY when it is explicitly flagged `public: true` in the schema.

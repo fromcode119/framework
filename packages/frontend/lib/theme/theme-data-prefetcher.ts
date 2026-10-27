@@ -122,7 +122,7 @@ export class ThemeDataPrefetcher {
    * ```
    *
    * `{api}` is the api prefix this deployment serves (`ApiVersionUtils.prefix()`), so a theme never spells
-   * it — a literal `/api/v1/...` template preloaded one URL while the page then requested another.
+   * it — a literal `/api/...` template preloaded one URL while the page then requested another.
    */
   static extractLcpImageUrl(
     prefetchData: Record<string, unknown>,

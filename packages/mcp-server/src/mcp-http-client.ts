@@ -20,7 +20,7 @@ export class McpHttpClient {
   private readonly baseUrl: string;
   private selectedSite: string | null;
 
-  /** `baseUrl` is the FULL api base including any versioned prefix (e.g. `https://api.x/api/v1`). */
+  /** `baseUrl` is the FULL api base, prefix included (e.g. `https://api.x/api`). */
   constructor(
     baseUrl: string,
     private readonly token: string,

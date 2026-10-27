@@ -3,7 +3,7 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 
 /**
  * The LCP preload must name the exact URL the page then requests, or the browser fetches the image twice.
- * `{api}` is the api prefix the deployment serves, so a theme never writes the version into its manifest.
+ * `{api}` is the api prefix the deployment serves, so a theme never writes the api path into its manifest.
  */
 describe('theme LCP url template', () => {
   afterEach(() => { vi.unstubAllEnvs(); });
@@ -17,8 +17,8 @@ describe('theme LCP url template', () => {
     expect(preload?.imageSrcSet).toContain('https://shop.example/api/plugins/cms/img?src=%2Fuploads%2Fhero.webp&w=360&q=60 360w');
   });
 
-  it('follows a configured version', () => {
+  it('never adds a version segment', () => {
     vi.stubEnv('API_VERSION_PREFIX', 'v2');
-    expect(ThemeDataPrefetcher.extractLcpImageUrl(data, [entry], '')?.href).toBe('/api/v2/plugins/cms/img?src=%2Fuploads%2Fhero.webp&w=800&q=60');
+    expect(ThemeDataPrefetcher.extractLcpImageUrl(data, [entry], '')?.href).toBe('/api/plugins/cms/img?src=%2Fuploads%2Fhero.webp&w=800&q=60');
   });
 });

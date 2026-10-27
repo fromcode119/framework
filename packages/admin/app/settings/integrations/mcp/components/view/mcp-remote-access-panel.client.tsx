@@ -18,7 +18,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * The hosted MCP transport toggle — the operator-visible switch behind `mcp_remote_enabled`.
  *
- * OFF by default: remote MCP clients (Claude web/desktop) can reach `POST /api/v1/mcp` only while
+ * OFF by default: remote MCP clients (Claude web/desktop) can reach `POST /api/mcp` only while
  * this is on, and every request still needs an API token from the panel below. The setting is a
  * declared system setting (`_system_meta`), written through the same endpoint as the rest of
  * Settings, and the api reads it live — no restart involved.

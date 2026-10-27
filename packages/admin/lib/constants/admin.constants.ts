@@ -1,7 +1,6 @@
 // Deep imports, not core's `client` barrel — this module is reachable from the MIDDLEWARE graph and
 // the barrel re-exports enums that import reactor's `Reactor` class component. See admin-proxy.ts.
 import { ApiPathUtils } from '@fromcode119/core/api/api-path-utils';
-import { ApiVersionUtils } from '@fromcode119/core/api-version';
 import { AppPathConstants } from '@fromcode119/core/constants/app-path.constants';
 import { RouteConstants } from '@fromcode119/core/constants/route.constants';
 import { RuntimeBridge } from '@fromcode119/core/runtime-bridge';
@@ -11,8 +10,6 @@ import { AdminApiPaths } from '@/lib/constants/admin-api-paths';
 import { AdminAuthEndpoints } from '@/lib/constants/admin-auth-endpoints';
 
 export class AdminConstants {
-  static readonly API_VERSION_PREFIX = ApiVersionUtils.prefix();
-
   static readonly SECONDARY_SIDEBAR = {
     WIDTH_PX: 280,
     MOBILE_BREAKPOINT: 1024,

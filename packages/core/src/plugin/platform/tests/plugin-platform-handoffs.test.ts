@@ -11,7 +11,7 @@ describe('PluginPlatformHandoffs', () => {
   const now = 1_700_000_000_000;
   const ticket = (nonce = 'n1'): IPluginPlatformTicket => ({
     slug: 'replies', tenantId: '42', userId: '7', nonce, exp: now + 30 * 60_000,
-    returnTo: 'https://site.example/admin/replies', completeUrl: 'https://site.example/api/v1/plugins/replies/connection/complete',
+    returnTo: 'https://site.example/admin/replies', completeUrl: 'https://site.example/api/plugins/replies/connection/complete',
   });
   const setup = () => {
     const table = new HandoffsTable();

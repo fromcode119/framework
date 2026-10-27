@@ -16,7 +16,7 @@ export class PublicSystemRouteUtils {
 
   static isAuthPath(path: string): boolean {
     const prefixes = ApiConfig.getInstance().prefixes;
-    return path.startsWith(`${prefixes.VERSIONED}${PublicSystemRouteUtils.AUTH_SUFFIX}`);
+    return path.startsWith(`${prefixes.API}${PublicSystemRouteUtils.AUTH_SUFFIX}`);
   }
 
   static isFrontendConfigPath(path: string): boolean {
@@ -36,14 +36,14 @@ export class PublicSystemRouteUtils {
   }
 
   /**
-   * The preview exchange, ANCHORED at the api's versioned base like `isAuthPath` — never matched
+   * The preview exchange, ANCHORED at the api's prefix like `isAuthPath` — never matched
    * with `includes`. Everything after the prefix is an attacker-supplied token, so a loose match
    * would let any request name this exemption from inside a path segment of its own choosing. That
    * is exactly how a suffix match once exempted every plugin's `/health` from tenancy.
    */
   static isSitePreviewExchangePath(path: string): boolean {
     const prefixes = ApiConfig.getInstance().prefixes;
-    return String(path || '').startsWith(`${prefixes.VERSIONED}${PublicSystemRouteUtils.SITE_PREVIEW_EXCHANGE_PREFIX}`);
+    return String(path || '').startsWith(`${prefixes.API}${PublicSystemRouteUtils.SITE_PREVIEW_EXCHANGE_PREFIX}`);
   }
 
   static isPluginAssetPath(path: string): boolean {

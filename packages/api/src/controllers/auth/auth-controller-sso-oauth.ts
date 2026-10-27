@@ -16,7 +16,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
  * same rules as every other SSO login, and returns the visitor to where they started. Every refusal is
  * a redirect back with `?ssoError=<code>`, which the storefront's sign-in buttons translate.
  *
- * The address a site registers with a provider is `<site>/api/v1/auth/sso/<provider>/callback`.
+ * The address a site registers with a provider is `<site>/api/auth/sso/<provider>/callback`.
  */
 export class AuthControllerSsoOauth extends AuthControllerAnonymous {
   private static readonly HANDOFF_SECONDS = 60;

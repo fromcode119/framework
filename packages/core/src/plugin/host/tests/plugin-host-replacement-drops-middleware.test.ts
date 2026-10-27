@@ -55,7 +55,7 @@ describe("a plugin process asked for a middleware it does not have", () => {
   afterAll(async () => { await guest.close(); fs.rmSync(dir, { recursive: true, force: true }); });
 
   const ask = (id: string) => new Promise<{ status: number; next: string | undefined }>((resolve, reject) => {
-    const req = http.request({ socketPath, path: `${PluginGuestHttp.MIDDLEWARE_PATH}/${encodeURIComponent(id)}`, method: 'GET', headers: { [PluginGuestHttp.HEADER_ORIGINAL_URL]: '/api/v1/anything' } }, (res) => {
+    const req = http.request({ socketPath, path: `${PluginGuestHttp.MIDDLEWARE_PATH}/${encodeURIComponent(id)}`, method: 'GET', headers: { [PluginGuestHttp.HEADER_ORIGINAL_URL]: '/api/anything' } }, (res) => {
       res.resume();
       res.on('end', () => resolve({ status: res.statusCode ?? 0, next: res.headers[PluginGuestHttp.HEADER_NEXT] as string | undefined }));
     });

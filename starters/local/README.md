@@ -90,7 +90,7 @@ Keep `.env` local-only. Do not commit `.env`, `.env.backup`, or token values; us
 2. Restart the API — it auto-discovers plugins on startup  
 
 See `plugins/hello-world/` for a minimal example.  
-Test: `GET http://localhost:3000/api/v1/hello-world/hello`
+Test: `GET http://localhost:3000/api/hello-world/hello`
 
 ## Adding a theme
 

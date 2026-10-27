@@ -38,7 +38,7 @@ describe('LegacyApiPathUsage', () => {
     expect(LegacyApiPathUsage.flush()).toEqual(['1x GET /api/v1/users client=okhttp/4 from=none']);
   });
 
-  it('records nothing when a version is configured (the bare form is then the alias)', () => {
+  it('records nothing for the current address, even with a retired version variable left set', () => {
     vi.stubEnv('API_VERSION_PREFIX', 'v1');
     new UnversionedApiAliasMiddleware().middleware()({ method: 'GET', url: '/api/users', originalUrl: '/api/users', headers: {} } as any, {} as any, () => undefined);
     expect(LegacyApiPathUsage.flush()).toEqual([]);

@@ -73,7 +73,7 @@ describe('GatewayEdgeCheck — country and address rules', () => {
   it('refuses a blocked country, checks an always-checked one though the site is not under attack, passes others', async () => {
     expect(await get('203.0.113.1')).toBe(403);
     expect(await get('203.0.113.2')).toBe(503);
-    expect(await get('203.0.113.2', '/api/v1/health')).toBe(200);
+    expect(await get('203.0.113.2', '/api/health')).toBe(200);
     expect(await get('203.0.113.3')).toBe(200);
   });
 });

@@ -6,8 +6,8 @@ import type { ICollectionListPathOptions } from '@core/collections/interfaces/co
  * Collection path and data utilities.
  *
  * @example
- * CollectionUtils.listPath('products')          // "/api/v1/collections/products"
- * CollectionUtils.docPath('products', '123')    // "/api/v1/collections/products/123"
+ * CollectionUtils.listPath('products')          // "/api/collections/products"
+ * CollectionUtils.docPath('products', '123')    // "/api/collections/products/123"
  * CollectionUtils.extractDocs(response)         // []
  */
 export class CollectionUtils {

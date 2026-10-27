@@ -12,7 +12,7 @@ describe('CSRF Middleware Security Scenarios', () => {
         csrfMiddleware = new CSRFMiddleware();
         req = {
             method: 'POST',
-            path: '/api/v1/test',
+            path: '/api/test',
             hostname: 'admin.framework.local',
             protocol: 'http',
             get: vi.fn().mockReturnValue(''),

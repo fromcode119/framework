@@ -134,8 +134,6 @@ services:
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-}
-        - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
-        - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
     command: npm run start --workspace=@fromcode119/api
     # T5c: the container starts as root for exactly one fork (the privileged spawner that runs plugin
     # processes as their own users); the app itself drops to `node` at once. Root keeps only the
@@ -194,8 +192,6 @@ services:
       # The logger's own default is debug, which writes a line for every request. Set LOG_LEVEL=debug
       # in .env to trace one.
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
-      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
       - API_URL=${API_URL:-}
       # The api builds links back into the admin (emails, notifications), so it needs the admin's
       # PUBLIC url — the internal one below is for server-to-server calls and is not a visitor address.
@@ -429,8 +425,6 @@ services:
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-}
-        - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
-        - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
     command: npm run start --workspace=@fromcode119/admin
     # T5c: starts as root only to drop to `node` (app-launcher); no guests, so no spawner capabilities.
     cap_drop:
@@ -445,8 +439,6 @@ services:
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${API_URL:-}
-      - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
-      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
       - ADMIN_URL=${ADMIN_URL:-}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in
@@ -478,8 +470,6 @@ services:
       args:
         - NODE_BASE_IMAGE=${NODE_BASE_IMAGE:-public.ecr.aws/docker/library/node:22-bookworm-slim}
         - NEXT_PUBLIC_API_URL=${API_URL:-}
-        - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
-        - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
     command: npm run start --workspace=@fromcode119/frontend
     # T5c: the container starts as root for exactly one fork (the privileged spawner that runs theme
     # render hosts as their own user); the app itself drops to `node` at once. Root keeps only the
@@ -502,8 +492,6 @@ services:
     environment:
       - API_URL=${INTERNAL_API_URL:-http://api:3000}
       - NEXT_PUBLIC_API_URL=${API_URL:-}
-      - API_VERSION_PREFIX=${API_VERSION_PREFIX:-}
-      - NEXT_PUBLIC_API_VERSION=${API_VERSION_PREFIX:-}
       - FRONTEND_URL=${FRONTEND_URL:-}
       # Shared secret the api presents when it calls the admin or frontend directly (Settings ->
       # Infrastructure restart buttons). Server-to-server only, never a browser credential. Set it in

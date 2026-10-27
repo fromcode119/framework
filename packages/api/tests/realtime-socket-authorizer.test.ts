@@ -27,7 +27,7 @@ describe('who may open the live socket', () => {
     verify: async (token: string) => rooms[token] ?? null,
   });
   const upgrade = (cookie?: string) => ({ headers: cookie ? { cookie } : {} }) as any;
-  const at = (query = '') => new URL(`http://api.test/api/v1/socket${query}`);
+  const at = (query = '') => new URL(`http://api.test/api/socket${query}`);
   const sites = () => TenantMode.configure({ tenantCount: 2, dialect: 'postgres', isolationSupported: true });
 
   it('refuses a connection with no session, a forged one, or a customer\'s', async () => {

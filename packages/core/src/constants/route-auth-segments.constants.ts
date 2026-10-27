@@ -188,7 +188,7 @@ export class RouteAuthSegments {
    *
    * At the ROOT of the host, not under the api's versioned base, because a crawler requests exactly
    * this path. A site's own `robots.txt` is a different thing entirely — it is served per tenant by
-   * the storefront and reaches the api under `api/v1/plugins/<slug>/...`, never here.
+   * the storefront and reaches the api under `api/plugins/<slug>/...`, never here.
    */
   ROBOTS: '/robots.txt',
   /** Gateway-side: the api pushes here after a tenant change; the gateway answers its health here. */

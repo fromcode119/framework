@@ -19,7 +19,7 @@ const renderRequest = () => ({
   cookies: {},
   socket: { remoteAddress: '::ffff:172.18.0.7' },
   path: '/v1/system/resolve',
-  originalUrl: '/api/v1/system/resolve',
+  originalUrl: '/api/system/resolve',
 });
 
 /** A public visitor arriving through the edge proxy, which itself sits on the private network. */
@@ -30,7 +30,7 @@ const visitorRequest = () => ({
   cookies: {},
   socket: { remoteAddress: '::ffff:172.18.0.2' },
   path: '/v1/system/resolve',
-  originalUrl: '/api/v1/system/resolve',
+  originalUrl: '/api/system/resolve',
 });
 
 /**

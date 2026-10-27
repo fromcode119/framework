@@ -16,7 +16,7 @@ export class MarketplaceClientConstants {
   }
 
   static get API_BASE_PATH(): string {
-    return `${MarketplaceClientConstants.readApiRootPath()}/${MarketplaceClientConstants.readApiVersion()}${MarketplaceClientConstants.MARKETPLACE_ROUTE_PATH}`;
+    return `${MarketplaceClientConstants.readApiRootPath()}${MarketplaceClientConstants.MARKETPLACE_ROUTE_PATH}`;
   }
 
   static get CATALOG_FILENAME(): string {
@@ -52,28 +52,10 @@ export class MarketplaceClientConstants {
     return normalized.startsWith('/') ? normalized : `/${normalized}`;
   }
 
-  private static normalizeVersion(value: string): string {
-    const raw = String(value || '').trim().replace(/^\/?api\//i, '').replace(/^\/+/, '');
-    if (!raw) {
-      return 'v1';
-    }
-
-    return raw.startsWith('v') ? raw : `v${raw}`;
-  }
-
   private static readApiRootPath(): string {
     return MarketplaceClientConstants.readPathFromEnv(
       ['NEXT_PUBLIC_API_BASE_PATH', 'API_BASE_PATH'],
       '/api',
-    );
-  }
-
-  private static readApiVersion(): string {
-    return MarketplaceClientConstants.normalizeVersion(
-      MarketplaceClientConstants.readValueFromEnv(
-        ['NEXT_PUBLIC_API_VERSION', 'API_VERSION_PREFIX', 'DEFAULT_API_VERSION'],
-        'v1',
-      ),
     );
   }
 

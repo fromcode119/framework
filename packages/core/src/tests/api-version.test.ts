@@ -1,25 +1,24 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ApiVersionUtils } from '@core/api-version';
 
 describe('ApiVersionUtils', () => {
-  afterEach(() => {
-    delete process.env.NEXT_PUBLIC_API_VERSION;
-    delete process.env.API_VERSION_PREFIX;
-    delete process.env.DEFAULT_API_VERSION;
-    delete process.env.NEXT_PUBLIC_API_URL;
-    delete process.env.API_URL;
+  afterEach(() => { vi.unstubAllEnvs(); });
+
+  it('mounts the api at /api, with no version segment', () => {
+    expect(ApiVersionUtils.prefix()).toBe('/api');
+    expect(ApiVersionUtils.withVersion('/users')).toBe('/api/users');
+    expect(ApiVersionUtils.withVersion('users')).toBe('/api/users');
   });
 
-  it('defaults to /api, with no version segment, when no version env is set', () => {
+  it('ignores the retired version variables', () => {
+    vi.stubEnv('API_VERSION_PREFIX', 'v1');
+    vi.stubEnv('NEXT_PUBLIC_API_VERSION', 'v2');
+    vi.stubEnv('DEFAULT_API_VERSION', 'v3');
     expect(ApiVersionUtils.prefix()).toBe('/api');
   });
 
-  it('uses API_VERSION_PREFIX when provided', () => {
-    process.env.API_VERSION_PREFIX = 'v3';
-    expect(ApiVersionUtils.prefix()).toBe('/api/v3');
-  });
-
-  it('normalizes numeric versions when prepending paths', () => {
-    expect(ApiVersionUtils.withVersion('/users', '2')).toBe('/api/v2/users');
+  it('follows a configured base path', () => {
+    vi.stubEnv('API_URL', 'https://example.com/mapi');
+    expect(ApiVersionUtils.prefix()).toBe('/mapi');
   });
 });
