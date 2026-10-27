@@ -205,6 +205,7 @@ export class OopGuardBaselines {
     'frontend/lib/frontend-config-cache.ts',
     'frontend/lib/frontend-public-settings.ts',
     'frontend/lib/frontend-translations-cache.ts',
+    'frontend/lib/missed-resolution-fetch.ts',
     'frontend/lib/plugin-injection-renderer.ts',
     'frontend/lib/resolved-content-metadata.ts',
     'frontend/lib/theme/page-doc-prefetch-request-cache.ts',
