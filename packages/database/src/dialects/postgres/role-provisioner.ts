@@ -61,15 +61,20 @@ export class PostgresRoleProvisioner {
   /**
    * Grants the runtime role rights over what this owner has created, and will create.
    *
-   * `ON ALL TABLES` covers what exists now; `ALTER DEFAULT PRIVILEGES FOR ROLE CURRENT_USER` covers what
-   * this role creates later. Naming CURRENT_USER rather than a configured owner is the point: privileges
-   * attach to the role that creates an object, and the deployment's init script used to name the
-   * superuser while migrations actually ran as a different role — so every migrated table came out
-   * unreadable by the app.
+   * The grant names the tables and sequences in `public` owned by a role this connection acts for;
+   * `ALTER DEFAULT PRIVILEGES FOR ROLE CURRENT_USER` covers what this role creates later. Naming
+   * CURRENT_USER rather than a configured owner is the point: privileges attach to the role that creates
+   * an object, and the deployment's init script used to name the superuser while migrations actually ran
+   * as a different role — so every migrated table came out unreadable by the app.
+   *
+   * Not `ON ALL TABLES IN SCHEMA`: that is one statement, so a single table some other role created (a
+   * backup copied in by hand as the superuser) failed it with "permission denied for table …", and with
+   * it the sequence grant and the default privileges after it, on every boot. Such objects are left out
+   * and named in the outcome's note.
    */
   async grantRuntimePrivileges(role: string): Promise<DatabaseRoleOutcome> {
-    await this.runFormatted('GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO %I', [role]);
-    await this.runFormatted('GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO %I', [role]);
+    await this.grantOnOwned(role, PostgresRoleProvisioner.TABLE_KINDS, 'GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE %s TO %I');
+    await this.grantOnOwned(role, PostgresRoleProvisioner.SEQUENCE_KINDS, 'GRANT USAGE, SELECT ON SEQUENCE %s TO %I');
     await this.runFormattedWithCurrentUser(
       'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO %I',
       role,
@@ -78,9 +83,34 @@ export class PostgresRoleProvisioner {
       'ALTER DEFAULT PRIVILEGES FOR ROLE %I IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO %I',
       role,
     );
-    return DatabaseRoleOutcome.applied([role]);
+    const foreign = await this.run(
+      `SELECT c.relname AS name FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE n.nspname = 'public' AND c.relkind = ANY($1::"char"[]) AND NOT pg_has_role(current_user, c.relowner, 'USAGE')
+       ORDER BY c.relname`,
+      [[...PostgresRoleProvisioner.TABLE_KINDS, ...PostgresRoleProvisioner.SEQUENCE_KINDS]],
+    );
+    const names = foreign.map((row) => String(row.name));
+    return DatabaseRoleOutcome.applied(
+      [role],
+      names.length ? `Left out ${names.length} object(s) another role owns, so this one cannot grant on them: ${names.join(', ')}.` : '',
+    );
   }
 
+  private static readonly TABLE_KINDS = ['r', 'p', 'v', 'm', 'f'];
+  private static readonly SEQUENCE_KINDS = ['S'];
+
+  /** One GRANT naming every object of these kinds in `public` whose owner this connection acts for. */
+  private async grantOnOwned(role: string, kinds: string[], template: string): Promise<void> {
+    const rows = await this.run(
+      `SELECT format($f$${template}$f$, string_agg(format('public.%I', c.relname), ', ' ORDER BY c.relname), $1::text) AS statement
+       FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+       WHERE n.nspname = 'public' AND c.relkind = ANY($2::"char"[]) AND pg_has_role(current_user, c.relowner, 'USAGE')
+       HAVING count(*) > 0`,
+      [role, kinds],
+    );
+    const statement = rows?.[0]?.statement;
+    if (statement) await this.run(String(statement));
+  }
 
   /** As `runFormatted`, with CURRENT_USER as the first `%I` — the role whose future objects are covered. */
   private async runFormattedWithCurrentUser(template: string, role: string): Promise<void> {
