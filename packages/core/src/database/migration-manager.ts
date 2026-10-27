@@ -61,6 +61,30 @@ export class MigrationManager {
     this.logger.info('Migrations completed successfully.');
   }
 
+  /** Whether any table whose name starts with `prefix` (`fcp_<slug>_`) exists. */
+  async hasTablesWithPrefix(prefix: string): Promise<boolean> {
+    return (await this.db.getTables()).some((table) => table.toLowerCase().startsWith(prefix));
+  }
+
+  /**
+   * Records migrations as applied WITHOUT running them, in one new batch. For a plugin installed for the
+   * first time: its collections are created at their current shape, so there is nothing for a migration
+   * to bring forward — and its tables do not exist yet for one to read.
+   */
+  async recordApplied(migrations: ISystemMigration[]): Promise<number> {
+    await this.init();
+    const executed = await this.db.find(SystemConstants.TABLE.MIGRATIONS, { columns: { name: true } });
+    const executedNames = new Set(executed.map((migration: any) => String(migration?.name || '').trim()));
+    const unrecorded = migrations.filter((migration) => !executedNames.has(migration.name));
+    if (unrecorded.length === 0) return 0;
+
+    const batch = (await this.getMaxBatch()) + 1;
+    for (const migration of unrecorded) {
+      await this.db.insert(SystemConstants.TABLE.MIGRATIONS, { name: migration.name, version: migration.version, batch });
+    }
+    return unrecorded.length;
+  }
+
   async rollback() {
     await this.init();
     const batch = await this.getMaxBatch();

@@ -1,3 +1,4 @@
+import { PhysicalTableNameUtils } from '@fromcode119/database';
 import { PluginMigrationLoader } from '@core/database/plugin-migration-loader';
 import type { MigrationManager } from '@core/database/migration-manager';
 import type { IDatabaseManager } from '@core/interfaces/database-manager.interface';
@@ -20,12 +21,29 @@ export class PluginMigrationRunner {
     private readonly migrationDatabaseFor: (manifest: IPluginManifest) => IDatabaseManager,
   ) {}
 
-  async run(slug: string, pluginPath: string, manifest: IPluginManifest, progressReporter?: IPluginInstallProgressReporter): Promise<void> {
+  /**
+   * `firstInstall`: the plugin was not installed before. When none of its tables exists yet, its migrations
+   * are recorded as applied instead of run: the tables are created afterwards, at their current shape,
+   * when it is enabled — run now, a migration reading one fails the install (`relation "fcp_<slug>_…" does
+   * not exist`), and a failed attempt leaves the migrations that did pass in the ledger. Over tables that
+   * are already there (a reinstall that kept its data, an adopted predecessor's) they run as on an update.
+   */
+  async run(slug: string, pluginPath: string, manifest: IPluginManifest, progressReporter?: IPluginInstallProgressReporter, firstInstall = false): Promise<void> {
     progressReporter?.({ phase: 'checking-migrations', message: `Checking migrations for "${slug}"...`, pluginSlug: slug });
 
     const pluginMigrations = await PluginMigrationLoader.load(slug, pluginPath, manifest.migrations);
     if (pluginMigrations.length === 0) {
       progressReporter?.({ phase: 'checking-migrations', message: `No plugin migrations found for "${slug}".`, pluginSlug: slug });
+      return;
+    }
+
+    if (firstInstall && !(await this.migrationManager.hasTablesWithPrefix(PhysicalTableNameUtils.createPluginPrefix(slug)))) {
+      const recorded = await this.migrationManager.recordApplied(pluginMigrations);
+      progressReporter?.({
+        phase: 'checking-migrations',
+        message: `First install of "${slug}": ${recorded} migration(s) recorded as applied; its tables are created at their current shape.`,
+        pluginSlug: slug,
+      });
       return;
     }
 
