@@ -6,28 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.458] - 2026-10-27
+
+### Fixed
+
+- **admin**: retry a failed page navigation once in the service worker; page bleed per axis ([#1098](https://github.com/fromcode119/framework/pull/1098))
+
 ## [0.2.457] - 2026-10-27
 
 ### Fixed
 
-- **gateway**: an Admin URL with a path on the Frontend URL's host (`https://shop.example.com/admin`) mounts the console there instead of giving the whole host to one app ([#1096](https://github.com/fromcode119/framework/pull/1096))
+- **gateway**: mount the platform console on the frontend host when admin and frontend share it ([#1096](https://github.com/fromcode119/framework/pull/1096))
 
 ## [0.2.456] - 2026-10-27
 
 ### Fixed
 
-- **core**: Runtime-role grants no longer fail on every boot when one table in public is owned by another role ([#1094](https://github.com/fromcode119/framework/pull/1094))
+- **database**: grant the runtime role only on objects this role owns ([#1094](https://github.com/fromcode119/framework/pull/1094))
 - **sdk**: stop reporting the detached boot peer registration as failed ([#1092](https://github.com/fromcode119/framework/pull/1092))
 
 ## [0.2.455] - 2026-10-27
 
-### Changed
-
-- **core**: drop the api version segment for good — routes live at `/api/...` only, the `API_VERSION_PREFIX` / `NEXT_PUBLIC_API_VERSION` / `DEFAULT_API_VERSION` variables are gone, and a legacy `/api/v<N>/...` address keeps working as a logged alias ([#1089](https://github.com/fromcode119/framework/pull/1089))
-
 ### Fixed
 
-- **core**: a plugin's first install records its migrations instead of running them — installing a plugin on a database that never had it ran its backfills before its tables existed (`relation "fcp_cms_pages" does not exist`) ([#1091](https://github.com/fromcode119/framework/pull/1091))
+- **core**: a plugin's first install records its migrations instead of running them ([#1091](https://github.com/fromcode119/framework/pull/1091))
 
 ## [0.2.454] - 2026-10-27
 
