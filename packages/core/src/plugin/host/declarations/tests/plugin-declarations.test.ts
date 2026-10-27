@@ -8,7 +8,8 @@ import { PluginGuestRegistrationKind } from '@core/plugin/host/enums/plugin-gues
 import { PluginHostRegistrations } from '@core/plugin/host/plugin-host-registrations';
 
 /**
- * Every registration-named method on the plugin context must be accounted for: declared (recorded and
+ * Every registration-named method on the plugin context — and `extend`, which declares fields onto
+ * another plugin's collection — must be accounted for: declared (recorded and
  * replayable), persisted by the api itself, already its own registration kind, or not offered to an
  * isolated plugin. A new one that is none of these would be missing, silently, from an api that takes
  * over a running plugin process — this is the test that says so.
@@ -17,12 +18,12 @@ describe('PluginDeclarations coverage', () => {
   const OWN_KINDS = [['api', 'registerMiddleware'], ['mcp', 'registerTools'], ['scheduler', 'register']];
   const NOT_OFFERED_TO_ISOLATED = [['attention', 'registerProvider']];
 
-  it('accounts for every register* method on the plugin context', () => {
+  it('accounts for every register* and extend method on the plugin context', () => {
     const dir = path.resolve(__dirname, '../../../context');
     const found: string[] = [];
     for (const file of fs.readdirSync(dir).filter((name) => name.endsWith('.ts'))) {
       const namespace = file.replace(/\.ts$/, '').replace(/-([a-z])/g, (_m, c: string) => c.toUpperCase());
-      for (const match of fs.readFileSync(path.join(dir, file), 'utf8').matchAll(/^\s+(register[A-Za-z]*)\s*[:(]/gm)) found.push(`${namespace}.${match[1]}`);
+      for (const match of fs.readFileSync(path.join(dir, file), 'utf8').matchAll(/^\s+(register[A-Za-z]*|extend)\s*[:(]/gm)) found.push(`${namespace}.${match[1]}`);
     }
     const accounted = new Set([...PluginDeclarations.CALLS, ...PluginDeclarations.PERSISTED, ...OWN_KINDS, ...NOT_OFFERED_TO_ISOLATED].map(([ns, m]) => `${ns}.${m}`));
     expect(found.length).toBeGreaterThan(10);

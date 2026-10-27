@@ -6,7 +6,16 @@ import type { IMediaRelationPreview } from '@/components/collection/interfaces/m
 
 /** What a stored media selection is — its file's address, name and type — for a field or a list cell to show. */
 export class MediaRelationPreviewResolver {
+  /** An address stored before the field became a picker (`https://…/a.jpg`, `/uploads/a.jpg`). */
+  private static readonly ADDRESS = /^(https?:)?\/\/|^\//i;
+
   static async resolve(id: string): Promise<IMediaRelationPreview | null> {
+    // A field that used to take a typed URL still holds one: show that file, so the operator sees what is
+    // set and can replace it, instead of an "id" that is an address.
+    if (MediaRelationPreviewResolver.ADDRESS.test(id)) {
+      const filename = decodeURIComponent(id.split(/[?#]/)[0].split('/').pop() || id);
+      return { id, url: MediaRelationFieldUtils.resolvePreviewUrl(id), filename, mimeType: '' };
+    }
     // A theme-asset selection ("theme:<relativePath>") is not a media record — resolve its preview
     // from the active theme's asset listing instead of the media collection.
     if (id.startsWith('theme:')) {
