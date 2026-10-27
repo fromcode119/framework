@@ -94,7 +94,10 @@ export class CollectionEditDerivations {
     return {
       collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
       sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections, navSections,
-      statusOptions, currentStatusValue: String(formData?.status || '').trim(),
+      // The status field shows its schema default until the operator picks one, and the default is what is
+      // saved; the header showed the FIRST option instead (a new subscription read "Trial" above a field
+      // reading "Pending"). Both now name the same value.
+      statusOptions, currentStatusValue: String(formData?.status || statusField?.defaultValue || '').trim(),
       currentRevIndex: self.state.selectedRevision ? self.state.revisions.findIndex((r: any) => r.id === self.state.selectedRevision.id) : -1,
       hasDisablePermalink: collection?.fields.some((f: any) => f.name === 'disablePermalink'),
       showPreview: canPreviewCollection && !isNew, showPermalink, isFullWidth,
