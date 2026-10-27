@@ -14,8 +14,9 @@ export class DatabaseRoleOutcome {
     readonly reason: string,
   ) {}
 
-  static applied(roles: readonly string[]): DatabaseRoleOutcome {
-    return new DatabaseRoleOutcome(true, roles, '');
+  /** `note`: what was applied with a reservation — objects left out, and why. Empty when none. */
+  static applied(roles: readonly string[], note = ''): DatabaseRoleOutcome {
+    return new DatabaseRoleOutcome(true, roles, note);
   }
 
   static unsupported(reason: string): DatabaseRoleOutcome {

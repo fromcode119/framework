@@ -46,6 +46,7 @@ export class AppRoleGrantService {
         return;
       }
       AppRoleGrantService.logger.info(`Runtime role "${role}" granted table and sequence privileges.`);
+      if (outcome.reason) AppRoleGrantService.logger.warn(outcome.reason);
     } catch (error: any) {
       // Not fatal on its own: a deployment whose grants were made by hand is already correct, and
       // failing the boot here would take down a working install over a no-op.

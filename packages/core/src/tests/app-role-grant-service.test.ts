@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { Logger } from '@core/logging';
 import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 
 /**
@@ -9,12 +10,12 @@ import { AppRoleGrantService } from '@core/database/app-role-grant-service';
 class FakeDb {
   granted: string[] = [];
 
-  constructor(readonly dialect: string, private readonly supported = true) {}
+  constructor(readonly dialect: string, private readonly supported = true, private readonly note = '') {}
 
   async grantRuntimePrivileges(role: string) {
     this.granted.push(role);
     return this.supported
-      ? { supported: true, reason: '' }
+      ? { supported: true, reason: this.note }
       : { supported: false, reason: 'no login system here' };
   }
 }
@@ -35,6 +36,15 @@ describe('AppRoleGrantService', () => {
     const db = new FakeDb('postgres');
     await AppRoleGrantService.apply(db as any);
     expect(db.granted).toEqual(['fromcode_app']);
+  });
+
+  it('grants, and says which objects it had to leave out', async () => {
+    const warn = vi.spyOn(Logger.prototype, 'warn');
+    const db = new FakeDb('postgres', true, 'Left out 1 object(s) another role owns, so this one cannot grant on them: _backup_x.');
+    await AppRoleGrantService.apply(db as any);
+    expect(db.granted).toEqual(['fromcode_app']);
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('_backup_x'));
+    warn.mockRestore();
   });
 
   it('reports a driver with no login system instead of failing', async () => {
