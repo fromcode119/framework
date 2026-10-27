@@ -20,16 +20,16 @@ function buildManager() {
   } as any;
 }
 
-const courses = () => ({ slug: 'lms-courses', fields: [{ name: 'title', type: 'text' }] });
+const items = () => ({ slug: 'host-items', fields: [{ name: 'title', type: 'text' }] });
 
 describe('extending a collection that registers later', () => {
   it('adds the fields once the owner registers it', () => {
     const manager = buildManager();
-    const seo = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'seo' } } as any, manager, logger, security);
-    const lms = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'lms' } } as any, manager, logger, security);
-    seo.extend('lms', 'courses', { fields: [{ name: 'ogImage', type: 'text' }] } as any);
-    lms.register(courses() as any);
-    const names = manager.registeredCollections.get('fcp_lms_courses').collection.fields.map((f: any) => f.name);
+    const extender = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'extender' } } as any, manager, logger, security);
+    const host = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'host' } } as any, manager, logger, security);
+    extender.extend('host', 'items', { fields: [{ name: 'ogImage', type: 'text' }] } as any);
+    host.register(items() as any);
+    const names = manager.registeredCollections.get('fcp_host_items').collection.fields.map((f: any) => f.name);
     expect(names).toContain('ogImage');
   });
 });

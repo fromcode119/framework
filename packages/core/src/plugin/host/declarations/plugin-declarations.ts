@@ -22,8 +22,8 @@ export class PluginDeclarations {
   static readonly CALLS: ReadonlyArray<readonly [string, string]> = [
     ['collections', 'register'],
     // Adding fields to ANOTHER plugin's collection lives only in the api's memory too. Unlisted, an api
-    // that took over running processes had every collection without the fields others extend it with:
-    // SEO's fields vanished from lms courses (form, reads, filters) on each api restart.
+    // that took over running processes had every collection without the fields others extend it with —
+    // gone from the form, reads and filters after each api restart.
     ['collections', 'extend'],
     ['settings', 'register'],
     ['i18n', 'registerTranslations'],
