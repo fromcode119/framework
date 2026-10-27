@@ -2,6 +2,7 @@ import type { ICollection } from '@core/collections/interfaces/collection.interf
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
+import type { ICollectionPublicContentSource } from '@core/collections/interfaces/collection-public-content-source.interface';
 import { Logger } from '@core/logging';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { ContextSecurityProxy } from '@core/plugin/context/utils';
@@ -11,6 +12,7 @@ import { PluginEntityRegistrationService } from '@core/plugin/services/plugin-en
 import { PluginEntityProviderRegistry } from '@core/services/entities/plugin-entity-provider-registry';
 import { CollectionWriteBridge } from '@core/plugin/collection-write-bridge';
 import { OwnCollectionRefresh } from '@core/plugin/context/own-collection-refresh';
+import { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 
 export class CollectionsContextProxy {
   private static readonly entityRegistration = new PluginEntityRegistrationService();
@@ -94,6 +96,35 @@ export class CollectionsContextProxy {
         update: async (collectionSlug: string, id: number | string, data: Record<string, unknown>, options?: { user?: unknown }) => {
           const fullSlug = ownCollection(collectionSlug, 'update');
           return CollectionWriteBridge.update(fullSlug, id, data, options?.user ?? null);
+        },
+        publicContent: async (): Promise<ICollectionPublicContentSource[]> => {
+          const sources: ICollectionPublicContentSource[] = [];
+          for (const entry of manager.registeredCollections.values()) {
+            const declared = entry.collection?.publicContent;
+            if (!declared) continue;
+            const owner = manager.plugins.get(entry.pluginSlug);
+            const slug = entry.collection.unprefixedSlug || entry.collection.slug;
+            sources.push({
+              plugin: entry.pluginSlug,
+              namespace: String(owner?.manifest.namespace || '').trim(),
+              slug,
+              label: CollectionLabelUtils.labelFor(entry.collection, slug),
+              entity: entry.collection.entity || '',
+              list: declared.list || '',
+              at: declared.at || '',
+            });
+          }
+          return sources;
+        },
+        extendPublicContent: (extensions: Pick<ICollection, 'fields'>) => {
+          for (const entry of manager.registeredCollections.values()) {
+            if (entry.collection?.publicContent) CollectionsContextProxy.mergeExtension(entry.collection, extensions, plugin.manifest.slug);
+          }
+          // A collection registered later — or re-registered by a hot update — is merged as it announces itself.
+          manager.hooks.on('collection:registered', (data: any) => {
+            const registered = data?.collection;
+            if (registered?.publicContent) CollectionsContextProxy.mergeExtension(registered, extensions, plugin.manifest.slug);
+          });
         },
         extend: (targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>) => {
           const fullSlug = PhysicalTableNameUtils.create(targetPlugin, targetCollection);

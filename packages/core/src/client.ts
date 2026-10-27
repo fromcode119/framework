@@ -25,6 +25,8 @@ export * from '@core/collections/interfaces/collection-input.interface';
 export * from '@core/collections/interfaces/collection-list-view.interface';
 export * from '@core/collections/interfaces/collection-quick-edit.interface';
 export * from '@core/collections/interfaces/collection-quick-edit-field.interface';
+export * from '@core/collections/interfaces/collection-public-content.interface';
+export * from '@core/collections/interfaces/collection-public-content-source.interface';
 export * from '@core/interfaces/field-input.interface';
 
 // ── Collections ───────────────────────────────────────────────────────────────

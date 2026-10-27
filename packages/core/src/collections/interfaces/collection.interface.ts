@@ -5,6 +5,7 @@ import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 import type { ICollectionProtection } from '@core/collections/interfaces/collection-protection.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
+import type { ICollectionPublicContent } from '@core/collections/interfaces/collection-public-content.interface';
 
 
 export interface ICollection {
@@ -33,6 +34,8 @@ export interface ICollection {
    * collection. The key is shared vocabulary owned by nobody, like `email`.
    */
   entity?: string;
+  /** Records a visitor opens at an address of their own. See {@link ICollectionPublicContent}. */
+  publicContent?: ICollectionPublicContent;
   /** Records can be archived and restored instead of deleted. See {@link ICollectionArchive}. */
   archive?: ICollectionArchive;
   /** Rows the database keeps as written. See {@link ICollectionProtection}. */

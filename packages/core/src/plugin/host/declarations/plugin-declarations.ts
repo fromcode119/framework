@@ -25,6 +25,7 @@ export class PluginDeclarations {
     // that took over running processes had every collection without the fields others extend it with —
     // gone from the form, reads and filters after each api restart.
     ['collections', 'extend'],
+    ['collections', 'extendPublicContent'],
     ['settings', 'register'],
     ['i18n', 'registerTranslations'],
     ['i18n', 'registerTranslationsFromDirectory'],

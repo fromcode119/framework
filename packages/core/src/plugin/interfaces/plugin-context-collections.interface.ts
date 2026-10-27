@@ -1,5 +1,6 @@
 import { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { ICollectionInput } from '@core/collections/interfaces/collection-input.interface';
+import type { ICollectionPublicContentSource } from '@core/collections/interfaces/collection-public-content-source.interface';
 
 /**
  * The `context.collections` surface of {@link PluginContext}.
@@ -10,6 +11,16 @@ import type { ICollectionInput } from '@core/collections/interfaces/collection-i
 export interface IPluginContextCollections {
   register(collection: ICollectionInput): void;
   extend(targetPlugin: string, targetCollection: string, extensions: Partial<ICollection>): void;
+  /**
+   * Every registered collection that declares `publicContent`, with the owner's namespace and methods —
+   * how a sitemap or search plugin finds public records without naming the plugins that hold them.
+   */
+  publicContent(): Promise<ICollectionPublicContentSource[]>;
+  /**
+   * Add these fields to EVERY collection that declares `publicContent`, now and as later ones register
+   * — the same merge as `extend`, for a plugin that serves all public content rather than one owner's.
+   */
+  extendPublicContent(extensions: Pick<ICollection, 'fields'>): void;
   /**
    * Update one record of THIS plugin's own collection through the SAME path an admin save takes —
    * access policy, validation and collection lifecycle hooks included. This is the canonical write
