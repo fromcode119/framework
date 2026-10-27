@@ -6,6 +6,7 @@ import { PluginInvocationTokens } from '@core/plugin/host/plugin-invocation-toke
 import type { IPluginRemoteCall } from '@core/plugin/host/interfaces/plugin-remote-call.interface';
 import { PluginHostPortableView } from '@core/plugin/host/plugin-host-portable-view';
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
+import { PluginUnknownInvocationError } from '@core/plugin/host/plugin-unknown-invocation-error';
 import type { PluginContext } from '@core/plugin/plugin-context';
 import type { ITenantScopeLease } from '@fromcode119/database';
 import { PluginRemoteCallRoot } from '@core/plugin/host/enums/plugin-remote-call-root.enum';
@@ -40,7 +41,7 @@ export class PluginHostDispatcher {
     const jsonRows = PluginJsonRows.readBy(protocol);
     const invocation = this.tokens.resolve(call.token);
     if (!invocation) {
-      throw Object.assign(new Error(`unknown_invocation: plugin "${this.slug}" presented a token the host did not mint`), { code: 'unknown_invocation' });
+      throw new PluginUnknownInvocationError(this.slug);
     }
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
     PluginHostCallPolicy.assert(this.slug, call, context, invocation.kind);

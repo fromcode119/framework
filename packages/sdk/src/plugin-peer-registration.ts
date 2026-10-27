@@ -1,4 +1,4 @@
-import { PluginPeerUnavailableError } from '@fromcode119/core/shared';
+import { PluginPeerUnavailableError, PluginUnknownInvocationError } from '@fromcode119/core/shared';
 /**
  * Registers this plugin into a PEER plugin's registry whenever the peer becomes reachable.
  *
@@ -53,6 +53,12 @@ export class PluginPeerRegistration {
       // the host says it with a CODE. Compared as a code and never as message text, which would break
       // the moment the host reworded the error.
       if (PluginPeerUnavailableError.is(error)) return false;
+      // The boot attempt cannot be awaited — `install` runs inside `onInit` and returns synchronously — so
+      // a register call that awaits anything before reaching the peer arrives after `onInit` has
+      // returned and its token was revoked. That is not a failure of the registration: `plugins:ready`
+      // and the first request try again inside invocations of their own. Every other moment is awaited
+      // by its invocation, so there the same code IS a real fault and is still reported.
+      if (moment === 'boot' && PluginUnknownInvocationError.is(error)) return false;
       this.context.logger.warn(`[${this.context.plugin.slug}] ${this.label} registration with ${this.peerSlug} failed (${moment}): ${String((error as any)?.message || error)}`);
       return false;
     }
