@@ -48,13 +48,19 @@ export class TenantRouteMap {
 
   static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }, setup = false): TenantRouteMap {
     const routes: TenantRoute[] = [];
-    const platformHost = (value: string | undefined, target: GatewayTarget) => {
+    const platformHost = (value: string | undefined, target: GatewayTarget, consolePath = '') => {
       const host = TenantRouteMap.hostOf(value);
-      if (host) routes.push(new TenantRoute(host, target, null));
+      if (host) routes.push(new TenantRoute(host, target, null, consolePath));
     };
-    platformHost(platform.admin, GatewayTarget.ADMIN);
+    // The console on a PATH of the frontend's own host (`shop.com` + `shop.com/admin`). A host belongs
+    // to one app, so a second route for the same host would replace the first and the console would
+    // vanish behind the storefront. The frontend route carries the console path instead — the same
+    // mount a site's "Console path" uses.
+    const adminHost = TenantRouteMap.hostOf(platform.admin);
+    const consolePath = adminHost && adminHost === TenantRouteMap.hostOf(platform.frontend) ? TenantRouteMap.pathOf(platform.admin) : '';
+    if (!consolePath) platformHost(platform.admin, GatewayTarget.ADMIN);
     platformHost(platform.api, GatewayTarget.API);
-    platformHost(platform.frontend, GatewayTarget.FRONTEND);
+    platformHost(platform.frontend, GatewayTarget.FRONTEND, consolePath);
     for (const tenant of tenants) {
       for (const host of tenant.hosts()) {
         // The DECLARED role, never the hostname. A host used to become the api by starting with
@@ -109,6 +115,13 @@ export class TenantRouteMap {
   }
 
   /** A public app URL or bare host → bare host. */
+  /** The URL's path without a trailing slash (`/admin`), or `''` for the root. */
+  private static pathOf(value: string | undefined): string {
+    const raw = String(value ?? '').trim();
+    if (!raw) return '';
+    try { return new URL(raw.includes('://') ? raw : `http://${raw}`).pathname.replace(/\/+$/, ''); } catch { return ''; }
+  }
+
   private static hostOf(value: string | undefined): string {
     const raw = String(value ?? '').trim().toLowerCase();
     if (!raw) return '';
