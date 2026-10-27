@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.455] - 2026-10-27
+
+### Changed
+
+- **core**: drop the api version segment for good — routes live at `/api/...` only, the `API_VERSION_PREFIX` / `NEXT_PUBLIC_API_VERSION` / `DEFAULT_API_VERSION` variables are gone, and a legacy `/api/v<N>/...` address keeps working as a logged alias ([#1089](https://github.com/fromcode119/framework/pull/1089))
+
+### Fixed
+
+- **core**: a plugin's first install records its migrations instead of running them — installing a plugin on a database that never had it ran its backfills before its tables existed (`relation "fcp_cms_pages" does not exist`) ([#1091](https://github.com/fromcode119/framework/pull/1091))
+
 ## [0.2.454] - 2026-10-27
 
 ### Fixed
