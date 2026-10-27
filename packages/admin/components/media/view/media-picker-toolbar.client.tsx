@@ -15,6 +15,10 @@ export class MediaPickerToolbar extends Reactor {
   /** Off while a source that cannot receive uploads is showing. */
   @prop declare canUpload: boolean;
   @prop declare onFile: (file: File) => void;
+  /** What the file input offers: the field's own types, or every format the library stores. */
+  @prop declare uploadAccept: string;
+  /** The types the list is narrowed to, stated so a short list is never mistaken for the whole library. */
+  @prop declare filterLabel: string;
 
   @ref declare fileInputRef: Ref<HTMLInputElement>;
 
@@ -32,11 +36,11 @@ export class MediaPickerToolbar extends Reactor {
   }
 
   render(): ReactNode {
-    const { search, uploading, canUpload } = this;
+    const { search, uploading, canUpload, uploadAccept, filterLabel } = this;
 
     return (
-      <div className="px-8 py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex items-center gap-4">
-        <div className="relative flex-1 group">
+      <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
+        <div className="relative flex-1 min-w-[12rem] group">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input
             type="text"
@@ -51,8 +55,13 @@ export class MediaPickerToolbar extends Reactor {
           ref={this.fileInputRef}
           className="hidden"
           onChange={this.handleFileChange}
-          accept="image/*,video/*,application/pdf"
+          accept={uploadAccept}
         />
+        {filterLabel ? (
+          <span className={`shrink-0 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400 ${AdminTypography.TYPOGRAPHY.LABEL}`}>
+            {AdminI18n.t('mediaPicker.showingOnly', { types: filterLabel })}
+          </span>
+        ) : null}
         <Button
           variant={ButtonVariant.PRIMARY}
           onClick={this.openFilePicker}

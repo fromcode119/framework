@@ -38,6 +38,8 @@ export class SidebarAccountCard extends AdminComponent {
   @state private sites: TenantOption[] = [];
   @state private currentSite: string | null = null;
   @state private multiTenant = false;
+  /** The host binds this console to one site, so there is nowhere to switch to from here. */
+  @state private locked = false;
   /** How the current workspace was opened — marks the right one of its two rows. */
   @state private mode = '';
   /** The reader's own console language ('' = the site's default) and what the site offers. */
@@ -57,6 +59,7 @@ export class SidebarAccountCard extends AdminComponent {
     AdminSiteBinding.record(this.currentSite);
     if (response.multiTenant !== true) return;
     this.multiTenant = true;
+    this.locked = response.locked === true;
     this.sites = TenantOption.fromList(response.tenants);
   }
 
@@ -140,6 +143,7 @@ export class SidebarAccountCard extends AdminComponent {
       current: this.currentSite,
       mode: this.mode,
       multiTenant: this.multiTenant,
+      locked: this.locked,
       storefrontHost: this.storefrontHost,
       canManagePlatform: this.canAddSite,
       onSelect: (tenantId, mode) => { void this.enter(tenantId, mode); },

@@ -27,6 +27,12 @@ export class HookEventUtils {
     FRONTEND_HEAD: 'frontend:head',
     /** Fired by cache.purge (MCP) — every framework cache that can go stale subscribes and invalidates. */
     SYSTEM_CACHE_PURGE: 'system:cache:purge',
+    /**
+     * A storefront answered 404: nothing resolved at the path and no redirect rule matched. Fired once
+     * per visitor request, from the storefront's final lookup only, with `{ path, referrer, userAgent }`
+     * of the visitor — never for the fallback lookups a resolution tries first.
+     */
+    RESOLUTION_MISSED: 'resolution:missed',
   } as const;
 
   private static readonly EVENT_PREFIX = 'collection';

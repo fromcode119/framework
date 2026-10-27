@@ -12,10 +12,11 @@ import { MediaPickerToolbar } from '@/components/media/view/media-picker-toolbar
 import { MediaPickerGrid } from '@/components/media/view/media-picker-grid.client';
 import { MediaPickerDetails } from '@/components/media/view/media-picker-details.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { MediaAcceptFilter } from '@/components/media/media-accept-filter';
 
 export class MediaPicker extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<MediaPicker, 'onSelect' | 'onClose' | 'allowMultiple' | 'value' | 'allowThemeAssets'>;
+  declare props: Pick<MediaPicker, 'onSelect' | 'onClose' | 'allowMultiple' | 'value' | 'allowThemeAssets' | 'accept'>;
 
   @prop declare onSelect: (item: IMediaItem) => void;
   @prop declare onClose: () => void;
@@ -28,6 +29,8 @@ export class MediaPicker extends Reactor {
    * no media row behind it. Fields that store a path or a URL turn it on.
    */
   @prop declare allowThemeAssets?: boolean;
+  /** The field's `admin.accept` (`image/*`, …): only those files are listed and offered for upload. */
+  @prop declare accept?: string;
 
   @state items: IMediaItem[] = [];
   @state themeItems: IMediaItem[] = [];
@@ -59,7 +62,10 @@ export class MediaPicker extends Reactor {
     this.loading = true;
     let loaded: IMediaItem[] = [];
     try {
-      const query = this.search ? `?q=${encodeURIComponent(this.search)}` : '';
+      const params = new URLSearchParams();
+      if (this.search) params.set('q', this.search);
+      if (this.filter.active) params.set('accept', this.filter.query);
+      const query = params.toString() ? `?${params.toString()}` : '';
       const result = await AdminApi.get(`${AdminConstants.ENDPOINTS.MEDIA.BASE}${query}`);
       loaded = Array.isArray(result) ? result : result.docs || [];
       this.items = loaded;
@@ -77,7 +83,7 @@ export class MediaPicker extends Reactor {
     this.themeLoading = true;
     let loaded: IMediaItem[] = [];
     try {
-      loaded = await MediaPickerSourceService.fetchThemeAssets();
+      loaded = (await MediaPickerSourceService.fetchThemeAssets()).filter((item) => this.filter.matches(item));
       this.themeItems = loaded;
     } catch (error) {
       console.error('Failed to fetch theme assets:', error);
@@ -93,6 +99,10 @@ export class MediaPicker extends Reactor {
     if (!match) return;
     this.selectedId = match.id;
     this.themeSource = !!match.relativePath;
+  }
+
+  private get filter(): MediaAcceptFilter {
+    return MediaAcceptFilter.from(this.accept);
   }
 
   private get visibleItems(): IMediaItem[] {
@@ -176,9 +186,11 @@ export class MediaPicker extends Reactor {
             uploading={this.uploading}
             canUpload={!this.themeSource}
             onFile={this.handleUpload}
+            uploadAccept={this.filter.uploadAccept}
+            filterLabel={this.filter.active ? this.filter.label : ''}
           />
-          <div className="flex-1 flex overflow-hidden">
-            <div className="flex-1 p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-transparent">
+          <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+            <div className="flex-1 min-h-0 p-4 md:p-8 overflow-y-auto custom-scrollbar bg-slate-50/30 dark:bg-transparent">
               <MediaPickerGrid
                 items={this.visibleItems}
                 loading={this.visibleLoading}
@@ -188,7 +200,7 @@ export class MediaPicker extends Reactor {
                 onConfirm={this.handleConfirm}
               />
             </div>
-            <div className="w-80 border-l border-slate-100 dark:border-slate-800 p-6 bg-white dark:bg-slate-900 flex flex-col">
+            <div className={`${this.selectedItem ? 'flex' : 'hidden md:flex'} max-h-[45%] md:max-h-none w-full md:w-80 shrink-0 overflow-y-auto border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 p-4 md:p-6 bg-white dark:bg-slate-900 flex-col`}>
               <MediaPickerDetails item={this.selectedItem} onConfirm={this.handleConfirm} />
             </div>
           </div>

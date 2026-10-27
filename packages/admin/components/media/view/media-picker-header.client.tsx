@@ -47,12 +47,12 @@ export class MediaPickerHeader extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className="px-8 py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-6">
+      <div className="px-4 py-4 md:px-8 md:py-6 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between gap-3 md:gap-6">
         <div>
           <h2 className={`${AdminTypography.TYPOGRAPHY.HEADING.SUBTLE} text-slate-900 dark:text-white`}>{AdminI18n.t('mediaPicker.mediaLibrary')}</h2>
           <p className={AdminTypography.TYPOGRAPHY.SUBTEXT}>{AdminI18n.t('mediaPicker.selectOrUploadAnAsset')}</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex shrink-0 items-center gap-2 md:gap-4">
           {this.renderTabs()}
           <button
             type="button"

@@ -173,7 +173,7 @@ export type { IAccess, ICandidateLookupOptions, IUpsertByCandidatesOptions } fro
 
 // Field/schema definitions
 export type { IField, ISettingsTab, ISettingsTabGroup, IPluginSettingsSchema } from '@fromcode119/core/client';
-export type { ICollection, ICollectionListView, ICollectionQuickEdit, ICollectionQuickEditField, ICollectionQueryInterface, IEntityAdminLayout, IEntityApiOptions, IEntityDefinition, IEntityDerivedField, IEntityField, IEntityFieldValidationError, IEntityIndex, IEntityInputAlias, IEntityParseOptions, IEntityParseResult, IEntityEnumOptions, IEntityFieldConfig, IEntityFieldsConfig } from '@fromcode119/core/client';
+export type { ICollection, ICollectionListView, ICollectionPublicContent, ICollectionPublicContentSource, ICollectionQuickEdit, ICollectionQuickEditField, ICollectionQueryInterface, IEntityAdminLayout, IEntityApiOptions, IEntityDefinition, IEntityDerivedField, IEntityField, IEntityFieldValidationError, IEntityIndex, IEntityInputAlias, IEntityParseOptions, IEntityParseResult, IEntityEnumOptions, IEntityFieldConfig, IEntityFieldsConfig } from '@fromcode119/core/client';
 
 // Manifest definitions
 export type { IMiddlewareConfig, IPluginManifest, IThemeManifest, IMenuItemManifest } from '@fromcode119/core/client';

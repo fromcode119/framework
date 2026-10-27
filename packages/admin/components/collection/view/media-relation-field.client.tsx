@@ -13,6 +13,9 @@ export class MediaRelationField extends Reactor {
   @prop declare hasMany?: boolean;
   /** Show the whole picked image instead of filling the box — a logo must not be cropped. */
   @prop declare wholeImage?: boolean;
+  /** File types the picker lists — see `admin.accept`. As a field component it arrives on `field`. */
+  @prop declare accept?: string;
+  @prop declare field?: { admin?: { accept?: string } };
 
   @state open = false;
   /** One per selected file, in the stored order. */
@@ -73,6 +76,7 @@ export class MediaRelationField extends Reactor {
     return (
       <MediaRelationFieldView
         wholeImage={Boolean(this.wholeImage)}
+        accept={this.accept ?? this.field?.admin?.accept ?? ''}
         theme={this.theme}
         hasMany={Boolean(this.hasMany)}
         open={this.open}

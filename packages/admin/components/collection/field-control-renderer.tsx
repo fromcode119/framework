@@ -107,7 +107,7 @@ export class FieldControlRenderer extends PureReactor {
         />
       ) : field.type === 'relationship' && field.relationTo === 'media' ? (
         wrapWithReadOnlyOverride(
-          <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} hasMany={Boolean(field.hasMany)} />
+          <MediaRelationField value={currentValue} onChange={updateValue} theme={theme} hasMany={Boolean(field.hasMany)} accept={field.admin?.accept} />
         )
       ) : field.type === 'relationship' &&
         field.admin?.component !== 'TagField' &&

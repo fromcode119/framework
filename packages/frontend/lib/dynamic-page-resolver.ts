@@ -10,6 +10,7 @@ import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { LocaleUrlStrategy } from '@fromcode119/core/client';
 import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
 import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
+import { MissedResolutionFetch } from '@/lib/missed-resolution-fetch';
 
 export class DynamicPageResolver {
   /**
@@ -136,7 +137,10 @@ export class DynamicPageResolver {
     try {
       const query = new URLSearchParams();
       query.set('slug', String(slug || '').replace(/^\/+/, ''));
-      const result = await DynamicPageResolver.resolveFetchCache(query.toString()) as
+      // The final lookup before a 404: `missed=1` lets the API report the miss with the VISITOR's
+      // referrer and browser (this fetch otherwise carries the storefront server's own).
+      query.set('missed', '1');
+      const result = await MissedResolutionFetch.fetch(query.toString()) as
         { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
       if (result?.type === 'redirect' && result.redirect?.target) {
         return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };

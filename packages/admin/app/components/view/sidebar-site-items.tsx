@@ -22,6 +22,11 @@ export class SidebarSiteItems {
     /** How the current workspace was opened: `appearance` or `configure` (the server's `mode`). */
     mode: string;
     multiTenant: boolean;
+    /**
+     * This console's host is bound to one site (a site's own console host or path). The server refuses
+     * every switch and every step out there, so the menu offers none: only the site you are on.
+     */
+    locked: boolean;
     storefrontHost: string;
     canManagePlatform: boolean;
     onSelect: (tenantId: string, mode?: string) => void;
@@ -29,7 +34,7 @@ export class SidebarSiteItems {
     onAddSite: () => void;
   }): IDropdownItem[] {
     const rows: IDropdownItem[] = [];
-    if (input.multiTenant && input.canManagePlatform) {
+    if (input.multiTenant && input.canManagePlatform && !input.locked) {
       rows.push({
         label: AdminI18n.t('shell.site.platform'),
         detail: AdminI18n.t('shell.site.platformHint'),
@@ -38,7 +43,8 @@ export class SidebarSiteItems {
         onClick: input.onLeave,
       });
     }
-    for (const tenant of input.tenants) rows.push(...SidebarSiteItems.tenantRows(tenant, input.current, input.mode, input.onSelect));
+    const reachable = input.locked ? input.tenants.filter((tenant) => tenant.id === input.current) : input.tenants;
+    for (const tenant of reachable) rows.push(...SidebarSiteItems.tenantRows(tenant, input.current, input.mode, input.onSelect));
     if (!input.multiTenant && input.storefrontHost) {
       rows.push({
         label: input.storefrontHost,
@@ -55,7 +61,7 @@ export class SidebarSiteItems {
       // after it (Add a site, Sign out) must stay reachable however many sites exist.
       ...rows.map((row, index) => ({ ...row, section: index === 0 ? heading : undefined, scrolls: index === 0 ? true : undefined })),
       // Adding a site is the platform's to do: the Sites screen and its API are platform-admin only.
-      ...(input.canManagePlatform ? [{
+      ...(input.canManagePlatform && !input.locked ? [{
         label: AdminI18n.t('shell.account.addSite'),
         icon: <FrameworkIcons.Plus size={16} />,
         section: rows.length === 0 ? heading : undefined,

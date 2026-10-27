@@ -17,6 +17,7 @@ export class MediaRelationFieldView extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare hasMany: boolean;
   @prop declare wholeImage: boolean;
+  @prop declare accept: string;
   @prop declare open: boolean;
   @prop declare previews: IMediaRelationPreview[];
   @prop declare selectedIds: Array<string | number>;
@@ -97,7 +98,7 @@ export class MediaRelationFieldView extends PureReactor {
           {this.hasMany ? <FrameworkIcons.Plus size={14} /> : <FrameworkIcons.Image size={14} />}
           {AdminI18n.t(this.hasMany ? 'ui.media.add' : 'ui.media.select')}
         </button>
-        {this.open ? <MediaPicker onSelect={this.handlePick} onClose={this.handleClose} /> : null}
+        {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
       </div>
     );
   }

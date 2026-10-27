@@ -53,7 +53,7 @@ export class ThemeSettingsHeader extends PureReactor {
           <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${dark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}>
             <FrameworkIcons.Palette size={20} />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-[12rem] flex-1">
             <h1 className={`truncate text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{themeDetail.name}</h1>
             {/* Words, never the member: `themeDetail.state` is a `ThemeState` Enum, and an Enum handed to
                 React as a child is an object — it threw "Minified React error #31" and blanked the page. */}

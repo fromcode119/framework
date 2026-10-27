@@ -105,6 +105,31 @@ context.collections.extend('blog', 'posts', {
 
 The framework handles the order of execution. If the target collection is not yet registered, the extension is queued and automatically applied once the target plugin registers its collection.
 
+### Public content: extending every collection that holds public pages
+A plugin that serves ALL public content — a sitemap, SEO fields, site search — must not keep a list of
+other plugins' collections. The collections say so themselves: an owner declares
+
+```typescript
+{ slug: 'posts', publicContent: { list: 'listPublicPosts' }, fields: [...] }
+```
+
+where `list` is a method of the owner's own namespace API that answers `({ limit })` with its published,
+public records, each with the `path` it is shown at (the owner resolves its own permalink rules). An
+optional `at` method answers `({ path })` with the record shown at that address, or `null`.
+
+The consumer reads the declarations and adds its fields to all of them:
+
+```typescript
+const sources = await context.collections.publicContent();
+// [{ plugin: 'blog', namespace: 'org.example', slug: 'posts', entity: '', list: 'listPublicPosts', at: '' }]
+const posts = await context.plugins.namespace(sources[0].namespace)[sources[0].plugin][sources[0].list]({ limit: 100 });
+
+context.collections.extendPublicContent({ fields: [{ name: 'seoTitle', type: 'text' }] });
+```
+
+`extendPublicContent` is the same merge as `extend` — a field the owner declares itself is never
+replaced — applied to every declaring collection now and to each one that registers later.
+
 ---
 
 ## Hooks

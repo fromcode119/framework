@@ -4142,6 +4142,9 @@
     "manageThemes": "Управление на темите"
   },
   "mediaPicker": {
+    "showingOnly": "Показани са само: {{types}}",
+    "acceptImages": "Изображения",
+    "acceptVideos": "Видеа",
     "uploads": "Качени",
     "theme": "Тема",
     "mediaLibrary": "Медийна библиотека",

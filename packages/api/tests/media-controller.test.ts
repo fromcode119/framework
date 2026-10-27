@@ -66,6 +66,35 @@ describe('media-controller.listFiles', () => {
     );
   });
 
+  it('lists only the accepted types when a field asks for some, and ignores malformed tokens', async () => {
+    const mockDb = {
+      find: vi.fn().mockResolvedValue([]),
+      desc: vi.fn().mockReturnValue('desc_order'),
+      like: vi.fn((column: string, pattern: string) => `like(${column},${pattern})`),
+      eq: vi.fn((column: string, value: string) => `eq(${column},${value})`),
+      or: vi.fn((...parts: string[]) => `or(${parts.join('|')})`),
+      and: vi.fn((...parts: string[]) => `and(${parts.join('|')})`),
+    } as any;
+    const controller = new MediaController({ db: mockDb } as any, buildMediaManager());
+
+    await controller.listFiles({ query: { accept: 'image/*, application/pdf, <script>' } } as any, buildResponse());
+
+    expect(mockDb.like).toHaveBeenCalledWith(expect.anything(), 'image/%');
+    expect(mockDb.eq).toHaveBeenCalledWith(expect.anything(), 'application/pdf');
+    expect(mockDb.or).toHaveBeenCalledTimes(1);
+    expect(String(mockDb.find.mock.calls[0][1].where)).toMatch(/^or\(like\(.*image\/%\)\|eq\(.*application\/pdf\)\)$/);
+  });
+
+  it('applies no type condition when nothing is accepted', async () => {
+    const mockDb = { find: vi.fn().mockResolvedValue([]), desc: vi.fn(), or: vi.fn(), like: vi.fn(), eq: vi.fn() } as any;
+    const controller = new MediaController({ db: mockDb } as any, buildMediaManager());
+
+    await controller.listFiles({ query: { accept: '' } } as any, buildResponse());
+
+    expect(mockDb.or).not.toHaveBeenCalled();
+    expect(mockDb.find.mock.calls[0][1].where).toBeUndefined();
+  });
+
   it('falls back to basic column set when full select fails', async () => {
     const mockFiles = [
       {

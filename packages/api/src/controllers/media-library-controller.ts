@@ -104,6 +104,14 @@ export class MediaLibraryController {
   /** Default page size. Small enough that a wide grid fills without loading the whole library. */
   private static readonly LIST_LIMIT = 60;
 
+  /** `image/*,application/pdf` → its well-formed tokens; anything else is ignored, never matched. */
+  private static acceptTokens(accept: unknown): string[] {
+    return String(accept ?? '')
+      .split(',')
+      .map((token) => token.trim().toLowerCase())
+      .filter((token) => /^[a-z0-9.+-]+\/(\*|[a-z0-9.+-]+)$/.test(token));
+  }
+
   async listFiles(req: Request, res: Response) {
     const { q, folderId } = req.query;
     // Paged from here on. The library used to fetch EVERY media row on each folder change and each
@@ -127,6 +135,14 @@ export class MediaLibraryController {
       if (req.query.id !== undefined) {
         if (!Number.isInteger(id) || id <= 0) return res.json([]);
         conditions.push(eq(Schema.media.id, id));
+      }
+
+      // A field that takes only some types (`admin.accept`, e.g. `image/*`) lists only those files.
+      const accepted = MediaLibraryController.acceptTokens(req.query.accept);
+      if (accepted.length > 0) {
+        conditions.push(or(...accepted.map((token) => token.endsWith('/*')
+          ? this.db.like(Schema.media.mimeType, `${token.slice(0, -1)}%`)
+          : eq(Schema.media.mimeType, token))));
       }
 
       if (folderId !== undefined) {

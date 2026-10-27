@@ -35,7 +35,7 @@ export class MediaPickerGrid extends PureReactor {
     }
 
     return (
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 md:gap-6">
         {items.map((item) => (
           <MediaPickerTile
             key={item.id}
