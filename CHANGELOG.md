@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.454] - 2026-10-27
+
+### Fixed
+
+- **core**: a page on the contract route outranks pages on its aliases ([#1086](https://github.com/fromcode119/framework/pull/1086))
+- **scheduler**: stop tasks a plugin no longer registers, and run a task in the current process ([#1087](https://github.com/fromcode119/framework/pull/1087))
+
 ## [0.2.453] - 2026-10-27
 
 ### Added
