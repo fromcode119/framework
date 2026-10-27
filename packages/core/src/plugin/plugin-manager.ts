@@ -18,6 +18,8 @@ import { I18nManager } from '@core/i18n/i18n-manager';
 import { EmailCategoryRegistry } from '@core/email/email-category-registry';
 import { DatabaseFactory, DatabaseConnectionUrls, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
+import { ApiWorkers } from '@core/cluster/api-workers';
+import { PluginDroppedTaskSweep } from '@core/plugin/services/runtime/plugin-dropped-task-sweep';
 import { MigrationCoordinator } from '@core/management/migration-coordinator';
 import { AuditManager } from '@core/security/audit-manager';
 import { SecurityMonitor } from '@core/security/security-monitor';
@@ -227,6 +229,12 @@ export class PluginManager extends PluginManagerApi implements IPluginManagerInt
     // mean "the picture was complete" — a false positive with its safety caveat missing, which is
     // worse than one that has it.
     await this.bootstrap.auditUndeclaredColumns();
+    // Only where the plugins' processes start: another api process attaches to them LATER, so at this
+    // point it has not registered their tasks yet and would stop every one of them.
+    if (!ApiWorkers.startsPluginProcesses()) return;
+    const registered = [...this.plugins.values()].filter((plugin) => plugin.state === PluginState.ACTIVE && !plugin.registrationDeferred).map((plugin) => plugin.manifest.slug);
+    const dropped = await PluginDroppedTaskSweep.run(this.db, this.scheduler, registered);
+    if (dropped.length) this.logger.info(`Stopped ${dropped.length} scheduled task(s) no plugin registers any more: ${dropped.join(', ')}`);
   }
 
 }

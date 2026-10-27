@@ -39,6 +39,10 @@ export class PluginHostRegistrations {
   private readonly declared: PluginHostDeclaredRoutes;
   private readonly hooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
   private readonly platformHooks = new Map<string, { event: string; handler: (...args: any[]) => unknown }>();
+  /** Each scheduled task's handler id in the CURRENT process, by task name; cleared when it is replaced. */
+  private readonly schedulerIds = new Map<string, string>();
+  /** The tasks the replaced process had registered, until the next one has registered its own. */
+  private replacedTasks: string[] = [];
   /** The worker is registered on the queue once; its handler id is the CURRENT process's, set per boot. */
   private jobWorkerHandlerId: string | null = null;
 
@@ -87,6 +91,8 @@ export class PluginHostRegistrations {
   resetForRestart(context: PluginContext): void {
     for (const { event, handler } of this.hooks.values()) context.hooks.off(event, handler as any);
     this.hooks.clear();
+    this.replacedTasks = [...this.schedulerIds.keys()];
+    this.schedulerIds.clear();
     // `context.plugins` had no `off`, so this optional call removed nothing: every relaunch left the old
     // guest's `plugins:ready` subscribers on the bus, and each later `plugins:ready` invoked handler ids
     // the new process never issued ("guest: unknown handler"), a few hundred errors per mass relaunch.
@@ -209,14 +215,29 @@ export class PluginHostRegistrations {
   }
 
   private scheduler(context: PluginContext, registration: IPluginGuestRegistration): void {
-    const id = String(registration.handlerId);
-    // The store is read WHEN THE TASK FIRES, not here. `PluginScheduledTenantRun` wraps this stub and
-    // runs it once per tenant inside that tenant's context; passing `undefined` threw that away, so an
-    // ISOLATED plugin's guest ran untenanted and every db call it made was skipped-and-warned. The task
-    // looked like it ran — "ran for 5 of 9 tenant(s)" — and read nothing for any of them.
-    void context.scheduler.register(String(registration.name), String(registration.schedule), async (data: unknown) => {
-      await this.invoke('scheduler', id, [data], RequestContextUtils.storage.getStore());
+    const name = String(registration.name);
+    this.schedulerIds.set(name, String(registration.handlerId));
+    // The id is read WHEN THE TASK FIRES, like the job worker's: a stand-in that captured it sent a run
+    // that fired while the process was being replaced to the old id, which the new process never issued
+    // ("guest: unknown handler"). Between the switch and the new process registering, there is none: skip.
+    // The store is read then too. `PluginScheduledTenantRun` wraps this stub and runs it once per tenant
+    // inside that tenant's context; passing `undefined` threw that away, so an ISOLATED plugin's guest ran
+    // untenanted and every db call it made was skipped-and-warned.
+    void context.scheduler.register(name, String(registration.schedule), async (data: unknown) => {
+      const id = this.schedulerIds.get(name);
+      if (id) await this.invoke('scheduler', id, [data], RequestContextUtils.storage.getStore());
     }, (registration.options ?? {}) as any);
+  }
+
+  /**
+   * The tasks the replaced process registered and the one that replaced it did not: a release that
+   * dropped a task. Its row would stay active and fire at nothing, so the caller stops it. Asked once
+   * the new process's registrations are applied.
+   */
+  droppedTasks(): string[] {
+    const dropped = this.replacedTasks.filter((name) => !this.schedulerIds.has(name));
+    this.replacedTasks = [];
+    return dropped;
   }
 
   /**
@@ -228,7 +249,7 @@ export class PluginHostRegistrations {
     const first = this.jobWorkerHandlerId === null;
     this.jobWorkerHandlerId = String(registration.handlerId);
     if (!first) return;
-    // Same reason as the scheduler above: whatever tenant context the job runs under must reach the guest.
+    // Same reason as the scheduler's: whatever tenant context the job runs under must reach the guest.
     (context.jobs as any).worker((job: any) => this.invoke('job', String(this.jobWorkerHandlerId), [{ id: job?.id, name: job?.name, data: job?.data }], RequestContextUtils.storage.getStore()), registration.options);
   }
 

@@ -130,6 +130,16 @@ export class SchedulerService {
     await this.db.update(SchedulerService.SCHEDULER_TASKS_TABLE, { name }, { is_active: false, next_run: null, updated_at: new Date() });
   }
 
+  hasHandler(name: string): boolean {
+    return this.handlers.has(name);
+  }
+
+  /** Forgets a task's handler and stops its schedule: its plugin no longer registers it. */
+  async unregister(name: string): Promise<void> {
+    this.handlers.delete(name);
+    await this.deactivate(name);
+  }
+
   /**
    * Start the scheduler
    */

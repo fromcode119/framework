@@ -84,6 +84,7 @@ export abstract class PluginHostSharedProcesses extends PluginHostGenerations {
     const restoring = (this.takenOver ?? []).splice(0);
     this.takenOver = null;
     if (this.context) for (const registration of restoring) await this.registrations.apply(this.context, registration);
+    if (this.context) for (const name of this.registrations.droppedTasks()) await this.manager.scheduler.unregister(`${this.slug}:${name}`);
     // Let go of the one it replaced; api 0 retires it once its own requests are done.
     if (previous && previous !== stuck) previous.channel.close();
     this.logger.info(`attached to process ${next.guest.pid}, which api process 0 started (${restoring.length} registrations)`);
