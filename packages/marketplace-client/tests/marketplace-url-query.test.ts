@@ -12,11 +12,11 @@ describe('a marketplace address with a key', () => {
 
   it('keeps the query on the catalogue address, whatever form the address was typed in', () => {
     expect(MarketplaceUrlService.resolveCatalogUrl('https://market.example?key=abc'))
-      .toBe('https://market.example/api/v1/plugins/marketplace/marketplace.json?key=abc');
+      .toBe('https://market.example/api/plugins/marketplace/marketplace.json?key=abc');
     expect(MarketplaceUrlService.resolveCatalogUrl('https://market.example/?key=abc'))
-      .toBe('https://market.example/api/v1/plugins/marketplace/marketplace.json?key=abc');
-    expect(MarketplaceUrlService.resolveCatalogUrl('https://market.example/api/v1/plugins/marketplace/marketplace.json?key=abc'))
-      .toBe('https://market.example/api/v1/plugins/marketplace/marketplace.json?key=abc');
+      .toBe('https://market.example/api/plugins/marketplace/marketplace.json?key=abc');
+    expect(MarketplaceUrlService.resolveCatalogUrl('https://market.example/api/plugins/marketplace/marketplace.json?key=abc'))
+      .toBe('https://market.example/api/plugins/marketplace/marketplace.json?key=abc');
   });
 
   it('resolves to the same address when resolved twice', () => {
@@ -26,14 +26,14 @@ describe('a marketplace address with a key', () => {
 
   it('leaves an address without a query exactly as before', () => {
     expect(MarketplaceUrlService.resolveCatalogUrl('https://market.example'))
-      .toBe('https://market.example/api/v1/plugins/marketplace/marketplace.json');
+      .toBe('https://market.example/api/plugins/marketplace/marketplace.json');
     expect(MarketplaceUrlService.resolveApiBaseUrl('https://market.example/'))
-      .toBe('https://market.example/api/v1/plugins/marketplace');
+      .toBe('https://market.example/api/plugins/marketplace');
   });
 
   it('works out the api base without the query', () => {
     expect(MarketplaceUrlService.resolveApiBaseUrl('https://market.example?key=abc'))
-      .toBe('https://market.example/api/v1/plugins/marketplace');
+      .toBe('https://market.example/api/plugins/marketplace');
   });
 
   it('requests the catalogue with the key in a header, not in the URL', async () => {
@@ -41,14 +41,14 @@ describe('a marketplace address with a key', () => {
     vi.stubGlobal('fetch', fetchMock);
     await new MarketplaceClient('https://market.example?key=abc&channel=beta').fetch();
     const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toBe('https://market.example/api/v1/plugins/marketplace/marketplace.json?channel=beta');
+    expect(url).toBe('https://market.example/api/plugins/marketplace/marketplace.json?channel=beta');
     expect(init.headers).toEqual({ 'X-Marketplace-Key': 'abc' });
   });
 
   it('resolves a relative download without the key and gives its headers separately', () => {
     const client = new MarketplaceClient('https://market.example?key=abc&channel=beta');
     const url = client.resolveDownloadUrl('download/shop');
-    expect(url).toBe('https://market.example/api/v1/plugins/marketplace/download/shop?channel=beta');
+    expect(url).toBe('https://market.example/api/plugins/marketplace/download/shop?channel=beta');
     expect(client.requestHeaders(url)).toEqual({ 'X-Marketplace-Key': 'abc' });
   });
 
@@ -71,8 +71,8 @@ describe('a marketplace address with a key', () => {
   });
 
   it('masks query values for logs', () => {
-    expect(MarketplaceUrlService.redact('https://market.example/api/v1/plugins/marketplace/download/shop?key=abc'))
-      .toBe('https://market.example/api/v1/plugins/marketplace/download/shop?key=***');
+    expect(MarketplaceUrlService.redact('https://market.example/api/plugins/marketplace/download/shop?key=abc'))
+      .toBe('https://market.example/api/plugins/marketplace/download/shop?key=***');
     expect(MarketplaceUrlService.redact('https://market.example/x')).toBe('https://market.example/x');
   });
 });

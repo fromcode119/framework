@@ -92,7 +92,7 @@ export abstract class Reactor<P = Record<string, unknown>, S = Record<string, un
           // — the decorator's documented contract ("assign it like a normal property", `this.count++`).
           // Without this, every post-mount write was invisible for the rest of the tick: an admin
           // detail page assigned `this.routeSlug = params.slug` and the fetch it kicked off one line
-          // later still read `''`, requesting `/api/v1/themes//config` (404) instead of the theme.
+          // later still read `''`, requesting `/api/themes//config` (404) instead of the theme.
           if (this.__pendingState && key in this.__pendingState) return this.__pendingState[key];
           return this.state ? this.state[key] : undefined;
         },

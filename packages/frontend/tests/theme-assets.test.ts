@@ -29,11 +29,11 @@ describe('ThemeAssets', () => {
       activeTheme: {
         slug: 'example-theme',
         ui: {
-          entry: 'http://api.framework.local/api/v1/themes/example-theme/ui/bundle.js?v=1.0.10',
+          entry: 'http://api.framework.local/api/themes/example-theme/ui/bundle.js?v=1.0.10',
           headLinks: [
             {
               rel: 'preload',
-              href: '/api/v1/themes/example-theme/ui/logo.webp',
+              href: '/api/themes/example-theme/ui/logo.webp',
               as: 'image',
               type: 'image/webp',
             },
@@ -46,7 +46,7 @@ describe('ThemeAssets', () => {
     renderToStaticMarkup(await ThemeAssetsView.render());
 
     expect(preloadSpy).toHaveBeenCalledWith(
-      'http://api.framework.local/api/v1/themes/example-theme/ui/logo.webp',
+      'http://api.framework.local/api/themes/example-theme/ui/logo.webp',
       expect.objectContaining({
         as: 'image',
         type: 'image/webp',

@@ -52,8 +52,8 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
 
   /**
    * The SYSTEM scope, not the auth scope the sibling panels use. Sessions and two-factor live on
-   * `/api/v1/auth/*`; these routes are on the system router, so the auth client resolved
-   * `/api/v1/auth/email-preferences` and the panel rendered "HTTP 404" over an empty list.
+   * `/api/auth/*`; these routes are on the system router, so the auth client resolved
+   * `/api/auth/email-preferences` and the panel rendered "HTTP 404" over an empty list.
    */
   protected get client(): any {
     return new SdkClient(this.api).getSystem();

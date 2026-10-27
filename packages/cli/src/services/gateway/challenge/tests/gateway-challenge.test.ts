@@ -82,7 +82,7 @@ describe('GatewayChallenge — under attack mode', () => {
   });
 
   it('never checks the exempt paths, and refuses a POST without a pass instead of showing a page', async () => {
-    expect((await ChallengeFixture.get(server, '/api/v1/plugins/payments/webhook')).body).toBe('through');
+    expect((await ChallengeFixture.get(server, '/api/plugins/payments/webhook')).body).toBe('through');
     const post = await ChallengeFixture.get(server, '/checkout', {}, 'POST');
     expect(post.status).toBe(403);
     expect(post.body).toContain('browser_check_required');

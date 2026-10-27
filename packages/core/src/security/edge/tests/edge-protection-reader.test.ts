@@ -44,7 +44,7 @@ describe('EdgeProtectionReader', () => {
     expect(protection.clearanceMinutes).toBe(720);
     expect(protection.exemptPaths).toEqual(['/api/', '/.well-known/', '/manifest.webmanifest']);
     expect(protection.title).toBe('Checking your browser');
-    expect(protection.isExempt('/api/v1/health')).toBe(true);
+    expect(protection.isExempt('/api/health')).toBe(true);
     expect(protection.isExempt('/apiary')).toBe(false);
   });
 

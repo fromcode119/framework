@@ -66,7 +66,7 @@ So:
 1. The admin asks the api for a **grant**: a random 256-bit token, stored only as a SHA-256 hash,
    bound to one site and one account, valid for **60 seconds** and spendable **once**.
 2. The operator's browser follows the link to
-   `https://<the site's host>/api/v1/system/site-preview/exchange/<token>`.
+   `https://<the site's host>/api/system/site-preview/exchange/<token>`.
 3. The api spends the grant — an UPDATE whose WHERE says "only if unspent", so two browsers
    following the same link race on the database rather than in the gap between a read and a write —
    and sets an **httpOnly, host-scoped** `fc_site_preview` cookie valid for **two hours**.

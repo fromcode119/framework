@@ -5,7 +5,7 @@ import { McpSiteTools } from '@mcp-server/mcp-site-tools';
 const sites = [{ id: 'acme', slug: 'acme', host: 'acme.test' }, { id: 'globex', slug: 'globex', host: 'globex.test' }];
 const fetchSites = vi.fn(async () => ({ ok: true, json: async () => ({ multiTenant: true, allSites: true, current: null, sites }) }));
 const build = () => {
-  const client = new McpHttpClient('https://example.test/api/v1', 'secret', fetchSites as any);
+  const client = new McpHttpClient('https://example.test/api', 'secret', fetchSites as any);
   return { client, tools: new McpSiteTools(client) };
 };
 

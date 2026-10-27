@@ -37,18 +37,18 @@ describe('TenantExemptRouteUtils.isPublicAssetRoute', () => {
   const isAsset = (path: string) => TenantExemptRouteUtils.isPublicAssetRoute({ path });
 
   it('exempts theme ui/public files and plugin ui files', () => {
-    expect(isAsset('/api/v1/themes/aurora/ui/bundle.js')).toBe(true);
-    expect(isAsset('/api/v1/themes/aurora/ui/fonts/ibm-plex-sans-400.woff2')).toBe(true);
-    expect(isAsset('/api/v1/themes/aurora/public/logo.svg')).toBe(true);
-    expect(isAsset('/api/v1/plugins/eta/ui/bundle.js')).toBe(true);
+    expect(isAsset('/api/themes/aurora/ui/bundle.js')).toBe(true);
+    expect(isAsset('/api/themes/aurora/ui/fonts/ibm-plex-sans-400.woff2')).toBe(true);
+    expect(isAsset('/api/themes/aurora/public/logo.svg')).toBe(true);
+    expect(isAsset('/api/plugins/eta/ui/bundle.js')).toBe(true);
   });
 
   it('exempts NOTHING that can return a row', () => {
-    expect(isAsset('/api/v1/themes')).toBe(false);
-    expect(isAsset('/api/v1/themes/aurora/activate')).toBe(false);
-    expect(isAsset('/api/v1/plugins/eta/settings')).toBe(false);
-    expect(isAsset('/api/v1/plugins/eta/health')).toBe(false);
-    expect(isAsset('/api/v1/system/frontend')).toBe(false);
-    expect(isAsset('/api/v1/media/ui/x')).toBe(false);
+    expect(isAsset('/api/themes')).toBe(false);
+    expect(isAsset('/api/themes/aurora/activate')).toBe(false);
+    expect(isAsset('/api/plugins/eta/settings')).toBe(false);
+    expect(isAsset('/api/plugins/eta/health')).toBe(false);
+    expect(isAsset('/api/system/frontend')).toBe(false);
+    expect(isAsset('/api/media/ui/x')).toBe(false);
   });
 });

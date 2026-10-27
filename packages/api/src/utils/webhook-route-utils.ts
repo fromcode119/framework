@@ -4,10 +4,10 @@ import { PluginPlatformRoute, RouteConstants } from '@fromcode119/core';
 
 /**
  * Which request paths are inbound webhooks. Two shapes exist: the framework's own `/webhooks/...` and a
- * plugin's `/api/v1/plugins/<slug>/webhooks/...` (a payment provider's callback, a courier's tracking push).
+ * plugin's `/api/plugins/<slug>/webhooks/...` (a payment provider's callback, a courier's tracking push).
  * Both carry their own signature scheme, so both are exempt from CSRF and keep the raw request bytes for
  * HMAC verification. Matching only the root shape left every plugin webhook 403 "Invalid CSRF token".
- * A plugin's PLATFORM webhook (`/api/v1/plugins/<slug>/platform/webhooks/...`, one provider app for every
+ * A plugin's PLATFORM webhook (`/api/plugins/<slug>/platform/webhooks/...`, one provider app for every
  * site) is the same kind of route one segment deeper.
  */
 export class WebhookRouteUtils {

@@ -14,7 +14,7 @@ export class SystemScimController {
 
   /**
    * The SCIM base path an IdP is pointed at — the mount point under the versioned API prefix,
-   * derived from the same constants the router mounts with (never a hardcoded `/api/v1/...`).
+   * derived from the same constants the router mounts with (never a hardcoded `/api/...`).
    */
   private get scimBaseUrl(): string {
     return ApiVersionUtils.withVersion(RouteConstants.SEGMENTS.SCIM_BASE);

@@ -224,7 +224,7 @@ export class FileShareAdminController extends BaseController {
 
   /**
    * The recipient-facing URL for a token — the FRONTEND page, not the API route, so the link in an
-   * email lands on a themed page rather than an `/api/v1/...` path. Built from the framework's frontend
+   * email lands on a themed page rather than an `/api/...` path. Built from the framework's frontend
    * base, never a literal host.
    */
   static buildShareUrl(rawToken: string): string {

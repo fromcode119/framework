@@ -35,7 +35,7 @@ describe('a downloaded package is read by its own bytes', () => {
 
   it('extracts a zip served as octet-stream at an address with no extension', async () => {
     const target = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-download-zip-'));
-    await BackupService.downloadAndExtract(`${base}/api/v1/plugins/marketplace/download-theme/shop`, target);
+    await BackupService.downloadAndExtract(`${base}/api/plugins/marketplace/download-theme/shop`, target);
     expect(fs.readFileSync(path.join(target, 'theme.json'), 'utf8')).toBe('{"slug":"shop"}');
   });
 

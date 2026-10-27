@@ -6,11 +6,11 @@ import { AsyncRouteGuard } from '@core/base/async-route-guard';
 /**
  * These tests exist because the failure they describe is not a bad response — it is a DEAD PROCESS.
  * An `async` route handler that rejects is invisible to Express 4's try/catch, and Node 22 kills the
- * process on an unobserved rejection. `GET /api/v1/plugins/alpha/navigation/<missing>` did exactly that
+ * process on an unobserved rejection. `GET /api/plugins/alpha/navigation/<missing>` did exactly that
  * to the live API, anonymously, on an ordinary not-found request.
  */
 describe('AsyncRouteGuard', () => {
-  const request = (): Request => ({ method: 'GET', originalUrl: '/api/v1/plugins/alpha/navigation/x' } as Request);
+  const request = (): Request => ({ method: 'GET', originalUrl: '/api/plugins/alpha/navigation/x' } as Request);
   const response = (): Response => ({ headersSent: false } as Response);
 
   const flush = async (): Promise<void> => {
@@ -45,7 +45,7 @@ describe('AsyncRouteGuard', () => {
     expect(AsyncRouteGuard.originOf(forwarded)).toEqual({
       source: 'alpha',
       method: 'GET',
-      path: '/api/v1/plugins/alpha/navigation/x',
+      path: '/api/plugins/alpha/navigation/x',
     });
   });
 

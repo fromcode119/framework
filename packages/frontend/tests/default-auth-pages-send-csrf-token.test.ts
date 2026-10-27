@@ -48,21 +48,21 @@ describe('a one-time link token is redeemed once per page load', () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ success: true }), { status: 200 }));
     vi.stubGlobal('fetch', fetchMock);
     const [first, second] = await Promise.all([
-      FrontendTokenRedemption.redeem('/api/v1/auth/verify-email', 'tok-1'),
-      FrontendTokenRedemption.redeem('/api/v1/auth/verify-email', 'tok-1'),
+      FrontendTokenRedemption.redeem('/api/auth/verify-email', 'tok-1'),
+      FrontendTokenRedemption.redeem('/api/auth/verify-email', 'tok-1'),
     ]);
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(first).toEqual({ ok: true, payload: { success: true } });
     expect(second).toBe(first);
-    expect(await FrontendTokenRedemption.redeem('/api/v1/auth/verify-email', 'tok-1')).toBe(first);
+    expect(await FrontendTokenRedemption.redeem('/api/auth/verify-email', 'tok-1')).toBe(first);
   });
 
   it('a refused attempt can be tried again', async () => {
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ error: 'Invalid verification token' }), { status: 400 }));
     vi.stubGlobal('fetch', fetchMock);
-    expect((await FrontendTokenRedemption.redeem('/api/v1/auth/verify-email', 'tok-2')).ok).toBe(false);
+    expect((await FrontendTokenRedemption.redeem('/api/auth/verify-email', 'tok-2')).ok).toBe(false);
     await new Promise((resolve) => setTimeout(resolve, 0));
-    await FrontendTokenRedemption.redeem('/api/v1/auth/verify-email', 'tok-2');
+    await FrontendTokenRedemption.redeem('/api/auth/verify-email', 'tok-2');
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });

@@ -14,7 +14,7 @@ export class ServerRequestEntrySetup {
       if (EnvUtils.isDevelopment()) return true;
       return NetworkAddressUtils.isPrivate(ip);
     });
-    // First, so every later middleware and router sees `/api/...` as the versioned path it aliases.
+    // First, so every later middleware and router sees a legacy `/api/v<N>/...` as the `/api/...` path it names.
     app.use(new UnversionedApiAliasMiddleware().middleware());
   }
 }

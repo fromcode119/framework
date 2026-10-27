@@ -15,7 +15,7 @@ export class ScimRouteUtils {
   static isScimPath(req: unknown): boolean {
     const path = String((req as { path?: unknown } | null)?.path ?? '').trim();
     if (!path) return false;
-    // Both the versioned mount (`/api/v1/scim/v2`) and the bare segment, since `req.path` differs by
+    // Both the mount under the api prefix (`/api/scim/v2`) and the bare segment, since `req.path` differs by
     // where the check runs in the stack.
     for (const base of [ApiPathUtils.versioned(RouteConstants.SEGMENTS.SCIM_BASE), RouteConstants.SEGMENTS.SCIM_BASE]) {
       if (path === base || path.startsWith(`${base}/`)) return true;

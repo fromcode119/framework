@@ -17,7 +17,7 @@ import { ApiPathUtils, ApiVersionUtils, RouteConstants, SystemConstants } from '
  * 
  * const config = ApiConfig.getInstance();
  * const loginRoute = config.routes.auth.LOGIN;
- * const versionedPrefix = config.prefixes.VERSIONED;
+ * const apiPrefix = config.prefixes.API;
  * const isReserved = config.isReservedPermalink('/api');
  * ```
  */
@@ -37,19 +37,12 @@ export class ApiConfig {
   }
 
   /**
-   * API version (extracted from environment or package.json).
-   */
-  get version(): string {
-    return ApiVersionUtils.normalize();
-  }
-
-  /**
    * API route prefixes.
    */
   get prefixes() {
     return {
       get BASE() { return ApiVersionUtils.API_BASE_PATH; },
-      get VERSIONED() { return ApiVersionUtils.prefix(); }
+      get API() { return ApiVersionUtils.prefix(); }
     };
   }
 
@@ -132,20 +125,20 @@ export class ApiConfig {
   }
 
   /**
-   * Versioned API routes.
+   * API routes.
    */
   get routes() {
     // Read on every request, by several middlewares: built once per prefix, which changes only with the
     // environment, rather than re-deriving each of its paths every time.
-    const versioned = this.prefixes.VERSIONED;
-    if (this.builtRoutes?.versioned !== versioned) this.builtRoutes = { versioned, routes: this.buildRoutes(versioned) };
+    const apiPrefix = this.prefixes.API;
+    if (this.builtRoutes?.apiPrefix !== apiPrefix) this.builtRoutes = { apiPrefix, routes: this.buildRoutes(apiPrefix) };
     return this.builtRoutes.routes;
   }
 
-  private builtRoutes: { versioned: string; routes: ReturnType<ApiConfig['buildRoutes']> } | null = null;
+  private builtRoutes: { apiPrefix: string; routes: ReturnType<ApiConfig['buildRoutes']> } | null = null;
 
-  private buildRoutes(versioned: string) {
-    const withVersion = (path: unknown) => `${versioned}${this.normalizePath(path, '/')}`;
+  private buildRoutes(apiPrefix: string) {
+    const withVersion = (path: unknown) => `${apiPrefix}${this.normalizePath(path, '/')}`;
     const withoutVersion = (path: unknown) => `${this.prefixes.BASE}${this.normalizePath(path, '/')}`;
 
     return {

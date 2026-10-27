@@ -6,7 +6,7 @@ import { PlatformSettingsService, RequestContextUtils } from '@fromcode119/core'
 /**
  * The exemption skips tenancy entirely, so anything it matches runs with NO tenant bound. The
  * platform's own robots.txt has to be the ONLY thing it matches — a site's robots.txt is served by a
- * plugin under `api/v1/plugins/<slug>/...`, and exempting that would hand a tenant's route an
+ * plugin under `api/plugins/<slug>/...`, and exempting that would hand a tenant's route an
  * untenanted request, which is exactly what the old `/health` suffix match did.
  */
 describe('TenantExemptRouteUtils.isPlatformRobotsRoute', () => {
@@ -18,9 +18,9 @@ describe('TenantExemptRouteUtils.isPlatformRobotsRoute', () => {
   });
 
   it('does NOT match a tenant or versioned path that ends in robots.txt', () => {
-    expect(isRobots('/api/v1/robots.txt')).toBe(false);
-    expect(isRobots('/api/v1/plugins/crate/robots.txt')).toBe(false);
-    expect(isRobots('/api/v1/pages/robots.txt')).toBe(false);
+    expect(isRobots('/api/robots.txt')).toBe(false);
+    expect(isRobots('/api/plugins/crate/robots.txt')).toBe(false);
+    expect(isRobots('/api/pages/robots.txt')).toBe(false);
     expect(isRobots('/sitemap.xml')).toBe(false);
   });
 });

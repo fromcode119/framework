@@ -117,7 +117,7 @@ export class ServerApiPaths {
    *
    * It previously read `API_URL` too and fell back to a localhost base. Both are addresses of this
    * SERVER, not of the visitor's browser: in a container `API_URL` is `http://api:3000`, so a
-   * deployment that set no public URL emitted `http://api:3000/api/v1/themes/<t>/ui/bundle.js` and
+   * deployment that set no public URL emitted `http://api:3000/api/themes/<t>/ui/bundle.js` and
    * `src:url(http://api:3000/.../font.woff)` into the page — a theme that cannot load and fonts that
    * cannot resolve, with nothing in the server log to say so. The localhost fallback was the same
    * mistake with a friendlier hostname, and an invented value besides.

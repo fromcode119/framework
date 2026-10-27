@@ -16,7 +16,7 @@ describe('ServerCorsSetup unknown origin', () => {
     vi.spyOn(TenantResolverService, 'shared').mockReturnValue({ resolveByHost: async () => null } as any);
     const server = express();
     new ServerCorsSetup(server, new Map(), { error: vi.fn(), warn: vi.fn(), info: vi.fn() } as any, {}).setup();
-    server.post('/api/v1/auth/login', (_req, res) => { res.json({ ok: true }); });
+    server.post('/api/auth/login', (_req, res) => { res.json({ ok: true }); });
     server.use((error: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
       res.status(500).json({ error: error.message });
     });
@@ -25,7 +25,7 @@ describe('ServerCorsSetup unknown origin', () => {
 
   it('refuses a preflight from an unknown origin without an error', async () => {
     const res = await request(app())
-      .options('/api/v1/auth/login')
+      .options('/api/auth/login')
       .set('Origin', 'https://evil.example')
       .set('Access-Control-Request-Method', 'POST');
     expect(res.status).toBeLessThan(500);
@@ -34,13 +34,13 @@ describe('ServerCorsSetup unknown origin', () => {
   });
 
   it('grants nothing to an unknown origin on a real request either', async () => {
-    const res = await request(app()).post('/api/v1/auth/login').set('Origin', 'https://evil.example');
+    const res = await request(app()).post('/api/auth/login').set('Origin', 'https://evil.example');
     expect(res.status).toBeLessThan(500);
     expect(res.headers['access-control-allow-origin']).toBeUndefined();
   });
 
   it('still answers a same-origin request', async () => {
-    const res = await request(app()).post('/api/v1/auth/login').set('Host', 'api.fromcode.test').set('Origin', 'https://api.fromcode.test');
+    const res = await request(app()).post('/api/auth/login').set('Host', 'api.fromcode.test').set('Origin', 'https://api.fromcode.test');
     expect(res.status).toBe(200);
   });
 });

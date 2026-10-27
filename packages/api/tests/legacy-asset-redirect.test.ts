@@ -39,8 +39,7 @@ describe('legacy asset addresses', () => {
     expect(req.url.startsWith('/api/v1')).toBe(false);
   });
 
-  it('does not redirect when a version is configured', () => {
-    vi.stubEnv('API_VERSION_PREFIX', 'v1');
+  it('does not redirect a file already asked for at its current address', () => {
     const { res, next } = run('GET', '/api/themes/aurora/ui/images/og-default.png');
     expect(res.redirect).not.toHaveBeenCalled();
     expect(next).toHaveBeenCalledOnce();

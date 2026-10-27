@@ -54,7 +54,7 @@ export class ApiOutcomeCounter {
   }
 
   /**
-   * `GET /api/v1/orders/:id` — the method and the path without its query, with every segment that names
+   * `GET /api/orders/:id` — the method and the path without its query, with every segment that names
    * one record (a number, a uuid, a long token) folded to `:id`. Ids and tokens never reach an email, and
    * one failing endpoint reads as one route rather than a thousand.
    */

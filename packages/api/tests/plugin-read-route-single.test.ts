@@ -124,7 +124,7 @@ describe('a read route that answers one record', () => {
           end: (c?: unknown) => { if (c) chunks.push(String(c)); res.finished = true; return res; },
           json: (v: unknown) => { headers['content-type'] = 'application/json'; res.end(JSON.stringify(v)); },
         };
-        const req: any = { method: 'GET', path: '/shop/items/mug', originalUrl: '/api/v1/plugins/shop/items/mug', url: '/items/mug', query: {}, headers: {} };
+        const req: any = { method: 'GET', path: '/shop/items/mug', originalUrl: '/api/plugins/shop/items/mug', url: '/items/mug', query: {}, headers: {} };
         await RequestContextUtils.storage.run({ locale: 'bg' } as any, async () => {
           routes.handle(req, res, vi.fn());
           await vi.waitFor(() => expect(res.finished).toBe(true));

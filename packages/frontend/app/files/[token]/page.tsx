@@ -15,7 +15,7 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
  * from a plugin contract renders through `DefaultPageDesignRenderer`, which resolves from a registry
  * only the Next bundle populates, so those pages paint an empty box on the server and fill in on
  * hydration. It is also not served off the API origin the way another plugin's share page is: that pattern
- * puts an `/api/v1/...` URL in front of a customer and bypasses the theme's layout, nav and footer
+ * puts an `/api/...` URL in front of a customer and bypasses the theme's layout, nav and footer
  * entirely, which is documented as a bug on this very route's sibling.
  *
  * It resolves a themed content page first so the panel sits inside the site's chrome, and falls back to the

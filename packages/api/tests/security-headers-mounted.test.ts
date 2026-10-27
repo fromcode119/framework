@@ -19,7 +19,7 @@ describe('api security headers', () => {
   };
 
   it('are on a response a later middleware ended, and Express is not named', async () => {
-    const res = await request(app()).get('/api/v1/anything');
+    const res = await request(app()).get('/api/anything');
     expect(res.status).toBe(418);
     expect(res.headers['x-content-type-options']).toBe('nosniff');
     expect(res.headers['referrer-policy']).toBe('strict-origin-when-cross-origin');
@@ -44,7 +44,7 @@ describe('api security headers', () => {
   });
 
   it('sets no framing rule — the console frames api-served previews, and pages set their own', async () => {
-    const res = await request(app()).get('/api/v1/anything');
+    const res = await request(app()).get('/api/anything');
     expect(res.headers['x-frame-options']).toBeUndefined();
     expect(res.headers['content-security-policy']).toBeUndefined();
   });

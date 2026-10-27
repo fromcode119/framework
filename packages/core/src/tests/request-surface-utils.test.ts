@@ -5,7 +5,7 @@ import { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 describe('RequestSurfaceUtils', () => {
   it('tells extension assets from admin pages under the same root', () => {
     expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/zeta/ui/bundle.js')).toBe(true);
-    expect(RequestSurfaceUtils.isExtensionAssetPath('/api/v1/plugins/zeta/ui/style.css')).toBe(true);
+    expect(RequestSurfaceUtils.isExtensionAssetPath('/api/plugins/zeta/ui/style.css')).toBe(true);
     expect(RequestSurfaceUtils.isExtensionAssetPath('/themes/atlantis/public/logo.svg')).toBe(true);
     expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/chi/settings')).toBe(false);
     expect(RequestSurfaceUtils.isExtensionAssetPath('/plugins/installed')).toBe(false);
@@ -14,7 +14,7 @@ describe('RequestSurfaceUtils', () => {
   });
 
   it('on an admin host only the api, uploads and extension assets are api paths', () => {
-    expect(RequestSurfaceUtils.isApiPathOnAppHost('/api/v1/auth/host')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPathOnAppHost('/api/auth/host')).toBe(true);
     expect(RequestSurfaceUtils.isApiPathOnAppHost('/uploads/a.png')).toBe(true);
     expect(RequestSurfaceUtils.isApiPathOnAppHost('/plugins/zeta/ui/bundle.js')).toBe(true);
     expect(RequestSurfaceUtils.isApiPathOnAppHost('/media')).toBe(false);
@@ -25,7 +25,7 @@ describe('RequestSurfaceUtils', () => {
   it('classifies admin requests from the framework client header', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
       headers: { 'x-framework-client': 'admin-ui' },
-      url: '/api/v1/auth/login',
+      url: '/api/auth/login',
     })).toBe(true);
   });
 
@@ -40,53 +40,53 @@ describe('RequestSurfaceUtils', () => {
   it('classifies frontend requests from the framework client header', () => {
     expect(RequestSurfaceUtils.isFrontendRequestContext({
       headers: { 'x-framework-client': 'frontend-ui' },
-      url: '/api/v1/auth/login',
+      url: '/api/auth/login',
     })).toBe(true);
   });
 
   it('detects admin auth requests from same-host admin referers', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
       headers: { referer: 'https://domain.com/admin/login?next=%2Fadmin' },
-      url: '/api/v1/auth/login',
+      url: '/api/auth/login',
     })).toBe(true);
   });
 
   it('detects admin requests from admin subdomain origins', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
       headers: { origin: 'https://admin.example.test', referer: 'https://admin.example.test/alpha/customers' },
-      url: '/api/v1/plugins/alpha/orders?limit=200',
+      url: '/api/plugins/alpha/orders?limit=200',
     })).toBe(true);
   });
 
   it('detects frontend auth requests from same-host frontend referers', () => {
     expect(RequestSurfaceUtils.isFrontendRequestContext({
       headers: { referer: 'https://domain.com/account/security' },
-      url: '/api/v1/auth/status',
+      url: '/api/auth/status',
     })).toBe(true);
   });
 
   it('does not classify frontend subdomain requests as admin requests', () => {
     expect(RequestSurfaceUtils.isAdminRequestContext({
       headers: { origin: 'https://www.example.test', referer: 'https://www.example.test/account' },
-      url: '/api/v1/system/events',
+      url: '/api/system/events',
     })).toBe(false);
   });
 
   it('treats versioned system admin routes as admin api paths', () => {
-    expect(RequestSurfaceUtils.isAdminPath('/api/v1/system/admin/users')).toBe(true);
-    expect(RequestSurfaceUtils.isApiPath('/api/v1/system/admin/users')).toBe(true);
+    expect(RequestSurfaceUtils.isAdminPath('/api/system/admin/users')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPath('/api/system/admin/users')).toBe(true);
   });
 
   it('treats extension admin routes as admin api paths', () => {
-    expect(RequestSurfaceUtils.isAdminPath('/api/v1/forge/admin/assistant/models')).toBe(true);
-    expect(RequestSurfaceUtils.isApiPath('/api/v1/forge/admin/assistant/models')).toBe(true);
-    expect(RequestSurfaceUtils.isExtensionAdminPath('/api/v1/forge/admin/assistant/models')).toBe(true);
+    expect(RequestSurfaceUtils.isAdminPath('/api/forge/admin/assistant/models')).toBe(true);
+    expect(RequestSurfaceUtils.isApiPath('/api/forge/admin/assistant/models')).toBe(true);
+    expect(RequestSurfaceUtils.isExtensionAdminPath('/api/forge/admin/assistant/models')).toBe(true);
   });
 
   it('does not treat auth api routes as frontend paths without a frontend signal', () => {
-    expect(RequestSurfaceUtils.isFrontendPath('/api/v1/auth/login')).toBe(false);
-    expect(RequestSurfaceUtils.isAdminPath('/api/v1/auth/login')).toBe(false);
-    expect(RequestSurfaceUtils.isApiPath('/api/v1/auth/login')).toBe(true);
+    expect(RequestSurfaceUtils.isFrontendPath('/api/auth/login')).toBe(false);
+    expect(RequestSurfaceUtils.isAdminPath('/api/auth/login')).toBe(false);
+    expect(RequestSurfaceUtils.isApiPath('/api/auth/login')).toBe(true);
   });
 });
 /**
@@ -110,7 +110,7 @@ describe('a request that arrives on the admin app is admin traffic', () => {
     await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
         headers: { 'x-forwarded-host': 'admin.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/example/documents/303/pdf',
+        url: '/api/plugins/example/documents/303/pdf',
       })).toBe(true);
     });
   });
@@ -119,7 +119,7 @@ describe('a request that arrives on the admin app is admin traffic', () => {
     await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
         headers: { 'x-forwarded-host': 'someshop.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/example/documents/303/pdf',
+        url: '/api/plugins/example/documents/303/pdf',
       })).toBe(false);
     });
   });
@@ -128,7 +128,7 @@ describe('a request that arrives on the admin app is admin traffic', () => {
     await withAdminUrl('https://admin.example.com', () => {
       expect(RequestSurfaceUtils.isAdminRequestContext({
         headers: { host: 'api:3000', 'x-forwarded-host': 'admin.example.com', 'x-forwarded-proto': 'https' },
-        url: '/api/v1/plugins/example/documents/303/pdf',
+        url: '/api/plugins/example/documents/303/pdf',
       })).toBe(true);
     });
   });

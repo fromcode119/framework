@@ -4,7 +4,7 @@ import { EnvUtils } from '@core/utils/env-utils';
 import { ApiPathUtils } from '@core/api/api-path-utils';
 
 /**
- * Lazy-loading cache of `publicSettings` from /api/v1/system/frontend.
+ * Lazy-loading cache of `publicSettings` from /api/system/frontend.
  *
  * Many UI primitives (LocalizedField, locale switchers, etc.) need to read
  * site-wide settings like `localization_locales` and `default_locale` from

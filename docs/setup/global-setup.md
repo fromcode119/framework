@@ -47,7 +47,6 @@ Important variables to review:
 - `NEXT_PUBLIC_API_URL=http://api.framework.local`
 - `ADMIN_URL=http://admin.framework.local`
 - `FRONTEND_URL=http://frontend.framework.local`
-- `API_VERSION_PREFIX=v1`
 - `CORS_ALLOWED_DOMAINS=framework.local,api.framework.local,admin.framework.local`
 - `PLUGINS_DIR=/app/plugins`
 - `THEMES_DIR=/app/themes`

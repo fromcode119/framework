@@ -126,7 +126,7 @@ export class PlatformHealthChecks {
     const percent = Math.round((errors / total) * 100);
     if (percent < threshold) return [];
     const kind = MonitoringIncidentKind.API_ERRORS;
-    // Which routes failed most — `GET /api/v1/x (12); POST /y (3)` — so the alert says who was hit.
+    // Which routes failed most — `GET /api/x (12); POST /y (3)` — so the alert says who was hit.
     const routes = failing.map(({ route, count }) => `${route} (${count})`).join('; ');
     return [{ key: kind.value, kind: kind.value, values: { errors, total, percent, threshold, routes } }];
   }

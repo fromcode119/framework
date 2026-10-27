@@ -15,8 +15,8 @@ describe('InFlightRequests', () => {
   };
 
   it('counts requests while they are open and forgets them when they close', () => {
-    const leave = arrive('shop.example', '/api/v1/cart');
-    arrive('shop.example', '/api/v1/cart');
+    const leave = arrive('shop.example', '/api/cart');
+    arrive('shop.example', '/api/cart');
     expect(InFlightRequests.summary()).toContain('In flight 2');
 
     leave();
@@ -24,14 +24,14 @@ describe('InFlightRequests', () => {
   });
 
   it('groups by site and route, biggest first, folding ids into one route', () => {
-    for (let i = 0; i < 3; i++) arrive('finestra.example', `/api/v1/orders/${100 + i}`);
-    arrive('finestra.example', '/api/v1/orders/9b2f0d7e-1c3a-4e5b-8a6c-0123456789ab');
-    arrive('other.example', '/api/v1/system/frontend');
+    for (let i = 0; i < 3; i++) arrive('finestra.example', `/api/orders/${100 + i}`);
+    arrive('finestra.example', '/api/orders/9b2f0d7e-1c3a-4e5b-8a6c-0123456789ab');
+    arrive('other.example', '/api/system/frontend');
 
     const summary = InFlightRequests.summary();
 
     expect(summary).toContain('In flight 5');
-    expect(summary).toContain('finestra.example /api/v1/orders/:id ×4');
+    expect(summary).toContain('finestra.example /api/orders/:id ×4');
     expect(summary.indexOf('finestra.example')).toBeLessThan(summary.indexOf('other.example'));
   });
 

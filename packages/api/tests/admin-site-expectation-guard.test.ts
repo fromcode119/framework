@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { AdminSiteHeaderConstants, ApiPathUtils, SystemConstants } from '@fromcode119/core';
 import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
 
-const request = (method: string, site: string | undefined, path = '/api/v1/system/admin/settings') => ({
+const request = (method: string, site: string | undefined, path = '/api/system/admin/settings') => ({
   method,
   path,
   headers: site === undefined ? {} : { [AdminSiteHeaderConstants.NAME.toLowerCase()]: site },

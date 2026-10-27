@@ -5,10 +5,10 @@ describe('ApiOutcomeCounter', () => {
   beforeEach(() => { ApiOutcomeCounter.drain(); });
 
   it('folds record ids and tokens out of a route, and drops the query', () => {
-    expect(ApiOutcomeCounter.route('get', '/api/v1/orders/42/items?secret=x')).toBe('GET /api/v1/orders/:id/items');
-    expect(ApiOutcomeCounter.route('GET', '/api/v1/people/3f2504e0-4f89-11d3-9a0c-0305e82c3301')).toBe('GET /api/v1/people/:id');
-    expect(ApiOutcomeCounter.route('GET', '/api/v1/reset/eyJhbGciOiJIUzI1NiJ9abc123def456')).toBe('GET /api/v1/reset/:id');
-    expect(ApiOutcomeCounter.route('GET', '/api/v1/system/frontend')).toBe('GET /api/v1/system/frontend');
+    expect(ApiOutcomeCounter.route('get', '/api/orders/42/items?secret=x')).toBe('GET /api/orders/:id/items');
+    expect(ApiOutcomeCounter.route('GET', '/api/people/3f2504e0-4f89-11d3-9a0c-0305e82c3301')).toBe('GET /api/people/:id');
+    expect(ApiOutcomeCounter.route('GET', '/api/reset/eyJhbGciOiJIUzI1NiJ9abc123def456')).toBe('GET /api/reset/:id');
+    expect(ApiOutcomeCounter.route('GET', '/api/system/frontend')).toBe('GET /api/system/frontend');
   });
 
   it('attributes only server errors, keeps the top five, and starts a fresh window on drain', () => {
@@ -24,11 +24,11 @@ describe('ApiOutcomeCounter', () => {
   it('counts a deliberate refusal as answered, not failed', () => {
     const privateSite = {};
     ApiOutcomeCounter.refused(privateSite);
-    ApiOutcomeCounter.record(503, 'GET', '/api/v1/system/resolve', ApiOutcomeCounter.isRefusal(privateSite));
-    ApiOutcomeCounter.record(503, 'GET', '/api/v1/system/resolve', ApiOutcomeCounter.isRefusal({}));
+    ApiOutcomeCounter.record(503, 'GET', '/api/system/resolve', ApiOutcomeCounter.isRefusal(privateSite));
+    ApiOutcomeCounter.record(503, 'GET', '/api/system/resolve', ApiOutcomeCounter.isRefusal({}));
     const window = ApiOutcomeCounter.drain();
     expect(window.total).toBe(2);
     expect(window.errors).toBe(1);
-    expect(window.failing).toEqual([{ route: 'GET /api/v1/system/resolve', count: 1 }]);
+    expect(window.failing).toEqual([{ route: 'GET /api/system/resolve', count: 1 }]);
   });
 });

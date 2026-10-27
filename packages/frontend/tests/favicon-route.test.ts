@@ -23,7 +23,7 @@ describe('favicon route', () => {
   }
 
   it('serves the active theme favicon from theme public assets', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'example-theme' },
     });
@@ -41,7 +41,7 @@ describe('favicon route', () => {
   });
 
   it('falls back to the framework favicon when the active theme has no favicon asset', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'theme-a-theme' },
     });
@@ -60,7 +60,7 @@ describe('favicon route', () => {
   });
 
   it('returns 204 when no theme or framework favicon is available', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockResolvedValue({
       activeTheme: { slug: 'theme-a-theme' },
     });
@@ -73,7 +73,7 @@ describe('favicon route', () => {
   });
 
   it('falls back to the framework favicon when theme resolution throws', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJson').mockRejectedValue(new Error('metadata unavailable'));
     vi.spyOn(ServerApiUtils, 'serverFetchInternalResponse').mockResolvedValue(createResponse('', 'text/plain', 404));
     const response = await FaviconRoute.GET();

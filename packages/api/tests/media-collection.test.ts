@@ -8,7 +8,7 @@ import { MediaCollection } from '@fromcode119/media';
  * `QueryHelper.getVirtualTable` threw on `collection.fields.map`, and the controller answered 500.
  *
  * That 500 was a stale fixture, NOT a product bug: verified against the live stack, an authenticated
- * `GET /api/v1/collections/media?limit=5` returns **200** with real media documents. The fixture simply
+ * `GET /api/collections/media?limit=5` returns **200** with real media documents. The fixture simply
  * never followed the module when the plain exported object became a class.
  */
 describe('Media Collection REST', () => {

@@ -14,7 +14,7 @@ import { ApiConfig } from '@api/config/api-config';
  * key. If a candidate route can return data belonging to a site, it does not belong in this class.
  *
  * MATCHED EXACTLY, NEVER BY SUFFIX — except where the protocol puts a variable in the path, and then
- * by anchored PREFIX. `endsWith('/health')` also matched `/api/v1/plugins/<slug>/health`, and
+ * by anchored PREFIX. `endsWith('/health')` also matched `/api/plugins/<slug>/health`, and
  * `context.api.health(...)` is a first-class part of the plugin API, so every plugin that declared a
  * health probe had that route silently exempted and then ran with no tenant bound. Found while
  * verifying T2, on the first plugin route that happened to be called `/health`.
@@ -63,7 +63,7 @@ export class TenantExemptRouteUtils {
    * it, which is the test every entry in this class has to pass.
    *
    * EXACT, and that matters here more than anywhere: a site's own robots.txt is served by a plugin
-   * under `api/v1/plugins/<slug>/...`, so a suffix match would exempt a TENANT's route and run it
+   * under `api/plugins/<slug>/...`, so a suffix match would exempt a TENANT's route and run it
    * with no tenant bound — the same mistake `/health` made. Only the bare root path is exempt.
    */
   static isPlatformRobotsRoute(req: any): boolean {
@@ -71,7 +71,7 @@ export class TenantExemptRouteUtils {
   }
 
   /**
-   * A plugin's PLATFORM route — `api/v1/plugins/<slug>/platform/...`: a provider webhook or OAuth
+   * A plugin's PLATFORM route — `api/plugins/<slug>/platform/...`: a provider webhook or OAuth
    * callback that answers for every site at once, so no host can name its tenant.
    *
    * NO TENANT ROW CAN REACH IT. Only a route declared `{ platform: true }` may sit under that

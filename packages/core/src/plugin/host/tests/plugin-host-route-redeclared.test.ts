@@ -32,7 +32,7 @@ describe('a route a newer plugin process declares differently', () => {
     registrations = new PluginHostRegistrations('shop', {} as any, async () => undefined, async () => undefined, {} as any, async () => undefined, () => true);
     (registrations as any).forwardRequest = (_req: express.Request, res: express.Response) => { answered += 1; res.json({ answered }); };
     const app = express();
-    app.use('/api/v1/plugins', router);
+    app.use('/api/plugins', router);
     base = await new Promise<string>((resolve) => { const s = app.listen(0, () => resolve(`http://127.0.0.1:${(s.address() as AddressInfo).port}`)); servers.push(s); });
   });
   afterEach(() => ApiResponseCache.reset());
@@ -45,7 +45,7 @@ describe('a route a newer plugin process declares differently', () => {
     kind: String(PluginGuestRegistrationKind.ROUTE.value), method: 'get', path, access, anonymousCache,
   } as any);
   const get = async (path: string) => {
-    const res = await fetch(`${base}/api/v1/plugins/shop/${path}`);
+    const res = await fetch(`${base}/api/plugins/shop/${path}`);
     return { status: res.status, cache: res.headers.get(ApiResponseCache.STATUS_HEADER) };
   };
 

@@ -53,14 +53,14 @@ export class RealtimeRoomClient {
   }
 
   /**
-   * Where the socket is served: under the VERSIONED api path, because that is what every host hands to
+   * Where the socket is served: under the api prefix, because that is what every host hands to
    * the api. The api's upgrade handler reads this same method, so the two cannot drift apart.
    */
   static socketPath(): string {
     return ApiPathUtils.versioned(RouteConstants.SEGMENTS.WEBSOCKET);
   }
 
-  /** `ws(s)://<this page's origin>/api/<version>/socket?room=<token>` */
+  /** `ws(s)://<this page's origin>/api/socket?room=<token>` */
   static socketUrl(token: string): string {
     const http = ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), RealtimeRoomClient.socketPath());
     const url = new URL(http, window.location.href);

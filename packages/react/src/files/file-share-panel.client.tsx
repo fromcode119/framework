@@ -60,7 +60,7 @@ export class FileSharePanel extends PluginComponent {
     return ApplicationUrlUtils.inferBrowserBaseUrl('api');
   }
 
-  /** The API is mounted at `/api/v1`; the version segment alone resolves to a path that 404s. */
+  /** The API is mounted at `/api`; the bare origin alone resolves to a path that 404s. */
   private get sharePath(): string {
     return ApplicationUrlUtils.joinApiPath(this.apiBase, `${ApiVersionUtils.prefix()}${FileRoutePaths.token(this.token)}`);
   }

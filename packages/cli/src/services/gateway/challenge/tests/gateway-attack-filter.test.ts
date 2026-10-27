@@ -38,7 +38,7 @@ describe('GatewayAttackFilter', () => {
   it('lets ordinary shop traffic through', () => {
     for (const url of [
       '/', '/products/union-jack-flag', '/search?q=select size', '/search?q=sleep mask', '/category/scripts-and-fonts',
-      "/search?q=o'neill jacket", '/blog/javascript-tips', '/api/v1/collections/products?where[name][like]=onion',
+      "/search?q=o'neill jacket", '/blog/javascript-tips', '/api/collections/products?where[name][like]=onion',
       '/products?sort=price&order=desc', '/environment', '/gitbook', '/search?q=1=1 bundle',
     ]) {
       expect(reason(url)).toBeNull();

@@ -67,7 +67,7 @@ const storefrontRequest = (tenantId: string) => ({
   headers: { host: `${tenantId}.example`, 'user-agent': 'test' },
   cookies: {},
   get: (name: string) => (name.toLowerCase() === 'host' ? `${tenantId}.example` : undefined),
-  path: '/api/v1/auth/login',
+  path: '/api/auth/login',
   protocol: 'https',
   secure: true,
   ip: '127.0.0.1',

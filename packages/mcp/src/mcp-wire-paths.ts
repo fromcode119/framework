@@ -4,9 +4,8 @@
  * The api mounts its routes from these constants (`McpRouteUtils` derives from `BASE`) and the
  * remote client appends them to its configured base URL, so the two ends of the wire cannot drift.
  *
- * These are RELATIVE to the api's versioned base. Which version (or none) a deployment serves is
- * deployment configuration, owned by the api (`ApiVersionUtils`); clients receive a FULL base URL
- * (e.g. `https://api.example.com/api/v1`) and never compose or assume a version themselves.
+ * These are RELATIVE to the api's base. Where that base lives is owned by the api (`ApiVersionUtils`);
+ * clients receive a FULL base URL (e.g. `https://api.example.com/api`) and never compose one themselves.
  */
 export class McpWirePaths {
   static readonly BASE = '/mcp';

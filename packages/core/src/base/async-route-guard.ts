@@ -8,7 +8,7 @@ import type { IRouteFailureOrigin } from '@core/base/interfaces/route-failure-or
  * becomes `next(err)` and reaches the global error handler. An `async` handler returns a promise
  * instead: the `try/catch` sees a clean return, the rejection is never observed, and under Node 22 an
  * unobserved rejection is FATAL — the process dies. That is a denial of service reachable by any
- * ordinary 404-shaped request: `GET /api/v1/plugins/<slug>/<collection>/<missing>` threw a 404-carrying
+ * ordinary 404-shaped request: `GET /api/plugins/<slug>/<collection>/<missing>` threw a 404-carrying
  * plugin ApiError out of an async handler and killed the API container, anonymously, every time.
  *
  * Every plugin that mounts an `express.Router()` (the repo convention — `BaseRouter` subclasses

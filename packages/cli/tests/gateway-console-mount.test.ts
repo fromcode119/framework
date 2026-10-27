@@ -32,14 +32,14 @@ describe('GatewayConsoleMount.resolve', () => {
   it('never mounts on a site without a path, an admin host, the api paths, or during setup', () => {
     expect(GatewayConsoleMount.resolve(map, 'plain.test', '/backend')).toBeNull();
     expect(GatewayConsoleMount.resolve(map, 'admin.platform.test', '/backend')).toBeNull();
-    expect(GatewayConsoleMount.resolve(map, 'acme.test', '/api/v1/auth/me')).toBeNull();
+    expect(GatewayConsoleMount.resolve(map, 'acme.test', '/api/auth/me')).toBeNull();
     expect(GatewayConsoleMount.resolve(map, 'acme.test', '/uploads/a.png')).toBeNull();
     expect(GatewayConsoleMount.resolve(null, 'acme.test', '/backend')).toBeNull();
   });
 
   it('sends the console to the admin, and an api path inside the mount to the api', () => {
     expect(GatewayConsoleMount.targetFor({ url: '/settings' }, targets)).toBe(targets.admin);
-    expect(GatewayConsoleMount.targetFor({ url: '/api/v1/auth/me' }, targets)).toBe(targets.api);
+    expect(GatewayConsoleMount.targetFor({ url: '/api/auth/me' }, targets)).toBe(targets.api);
   });
 });
 
@@ -54,7 +54,7 @@ describe('GatewayConsoleMount.rewriteLocation', () => {
     expect(GatewayConsoleMount.rewriteLocation('/backend/login', '/backend', 'acme.test')).toBe('/backend/login');
     expect(GatewayConsoleMount.rewriteLocation('https://other.test/login', '/backend', 'acme.test')).toBe('https://other.test/login');
     expect(GatewayConsoleMount.rewriteLocation('//other.test/x', '/backend', 'acme.test')).toBe('//other.test/x');
-    expect(GatewayConsoleMount.rewriteLocation('/api/v1/auth/me', '/backend', 'acme.test')).toBe('/api/v1/auth/me');
+    expect(GatewayConsoleMount.rewriteLocation('/api/auth/me', '/backend', 'acme.test')).toBe('/api/auth/me');
   });
 });
 

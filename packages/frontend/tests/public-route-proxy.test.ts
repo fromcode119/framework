@@ -19,7 +19,7 @@ describe('PublicRouteProxy', () => {
       host: 'frontend.framework.local',
       'x-forwarded-proto': 'https',
     }));
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       plugins: [
         {
@@ -35,7 +35,7 @@ describe('PublicRouteProxy', () => {
         },
       ],
     }));
-    vi.spyOn(ServerApiPaths, 'buildPluginPath').mockReturnValue('/api/v1/plugins/content/feed.xml');
+    vi.spyOn(ServerApiPaths, 'buildPluginPath').mockReturnValue('/api/plugins/content/feed.xml');
     vi.spyOn(ServerApiUtils, 'serverFetchResponse').mockResolvedValue(
       new Response('<feed />', {
         status: 200,
@@ -52,7 +52,7 @@ describe('PublicRouteProxy', () => {
     expect(ServerApiPaths.buildPluginPath).toHaveBeenCalledWith('content', 'feed.xml');
     expect(ServerApiUtils.serverFetchResponse).toHaveBeenCalledTimes(1);
     expect(ServerApiUtils.serverFetchResponse).toHaveBeenCalledWith(
-      '/api/v1/plugins/content/feed.xml',
+      '/api/plugins/content/feed.xml',
       expect.objectContaining({
         headers: expect.any(Headers),
       }),
@@ -76,7 +76,7 @@ describe('PublicRouteProxy', () => {
 
   it('returns a gateway error when the upstream public route is unavailable', async () => {
     vi.mocked(headers).mockResolvedValue(new Headers({ host: 'frontend.framework.local' }));
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({
       plugins: [
         {
@@ -92,7 +92,7 @@ describe('PublicRouteProxy', () => {
         },
       ],
     }));
-    vi.spyOn(ServerApiPaths, 'buildPluginPath').mockReturnValue('/api/v1/plugins/content/directory.xml');
+    vi.spyOn(ServerApiPaths, 'buildPluginPath').mockReturnValue('/api/plugins/content/directory.xml');
     vi.spyOn(ServerApiUtils, 'serverFetchResponse').mockResolvedValue(null);
 
     const response = await PublicRouteProxy.getResponse('directory.xml');
@@ -103,7 +103,7 @@ describe('PublicRouteProxy', () => {
   });
 
   it('returns not found when no plugin claims the requested public route', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(ServerFetchOutcome.resolved({ plugins: [] }));
 
     const response = await PublicRouteProxy.getResponse('catalog.xml');
@@ -113,7 +113,7 @@ describe('PublicRouteProxy', () => {
   });
 
   it('returns a gateway error, NOT a 404, when the route table itself is unreachable', async () => {
-    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/v1/system/frontend');
+    vi.spyOn(ServerApiPaths, 'buildSystemFrontendPath').mockReturnValue('/api/system/frontend');
     vi.spyOn(ServerApiUtils, 'serverFetchJsonOutcome').mockResolvedValue(
       ServerFetchOutcome.unreachable(new TypeError('fetch failed')),
     );

@@ -3,7 +3,7 @@ import { ApiPathUtils } from '@fromcode119/core/client';
 /**
  * One `theme.json` `ui.headLinks[]` entry, resolved. Three `href` forms:
  *  - absolute (`https://…`) — used as is;
- *  - root-relative (`/api/v1/…`) — prefixed with the api origin (theme assets are served by the api);
+ *  - root-relative (`/api/…`) — prefixed with the api origin (theme assets are served by the api);
  *  - bare (`fonts/archivo.woff2`) — a file in the theme's own `ui/` directory, resolved exactly like
  *    `ui.css` entries, so a theme preloads its fonts without spelling any API path.
  * Knows which of the three roles it plays — a `preload` hint, an external stylesheet (injected

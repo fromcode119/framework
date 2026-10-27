@@ -13,7 +13,6 @@ describe('System E2E / Integration', () => {
     beforeAll(async () => {
         // Setup minimal mock environment
         process.env.DATABASE_URL = ':memory:';
-        process.env.API_VERSION_PREFIX = 'v1';
         // BEFORE anything builds a server. `ApiBootstrapService` does this on every real boot, and
         // this suite constructs `APIServer` directly — so without it `setupRoutes` reaches
         // `CoreServices.catalogContributions`, a server-only service nothing has registered, and the
@@ -60,7 +59,7 @@ describe('System E2E / Integration', () => {
     it('should allow login and access protected routes', async () => {
         // 1. Attempt login with mock credentials
         const loginRes = await request(server.app)
-            .post('/api/v1/auth/login')
+            .post('/api/auth/login')
             .send({ 
                 email: 'admin@fromcode.com', 
                 password: 'password' 
@@ -73,7 +72,7 @@ describe('System E2E / Integration', () => {
     it('should serve media collection without 500', async () => {
         // This checks if our schema alignment fixed the 500 crash
         const res = await request(server.app)
-            .get('/api/v1/collections/media')
+            .get('/api/collections/media')
             .set('Authorization', 'Bearer dummy-token');
         
         // It might be 503 due to maintenance mode when DB is unavailable, but NOT 500
@@ -82,30 +81,30 @@ describe('System E2E / Integration', () => {
 
     it('should not expose system settings collection anonymously', async () => {
         const res = await request(server.app)
-            .get('/api/v1/collections/settings');
+            .get('/api/collections/settings');
 
         expect([401, 403, 503]).toContain(res.status);
     });
 
     it('should not expose users collection anonymously', async () => {
         const res = await request(server.app)
-            .get('/api/v1/collections/users');
+            .get('/api/collections/users');
 
         expect([401, 403, 503]).toContain(res.status);
     });
 
     it('should return 401 or 503 for unauthorized access to plugins', async () => {
-        const res = await request(server.app).get('/api/v1/plugins');
+        const res = await request(server.app).get('/api/plugins');
         expect([401, 503]).toContain(res.status);
     });
 
     it('should expose canonical forge assistant route', async () => {
-        const res = await request(server.app).get('/api/v1/forge/admin/assistant/tools');
+        const res = await request(server.app).get('/api/forge/admin/assistant/tools');
         expect(res.status).not.toBe(404);
     });
 
     it('should not expose assistant aliases under system routes', async () => {
-        const res = await request(server.app).get('/api/v1/system/admin/assistant/tools');
+        const res = await request(server.app).get('/api/system/admin/assistant/tools');
         expect([404, 503]).toContain(res.status);
     });
 });

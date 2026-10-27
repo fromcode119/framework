@@ -2,7 +2,7 @@
  * Header hygiene for an app that proxies a browser request to the API on its own origin.
  *
  * Both Next apps do this — the storefront so a multi-site deployment can tell WHICH site a call
- * belongs to, the admin because its bundle calls `/api/v1/...` on whatever host it was served from.
+ * belongs to, the admin because its bundle calls `/api/...` on whatever host it was served from.
  * The rules below are the same in both directions and each one is a fix for something that shipped
  * broken, so they live here once rather than in two `lib/` copies that can drift apart.
  */

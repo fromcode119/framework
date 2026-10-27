@@ -29,7 +29,7 @@ function app(mount: (plugins: express.Router) => void): express.Express {
   const plugins = express.Router();
   mount(plugins);
   plugins.get('/:pluginSlug/:slug', (req, res) => { res.json({ label: 'after plugins', params: req.params }); });
-  application.use('/api/v1/plugins', plugins);
+  application.use('/api/plugins', plugins);
   application.use((_req, res) => { res.status(404).json({ label: 'not found' }); });
   return application;
 }
@@ -53,19 +53,19 @@ afterAll(() => { for (const server of servers) server.close(); });
 
 describe('PluginApiHost', () => {
   it.each([
-    ['GET', '/api/v1/plugins/shop/products'],
-    ['GET', '/api/v1/plugins/shop/products?limit=20&u=x'],
-    ['GET', '/api/v1/plugins/shop/products/bench-10'],
-    ['GET', '/api/v1/plugins/SHOP/Products/Bench-10'],
-    ['POST', '/api/v1/plugins/shop/products'],
-    ['GET', '/api/v1/plugins/blog/products'],
-    ['GET', '/api/v1/plugins/blog/feed'],
-    ['GET', '/api/v1/plugins/blog/x/deep'],
-    ['GET', '/api/v1/plugins/nobody/orders'],
-    ['GET', '/api/v1/plugins/shop/unknown'],
-    ['GET', '/api/v1/plugins/shop'],
-    ['GET', '/api/v1/plugins/'],
-    ['DELETE', '/api/v1/plugins/shop/products'],
+    ['GET', '/api/plugins/shop/products'],
+    ['GET', '/api/plugins/shop/products?limit=20&u=x'],
+    ['GET', '/api/plugins/shop/products/bench-10'],
+    ['GET', '/api/plugins/SHOP/Products/Bench-10'],
+    ['POST', '/api/plugins/shop/products'],
+    ['GET', '/api/plugins/blog/products'],
+    ['GET', '/api/plugins/blog/feed'],
+    ['GET', '/api/plugins/blog/x/deep'],
+    ['GET', '/api/plugins/nobody/orders'],
+    ['GET', '/api/plugins/shop/unknown'],
+    ['GET', '/api/plugins/shop'],
+    ['GET', '/api/plugins/'],
+    ['DELETE', '/api/plugins/shop/products'],
   ])('%s %s answers exactly as the shared router did', async (method, path) => {
     const [a, b] = await Promise.all([shared, perPlugin].map(async (base) => {
       const response = await fetch(base + path, { method });

@@ -32,7 +32,7 @@ describe('MarketplaceRouter install route', () => {
 
     const app = express();
     app.use(express.json());
-    app.use('/api/v1/marketplace', new MarketplaceRouter(manager, auth, platformAdmin).router);
+    app.use('/api/marketplace', new MarketplaceRouter(manager, auth, platformAdmin).router);
     return { app, manager };
   };
 
@@ -42,7 +42,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp({ platformAdminAllows: false });
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/tracker')
+      .post('/api/marketplace/install/tracker')
       .send({});
 
     expect(response.status).toBe(403);
@@ -55,7 +55,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp();
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/tracker')
+      .post('/api/marketplace/install/tracker')
       .send({});
 
     expect(response.status).toBe(200);
@@ -72,7 +72,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp();
 
     const response = await request(app)
-      .post('/api/v1/marketplace/install/tracker?version=0.1.2')
+      .post('/api/marketplace/install/tracker?version=0.1.2')
       .send({});
 
     expect(response.status).toBe(200);
@@ -83,7 +83,7 @@ describe('MarketplaceRouter install route', () => {
     const { app, manager } = buildApp();
 
     await request(app)
-      .post('/api/v1/marketplace/install/tracker?version=%20%20')
+      .post('/api/marketplace/install/tracker?version=%20%20')
       .send({});
 
     expect(manager.installOrUpdateFromMarketplace).toHaveBeenCalledWith('tracker', { version: undefined });

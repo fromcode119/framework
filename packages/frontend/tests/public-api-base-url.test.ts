@@ -7,7 +7,7 @@ import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
  *
  * It used to read `API_URL` as well and fall back to a localhost base. Both name this SERVER: inside a
  * container `API_URL` is `http://api:3000`, so a deployment that configured no public URL emitted
- * `http://api:3000/api/v1/themes/<t>/ui/bundle.js` and `src:url(http://api:3000/.../font.woff)` into
+ * `http://api:3000/api/themes/<t>/ui/bundle.js` and `src:url(http://api:3000/.../font.woff)` into
  * the page. The theme never loaded and the fonts never resolved, with nothing in the log to say why.
  */
 describe('ServerApiPaths.buildPublicApiBaseUrl', () => {

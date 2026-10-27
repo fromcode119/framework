@@ -6,7 +6,7 @@ Atlantis provides a comprehensive REST and GraphQL API for interacting with syst
 
 Most endpoints require authentication via a JWT token.
 
-- **Login**: `POST /api/v1/auth/login`
+- **Login**: `POST /api/auth/login`
   ```json
   { "email": "admin@example.com", "password": "..." }
   ```
@@ -21,7 +21,7 @@ Most endpoints require authentication via a JWT token.
 Every collection (e.g., `posts`, `products`) automatically receives CRUD endpoints.
 
 ### List Records
-`GET /api/v1/collections/:slug`
+`GET /api/collections/:slug`
 
 **Query Parameters:**
 - `limit`: Number of records to return (default: 10)
@@ -30,16 +30,16 @@ Every collection (e.g., `posts`, `products`) automatically receives CRUD endpoin
 - `where`: JSON filter object (e.g., `{"status": "published"}`)
 
 ### Get Record
-`GET /api/v1/collections/:slug/:id`
+`GET /api/collections/:slug/:id`
 
 ### Create Record
-`POST /api/v1/collections/:slug`
+`POST /api/collections/:slug`
 
 ### Update Record
-`PATCH /api/v1/collections/:slug/:id`
+`PATCH /api/collections/:slug/:id`
 
 ### Delete Record
-`DELETE /api/v1/collections/:slug/:id`
+`DELETE /api/collections/:slug/:id`
 
 ## System Endpoints
 
@@ -48,24 +48,26 @@ Every collection (e.g., `posts`, `products`) automatically receives CRUD endpoin
 Returns system status, version, and maintenance mode state.
 
 ### System Metadata
-`GET /api/v1/system/metadata`
+`GET /api/system/metadata`
 Returns information about registered plugins, themes, and capabilities.
 
 ### User Status
-`GET /api/v1/auth/status`
+`GET /api/auth/status`
 Returns details of the currently authenticated user.
 
 ## GraphQL API
 
-Enabled by default at `/api/v1/graphql`.
+Enabled by default at `/api/graphql`.
 
 The GraphQL schema is automatically generated based on your collection definitions. You can browse the schema and test queries using the built-in Voyager or GraphQL Playground (if enabled in development).
 
-## API Versioning
+## API paths
 
-The framework supports versioned APIs via the URL prefix:
-- CURRENT: `/api/v1`
-- LEGACY: `/api/collections` (deprecated)
+Every route lives directly under `/api` — there is no version segment. A request to a legacy
+`/api/v<N>/...` address is answered at the same route, and each one is logged (`api-legacy-path`), so
+an address handed out before the version was dropped (a webhook, an OAuth callback, an installed app)
+keeps working while the log names who still holds it. Theme and plugin files asked for at a legacy
+address get a permanent redirect instead.
 
 ## Realtime API (WebSockets)
 

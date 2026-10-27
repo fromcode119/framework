@@ -105,7 +105,7 @@ export class ServerRoutesSetup {
     this.app.get(`${ApiVersionUtils.API_BASE_PATH}${ApiConfig.getInstance().probeRoutes.READY}`, healthHandler);
     this.app.get(ApiConfig.getInstance().routes.system.HEALTH, healthHandler);
 
-    const vPrefix = ApiConfig.getInstance().prefixes.VERSIONED;
+    const vPrefix = ApiConfig.getInstance().prefixes.API;
     this.app.all(`${vPrefix}/graphql`, (req, res, next) => { createHandler({ schema: this.graphQLService.generateSchema(), context: { req } })(req, res, next); });
 
     // Live OpenAPI spec (self-generates from the running collection schemas) and its public Redoc
