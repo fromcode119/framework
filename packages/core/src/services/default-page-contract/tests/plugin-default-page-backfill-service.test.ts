@@ -81,12 +81,26 @@ describe('PluginDefaultPageBackfillService', () => {
     expect(entry.reasons).toEqual(['matched-by-customPermalink']);
   });
 
+  it('associates the page on the contract route over a page that only sits on one of its aliases', () => {
+    const [entry] = service.createPlan({
+      resolvedContracts: [createResolvedContract()],
+      existingPages: [
+        { id: 1, customPermalink: '/browse' },
+        { id: 2, customPermalink: '/catalog' },
+      ],
+      existingAssociations: {},
+    }).entries;
+
+    expect(entry.action).toBe(PluginDefaultPageContractBackfillAction.ASSOCIATE_EXISTING);
+    expect(entry.matchedPageId).toBe(2);
+  });
+
   it('marks a contract ambiguous when multiple pages match the same singleton contract', () => {
     const [entry] = service.createPlan({
       resolvedContracts: [createResolvedContract()],
       existingPages: [
-        { id: 1, customPermalink: '/catalog' },
-        { id: 2, customPermalink: '/browse' },
+        { id: 1, customPermalink: '/browse' },
+        { id: 2, customPermalink: '/browse/' },
       ],
       existingAssociations: {},
     }).entries;

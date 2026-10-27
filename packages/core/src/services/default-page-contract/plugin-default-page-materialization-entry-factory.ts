@@ -83,7 +83,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
       );
     }
 
-    const matches = this.findMatches(lookupCandidates, pages);
+    const matches = this.findMatches(lookupCandidates, this.buildPrimaryCandidates(contract), pages);
 
     if (matches.length > 1) {
       return this.createBaseEntry(
@@ -151,12 +151,29 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
     });
   }
 
+  /**
+   * The contract's OWN route — its effective slug — without the aliases and adoption hints.
+   *
+   * Aliases are other routes the contract also serves, and a site can give them real pages of their
+   * own: a theme can point three aliases of a listing contract at three separate landing pages. Ranking
+   * those level with the page on the contract's own route made four pages "match" equally, so the
+   * contract was reported ambiguous and skipped on every pass.
+   */
+  private buildPrimaryCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
+    return this.seedPageService.buildPageLookupCandidates([], {
+      customPermalink: contract.effectiveSlug,
+      slug: this.resolveSingletonDocumentSlug(contract.effectiveSlug),
+    });
+  }
+
+  /** A page on the contract's own route outranks a page that only sits on one of its aliases. */
   private findMatches(
     lookupCandidates: string[],
+    primaryCandidates: string[],
     pages: IPluginDefaultPageContractMaterializationCandidatePage[],
   ): IPluginDefaultPageContractMaterializationPageMatch[] {
     const allMatches = pages
-      .map((page) => this.getPageMatch(page, lookupCandidates))
+      .map((page) => this.getPageMatch(page, primaryCandidates, 0) || this.getPageMatch(page, lookupCandidates, 2))
       .filter((match): match is IPluginDefaultPageContractMaterializationPageMatch => Boolean(match));
 
     if (!allMatches.length) {
@@ -173,11 +190,12 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
   private getPageMatch(
     page: IPluginDefaultPageContractMaterializationCandidatePage,
     lookupCandidates: string[],
+    basePriority: number,
   ): IPluginDefaultPageContractMaterializationPageMatch | undefined {
     if (this.hasCandidateMatch(lookupCandidates, page.customPermalinkCandidates)) {
       return {
         matchedPageId: page.id,
-        priority: 0,
+        priority: basePriority,
         source: PluginDefaultPageContractMaterializationPageMatchSource.CUSTOM_PERMALINK,
       };
     }
@@ -185,7 +203,7 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
     if (this.hasCandidateMatch(lookupCandidates, page.slugCandidates)) {
       return {
         matchedPageId: page.id,
-        priority: 1,
+        priority: basePriority + 1,
         source: PluginDefaultPageContractMaterializationPageMatchSource.SLUG,
       };
     }
