@@ -1,14 +1,6 @@
-import { PersonFieldType } from '@core/plugin/services/people/fields/person-field-type.enum';
+import { PersonFieldType } from '@core/plugin/services/people/fields/enums/person-field-type.enum';
 
-/** A value as stored: what the type allows, or null for "not given". */
-export type PersonFieldStoredValue = string | number | boolean | string[] | null;
-
-/** Thrown when a value does not fit its field; `field` is the key, so a client can point at the input. */
-export class PersonFieldValueError extends Error {
-  constructor(readonly field: string, readonly reason: string) {
-    super(`${field}: ${reason}`);
-  }
-}
+import { PersonFieldValueError } from '@core/plugin/services/people/fields/person-field-value-error';
 
 /**
  * Checks one value against its field's type and turns it into what is stored. Untrusted input (an app,
@@ -21,7 +13,7 @@ export class PersonFieldValue {
   private static readonly TIME = /^([01]\d|2[0-3]):[0-5]\d$/;
 
   /** `options` are the allowed keys of a choice field. */
-  static normalize(key: string, type: PersonFieldType, raw: unknown, options: readonly string[] = []): PersonFieldStoredValue {
+  static normalize(key: string, type: PersonFieldType, raw: unknown, options: readonly string[] = []): string | number | boolean | string[] | null {
     if (raw === null || raw === undefined || raw === '') return null;
     switch (type) {
       case PersonFieldType.TEXT:

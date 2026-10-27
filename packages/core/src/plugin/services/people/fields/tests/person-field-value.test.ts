@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { PersonFieldType } from '@core/plugin/services/people/fields/person-field-type.enum';
-import { PersonFieldValue, PersonFieldValueError } from '@core/plugin/services/people/fields/person-field-value';
+import { PersonFieldType } from '@core/plugin/services/people/fields/enums/person-field-type.enum';
+import { PersonFieldValue } from '@core/plugin/services/people/fields/person-field-value';
+import { PersonFieldValueError } from '@core/plugin/services/people/fields/person-field-value-error';
 
 describe('PersonFieldValue', () => {
   const normalize = (type: PersonFieldType, raw: unknown, options: string[] = []) => PersonFieldValue.normalize('field', type, raw, options);

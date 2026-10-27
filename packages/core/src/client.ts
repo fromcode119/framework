@@ -26,7 +26,9 @@ export * from '@core/collections/interfaces/collection-list-view.interface';
 export * from '@core/collections/interfaces/collection-quick-edit.interface';
 export * from '@core/collections/interfaces/collection-quick-edit-field.interface';
 export * from '@core/interfaces/field-input.interface';
-export type { IPersonField, IPersonFieldInput, IPersonFieldOption, LocalizedWords } from '@core/plugin/services/people/fields/person-field.interface';
+export type { IPersonField } from '@core/plugin/services/people/fields/interfaces/person-field.interface';
+export type { IPersonFieldInput } from '@core/plugin/services/people/fields/interfaces/person-field-input.interface';
+export type { IPersonFieldOption } from '@core/plugin/services/people/fields/interfaces/person-field-option.interface';
 
 // ── Collections ───────────────────────────────────────────────────────────────
 export { RecordVersions } from '@core/collections/record-versions';

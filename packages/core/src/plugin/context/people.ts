@@ -6,8 +6,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
-import { PersonFieldService } from '@core/plugin/services/people/fields/person-field-service';
-import type { IPersonFieldInput } from '@core/plugin/services/people/fields/person-field.interface';
+import { PeopleFieldsContextProxy } from '@core/plugin/context/people-fields';
 import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
 import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
 import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
@@ -33,7 +32,6 @@ export class PeopleContextProxy {
     const db = manager.db as any;
     const catalogs = new PersonCatalogService(db);
     const addresses = new PeopleAddressService(db);
-    const fields = new PersonFieldService(db);
     // The framework's own personal data. Core-owned because plugins may not touch system tables.
     const personalDataService = new PersonalDataErasureService(db);
     const gate = new PluginPersonalDataGate(plugin, manager, security);
@@ -171,18 +169,7 @@ export class PeopleContextProxy {
         unregister: (kind: string, key: string) => catalogs.remove(kind, key)
       },
 
-      fields: {
-        list: () => fields.list(),
-        get: (key: string) => fields.get(key),
-        // Same rule as catalogs: outside a tenant (boot, or a platform-scope plugin toggle), every tenant gets the field.
-        register: async (input: IPersonFieldInput) => {
-          const add = async () => { if (!(await fields.get(input?.key))) await fields.save(input); };
-          if (RequestContextUtils.storage.getStore()?.tenantId) return add();
-          await PerTenantRun.forEach({ label: `people:field:${input?.key}`, db: db as any, work: add });
-        },
-        values: (personId: any) => fields.values(Number(personId)),
-        set: (personId: any, values: Record<string, unknown>) => fields.setValues(Number(personId), values),
-      },
+      fields: PeopleFieldsContextProxy.create(db),
 
       // Reusable address book on the shared `people_addresses` table. Plugins delegate their account
       // address book here instead of owning a parallel store. `ref` resolves the owning person from

@@ -1,9 +1,11 @@
 import type { ICatalogDb } from '@core/plugin/services/interfaces/catalog-db.interface';
 import { NamingStrategy } from '@fromcode119/database';
 import { SystemConstants } from '@core/constants/system.constants';
-import { PersonFieldType } from '@core/plugin/services/people/fields/person-field-type.enum';
-import { PersonFieldValue, PersonFieldValueError, type PersonFieldStoredValue } from '@core/plugin/services/people/fields/person-field-value';
-import type { IPersonField, IPersonFieldInput } from '@core/plugin/services/people/fields/person-field.interface';
+import { PersonFieldType } from '@core/plugin/services/people/fields/enums/person-field-type.enum';
+import { PersonFieldValue } from '@core/plugin/services/people/fields/person-field-value';
+import { PersonFieldValueError } from '@core/plugin/services/people/fields/person-field-value-error';
+import type { IPersonField } from '@core/plugin/services/people/fields/interfaces/person-field.interface';
+import type { IPersonFieldInput } from '@core/plugin/services/people/fields/interfaces/person-field-input.interface';
 
 /**
  * The site's person fields and each person's values for them. Every reader — the admin, a plugin through
@@ -57,9 +59,9 @@ export class PersonFieldService {
   }
 
   /** One person's values, keyed by field. A field with no value is absent, never invented. */
-  async values(personId: number): Promise<Record<string, PersonFieldStoredValue>> {
+  async values(personId: number): Promise<Record<string, string | number | boolean | string[] | null>> {
     const rows = await this.db.find(SystemConstants.TABLE.PERSON_FIELD_VALUES, { where: { personId } });
-    const result: Record<string, PersonFieldStoredValue> = {};
+    const result: Record<string, string | number | boolean | string[] | null> = {};
     for (const raw of rows ?? []) {
       const row = NamingStrategy.denormalizeRecord(raw);
       const value = PersonFieldService.decode(row?.value);
@@ -72,9 +74,9 @@ export class PersonFieldService {
    * Writes several values at once; all are checked before any is stored. `selfOnly` limits the write to
    * fields the operator marked as editable by the person themselves.
    */
-  async setValues(personId: number, values: Record<string, unknown>, options: { selfOnly?: boolean } = {}): Promise<Record<string, PersonFieldStoredValue>> {
+  async setValues(personId: number, values: Record<string, unknown>, options: { selfOnly?: boolean } = {}): Promise<Record<string, string | number | boolean | string[] | null>> {
     const fields = new Map((await this.list()).map((field) => [field.key, field]));
-    const checked: [string, PersonFieldStoredValue][] = [];
+    const checked: [string, string | number | boolean | string[] | null][] = [];
     for (const [key, raw] of Object.entries(values ?? {})) {
       const field = fields.get(key);
       if (!field || (options.selfOnly && !field.selfEditable)) throw new PersonFieldValueError(key, 'unknownField');
@@ -89,7 +91,7 @@ export class PersonFieldService {
     await this.db.delete(SystemConstants.TABLE.PERSON_FIELD_VALUES, { personId });
   }
 
-  private async write(personId: number, fieldKey: string, value: PersonFieldStoredValue): Promise<void> {
+  private async write(personId: number, fieldKey: string, value: string | number | boolean | string[] | null): Promise<void> {
     const where = { personId, fieldKey };
     if (value === null) {
       await this.db.delete(SystemConstants.TABLE.PERSON_FIELD_VALUES, where);
@@ -104,9 +106,9 @@ export class PersonFieldService {
   }
 
   /** Postgres hands JSONB back parsed; a driver that returns the text is parsed here. */
-  private static decode(stored: unknown): PersonFieldStoredValue {
+  private static decode(stored: unknown): string | number | boolean | string[] | null {
     const wrapper = typeof stored === 'string' ? JSON.parse(stored) : stored;
-    return (wrapper as { value?: PersonFieldStoredValue } | null)?.value ?? null;
+    return (wrapper as { value?: string | number | boolean | string[] | null } | null)?.value ?? null;
   }
 
   private static toField(raw: any): IPersonField {

@@ -10,7 +10,7 @@ import { AdminLink } from '@/components/view/admin-link.client';
 import { Button } from '@/components/ui/view/button.client';
 import { PersonFieldControl } from '@/app/users/people/fields/components/view/person-field-control.client';
 import { PersonFieldWords } from '@/app/users/people/fields/person-field-words';
-import type { IPersonFieldDefinition, PersonFieldAnswer } from '@/app/users/people/fields/interfaces/person-field.interface';
+import type { IPersonFieldDefinition } from '@/app/users/people/fields/interfaces/person-field.interface';
 
 /**
  * The person's values for the site's person fields — what they answered in an app, or what the operator
@@ -23,7 +23,7 @@ export class PersonFieldsPanel extends Reactor {
   @prop declare theme: ThemeMode;
 
   @state fields: IPersonFieldDefinition[] = [];
-  @state values: Record<string, PersonFieldAnswer> = {};
+  @state values: Record<string, string | number | boolean | string[] | null> = {};
   @state loading = true;
   @state saving = false;
   @state error = '';

@@ -1,5 +1,5 @@
-import type { IPersonField, IPersonFieldInput } from '@core/plugin/services/people/fields/person-field.interface';
-import type { PersonFieldStoredValue } from '@core/plugin/services/people/fields/person-field-value';
+import type { IPersonField } from '@core/plugin/services/people/fields/interfaces/person-field.interface';
+import type { IPersonFieldInput } from '@core/plugin/services/people/fields/interfaces/person-field-input.interface';
 import type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
 import type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
 import type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
@@ -81,8 +81,8 @@ export interface IPluginContextPeople {
     list(): Promise<IPersonField[]>;
     get(key: string): Promise<IPersonField | null>;
     register(input: IPersonFieldInput): Promise<void>;
-    values(personId: any): Promise<Record<string, PersonFieldStoredValue>>;
-    set(personId: any, values: Record<string, unknown>): Promise<Record<string, PersonFieldStoredValue>>;
+    values(personId: any): Promise<Record<string, string | number | boolean | string[] | null>>;
+    set(personId: any, values: Record<string, unknown>): Promise<Record<string, string | number | boolean | string[] | null>>;
   };
   /**
    * Reusable address book on the shared `people_addresses` table. Plugins delegate their account

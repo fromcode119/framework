@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/view/select.client';
 import { Checkbox } from '@/components/ui/view/checkbox.client';
 import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.client';
 import { PersonFieldWords } from '@/app/users/people/fields/person-field-words';
-import type { IPersonFieldDefinition, PersonFieldAnswer } from '@/app/users/people/fields/interfaces/person-field.interface';
+import type { IPersonFieldDefinition } from '@/app/users/people/fields/interfaces/person-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /** One person field's control, chosen by its type — the same types an app draws its inputs from. */
@@ -15,8 +15,8 @@ export class PersonFieldControl extends PureReactor {
   declare props: Pick<PersonFieldControl, 'field' | 'value' | 'onChange' | 'disabled' | 'theme'>;
 
   @prop declare field: IPersonFieldDefinition;
-  @prop declare value: PersonFieldAnswer;
-  @prop declare onChange: (value: PersonFieldAnswer) => void;
+  @prop declare value: string | number | boolean | string[] | null;
+  @prop declare onChange: (value: string | number | boolean | string[] | null) => void;
   @prop declare disabled?: boolean;
   @prop declare theme?: ThemeMode;
 
@@ -25,7 +25,7 @@ export class PersonFieldControl extends PureReactor {
       onChange={(event) => this.onChange(event.target.value)} />;
   }
 
-  private static localDateTime(value: PersonFieldAnswer): string {
+  private static localDateTime(value: string | number | boolean | string[] | null): string {
     if (!value) return '';
     const date = new Date(String(value));
     if (Number.isNaN(date.getTime())) return '';

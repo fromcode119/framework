@@ -8,5 +8,3 @@ export interface IPersonFieldDefinition {
   selfEditable: boolean;
   sortOrder: number;
 }
-
-export type PersonFieldAnswer = string | number | boolean | string[] | null;
