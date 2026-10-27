@@ -11,6 +11,8 @@ export interface ICollectionPublicContentSource {
   namespace: string;
   /** The slug the owner DECLARED — the identity its collection hook events carry. */
   slug: string;
+  /** The name a resolved page reports as its type (`fromcode:resolved-type`): the slug without the owner's prefix. */
+  shortSlug: string;
   /** The collection's own name (`ICollection.displayName`, or its capitalized slug) — the owner names its content. */
   label: string;
   /** The entity the collection provides (`'product'`), when it declares one. */

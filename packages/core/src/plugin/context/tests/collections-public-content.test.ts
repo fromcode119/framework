@@ -36,13 +36,13 @@ const fieldNames = (manager: any, table: string) => manager.registeredCollection
  * from their own declaration, never from a list of plugin names it keeps itself.
  */
 describe('context.collections.publicContent', () => {
-  it('lists each declaring collection with its owner, namespace, declared slug and methods', async () => {
+  it('lists each declaring collection with its owner, namespace, declared and short slug and methods', async () => {
     const manager = buildManager();
     proxy(manager, 'host').register({ slug: 'host-items', displayName: 'Items', entity: 'product', publicContent: { list: 'listPublicItems', at: 'itemAt' }, fields: [] } as any);
     proxy(manager, 'host').register({ slug: 'host-drafts', fields: [] } as any);
 
     await expect(proxy(manager, 'other').publicContent()).resolves.toEqual([
-      { plugin: 'host', namespace: 'org.example', slug: 'host-items', label: 'Items', entity: 'product', list: 'listPublicItems', at: 'itemAt' },
+      { plugin: 'host', namespace: 'org.example', slug: 'host-items', shortSlug: 'items', label: 'Items', entity: 'product', list: 'listPublicItems', at: 'itemAt' },
     ]);
   });
 });

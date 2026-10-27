@@ -108,6 +108,7 @@ export class CollectionsContextProxy {
               plugin: entry.pluginSlug,
               namespace: String(owner?.manifest.namespace || '').trim(),
               slug,
+              shortSlug: entry.collection.shortSlug || slug,
               label: CollectionLabelUtils.labelFor(entry.collection, slug),
               entity: entry.collection.entity || '',
               list: declared.list || '',
