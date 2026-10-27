@@ -127,6 +127,17 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
     // as a person id.
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_SUGGEST, this.auth.requirePermission('users:view'),
       this.controller.suggestRecipients);
+    // Person fields: literal `/fields` paths first, for the same reason as `suggest`.
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_FIELDS, this.auth.requirePermission('users:view'),
+      this.controller.getPersonFields);
+    this.put(RouteConstants.SEGMENTS.ADMIN_PEOPLE_FIELDS, this.auth.requirePermission('users:manage'),
+      this.controller.savePersonField);
+    this.delete(RouteConstants.SEGMENTS.ADMIN_PEOPLE_FIELDS_KEY, this.auth.requirePermission('users:manage'),
+      this.controller.deletePersonField);
+    this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_FIELDS, this.auth.requirePermission('users:view'),
+      this.controller.getPersonFieldValues);
+    this.patch(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_FIELDS, this.auth.requirePermission('users:manage'),
+      this.controller.savePersonFieldValues);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID, this.auth.requirePermission('users:view'),
       this.controller.getPerson);
     this.get(RouteConstants.SEGMENTS.ADMIN_PEOPLE_ID_RECORDS, this.auth.requirePermission('users:view'),

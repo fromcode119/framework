@@ -61,6 +61,8 @@ export class AppPathConstants {
     PEOPLE: {
       ROOT: '/users/people',
       LIST: '/users/people',
+      /** The site's person fields — declared here, filled per person on the person's page. */
+      FIELDS: '/users/people/fields',
       DETAIL: (id: string | number) => `/users/people/${id}`,
     },
     PLUGINS: {

@@ -9,6 +9,7 @@ import { SystemIntegrationController } from '@api/controllers/system/system-inte
 import { SystemRuntimeController } from '@api/controllers/system/system-runtime-controller';
 import { SystemUserController } from '@api/controllers/system/system-user-controller';
 import { SystemPeopleController } from '@api/controllers/system/system-people-controller';
+import { SystemPersonFieldsController } from '@api/controllers/system/system-person-fields-controller';
 import { SystemRecordLinksController } from '@api/controllers/system/system-record-links-controller';
 import { SystemSettingsController } from '@api/controllers/system/system-settings-controller';
 import { SystemMetadataController } from '@api/controllers/system/system-metadata-controller';
@@ -23,6 +24,7 @@ export class SystemController extends SystemAccountRoutes {
   protected readonly runtimeController: SystemRuntimeController;
   protected readonly userController: SystemUserController;
   private readonly peopleController: SystemPeopleController;
+  private readonly personFieldsController: SystemPersonFieldsController;
   private readonly recordLinksController: SystemRecordLinksController;
   private readonly deployController: SystemDeployController;
   protected readonly settingsController: SystemSettingsController;
@@ -44,6 +46,7 @@ export class SystemController extends SystemAccountRoutes {
     this.runtimeController = new SystemRuntimeController(runtime);
     this.userController = new SystemUserController(runtime);
     this.peopleController = new SystemPeopleController(runtime);
+    this.personFieldsController = new SystemPersonFieldsController(runtime);
     this.recordLinksController = new SystemRecordLinksController();
     this.deployController = new SystemDeployController(runtime);
     this.settingsController = new SystemSettingsController(runtime);
@@ -93,6 +96,12 @@ export class SystemController extends SystemAccountRoutes {
   async linkUser(req: Request, res: Response) {
     return this.peopleController.linkUser(req, res);
   }
+
+  async getPersonFields(req: Request, res: Response) { return this.personFieldsController.list(req, res); }
+  async savePersonField(req: Request, res: Response) { return this.personFieldsController.save(req, res); }
+  async deletePersonField(req: Request, res: Response) { return this.personFieldsController.remove(req, res); }
+  async getPersonFieldValues(req: Request, res: Response) { return this.personFieldsController.values(req, res); }
+  async savePersonFieldValues(req: Request, res: Response) { return this.personFieldsController.setValues(req, res); }
 
   async getAdminMetadata(req: Request, res: Response) {
     return this.metadataController.getAdminMetadata(req, res);

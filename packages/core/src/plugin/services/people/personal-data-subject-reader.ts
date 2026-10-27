@@ -62,6 +62,12 @@ export class PersonalDataSubjectReader {
     return this.db.find(SystemConstants.TABLE.PEOPLE_ADDRESSES, { where: { person_id: person.id } });
   }
 
+  async findFieldValues(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
+    const person = await this.findPerson(subject);
+    if (!person) return [];
+    return this.db.find(SystemConstants.TABLE.PERSON_FIELD_VALUES, { where: { person_id: person.id } });
+  }
+
   async findVersions(subject: IPersonalDataSubject): Promise<Record<string, unknown>[]> {
     const person = await this.findPerson(subject);
     const user = await this.findUser(subject);
