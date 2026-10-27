@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.457] - 2026-10-27
+
+### Fixed
+
+- **gateway**: an Admin URL with a path on the Frontend URL's host (`https://shop.example.com/admin`) mounts the console there instead of giving the whole host to one app ([#1096](https://github.com/fromcode119/framework/pull/1096))
+
 ## [0.2.456] - 2026-10-27
 
 ### Fixed
