@@ -8,3 +8,4 @@ export * from '@core/collections/interfaces/collection-input.interface';
 export * from '@core/interfaces/field-input.interface';
 export * from '@core/utils';
 export * from '@core/plugin/host/plugin-peer-unavailable-error';
+export * from '@core/plugin/host/plugin-unknown-invocation-error';
