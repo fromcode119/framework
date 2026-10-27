@@ -155,9 +155,9 @@ export class PluginDefaultPageMaterializationEntryFactory extends PluginDefaultP
    * The contract's OWN route — its effective slug — without the aliases and adoption hints.
    *
    * Aliases are other routes the contract also serves, and a site can give them real pages of their
-   * own: vselenskiportal88 serves its store index at `/cosmic-box`, `/numerology` and `/vision-board`,
-   * each of which is a separate landing page. Ranking those level with the page on `/shop` made four
-   * pages "match" equally, so the store index was reported ambiguous and skipped on every pass.
+   * own: a theme can point three aliases of a listing contract at three separate landing pages. Ranking
+   * those level with the page on the contract's own route made four pages "match" equally, so the
+   * contract was reported ambiguous and skipped on every pass.
    */
   private buildPrimaryCandidates(contract: IResolvedPluginDefaultPageContract): string[] {
     return this.seedPageService.buildPageLookupCandidates([], {
