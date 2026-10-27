@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.456] - 2026-10-27
+
+### Fixed
+
+- **core**: Runtime-role grants no longer fail on every boot when one table in public is owned by another role ([#1094](https://github.com/fromcode119/framework/pull/1094))
+- **sdk**: stop reporting the detached boot peer registration as failed ([#1092](https://github.com/fromcode119/framework/pull/1092))
+
 ## [0.2.455] - 2026-10-27
 
 ### Changed
