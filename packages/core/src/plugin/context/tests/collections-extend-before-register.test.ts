@@ -33,3 +33,31 @@ describe('extending a collection that registers later', () => {
     expect(names).toContain('ogImage');
   });
 });
+
+describe('extending a collection again after a hot update', () => {
+  it('replaces the field this extender added before, so the new release definition shows', () => {
+    const manager = buildManager();
+    const host = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'host' } } as any, manager, logger, security);
+    host.register(items() as any);
+    const before = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'extender' } } as any, manager, logger, security);
+    before.extend('host', 'items', { fields: [{ name: 'ogImage', type: 'text', label: 'Old' }] } as any);
+    const after = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'extender' } } as any, manager, logger, security);
+    after.extend('host', 'items', { fields: [{ name: 'ogImage', type: 'text', label: 'New', admin: { component: 'Picker' } }] } as any);
+    const fields = manager.registeredCollections.get('fcp_host_items').collection.fields.filter((f: any) => f.name === 'ogImage');
+    expect(fields).toHaveLength(1);
+    expect(fields[0]).toMatchObject({ label: 'New', admin: { component: 'Picker' }, extendedBy: 'extender' });
+  });
+
+  it('never overwrites a field the owner declares, or one another extender added', () => {
+    const manager = buildManager();
+    const host = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'host' } } as any, manager, logger, security);
+    host.register(items() as any);
+    const first = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'first' } } as any, manager, logger, security);
+    const second = CollectionsContextProxy.createCollectionsProxy({ manifest: { slug: 'second' } } as any, manager, logger, security);
+    first.extend('host', 'items', { fields: [{ name: 'badge', type: 'text', label: 'First' }] } as any);
+    second.extend('host', 'items', { fields: [{ name: 'badge', type: 'text', label: 'Second' }, { name: 'title', type: 'textarea' }] } as any);
+    const fields = manager.registeredCollections.get('fcp_host_items').collection.fields;
+    expect(fields.find((f: any) => f.name === 'badge')).toMatchObject({ label: 'First', extendedBy: 'first' });
+    expect(fields.find((f: any) => f.name === 'title')).toEqual({ name: 'title', type: 'text' });
+  });
+});
