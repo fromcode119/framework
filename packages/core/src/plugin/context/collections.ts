@@ -100,14 +100,7 @@ export class CollectionsContextProxy {
 
           const entry = manager.getCollection(fullSlug);
           if (entry) {
-            if (extensions.fields) {
-              const existingNames = new Set(entry.collection.fields.map((f: IField) => f.name));
-              extensions.fields.forEach((f: IField) => {
-                if (!existingNames.has(f.name)) {
-                  entry.collection.fields.push({ ...f, extendedBy: plugin.manifest.slug });
-                }
-              });
-            }
+            CollectionsContextProxy.mergeExtension(entry.collection, extensions, plugin.manifest.slug);
           } else {
             // Re-run the SAME lookup the immediate branch uses. Comparing `shortSlug` here instead
             // was a second, DIFFERENT identity rule, and the two disagreed whenever a collection's
@@ -119,19 +112,27 @@ export class CollectionsContextProxy {
                const registered = manager.getCollection(fullSlug);
                if (data.pluginSlug === targetPlugin && registered) {
                   data = { ...data, collection: registered.collection };
-                  if (extensions.fields) {
-                    const existingNames = new Set(data.collection.fields.map((f: IField) => f.name));
-                    extensions.fields.forEach((f: any) => {
-                      if (!existingNames.has(f.name)) {
-                        data.collection.fields.push({ ...f, extendedBy: plugin.manifest.slug });
-                      }
-                    });
-                  }
+                  CollectionsContextProxy.mergeExtension(data.collection, extensions, plugin.manifest.slug);
                }
             });
           }
         }
       };
 
+  }
+
+  /**
+   * Adds an extender's fields to another plugin's collection. A field the target declares itself is
+   * never touched. A field THIS extender added earlier is replaced: a hot plugin update re-runs
+   * `extend()` against collections still holding the previous release's field, and keeping the old
+   * one left every extended collection on the old definition until the api restarted.
+   */
+  static mergeExtension(collection: ICollection, extensions: Partial<ICollection>, extenderSlug: string): void {
+    for (const field of extensions.fields || []) {
+      const next = { ...field, extendedBy: extenderSlug } as IField;
+      const index = collection.fields.findIndex((existing: IField) => existing.name === field.name);
+      if (index === -1) collection.fields.push(next);
+      else if (collection.fields[index].extendedBy === extenderSlug) collection.fields[index] = next;
+    }
   }
 }
