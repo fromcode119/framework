@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { PluginPeerRegistration } from '../src/plugin-peer-registration';
+import { PluginPeerRegistration } from '@sdk/plugin-peer-registration';
 
 /** A revoked token as the guest sees it: a revived plain Error that kept only the code. */
 const revoked = () => Object.assign(new Error('unknown_invocation: plugin "alpha" presented a token the host did not mint'), { code: 'unknown_invocation' });
