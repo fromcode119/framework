@@ -30,9 +30,26 @@ An operator chooses per host. Both are first-class; neither is a fallback for th
 | **Uploaded** | The operator pastes the certificate and its key | **Nobody.** The platform warns; a human replaces it |
 | **Automatic** | The platform | The platform | 
 
-> **Automatic is declared but NOT IMPLEMENTED yet.** The value exists in the data model so that
-> nothing has to change when issuance lands, and the admin says so rather than offering a control
-> that does nothing. Until then, every certificate is an uploaded one.
+Automatic certificates come from an ACME authority (Let's Encrypt or any other the operator names).
+Two things must be true before the admin offers the choice, and it says which one is missing:
+
+- **An authority and the platform's public addresses are set** — Settings → Infrastructure →
+  Certificates. The addresses are what DNS must point at for a host to be issued over HTTP-01.
+- **This deployment's own gateway terminates TLS** (`GATEWAY_TLS_PORT`, below). A certificate the
+  platform obtained is served by nothing else, so without it the control stays off.
+
+A scheduled sweep orders a certificate for every host set to Automatic that has none, and renews one
+that is running out. Nothing reaches the authority until two cheap local checks pass, because failed
+validations are rationed (five per hostname per hour) and an order placed blind can lock a domain out
+for the hour somebody is fixing it:
+
+1. **DNS pre-check** — the host must resolve to one of the declared addresses, else it is
+   `Waiting for DNS` and rechecked every 5 minutes.
+2. **Challenge reachability** — the platform fetches its own `/.well-known/acme-challenge/` path on
+   the host. Unreachable is recorded and rechecked every 10 minutes, without touching the authority.
+
+A real failure backs off from 2 hours up to a day. **DNS-01** (wildcards, or a host whose origin is not
+reachable over HTTP) uses a Cloudflare token — the site's own if it has one, else the platform's.
 
 ### The platform never silently replaces a certificate it was given
 
@@ -77,10 +94,11 @@ certificate at once, before any request exists and therefore before there is a t
 
 1. Add the domain to the site in the admin (Sites → the site → **Overview**, primary host or aliases).
 2. Point the customer's DNS at the platform.
-3. Go to **Certificates** (or the site's **Domains** tab), press **Upload**, and paste the certificate
-   chain and the private key.
+3. Go to **Certificates** (or the site's **Domains** tab) and either choose **Automatic**, or press
+   **Upload** and paste the certificate chain and the private key.
 
-That is the whole flow. The certificate is live as soon as it is stored.
+That is the whole flow. An uploaded certificate is live as soon as it is stored; an automatic one as
+soon as the next sweep has issued it.
 
 ### When an upload is refused
 
@@ -205,5 +223,4 @@ Expiry states are **derived from the certificate's own dates at read time**, nev
 | `GATEWAY_TLS_PUBLISH` | Where that listener is published on the host. Loopback by default, so setting `GATEWAY_TLS_PORT` alone terminates TLS the internet cannot reach — set this to `0.0.0.0:443` when the gateway IS the edge |
 | `GATEWAY_CERTIFICATES_TTL_MS` | How often the gateway refreshes its copy (default 60s) |
 
-**Not built yet:** automatic issuance (ACME), DNS pre-checks, renewal of platform-issued certificates,
-HTTP/2 on the gateway's TLS listener, OCSP stapling, and operator-configurable warning thresholds.
+**Not built yet:** OCSP stapling and operator-configurable warning thresholds.
