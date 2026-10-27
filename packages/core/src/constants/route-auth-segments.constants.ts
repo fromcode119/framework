@@ -57,6 +57,8 @@ export class RouteAuthSegments {
   SECURITY: '/security',
   PROFILE: '/profile',
   ME_PERSON: '/me/person',
+  /** The signed-in person's values for the fields the site opened to them (`selfEditable`). */
+  ME_PERSON_FIELDS: '/me/person/fields',
   VERIFY_PASSWORD: '/verify-password',
   CHANGE_PASSWORD: '/change-password',
   EMAIL_CHANGE_REQUEST: '/email-change/request',
@@ -232,7 +234,11 @@ export class RouteAuthSegments {
   ADMIN_PEOPLE_RECORDS: '/admin/people/records',
   /** Recipient suggestions. Literal path — must be registered before ADMIN_PEOPLE_ID. */
   ADMIN_PEOPLE_SUGGEST: '/admin/people/suggest',
+  /** The site's person field declarations. Literal path — must be registered before ADMIN_PEOPLE_ID. */
+  ADMIN_PEOPLE_FIELDS: '/admin/people/fields',
+  ADMIN_PEOPLE_FIELDS_KEY: '/admin/people/fields/:key',
   ADMIN_PEOPLE_ID: '/admin/people/:id',
+  ADMIN_PEOPLE_ID_FIELDS: '/admin/people/:id/fields',
   ADMIN_PEOPLE_ID_CREATE_USER: '/admin/people/:id/create-user',
   ADMIN_PEOPLE_ID_LINK_USER: '/admin/people/:id/link-user',
   ADMIN_PEOPLE_ID_RECORDS: '/admin/people/:id/records',

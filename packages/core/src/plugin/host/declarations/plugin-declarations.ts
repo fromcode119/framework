@@ -55,6 +55,7 @@ export class PluginDeclarations {
   /** Registration-named methods whose effect is stored in the database, so nothing is lost with the api. */
   static readonly PERSISTED: ReadonlyArray<readonly [string, string]> = [
     ['people', 'register'],
+    ['peopleFields', 'register'],
   ];
 
   /** Whether `<root>.<namespace>.<method>(…)` is one of the declarations (`root` a `PluginRemoteCallRoot` value). */

@@ -89,7 +89,7 @@ export class PersonalDataErasureService {
       { key: PersonalDataDatasetKey.ACCOUNT.value, label: 'Platform account', fields: ['email', 'username', 'firstName', 'lastName'],
         strategies: [PersonalDataErasureService.ANONYMISE, PersonalDataErasureService.RETAIN],
         defaultStrategy: PersonalDataErasureService.ANONYMISE },
-      { key: PersonalDataDatasetKey.PERSON.value, label: 'Person record, addresses and relationships', fields: ['email', 'phone', 'firstName', 'lastName', 'address'],
+      { key: PersonalDataDatasetKey.PERSON.value, label: 'Person record, addresses, relationships and person fields', fields: ['email', 'phone', 'firstName', 'lastName', 'address', 'personFields'],
         strategies: [PersonalDataErasureService.DELETE, PersonalDataErasureService.ANONYMISE],
         defaultStrategy: PersonalDataErasureService.DELETE },
       { key: PersonalDataDatasetKey.SESSIONS.value, label: 'Sign-in sessions', fields: ['ipAddress', 'userAgent'],
@@ -113,6 +113,7 @@ export class PersonalDataErasureService {
       case PersonalDataDatasetKey.PERSON.value: return [
         ...this.reader.rows(await this.reader.findPerson(subject)),
         ...(await this.reader.findAddresses(subject)),
+        ...(await this.reader.findFieldValues(subject)),
       ];
       case PersonalDataDatasetKey.SESSIONS.value: return this.reader.byUser(SystemConstants.TABLE.SESSIONS, subject);
       case PersonalDataDatasetKey.ROLES.value: return this.reader.byUser(SystemConstants.TABLE.TENANT_MEMBERSHIPS, subject);

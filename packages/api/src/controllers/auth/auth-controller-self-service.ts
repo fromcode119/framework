@@ -1,7 +1,7 @@
 import { InspectorAccess } from '@fromcode119/auth';
 import { Response } from 'express';
 import { RequestContextUtils, TenantMode, TenantMembershipService } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, PersonFieldService, PersonFieldValueError } from '@fromcode119/core';
 import { AuthControllerSecurity } from '@api/controllers/auth/auth-controller-security';
 import { SystemTwoFactorService } from '@api/controllers/system/system-2fa-service';
 import { AuthProfileService } from '@api/services/auth-profile-service';
@@ -37,6 +37,35 @@ export class AuthControllerSelfService extends AuthControllerSecurity {
     // Their console language may just have changed: the next request must not answer in the old one.
     ConsoleLocaleMiddleware.forget(String(RequestContextUtils.getTenantId() ?? ''), req.user?.id);
     return res.json({ person });
+  }
+
+  /**
+   * The fields the site opened to the person (`selfEditable`) with their own values — what an app or the
+   * account page draws as inputs. Fields kept for the operator alone are neither listed nor writable here.
+   */
+  async getMyPersonFields(req: any, res: Response) {
+    if (!this.parseUserId(req.user?.id)) return res.status(401).json({ error: 'Unauthorized' });
+    const fields = new PersonFieldService(this.db as any);
+    const open = (await fields.list()).filter((field) => field.selfEditable);
+    const person = SiteOwnedWrites.possible(req) ? await new PeopleSelfService(this.db).findSelf(req.user) : null;
+    const values = person ? await fields.values(Number(person.id)) : {};
+    return res.json({ fields: open, values: Object.fromEntries(open.filter((field) => field.key in values).map((field) => [field.key, values[field.key]])) });
+  }
+
+  async updateMyPersonFields(req: any, res: Response) {
+    if (!this.parseUserId(req.user?.id)) return res.status(401).json({ error: 'Unauthorized' });
+    if (!SiteOwnedWrites.possible(req)) return res.status(409).json({ error: SiteOwnedWrites.REQUIRED });
+    const self = await new PeopleSelfService(this.db).resolveSelf(req.user);
+    try {
+      const fields = new PersonFieldService(this.db as any);
+      const values = await fields.setValues(Number(self.id), req.body?.values || {}, { selfOnly: true });
+      // Only what the person may see: fields kept for the operator stay out of the answer too.
+      const open = new Set((await fields.list()).filter((field) => field.selfEditable).map((field) => field.key));
+      return res.json({ values: Object.fromEntries(Object.entries(values).filter(([key]) => open.has(key))) });
+    } catch (error: any) {
+      if (error instanceof PersonFieldValueError) return res.status(400).json({ error: 'invalidField', field: error.field, reason: error.reason });
+      throw error;
+    }
   }
 
   async getMySecurityState(req: any, res: Response) {

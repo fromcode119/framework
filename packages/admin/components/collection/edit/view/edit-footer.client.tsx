@@ -63,11 +63,13 @@ export class EditFooter extends PureReactor {
         <div className="flex w-full items-center justify-between gap-3 px-4 py-2.5 sm:px-6 lg:px-8">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className={`h-2 w-2 shrink-0 rounded-full ${this.isDirty ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
+              <span className={`h-2 w-2 shrink-0 rounded-full ${this.isDirty && !this.isNew ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`} />
               <span className="truncate text-[13px] font-medium text-slate-700 dark:text-slate-200">
-                {this.isDirty || !this.isNew
-                  ? AdminI18n.t('collection.edit.unsavedChanges')
-                  : AdminI18n.t('collection.edit.newEntry')}
+                {/* A new entry is always "dirty" (nothing exists on the server yet), so testing isDirty
+                    first made "New entry" unreachable and an untouched new form claimed unsaved changes. */}
+                {this.isNew
+                  ? AdminI18n.t('collection.edit.newEntry')
+                  : AdminI18n.t('collection.edit.unsavedChanges')}
               </span>
             </div>
             {this.saveError && (

@@ -593,6 +593,11 @@
       "clearFilters": "Clear all",
       "removeFilter": "Remove the {{label}} filter",
       "showResults": "Show {{count}} results"
+    },
+    "personFieldPicker": {
+      "none": "Not saved to a person field",
+      "missing": "{{key}} (no longer a person field)",
+      "manage": "Manage person fields"
     }
   },
   "shell": {
@@ -752,7 +757,8 @@
       "personal-data": "Personal data",
       "infrastructure": "Infrastructure",
       "backups": "Backups",
-      "updates": "Updates"
+      "updates": "Updates",
+      "person-fields": "Person fields"
     },
     "groups": {
       "core": "Core",
@@ -2969,7 +2975,51 @@
     "removedFromSite": "Removed from this site. The person's account itself is kept, because it is not managed by this site.",
     "roleScopeSite": "This site",
     "roleScopePlatform": "Platform",
-    "platformRoleLockedHint": "This is a platform role: it is the same on every site, so it can only be changed in platform scope by the platform admin. You can still give it to people on this site."
+    "platformRoleLockedHint": "This is a platform role: it is the same on every site, so it can only be changed in platform scope by the platform admin. You can still give it to people on this site.",
+    "fields": {
+      "title": "Person fields",
+      "subtitle": "What the site keeps about a person, filled on their page, by a plugin, or by the person in an app",
+      "add": "Add field",
+      "loading": "Loading person fields…",
+      "loadFailed": "Person fields could not be loaded.",
+      "saveFailed": "The fields could not be saved.",
+      "saved": "Fields saved.",
+      "empty": "No person fields yet. Add one to start keeping it for every person.",
+      "noneDeclared": "This site has no person fields yet.",
+      "declare": "Add person fields",
+      "manage": "Manage fields",
+      "save": "Save fields",
+      "saveField": "Save field",
+      "delete": "Delete",
+      "deleteTitle": "Delete this field?",
+      "deleteBody": "\"{{name}}\" and every person's value for it are removed.",
+      "invalidValue": "\"{{field}}\" does not accept that value.",
+      "notSet": "Not set",
+      "key": "Key",
+      "keyHint": "A camelCase name such as favouriteColour. Plugins and apps refer to the field by it; it cannot change later.",
+      "keyRule": "The key must start with a lowercase letter and use only letters and digits (camelCase).",
+      "type": "Type",
+      "label": "Label",
+      "description": "Who reads it",
+      "options": "Options",
+      "optionKey": "Option key",
+      "addOption": "Add option",
+      "removeOption": "Remove",
+      "selfEditable": "The person can set it",
+      "sortOrder": "Order",
+      "types": {
+        "text": "Short text",
+        "longText": "Long text",
+        "number": "Number",
+        "boolean": "Yes / no",
+        "date": "Date",
+        "time": "Time",
+        "datetime": "Date and time",
+        "place": "Place",
+        "choice": "One of a list",
+        "choices": "Several of a list"
+      }
+    }
   },
   "scope": {
     "siteSettingsNamedInsideEachSite": "Site settings ({{what}}) are set inside each site — choose one from the site menu.",

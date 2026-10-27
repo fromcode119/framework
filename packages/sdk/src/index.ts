@@ -181,6 +181,7 @@ export type { IDatasourceDescriptor, IDatasourceOptionItem, IDatasourceOptionsPa
 
 // Plugin runtime interfaces
 export type { PluginContext, IAtlantisPlugin, ILoadedPlugin } from '@fromcode119/core/client';
+export type { IPersonField, IPersonFieldOption } from '@fromcode119/core/client';
 
 // ── Theme Registration & Style Variant Types ─────────────────────────────────
 export type { IThemeStyleVariant } from '@sdk/types/interfaces/theme-style-variant.interface';

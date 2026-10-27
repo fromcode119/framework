@@ -24,6 +24,8 @@ export class AdminPageAccessService {
     [AdminConstants.ROUTES.USERS.ROLE_EDIT(':slug'), 'roles:manage'],
     [AdminConstants.ROUTES.USERS.ROLE_LIST, 'roles:view'],
     [AdminConstants.ROUTES.USERS.PERMISSIONS, 'roles:view'],
+    // Before DETAIL: `:id` would match `fields`.
+    [AdminConstants.ROUTES.PEOPLE.FIELDS, 'users:view'],
     [AdminConstants.ROUTES.PEOPLE.DETAIL(':id'), 'users:view'],
     [AdminConstants.ROUTES.PEOPLE.ROOT, 'users:view'],
     [AdminConstants.ROUTES.USERS.NEW, 'users:manage'],

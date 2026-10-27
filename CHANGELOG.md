@@ -6,6 +6,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.452] - 2026-10-27
+
+### Fixed
+
+- **admin**: the edit header's status names the value the form will save ([#1082](https://github.com/fromcode119/framework/pull/1082))
+- **admin**: an untouched new record's save bar says New entry, not Unsaved changes ([#1081](https://github.com/fromcode119/framework/pull/1081))
+
+## [0.2.451] - 2026-10-27
+
+### Added
+
+- **people**: person fields ([#1079](https://github.com/fromcode119/framework/pull/1079))
+
 ## [0.2.450] - 2026-10-27
 
 ### Fixed

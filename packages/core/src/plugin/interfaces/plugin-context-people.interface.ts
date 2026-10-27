@@ -1,3 +1,5 @@
+import type { IPersonField } from '@core/plugin/services/people/fields/interfaces/person-field.interface';
+import type { IPersonFieldInput } from '@core/plugin/services/people/fields/interfaces/person-field-input.interface';
 import type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
 import type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
 import type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';
@@ -69,6 +71,18 @@ export interface IPluginContextPeople {
     list(kind: string): Promise<Array<{ key: string; label: string }>>;
     /** Remove one (kind, key) entry. Returns whether a row was removed. */
     unregister(kind: string, key: string): Promise<boolean>;
+  };
+  /**
+   * Person fields the site's operator declares (People → Fields) and each person's values. A plugin reads
+   * and writes values only through here; values are checked against the declared type. `register` adds a
+   * field the plugin needs when the site has none under that key, and never changes one the operator edited.
+   */
+  fields: {
+    list(): Promise<IPersonField[]>;
+    get(key: string): Promise<IPersonField | null>;
+    register(input: IPersonFieldInput): Promise<void>;
+    values(personId: any): Promise<Record<string, string | number | boolean | string[] | null>>;
+    set(personId: any, values: Record<string, unknown>): Promise<Record<string, string | number | boolean | string[] | null>>;
   };
   /**
    * Reusable address book on the shared `people_addresses` table. Plugins delegate their account
