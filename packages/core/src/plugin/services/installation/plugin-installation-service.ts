@@ -207,7 +207,7 @@ export class PluginInstallationService {
 
     await this.adoptPredecessors(manifest, pluginPath);
     // Given the install's start, a failed migration puts the files this install replaced back.
-    const migrate = () => this.migrations.run(slug, pluginPath, manifest, options.progressReporter);
+    const migrate = () => this.migrations.run(slug, pluginPath, manifest, options.progressReporter, !existingPlugin);
     await (options.startedAt === undefined ? migrate() : this.rollback.runOrRestore(slug, options.startedAt, migrate));
 
     // Fills `ui.*` in from what landed on disk — see PR #110. Runs AFTER the plugin's migrations:
