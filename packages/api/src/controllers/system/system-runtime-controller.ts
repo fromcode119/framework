@@ -5,7 +5,7 @@ import { ContentPreviewAccessUtils, DeploymentKind, PluginState, PluginTenantAcc
 import { SelfUpdateScreenService } from '@api/services/system/self-update-screen-service';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { CoercionUtils, RequestContextUtils } from '@fromcode119/core';
+import { CoercionUtils, HookEventUtils, RequestContextUtils } from '@fromcode119/core';
 import { SitePreviewViewer } from '@api/services/tenants/site-preview-viewer';
 
 export class SystemRuntimeController {
@@ -188,12 +188,26 @@ export class SystemRuntimeController {
       });
 
       if (!result) {
+        if (CoercionUtils.toBoolean(req.query.missed)) this.reportMissed(slug, req);
         return res.status(404).json({ error: 'Not found' });
       }
       res.json(ResolvedDocResponseService.normalizeResult(result));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+  /**
+   * The storefront's LAST lookup before it answers 404 says so (`missed=1`) and carries the visitor's
+   * `referer` / `user-agent`; every earlier lookup of the same request (the slash variant, the account
+   * base) does not, so one visitor 404 is one event. The listener — a 404 log — owns what is kept.
+   */
+  private reportMissed(slug: string, req: Request): void {
+    this.runtime.manager.hooks.emit(HookEventUtils.HOOK_EVENTS.RESOLUTION_MISSED, {
+      path: `/${CoercionUtils.toString(slug).trim().replace(/^\/+/, '')}`,
+      referrer: CoercionUtils.toString(req.get('referer')).trim(),
+      userAgent: CoercionUtils.toString(req.get('user-agent')).trim(),
+    });
   }
 
   /** Which plugin's design a storefront page shows while its content is empty — for the page editor. */

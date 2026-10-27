@@ -4055,6 +4055,9 @@
     }
   },
   "mediaPicker": {
+    "showingOnly": "Showing only: {{types}}",
+    "acceptImages": "Images",
+    "acceptVideos": "Videos",
     "uploads": "Uploads",
     "theme": "Theme",
     "mediaLibrary": "Media Library",

@@ -1,4 +1,5 @@
 import { cache } from 'react';
+import { headers } from 'next/headers';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 import { AccountRouteUtils, LocalizationUtils } from '@fromcode119/core/client';
@@ -36,6 +37,20 @@ export class DynamicPageResolver {
     const forwardOperatorSession = new URLSearchParams(queryString).get('preview') === '1';
     const response = (await ServerApiUtils.serverFetchResponseOutcome(path, undefined, { forwardOperatorSession }))
       .valueOrThrow(path);
+    if (!response || !response.ok) return null;
+    return await response.json() as Record<string, any>;
+  });
+
+  /** The would-be-404 lookup — see {@link resolveRedirect}. Memoized per request like the one above. */
+  private static readonly resolveMissFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
+    const path = ServerApiPaths.buildSystemResolvePath(queryString);
+    const visitor = await headers();
+    const visitorHeaders: Record<string, string> = {};
+    const referer = String(visitor.get('referer') || '').trim();
+    const userAgent = String(visitor.get('user-agent') || '').trim();
+    if (referer) visitorHeaders.referer = referer;
+    if (userAgent) visitorHeaders['user-agent'] = userAgent;
+    const response = (await ServerApiUtils.serverFetchResponseOutcome(path, { headers: visitorHeaders })).valueOrThrow(path);
     if (!response || !response.ok) return null;
     return await response.json() as Record<string, any>;
   });
@@ -136,7 +151,10 @@ export class DynamicPageResolver {
     try {
       const query = new URLSearchParams();
       query.set('slug', String(slug || '').replace(/^\/+/, ''));
-      const result = await DynamicPageResolver.resolveFetchCache(query.toString()) as
+      // The final lookup before a 404: `missed=1` lets the API report the miss with the VISITOR's
+      // referrer and browser (this fetch otherwise carries the storefront server's own).
+      query.set('missed', '1');
+      const result = await DynamicPageResolver.resolveMissFetchCache(query.toString()) as
         { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
       if (result?.type === 'redirect' && result.redirect?.target) {
         return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };

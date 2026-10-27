@@ -88,6 +88,12 @@ export interface IField {
     position?: FieldPosition | string;
     component?: string;
     /**
+     * For a media field: the file types its picker lists and its upload control offers, in the
+     * browser's `accept` syntax (`image/*`, `video/*`, `application/pdf`, comma separated). The picker
+     * states the filter it applies; no declaration lists every file in the library.
+     */
+    accept?: string;
+    /**
      * A registered field component that DISPLAYS this field's value in a collection list — the table
      * cell and the phone card — where `component` is the control that edits it. For a value only its
      * plugin can present: a price in its currency, a duration in its unit. Rendered with

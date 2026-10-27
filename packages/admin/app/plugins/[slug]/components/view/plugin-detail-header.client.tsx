@@ -98,7 +98,7 @@ export class PluginDetailHeader extends PureReactor {
           <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${dark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}>
             <FrameworkIcons.Plugins size={20} />
           </div>
-          <div className="min-w-0 flex-1">
+          <div className="min-w-[12rem] flex-1">
             <h1 className={`truncate text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</h1>
             <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
               <Badge variant={PluginState.resolve(plugin.state) === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
