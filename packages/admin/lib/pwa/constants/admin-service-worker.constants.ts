@@ -16,6 +16,9 @@ export class AdminServiceWorkerConstants {
   /** Public path the compiled worker is served from (emitted by the `build:sw` step). */
   static readonly SCRIPT_PATH = '/sw.js';
 
+  /** Pause before a failed page navigation is tried once more (see the worker's `retryNavigation`). */
+  static readonly NAVIGATION_RETRY_DELAY_MS = 800;
+
   /**
    * Path prefixes that must ALWAYS hit the network and are never cached — live API traffic and the
    * websocket upgrade. Sourced from the framework's own route constants so they cannot drift from the

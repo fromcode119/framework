@@ -251,7 +251,10 @@ html.dark {
    The page root answers for its own padding here; the header just reads the answer. An unmapped root
    (e.g. one padded from an inline style) resolves to 0 — the bar is then inset, never overhanging. */
 .fc-page-bleed {
-  margin: calc(-1 * var(--fc-page-pad, 0px)) calc(-1 * var(--fc-page-pad, 0px)) 1.5rem;
+  margin:
+    calc(-1 * var(--fc-page-pad-y, var(--fc-page-pad, 0px)))
+    calc(-1 * var(--fc-page-pad-x, var(--fc-page-pad, 0px)))
+    1.5rem;
 }
 
 .p-4:has(> .fc-page-bleed) { --fc-page-pad: 1rem; }
@@ -266,6 +269,19 @@ html.dark {
 }
 @media (min-width: 1024px) {
   .lg\:p-8:has(> .fc-page-bleed) { --fc-page-pad: 2rem; }
+}
+
+/* A plugin page that matches the collection list's inset (`px-3 sm:px-6 lg:px-12 py-5 sm:py-8 lg:py-10`,
+   the same classes `.fc-collection-list` uses) pads differently across and down, so it answers per axis. */
+.px-3:has(> .fc-page-bleed) { --fc-page-pad-x: 0.75rem; }
+.py-5:has(> .fc-page-bleed) { --fc-page-pad-y: 1.25rem; }
+@media (min-width: 640px) {
+  .sm\:px-6:has(> .fc-page-bleed) { --fc-page-pad-x: 1.5rem; }
+  .sm\:py-8:has(> .fc-page-bleed) { --fc-page-pad-y: 2rem; }
+}
+@media (min-width: 1024px) {
+  .lg\:px-12:has(> .fc-page-bleed) { --fc-page-pad-x: 3rem; }
+  .lg\:py-10:has(> .fc-page-bleed) { --fc-page-pad-y: 2.5rem; }
 }
 
 /* Controls opt in by class, so a button is elevated by the same token as a panel. */

@@ -61,7 +61,23 @@ export class AdminServiceWorker {
     } catch {
       // Offline: serve the cached shell. With no cached copy the request fails as a network error,
       // exactly as an unhandled fetch would.
-      return (await caches.match(request)) ?? Response.error();
+      return (await caches.match(request)) ?? (await AdminServiceWorker.retryNavigation(request));
+    }
+  }
+
+  /**
+   * A page navigation that failed once and has no cached copy is tried one more time before it fails.
+   * A connection dropped mid-request — a server rolling to a new release, a relay restarting — would
+   * otherwise leave the operator on the browser's error page for a request that succeeds a moment later.
+   * Sub-resources are not retried: the page that asked for them already handles their failure.
+   */
+  private static async retryNavigation(request: Request): Promise<Response> {
+    if (request.mode !== 'navigate') return Response.error();
+    await new Promise((resolve) => setTimeout(resolve, AdminServiceWorkerConstants.NAVIGATION_RETRY_DELAY_MS));
+    try {
+      return await fetch(request);
+    } catch {
+      return Response.error();
     }
   }
 
