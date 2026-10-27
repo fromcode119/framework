@@ -47,5 +47,24 @@ describe('PluginHostRegistrations.resetForRestart', () => {
     expect(workers).toHaveLength(1);
     expect(invoked).toEqual(['job:second-process']);
   });
-});
 
+  it('runs a scheduled task in the CURRENT process, skips it during the switch, and names a task the new process dropped', async () => {
+    const invoked: string[] = [];
+    const registrations = new PluginHostRegistrations(slug, {} as any, async (_kind, handlerId) => { invoked.push(handlerId); }, async () => undefined, {} as any, async () => undefined, () => true);
+    const tasks = new Map<string, (data: unknown) => Promise<void>>();
+    const context: any = { hooks: { off: () => undefined }, plugins: { off: () => undefined }, scheduler: { register: async (name: string, _schedule: string, handler: any) => { tasks.set(name, handler); } } };
+    const kind = String(PluginGuestRegistrationKind.SCHEDULER.value);
+
+    registrations.apply(context, { kind, name: 'sync', schedule: '1h', handlerId: 'scheduler:first' } as any);
+    registrations.apply(context, { kind, name: 'clips', schedule: '10m', handlerId: 'scheduler:clips' } as any);
+    registrations.resetForRestart(context);
+    await tasks.get('sync')!(undefined);
+    registrations.apply(context, { kind, name: 'sync', schedule: '1h', handlerId: 'scheduler:second' } as any);
+    await tasks.get('sync')!(undefined);
+    await tasks.get('clips')!(undefined);
+
+    expect(invoked).toEqual(['scheduler:second']);
+    expect(registrations.droppedTasks()).toEqual(['clips']);
+    expect(registrations.droppedTasks()).toEqual([]);
+  });
+});

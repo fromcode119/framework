@@ -31,7 +31,7 @@ describe('a relaunch', () => {
     Object.assign(host, {
       slug: 'site-data-probe', guest: { pid: 1 }, channel: oldChannel, generation: { channel: oldChannel, retireAfter: async () => undefined },
       context, manager, logger, wasEnabled: false, restarts: 0, healthyTimer: null,
-      registrations: { resetForRestart() {}, apply: async () => undefined },
+      registrations: { resetForRestart() {}, droppedTasks: () => [], apply: async () => undefined },
       proxy: { retarget() {}, inFlight: () => 0 }, limits: { timeoutMs: 1000 },
       invoke: async (invocation: { name: string }) => { invoked.push(invocation.name); },
       launchGeneration: async () => next,

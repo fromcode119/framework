@@ -178,13 +178,13 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     }
     // The switch, in ONE synchronous step, so nothing is dispatched to a half-switched plugin: the replaced
     // process's stand-ins go, the next one serves, and what it registered while initialising is applied.
-    // Its middleware too. Registering again replaces one of the same id, but a middleware the new process
-    // no longer registers (an update that removed it) stayed, pointing at a handler the new process does
-    // not have — on every request the api served, for every site running the plugin.
+    // Its middleware and its scheduled tasks too: one the new process no longer registers (an update that
+    // removed it) stayed, pointing at a handler the new process does not have — on every request, every run.
     if (this.context) { this.registrations.resetForRestart(this.context); this.manager.middlewares.unregisterByPlugin(this.slug); }
     this.adopt(next);
     if (this.context) {
       PluginHostCollectionPrune.applyAll(this.manager, this.slug, this.logger, next.held.splice(0), (registration) => this.registrations.apply(this.context!, registration));
+      for (const name of this.registrations.droppedTasks()) await this.manager.scheduler.unregister(`${this.slug}:${name}`);
       // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
       // provider, a search provider, a newsletter content provider) is gone with the old one. Say
       // `plugins:ready` again — the same event peers already re-register on at boot — naming the
