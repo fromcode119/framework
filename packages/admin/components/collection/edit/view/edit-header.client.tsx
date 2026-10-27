@@ -187,7 +187,7 @@ export class EditHeader extends PureReactor {
             {statusOptions.length > 0 && (
               <div className="flex items-center gap-2">
                 <Select
-                  value={currentStatusValue || statusOptions[0].value}
+                  value={currentStatusValue}
                   onChange={this.onStatusChange}
                   options={statusOptions}
                   searchable={false}
