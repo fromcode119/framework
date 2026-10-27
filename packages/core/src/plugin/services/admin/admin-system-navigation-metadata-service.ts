@@ -126,6 +126,17 @@ export class AdminSystemNavigationMetadataService {
         requiredCapabilities: ['users:view'],
       },
       {
+        id: 'person-fields',
+        siteOnly: true,
+        label: 'Person fields',
+        path: AppPathConstants.ADMIN.PEOPLE.FIELDS,
+        sourcePaths: [AppPathConstants.ADMIN.USERS.ROOT],
+        icon: 'ListChecks',
+        scope: CapabilityScope.SELF,
+        priority: 16,
+        requiredCapabilities: ['users:view'],
+      },
+      {
         id: 'roles',
         label: 'Roles',
         path: AppPathConstants.ADMIN.USERS.ROLE_LIST,

@@ -98,6 +98,10 @@ export class PersonalDataEraser {
       }
       erased += addresses.length;
       await this.db.delete(SystemConstants.TABLE.PERSON_RELATIONSHIPS, { from_person_id: person.id }).catch(() => undefined);
+      // Field values are answers about the person: gone under either strategy.
+      const values = await this.db.find(SystemConstants.TABLE.PERSON_FIELD_VALUES, { where: { person_id: person.id } });
+      await this.db.delete(SystemConstants.TABLE.PERSON_FIELD_VALUES, { person_id: person.id });
+      erased += values.length;
 
       if (strategy === PersonalDataEraser.ANONYMISE) {
         await this.db.update(SystemConstants.TABLE.PEOPLE, { id: person.id }, {

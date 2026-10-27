@@ -194,6 +194,9 @@ export class AdminConstants {
     PERSON_SAVE: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID, { id })),
     PERSON_CREATE_USER: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_CREATE_USER, { id })),
     PEOPLE_SUGGEST: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_SUGGEST),
+    PERSON_FIELDS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_FIELDS),
+    PERSON_FIELD: (key: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_FIELDS_KEY, { key })),
+    PERSON_FIELD_VALUES: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID_FIELDS, { id })),
     PERSON_RECORDS: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_PEOPLE_ID_RECORDS, { id })),
     /** Records RELATED to one record. `keys` is a JSON object of correlation keys the subject offers. */
     RECORD_LINKS: (kind: string, id: string | number, keys: Record<string, string>) => AdminApiPaths.v(

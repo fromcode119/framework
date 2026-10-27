@@ -65,6 +65,13 @@ export type { IEntitySchemaPlan } from '@core/database/interfaces/entity-schema-
 export { MigrationManager } from '@core/database/migration-manager';
 export { JournalRetentionService } from '@core/database/journal-retention-service';
 export { PersonalDataErasureService } from '@core/plugin/services/people/personal-data-erasure-service';
+export { PersonFieldService } from '@core/plugin/services/people/fields/person-field-service';
+export { PersonFieldType } from '@core/plugin/services/people/fields/enums/person-field-type.enum';
+export { PersonFieldValue } from '@core/plugin/services/people/fields/person-field-value';
+export { PersonFieldValueError } from '@core/plugin/services/people/fields/person-field-value-error';
+export type { IPersonField } from '@core/plugin/services/people/fields/interfaces/person-field.interface';
+export type { IPersonFieldInput } from '@core/plugin/services/people/fields/interfaces/person-field-input.interface';
+export type { IPersonFieldOption } from '@core/plugin/services/people/fields/interfaces/person-field-option.interface';
 export type { IPersonalDataDataset } from '@core/plugin/services/interfaces/personal-data-dataset.interface';
 export type { IPersonalDataErasure } from '@core/plugin/services/interfaces/personal-data-erasure.interface';
 export type { IPersonalDataSubject } from '@core/plugin/services/interfaces/personal-data-subject.interface';

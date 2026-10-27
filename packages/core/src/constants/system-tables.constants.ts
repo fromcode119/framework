@@ -96,6 +96,8 @@ export class SystemTables {
     PERSON_RELATIONSHIPS: 'person_relationships',
     PEOPLE_ADDRESSES: 'people_addresses',
     PERSON_CATALOGS: 'person_catalogs',
+    PERSON_FIELDS: 'person_fields',
+    PERSON_FIELD_VALUES: 'person_field_values',
     // Private-file delivery. A SHARE is the send (files + message + policy defaults); a GRANT is one
     // recipient's access to it, carrying its own token so a single person can be revoked without
     // cutting off the others; the ACCESS LOG is the audit trail of what was actually opened.

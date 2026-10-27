@@ -46,6 +46,9 @@ export class TenantScopedTables {
     String(SystemConstants.TABLE.PEOPLE_ADDRESSES).toLowerCase(),
     String(SystemConstants.TABLE.PERSON_RELATIONSHIPS).toLowerCase(),
     String(SystemConstants.TABLE.PERSON_CATALOGS).toLowerCase(),
+    // A site's own person fields and its people's values for them.
+    String(SystemConstants.TABLE.PERSON_FIELDS).toLowerCase(),
+    String(SystemConstants.TABLE.PERSON_FIELD_VALUES).toLowerCase(),
     '_system_redirects',
     // PRIVATE FILE DELIVERY. A share is one site's send of its own files, a grant is one recipient's
     // access to it, and the access log is who opened what. All three are that site's, and none was

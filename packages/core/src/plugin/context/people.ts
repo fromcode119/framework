@@ -6,6 +6,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginManagerInterface } from '@core/plugin/context/interfaces/plugin-manager-interface.interface';
 import { SystemConstants } from '@core/constants/system.constants';
+import { PeopleFieldsContextProxy } from '@core/plugin/context/people-fields';
 import { PersonCatalogService } from '@core/plugin/services/people/person-catalog-service';
 import { PeopleAddressService } from '@core/plugin/services/people/people-address-service';
 import { PeopleDirectoryService } from '@core/plugin/services/people/people-directory-service';
@@ -144,8 +145,9 @@ export class PeopleContextProxy {
         /**
          * Registering a catalog value, from wherever the plugin calls it.
          *
-         * Inside a request there is a tenant and this is one write. At BOOT — where every plugin
-         * declaring its own vocabulary calls it, in `onInit` — there is none, and `person_catalogs`
+         * Inside a site's request there is a tenant and this is one write. At BOOT — where every plugin
+         * declaring its own vocabulary calls it, in `onInit` — there is none, nor on a platform-scope
+         * request such as enabling a plugin from the platform console, and `person_catalogs`
          * is tenant-scoped: the row's `tenant_id` defaults to NULL and the policy checks
          * `tenant_id = current_setting(...)`, so NULL = NULL is not TRUE and the write is refused.
          * Three plugins and the framework's own seed failed that way on every boot, each reporting
@@ -156,7 +158,7 @@ export class PeopleContextProxy {
          * vocabulary is; which tenants have it is not a question a plugin should have to ask.
          */
         register: async (kind: string, entry: { key: string; label: string; pluginSlug?: string }) => {
-          if (RequestContextUtils.storage.getStore()) return catalogs.register(kind, entry);
+          if (RequestContextUtils.storage.getStore()?.tenantId) return catalogs.register(kind, entry);
           await PerTenantRun.forEach({
             label: `people:catalog:${kind}:${entry?.key}`,
             db: db as any,
@@ -166,6 +168,8 @@ export class PeopleContextProxy {
         list: (kind: string) => catalogs.list(kind),
         unregister: (kind: string, key: string) => catalogs.remove(kind, key)
       },
+
+      fields: PeopleFieldsContextProxy.create(db),
 
       // Reusable address book on the shared `people_addresses` table. Plugins delegate their account
       // address book here instead of owning a parallel store. `ref` resolves the owning person from

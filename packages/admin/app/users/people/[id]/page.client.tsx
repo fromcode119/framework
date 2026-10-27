@@ -12,6 +12,7 @@ import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { PersonFieldsPanel } from '@/app/users/people/[id]/components/view/person-fields-panel.client';
 import { PersonAccountPanel } from '@/app/users/people/[id]/components/view/person-account-panel.client';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
@@ -109,6 +110,8 @@ export class PersonEditPage extends PersonEditPageActions {
             </form>
             <PersonAccountPanel person={person} theme={theme.value} granting={granting} onGrantLogin={() => this.grantLogin()} />
           </div>
+
+          <PersonFieldsPanel personId={person.id} theme={theme} />
 
           <div className={`mt-6 ${AdminClass.SURFACE} p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
             <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>{AdminI18n.t('users.accountManagement')}</h3>
