@@ -3,6 +3,7 @@ import { OopGuardBaselines } from './oop-guard-baselines';
 import { OopGuardPatterns } from './oop-guard-patterns';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { OopGuard } from './oop-guard';
+import { ReactNativePackage } from './react-native-package';
 
 /**
  * Reads every source file in one package and fills that package's violation buckets.
@@ -62,10 +63,15 @@ export class OopGuardFileScanner {
         // happen to do this today, and the framework names no extension.
         const isKeyedFragmentOnly = /^\s*import\s*\{\s*Fragment\s*,?\s*\}\s*from\s*['"]react['"]/m.test(src)
           && /<Fragment\s+key=/.test(src);
-        if (OopGuardPatterns.REACT_IMPORT.test(src) && !isKeyedFragmentOnly) found.push(`${rel}: non-type import from 'react'`);
-        if (OopGuardPatterns.BUILTIN_HOOK.test(src)) found.push(`${rel}: React hook call`);
-        else if (file.endsWith('.tsx') && OopGuardPatterns.CUSTOM_HOOK.test(src)) found.push(`${rel}: custom hook invocation (use<X>())`);
-        if (OopGuardPatterns.RAW_REACT.test(src)) found.push(`${rel}: raw React escape hatch (createElement/forwardRef/createContext/memo/…)`);
+        // A React Native package an extension publishes on its own runs on the app's React, where hooks are
+        // the normal tools — only the hook-free rule is lifted for it; every check below still applies.
+        const isNativePackage = ReactNativePackage.owns(file);
+        if (!isNativePackage) {
+          if (OopGuardPatterns.REACT_IMPORT.test(src) && !isKeyedFragmentOnly) found.push(`${rel}: non-type import from 'react'`);
+          if (OopGuardPatterns.BUILTIN_HOOK.test(src)) found.push(`${rel}: React hook call`);
+          else if (file.endsWith('.tsx') && OopGuardPatterns.CUSTOM_HOOK.test(src)) found.push(`${rel}: custom hook invocation (use<X>())`);
+          if (OopGuardPatterns.RAW_REACT.test(src)) found.push(`${rel}: raw React escape hatch (createElement/forwardRef/createContext/memo/…)`);
+        }
         // Next route files (page/layout/route/loading/error/not-found/template/default/global-error) MUST
         // default-export a component and async server components can't be classes — the thin function shim there
         // is framework-required, so skip the OopGuardPatterns.FC check for them (hooks / raw-React are still flagged).
