@@ -23,6 +23,12 @@ export class SelfUpdateRun {
   static readonly SERVICES = ['extension-host', 'site-extension-host', 'api', 'admin', 'frontend', 'gateway'];
   static readonly PROJECT_LABEL = 'com.docker.compose.project';
   static readonly SERVICE_LABEL = 'com.docker.compose.service';
+  /**
+   * The tag the compose files fall back to when `.env` names no `VERSION` (`${VERSION:-latest}`). An
+   * install that never wrote one runs every service on it, and the api it serves is the version being
+   * replaced — so those containers are that version, and the update is what pins them.
+   */
+  static readonly UNPINNED_TAG = 'latest';
 
   private readonly replacement: ContainerReplacement;
 
@@ -71,23 +77,31 @@ export class SelfUpdateRun {
 
     this.onStep('Removing what the update replaced');
     for (const done of replaced) await this.replacement.discard(done).catch(() => undefined);
-    await this.prune(tag, SelfUpdateRun.tag(from));
+    // The image a rollback would start is the one the replaced containers ran — on an unpinned install
+    // that is `latest`, not the version tag, and pruning it would leave nothing to go back to.
+    const unpinned = targets.some((target) => target.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`));
+    await this.prune(tag, unpinned ? SelfUpdateRun.UNPINNED_TAG : SelfUpdateRun.tag(from));
     return { state: UpdaterState.SUCCEEDED.value, error: '' };
   }
 
-  /** The platform's own containers on the version being replaced. An `EDGE_IMAGE` someone chose is not ours to replace. */
+  /**
+   * The platform's own containers on the version being replaced — tagged with it, or unpinned (see
+   * UNPINNED_TAG). An `EDGE_IMAGE` someone chose is not ours to replace.
+   */
   private async targets(fromTag: string): Promise<IContainerSummary[]> {
     const containers = await this.engine.listContainers([`${SelfUpdateRun.PROJECT_LABEL}=${this.project}`]);
     return SelfUpdateRun.SERVICES.flatMap((service) => containers.filter((container) =>
       container.Labels[SelfUpdateRun.SERVICE_LABEL] === service
       && container.Image.startsWith(ImageRetention.REGISTRY_PREFIX)
-      && container.Image.endsWith(`:${fromTag}`)));
+      && (container.Image.endsWith(`:${fromTag}`) || container.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`))));
   }
 
   private async rollBack(replaced: IReplacedContainer[], previousVersion: string): Promise<void> {
     this.onStep('Putting the previous version back');
     for (const done of [...replaced].reverse()) await this.replacement.restore(done).catch(() => undefined);
-    this.versionFile.write(previousVersion);
+    // An install that named no version goes back to naming none, so `docker compose up` keeps starting
+    // what is serving rather than the version that was just refused.
+    if (previousVersion) this.versionFile.write(previousVersion); else this.versionFile.clear();
   }
 
   private async prune(deployed: string, replacedTag: string): Promise<void> {

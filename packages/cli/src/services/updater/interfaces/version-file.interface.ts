@@ -2,4 +2,6 @@
 export interface IVersionFile {
   read(): string;
   write(version: string): void;
+  /** Stop naming a version, so the compose files' own default applies again. */
+  clear(): void;
 }
