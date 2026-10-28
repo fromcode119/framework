@@ -28,6 +28,16 @@ export class EnvVersionFile implements IVersionFile {
     const index = lines.findIndex((entry) => entry.startsWith(`${EnvVersionFile.KEY}=`));
     const line = `${EnvVersionFile.KEY}=${version}`;
     if (index === -1) lines.push(line); else lines[index] = line;
+    this.save(lines);
+  }
+
+  clear(): void {
+    const lines = this.lines();
+    if (!lines.some((entry) => entry.startsWith(`${EnvVersionFile.KEY}=`))) return;
+    this.save(lines.filter((entry) => !entry.startsWith(`${EnvVersionFile.KEY}=`)));
+  }
+
+  private save(lines: string[]): void {
     // `.env` can hold secrets, and the updater runs as root. The replacement is created exclusively under
     // an unguessable name and never through a link; its owner and permissions are the original's, set on
     // the open file before a byte is written, so no copy is ever readable by anyone the original was not.

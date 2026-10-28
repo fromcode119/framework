@@ -10,13 +10,14 @@ class Stack {
   version = 'v0.2.392';
   healthy = true;
   steps: string[] = [];
-  constructor() {
-    for (const [service, image] of Object.entries(SERVICES)) this.engine.add(service, `${REG}${image}:v0.2.392`);
+  constructor(tag = 'v0.2.392') {
+    if (tag === 'latest') this.version = '';
+    for (const [service, image] of Object.entries(SERVICES)) this.engine.add(service, `${REG}${image}:${tag}`);
     this.engine.add('db', 'postgres:16');
     for (const image of ['api', 'admin', 'frontend', 'gateway']) this.engine.published.add(`${REG}${image}:v0.2.400`);
   }
   run() {
-    const file = { read: () => this.version, write: (v: string) => { this.version = v; } };
+    const file = { read: () => this.version, write: (v: string) => { this.version = v; }, clear: () => { this.version = ''; } };
     return new SelfUpdateRun(this.engine, { reports: async () => this.healthy }, file, 'site', (s) => this.steps.push(s)).run('0.2.392', '0.2.400');
   }
   imageOf(service: string) {
@@ -112,5 +113,28 @@ describe('SelfUpdateRun', () => {
     expect(stack.engine.images.has(`${REG}api:v0.2.300`)).toBe(false);
     expect(stack.engine.images.has(`${REG}api:v0.2.392`)).toBe(true);
     expect(stack.engine.images.has('redis:7')).toBe(true);
+  });
+
+  it('updates an install whose .env names no version and so runs every service on latest', async () => {
+    const stack = new Stack('latest');
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    for (const service of ['api', 'extension-host', 'admin', 'frontend', 'gateway']) expect(stack.imageOf(service)).toMatch(/:v0\.2\.400$/);
+    expect(stack.imageOf('edge')).toMatch(/:latest$/);
+    expect(stack.version).toBe('v0.2.400');
+    expect(stack.engine.images.has(`${REG}api:latest`)).toBe(true);
+  });
+
+  it('leaves an unpinned install unpinned when it has to roll back', async () => {
+    const stack = new Stack('latest');
+    stack.healthy = false;
+
+    const outcome = await stack.run();
+
+    expect(outcome.state).toBe('rolledBack');
+    expect(stack.imageOf('api')).toMatch(/:latest$/);
+    expect(stack.version).toBe('');
   });
 });
