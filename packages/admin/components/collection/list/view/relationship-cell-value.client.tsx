@@ -22,6 +22,14 @@ export class CollectionListRelationshipCellValue extends AdminComponent {
     return CollectionKeyUtils.resolveSourceSlugs(this.relationTo, this.collections || []);
   }
 
+  /** A related record named as its own collection names it (`admin.useAsTitle`), as the edit form's select does. */
+  private labelOf(doc: any, relationSlug: string): string {
+    const collection = (this.collections || []).find((entry: any) => entry.slug === relationSlug);
+    const titleField = collection?.admin?.useAsTitle;
+    const title = titleField ? String(doc?.[titleField] ?? '').trim() : '';
+    return title || CollectionListUtils.resolveRelationDisplayLabel(doc);
+  }
+
   private getTokens(): IRelationToken[] {
     const { raw } = this;
     const entries = Array.isArray(raw) ? raw : [raw];
@@ -74,7 +82,7 @@ export class CollectionListRelationshipCellValue extends AdminComponent {
                 `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?id=${encodeURIComponent(entry.value)}&limit=1`
               ));
               if (byId) {
-                const label = CollectionListUtils.resolveRelationDisplayLabel(byId) || entry.value;
+                const label = this.labelOf(byId, relationSlug) || entry.value;
                 updates[key] = label;
                 CollectionListRelationshipCellValue.RELATIONSHIP_LABEL_CACHE.set(key, label);
                 return;
@@ -83,7 +91,7 @@ export class CollectionListRelationshipCellValue extends AdminComponent {
                 `${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${encodeURIComponent(relationSlug)}?slug=${encodeURIComponent(entry.value)}&limit=1`
               ));
               if (bySlug) {
-                const label = CollectionListUtils.resolveRelationDisplayLabel(bySlug) || entry.value;
+                const label = this.labelOf(bySlug, relationSlug) || entry.value;
                 updates[key] = label;
                 CollectionListRelationshipCellValue.RELATIONSHIP_LABEL_CACHE.set(key, label);
                 return;
