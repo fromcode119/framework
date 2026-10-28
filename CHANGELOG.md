@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.459] - 2026-10-28
+
+### Fixed
+
+- **updater**: update installs whose .env names no VERSION ([#1100](https://github.com/fromcode119/framework/pull/1100))
+
 ## [0.2.458] - 2026-10-27
 
 ### Fixed
