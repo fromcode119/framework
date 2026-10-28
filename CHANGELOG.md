@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.460] - 2026-10-28
+
+### Fixed
+
+- **admin**: list cells name a related record by its collection's useAsTitle ([#1103](https://github.com/fromcode119/framework/pull/1103))
+- **arch-guard**: let a React Native package an extension publishes use hooks ([#1102](https://github.com/fromcode119/framework/pull/1102))
+
 ## [0.2.459] - 2026-10-28
 
 ### Fixed
