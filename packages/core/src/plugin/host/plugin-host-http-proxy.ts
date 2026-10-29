@@ -1,9 +1,11 @@
 import http from 'http';
+import zlib from 'zlib';
 import type { Request, Response, NextFunction } from 'express';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
+import { ResponseCompressionPolicy } from '@core/security/response-compression-policy';
 
 /**
  * Forwards one Express request to the guest's Unix socket and streams the answer back.
@@ -31,7 +33,39 @@ export class PluginHostHttpProxy {
   /** Requests being served, per routes socket: a replaced plugin process is retired only once its count is 0. */
   private readonly serving = new Map<string, number>();
 
+  /** A JSON answer larger than this streams through as it is rather than being held to compress. */
+  private static readonly MAX_COMPRESS_BYTES = 16 * 1024 * 1024;
+
   constructor(private socketPath: string) {}
+
+  /**
+   * A plugin's JSON answer is gzipped here, by the same `ResponseCompressionPolicy` as the api's own
+   * routes: it streams back from the guest and never passes the api's `res.json`, so every plugin
+   * answer used to reach the client uncompressed.
+   */
+  private static compressible(req: Request, reply: http.IncomingMessage): boolean {
+    if (reply.headers['content-encoding']) return false;
+    if (!String(reply.headers['content-type'] || '').toLowerCase().includes('application/json')) return false;
+    if (Number(reply.headers['content-length'] || 0) > PluginHostHttpProxy.MAX_COMPRESS_BYTES) return false;
+    return ResponseCompressionPolicy.mayCompress(req);
+  }
+
+  /** Holds the answer, then sends it gzipped — or as it was, when it is small or holds a request secret. */
+  private static sendCompressed(req: Request, res: Response, reply: http.IncomingMessage): void {
+    const chunks: Buffer[] = [];
+    reply.on('data', (chunk: Buffer) => chunks.push(chunk));
+    reply.on('end', () => {
+      const body = Buffer.concat(chunks);
+      res.vary('Accept-Encoding');
+      res.removeHeader('Content-Length');
+      if (!ResponseCompressionPolicy.compressesBody(body.toString('utf8'), ResponseCompressionPolicy.secrets(req))) {
+        res.end(body);
+        return;
+      }
+      res.setHeader('Content-Encoding', 'gzip');
+      res.end(zlib.gzipSync(body));
+    });
+  }
 
   inFlight(socketPath: string): number {
     return this.serving.get(socketPath) ?? 0;
@@ -125,7 +159,8 @@ export class PluginHostHttpProxy {
           res.setHeader('Content-Security-Policy', PluginHostHttpProxy.SITE_PLUGIN_RESPONSE_POLICY);
           res.setHeader('X-Content-Type-Options', 'nosniff');
         }
-        reply.pipe(res);
+        if (PluginHostHttpProxy.compressible(req, reply)) PluginHostHttpProxy.sendCompressed(req, res, reply);
+        else reply.pipe(res);
         reply.on('end', finish);
         reply.on('error', () => { if (!res.headersSent) res.status(502); res.end(); finish(); });
       });

@@ -248,6 +248,7 @@ export { SettingScope } from '@core/settings/enums/setting-scope.enum';
 export { SettingSource } from '@core/settings/enums/setting-source.enum';
 export { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 export { NetworkAddressUtils } from '@core/security/network-address-utils';
+export { ResponseCompressionPolicy } from '@core/security/response-compression-policy';
 export { GeoIpLookup } from '@core/geo/geo-ip-lookup';
 export { GeoDatabaseUpdater } from '@core/geo/geo-database-updater';
 export { GeoDatabaseSource } from '@core/geo/geo-database-source';
