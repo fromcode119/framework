@@ -2,11 +2,12 @@ import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { IntegrationFieldType } from '@/app/settings/integrations/enums/integration-field-type.enum';
 import type { ChangeEvent, ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound, state } from '@fromcode119/react-class-components';
 import { Input } from '@/components/ui/view/input.client';
 import { TextArea } from '@/components/ui/view/text-area.client';
 import { Select } from '@/components/ui/view/select.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
 import type { IntegrationsFieldOptionsService } from '@/app/settings/integrations/integrations-field-options-service';
@@ -22,6 +23,9 @@ export class IntegrationFieldInput extends PureReactor {
   @prop declare dynamicFieldErrors: Record<string, string>;
   @prop declare dynamicFieldLoading: Record<string, boolean>;
   @prop declare onChange: (nextValue: any) => void;
+  /** The file the value was read from, shown in the drop zone until Save; never kept or uploaded. */
+  @state private chosenFile: File | null = null;
+  @state private failedFileName = '';
 
   private get value(): any {
     return this.editor.config?.[this.field.name];
@@ -34,6 +38,52 @@ export class IntegrationFieldInput extends PureReactor {
   @bound
   private handleInputChange(event: ChangeEvent<HTMLInputElement>): void {
     this.onChange(event.target.value);
+  }
+
+  /**
+   * Reads the chosen file into the field — as text, or as base64 when the provider declares a binary file.
+   * The file never leaves the browser; only Save sends the value, which is encrypted like any secret.
+   */
+  @bound
+  private handleFileChosen(file: File | null): void {
+    this.failedFileName = '';
+    this.chosenFile = file;
+    if (!file) { this.onChange(''); return; }
+    const read = this.field.fileAsBase64
+      ? file.arrayBuffer().then((buffer) => IntegrationFieldInput.toBase64(new Uint8Array(buffer)))
+      : file.text().then((text) => text.trim());
+    read.then((value) => this.onChange(value), () => { this.chosenFile = null; this.failedFileName = file.name; });
+  }
+
+  private static toBase64(bytes: Uint8Array): string {
+    let binary = '';
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+    return btoa(binary);
+  }
+
+  /** A field the provider takes as a file: the platform's drop zone in place of a paste box. */
+  private renderFile(): ReactNode {
+    const { field, editor } = this;
+    const accept = field.acceptFile || [];
+    // A saved secret stays until a new file replaces it; the drop zone only shows a file chosen now.
+    const file = this.hasSavedSecret ? null : this.chosenFile;
+    return (
+      <div className="md:col-span-2">
+        <span className="mb-1.5 block text-[12px] font-semibold text-slate-700 dark:text-slate-300">{`${field.label}${field.required ? ' *' : ''}`}</span>
+        <FileDropzone accept={accept.join(',')} file={file} onSelect={this.handleFileChosen}
+          hint={AdminI18n.t('settings.integrations.fileTypes', { types: accept.join(', ') })} />
+        {this.failedFileName ? <p className="mt-1 text-[11px] text-rose-600">{AdminI18n.t('settings.integrations.fileReadFailed', { name: this.failedFileName })}</p> : null}
+        {this.hasSavedSecret && (
+          <div className="mt-2 flex items-center gap-2 text-[11px] text-emerald-600 dark:text-emerald-400">
+            <FrameworkIcons.CheckCircle size={12} />
+            <span>{AdminI18n.t('settings.integrations.fileSavedChooseToReplace')}</span>
+          </div>
+        )}
+        {field.description ? <p className="mt-1 text-[11px] text-slate-500">{field.description}</p> : null}
+      </div>
+    );
   }
 
   @bound
@@ -136,7 +186,8 @@ export class IntegrationFieldInput extends PureReactor {
             <span>{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</span>
           </div>
         )}
-        {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew)) && (
+        {/* The saved-secret line above already says to leave it blank; repeating it under it was noise. */}
+        {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew && !this.hasSavedSecret)) && (
           <p className="mt-1 text-[11px] text-slate-500">
             {field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}
           </p>
@@ -146,6 +197,7 @@ export class IntegrationFieldInput extends PureReactor {
   }
 
   render(): ReactNode {
+    if (this.field.acceptFile?.length) return this.renderFile();
     if (this.field.type === IntegrationFieldType.BOOLEAN) return this.renderBoolean();
     if (this.field.type === IntegrationFieldType.TEXTAREA) return this.renderTextArea();
     if (this.field.type === IntegrationFieldType.SELECT) return this.renderSelect();

@@ -14,8 +14,9 @@ import type { IStoredProvider } from '@/app/settings/integrations/interfaces/sto
  * The base of this page's chain — reconciliation, then the provider actions, then the lifecycle and
  * the markup — each layer working over these same fields.
  *
- * `editor` being `null` is meaningful: nothing is being edited, which is NOT the same as editing a
- * provider whose fields happen to be empty. Both states exist and the screen renders them differently.
+ * `editor` being `null` is meaningful. For a type that allows several providers it is the list; an editor
+ * replaces the list in place until it is saved or left. A one-provider type always has an editor: its
+ * page IS the form.
  */
 export abstract class IntegrationsSettingsPageState extends AdminComponent {
   @prop declare searchParams?: Promise<Record<string, string | string[]>>;
@@ -41,13 +42,26 @@ export abstract class IntegrationsSettingsPageState extends AdminComponent {
   protected readonly fieldOptionsService = new IntegrationsFieldOptionsService();
   protected fieldOptionsLoadToken = 0;
   protected prevReconcileKey = '';
-  protected prevEditorBuildKey = '';
   protected prevDynamicKey = '';
 
   // ---- Derived selectors (replace useMemo) ----
 
-  protected get integrationOptions(): Array<{ label: string; value: string }> {
-    return IntegrationSelectors.integrationOptions(this.integrations);
+  protected get ownerTabs(): Array<{ slug: string; label: string }> {
+    return IntegrationSelectors.ownerTabs(this.integrations);
+  }
+
+  /** The owner whose types are shown: the one the active type belongs to. */
+  protected get activeOwner(): string {
+    return this.activeIntegration?.owner?.slug || '';
+  }
+
+  protected get ownerTypes(): IIntegrationRecord[] {
+    return IntegrationSelectors.typesOfOwner(this.integrations, this.activeOwner);
+  }
+
+  /** One provider at a time: the type is edited as a single form, never as a list. */
+  protected get singleProvider(): boolean {
+    return !!this.activeIntegration && !this.activeIntegration.allowMultipleActiveProviders;
   }
 
   protected get activeIntegration(): IIntegrationRecord | null {
@@ -64,10 +78,6 @@ export abstract class IntegrationsSettingsPageState extends AdminComponent {
 
   protected get currentProviderDefinition(): IIntegrationProvider | null {
     return IntegrationSelectors.currentProviderDefinition(this.activeIntegration, this.editor);
-  }
-
-  protected get selectedProviderDefinition(): IIntegrationProvider | null {
-    return IntegrationSelectors.selectedProviderDefinition(this.activeIntegration, this.selectedProviderId);
   }
 
   protected patchEditor(patch: Partial<IProviderEditorState> | ((prev: IProviderEditorState) => IProviderEditorState)): void {

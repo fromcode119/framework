@@ -3,6 +3,7 @@ import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-
 import { IntegrationProviderFormHelper } from '@/app/settings/integrations/integration-provider-form-helper';
 import { IntegrationReconciler } from '@/app/settings/integrations/integration-reconciler';
 import type { IIntegrationConfigField } from '@/app/settings/integrations/interfaces/integration-config-field.interface';
+import type { IIntegrationProvider } from '@/app/settings/integrations/interfaces/integration-provider.interface';
 import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/integration-record.interface';
 import type { IProviderEditorState } from '@/app/settings/integrations/interfaces/provider-editor-state.interface';
 import { IntegrationsSettingsPageState } from '@/app/settings/integrations/components/view/integrations-settings-page-state.client';
@@ -45,37 +46,50 @@ export abstract class IntegrationsSettingsPageReconcile extends IntegrationsSett
     }
   }
 
+  /**
+   * A type with several providers shows its list until a provider is opened, and closes an editor whose
+   * provider is gone. A one-provider type is a form: it always has an editor, for the provider in use or,
+   * when nothing is saved yet, a new one for the type's default.
+   */
   protected reconcileEditor(): void {
     const activeIntegration = this.activeIntegration;
-    const { selectedProviderId, editor } = this;
-    const selectedProviderDefinition = this.selectedProviderDefinition;
-
-    const key = IntegrationReconciler.editorBuildKey(activeIntegration, selectedProviderId, editor, selectedProviderDefinition);
-    if (key === this.prevEditorBuildKey) return;
-    this.prevEditorBuildKey = key;
-
+    const editor = this.editor;
     if (!activeIntegration) {
       if (editor) this.editor = null;
       return;
     }
 
-    if (editor?.isNew) return;
-
     const providers = activeIntegration.storedProviders || [];
-    if (!providers.length) {
-      this.selectedProviderId = '';
-      this.editor = null;
+    if (activeIntegration.allowMultipleActiveProviders) {
+      if (editor && !editor.isNew && !providers.some((provider) => provider.id === editor.providerId)) this.editor = null;
       return;
     }
 
-    const selected = providers.find((provider) => provider.id === selectedProviderId) || providers[0];
-
-    if (!selectedProviderId || selectedProviderId !== selected.id) {
-      this.selectedProviderId = selected.id;
+    if (editor) return;
+    const inUse = providers.find((provider) => provider.enabled !== false) || providers[0];
+    if (inUse) {
+      this.selectedProviderId = inUse.id;
+      this.editor = IntegrationProviderFormHelper.buildEditorForProvider(inUse, this.definitionOf(inUse.providerKey));
       return;
     }
+    const fallback = this.definitionOf(activeIntegration.defaultProvider) || activeIntegration.providers[0];
+    if (fallback) this.editor = this.newEditorFor(fallback.key);
+  }
 
-    this.editor = IntegrationProviderFormHelper.buildEditorForProvider(selected, selectedProviderDefinition);
+  protected definitionOf(providerKey: string): IIntegrationProvider | null {
+    return this.activeIntegration?.providers.find((provider) => provider.key === providerKey) || null;
+  }
+
+  protected newEditorFor(providerKey: string): IProviderEditorState {
+    return {
+      isNew: true,
+      providerId: '',
+      providerKey,
+      providerName: '',
+      enabled: true,
+      config: IntegrationsPageUtils.defaultConfigForFields(this.definitionOf(providerKey)?.fields),
+      preservedSecretFields: {},
+    };
   }
 
   protected reconcileDynamicFieldOptions(): void {

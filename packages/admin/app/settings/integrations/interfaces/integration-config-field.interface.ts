@@ -11,4 +11,8 @@ export interface IIntegrationConfigField {
   optionsEndpoint?: string;
   searchable?: boolean;
   defaultValue?: string | number | boolean;
+  /** File types the field can be filled from; read in the browser, never uploaded. */
+  acceptFile?: string[];
+  /** The file is binary: the field gets its bytes as base64, which the provider decodes. */
+  fileAsBase64?: boolean;
 }

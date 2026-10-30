@@ -17,4 +17,15 @@ export interface IIntegrationConfigField {
    * means for a payment or shipping provider is that owner's business, this flag only marks the field.
    */
   public?: boolean;
+  /**
+   * File types the provider takes this value as (`.json`, `.pem`, `.p8`, `.p12`, `.pfx`, `.cer`…): the admin
+   * offers "Choose file", reads it in the browser and fills the field. The file itself is never uploaded or
+   * stored — only the value, encrypted like any secret.
+   */
+  acceptFile?: string[];
+  /**
+   * The file is binary (a `.p12`/`.pfx` keystore, a DER certificate): the field gets its bytes as base64 and
+   * the provider decodes them. Absent means the file is text (JSON, PEM) and the field gets that text.
+   */
+  fileAsBase64?: boolean;
 }

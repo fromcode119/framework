@@ -26,11 +26,17 @@ export class IntegrationProviderFormHelper {
     return errors;
   }
 
-  static buildSavePayload(providerDefinition: IIntegrationProvider, editor: IProviderEditorState): Record<string, any> {
+  /**
+   * A one-provider type saves with `makeActive`, which turns every other provider off — choosing another
+   * provider replaces the one in use. A type with several keeps each provider's own on/off: with
+   * `makeActive` (the api's default) saving a provider that was off would quietly turn it back on.
+   */
+  static buildSavePayload(providerDefinition: IIntegrationProvider, editor: IProviderEditorState, allowMultiple: boolean): Record<string, any> {
     const payload: Record<string, any> = {
       provider: editor.providerKey,
       config: IntegrationsPageUtils.copyConfigForFields(providerDefinition.fields || [], editor.config || {}),
-      enabled: editor.enabled
+      enabled: allowMultiple ? editor.enabled : true,
+      makeActive: !allowMultiple,
     };
     if (!editor.isNew && editor.providerId) payload.providerId = editor.providerId;
     if (editor.providerName.trim()) payload.providerName = editor.providerName.trim();
