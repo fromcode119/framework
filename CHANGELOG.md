@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.467] - 2026-10-30
+
+### Fixed
+
+- **admin**: collection edit header matches the shared compact header ([#1118](https://github.com/fromcode119/framework/pull/1118))
+
 ## [0.2.466] - 2026-10-30
 
 ### Fixed
