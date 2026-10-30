@@ -2106,7 +2106,10 @@
       "removeProvider": "Remove provider",
       "removeLastRefused": "The last provider cannot be removed. Turn it off instead.",
       "secretSaved": "secret saved",
-      "noProvidersYetHint": "Add a provider to turn this on."
+      "noProvidersYetHint": "Add a provider to turn this on.",
+      "fileReadFailed": "Could not read {{name}}.",
+      "fileTypes": "{{types}} · read in your browser; only its contents are saved, encrypted.",
+      "fileSavedChooseToReplace": "A file is saved securely. Choose a new one only to replace it."
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",
