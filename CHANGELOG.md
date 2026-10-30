@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.465] - 2026-10-30
+
+### Fixed
+
+- **deploy**: give Postgres a 1G memory cap in the full stack ([#1114](https://github.com/fromcode119/framework/pull/1114))
+
 ## [0.2.464] - 2026-10-30
 
 ### Fixed
