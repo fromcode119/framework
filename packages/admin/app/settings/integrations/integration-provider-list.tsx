@@ -76,7 +76,7 @@ export class IntegrationProviderList extends PureReactor {
     const integration = this.activeIntegration;
     return (
       <div className="space-y-4">
-        <div className="flex items-start justify-between gap-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <h2 className="text-base font-semibold text-slate-900 dark:text-white">{integration.label}</h2>
             <p className="mt-1 text-[12px] text-slate-500">
@@ -84,7 +84,7 @@ export class IntegrationProviderList extends PureReactor {
             </p>
           </div>
           <button type="button" onClick={this.onAddProvider}
-            className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800">
+            className="inline-flex h-9 shrink-0 items-center gap-1.5 self-start rounded-lg border border-slate-200 bg-white px-3 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 dark:border-slate-700 dark:bg-transparent dark:text-slate-200 dark:hover:bg-slate-800">
             <FrameworkIcons.Plus size={14} />
             {AdminI18n.t('settings.integrations.addProvider')}
           </button>
