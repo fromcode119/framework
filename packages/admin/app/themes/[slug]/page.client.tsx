@@ -172,18 +172,20 @@ export class ThemeSettingsPage extends AdminComponent implements IThemeSettingsP
 
     const model = ThemeSettingsRenderModel.build(this, themeDetail);
     const { adminTheme, activeTab } = model;
-    const dark = adminTheme === ThemeMode.DARK;
     return (
-      <div className="w-full space-y-5 pb-12">
+      <div className="w-full pb-12">
         <ThemeSettingsHeader page={this} model={model} />
-        <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-          <ThemeDetailTabs activeTab={activeTab} onTabChange={this.handleTabChange} theme={adminTheme} />
-          {activeTab === ThemeSettingsTab.SETTINGS ? <ThemeSettingsSections page={this} model={model} /> : (
-            activeTab === ThemeSettingsTab.MAINTENANCE
-              ? <div className="p-6"><ThemeSettingsMaintenancePanel page={this} model={model} /></div>
-              : <ThemeSettingsOverviewPanel page={this} model={model} />
-          )}
-        </section>
+        {/* Tabs are bands under the header and the content one card below, as on Integrations. */}
+        <ThemeDetailTabs activeTab={activeTab} onTabChange={this.handleTabChange} theme={adminTheme} />
+        {activeTab === ThemeSettingsTab.SETTINGS ? <ThemeSettingsSections page={this} model={model} /> : (
+          <div className="w-full p-6">
+            <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+              {activeTab === ThemeSettingsTab.MAINTENANCE
+                ? <div className="p-6"><ThemeSettingsMaintenancePanel page={this} model={model} /></div>
+                : <ThemeSettingsOverviewPanel page={this} model={model} />}
+            </section>
+          </div>
+        )}
         <ThemeSettingsDialogs page={this} model={model} />
       </div>
     );
