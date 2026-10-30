@@ -585,11 +585,14 @@ services:
         condition: service_completed_successfully
     networks:
       - framework
+    # 384M was too tight: 128 MB of shared buffers, ~10 MB per connection and a checkpoint
+    # writing ~50 MB took the container over its cap, the kernel killed the checkpointer, Postgres
+    # restarted, and the api exited on the dropped connection. A cap, not a reservation.
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          memory: 384M
+          memory: 1G
 
   redis:
     image: redis:7-alpine
