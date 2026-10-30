@@ -72,6 +72,69 @@ export class GeneralSystemCards extends PureReactor {
   }
 
   @bound
+  protected changeSiteEnvironment(value: string): void {
+    this.setSettings((prev) => ({ ...prev, site_environment: value }));
+  }
+
+  @bound
+  protected changeSiteSearchIndexing(val: boolean): void {
+    this.setSettings((prev) => ({ ...prev, site_search_indexing: val }));
+  }
+
+  /**
+   * The single-site twin of a site's Environment and "Visible to" — on a deployment with sites each
+   * site carries both on its own page, so this card is not rendered there.
+   */
+  private renderSiteCard(): ReactNode {
+    if (!this.platformLocks.isSingleSite()) return null;
+    const { settings, theme } = this;
+    return (
+      <Card title={AdminI18n.t('settings.general.site')}>
+        <SettingRow
+          theme={theme}
+          icon={FrameworkIcons.Globe}
+          title={AdminI18n.t('sites.environment')}
+          description={AdminI18n.t('settings.general.siteEnvironmentDescription')}
+          explanation={(
+            <Explanation>
+              <p>{AdminI18n.t('settings.general.siteEnvironmentProduction')}</p>
+              <p>{AdminI18n.t('settings.general.siteEnvironmentNonProduction')}</p>
+            </Explanation>
+          )}
+        >
+          <Select
+            value={settings.site_environment}
+            onChange={this.changeSiteEnvironment}
+            options={[
+              { value: 'production', label: AdminI18n.t('sites.productionEmailPaymentsAndShipments') },
+              { value: 'non-production', label: AdminI18n.t('sites.nonProductionNothingLeavesThis') },
+            ]}
+            theme={theme}
+            className="w-full md:w-80"
+            triggerClassName="font-bold rounded-xl"
+          />
+        </SettingRow>
+        <SettingRow
+          theme={theme}
+          icon={FrameworkIcons.Search}
+          title={AdminI18n.t('settings.general.siteSearchIndexing')}
+          description={AdminI18n.t('settings.general.siteSearchIndexingDescription')}
+          explanation={(
+            <Explanation>
+              <p><AdminRichText k="settings.general.siteSearchIndexingOff" /></p>
+            </Explanation>
+          )}
+        >
+          <Switch
+            checked={settings.site_search_indexing}
+            onChange={this.changeSiteSearchIndexing}
+          />
+        </SettingRow>
+      </Card>
+    );
+  }
+
+  @bound
   protected changeAdminSearchIndexing(val: boolean): void {
     this.setSettings((prev) => ({ ...prev, admin_search_indexing: val }));
   }
@@ -184,6 +247,8 @@ export class GeneralSystemCards extends PureReactor {
             )}
           </Card>
         )}
+
+        {this.renderSiteCard()}
 
         {this.shown('admin_search_indexing') && (
           <Card title={AdminI18n.t('settings.general.searchEngines')}>

@@ -355,6 +355,7 @@ export { PlatformOwnershipService } from '@core/tenant/platform-ownership-servic
 export { PlatformOwnershipError } from '@core/tenant/platform-ownership-error';
 export { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 export { TenantEnvironmentGate } from '@core/tenant/tenant-environment-gate';
+export { StandaloneSitePolicy } from '@core/tenant/standalone-site-policy';
 export { NonProductionRefusal } from '@core/tenant/non-production-refusal';
 export { TenantMode } from '@core/tenant/tenant-mode';
 export { IntegrationTenantAccess } from '@core/integrations/integration-tenant-access';

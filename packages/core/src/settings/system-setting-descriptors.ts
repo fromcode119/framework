@@ -285,6 +285,9 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.NOTIFICATION_EMAIL]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC]: { scope: SettingScope.SITE, writable: true, exposed: true },
     [SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
+    // Settings → General → Site, shown only on a single-site deployment — see StandaloneSitePolicy.
+    [SystemConstants.META_KEY.SITE_ENVIRONMENT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true, seed: { value: 'production', description: "Whether this single-site deployment is the real site or a copy for testing.", group: "General" } },
+    [SystemConstants.META_KEY.SITE_SEARCH_INDEXING]: { scope: SettingScope.PLATFORM, writable: true, exposed: true, seed: { value: 'true', description: "Let search engines index this single-site deployment's storefront.", group: "General" } },
     [SystemConstants.META_KEY.FRAMEWORK_REPOSITORY]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SOURCES_WORKSPACE_ROOT]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },
     [SystemConstants.META_KEY.SOURCES_BUILD_UNVERIFIED_COMMITS]: { scope: SettingScope.PLATFORM, writable: true, exposed: true },

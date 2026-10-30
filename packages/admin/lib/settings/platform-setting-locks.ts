@@ -125,6 +125,14 @@ export class PlatformSettingLocks {
   }
 
   /** Is a site selected? `false` is the platform scope, and on a single-tenant deployment there is no scope at all. */
+  /**
+   * A deployment with no sites at all. Settings that stand in for a site's own row (its environment,
+   * its indexability) belong on this screen only then; with sites, each site carries them itself.
+   */
+  isSingleSite(): boolean {
+    return !this.tenantMode;
+  }
+
   isSiteScope(): boolean {
     return this.tenantMode && this.siteSelected;
   }

@@ -1,3 +1,4 @@
+import { StandaloneSitePolicy } from '@core/tenant/standalone-site-policy';
 import { Logger } from '@core/logging';
 import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
 import { TenantMode } from '@core/tenant/tenant-mode';
@@ -57,6 +58,11 @@ export class PluginScheduledTenantRun {
   }): (data?: unknown) => Promise<void> {
     return async (data?: unknown): Promise<void> => {
       if (!TenantMode.isEnabled()) {
+        // The single-site twin of skipping a non-production tenant below — same reason, same answer.
+        if (!(await StandaloneSitePolicy.isProduction())) {
+          PluginScheduledTenantRun.logger.info(`Skipping ${input.pluginSlug}:${input.taskName} — the site is marked non-production.`);
+          return;
+        }
         await input.handler(data);
         return;
       }

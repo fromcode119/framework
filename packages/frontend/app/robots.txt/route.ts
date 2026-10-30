@@ -26,7 +26,7 @@ export class RobotsRoute {
     // welcome is the platform's answer about the site, not a plugin's answer about content, and the
     // plugin that serves this file may not even be active — which is exactly how this route used to
     // hand out `Allow: /` for an unpublished site.
-    if (await SiteVisibilityVerdict.isTenanted() && !(await SiteVisibilityVerdict.isIndexable())) {
+    if (!(await SiteVisibilityVerdict.indexableOrUntenanted())) {
       return RobotsRoute.text('User-agent: *\nDisallow: /\n');
     }
 
@@ -40,7 +40,8 @@ export class RobotsRoute {
     // complete disallow and that is the better default, but flipping it here would de-index every
     // existing single-site storefront the moment it upgraded — a live site going dark in search
     // because a plugin was inactive. That is a decision for an operator, not for an upgrade. The
-    // visibility branch above already covers every site that has said it is not ready.
+    // visibility branch above already covers every site — and every single-site deployment — that has
+    // said it is not ready.
     //
     // `no-store` regardless: this answer is a symptom, and caching it for an hour outlives the fix.
     return RobotsRoute.text('User-agent: *\nAllow: /\n');

@@ -28,6 +28,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'frontend_url',
     'admin_url',
     'site_url',
+    'site_environment',
     'marketplace_url',
     'framework_repository',
     'sources_workspace_root',
@@ -47,6 +48,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
   ] as const;
   protected static readonly BOOLEAN_KEYS = [
     'admin_search_indexing',
+    'site_search_indexing',
     'email_notifications',
     'frontend_auth_enabled',
     'frontend_registration_enabled',

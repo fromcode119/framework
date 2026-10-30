@@ -203,6 +203,8 @@ export class StorefrontDocumentRenderer {
       // The render already got this far, so the site is either published or this caller may preview
       // it. Only the second case says so on screen.
       preview: await SiteVisibilityVerdict.isPreview(),
+      // The islands document said nothing about a non-production site while the root layout did.
+      nonProduction: await SiteVisibilityVerdict.isNonProduction(),
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),
       layoutInlineCss: FrontendLayoutStylesheets.inlineCss(),
       status: args.status || 200,

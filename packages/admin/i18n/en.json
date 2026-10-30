@@ -1703,7 +1703,14 @@
       "sourcesCheckInterval": "Check for new commits every (minutes)",
       "sourcesCheckIntervalDescription": "How often Sources looks for new commits on the sources set to build automatically, and builds and installs what changed. A shorter interval brings a merge live sooner; each check asks every source's repository once. Set 0 to stop the automatic checks; a source can still be built by hand.",
       "sourcesBuildUnverified": "Build commits not merged through GitHub",
-      "sourcesBuildUnverifiedDescription": "Off: Sources builds only a commit GitHub itself merged — a pull request merged on github.com, signed with GitHub’s key. A commit pushed any other way, or a repository not on GitHub, is refused and the Sources screen says why. On: every commit on the tracked branch is built, wherever it came from."
+      "sourcesBuildUnverifiedDescription": "Off: Sources builds only a commit GitHub itself merged — a pull request merged on github.com, signed with GitHub’s key. A commit pushed any other way, or a repository not on GitHub, is refused and the Sources screen says why. On: every commit on the tracked branch is built, wherever it came from.",
+      "site": "Site",
+      "siteEnvironmentDescription": "Whether this is the real site or a copy for testing.",
+      "siteEnvironmentProduction": "Production — email, payments, shipments and scheduled jobs reach the outside world.",
+      "siteEnvironmentNonProduction": "Non-production — no email, payment, shipment or other outside request leaves this site and no scheduled job runs, whatever its plugins are set to do. Every visitor sees a bar saying so. Courier and payment test modes stop working too, because they also call outside.",
+      "siteSearchIndexing": "Let Search Engines Index This Site",
+      "siteSearchIndexingDescription": "Off tells search engines not to index the storefront. Visitors can still open it.",
+      "siteSearchIndexingOff": "<strong>Off</strong> — <code>robots.txt</code> answers <code>Disallow: /</code> and every page carries <code>noindex, nofollow</code>."
     },
     "appearance": {
       "appearance": "Appearance",

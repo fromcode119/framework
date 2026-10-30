@@ -13,14 +13,15 @@ export class NonProductionRefusal extends Error {
   constructor(
     /** Which brake refused: `email`, `network` or `scheduler`. */
     readonly effect: string,
-    /** The site that refused, by slug — what the operator sees in the Sites list. */
+    /** The site that refused, by slug — what the operator sees in the Sites list. Empty on a single-site deployment. */
     readonly tenantSlug: string,
     /** What was being reached: a recipient address, a URL, a task name. */
     readonly target: string,
   ) {
     super(
       `Blocked: this site is marked non-production, so ${effect} cannot leave it `
-      + `(attempted: ${target}). Change it at Sites → ${tenantSlug} → Environment.`,
+      + `(attempted: ${target}). Change it at `
+      + (tenantSlug ? `Sites → ${tenantSlug} → Environment.` : 'Settings → General → Site → Environment.'),
     );
     this.name = 'NonProductionRefusal';
   }

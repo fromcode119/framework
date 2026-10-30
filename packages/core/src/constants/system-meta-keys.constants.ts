@@ -266,6 +266,15 @@ export class SystemMetaKeys {
    */
   ADMIN_SEARCH_INDEXING: 'admin_search_indexing',
   /**
+   * A SINGLE-SITE deployment's environment — `production` or `non-production`, the values of
+   * `TenantEnvironment`. A deployment with sites ignores it: each site carries its own environment on
+   * its `_system_tenants` row, and this key exists only because a single-site deployment has no row to
+   * carry it. Read by `StandaloneSitePolicy`.
+   */
+  SITE_ENVIRONMENT: 'site_environment',
+  /** Whether search engines may index a SINGLE-SITE deployment's storefront — see `SITE_ENVIRONMENT`. */
+  SITE_SEARCH_INDEXING: 'site_search_indexing',
+  /**
    * `owner/repo` checked for framework releases, and where Sources writes what it builds.
    *
    * Declared here because the General settings page WRITES them. They once existed ONLY on the read

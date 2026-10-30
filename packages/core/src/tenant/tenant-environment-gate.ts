@@ -3,6 +3,7 @@ import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { NonProductionRefusal } from '@core/tenant/non-production-refusal';
 import { Logger } from '@core/logging';
 import { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
+import { StandaloneSitePolicy } from '@core/tenant/standalone-site-policy';
 
 /**
  * The brake: refuses any outward-facing effect from a site marked non-production.
@@ -34,7 +35,7 @@ export class TenantEnvironmentGate {
     if (await this.isProduction()) return;
 
     const record = await this.record();
-    const slug = record?.slug || record?.id || 'unknown';
+    const slug = record?.slug || record?.id || (RequestContextUtils.getTenantId() ? 'unknown' : '');
 
     // Recorded, not just refused: a test run is meant to be inspectable afterwards — "what would this
     // have sent?" is the question the operator actually has.
@@ -57,16 +58,17 @@ export class TenantEnvironmentGate {
   /**
    * Whether the current site may reach the outside world.
    *
-   * NO TENANT MEANS ALLOW. Platform-level work — certificate mail, telemetry — runs with no tenant in
-   * the request store, and a single-tenant deployment has none either. There is nothing to flag when
-   * there is no site, and refusing here would mute the platform's own mail.
+   * NO TENANT is answered by {@link StandaloneSitePolicy}. On a deployment with sites that is always
+   * production: platform-level work — certificate mail, telemetry — runs with no tenant in the request
+   * store, and refusing it would mute the platform's own mail. On a single-site deployment there is no
+   * row to read, so the site's environment is the platform setting (Settings → General → Site).
    *
    * A tenant id that resolves to NOTHING is the one genuinely ambiguous case, and it refuses: an id
    * we cannot read is not evidence that sending is safe.
    */
   async isProduction(): Promise<boolean> {
     const tenantId = RequestContextUtils.getTenantId();
-    if (!tenantId) return true;
+    if (!tenantId) return StandaloneSitePolicy.isProduction();
 
     const record = await this.record();
     if (!record) {
