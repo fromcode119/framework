@@ -112,7 +112,7 @@ export class MarketplaceDetailPage extends AdminComponent {
     try {
       this.installing = true;
       const isUpdate = Boolean(installedPlugin);
-      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updateStarted') : AdminI18n.t('plugins.list.installationStarted'), `${isUpdate ? 'Updating' : 'Downloading and staging'} ${pluginSlug} v${plugin.version}...`);
+      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updateStarted') : AdminI18n.t('plugins.list.installationStarted'), AdminI18n.t(isUpdate ? 'plugins.list.updatingVersion' : 'plugins.list.stagingVersion', { slug: pluginSlug, version: plugin.version }));
       const result = await PluginInstallOperationService.startMarketplaceInstall(pluginSlug, plugin.version);
       await PluginInstallOperationService.waitForCompletion(result.operationId, (op: IPluginInstallOperation | null) => { this.installOperation = op; });
       const refreshedPlugin = await PluginVersionWaitService.waitForInstalledVersion(pluginSlug, plugin.version);

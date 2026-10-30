@@ -1202,6 +1202,8 @@
       "failedToConnectToThe": "Failed to connect to the marketplace.",
       "updateStarted": "Update Started",
       "installationStarted": "Installation Started",
+      "updatingVersion": "Updating {{slug}} v{{version}}...",
+      "stagingVersion": "Downloading and staging {{slug}} v{{version}}...",
       "failedToInstallPlugin": "Failed to install plugin.",
       "notSaved": "Not saved: {{message}}",
       "notSavedCorrect": "Not saved — correct: {{join}}",

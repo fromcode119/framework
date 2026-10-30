@@ -1239,6 +1239,8 @@
       "failedToConnectToThe": "Няма връзка с магазина.",
       "updateStarted": "Обновлението започна",
       "installationStarted": "Инсталацията започна",
+      "updatingVersion": "Обновяване на {{slug}} до v{{version}}…",
+      "stagingVersion": "Изтегляне и подготовка на {{slug}} v{{version}}…",
       "failedToInstallPlugin": "Плъгинът не беше инсталиран.",
       "notSaved": "Не е запазено: {{message}}",
       "notSavedCorrect": "Не е запазено — поправете: {{join}}",
