@@ -6,11 +6,22 @@ import type { IStoredProvider } from '@/app/settings/integrations/interfaces/sto
  * Pure derived selectors for the integrations settings page state.
  */
 export class IntegrationSelectors {
-  static integrationOptions(integrations: IIntegrationRecord[]): Array<{ label: string; value: string }> {
-    return integrations.map((integration) => ({
-      label: integration.label,
-      value: integration.key
-    }));
+  /**
+   * One tab per owner of at least one type: the framework's types first, then each plugin's, in the
+   * order the plugins first appear. An empty slug is the framework.
+   */
+  static ownerTabs(integrations: IIntegrationRecord[]): Array<{ slug: string; label: string }> {
+    const tabs: Array<{ slug: string; label: string }> = [];
+    for (const integration of integrations) {
+      const slug = integration.owner?.slug || '';
+      if (tabs.some((tab) => tab.slug === slug)) continue;
+      tabs.push({ slug, label: integration.owner?.label || slug });
+    }
+    return tabs.sort((a, b) => (a.slug === '' ? -1 : b.slug === '' ? 1 : 0));
+  }
+
+  static typesOfOwner(integrations: IIntegrationRecord[], ownerSlug: string): IIntegrationRecord[] {
+    return integrations.filter((integration) => (integration.owner?.slug || '') === ownerSlug);
   }
 
   static activeIntegration(integrations: IIntegrationRecord[], activeType: string): IIntegrationRecord | null {
@@ -37,15 +48,5 @@ export class IntegrationSelectors {
   ): IIntegrationProvider | null {
     if (!activeIntegration || !editor?.providerKey) return null;
     return activeIntegration.providers.find((provider) => provider.key === editor.providerKey) || null;
-  }
-
-  static selectedProviderDefinition(
-    activeIntegration: IIntegrationRecord | null,
-    selectedProviderId: string,
-  ): IIntegrationProvider | null {
-    if (!activeIntegration || !selectedProviderId) return null;
-    const selectedProvider = (activeIntegration.storedProviders || []).find((provider) => provider.id === selectedProviderId);
-    if (!selectedProvider) return null;
-    return activeIntegration.providers.find((provider) => provider.key === selectedProvider.providerKey) || null;
   }
 }

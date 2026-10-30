@@ -1,5 +1,7 @@
-import type { ReactElement } from 'react';
-import { Card } from '@/components/ui/view/card.client';
+import type { ReactElement, ReactNode } from 'react';
+import { ThemeMode } from '@fromcode119/core/client';
+import { FrameworkIcons } from '@fromcode119/react';
+import { IntegrationSelectors } from '@/app/settings/integrations/integration-selectors';
 import { Loader } from '@/components/ui/view/loader.client';
 import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
 import { IntegrationProviderList } from '@/app/settings/integrations/integration-provider-list';
@@ -47,28 +49,113 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     this.mounted = false;
   }
 
-  render(): ReactElement {
-    const theme = this.theme;
-    const {
-      loading,
-      saving,
-      resettingStaleJs,
-      changingProviderId,
-      removeCandidateId,
-      activeType,
-      selectedProviderId,
-      editor,
-      integrations,
-      dynamicFieldOptions,
-      dynamicFieldErrors,
-      dynamicFieldLoading,
-    } = this;
-    const activeIntegration = this.activeIntegration;
-    const activeProviders = this.activeProviders;
-    const runtimeProviderId = this.runtimeProviderId;
-    const currentProviderDefinition = this.currentProviderDefinition;
+  private tab(key: string, label: string, icon: ReactNode, active: boolean, onClick: () => void): ReactNode {
+    const dark = this.theme === ThemeMode.DARK;
+    const tone = active
+      ? (dark ? 'text-white border-indigo-500' : 'text-slate-900 border-indigo-600')
+      : (dark ? 'text-slate-400 border-transparent hover:text-slate-200' : 'text-slate-500 border-transparent hover:text-slate-800');
+    return (
+      <button key={key} type="button" onClick={onClick} aria-current={active ? 'page' : undefined}
+        className={`-mb-px flex items-center gap-2 whitespace-nowrap border-b-2 py-3.5 text-[13px] transition-colors ${active ? 'font-semibold' : 'font-medium'} ${tone}`}>
+        {icon}
+        {label}
+      </button>
+    );
+  }
 
-    if (loading) {
+  /** Top row: who registered the types — the platform first, then each plugin. */
+  private renderOwnerTabs(): ReactNode {
+    const dark = this.theme === ThemeMode.DARK;
+    const activeOwner = this.activeOwner;
+    return (
+      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 border-b ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
+        {this.ownerTabs.map((owner) => this.tab(
+          `owner-${owner.slug}`,
+          owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
+          owner.slug ? <FrameworkIcons.Plugins size={15} /> : <FrameworkIcons.Settings size={15} />,
+          owner.slug === activeOwner,
+          () => {
+            const first = IntegrationSelectors.typesOfOwner(this.integrations, owner.slug)[0];
+            if (first) this.activateType(first.key);
+          },
+        ))}
+      </nav>
+    );
+  }
+
+  /** Second, quieter row: the owner's types. Hidden when the owner has only one. */
+  private renderTypeTabs(): ReactNode {
+    const types = this.ownerTypes;
+    if (types.length < 2) return null;
+    const dark = this.theme === ThemeMode.DARK;
+    return (
+      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+        {types.map((type) => (
+          <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
+            className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${type.key === this.activeType
+              ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
+              : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
+            {type.label}
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  private renderBody(): ReactNode {
+    const integration = this.activeIntegration;
+    if (!integration) return null;
+    const editor = this.editor;
+    if (editor) {
+      const removable = this.activeProviders.length > 1;
+      return (
+        <IntegrationProviderEditor
+          activeIntegration={integration}
+          editor={editor}
+          currentProviderDefinition={this.currentProviderDefinition}
+          fieldOptionsService={this.fieldOptionsService}
+          dynamicFieldOptions={this.dynamicFieldOptions}
+          dynamicFieldErrors={this.dynamicFieldErrors}
+          dynamicFieldLoading={this.dynamicFieldLoading}
+          patchEditor={(patch) => this.patchEditor(patch)}
+          onSubmit={() => void this.handleSaveProvider()}
+          onChooseProvider={(providerKey) => this.chooseSingleProvider(providerKey)}
+          onBack={() => this.closeEditor()}
+          canRemove={removable}
+          confirmingRemove={this.removeCandidateId === editor.providerId}
+          removing={this.changingProviderId === editor.providerId}
+          onRequestRemove={() => { this.removeCandidateId = editor.providerId; }}
+          onCancelRemove={() => { this.removeCandidateId = null; }}
+          onConfirmRemove={() => {
+            const provider = this.activeProviders.find((entry) => entry.id === editor.providerId);
+            if (provider) void this.handleRemoveProvider(provider);
+          }}
+        />
+      );
+    }
+    // A type that declares NO providers is configured entirely by its own panel below.
+    if (!integration.providers.length) {
+      return (
+        <div>
+          <h2 className="text-base font-semibold text-slate-900 dark:text-white">{integration.label}</h2>
+          {integration.description ? <p className="mt-1 text-[12px] text-slate-500">{integration.description}</p> : null}
+        </div>
+      );
+    }
+    return (
+      <IntegrationProviderList
+        activeIntegration={integration}
+        activeProviders={this.activeProviders}
+        changingProviderId={this.changingProviderId}
+        onAddProvider={() => this.startAddProvider()}
+        onOpenProvider={(providerId) => this.openProvider(providerId)}
+        onToggleProvider={(provider) => void this.handleToggleProvider(provider)}
+      />
+    );
+  }
+
+  render(): ReactElement {
+    if (this.loading) {
       return (
         <div className="p-12">
           <Loader label={AdminI18n.t('settings.integrations.loadingIntegrationProviders')} />
@@ -80,81 +167,31 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
       return <div className="p-8 lg:p-12"><PlatformScopeGate what={this.platformOnlyType.label}>{null}</PlatformScopeGate></div>;
     }
 
-    if (!integrations.length) {
+    if (!this.integrations.length) {
       return <IntegrationEmptyState />;
     }
 
+    const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className="flex flex-col h-full animate-in fade-in duration-300">
+      <div className="w-full space-y-5 p-8 pb-12 lg:p-12 animate-in fade-in duration-300">
         <IntegrationHeader
-          theme={theme}
-          activeType={activeType}
-          integrationOptions={this.integrationOptions}
-          resettingStaleJs={resettingStaleJs}
-          onChangeType={(value) => this.activateType(value)}
+          theme={this.theme}
+          formId={this.editor ? IntegrationProviderEditor.FORM_ID : ''}
+          saving={this.saving}
+          resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
-
-        <div className="p-8 lg:p-12 space-y-6">
-          <Card className="p-5">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div>
-                <h2 className="text-base font-bold tracking-tight text-slate-900 dark:text-white">
-                  {activeIntegration?.label || AdminI18n.t('settings.integrations.integration')}
-                </h2>
-                <p className="text-sm text-slate-500 mt-1">
-                  {activeIntegration?.description || AdminI18n.t('settings.integrations.configureProviderInstancesForThis')}
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          {/* A type that declares NO providers gets no provider grid. Showing "add your first
-              provider instance" for something that has none is an instruction the operator cannot
-              follow — the type is configured entirely by its own panel below. */}
-          {(activeIntegration?.providers?.length ?? 0) > 0 && (
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
-            <IntegrationProviderList
-              activeIntegration={activeIntegration}
-              activeProviders={activeProviders}
-              selectedProviderId={selectedProviderId}
-              editor={editor}
-              removeCandidateId={removeCandidateId}
-              changingProviderId={changingProviderId}
-              runtimeProviderId={runtimeProviderId}
-              onAddProvider={() => this.startAddProvider()}
-              onSelectProvider={(providerId) => {
-                this.removeCandidateId = null;
-                this.editor = null;
-                this.selectedProviderId = providerId;
-              }}
-              onToggleProvider={(provider) => void this.handleToggleProvider(provider)}
-              onRequestRemove={(providerId) => { this.removeCandidateId = providerId; }}
-              onCancelRemove={() => { this.removeCandidateId = null; }}
-              onConfirmRemove={(provider) => void this.handleRemoveProvider(provider)}
-            />
-
-            <IntegrationProviderEditor
-              activeIntegration={activeIntegration}
-              editor={editor}
-              currentProviderDefinition={currentProviderDefinition}
-              saving={saving}
-              fieldOptionsService={this.fieldOptionsService}
-              dynamicFieldOptions={dynamicFieldOptions}
-              dynamicFieldErrors={dynamicFieldErrors}
-              dynamicFieldLoading={dynamicFieldLoading}
-              patchEditor={(patch) => this.patchEditor(patch)}
-              onSubmit={() => void this.handleSaveProvider()}
-              onCancel={() => this.cancelNewProvider()}
-              onReset={() => this.resetEditor()}
-            />
+        <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+          {this.renderOwnerTabs()}
+          {this.renderTypeTabs()}
+          <div className="space-y-6 p-6">
+            {this.renderBody()}
+            {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
+                registry so this page never names a type. Hidden while one provider is open in place of
+                the list, so the editor stands alone. */}
+            {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
           </div>
-          )}
-
-          {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
-              registry so this page never names a type. */}
-          {IntegrationExtraPanels.render(activeType)}
-        </div>
+        </section>
       </div>
     );
   }

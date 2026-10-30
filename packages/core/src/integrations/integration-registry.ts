@@ -45,7 +45,11 @@ export class IntegrationRegistry {
   // Type & provider registration
   // ---------------------------------------------------------------------------
 
-  registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>, owner: string = IntegrationRegistrationOwners.FRAMEWORK) {
+  registerType<TInstance = any>(
+    definition: IIntegrationTypeDefinition<TInstance>,
+    owner: string = IntegrationRegistrationOwners.FRAMEWORK,
+    ownerLabel: string = '',
+  ) {
     const key = this.normalize(definition.key);
     if (!key) throw new Error('Integration type key is required');
     this.owners.claimType(key, owner, this.types.has(key));
@@ -58,7 +62,12 @@ export class IntegrationRegistry {
       throw new Error(`Integration type "${key}" must declare a defaultProvider`);
     }
 
-    const runtime: IIntegrationTypeRuntime<TInstance> = { definition: { ...definition, key }, providers: new Map() };
+    const slug = String(owner ?? '').trim();
+    const runtime: IIntegrationTypeRuntime<TInstance> = {
+      definition: { ...definition, key },
+      providers: new Map(),
+      owner: { slug, label: slug ? String(ownerLabel || '').trim() || slug : '' },
+    };
 
     this.types.set(key, runtime as IIntegrationTypeRuntime<any>);
     for (const provider of definition.providers || []) {
@@ -106,14 +115,20 @@ export class IntegrationRegistry {
   // ---------------------------------------------------------------------------
 
   listTypes(): IIntegrationTypeSummary[] {
-    return Array.from(this.types.values()).map((runtime) => ({
+    return Array.from(this.types.values()).map((runtime) => this.typeSummary(runtime));
+  }
+
+  private typeSummary(runtime: IIntegrationTypeRuntime<any>): IIntegrationTypeSummary {
+    return {
       key: runtime.definition.key,
       label: runtime.definition.label,
       description: runtime.definition.description,
       defaultProvider: this.normalize(runtime.definition.defaultProvider),
       platformOnly: Boolean(runtime.definition.platformOnly),
+      allowMultipleActiveProviders: Boolean(runtime.definition.allowMultipleActiveProviders),
+      owner: { ...runtime.owner },
       providers: this.providerSummaries(runtime),
-    }));
+    };
   }
 
   /** What the admin is told about each provider: the same shape for the list and for a single type. */
@@ -128,17 +143,8 @@ export class IntegrationRegistry {
   }
 
   getTypeSummary(typeKey: string): IIntegrationTypeSummary | null {
-    const normalizedType = this.normalize(typeKey);
-    const runtime = this.types.get(normalizedType);
-    if (!runtime) return null;
-    return {
-      key: runtime.definition.key,
-      label: runtime.definition.label,
-      description: runtime.definition.description,
-      defaultProvider: this.normalize(runtime.definition.defaultProvider),
-      platformOnly: Boolean(runtime.definition.platformOnly),
-      providers: this.providerSummaries(runtime),
-    };
+    const runtime = this.types.get(this.normalize(typeKey));
+    return runtime ? this.typeSummary(runtime) : null;
   }
 
   // ---------------------------------------------------------------------------

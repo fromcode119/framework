@@ -18,7 +18,7 @@ export class IntegrationsContextProxy {
         const providers = Array.isArray(definition?.providers)
           ? definition.providers.map((provider: any) => ({ ...provider, namespace: plugin.manifest.namespace }))
           : definition?.providers;
-        manager.integrations.registerType({ ...definition, providers }, plugin.manifest.slug);
+        manager.integrations.registerType({ ...definition, providers }, plugin.manifest.slug, plugin.manifest.name);
       },
       registerProvider: (typeKey: string, provider: any) => {
         // The registering plugin's namespace travels with the provider, so a saved integration entry

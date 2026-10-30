@@ -89,7 +89,7 @@ describe('saved-secret mask never makes the return trip', () => {
         { id: 'p1', providerKey: 'courier', enabled: true, config: { username: 'a@b.c', password: serverMask } } as any,
         hydrated,
       );
-      const payload = IntegrationProviderFormHelper.buildSavePayload(hydrated, editor);
+      const payload = IntegrationProviderFormHelper.buildSavePayload(hydrated, editor, false);
 
       expect(editor.config.password).toBe('');
       expect(payload.config.password).toBe('');

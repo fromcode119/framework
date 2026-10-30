@@ -16,21 +16,6 @@ export class IntegrationReconciler {
     return JSON.stringify({ ids: integrations.map((i) => i.key), queryType, activeType });
   }
 
-  static editorBuildKey(
-    activeIntegration: IIntegrationRecord | null,
-    selectedProviderId: string,
-    editor: IProviderEditorState | null,
-    selectedProviderDefinition: IIntegrationProvider | null,
-  ): string {
-    return JSON.stringify({
-      activeKey: activeIntegration?.key || '',
-      providers: (activeIntegration?.storedProviders || []).map((p) => p.id),
-      selectedProviderId,
-      isNew: editor?.isNew ?? null,
-      defFields: (selectedProviderDefinition?.fields || []).map((f) => f.name),
-    });
-  }
-
   static dynamicKey(currentProviderDefinition: IIntegrationProvider | null, editor: IProviderEditorState | null): string {
     return JSON.stringify({
       defKey: currentProviderDefinition?.key || '',

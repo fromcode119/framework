@@ -88,44 +88,40 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
     IntegrationStaleJsService.reloadWithBuster();
   }
 
+  /** Opens the add form in place of the list, for the type's default provider. */
   protected startAddProvider(): void {
     const activeIntegration = this.activeIntegration;
     if (!activeIntegration?.providers?.length) return;
-    const defaultProvider = activeIntegration.providers[0];
+    const first = this.definitionOf(activeIntegration.defaultProvider) || activeIntegration.providers[0];
     this.removeCandidateId = null;
     this.selectedProviderId = '';
-    this.editor = {
-      isNew: true,
-      providerId: '',
-      providerKey: defaultProvider.key,
-      providerName: '',
-      enabled: true,
-      config: IntegrationsPageUtils.defaultConfigForFields(defaultProvider.fields),
-      preservedSecretFields: {}
-    };
+    this.editor = this.newEditorFor(first.key);
   }
 
-  protected resetEditor(): void {
-    const editor = this.editor;
-    const activeIntegration = this.activeIntegration;
-    if (!editor || !activeIntegration) return;
-    if (editor.isNew) {
-      this.startAddProvider();
-      return;
-    }
-
-    const selectedProviderDefinition = this.selectedProviderDefinition;
-    const selected = (activeIntegration.storedProviders || []).find((provider) => provider.id === editor.providerId);
-    if (!selected) return;
-    this.editor = IntegrationProviderFormHelper.buildEditorForProvider(selected, selectedProviderDefinition);
+  /** Opens one saved provider for editing, in place of the list. */
+  protected openProvider(providerId: string): void {
+    const provider = this.activeProviders.find((entry) => entry.id === providerId);
+    if (!provider) return;
+    this.removeCandidateId = null;
+    this.selectedProviderId = provider.id;
+    this.editor = IntegrationProviderFormHelper.buildEditorForProvider(provider, this.definitionOf(provider.providerKey));
   }
 
-  protected cancelNewProvider(): void {
-    const firstProvider = this.activeProviders[0];
+  /** Leaves the editor for the list without saving. */
+  protected closeEditor(): void {
+    this.removeCandidateId = null;
     this.editor = null;
-    if (firstProvider) {
-      this.selectedProviderId = firstProvider.id;
-    }
+  }
+
+  /**
+   * A one-provider type's provider choice. A provider saved before comes back with its own values (its
+   * secrets stay saved); one never saved starts from its defaults. Nothing changes until Save.
+   */
+  protected chooseSingleProvider(providerKey: string): void {
+    const saved = this.activeProviders.find((entry) => entry.providerKey === providerKey);
+    this.editor = saved
+      ? IntegrationProviderFormHelper.buildEditorForProvider(saved, this.definitionOf(providerKey))
+      : this.newEditorFor(providerKey);
   }
 
   protected async handleSaveProvider(): Promise<void> {
@@ -155,13 +151,13 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
 
     this.saving = true;
     try {
-      const payload = IntegrationProviderFormHelper.buildSavePayload(providerDefinition, editor);
+      const payload = IntegrationProviderFormHelper.buildSavePayload(providerDefinition, editor, activeIntegration.allowMultipleActiveProviders);
       const response = await AdminApi.put(AdminConstants.ENDPOINTS.SYSTEM.INTEGRATION(activeIntegration.key), payload);
       const updatedIntegration = IntegrationProviderFormHelper.extractUpdatedIntegration(response);
       this.applyIntegrationUpdate(updatedIntegration);
 
-      const nextProviderId = IntegrationProviderFormHelper.resolveNextProviderId(updatedIntegration, editor);
-      this.selectedProviderId = nextProviderId;
+      this.selectedProviderId = IntegrationProviderFormHelper.resolveNextProviderId(updatedIntegration, editor);
+      // Back to the list; a one-provider type rebuilds its form from what was saved.
       this.editor = null;
       this.removeCandidateId = null;
       addNotification({
