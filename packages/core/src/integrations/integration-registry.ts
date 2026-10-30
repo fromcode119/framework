@@ -45,11 +45,7 @@ export class IntegrationRegistry {
   // Type & provider registration
   // ---------------------------------------------------------------------------
 
-  registerType<TInstance = any>(
-    definition: IIntegrationTypeDefinition<TInstance>,
-    owner: string = IntegrationRegistrationOwners.FRAMEWORK,
-    ownerLabel: string = '',
-  ) {
+  registerType<TInstance = any>(definition: IIntegrationTypeDefinition<TInstance>, owner: string = IntegrationRegistrationOwners.FRAMEWORK, ownerLabel = '') {
     const key = this.normalize(definition.key);
     if (!key) throw new Error('Integration type key is required');
     this.owners.claimType(key, owner, this.types.has(key));
@@ -63,11 +59,8 @@ export class IntegrationRegistry {
     }
 
     const slug = String(owner ?? '').trim();
-    const runtime: IIntegrationTypeRuntime<TInstance> = {
-      definition: { ...definition, key },
-      providers: new Map(),
-      owner: { slug, label: slug ? String(ownerLabel || '').trim() || slug : '' },
-    };
+    const ownerInfo = { slug, label: slug ? String(ownerLabel || '').trim() || slug : '' };
+    const runtime: IIntegrationTypeRuntime<TInstance> = { definition: { ...definition, key }, providers: new Map(), owner: ownerInfo };
 
     this.types.set(key, runtime as IIntegrationTypeRuntime<any>);
     for (const provider of definition.providers || []) {
