@@ -5,6 +5,7 @@ import { IntegrationRegistry } from '@core/integrations/integration-registry';
 /** Settings → Integrations in the console's language: the type from its owner, a provider from the plugin that supplied it. */
 describe('AdminSchemaLocalizer.integration', () => {
   const dictionary: Record<string, string> = {
+    'carriers.admin.label': 'Превозвачи',
     'carriers.admin.integrations.shipping_provider.label': 'Куриер',
     'carriers.admin.integrations.shipping_provider.description': 'Цени, етикети и проследяване.',
     'courier-plugin.admin.integrations.shipping_provider.providers.acme.label': 'Акме',
@@ -33,6 +34,7 @@ describe('AdminSchemaLocalizer.integration', () => {
   it("words the type from its owner and the provider from the plugin that supplied it", () => {
     const localized = localizer.integration(summary());
     expect(localized.label).toBe('Куриер');
+    expect(localized.owner).toEqual({ slug: 'carriers', label: 'Превозвачи' });
     expect(localized.description).toBe('Цени, етикети и проследяване.');
     const [provider] = localized.providers;
     expect(provider.label).toBe('Акме');
