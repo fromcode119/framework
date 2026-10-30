@@ -68,6 +68,8 @@ export class MarketplaceInstaller {
     progressReporter?.({
       phase: 'resolving-marketplace-package',
       message: `Preparing marketplace package "${slug}"...`,
+      messageKey: 'preparingMarketplacePackage',
+      messageParams: { pluginSlug: slug },
       pluginSlug: slug,
     });
 
@@ -79,6 +81,8 @@ export class MarketplaceInstaller {
           progressReporter?.({
             phase: 'installing-dependency',
             message: `Installing dependency "${depSlug}" required by "${slug}"...`,
+            messageKey: 'installingDependency',
+            messageParams: { dependencySlug: depSlug, pluginSlug: slug },
             pluginSlug: slug,
             dependencySlug: depSlug,
           });
@@ -134,6 +138,8 @@ export class MarketplaceInstaller {
       progressReporter?.({
         phase: 'downloading-package',
         message: `Downloading "${slug}" from marketplace...`,
+        messageKey: 'downloading',
+        messageParams: { pluginSlug: slug },
         pluginSlug: slug,
       });
       const response = await fetch(downloadUrl, { headers: client.requestHeaders(downloadUrl) });
@@ -154,6 +160,8 @@ export class MarketplaceInstaller {
       progressReporter?.({
         phase: 'extracting-package',
         message: `Extracting "${slug}" package...`,
+        messageKey: 'extracting',
+        messageParams: { pluginSlug: slug },
         pluginSlug: slug,
       });
       const manifest = await this.discovery.installFromZip(tempZipPath, { slug, version: plugin.version });

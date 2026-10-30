@@ -47,6 +47,8 @@ export class MigrationManager {
       progressReporter?.({
         phase: 'running-migrations',
         message: `Running migration ${migration.name}`,
+        messageKey: 'runningMigration',
+        messageParams: { migrationName: migration.name },
         pluginSlug: this.resolvePluginSlug(migration.name),
         migrationName: migration.name,
       });
