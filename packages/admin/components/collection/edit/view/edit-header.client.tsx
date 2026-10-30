@@ -113,39 +113,36 @@ export class EditHeader extends PureReactor {
 
   return (
     <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 md:py-4">
-        <div className="flex items-center gap-2 mb-2">
-          <AdminLink 
-            href={this.listHref || `/${pluginSlug}/${slug}`}
-            className={`flex items-center gap-1.5 text-[10px] font-semibold transition-all hover:-translate-x-1 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}
-          >
-            <FrameworkIcons.Left size={14} />
-            {collectionLabel}
-          </AdminLink>
-          {/* On a phone the back link is enough: the title right below already names the record. */}
-          <span className="hidden md:inline text-slate-300">/</span>
-          <span className={`hidden md:inline text-[10px] font-semibold ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-500'}`}>
-            {isNew ? AdminI18n.t('collection.edit.newEntry') : [resolvedTitleValue, `#${id.length > 8 ? `${id.substring(0, 8)}…` : id}`].filter(Boolean).join(' · ')}
-          </span>
-        </div>
-
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          {/* The title takes the room the actions leave and ends in "…" when longer; below its minimum the
-              actions wrap under it. A long product name used to squeeze this column to one word per line. */}
-          <div className="min-w-[16rem] flex-1">
-            <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-lg md:text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-              {isNew
-                ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
-                : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
-              }
-            </h1>
-            {/* Only a new record gets a line under its title. On an existing one it said "Modify existing
-                <title>" — the title a third time, after the breadcrumb and the heading. */}
-            {isNew ? (
-              <p className="truncate text-slate-500 font-medium text-xs tracking-tight mt-0.5">
-                {AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel })}
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+          {/* The same left side as every other admin page header (CompactPageHeader): back to the list, the
+              icon, the title and one line under it. The title takes the room the actions leave and ends in
+              "…" when longer; below its minimum the actions wrap under it. */}
+          <div className="flex min-w-0 flex-[1_1_16rem] items-center gap-3">
+            <AdminLink
+              href={this.listHref || `/${pluginSlug}/${slug}`}
+              aria-label={collectionLabel}
+              className="h-9 w-9 flex items-center justify-center rounded-lg border shrink-0 transition-colors border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
+            >
+              <FrameworkIcons.Left size={16} strokeWidth={2} />
+            </AdminLink>
+            <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
+              <FrameworkIcons.Layout size={18} />
+            </div>
+            <div className="min-w-0">
+              <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+                {isNew
+                  ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
+                  : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
+                }
+              </h1>
+              {/* Which list it belongs to and which record — never the title a second time. */}
+              <p className="truncate text-xs font-medium tracking-tight text-slate-500">
+                {isNew
+                  ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel })
+                  : `${collectionLabel} · #${id.length > 8 ? `${id.substring(0, 8)}…` : id}`}
               </p>
-            ) : null}
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
