@@ -2257,7 +2257,386 @@
       "noProvidersYetHint": "Добавете доставчик, за да го включите.",
       "fileReadFailed": "Файлът {{name}} не може да бъде прочетен.",
       "fileTypes": "{{types}} · чете се в браузъра; пази се само съдържанието, криптирано.",
-      "fileSavedChooseToReplace": "Файлът е запазен сигурно. Изберете нов само ако искате да го смените."
+      "fileSavedChooseToReplace": "Файлът е запазен сигурно. Изберете нов само ако искате да го смените.",
+      "types": {
+        "email": {
+          "label": "Изпращане на имейли",
+          "description": "Доставчикът, през който излизат имейлите на системата и плъгините.",
+          "providers": {
+            "mock": {
+              "label": "Тестов драйвер",
+              "description": "Записва изходящите имейли в журнала, без да ги изпраща."
+            },
+            "smtp": {
+              "label": "SMTP",
+              "description": "Изпраща през SMTP сървър с неговите данни за достъп.",
+              "fields": {
+                "host": {
+                  "label": "SMTP сървър"
+                },
+                "port": {
+                  "label": "SMTP порт"
+                },
+                "secure": {
+                  "label": "Използвай TLS (защитена връзка)"
+                },
+                "user": {
+                  "label": "SMTP потребител"
+                },
+                "pass": {
+                  "label": "SMTP парола"
+                },
+                "fromAddress": {
+                  "label": "Адрес на подателя"
+                },
+                "fromName": {
+                  "label": "Име на подателя",
+                  "placeholder": "Показва се до адреса; по подразбиране е името на платформата"
+                }
+              }
+            }
+          }
+        },
+        "sms": {
+          "label": "Текстови съобщения",
+          "description": "Доставчикът, през който се изпращат SMS съобщения на хората, съгласили се да ги получават.",
+          "providers": {
+            "none": {
+              "label": "Не е настроено",
+              "description": "Не се изпращат текстови съобщения. Инсталирайте плъгин за SMS и го изберете тук."
+            }
+          }
+        },
+        "storage": {
+          "label": "Съхранение на файлове",
+          "description": "Доставчикът, в който се пазят и от който се четат качените медии и файлове.",
+          "providers": {
+            "local": {
+              "label": "Локална файлова система",
+              "description": "Пази файловете на диска на сървъра.",
+              "fields": {
+                "uploadDir": {
+                  "label": "Папка за качване"
+                },
+                "publicUrlBase": {
+                  "label": "Публичен базов адрес"
+                }
+              }
+            },
+            "s3": {
+              "label": "S3 съвместимо хранилище",
+              "description": "Облачно хранилище в AWS S3 или съвместима услуга (DigitalOcean Spaces, MinIO и др.).",
+              "fields": {
+                "region": {
+                  "label": "Регион"
+                },
+                "bucket": {
+                  "label": "Име на кофата (bucket)"
+                },
+                "endpoint": {
+                  "label": "Адрес на услугата (endpoint)"
+                },
+                "accessKeyId": {
+                  "label": "Access Key ID"
+                },
+                "secretAccessKey": {
+                  "label": "Secret Access Key"
+                },
+                "publicUrlBase": {
+                  "label": "Публичен базов адрес"
+                }
+              }
+            }
+          }
+        },
+        "cache": {
+          "label": "Системен кеш",
+          "description": "Доставчикът за системния кеш и за данните, които плъгините пазят.",
+          "providers": {
+            "memory": {
+              "label": "В паметта",
+              "description": "Пази кеша в паметта на сървъра. Не се споделя между инстанциите."
+            },
+            "redis": {
+              "label": "Redis",
+              "description": "Бърз споделен кеш в Redis.",
+              "fields": {
+                "url": {
+                  "label": "Redis адрес"
+                }
+              }
+            }
+          }
+        },
+        "queue": {
+          "label": "Фонови задачи",
+          "description": "Изпълнява насрочените задачи и задачите на плъгините. Redis ги запазва при рестарт и ги споделя между инстанциите.",
+          "providers": {
+            "local": {
+              "label": "В процеса",
+              "description": "Изпълнява задачите в този процес. Те не оцеляват при рестарт и не се споделят между инстанциите."
+            },
+            "bull": {
+              "label": "Redis (BullMQ)",
+              "description": "Нарежда задачите в Redis, така че оцеляват при рестарт, повтарят се при грешка и се споделят между инстанциите.",
+              "fields": {
+                "url": {
+                  "label": "Redis адрес"
+                },
+                "namespace": {
+                  "label": "Префикс на ключовете"
+                }
+              }
+            }
+          }
+        },
+        "sso": {
+          "label": "Вход с външен профил (SSO)",
+          "description": "Данни за OAuth/OpenID доставчици за единен вход на клиенти и администратори.",
+          "providers": {
+            "google": {
+              "label": "Google OAuth",
+              "description": "Вход с Google профил.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Обхвати (scopes)",
+                  "description": "Разделени с интервал. Пример: \"openid email profile\"."
+                },
+                "appClientIds": {
+                  "label": "Client ID на мобилните приложения",
+                  "description": "По един на ред. Вход от вашето iOS или Android приложение се приема само за изброените тук."
+                }
+              }
+            },
+            "apple": {
+              "label": "Вход с Apple",
+              "description": "Вход с Apple от вашето iOS приложение.",
+              "fields": {
+                "clientId": {
+                  "label": "Bundle ID",
+                  "description": "Bundle ID на вашето iOS приложение, например com.example.app. Apple го посочва във всеки токен за вход."
+                },
+                "appClientIds": {
+                  "label": "Client ID на мобилните приложения",
+                  "description": "По един на ред. Вход от вашето iOS или Android приложение се приема само за изброените тук."
+                }
+              }
+            },
+            "microsoft": {
+              "label": "Microsoft OAuth",
+              "description": "Вход с профил в Microsoft/Azure AD.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Обхвати (scopes)",
+                  "description": "Разделени с интервал. Пример: \"openid email profile\"."
+                }
+              }
+            },
+            "github": {
+              "label": "GitHub OAuth",
+              "description": "Вход с GitHub профил.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Обхвати (scopes)",
+                  "description": "Разделени с интервал. Пример: \"openid email profile\"."
+                }
+              }
+            },
+            "openid": {
+              "label": "OpenID Connect (общ)",
+              "description": "Собствен OpenID Connect доставчик (на ваш сървър или корпоративен).",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Обхвати (scopes)",
+                  "description": "Разделени с интервал. Пример: \"openid email profile\"."
+                },
+                "issuer": {
+                  "label": "Адрес на издателя (issuer)"
+                },
+                "authorizeUrl": {
+                  "label": "Адрес за оторизация"
+                },
+                "tokenUrl": {
+                  "label": "Адрес за токени"
+                },
+                "userInfoUrl": {
+                  "label": "Адрес за данни на потребителя (UserInfo)"
+                }
+              }
+            }
+          }
+        },
+        "mcp": {
+          "label": "MCP (Model Context Protocol)",
+          "description": "Как външни AI клиенти достигат инструментите на тази инсталация. Достъпът е само с токен и всяко извикване е ограничено до инструментите, които токенът посочва."
+        },
+        "monitoring": {
+          "label": "Наблюдение",
+          "description": "Кой научава, когато сайт, плъгин или сървърът има проблем, и кой наблюдава сайтовете отвън.",
+          "providers": {
+            "email": {
+              "label": "Имейл",
+              "description": "Инцидентите отиват до администраторите на платформата и до адреса за известия в Настройки → Общи."
+            },
+            "uptimerobot": {
+              "label": "UptimeRobot",
+              "description": "Наблюдава всеки сайт отвън и известява чрез контактите ви в UptimeRobot, дори когато целият сървър не работи.",
+              "fields": {
+                "apiKey": {
+                  "label": "Основен API ключ",
+                  "description": "UptimeRobot → Integrations & API → Main API key."
+                },
+                "interval": {
+                  "label": "Проверка на всеки (секунди)",
+                  "description": "Колко често UptimeRobot проверява всеки адрес. Безплатният план позволява 300 или повече; по-често изисква платен план."
+                },
+                "timeout": {
+                  "label": "Изчакване на отговор (секунди)",
+                  "description": "Колко дълго UptimeRobot чака отговор, преди проверката да се счете за неуспешна: от 1 до 60."
+                },
+                "namePrefix": {
+                  "label": "Префикс в името на монитора",
+                  "description": "Мониторите, чието име започва така, са на платформата: добавят се и се премахват според сайтовете. Всички други монитори в профила остават непокътнати."
+                }
+              }
+            },
+            "betterstack": {
+              "label": "Better Stack",
+              "description": "Наблюдава всеки сайт отвън и известява според дежурствата ви в Better Stack, дори когато целият сървър не работи.",
+              "fields": {
+                "apiToken": {
+                  "label": "Uptime API токен",
+                  "description": "Better Stack → Uptime → API tokens."
+                },
+                "namePrefix": {
+                  "label": "Префикс в името на монитора",
+                  "description": "Мониторите, чието име започва така, са на платформата: добавят се и се премахват според сайтовете. Всички други монитори в профила остават непокътнати."
+                }
+              }
+            }
+          }
+        },
+        "ai": {
+          "label": "AI асистент",
+          "description": "Езиковият модел, който ползват автоматизацията в администрацията и операциите със съдържание с помощта на AI.",
+          "providers": {
+            "openai": {
+              "label": "OpenAI",
+              "description": "Използва OpenAI Chat Completions API за планиране и действия на асистента.",
+              "fields": {
+                "apiKey": {
+                  "label": "API ключ"
+                },
+                "model": {
+                  "label": "Модел"
+                },
+                "baseUrl": {
+                  "label": "Базов адрес"
+                },
+                "organization": {
+                  "label": "ID на организацията"
+                },
+                "project": {
+                  "label": "ID на проекта"
+                },
+                "temperature": {
+                  "label": "Температура"
+                },
+                "maxTokens": {
+                  "label": "Максимум токени"
+                }
+              }
+            },
+            "ollama": {
+              "label": "Ollama",
+              "description": "Използва локален Ollama сървър за планиране и действия на асистента.",
+              "fields": {
+                "model": {
+                  "label": "Модел"
+                },
+                "baseUrl": {
+                  "label": "Базов адрес"
+                },
+                "temperature": {
+                  "label": "Температура"
+                },
+                "maxTokens": {
+                  "label": "Максимум токени"
+                }
+              }
+            },
+            "anthropic": {
+              "label": "Anthropic",
+              "description": "Използва Anthropic Messages API за планиране и действия на асистента.",
+              "fields": {
+                "apiKey": {
+                  "label": "API ключ"
+                },
+                "model": {
+                  "label": "Модел"
+                },
+                "baseUrl": {
+                  "label": "Базов адрес"
+                },
+                "anthropicVersion": {
+                  "label": "Версия на API"
+                },
+                "temperature": {
+                  "label": "Температура"
+                },
+                "maxTokens": {
+                  "label": "Максимум токени"
+                }
+              }
+            },
+            "gemini": {
+              "label": "Gemini",
+              "description": "Използва Google Gemini API за планиране и действия на асистента.",
+              "fields": {
+                "apiKey": {
+                  "label": "API ключ"
+                },
+                "model": {
+                  "label": "Модел"
+                },
+                "baseUrl": {
+                  "label": "Базов адрес"
+                },
+                "temperature": {
+                  "label": "Температура"
+                },
+                "maxTokens": {
+                  "label": "Максимум токени"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "Заявката за настройките за локализация е неуспешна.",

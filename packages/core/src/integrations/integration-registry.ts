@@ -130,8 +130,8 @@ export class IntegrationRegistry {
       key: provider.key,
       label: provider.label,
       description: provider.description,
-      fields: provider.fields || [],
-      setupAddresses: provider.setupAddresses || [],
+      fields: provider.fields || [], setupAddresses: provider.setupAddresses || [],
+      registeredBy: provider.registeredBy ?? '', dictionary: String(provider.dictionary || provider.registeredBy || '').trim(),
     }));
   }
 

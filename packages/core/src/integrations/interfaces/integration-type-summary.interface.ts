@@ -18,5 +18,9 @@ export interface IIntegrationTypeSummary {
     description?: string;
     fields?: IIntegrationConfigField[];
     setupAddresses?: IIntegrationSetupAddress[];
+    /** Who registered the provider ('' = the framework). */
+    registeredBy: string;
+    /** The plugin whose dictionary words it ({@link IIntegrationProviderDefinition.dictionary}); '' = the console's. */
+    dictionary: string;
   }>;
 }
