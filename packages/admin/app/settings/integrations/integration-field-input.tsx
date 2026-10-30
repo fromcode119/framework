@@ -136,7 +136,8 @@ export class IntegrationFieldInput extends PureReactor {
             <span>{AdminI18n.t('settings.integrations.savedSecurelyLeaveThisField')}</span>
           </div>
         )}
-        {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew)) && (
+        {/* The saved-secret line above already says to leave it blank; repeating it under it was noise. */}
+        {(field.description || (field.type === IntegrationFieldType.PASSWORD && !editor.isNew && !this.hasSavedSecret)) && (
           <p className="mt-1 text-[11px] text-slate-500">
             {field.description || AdminI18n.t('settings.integrations.leaveThisFieldBlankTo')}
           </p>

@@ -119,7 +119,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           dynamicFieldLoading={this.dynamicFieldLoading}
           patchEditor={(patch) => this.patchEditor(patch)}
           onSubmit={() => void this.handleSaveProvider()}
-          onChooseProvider={(providerKey) => this.chooseSingleProvider(providerKey)}
+          onChooseProvider={(providerKey) => this.chooseProvider(providerKey)}
           onBack={() => this.closeEditor()}
           canRemove={removable}
           confirmingRemove={this.removeCandidateId === editor.providerId}

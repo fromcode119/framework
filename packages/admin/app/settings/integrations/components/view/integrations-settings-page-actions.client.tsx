@@ -114,11 +114,12 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
   }
 
   /**
-   * A one-provider type's provider choice. A provider saved before comes back with its own values (its
+   * The provider choice. A provider saved before comes back with its own values (its
    * secrets stay saved); one never saved starts from its defaults. Nothing changes until Save.
    */
-  protected chooseSingleProvider(providerKey: string): void {
-    const saved = this.activeProviders.find((entry) => entry.providerKey === providerKey);
+  protected chooseProvider(providerKey: string): void {
+    // Adding to a several-at-once type is always a NEW provider, even of a kind already saved.
+    const saved = this.singleProvider ? this.activeProviders.find((entry) => entry.providerKey === providerKey) : undefined;
     this.editor = saved
       ? IntegrationProviderFormHelper.buildEditorForProvider(saved, this.definitionOf(providerKey))
       : this.newEditorFor(providerKey);
