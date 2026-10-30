@@ -1,9 +1,9 @@
-# Why Atlantis?
+# Why Fromcode Framework?
 
-Atlantis is built for teams who need a complete, extensible application platform — not a CMS, not a bare framework, not a locked-in SaaS.
+Fromcode Framework is built for teams who need a complete, extensible application platform — not a CMS, not a bare framework, not a locked-in SaaS.
 
 Traditional frameworks hand you raw materials but no system. CMS platforms lock you into their
-schema. SaaS products lock you into their pricing. Atlantis is none of those — it's a
+schema. SaaS products lock you into their pricing. Fromcode Framework is none of those — it's a
 production-hardened application kernel that handles identity, security, migrations, queues, media,
 AI hooks, and real-time out of the box, while remaining completely modular and provider-agnostic at
 every layer. Build a SaaS product, a content platform, a marketplace, a logistics system, or all of
@@ -11,7 +11,7 @@ the above — without re-architecting between them.
 
 ## Full Comparison Matrix
 
-| Feature | Atlantis | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
+| Feature | Fromcode Framework | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
 |:--------|:--------:|:---------:|:------:|:-------:|:----------------:|:----------------:|
 | **Deployment Mode** | API / API+Admin / Full-Stack | Monolithic | Headless Only | Headless Only | Headless Only | API Only |
 | **Architecture** | Modular Kernel + Plugins | PHP Monolith | Static Schema | Code-first Schema | Static Schema | Manual Structure |

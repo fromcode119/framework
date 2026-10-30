@@ -8,7 +8,7 @@ const sourceWith = (meta: Record<string, string>) => ({
 describe('FrameworkEmailLayout', () => {
   it('frames a text-only message under the platform name with the subject as heading and a recipients footer', async () => {
     const html = await FrameworkEmailLayout.wrap(sourceWith({ platform_name: 'Fromcode' }), {
-      subject: '[Atlantis] "marketplace" is waiting for your approval',
+      subject: '[Fromcode Framework] "marketplace" is waiting for your approval',
       text: 'First paragraph.\n\nSecond <b>paragraph</b>.',
     });
     expect(html).toContain('>Fromcode</span>');
@@ -48,7 +48,7 @@ describe('FrameworkEmailLayout heading', () => {
     const src = sourceWith({ platform_name: 'Вселенски Портал' });
     const a = await FrameworkEmailLayout.wrap(src, { subject: 'Вселенски Портал: Telemetry Test Email', text: 'x' });
     expect(a).toContain('>Telemetry Test Email</h1>');
-    const b = await FrameworkEmailLayout.wrap(src, { subject: '[Atlantis] 2 plugin(s) need attention', text: 'x' });
+    const b = await FrameworkEmailLayout.wrap(src, { subject: '[Fromcode Framework] 2 plugin(s) need attention', text: 'x' });
     expect(b).toContain('>2 plugin(s) need attention</h1>');
     const c = await FrameworkEmailLayout.wrap(src, { subject: 'Plugin "a" is not running', text: 'x' });
     expect(c).toContain('>Plugin &quot;a&quot; is not running</h1>');

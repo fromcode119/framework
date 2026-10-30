@@ -36,7 +36,7 @@ npm run check:framework-oop
 npm run check:app-typecheck
 ```
 
-## The Atlantis CLI
+## The Fromcode Framework CLI
 
 ```bash
 npm run atlantis -- <command>
@@ -67,4 +67,4 @@ Commands are grouped: `atlantis <group> <command>`.
 | **API Only** | `npm run dev:local:api` | 3000 | Pure REST/GraphQL backend, maximum flexibility |
 | **Local Dev** | `npm run dev:local` | 3000 (proxy) | All surfaces through a single local proxy |
 
-> **Headless support**: Consume any Atlantis endpoint from your own React, Next.js, Vue, or native clients. No coupling to the bundled frontend.
+> **Headless support**: Consume any Fromcode Framework endpoint from your own React, Next.js, Vue, or native clients. No coupling to the bundled frontend.

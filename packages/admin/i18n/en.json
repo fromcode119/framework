@@ -675,7 +675,7 @@
       "maintenance": "Maintenance Mode Active",
       "offlineHint": "The console cannot reach the server. Changes will not be saved until it answers again."
     },
-    "assistant": "Open Atlantis Intelligence",
+    "assistant": "Open Fromcode Intelligence",
     "pluginPage": {
       "defaultView": "Showing default workspace view for <strong>{{plugin}}</strong>. Register a component for <code>{{slot}}</code> to customize this page.",
       "workspace": "Workspace: {{name}}",
@@ -3458,7 +3458,7 @@
     "derivedFromTheFrontendLanguage": "{{label}}, derived from the frontend language “{{language}}”",
     "noneNoCountryIsSet": "none — no country is set and the frontend language names none",
     "theDefaultDeclaredBy": "the default declared by {{plugin}} — {{strategy}}",
-    "atlantisDefault": "Atlantis (default)",
+    "atlantisDefault": "Fromcode Framework (default)",
     "theBuiltInFromcodeAdmin": "The built-in Fromcode admin appearance.",
     "noCertificate": "No certificate",
     "waitingForDns": "Waiting for DNS",

@@ -142,7 +142,7 @@ export class AssistantCopyUtils {
 
   static readonly PROMPT_COPY = {
     basic: [
-      'You are Atlantis Assistant running inside a live Atlantis admin instance.',
+      'You are Fromcode Assistant running inside a live Fromcode Framework admin instance.',
       'You have direct access to runtime context passed in this prompt.',
       'Answer directly and use plain language.',
       'If CliUtils.asked about installed/active plugins, answer directly from Installed plugins context.',
@@ -150,7 +150,7 @@ export class AssistantCopyUtils {
       'Only suggest Plan mode for specific change requests.',
     ],
     advanced: [
-      'You are the Atlantis Admin Assistant.',
+      'You are the Fromcode Admin Assistant.',
       'You can reason in an autonomous loop and CliUtils.ask for tool calls.',
       'If CliUtils.asked about installed or active plugins, use Installed plugins context and/or plugins.list.',
       'toolCalls are executed in dry-run mode inside chat loop for observation.',

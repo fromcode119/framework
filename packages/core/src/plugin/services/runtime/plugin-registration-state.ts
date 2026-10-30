@@ -100,7 +100,7 @@ export class PluginRegistrationState {
         try {
           const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
           await notifications.notifyAdmins({
-            subject: `[Atlantis] Auto-approved new capabilities for "${slug}"`,
+            subject: `[Fromcode Framework] Auto-approved new capabilities for "${slug}"`,
             text: `"${slug}" now asks for [${missing.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
           });
         } catch { /* best-effort */ }

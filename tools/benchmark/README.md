@@ -1,7 +1,7 @@
 # Benchmark tools
 
 The runner behind [docs/benchmarks.md](../../docs/benchmarks.md). It measures one system at a time, so you can run
-the same load against Atlantis and anything else on your own hardware.
+the same load against Fromcode Framework and anything else on your own hardware.
 
 ## What you need
 
@@ -34,7 +34,7 @@ PrestaShop) reject unknown query parameters: give those the plain URL; they have
 - Compare a system at the same record width as the others. A full commerce product carries several times the data of
   a six-field record.
 
-## The Atlantis test collections
+## The Fromcode Framework test collections
 
 `atlantis-plugin/` is a small plugin that registers the two collections the published numbers used: `benchitems-items`
 (the six fields) and `benchitems-wide` (the same six plus thirty). Copy it into your plugins directory, build it

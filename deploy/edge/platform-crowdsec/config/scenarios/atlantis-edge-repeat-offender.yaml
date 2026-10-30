@@ -3,7 +3,7 @@
 # mistaken request.
 type: leaky
 name: atlantis/edge-repeat-offender
-description: "Refused again and again by the Atlantis gateway"
+description: "Refused again and again by the Fromcode Framework gateway"
 filter: "evt.Meta.log_type == 'atlantis_edge_refused'"
 groupby: evt.Meta.source_ip
 capacity: 4
@@ -16,5 +16,5 @@ labels:
   classification:
     - attack.T1595
   behavior: "http:exploit"
-  label: "Atlantis gateway repeat offender"
+  label: "Fromcode Framework gateway repeat offender"
   remediation: true

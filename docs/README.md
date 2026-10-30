@@ -1,11 +1,11 @@
 # Documentation Site
 
-Welcome to the Atlantis documentation. This site provides everything you need to build, extend, and deploy your platform.
+Welcome to the Fromcode Framework documentation. This site provides everything you need to build, extend, and deploy your platform.
 
 ## 📖 Navigation
 
 ### [Installation Guide](./installation.md)
-Every supported way to install and run Atlantis — local Docker, local Node dev, a production server with zero checkout, Coolify, or a manual image build.
+Every supported way to install and run Fromcode Framework — local Docker, local Node dev, a production server with zero checkout, Coolify, or a manual image build.
 
 ### [Configuration](./configuration.md)
 Every environment variable: core settings, the database, cache/queue/storage/email integrations, multi-site/gateway, rate limiting.
@@ -13,8 +13,8 @@ Every environment variable: core settings, the database, cache/queue/storage/ema
 ### [Architecture](./architecture.md)
 The Hooked Kernel Architecture, request flow, and the kernel subsystems — security & identity, infrastructure, database layer, multi-site tenancy, admin appearances, i18n, class-based conventions — plus the repository structure.
 
-### [Comparison — Why Atlantis?](./comparison.md)
-How Atlantis compares to WordPress, Strapi, Payload, Ghost/Directus, and NestJS/Express.
+### [Comparison — Why Fromcode Framework?](./comparison.md)
+How Fromcode Framework compares to WordPress, Strapi, Payload, Ghost/Directus, and NestJS/Express.
 
 ### [Benchmarks](./benchmarks.md)
 Requests per second against Payload, Directus, Strapi, Medusa, PrestaShop, Magento, Drupal Commerce and WordPress + WooCommerce on the same server and data, with the method and its limits.
@@ -23,7 +23,7 @@ Requests per second against Payload, Directus, Strapi, Medusa, PrestaShop, Magen
 Build commands, architecture-check gates, the `atlantis`/`fromcode` CLI command reference, and run modes.
 
 ### [MCP Server](./mcp-server.md)
-Every Atlantis installation as a Model Context Protocol server: security model, tool surface, connecting Claude, shipping a plugin's own tools, and the kernel's built-in AI hooks.
+Every Fromcode Framework installation as a Model Context Protocol server: security model, tool surface, connecting Claude, shipping a plugin's own tools, and the kernel's built-in AI hooks.
 
 ### [Module Documentation Index](./modules/README.md)
 Framework package documentation index.
@@ -56,7 +56,7 @@ Overview of how the theme system works, including component overrides and visual
 Detailed look at how plugins interact with the Next.js frontend and the UI slot system.
 
 ### [Design System](./design-system.md)
-The Brutalist-Soft design language for Atlantis plugin UIs.
+The Brutalist-Soft design language for Fromcode Framework plugin UIs.
 
 ## 📚 Reference
 
@@ -75,7 +75,7 @@ The Brutalist-Soft design language for Atlantis plugin UIs.
 
 ## 🚀 Concept Overview
 
-Atlantis is a **plugin-first** framework. This means the core kernel is kept minimal, handles security and data orchestration, while all functional features (content, commerce, search optimisation) are implemented as self-contained plugins.
+Fromcode Framework is a **plugin-first** framework. This means the core kernel is kept minimal, handles security and data orchestration, while all functional features (content, commerce, search optimisation) are implemented as self-contained plugins.
 
 ### Key Architecture Pieces
 - **Kernel (@fromcode119/core)**: Plugin loader, hook manager, and security sandbox.

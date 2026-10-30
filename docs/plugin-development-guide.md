@@ -2,7 +2,7 @@
 
 ## Plugin Ecosystem
 
-Atlantis ships with a growing ecosystem of domain plugins. Each plugin registers into the kernel
+Fromcode Framework ships with a growing ecosystem of domain plugins. Each plugin registers into the kernel
 lifecycle and communicates only through the kernel context — never directly importing across plugin
 boundaries.
 

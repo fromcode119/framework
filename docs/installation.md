@@ -1,6 +1,6 @@
 # Installation Guide
 
-Welcome to **Atlantis**. This guide walks through every supported way to install and run it, from a
+Welcome to **Fromcode Framework**. This guide walks through every supported way to install and run it, from a
 one-command local Docker stack to a production server with zero checkout.
 
 > For the shortest path, see the Quick Start section in the [repo README](../README.md). This
@@ -185,7 +185,7 @@ docker compose down -v
 
 ## Option 4: Coolify — recommended for self-hosted production
 
-[Coolify](https://coolify.io) is the recommended way to run Atlantis in production on your own infrastructure with zero-downtime deployments and automatic TLS.
+[Coolify](https://coolify.io) is the recommended way to run Fromcode Framework in production on your own infrastructure with zero-downtime deployments and automatic TLS.
 
 ### 1. Install Coolify on your server
 
@@ -214,7 +214,7 @@ The gateway needs `INTERNAL_SERVICE_SECRET` to fetch the routing map. Set it for
 
 ### 4. Deploy
 
-Click **Deploy** in Coolify. Atlantis will install plugin dependencies, run migrations, and start. Coolify handles zero-downtime rolling updates and automatic TLS provisioning.
+Click **Deploy** in Coolify. Fromcode Framework will install plugin dependencies, run migrations, and start. Coolify handles zero-downtime rolling updates and automatic TLS provisioning.
 
 ### 5. Notes for proxy networking
 

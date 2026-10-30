@@ -18,7 +18,7 @@ export class EnvUtils {
   /**
    * The raw value for `name`, accepting the legacy `FROMCODE_*` spelling of the same variable.
    *
-   * The binaries and the product are called Atlantis; the variables were still named after the
+   * The binaries carry the release codename, atlantis; the variables were still named after the
    * company. Renaming them outright is the one change here that could not be made by editing the
    * repository: these are set in deployed `.env` files, in Dockerfiles, and — for the three the MCP
    * guide documents — in other people's Claude configuration, none of which this repository can

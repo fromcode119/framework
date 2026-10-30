@@ -23,7 +23,7 @@ export class GeneratedEnvFile {
    */
   static contents(dest: string, localMode: boolean): string {
     return [
-      '# Atlantis environment config — edit JWT_SECRET before going live',
+      '# Fromcode Framework environment config — edit JWT_SECRET before going live',
       '# See .env.example for all available options',
       '',
       'DB_DIALECT=sqlite',

@@ -3,10 +3,10 @@
 > **Maintainer environment — not a recommended install path.** This describes the multi-hostname
 > `*.framework.local` setup used when developing the framework itself. It needs hosts entries and an
 > external reverse proxy, and it is deliberately not linked from the documentation index. If you are
-> installing or evaluating Atlantis, use the [Quick Start](../../README.md#-quick-start) or the
+> installing or evaluating Fromcode Framework, use the [Quick Start](../../README.md#-quick-start) or the
 > [installation guide](../installation.md) instead.
 
-This guide documents the local setup for the full Atlantis stack using local domains (`*.framework.local`), Docker services, and workspace scripts.
+This guide documents the local setup for the full Fromcode Framework stack using local domains (`*.framework.local`), Docker services, and workspace scripts.
 
 ## 1. Requirements
 

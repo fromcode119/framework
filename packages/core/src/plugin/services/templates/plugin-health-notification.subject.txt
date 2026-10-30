@@ -1,1 +1,1 @@
-[Atlantis] {{count}} plugin(s) need attention
+[Fromcode Framework] {{count}} plugin(s) need attention

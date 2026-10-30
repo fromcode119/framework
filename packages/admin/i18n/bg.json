@@ -712,7 +712,7 @@
       "maintenance": "Режим на поддръжка",
       "offlineHint": "Конзолата не може да се свърже със сървъра. Промените няма да се запазят, докато той не отговори отново."
     },
-    "assistant": "Отвори Atlantis Intelligence",
+    "assistant": "Отвори Fromcode Intelligence",
     "pluginPage": {
       "defaultView": "Показва се стандартният изглед за <strong>{{plugin}}</strong>. Регистрирайте компонент за <code>{{slot}}</code>, за да промените тази страница.",
       "workspace": "Работно пространство: {{name}}",
@@ -3495,7 +3495,7 @@
     "derivedFromTheFrontendLanguage": "{{label}}, определено от езика на сайта „{{language}}“",
     "noneNoCountryIsSet": "няма — не е зададена държава и езикът на сайта не посочва такава",
     "theDefaultDeclaredBy": "стойността по подразбиране, обявена от {{plugin}} — {{strategy}}",
-    "atlantisDefault": "Atlantis (по подразбиране)",
+    "atlantisDefault": "Fromcode Framework (по подразбиране)",
     "theBuiltInFromcodeAdmin": "Вграденият облик на администрацията на Fromcode.",
     "noCertificate": "Няма сертификат",
     "waitingForDns": "Изчакване на DNS",
