@@ -18,7 +18,9 @@ describe('platform-only integration types', () => {
       updateConfig: vi.fn(async () => { marked.push(underMarker); return { ok: true }; }),
     };
     const db = { withPlatformAdmin: async <T>(fn: () => Promise<T>) => { underMarker = true; try { return await fn(); } finally { underMarker = false; } } };
-    const runtime = { manager: { integrations }, db, isPlatformAdmin: vi.fn(async () => platformAdmin) };
+    // The console's language is read for the listing: no site default and no translation here.
+    const manager = { integrations, db: { find: async () => [], findOne: async () => null }, i18n: { translateOrFallback: () => '' } };
+    const runtime = { manager, db, isPlatformAdmin: vi.fn(async () => platformAdmin) };
     return { integrations, marked, controller: new SystemIntegrationController(runtime as any) };
   };
   const response = () => { const res: any = { status: vi.fn(() => res), json: vi.fn(() => res) }; return res; };

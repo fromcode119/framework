@@ -1,7 +1,7 @@
 /**
  * An integration's words in the console's language (Settings → Integrations), from the dictionary of the
  * plugin that declared them. The type, each provider and each provider's settings were sent exactly as
- * registered, in English, so a Bulgarian console showed Econt's username, password and sender fields — and
+ * registered, in English, so a Bulgarian console showed a courier's username, password and sender fields — and
  * every other plugin's — in English.
  *
  * The type's words come from its owner's dictionary; a provider's from the plugin that supplied it
