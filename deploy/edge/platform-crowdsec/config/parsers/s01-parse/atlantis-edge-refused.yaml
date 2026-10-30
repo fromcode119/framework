@@ -1,8 +1,8 @@
-# The Atlantis gateway's refused-visitor lines: [edge-refused] {"reason","address","host","method","path","at"}
+# The Fromcode Framework gateway's refused-visitor lines: [edge-refused] {"reason","address","host","method","path","at"}
 onsuccess: next_stage
 filter: "evt.Line.Labels.type == 'atlantis-gateway' && evt.Line.Raw contains '[edge-refused] '"
 name: atlantis/edge-refused
-description: "A visitor the Atlantis gateway refused: an attack, a blocked address or country, too many requests"
+description: "A visitor the Fromcode Framework gateway refused: an attack, a blocked address or country, too many requests"
 grok:
   pattern: '\[edge-refused\] %{GREEDYDATA:refusal}'
   apply_on: Line.Raw

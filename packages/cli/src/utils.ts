@@ -9,9 +9,9 @@ export class CliUtils {
   en: {
     'cli.status.checking': 'Checking marketplace at {{registry}}...',
     'cli.status.no_core': 'Marketplace does not provide core version information yet.',
-    'cli.status.new_version': '\nA newer version of Fromcode Atlantis is available: {{version}}',
+    'cli.status.new_version': '\nA newer version of Fromcode Framework is available: {{version}}',
     'cli.status.update_hint': 'Use "atlantis core update" to apply the update.',
-    'cli.status.latest': '\nYou are running the latest version of Fromcode Atlantis.',
+    'cli.status.latest': '\nYou are running the latest version of Fromcode Framework.',
     'cli.build.starting': '\nBuilding {{type}} {{slug}}...',
     'cli.pack.starting': '\nPacking {{slug}} v{{version}}...',
     'cli.pack.success': '\nPacked successfully!',

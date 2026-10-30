@@ -4,12 +4,12 @@ import { AppPathConstants } from '@fromcode119/core/client';
 
 export class AdminExtensionRegistry {
   static registerAdminExtension(bridge: IAdminExtensionBridge) {
-      // Register Atlantis Intelligence UI component to admin.minimal.root slot
+      // Register Fromcode Intelligence UI component to admin.minimal.root slot
       bridge.registerSlotComponent('admin.minimal.root', AdminAssistantPage, 'ai', 100);
 
-      // Register navigation menu item for Atlantis Intelligence
+      // Register navigation menu item for Fromcode Intelligence
       bridge.registerMenuItem({
-        label: 'Atlantis Intelligence',
+        label: 'Fromcode Intelligence',
         path: AppPathConstants.ADMIN.MINIMAL,
         icon: 'Zap',
         priority: 10,

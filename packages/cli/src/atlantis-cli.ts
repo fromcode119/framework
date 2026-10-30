@@ -12,8 +12,8 @@ import { DeployCommandService } from '@cli/commands/deploy-command-service';
 /**
  * The `atlantis` CLI.
  *
- * `fromcode` is kept as a second name for the same binary. The framework is Atlantis and the company
- * is Fromcode, so the command follows the framework — but a rename that silently broke every script,
+ * `fromcode` is kept as a second name for the same binary. The product is Fromcode Framework and its
+ * release codename is Atlantis, so the command carries the codename — but a rename that silently broke every script,
  * deploy target and shell history would cost more than the clarity is worth.
  *
  * `bin.ts` is the process entry and does nothing but call `main` — the program is built here so the
@@ -38,7 +38,7 @@ export class AtlantisCli {
 
     program
       .name('atlantis')
-      .description('Atlantis CLI - manage this Fromcode Atlantis installation')
+      .description('Fromcode Framework CLI (codename Atlantis) - manage this installation')
       .version('1.0.0');
 
     // Called directly rather than through a table of detached method references: a detached static

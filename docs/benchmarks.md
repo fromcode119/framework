@@ -1,7 +1,7 @@
-# Benchmarks — Atlantis against the platforms people actually run
+# Benchmarks — Fromcode Framework against the platforms people actually run
 
 **req/s** = requests per second (higher is better), measured on **6 October 2026** on one 2 vCPU / 4 GB server, one platform
-at a time, on the same data. Nine platforms: Atlantis (the framework in this repository with the shop and
+at a time, on the same data. Nine platforms: Fromcode Framework (the framework in this repository with the shop and
 CMS plugins), Payload (also with its official e-commerce plugin), Directus, Strapi, Medusa, PrestaShop, Magento 2.4, Drupal 11 + Commerce 3 and
 WordPress + WooCommerce. Best result in each row in **bold**.
 
@@ -30,12 +30,12 @@ hardware.
 | Signed-in read (20) | **157.4** | 119.0 | 76.5 | 52.7 | 103.1 | 94.6 | 10.5 | 51.7 | 6.4 | 4.3 | 7.7 |
 | Create a record | **84.7** | 70.3 | 58.9 | 44.9 | 76.5 | 76.2 | 5.2 | 23.0 | 24.1 | 4.3 | 14.7 |
 
-The first Atlantis column is a plain collection with the same six fields as the other tools' products
-(`name`, `slug`, `description`, `price`, `sku`, `stock`), through Atlantis' generic REST API. The second is
-Atlantis' own **full shop product** (94 columns, tax-aware prices, variants, stock, ratings, lead time) and
+The first Fromcode Framework column is a plain collection with the same six fields as the other tools' products
+(`name`, `slug`, `description`, `price`, `sku`, `stock`), through Fromcode Framework's generic REST API. The second is
+Fromcode Framework's own **full shop product** (94 columns, tax-aware prices, variants, stock, ratings, lead time) and
 CMS records, which carry several times the data of a plain record. The second column is the like-for-like for
 the commerce setups (Payload with its official e-commerce plugin, Medusa, PrestaShop, Magento, Drupal
-Commerce, WooCommerce), which also return full commerce products. Atlantis is first in every row, the richer CMS
+Commerce, WooCommerce), which also return full commerce products. Fromcode Framework is first in every row, the richer CMS
 record included: a page by slug no longer counts every match when the answer is one page (288.1), and the post
 list is answered from entries the CMS keeps beside each post (219.9). Both were measured on a slower day than the
 Payload figures in this table; measured beside Payload in that same session, Payload answered 162.7 and 129.8.
@@ -74,7 +74,7 @@ run-to-run noise is about ±10%).
 | Create a record | **84.7** | 58.9 | 76.5 | 76.2 |
 
 Payload (draft versions on), Directus and Strapi: Postgres, production mode, public read, the same six fields
-and 1,000 rows as the Atlantis test collection.
+and 1,000 rows as the Fromcode Framework test collection.
 
 ## 4. Plain records, 36 fields — 30 more fields, same data (req/s)
 
@@ -87,19 +87,19 @@ and 1,000 rows as the Atlantis test collection.
 | Create a record | **83.2** | 43.5 | 66.8 | 56.3 |
 
 The 30 extra fields (10 text, 8 numbers, 6 switches, 4 dates, 2 JSON) are filled identically on all four
-platforms, each rebuilt with the same fields and data. For Atlantis, 30 more fields cost 25% more CPU per list
+platforms, each rebuilt with the same fields and data. For Fromcode Framework, 30 more fields cost 25% more CPU per list
 request (5.2 → 6.5 ms) while the answer grows 2.4× (14.2 → 34.6 KB): about 2.2 µs per extra value.
 
 ## Run it yourself
 
 The runner, an example suite file and the data and method notes are in [`tools/benchmark`](../tools/benchmark/README.md):
 the same load (oha, unique query strings, median of three runs) against one system at a time, so you can put
-Atlantis and any other platform on your own hardware and compare.
+Fromcode Framework and any other platform on your own hardware and compare.
 
 ## How it was measured
 
 - **One server:** 2 vCPU, 4 GB RAM. The load generator ([oha](https://github.com/hatoo/oha), 32 connections) is
-  pinned to core 1 and every other stack is stopped. Atlantis (API, plugin host, database, cache) and Payload were
+  pinned to core 1 and every other stack is stopped. Fromcode Framework (API, plugin host, database, cache) and Payload were
   pinned to core 0, a single core. Strapi, Directus, Medusa and PrestaShop were **not** pinned and could use both
   cores, which favours them. Magento, Drupal and WooCommerce were measured on 4 October; their pinning was not
   re-checked.
@@ -109,7 +109,7 @@ Atlantis and any other platform on your own hardware and compare.
   posts, 20 pages, one administrator.
 - **No caches:** a unique query parameter on every request defeats full-page and response caches (Strapi,
   Medusa and PrestaShop reject unknown parameters and have no response cache, so they ran on the plain URL).
-- **Each platform through its own public API:** Atlantis REST, Payload REST, Directus and Strapi REST, Medusa
+- **Each platform through its own public API:** Fromcode Framework REST, Payload REST, Directus and Strapi REST, Medusa
   store API, PrestaShop webservice (JSON), Magento storefront GraphQL (admin REST for create), Drupal JSON:API,
   WooCommerce Store API + WordPress REST.
 - **Dates:** Magento (Mage-OS 2.4 with MariaDB and OpenSearch), Drupal 11 + Commerce 3, WordPress +
@@ -117,15 +117,15 @@ Atlantis and any other platform on your own hardware and compare.
   same server and data.
 - **Noise:** about ±10% from run to run. The narrowest leads (11% on 6-field create, 13% on 36-field filtered
   reads, 15% on 6-field filtered reads) are close to it.
-- **Atlantis build:** framework 0.2.334–0.2.336 with the shop plugin 0.1.247–0.1.248 (the code released on 6
+- **Fromcode Framework build:** framework 0.2.334–0.2.336 with the shop plugin 0.1.247–0.1.248 (the code released on 6
   October 2026), with the record-versions index (migration 62) applied.
 
 ## What this does not show
 
 - Magento, Drupal, WordPress and PrestaShop have fixed commerce schemas, so they were measured at their own
-  product width only; the width comparison is Atlantis, Payload, Directus and Strapi.
-- Payload's commerce product is the one its own plugin and template ship; it is not identical to Atlantis'
-  (Atlantis' carries tax-aware pricing, variants and lead time in one record), so the two are comparable in
+  product width only; the width comparison is Fromcode Framework, Payload, Directus and Strapi.
+- Payload's commerce product is the one its own plugin and template ship; it is not identical to Fromcode Framework's
+  (Fromcode Framework's carries tax-aware pricing, variants and lead time in one record), so the two are comparable in
   kind, not field for field.
 - Hosted SaaS (Shopify and similar) cannot be run on this server and is not included.
 - A 2 vCPU / 4 GB server: Magento runs near its memory limit on it, and every platform would do better on a

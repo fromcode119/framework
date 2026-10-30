@@ -2,7 +2,7 @@
 
 ## Hooked Kernel Architecture
 
-Atlantis uses a Hooked Kernel Architecture. The kernel provides base orchestration while plugins register into defined lifecycle phases: `Discovery → Boot → Route → Hook`
+Fromcode Framework uses a Hooked Kernel Architecture. The kernel provides base orchestration while plugins register into defined lifecycle phases: `Discovery → Boot → Route → Hook`
 
 ```mermaid
 graph TB
@@ -171,7 +171,7 @@ Localization is a first-class feature of the kernel, not a plugin add-on. Every 
 
 ## Class-Based Architecture
 
-Every piece of Atlantis follows a strict class-based pattern. There are no bare exported functions anywhere in the codebase.
+Every piece of Fromcode Framework follows a strict class-based pattern. There are no bare exported functions anywhere in the codebase.
 
 | Layer | Pattern | Example |
 |-------|---------|--------|
@@ -184,7 +184,7 @@ Every piece of Atlantis follows a strict class-based pattern. There are no bare 
 
 > **No arrow function methods.** Class methods always use prototype syntax and are bound explicitly when passed as callbacks: `router.get('/x', this.controller.handle.bind(this.controller))`.
 
-On the UI side the same philosophy is carried by three **standalone packages** (usable in any React project, zero Atlantis dependencies):
+On the UI side the same philosophy is carried by three **standalone packages** (usable in any React project, zero Fromcode Framework dependencies):
 
 | Package | Role |
 |---------|------|
@@ -218,7 +218,7 @@ This means every class is independently instantiable, mockable, and replaceable 
 │   ├── ai/                 # Admin Assistant runtime — LLM clients, classifier, MCP tool packs
 │   ├── mcp/                # MCP schema/registry/bridge primitives (shared by server + clients)
 │   ├── mcp-server/         # Standalone MCP server binary (stdio + Streamable HTTP client)
-│   │  # Standalone OOP stack (reusable outside Atlantis)
+│   │  # Standalone OOP stack (reusable outside Fromcode Framework)
 │   ├── react-class-components/  # Class-based React primitives — Reactor/PureReactor, @prop/@state/@bound/@watch, Enum
 │   ├── next-build-codegen/             # Build-time companion — .view template compiler, 'use client' injection
 │   ├── typescript-multiple-inheritance/              # TypeScript build tool — multiple inheritance, package aliases, real typecheck
@@ -230,8 +230,8 @@ This means every class is independently instantiable, mockable, and replaceable 
 │   ├── extension-builder/  # Packs plugins and themes — build pipeline, SSR dep closure, integrity stamping
 │   ├── queue/              # Background job queue — BullMQ or in-process, one API for both
 │   ├── next/               # Shared Next.js glue
-│   ├── create/             # `npm create` scaffolder for new Atlantis apps
-│   └── cli/                # Atlantis CLI tool
+│   ├── create/             # `npm create` scaffolder for new Fromcode Framework apps
+│   └── cli/                # Fromcode Framework CLI tool
 ├── plugins/           # 🔌 Domain plugins (each its own repository)
 ├── themes/            # 🎨 UI themes and layout bundles
 ├── appearance/        # 🎛️ Admin appearances — product consoles (each its own repository)

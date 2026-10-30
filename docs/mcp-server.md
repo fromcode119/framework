@@ -1,6 +1,6 @@
 # MCP Server — AI Agent Access
 
-Every Atlantis installation doubles as a **Model Context Protocol server**. An AI agent with a scoped
+Every Fromcode Framework installation doubles as a **Model Context Protocol server**. An AI agent with a scoped
 token can do real operator work — read and update content, swap a page's images by *named slot*,
 inspect orders, shipments and invoices, upload media, purge caches — without ssh, database access, or
 a human relaying clicks.

@@ -40,7 +40,7 @@ The AI package is an optional core extension that can be enabled or disabled wit
 - Re-enable: set `AI_ENABLED=true` (or unset) and restart.
 
 ### Expected behavior when disabled
-- Atlantis Intelligence UI is hidden or unavailable.
+- Fromcode Intelligence UI is hidden or unavailable.
 - AI-specific API routes are not registered.
 - AI settings/integrations are not shown.
 
@@ -52,7 +52,7 @@ The AI package is an optional core extension that can be enabled or disabled wit
 ## 3. UX Improvements
 
 ### Plan summary
-The Atlantis Intelligence UX update focuses on reducing cognitive load, removing duplicated controls, clarifying action flows, and improving responsiveness.
+The Fromcode Intelligence UX update focuses on reducing cognitive load, removing duplicated controls, clarifying action flows, and improving responsiveness.
 
 ### Key improvements
 - Unified settings drawer for provider/model/key/behavior.

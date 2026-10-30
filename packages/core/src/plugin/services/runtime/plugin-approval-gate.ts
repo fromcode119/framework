@@ -49,7 +49,7 @@ export class PluginApprovalGate {
     await this.saveApproved(slug, next);
     await this.registry.writeLog('INFO', `Carried "${slug}"'s network approval over to the hosts it declares: ${tokens.join(', ')}`, slug);
     await this.notify(
-      `[Atlantis] "${slug}" may now reach only the hosts it declares`,
+      `[Fromcode Framework] "${slug}" may now reach only the hosts it declares`,
       `"${slug}" was approved to reach the internet before plugins declared their hosts. It is now limited to: ${tokens.map((token) => token.replace(PluginNetworkDeclaration.HOST_TOKEN_PREFIX, '')).join(', ')}. Review it in Plugins.`,
     );
     return next;
@@ -103,7 +103,7 @@ export class PluginApprovalGate {
     const missing = PluginConsentSet.missing(plugin.manifest, plugin.approvedCapabilities);
     this.logger.warn(`Plugin "${slug}" HELD for approval: it asks for ${missing.join(', ')}.`);
     await this.notify(
-      `[Atlantis] "${slug}" is waiting for your approval`,
+      `[Fromcode Framework] "${slug}" is waiting for your approval`,
       `"${slug}" asks for ${missing.join(', ')}, which nobody approved. It stays off until an admin approves it in Plugins.`,
     );
   }

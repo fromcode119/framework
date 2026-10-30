@@ -7,7 +7,7 @@ describe('DefaultAdminAppearanceBootstrap', () => {
     const registry = new AdminAppearanceRegistry();
     DefaultAdminAppearanceBootstrap.register(registry);
     expect(registry.has('default')).toBe(true);
-    expect(registry.get('default')?.label).toBe('Atlantis (default)');
+    expect(registry.get('default')?.label).toBe('Fromcode Framework (default)');
   });
 
   it('is idempotent — re-registering keeps a single default entry', () => {

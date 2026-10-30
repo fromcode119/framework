@@ -23,7 +23,7 @@ export class HomeClient extends Reactor {
     return String((this.context?.activeTheme as Record<string, unknown> | null)?.defaultLayout || '');
   }
   /** Product name used when a page has no title of its own. */
-  private static readonly FRAMEWORK_TITLE = 'Atlantis';
+  private static readonly FRAMEWORK_TITLE = 'Fromcode Framework';
 
   private renderContent(content: any) {
     const rawContent = ContentRenderingUtils.buildRenderableContent(content);

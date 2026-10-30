@@ -2,10 +2,10 @@
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="packages/frontend/public/brand/atlantis-logo-white.png">
-  <img alt="Atlantis by Fromcode" src="packages/frontend/public/brand/atlantis-logo-slate.png" width="340">
+  <img alt="Fromcode Framework — codename Atlantis" src="packages/frontend/public/brand/atlantis-logo-slate.png" width="340">
 </picture>
 
-**The open-source application framework by Fromcode**
+**The open-source application framework by Fromcode** · codename **Atlantis**
 
 [![GitHub Stars](https://img.shields.io/github/stars/fromcode119/framework?style=for-the-badge&logo=github&color=gold)](https://github.com/fromcode119/framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)
@@ -19,27 +19,27 @@
 
 </div>
 
-## What is Atlantis?
+## What is Fromcode Framework?
 
-Atlantis is a production-hardened application kernel, not a CMS and not a locked-in SaaS. It handles
+Fromcode Framework is a production-hardened application kernel, not a CMS and not a locked-in SaaS. It handles
 identity, security, migrations, queues, media, AI hooks, and real-time out of the box, while staying
 completely modular and provider-agnostic at every layer. You build a SaaS product, a content
 platform, a marketplace, or all of the above, without re-architecting between them.
 
 **The framework in this repository is free and MIT-licensed.** Domain plugins — content, commerce,
 billing, shipping, courses and the rest — are separate commercial products, distributed through the
-marketplace and not included here. Atlantis gives you the kernel and the plugin contract; what you
+marketplace and not included here. Fromcode Framework gives you the kernel and the plugin contract; what you
 build on it is yours, and nothing obliges you to use our plugins at all.
 
-## 🆚 Why Atlantis?
+## 🆚 Why Fromcode Framework?
 
 Traditional frameworks hand you raw materials but no system. CMS platforms lock you into their
-schema. SaaS products lock you into their pricing. Atlantis is none of those.
+schema. SaaS products lock you into their pricing. Fromcode Framework is none of those.
 
 <details>
 <summary><b>📊 Full comparison — WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express</b></summary>
 
-| Feature | Atlantis | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
+| Feature | Fromcode Framework | WordPress | Strapi | Payload | Ghost / Directus | NestJS / Express |
 |:--------|:--------:|:---------:|:------:|:-------:|:----------------:|:----------------:|
 | **Deployment Mode** | API / API+Admin / Full-Stack | Monolithic | Headless Only | Headless Only | Headless Only | API Only |
 | **Architecture** | Modular Kernel + Plugins | PHP Monolith | Static Schema | Code-first Schema | Static Schema | Manual Structure |
@@ -59,7 +59,7 @@ schema. SaaS products lock you into their pricing. Atlantis is none of those.
 
 </details>
 
-Full write-up: **[Why Atlantis?](docs/comparison.md)**
+Full write-up: **[Why Fromcode Framework?](docs/comparison.md)**
 
 ## ⚡ Performance
 
@@ -67,7 +67,7 @@ Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, sam
 
 **Against the open-source backends** — the same six-field records on every platform:
 
-| Operation (req/s) | Atlantis (plain record) | Payload | Directus | Strapi |
+| Operation (req/s) | Fromcode Framework (plain record) | Payload | Directus | Strapi |
 |:--|--:|--:|--:|--:|
 | List of 20 records | **203.4** | 137.5 | 109.6 | 99.5 |
 | One record by slug | **255.9** | 217.6 | 128.8 | 115.2 |
@@ -75,10 +75,10 @@ Every number is **req/s** (requests per second) on one 2 vCPU / 4 GB server, sam
 | Signed-in read (20) | **157.4** | 76.5 | 103.1 | 94.6 |
 | Create a record | **84.7** | 58.9 | 76.5 | 76.2 |
 
-**Against the commerce platforms** — Atlantis' own full shop product (94 columns, tax-aware prices, variants,
+**Against the commerce platforms** — Fromcode Framework's own full shop product (94 columns, tax-aware prices, variants,
 stock) against each platform's own product (Payload with its official e-commerce plugin):
 
-| Operation (req/s) | Atlantis, full shop product | Payload + e-commerce plugin | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
+| Operation (req/s) | Fromcode Framework, full shop product | Payload + e-commerce plugin | PrestaShop | Magento | Drupal Commerce | WooCommerce | Medusa |
 |:--|--:|--:|--:|--:|--:|--:|--:|
 | Product list (20) | **80.6** | 58.2 | 14.7 | 9.8 | 9.3 | 6.2 | 13.7 |
 | Single product | **214.6** | 98.2 | 54.1 | 12.8 | 12.4 | 21.0 | 25.6 |
@@ -86,7 +86,7 @@ stock) against each platform's own product (Payload with its official e-commerce
 | Signed-in read (20) | **119.0** | 52.7 | 51.7 | 6.4 | 4.3 | 7.7 | 10.5 |
 | Create a record | **70.3** | 44.9 | 23.0 | 24.1 | 4.3 | 14.7 | 5.2 |
 
-Atlantis is first in every row of every table, including at 36 fields per record where it stays 1.1× to 1.8×
+Fromcode Framework is first in every row of every table, including at 36 fields per record where it stays 1.1× to 1.8×
 ahead. Every number, the method, the data and what these results do **not** show are in
 **[docs/benchmarks.md](docs/benchmarks.md)**; they come from one server run by the project, so please run your
 own load before you choose.
@@ -147,7 +147,7 @@ manual image builds, and the routing shapes for multi-hostname deployments.
 | [Deploying the framework](deploy/DEPLOYMENT.md) | Prebuilt images, rolling releases, the edge, a relay in front of it, and protecting and reporting at the edge |
 | [Configuration](docs/configuration.md) | Every environment variable — core, database, cache/queue/storage/email, multi-site, rate limiting |
 | [Architecture](docs/architecture.md) | Hooked kernel design, request flow, kernel subsystems, repository structure |
-| [Comparison — Why Atlantis?](docs/comparison.md) | Feature-by-feature vs. WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express |
+| [Comparison — Why Fromcode Framework?](docs/comparison.md) | Feature-by-feature vs. WordPress, Strapi, Payload, Ghost/Directus, NestJS/Express |
 | [Build & CLI](docs/cli.md) | Build commands, architecture-check gates, the `atlantis` CLI, run modes |
 | [MCP Server](docs/mcp-server.md) | Every install as a Model Context Protocol server — security model, tools, connecting Claude |
 | [Plugin Development](docs/plugin-development-guide.md) | Plugin ecosystem, plugin structure, cross-plugin communication, collections, hooks |
@@ -231,7 +231,7 @@ The full guide — every protection, every limit, and what no platform can do fo
 
 ## 📐 Architecture
 
-Atlantis uses a Hooked Kernel Architecture: the kernel provides base orchestration while plugins
+Fromcode Framework uses a Hooked Kernel Architecture: the kernel provides base orchestration while plugins
 register into lifecycle phases (`Discovery → Boot → Route → Hook`). Requests enter through the platform's
 `edge` (a TCP load balancer across gateway replicas, optionally behind a relay on another server), then a platform gateway that screens them and routes by hostname to the API, Admin, or Frontend, all built on a shared kernel core
 (`packages/core` + `packages/sdk`) that owns security, the database layer, and multi-site isolation.
@@ -251,7 +251,7 @@ follows the [Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ## 📜 License
 
-Atlantis is [MIT licensed](LICENSE). See [SECURITY.md](SECURITY.md) for reporting a vulnerability.
+Fromcode Framework is [MIT licensed](LICENSE). See [SECURITY.md](SECURITY.md) for reporting a vulnerability.
 
 <div align="center">
 

@@ -5,7 +5,7 @@
 
 ## Purpose
 
-The `npm create` scaffolder for a new Atlantis app.
+The `npm create` scaffolder for a new Fromcode Framework app.
 
 It writes a project that depends on the published packages rather than a checkout of this repository.
 

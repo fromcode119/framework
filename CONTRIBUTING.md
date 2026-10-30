@@ -1,4 +1,4 @@
-# Contributing to Atlantis
+# Contributing to Fromcode Framework
 
 Thanks for looking at contributing. This document covers the local setup, the checks a change must
 pass, and how a change gets merged.

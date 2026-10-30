@@ -2,13 +2,13 @@
 
 > **Important — Open Source Disclaimer**
 >
-> Atlantis is provided **as-is** under the MIT License. As an open-source project, **we make no warranties or guarantees** regarding security, fitness for purpose, or freedom from defects. By using Atlantis, you accept full responsibility for securing your own deployment. The maintainers are not liable for any damages, data breaches, or losses arising from use of this software.
+> Fromcode Framework is provided **as-is** under the MIT License. As an open-source project, **we make no warranties or guarantees** regarding security, fitness for purpose, or freedom from defects. By using Fromcode Framework, you accept full responsibility for securing your own deployment. The maintainers are not liable for any damages, data breaches, or losses arising from use of this software.
 >
 > We will make **best-effort** attempts to address reported vulnerabilities, but there are no SLAs, no guaranteed patch timelines, and no obligation to act on any report.
 
 ## Supported Versions
 
-Only the latest stable release of Atlantis receives best-effort security attention.
+Only the latest stable release of Fromcode Framework receives best-effort security attention.
 
 | Version | Status          |
 |---------|-----------------|
@@ -55,7 +55,7 @@ The following are **out of scope**:
 
 ## Security Architecture
 
-Atlantis has several built-in security layers you should be aware of when researching:
+Fromcode Framework has several built-in security layers you should be aware of when researching:
 
 - **Security Monitor** — Real-time threat detection loop (`packages/core/src/security/`)
 - **Plugin Process Isolation** — Every plugin outside the framework's own runs in its own OS process and user, with an empty environment, and answers only the SDK contract; a plugin a SITE uploads is further limited to a short list of SDK calls, has no network, is held to CPU/memory/disk/process limits, and runs in its own container that can run under gVisor (see [docs/untrusted-plugins.md](docs/untrusted-plugins.md))

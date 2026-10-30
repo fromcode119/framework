@@ -1,6 +1,6 @@
 {
   "ai": {
-    "atlantisIntelligenceMode": "Режим на Atlantis Intelligence",
+    "atlantisIntelligenceMode": "Режим на Fromcode Intelligence",
     "openAdvancedAdmin": "Отвори разширената администрация",
     "advanced": "Разширени",
     "toggleComposerControls": "Покажи/скрий контролите за писане",
@@ -69,7 +69,7 @@
     "askAQuestionOrEnter": "Задайте въпрос или въведете команда...",
     "uploadingAssets": "Качване на файлове",
     "toolPermissions": "Права за инструменти",
-    "chooseWhatAtlantisIntelligenceIs": "Изберете какво може да използва Atlantis Intelligence в този разговор.",
+    "chooseWhatAtlantisIntelligenceIs": "Изберете какво може да използва Fromcode Intelligence в този разговор.",
     "noToolsAvailable": "Няма налични инструменти.",
     "deleteSession": "Изтрий разговора",
     "new": "Нов",

@@ -1,9 +1,9 @@
 import { SelectOption } from '@ai/ui/select-option';
 
 export class AssistantConstants {
-  static readonly SURFACE_NAME = 'Atlantis Intelligence';
+  static readonly SURFACE_NAME = 'Fromcode Intelligence';
   /** The product's short name, on the switch back to the assistant — a name, so never translated. */
-  static readonly SHORT_NAME = 'Atlantis';
+  static readonly SHORT_NAME = 'Fromcode';
   
   static readonly ENDPOINTS = {
     INTEGRATION: '/system/admin/integrations/ai',

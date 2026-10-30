@@ -1,6 +1,6 @@
 {
   "ai": {
-    "atlantisIntelligenceMode": "Atlantis Intelligence mode",
+    "atlantisIntelligenceMode": "Fromcode Intelligence mode",
     "openAdvancedAdmin": "Open advanced admin",
     "advanced": "Advanced",
     "toggleComposerControls": "Toggle composer controls",
@@ -69,7 +69,7 @@
     "askAQuestionOrEnter": "Ask a question or enter a command...",
     "uploadingAssets": "Uploading assets",
     "toolPermissions": "Tool Permissions",
-    "chooseWhatAtlantisIntelligenceIs": "Choose what Atlantis Intelligence is allowed to use in this chat.",
+    "chooseWhatAtlantisIntelligenceIs": "Choose what Fromcode Intelligence is allowed to use in this chat.",
     "noToolsAvailable": "No tools available.",
     "deleteSession": "Delete session",
     "new": "New",

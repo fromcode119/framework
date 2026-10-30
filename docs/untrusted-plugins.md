@@ -3,7 +3,7 @@
 The failure every site owner has seen on other platforms: someone installs a plugin, the plugin is
 malicious or simply broken, and within hours the site sends spam, every other site on the same server
 is defaced, and the hosting account belongs to someone else. This guide is about making sure that
-cannot happen on an Atlantis deployment — what the platform does on its own, what you as the operator
+cannot happen on a Fromcode Framework deployment — what the platform does on its own, what you as the operator
 must do, and what no platform can do for you.
 
 The goal is simple to state: **a bad plugin breaks at most the site that installed it.** It must not

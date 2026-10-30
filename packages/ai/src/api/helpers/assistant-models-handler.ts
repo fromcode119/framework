@@ -13,7 +13,7 @@ export class AssistantModelsHandler {
       const mergedConfig = { ...storedConfig, ...requestConfig };
       const formatError = (baseUrl: string, response: any, payload: any): string => {
         const raw = String(payload?.error?.message || payload?.error || payload?.message || response.statusText || '').trim();
-        if (response.status === 404 || raw.toLowerCase() === 'not found') return `Provider endpoint not found at "${baseUrl}". Check the ${provider} Base URL in Atlantis Intelligence settings.`;
+        if (response.status === 404 || raw.toLowerCase() === 'not found') return `Provider endpoint not found at "${baseUrl}". Check the ${provider} Base URL in Fromcode Intelligence settings.`;
         return raw || 'Failed to fetch models';
       };
 

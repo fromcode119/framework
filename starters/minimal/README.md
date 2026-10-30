@@ -1,6 +1,6 @@
-# Minimal Atlantis Project
+# Minimal Fromcode Framework Project
 
-This is a minimal Atlantis project scaffolded with the `npm create fromcode` scaffolder.
+This is a minimal Fromcode Framework project scaffolded with the `npm create fromcode` scaffolder.
 
 ## Getting Started
 

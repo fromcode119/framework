@@ -40,7 +40,7 @@ export class AdminAssistantPageView extends PureReactor {
     return (
       <main className="relative z-10 flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--bg)]">
         <AssistantSimpleTopBar
-          sessionTitle="Atlantis Intelligence"
+          sessionTitle="Fromcode Intelligence"
           historyCount={this.model.historySessions.length}
           onBackToAdmin={this.model.openAdvancedWorkspace}
           onHistoryToggle={this.model.toggleHistoryPanel}

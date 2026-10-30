@@ -1,9 +1,9 @@
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 export class AppEnv {
 	static readonly COMPANY_NAME = 'Fromcode';
-	static readonly APP_NAME = 'Atlantis';
-	static readonly PRODUCT_NAME = 'Fromcode Atlantis';
-	static readonly AI_NAME = 'Atlantis Intelligence';
+	static readonly APP_NAME = 'Fromcode Framework';
+	static readonly PRODUCT_NAME = 'Fromcode Framework';
+	static readonly AI_NAME = 'Fromcode Intelligence';
 	static readonly AI_ENABLED = process.env.NEXT_PUBLIC_ADMIN_AI_ENABLED !== 'false';
 	/**
 	 * The running framework version, injected at build time from the root package.json

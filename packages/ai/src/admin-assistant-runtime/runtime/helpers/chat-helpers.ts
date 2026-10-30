@@ -103,7 +103,7 @@ export class ChatHelpers {
    *   intent: { kind: RuntimeIntentKind.CHAT, confidence: 0.9 },
    *   workspaceSummary: 'Collections: posts, pages'
    * });
-   * // => "You are Atlantis Intelligence.\nChat naturally..."
+   * // => "You are Fromcode Intelligence.\nChat naturally..."
    */
  static buildSystemPrompt(input: {
     profile: IAssistantPromptProfile;
@@ -112,7 +112,7 @@ export class ChatHelpers {
     workspaceSummary: string;
   }): string {
     const base = [
-      'You are Atlantis Intelligence.',
+      'You are Fromcode Intelligence.',
       'Chat naturally when the user is chatting or asking factual questions.',
       'Do not force staging, planning, or approval language unless the user asked to change data/files.',
       'If a target is missing for an action, ask one focused clarification and stop.',

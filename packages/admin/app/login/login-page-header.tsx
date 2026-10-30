@@ -30,7 +30,7 @@ export class LoginPageHeader extends Reactor {
   /**
    * The PLATFORM wordmark, shown unless the active appearance brought its own sign-in frame.
    *
-   * On a workspace domain that frame carries the customer's logo, and printing Atlantis above it made
+   * On a workspace domain that frame carries the customer's logo, and printing the platform name above it made
    * the page read as two products stacked — which is what "the real login still hasn't changed" meant:
    * the words said the workspace, the mark still said the platform. When no appearance claims the
    * sign-in, this is the only brand on the page and stays exactly as it was.

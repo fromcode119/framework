@@ -103,7 +103,7 @@ export class SystemSettingDescriptors {
     [SystemConstants.META_KEY.ADMIN_SHADOWS]: { scope: SettingScope.SITE, writable: true, exposed: true, members: true },
     [SystemConstants.META_KEY.PLATFORM_NAME]: {
       scope: SettingScope.SITE, writable: true, exposed: true, members: true,
-      seed: { value: 'Atlantis', description: "The identity of your platform instance.", group: "General" },
+      seed: { value: 'Fromcode Framework', description: "The identity of your platform instance.", group: "General" },
     }, // candidate for PLATFORM (Phase 2)
     [SystemConstants.META_KEY.PLATFORM_DOMAIN]: {
       scope: SettingScope.SITE, writable: true, exposed: true,

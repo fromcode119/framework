@@ -83,9 +83,9 @@
       "weAreCurrentlyPerformingScheduled": "В момента извършваме планирана поддръжка, за да подобрим услугите си. Порталът ще бъде отново достъпен скоро."
     },
     "starterHero": {
-      "atlantisByFromcode": "Atlantis от Fromcode",
+      "atlantisByFromcode": "Fromcode Framework · Atlantis",
       "doesnTGetInYour": "не ви пречи",
-      "atlantisIsTheOpenSource": "Atlantis е платформа с отворен код от Fromcode за екипи, които искат да създават професионални приложения — бързо, гъвкаво и по свои правила.",
+      "atlantisIsTheOpenSource": "Fromcode Framework е платформа с отворен код за екипи, които искат да създават професионални приложения — бързо, гъвкаво и по свои правила.",
       "openAdmin": "Към администрацията →",
       "fromcode": "Fromcode",
       "theFrameworkThat": "Платформата, която",
