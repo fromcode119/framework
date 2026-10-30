@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.469] - 2026-10-30
+
+### Fixed
+
+- **integrations**: name an integration's plugin tab in the console's language ([#1125](https://github.com/fromcode119/framework/pull/1125))
+- **plugins**: marketplace shows an installed plugin's name and description in the console's language ([#1124](https://github.com/fromcode119/framework/pull/1124))
+- **plugins**: show install and update progress in the console's language ([#1122](https://github.com/fromcode119/framework/pull/1122))
+
 ## [0.2.468] - 2026-10-30
 
 ### Fixed
