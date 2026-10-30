@@ -62,12 +62,12 @@ describe('TenantEnvironmentGate', () => {
 
     it('refuses once it says non-production, and names THAT control', async () => {
       givenSetting('non-production');
-      const attempt = new TenantEnvironmentGate(db, audit).assert('network', 'https://api.stripe.com/v1/charges', 'ecommerce');
+      const attempt = new TenantEnvironmentGate(db, audit).assert('network', 'https://payments.example.com/charge', 'shop');
       await expect(attempt).rejects.toBeInstanceOf(NonProductionRefusal);
       await attempt.catch((err: NonProductionRefusal) => {
         expect(err.message).toContain('Settings → General → Site → Environment');
       });
-      expect(audited).toEqual([['ecommerce', 'network', 'https://api.stripe.com/v1/charges', AuditOutcome.DENIED, { reason: 'non-production' }]]);
+      expect(audited).toEqual([['shop', 'network', 'https://payments.example.com/charge', AuditOutcome.DENIED, { reason: 'non-production' }]]);
     });
 
     it('never reads the setting once the deployment has sites — platform mail must still leave', async () => {
