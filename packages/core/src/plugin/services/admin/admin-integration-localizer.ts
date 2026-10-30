@@ -24,6 +24,8 @@ export class AdminIntegrationLocalizer {
     const owner = String(summary.owner?.slug || '');
     return {
       ...summary,
+      // The tab a type is grouped under names its plugin; the plugin list words that name as `admin.label`.
+      ...(summary.owner && owner ? { owner: { ...summary.owner, label: this.text(owner, 'admin.label', summary.owner.label) } } : {}),
       label: this.text(owner, `${base}.label`, summary.label),
       description: this.text(owner, `${base}.description`, summary.description),
       providers: Array.isArray(summary.providers) ? summary.providers.map((provider: any) => this.provider(`${base}.providers`, provider)) : summary.providers,
