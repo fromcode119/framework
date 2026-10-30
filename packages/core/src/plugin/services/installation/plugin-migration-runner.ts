@@ -29,11 +29,11 @@ export class PluginMigrationRunner {
    * are already there (a reinstall that kept its data, an adopted predecessor's) they run as on an update.
    */
   async run(slug: string, pluginPath: string, manifest: IPluginManifest, progressReporter?: IPluginInstallProgressReporter, firstInstall = false): Promise<void> {
-    progressReporter?.({ phase: 'checking-migrations', message: `Checking migrations for "${slug}"...`, pluginSlug: slug });
+    progressReporter?.({ phase: 'checking-migrations', message: `Checking migrations for "${slug}"...`, messageKey: 'checkingMigrations', messageParams: { pluginSlug: slug }, pluginSlug: slug });
 
     const pluginMigrations = await PluginMigrationLoader.load(slug, pluginPath, manifest.migrations);
     if (pluginMigrations.length === 0) {
-      progressReporter?.({ phase: 'checking-migrations', message: `No plugin migrations found for "${slug}".`, pluginSlug: slug });
+      progressReporter?.({ phase: 'checking-migrations', message: `No plugin migrations found for "${slug}".`, messageKey: 'noMigrations', messageParams: { pluginSlug: slug }, pluginSlug: slug });
       return;
     }
 
@@ -42,6 +42,8 @@ export class PluginMigrationRunner {
       progressReporter?.({
         phase: 'checking-migrations',
         message: `First install of "${slug}": ${recorded} migration(s) recorded as applied; its tables are created at their current shape.`,
+        messageKey: 'firstInstallMigrationsRecorded',
+        messageParams: { pluginSlug: slug, count: recorded },
         pluginSlug: slug,
       });
       return;

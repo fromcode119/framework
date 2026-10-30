@@ -19,11 +19,11 @@ describe('plugin install progress across api workers', () => {
     polled.useSharedStore(shared);
     let finish!: () => void;
     const operation = running.start('finance', 'marketplace install', async (report) => {
-      report({ phase: 'running-migrations', message: 'Running migration x', pluginSlug: 'finance', migrationName: 'x' } as any);
+      report({ phase: 'running-migrations', message: 'Running migration x', messageKey: 'runningMigration', messageParams: { migrationName: 'x' }, pluginSlug: 'finance', migrationName: 'x' });
       await new Promise<void>((resolve) => { finish = resolve; });
     });
     await new Promise((resolve) => setTimeout(resolve, 5));
-    expect(await polled.get(operation.id)).toMatchObject({ status: 'running', phase: 'running-migrations', migrationNames: ['x'] });
+    expect(await polled.get(operation.id)).toMatchObject({ status: 'running', phase: 'running-migrations', migrationNames: ['x'], messageKey: 'runningMigration', messageParams: { migrationName: 'x' } });
     finish();
     await new Promise((resolve) => setTimeout(resolve, 5));
     expect(await polled.get(operation.id)).toMatchObject({ status: 'completed', phase: 'completed' });

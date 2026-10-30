@@ -65,28 +65,16 @@ export class PluginInstallationService {
       throw new Error(`Plugin "${slug}"${options.version ? ` v${options.version}` : ''} not found in marketplace.`);
     }
 
-    options.progressReporter?.({
-      phase: 'resolving-marketplace-package',
-      message: `Checking marketplace package for "${slug}"...`,
-      pluginSlug: slug,
-    });
+    options.progressReporter?.({ phase: 'resolving-marketplace-package', message: `Checking marketplace package for "${slug}"...`, messageKey: 'checkingMarketplacePackage', messageParams: { pluginSlug: slug }, pluginSlug: slug });
 
     if (pkg.dependencies && Object.keys(pkg.dependencies).length > 0) {
-      options.progressReporter?.({
-        phase: 'dependencies-ready',
-        message: `Required dependencies: ${Object.keys(pkg.dependencies).join(', ')}`,
-        pluginSlug: slug,
-      });
+      options.progressReporter?.({ phase: 'dependencies-ready', message: `Required dependencies: ${Object.keys(pkg.dependencies).join(', ')}`, messageKey: 'requiredDependencies', messageParams: { dependencies: Object.keys(pkg.dependencies).join(', ') }, pluginSlug: slug });
     }
 
     const existing = this.plugins.get(slug);
     if (existing?.path) {
       this.logger.info(`Creating backup for ${slug} before update...`);
-      options.progressReporter?.({
-        phase: 'creating-backup',
-        message: `Creating backup for "${slug}" before update...`,
-        pluginSlug: slug,
-      });
+      options.progressReporter?.({ phase: 'creating-backup', message: `Creating backup for "${slug}" before update...`, messageKey: 'creatingBackup', messageParams: { pluginSlug: slug }, pluginSlug: slug });
       await BackupService.create(slug, existing.path, BackupSectionKey.PLUGINS);
     }
 
@@ -104,7 +92,7 @@ export class PluginInstallationService {
     filePath: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<IPluginManifest> {
-    options.progressReporter?.({ phase: 'extracting-package', message: 'Extracting uploaded plugin package...', pluginSlug: 'upload' });
+    options.progressReporter?.({ phase: 'extracting-package', message: 'Extracting uploaded plugin package...', messageKey: 'extractingUpload', pluginSlug: 'upload' });
 
     const startedAt = Date.now();
     const manifest = await this.discovery.installFromZip(filePath);
@@ -120,7 +108,7 @@ export class PluginInstallationService {
     packageDir: string,
     options: { enable?: boolean; progressReporter?: IPluginInstallProgressReporter } = {},
   ): Promise<IPluginManifest> {
-    options.progressReporter?.({ phase: 'extracting-package', message: 'Installing built plugin package...', pluginSlug: 'build' });
+    options.progressReporter?.({ phase: 'extracting-package', message: 'Installing built plugin package...', messageKey: 'installingBuild', pluginSlug: 'build' });
 
     const startedAt = Date.now();
     const manifest = await this.discovery.installFromDirectory(packageDir);
@@ -146,18 +134,14 @@ export class PluginInstallationService {
     const failed: { slug: string; error: string }[] = [];
 
     if (!updates.length) {
-      options.progressReporter?.({ phase: 'completed', message: 'Every installed plugin is already at its latest marketplace version.', pluginSlug: 'all' });
+      options.progressReporter?.({ phase: 'completed', message: 'Every installed plugin is already at its latest marketplace version.', messageKey: 'allUpToDate', pluginSlug: 'all' });
       return { updated, failed };
     }
 
     for (const [index, entry] of updates.entries()) {
       // Shown VERBATIM as the live progress label — lead with the countdown (7, 6, 5…).
       const remaining = updates.length - index;
-      options.progressReporter?.({
-        phase: 'updating-plugin',
-        message: `${remaining} update${remaining === 1 ? '' : 's'} remaining — updating ${entry.slug} to v${entry.version}...`,
-        pluginSlug: entry.slug,
-      });
+      options.progressReporter?.({ phase: 'updating-plugin', message: `${remaining} update${remaining === 1 ? '' : 's'} remaining — updating ${entry.slug} to v${entry.version}...`, messageKey: 'updatingPlugin', messageParams: { remaining, pluginSlug: entry.slug, version: entry.version }, pluginSlug: entry.slug });
       try {
         await this.installOrUpdateFromMarketplace(entry.slug, {
           progressReporter: options.progressReporter,
@@ -167,24 +151,16 @@ export class PluginInstallationService {
         updated.push(entry.slug);
       } catch (error) {
         failed.push({ slug: entry.slug, error: (error as Error).message });
-        options.progressReporter?.({
-          phase: 'plugin-failed',
-          message: `Update failed for ${entry.slug}: ${(error as Error).message} — continuing with the rest.`,
-          pluginSlug: entry.slug,
-        });
+        options.progressReporter?.({ phase: 'plugin-failed', message: `Update failed for ${entry.slug}: ${(error as Error).message} — continuing with the rest.`, messageKey: 'pluginUpdateFailed', messageParams: { pluginSlug: entry.slug, error: String((error as Error).message) }, pluginSlug: entry.slug });
       }
     }
 
     if (updated.length && this.restartOwed) {
       this.restartOwed = false;
-      options.progressReporter?.({
-        phase: 'restart-required',
-        message: `All ${updated.length} update(s) installed — restarting the API for the plugin(s) that run inside it...`,
-        pluginSlug: 'all',
-      });
+      options.progressReporter?.({ phase: 'restart-required', message: `All ${updated.length} update(s) installed — restarting the API for the plugin(s) that run inside it...`, messageKey: 'allUpdatesRestarting', messageParams: { count: updated.length }, pluginSlug: 'all' });
       this.runtimeRestart.scheduleRestart(`Batch update replaced ${updated.length} plugin(s).`);
     } else if (updated.length) {
-      options.progressReporter?.({ phase: 'completed', message: `All ${updated.length} update(s) installed; each plugin's process was replaced in place.`, pluginSlug: 'all' });
+      options.progressReporter?.({ phase: 'completed', message: `All ${updated.length} update(s) installed; each plugin's process was replaced in place.`, messageKey: 'allUpdatesReplaced', messageParams: { count: updated.length }, pluginSlug: 'all' });
     }
 
     return { updated, failed };
@@ -238,11 +214,7 @@ export class PluginInstallationService {
       if (await this.reloadHost(slug, manifest).catch((error) => { existingPlugin.manifest = previousManifest; throw error; })) {
         // Sync tables + default pages now: a release adding a field or a required page otherwise waits for a boot.
         if (desiredState === PluginState.ACTIVE && !held) await this.refreshActivePlugin(slug);
-        options.progressReporter?.({
-          phase: 'plugin-reloaded',
-          message: `Plugin "${slug}" was replaced and its process restarted on the new code. No API restart needed.`,
-          pluginSlug: slug,
-        });
+        options.progressReporter?.({ phase: 'plugin-reloaded', message: `Plugin "${slug}" was replaced and its process restarted on the new code. No API restart needed.`, messageKey: 'pluginReloaded', messageParams: { pluginSlug: slug }, pluginSlug: slug });
         return;
       }
 
@@ -250,19 +222,11 @@ export class PluginInstallationService {
       if (options.deferRestart) {
         this.restartOwed = true;
         // A batch driver restarts ONCE at the end; restarting here would abort the rest of the batch.
-        options.progressReporter?.({
-          phase: 'plugin-replaced',
-          message: `Plugin "${slug}" was replaced. Restart deferred to the end of the batch.`,
-          pluginSlug: slug,
-        });
+        options.progressReporter?.({ phase: 'plugin-replaced', message: `Plugin "${slug}" was replaced. Restart deferred to the end of the batch.`, messageKey: 'pluginReplacedDeferred', messageParams: { pluginSlug: slug }, pluginSlug: slug });
         return;
       }
 
-      options.progressReporter?.({
-        phase: 'restart-required',
-        message: `Plugin "${slug}" was replaced. Scheduling API restart so the new runtime code is loaded.`,
-        pluginSlug: slug,
-      });
+      options.progressReporter?.({ phase: 'restart-required', message: `Plugin "${slug}" was replaced. Scheduling API restart so the new runtime code is loaded.`, messageKey: 'pluginReplacedRestarting', messageParams: { pluginSlug: slug }, pluginSlug: slug });
 
       this.runtimeRestart.scheduleRestart(`Plugin "${slug}" was replaced on disk.`);
       return;
@@ -273,16 +237,16 @@ export class PluginInstallationService {
     if (existingPlugin?.state === PluginState.ERROR) {
       existingPlugin.manifest = manifest;
       if (await this.holdIfUnapproved(slug, manifest)) {
-        options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" waits for approval of its changed capabilities.`, pluginSlug: slug });
+        options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" waits for approval of its changed capabilities.`, messageKey: 'awaitingCapabilityApproval', messageParams: { pluginSlug: slug }, pluginSlug: slug });
         return;
       }
       await this.reloadHost(slug, manifest);
     }
-    options.progressReporter?.({ phase: 'refreshing-plugin-registry', message: `Refreshing plugin registry for "${slug}"...`, pluginSlug: slug });
+    options.progressReporter?.({ phase: 'refreshing-plugin-registry', message: `Refreshing plugin registry for "${slug}"...`, messageKey: 'refreshingRegistry', messageParams: { pluginSlug: slug }, pluginSlug: slug });
     await this.discoverPlugins();
 
     if (options.enable) {
-      options.progressReporter?.({ phase: 'enabling-plugin', message: `Activating "${slug}"...`, pluginSlug: slug });
+      options.progressReporter?.({ phase: 'enabling-plugin', message: `Activating "${slug}"...`, messageKey: 'activating', messageParams: { pluginSlug: slug }, pluginSlug: slug });
       // A plugin that asks for anything is installed, not run, until an admin approves it.
       await this.enablePlugin(slug).catch(async (error) => {
         if (!PluginConsentRequiredError.is(error)) throw error;
@@ -290,6 +254,6 @@ export class PluginInstallationService {
       });
     }
 
-    options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" is ready.`, pluginSlug: slug });
+    options.progressReporter?.({ phase: 'completed', message: `Plugin "${slug}" is ready.`, messageKey: 'ready', messageParams: { pluginSlug: slug }, pluginSlug: slug });
   }
 }

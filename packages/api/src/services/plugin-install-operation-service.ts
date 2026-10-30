@@ -42,6 +42,7 @@ export class PluginInstallOperationService {
       status: 'running',
       phase: 'queued',
       message: `Starting ${kind} for "${pluginSlug}"...`,
+      messageKey: 'queued',
       startedAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       dependencySlugs: [],
@@ -86,6 +87,8 @@ export class PluginInstallOperationService {
 
     operation.phase = progress.phase;
     operation.message = progress.message;
+    operation.messageKey = progress.messageKey;
+    operation.messageParams = progress.messageParams;
     operation.updatedAt = new Date().toISOString();
 
     if (progress.dependencySlug && !operation.dependencySlugs.includes(progress.dependencySlug)) {
@@ -111,7 +114,10 @@ export class PluginInstallOperationService {
     if (operation.phase !== 'restart-required') {
       operation.phase = 'completed';
     }
-    operation.message = operation.message || `Completed ${operation.kind} for "${operation.pluginSlug}".`;
+    if (!operation.message) {
+      operation.message = `Completed ${operation.kind} for "${operation.pluginSlug}".`;
+      operation.messageKey = 'completed';
+    }
     operation.updatedAt = new Date().toISOString();
     this.share(operation);
   }
@@ -126,6 +132,9 @@ export class PluginInstallOperationService {
     operation.phase = 'failed';
     operation.error = error instanceof Error ? error.message : String(error);
     operation.message = operation.error;
+    // The error is the failing step's own words; the console shows it as given.
+    operation.messageKey = undefined;
+    operation.messageParams = undefined;
     operation.updatedAt = new Date().toISOString();
     // The admin polls this record and shows the message; the LOG must say it too, or a failed install
     // leaves no trace once the operation is pruned from memory.

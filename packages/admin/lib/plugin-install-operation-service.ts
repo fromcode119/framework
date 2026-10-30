@@ -2,6 +2,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { IPluginInstallOperation } from '@/lib/interfaces/plugin-install-operation.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginInstallProgressCopy } from '@/lib/plugin-install-progress-copy';
 
 export class PluginInstallOperationService {
   private static readonly POLL_INTERVAL_MS = 800;
@@ -56,7 +57,7 @@ export class PluginInstallOperationService {
           operation?: IPluginInstallOperation;
         };
 
-        const operation = response?.operation;
+        const operation = response?.operation ? PluginInstallProgressCopy.localize(response.operation) : undefined;
         if (!operation) {
           if (this.shouldRecoverFromRestart(lastOperation)) {
             const recoveredOperation = await this.recoverAfterRestart(lastOperation);
