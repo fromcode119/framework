@@ -16,6 +16,8 @@ import { DatabasePoolCard } from '@/app/settings/infrastructure/database-pool-ca
 import { MonitoringCard } from '@/app/settings/infrastructure/monitoring-card.client';
 import { SchemaOrphansCard } from '@/app/settings/infrastructure/schema-orphans-card.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { FrameworkIcons } from '@fromcode119/react';
 
 /**
  * Infrastructure & Health.
@@ -58,15 +60,9 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     }
 
     return (
-      <div className="p-6 animate-in fade-in duration-500 w-full">
-         <div className="mb-6">
-          <h1 className={`text-2xl font-bold tracking-tight mb-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-            {AdminI18n.t('settings.infrastructure.infrastructureHealth')}
-          </h1>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            {AdminI18n.t('settings.infrastructure.administrativeMaintenanceForThisInstance')}
-          </p>
-        </div>
+      <div className="flex h-full flex-col animate-in fade-in duration-500">
+        <CompactPageHeader icon={<FrameworkIcons.Activity size={18} strokeWidth={2} />} title={AdminI18n.t('settings.infrastructure.infrastructureHealth')} subtitle={AdminI18n.t('settings.infrastructure.administrativeMaintenanceForThisInstance')} />
+        <div className="w-full p-6">
 
         {this.loadError && (
           <LoadErrorPanel
@@ -112,6 +108,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
           <RestartServicesCard />
 
           {/* Cache flushing and factory reset still have no endpoint and so still have no button. */}
+        </div>
         </div>
       </div>
     );
