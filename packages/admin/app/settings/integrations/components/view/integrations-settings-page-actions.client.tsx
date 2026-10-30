@@ -8,6 +8,7 @@ import type { IIntegrationRecord } from '@/app/settings/integrations/interfaces/
 import type { IStoredProvider } from '@/app/settings/integrations/interfaces/stored-provider.interface';
 import { IntegrationsSettingsPageReconcile } from '@/app/settings/integrations/components/view/integrations-settings-page-reconcile.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { FrameworkIntegrationCopy } from '@/app/settings/integrations/framework-integration-copy';
 
 /**
  * What the operator can DO here: load, add, save, enable, disable and remove a provider.
@@ -24,6 +25,7 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
       const docs = Array.isArray(response?.docs) ? response.docs : [];
       const sorted = docs
         .filter((doc: any) => doc && typeof doc.key === 'string')
+        .map((doc: IIntegrationRecord) => FrameworkIntegrationCopy.localize(doc))
         .sort((a: IIntegrationRecord, b: IIntegrationRecord) => a.label.localeCompare(b.label));
       IntegrationsPageUtils.hydrateFieldTypes(sorted);
       const platformOnlyType = await this.findPlatformOnlyType(sorted);

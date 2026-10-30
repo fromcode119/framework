@@ -20,4 +20,10 @@ export interface IIntegrationProviderDefinition <TInstance = any> {
   namespace?: string;
   /** The plugin slug that registered this provider ('' = the framework) — stamped by the registry, never by the plugin. */
   registeredBy?: string;
+  /**
+   * The plugin whose admin dictionary words this provider, when a plugin registers it on another's behalf
+   * (logistics registers each courier plugin's settings, finance each payment plugin's). Defaults to
+   * `registeredBy`. It only chooses where the provider's labels are translated from.
+   */
+  dictionary?: string;
 }

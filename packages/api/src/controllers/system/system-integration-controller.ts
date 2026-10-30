@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { CoercionUtils, RequestContextUtils } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
+import { AdminSchemaLocalization } from '@api/services/system/admin-schema-localization';
 
 export class SystemIntegrationController {
   constructor(private readonly runtime: SystemControllerRuntime) {}
@@ -9,7 +10,9 @@ export class SystemIntegrationController {
     try {
       // A platform-only type (monitoring) is the platform admin's: a site never lists it.
       const all = await this.runtime.manager.integrations.listConfigs();
-      const data = RequestContextUtils.getTenantId() ? all.filter((entry: { platformOnly?: boolean }) => !entry.platformOnly) : all;
+      const visible = RequestContextUtils.getTenantId() ? all.filter((entry: { platformOnly?: boolean }) => !entry.platformOnly) : all;
+      const localizer = await AdminSchemaLocalization.forRequest(this.runtime.manager, req);
+      const data = visible.map((entry) => localizer.integration(entry));
       res.json({ docs: data, totalDocs: data.length });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -23,7 +26,7 @@ export class SystemIntegrationController {
       if (!integration) {
         return res.status(404).json({ error: 'Not found' });
       }
-      res.json(integration);
+      res.json(await this.localized(req, integration));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -45,7 +48,7 @@ export class SystemIntegrationController {
           enabled: req.body.enabled === undefined ? undefined : CoercionUtils.toBoolean(req.body.enabled),
         }
       ));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -59,7 +62,7 @@ export class SystemIntegrationController {
         req.params.providerId,
         CoercionUtils.toBoolean(req.body?.enabled)
       ));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -69,7 +72,7 @@ export class SystemIntegrationController {
     if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
       const updated = await this.asScope(() => (this.runtime.manager.integrations as any).removeProvider(req.params.type, req.params.providerId));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -79,7 +82,7 @@ export class SystemIntegrationController {
     if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
       const updated = await this.asScope(() => (this.runtime.manager.integrations as any).activateProfile(req.params.type, req.params.profileId));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -97,7 +100,7 @@ export class SystemIntegrationController {
         req.params.profileId,
         profileName
       ));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -107,10 +110,16 @@ export class SystemIntegrationController {
     if (await this.refusedForSite(req, res) || await this.refusedForPlatform(req, res)) return;
     try {
       const updated = await this.asScope(() => (this.runtime.manager.integrations as any).deleteProfile(req.params.type, req.params.profileId));
-      res.json({ success: !!updated, integration: updated });
+      res.json({ success: !!updated, integration: await this.localized(req, updated) });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
+  }
+
+  /** In the reader's console language: each plugin's integration words from its own dictionary. */
+  private async localized<T>(req: Request, integration: T): Promise<T> {
+    if (!integration) return integration;
+    return (await AdminSchemaLocalization.forRequest(this.runtime.manager, req)).integration(integration as Record<string, any>) as T;
   }
 
   /**

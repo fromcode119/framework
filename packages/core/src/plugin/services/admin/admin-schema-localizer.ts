@@ -1,4 +1,5 @@
 import { StringUtils } from '@core/utils/string-utils';
+import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-integration-localizer';
 
 /**
  * A plugin's admin text in the console's language, from that plugin's own dictionary.
@@ -23,6 +24,7 @@ import { StringUtils } from '@core/utils/string-utils';
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
  *   admin.settings.tabs.<id>, admin.settings.groups.<id>, admin.settings.fields.<field>.…   the settings form, same shape
  *   admin.widgets.<id>.label | description                              a dashboard widget
+ *   admin.integrations.<type>…                                          Settings → Integrations (AdminIntegrationLocalizer)
  *
  * `lookup(pluginSlug, key)` answers the translation or '' — the caller binds it to one locale.
  */
@@ -78,6 +80,11 @@ export class AdminSchemaLocalizer {
         : schema.groups,
       fields: this.fields(pluginSlug, 'admin.settings.fields', schema.fields, 'admin.settings.sections'),
     };
+  }
+
+  /** An integration type with its providers and their settings — see {@link AdminIntegrationLocalizer}. */
+  integration<T extends Record<string, any>>(summary: T): T {
+    return new AdminIntegrationLocalizer(this.lookup).type(summary);
   }
 
   /** The dashboard widgets a plugin declares — `admin.widgets.<id>.label|description`. */

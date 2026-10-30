@@ -8,4 +8,6 @@ export interface IIntegrationProvider {
   description?: string;
   fields?: IIntegrationConfigField[];
   setupAddresses?: IIntegrationSetupAddress[];
+  /** The plugin whose dictionary the api translated this provider from; empty = the framework's, worded by the console. */
+  dictionary?: string;
 }

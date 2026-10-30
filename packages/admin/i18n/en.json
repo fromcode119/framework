@@ -2115,7 +2115,386 @@
       "noProvidersYetHint": "Add a provider to turn this on.",
       "fileReadFailed": "Could not read {{name}}.",
       "fileTypes": "{{types}} · read in your browser; only its contents are saved, encrypted.",
-      "fileSavedChooseToReplace": "A file is saved securely. Choose a new one only to replace it."
+      "fileSavedChooseToReplace": "A file is saved securely. Choose a new one only to replace it.",
+      "types": {
+        "email": {
+          "label": "Email Delivery",
+          "description": "Provider used for outbound system and plugin emails.",
+          "providers": {
+            "mock": {
+              "label": "Mock Driver",
+              "description": "Logs outbound emails without sending."
+            },
+            "smtp": {
+              "label": "SMTP",
+              "description": "Uses SMTP host credentials for delivery.",
+              "fields": {
+                "host": {
+                  "label": "SMTP Host"
+                },
+                "port": {
+                  "label": "SMTP Port"
+                },
+                "secure": {
+                  "label": "Use TLS (secure)"
+                },
+                "user": {
+                  "label": "SMTP Username"
+                },
+                "pass": {
+                  "label": "SMTP Password"
+                },
+                "fromAddress": {
+                  "label": "From Address"
+                },
+                "fromName": {
+                  "label": "From Name",
+                  "placeholder": "Shown beside the address; defaults to the platform name"
+                }
+              }
+            }
+          }
+        },
+        "sms": {
+          "label": "Text messages",
+          "description": "Provider used to send text messages (SMS) to the people who agreed to receive them.",
+          "providers": {
+            "none": {
+              "label": "Not set up",
+              "description": "No text messages are sent. Install a text-message provider plugin and choose it here."
+            }
+          }
+        },
+        "storage": {
+          "label": "File Storage",
+          "description": "Provider used for storing and retrieving uploaded media and files.",
+          "providers": {
+            "local": {
+              "label": "Local File System",
+              "description": "Stores files on the local disk of the server.",
+              "fields": {
+                "uploadDir": {
+                  "label": "Upload Directory"
+                },
+                "publicUrlBase": {
+                  "label": "Public URL Base"
+                }
+              }
+            },
+            "s3": {
+              "label": "S3 Compatible Storage",
+              "description": "Cloud storage using AWS S3 or compatible services (DigitalOcean Spaces, MinIO, etc.).",
+              "fields": {
+                "region": {
+                  "label": "Region"
+                },
+                "bucket": {
+                  "label": "Bucket Name"
+                },
+                "endpoint": {
+                  "label": "Endpoint URL"
+                },
+                "accessKeyId": {
+                  "label": "Access Key ID"
+                },
+                "secretAccessKey": {
+                  "label": "Secret Access Key"
+                },
+                "publicUrlBase": {
+                  "label": "Public URL Base"
+                }
+              }
+            }
+          }
+        },
+        "cache": {
+          "label": "System Cache",
+          "description": "Provider used for system-level caching and plugin data storage.",
+          "providers": {
+            "memory": {
+              "label": "In-Memory",
+              "description": "Stores cache data in local server memory. Not shared across instances."
+            },
+            "redis": {
+              "label": "Redis",
+              "description": "High-performance shared cache using Redis.",
+              "fields": {
+                "url": {
+                  "label": "Redis URL"
+                }
+              }
+            }
+          }
+        },
+        "queue": {
+          "label": "Background Jobs",
+          "description": "Runs scheduled tasks and plugin jobs. Redis survives restarts and is shared between instances.",
+          "providers": {
+            "local": {
+              "label": "In-Process",
+              "description": "Runs jobs in this process. They do not survive a restart and are not shared between instances."
+            },
+            "bull": {
+              "label": "Redis (BullMQ)",
+              "description": "Queues jobs in Redis, so they survive a restart, retry on failure, and are shared between instances.",
+              "fields": {
+                "url": {
+                  "label": "Redis URL"
+                },
+                "namespace": {
+                  "label": "Key Namespace"
+                }
+              }
+            }
+          }
+        },
+        "sso": {
+          "label": "Federated Login (SSO)",
+          "description": "OAuth/OpenID provider credentials used for customer/admin single sign-on.",
+          "providers": {
+            "google": {
+              "label": "Google OAuth",
+              "description": "Sign in with Google accounts.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Scopes",
+                  "description": "Space-separated scopes. Example: \"openid email profile\"."
+                },
+                "appClientIds": {
+                  "label": "Mobile app client IDs",
+                  "description": "One per line. Sign-in from your iOS or Android app is accepted only for the IDs listed here."
+                }
+              }
+            },
+            "apple": {
+              "label": "Sign in with Apple",
+              "description": "Sign in with Apple from your iOS app.",
+              "fields": {
+                "clientId": {
+                  "label": "Bundle ID",
+                  "description": "Your iOS app's bundle ID, for example com.example.app. Apple names it in every sign-in token."
+                },
+                "appClientIds": {
+                  "label": "Mobile app client IDs",
+                  "description": "One per line. Sign-in from your iOS or Android app is accepted only for the IDs listed here."
+                }
+              }
+            },
+            "microsoft": {
+              "label": "Microsoft OAuth",
+              "description": "Sign in with Microsoft/Azure AD accounts.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Scopes",
+                  "description": "Space-separated scopes. Example: \"openid email profile\"."
+                }
+              }
+            },
+            "github": {
+              "label": "GitHub OAuth",
+              "description": "Sign in with GitHub accounts.",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Scopes",
+                  "description": "Space-separated scopes. Example: \"openid email profile\"."
+                }
+              }
+            },
+            "openid": {
+              "label": "Generic OpenID Connect",
+              "description": "Custom OpenID Connect provider (self-hosted/enterprise).",
+              "fields": {
+                "clientId": {
+                  "label": "Client ID"
+                },
+                "clientSecret": {
+                  "label": "Client Secret"
+                },
+                "scopes": {
+                  "label": "Scopes",
+                  "description": "Space-separated scopes. Example: \"openid email profile\"."
+                },
+                "issuer": {
+                  "label": "Issuer URL"
+                },
+                "authorizeUrl": {
+                  "label": "Authorize URL"
+                },
+                "tokenUrl": {
+                  "label": "Token URL"
+                },
+                "userInfoUrl": {
+                  "label": "UserInfo URL"
+                }
+              }
+            }
+          }
+        },
+        "mcp": {
+          "label": "MCP (Model Context Protocol)",
+          "description": "How external AI clients reach this installation’s tools. Access is token-only and every call is scoped to the tools its token names."
+        },
+        "monitoring": {
+          "label": "Monitoring",
+          "description": "Who is told when a site, a plugin or the server has a problem, and who watches the sites from outside.",
+          "providers": {
+            "email": {
+              "label": "Email",
+              "description": "Incidents to the platform admins and the notification address in Settings → General."
+            },
+            "uptimerobot": {
+              "label": "UptimeRobot",
+              "description": "Watches every site from outside and alerts through your UptimeRobot alert contacts, even when the whole server is down.",
+              "fields": {
+                "apiKey": {
+                  "label": "Main API key",
+                  "description": "UptimeRobot → Integrations & API → Main API key."
+                },
+                "interval": {
+                  "label": "Check every (seconds)",
+                  "description": "How often UptimeRobot checks each address. The free plan allows 300 or more; shorter needs a paid plan."
+                },
+                "timeout": {
+                  "label": "Wait for an answer (seconds)",
+                  "description": "How long UptimeRobot waits for an address to answer before the check counts as failed: 1 to 60."
+                },
+                "namePrefix": {
+                  "label": "Monitor name prefix",
+                  "description": "Monitors whose name starts with this are the platform's: they are added and removed to match the sites. Every other monitor in the account is left alone."
+                }
+              }
+            },
+            "betterstack": {
+              "label": "Better Stack",
+              "description": "Watches every site from outside and alerts through your Better Stack on-call settings, even when the whole server is down.",
+              "fields": {
+                "apiToken": {
+                  "label": "Uptime API token",
+                  "description": "Better Stack → Uptime → API tokens."
+                },
+                "namePrefix": {
+                  "label": "Monitor name prefix",
+                  "description": "Monitors whose name starts with this are the platform's: they are added and removed to match the sites. Every other monitor in the account is left alone."
+                }
+              }
+            }
+          }
+        },
+        "ai": {
+          "label": "AI Assistant",
+          "description": "LLM provider used by admin automation and AI-assisted content operations.",
+          "providers": {
+            "openai": {
+              "label": "OpenAI",
+              "description": "Use OpenAI Chat Completions API for assistant planning and actions.",
+              "fields": {
+                "apiKey": {
+                  "label": "API Key"
+                },
+                "model": {
+                  "label": "Model"
+                },
+                "baseUrl": {
+                  "label": "Base URL"
+                },
+                "organization": {
+                  "label": "Organization ID"
+                },
+                "project": {
+                  "label": "Project ID"
+                },
+                "temperature": {
+                  "label": "Temperature"
+                },
+                "maxTokens": {
+                  "label": "Max Tokens"
+                }
+              }
+            },
+            "ollama": {
+              "label": "Ollama",
+              "description": "Use a local Ollama server for assistant planning and actions.",
+              "fields": {
+                "model": {
+                  "label": "Model"
+                },
+                "baseUrl": {
+                  "label": "Base URL"
+                },
+                "temperature": {
+                  "label": "Temperature"
+                },
+                "maxTokens": {
+                  "label": "Max Tokens"
+                }
+              }
+            },
+            "anthropic": {
+              "label": "Anthropic",
+              "description": "Use Anthropic Messages API for assistant planning and actions.",
+              "fields": {
+                "apiKey": {
+                  "label": "API Key"
+                },
+                "model": {
+                  "label": "Model"
+                },
+                "baseUrl": {
+                  "label": "Base URL"
+                },
+                "anthropicVersion": {
+                  "label": "API Version"
+                },
+                "temperature": {
+                  "label": "Temperature"
+                },
+                "maxTokens": {
+                  "label": "Max Tokens"
+                }
+              }
+            },
+            "gemini": {
+              "label": "Gemini",
+              "description": "Use Google Gemini API for assistant planning and actions.",
+              "fields": {
+                "apiKey": {
+                  "label": "API Key"
+                },
+                "model": {
+                  "label": "Model"
+                },
+                "baseUrl": {
+                  "label": "Base URL"
+                },
+                "temperature": {
+                  "label": "Temperature"
+                },
+                "maxTokens": {
+                  "label": "Max Tokens"
+                }
+              }
+            }
+          }
+        }
+      }
     },
     "localization": {
       "theLocalizationSettingsRequestFailed": "The localization settings request failed.",

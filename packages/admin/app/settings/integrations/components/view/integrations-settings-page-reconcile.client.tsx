@@ -1,4 +1,5 @@
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { FrameworkIntegrationCopy } from '@/app/settings/integrations/framework-integration-copy';
 import { IntegrationsPageUtils } from '@/app/settings/integrations/integrations-page-utils';
 import { IntegrationProviderFormHelper } from '@/app/settings/integrations/integration-provider-form-helper';
 import { IntegrationReconciler } from '@/app/settings/integrations/integration-reconciler';
@@ -141,7 +142,8 @@ export abstract class IntegrationsSettingsPageReconcile extends IntegrationsSett
 
   // ---- Actions ----
 
-  protected applyIntegrationUpdate(updated: IIntegrationRecord): IIntegrationRecord {
+  protected applyIntegrationUpdate(saved: IIntegrationRecord): IIntegrationRecord {
+    const updated = FrameworkIntegrationCopy.localize(saved);
     const exists = this.integrations.some((integration) => integration.key === updated.key);
     if (exists) {
       this.integrations = this.integrations.map((integration) => (integration.key === updated.key ? updated : integration));
