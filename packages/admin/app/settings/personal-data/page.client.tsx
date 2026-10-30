@@ -15,6 +15,8 @@ import type { IPersonalDataPolicyChoice } from '@/app/settings/personal-data/int
 import type { IPersonalDataChoiceMap } from '@/app/settings/personal-data/interfaces/personal-data-choice-map.interface';
 import type { IPersonalDataPolicyDataset } from '@/app/settings/personal-data/interfaces/personal-data-policy-dataset.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { FrameworkIcons } from '@fromcode119/react';
 
 /**
  * What the platform does with a person's data when they ask to be forgotten.
@@ -132,15 +134,9 @@ export class PersonalDataSettingsPage extends AdminComponent {
     if (this.isLoading) return <Loader />;
 
     return (
-      <div className="p-6 animate-in fade-in duration-500 w-full">
-        <div className="mb-6">
-          <h1 className={`text-2xl font-bold tracking-tight mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>
-            {AdminI18n.t('settings.personalData.personalData')}
-          </h1>
-          <p className="text-slate-500 text-sm leading-relaxed">
-            {AdminI18n.t('settings.personalData.whatHappensToEachDataset')}
-          </p>
-        </div>
+      <div className="flex h-full flex-col animate-in fade-in duration-500">
+        <CompactPageHeader icon={<FrameworkIcons.ShieldCheck size={18} strokeWidth={2} />} title={AdminI18n.t('settings.personalData.personalData')} subtitle={AdminI18n.t('settings.personalData.whatHappensToEachDataset')} />
+        <div className="w-full p-6">
 
         {this.loadError && (
           <LoadErrorPanel
@@ -186,6 +182,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
             </div>
           </Card>
         )}
+        </div>
       </div>
     );
   }

@@ -1,6 +1,6 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
-import { AdminLink } from '@/components/view/admin-link.client';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { Badge } from '@/components/ui/view/badge.client';
@@ -17,7 +17,7 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The page's header: where you are, which plugin, its state and version — and the one action of the
+ * The page's header (the shared compact one): which plugin, its state and version — and the one action of the
  * tab you are on (settings: save; resources: save the policy). Everything that is not an everyday action
  * (exporting, importing or resetting the settings, the raw definition) sits in the ⋯ menu.
  */
@@ -84,44 +84,32 @@ export class PluginDetailHeader extends PureReactor {
   }
 
   render(): ReactNode {
-    const { activeTab, plugin, theme } = this;
-    const dark = theme === ThemeMode.DARK;
+    const { activeTab, plugin } = this;
     const items = this.menuItems;
-    return (
-      <div>
-        <div className={`mb-2 flex items-center gap-1.5 text-xs ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
-          <AdminLink href={AdminConstants.ROUTES.PLUGINS.INSTALLED} className={`hover:underline ${dark ? 'hover:text-slate-300' : 'hover:text-slate-600'}`}>{AdminI18n.t('plugins.detail.installed')}</AdminLink>
-          <span>/</span>
-          <span>{plugin.manifest.name}</span>
-        </div>
-        <div className="flex flex-wrap items-center gap-4">
-          <div className={`flex h-11 w-11 items-center justify-center rounded-xl ${dark ? 'bg-indigo-500/15 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}>
-            <FrameworkIcons.Plugins size={20} />
-          </div>
-          <div className="min-w-[12rem] flex-1">
-            <h1 className={`truncate text-xl font-bold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</h1>
-            <div className={`mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs ${dark ? 'text-slate-400' : 'text-slate-500'}`}>
-              <Badge variant={PluginState.resolve(plugin.state) === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
-              <span>v{plugin.manifest.version}</span>
-              {this.author ? <><span>·</span><span>{this.author}</span></> : null}
-              {/* The vendor: an install refuses a same-slug plugin from another one, so it is shown. */}
-              <span>·</span>
-              <span title={AdminI18n.t('plugins.detail.vendorHelp')}>{String(plugin.manifest.namespace || '').trim() || AdminI18n.t('plugins.detail.noVendorDeclared')}</span>
-            </div>
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {(activeTab === PluginDetailTab.SETTINGS || (activeTab === PluginDetailTab.PLATFORM_SETTINGS && this.platformActions)) && this.settingsHasFields ? this.settingsActions() : null}
-            {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
-            {items.length ? (
-              <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={
-                <span aria-label={AdminI18n.t('common.more')} className={`inline-flex h-9 w-9 items-center justify-center rounded-lg border ${dark ? 'border-slate-700 text-slate-300 hover:bg-slate-800' : 'border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
-                  <FrameworkIcons.More size={16} />
-                </span>
-              } />
-            ) : null}
-          </div>
-        </div>
-      </div>
+    const subtitle = (
+      <span className="inline-flex flex-wrap items-center gap-x-2">
+        <Badge variant={PluginState.resolve(plugin.state) === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
+        <span>v{plugin.manifest.version}</span>
+        {this.author ? <><span>·</span><span>{this.author}</span></> : null}
+        {/* The vendor: an install refuses a same-slug plugin from another one, so it is shown. */}
+        <span>·</span>
+        <span title={AdminI18n.t('plugins.detail.vendorHelp')}>{String(plugin.manifest.namespace || '').trim() || AdminI18n.t('plugins.detail.noVendorDeclared')}</span>
+      </span>
     );
+    const actions = (
+      <>
+        {(activeTab === PluginDetailTab.SETTINGS || (activeTab === PluginDetailTab.PLATFORM_SETTINGS && this.platformActions)) && this.settingsHasFields ? this.settingsActions() : null}
+        {activeTab === PluginDetailTab.RESOURCES && this.platformActions ? this.button(this.isSaving ? AdminI18n.t('plugins.detail.saving') : AdminI18n.t('plugins.detail.updatePolicy'), this.onSaveSandbox, true, this.isSaving) : null}
+        {items.length ? (
+          <Dropdown align={HorizontalAlign.RIGHT} items={items} trigger={
+            <span aria-label={AdminI18n.t('common.more')} className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800">
+              <FrameworkIcons.More size={16} />
+            </span>
+          } />
+        ) : null}
+      </>
+    );
+    // The same header every settings page has; the back arrow returns to the installed list.
+    return <CompactPageHeader backHref={AdminConstants.ROUTES.PLUGINS.INSTALLED} icon={<FrameworkIcons.Plugins />} title={plugin.manifest.name} subtitle={subtitle} actions={actions} />;
   }
 }

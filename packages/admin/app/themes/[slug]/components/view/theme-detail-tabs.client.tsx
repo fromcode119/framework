@@ -32,7 +32,7 @@ export class ThemeDetailTabs extends PureReactor {
 
   render(): ReactNode {
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 ${this.theme === ThemeMode.DARK ? 'border-slate-800' : 'border-slate-200'}`}>
+      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 ${this.theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/80' : 'border-slate-200 bg-white'}`}>
         {this.tab(ThemeSettingsTab.OVERVIEW, AdminI18n.t('themes.overview'), FrameworkIcons.Info, this.openOverview)}
         {this.tab(ThemeSettingsTab.SETTINGS, AdminI18n.t('themes.settings'), FrameworkIcons.Settings, this.openSettings)}
         {this.tab(ThemeSettingsTab.MAINTENANCE, AdminI18n.t('themes.maintenance'), FrameworkIcons.Wrench, this.openMaintenance, 'ml-auto')}

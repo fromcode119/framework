@@ -32,7 +32,7 @@ export class ThemeSettingsSections extends PureReactor {
     const dark = adminTheme === ThemeMode.DARK;
     return (
       <>
-        <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+        <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
           {sections.map((section) => (
             <button type="button" key={section.id} onClick={() => this.page.handleTabChange(ThemeSettingsTab.SETTINGS, section.id)}
               aria-current={section === currentSection ? 'page' : undefined}
@@ -43,9 +43,11 @@ export class ThemeSettingsSections extends PureReactor {
             </button>
           ))}
         </div>
-        <div className="space-y-4 p-6">
-          <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentSection.label}</h2>
-          {this.content(currentSection)}
+        <div className="w-full p-6">
+          <section className="space-y-4 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900/40">
+            <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentSection.label}</h2>
+            {this.content(currentSection)}
+          </section>
         </div>
       </>
     );

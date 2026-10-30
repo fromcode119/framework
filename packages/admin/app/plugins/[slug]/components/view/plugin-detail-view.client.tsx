@@ -91,11 +91,12 @@ export class PluginDetailView extends AdminComponent {
     const { plugin, theme, activeTab, isCopyingError } = this;
 
     return (
-      <div className="w-full space-y-5 pb-12">
+      <div className="w-full pb-12">
         {this.isUpdating && this.installOperation ? <Loader fullPage label={this.installOperation.message} /> : null}
         <PluginDetailHeader activeTab={activeTab} isSaving={this.isSaving} onOpenDefinition={this.onOpenDefinition} onSaveSandbox={this.onSaveSandbox} platformActions={this.platformHere} plugin={plugin} settingsDirty={this.settingsDirty} settingsFormRef={this.settingsFormRef} settingsHasFields={this.settingsHasFields} settingsSaving={this.settingsSaving} theme={theme} />
+        <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
         {plugin.error ? (
-          <div className={`rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+          <div className={`mx-6 mt-6 rounded-xl border px-4 py-4 ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-rose-500/10 text-rose-100' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
             <div className="flex items-start gap-4">
               <div className={`rounded-lg p-2 ${theme === ThemeMode.DARK ? 'bg-rose-500/10 text-rose-400' : 'bg-white text-rose-500 shadow-sm'}`}>
                 <FrameworkIcons.Alert size={18} />
@@ -123,8 +124,6 @@ export class PluginDetailView extends AdminComponent {
             </div>
           </div>
         ) : null}
-        <section className={`overflow-hidden rounded-2xl border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-          <PluginDetailTabs activeTab={activeTab} activeGroup={this.settingsGroup} groups={this.settingsGroups} onTabChange={this.onTabChange} platformPart={plugin.manifest.platform === true} siteScope={this.siteScope} theme={theme} />
           {activeTab === PluginDetailTab.SETTINGS ? (
             <PluginSettingsForm ref={this.settingsFormRef} pluginSlug={this.slug} formId="plugin-settings-form" waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange}
               group={this.settingsGroup || this.settingsGroups[0]?.id || ''} section={this.settingsSection}
@@ -135,7 +134,7 @@ export class PluginDetailView extends AdminComponent {
                 waiting={PluginState.resolve(plugin.state) !== PluginState.ACTIVE} onStateChange={this.onSettingsStateChange} />
             </PlatformScopeGate>
           ) : (
-            <div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
+            <div className="w-full p-6"><section className={`overflow-hidden ${PluginSettingsForm.CARD}`}><div className={activeTab === PluginDetailTab.OVERVIEW ? '' : 'p-6'}>
               {activeTab === PluginDetailTab.OVERVIEW && <PluginDetailOverview isUpdating={this.isUpdating} loadingLogs={this.loadingLogs} logs={this.logs} marketplaceItem={this.marketplaceItem} onOpenDeleteConfirm={this.onOpenDeleteConfirm} onOpenSecurity={() => this.onTabChange(PluginDetailTab.PERMISSIONS)} onRefreshLogs={this.onRefreshLogs} onToggle={this.onToggle} onUpdate={this.onUpdate} platformActions={this.platformHere} plugin={plugin} siteScope={this.siteScope} theme={theme} />}
               {activeTab === PluginDetailTab.PERMISSIONS && (
                 <PlatformScopeGate what={AdminI18n.t('plugins.detail.thisPluginSSecurityThe')}>
@@ -150,9 +149,8 @@ export class PluginDetailView extends AdminComponent {
                   </div>
                 </PlatformScopeGate>
               )}
-            </div>
+            </div></section></div>
           )}
-        </section>
         <ConfirmDialog isOpen={this.showDeleteConfirm} onClose={this.onCloseDeleteConfirm} onConfirm={this.onDelete} isLoading={this.isDeleting} title={AdminI18n.t('plugins.detail.confirmUninstallation')} description={AdminI18n.t('plugins.detail.areYouSureYouWant', { name: plugin.manifest.name })} confirmLabel={AdminI18n.t('plugins.detail.uninstallPlugin')} />
         <PluginManifestModal isOpen={this.showDefinition && this.platformHere} onClose={this.onCloseDefinition} plugin={plugin} />
       </div>

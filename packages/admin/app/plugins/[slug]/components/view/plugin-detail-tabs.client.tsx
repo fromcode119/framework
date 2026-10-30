@@ -7,7 +7,7 @@ import { PluginDetailTab } from '@/app/plugins/[slug]/enums/plugin-detail-tab.en
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The page's one row of tabs: Overview, then the plugin's settings — one tab per group it declares, or a
+ * The band of tabs under the page's header: Overview, then the plugin's settings — one tab per group it declares, or a
  * single "Settings" — and, set apart on the right, the platform's Security and Resources.
  */
 export class PluginDetailTabs extends PureReactor {
@@ -52,7 +52,7 @@ export class PluginDetailTabs extends PureReactor {
     const current = this.currentGroup;
     const platform = !this.siteScope;
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 border-b ${this.theme === ThemeMode.DARK ? 'border-slate-800' : 'border-slate-200'}`}>
+      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 ${this.theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/80' : 'border-slate-200 bg-white'}`}>
         {this.tab('overview', AdminI18n.t('plugins.detail.overview'), FrameworkIcons.Info, activeTab === PluginDetailTab.OVERVIEW, () => onTabChange(PluginDetailTab.OVERVIEW))}
         {groups.length
           ? groups.map((group) => this.tab(`group-${group.id}`, group.label, this.icon(group.icon), settingsActive && current === group.id, () => onTabChange(PluginDetailTab.SETTINGS, group.id)))

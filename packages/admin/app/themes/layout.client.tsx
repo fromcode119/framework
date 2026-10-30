@@ -52,7 +52,7 @@ export class ThemesLayout extends AdminComponent {
     // A theme's own page carries its own header (where you are, the theme, its actions) and nothing below
     // it: the section header and the footer belong to the lists.
     if (this.isDetailPage) {
-      return <div className="w-full px-6 pt-6 lg:px-8 animate-in fade-in duration-500">{this.children}</div>;
+      return <div className="flex w-full flex-col animate-in fade-in duration-500">{this.children}</div>;
     }
     const theme = this.theme;
     const { isMarketplace, isInstalled, activeTab } = this;
