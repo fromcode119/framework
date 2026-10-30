@@ -15,6 +15,9 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * the links below — see `PluginSettingsFormState`.
  */
 export class PluginSettingsForm extends PluginSettingsFormActions implements IPluginSettingsFormHandle {
+  /** The card the fields sit in, below the page's tab bands — the same card as every other plugin tab. */
+  static readonly CARD = 'rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40';
+
   componentDidMount(): void {
     this.loadSettings();
     this.onStateChange?.(this.isDirty, this.saving, this.hasFields);
@@ -59,7 +62,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     }
 
     if (!schema || !schema.fields || schema.fields.length === 0) {
-      return <PluginSettingsEmpty waiting={Boolean(this.waiting)} />;
+      return <div className="w-full p-6"><section className={PluginSettingsForm.CARD}><PluginSettingsEmpty waiting={Boolean(this.waiting)} /></section></div>;
     }
 
     const visibleFields = this.visibleFields;
@@ -73,9 +76,9 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         {/* hidden file input for import */}
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 
-        {/* The group's own tabs: a second, quieter row beneath the page's tabs. */}
+        {/* The group's own tabs: a second band under the page's tabs, like the type row on Integrations. */}
         {tabs.length > 1 ? (
-          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
             {tabs.map((tab: any) => (
               <button type="button" key={tab.id} onClick={() => this.selectTab(tab.id)} aria-current={tab.id === current ? 'page' : undefined}
                 className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${tab.id === current
@@ -87,43 +90,45 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
           </div>
         ) : null}
 
-        <div className="space-y-4 p-6">
-          {currentTab ? <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentTab.label}</h2> : null}
-          {status && (
-            <div className={`flex items-center gap-3 rounded-xl border p-3 ${status.type === NotificationType.SUCCESS ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-              {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
-              <p className="text-sm font-semibold">{status.message}</p>
+        <div className="w-full p-6">
+          <section className={`space-y-4 p-6 ${PluginSettingsForm.CARD}`}>
+            {currentTab ? <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentTab.label}</h2> : null}
+            {status && (
+              <div className={`flex items-center gap-3 rounded-xl border p-3 ${status.type === NotificationType.SUCCESS ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
+                {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
+                <p className="text-sm font-semibold">{status.message}</p>
+              </div>
+            )}
+            {this.saveRefusal ? <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">{this.saveRefusal}</p> : null}
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              {visibleFields.map((field: any) => {
+                const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
+                // Keep the plugin's own description (it can carry what to paste elsewhere) and add that a value is
+                // held. A read-only secret is written by the plugin, not typed here, so "leave blank to keep" would
+                // describe an input it lacks.
+                const savedNote = [
+                  field.admin?.description,
+                  AdminI18n.t(field.admin?.readOnly ? 'plugins.list.savedSecurelyReadOnly' : 'plugins.list.savedSecurelyLeaveBlankTo'),
+                ].filter(Boolean).join(' ');
+                const resolvedField = hasSavedSecret
+                  ? { ...field, admin: { ...(field.admin || {}), description: savedNote } }
+                  : field;
+                return (
+                  <FieldRenderer
+                    key={field.name}
+                    field={resolvedField}
+                    value={this.settings[field.name]}
+                    onChange={(value) => this.handleFieldChange(field.name, value)}
+                    record={this.settings}
+                    onPatch={(partial) => Object.entries(partial).forEach(([name, next]) => this.handleFieldChange(name, next))}
+                    theme={theme}
+                    collectionSlug={`settings-${this.pluginSlug}`}
+                    errors={this.errors[field.name] ? (Array.isArray(this.errors[field.name]) ? (this.errors[field.name] as string[]) : [this.errors[field.name] as string]) : undefined}
+                  />
+                );
+              })}
             </div>
-          )}
-          {this.saveRefusal ? <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">{this.saveRefusal}</p> : null}
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            {visibleFields.map((field: any) => {
-              const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
-              // Keep the plugin's own description (it can carry what to paste elsewhere) and add that a value is
-              // held. A read-only secret is written by the plugin, not typed here, so "leave blank to keep" would
-              // describe an input it lacks.
-              const savedNote = [
-                field.admin?.description,
-                AdminI18n.t(field.admin?.readOnly ? 'plugins.list.savedSecurelyReadOnly' : 'plugins.list.savedSecurelyLeaveBlankTo'),
-              ].filter(Boolean).join(' ');
-              const resolvedField = hasSavedSecret
-                ? { ...field, admin: { ...(field.admin || {}), description: savedNote } }
-                : field;
-              return (
-                <FieldRenderer
-                  key={field.name}
-                  field={resolvedField}
-                  value={this.settings[field.name]}
-                  onChange={(value) => this.handleFieldChange(field.name, value)}
-                  record={this.settings}
-                  onPatch={(partial) => Object.entries(partial).forEach(([name, next]) => this.handleFieldChange(name, next))}
-                  theme={theme}
-                  collectionSlug={`settings-${this.pluginSlug}`}
-                  errors={this.errors[field.name] ? (Array.isArray(this.errors[field.name]) ? (this.errors[field.name] as string[]) : [this.errors[field.name] as string]) : undefined}
-                />
-              );
-            })}
-          </div>
+          </section>
         </div>
       </form>
     );
