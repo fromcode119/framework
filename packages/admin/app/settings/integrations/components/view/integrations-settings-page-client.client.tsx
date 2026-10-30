@@ -68,7 +68,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     const dark = this.theme === ThemeMode.DARK;
     const activeOwner = this.activeOwner;
     return (
-      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 border-b ${dark ? 'border-slate-800' : 'border-slate-200'}`}>
+      <nav className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 ${this.ownerTypes.length > 1 ? `border-b ${dark ? 'border-slate-800' : 'border-slate-200'}` : ''}`}>
         {this.ownerTabs.map((owner) => this.tab(
           `owner-${owner.slug}`,
           owner.slug ? owner.label : AdminI18n.t('settings.integrations.ownerPlatform'),
@@ -89,7 +89,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (types.length < 2) return null;
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 text-[12.5px] ${dark ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
         {types.map((type) => (
           <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
             className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${type.key === this.activeType
@@ -181,17 +181,18 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
+        {/* The tabs belong to the header: one band under it, the full page width, so the page reads as one. */}
+        <div className={`border-b ${dark ? 'border-slate-800 bg-slate-950' : 'border-slate-200 bg-white'}`}>
+          {this.renderOwnerTabs()}
+          {this.renderTypeTabs()}
+        </div>
         <div className="w-full p-6">
-          <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-            {this.renderOwnerTabs()}
-            {this.renderTypeTabs()}
-            <div className="space-y-6 p-6">
-              {this.renderBody()}
-              {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
-                  registry so this page never names a type. Hidden while one provider is open in place of
-                  the list, so the editor stands alone. */}
-              {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
-            </div>
+          <section className={`space-y-6 rounded-2xl border p-6 ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+            {this.renderBody()}
+            {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
+                registry so this page never names a type. Hidden while one provider is open in place of
+                the list, so the editor stands alone. */}
+            {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
           </section>
         </div>
       </div>
