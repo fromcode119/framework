@@ -8,6 +8,7 @@ import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { IPluginEntry } from '@fromcode119/core/client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
 export class MarketplaceDetailHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -37,7 +38,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                <>
                  <img
                     src={plugin.iconUrl}
-                    alt={plugin.name}
+                    alt={MarketplacePluginCopy.label(plugin, installedPlugin)}
                     className="w-full h-full object-contain filter drop-shadow-md z-10"
                     onError={(e) => {
                       (e.target as HTMLImageElement).style.display = 'none';
@@ -56,7 +57,7 @@ export class MarketplaceDetailHeader extends PureReactor {
            <div className="flex-1">
               <div className="flex justify-between items-start">
                  <div className="flex items-center gap-3">
-                    <h2 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{plugin.name}</h2>
+                    <h2 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{MarketplacePluginCopy.label(plugin, installedPlugin)}</h2>
                     {allVersions.length > 1 && (
                       <div className="ml-4">
                         <Dropdown
@@ -81,7 +82,7 @@ export class MarketplaceDetailHeader extends PureReactor {
                  <Badge variant={installedPlugin ? "success" : "blue"} className="px-4 py-1 text-xs font-semibold uppercase tracking-wide">{plugin.category || AdminI18n.t('plugins.list.general')}</Badge>
               </div>
               <p className={`mt-2 text-sm leading-relaxed ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                {plugin.description}
+                {MarketplacePluginCopy.description(plugin, installedPlugin)}
               </p>
 
               <div className="flex flex-wrap items-center gap-6 mt-4">

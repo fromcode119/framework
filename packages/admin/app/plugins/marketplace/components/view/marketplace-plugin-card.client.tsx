@@ -10,6 +10,7 @@ import { Icon } from '@/components/view/icon.client';
 import { MarketplaceCardActions } from '@/app/plugins/marketplace/components/view/marketplace-card-actions.client';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
 export class MarketplacePluginCard extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -53,7 +54,7 @@ export class MarketplacePluginCard extends PureReactor {
               {plugin.iconUrl && !hasImageError ? (
                 <img
                   src={plugin.iconUrl}
-                  alt={plugin.name}
+                  alt={MarketplacePluginCopy.label(plugin, installed)}
                   className="w-6 h-6 object-contain"
                   onError={onImageError}
                 />
@@ -84,7 +85,7 @@ export class MarketplacePluginCard extends PureReactor {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <h3 className={`text-base font-bold tracking-tight leading-tight transition-colors duration-300 group-hover:text-indigo-500 line-clamp-1 flex-1 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {plugin.name}
+                {MarketplacePluginCopy.label(plugin, installed)}
               </h3>
               {isVerified && (
                 <div className="bg-emerald-500/10 p-1 rounded-full text-emerald-500" title={AdminI18n.t('plugins.list.verifiedPublisher')}>
@@ -93,7 +94,7 @@ export class MarketplacePluginCard extends PureReactor {
               )}
             </div>
             <p className={`text-xs leading-snug font-medium line-clamp-2 transition-colors duration-300 ${theme === ThemeMode.DARK ? 'text-slate-400 group-hover:text-slate-300' : 'text-slate-500 group-hover:text-slate-600'}`}>
-              {plugin.description}
+              {MarketplacePluginCopy.description(plugin, installed)}
             </p>
           </div>
 
