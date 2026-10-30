@@ -173,7 +173,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
 
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className="w-full space-y-5 p-8 pb-12 lg:p-12 animate-in fade-in duration-300">
+      <div className="flex h-full flex-col animate-in fade-in duration-500">
         <IntegrationHeader
           theme={this.theme}
           formId={this.editor ? IntegrationProviderEditor.FORM_ID : ''}
@@ -181,17 +181,19 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
           resettingStaleJs={this.resettingStaleJs}
           onResetStaleJs={() => void this.handleResetStaleJavaScript()}
         />
-        <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
-          {this.renderOwnerTabs()}
-          {this.renderTypeTabs()}
-          <div className="space-y-6 p-6">
-            {this.renderBody()}
-            {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
-                registry so this page never names a type. Hidden while one provider is open in place of
-                the list, so the editor stands alone. */}
-            {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
-          </div>
-        </section>
+        <div className="w-full p-6">
+          <section className={`overflow-hidden rounded-2xl border ${dark ? 'border-slate-800 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
+            {this.renderOwnerTabs()}
+            {this.renderTypeTabs()}
+            <div className="space-y-6 p-6">
+              {this.renderBody()}
+              {/* Whatever this integration type contributes beyond providers-and-fields. Resolved from a
+                  registry so this page never names a type. Hidden while one provider is open in place of
+                  the list, so the editor stands alone. */}
+              {this.editor && !this.singleProvider ? null : IntegrationExtraPanels.render(this.activeType)}
+            </div>
+          </section>
+        </div>
       </div>
     );
   }
