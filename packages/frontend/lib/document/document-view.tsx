@@ -9,6 +9,7 @@ import { StructuredDataScriptsView } from '@/components/structured-data-scripts'
 import { StorefrontDocumentContract } from '@/lib/document/storefront-document-contract';
 import { SitePreviewBannerView } from '@/lib/document/site-preview-banner-view';
 import { SiteBannersView } from '@/lib/document/site-banners-view';
+import { SiteEnvironmentBannerView } from '@/lib/document/site-environment-banner-view';
 
 /**
  * The whole islands document as one synchronous React tree, rendered to static markup by
@@ -21,7 +22,7 @@ import { SiteBannersView } from '@/lib/document/site-banners-view';
  * content can never close the script element.
  */
 export class DocumentView {
-  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutInlineCss }: {
+  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, nonProduction, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutInlineCss }: {
     lang: string;
     page: Metadata;
     site: Metadata;
@@ -31,6 +32,8 @@ export class DocumentView {
     bodyStartInjections: ReactElement[];
     /** Whether this render is somebody looking at a site that is not published yet. */
     preview: boolean;
+    /** Whether the site is marked non-production — the same bar the root layout renders. */
+    nonProduction: boolean;
     schema: string[];
     pageDocPrefetch: Record<string, unknown>;
     runtimeConfig: Record<string, unknown>;
@@ -44,7 +47,10 @@ export class DocumentView {
         <body>
           {/* FIRST in the body, ahead of the theme and ahead of any plugin injection, so nothing a
               theme renders can sit above it or paint over it. */}
-          <SiteBannersView.render bars={[SitePreviewBannerView.render({ visible: preview, locale: lang })]} />
+          <SiteBannersView.render bars={[
+            SitePreviewBannerView.render({ visible: preview, locale: lang }),
+            SiteEnvironmentBannerView.render({ visible: nonProduction, locale: lang }),
+          ]} />
           {bodyStartInjections}
           <div id={StorefrontDocumentContract.ROOT_ID} dangerouslySetInnerHTML={{ __html: markup?.bodyHtml || '' }} />
           <StructuredDataScriptsView.render schema={schema} />

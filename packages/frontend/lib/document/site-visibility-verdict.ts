@@ -63,8 +63,9 @@ export class SiteVisibilityVerdict {
   static async isNonProduction(): Promise<boolean> {
     try {
       const config = await FrontendConfigCache.read();
-      const site = (config as { site?: { isProduction?: unknown } } | null)?.site;
-      return site?.isProduction === false;
+      const answer = config as { site?: { isProduction?: unknown } | null; standalone?: { isProduction?: unknown } | null } | null;
+      // A site's own row, or — on a single-site deployment, which has none — Settings → General → Site.
+      return (answer?.site ?? answer?.standalone)?.isProduction === false;
     } catch {
       return false;
     }
@@ -82,14 +83,21 @@ export class SiteVisibilityVerdict {
   }
 
   /**
-   * Indexable, OR this deployment has no sites at all.
+   * Indexable — a site by its own visibility, a single-site deployment by its own switch.
    *
-   * The two are one question for the renderer: a single-tenant storefront has no tenant row, and
-   * treating "no site" as "not indexable" would take every existing single-site deployment out of
-   * the index on upgrade. Absence of tenancy is not an unpublished site.
+   * A single-tenant storefront has no tenant row, so it answers from Settings → General → Site
+   * (`standalone`). Anything short of an explicit `false` there is indexable: treating "no answer" as
+   * "not indexable" would take every existing single-site deployment out of the index on upgrade.
    */
   static async indexableOrUntenanted(): Promise<boolean> {
-    if (!(await SiteVisibilityVerdict.isTenanted())) return true;
+    if (!(await SiteVisibilityVerdict.isTenanted())) {
+      try {
+        const config = await FrontendConfigCache.read();
+        return (config as { standalone?: { isIndexable?: unknown } | null } | null)?.standalone?.isIndexable !== false;
+      } catch {
+        return true;
+      }
+    }
     return SiteVisibilityVerdict.isIndexable();
   }
 

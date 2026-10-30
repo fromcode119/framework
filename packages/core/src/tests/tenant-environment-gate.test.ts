@@ -5,6 +5,9 @@ import { TenantEnvironment } from '@core/enums/tenant-environment.enum';
 import { AuditOutcome } from '@core/security/enums/audit-outcome.enum';
 import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 import { RequestContextUtils } from '@core/context/request-context';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { PlatformSettingsService } from '@core/management/platform-settings-service';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * The brake that stops a copy of a live shop reaching real customers. Every path matters, and two of
@@ -36,6 +39,42 @@ describe('TenantEnvironmentGate', () => {
 
     await expect(new TenantEnvironmentGate(db, audit).assert('email', 'ops@example.com')).resolves.toBeUndefined();
     expect(audited).toEqual([]);
+  });
+
+  describe('a single-site deployment (no sites at all)', () => {
+    const givenSetting = (environment: string | null): void => {
+      vi.spyOn(PlatformSettingsService, 'getSetting').mockImplementation(async (key: string) =>
+        (key === SystemConstants.META_KEY.SITE_ENVIRONMENT ? environment : null));
+    };
+
+    beforeEach(() => {
+      vi.spyOn(RequestContextUtils, 'getTenantId').mockReturnValue(undefined);
+      vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
+    });
+
+    it('allows while Settings → General → Site says production, or says nothing', async () => {
+      givenSetting('production');
+      await expect(new TenantEnvironmentGate(db, audit).assert('email', 'a@example.com')).resolves.toBeUndefined();
+      givenSetting(null);
+      await expect(new TenantEnvironmentGate(db, audit).assert('email', 'a@example.com')).resolves.toBeUndefined();
+      expect(audited).toEqual([]);
+    });
+
+    it('refuses once it says non-production, and names THAT control', async () => {
+      givenSetting('non-production');
+      const attempt = new TenantEnvironmentGate(db, audit).assert('network', 'https://api.stripe.com/v1/charges', 'ecommerce');
+      await expect(attempt).rejects.toBeInstanceOf(NonProductionRefusal);
+      await attempt.catch((err: NonProductionRefusal) => {
+        expect(err.message).toContain('Settings → General → Site → Environment');
+      });
+      expect(audited).toEqual([['ecommerce', 'network', 'https://api.stripe.com/v1/charges', AuditOutcome.DENIED, { reason: 'non-production' }]]);
+    });
+
+    it('never reads the setting once the deployment has sites — platform mail must still leave', async () => {
+      vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+      givenSetting('non-production');
+      await expect(new TenantEnvironmentGate(db, audit).assert('email', 'ops@example.com')).resolves.toBeUndefined();
+    });
   });
 
   it('allows a production site', async () => {

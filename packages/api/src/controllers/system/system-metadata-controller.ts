@@ -1,4 +1,4 @@
-import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, TenantResolverService, AdminScope } from '@fromcode119/core';
+import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, StandaloneSitePolicy, TenantMode, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ApplicationUrlUtils, Logger, PluginState, StorefrontContentSecurityPolicy, SystemConstants, SystemSettingsExposureUtils, ThemeState } from '@fromcode119/core';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -156,8 +156,15 @@ export class SystemMetadataController {
     // Publish, and a cached "closed" would outlive the decision. A console request is never shared
     // either — see FrontendMetadataCachePolicy.
     res.set('Cache-Control', FrontendMetadataCachePolicy.resolve((req as any).tenantSurface, Boolean(site && !site.isIndexable)));
+    // A single-site deployment has no site row, so the same two answers come from its platform
+    // settings (Settings → General → Site). Null on a deployment with sites: a request with no tenant
+    // there is the platform's own, and the storefront must keep treating it as it always has.
+    const standalone = !site && !TenantMode.isEnabled()
+      ? { isProduction: await StandaloneSitePolicy.isProduction(), isIndexable: await StandaloneSitePolicy.isIndexable() }
+      : null;
     res.json({
       ...metadata,
+      standalone,
       site: site
         ? {
           id: site.id,
