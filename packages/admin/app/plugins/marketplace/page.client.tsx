@@ -112,7 +112,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
     try {
       this.installing = slug;
-      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updatingPlugin') : AdminI18n.t('plugins.list.installingPlugin'), `${isUpdate ? 'Updating' : 'Downloading and staging'} ${slug} v${targetVersion}...`);
+      notify(NotificationType.INFO, isUpdate ? AdminI18n.t('plugins.list.updatingPlugin') : AdminI18n.t('plugins.list.installingPlugin'), AdminI18n.t(isUpdate ? 'plugins.list.updatingVersion' : 'plugins.list.stagingVersion', { slug, version: targetVersion }));
 
       const { operationId } = await PluginInstallOperationService.startMarketplaceInstall(slug, targetVersion);
       // Wait for the background operation to fully complete (handles restart recovery internally)
