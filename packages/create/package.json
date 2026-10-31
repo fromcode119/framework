@@ -1,7 +1,7 @@
 {
   "name": "@fromcode119/create",
   "version": "0.2.5",
-  "description": "Create a new Fromcode app",
+  "description": "Create a new Fromcode Framework app",
   "bin": {
     "create-atlantis": "dist/index.js"
   },
