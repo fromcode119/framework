@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/core",
   "version": "0.0.0",
+  "description": "Fromcode Framework core: the kernel that loads plugins, themes and settings",
   "private": true,
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

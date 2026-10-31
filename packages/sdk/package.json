@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/sdk",
   "version": "0.2.5",
+  "description": "Fromcode Framework SDK for building plugins and themes",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {

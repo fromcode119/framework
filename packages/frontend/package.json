@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/frontend",
   "version": "0.0.0",
+  "description": "Fromcode Framework frontend: renders sites with their installed theme",
   "private": true,
   "bin": {
     "atlantis-frontend": "dist/bin.js"

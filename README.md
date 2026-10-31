@@ -5,7 +5,7 @@
   <img alt="Fromcode Framework — codename Atlantis" src="packages/frontend/public/brand/atlantis-logo-slate.png" width="340">
 </picture>
 
-**The open-source application framework by Fromcode** · codename **Atlantis**
+**Fromcode Framework** — the open-source application framework by Fromcode · codename **Atlantis**
 
 [![GitHub Stars](https://img.shields.io/github/stars/fromcode119/framework?style=for-the-badge&logo=github&color=gold)](https://github.com/fromcode119/framework)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge&logo=opensourceinitiative)](https://opensource.org/licenses/MIT)

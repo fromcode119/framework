@@ -1,6 +1,7 @@
 {
   "name": "@fromcode119/framework",
   "version": "0.2.471",
+  "description": "Fromcode Framework (codename Atlantis): the open-source TypeScript application framework by Fromcode",
   "private": true,
   "license": "MIT",
   "workspaces": [
