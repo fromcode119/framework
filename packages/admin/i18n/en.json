@@ -1233,6 +1233,15 @@
       "installPlugin": "Install Plugin",
       "failedToLoadPluginSettings": "Failed to load plugin settings.",
       "settingsSavedSuccessfully": "Settings saved successfully!",
+      "refusal": {
+        "required": "This field is required.",
+        "notANumber": "Must be a number.",
+        "belowMin": "Must be at least {{min}}.",
+        "aboveMax": "Must be at most {{max}}.",
+        "notAnEmail": "Must be a valid email address.",
+        "notAUrl": "Must be a valid URL.",
+        "notAnOption": "Must be one of the listed options."
+      },
       "validationFailedPleaseCheckThe": "Validation failed. Please check the fields below.",
       "failedToSaveSettings": "Failed to save settings.",
       "resetAllSettingsToDefaults": "Reset all settings to defaults? This cannot be undone.",

@@ -1270,6 +1270,15 @@
       "installPlugin": "Инсталирай",
       "failedToLoadPluginSettings": "Настройките на плъгина не можаха да се заредят.",
       "settingsSavedSuccessfully": "Настройките са запазени.",
+      "refusal": {
+        "required": "Полето е задължително.",
+        "notANumber": "Трябва да е число.",
+        "belowMin": "Трябва да е поне {{min}}.",
+        "aboveMax": "Трябва да е най-много {{max}}.",
+        "notAnEmail": "Трябва да е валиден имейл адрес.",
+        "notAUrl": "Трябва да е валиден адрес (URL).",
+        "notAnOption": "Трябва да е някоя от изброените възможности."
+      },
       "validationFailedPleaseCheckThe": "Има невалидни стойности. Проверете полетата по-долу.",
       "failedToSaveSettings": "Настройките не бяха запазени.",
       "resetAllSettingsToDefaults": "Да се върнат ли всички настройки по подразбиране? Действието не може да бъде отменено.",

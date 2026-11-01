@@ -39,8 +39,8 @@ export class PluginPlatformSettingsController {
     const resolved = this.resolve(req, res);
     if (!resolved) return;
     const incoming = CoercionUtils.toObject(req.body) as Record<string, any>;
-    const errors = await this.support.validateSettings(incoming, resolved.schema);
-    if (errors) return res.status(400).json({ errors });
+    const refused = await this.support.validateSettings(incoming, resolved.schema);
+    if (refused) return res.status(400).json(refused);
 
     const existing = await this.store.stored(resolved.slug);
     const sealed = this.support.encryptPasswordFields(incoming, existing, resolved.schema.fields);
