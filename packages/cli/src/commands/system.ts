@@ -7,6 +7,7 @@ import { SiteTransferBundleCommandService } from '@cli/services/site-transfer-bu
 import { SystemUpdateCommandService } from '@cli/services/system-update-command-service';
 import { PlatformGateway } from '@cli/services/platform-gateway';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
+import { GatewayWatchdog } from '@cli/services/gateway/gateway-watchdog';
 import { UpdaterService } from '@cli/services/updater/updater-service';
 import { BootstrapSecretsService } from '@fromcode119/core';
 
@@ -89,11 +90,22 @@ export class SystemCommands {
         BootstrapSecretsService.adopt();
         const gateway = new PlatformGateway();
         gateway.start();
+        // A gateway that still accepts connections but answers none is never restarted by anything
+        // else: end it, and Docker starts a fresh one (`GatewayWatchdog`).
+        let watchdog: GatewayWatchdog | null = null;
+        void gateway.listener?.listening.then(() => {
+          watchdog = new GatewayWatchdog(gateway.listener?.port ?? 0, PlatformGateway.HEALTH_PATH, (reason) => {
+            console.error(`[platform-gateway] watchdog: ${reason}; exiting so the container is restarted`);
+            process.exit(1);
+          });
+          watchdog.start();
+        });
         // `docker stop` during a deploy: finish what is in flight while the replacement takes new
         // connections, then exit. Without this the process died where it stood.
         for (const signal of ['SIGTERM', 'SIGINT'] as const) {
           process.once(signal, () => {
             console.log(`[platform-gateway] ${signal}: no longer accepting; finishing requests in flight`);
+            watchdog?.stop();
             void gateway.stop(PlatformGateway.STOP_GRACE_MS).then(() => process.exit(0));
           });
         }
