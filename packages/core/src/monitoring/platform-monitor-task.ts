@@ -25,6 +25,11 @@ import { TenantResolverService } from '@core/tenant/tenant-resolver-service';
 export class PlatformMonitorTask {
   static readonly NAME = 'platform-monitor';
   static readonly SCHEDULE = '*/5 * * * *';
+  /**
+   * Part of what was last synced. Raise it when a sync starts doing something new to EXISTING monitors, or a
+   * deployment whose addresses never change would never run it: 2 — monitors given their alert contacts.
+   */
+  static readonly SYNC_REVISION = 2;
 
   private readonly logger = new Logger({ namespace: 'platform-monitor' });
   private readonly store: MonitoringIncidentStore;
@@ -101,7 +106,7 @@ export class PlatformMonitorTask {
     const syncing = active.filter(({ provider }) => provider.syncTargets);
     if (!syncing.length) return;
     const targets = await this.targets();
-    const fingerprint = JSON.stringify({ providers: syncing.map(({ key }) => key).sort(), targets });
+    const fingerprint = JSON.stringify({ revision: PlatformMonitorTask.SYNC_REVISION, providers: syncing.map(({ key }) => key).sort(), targets });
     if (fingerprint === await this.store.readSyncedTargets()) return;
     let allSynced = true;
     for (const { key, provider } of syncing) {
