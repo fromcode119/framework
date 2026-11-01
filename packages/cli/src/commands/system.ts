@@ -95,8 +95,9 @@ export class SystemCommands {
         let watchdog: GatewayWatchdog | null = null;
         void gateway.listener?.listening.then(() => {
           watchdog = new GatewayWatchdog(gateway.listener?.port ?? 0, PlatformGateway.HEALTH_PATH, (reason) => {
-            console.error(`[platform-gateway] watchdog: ${reason}; exiting so the container is restarted`);
-            process.exit(1);
+            // Gracefully, as a deploy does: what is still in flight finishes, then Docker starts a fresh one.
+            console.error(`[platform-gateway] watchdog: ${reason}; stopping so the container is restarted`);
+            void gateway.stop(PlatformGateway.STOP_GRACE_MS).finally(() => process.exit(1));
           });
           watchdog.start();
         });

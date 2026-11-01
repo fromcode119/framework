@@ -66,12 +66,26 @@ describe('GatewayWatchdog', () => {
     // No limit set (`max`) or no cgroup v2: nothing to judge by, so never a reason to end the gateway.
     expect(new GatewayWatchdog(port, '/healthz', () => undefined, 60_000, 100, 1, (file) => (file === 'memory.max' ? 'max' : null)).memoryPressure()).toBeNull();
 
+    // Answering promptly, memory does not count — whatever is in swap.
+    const prompt: string[] = [];
+    const fine = new GatewayWatchdog(port, '/healthz', (reason) => prompt.push(reason), 60_000, 3_000, 2, cgroup(200, 14));
+    fine.start();
+    await fine.check();
+    await fine.check();
+    fine.stop();
+    expect(prompt).toEqual([]);
+  });
+
+  it('ends a gateway in swap once its answers are slow as well', async () => {
+    const port = await listen(http.createServer((_req, res) => { setTimeout(() => res.end('ok'), GatewayWatchdog.SLOW_MS + 100); }));
+    const cgroup = (file: string): string | null => ({ 'memory.max': String(512 * 1024 * 1024), 'memory.stat': 'anon 1', 'memory.swap.current': String(14 * 1024 * 1024) } as Record<string, string>)[file] ?? null;
     const reasons: string[] = [];
-    const watchdog = new GatewayWatchdog(port, '/healthz', (reason) => reasons.push(reason), 60_000, 500, 2, cgroup(200, 14));
+    const watchdog = new GatewayWatchdog(port, '/healthz', (reason) => reasons.push(reason), 60_000, 3_000, 2, cgroup);
     watchdog.start();
     await watchdog.check();
     await watchdog.check();
 
-    expect(reasons).toEqual(['14 MiB in swap, 2 checks in a row']);
-  });
+    expect(reasons).toHaveLength(1);
+    expect(reasons[0]).toMatch(/^14 MiB in swap, and its health check took \d+ ms, 2 checks in a row$/);
+  }, 10_000);
 });

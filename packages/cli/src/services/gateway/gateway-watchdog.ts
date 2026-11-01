@@ -10,12 +10,16 @@ import http from 'http';
  * restarts a container that is running. So every `intervalMs` the gateway checks itself, two ways:
  *
  *  - it requests its own health path, which must answer within `timeoutMs`;
- *  - it reads its container's memory (cgroup v2): memory the process owns at `anonShare` of the limit,
- *    or `swapBytes` in swap, is the state that hung it, whether or not the next request still squeezes
- *    through.
+ *  - when that answer was slow (over `SLOW_MS`), it reads its container's memory (cgroup v2): memory the
+ *    process owns at `ANON_SHARE` of the limit, or `SWAP_BYTES` in swap, is the state that hung it, even
+ *    while the odd request still squeezes through.
  *
- * After `limit` failed checks in a row it logs why and calls `onHung` (the process exits). Half a minute
- * of failures, not one: a gateway that is merely busy is never ended for it.
+ * Memory alone never counts. Visitors can raise it — open many connections — and a gateway that holds a
+ * lot but still answers promptly is doing its job; ending it would hand them a restart. And swap can hold
+ * cold pages that cost nothing. Only memory that comes WITH slowness is the failure seen on 2026-11-01.
+ *
+ * After `limit` failed checks in a row it logs why and calls `onHung`, which stops the gateway gracefully
+ * and exits. Half a minute of failures, not one: a gateway that is merely busy is never ended for it.
  */
 export class GatewayWatchdog {
   static readonly INTERVAL_MS = 10_000;
@@ -23,6 +27,8 @@ export class GatewayWatchdog {
   static readonly LIMIT = 3;
   static readonly ANON_SHARE = 0.85;
   static readonly SWAP_BYTES = 8 * 1024 * 1024;
+  /** A health answer slower than this is what makes memory pressure count. A healthy one takes milliseconds. */
+  static readonly SLOW_MS = 1_000;
   private static readonly CGROUP = '/sys/fs/cgroup';
 
   private failures = 0;
@@ -55,10 +61,11 @@ export class GatewayWatchdog {
     this.checking = true;
     const startedAt = Date.now();
     const answered = await GatewayWatchdog.answers(this.port, this.path, this.timeoutMs);
-    const pressure = this.memoryPressure();
+    const tookMs = Date.now() - startedAt;
+    const pressure = answered && tookMs > GatewayWatchdog.SLOW_MS ? this.memoryPressure() : null;
     this.checking = false;
     if (!this.timer) return;
-    const problem = !answered ? `no answer from its own health check in ${Date.now() - startedAt} ms` : pressure;
+    const problem = !answered ? `no answer from its own health check in ${tookMs} ms` : pressure ? `${pressure}, and its health check took ${tookMs} ms` : null;
     if (!problem) { this.failures = 0; return; }
     this.failures += 1;
     console.warn(`[platform-gateway] watchdog: ${problem} (${this.failures}/${this.limit})`);
