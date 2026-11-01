@@ -42,7 +42,7 @@ describe('EntityValueParserService', () => {
   it('reports required fields on create', () => {
     const parsed = new EntityValueParserService().parseCollectionInput(collection, {}, { mode: EntityParseMode.CREATE });
 
-    expect(parsed.errors).toEqual([{ field: 'title', message: 'Field "title" is required' }]);
+    expect(parsed.errors).toEqual([{ field: 'title', code: 'required', message: 'Field "title" is required' }]);
     expect(parsed.data.count).toBe(1);
     expect(parsed.data.enabled).toBe(true);
   });

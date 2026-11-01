@@ -204,6 +204,7 @@
       "updated": "Entry updated successfully",
       "failed": "Operation failed",
       "validationError": "Validation error",
+      "fieldRequired": "{{label}} is required.",
       "hardRestoreConfirm": "Are you sure you want to PERMANENTLY restore the live record to version {{version}}? This will update the database immediately.",
       "hardRestored": "Record permanently restored to version {{version}}",
       "restoreFailed": "Failed to restore record",

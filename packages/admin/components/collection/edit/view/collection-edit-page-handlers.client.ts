@@ -6,6 +6,7 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
 import { CollectionEditUtils } from '@/components/collection/collection-edit-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { CollectionEditSubmitError } from '@/components/collection/edit/view/collection-edit-submit-error';
 import { VersionChangeSummary } from '@fromcode119/core/client';
 
 /**
@@ -93,7 +94,7 @@ export class CollectionEditPageHandlers {
       return result;
     } catch (err: any) {
       console.error('Form submission error:', err);
-      const { message, perField } = CollectionEditPageHandlers.parseSubmitError(err);
+      const { message, perField } = CollectionEditSubmitError.parse(err, collection);
       self.setState({ fieldErrors: perField, status: { type: NotificationType.ERROR, message } });
       throw err;
     } finally {
@@ -110,31 +111,6 @@ export class CollectionEditPageHandlers {
     } catch {
       return null;
     }
-  }
-
-  private static parseSubmitError(err: any): { message: string; perField: Record<string, string[]> } {
-    let message = AdminI18n.t('collection.edit.failed');
-    if (err?.data?.errors) {
-      if (Array.isArray(err.data.errors)) {
-        const items = err.data.errors as any[];
-        message = items.map((e) => (typeof e === 'string' ? e : e.message || e.field || AdminI18n.t('collection.edit.validationError'))).join(', ');
-        const perField: Record<string, string[]> = {};
-        for (const e of items) {
-          if (e && typeof e === 'object' && e.field) {
-            const key = String(e.field);
-            if (!perField[key]) perField[key] = [];
-            perField[key].push(typeof e.message === 'string' ? e.message : String(e.message ?? e));
-          }
-        }
-        return { message, perField: Object.keys(perField).length ? perField : { base: [message] } };
-      }
-      if (typeof err.data.errors === 'object') {
-        const fieldErrors = err.data.errors as Record<string, string[]>;
-        return { message: Object.values(fieldErrors).flat().join(', '), perField: fieldErrors };
-      }
-    }
-    message = err?.message || AdminI18n.t('collection.edit.failed');
-    return { message, perField: { base: [message] } };
   }
 
   /**

@@ -10,6 +10,7 @@ export * from '@core/enums/condition-operator.enum';
 export * from '@core/enums/entity-field-transform.enum';
 export * from '@core/enums/entity-parse-mode.enum';
 export * from '@core/enums/field-label-layout.enum';
+export * from '@core/enums/entity-field-error-code.enum';
 export * from '@core/enums/field-position.enum';
 export * from '@core/enums/field-type.enum';
 export * from '@core/enums/field-width.enum';
