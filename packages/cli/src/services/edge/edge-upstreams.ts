@@ -82,34 +82,34 @@ export class EdgeUpstreams {
     } catch {
       addresses = [];
     }
-    const results = await Promise.all(addresses.map(async (address) => ({ address, state: await EdgeUpstreams.probe(address, this.checkPort) })));
-    const answering = results.filter((result) => result.state === 'answers').map((result) => result.address).sort();
-    const accepting = results.filter((result) => result.state !== 'down').map((result) => result.address).sort();
+    const results = await Promise.all(addresses.map(async (address) => ({ address, ...(await EdgeUpstreams.probe(address, this.checkPort)) })));
+    const answering = results.filter((result) => result.answered).map((result) => result.address).sort();
+    const accepting = results.filter((result) => result.accepted).map((result) => result.address).sort();
     for (const result of results) {
-      if (result.state === 'accepts' && !this.silent.has(result.address)) console.warn(`[edge] gateway ${result.address} accepts connections but did not answer its health check in ${EdgeUpstreams.ANSWER_TIMEOUT_MS} ms`);
+      if (result.accepted && !result.answered && !this.silent.has(result.address)) console.warn(`[edge] gateway ${result.address} accepts connections but did not answer its health check in ${EdgeUpstreams.ANSWER_TIMEOUT_MS} ms`);
     }
     this.silent.clear();
-    for (const result of results) if (result.state === 'accepts') this.silent.add(result.address);
+    for (const result of results) if (result.accepted && !result.answered) this.silent.add(result.address);
     const next = answering.length ? answering : accepting;
     const before = this.healthy.join(',');
     this.healthy = next;
     if (next.join(',') !== before) console.log(`[edge] gateways answering: ${next.length ? next.join(', ') : 'none'}${answering.length || !next.length ? '' : ' (accepting only — none answered its health check)'}`);
   }
 
-  /** `answers` — its health path came back 200; `accepts` — the port is open but no answer came; `down`. */
-  private static probe(address: string, port: number): Promise<'answers' | 'accepts' | 'down'> {
+  /** Whether the port took the connection, and whether the health path then came back 200 in time. */
+  private static probe(address: string, port: number): Promise<{ accepted: boolean; answered: boolean }> {
     return new Promise((resolve) => {
       let connected = false;
       const request = http.get({ host: address, port, path: EdgeUpstreams.HEALTH_PATH, agent: false });
-      const finish = (state: 'answers' | 'accepts' | 'down'): void => { clearTimeout(timer); request.destroy(); resolve(state); };
-      const timer = setTimeout(() => finish(connected ? 'accepts' : 'down'), EdgeUpstreams.ANSWER_TIMEOUT_MS);
+      const finish = (answered: boolean): void => { clearTimeout(timer); request.destroy(); resolve({ accepted: connected, answered }); };
+      const timer = setTimeout(() => finish(false), EdgeUpstreams.ANSWER_TIMEOUT_MS);
       request.once('socket', (socket: net.Socket) => {
-        const connectTimer = setTimeout(() => { if (!connected) finish('down'); }, EdgeUpstreams.CONNECT_TIMEOUT_MS);
+        const connectTimer = setTimeout(() => { if (!connected) finish(false); }, EdgeUpstreams.CONNECT_TIMEOUT_MS);
         socket.once('connect', () => { connected = true; clearTimeout(connectTimer); });
         socket.once('close', () => clearTimeout(connectTimer));
       });
-      request.once('response', (res) => { res.resume(); finish(res.statusCode === 200 ? 'answers' : 'accepts'); });
-      request.on('error', () => finish(connected ? 'accepts' : 'down'));
+      request.once('response', (res) => { res.resume(); finish(res.statusCode === 200); });
+      request.on('error', () => finish(false));
     });
   }
 }
