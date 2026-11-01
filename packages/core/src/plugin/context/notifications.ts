@@ -77,6 +77,38 @@ export class NotificationsContextProxy {
     return !!row && TenantMembership.from(row as Record<string, unknown>).isActive;
   }
 
+  /**
+   * Every address `notifyAdmins` mails: the extra addresses, the notification address(es) in Settings →
+   * General (`notification_email` + `notification_email_cc`) and every admin-role user. Exposed so a screen
+   * can show who an alert reaches without sending one.
+   */
+  static async adminRecipients(manager: IPluginManagerInterface, extraRecipients: string[] = []): Promise<string[]> {
+    const recipients = new Set<string>();
+    const addEmails = (value: unknown) => {
+      // Accept a single address or a comma/semicolon-separated list (the CC setting holds several).
+      for (const part of String(value ?? '').split(/[,;\s]+/)) {
+        const normalized = part.trim().toLowerCase();
+        if (normalized) recipients.add(normalized);
+      }
+    };
+    for (const extra of extraRecipients) addEmails(extra);
+
+    // The platform's generic "where admin alerts go" setting, so a plugin never needs its own duplicate.
+    try {
+      const notify = await manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.NOTIFICATION_EMAIL }).catch(() => null);
+      const notifyCc = await manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC }).catch(() => null);
+      addEmails(notify?.value);
+      addEmails(notifyCc?.value);
+    } catch { /* best-effort */ }
+
+    // Admin-role recipients via the framework's own users/roles join (RAW db; not plugin context.db).
+    try {
+      const adminEmails = await RolesContextProxy.createRolesProxy(manager).listUserEmailsWithRole('admin');
+      for (const adminEmail of (Array.isArray(adminEmails) ? adminEmails : [])) addEmails(adminEmail);
+    } catch { /* best-effort — fall through to whatever recipients we already have */ }
+    return Array.from(recipients);
+  }
+
   static createNotificationsProxy(
     manager: IPluginManagerInterface,
     sourceSlug = '',
@@ -109,35 +141,10 @@ export class NotificationsContextProxy {
         message: { subject: string; html?: string; text?: string },
         options: { extraRecipients?: string[] } = {},
       ): Promise<{ recipients: number; sent: number }> {
-        const recipients = new Set<string>();
-        const addEmails = (value: unknown) => {
-          // Accept a single address or a comma/semicolon-separated list (the CC setting holds several).
-          for (const part of String(value ?? '').split(/[,;\s]+/)) {
-            const normalized = part.trim().toLowerCase();
-            if (normalized) recipients.add(normalized);
-          }
-        };
-
         // Arbitrary addresses make this a way to send the platform's mail to anyone, so they need the
-        // same capability as sending mail directly. Admin recipients below need nothing extra.
+        // same capability as sending mail directly. Admin recipients need nothing extra.
         if ((options.extraRecipients || []).length && security && !security.hasCapability('email')) security.handleViolation('email');
-        for (const extra of options.extraRecipients || []) addEmails(extra);
-
-        // Framework-wide notification address(es) — admin Settings → General (`notification_email` +
-        // `notification_email_cc`). This is the platform's generic "where admin alerts go" setting, so a
-        // plugin never needs its own duplicate email setting; notifyAdmins includes it automatically.
-        try {
-          const notify = await manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.NOTIFICATION_EMAIL }).catch(() => null);
-          const notifyCc = await manager.db.findOne(SystemConstants.TABLE.META, { key: SystemConstants.META_KEY.NOTIFICATION_EMAIL_CC }).catch(() => null);
-          addEmails(notify?.value);
-          addEmails(notifyCc?.value);
-        } catch { /* best-effort */ }
-
-        // Admin-role recipients via the framework's own users/roles join (RAW db; not plugin context.db).
-        try {
-          const adminEmails = await RolesContextProxy.createRolesProxy(manager).listUserEmailsWithRole('admin');
-          for (const adminEmail of (Array.isArray(adminEmails) ? adminEmails : [])) addEmails(adminEmail);
-        } catch { /* best-effort — fall through to whatever recipients we already have */ }
+        const list = await NotificationsContextProxy.adminRecipients(manager, options.extraRecipients);
 
         // In-app inbox rows for every admin user (bell badge) — alongside the emails, best-effort.
         try {
@@ -152,7 +159,6 @@ export class NotificationsContextProxy {
           }
         } catch { /* best-effort */ }
 
-        const list = Array.from(recipients);
         if (!list.length) {
           await manager.writeLog(
             'WARN',

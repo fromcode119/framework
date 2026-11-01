@@ -24,6 +24,18 @@ import { AuditManager } from '@core/security/audit-manager';
  */
 export class IntegrationTenantResolver {
   /**
+   * The platform's mail, as the manager resolved it with NO tenant bound. A site that opted into the
+   * platform's server is handed this. Resolving it again from inside the site's scope cannot work: the
+   * platform's rows are not visible on a site's connection, so that resolution always came back as the
+   * mock and every opted-in site was told the platform had no mail server.
+   */
+  private platformMail: { email: IEmailDriver | null; resolved: unknown; sender: { address: string; name: string } } = {
+    email: null,
+    resolved: null,
+    sender: { address: '', name: '' },
+  };
+
+  /**
    * The manager's OWN instance map, shared rather than duplicated.
    *
    * Keys are `<tenantId>::<type>` on both sides, and the manager's generic `get()` path reads and
@@ -37,6 +49,16 @@ export class IntegrationTenantResolver {
     private readonly logger: Logger,
     private readonly instances: Map<string, any>, // eslint-disable-line @typescript-eslint/no-explicit-any
   ) {}
+
+  /** Called by the manager each time it resolves the platform's mail, with no tenant in scope. */
+  usePlatformMail(email: IEmailDriver, resolved: unknown, sender: { address: string; name: string }): void {
+    this.platformMail = { email, resolved, sender };
+  }
+
+  /** The sender the platform's mail server is configured with — the one an opted-in site's mail goes out as. */
+  platformSender(): { address: string; name: string } {
+    return this.platformMail.sender;
+  }
 
   /**
    * One tenant's instance of a core type, resolved once and kept beside its other integrations.
@@ -67,7 +89,7 @@ export class IntegrationTenantResolver {
     // this holds whether `source` is the enum member the resolver sets or a string it survived as.
     const resolvedDriver = String(resolved?.source) === String(SettingSource.STORED)
       ? email
-      : await this.platformSenderOrRefusal(tenantId, email, resolved);
+      : await this.platformSenderOrRefusal(tenantId);
     // Wrapped, always — the wrapper decides per SEND, not here. A non-production site must stop
     // sending the moment an operator says so, and this driver is cached for the life of the tenant's
     // integrations, so a decision taken at resolve time would outlive the switch that changed it.
@@ -92,11 +114,12 @@ export class IntegrationTenantResolver {
   }
 
   /** The platform's own driver when this site has opted in and the platform has a real one; a refusing driver otherwise. */
-  private async platformSenderOrRefusal(tenantId: string, platformDriver: IEmailDriver, resolved: unknown): Promise<IEmailDriver> {
+  private async platformSenderOrRefusal(tenantId: string): Promise<IEmailDriver> {
     if (await TenantEmailPolicy.permitsPlatformSender(this.db)) {
+      const { email: platformDriver, resolved } = this.platformMail;
       // The platform's own "server" may be the mock, which reports every send as delivered and drops it.
       // Handing that to a site that asked for real mail is the silent failure this method exists to avoid.
-      if (PlatformMailUnavailableEmailDriver.isMock(resolved)) {
+      if (!platformDriver || PlatformMailUnavailableEmailDriver.isMock(resolved)) {
         this.logger.warn(
           `Site "${tenantId}" opted into the platform's mail server, but the platform has none configured `
           + '(its email integration is the mock driver). Its mail is refused rather than dropped.',

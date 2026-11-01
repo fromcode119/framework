@@ -107,4 +107,27 @@ describe('FrameworkEmailSenderService', () => {
 
     expect(sender.identity).toBe('"The \\"Shop\\"" <a@b.example>');
   });
+
+  it('a site with no mail of its own goes out as the platform\'s sender', async () => {
+    const site = {
+      getConfig: async () => ({ stored: null, active: { source: 'default', config: {} } }),
+      platformEmailSender: () => ({ address: 'alerts@platform.example', name: 'Platform mail' }),
+    };
+
+    const sender = await FrameworkEmailSenderService.resolve(site, 'Zen');
+
+    expect(sender.address).toBe('alerts@platform.example');
+  });
+
+  it('a site with its own mail never borrows the platform\'s sender', async () => {
+    const site = {
+      getConfig: async () => ({ stored: { providerKey: 'smtp', config: {} }, active: { source: 'stored', config: {} } }),
+      platformEmailSender: () => ({ address: 'alerts@platform.example', name: '' }),
+    };
+
+    const sender = await FrameworkEmailSenderService.resolve(site, 'Shop');
+
+    expect(sender.isConfigured).toBe(false);
+  });
 });
+
