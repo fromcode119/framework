@@ -5,6 +5,7 @@ import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { PluginSettingsFormState } from '@/components/plugins/view/plugin-settings-form-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { PluginSettingsRefusal } from '@/components/plugins/view/plugin-settings-refusal';
 
 /**
  * Loading, saving, resetting, exporting and importing a plugin's settings.
@@ -77,7 +78,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
     } catch (err: any) {
       console.error('Save error:', err);
       if (err.data?.errors) {
-        this.errors = err.data.errors;
+        this.errors = PluginSettingsRefusal.perField(err.data);
         this.status = { type: NotificationType.ERROR, message: AdminI18n.t('plugins.list.validationFailedPleaseCheckThe') };
       } else {
         this.status = { type: NotificationType.ERROR, message: err.message || AdminI18n.t('plugins.list.failedToSaveSettings') };

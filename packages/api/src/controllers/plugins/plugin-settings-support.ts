@@ -1,5 +1,7 @@
 import { PluginManager, Logger, SecretService } from '@fromcode119/core';
-import { SystemConstants } from '@fromcode119/core';
+import { SystemConstants, EntityFieldErrorCode } from '@fromcode119/core';
+import type { IEntityFieldValidationError } from '@fromcode119/core';
+import type { IPluginSettingsRefusal } from '@api/controllers/plugins/interfaces/plugin-settings-refusal.interface';
 
 /**
  * Schema resolution, password/secret field handling, settings validation and
@@ -84,18 +86,23 @@ export class PluginSettingsSupport {
     return defaults;
   }
 
+  /**
+   * Why these settings are refused, field by field: `errors` holds the English sentence (as before) and
+   * `refusals` the same refusals by code, so the console says them in its reader's language.
+   */
   async validateSettings(
     settings: Record<string, any>,
     schema: any
-  ): Promise<Record<string, string> | null> {
-    const errors: Record<string, string> = {};
-    const fields = schema.fields || [];
+  ): Promise<IPluginSettingsRefusal | null> {
+    const refusals: IEntityFieldValidationError[] = [];
+    const refuse = (field: string, code: EntityFieldErrorCode, message: string, vars?: Record<string, string | number>) =>
+      refusals.push({ field, code: code.value, message, ...(vars ? { vars } : {}) });
 
-    for (const field of fields) {
+    for (const field of schema.fields || []) {
       const value = settings[field.name];
 
       if (field.required && (value === undefined || value === null || value === '')) {
-        errors[field.name] = 'This field is required';
+        refuse(field.name, EntityFieldErrorCode.REQUIRED, 'This field is required');
         continue;
       }
 
@@ -106,36 +113,31 @@ export class PluginSettingsSupport {
       switch (field.type) {
         case 'number':
           if (typeof value !== 'number' || Number.isNaN(value)) {
-            errors[field.name] = 'Must be a number';
+            refuse(field.name, EntityFieldErrorCode.NOT_A_NUMBER, 'Must be a number');
           } else if (field.min !== undefined && value < field.min) {
-            errors[field.name] = `Must be at least ${field.min}`;
+            refuse(field.name, EntityFieldErrorCode.BELOW_MIN, `Must be at least ${field.min}`, { min: field.min });
           } else if (field.max !== undefined && value > field.max) {
-            errors[field.name] = `Must be at most ${field.max}`;
+            refuse(field.name, EntityFieldErrorCode.ABOVE_MAX, `Must be at most ${field.max}`, { max: field.max });
           }
           break;
         case 'email':
           if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value))) {
-            errors[field.name] = 'Must be a valid email';
+            refuse(field.name, EntityFieldErrorCode.NOT_AN_EMAIL, 'Must be a valid email');
           }
           break;
         case 'url':
           try {
             new URL(String(value));
           } catch {
-            errors[field.name] = 'Must be a valid URL';
+            refuse(field.name, EntityFieldErrorCode.NOT_A_URL, 'Must be a valid URL');
           }
           break;
         case 'select':
           if (Array.isArray(field.options)) {
             const optionValues = new Set(field.options.map((option: any) => option?.value));
             const isMultiple = field?.admin?.multiple === true;
-            if (isMultiple) {
-              if (!Array.isArray(value) || value.some((entry) => !optionValues.has(entry))) {
-                errors[field.name] = 'Must be a valid option';
-              }
-            } else if (!optionValues.has(value)) {
-              errors[field.name] = 'Must be a valid option';
-            }
+            const valid = isMultiple ? Array.isArray(value) && value.every((entry) => optionValues.has(entry)) : optionValues.has(value);
+            if (!valid) refuse(field.name, EntityFieldErrorCode.NOT_AN_OPTION, 'Must be a valid option');
           }
           break;
         default:
@@ -143,7 +145,8 @@ export class PluginSettingsSupport {
       }
     }
 
-    return Object.keys(errors).length > 0 ? errors : null;
+    if (!refusals.length) return null;
+    return { errors: Object.fromEntries(refusals.map((one) => [one.field, one.message])), refusals };
   }
 
   async getEffectiveSchema(slug: string): Promise<any | null> {

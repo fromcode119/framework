@@ -100,7 +100,8 @@ describe('plugin-settings-controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        errors: { count: 'Must be at least 10' }
+        errors: { count: 'Must be at least 10' },
+        refusals: [{ field: 'count', code: 'belowMin', message: 'Must be at least 10', vars: { min: 10 } }],
       });
     });
 
@@ -197,7 +198,8 @@ describe('plugin-settings-controller', () => {
 
       expect(res.status).toHaveBeenCalledWith(400);
       expect(res.json).toHaveBeenCalledWith({
-        errors: { count: 'Must be a number' }
+        errors: { count: 'Must be a number' },
+        refusals: [{ field: 'count', code: 'notANumber', message: 'Must be a number' }],
       });
     });
   });

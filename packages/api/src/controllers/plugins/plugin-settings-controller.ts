@@ -61,9 +61,9 @@ export class PluginSettingsController {
     const schema = await this.support.getEffectiveSchema(slug);
 
     if (schema) {
-      const errors = await this.support.validateSettings(newSettings, schema);
-      if (errors) {
-        return res.status(400).json({ errors });
+      const refused = await this.support.validateSettings(newSettings, schema);
+      if (refused) {
+        return res.status(400).json(refused);
       }
 
       if (schema.validate) {
@@ -174,9 +174,9 @@ export class PluginSettingsController {
       return res.status(422).json({ error: 'Cannot import settings: plugin schema not registered. Ensure the plugin is enabled.' });
     }
 
-    const errors = await this.support.validateSettings(importedSettings, schema);
-    if (errors) {
-      return res.status(400).json({ errors });
+    const refused = await this.support.validateSettings(importedSettings, schema);
+    if (refused) {
+      return res.status(400).json(refused);
     }
     if (schema.validate) {
       const customErrors = await schema.validate(importedSettings, this.hookContext(plugin));
