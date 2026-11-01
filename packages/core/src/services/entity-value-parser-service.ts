@@ -31,7 +31,7 @@ export class EntityValueParserService {
       const value = resolved.exists ? resolved.value : field.defaultValue;
       if (this.isEmpty(value)) {
         if (field.required && (options.mode !== EntityParseMode.UPDATE || resolved.exists)) {
-          errors.push({ field: name, message: `Field "${field.label || name}" is required` });
+          errors.push({ field: name, code: 'required', message: `Field "${field.label || name}" is required` });
         }
         if (resolved.exists) {
           data[name] = this.coerceEmptyFieldValue(field);

@@ -6,6 +6,7 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminUrlUtils } from '@/lib/url-utils';
 import { CollectionEditUtils } from '@/components/collection/collection-edit-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { FieldDisplayLabel } from '@/lib/collection/field-display-label';
 import { VersionChangeSummary } from '@fromcode119/core/client';
 
 /**
@@ -93,7 +94,7 @@ export class CollectionEditPageHandlers {
       return result;
     } catch (err: any) {
       console.error('Form submission error:', err);
-      const { message, perField } = CollectionEditPageHandlers.parseSubmitError(err);
+      const { message, perField } = CollectionEditPageHandlers.parseSubmitError(err, collection);
       self.setState({ fieldErrors: perField, status: { type: NotificationType.ERROR, message } });
       throw err;
     } finally {
@@ -112,20 +113,21 @@ export class CollectionEditPageHandlers {
     }
   }
 
-  private static parseSubmitError(err: any): { message: string; perField: Record<string, string[]> } {
+  private static parseSubmitError(err: any, collection: any): { message: string; perField: Record<string, string[]> } {
     let message = AdminI18n.t('collection.edit.failed');
     if (err?.data?.errors) {
       if (Array.isArray(err.data.errors)) {
         const items = err.data.errors as any[];
-        message = items.map((e) => (typeof e === 'string' ? e : e.message || e.field || AdminI18n.t('collection.edit.validationError'))).join(', ');
+        const said = items.map((e) => CollectionEditPageHandlers.fieldErrorText(e, collection));
+        message = said.join(', ');
         const perField: Record<string, string[]> = {};
-        for (const e of items) {
+        items.forEach((e, index) => {
           if (e && typeof e === 'object' && e.field) {
             const key = String(e.field);
             if (!perField[key]) perField[key] = [];
-            perField[key].push(typeof e.message === 'string' ? e.message : String(e.message ?? e));
+            perField[key].push(said[index]);
           }
-        }
+        });
         return { message, perField: Object.keys(perField).length ? perField : { base: [message] } };
       }
       if (typeof err.data.errors === 'object') {
@@ -135,6 +137,20 @@ export class CollectionEditPageHandlers {
     }
     message = err?.message || AdminI18n.t('collection.edit.failed');
     return { message, perField: { base: [message] } };
+  }
+
+  /**
+   * One refusal in the console's language. A refusal the server names by its code is said here, under the
+   * label the form shows the field by; any other keeps the server's own words.
+   */
+  private static fieldErrorText(error: any, collection: any): string {
+    if (typeof error === 'string') return error;
+    if (error?.code === 'required') {
+      const field = (collection?.fields || []).find((one: any) => one?.name === error.field);
+      return AdminI18n.t('collection.edit.fieldRequired', { label: field ? FieldDisplayLabel.of(field) : String(error.field) });
+    }
+    if (typeof error?.message === 'string' && error.message) return error.message;
+    return error?.field ? String(error.field) : AdminI18n.t('collection.edit.validationError');
   }
 
   /**
