@@ -76,8 +76,14 @@ services:
           # compiles the TypeScript it imports at boot, and that graph has grown. At 96M it was
           # OOM-killed straight after "listening" and restarted in a loop — every *.framework.local
           # host answered 404. It had run for eleven days under 96M only because nothing had
-          # restarted it; the first restart exposed it. 256M leaves headroom, not a target.
-          memory: 256M
+          # restarted it; the first restart exposed it.
+          #
+          # Measured again 2026-11-01: since the gateway terminates TLS and HTTP/2 itself, native
+          # memory (OpenSSL sessions, HTTP/2 buffers) grows with the connections it has served and
+          # plateaus around 250-290 MiB while the JS heap stays flat. Under 256M it reached the
+          # limit, went into swap, and TLS handshakes stalled for two hours — every site hung while
+          # the edge still saw the port open. 512M sits well above that plateau.
+          memory: 512M
 
   # Holds the public ports (80 and 443, or wherever GATEWAY_PORT / GATEWAY_TLS_PUBLISH say) and passes
   # every connection, untouched, to a running gateway (`atlantis system edge`, PlatformEdge). It routes
