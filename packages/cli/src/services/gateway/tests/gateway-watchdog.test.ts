@@ -29,7 +29,7 @@ describe('GatewayWatchdog', () => {
     await watchdog.check();
 
     expect(reasons).toHaveLength(1);
-    expect(reasons[0]).toContain('3 health checks in a row');
+    expect(reasons[0]).toMatch(/^no answer from its own health check in \d+ ms, 3 checks in a row$/);
   });
 
   it('never ends a gateway that answers, and a single slow answer does not count against it once it recovers', async () => {
@@ -49,5 +49,29 @@ describe('GatewayWatchdog', () => {
     watchdog.stop();
 
     expect(reasons).toEqual([]);
+  });
+
+  it('ends a gateway that still answers but is in swap or at its memory limit — the state that hung it on 2026-11-01', async () => {
+    const port = await listen(http.createServer((_req, res) => res.end('ok')));
+    const MiB = 1024 * 1024;
+    const cgroup = (anonMiB: number, swapMiB: number) => (file: string): string | null => ({
+      'memory.max': String(512 * MiB),
+      'memory.stat': `file 1234\nanon ${anonMiB * MiB}\nkernel 99`,
+      'memory.swap.current': String(swapMiB * MiB),
+    } as Record<string, string>)[file] ?? null;
+
+    expect(new GatewayWatchdog(port, '/healthz', () => undefined, 60_000, 100, 1, cgroup(200, 0)).memoryPressure()).toBeNull();
+    expect(new GatewayWatchdog(port, '/healthz', () => undefined, 60_000, 100, 1, cgroup(200, 14)).memoryPressure()).toBe('14 MiB in swap');
+    expect(new GatewayWatchdog(port, '/healthz', () => undefined, 60_000, 100, 1, cgroup(450, 0)).memoryPressure()).toBe('memory at 450 MiB of its 512 MiB limit');
+    // No limit set (`max`) or no cgroup v2: nothing to judge by, so never a reason to end the gateway.
+    expect(new GatewayWatchdog(port, '/healthz', () => undefined, 60_000, 100, 1, (file) => (file === 'memory.max' ? 'max' : null)).memoryPressure()).toBeNull();
+
+    const reasons: string[] = [];
+    const watchdog = new GatewayWatchdog(port, '/healthz', (reason) => reasons.push(reason), 60_000, 500, 2, cgroup(200, 14));
+    watchdog.start();
+    await watchdog.check();
+    await watchdog.check();
+
+    expect(reasons).toEqual(['14 MiB in swap, 2 checks in a row']);
   });
 });

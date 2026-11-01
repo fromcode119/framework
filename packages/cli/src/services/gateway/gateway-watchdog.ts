@@ -1,22 +1,29 @@
+import fs from 'fs';
 import http from 'http';
 
 /**
- * Ends the gateway when it has stopped answering, so Docker (`restart: unless-stopped`) starts a fresh one.
+ * Ends the gateway when it has stopped answering, or is about to, so Docker (`restart: unless-stopped`)
+ * starts a fresh one.
  *
- * A gateway that is out of memory and in swap still ACCEPTS connections — the kernel completes the TCP
- * handshake — but answers nothing: on 2026-11-01 one sat like that for two hours and every site hung,
- * while `edge`, which then saw only that the port was open, kept sending it every visitor. Nothing else
- * restarts a container that is running but hung, so the gateway asks itself: every `intervalMs` it
- * requests its own health path, and after `limit` answers in a row that did not come within `timeoutMs`
- * it logs why and calls `onHung` (the process exits).
+ * On 2026-11-01 the gateway reached its memory limit and went into swap. It still accepted every
+ * connection and still finished some, but so slowly that every site hung for two hours — and nothing
+ * restarts a container that is running. So every `intervalMs` the gateway checks itself, two ways:
  *
- * The bar is deliberately low and slow — any answer to a trivial request, three times running, about half
- * a minute — so a busy gateway is never ended for being busy.
+ *  - it requests its own health path, which must answer within `timeoutMs`;
+ *  - it reads its container's memory (cgroup v2): memory the process owns at `anonShare` of the limit,
+ *    or `swapBytes` in swap, is the state that hung it, whether or not the next request still squeezes
+ *    through.
+ *
+ * After `limit` failed checks in a row it logs why and calls `onHung` (the process exits). Half a minute
+ * of failures, not one: a gateway that is merely busy is never ended for it.
  */
 export class GatewayWatchdog {
   static readonly INTERVAL_MS = 10_000;
   static readonly TIMEOUT_MS = 5_000;
   static readonly LIMIT = 3;
+  static readonly ANON_SHARE = 0.85;
+  static readonly SWAP_BYTES = 8 * 1024 * 1024;
+  private static readonly CGROUP = '/sys/fs/cgroup';
 
   private failures = 0;
   private timer: NodeJS.Timeout | null = null;
@@ -29,6 +36,8 @@ export class GatewayWatchdog {
     private readonly intervalMs = GatewayWatchdog.INTERVAL_MS,
     private readonly timeoutMs = GatewayWatchdog.TIMEOUT_MS,
     private readonly limit = GatewayWatchdog.LIMIT,
+    /** A file under the container's cgroup, or null when it cannot be read (no cgroup v2, no limit). */
+    private readonly readCgroup: (file: string) => string | null = GatewayWatchdog.readCgroupFile,
   ) {}
 
   start(): void {
@@ -46,14 +55,36 @@ export class GatewayWatchdog {
     this.checking = true;
     const startedAt = Date.now();
     const answered = await GatewayWatchdog.answers(this.port, this.path, this.timeoutMs);
+    const pressure = this.memoryPressure();
     this.checking = false;
     if (!this.timer) return;
-    if (answered) { this.failures = 0; return; }
+    const problem = !answered ? `no answer from its own health check in ${Date.now() - startedAt} ms` : pressure;
+    if (!problem) { this.failures = 0; return; }
     this.failures += 1;
-    console.warn(`[platform-gateway] watchdog: no answer from its own health check in ${Date.now() - startedAt} ms (${this.failures}/${this.limit})`);
+    console.warn(`[platform-gateway] watchdog: ${problem} (${this.failures}/${this.limit})`);
     if (this.failures < this.limit) return;
     this.stop();
-    this.onHung(`no answer to ${this.limit} health checks in a row, each given ${this.timeoutMs} ms`);
+    this.onHung(`${problem}, ${this.limit} checks in a row`);
+  }
+
+  /** What is wrong with the container's memory, or null when it is fine or cannot be read. */
+  memoryPressure(): string | null {
+    const max = Number(this.readCgroup('memory.max'));
+    if (!Number.isFinite(max) || max <= 0) return null;
+    const anon = Number(/^anon (\d+)$/m.exec(this.readCgroup('memory.stat') ?? '')?.[1]);
+    const swap = Number(this.readCgroup('memory.swap.current') ?? 0);
+    const mib = (bytes: number): string => `${Math.round(bytes / 1024 / 1024)} MiB`;
+    if (swap >= GatewayWatchdog.SWAP_BYTES) return `${mib(swap)} in swap`;
+    if (Number.isFinite(anon) && anon >= max * GatewayWatchdog.ANON_SHARE) return `memory at ${mib(anon)} of its ${mib(max)} limit`;
+    return null;
+  }
+
+  private static readCgroupFile(file: string): string | null {
+    try {
+      return fs.readFileSync(`${GatewayWatchdog.CGROUP}/${file}`, 'utf8').trim();
+    } catch {
+      return null;
+    }
   }
 
   private static answers(port: number, path: string, timeoutMs: number): Promise<boolean> {
