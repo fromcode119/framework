@@ -19,6 +19,7 @@ import { IntegrationConfigReadService } from '@core/integrations/integration-con
 import { IntegrationConfigWriteService } from '@core/integrations/integration-config-write-service';
 import { IntegrationCoreRefreshService } from '@core/integrations/integration-core-refresh-service';
 import { RequestContextUtils } from '@core/context/request-context';
+import { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
 
 export class IntegrationManager {
   private registry: IntegrationRegistry;
@@ -199,6 +200,7 @@ export class IntegrationManager {
   async refreshEmail(preferStored: boolean = true) {
     const { email, resolved } = await this.coreRefresh.refreshEmail(preferStored);
     this.platformEmail = email;
+    this.tenantResolver.usePlatformMail(email, resolved, await FrameworkEmailSenderService.configuredSender(this));
     this.email = this.scopedFactory.email(() => this.platformEmail, this.db);
     return resolved;
   }
@@ -279,20 +281,18 @@ export class IntegrationManager {
     return CoreServices.getInstance().content.sanitizeKey(type);
   }
 
+  /** The sender of the platform's own mail server: what a site sending through it goes out as. */
+  platformEmailSender(): { address: string; name: string } {
+    return this.tenantResolver.platformSender();
+  }
+
   private async refreshType(normalizedType: string) {
     new IntegrationInstanceInvalidator(this.instances).forget(normalizedType);
-    if (normalizedType === 'email') {
-      await this.refreshEmail(true);
-      return;
-    }
-    if (normalizedType === 'storage') {
-      await this.refreshStorage(true);
-      return;
-    }
-    if (normalizedType === 'cache') {
-      await this.refreshCache(true);
-      return;
-    }
+    // A site's write changes only that site, and the line above dropped its copy. Re-resolving would run on
+    // the SITE's connection and install the result as the PLATFORM's — its mail server for every untenanted send.
+    if (RequestContextUtils.getTenantId()) return;
+    const refresh = { email: () => this.refreshEmail(true), storage: () => this.refreshStorage(true), cache: () => this.refreshCache(true) }[normalizedType];
+    if (refresh) await refresh();
   }
 
 }

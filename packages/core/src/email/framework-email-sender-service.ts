@@ -1,4 +1,5 @@
 import { FrameworkEmailSender } from '@core/email/framework-email-sender';
+import { SettingSource } from '@core/settings/enums/setting-source.enum';
 
 /**
  * Resolves the sender for framework-owned email (auth, 2FA, telemetry) from configuration only.
@@ -10,7 +11,8 @@ import { FrameworkEmailSender } from '@core/email/framework-email-sender';
  * The order is strict and there is no final fallback:
  *
  * 1. the **From Address** configured on the Email Delivery integration — the same screen that holds
- *    the SMTP host and credentials, which is where an operator looks for it;
+ *    the SMTP host and credentials, which is where an operator looks for it. A site that configured no
+ *    mail of its own and sends through the platform's server goes out as the platform's From Address;
  * 2. `EMAIL_FROM` / `SMTP_FROM` from the environment, for deployments that configure mail entirely
  *    through env;
  * 3. nothing.
@@ -31,10 +33,14 @@ export class FrameworkEmailSenderService {
    * @param appName platform/site name, used as the display name when the integration sets none.
    */
   static async resolve(
-    integrations: { getConfig(type: string): Promise<any> } | null,
+    integrations: { getConfig(type: string): Promise<any>; platformEmailSender?(): { address: string; name: string } } | null,
     appName = '',
   ): Promise<FrameworkEmailSender> {
     const configured = await FrameworkEmailSenderService.readIntegrationSender(integrations);
+    if (!configured.address && !configured.stored && integrations?.platformEmailSender) {
+      const platform = integrations.platformEmailSender();
+      if (platform.address) return new FrameworkEmailSender(platform.address, platform.name || appName);
+    }
     if (configured.address) {
       return new FrameworkEmailSender(configured.address, configured.name || appName);
     }
@@ -48,6 +54,12 @@ export class FrameworkEmailSenderService {
     return new FrameworkEmailSender('', appName);
   }
 
+  /** The From Address stored on the Email Delivery integration of the scope this runs in, and nothing else. */
+  static async configuredSender(integrations: { getConfig(type: string): Promise<any> } | null): Promise<{ address: string; name: string }> {
+    const { address, name } = await FrameworkEmailSenderService.readIntegrationSender(integrations);
+    return { address, name };
+  }
+
   /**
    * The active Email Delivery config. Reading it must never break sending: a deployment with no
    * integration row, or one whose provider is the mock driver, simply has no configured sender and
@@ -55,8 +67,8 @@ export class FrameworkEmailSenderService {
    */
   private static async readIntegrationSender(
     integrations: { getConfig(type: string): Promise<any> } | null,
-  ): Promise<{ address: string; name: string }> {
-    if (!integrations) return { address: '', name: '' };
+  ): Promise<{ address: string; name: string; stored: boolean }> {
+    if (!integrations) return { address: '', name: '', stored: false };
 
     try {
       const config = await integrations.getConfig('email');
@@ -68,9 +80,11 @@ export class FrameworkEmailSenderService {
       return {
         address: String(stored.fromAddress || active.fromAddress || '').trim(),
         name: String(stored.fromName || active.fromName || '').trim(),
+        // Whether this scope has mail of its own. Without it, a site's mail goes through the platform.
+        stored: String(config?.active?.source) === String(SettingSource.STORED),
       };
     } catch {
-      return { address: '', name: '' };
+      return { address: '', name: '', stored: false };
     }
   }
 }
