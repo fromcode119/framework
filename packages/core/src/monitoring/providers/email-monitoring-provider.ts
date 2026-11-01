@@ -6,14 +6,19 @@ import type { IMonitoringIncident } from '@core/monitoring/interfaces/monitoring
 import type { IMonitoringProvider } from '@core/monitoring/interfaces/monitoring-provider.interface';
 
 /**
- * The built-in provider: each incident, opened and resolved, to the platform's admins and the
- * notification address in Settings → General — the same recipients as every other platform warning.
- * It owns no recipient setting of its own.
+ * The built-in provider: each incident, opened and resolved, to the addresses entered on the provider in
+ * Settings → Integrations → Monitoring, plus the platform's admins and its notification address — the same
+ * recipients as every other platform warning.
  */
 export class EmailMonitoringProvider implements IMonitoringProvider {
   private static readonly TEMPLATE_BASE = 'monitoring-incident';
 
-  constructor(private readonly manager: any) {}
+  constructor(private readonly manager: any, private readonly extraRecipients: string[] = []) {}
+
+  /** Everyone an incident reaches, for the console to show. */
+  recipients(): Promise<string[]> {
+    return NotificationsContextProxy.adminRecipients(this.manager, this.extraRecipients);
+  }
 
   async notify(incident: IMonitoringIncident, change: MonitoringChange): Promise<void> {
     // One flag per kind: the template holds the words for each, and the measured values fill them in.
@@ -29,6 +34,6 @@ export class EmailMonitoringProvider implements IMonitoringProvider {
       isMemoryFull: incident.kind === MonitoringIncidentKind.MEMORY_FULL.value,
       isApiErrors: incident.kind === MonitoringIncidentKind.API_ERRORS.value,
     });
-    await NotificationsContextProxy.createNotificationsProxy(this.manager, 'system').notifyAdmins(message);
+    await NotificationsContextProxy.createNotificationsProxy(this.manager, 'system').notifyAdmins(message, { extraRecipients: this.extraRecipients });
   }
 }

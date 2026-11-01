@@ -1997,10 +1997,12 @@
       "monitoringUnavailable": "Monitoring could not be loaded",
       "monitoringSaved": "The monitoring thresholds apply from the next check.",
       "monitoringProviders": "Where alerts go",
-      "monitoringProvidersHelp": "Chosen in Settings → Integrations → Monitoring: email to the platform admins, and outside services such as UptimeRobot or Better Stack that keep watching even when the whole server is down.",
+      "monitoringProvidersHelp": "Chosen in Settings → Integrations → Monitoring: email to the addresses set there and the platform admins, and outside services such as UptimeRobot or Better Stack that keep watching even when the whole server is down.",
       "monitoringNoProviders": "No provider is active, so nobody is told.",
       "monitoringNoAlerting": "None of these sends the platform's own alerts — a plugin down, the disk or memory full, api errors — so nobody is told about them. Add Email in Settings → Integrations → Monitoring as well.",
       "monitoringNoPlatformMail": "Email alerts are not sent: the platform has no mail server of its own, so they are only logged. Set one up in Settings → Integrations → Email, in Platform scope.",
+      "monitoringEmailRecipients": "Email alerts go to: {{addresses}}",
+      "monitoringNoEmailRecipients": "Email alerts reach nobody: add addresses in Settings → Integrations → Monitoring → Email.",
       "monitoringWatched": "Watched from outside: {{addresses}}",
       "monitoringNothingWatched": "No outside service watches the sites yet.",
       "monitoringDisk": "Alert when the disk is this full (%)",
@@ -2389,7 +2391,13 @@
           "providers": {
             "email": {
               "label": "Email",
-              "description": "Incidents to the platform admins and the notification address in Settings → General."
+              "description": "Incidents by email to the addresses below, and to the platform admins.",
+              "fields": {
+                "recipients": {
+                  "label": "Send alerts to",
+                  "description": "Email addresses, separated by commas. The platform admins receive every alert as well; Settings → Infrastructure → Monitoring lists everyone who does."
+                }
+              }
             },
             "uptimerobot": {
               "label": "UptimeRobot",

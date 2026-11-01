@@ -44,7 +44,9 @@ export class MonitoringIntegrationDefinition {
     // One monitor watches every site; a site-level entry would be one nothing reads.
     platformOnly: true,
     providers: [
-      MonitoringIntegrationDefinition.provider('email', 'Email', 'Incidents to the platform admins and the notification address in Settings → General.', []),
+      MonitoringIntegrationDefinition.provider('email', 'Email', 'Incidents by email to the addresses below, and to the platform admins.', [
+        { name: 'recipients', label: 'Send alerts to', type: IntegrationConfigFieldType.TEXT, required: false, description: 'Email addresses, separated by commas. The platform admins receive every alert as well; Settings → Infrastructure → Monitoring lists everyone who does.' },
+      ]),
       MonitoringIntegrationDefinition.provider('uptimerobot', 'UptimeRobot', 'Watches every site from outside and alerts through your UptimeRobot alert contacts, even when the whole server is down.', [
         { name: 'apiKey', label: 'Main API key', type: IntegrationConfigFieldType.PASSWORD, required: true, description: 'UptimeRobot → Integrations & API → Main API key.' },
         // Sent with every monitor it creates, so how often each address is checked is the operator's choice.

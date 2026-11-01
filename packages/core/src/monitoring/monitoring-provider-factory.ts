@@ -26,17 +26,20 @@ export class MonitoringProviderFactory {
    * Whether the active providers actually tell anyone about the platform's own incidents, and whether the
    * platform has a mail server of its own. The email provider sends through the platform's mail; when that
    * is the mock — nothing configured in platform scope — every alert is logged and dropped, so email only
-   * counts when the platform's mail is real. An outside watcher (UptimeRobot) never delivers incidents.
+   * counts when the platform's mail is real — and only when it has someone to write to. An outside watcher
+   * (UptimeRobot) never delivers incidents. `emailRecipients` is who the email provider writes to.
    */
-  async delivery(active: Array<{ key: string; provider: IMonitoringProvider }>): Promise<{ alerting: boolean; platformMail: boolean }> {
+  async delivery(active: Array<{ key: string; provider: IMonitoringProvider }>): Promise<{ alerting: boolean; platformMail: boolean; emailRecipients: string[] }> {
     const platformMail = !PlatformMailUnavailableEmailDriver.isMock(await this.manager.integrations.resolveMany('email'));
-    const alerting = active.some(({ key, provider }) => Boolean(provider.notify) && (key !== 'email' || platformMail));
-    return { alerting, platformMail };
+    const email = active.find(({ key }) => key === 'email')?.provider;
+    const emailRecipients = email instanceof EmailMonitoringProvider ? await email.recipients() : [];
+    const alerting = active.some(({ key, provider }) => Boolean(provider.notify) && (key !== 'email' || (platformMail && emailRecipients.length > 0)));
+    return { alerting, platformMail, emailRecipients };
   }
 
   private async build(entry: IIntegrationResolved): Promise<IMonitoringProvider> {
     const config = entry.config ?? {};
-    if (entry.providerKey === 'email') return new EmailMonitoringProvider(this.manager);
+    if (entry.providerKey === 'email') return new EmailMonitoringProvider(this.manager, String(config.recipients ?? '').split(/[,;\s]+/).filter(Boolean));
     if (entry.providerKey === 'uptimerobot') return new UptimeRobotMonitoringProvider(String(config.apiKey ?? ''), String(config.namePrefix ?? ''), Number(config.interval) || 0, Number(config.timeout) || 0);
     if (entry.providerKey === 'betterstack') return new BetterStackMonitoringProvider(String(config.apiToken ?? ''), String(config.namePrefix ?? ''));
     return (await entry.provider.create(config)) as IMonitoringProvider;
