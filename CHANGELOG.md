@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.472] - 2026-11-01
+
+### Fixed
+
+- **gateway**: restart a gateway that accepts connections but answers none ([#1132](https://github.com/fromcode119/framework/pull/1132))
+- **deploy**: raise the gateway memory limit from 256M to 512M ([#1131](https://github.com/fromcode119/framework/pull/1131))
+
 ## [0.2.471] - 2026-10-30
 
 ### Changed
