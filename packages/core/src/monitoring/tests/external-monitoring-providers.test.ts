@@ -16,10 +16,11 @@ afterEach(() => { vi.unstubAllGlobals(); });
 
 describe('UptimeRobotMonitoringProvider', () => {
   /** A v3 account: two pages of monitors, the second reached by `nextLink`. */
-  const account = (pages: any[][]) => {
+  const account = (pages: any[][], contacts: any[] = []) => {
     const calls: Array<{ method: string; url: string; auth: string; body: any }> = [];
     vi.stubGlobal('fetch', vi.fn(async (url: string, init: any) => {
       calls.push({ method: init.method, url, auth: init.headers.Authorization, body: init.body ? JSON.parse(init.body) : null });
+      if (init.method === 'GET' && url.endsWith('/user/alert-contacts')) return { ok: true, status: 200, json: async () => ({ data: contacts }) };
       if (init.method === 'GET') {
         const page = new URL(url).searchParams.get('cursor') ? 1 : 0;
         return { ok: true, status: 200, json: async () => ({ data: pages[page], nextLink: page + 1 < pages.length ? 'https://api.uptimerobot.com/v3/monitors?cursor=2' : null }) };
@@ -40,6 +41,20 @@ describe('UptimeRobotMonitoringProvider', () => {
     expect(calls.every((c) => c.auth === 'Bearer key-1')).toBe(true);
   });
 
+  it('gives every monitor every active alert contact, and repairs one created without them', async () => {
+    const calls = account(
+      [[
+        { id: 1, url: 'https://shop.example/', friendlyName: 'Platform: shop', assignedAlertContacts: [] },
+        { id: 4, url: 'https://shop.example/', friendlyName: 'Platform: shop-ok', assignedAlertContacts: [{ alertContactId: 7 }, { alertContactId: 8 }] },
+      ]],
+      [{ id: 7, status: 'Active' }, { id: 8, status: 'Active' }, { id: 9, status: 'Paused' }],
+    );
+    await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
+    const assigned = [{ alertContactId: 7, threshold: 0, recurrence: 0 }, { alertContactId: 8, threshold: 0, recurrence: 0 }];
+    expect(calls.filter((c) => c.method === 'PATCH').map((c) => [c.url, c.body])).toEqual([['https://api.uptimerobot.com/v3/monitors/1', { assignedAlertContacts: assigned }]]);
+    expect(calls.filter((c) => c.method === 'POST').map((c) => c.body.assignedAlertContacts)).toEqual([assigned]);
+  });
+
   it('sends no interval or timeout when none is configured', async () => {
     const calls = account([[]]);
     await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets(targets);
@@ -49,7 +64,7 @@ describe('UptimeRobotMonitoringProvider', () => {
   it('never follows a next page to another host, which would hand it the key', async () => {
     vi.stubGlobal('fetch', vi.fn(async (url: string) => ({ ok: true, status: 200, json: async () => ({ data: [], nextLink: url.includes('evil') ? null : 'https://evil.example/steal' }) })));
     await new UptimeRobotMonitoringProvider('key-1', 'Platform: ').syncTargets([]);
-    expect((globalThis.fetch as any).mock.calls.map((c: any[]) => new URL(c[0]).host)).toEqual(['api.uptimerobot.com']);
+    expect((globalThis.fetch as any).mock.calls.map((c: any[]) => new URL(c[0]).host)).toEqual(['api.uptimerobot.com', 'api.uptimerobot.com']);
   });
 
   it('fails loudly on an API error rather than reporting a sync that did not happen', async () => {

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import http from 'http';
+import net from 'net';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
 import { PlatformEdge } from '@cli/services/edge/platform-edge';
 import { GatewayListener } from '@cli/services/gateway/gateway-listener';
@@ -10,6 +11,19 @@ class GatewayFixture {
     const listener = new GatewayListener(http.createServer((req, res) => res.end(`${name} ${req.socket.remoteAddress}`)));
     await new Promise<void>((resolve) => listener.listen(port, resolve, host));
     return listener;
+  }
+}
+
+/** A gateway out of memory: the port accepts, nothing is ever answered. */
+class HungGatewayFixture {
+  static async start(host: string, port: number): Promise<net.Server> {
+    const sockets = new Set<net.Socket>();
+    const server = net.createServer((socket) => { sockets.add(socket); socket.on('error', () => undefined); });
+    server.on('close', () => sockets.forEach((socket) => socket.destroy()));
+    await new Promise<void>((resolve) => server.listen(port, host, resolve));
+    const close = server.close.bind(server);
+    server.close = ((callback?: (error?: Error) => void) => { sockets.forEach((socket) => socket.destroy()); return close(callback); }) as typeof server.close;
+    return server;
   }
 }
 
@@ -65,4 +79,27 @@ describe('PlatformEdge', () => {
     stops.push(() => edge.stop(0));
     await expect(new Promise((resolve, reject) => http.get({ host: '127.0.0.1', port: edgePort, path: '/' }, resolve).on('error', reject))).rejects.toThrow();
   });
+
+  it('takes a gateway that accepts but never answers out of rotation while another answers', async () => {
+    const hung = await HungGatewayFixture.start('127.0.0.1', 0);
+    const port = (hung.address() as net.AddressInfo).port;
+    const good = await GatewayFixture.start('good', '::1', port);
+    const upstreams = new EdgeUpstreams('gateways', port, 200, async () => ['127.0.0.1', '::1']);
+    stops.push(async () => { upstreams.stop(); await new Promise((resolve) => hung.close(resolve)); }, () => good.stop(0));
+
+    await upstreams.check();
+
+    expect(upstreams.candidates(new Set())).toEqual(['::1']);
+  }, 10_000);
+
+  it('keeps a gateway that only accepts when no gateway answers, rather than refusing every visitor', async () => {
+    const hung = await HungGatewayFixture.start('127.0.0.1', 0);
+    const port = (hung.address() as net.AddressInfo).port;
+    const upstreams = new EdgeUpstreams('gateways', port, 200, async () => ['127.0.0.1', '::1']);
+    stops.push(async () => { upstreams.stop(); await new Promise((resolve) => hung.close(resolve)); });
+
+    await upstreams.check();
+
+    expect(upstreams.candidates(new Set())).toEqual(['127.0.0.1']);
+  }, 10_000);
 });
