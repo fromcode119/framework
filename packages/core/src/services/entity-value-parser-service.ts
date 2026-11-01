@@ -1,4 +1,5 @@
 import { EntityParseMode } from '@core/enums/entity-parse-mode.enum';
+import { EntityFieldErrorCode } from '@core/enums/entity-field-error-code.enum';
 import { CoercionUtils } from '@core/utils/coercion-utils';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
@@ -31,7 +32,7 @@ export class EntityValueParserService {
       const value = resolved.exists ? resolved.value : field.defaultValue;
       if (this.isEmpty(value)) {
         if (field.required && (options.mode !== EntityParseMode.UPDATE || resolved.exists)) {
-          errors.push({ field: name, code: 'required', message: `Field "${field.label || name}" is required` });
+          errors.push({ field: name, code: EntityFieldErrorCode.REQUIRED.value, message: `Field "${field.label || name}" is required` });
         }
         if (resolved.exists) {
           data[name] = this.coerceEmptyFieldValue(field);
