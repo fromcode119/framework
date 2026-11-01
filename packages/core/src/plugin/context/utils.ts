@@ -14,6 +14,13 @@ export class ContextSecurityProxy {
           Boolean(plugin.manifest.capabilities?.includes('*')));
 
       const handleViolation = (cap: string) => {
+        // A plugin held for approval is refused everything, and that refusal is the hold working — not a
+        // fault of the plugin. Marking it ERROR would overwrite the hold, so the console would show a
+        // broken plugin instead of the approval it waits on.
+        if (!PluginApprovalCoverage.covers(plugin)) {
+          rootLogger.warn(`Plugin "${plugin.manifest.slug}" is held for approval; refused "${cap}".`);
+          throw new Error(`Plugin "${plugin.manifest.slug}" is waiting for approval.`);
+        }
         rootLogger.error(`Security Violation: Plugin "${plugin.manifest.slug}" attempted to use "${cap}" without declaration or approval.`);
         manager.audit.logAction(plugin.manifest.slug, 'Capability Check', cap, 'violation');
         manager.disableWithError(plugin.manifest.slug, `Security Violation: Missing "${cap}" capability.`);
