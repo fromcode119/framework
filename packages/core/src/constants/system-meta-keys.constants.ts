@@ -1,5 +1,6 @@
 import { PluginIsolationMetaKeys } from '@core/constants/plugin-isolation-meta-keys.constants';
 import { MonitoringMetaKeys } from '@core/constants/monitoring-meta-keys.constants';
+import { UsageReportMetaKeys } from '@core/constants/usage-report-meta-keys.constants';
 import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
@@ -136,6 +137,7 @@ export class SystemMetaKeys {
   DEPLOY_MODE: 'deploy_mode',
   ...PluginIsolationMetaKeys.ALL,
   ...MonitoringMetaKeys.ALL,
+  ...UsageReportMetaKeys.ALL,
   ...CapacityMetaKeys.ALL,
   /** Heap ceiling (MB) and per-render deadline (ms) of one theme render host process. */
   SSR_RENDER_MEMORY_MB: 'ssr_render_memory_mb',

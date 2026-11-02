@@ -165,6 +165,9 @@ export class AdminConstants {
       INSTALLATION: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_STATS_INSTALLATION),
     },
     EMAIL_TELEMETRY_TEST: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_TELEMETRY_EMAIL_TEST),
+    /** The usage report: what it would send, where, and "send now". Platform admins only. */
+    USAGE_REPORT: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USAGE_REPORT),
+    USAGE_REPORT_SEND: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USAGE_REPORT_SEND),
     FRONTEND: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.FRONTEND),
     LOGS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_LOGS),
     AUDIT: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_AUDIT),

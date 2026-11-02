@@ -7,6 +7,12 @@ export class MarketplaceClientConstants {
    */
   static readonly KEY_PARAM = 'key';
   static readonly KEY_HEADER = 'X-Marketplace-Key';
+  /**
+   * Where, under a marketplace's API base, an installation sends its usage report (when its operator turned
+   * it on). A webhook path: the post is server to server with no session, so it must not be asked for a
+   * CSRF token.
+   */
+  static readonly USAGE_REPORT_PATH = 'webhooks/usage';
 
   static get MARKETPLACE_ROUTE_PATH(): string {
     return MarketplaceClientConstants.readPathFromEnv(

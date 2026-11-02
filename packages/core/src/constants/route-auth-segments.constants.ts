@@ -111,6 +111,8 @@ export class RouteAuthSegments {
   ADMIN_INTEGRATIONS_PROFILE_ACTIVATE: '/admin/integrations/:type/profiles/:profileId/activate',
   ADMIN_INTEGRATIONS_PROFILE: '/admin/integrations/:type/profiles/:profileId',
   ADMIN_TELEMETRY_EMAIL_TEST: '/admin/telemetry/email-test',
+  ADMIN_USAGE_REPORT: '/admin/usage-report',
+  ADMIN_USAGE_REPORT_SEND: '/admin/usage-report/send',
   ADMIN_ACTIVITY: '/admin/activity',
   ADMIN_LOGS: '/admin/logs',
   ADMIN_AUDIT: '/admin/audit',

@@ -8,6 +8,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { GeneralBrandCard } from '@/app/settings/general/general-brand-card';
 import { GeneralSystemCards } from '@/app/settings/general/general-system-cards';
 import { GeneralSignupEmailCard } from '@/app/settings/general/general-signup-email-card';
+import { GeneralUsageReportCard } from '@/app/settings/general/general-usage-report-card';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { GeneralSettingsPageActions } from '@/app/settings/general/page-actions.client';
@@ -119,6 +120,12 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
               settings={settings}
               setSettings={this.setSettings}
               theme={theme}
+            />
+
+            <GeneralUsageReportCard
+              platformLocks={this.platformLocks}
+              settings={settings}
+              setSettings={this.setSettings}
             />
 
             <Slot name="admin.settings.general.bottom" />

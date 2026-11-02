@@ -28,6 +28,7 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
   protected declare pushController: any;
   protected declare notificationPreferencesController: any;
   protected declare storefrontNoticeController: any;
+  protected declare usageReportController: any;
   protected declare upload: multer.Multer;
   protected declare chunkUpload: multer.Multer;
 
@@ -52,6 +53,12 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
     this.delete(RouteConstants.SEGMENTS.ADMIN_BACKUPS_ID, this.auth.requirePermission('system:backup:manage'), platform,
       this.backupController.deleteBackup);
     
+    // Settings → General → Usage report: what would be sent, where, how the last send went; and "Send now".
+    this.get(RouteConstants.SEGMENTS.ADMIN_USAGE_REPORT, this.auth.requirePermission('system:manage'), platform,
+      (req: any, res: any) => this.usageReportController.show(req, res));
+    this.post(RouteConstants.SEGMENTS.ADMIN_USAGE_REPORT_SEND, this.auth.requirePermission('system:manage'), platform,
+      (req: any, res: any) => this.usageReportController.send(req, res));
+
     // URL redirect rules (framework-owned store — Settings → Redirects)
     this.get(RouteConstants.SEGMENTS.ADMIN_REDIRECTS, this.auth.requirePermission('system:manage'),
       (req: any, res: any) => this.redirectsController.list(req, res));
