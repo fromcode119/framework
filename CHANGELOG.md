@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.478] - 2026-11-02
+
+### Fixed
+- **core**: a plugin update refreshes its collections' public content methods, so a release that adds `at` is asked without an api restart ([#1145](https://github.com/fromcode119/framework/pull/1145))
+
 ## [0.2.477] - 2026-11-02
 
 ### Added
