@@ -50,4 +50,15 @@ describe('PluginEntityRegistrationService.refreshOwnCollection', () => {
     } as any);
     expect(existing.fields.map((field: any) => field.name)).toEqual(['name', 'sku', 'price', 'origin']);
   });
+
+  it("takes the release's public content methods", () => {
+    const existing = { ...registered(), publicContent: { list: 'listPublic' } };
+    new PluginEntityRegistrationService().refreshOwnCollection(existing, {
+      slug: 'products',
+      admin: {},
+      publicContent: { list: 'listPublic', at: 'publicAt' },
+      fields: [{ name: 'name', type: 'text' }],
+    } as any);
+    expect(existing.publicContent).toEqual({ list: 'listPublic', at: 'publicAt' });
+  });
 });
