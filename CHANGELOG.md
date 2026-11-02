@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.479] - 2026-11-02
+
+### Fixed
+- **updates**: a release is offered only once its images are published, so an automatic update no longer fails in the minutes between the tag and the images ([#1147](https://github.com/fromcode119/framework/pull/1147))
+
 ## [0.2.478] - 2026-11-02
 
 ### Fixed
