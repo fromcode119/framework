@@ -1,4 +1,4 @@
-import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import type { ILoadedPlugin } from '@core/interfaces/loaded-plugin.interface';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
@@ -44,7 +44,7 @@ export abstract class PluginManagerApi extends PluginManagerExtensions {
   }
   async disable(slug: string, options: { persistState?: boolean } = {}) { return this.lifecycle.disable(slug, options); }
   async delete(slug: string) { return this.lifecycle.delete(slug); }
-  async register(plugin: IAtlantisPlugin, path?: string) { return this.lifecycle.register(plugin, path); }
+  async register(plugin: IFromcodePlugin, path?: string) { return this.lifecycle.register(plugin, path); }
 
   async scaffoldPlugin(input: IScaffoldPluginInput): Promise<IScaffoldPluginResult> {
     return this.scaffold.scaffoldPlugin(input);

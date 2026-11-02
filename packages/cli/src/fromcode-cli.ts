@@ -10,19 +10,21 @@ import { ExtensionBuildCommandService } from '@cli/commands/extension-build-comm
 import { DeployCommandService } from '@cli/commands/deploy-command-service';
 
 /**
- * The `atlantis` CLI.
+ * The `fromcode` CLI.
  *
- * `fromcode` is kept as a second name for the same binary. The product is Fromcode Framework and its
- * release codename is Atlantis, so the command carries the codename — but a rename that silently broke every script,
- * deploy target and shell history would cost more than the clarity is worth.
+ * The command follows the brand, Fromcode Framework, never a release name: Atlantis is one release,
+ * the next has another, and a command named after it would be wrong the day that release ships.
+ * `atlantis` stays as a second bin name and npm script for the same entry, because the command
+ * carried that name for a while and a rename that silently broke every script, deploy target and
+ * shell history would cost more than the clarity is worth.
  *
  * `bin.ts` is the process entry and does nothing but call `main` — the program is built here so the
  * construction is a method rather than module-level statements, and so it can be exercised without
  * spawning a process.
  */
-export class AtlantisCli {
+export class FromcodeCli {
   static main(argv: string[]): void {
-    const program = AtlantisCli.build();
+    const program = FromcodeCli.build();
 
     // No arguments is a request for help, not an error — commander would otherwise exit silently.
     if (!argv.slice(2).length) {
@@ -37,8 +39,8 @@ export class AtlantisCli {
     const program = new Command();
 
     program
-      .name('atlantis')
-      .description('Fromcode Framework CLI (codename Atlantis) - manage this installation')
+      .name('fromcode')
+      .description('Fromcode Framework CLI - manage this installation')
       .version('1.0.0');
 
     // Called directly rather than through a table of detached method references: a detached static
@@ -52,7 +54,7 @@ export class AtlantisCli {
     AuthCommands.registerAuthCommands(program);
     DeployCommandService.register(program);
 
-    program.on('command:*', () => AtlantisCli.rejectUnknown(program));
+    program.on('command:*', () => FromcodeCli.rejectUnknown(program));
     return program;
   }
 

@@ -20,7 +20,7 @@ How Fromcode Framework compares to WordPress, Strapi, Payload, Ghost/Directus, a
 Requests per second against Payload, Directus, Strapi, Medusa, PrestaShop, Magento, Drupal Commerce and WordPress + WooCommerce on the same server and data, with the method and its limits.
 
 ### [Build & CLI](./cli.md)
-Build commands, architecture-check gates, the `atlantis`/`fromcode` CLI command reference, and run modes.
+Build commands, architecture-check gates, the `fromcode` CLI command reference, and run modes.
 
 ### [MCP Server](./mcp-server.md)
 Every Fromcode Framework installation as a Model Context Protocol server: security model, tool surface, connecting Claude, shipping a plugin's own tools, and the kernel's built-in AI hooks.
@@ -84,6 +84,6 @@ Fromcode Framework is a **plugin-first** framework. This means the core kernel i
 - **SDK**: Tools for local development, testing, and building assets.
 
 ## 🛠️ Developer Resources
-- **Command Line Interface**: `atlantis dev`, `atlantis plugin create`.
+- **Command Line Interface**: `fromcode plugin dev`, `fromcode plugin create`.
 - **Hooks & Events**: Extend system behavior without modifying core files.
 - **Component Overrides**: Replace any part of the UI from your theme or plugin.

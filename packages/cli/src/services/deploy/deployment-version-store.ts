@@ -10,7 +10,9 @@ import { RemoteShell } from '@cli/services/deploy/remote-shell';
 export class DeploymentVersionStore {
   private static readonly ROLLBACK_FILE = '.previous-version';
   /** The `.env` switch the updater service reads (`docker-compose.images.yml`). */
-  static readonly UPDATER_KEY = 'ATLANTIS_UPDATER';
+  static readonly UPDATER_KEY = 'FROMCODE_UPDATER';
+  /** The release-named spelling of the same switch, still honoured where an existing `.env` sets it. */
+  static readonly LEGACY_UPDATER_KEY = 'ATLANTIS_UPDATER';
 
   constructor(private readonly shell: RemoteShell) {}
 
@@ -29,12 +31,13 @@ export class DeploymentVersionStore {
   /**
    * A target this CLI deploys is updated by this CLI, not by the platform's own updater service: two
    * deployers on one box race, and the updater restarts each app where this CLI rolls with no gap. So a
-   * `.env` that says nothing about the updater is told `ATLANTIS_UPDATER=off`. An explicit value — an
-   * operator who wants the box to update itself — is left exactly as it is.
+   * `.env` that says nothing about the updater is told `FROMCODE_UPDATER=off`. An explicit value — an
+   * operator who wants the box to update itself — is left exactly as it is, under EITHER spelling:
+   * appending the new name beside an old `ATLANTIS_UPDATER=on` would quietly overrule that operator.
    */
   async handUpdatesToThisCli(): Promise<void> {
     await this.shell.runOrThrow(
-      `grep -qE '^${DeploymentVersionStore.UPDATER_KEY}=' .env || { [ -z "$(tail -c1 .env)" ] || echo >> .env; printf '%s=off\\n' '${DeploymentVersionStore.UPDATER_KEY}' >> .env; }`,
+      `grep -qE '^(${DeploymentVersionStore.UPDATER_KEY}|${DeploymentVersionStore.LEGACY_UPDATER_KEY})=' .env || { [ -z "$(tail -c1 .env)" ] || echo >> .env; printf '%s=off\\n' '${DeploymentVersionStore.UPDATER_KEY}' >> .env; }`,
     );
   }
 

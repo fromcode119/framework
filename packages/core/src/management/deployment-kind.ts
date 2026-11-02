@@ -9,7 +9,7 @@ import { EnvUtils } from '@core/utils/env-utils';
  * compose up` would restore the image's own files and silently undo the update. The upgrade for such
  * a deployment is to run the newer IMAGE.
  *
- * The image declares this itself (`ATLANTIS_DEPLOYMENT=image` in the Dockerfile) rather than being
+ * The image declares this itself (`FROMCODE_DEPLOYMENT=image` in the Dockerfile) rather than being
  * guessed at from a failed write: a probe would report "cannot update" for a source deployment whose
  * disk merely happened to be full.
  */
@@ -17,7 +17,7 @@ export class DeploymentKind {
   static readonly IMAGE = 'image';
 
   static get current(): string {
-    return EnvUtils.text('ATLANTIS_DEPLOYMENT').toLowerCase();
+    return EnvUtils.text('FROMCODE_DEPLOYMENT').toLowerCase();
   }
 
   /** True when the running code came from a published image and cannot rewrite itself. */

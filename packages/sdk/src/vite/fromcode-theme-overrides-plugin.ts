@@ -2,7 +2,7 @@ import type { IDiscoveredSlot } from '@sdk/vite/interfaces/discovered-slot.inter
 import type { Plugin } from 'vite';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
-import type { IAtlantisThemeOverridesOptions } from '@sdk/vite/interfaces/atlantis-theme-overrides-options.interface';
+import type { IFromcodeThemeOverridesOptions } from '@sdk/vite/interfaces/fromcode-theme-overrides-options.interface';
 
 /**
  * Discovers active-theme renderer overrides without reading outside the theme.
@@ -14,12 +14,12 @@ import type { IAtlantisThemeOverridesOptions } from '@sdk/vite/interfaces/atlant
  * By default the slot key is the relative file path with `/` replaced by `.`.
  * Optional `overrides.json` manifests can be added for exceptional mappings.
  */
-export class AtlantisThemeOverridesPlugin {
+export class FromcodeThemeOverridesPlugin {
   private static readonly VIRTUAL_MODULE_ID = 'virtual:fromcode/theme-overrides';
   private static readonly RESOLVED_VIRTUAL_ID = '\0virtual:fromcode/theme-overrides';
   private static readonly MANIFEST_FILE = 'overrides.json';
 
-  static create(options: IAtlantisThemeOverridesOptions): Plugin {
+  static create(options: IFromcodeThemeOverridesOptions): Plugin {
     const { themeSlug, priority = 11, entry = 'index.jsx' } = options;
 
     let resolvedSrcDir: string;
@@ -29,13 +29,13 @@ export class AtlantisThemeOverridesPlugin {
     let discoveredSlots: IDiscoveredSlot[] = [];
 
     const rescan = (): IDiscoveredSlot[] =>
-      AtlantisThemeOverridesPlugin.sortSlots([
-        ...AtlantisThemeOverridesPlugin.scanManifestOrLiteralRoot(resolvedCoreDir),
-        ...AtlantisThemeOverridesPlugin.scanPluginsDir(resolvedPluginsDir),
+      FromcodeThemeOverridesPlugin.sortSlots([
+        ...FromcodeThemeOverridesPlugin.scanManifestOrLiteralRoot(resolvedCoreDir),
+        ...FromcodeThemeOverridesPlugin.scanPluginsDir(resolvedPluginsDir),
       ]);
 
     return {
-      name: 'atlantis-theme-overrides',
+      name: 'fromcode-theme-overrides',
       enforce: 'pre',
 
       configResolved(config) {
@@ -52,40 +52,40 @@ export class AtlantisThemeOverridesPlugin {
       handleHotUpdate({ file, server }) {
         if (file.startsWith(resolvedCoreDir) || file.startsWith(resolvedPluginsDir)) {
           discoveredSlots = rescan();
-          const mod = server.moduleGraph.getModuleById(AtlantisThemeOverridesPlugin.RESOLVED_VIRTUAL_ID);
+          const mod = server.moduleGraph.getModuleById(FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID);
           if (mod) server.moduleGraph.invalidateModule(mod);
         }
       },
 
       resolveId(id) {
-        if (id === AtlantisThemeOverridesPlugin.VIRTUAL_MODULE_ID) return AtlantisThemeOverridesPlugin.RESOLVED_VIRTUAL_ID;
+        if (id === FromcodeThemeOverridesPlugin.VIRTUAL_MODULE_ID) return FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID;
       },
 
       load(id) {
-        if (id !== AtlantisThemeOverridesPlugin.RESOLVED_VIRTUAL_ID) return;
+        if (id !== FromcodeThemeOverridesPlugin.RESOLVED_VIRTUAL_ID) return;
         if (discoveredSlots.length === 0) {
-          return `// atlantis-theme-overrides: no override files found in ${resolvedSrcDir}/overrides\n`;
+          return `// fromcode-theme-overrides: no override files found in ${resolvedSrcDir}/overrides\n`;
         }
-        return AtlantisThemeOverridesPlugin.generateVirtualModule(discoveredSlots, themeSlug, priority);
+        return FromcodeThemeOverridesPlugin.generateVirtualModule(discoveredSlots, themeSlug, priority);
       },
 
       transform(code, id) {
         if (resolvedEntryId && id === resolvedEntryId) {
-          return `import '${AtlantisThemeOverridesPlugin.VIRTUAL_MODULE_ID}';\n` + code;
+          return `import '${FromcodeThemeOverridesPlugin.VIRTUAL_MODULE_ID}';\n` + code;
         }
       },
     };
   }
 
   private static scanPluginsDir(pluginsDir: string): IDiscoveredSlot[] {
-    const namespaces = AtlantisThemeOverridesPlugin.readDirs(pluginsDir);
+    const namespaces = FromcodeThemeOverridesPlugin.readDirs(pluginsDir);
     const results: IDiscoveredSlot[] = [];
 
     for (const namespace of namespaces) {
       const namespaceDir = join(pluginsDir, namespace);
-      for (const owner of AtlantisThemeOverridesPlugin.readDirs(namespaceDir)) {
+      for (const owner of FromcodeThemeOverridesPlugin.readDirs(namespaceDir)) {
         const ownerDir = join(namespaceDir, owner);
-        results.push(...AtlantisThemeOverridesPlugin.scanManifestOrLiteralRoot(ownerDir));
+        results.push(...FromcodeThemeOverridesPlugin.scanManifestOrLiteralRoot(ownerDir));
       }
     }
 
@@ -93,22 +93,22 @@ export class AtlantisThemeOverridesPlugin {
   }
 
   private static scanManifestOrLiteralRoot(rootDir: string): IDiscoveredSlot[] {
-    const manifestPath = join(rootDir, AtlantisThemeOverridesPlugin.MANIFEST_FILE);
-    if (existsSync(manifestPath)) return AtlantisThemeOverridesPlugin.scanManifestRoot(rootDir);
-    return AtlantisThemeOverridesPlugin.scanLiteralSlotDir(rootDir);
+    const manifestPath = join(rootDir, FromcodeThemeOverridesPlugin.MANIFEST_FILE);
+    if (existsSync(manifestPath)) return FromcodeThemeOverridesPlugin.scanManifestRoot(rootDir);
+    return FromcodeThemeOverridesPlugin.scanLiteralSlotDir(rootDir);
   }
 
   private static scanManifestRoot(rootDir: string): IDiscoveredSlot[] {
-    const manifestPath = join(rootDir, AtlantisThemeOverridesPlugin.MANIFEST_FILE);
+    const manifestPath = join(rootDir, FromcodeThemeOverridesPlugin.MANIFEST_FILE);
     if (!existsSync(manifestPath)) return [];
 
-    const manifest = AtlantisThemeOverridesPlugin.readManifest(manifestPath);
+    const manifest = FromcodeThemeOverridesPlugin.readManifest(manifestPath);
     const mappedFiles = new Set(Object.keys(manifest));
-    const overrideFiles = AtlantisThemeOverridesPlugin.scanOverrideFiles(rootDir, (rel) => !rel.startsWith(`slots${sep}`));
+    const overrideFiles = FromcodeThemeOverridesPlugin.scanOverrideFiles(rootDir, (rel) => !rel.startsWith(`slots${sep}`));
     const results: IDiscoveredSlot[] = [];
 
     for (const overrideFile of overrideFiles) {
-      const rel = AtlantisThemeOverridesPlugin.normalizePath(relative(rootDir, overrideFile));
+      const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, overrideFile));
       const slotKey = manifest[rel];
       if (!slotKey) {
         throw new Error(`Theme override ${overrideFile} is not listed in ${manifestPath}.`);
@@ -135,14 +135,14 @@ export class AtlantisThemeOverridesPlugin {
       if (typeof slotKey !== 'string' || !slotKey.trim()) {
         throw new Error(`${manifestPath} has an invalid slot key for ${relPath}.`);
       }
-      manifest[AtlantisThemeOverridesPlugin.normalizePath(relPath)] = slotKey;
+      manifest[FromcodeThemeOverridesPlugin.normalizePath(relPath)] = slotKey;
     }
     return manifest;
   }
 
   private static scanLiteralSlotDir(rootDir: string): IDiscoveredSlot[] {
-    return AtlantisThemeOverridesPlugin.scanOverrideFiles(rootDir).map((absolutePath) => {
-      const rel = AtlantisThemeOverridesPlugin.normalizePath(relative(rootDir, absolutePath));
+    return FromcodeThemeOverridesPlugin.scanOverrideFiles(rootDir).map((absolutePath) => {
+      const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, absolutePath));
       return {
         slotKey: rel.replace(/\.tsx$/, '').split('/').join('.'),
         absolutePath,
@@ -166,8 +166,8 @@ export class AtlantisThemeOverridesPlugin {
         const fullPath = join(dir, name);
         if (statSync(fullPath).isDirectory()) {
           walk(fullPath);
-        } else if (AtlantisThemeOverridesPlugin.isOverrideComponentFile(name)) {
-          const rel = AtlantisThemeOverridesPlugin.normalizePath(relative(rootDir, fullPath));
+        } else if (FromcodeThemeOverridesPlugin.isOverrideComponentFile(name)) {
+          const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, fullPath));
           if (include(rel)) results.push(fullPath);
         }
       }
@@ -212,7 +212,7 @@ export class AtlantisThemeOverridesPlugin {
 
   private static generateVirtualModule(slots: IDiscoveredSlot[], themeSlug: string, priority: number): string {
     const importLines = slots.map(({ absolutePath }, i) => {
-      const importPath = AtlantisThemeOverridesPlugin.normalizePath(absolutePath);
+      const importPath = FromcodeThemeOverridesPlugin.normalizePath(absolutePath);
       return `const _slot${i} = () => import('${importPath}');`;
     });
     const mapEntries = slots.map(({ slotKey }, i) => `  '${slotKey}': _slot${i},`);

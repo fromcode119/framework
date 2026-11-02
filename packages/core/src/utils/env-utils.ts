@@ -8,24 +8,25 @@ import { CoercionUtils } from '@core/utils/coercion-utils';
  * @example EnvUtils.flag('ENFORCE_AUTHZ_GATEWAY', true)    // defaults to true when unset
  */
 export class EnvUtils {
-  /** The product's variable prefix, and the company-named one it replaced. */
-  private static readonly PREFIX = 'ATLANTIS_';
-  private static readonly LEGACY_PREFIX = 'FROMCODE_';
+  /** The brand's variable prefix, and the release-named one it replaced. */
+  private static readonly PREFIX = 'FROMCODE_';
+  private static readonly LEGACY_PREFIX = 'ATLANTIS_';
 
   /** Legacy names already warned about, so a variable read in a loop warns once, not every call. */
   private static readonly warned = new Set<string>();
 
   /**
-   * The raw value for `name`, accepting the legacy `FROMCODE_*` spelling of the same variable.
+   * The raw value for `name`, accepting the legacy `ATLANTIS_*` spelling of the same variable.
    *
-   * The binaries carry the release codename, atlantis; the variables were still named after the
-   * company. Renaming them outright is the one change here that could not be made by editing the
-   * repository: these are set in deployed `.env` files, in Dockerfiles, and — for the three the MCP
-   * guide documents — in other people's Claude configuration, none of which this repository can
-   * reach. A rename with no fallback would read as "unset" and fail at boot with a message about a
-   * variable the operator believes they have set.
+   * Atlantis is a RELEASE name, and the next release gets another one; a variable named after it
+   * would be wrong the day that release ships. So the names follow the brand, Fromcode Framework,
+   * the way they did before they briefly carried the release name. That earlier rename is why the
+   * old spelling has to keep working: `ATLANTIS_*` is set in deployed `.env` files, in Dockerfiles,
+   * and — for the three the MCP guide documents — in other people's Claude configuration, none of
+   * which this repository can reach. A rename with no fallback would read as "unset" and fail at
+   * boot with a message about a variable the operator believes they have set.
    *
-   * So both spellings resolve, the new one wins, and using the old one says so on stderr once. The
+   * So both spellings resolve, the brand one wins, and using the old one says so on stderr once. The
    * legacy branch is deletable in a later release, at which point the warning is the notice that it
    * is about to be.
    */
@@ -40,7 +41,7 @@ export class EnvUtils {
 
     if (!EnvUtils.warned.has(legacyName)) {
       EnvUtils.warned.add(legacyName);
-      console.warn(`[atlantis] ${legacyName} is deprecated — rename it to ${name}. Both work for now.`);
+      console.warn(`[fromcode] ${legacyName} is deprecated — rename it to ${name}. Both work for now.`);
     }
     return legacy;
   }

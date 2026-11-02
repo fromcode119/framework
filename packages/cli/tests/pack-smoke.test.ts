@@ -5,7 +5,7 @@ import os from 'node:os';
 import path from 'node:path';
 
 /**
- * `atlantis pack` must actually run.
+ * `fromcode pack` must actually run.
  *
  * It is also the only end-to-end exercise of the PACK half of the pipeline — `PackCleaner`, the
  * theme SSR dependency collector and the stamp over the cleaned directory. The server build path
@@ -26,7 +26,7 @@ import path from 'node:path';
  * suite first ran in CI, against a framework-only checkout, it failed the same way for the same
  * reason. A fixture cannot be deleted by someone else and needs nothing else on disk.
  */
-describe('atlantis pack produces an archive', () => {
+describe('fromcode pack produces an archive', () => {
   const frameworkRoot = path.resolve(__dirname, '../../..');
   const bin = path.join(frameworkRoot, 'packages/cli/dist/bin.js');
   const slug = 'packsmoke';
@@ -57,11 +57,11 @@ describe('atlantis pack produces an archive', () => {
     }
     writeFixture();
 
-    // `ATLANTIS_PROJECT_ROOT` is what decides where `plugins/` is read from and where `dist/` is
+    // `FROMCODE_PROJECT_ROOT` is what decides where `plugins/` is read from and where `dist/` is
     // written, so the whole run happens inside the temp directory and touches no checkout.
     const output = execFileSync(process.execPath, [bin, 'pack', 'plugin', slug], {
       cwd: frameworkRoot,
-      env: { ...process.env, ATLANTIS_PROJECT_ROOT: projectRoot },
+      env: { ...process.env, FROMCODE_PROJECT_ROOT: projectRoot },
       encoding: 'utf8',
       timeout: 300_000,
     });

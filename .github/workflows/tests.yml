@@ -92,7 +92,7 @@ jobs:
       - name: Build the storefront runtime bundle
         run: npm run build:frontend-runtime
 
-      # `atlantis db` — the roles and migrations below run through the framework's own commands rather
+      # `fromcode db` — the roles and migrations below run through the framework's own commands rather
       # than a SQL fixture kept beside them, so what CI sets up cannot drift from what a deployment does.
       - name: Build the CLI
         run: npm run build --workspace=@fromcode119/cli

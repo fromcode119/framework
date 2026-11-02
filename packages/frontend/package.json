@@ -4,6 +4,7 @@
   "description": "Fromcode Framework frontend: renders sites with their installed theme",
   "private": true,
   "bin": {
+    "fromcode-frontend": "dist/bin.js",
     "atlantis-frontend": "dist/bin.js"
   },
   "files": [

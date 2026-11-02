@@ -58,14 +58,17 @@ services:
   # ones back if it does not. It needs the Docker socket to do that, and this deployment's folder to
   # record the version in `.env` so a later `docker compose up` starts the same one.
   #
-  # ATLANTIS_UPDATER=off in `.env` stops it for a deployment that is updated some other way (a deploy
-  # pipeline); the update screen then says so.
+  # FROMCODE_UPDATER=off in `.env` stops it for a deployment that is updated some other way (a deploy
+  # pipeline); the update screen then says so. ATLANTIS_UPDATER is the release-named spelling an
+  # existing `.env` may still carry: both are passed through, the updater reads either, and unset
+  # means on. (No nested `${A:-${B}}` default — not every compose this file meets resolves one.)
   updater:
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
     command: ./node_modules/.bin/tsx packages/cli/src/bin.ts system updater
     user: root
     environment:
-      - ATLANTIS_UPDATER=${ATLANTIS_UPDATER:-on}
+      - FROMCODE_UPDATER=${FROMCODE_UPDATER:-}
+      - ATLANTIS_UPDATER=${ATLANTIS_UPDATER:-}
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       - UPDATER_API_URL=http://api:3000/api
       - UPDATER_ENV_FILE=/app/deploy-project/.env

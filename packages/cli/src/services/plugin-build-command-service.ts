@@ -8,8 +8,8 @@ import type { BuildStepResult as BuildStepResultType, ExtensionBuildPipeline as 
 import { CliUtils } from '@cli/utils';
 
 /**
- * `atlantis plugin build <slug>` and `atlantis plugin dev <slug>` (which spawns
- * `atlantis plugin build <slug> --watch`).
+ * `fromcode plugin build <slug>` and `fromcode plugin dev <slug>` (which spawns
+ * `fromcode plugin build <slug> --watch`).
  *
  * Both used to resolve a hand-authored `<plugin>/ui/index.ts` and run a bespoke esbuild over it, plus
  * a second hand-rolled esbuild over `<plugin>/index.ts` for the backend — the same duplication
@@ -22,10 +22,10 @@ import { CliUtils } from '@cli/utils';
  * throwing, so it just printed the key itself for as long as this command existed.
  *
  * This now drives `ExtensionBuildPipeline` for `ExtensionKind.PLUGIN` — the SAME pipeline
- * `atlantis build plugin <slug>` and the pack/install path already use — so there is now ONE way a
+ * `fromcode build plugin <slug>` and the pack/install path already use — so there is now ONE way a
  * plugin is built, and it fails loudly instead of silently. The old `cli.build.noEntry`/`no_ui` keys
  * are deleted rather than repaired: nothing calls them any more, since the pipeline's own
- * `BuildStepResult.skippedReason` (plain strings, matching `atlantis build plugin`'s own reporting)
+ * `BuildStepResult.skippedReason` (plain strings, matching `fromcode build plugin`'s own reporting)
  * says why a step did nothing — a second, i18n-routed message saying the same thing would be the kind
  * of duplication this codebase's "ONE way to build" rule exists to avoid.
  *
@@ -97,7 +97,7 @@ export class PluginBuildCommandService {
 
   /**
    * Prints one line per step and sets a non-zero exit code on any failure — the same convention
-   * `ExtensionBuildCommandService.reportAndExit` uses for `atlantis build plugin <slug>`, so `plugin
+   * `ExtensionBuildCommandService.reportAndExit` uses for `fromcode build plugin <slug>`, so `plugin
    * build` and `build plugin` fail the same way for the same reason.
    */
   private static report(steps: BuildStepResultType[]): void {
@@ -132,7 +132,7 @@ export class PluginBuildCommandService {
     // A SKIPPED step names why (see `BuildStepResult`) and is not a failure — a backend-only plugin
     // has no UI to build, and that is a true, honest report, not this command's original defect
     // (which built nothing while claiming success). Only a real `failed` step exits non-zero, the
-    // same rule `atlantis build plugin <slug>` already uses, so the two commands agree.
+    // same rule `fromcode build plugin <slug>` already uses, so the two commands agree.
     if (!steps.some((s) => s.failed)) console.log(chalk.green('Plugin build completed successfully!'));
   }
 

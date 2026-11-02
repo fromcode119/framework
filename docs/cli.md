@@ -39,10 +39,27 @@ npm run check:app-typecheck
 ## The Fromcode Framework CLI
 
 ```bash
-npm run atlantis -- <command>
+npm run fromcode -- <command>
 ```
 
-Commands are grouped: `atlantis <group> <command>`.
+Commands are grouped: `fromcode <group> <command>`.
+
+### Names follow the brand, not the release
+
+Commands, binaries and environment variables are named after the brand — `fromcode`, `fromcode-api`,
+`fromcode-admin`, `fromcode-frontend`, `fromcode-mcp`, `create-fromcode`, `FROMCODE_*` — and never
+after a release. A release name (Atlantis is one) appears in the release notes and on the release
+badge only, so the next release changes nothing you type or configure.
+
+The release-named spellings from earlier versions are deprecated aliases and keep working, so an
+existing installation and its `.env` boot unchanged:
+
+| Use | Deprecated alias, still accepted |
+|-----|----------------------------------|
+| `fromcode`, `npm run fromcode` | `atlantis`, `npm run atlantis` |
+| `fromcode-api` / `-admin` / `-frontend` / `-mcp` | `atlantis-api` / `-admin` / `-frontend` / `-mcp` |
+| `create-fromcode` | `create-atlantis` |
+| `FROMCODE_<NAME>` (e.g. `FROMCODE_UPDATER`, `FROMCODE_PROJECT_ROOT`, `FROMCODE_API_URL`) | `ATLANTIS_<NAME>` — read when the `FROMCODE_` name is unset, with a one-time deprecation warning |
 
 | Command | Description |
 |---------|-------------|

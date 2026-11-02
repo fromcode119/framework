@@ -180,7 +180,7 @@ export type { IMiddlewareConfig, IPluginManifest, IThemeManifest, IMenuItemManif
 export type { IDatasourceDescriptor, IDatasourceOptionItem, IDatasourceOptionsPayload, IFilterDefinition } from '@fromcode119/core/client';
 
 // Plugin runtime interfaces
-export type { PluginContext, IAtlantisPlugin, ILoadedPlugin } from '@fromcode119/core/client';
+export type { PluginContext, IFromcodePlugin, IAtlantisPlugin, ILoadedPlugin } from '@fromcode119/core/client';
 export type { IPersonField, IPersonFieldOption } from '@fromcode119/core/client';
 
 // ── Theme Registration & Style Variant Types ─────────────────────────────────

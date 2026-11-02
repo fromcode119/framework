@@ -1,4 +1,5 @@
 import { Logger } from '@core/logging';
+import { EnvUtils } from '@core/utils/env-utils';
 
 export class PluginRuntimeRestartService {
   private restartTimer: NodeJS.Timeout | null = null;
@@ -16,7 +17,7 @@ export class PluginRuntimeRestartService {
 
     this.logger.warn(`Scheduling process restart in ${this.restartDelayMs}ms: ${reason}`);
 
-    if (process.env.NODE_ENV === 'test' || process.env.ATLANTIS_DISABLE_PLUGIN_RUNTIME_RESTART === 'true') {
+    if (process.env.NODE_ENV === 'test' || EnvUtils.text('FROMCODE_DISABLE_PLUGIN_RUNTIME_RESTART') === 'true') {
       return;
     }
 
