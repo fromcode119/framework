@@ -112,6 +112,10 @@ export class PluginEntityRegistrationService {
     existing.hooks = incoming.hooks;
     existing.admin = incoming.admin;
     existing.displayName = incoming.displayName;
+    // Which methods answer for its public pages is the owner's too. Kept as at boot, a release that
+    // added `at` (the record served at an address) was never asked, and those pages' heads stayed
+    // empty until the api restarted.
+    existing.publicContent = incoming.publicContent;
     // The release's own order first — a field it adds sits where it was declared, not after every
     // field the api already had (an update put a new select under the last field of the form until the
     // api restarted). What the release does not declare keeps its place after them, as at boot: the
