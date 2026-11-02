@@ -11,6 +11,7 @@ describe('FrameworkReleaseSource.pending notes', () => {
 
   const stub = (changelog: string, commitMessages: Record<string, string> = {}) => {
     vi.spyOn(FrameworkReleaseSource, 'repository').mockResolvedValue('owner/repo');
+    vi.spyOn(FrameworkReleaseSource, 'imagesPublished').mockResolvedValue(true);
     const fetchMock = vi.fn(async (url: string) => {
       if (url.endsWith('/CHANGELOG.md')) return changelog ? { ok: true, text: async () => changelog } : { ok: false, text: async () => '' };
       if (url.includes('/tags?')) return { ok: true, json: async () => tags };

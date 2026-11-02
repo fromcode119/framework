@@ -32,6 +32,18 @@ export class FrameworkReleaseSource {
   /** Raw files of a tag — the CHANGELOG.md the notes are read from. Public repository, no token. */
   private static readonly RAW_FILES = 'https://raw.githubusercontent.com';
 
+  /**
+   * The registry the release pipeline pushes each tag's images to, as `<repository>-<service>`.
+   *
+   * The tag exists minutes before its images do — the pipeline tags first and builds after. An
+   * installation that read the tag alone was offered the version, tried to pull it, found nothing, and
+   * recorded a failed update it never retried. A version is released when its images can be pulled.
+   */
+  private static readonly IMAGE_REGISTRY = 'https://ghcr.io';
+
+  /** The api image is pushed by the same build as every other service, so its manifest stands for the set. */
+  private static readonly PROBE_SERVICE = 'api';
+
   /** One page is a decade of releases at this cadence, and ordering is by semver, not by position. */
   private static readonly PAGE_SIZE = 100;
 
@@ -59,7 +71,7 @@ export class FrameworkReleaseSource {
     const repository = await FrameworkReleaseSource.repository();
     if (!repository) return '';
 
-    const tags = await FrameworkReleaseSource.fetchTags(repository) ?? [];
+    const tags = await FrameworkReleaseSource.publishedTags(repository);
     return FrameworkReleaseSource.highest(tags.map((tag) => String(tag?.name || '')));
   }
 
@@ -90,7 +102,7 @@ export class FrameworkReleaseSource {
     const repository = await FrameworkReleaseSource.repository();
     if (!repository || !semver.valid(currentVersion)) return [];
 
-    const tags = await FrameworkReleaseSource.fetchTags(repository) ?? [];
+    const tags = await FrameworkReleaseSource.publishedTags(repository);
     const newer = tags
       .filter((tag) => {
         const version = FrameworkReleaseSource.normalize(String(tag?.name || ''));
@@ -138,6 +150,57 @@ export class FrameworkReleaseSource {
     const url = `${FrameworkReleaseSource.TAGS_API}/${repository}/tags?per_page=${FrameworkReleaseSource.PAGE_SIZE}`;
     const tags = await FrameworkReleaseSource.readJson(url);
     return Array.isArray(tags) ? tags : null;
+  }
+
+  /**
+   * The tags whose images have been published. Only the highest few are probed — an older tag is
+   * either already installed or long since published, and probing a hundred costs a hundred requests.
+   */
+  private static async publishedTags(repository: string): Promise<Array<Record<string, unknown>>> {
+    const tags = (await FrameworkReleaseSource.fetchTags(repository) ?? [])
+      .filter((tag) => {
+        const version = FrameworkReleaseSource.normalize(String(tag?.name || ''));
+        return Boolean(semver.valid(version)) && semver.prerelease(version) === null;
+      })
+      .sort((a, b) => semver.rcompare(
+        FrameworkReleaseSource.normalize(String(a?.name || '')),
+        FrameworkReleaseSource.normalize(String(b?.name || '')),
+      ))
+      .slice(0, FrameworkReleaseSource.MAX_PENDING);
+    const published = await Promise.all(tags.map((tag) => FrameworkReleaseSource.imagesPublished(repository, String(tag?.name || ''))));
+    return tags.filter((_tag, index) => published[index]);
+  }
+
+  /**
+   * Whether `tag`'s images can be pulled. An unpublished tag and an unreachable registry both answer
+   * no: offering a version that cannot be pulled is the failure this exists to stop, and a "no" is
+   * remembered for the short time only, so the version appears minutes after its images do.
+   */
+  static async imagesPublished(repository: string, tag: string): Promise<boolean> {
+    const image = `${repository.toLowerCase()}-${FrameworkReleaseSource.PROBE_SERVICE}`;
+    const found = await ReleaseFetchCache.remember(`image:${image}:${tag}`, async () => {
+      const token = await FrameworkReleaseSource.fetchJson(`${FrameworkReleaseSource.IMAGE_REGISTRY}/token?scope=repository:${image}:pull`);
+      const bearer = String((token as any)?.token || '');
+      if (!bearer) return null;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), FrameworkReleaseSource.TIMEOUT_MS);
+      try {
+        const response = await fetch(`${FrameworkReleaseSource.IMAGE_REGISTRY}/v2/${image}/manifests/${tag}`, {
+          method: 'HEAD',
+          headers: {
+            Authorization: `Bearer ${bearer}`,
+            Accept: 'application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.oci.image.manifest.v1+json',
+          },
+          signal: controller.signal,
+        });
+        return response.ok ? true : null;
+      } catch {
+        return null;
+      } finally {
+        clearTimeout(timer);
+      }
+    });
+    return found === true;
   }
 
   /** Whether the release source answered the last time it was asked (remembered, not re-asked). */
