@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.477] - 2026-11-02
+
+### Added
+- **settings**: opt-in usage report — off by default; Settings → General shows the exact report, where it goes, and the last send ([#1143](https://github.com/fromcode119/framework/pull/1143))
+
+### Changed
+- Next.js telemetry is turned off in dev and build ([#1143](https://github.com/fromcode119/framework/pull/1143))
+
 ## [0.2.476] - 2026-11-02
 
 ### Changed
