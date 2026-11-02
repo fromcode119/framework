@@ -55,7 +55,8 @@ export class AdminLauncher {
     const child = spawn(process.execPath, AdminLauncher.argumentsFor(AdminLauncher.resolveNextBinary()), {
       cwd: AdminLauncher.packageDirectory,
       stdio: 'inherit',
-      env: { ...process.env, PORT: AdminLauncher.port },
+      // `next dev` reports usage to Vercel unless told not to; an install sends nothing anywhere.
+      env: { ...process.env, PORT: AdminLauncher.port, NEXT_TELEMETRY_DISABLED: '1' },
     });
     child.on('exit', (code) => process.exit(code ?? 0));
   }

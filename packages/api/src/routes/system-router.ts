@@ -16,6 +16,7 @@ import { SystemNotificationPreferencesController } from '@api/controllers/system
 import { SystemStorefrontNoticeController } from '@api/controllers/system/system-storefront-notice-controller';
 import { SystemRedirectsController } from '@api/controllers/system/system-redirects-controller';
 import { AuditTableCatalogController } from '@api/controllers/system/audit-table-catalog-controller';
+import { SystemUsageReportController } from '@api/controllers/system/system-usage-report-controller';
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 import { SystemPlatformRoutes } from '@api/routes/system-platform-routes';
@@ -68,6 +69,7 @@ export class SystemRouter extends SystemPlatformRoutes {
     // second instance over the same manager db is equivalent.
     this.redirectsController = new SystemRedirectsController(new SystemRedirectService((manager as any).db));
     this.auditTableCatalogController = new AuditTableCatalogController(manager);
+    this.usageReportController = new SystemUsageReportController(manager);
   }
 
   protected registerRoutes(): void {

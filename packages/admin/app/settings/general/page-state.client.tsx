@@ -33,6 +33,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'framework_repository',
     'sources_workspace_root',
     'sources_keep_builds',
+    'usage_report_url',
     'sources_check_interval_minutes',
     'timezone',
     'time_format',
@@ -57,6 +58,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'app_anonymous_enabled',
     'signup_email_branded',
     'sources_build_unverified_commits',
+    'usage_report_enabled',
   ] as const;
 
   @state isSaving = false;

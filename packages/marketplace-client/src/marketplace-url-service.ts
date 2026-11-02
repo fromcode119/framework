@@ -33,6 +33,22 @@ export class MarketplaceUrlService {
   }
 
   /**
+   * Where a usage report to this marketplace address is sent, or `''` when the address is not an http(s)
+   * one. The address's query (its client key among it) is dropped: a usage report is anonymous, so it is
+   * never tied to the client a key names.
+   */
+  static resolveUsageReportUrl(url?: string): string {
+    const raw = String(url || '').trim();
+    if (!raw.startsWith('http')) {
+      return '';
+    }
+
+    const apiBaseUrl = MarketplaceUrlService.resolveApiBaseUrl(raw);
+    const base = apiBaseUrl.endsWith('.json') ? apiBaseUrl.replace(/\/[^/]*\.json$/, '') : apiBaseUrl;
+    return `${base}/${MarketplaceClientConstants.USAGE_REPORT_PATH}`;
+  }
+
+  /**
    * The query of a marketplace address (`?key=…`), or `''` when it has none or is not an http(s) URL.
    */
   static readQuery(url?: string): string {

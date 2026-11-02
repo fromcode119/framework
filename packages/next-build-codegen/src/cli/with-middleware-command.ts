@@ -52,7 +52,10 @@ export class WithMiddlewareCommand extends NextorCommand {
     process.on('exit', cleanup);
 
     return new Promise<number>((resolve) => {
-      const child = spawn(command[0], command.slice(1), { stdio: 'inherit', shell: process.platform === 'win32' });
+      // `next build` and `next dev` report usage to Vercel unless told not to. The framework sends nothing
+      // about an install anywhere, and that includes the toolchain it runs.
+      const env = { ...process.env, NEXT_TELEMETRY_DISABLED: '1' };
+      const child = spawn(command[0], command.slice(1), { stdio: 'inherit', shell: process.platform === 'win32', env });
       child.on('exit', (code, signal) => {
         cleanup();
         resolve(signal ? 1 : code ?? 0);

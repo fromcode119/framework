@@ -11,6 +11,8 @@ import { RecordVersions } from '@core/collections/record-versions';
 import { WebhooksCollection } from '@core/collections/webhooks';
 import { CertificateExpiryWarningTask } from '@core/certificates/certificate-expiry-warning-task';
 import { PlatformMonitorTask } from '@core/monitoring/platform-monitor-task';
+import { UsageReportTask } from '@core/usage-report/usage-report-task';
+import { UsageReportService } from '@core/usage-report/usage-report-service';
 import { CertificateIssuanceTask } from '@core/certificates/acme/certificate-issuance-task';
 import { CertificateStoreService } from '@core/certificates/certificate-store-service';
 import { SitePreviewGrantService } from '@core/tenant/preview/site-preview-grant-service';
@@ -98,6 +100,10 @@ export class PluginManagerInitService {
     await manager.scheduler.register(PlatformMonitorTask.NAME, PlatformMonitorTask.SCHEDULE, async () => {
       await PlatformMonitorTask.for(manager).run();
     }, { type: 'cron' });
+    // The usage report: sent only while the operator has turned it on (Settings → General), never by default.
+    await manager.scheduler.register(UsageReportTask.NAME, UsageReportTask.SCHEDULE, async () => {
+      await new UsageReportService(manager).run();
+    });
     // Obtains and renews what the platform manages. Most passes do nothing: with no authority
     // declared it returns immediately. The per-host backoff, not this interval, rations attempts.
     await manager.scheduler.register(CertificateIssuanceTask.NAME, CertificateIssuanceTask.SCHEDULE, async () => {

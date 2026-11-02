@@ -10,6 +10,7 @@ import { ApiResponseCacheSettingDescriptors } from '@core/settings/api-response-
 import { DatabasePoolSettingDescriptors } from '@core/settings/database-pool-setting-descriptors';
 import { MonitoringSettingDescriptors } from '@core/settings/monitoring-setting-descriptors';
 import { UpdateSettingDescriptors } from '@core/settings/update-setting-descriptors';
+import { UsageReportSettingDescriptors } from '@core/settings/usage-report-setting-descriptors';
 import { CustomerSignInSettingDescriptors } from '@core/settings/customer-sign-in-setting-descriptors';
 
 /**
@@ -256,8 +257,8 @@ export class SystemSettingDescriptors {
     ...ApiResponseCacheSettingDescriptors.ALL,
     // Settings → Infrastructure → Database connections — see DatabasePoolSettingDescriptors.
     ...DatabasePoolSettingDescriptors.ALL,
-    // Settings → Infrastructure → Monitoring and Settings → Updates — see each class.
-    ...MonitoringSettingDescriptors.ALL, ...UpdateSettingDescriptors.ALL,
+    // Settings → Infrastructure → Monitoring, Settings → Updates, Settings → General → Usage report — see each class.
+    ...MonitoringSettingDescriptors.ALL, ...UpdateSettingDescriptors.ALL, ...UsageReportSettingDescriptors.ALL,
     [SystemConstants.META_KEY.AUDIT_DB_WRITE_EXCLUDED_TABLES]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: '', description: "Physical table names (comma separated) whose plugin database writes are NOT recorded in the audit log. Empty means every plugin write is audited. Name a high-volume table here — telemetry, event streams — when its writes would otherwise drown the trail. Seeded empty on purpose: which tables those are depends on what is installed, so it is yours to state.", group: "security" },

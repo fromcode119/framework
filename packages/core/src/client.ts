@@ -111,6 +111,7 @@ export { ApplicationHostUtils } from '@core/utils/application-host-utils';
 export { InternalServiceAuth } from '@core/security/internal-service-auth';
 export { ProcessRestartService } from '@core/management/process-restart-service';
 export { FrameworkReleaseDefaults } from '@core/management/framework-release-defaults';
+export { UsageReportDefaults } from '@core/usage-report/usage-report-defaults';
 export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
 export { ConsoleMountConstants } from '@core/constants/console-mount.constants';
 export { ConsoleMountUtils } from '@core/utils/console-mount-utils';
