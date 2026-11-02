@@ -1,5 +1,5 @@
 import os from 'os';
-import { ApiVersionUtils, AutomaticUpdatePolicy, BootstrapSecretsService, UpdaterState } from '@fromcode119/core';
+import { ApiVersionUtils, AutomaticUpdatePolicy, BootstrapSecretsService, EnvUtils, UpdaterState } from '@fromcode119/core';
 import { SelfUpdateRun } from '@cli/services/updater/self-update-run';
 import { UpdaterApiClient } from '@cli/services/updater/updater-api-client';
 import { DockerEngineClient } from '@cli/services/updater/docker-engine-client';
@@ -19,7 +19,7 @@ export class UpdaterService {
   static readonly ENV_API = 'UPDATER_API_URL';
   static readonly ENV_FILE = 'UPDATER_ENV_FILE';
   static readonly ENV_SOCKET = 'UPDATER_DOCKER_SOCKET';
-  static readonly ENV_SWITCH = 'ATLANTIS_UPDATER';
+  static readonly ENV_SWITCH = 'FROMCODE_UPDATER';
   /** The step text the screen recognises for a deployment that turned the updater off. */
   static readonly OFF_STEP = 'turnedOffByDeployment';
 
@@ -61,9 +61,12 @@ export class UpdaterService {
     if (this.timer) clearInterval(this.timer);
   }
 
-  /** `ATLANTIS_UPDATER=off` in the deployment's `.env`: this deployment is updated some other way. */
+  /**
+   * `FROMCODE_UPDATER=off` in the deployment's `.env`: this deployment is updated some other way. The
+   * `ATLANTIS_UPDATER` spelling an existing `.env` carries still counts — `EnvUtils` resolves it.
+   */
   static get turnedOff(): boolean {
-    return String(process.env[UpdaterService.ENV_SWITCH] ?? '').trim().toLowerCase() === 'off';
+    return EnvUtils.text(UpdaterService.ENV_SWITCH).toLowerCase() === 'off';
   }
 
   async tick(): Promise<void> {

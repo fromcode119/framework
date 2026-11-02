@@ -10,7 +10,7 @@ export class CliUtils {
     'cli.status.checking': 'Checking marketplace at {{registry}}...',
     'cli.status.no_core': 'Marketplace does not provide core version information yet.',
     'cli.status.new_version': '\nA newer version of Fromcode Framework is available: {{version}}',
-    'cli.status.update_hint': 'Use "atlantis core update" to apply the update.',
+    'cli.status.update_hint': 'Use "fromcode core update" to apply the update.',
     'cli.status.latest': '\nYou are running the latest version of Fromcode Framework.',
     'cli.build.starting': '\nBuilding {{type}} {{slug}}...',
     'cli.pack.starting': '\nPacking {{slug}} v{{version}}...',
@@ -33,7 +33,7 @@ export class CliUtils {
     return dir;
   }
 
-  /** Where themes live, WITHOUT creating it: honours THEMES_DIR, like `atlantis build theme` does. */
+  /** Where themes live, WITHOUT creating it: honours THEMES_DIR, like `fromcode build theme` does. */
   static themesRoot(): string {
     return ProjectPaths.getThemesDir();
   }

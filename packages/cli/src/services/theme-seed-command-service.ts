@@ -1,9 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import { spawnSync } from 'child_process';
+import { EnvUtils } from '@fromcode119/core';
 
 /**
- * Seeds a theme into the running site — the framework capability behind `atlantis theme seed`.
+ * Seeds a theme into the running site — the framework capability behind `fromcode theme seed`.
  *
  * Lives in the CLI beside the other theme commands (and site-transfer/backup) rather than as a loose
  * script: the framework owns its own operations, and a script that only the repo can run is not a feature.
@@ -111,11 +112,11 @@ export class ThemeSeedCommandService {
     }
 
     if (!options.theme) {
-      options.theme = String(process.env.ATLANTIS_THEME || '').trim();
+      options.theme = EnvUtils.text('FROMCODE_THEME');
     }
 
     if (!options.containerName) {
-      options.containerName = String(process.env.ATLANTIS_API_CONTAINER || '').trim();
+      options.containerName = EnvUtils.text('FROMCODE_API_CONTAINER');
     }
 
     if (!options.databaseUrl) {
@@ -128,7 +129,7 @@ export class ThemeSeedCommandService {
   static resolveThemeRoot(frameworkRoot: any, options: any): any {
     const input = String(options.theme || '').trim();
     if (!input) {
-      throw new Error('[framework] Missing theme argument. Use --theme <slug|path> or set ATLANTIS_THEME.');
+      throw new Error('[framework] Missing theme argument. Use --theme <slug|path> or set FROMCODE_THEME.');
     }
 
     const directPath = path.resolve(input);
@@ -154,7 +155,7 @@ export class ThemeSeedCommandService {
       env.DATABASE_URL = databaseUrl;
     }
 
-    const result = spawnSync('npm', ['run', 'atlantis', '--', 'db', 'seed', '--file', seedFile], {
+    const result = spawnSync('npm', ['run', 'fromcode', '--', 'db', 'seed', '--file', seedFile], {
       cwd: frameworkRoot,
       stdio: 'inherit',
       env,
@@ -234,9 +235,9 @@ export class ThemeSeedCommandService {
         '  npm run seed:theme -- --theme <absolute-or-relative-theme-path>',
         '  npm run seed:theme -- --theme <theme-slug> --container <api-container-name>',
         '  npm run seed:theme -- --theme <theme-slug> --database-url <database-url>',
-        '  ATLANTIS_THEME=<theme-slug> npm run seed:theme',
-        '  ATLANTIS_THEME=<theme-slug> DATABASE_URL=<database-url> npm run seed:theme',
-        '  ATLANTIS_THEME=<theme-slug> ATLANTIS_API_CONTAINER=<api-container-name> npm run seed:theme',
+        '  FROMCODE_THEME=<theme-slug> npm run seed:theme',
+        '  FROMCODE_THEME=<theme-slug> DATABASE_URL=<database-url> npm run seed:theme',
+        '  FROMCODE_THEME=<theme-slug> FROMCODE_API_CONTAINER=<api-container-name> npm run seed:theme',
       ].join('\n'),
     );
     process.stdout.write('\n');

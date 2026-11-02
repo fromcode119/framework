@@ -3,5 +3,8 @@
 // bundles the config with esbuild and knows nothing of tsconfig `paths`. An `@sdk/...` specifier
 // here fails every plugin and theme UI build with "Cannot find module". Everything else in the SDK
 // uses the alias.
-export { AtlantisThemeOverridesPlugin } from './atlantis-theme-overrides-plugin';
-export type { IAtlantisThemeOverridesOptions } from './interfaces/atlantis-theme-overrides-options.interface';
+export { FromcodeThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
+export type { IFromcodeThemeOverridesOptions } from './interfaces/fromcode-theme-overrides-options.interface';
+/** @deprecated The release-named spellings of the two names above; use those. */
+export { FromcodeThemeOverridesPlugin as AtlantisThemeOverridesPlugin } from './fromcode-theme-overrides-plugin';
+export type { IFromcodeThemeOverridesOptions as IAtlantisThemeOverridesOptions } from './interfaces/fromcode-theme-overrides-options.interface';

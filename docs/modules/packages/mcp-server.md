@@ -1,7 +1,7 @@
 # Package Module: @fromcode119/mcp-server
 
 - Path: `packages/mcp-server`
-- Binary: `atlantis-mcp`
+- Binary: `fromcode-mcp`
 
 ## Purpose
 

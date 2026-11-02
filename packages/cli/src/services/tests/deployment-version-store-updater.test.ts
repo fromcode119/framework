@@ -36,18 +36,24 @@ describe('DeploymentVersionStore.handUpdatesToThisCli', () => {
   it('turns the updater off on a target whose .env says nothing about it', async () => {
     const { store, read } = target('VERSION=v0.2.392\n');
     await store.handUpdatesToThisCli();
-    expect(read()).toBe('VERSION=v0.2.392\nATLANTIS_UPDATER=off\n');
+    expect(read()).toBe('VERSION=v0.2.392\nFROMCODE_UPDATER=off\n');
   });
 
   it('adds it on its own line when the file has no final newline', async () => {
     const { store, read } = target('VERSION=v0.2.392');
     await store.handUpdatesToThisCli();
-    expect(read()).toBe('VERSION=v0.2.392\nATLANTIS_UPDATER=off\n');
+    expect(read()).toBe('VERSION=v0.2.392\nFROMCODE_UPDATER=off\n');
   });
 
   it('leaves an operator\'s explicit choice alone, and adds nothing twice', async () => {
-    const { store, read } = target('VERSION=v0.2.392\nATLANTIS_UPDATER=on\n');
+    const { store, read } = target('VERSION=v0.2.392\nFROMCODE_UPDATER=on\n');
     await store.handUpdatesToThisCli();
+    await store.handUpdatesToThisCli();
+    expect(read()).toBe('VERSION=v0.2.392\nFROMCODE_UPDATER=on\n');
+  });
+
+  it('honours the choice under the release-named spelling an existing .env carries', async () => {
+    const { store, read } = target('VERSION=v0.2.392\nATLANTIS_UPDATER=on\n');
     await store.handUpdatesToThisCli();
     expect(read()).toBe('VERSION=v0.2.392\nATLANTIS_UPDATER=on\n');
   });

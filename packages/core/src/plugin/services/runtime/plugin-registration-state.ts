@@ -4,7 +4,7 @@ import { PluginBootHealthReporter } from '@core/plugin/services/runtime/plugin-b
 import { PluginHeldReason } from '@core/plugin/services/enums/plugin-held-reason.enum';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
-import type { IAtlantisPlugin } from '@core/interfaces/atlantis-plugin.interface';
+import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
 import type { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
 
@@ -40,7 +40,7 @@ export class PluginRegistrationState {
   /** Resolve the state and any held reason for `slug`, applying every rule above in order. */
   async resolve(
     slug: string,
-    plugin: IAtlantisPlugin,
+    plugin: IFromcodePlugin,
     registryData: Record<string, any>,
   ): Promise<{ state: PluginState; heldReason: PluginHeldReason | undefined; saved: any; approved: string[] }> {
     const normSlug = slug.toLowerCase();

@@ -10,19 +10,32 @@ import { McpStdioServer } from '@mcp-server/mcp-stdio-server';
  * process on the machine could read it.
  */
 export class McpServerLauncher {
-  static readonly USAGE = 'atlantis-mcp: ATLANTIS_API_URL (full api base, e.g. https://api.example.com/api) and ATLANTIS_API_TOKEN are required. ATLANTIS_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
+  static readonly USAGE = 'fromcode-mcp: FROMCODE_API_URL (full api base, e.g. https://api.example.com/api) and FROMCODE_API_TOKEN are required. FROMCODE_SITE (a site id or host) is optional: it preselects the site an all-sites token acts on.';
 
   /** Wires a ready server from the environment. Throws the usage message when either value is missing. */
   static create(env: Record<string, string | undefined>): McpStdioServer {
-    const baseUrl = String(env.ATLANTIS_API_URL || '').trim();
-    const token = String(env.ATLANTIS_API_TOKEN || '').trim();
+    const baseUrl = McpServerLauncher.setting(env, 'API_URL');
+    const token = McpServerLauncher.setting(env, 'API_TOKEN');
     if (!baseUrl || !token) {
       throw new Error(McpServerLauncher.USAGE);
     }
     // A site-bound token ignores this (the api refuses a mismatch); an all-sites token starts on it
     // instead of needing `sites.select` first.
-    const site = String(env.ATLANTIS_SITE || '').trim() || null;
+    const site = McpServerLauncher.setting(env, 'SITE') || null;
     return new McpStdioServer(new McpHttpClient(baseUrl, token, fetch, site));
+  }
+
+  /**
+   * `FROMCODE_<key>`, or the release-named `ATLANTIS_<key>` an existing Claude configuration still
+   * carries. That configuration lives on other people's machines, so the old spelling keeps working;
+   * using it says so once on stderr (stdout is the MCP channel and must stay clean).
+   */
+  private static setting(env: Record<string, string | undefined>, key: string): string {
+    const current = String(env[`FROMCODE_${key}`] || '').trim();
+    if (current) return current;
+    const legacy = String(env[`ATLANTIS_${key}`] || '').trim();
+    if (legacy) console.error(`fromcode-mcp: ATLANTIS_${key} is deprecated — rename it to FROMCODE_${key}. Both work for now.`);
+    return legacy;
   }
 
   /** Process entry: a clean one-line error and exit code 1 on any failure, never a raw stack trace. */
@@ -31,7 +44,7 @@ export class McpServerLauncher {
       await McpServerLauncher.create(env).start();
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      console.error(message.startsWith('atlantis-mcp:') ? message : `atlantis-mcp: ${message}`);
+      console.error(message.startsWith('fromcode-mcp:') ? message : `fromcode-mcp: ${message}`);
       process.exit(1);
     }
   }

@@ -21,11 +21,11 @@ docker compose -f docker-compose.full-stack.yml -f docker-compose.images.yml up 
 Updating is the same two commands with a new `VERSION`. Rolling back is the same two commands with
 the previous one — no rebuild, so it takes seconds either way.
 
-**Prefer `atlantis deploy` over running those by hand.** From a checkout of this repository:
+**Prefer `fromcode deploy` over running those by hand.** From a checkout of this repository:
 
 ```bash
-atlantis deploy v2.0.0                 # target defaults to "staging"
-atlantis deploy v2.0.0 --target prod
+fromcode deploy v2.0.0                 # target defaults to "staging"
+fromcode deploy v2.0.0 --target prod
 ```
 
 It does the two commands above and the three things doing them by hand does not: it pulls BEFORE
@@ -35,7 +35,7 @@ answering 200 — and rolls back automatically when it does not; and on success 
 published images except the live one and the rollback target. Nine releases in one day took a
 staging disk from 16G to 25G before it existed.
 
-The host can be given directly — `atlantis deploy v2.0.0 --host deploy@example.com --dir /srv/fromcode/deploy`
+The host can be given directly — `fromcode deploy v2.0.0 --host deploy@example.com --dir /srv/fromcode/deploy`
 — or named once in `deploy/targets.json`. **That file is deliberately not committed**, and neither is
 any host: an ssh address and a path on somebody's server are local configuration, and a framework
 other people deploy has no business shipping one operator's infrastructure. Copy
@@ -67,7 +67,7 @@ nothing**; if it is ever made private, both begin billing.
 
 ### How a release replaces the running platform
 
-`atlantis deploy` brings the box's `deploy/` files to the release first (the directory is a checkout
+`fromcode deploy` brings the box's `deploy/` files to the release first (the directory is a checkout
 of this repository; `.env` is never touched), then replaces the apps in one of two ways — chosen in
 **Settings → Infrastructure → Deployments**, stored as `deploy_mode`:
 
@@ -100,7 +100,7 @@ are still the admin's) and terminates nothing (the gateway holds the certificate
 The first release that includes the edge moves the ports from the gateway to it: that one deploy
 runs as a restart (a gap of a few seconds, once); every deploy after it rolls with none.
 
-The default edge is the platform's own (`atlantis system edge`, from the gateway image). **Anything
+The default edge is the platform's own (`fromcode system edge`, from the gateway image). **Anything
 that meets this contract can replace it**:
 
 - TCP pass-through of `:80` to `gateway:3000` and `:443` to `gateway:${GATEWAY_TLS_PORT}` — no TLS;
@@ -162,10 +162,14 @@ On the relay, as root:
 
 ```bash
 cp deploy/edge/relay/protection/90-edge.conf /etc/sysctl.d/ && sysctl -p /etc/sysctl.d/90-edge.conf
-mkdir -p /etc/atlantis && cp deploy/edge/relay/protection/edge-limits.nft /etc/atlantis/
+mkdir -p /etc/fromcode && cp deploy/edge/relay/protection/edge-limits.nft /etc/fromcode/
 cp deploy/edge/relay/protection/edge-limits.service /etc/systemd/system/ && systemctl enable --now edge-limits
 (cd deploy/edge/relay/crowdsec && docker compose up -d)
 ```
+
+A relay set up by an earlier release keeps its files in `/etc/atlantis/` and the unit it was given
+then, which still points there; nothing has to move. Re-running the lines above moves it to
+`/etc/fromcode/` — copy the unit and the `.nft` files together, so they agree.
 
 The firewall half of CrowdSec runs on the host, from CrowdSec's signed apt repository
 (`packagecloud.io/crowdsec/crowdsec`, package `crowdsec-firewall-bouncer-nftables`). Give it a key from
@@ -223,7 +227,7 @@ Then, beside `docker-compose.yml`, a `.env` with `COMPOSE_FILE=docker-compose.ym
 server — in your provider's firewall, and on the relay itself:
 
 ```bash
-cp deploy/edge/relay/protection/edge-report-guard.nft /etc/atlantis/   # set REPORT_SOURCE in it
+cp deploy/edge/relay/protection/edge-report-guard.nft /etc/fromcode/   # set REPORT_SOURCE in it
 cp deploy/edge/relay/protection/edge-limits.service /etc/systemd/system/ && systemctl daemon-reload
 systemctl restart edge-limits
 ```
@@ -305,7 +309,7 @@ existing deployment keeps behaving exactly as it did:
 | `COMPOSE_PROFILES` | `single-domain` in the example | Without it no port is published at all. Leave it off only when something else already fronts api/admin/frontend. |
 | `GATEWAY_PORT` | `80` in the example | A free port, when a reverse proxy already holds 80. |
 | `GATEWAY_TLS_PUBLISH` | `127.0.0.1:8443` | Where the gateway's HTTPS listener is published. Only does anything once `GATEWAY_TLS_PORT` is set (see `docs/certificates-and-tls.md`); set it to `0.0.0.0:443` when the gateway IS the edge, and leave it alone when a reverse proxy holds 443 — publishing there would put the gateway in front of that proxy's TLS and access policy. |
-| `EXTERNAL_PROXY_NETWORK` | `atlantis-edge` | The network the app services join. As shipped, compose creates it. |
+| `EXTERNAL_PROXY_NETWORK` | `fromcode-edge` (in `.env.example`) | The network the app services join. As shipped, compose creates it. A `.env` without this line gets `atlantis-edge`, the name earlier releases shipped, so an existing deployment keeps its network. |
 | `PROXY_NETWORK_EXTERNAL` | `true`, and `false` in the shipped `.env.example` | Whose network it is. `true` joins one somebody else created — a proxy you already run — and compose refuses to start if it is missing. `false` has compose create it, which is why a bare install runs no `docker network create`. Unset defaults to `true` so every deployment written before this behaves exactly as it did. |
 | `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` | `postgres` / generated / `fromcode` | The superuser, spent once at boot to create the other two roles. The password is generated into a file the application cannot read. |
 | `DATABASE_MIGRATION_URL` | written by the wizard | Schema owner — runs migrations. |

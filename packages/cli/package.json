@@ -1,8 +1,9 @@
 {
   "name": "@fromcode119/cli",
   "version": "0.2.5",
-  "description": "Fromcode Framework CLI (codename Atlantis): manage an installation, build and pack extensions",
+  "description": "Fromcode Framework CLI: manage an installation, build and pack extensions",
   "bin": {
+    "fromcode": "dist/bin.js",
     "atlantis": "dist/bin.js"
   },
   "scripts": {

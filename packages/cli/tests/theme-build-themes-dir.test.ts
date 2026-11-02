@@ -5,8 +5,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { ThemeBuildCommandService } from '@cli/services/theme-build-command-service';
 
 /**
- * `atlantis theme build <slug>` looked for the theme under `<project root>/themes` and ignored THEMES_DIR, while
- * `atlantis build theme <slug>` honoured it. With themes kept beside the framework, the first said "Theme
+ * `fromcode theme build <slug>` looked for the theme under `<project root>/themes` and ignored THEMES_DIR, while
+ * `fromcode build theme <slug>` honoured it. With themes kept beside the framework, the first said "Theme
  * directory not found" for a theme the second built.
  */
 describe('theme build finds themes where THEMES_DIR says', () => {

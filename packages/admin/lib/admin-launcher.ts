@@ -4,7 +4,7 @@ import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
 
 /**
- * The `atlantis-admin` binary: runs the Next admin panel from its own package directory.
+ * The `fromcode-admin` binary: runs the Next admin panel from its own package directory.
  *
  * It exists because `next` must be started with THIS package as its cwd — installed globally, via
  * npx, or as a workspace dependency, the admin's `.next` build and its config live here, not
@@ -37,7 +37,7 @@ export class AdminLauncher {
     try {
       return requireFrom.resolve('next/dist/bin/next');
     } catch {
-      console.error('[atlantis-admin] Could not resolve the "next" binary. Run: npm install inside @fromcode119/admin');
+      console.error('[fromcode-admin] Could not resolve the "next" binary. Run: npm install inside @fromcode119/admin');
       process.exit(1);
     }
   }

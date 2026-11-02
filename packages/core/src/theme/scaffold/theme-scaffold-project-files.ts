@@ -30,7 +30,7 @@ export class ThemeScaffoldProjectFiles {
       name: input.name,
       version: input.version || '0.1.0',
       description: input.description,
-      // `ui.entry` and `ui.css` are what the build writes into ui/; nothing exists until `atlantis build theme`.
+      // `ui.entry` and `ui.css` are what the build writes into ui/; nothing exists until `fromcode build theme`.
       ui: { entry: 'bundle.js', css: [`${input.slug}-theme.css`] },
       // Each variable is a theme setting the operator edits under Themes, and reaches the page as the CSS
       // variable `--theme-<name>` (primaryColor becomes --theme-primary-color). Defaults live here.
@@ -79,7 +79,7 @@ export class ThemeScaffoldProjectFiles {
       description: input.description,
       overrides: { react: '19.0.0', 'react-dom': '19.0.0' },
       scripts: {
-        build: `echo "Build from the workspace root: atlantis build theme ${input.slug}" && exit 1`,
+        build: `echo "Build from the workspace root: fromcode build theme ${input.slug}" && exit 1`,
         test: 'vitest run --config vitest.config.ts',
       },
       dependencies: { react: '19.0.0', 'react-dom': '19.0.0' },
@@ -149,8 +149,8 @@ export class ThemeScaffoldProjectFiles {
       '## Work on it',
       '',
       '```bash',
-      `atlantis build theme ${input.slug}    # compile src/ into ui/`,
-      `atlantis theme dev ${input.slug}      # rebuild on every change`,
+      `fromcode build theme ${input.slug}    # compile src/ into ui/`,
+      `fromcode theme dev ${input.slug}      # rebuild on every change`,
       '```',
       '',
       '## Where things are',

@@ -165,7 +165,7 @@
                                ▼
 ┌────────────────────────────────────────────────────────────────────┐
 │                  BUILD PLUGIN FRONTEND                              │
-│  $ atlantis plugin build meta --frontend                            │
+│  $ fromcode plugin build meta --frontend                            │
 │                                                                     │
 │  Output:                                                            │
 │  └── plugins/meta/dist/frontend/                                    │
@@ -312,7 +312,7 @@
 // Scenario: Add live chat to your site
 
 // 1. Install plugin
-$ atlantis plugins install @fromcode119/livechat
+$ fromcode plugins install @fromcode119/livechat
 
 // 2. Enable in admin panel
 // (One click in UI)

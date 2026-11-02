@@ -177,7 +177,7 @@ export class ProjectPaths extends UploadPaths {
 
   static getPackagesDir(): string {
       // Allow explicit override via environment variable
-      const packagesDir = EnvUtils.text('ATLANTIS_PACKAGES_DIR');
+      const packagesDir = EnvUtils.text('FROMCODE_PACKAGES_DIR');
       if (packagesDir) {
         return path.resolve(packagesDir);
       }

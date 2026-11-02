@@ -6,6 +6,7 @@
   "main": "lib/index.ts",
   "types": "lib/index.ts",
   "bin": {
+    "fromcode-admin": "dist/bin.js",
     "atlantis-admin": "dist/bin.js"
   },
   "files": [

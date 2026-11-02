@@ -2,7 +2,7 @@ import { ExtensionBuildPipeline, ExtensionKind } from '@fromcode119/extension-bu
 import type { IThemeBuilder } from '@fromcode119/core';
 
 /**
- * Compiles a theme in place with the same pipeline `atlantis build theme` runs, so a theme the platform
+ * Compiles a theme in place with the same pipeline `fromcode build theme` runs, so a theme the platform
  * scaffolds is built exactly like one a developer builds. Rejects with the failed step's own message.
  */
 export class ExtensionThemeBuilder implements IThemeBuilder {

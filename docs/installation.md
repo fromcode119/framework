@@ -109,7 +109,7 @@ alternative, not a prerequisite.
 
 ```bash
 npm install
-npm run atlantis -- db migrate
+npm run fromcode -- db migrate
 ```
 
 ### 4. Start the development environment

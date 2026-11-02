@@ -20,7 +20,7 @@ export class ThemeScaffoldService {
   ) {}
 
   /**
-   * The same theme `atlantis theme create` writes, compiled, and activated only if it compiled.
+   * The same theme `fromcode theme create` writes, compiled, and activated only if it compiled.
    *
    * It used to write a pre-bundle `ui/index.js` and activate at once. The theme a scaffold writes now has
    * a `src/` the platform cannot serve, so activating before the build would put an unbuilt theme in
@@ -74,7 +74,7 @@ export class ThemeScaffoldService {
   /** The reason the build did not happen or failed, or null when the theme is built. */
   private async build(themePath: string, slug: string): Promise<string | null> {
     const builder = this.builder();
-    if (!builder) return 'this installation has no theme builder; run `atlantis build theme ' + slug + '` on the server';
+    if (!builder) return 'this installation has no theme builder; run `fromcode build theme ' + slug + '` on the server';
     try {
       await builder.build(themePath, slug);
       return null;

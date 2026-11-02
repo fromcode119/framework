@@ -2858,7 +2858,7 @@
         "automatic": "Install updates automatically",
         "automaticExplained": "New versions are installed as they are released. A version marked breaking always waits for the Install button.",
         "notRunning": "The updater service is not running on this installation, so updates cannot be installed from here. Start the stack again with the current compose files to add it.",
-        "turnedOff": "Updates are turned off for this installation in its .env (ATLANTIS_UPDATER=off): it is updated another way.",
+        "turnedOff": "Updates are turned off for this installation in its .env (FROMCODE_UPDATER=off): it is updated another way.",
         "updating": "Updating to v{{to}}: {{step}}…",
         "failed": "The update to v{{to}} did not start: {{error}}",
         "rolledBack": "The update to v{{to}} was undone, the previous version is running: {{error}}",

@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { AtlantisCli } from '@cli/atlantis-cli';
+import { FromcodeCli } from '@cli/fromcode-cli';
 
-AtlantisCli.main(process.argv);
+FromcodeCli.main(process.argv);

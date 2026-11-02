@@ -15,9 +15,9 @@ export class SecretService {
    *
    * It only has to agree with itself inside one running process, and both the masking and the
    * recognising side call {@link SecretService.getSavedSecretMask} — so it is free to follow the
-   * product's naming like every other `ATLANTIS_*` name in the tree.
+   * brand's naming like every other `FROMCODE_*` name in the tree, rather than a release name.
    */
-  private static readonly DEFAULT_SAVED_SECRET_MASK = '__ATLANTIS_SAVED_SECRET__';
+  private static readonly DEFAULT_SAVED_SECRET_MASK = '__FROMCODE_SAVED_SECRET__';
 
   static getSavedSecretMask(): string {
     return String(process.env.INTEGRATION_SECRET_MASK || '').trim() || SecretService.DEFAULT_SAVED_SECRET_MASK;

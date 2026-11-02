@@ -58,7 +58,7 @@ describe('ThemeScaffoldService', () => {
 
     expect(activate).not.toHaveBeenCalled();
     expect(result.built).toBe(false);
-    expect(result.buildError).toContain('atlantis build theme corner-shop');
+    expect(result.buildError).toContain('fromcode build theme corner-shop');
   });
 
   it('builds but does not activate when asked not to activate', async () => {

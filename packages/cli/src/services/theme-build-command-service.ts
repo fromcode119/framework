@@ -7,12 +7,12 @@ import type { ThemeBundleCompiler as ThemeBundleCompilerType } from '@fromcode11
 import { CliUtils } from '@cli/utils';
 
 /**
- * `atlantis theme build` and `atlantis theme dev`.
+ * `fromcode theme build` and `fromcode theme dev`.
  *
  * Both used to resolve a hand-authored `ui/index.ts` and run a bespoke esbuild over it. No theme in
  * this repository has ever shipped that file — all four carry `theme.json` + `src/` — so both commands
  * failed with "Entry file not found" for every real theme. They drive `ThemeBundleCompiler`, the
- * framework's own Vite pipeline, which is the same one `atlantis build theme <slug>` and the pack
+ * framework's own Vite pipeline, which is the same one `fromcode build theme <slug>` and the pack
  * pipeline use, so there is now ONE way a theme is built.
  *
  * In its own class because `theme.ts` is the command REGISTRY — it declares what exists — and the

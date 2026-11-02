@@ -43,7 +43,7 @@ export class ThemeCommands {
           }
 
           console.log(chalk.green(`\nTheme scaffolded (${Object.keys(files).length} files). Next:`));
-          console.log(chalk.gray(`  atlantis build theme ${slug}`));
+          console.log(chalk.gray(`  fromcode build theme ${slug}`));
         } catch (error) {
           console.error(chalk.red('Error creating theme:'), error);
         }
@@ -86,7 +86,7 @@ export class ThemeCommands {
       .description('Run theme development mode: rebuild on every change under src/')
       .action(async (slug) => { await ThemeBuildCommandService.dev(slug); });
 
-    // The same pipeline as `atlantis pack theme <slug>`. This command used to zip the raw source folder
+    // The same pipeline as `fromcode pack theme <slug>`. This command used to zip the raw source folder
     // itself — no integrity stamp, no SSR dependency closure, `node_modules` included — which no platform
     // could install, and since the archiver import stopped resolving it crashed before writing anything.
     theme
