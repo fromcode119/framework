@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.481] - 2026-11-03
+
+### Fixed
+- **api**: record when an MCP token was last used ([#1156](https://github.com/fromcode119/framework/pull/1156))
+- **core**: stop leaking temp folders across api restarts ([#1155](https://github.com/fromcode119/framework/pull/1155))
+- **core**: sandboxed plugins see the client content type; add context.auth.holdsPermission ([#1150](https://github.com/fromcode119/framework/pull/1150))
+
 ## [0.2.480] - 2026-11-03
 
 ### Added
