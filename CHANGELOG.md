@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.480] - 2026-11-03
+
+### Added
+- **settings**: per-site Site icon in Settings → General — `/favicon.ico` and `/apple-touch-icon.png` serve the picked file, else the theme's own icon, else the platform mark; an empty field names what is shown ([#1151](https://github.com/fromcode119/framework/pull/1151))
+
+### Fixed
+- **setup**: the documented local quick start reaches a working admin ([#1149](https://github.com/fromcode119/framework/pull/1149))
+
 ## [0.2.479] - 2026-11-02
 
 ### Fixed
