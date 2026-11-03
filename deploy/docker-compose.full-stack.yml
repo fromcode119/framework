@@ -28,8 +28,9 @@
 # rotated and capped by the host's journald (SystemMaxUse, default 10% of the disk, at most 4G).
 # `docker logs` still works. Older lines, across releases, by service:
 #   journalctl COM_DOCKER_COMPOSE_SERVICE=api --since "-7d"
-# Only the services a release recreates carry it: changing the logging of db, redis or edge would
-# recreate them on the next `up`, which takes the platform down.
+# db and redis carry it too, so their logs are capped as well; a rolling release never recreates them
+# (`--no-deps`), so the change reaches them only when they are recreated on purpose. edge does not: it
+# is recreated by the next `up` that names it, which takes the platform down.
 x-platform-logging: &platform-logging
   driver: journald
   options:
@@ -585,6 +586,7 @@ services:
     restart: "no"
 
   db:
+    logging: *platform-logging
     image: postgres:15-alpine
     environment:
       # The image creates POSTGRES_USER as a SUPERUSER — that is unavoidable — so nothing else may use
@@ -621,6 +623,7 @@ services:
           memory: 1G
 
   redis:
+    logging: *platform-logging
     image: redis:7-alpine
     networks:
       - framework
