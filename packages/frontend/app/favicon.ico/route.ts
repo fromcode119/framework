@@ -1,9 +1,8 @@
-import { ThemeFaviconRouteResolver } from '@/lib/theme/theme-favicon-route-resolver';
-import { ThemeIconRouteService } from '@/lib/theme/theme-icon-route-service';
+import { SiteIconRouteService } from '@/lib/theme/site-icon-route-service';
 
-/** Serves the active theme's favicon, falling back to the framework default. */
+/** Serves the site's favicon — see SiteIconRouteService. */
 export class FaviconRoute {
   static async GET() {
-    return ThemeIconRouteService.serve(await ThemeFaviconRouteResolver.resolve(), 'image/x-icon', 'favicon');
+    return SiteIconRouteService.serve((icon) => icon.favicon, 'favicon');
   }
 }

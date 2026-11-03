@@ -131,6 +131,7 @@ describe('SystemController.getFrontendMetadata public settings', () => {
     const themeManager: any = {
       getFrontendMetadata: vi.fn().mockResolvedValue({ activeTheme: null }),
       getThemes: vi.fn().mockReturnValue([]),
+      getActiveThemeManifest: vi.fn().mockReturnValue(null),
     };
     const restController: any = {};
     const auth: any = {};

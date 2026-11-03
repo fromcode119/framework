@@ -55,6 +55,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
     return {
       platform_name: String(settings.platform_name ?? '').trim(),
       email_logo: String(settings.email_logo ?? '').trim(),
+      site_icon: String(settings.site_icon ?? '').trim(),
       admin_search_indexing: Boolean(settings.admin_search_indexing),
       site_environment: String(settings.site_environment ?? '').trim(),
       site_search_indexing: Boolean(settings.site_search_indexing),
