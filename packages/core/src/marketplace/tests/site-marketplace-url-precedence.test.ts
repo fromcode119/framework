@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
+import { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
 import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 import { SystemConstants } from '@core/constants/system.constants';
 import { TenantBespokePolicies } from '@core/database/tenant-bespoke-policies';
@@ -68,6 +69,21 @@ describe('marketplace URL precedence', () => {
 
   it('answers nothing, not a guess, when the read throws', async () => {
     SiteMarketplaceUrl.registerAccessor(vi.fn(async () => { throw new Error('connection reset'); }));
+    expect(await inSite('my-site', () => SiteMarketplaceUrl.current())).toBe('');
+  });
+
+  it('browses the declared default when nothing is stored and the environment is blank', async () => {
+    wire([]);
+    expect(await inSite('my-site', () => SiteMarketplaceUrl.current(''))).toBe(MarketplaceDefaults.ADDRESS);
+    expect(await inSite('my-site', () => SiteMarketplaceUrl.current())).toBe(MarketplaceDefaults.ADDRESS);
+  });
+
+  it('keeps a stored off rather than the default', async () => {
+    wire([{ tenantId: null, value: 'off' }]);
+    expect(await inSite('my-site', () => SiteMarketplaceUrl.current())).toBe('off');
+  });
+
+  it('never hands out the default when the store was not read', async () => {
     expect(await inSite('my-site', () => SiteMarketplaceUrl.current())).toBe('');
   });
 });

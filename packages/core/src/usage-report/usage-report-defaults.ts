@@ -1,3 +1,5 @@
+import { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
+
 /**
  * Where a usage report goes when Settings → General leaves the address blank.
  *
@@ -7,5 +9,5 @@
  */
 export class UsageReportDefaults {
   /** The publisher's public marketplace, which keeps the reports it is sent. Any marketplace address works. */
-  static readonly ADDRESS = 'https://marketplace.fromcode.com';
+  static readonly ADDRESS = MarketplaceDefaults.ADDRESS;
 }

@@ -389,6 +389,7 @@ export { TenantPluginQuota } from '@core/plugin/tenant/tenant-plugin-quota';
 export { TenantThemeAccess } from '@core/theme/tenant-theme-access';
 export { TenantThemeChoice } from '@core/theme/tenant-theme-choice';
 export { TenantThemeStateService } from '@core/theme/tenant-theme-state-service';
+export { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
 export { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 export { SiteBaseUrl } from '@core/tenant/site-base-url';
 export { SiteContentRevision } from '@core/tenant/site-content-revision';

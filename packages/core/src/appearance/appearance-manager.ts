@@ -10,6 +10,7 @@ import type { IAppearanceManifest } from '@core/appearance/interfaces/appearance
 import type { IAppearanceSummary } from '@core/appearance/interfaces/appearance-summary.interface';
 import type { IAppearanceCatalogEntry } from '@core/appearance/interfaces/appearance-catalog-entry.interface';
 import { AppearanceWorkspaceDeclarationReader } from '@core/appearance/appearance-workspace-declaration-reader';
+import { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
 import { SystemConstants } from '@core/constants/system.constants';
 
 /**
@@ -169,7 +170,7 @@ export class AppearanceManager {
    * marketplace off, never reached the appearance screens until a restart. It is one settings read.
    */
   private async resolveClient(): Promise<MarketplaceClient | null> {
-    const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL);
+    const raw = await PlatformSettingsService.resolve(process.env.MARKETPLACE_URL, SystemConstants.META_KEY.MARKETPLACE_URL, MarketplaceDefaults.ADDRESS);
     const normalized = String(raw || '').trim().toLowerCase();
     if (!raw || normalized === 'off' || normalized === 'false' || normalized === 'disabled') {
       this.logger.info('Marketplace disabled — appearance catalog/update checks skipped.');

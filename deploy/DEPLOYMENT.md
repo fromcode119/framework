@@ -324,8 +324,10 @@ existing deployment keeps behaving exactly as it did:
 Generate secrets with `openssl rand -base64 48 | tr -d '=+/' | cut -c1-48`. Keep `.env` at mode
 `600`; never commit it.
 
-`MARKETPLACE_URL` may be left **empty**, which disables marketplace lookups. Plugin and theme
-updates come from their own repositories.
+`MARKETPLACE_URL` may be left **empty**: the platform then browses
+`https://marketplace.fromcodeframework.com`, the address Settings → General states beside its
+Marketplace URL field. `MARKETPLACE_URL=off` disables marketplace lookups; plugin and theme updates
+then come from their own repositories.
 
 ## Recommended: sandbox the plugins sites upload
 
