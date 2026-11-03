@@ -6,6 +6,7 @@ import { MarketplaceClient } from '@fromcode119/marketplace-client';
 import semver from 'semver';
 import crypto from 'crypto';
 import { ProjectPaths } from '@core/config/paths';
+import { FrameworkRootLocator } from '@core/config/framework-root-locator';
 import { SafeArchive } from '@core/security/safe-archive';
 import { PlatformSettingsService } from '@core/management/platform-settings-service';
 import { PluginRuntimeRestartService } from '@core/plugin/services/runtime/plugin-runtime-restart-service';
@@ -15,6 +16,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 
 export class SystemUpdateService {
   private static logger = new Logger({ namespace: 'SystemUpdate' });
+  private static readonly FRAMEWORK_PACKAGE_NAME = '@fromcode119/framework';
   private static client = new MarketplaceClient();
 
   /** Marketplace client built with the resolved URL (env ?? `_system_meta` ?? default). */
@@ -32,27 +34,24 @@ export class SystemUpdateService {
   }
 
   private static resolveInstalledVersion(): string {
-    const rootDir = ProjectPaths.getProjectRoot();
+    const projectRoot = ProjectPaths.getProjectRoot();
     // The framework ROOT package (@fromcode119/framework) is the canonical engine version — it is what
     // gets bumped on release and what the registry compares against. Individual packages/* may lag, so
     // read the root FIRST; otherwise the update check compares against a stale package version and can
     // offer an OLDER registry release as an "upgrade" (a silent downgrade).
-    const rootPkgPath = path.resolve(rootDir, 'package.json');
-    try {
-      if (fs.existsSync(rootPkgPath)) {
-        const rootPkg = JSON.parse(fs.readFileSync(rootPkgPath, 'utf8')) as { name?: string; version?: string };
-        const version = String(rootPkg.version || '').trim();
-        if (rootPkg.name === '@fromcode119/framework' && version && semver.valid(version)) {
-          return version;
-        }
-      }
-    } catch { /* fall through to package fallbacks */ }
+    //
+    // The project root is not always the framework root: a starter app (`starters/local`) is its own
+    // project inside the checkout, with its own package.json and its own version. So the framework
+    // root is looked for from the project root UPWARDS, and a project's own version is never read as
+    // the engine's — that reported 0.1.0 and offered the running release as an update.
+    const rootDir = SystemUpdateService.frameworkRootFrom(projectRoot) ?? projectRoot;
+    const rootVersion = SystemUpdateService.frameworkPackageVersion(path.resolve(rootDir, 'package.json'));
+    if (rootVersion) return rootVersion;
 
     const candidatePaths = [
       path.resolve(rootDir, 'packages/core/package.json'),
       path.resolve(rootDir, 'packages/admin/package.json'),
       path.resolve(rootDir, 'packages/api/package.json'),
-      rootPkgPath,
     ];
 
     for (const candidatePath of candidatePaths) {
@@ -72,6 +71,29 @@ export class SystemUpdateService {
     }
 
     return '0.0.0';
+  }
+
+  /** The nearest directory at or above `start` whose package.json is the framework's own. */
+  private static frameworkRootFrom(start: string): string | null {
+    let current = path.resolve(start);
+    while (true) {
+      if (FrameworkRootLocator.isFrameworkRoot(current)) return current;
+      const parent = path.dirname(current);
+      if (parent === current) return null;
+      current = parent;
+    }
+  }
+
+  /** The version in `file` when it is the framework's root package.json, otherwise null. */
+  private static frameworkPackageVersion(file: string): string | null {
+    try {
+      if (!fs.existsSync(file)) return null;
+      const pkg = JSON.parse(fs.readFileSync(file, 'utf8')) as { name?: string; version?: string };
+      const version = String(pkg.version || '').trim();
+      return pkg.name === SystemUpdateService.FRAMEWORK_PACKAGE_NAME && semver.valid(version) ? version : null;
+    } catch {
+      return null;
+    }
   }
 
   private static getFileHash(filePath: string): string {

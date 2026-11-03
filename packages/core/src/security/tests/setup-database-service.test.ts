@@ -38,6 +38,20 @@ describe('SetupDatabaseService', () => {
     fs.rmSync(root, { recursive: true, force: true });
   });
 
+  it('writes SQLite as a file beside the app, with no server and no second role', () => {
+    SetupDatabaseService.apply({ driver: 'sqlite' });
+    const stored = DatabaseConnectionFileService.read()!;
+
+    expect(stored.runtimeUrl).toBe(`sqlite://${SetupDatabaseService.sqliteFile()}`);
+    expect(stored.migrationUrl).toBe('');
+  });
+
+  it('tells the wizard which drivers need a server form', () => {
+    const needs = Object.fromEntries(SetupDatabaseService.options().drivers.map((d) => [d.value, d.needsServer]));
+
+    expect(needs).toEqual({ postgres: true, sqlite: false, mysql: true });
+  });
+
   it('names two different roles with two different passwords', () => {
     SetupDatabaseService.apply({ driver: 'postgres' });
     const stored = DatabaseConnectionFileService.read()!;
@@ -159,9 +173,15 @@ describe('SetupDatabaseService', () => {
     });
 
     it('needs no owner role for a driver that isolates nothing', () => {
-      SetupDatabaseService.apply({ driver: 'sqlite', server: { ...server, ownerUser: '' } });
+      SetupDatabaseService.apply({ driver: 'mysql', server: { ...server, ownerUser: '' } });
 
       expect(DatabaseConnectionFileService.read()!.migrationUrl).toBe('');
+    });
+
+    it('REFUSES a server for SQLite, which is a file and has no host to name', () => {
+      expect(() => SetupDatabaseService.apply({ driver: 'sqlite', server })).toThrow(/takes no server/);
+
+      expect(DatabaseConnectionFileService.read()).toBeNull();
     });
 
     it('falls back to the driver\'s own port rather than inventing one', () => {

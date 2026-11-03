@@ -80,4 +80,9 @@ export class DatabaseDriverChoice extends Enum {
   get isSingleSiteOnly(): boolean {
     return !this.isolatesTenants;
   }
+
+  /** False for a driver that is a file beside the app: there is no host, port or role to name. */
+  get needsServer(): boolean {
+    return this !== DatabaseDriverChoice.SQLITE;
+  }
 }

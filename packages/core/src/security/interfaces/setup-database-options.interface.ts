@@ -6,6 +6,7 @@ export interface ISetupDatabaseOptions {
     value: string;
     isAvailable: boolean;
     isSingleSiteOnly: boolean;
+    needsServer: boolean;
     hasBundledServer: boolean;
     needsOwnerRole: boolean;
     defaultPort: number;
