@@ -200,6 +200,10 @@ The gateway writes one `[edge-refused]` line (JSON: reason, address, host, metho
 query) for every visitor it refuses: an attack, a blocked address or country, too many requests. It
 names no tool; anything that reads container logs can act on them.
 
+The app containers log to the host journal (`x-platform-logging` in the full-stack file), so their
+logs outlive the container a release recreates. Read a service across releases with
+`journalctl COM_DOCKER_COMPOSE_SERVICE=api --since "-7d"`; the host's journald caps and rotates it.
+
 `deploy/edge/platform-crowdsec/` is one such reader: a CrowdSec agent on the platform server that
 turns a visitor refused again and again (about five refusals in ten minutes, scenario
 `atlantis/edge-repeat-offender`) into a ban on the relay, in front of every site. It reports to the
