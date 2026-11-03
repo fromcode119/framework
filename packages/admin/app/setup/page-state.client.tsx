@@ -85,10 +85,11 @@ export abstract class SetupPageState extends AdminComponent {
   handleDatabaseDriverChange(value: string): void {
     this.databaseDriver = value;
     // A driver this deployment ships no server for has only one route, so the form opens with it
-    // rather than offering a bundled option that does not exist.
+    // rather than offering a bundled option that does not exist. A file-based driver has no server
+    // at all, so it never opens the form.
     const driver = this.databaseOptions?.drivers.find((entry) => entry.value === value);
-    if (driver && !driver.hasBundledServer) this.handleUseOwnServer(true);
-    if (driver?.hasBundledServer) this.databaseServer = null;
+    if (driver?.needsServer && !driver.hasBundledServer) this.handleUseOwnServer(true);
+    else this.databaseServer = null;
   }
 
   @bound

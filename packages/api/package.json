@@ -16,7 +16,7 @@
     "copy:templates": "mkdir -p dist/controllers/auth/email-templates/templates && cp -r src/controllers/auth/email-templates/templates/. dist/controllers/auth/email-templates/templates/ && mkdir -p dist/utils/templates && cp -r src/utils/templates/. dist/utils/templates/",
     "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:templates",
     "prepack": "npm run copy:templates",
-    "dev": "tsx watch --tsconfig tsconfig.dev.json src/server.ts",
+    "dev": "tsx watch --include \"${FROMCODE_PROJECT_ROOT:-../..}/data/database.json\" --tsconfig tsconfig.dev.json src/server.ts",
     "start": "exec node dist/bin.js",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project api"
   },

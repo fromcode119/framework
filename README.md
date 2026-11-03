@@ -100,10 +100,10 @@ Requires **Node.js 22+**, **npm 10+** and **Git**. Zero Docker, zero Postgres, z
 ```bash
 git clone https://github.com/fromcode119/framework.git
 cd framework
-npm install
+npm install                   # one install at the root covers every package and the starter
+npm run build:packages        # the shared packages the api and admin load from their built output
 cd starters/local
 cp .env.example .env          # then set a real JWT_SECRET before going to production
-npm install
 npm run dev:api-admin
 ```
 

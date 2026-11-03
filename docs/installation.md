@@ -109,8 +109,12 @@ alternative, not a prerequisite.
 
 ```bash
 npm install
+npm run build:packages
 npm run fromcode -- db migrate
 ```
+
+`build:packages` compiles the shared packages the api and admin load from their built output; without it the
+first `dev` run stops on a missing `dist/` module.
 
 ### 4. Start the development environment
 

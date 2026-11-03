@@ -80,6 +80,7 @@ export class SetupDatabaseService {
         value: driver.value,
         isAvailable: driver.isAvailable,
         isSingleSiteOnly: driver.isSingleSiteOnly,
+        needsServer: driver.needsServer,
         // Whether this deployment ships a server speaking it, so nothing has to be typed. A driver it
         // does not speak is still choosable — it just needs a server the operator names.
         hasBundledServer: driver.value === (SetupDatabaseService.bundledTarget()?.driver ?? ''),
@@ -107,14 +108,12 @@ export class SetupDatabaseService {
       throw new Error(`SetupDatabaseService: "${driver.value}" is not a driver this platform can install yet.`);
     }
 
-    // A server the operator already runs. This is the ONLY route for a driver the deployment ships
-    // no server for — MySQL, or a PostgreSQL somewhere else — and the roles are theirs to have
-    // created, because nothing here holds a credential privileged enough to create them.
-    if (input.server) {
-      return { file: SetupDatabaseService.applyExternal(driver, input.server), driver };
-    }
-
-    if (driver === DatabaseDriverChoice.SQLITE) {
+    // Decided before any server is read: a file has no host, so a server block sent with it is a
+    // form that showed the wrong fields, and is refused rather than quietly dropped.
+    if (!driver.needsServer) {
+      if (input.server) {
+        throw new Error(`SetupDatabaseService: ${driver.value} is a file beside the app and takes no server.`);
+      }
       const file = DatabaseConnectionFileService.write({
         driver,
         runtimeUrl: `sqlite://${SetupDatabaseService.sqliteFile()}`,
@@ -123,6 +122,13 @@ export class SetupDatabaseService {
         migrationUrl: '',
       });
       return { file, driver };
+    }
+
+    // A server the operator already runs. This is the ONLY route for a driver the deployment ships
+    // no server for — MySQL, or a PostgreSQL somewhere else — and the roles are theirs to have
+    // created, because nothing here holds a credential privileged enough to create them.
+    if (input.server) {
+      return { file: SetupDatabaseService.applyExternal(driver, input.server), driver };
     }
 
     const bundled = SetupDatabaseService.bundledTarget();

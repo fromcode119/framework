@@ -11,6 +11,8 @@ export interface ISetupDatabaseDriver {
   readonly isAvailable: boolean;
   /** True when choosing it means this installation can never host a second site. */
   readonly isSingleSiteOnly: boolean;
+  /** False for a driver that is a file beside the app, so there is no server form to show. */
+  readonly needsServer: boolean;
   /** True when this deployment ships a server speaking it, so nothing has to be typed. */
   readonly hasBundledServer: boolean;
   /** True when the form must ask for a second, schema-owning role — see the isolation note. */
