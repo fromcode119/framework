@@ -57,7 +57,8 @@ export class CollectionEditPageLifecycle {
       // and that name must come from the schema rather than being repeated in the field's own rule.
       AdminApi.get(`${AdminConstants.ENDPOINTS.PLUGINS.BASE}/${collection.pluginSlug}/settings/schema`)
         .then((res) => self.updateState('pluginSettingsSchema', res?.schema ?? res ?? {}))
-        .catch((err) => console.error('Failed to load plugin settings schema:', err));
+        // 404 is how the route says this plugin declares no settings: there is no schema to name, not a failure.
+        .catch((err) => { if (err?.status !== 404) console.error('Failed to load plugin settings schema:', err); });
     });
     CollectionEditPageLifecycle.runSlugGeneration(self, isNew);
     CollectionEditPageLifecycle.runSlugValidation(self, resolvedSlug, isNew);
