@@ -71,6 +71,26 @@ export class McpTokenStore {
     return this.db.withTenant(tenantId, () => this.db.findOne(SystemConstants.TABLE.META, { key: McpTokenStore.keyFor(hash) }));
   }
 
+  // ---- a list row in the partition that holds a token (recording when the token was last used) ----
+
+  /** The raw stored value of `key` in `tenantId`'s partition, or the platform partition for `null`. */
+  async readRawIn(tenantId: string | null, key: string): Promise<string | null> {
+    const row: any = await this.inPartition(tenantId, () => this.db.findOne(SystemConstants.TABLE.META, { key }));
+    return row?.value ? String(row.value) : null;
+  }
+
+  /**
+   * Rewrites `key` only while it still holds `previous`. A list that changed in between — a token
+   * issued or revoked — is left alone, so a late write can never bring a revoked entry back.
+   */
+  replaceRawIfUnchanged(tenantId: string | null, key: string, previous: string, next: string): Promise<unknown> {
+    return this.inPartition(tenantId, () => this.db.update(SystemConstants.TABLE.META, { key, value: previous }, { value: next }));
+  }
+
+  private inPartition<T>(tenantId: string | null, work: () => Promise<T>): Promise<T> {
+    return tenantId ? this.db.withTenant(tenantId, work) : this.db.withPlatformAdmin(work);
+  }
+
   private async readIndex(): Promise<any[]> {
     const row = await this.db.findOne(SystemConstants.TABLE.META, { key: McpTokenStore.INDEX_KEY });
     if (!row?.value) return [];
