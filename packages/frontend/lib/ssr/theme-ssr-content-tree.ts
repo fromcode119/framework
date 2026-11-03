@@ -84,10 +84,11 @@ export class ThemeSsrContentTree {
    */
   private static buildProse(runtime: ThemeSsrRuntime, entry: Record<string, unknown> | null, html: string): unknown {
     const { createElement } = runtime.react;
+    const title = ContentRenderingUtils.resolveDisplayTitle(entry);
     return createElement(
       'div',
       { key: 'prose', className: StorefrontContentContract.PROSE_CLASS },
-      createElement('h1', { className: StorefrontContentContract.TITLE_CLASS }, ContentRenderingUtils.resolveDisplayTitle(entry)),
+      title ? createElement('h1', { className: StorefrontContentContract.TITLE_CLASS }, title) : null,
       createElement('div', { dangerouslySetInnerHTML: { __html: html } }),
     );
   }

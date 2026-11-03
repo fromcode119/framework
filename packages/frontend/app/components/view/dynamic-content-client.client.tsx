@@ -116,7 +116,7 @@ export class DynamicContentClient extends Reactor {
 
           {(!hasDefaultPageDesign && (!renderableContent || typeof renderableContent === 'string')) && (
             <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
-              <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(normalizedContent)}</h1>
+              {ContentRenderingUtils.resolveDisplayTitle(normalizedContent) ? <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(normalizedContent)}</h1> : null}
               <div dangerouslySetInnerHTML={{ __html: renderableContent || '' }} />
             </div>
           )}

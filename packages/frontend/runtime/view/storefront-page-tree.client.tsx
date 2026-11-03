@@ -65,7 +65,7 @@ export class StorefrontPageTree extends PureReactor {
   private renderProse(entry: Record<string, unknown> | null, html: string): ReactNode {
     return (
       <div key="prose" className={StorefrontContentContract.PROSE_CLASS}>
-        <h1 className={StorefrontContentContract.TITLE_CLASS}>{ContentRenderingUtils.resolveDisplayTitle(entry)}</h1>
+        {ContentRenderingUtils.resolveDisplayTitle(entry) ? <h1 className={StorefrontContentContract.TITLE_CLASS}>{ContentRenderingUtils.resolveDisplayTitle(entry)}</h1> : null}
         <div dangerouslySetInnerHTML={{ __html: html }} />
       </div>
     );
