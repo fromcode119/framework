@@ -19,7 +19,7 @@ import { StorefrontPageView } from '@/runtime/view/storefront-page-view.client';
  *
  * A 404 document takes its OWN branch, because it has no content by design. Routing it to
  * `DynamicContentClient` — which is what happened before this branch existed — renders that component's
- * empty-content body: an `<h1>` whose title falls back to the literal "Untitled", wrapped in the site's
+ * empty-content body (then titled with the literal "Untitled"), wrapped in the site's
  * real header, nav and footer. The visitor gets a page that looks published at a URL that does not
  * exist, and the server's correct 404 (the theme's own override chain, already on screen) is replaced
  * by it. Status stays 404 throughout, so only the body was ever wrong — and the body is what a person

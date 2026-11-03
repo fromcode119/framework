@@ -29,9 +29,10 @@ export class ContentRenderingUtils {
 
   /**
    * Resolves the best display title from content object.
-   * Tries content.title, then content.name, with a fallback.
+   * Tries content.title, then content.name, then the caller's fallback. With no fallback it is empty:
+   * a page nobody titled shows no heading, never an invented word like "Untitled".
    */
-  static resolveDisplayTitle(content: any, fallback = 'Untitled'): string {
+  static resolveDisplayTitle(content: any, fallback = ''): string {
     return (
       CoercionUtils.toString(content?.title) ||
       CoercionUtils.toString(content?.name) ||

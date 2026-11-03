@@ -276,6 +276,13 @@ describe('StorefrontPageTree parity with ThemeSsrContentTree', () => {
     expect(ParityFixture.client(ParityFixture.emptyContent)).toBe(html);
   });
 
+  it('no content at all — no invented "Untitled" heading on either side', () => {
+    const html = ParityFixture.server(null);
+    expect(html).not.toContain('<h1');
+    expect(html).not.toContain('Untitled');
+    expect(ParityFixture.client(null)).toBe(html);
+  });
+
   it('the home wrapper (no reserved height) matches too', () => {
     expect(StorefrontPageKind.HOME.contentStyle).toBeNull();
     const html = ParityFixture.server(ParityFixture.stringContent, StorefrontPageKind.HOME.contentStyle);
