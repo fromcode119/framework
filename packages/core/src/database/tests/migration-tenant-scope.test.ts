@@ -12,8 +12,10 @@ class ScopeFixture {
   readonly bound: string[] = [];
 
   /** A manager whose `withTenant` records the site it bound, and whose tenants table holds `ids`. */
-  db(ids: string[]): any {
+  db(ids: string[], options: { isolation?: boolean; tenantsTable?: boolean } = {}): any {
     return {
+      supportsTenantIsolation: () => options.isolation ?? true,
+      tableExists: vi.fn(async () => options.tenantsTable ?? true),
       withPlatformAdmin: (fn: () => Promise<unknown>) => fn(),
       find: vi.fn(async () => ids.map((id) => ({ id }))),
       withTenant: async (tenantId: string, fn: () => Promise<unknown>) => {
@@ -28,7 +30,6 @@ afterEach(() => vi.restoreAllMocks());
 
 describe('MigrationTenantScope', () => {
   it('runs the callback once per site, with that site bound in the database AND the request context', async () => {
-    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
     const fixture = new ScopeFixture();
     const seen: Array<{ tenantId: string; context: unknown }> = [];
 
@@ -40,21 +41,43 @@ describe('MigrationTenantScope', () => {
     expect(seen).toEqual([{ tenantId: 'alpha', context: 'alpha' }, { tenantId: 'beta', context: 'beta' }]);
   });
 
-  it('runs once, unscoped, on a single-tenant deployment', async () => {
+  it('binds each site at boot too, before TenantMode is configured', async () => {
+    // Core migrations run before boot configures TenantMode, which then still says single-tenant.
     vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
     const fixture = new ScopeFixture();
-    const db = fixture.db(['ignored']);
     const calls: string[] = [];
 
-    await new MigrationTenantScope(db).forEachTenant(async (tenantId) => { calls.push(tenantId); });
+    await new MigrationTenantScope(fixture.db(['alpha', 'beta'])).forEachTenant(async (tenantId) => { calls.push(tenantId); });
+
+    expect(calls).toEqual(['alpha', 'beta']);
+    expect(fixture.bound).toEqual(['alpha', 'beta']);
+  });
+
+  it('runs once, unscoped, on a deployment with no sites', async () => {
+    const fixture = new ScopeFixture();
+    const calls: string[] = [];
+
+    await new MigrationTenantScope(fixture.db([])).forEachTenant(async (tenantId) => { calls.push(tenantId); });
 
     expect(calls).toEqual(['']);
     expect(fixture.bound).toEqual([]);
-    expect(db.find).not.toHaveBeenCalled();
+  });
+
+  it('runs once, unscoped, on a driver without isolation or before the tenants table exists', async () => {
+    for (const options of [{ isolation: false }, { tenantsTable: false }]) {
+      const fixture = new ScopeFixture();
+      const db = fixture.db(['ignored'], options);
+      const calls: string[] = [];
+
+      await new MigrationTenantScope(db).forEachTenant(async (tenantId) => { calls.push(tenantId); });
+
+      expect(calls).toEqual(['']);
+      expect(fixture.bound).toEqual([]);
+      expect(db.find).not.toHaveBeenCalled();
+    }
   });
 
   it('stops at the first site that fails, so the migration is not recorded as done', async () => {
-    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
     const fixture = new ScopeFixture();
     const calls: string[] = [];
 
