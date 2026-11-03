@@ -33,9 +33,14 @@ export class CollectionEditPageViewModelBuilder {
       // NOTE: the `typeof v === 'function'` test is not a defensive contract guard — `SetStateAction`
       // is a value|updater union, so discriminating it is the contract.
       formData: s.formData,
-      setFormData: (v) => self.setState((prev: any) => ({
-        formData: typeof v === 'function' ? (v as (p: any) => any)(prev.formData) : v,
-      })),
+      // A slug that arrives here (an imported or hand-edited Record JSON, a plugin component) was chosen,
+      // not derived: it stops the title-to-slug generation exactly as typing in the slug field does.
+      // Without this an imported `"slug": "mobile"` on a new record was overwritten from its name.
+      setFormData: (v) => self.setState((prev: any) => {
+        const formData = typeof v === 'function' ? (v as (p: any) => any)(prev.formData) : v;
+        const chosenSlug = Boolean(formData?.slug) && formData.slug !== prev.formData?.slug;
+        return chosenSlug ? { formData, slugManuallyEdited: true } : { formData };
+      }),
       handleSubmit: (e, summary) => CollectionEditPageHandlers.handleSubmit(self, e, summary),
       saving: s.saving, fieldErrors: s.fieldErrors,
       resolvedTitleValue: d.resolvedTitleValue, slugManuallyEdited: s.slugManuallyEdited, slugWarning: s.slugWarning,
