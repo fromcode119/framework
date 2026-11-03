@@ -120,7 +120,10 @@ export class ServerMiddlewareSetup {
       const hasToken =
         this.requestCookies.hasCookie(req, CookieConstants.AUTH_TOKEN) ||
         this.requestCookies.hasCookie(req, CookieConstants.CLIENT_AUTH_TOKEN) ||
-        Boolean(req.headers.authorization);
+        // Only a Bearer JWT is the framework's own credential. Another scheme (a plugin's signed
+        // `Authorization: Bridge …`) or a plugin's opaque bearer token is its route's to check, and
+        // warning about it on every request buried the real expired-session warnings.
+        /^Bearer\s+[\w-]+\.[\w-]+\.[\w-]+$/i.test(String(req.headers.authorization || '').trim());
       const isNoise =
         req.url.includes(probeRoutes.HEALTH) ||
         req.url.includes(probeRoutes.READY) ||
