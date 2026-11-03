@@ -10,7 +10,7 @@ import { DomainAliasesInput } from '@/app/settings/general/components/view/domai
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { Explanation } from '@/components/ui/view/explanation.client';
-import { FrameworkReleaseDefaults } from '@fromcode119/core/client';
+import { FrameworkReleaseDefaults, MarketplaceDefaults } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { GeneralEmailLogoRow } from '@/app/settings/general/general-email-logo-row';
@@ -196,13 +196,13 @@ export class GeneralBrandCard extends PureReactor {
             title={AdminI18n.t('settings.general.marketplaceUrl')}
             description={this.platformLocks.isSiteScope()
               ? <AdminRichText k="settings.general.marketplaceUrlSite" />
-              : <AdminRichText k="settings.general.marketplaceUrlPlatform" />}
+              : <AdminRichText k="settings.general.marketplaceUrlPlatform" vars={{ address: MarketplaceDefaults.ADDRESS }} />}
           >
             <Input
               value={settings.marketplace_url}
               onChange={this.onMarketplaceUrlChange}
               className="w-full md:w-64 font-bold"
-              placeholder="https://marketplace.example.com"
+              placeholder={this.platformLocks.isSiteScope() ? 'https://marketplace.example.com' : MarketplaceDefaults.ADDRESS}
             />
           </SettingRow>
         )}

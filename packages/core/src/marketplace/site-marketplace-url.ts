@@ -1,6 +1,7 @@
 import { Logger } from '@core/logging';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
+import { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
 
 /**
  * Which catalogue THIS SITE browses.
@@ -51,12 +52,15 @@ export class SiteMarketplaceUrl {
    * The catalogue URL in force for the current request's site.
    *
    * The site's own row wins; the platform's is what every site that has chosen nothing gets. `envValue`
-   * is last and only when the store holds nothing at all — it is how a deployment configured this
-   * before the setting existed. The caller passes it, exactly as `PlatformSettingsService.resolve`
-   * requires, so this stays free of `process.env` coupling and is testable without it.
+   * is next, only when the store holds nothing at all — it is how a deployment configured this before
+   * the setting existed. The caller passes it, exactly as `PlatformSettingsService.resolve` requires,
+   * so this stays free of `process.env` coupling and is testable without it. Last is
+   * `MarketplaceDefaults.ADDRESS`, which the admin states beside the field — but only after the store
+   * was actually read: an unread store may hold an `off`, and the default must not override it.
    */
   static async current(envValue?: string): Promise<string> {
-    const rows = await SiteMarketplaceUrl.rows();
+    const read = await SiteMarketplaceUrl.rows();
+    const rows = read ?? [];
     const scope = SiteMarketplaceUrl.currentScopeKey();
 
     const own = scope ? rows.find((row) => String(row.tenantId ?? '') === scope)?.value ?? '' : '';
@@ -65,7 +69,9 @@ export class SiteMarketplaceUrl {
     const platform = rows.find((row) => row.tenantId === null)?.value ?? '';
     if (platform) return platform;
 
-    return String(envValue ?? '').trim();
+    const env = String(envValue ?? '').trim();
+    if (env) return env;
+    return read ? MarketplaceDefaults.ADDRESS : '';
   }
 
   /**
@@ -81,12 +87,13 @@ export class SiteMarketplaceUrl {
   }
 
   /**
-   * A FAILED READ IS NOT A CHOICE. If the rows cannot be read this answers with none rather than
-   * pretending the store was empty in a way that looks like a deliberate "off": the caller then falls
-   * through to the environment, which is the last thing an operator explicitly set.
+   * A FAILED READ IS NOT A CHOICE. If the rows cannot be read this answers `null` rather than
+   * pretending the store was empty in a way that looks like a deliberate "off" — or like "nothing
+   * chosen", which would hand out the default: the caller then falls through to the environment, which
+   * is the last thing an operator explicitly set.
    */
-  private static async rows(): Promise<Array<{ tenantId: string | null; value: string }>> {
-    if (!SiteMarketplaceUrl.accessor) return [];
+  private static async rows(): Promise<Array<{ tenantId: string | null; value: string }> | null> {
+    if (!SiteMarketplaceUrl.accessor) return null;
     try {
       return (await SiteMarketplaceUrl.accessor(SystemConstants.META_KEY.MARKETPLACE_URL)) ?? [];
     } catch (error: unknown) {
@@ -94,7 +101,7 @@ export class SiteMarketplaceUrl {
         `Could not read "${SystemConstants.META_KEY.MARKETPLACE_URL}". `
         + `${error instanceof Error ? error.message : String(error)}`,
       );
-      return [];
+      return null;
     }
   }
 }
