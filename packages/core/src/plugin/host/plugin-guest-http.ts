@@ -5,6 +5,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 import { PermissionGrants } from '@core/utils/permission-grants';
 import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
+import { PluginGuestClientContentType } from '@core/plugin/host/plugin-guest-client-content-type';
 import type { PluginChannel } from '@core/plugin/host/plugin-channel';
 
 /**
@@ -94,6 +95,7 @@ export class PluginGuestHttp {
       PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE,
       PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_ORIGINAL_URL,
       PluginGuestHttp.HEADER_NEXT, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP,
+      PluginGuestClientContentType.HEADER,
     ];
   }
 
@@ -118,6 +120,7 @@ export class PluginGuestHttp {
     // webhook path, where it parsed it the same way.
     this.server.use(express.json({ limit: '64kb', type: PluginGuestHttp.REPORT_MEDIA_TYPES as unknown as string[], verify: PluginGuestHttp.keepRawBody }));
     this.server.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.server.use(PluginGuestClientContentType.restore);
     this.server.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
     this.app = express.Router();
     this.server.use(this.app);
@@ -272,11 +275,12 @@ export class PluginGuestHttp {
     const cacheScope = PluginGuestHttp.decodeCacheScope(String(req.headers[PluginGuestHttp.HEADER_CACHE] ?? ''));
     const connectionId = String(req.headers[PluginGuestConnections.HEADER_CONNECTION] ?? '').trim() || null;
     const clientIp = String(req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? '').trim();
+    PluginGuestClientContentType.capture(req);
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestConnections.HEADER_CONNECTION]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestClientContentType.HEADER, PluginGuestConnections.HEADER_CONNECTION]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;

@@ -2,6 +2,7 @@ import type { IPluginContextAuth } from '@core/plugin/interfaces/plugin-context-
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { RequestContextUtils } from '@core/context/request-context';
 import { SystemConstants } from '@core/constants/system.constants';
+import { TenantMembershipService } from '@core/tenant/tenant-membership-service';
 
 /**
  * The auth surface handed to a plugin.
@@ -52,6 +53,7 @@ export class AuthContextProxy {
       actor: async () => RequestContextUtils.getUser() ?? null,
       twoFactorEnabled: (token: string) => AuthContextProxy.twoFactorEnabled(manager, db, token),
       revokeSession: (token: string) => AuthContextProxy.revokeSession(manager, db, token),
+      holdsPermission: (userId: number | string, permission: string) => AuthContextProxy.holdsPermission(manager, db, userId, permission),
     };
   }
 
@@ -122,6 +124,28 @@ export class AuthContextProxy {
   }
 
   /**
+   * What `requirePermission(permission)` would answer for this account on THIS site, with no request
+   * of its own — for a credential the plugin issued itself, re-checked on every use so it does not
+   * outlive the access that allowed it. The same two steps a signed-in request goes through: may the
+   * account enter the site at all (`hasAccess`), then the roles in effect there (the membership's,
+   * else the account's global ones, as `AuthManager.applyTenantRoles` decides) against the gate's own
+   * grant rule. With no site bound, the platform-scope roles (`rolesOutsideSite`). Fails closed.
+   */
+  static async holdsPermission(auth: Record<string, (...args: any[]) => any>, db: any, userId: number | string, permission: string): Promise<boolean> {
+    const id = String(userId ?? '').trim();
+    if (!id || !permission || !db) return false;
+    try {
+      const memberships = new TenantMembershipService(db);
+      const tenantId = RequestContextUtils.getTenantId();
+      if (tenantId && !(await memberships.hasAccess(id, tenantId))) return false;
+      const roles = tenantId ? await memberships.rolesForTenant(id, tenantId) : await memberships.rolesOutsideSite(id);
+      return Boolean(await auth.holdsPermission({ user: roles ? { id, roles } : { id } }, [permission]));
+    } catch {
+      return false;
+    }
+  }
+
+  /**
    * Auth is not wired yet. Every answer is the denying one, so a plugin never needs a defensive
    * check around `context.auth.*`.
    */
@@ -138,6 +162,7 @@ export class AuthContextProxy {
       actor: async () => null,
       twoFactorEnabled: async () => null,
       revokeSession: async () => false,
+      holdsPermission: async () => false,
     };
   }
 }
