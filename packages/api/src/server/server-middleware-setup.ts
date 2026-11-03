@@ -23,6 +23,7 @@ import { SessionUserContextMiddleware } from '@api/middlewares/session-user-cont
 import { ServerTenantMiddlewareParts } from '@api/server/server-tenant-middleware-parts';
 import { TenantRequestBinder } from '@api/server/tenant-request-binder';
 import { AdminSiteExpectationGuard } from '@api/server/admin-site-expectation-guard';
+import { FrameworkBearerHeader } from '@api/server/framework-bearer-header';
 
 export class ServerMiddlewareSetup {
   private readonly requestCookies = new RequestCookieService();
@@ -117,10 +118,9 @@ export class ServerMiddlewareSetup {
 
     this.app.use((req: any, res, next) => {
       const probeRoutes = ApiConfig.getInstance().probeRoutes;
-      const hasToken =
-        this.requestCookies.hasCookie(req, CookieConstants.AUTH_TOKEN) ||
+      const hasToken = this.requestCookies.hasCookie(req, CookieConstants.AUTH_TOKEN) ||
         this.requestCookies.hasCookie(req, CookieConstants.CLIENT_AUTH_TOKEN) ||
-        Boolean(req.headers.authorization);
+        FrameworkBearerHeader.carriesFrameworkToken(req.headers.authorization);
       const isNoise =
         req.url.includes(probeRoutes.HEALTH) ||
         req.url.includes(probeRoutes.READY) ||
