@@ -1,7 +1,6 @@
 import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager } from '@fromcode119/core';
@@ -13,6 +12,7 @@ import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { PluginRuntimeController } from '@api/controllers/plugins/plugin-runtime-controller';
 import { PluginSiteOfferController } from '@api/controllers/plugins/plugin-site-offer-controller';
 import { SitePluginUploadController } from '@api/controllers/plugins/site-plugin-upload-controller';
+import { ProcessScratchDirectory } from '@fromcode119/core';
 
 export class PluginRouter extends BaseRouter {
   private controller: PluginController;
@@ -36,8 +36,8 @@ export class PluginRouter extends BaseRouter {
     this.lifecycleController = new PluginLifecycleController(manager);
     this.runtimeController = new PluginRuntimeController(manager);
     this.siteOfferController = new PluginSiteOfferController(manager);
-    const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-uploads-'));
-    const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-upload-chunks-'));
+    const uploadsDir = ProcessScratchDirectory.make('fromcode-plugin-uploads-');
+    const chunkDir = ProcessScratchDirectory.make('fromcode-plugin-upload-chunks-');
     this.upload = multer({ dest: uploadsDir });
     this.chunkUpload = multer({ dest: chunkDir });
     this.sitePluginController = new SitePluginUploadController(manager);

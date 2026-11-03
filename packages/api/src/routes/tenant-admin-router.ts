@@ -1,5 +1,4 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import multer from 'multer';
 import { AuthManager } from '@fromcode119/auth';
@@ -7,6 +6,7 @@ import { BaseRouter, PluginManager, RouteConstants, ThemeManager } from '@fromco
 import { TenantAdminController } from '@api/controllers/system/tenant-admin-controller';
 import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { TenantAdminService } from '@api/services/tenants/tenant-admin-service';
+import { ProcessScratchDirectory } from '@fromcode119/core';
 
 /**
  * `/system/admin/tenants` — creating, changing, exporting, importing and deleting SITES.
@@ -27,7 +27,7 @@ export class TenantAdminRouter extends BaseRouter {
   ) {
     super();
     this.controller = new TenantAdminController(new TenantAdminService(manager, themeManager, uploadsDir));
-    this.chunkUpload = multer({ dest: fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-tenant-import-chunks-')) });
+    this.chunkUpload = multer({ dest: ProcessScratchDirectory.make('fromcode-tenant-import-chunks-') });
   }
 
   protected registerRoutes(): void {

@@ -1,6 +1,5 @@
 import { MarketplaceArtifactDigest } from '@core/marketplace/marketplace-artifact-digest';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import type { IPluginInstallProgressReporter } from '@core/plugin/interfaces/plugin-install-progress-reporter.interface';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
@@ -11,6 +10,7 @@ import { pipeline } from 'stream/promises';
 import { DiscoveryService } from '@core/plugin/services/installation/discovery-service';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
 import { CatalogSource } from '@core/marketplace/enums/catalog-source.enum';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * Fetching a plugin package and putting it on disk — including working out WHICH version that is.
@@ -129,7 +129,7 @@ export class MarketplaceInstaller {
     // the image while the api runs as an unprivileged user — so this threw EACCES on every install,
     // before the download was even attempted. `mkdtemp` also gives each install its own directory
     // rather than a shared one two installs can race in.
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fc-plugin-'));
+    const tempDir = ProcessScratchDirectory.make('fc-plugin-');
 
     const tempZipPath = path.join(tempDir, `${slug}-${Date.now()}.zip`);
 

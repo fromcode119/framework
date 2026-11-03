@@ -1,7 +1,6 @@
 import { ExtensionKind, PluginConsentSummary } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { BackupService, PluginManager, PluginState, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
@@ -18,6 +17,7 @@ import { AssetCacheHeaderService } from '@api/services/asset-cache-header-servic
 import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 import { CoercionUtils } from '@fromcode119/core';
 import { ApplicationUrlUtils } from '@fromcode119/core';
+import { ProcessScratchDirectory } from '@fromcode119/core';
 
 export class PluginArchiveSupport {
 
@@ -182,7 +182,7 @@ export class PluginArchiveSupport {
   }
 
   private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename: string | undefined, type: ExtensionKind): Promise<string> {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `fromcode-${type}-inspect-`));
+    const tempDir = ProcessScratchDirectory.make(`fromcode-${type}-inspect-`);
     try {
       if (this.isZipArchive(filePath, originalFilename)) {
         SafeArchive.extractZip(filePath, tempDir);
@@ -216,7 +216,7 @@ export class PluginArchiveSupport {
 
   createDetachedArchiveCopy(sourceFilePath: string, originalFilename?: string): string {
     const extension = path.extname(String(originalFilename || sourceFilePath || '').trim()) || '.bin';
-    const detachedPath = path.join(os.tmpdir(), `fromcode-plugin-install-${Date.now()}-${Math.random().toString(16).slice(2)}${extension}`);
+    const detachedPath = path.join(ProcessScratchDirectory.make('fromcode-plugin-install-'), `archive${extension}`);
     fs.copyFileSync(sourceFilePath, detachedPath);
     return detachedPath;
   }

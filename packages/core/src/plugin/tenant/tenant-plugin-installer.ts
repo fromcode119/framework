@@ -1,5 +1,4 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import type { ITenantPluginHost } from '@core/plugin/tenant/interfaces/tenant-plugin-host.interface';
@@ -13,6 +12,7 @@ import { TenantPluginRuntimePolicy } from '@core/plugin/tenant/tenant-plugin-run
 import { TenantPluginRefusal } from '@core/plugin/tenant/tenant-plugin-refusal';
 import { TenantPluginRefusalReason } from '@core/plugin/tenant/enums/tenant-plugin-refusal-reason.enum';
 import { PluginConsentRequiredError } from '@core/plugin/consent/plugin-consent-required-error';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * A SITE installing and removing a plugin of its own.
@@ -46,7 +46,7 @@ export class TenantPluginInstaller {
       throw new TenantPluginRefusal(TenantPluginRefusalReason.ISOLATION_UNAVAILABLE, 'This server cannot run a site\'s plugin under its own user, so it does not accept one.');
     }
 
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-site-plugin-'));
+    const tempDir = ProcessScratchDirectory.make('fromcode-site-plugin-');
     try {
       TenantPluginInstaller.extract(archivePath, tempDir, limits.maxBytes);
       const contentDir = TenantPluginInstaller.findManifestDir(tempDir, 3);

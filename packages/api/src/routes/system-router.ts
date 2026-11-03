@@ -2,7 +2,6 @@ import { PlatformAdminGuard } from '@api/middlewares/platform-admin-guard';
 import { BaseRouter } from '@fromcode119/core';
 import multer from 'multer';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { AuthManager } from '@fromcode119/auth';
 import { PluginManager, ThemeManager, RouteConstants, SystemRedirectService } from '@fromcode119/core';
@@ -20,6 +19,7 @@ import { SystemUsageReportController } from '@api/controllers/system/system-usag
 import { SystemBackupRepository } from '@api/repositories/system-backup-repository';
 import { SystemBackupService } from '@api/services/system-backup-service';
 import { SystemPlatformRoutes } from '@api/routes/system-platform-routes';
+import { ProcessScratchDirectory } from '@fromcode119/core';
 
 /**
  * System management router.
@@ -50,8 +50,8 @@ export class SystemRouter extends SystemPlatformRoutes {
   ) {
     super();
     this.auth = auth;
-    const uploadsDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-system-backup-'));
-    const chunkDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-system-backup-chunks-'));
+    const uploadsDir = ProcessScratchDirectory.make('fromcode-system-backup-');
+    const chunkDir = ProcessScratchDirectory.make('fromcode-system-backup-chunks-');
     this.upload = multer({ dest: uploadsDir });
     this.chunkUpload = multer({ dest: chunkDir });
     this.controller = new SystemController(manager, themeManager, restController, auth);

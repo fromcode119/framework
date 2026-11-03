@@ -1,7 +1,6 @@
 import { ThemeAssetScope } from '@api/controllers/themes/enums/theme-asset-scope.enum';
 import { Request, Response } from 'express';
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import { BackupService, ThemeManager, SafeArchive } from '@fromcode119/core';
 import { ApplicationHostUtils } from '@fromcode119/core';
@@ -11,6 +10,7 @@ import { AssetCacheHeaderService } from '@api/services/asset-cache-header-servic
 import { ServedFileHeaderService } from '@api/services/served-file-header-service';
 import { CoercionUtils } from '@fromcode119/core';
 import { ApplicationUrlUtils } from '@fromcode119/core';
+import { ProcessScratchDirectory } from '@fromcode119/core';
 
 /**
  * Archive inspection/extraction, upload-request parsing, asset serving and
@@ -168,7 +168,7 @@ export class ThemeArchiveSupport {
   }
 
   private async extractArchiveToTemporaryDirectory(filePath: string, originalFilename?: string): Promise<string> {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-theme-inspect-'));
+    const tempDir = ProcessScratchDirectory.make('fromcode-theme-inspect-');
     try {
       if (this.isZipArchive(filePath, originalFilename)) {
         SafeArchive.extractZip(filePath, tempDir);

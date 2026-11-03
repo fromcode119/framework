@@ -3,7 +3,6 @@ import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum
 import { ExtensionVendorGuard } from '@core/extensions/extension-vendor-guard';
 import fs from 'fs';
 import path from 'path';
-import os from 'os';
 import type { IPluginManifest } from '@core/plugin/interfaces/plugin-manifest.interface';
 import { BackupService } from '@core/management/backup-service';
 import { SafeArchive } from '@core/security/safe-archive';
@@ -11,6 +10,7 @@ import { PluginPackageValidator } from '@core/plugin/services/installation/plugi
 import { PluginDependencyInstallerService } from '@core/plugin/services/installation/plugin-dependency-installer-service';
 import { PluginDirectoryAction } from '@core/plugin/services/installation/enums/plugin-directory-action.enum';
 import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * PluginArchiveInstallerService
@@ -102,7 +102,7 @@ export class PluginArchiveInstallerService {
    * without this an entry saying 1.0.1 installed a package saying 1.0.0 and offered the update forever.
    */
   async installFromZip(filePath: string, expected?: { slug: string; version: string }): Promise<IPluginManifest> {
-    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-ext-'));
+    const tempDir = ProcessScratchDirectory.make('fromcode-plugin-ext-');
 
     try {
       if (this.isZipArchive(filePath)) {

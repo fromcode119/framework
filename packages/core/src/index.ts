@@ -472,6 +472,7 @@ export { AttentionResolutionService } from '@core/services/attention/attention-r
 export { PluginAttentionRegistryService } from '@core/services/attention/plugin-attention-registry-service';
 export { BackupImportService } from '@core/management/backup-import-service';
 export { ArchiveUploadSessionService } from '@core/management/archive-upload-session-service';
+export { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 export type { ICreateSystemBackupOptions } from '@core/management/interfaces/create-system-backup-options.interface';
 export { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 export { BackupCatalogService } from '@core/management/backup-catalog-service';
