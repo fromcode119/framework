@@ -2,6 +2,8 @@
  * The parts of `/system/frontend` that are the SITE's, not the caller's: the same for every visitor of
  * one site at one content revision, and the expensive part of the answer.
  */
+import type { SiteIcon } from '@fromcode119/core';
+
 export interface IFrontendMetadataParts {
   adminMetadata: any;
   publicSettings: Record<string, unknown>;
@@ -9,4 +11,5 @@ export interface IFrontendMetadataParts {
   ssrGenerationCap: number;
   ssrRenderMemoryMb: number;
   ssrRenderTimeoutMs: number;
+  siteIcon: SiteIcon;
 }

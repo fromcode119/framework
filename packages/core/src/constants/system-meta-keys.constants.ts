@@ -258,6 +258,7 @@ export class SystemMetaKeys {
    * no logo. Per SITE, set in Settings → General.
    */
   EMAIL_LOGO: 'email_logo',
+  SITE_ICON: 'site_icon', // `/favicon.ico` + `/apple-touch-icon.png`, per SITE — see SiteIconResolver.
   /**
    * Whether search engines may index the PLATFORM'S OWN HOSTS — the admin console and the api
    * host, both of which read this one switch. Off unless an operator turns it on. A tenant's

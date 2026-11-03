@@ -23,6 +23,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
   protected static readonly TEXT_KEYS = [
     'platform_name',
     'email_logo',
+    'site_icon',
     'notification_email',
     'notification_email_cc',
     'frontend_url',

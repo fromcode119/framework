@@ -1,6 +1,7 @@
 import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, StandaloneSitePolicy, TenantMode, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
-import { ApplicationUrlUtils, Logger, PluginState, StorefrontContentSecurityPolicy, SystemConstants, SystemSettingsExposureUtils, ThemeState } from '@fromcode119/core';
+import { ApplicationUrlUtils, Logger, PluginState, SiteIconResolver, StorefrontContentSecurityPolicy, SystemConstants, SystemSettingsExposureUtils, ThemeState } from '@fromcode119/core';
+import path from 'path';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 import { AdminNavigationScopeFilter } from '@api/services/system/admin-navigation-scope-filter';
 import { SiteVisibilityGate } from '@api/server/site-visibility-gate';
@@ -130,7 +131,7 @@ export class SystemMetadataController {
     ]);
     const parts = await this.frontendParts.get(signature, () => this.computeFrontendParts(steps));
     steps.mark('parts');
-    const { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs } = parts;
+    const { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs, siteIcon } = parts;
 
     // WHICH SITE this is and whether it is open yet. The storefront cannot ask the tenant table — it
     // has no tenant knowledge, it forwards a host and the api resolves — so the one payload it
@@ -198,6 +199,9 @@ export class SystemMetadataController {
       ssrGenerationCap,
       ssrRenderMemoryMb,
       ssrRenderTimeoutMs,
+      // Which file `/favicon.ico` and `/apple-touch-icon.png` serve, and where it comes from — the
+      // storefront redirects to it, and the admin names it beside the empty Site icon setting.
+      siteIcon,
       // What the storefront's rendered-page cache is keyed on: it changes on every write that can
       // reach this site's pages (see SiteContentRevision).
       contentRevision: SiteContentRevision.current(tenantId),
@@ -233,6 +237,11 @@ export class SystemMetadataController {
     const ssrRenderMemoryMb = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_MEMORY_MB, SystemConstants.SSR_RENDER_MEMORY_MB_DEFAULT);
     const ssrRenderTimeoutMs = await declaredNumber(SystemConstants.META_KEY.SSR_RENDER_TIMEOUT_MS, SystemConstants.SSR_RENDER_TIMEOUT_MS_DEFAULT);
     steps.mark('renderLimits');
-    return { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs };
+    const themeSlug = String(this.runtime.themeManager.getActiveThemeManifest()?.slug || '').trim();
+    const siteIcon = await SiteIconResolver.resolve(this.runtime.db, themeSlug
+      ? { slug: themeSlug, uiDirectory: path.resolve(this.runtime.themeManager.getThemeDirectory(themeSlug), 'ui') }
+      : null);
+    steps.mark('siteIcon');
+    return { adminMetadata, publicSettings, pluginPublicSettings, ssrGenerationCap, ssrRenderMemoryMb, ssrRenderTimeoutMs, siteIcon };
   }
 }

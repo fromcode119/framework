@@ -276,6 +276,11 @@ export { EmailPreferencesTokenService } from '@core/email/email-preferences-toke
 export { FrameworkEmailSender } from '@core/email/framework-email-sender';
 export { FrameworkEmailSenderService } from '@core/email/framework-email-sender-service';
 export { EmailLogoUrl } from '@core/email/email-logo-url';
+export { MediaPickerAsset } from '@core/utils/media-picker-asset';
+export { SiteIconSource } from '@core/enums/site-icon-source.enum';
+export { SiteIconChoice } from '@core/theme/site-icon/site-icon-choice';
+export { SiteIcon } from '@core/theme/site-icon/site-icon';
+export { SiteIconResolver } from '@core/theme/site-icon/site-icon-resolver';
 export { MetaContextProxy } from '@core/plugin/context/meta';
 export type { IIntegrationTypeDefinition } from '@core/integrations/interfaces/integration-type-definition.interface';
 export type { IIntegrationProviderDefinition } from '@core/integrations/interfaces/integration-provider-definition.interface';
