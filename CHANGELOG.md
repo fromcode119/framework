@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.483] - 2026-11-03
+
+### Fixed
+- **api**: stop answering /api/v1 and rewrite stored v1 addresses ([#1160](https://github.com/fromcode119/framework/pull/1160))
+- **deploy**: cap db and redis logs in the host journal ([#1162](https://github.com/fromcode119/framework/pull/1162))
+
 ## [0.2.482] - 2026-11-03
 
 ### Fixed
