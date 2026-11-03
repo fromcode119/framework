@@ -36,15 +36,23 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
   async up(db: IDatabaseManager, _sql?: unknown, tenants?: IMigrationTenantScope): Promise<void> {
     if (db.dialect !== 'postgres') return;
     const tables = await StoredApiAddressesWithoutVersionMigration.tables(db);
-    const rewriteAll = async (scoped: boolean) => {
+    const rewriteAll = async (scoped: boolean, rows: string) => {
       for (const table of tables) {
-        if (table.scoped === scoped) await StoredApiAddressesWithoutVersionMigration.rewrite(db, table.name, table.columns);
+        if (table.scoped !== scoped || (rows && !table.tenanted)) continue;
+        await StoredApiAddressesWithoutVersionMigration.rewrite(db, table.name, table.columns, rows);
       }
     };
     // A table without row-level security is shared: one pass reaches every row of it.
-    await rewriteAll(false);
-    if (tenants) await tenants.forEachTenant(() => rewriteAll(true));
-    else await rewriteAll(true);
+    await rewriteAll(false, '');
+    // A site-owned table is rewritten in passes that each touch only rows the pass may write: the
+    // platform's own (no site) rows unbound, then each site's rows with that site bound. A policy can
+    // SHOW a row it will not let the same binding write — a shared row to a site, a site's row to the
+    // platform — and one such row fails the whole statement.
+    await rewriteAll(true, '"tenant_id" IS NULL');
+    if (!tenants) return;
+    await tenants.forEachTenant((tenantId) => tenantId
+      ? rewriteAll(true, `"tenant_id"::text = '${tenantId.replace(/'/g, "''")}'`)
+      : Promise.resolve());
   }
 
   /**
@@ -52,9 +60,10 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
    * whether rows belong to a site. A table another role owns and never granted (a hand-made backup copy)
    * is not this platform's data, and updating it would only fail the boot.
    */
-  private static async tables(db: IDatabaseManager): Promise<Array<{ name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>> {
+  private static async tables(db: IDatabaseManager): Promise<Array<{ name: string; scoped: boolean; tenanted: boolean; columns: Array<{ name: string; json: string }> }>> {
     const result = await db.execute(Sql.raw(
-      `SELECT c.relname AS table_name, c.relrowsecurity AS scoped, a.attname AS column_name, format_type(a.atttypid, NULL) AS data_type
+      `SELECT c.relname AS table_name, c.relrowsecurity AS scoped, a.attname AS column_name, format_type(a.atttypid, NULL) AS data_type,
+              EXISTS (SELECT 1 FROM pg_attribute t WHERE t.attrelid = c.oid AND t.attname = 'tenant_id' AND NOT t.attisdropped) AS tenanted
          FROM pg_class c
          JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = current_schema()
          JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped AND a.attgenerated = ''
@@ -62,22 +71,22 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
           AND has_table_privilege(c.oid, 'SELECT') AND has_table_privilege(c.oid, 'UPDATE')
         ORDER BY c.relname, a.attnum`,
     ));
-    const byTable = new Map<string, { name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>();
+    const byTable = new Map<string, { name: string; scoped: boolean; tenanted: boolean; columns: Array<{ name: string; json: string }> }>();
     for (const row of (result?.rows ?? []) as Array<Record<string, unknown>>) {
       const type = String(row.data_type || '').toLowerCase();
       const json = StoredApiAddressesWithoutVersionMigration.JSON_TYPES.has(type) ? type : '';
       if (!json && !StoredApiAddressesWithoutVersionMigration.TEXT_TYPES.has(type)) continue;
       const name = String(row.table_name);
       if (name === SystemConstants.TABLE.MIGRATIONS) continue;
-      const table = byTable.get(name) ?? { name, scoped: row.scoped === true, columns: [] };
+      const table = byTable.get(name) ?? { name, scoped: row.scoped === true, tenanted: row.tenanted === true, columns: [] };
       table.columns.push({ name: String(row.column_name), json });
       byTable.set(name, table);
     }
     return [...byTable.values()];
   }
 
-  /** One statement per table: each matching column rewritten, every other value left as it is. */
-  private static async rewrite(db: IDatabaseManager, table: string, columns: Array<{ name: string; json: string }>): Promise<void> {
+  /** One statement per table: each matching column rewritten, every other value left as it is; `rows` narrows which rows. */
+  private static async rewrite(db: IDatabaseManager, table: string, columns: Array<{ name: string; json: string }>, rows = ''): Promise<void> {
     const pattern = StoredApiAddressesWithoutVersionMigration.pattern().replace(/'/g, "''");
     const base = ApiVersionUtils.API_BASE_PATH.replace(/'/g, "''");
     const quote = (name: string) => `"${name.replace(/"/g, '""')}"`;
@@ -87,7 +96,8 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
       const replaced = `regexp_replace(${column}::text, '${pattern}', '\\1${base}/', 'g')`;
       return `${column} = CASE WHEN ${matches(column)} THEN ${json ? `(${replaced})::${json}` : replaced} ELSE ${column} END`;
     });
-    const where = columns.map(({ name }) => matches(quote(name))).join(' OR ');
+    const any = columns.map(({ name }) => matches(quote(name))).join(' OR ');
+    const where = rows ? `${rows} AND (${any})` : any;
     await db.execute(Sql.raw(`UPDATE ${quote(table)} SET ${assignments.join(', ')} WHERE ${where}`));
   }
 }
