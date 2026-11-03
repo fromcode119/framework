@@ -3,8 +3,7 @@ import { ApiVersionDefaults } from '@core/constants/api-version-defaults.constan
 
 /**
  * Where the api's routes live: directly under its base path (`/api/...`). There is no version
- * segment and nothing configures one. An address handed out while `/api/...` was served keeps
- * working through the api's legacy alias (`UnversionedApiAliasMiddleware`), never through this class.
+ * segment and nothing configures one; `/api/v<N>/...` is not answered.
  *
  * @example
  * ApiVersionUtils.prefix()              // "/api"

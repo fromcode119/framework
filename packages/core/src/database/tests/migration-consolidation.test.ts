@@ -31,6 +31,7 @@ import { PluginPlatformPartsMigration } from '@core/database/migrations/065_plug
 import { PluginPlatformHandoffsMigration } from '@core/database/migrations/066_plugin_platform_handoffs';
 import { SiteConsolePathMigration } from '@core/database/migrations/067_site_console_path';
 import { PersonFieldsMigration } from '@core/database/migrations/068_person_fields';
+import { StoredApiAddressesWithoutVersionMigration } from '@core/database/migrations/069_stored_api_addresses_without_version';
 
 /** `MigrationLoader` requires compiled files at runtime; under vitest the set is handed over directly. */
 const MIGRATIONS = [
@@ -53,10 +54,11 @@ const MIGRATIONS = [
   new PluginPlatformHandoffsMigration(),
   new SiteConsolePathMigration(),
   new PersonFieldsMigration(),
+  new StoredApiAddressesWithoutVersionMigration(),
 ];
 
 /** The consolidated nine, then everything written after the consolidation. */
-const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68];
+const VERSIONS = [1, 9, 11, 15, 19, 31, 39, 40, 45, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69];
 
 /**
  * Framework migrations 1–52 were consolidated into nine. Each keeps the number of one version it
@@ -127,7 +129,7 @@ describe('consolidated framework migrations', () => {
     // Only what came after the consolidation runs; nothing consolidated re-creates a table.
     expect(await db.tableExists('_system_plugins')).toBe(false);
     const recorded = await db.find('_system_migrations', {});
-    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68]);
+    expect(recorded.map((row: any) => Number(row.version)).filter((version: number) => version > 52)).toEqual([53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69]);
   });
 
   it('refuses a database that stopped part-way, before running anything', async () => {
