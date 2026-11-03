@@ -48,4 +48,11 @@ twoFactorEnabled(token: string): Promise<boolean | null>;
  * `true` once revoked; `false` when the token no longer verifies or the revocation could not be written.
  */
 revokeSession(token: string): Promise<boolean>;
+/**
+ * Whether this account holds `permission` on THIS site right now — exactly what `requirePermission`
+ * answers for a signed-in request, without one: it must be able to enter the site, and the roles in
+ * effect there must grant it. For a credential a plugin issues itself (a connector token, an API key of
+ * its own), so revoking the account's role or membership stops that credential at once. Fails closed.
+ */
+holdsPermission(userId: number | string, permission: string): Promise<boolean>;
 }
