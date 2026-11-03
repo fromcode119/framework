@@ -81,6 +81,13 @@ export class PluginGuestHttp {
    * is the host's, and `x-forwarded-for` is whatever the client chose to write.
    */
   static readonly HEADER_CLIENT_IP = 'x-fc-client-ip';
+  /**
+   * The media type the CLIENT declared, when the host re-serialised a parsed body as JSON. The host
+   * writes `content-type: application/json` for those bytes, so without this a plugin answering a form
+   * post saw JSON and could never refuse it with 415. The guest parses the JSON it was sent, then puts
+   * the client's media type back on the request.
+   */
+  static readonly HEADER_CLIENT_CONTENT_TYPE = 'x-fc-client-content-type';
   static readonly MIDDLEWARE_PATH = '/__fc/middleware';
 
   /**
@@ -94,6 +101,7 @@ export class PluginGuestHttp {
       PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE,
       PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_ORIGINAL_URL,
       PluginGuestHttp.HEADER_NEXT, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP,
+      PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE,
     ];
   }
 
@@ -118,6 +126,7 @@ export class PluginGuestHttp {
     // webhook path, where it parsed it the same way.
     this.server.use(express.json({ limit: '64kb', type: PluginGuestHttp.REPORT_MEDIA_TYPES as unknown as string[], verify: PluginGuestHttp.keepRawBody }));
     this.server.use(express.urlencoded({ extended: true, limit: '25mb', verify: PluginGuestHttp.keepRawBody }));
+    this.server.use(PluginGuestHttp.restoreClientContentType);
     this.server.all(`${PluginGuestHttp.MIDDLEWARE_PATH}/:id`, (req: Request, res: Response) => this.runMiddleware(req, res));
     this.app = express.Router();
     this.server.use(this.app);
@@ -262,6 +271,14 @@ export class PluginGuestHttp {
     };
   }
 
+  /** After the body parsers: the request carries the media type its client sent, not the one the host wrote. */
+  private static restoreClientContentType(req: Request, _res: Response, next: NextFunction): void {
+    const declared = (req as any).fcClientContentType;
+    delete (req as any).fcClientContentType;
+    if (declared) req.headers['content-type'] = declared;
+    next();
+  }
+
   private enterInvocation(req: Request, _res: Response, next: NextFunction): void {
     // Read before the private headers are stripped below; the body parsers (which run after this) check it.
     (req as any).fcKeepRawBody = Boolean(req.headers[PluginGuestHttp.HEADER_RAW_BODY]);
@@ -272,11 +289,12 @@ export class PluginGuestHttp {
     const cacheScope = PluginGuestHttp.decodeCacheScope(String(req.headers[PluginGuestHttp.HEADER_CACHE] ?? ''));
     const connectionId = String(req.headers[PluginGuestConnections.HEADER_CONNECTION] ?? '').trim() || null;
     const clientIp = String(req.headers[PluginGuestHttp.HEADER_CLIENT_IP] ?? '').trim();
+    (req as any).fcClientContentType = String(req.headers[PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE] ?? '').trim();
     const rawUser = req.headers[PluginGuestHttp.HEADER_USER];
     if (typeof rawUser === 'string' && rawUser) {
       (req as any).user = PluginGuestHttp.decodeUser(rawUser);
     }
-    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestConnections.HEADER_CONNECTION]) {
+    for (const header of [PluginGuestHttp.HEADER_TOKEN, PluginGuestHttp.HEADER_TENANT, PluginGuestHttp.HEADER_LOCALE, PluginGuestHttp.HEADER_SITE_LOCALE, PluginGuestHttp.HEADER_CACHE, PluginGuestHttp.HEADER_USER, PluginGuestHttp.HEADER_RAW_BODY, PluginGuestHttp.HEADER_CLIENT_IP, PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE, PluginGuestConnections.HEADER_CONNECTION]) {
       delete req.headers[header];
     }
     (req as any).tenantId = tenantId ?? undefined;

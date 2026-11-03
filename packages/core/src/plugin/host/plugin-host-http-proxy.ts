@@ -113,7 +113,11 @@ export class PluginHostHttpProxy {
       const serialized = forwardRaw ? rawBody : (sendParsed ? Buffer.from(JSON.stringify(parsedBody)) : null);
       if (serialized) {
         if (forwardRaw) headers[PluginGuestHttp.HEADER_RAW_BODY] = '1';
-        else headers['content-type'] = 'application/json';
+        else {
+          const declared = String(req.headers['content-type'] ?? '').trim();
+          if (declared) headers[PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE] = declared;
+          headers['content-type'] = 'application/json';
+        }
         headers['content-length'] = String(serialized.length);
       }
 
