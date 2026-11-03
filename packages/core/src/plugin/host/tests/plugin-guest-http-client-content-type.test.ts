@@ -5,6 +5,7 @@ import path from 'path';
 import request from 'supertest';
 import { afterEach, describe, expect, it } from 'vitest';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
+import { PluginGuestClientContentType } from '@core/plugin/host/plugin-guest-client-content-type';
 import { PluginHostHttpProxy } from '@core/plugin/host/plugin-host-http-proxy';
 
 /**
@@ -33,7 +34,7 @@ describe('the content type a sandboxed plugin sees', () => {
     guest.app.post('/echo', (req: any, res) => res.json({
       type: req.headers['content-type'] ?? null,
       body: req.body,
-      leaked: req.headers[PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE] ?? null,
+      leaked: req.headers[PluginGuestClientContentType.HEADER] ?? null,
     }));
     await guest.listen();
     closers.push(() => guest.close());
@@ -59,7 +60,7 @@ describe('the content type a sandboxed plugin sees', () => {
 
   it('a client cannot name the media type through the private header', async () => {
     const reply = await request(await hostTo()).post('/echo').type('form')
-      .set(PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE, 'application/json').send('a=1');
+      .set(PluginGuestClientContentType.HEADER, 'application/json').send('a=1');
     expect(reply.body.type).toBe('application/x-www-form-urlencoded');
   });
 });

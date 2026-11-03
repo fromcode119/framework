@@ -3,6 +3,7 @@ import zlib from 'zlib';
 import type { Request, Response, NextFunction } from 'express';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
 import { PluginGuestHttp } from '@core/plugin/host/plugin-guest-http';
+import { PluginGuestClientContentType } from '@core/plugin/host/plugin-guest-client-content-type';
 import { NetworkAddressUtils } from '@core/security/network-address-utils';
 import { SitePluginResponseRules } from '@core/plugin/host/site-plugin-response-rules';
 import { ResponseCompressionPolicy } from '@core/security/response-compression-policy';
@@ -115,7 +116,7 @@ export class PluginHostHttpProxy {
         if (forwardRaw) headers[PluginGuestHttp.HEADER_RAW_BODY] = '1';
         else {
           const declared = String(req.headers['content-type'] ?? '').trim();
-          if (declared) headers[PluginGuestHttp.HEADER_CLIENT_CONTENT_TYPE] = declared;
+          if (declared) headers[PluginGuestClientContentType.HEADER] = declared;
           headers['content-type'] = 'application/json';
         }
         headers['content-length'] = String(serialized.length);
