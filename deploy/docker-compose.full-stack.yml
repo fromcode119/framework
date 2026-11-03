@@ -22,8 +22,23 @@
 # If your platform creates a network per deployment, prefer that one over a global shared network:
 # a shared network resolves by service NAME, so two stacks both running `redis` will collide.
 
+# Container logs go to the host journal, not to a file inside the container's own directory: a
+# release recreates the app containers, and Docker deletes a container's json-file log with it, so
+# every deploy used to erase everything logged before it. The journal survives recreation and is
+# rotated and capped by the host's journald (SystemMaxUse, default 10% of the disk, at most 4G).
+# `docker logs` still works. Older lines, across releases, by service:
+#   journalctl COM_DOCKER_COMPOSE_SERVICE=api --since "-7d"
+# Only the services a release recreates carry it: changing the logging of db, redis or edge would
+# recreate them on the next `up`, which takes the platform down.
+x-platform-logging: &platform-logging
+  driver: journald
+  options:
+    tag: "{{.Name}}"
+    labels: com.docker.compose.service
+
 services:
   gateway:
+    logging: *platform-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -133,6 +148,7 @@ services:
           memory: 192M
 
   api:
+    logging: *platform-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -324,6 +340,7 @@ services:
   # With it down, the platform keeps serving; plugin routes do not, and each plugin says why in the admin
   # (Plugins -> a plugin -> Resource limits). When it comes back, the api reconnects and restarts them.
   extension-host:
+    logging: *platform-logging
     image: ${IMAGE_API:-atlantis-api}
     build:
       context: .
@@ -387,6 +404,7 @@ services:
   # (`EXTENSION_HOST_SITE_POOL` on the api). The runtime must be registered with docker, with
   # `--host-uds=all` so the api and the plugins can still reach each other's sockets.
   site-extension-host:
+    logging: *platform-logging
     image: ${IMAGE_API:-atlantis-api}
     build:
       context: .
@@ -424,6 +442,7 @@ services:
           memory: 1G
 
   admin:
+    logging: *platform-logging
     build:
       context: .
       dockerfile: Dockerfile
@@ -469,6 +488,7 @@ services:
           memory: 512M
 
   frontend:
+    logging: *platform-logging
     build:
       context: .
       dockerfile: Dockerfile
