@@ -22,6 +22,8 @@ export class ProcessScratchDirectory {
   /** A legacy folder younger than this may still belong to a process running the previous release. */
   private static readonly LEGACY_GRACE_MS = 24 * 60 * 60 * 1000;
 
+  private static readonly RUN_NAME = /^\d+-\d+$/;
+
   private static runName: string | null = null;
 
   /** A fresh, empty folder inside this run's scratch folder — the drop-in for `fs.mkdtempSync`. */
@@ -32,8 +34,11 @@ export class ProcessScratchDirectory {
   /** Removes what dead runs left behind. Returns how many folders were removed. */
   static sweepStale(): number {
     let removed = 0;
-    for (const name of this.list(this.ROOT)) {
-      if (this.isStaleRun(name)) removed += this.remove(path.join(this.ROOT, name));
+    // The root sits in a shared temp directory: sweep it only when it is our own private folder, never through a link.
+    if (this.isOwnPrivateDirectory(this.ROOT)) {
+      for (const name of this.list(this.ROOT)) {
+        if (this.RUN_NAME.test(name) && this.isStaleRun(name)) removed += this.remove(path.join(this.ROOT, name));
+      }
     }
     const cutoff = Date.now() - this.LEGACY_GRACE_MS;
     for (const name of this.list(os.tmpdir())) {
@@ -46,15 +51,30 @@ export class ProcessScratchDirectory {
 
   private static runDirectory(): string {
     if (!this.runName) this.runName = `${process.pid}-${Date.now()}`;
+    fs.mkdirSync(this.ROOT, { recursive: true, mode: 0o700 });
+    if (!this.isOwnPrivateDirectory(this.ROOT)) {
+      throw new Error(`Refusing to use ${this.ROOT}: it must be a directory owned by this user and closed to others.`);
+    }
     const dir = path.join(this.ROOT, this.runName);
-    fs.mkdirSync(dir, { recursive: true });
+    fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
     return dir;
+  }
+
+  private static isOwnPrivateDirectory(dir: string): boolean {
+    try {
+      const stat = fs.lstatSync(dir);
+      if (!stat.isDirectory()) return false;
+      if (process.getuid && stat.uid !== process.getuid()) return false;
+      return (stat.mode & 0o077) === 0;
+    } catch {
+      return false;
+    }
   }
 
   private static isStaleRun(name: string): boolean {
     if (name === this.runName) return false;
     const pid = Number(name.split('-')[0]);
-    if (!Number.isInteger(pid) || pid <= 0) return true;
+    if (pid <= 0) return true;
     if (pid === process.pid) return true;
     return !this.isAlive(pid);
   }
