@@ -18,6 +18,9 @@ export class GitCommandRunner {
   /** `git` as a promise. Never through a shell, so nothing in a URL or a branch name can be a command. */
   static readonly execFileAsync = promisify(execFile);
 
+  /** Ignored files a pull keeps: installed dependencies and their caches, never build output. */
+  static readonly KEPT_ON_CLEAN = ['node_modules', '.npm-cache', 'package-lock.json', '.fromcode-plugin-deps.json'];
+
   constructor(
     private readonly logger: any,
   ) {}
@@ -49,6 +52,11 @@ export class GitCommandRunner {
         gitUrl,
       );
       await this.runGit(['reset', '--hard', `origin/${branch}`, '--'], { cwd: targetDir });
+      // A reset leaves IGNORED files behind, and those are the previous build's output. A version that
+      // drops its admin UI kept the old src/ui/bundle.js, so the next build still saw an admin bundle,
+      // compiled its styles from a folder that no longer exists and failed "compiled empty" forever.
+      // Every ignored file goes except the dependency caches, which only make the next install faster.
+      await this.runGit(['clean', '-ffdx', ...GitCommandRunner.KEPT_ON_CLEAN.flatMap((kept) => ['-e', kept]), '--'], { cwd: targetDir });
     } catch (err) {
       this.logger.warn(`Pull failed, retrying with fresh clone: ${err}`);
       await this.clone(gitUrl, branch, targetDir, token);
