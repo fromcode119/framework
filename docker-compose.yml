@@ -128,6 +128,13 @@ services:
       - ../../themes:/app/themes
       - ../../appearance:/app/appearance
 
+  # The one-shot that writes the bundled superuser password runs the CLI. Locally the image is the
+  # api's own build, whose baked package.json can predate the npm script name the topology calls, so
+  # the CLI is run directly instead of through that script.
+  db-secrets:
+    image: framework-api
+    entrypoint: ["npx", "tsx", "packages/cli/src/bin.ts", "db", "init-bundled-superuser", "--file", "/run/fromcode-db/superuser.password"]
+
   admin:
     build:
       args:
