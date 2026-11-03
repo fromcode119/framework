@@ -6,7 +6,7 @@ import { BaseMiddleware } from '@api/middlewares/base-middleware';
 /**
  * Gzip compression for JSON GET responses the api answers itself.
  *
- * The api registered no compression middleware at all, so payloads like `/api/v1/system/frontend`
+ * The api registered no compression middleware at all, so payloads like `/api/system/frontend`
  * shipped uncompressed JSON on every storefront boot. Static JS/CSS are already served from precomputed
  * `.gz` files by the archive-support classes; this middleware closes the JSON gap. A plugin's answer
  * streams back through `PluginHostHttpProxy` instead and is compressed there, by the same policy.

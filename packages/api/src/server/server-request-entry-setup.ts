@@ -1,8 +1,7 @@
 import type express from 'express';
 import { EnvUtils, NetworkAddressUtils } from '@fromcode119/core';
-import { UnversionedApiAliasMiddleware } from '@api/middlewares/unversioned-api-alias-middleware';
 
-/** How a request is read before ANY middleware sees it: who sent it, and which path it names. */
+/** How a request is read before ANY middleware sees it: who sent it. */
 export class ServerRequestEntrySetup {
   static apply(app: express.Express): void {
     // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
@@ -14,7 +13,5 @@ export class ServerRequestEntrySetup {
       if (EnvUtils.isDevelopment()) return true;
       return NetworkAddressUtils.isPrivate(ip);
     });
-    // First, so every later middleware and router sees a legacy `/api/v<N>/...` as the `/api/...` path it names.
-    app.use(new UnversionedApiAliasMiddleware().middleware());
   }
 }

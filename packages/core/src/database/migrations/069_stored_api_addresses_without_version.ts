@@ -1,0 +1,88 @@
+import { BaseMigration, IDatabaseManager, IMigrationTenantScope, Sql } from '@fromcode119/database';
+import { ApiVersionUtils } from '@core/api-version';
+import { SystemConstants } from '@core/constants/system.constants';
+
+/**
+ * Stored addresses of the api lose their old version segment: `/api/v1/themes/x/ui/logo.png` becomes
+ * `/api/themes/x/ui/logo.png`.
+ *
+ * The api no longer answers `/api/v1/...` at all. Content saved while it did still names that form — a
+ * site logo in the SEO settings, a page's share image, an image inside a post body — and would now
+ * point at nothing. This rewrites every such address in every text and JSON column, once.
+ *
+ * Only an address of THIS api is touched: a relative path, at the start of a value or right after a
+ * quote, `(`, `=` or whitespace. `https://api.example.com/api/v1` in a blog post about another
+ * service, or a webhook URL pointing elsewhere, has a host in front of it and is left exactly as written.
+ *
+ * Runs once per site, because every site-owned table is behind row-level security and an unscoped
+ * update matches none of its rows. Postgres only: it is the one dialect a deployment runs on, and the
+ * pattern match needs `regexp_replace`.
+ */
+export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
+  readonly version = 69;
+  readonly name = 'Stored api addresses without version';
+  /** The serving release reads both forms until it is replaced, so rewriting under it changes nothing it shows. */
+  readonly rollingSafe = true;
+
+  private static readonly TEXT_TYPES = new Set(['text', 'character varying', 'character']);
+  private static readonly JSON_TYPES = new Set(['json', 'jsonb']);
+
+  /** `(^|["'(=\s])/api/v<N>/` — the old prefix of a relative address, with what stood before it kept. */
+  static pattern(base = ApiVersionUtils.API_BASE_PATH): string {
+    const escaped = base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return `(^|["'(=\\s])${escaped}/v[0-9]+/`;
+  }
+
+  async up(db: IDatabaseManager, _sql?: unknown, tenants?: IMigrationTenantScope): Promise<void> {
+    if (db.dialect !== 'postgres') return;
+    const tables = await StoredApiAddressesWithoutVersionMigration.tables(db);
+    const rewriteAll = async (scoped: boolean) => {
+      for (const table of tables) {
+        if (table.scoped === scoped) await StoredApiAddressesWithoutVersionMigration.rewrite(db, table.name, table.columns);
+      }
+    };
+    // A table without row-level security is shared: one pass reaches every row of it.
+    await rewriteAll(false);
+    if (tenants) await tenants.forEachTenant(() => rewriteAll(true));
+    else await rewriteAll(true);
+  }
+
+  /** Every table in the current schema with its text and JSON columns, and whether rows belong to a site. */
+  private static async tables(db: IDatabaseManager): Promise<Array<{ name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>> {
+    const result = await db.execute(Sql.raw(
+      `SELECT c.relname AS table_name, c.relrowsecurity AS scoped, a.attname AS column_name, format_type(a.atttypid, NULL) AS data_type
+         FROM pg_class c
+         JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = current_schema()
+         JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped AND a.attgenerated = ''
+        WHERE c.relkind IN ('r', 'p')
+        ORDER BY c.relname, a.attnum`,
+    ));
+    const byTable = new Map<string, { name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>();
+    for (const row of (result?.rows ?? []) as Array<Record<string, unknown>>) {
+      const type = String(row.data_type || '').toLowerCase();
+      const json = StoredApiAddressesWithoutVersionMigration.JSON_TYPES.has(type) ? type : '';
+      if (!json && !StoredApiAddressesWithoutVersionMigration.TEXT_TYPES.has(type)) continue;
+      const name = String(row.table_name);
+      if (name === SystemConstants.TABLE.MIGRATIONS) continue;
+      const table = byTable.get(name) ?? { name, scoped: row.scoped === true, columns: [] };
+      table.columns.push({ name: String(row.column_name), json });
+      byTable.set(name, table);
+    }
+    return [...byTable.values()];
+  }
+
+  /** One statement per table: each matching column rewritten, every other value left as it is. */
+  private static async rewrite(db: IDatabaseManager, table: string, columns: Array<{ name: string; json: string }>): Promise<void> {
+    const pattern = StoredApiAddressesWithoutVersionMigration.pattern().replace(/'/g, "''");
+    const base = ApiVersionUtils.API_BASE_PATH.replace(/'/g, "''");
+    const quote = (name: string) => `"${name.replace(/"/g, '""')}"`;
+    const matches = (column: string) => `${column}::text ~ '${pattern}'`;
+    const assignments = columns.map(({ name, json }) => {
+      const column = quote(name);
+      const replaced = `regexp_replace(${column}::text, '${pattern}', '\\1${base}/', 'g')`;
+      return `${column} = CASE WHEN ${matches(column)} THEN ${json ? `(${replaced})::${json}` : replaced} ELSE ${column} END`;
+    });
+    const where = columns.map(({ name }) => matches(quote(name))).join(' OR ');
+    await db.execute(Sql.raw(`UPDATE ${quote(table)} SET ${assignments.join(', ')} WHERE ${where}`));
+  }
+}

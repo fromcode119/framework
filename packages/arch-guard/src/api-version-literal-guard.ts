@@ -7,8 +7,8 @@ import { GuardScope } from './cli/guard-scope';
  *
  * The version segment is configuration — `ApiVersionUtils.prefix()` reads it, and `ApiPathUtils`
  * composes every framework path from it — so a literal copy is a second answer that silently stops
- * matching the moment the prefix changes. The api serves `/api/...` and `/api/v1/...` alike, which
- * is exactly why a stale literal would go unnoticed until the alias is retired.
+ * matching the moment the prefix changes. The api no longer answers `/api/v1/...`, so a stale literal
+ * is a request that 404s.
  *
  * Stylesheets and manifests (`theme.json`, `appearance.json`) are scanned too: a font `url()` or an LCP
  * `urlTemplate` with the version written in it is the same second answer.

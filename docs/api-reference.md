@@ -63,11 +63,12 @@ The GraphQL schema is automatically generated based on your collection definitio
 
 ## API paths
 
-Every route lives directly under `/api` — there is no version segment. A request to a legacy
-`/api/v<N>/...` address is answered at the same route, and each one is logged (`api-legacy-path`), so
-an address handed out before the version was dropped (a webhook, an OAuth callback, an installed app)
-keeps working while the log names who still holds it. Theme and plugin files asked for at a legacy
-address get a permanent redirect instead.
+Every route lives directly under `/api` — there is no version segment. A `/api/v<N>/...` address is
+not answered (404). Addresses of this api that were stored in content with a version segment (a site
+logo, a share image, an image in a post) were rewritten to `/api/...` by core migration 69.
+
+On a host whose role is **api**, the same routes are also answered at the root:
+`https://api.example.com/collections/pages` is `https://api.example.com/api/collections/pages`.
 
 ## Realtime API (WebSockets)
 

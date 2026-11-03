@@ -7,8 +7,8 @@
  * always hit the network, and pulling it from `ApiVersionUtils` dragged the whole browser-URL chain
  * into a `ServiceWorkerGlobalScope` that has no `window`.
  *
- * Routes live directly under it (`/api/...`); there is no version segment. A legacy `/api/v<N>/...`
- * request still reaches the same route (`UnversionedApiAliasMiddleware`).
+ * Routes live directly under it (`/api/...`); there is no version segment, and `/api/v<N>/...` is not
+ * answered.
  */
 export class ApiVersionDefaults {
   static readonly BASE_PATH = '/api';
