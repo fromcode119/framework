@@ -6,7 +6,7 @@ import { RealtimeSocketAuthorizer } from '@api/server/realtime-socket-authorizer
 import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
-import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, RealtimeRoomClient, ProcessSignals, RedisProcessSignalTransport } from '@fromcode119/core';
+import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, RealtimeRoomClient, ProcessSignals, RedisProcessSignalTransport, ProcessScratchDirectory, ArchiveUploadSessionService } from '@fromcode119/core';
 import { SystemConstants, ApplicationUrlUtils, LocalizationUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
@@ -118,6 +118,10 @@ export class APIServer {
 
   public async initialize() {
     this.logger.info('Initializing API Server infrastructure...');
+    // Temporary folders a previous run of this api left behind (an upload cut off by a restart, an import that crashed mid-unpack).
+    const sweptScratch = ProcessScratchDirectory.sweepStale();
+    ArchiveUploadSessionService.pruneExpiredSessions();
+    if (sweptScratch > 0) this.logger.info(`Removed ${sweptScratch} temporary folder(s) left by earlier runs.`);
     // What another api process changes reaches this one's caches (ProcessSignals); one process needs no transport.
     const redisUrl = process.env.REDIS_URL;
     // Not awaited: an unreachable Redis must not hold up boot; signals start once it answers.

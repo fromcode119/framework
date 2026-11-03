@@ -1,5 +1,4 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import * as tar from 'tar';
 import { CoercionUtils } from '@core/utils/coercion-utils';
@@ -12,6 +11,7 @@ import { TenantArchiveUsersExport } from '@core/tenant/provisioning/tenant-archi
 import { TenantSql } from '@core/tenant/provisioning/tenant-sql';
 import { TenantTableDescriptor } from '@core/tenant/provisioning/tenant-table-descriptor';
 import { SecretTransitResealer } from '@core/security/secret-transit-resealer';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * Writes one tenant — or one whole single-tenant deployment — into a portable archive.
@@ -47,7 +47,7 @@ export class TenantArchiveWriter {
     theme: TenantArchiveManifest['theme'];
     outputPath: string;
   }): Promise<{ archivePath: string; manifest: TenantArchiveManifest }> {
-    const staging = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-tenant-export-'));
+    const staging = ProcessScratchDirectory.make('fromcode-tenant-export-');
     try {
       fs.mkdirSync(path.join(staging, TenantArchiveLayout.TABLES_DIR), { recursive: true });
       fs.mkdirSync(path.join(staging, TenantArchiveLayout.FILES_DIR), { recursive: true });

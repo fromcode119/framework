@@ -1,10 +1,10 @@
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import { BackupService } from '@core/management/backup-service';
 import { BackupSectionKey } from '@core/management/enums/backup-section-key.enum';
 import { ExtensionDirectorySwap } from '@core/extensions/extension-directory-swap';
 import type { Logger } from '@core/logging';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * An install whose migrations fail leaves the plugin's files as they were.
@@ -57,7 +57,7 @@ export class PluginInstallRollback {
       this.logger.warn(`Install of "${slug}" failed; its files were removed, as it was not installed before.`);
       return;
     }
-    const scratch = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-plugin-restore-'));
+    const scratch = ProcessScratchDirectory.make('fromcode-plugin-restore-');
     try {
       await BackupService.restore(backup, scratch);
       const restored = path.join(scratch, slug);

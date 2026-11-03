@@ -189,7 +189,8 @@ export class ArchiveUploadSessionService {
     return fs.readdirSync(chunkDirectory).filter((entry) => entry.endsWith('.part')).length;
   }
 
-  private static pruneExpiredSessions(): void {
+  /** Removes upload sessions older than the TTL. Runs at boot too, so an upload cut off by a restart does not wait for the next upload to be cleared. */
+  static pruneExpiredSessions(): void {
     if (!fs.existsSync(this.SESSION_ROOT)) {
       return;
     }

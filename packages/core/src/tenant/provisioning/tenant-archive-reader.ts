@@ -1,10 +1,10 @@
 import fs from 'fs';
-import os from 'os';
 import path from 'path';
 import readline from 'readline';
 import * as tar from 'tar';
 import { TenantArchiveLayout } from '@core/tenant/provisioning/tenant-archive-layout';
 import { TenantArchiveManifest } from '@core/tenant/provisioning/tenant-archive-manifest';
+import { ProcessScratchDirectory } from '@core/management/process-scratch-directory';
 
 /**
  * Opens a tenant archive: extracts it to a private temporary directory, validates the manifest, and
@@ -19,7 +19,7 @@ export class TenantArchiveReader {
 
   static async open(archivePath: string): Promise<TenantArchiveReader> {
     if (!fs.existsSync(archivePath)) throw new Error(`Tenant archive not found: ${archivePath}`);
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), 'fromcode-tenant-import-'));
+    const root = ProcessScratchDirectory.make('fromcode-tenant-import-');
     try {
       await tar.extract({ file: archivePath, cwd: root });
       const manifestPath = path.join(root, TenantArchiveLayout.MANIFEST);
