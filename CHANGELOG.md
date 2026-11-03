@@ -6,6 +6,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.486] - 2026-11-03
+
+### Added
+- **marketplace**: browse marketplace.fromcodeframework.com by default ([#1165](https://github.com/fromcode119/framework/pull/1165))
+
+### Fixed
+- **admin**: an imported slug survives on a new record ([#1167](https://github.com/fromcode119/framework/pull/1167))
+- **frontend**: never invent an "Untitled" heading for a page with no title ([#1166](https://github.com/fromcode119/framework/pull/1166))
+
 ## [0.2.485] - 2026-11-03
 
 ### Fixed
