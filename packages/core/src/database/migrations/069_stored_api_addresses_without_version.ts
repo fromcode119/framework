@@ -47,7 +47,11 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
     else await rewriteAll(true);
   }
 
-  /** Every table in the current schema with its text and JSON columns, and whether rows belong to a site. */
+  /**
+   * Every table in the current schema that this role may update, with its text and JSON columns, and
+   * whether rows belong to a site. A table another role owns and never granted (a hand-made backup copy)
+   * is not this platform's data, and updating it would only fail the boot.
+   */
   private static async tables(db: IDatabaseManager): Promise<Array<{ name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>> {
     const result = await db.execute(Sql.raw(
       `SELECT c.relname AS table_name, c.relrowsecurity AS scoped, a.attname AS column_name, format_type(a.atttypid, NULL) AS data_type
@@ -55,6 +59,7 @@ export class StoredApiAddressesWithoutVersionMigration extends BaseMigration {
          JOIN pg_namespace n ON n.oid = c.relnamespace AND n.nspname = current_schema()
          JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum > 0 AND NOT a.attisdropped AND a.attgenerated = ''
         WHERE c.relkind IN ('r', 'p')
+          AND has_table_privilege(c.oid, 'SELECT') AND has_table_privilege(c.oid, 'UPDATE')
         ORDER BY c.relname, a.attnum`,
     ));
     const byTable = new Map<string, { name: string; scoped: boolean; columns: Array<{ name: string; json: string }> }>();
