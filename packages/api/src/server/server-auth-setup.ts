@@ -8,6 +8,7 @@ import { TenantRegistryService, TenantResolverService } from '@fromcode119/core'
 import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resolver';
 import { McpTokenLookupService } from '@api/controllers/mcp/mcp-token-lookup-service';
 import { McpTokenStore } from '@api/controllers/mcp/mcp-token-store';
+import { McpTokenUsageRecorder } from '@api/controllers/mcp/mcp-token-usage-recorder';
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 
 export class ServerAuthSetup {
@@ -18,6 +19,7 @@ export class ServerAuthSetup {
   ) {}
 
   private lookup: McpTokenLookupService | null = null;
+  private usage: McpTokenUsageRecorder | null = null;
 
   private tokenLookup(): McpTokenLookupService {
     if (!this.lookup) {
@@ -25,6 +27,11 @@ export class ServerAuthSetup {
       this.lookup = new McpTokenLookupService(new McpTokenStore(this.db), () => new TenantRegistryService(this.db, tenants).list());
     }
     return this.lookup;
+  }
+
+  private tokenUsage(): McpTokenUsageRecorder {
+    if (!this.usage) this.usage = new McpTokenUsageRecorder(new McpTokenStore(this.db), this.logger);
+    return this.usage;
   }
 
   configure() {
@@ -76,6 +83,7 @@ export class ServerAuthSetup {
         if (!record || record.isExpired) return null;
         const user = await this.db.findOne('users', { id: record.userId });
         if (!user) return null;
+        void this.tokenUsage().touch(record);
         const roles = Array.isArray(user.roles) ? user.roles : (() => {
           try { const p = JSON.parse(user.roles); return Array.isArray(p) ? p : []; } catch { return []; }
         })();
