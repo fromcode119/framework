@@ -9,7 +9,7 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
  * `DynamicPageResolver.resolveFetchCache` and `ResolvedContentMetadata.headDataCache`.
  *
  * Two server-side consumers share the SAME prefetch pass within one request:
- *  - `ThemeAssets` (head): injects `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}` + LCP image preload.
+ *  - `ThemeAssets` (head): injects the page's prefetch JSON (`PagePrefetch`) + LCP image preload.
  *  - `SsrContentShell` (body): paints the above-the-fold shell (nav + h1 + intro text).
  *
  * React `cache()` guarantees a single `ThemeDataPrefetcher.prefetch()` execution per

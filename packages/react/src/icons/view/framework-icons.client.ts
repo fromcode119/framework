@@ -5,6 +5,7 @@ import { IconUtils } from '@react/icons/icon-utils';
 import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
 
 export class FrameworkIcons {
+  private static readonly proxyIconCache = new Map<string, React.ComponentType<any>>();
   static readonly Dashboard = IconUtils.createProxyIcon('LayoutDashboard');
   static readonly LayoutDashboard = IconUtils.createProxyIcon('LayoutDashboard');
   static readonly Plugins = IconUtils.createProxyIcon('Puzzle');
@@ -153,12 +154,7 @@ export class FrameworkIcons {
   }
 
   private static getProxyCache(): Map<string, React.ComponentType<any>> {
-    const globalWindow = window as any;
-    if (!globalWindow._proxyIconCache) {
-      globalWindow._proxyIconCache = new Map<string, React.ComponentType<any>>();
-    }
-
-    return globalWindow._proxyIconCache;
+    return FrameworkIcons.proxyIconCache;
   }
 }
 

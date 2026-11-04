@@ -17,7 +17,7 @@ import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-fro
  * Domain-agnostic by construction: the framework only reads generic document/block
  * shapes (`slug`, block `data.slugs`/`productSlugs`/`productSlug`); the theme's
  * `theme.json` decides which plugin endpoint the values feed and under which key
- * the payload lands. Results are merged into `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}`
+ * the payload lands. Results are merged into the page's prefetch JSON (`PagePrefetch`)
  * by the PageDocPrefetch server component (body script — runs long before the
  * client-only theme boots).
  *
@@ -160,11 +160,6 @@ export class PageDocPrefetcher {
   private static slugToken(raw: unknown): string {
     const value = String(raw ?? '').trim();
     return /^[a-z0-9][a-z0-9_-]*$/i.test(value) ? value : '';
-  }
-
-  /** Inline-script body that merges page-scoped payloads into the shared prefetch global. */
-  static buildMergeScript(results: Record<string, unknown>): string {
-    return `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}=Object.assign(window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}||{},${ThemeDataPrefetcher.safeSerialize(results)});`;
   }
 
   static deriveValues(doc: unknown, config: ThemePrefetchFromPageConfig): string[] {

@@ -1,8 +1,8 @@
+import { PagePrefetchScriptView } from '@/components/page-prefetch-script';
 import type { Metadata } from 'next';
 import type { ReactElement, ReactNode } from 'react';
 import { DocumentHeadView } from '@/lib/document/document-head-view';
 import type { ThemeHeadModel } from '@/lib/document/theme-head-model';
-import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import type { ThemeSsrMarkup } from '@/lib/ssr/theme-ssr-markup';
 import { StructuredDataScriptsView } from '@/components/structured-data-scripts';
@@ -54,7 +54,7 @@ export class DocumentView {
           {bodyStartInjections}
           <div id={StorefrontDocumentContract.ROOT_ID} dangerouslySetInnerHTML={{ __html: markup?.bodyHtml || '' }} />
           <StructuredDataScriptsView.render schema={schema} />
-          {Object.keys(pageDocPrefetch).length ? <script dangerouslySetInnerHTML={{ __html: PageDocPrefetcher.buildMergeScript(pageDocPrefetch) }} /> : null}
+          <PagePrefetchScriptView.render payload={pageDocPrefetch} />
           <script type="application/json" id={StorefrontDocumentContract.CONFIG_ELEMENT_ID} dangerouslySetInnerHTML={{ __html: ThemeDataPrefetcher.safeSerialize(runtimeConfig) }} />
         </body>
       </html>

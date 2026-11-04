@@ -13,7 +13,7 @@ export class ThemePrefetchApiEntry {
    * Per-page prefetch: derive an extra query param from the resolved page document.
    * Entries WITH `fromPage` are skipped by the static per-request prefetch pass
    * (ThemeDataPrefetcher) and instead fetched by PageDocPrefetcher, which has the
-   * resolved document; their payloads are merged into `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}`
+   * resolved document; their payloads are merged into the page's prefetch JSON (`PagePrefetch`)
    * from the page body before the theme boots.
    */
   declare fromPage?: ThemePrefetchFromPageConfig;

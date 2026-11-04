@@ -12,7 +12,7 @@ import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
  *  - `SsrContentShell` (body): extracts the page's LCP image from the payload
  *    (via the entry's `lcp` config) when the document itself carries no image.
  *  - `PageDocPrefetch` (body): injects the payloads into
- *    `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}` for the theme.
+ *    the page's prefetch JSON (`PagePrefetch`) for the theme.
  */
 export class PageDocPrefetchRequestCache {
   private static readonly prefetchCache = cache(async (doc: unknown, requestSearch: string): Promise<Record<string, unknown>> => {

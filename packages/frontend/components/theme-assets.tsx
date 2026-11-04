@@ -1,3 +1,4 @@
+import { PagePrefetchScriptView } from '@/components/page-prefetch-script';
 import { preconnect, preload } from 'react-dom';
 import { ThemeHeadModel } from '@/lib/document/theme-head-model';
 
@@ -47,7 +48,7 @@ export class ThemeAssetsView {
           {/* The theme's boot script, inlined so it runs at FIRST PAINT rather than behind the bundle
             chain — see `ThemeHeadModel.loadBootScript`. */}
           {model.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: model.inlinedBootScript }} /> : null}
-          {model.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: model.prefetchScript }} /> : null}
+          <PagePrefetchScriptView.render payload={model.prefetchData} />
           {model.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={model.versionedEntryUrl} /> : null}
           {/* Inline script: modulepreload + non-blocking external stylesheets, so React 19's resource
               hoisting cannot interfere (see ThemeHeadModel.injectorScript). */}

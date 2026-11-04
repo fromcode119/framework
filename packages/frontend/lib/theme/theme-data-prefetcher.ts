@@ -9,7 +9,7 @@ import type { ILcpImagePreload } from '@/lib/theme/interfaces/lcp-image-preload.
  * Fetches plugin data server-side based on theme.json `ui.prefetchApis` config
  * and returns a record keyed by the declared entry `key`.
  *
- * The caller should inject the result as `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}`
+ * The caller should inject the result as the page's prefetch JSON (`PagePrefetch`)
  * so theme components can hydrate immediately without waiting for a client-side
  * API round-trip.
  *
@@ -47,7 +47,7 @@ export class ThemeDataPrefetcher {
     // THE TENANT, and the reason this whole mechanism was dead. A server-to-server fetch reaches the
     // API as `Host: api:3000`, and on a multi-tenant deployment the API routes by host — so every
     // prefetch resolved no site and was refused. Nothing failed loudly: the payload came back empty,
-    // no `__FC_PAGE_PREFETCH__` script was emitted, and every consumer quietly fell through to
+    // no prefetch JSON was emitted, and every consumer quietly fell through to
     // its client fetch. The navigation menus have been arriving one round trip late ever since, and
     // any consumer WITHOUT a fallback would simply have rendered nothing.
     const forwardedHeaders = await ServerApiUtils.buildForwardedAuthHeaders();

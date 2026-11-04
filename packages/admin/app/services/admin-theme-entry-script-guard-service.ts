@@ -1,13 +1,14 @@
 import { Platform } from '@fromcode119/react-class-components';
 
 export class AdminThemeEntryScriptGuardService {
+  private static installed = false;
+
   static install(): void {
     if (!Platform.isBrowser || typeof Element === 'undefined') {
       return;
     }
 
-    const globalWindow = window as typeof window & Record<string, any>;
-    if (globalWindow.__fromcodeAdminThemeEntryScriptGuardInstalled) {
+    if (AdminThemeEntryScriptGuardService.installed) {
       return;
     }
 
@@ -29,6 +30,6 @@ export class AdminThemeEntryScriptGuardService {
       return originalAppendChild.call(this, node) as T;
     };
 
-    globalWindow.__fromcodeAdminThemeEntryScriptGuardInstalled = true;
+    AdminThemeEntryScriptGuardService.installed = true;
   }
 }

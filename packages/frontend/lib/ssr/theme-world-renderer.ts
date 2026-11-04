@@ -6,7 +6,8 @@
 // dragged them in. Importing the one module directly is also what the codebase's own rule asks for —
 // consumers import from the actual source file, never through a re-export barrel.
 import { PluginNavigation } from '@fromcode119/react/plugin-navigation';
-import { RuntimeConstants } from '@fromcode119/core/client';
+import { PagePrefetch, RenderLocationUtils } from '@fromcode119/core/client';
+import type { IRenderLocation } from '@fromcode119/core/client';
 import { ResolvedContentShape } from '@/lib/resolved-content-shape';
 import { ServerPluginContext } from '@/lib/ssr/server-plugin-context';
 import { ThemeServerRegistry } from '@/lib/ssr/theme-server-registry';
@@ -102,39 +103,29 @@ export class ThemeWorldRenderer {
   }
 
   /**
-   * Render with the page's prefetch payload visible on `globalThis`.
+   * Render with the page's prefetch payload and address in scope.
    *
-   * A theme reads server-prefetched data through `PrefetchedDataService`, which looks the payload up on
-   * `globalThis[GLOBALS.PAGE_PREFETCH]` — the browser gets it from the inline script `PageDocPrefetchView`
-   * emits. Without it server-side, product-backed components render their empty state and the page's real
-   * LCP image (the product photo) is absent from the HTML, so the browser cannot start fetching it until
-   * the client has hydrated AND made its own API round-trip.
+   * A theme reads server-prefetched data through `PagePrefetch.get(key)` — the browser gets it from the
+   * JSON block `PagePrefetchScriptView` emits — and the page address through `RenderLocationUtils`.
+   * Without them server-side, product-backed components render their empty state and the page's real LCP
+   * image (the product photo) is absent from the HTML.
    *
-   * Safe as a global: `renderToString` is synchronous, so nothing else runs between the assignment
-   * and the restore, and the previous value is put back in `finally`.
+   * Both are module-scoped, never `globalThis`: `renderToString` is synchronous, so the scope is exactly
+   * the render. They are set on BOTH core instances that can be reached during it — the one this process
+   * bundled and the one the theme/plugin bundles `require` — since each holds its own scope.
    */
   private static renderWithPrefetch(
     runtime: ThemeSsrRuntime,
     tree: unknown,
     prefetched: Record<string, unknown>,
-    location: { path: string; origin: string; search: string },
+    location: IRenderLocation,
   ): string {
-    const globals = globalThis as unknown as Record<string, unknown>;
-    const { PAGE_PREFETCH, RENDER_PATH, RENDER_ORIGIN, RENDER_SEARCH } = RuntimeConstants.GLOBALS;
-    const previous = { prefetch: globals[PAGE_PREFETCH], path: globals[RENDER_PATH], origin: globals[RENDER_ORIGIN], search: globals[RENDER_SEARCH] };
-    globals[PAGE_PREFETCH] = prefetched;
-    // The server's `window.location` — see `RenderLocationUtils`.
-    globals[RENDER_PATH] = location.path;
-    globals[RENDER_ORIGIN] = location.origin;
-    globals[RENDER_SEARCH] = location.search;
-    try {
-      return runtime.renderToString(tree);
-    } finally {
-      globals[PAGE_PREFETCH] = previous.prefetch;
-      globals[RENDER_PATH] = previous.path;
-      globals[RENDER_ORIGIN] = previous.origin;
-      globals[RENDER_SEARCH] = previous.search;
-    }
+    const shared = runtime.frameworkCore as { PagePrefetch: typeof PagePrefetch; RenderLocationUtils: typeof RenderLocationUtils };
+    // The themes built before `PagePrefetch` read the legacy read-only name; it is a getter onto `all()`.
+    shared.PagePrefetch.installLegacyAlias();
+    const render = () => runtime.renderToString(tree) as string;
+    return PagePrefetch.renderWith(prefetched, () => RenderLocationUtils.renderAt(location, () =>
+      shared.PagePrefetch.renderWith(prefetched, () => shared.RenderLocationUtils.renderAt(location, render))));
   }
 
   /**

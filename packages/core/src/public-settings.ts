@@ -2,6 +2,7 @@ import React from 'react';
 import { RuntimeConstants } from '@core/constants/runtime.constants';
 import { EnvUtils } from '@core/utils/env-utils';
 import { ApiPathUtils } from '@core/api/api-path-utils';
+import { RuntimeBridge } from '@core/runtime-bridge';
 
 /**
  * Lazy-loading cache of `publicSettings` from /api/system/frontend.
@@ -82,8 +83,7 @@ export class PublicSettings {
   private static resolveApiBaseUrl(explicit?: string): string {
     if (explicit) return explicit;
     if (EnvUtils.isServer()) return '';
-    const w = window as any;
-    return String(w.ATLANTIS_API_URL || w.Fromcode?.apiUrl || w.location?.origin || '').replace(/\/+$/, '');
+    return RuntimeBridge.resolveApiBaseUrl();
   }
 
   private static emit(): void {

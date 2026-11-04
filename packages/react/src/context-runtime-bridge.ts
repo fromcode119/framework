@@ -110,8 +110,6 @@ export class ContextRuntimeBridge {
 
   /** Shared by both installs: ContextBridge args, the ONE runtime registry, the import map. */
   private static installBridge(args: IRuntimeBridgeInstallArgs): void {
-    if (args.apiUrl) (window as any).ATLANTIS_API_URL = args.apiUrl;
-
     // Install args into ContextBridge so its static methods delegate to live implementations.
     ContextBridge.install(args);
 

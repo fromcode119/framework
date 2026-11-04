@@ -12,7 +12,7 @@ describe('DocumentHeadView', () => {
   it('emits no modulepreload for the theme entry or its chunks', () => {
     const theme = {
       slug: 'demo', apiUrl: 'https://api.example.test', cssVariables: '', inlinedCss: '', fallbackCssHrefs: [],
-      preloadLinks: [], elementLinks: [], inlinedBootScript: '', externalStylesheets: [], prefetchScript: '', lcpPreload: null,
+      preloadLinks: [], elementLinks: [], inlinedBootScript: '', externalStylesheets: [], prefetchData: {}, lcpPreload: null,
       injectorScript: '', versionedEntryUrl: 'https://api.example.test/themes/demo/ui/bundle.js?v=1',
       modulePreloadLinks: ['https://api.example.test/themes/demo/ui/bundle.js?v=1', 'https://api.example.test/themes/demo/ui/chunk-a.js'],
     } as unknown as ThemeHeadModel;
