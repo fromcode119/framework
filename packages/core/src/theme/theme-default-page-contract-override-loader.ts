@@ -14,7 +14,7 @@ export class ThemeDefaultPageContractOverrideLoader {
       return [];
     }
 
-    const moduleExports = await this.loadModule(overrideModulePath);
+    const moduleExports = await this.loadModule(overrideModulePath, themeDirectory);
     return this.readOverrides(moduleExports);
   }
 
@@ -40,12 +40,31 @@ export class ThemeDefaultPageContractOverrideLoader {
     return candidates.find((candidate) => fs.existsSync(candidate)) || null;
   }
 
-  private async loadModule(modulePath: string): Promise<any> {
+  private async loadModule(modulePath: string, themeDirectory: string): Promise<any> {
+    if (modulePath.endsWith('.ts')) return this.loadSource(modulePath, themeDirectory);
     try {
       return require(modulePath);
     } catch {
       return import(pathToFileURL(modulePath).href);
     }
+  }
+
+  /**
+   * A mounted source theme (local dev) imports through its own `@theme/*` path alias, which plain
+   * `require`/`import` cannot resolve. Load it with the theme's own tsconfig, so the alias resolves
+   * exactly as the theme's build resolves it. (tsx applies `paths` to ES-module packages, which every
+   * theme is — `theme.json` themes declare `"type": "module"`.)
+   */
+  private async loadSource(sourcePath: string, mountedDirectory: string): Promise<any> {
+    // tsx matches tsconfig `paths` against the REAL path; a symlinked mount must not hide the alias.
+    const themeDirectory = fs.realpathSync(mountedDirectory);
+    const modulePath = fs.realpathSync(sourcePath);
+    const tsconfig = path.join(themeDirectory, 'tsconfig.json');
+    const { tsImport } = require('tsx/esm/api') as { tsImport: (specifier: string, options: { parentURL: string; tsconfig?: string | false }) => Promise<any> };
+    return tsImport(pathToFileURL(modulePath).href, {
+      parentURL: pathToFileURL(`${themeDirectory}${path.sep}`).href,
+      tsconfig: fs.existsSync(tsconfig) ? tsconfig : false,
+    });
   }
 
   private readOverrides(moduleExports: any): IThemeDefaultPageContractOverride[] {

@@ -81,4 +81,27 @@ describe('ThemeDefaultPageContractOverrideLoader', () => {
 
     await expect(loader.load(themeDirectory)).resolves.toEqual([]);
   });
+
+  it('loads a mounted source theme whose overrides import through the theme\'s own @theme alias', async () => {
+    const themeDirectory = fs.mkdtempSync(path.join(os.tmpdir(), 'theme-overrides-'));
+    temporaryDirectories.push(themeDirectory);
+    fs.mkdirSync(path.join(themeDirectory, 'src', 'seeds'), { recursive: true });
+    fs.mkdirSync(path.join(themeDirectory, 'src', 'lib'), { recursive: true });
+    // Themes are ES modules; tsx applies tsconfig `paths` on that path.
+    fs.writeFileSync(path.join(themeDirectory, 'package.json'), JSON.stringify({ name: 'theme', private: true, type: 'module' }));
+    fs.writeFileSync(path.join(themeDirectory, 'tsconfig.json'), JSON.stringify({ compilerOptions: { baseUrl: '.', paths: { '@theme/*': ['./src/*'] } } }));
+    fs.writeFileSync(path.join(themeDirectory, 'src', 'lib', 'routes.ts'), "export class Routes { static readonly SHOP = '/shop'; }\n");
+    fs.writeFileSync(
+      path.join(themeDirectory, 'src', 'seeds', 'theme-default-page-contract-overrides.ts'),
+      [
+        "import { Routes } from '@theme/lib/routes';",
+        'export class Overrides {',
+        "  static getOverrides() { return [{ contract: { namespace: 'org.fromcode', pluginSlug: 'alpha', key: 'store-index' }, slug: Routes.SHOP }]; }",
+        '}',
+      ].join('\n'),
+    );
+
+    const overrides = await new ThemeDefaultPageContractOverrideLoader().load(themeDirectory);
+    expect(overrides.map((override) => override.slug)).toEqual(['/shop']);
+  });
 });
