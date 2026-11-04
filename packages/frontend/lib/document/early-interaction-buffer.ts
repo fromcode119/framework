@@ -15,11 +15,17 @@
  * the page was re-rendered on the fallback path, on the element now at the same place.
  *
  * {@link bootstrap} is serialised with `Function.prototype.toString()`, like `ColorSchemeBootScript`:
- * it must stay self-contained — only its parameters and browser globals.
+ * it must stay self-contained — only its parameters and the DOM.
+ *
+ * The two halves share nothing on `window`: the inline script records what it held in an inert
+ * `<script type="application/json">` element and stops when the runtime dispatches {@link RELEASE_EVENT}.
  */
 export class EarlyInteractionBuffer {
-  /** Where the inline script keeps its state for the runtime to find. */
-  static readonly GLOBAL_KEY = '__fcEarlyInteractions';
+  /** The inert JSON element in which the inline script records what it held, for the runtime to read. */
+  static readonly STATE_ELEMENT_ID = 'fc-early-interactions';
+
+  /** Dispatched on `document` by {@link release}; the inline script stops holding when it arrives. */
+  static readonly RELEASE_EVENT = 'fc:early-interactions-release';
 
   /** Set on a control whose click is being held; removed when it is played back. */
   static readonly PENDING_ATTRIBUTE = 'data-fc-pending';
@@ -27,9 +33,9 @@ export class EarlyInteractionBuffer {
   /** How long playback waits for a fallback re-render to put the control back, in 50 ms steps. */
   private static readonly RETRY_LIMIT = 100;
 
-  static bootstrap(globalKey: string, pendingAttribute: string): void {
+  static bootstrap(stateElementId: string, pendingAttribute: string, releaseEvent: string): void {
     const controlSelector = 'button,[role="button"],input[type="submit"],input[type="button"],input[type="image"]';
-    const held: Array<{ element: Element; path: string; submit: boolean }> = [];
+    const held: Array<{ path: string; submit: boolean }> = [];
     const pathOf = (element: Element): string => {
       const parts: string[] = [];
       let node: Element | null = element;
@@ -42,10 +48,22 @@ export class EarlyInteractionBuffer {
       }
       return parts.join('>');
     };
+    const record = (): void => {
+      let state = document.getElementById(stateElementId);
+      if (!state) {
+        state = document.createElement('script');
+        state.setAttribute('type', 'application/json');
+        state.id = stateElementId;
+        (document.head || document.documentElement).appendChild(state);
+      }
+      state.textContent = JSON.stringify(held).replace(/</g, '\\u003c');
+    };
     const hold = (element: Element, submit: boolean): void => {
-      if (!held.some((entry) => entry.element === element)) held.push({ element, path: pathOf(element), submit });
+      const path = pathOf(element);
+      if (!held.some((entry) => entry.path === path)) held.push({ path, submit });
       element.setAttribute(pendingAttribute, '');
       element.setAttribute('aria-busy', 'true');
+      record();
     };
     const onClick = (event: Event): void => {
       const target = event.target as Element | null;
@@ -60,20 +78,20 @@ export class EarlyInteractionBuffer {
       event.stopImmediatePropagation();
       if (event.target instanceof HTMLFormElement) hold(event.target, true);
     };
+    const onRelease = (): void => {
+      document.removeEventListener('click', onClick, true);
+      document.removeEventListener('submit', onSubmit, true);
+      document.removeEventListener(releaseEvent, onRelease);
+    };
     document.addEventListener('click', onClick, true);
     document.addEventListener('submit', onSubmit, true);
-    (window as unknown as Record<string, unknown>)[globalKey] = {
-      held,
-      stop: (): void => {
-        document.removeEventListener('click', onClick, true);
-        document.removeEventListener('submit', onSubmit, true);
-      },
-    };
+    document.addEventListener(releaseEvent, onRelease);
   }
 
   /** The IIFE for the inline `<script>`. */
   static inlineScript(): string {
-    return `(function ${EarlyInteractionBuffer.bootstrap.toString()})(${JSON.stringify(EarlyInteractionBuffer.GLOBAL_KEY)},${JSON.stringify(EarlyInteractionBuffer.PENDING_ATTRIBUTE)});`;
+    const args = [EarlyInteractionBuffer.STATE_ELEMENT_ID, EarlyInteractionBuffer.PENDING_ATTRIBUTE, EarlyInteractionBuffer.RELEASE_EVENT];
+    return `(function ${EarlyInteractionBuffer.bootstrap.toString()})(${args.map((arg) => JSON.stringify(arg)).join(',')});`;
   }
 
   /**
@@ -81,21 +99,31 @@ export class EarlyInteractionBuffer {
    * listeners are attached by then, and a click on a boundary still hydrating is one React replays.
    */
   static release(win: Window = window): void {
-    const bag = win as unknown as Record<string, { held: Array<{ element: Element; path: string; submit: boolean }>; stop: () => void } | undefined>;
-    const state = bag[EarlyInteractionBuffer.GLOBAL_KEY];
-    if (!state) return;
-    bag[EarlyInteractionBuffer.GLOBAL_KEY] = undefined;
-    state.stop();
-    for (const entry of state.held) {
-      entry.element.removeAttribute(EarlyInteractionBuffer.PENDING_ATTRIBUTE);
-      entry.element.removeAttribute('aria-busy');
-      EarlyInteractionBuffer.playBack(win, entry, 0);
+    const doc = win.document;
+    doc.dispatchEvent(new Event(EarlyInteractionBuffer.RELEASE_EVENT));
+    const state = doc.getElementById(EarlyInteractionBuffer.STATE_ELEMENT_ID);
+    const held = EarlyInteractionBuffer.readHeld(state?.textContent || '');
+    state?.remove();
+    doc.querySelectorAll(`[${EarlyInteractionBuffer.PENDING_ATTRIBUTE}]`).forEach((element) => {
+      element.removeAttribute(EarlyInteractionBuffer.PENDING_ATTRIBUTE);
+      element.removeAttribute('aria-busy');
+    });
+    for (const entry of held) EarlyInteractionBuffer.playBack(win, entry, 0);
+  }
+
+  private static readHeld(json: string): Array<{ path: string; submit: boolean }> {
+    if (!json) return [];
+    try {
+      const parsed = JSON.parse(json);
+      return Array.isArray(parsed) ? parsed.map((entry) => ({ path: String(entry?.path || ''), submit: entry?.submit === true })).filter((entry) => entry.path) : [];
+    } catch {
+      return [];
     }
   }
 
-  private static playBack(win: Window, entry: { element: Element; path: string; submit: boolean }, attempt: number): void {
+  private static playBack(win: Window, entry: { path: string; submit: boolean }, attempt: number): void {
     win.setTimeout(() => {
-      const element = entry.element.isConnected ? entry.element : win.document.querySelector(entry.path);
+      const element = win.document.querySelector(entry.path);
       if (!element) {
         if (attempt < EarlyInteractionBuffer.RETRY_LIMIT) EarlyInteractionBuffer.playBack(win, entry, attempt + 1);
         return;
