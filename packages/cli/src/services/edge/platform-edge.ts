@@ -94,12 +94,16 @@ export class PlatformEdge {
   /** A connection to a gateway that accepts it, with the header already sent — or null when none does. */
   private async connect(port: number, header: Buffer, tried: Set<string>): Promise<{ address: string; socket: net.Socket } | null> {
     for (let attempt = 0; attempt < PlatformEdge.ATTEMPTS; attempt += 1) {
-      const address = this.upstreams.candidates(tried)[0];
+      // A gateway not yet tried first. With every one tried, the attempts left go to them again: across a
+      // lossy link a second connection often gets through where the first was lost, and with a single
+      // gateway (the relay in front of the platform) there is no other to try — on 2026-11-04 one
+      // attempt per visitor at 60% loss failed a third of them.
+      let address = this.upstreams.candidates(tried)[0] ?? this.upstreams.candidates(new Set())[0];
       if (!address) {
-        // Every known gateway tried, or none known (a gateway starting, or all being replaced): look again once before giving up.
+        // None known (a gateway starting, or all being replaced): look again before giving up.
         await this.upstreams.check();
-        if (!this.upstreams.candidates(tried).length) return null;
-        continue;
+        address = this.upstreams.candidates(new Set())[0];
+        if (!address) return null;
       }
       tried.add(address);
       const socket = await PlatformEdge.open(address, port);

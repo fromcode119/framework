@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import http from 'http';
 import net from 'net';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
@@ -34,7 +34,7 @@ class HungGatewayFixture {
  */
 describe('PlatformEdge', () => {
   const stops: Array<() => Promise<void>> = [];
-  afterEach(async () => { await Promise.all(stops.splice(0).map((stop) => stop())); });
+  afterEach(async () => { vi.restoreAllMocks(); await Promise.all(stops.splice(0).map((stop) => stop())); });
 
   it('keeps every request answered while a gateway behind it is replaced, and tells the gateway the visitor', async () => {
     const a = await GatewayFixture.start('a', '127.0.0.1', 0);
@@ -100,6 +100,27 @@ describe('PlatformEdge', () => {
       }).on('error', reject);
     });
     expect(body.startsWith('only ')).toBe(true);
+  }, 10_000);
+
+  it('tries its only gateway again when a connection to it is lost, instead of refusing the visitor', async () => {
+    const gateway = await GatewayFixture.start('only', '127.0.0.1', 0);
+    const upstreams = new EdgeUpstreams('gateways', gateway.port, 60_000, async () => ['127.0.0.1']);
+    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const [edgePort] = await edge.start();
+    stops.push(() => edge.stop(0), () => gateway.stop(0));
+    // The first connection is lost on the way, as a dropped SYN would be; the next gets through.
+    const open = (PlatformEdge as any).open.bind(PlatformEdge);
+    const spy = vi.spyOn(PlatformEdge as any, 'open').mockImplementationOnce(async () => null).mockImplementation(open);
+
+    const body = await new Promise<string>((resolve, reject) => {
+      http.get({ host: '127.0.0.1', port: edgePort, path: '/', agent: false }, (res) => {
+        let text = '';
+        res.on('data', (chunk) => { text += chunk; });
+        res.on('end', () => resolve(text));
+      }).on('error', reject);
+    });
+    expect(body.startsWith('only ')).toBe(true);
+    expect(spy).toHaveBeenCalledTimes(2);
   }, 10_000);
 
   it('offers a failing gateway as a last resort only within a minute of its last accepted check, and only while the lookup returns it', async () => {
