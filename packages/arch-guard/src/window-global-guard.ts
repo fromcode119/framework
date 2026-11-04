@@ -26,10 +26,6 @@ export class WindowGlobalGuard {
     // The runtime module registry: ONE locked binding (non-writable, non-configurable) whose view refuses
     // every write — only the framework's private store behind it changes.
     'core/src/runtime-registry-access.ts': 1,
-    // The `process` shim the plugin/theme bundles read; goes with the registry.
-    'frontend/runtime/storefront-runtime-globals.ts': 1,
-    // Deprecated, called by nothing; kept only so a bundle importing the name still loads.
-    'core/src/clients/browser-state-runtime-builder.ts': 1,
     // SERVER process, never a page: the privileged spawner shared between the two copies of core one
     // process loads (Next bundles core from source, the launcher runs it from dist). No script reaches it.
     'core/src/process/spawner-client.ts': 5,

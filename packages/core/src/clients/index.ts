@@ -3,7 +3,6 @@ export { AdminResourceClient } from '@core/clients/admin-resource-client';
 export { AdminSdkClient } from '@core/clients/admin-sdk-client';
 export { BrowserStateClient } from '@core/clients/browser-state-client';
 export { StorefrontNoticeClient } from '@core/clients/storefront-notice-client';
-export { BrowserStateRuntimeBuilder } from '@core/clients/browser-state-runtime-builder';
 export { SystemAuthClient } from '@core/clients/system-auth-client';
 export { SystemAuthSession } from '@core/clients/system-auth-session';
 export { AdminUserClient } from '@core/clients/admin-user-client';
