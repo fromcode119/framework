@@ -671,3 +671,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
 .fc-edit-sticky { position: sticky; align-self: start; }
+
+/* A menu item's trailing slot (sidebar-nav-item-view): after the label, or on the icon's corner collapsed. */
+.fc-nav-item-trailing { margin-left: auto; display: inline-flex; align-items: center; }
+.fc-nav-item-trailing:empty { display: none; }
+.fc-nav-item-trailing--mini { position: absolute; top: -2px; right: -2px; margin-left: 0; }

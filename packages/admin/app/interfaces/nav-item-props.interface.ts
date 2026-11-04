@@ -7,6 +7,7 @@ export interface INavItemProps {
   isAnchoredToSecondary?: boolean;
   onClick?: () => void;
   children?: any[];
+  pluginSlug?: string;
   isMini?: boolean;
   isGroupHeader?: boolean;
   version?: string;

@@ -1,7 +1,7 @@
 import type { MouseEvent, ReactElement, ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminServices } from '@/lib/admin-services';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
@@ -18,6 +18,8 @@ export class NavItemView extends Reactor {
   @prop declare isMini?: boolean;
   @prop declare isGroupHeader?: boolean;
   @prop declare version?: string;
+  /** The plugin that registered this item; only it may fill the item's trailing slot. */
+  @prop declare pluginSlug?: string;
   @prop declare showHoverPreview?: boolean;
   @prop declare onHoverPreviewStart?: (path: string) => void;
   @prop declare onHoverPreviewEnd?: () => void;
@@ -155,7 +157,7 @@ export class NavItemView extends Reactor {
             // named nothing, so the name lives in the tooltip and in the accessible name instead.
             title={isMini ? displayLabel : undefined}
             aria-label={isMini ? displayLabel : undefined}
-            className={`flex items-center transition-colors duration-150 ${
+            className={`relative flex items-center transition-colors duration-150 ${
               isHighlighted
                 ? 'bg-indigo-600 text-white'
                 : isPreviewingSecondary
@@ -183,6 +185,8 @@ export class NavItemView extends Reactor {
                 </div>
               )}
             </div>
+
+            {this.renderTrailing(href, !!isHighlighted, !!isMini)}
 
             {hasChildren && !isMini && (
               <FrameworkIcons.Down
@@ -215,6 +219,7 @@ export class NavItemView extends Reactor {
                     <span className="absolute left-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
                   )}
                   <span className="whitespace-nowrap tracking-[-0.01em]">{AdminNavText.menuLabel(child)}</span>
+                  {this.renderTrailing(child.path, isSubActive, false)}
                 </AdminLink>
               );
             })}
@@ -222,5 +227,29 @@ export class NavItemView extends Reactor {
         )}
       </div>
     );
+  }
+
+  /**
+   * The item's trailing slot, `admin.layout.sidebar.item:<path>` — a count, a status dot — filled only
+   * by the plugin that registered the item, so no plugin can label another's menu entry. The component
+   * receives `{ path, active, isMini }`; collapsed, it sits on the icon's corner. Renders nothing when
+   * the slot is empty, so a component returning null hides it.
+   */
+  private renderTrailing(path: string, active: boolean, isMini: boolean): ReactNode {
+    const owner = this.pluginSlug;
+    if (!owner) return null;
+    return (
+      <span className={isMini ? 'fc-nav-item-trailing fc-nav-item-trailing--mini' : 'fc-nav-item-trailing'}>
+        <Slot
+          name={NavItemView.trailingSlot(path)}
+          props={{ path: NavUtils.normalizePath(path), active, isMini }}
+          include={({ pluginSlug }) => pluginSlug === owner}
+        />
+      </span>
+    );
+  }
+
+  static trailingSlot(path: string): string {
+    return `admin.layout.sidebar.item:${NavUtils.normalizePath(path)}`;
   }
 }
