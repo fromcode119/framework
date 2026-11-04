@@ -7,13 +7,13 @@ export class RuntimeConstants {
     MODULES: RuntimeAssetConstants.REGISTRY_GLOBAL,
     /** Window global carrying server-prefetched page data (nav menus, page-scoped products, …).
      *  The ONLY place this name is defined — framework injectors and theme readers both use it. */
-    PAGE_PREFETCH: '__ATLANTIS_PAGE_PREFETCH__',
+    PAGE_PREFETCH: '__FC_PAGE_PREFETCH__',
     /** The request path and origin of the page being SERVER-rendered, set for the duration of that
      *  synchronous render — the server's `window.location`. Read through `RenderLocationUtils` only. */
-    RENDER_PATH: '__ATLANTIS_RENDER_PATH__',
-    RENDER_ORIGIN: '__ATLANTIS_RENDER_ORIGIN__',
+    RENDER_PATH: '__FC_RENDER_PATH__',
+    RENDER_ORIGIN: '__FC_RENDER_ORIGIN__',
     /** The query string of that request (`?a=1`, or empty) — the server's `window.location.search`. */
-    RENDER_SEARCH: '__ATLANTIS_RENDER_SEARCH__',
+    RENDER_SEARCH: '__FC_RENDER_SEARCH__',
   } as const;
 
   static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;
