@@ -99,7 +99,7 @@ class BridgeFixture {
 
 afterEach(() => {
   vi.restoreAllMocks();
-  delete (window as any)._fromcodeQueue;
+  delete (PreBootRegistrationSeed.holder as any)._fromcodeQueue;
 });
 
 describe('PreBootBridgeArgs — the pre-boot bridge answers from the inlined data', () => {

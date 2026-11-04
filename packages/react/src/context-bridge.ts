@@ -72,7 +72,7 @@ export class ContextBridge {
   static registerTranslations(...args: any[]): any {
     if (ContextBridge._args) return ContextBridge._args.registerTranslations?.(...args);
     if (!Platform.isBrowser) return undefined;
-    const target = window as unknown as Record<string, any>;
+    const target = PreBootRegistrationSeed.holder;
     (target[PreBootRegistrationSeed.QUEUE_KEY] ||= []).push({ type: 'translations', args });
     return undefined;
   }

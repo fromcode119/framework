@@ -22,20 +22,21 @@ export class ContextRuntimeBridge {
     // is what lets every import-map data-URL module read the registry directly, with no
     // `window.Fromcode` fallback: the registry is the source at both stub-time and install-time.
     const registry = RuntimeRegistryAccess.ensure();
-    registry[RuntimeRegistryAccess.KEYS.REACT] = args.ReactRef;
-    registry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef);
-    registry[RuntimeRegistryAccess.KEYS.REACT_DOM] = ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef);
-    registry[RuntimeRegistryAccess.KEYS.LUCIDE] = LucideNamespaceProxy.create(args.getIcon);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT, args.ReactRef);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.JSX_RUNTIME, RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef));
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_DOM, ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef));
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, LucideNamespaceProxy.create(args.getIcon));
 
-    const fc = (registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] ||= {});
-    registry[RuntimeRegistryAccess.KEYS.SDK] = fc;
-    registry[RuntimeRegistryAccess.KEYS.SDK_REACT] = fc;
+    const fc = registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] || {};
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, fc);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK, fc);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK_REACT, fc);
     fc.React = args.ReactRef;
     fc.ReactDOM = args.ReactDOMRef;
     fc.ReactDom = args.ReactDOMRef;
 
     const queueMethod = (type: string) => (...methodArgs: any[]) => {
-      const target = window as unknown as Record<string, any>;
+      const target = PreBootRegistrationSeed.holder;
       (target[PreBootRegistrationSeed.QUEUE_KEY] ||= []).push({ type, args: methodArgs });
     };
 
@@ -103,7 +104,7 @@ export class ContextRuntimeBridge {
    */
   static installPreBootBridge(args: IRuntimeBridgeInstallArgs): void {
     if (!Platform.isBrowser) return;
-    const target = window as unknown as Record<string, any>;
+    const target = PreBootRegistrationSeed.holder;
     target[PreBootRegistrationSeed.QUEUE_KEY] ||= [];
     ContextRuntimeBridge.installBridge(args);
   }
@@ -117,18 +118,17 @@ export class ContextRuntimeBridge {
     // The ONE runtime handoff surface. The real bridge replaces the stub written in
     // setupGlobalStubs; React, ReactDOM, and the Lucide proxy live under the same registry.
     const runtimeRegistry = RuntimeRegistryAccess.ensure();
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] = bridge;
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.SDK] = bridge;
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.SDK_REACT] = bridge;
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT] = args.ReactRef;
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef);
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_DOM] = ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef);
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.LUCIDE] = LucideNamespaceProxy.create(args.getIcon);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, bridge);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK, bridge);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK_REACT, bridge);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT, args.ReactRef);
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.JSX_RUNTIME, RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef));
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_DOM, ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef));
+    RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, LucideNamespaceProxy.create(args.getIcon));
 
     // Assign LazyLoadClass through an explicit window property chain so webpack cannot tree-shake it —
     // a property assignment on a local var that merely escapes via window can be elided by webpack.
-    (window as any)[RuntimeRegistryAccess.globalName][RuntimeRegistryAccess.KEYS.REACT_BRIDGE].LazyLoadClass =
-      LazyLoadClass;
+    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE].LazyLoadClass = LazyLoadClass;
 
     ContextRuntimeBridge.installImportMap(args, bridge, runtimeRegistry);
   }
@@ -177,7 +177,7 @@ export class ContextRuntimeBridge {
   };
 
   private static flushQueue(): void {
-    const target = window as unknown as Record<string, any>;
+    const target = PreBootRegistrationSeed.holder;
     const queue = target[PreBootRegistrationSeed.QUEUE_KEY];
     if (!queue) return;
     delete target[PreBootRegistrationSeed.QUEUE_KEY];

@@ -1,5 +1,5 @@
 import { Platform } from '@fromcode119/react-class-components';
-import { RuntimeConstants } from '@fromcode119/core/client';
+import { RuntimeConstants, RuntimeRegistryAccess } from '@fromcode119/core/client';
 
 export class ClientLayoutRuntimeService {
   static buildAdminRuntimeModule(source: Record<string, unknown>): Record<string, unknown> {
@@ -93,14 +93,13 @@ export class ClientLayoutRuntimeService {
       return;
     }
 
-    const runtimeRegistry = (((window as any)[RuntimeConstants.GLOBALS.MODULES] ||= {}) as Record<string, unknown>);
-    runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN] = runtimeModule;
-    runtimeRegistry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] = runtimeModule;
+    RuntimeRegistryAccess.register(RuntimeConstants.MODULE_NAMES.ADMIN, runtimeModule);
+    RuntimeRegistryAccess.register(RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS, runtimeModule);
     // The SDK re-exports AdminServices from `@fromcode119/admin/services`; register it so dynamic
     // plugin imports resolve it instead of crashing on `undefined.getInstance()`.
-    runtimeRegistry['@fromcode119/admin/services'] = runtimeModule;
+    RuntimeRegistryAccess.register('@fromcode119/admin/services', runtimeModule);
     // Same reason as the map above: this is the key theme/plugin bundles actually look up.
-    runtimeRegistry['@fromcode119/sdk/admin'] = runtimeModule;
-    if (reactorModule) runtimeRegistry['@fromcode119/react-class-components'] = reactorModule;
+    RuntimeRegistryAccess.register('@fromcode119/sdk/admin', runtimeModule);
+    if (reactorModule) RuntimeRegistryAccess.register('@fromcode119/react-class-components', reactorModule);
   }
 }

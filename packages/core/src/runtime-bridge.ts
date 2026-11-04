@@ -1,3 +1,4 @@
+import { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 import { SystemApiPaths } from '@core/constants/system-api-paths.constants';
 import { RuntimeConstants } from '@core/constants/runtime.constants';
@@ -57,9 +58,7 @@ export class RuntimeBridge {
    */
   static getBridge<T = any>(moduleName: string = '@fromcode119/react'): T {
     if (EnvUtils.isServer()) return {} as T;
-    const win = window as any;
-    const modules = win[RuntimeConstants.GLOBALS.MODULES];
-    return (modules?.[moduleName]) || win[RuntimeConstants.GLOBALS.FROMCODE] || {};
+    return RuntimeRegistryAccess.ensure()[moduleName] || {};
   }
 
   static async getMetadata(options: { ensureLoaded?: boolean } = {}): Promise<IFrontendRuntimeMetadata> {

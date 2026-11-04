@@ -22,6 +22,9 @@ import { RenderableContentTransformerRegistry } from '@react/renderable-content-
 export class PreBootRegistrationSeed {
   static readonly QUEUE_KEY = '_fromcodeQueue';
 
+  /** Module-private home of the pre-boot queue — never the window, where any script could append to it. */
+  static readonly holder: Record<string, any> = {};
+
   readonly slots: Record<string, ISlotComponent[]>;
 
   readonly overrides: Record<string, ISlotComponent>;
@@ -139,7 +142,7 @@ export class PreBootRegistrationSeed {
    * Fold the window's pre-boot queue and write the residual back, so the live bridge's flush replays only
    * what was NOT seeded — never a registration twice.
    */
-  static consume(target: Record<string, any>): PreBootRegistrationSeed {
+  static consume(target: Record<string, any> = PreBootRegistrationSeed.holder): PreBootRegistrationSeed {
     const queue = target[PreBootRegistrationSeed.QUEUE_KEY];
     if (!Array.isArray(queue) || queue.length === 0) return PreBootRegistrationSeed.empty();
     const { seed, residual } = PreBootRegistrationSeed.fold(queue);

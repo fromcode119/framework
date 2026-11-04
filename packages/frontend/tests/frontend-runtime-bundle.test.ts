@@ -131,7 +131,9 @@ describe('storefront runtime bundle', () => {
     expect(typeof registry!['@fromcode119/react'].ContextBridge.registerTheme).toBe('function');
     expect(typeof registry!['@fromcode119/react'].t).toBe('function');
     expect(dom.window.document.getElementById('fc-runtime-import-map')).toBeTruthy();
-    expect(Array.isArray(dom.window._fromcodeQueue)).toBe(true);
+    expect(dom.window._fromcodeQueue).toBeUndefined();
+    // The registry binding is locked: a page script can neither replace it nor overwrite an entry.
+    expect(Object.getOwnPropertyDescriptor(dom.window, "__fromcodeRuntimeModules")?.configurable).toBe(false);
     expect(warnings.some((line) => line.includes('no #fc-runtime-config'))).toBe(true);
     // No tolerated error any more: the Next router invariant is gone with RouterBridge.
     expect(errors).toEqual([]);

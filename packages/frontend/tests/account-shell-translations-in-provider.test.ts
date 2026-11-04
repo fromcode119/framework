@@ -44,7 +44,7 @@ class AccountShellInProviderFixture {
     ContextBridge.install(null as never);
     document.documentElement.lang = 'bg';
     window.history.replaceState({}, '', '/account/email-preferences');
-    (window as any)._fromcodeQueue = [];
+    (PreBootRegistrationSeed.holder as any)._fromcodeQueue = [];
     (AccountTranslations as any).registered = false;
     AccountTranslations.register();
   }
@@ -77,7 +77,7 @@ afterEach(() => {
   AccountShellInProviderFixture.container?.remove();
   AccountShellInProviderFixture.root = null;
   vi.restoreAllMocks();
-  delete (window as any)._fromcodeQueue;
+  delete (PreBootRegistrationSeed.holder as any)._fromcodeQueue;
 });
 
 describe('account shell copy inside the provider', () => {
@@ -89,7 +89,7 @@ describe('account shell copy inside the provider', () => {
     AccountShellInProviderFixture.freshPage();
 
     const container = await AccountShellInProviderFixture.mount(
-      AccountShellInProviderFixture.seed(PreBootRegistrationSeed.consume(window as never)),
+      AccountShellInProviderFixture.seed(PreBootRegistrationSeed.consume()),
     );
 
     expect(container.textContent).toContain(account.shell.title);

@@ -17,21 +17,23 @@ export class GlobalInitializer extends Reactor {
             // Pre-boot stub on the ONE runtime registry (no bare window.React / window.Fromcode).
             // The full bridge (installRuntimeBridge) later replaces the @fromcode119/react entry.
             const registry = RuntimeRegistryAccess.ensure();
-            registry[RuntimeRegistryAccess.KEYS.REACT] = React;
+            RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT, React);
             // React 19's `react-dom` no longer carries the root factories (they live in `react-dom/client`),
             // but the import map's `react-dom` module destructures `createRoot` / `hydrateRoot` from THIS
             // entry — so a bundle that mounts its own root gets them from the one bundled react-dom.
-            registry[RuntimeRegistryAccess.KEYS.REACT_DOM] = {
+            RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_DOM, {
                 ...ReactDOM,
                 createRoot: ReactDomRoots.createRoot,
                 hydrateRoot: ReactDomRoots.hydrateRoot,
-            };
-            registry[RuntimeRegistryAccess.KEYS.JSX_RUNTIME] = RuntimeRegistryAccess.jsxRuntimeFor(React);
-            registry[RuntimeRegistryAccess.KEYS.LUCIDE] = FrameworkIcons;
-            registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] ||= {
-                useTranslation: ContextHooks.useTranslation,
-                getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),
-            };
+            });
+            RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.JSX_RUNTIME, RuntimeRegistryAccess.jsxRuntimeFor(React));
+            RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, FrameworkIcons);
+            if (!registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE]) {
+                RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, {
+                    useTranslation: ContextHooks.useTranslation,
+                    getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),
+                });
+            }
         }
 
         return null;

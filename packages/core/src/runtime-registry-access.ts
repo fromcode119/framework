@@ -63,9 +63,71 @@ export class RuntimeRegistryAccess {
     return `(${g} && ${g}[${JSON.stringify(key)}])`;
   }
 
-  /** Ensure and return the live registry object (browser runtime). */
+  /**
+   * The live registry (browser runtime) — a READ-ONLY view for everyone outside the framework.
+   *
+   * The window binding is non-writable and non-configurable, so no script or console can swap the
+   * registry for its own. Writes through the returned object are refused: a page script cannot
+   * replace `react` or the bridge that every plugin and theme reads. The framework writes only
+   * through `register`, which goes to the private store behind the view.
+   */
   static ensure(): Record<string, any> {
+    return RuntimeRegistryAccess.install().view;
+  }
+
+  /** Framework-only writer. Entries become visible through the read-only view immediately. */
+  static register(key: string, value: unknown): void {
+    RuntimeRegistryAccess.install().store[key] = value;
+  }
+
+  private static installed: { view: Record<string, any>; store: Record<string, any> } | null = null;
+
+  private static install(): { view: Record<string, any>; store: Record<string, any> } {
+    if (RuntimeRegistryAccess.installed) return RuntimeRegistryAccess.installed;
     const w = window as unknown as Record<string, any>;
-    return (w[RuntimeRegistryAccess.globalName] ||= {});
+    const name = RuntimeRegistryAccess.globalName;
+    const existing = Object.getOwnPropertyDescriptor(w, name);
+    // Another framework bundle on this page already installed it: share its store.
+    const shared = existing?.value?.[RuntimeRegistryAccess.STORE];
+    if (shared) {
+      RuntimeRegistryAccess.installed = { view: existing!.value, store: shared };
+      return RuntimeRegistryAccess.installed;
+    }
+    if (existing) {
+      // Installed by a bundle that will not share its store any more: read, never write.
+      console.warn('[fromcode] Runtime module registry is already sealed; this bundle reads it only.');
+      RuntimeRegistryAccess.installed = { view: existing.value, store: {} };
+      return RuntimeRegistryAccess.installed;
+    }
+    const store: Record<string, any> = {};
+    const view = new Proxy(store, {
+      get: (target, key) => (key === RuntimeRegistryAccess.STORE ? RuntimeRegistryAccess.storeOnce(target) : (target as any)[key]),
+      set: (_target, key) => RuntimeRegistryAccess.refuse(key),
+      defineProperty: (_target, key) => RuntimeRegistryAccess.refuse(key),
+      deleteProperty: (_target, key) => RuntimeRegistryAccess.refuse(key),
+      setPrototypeOf: () => false,
+    });
+    Object.defineProperty(w, name, { value: view, writable: false, configurable: false, enumerable: false });
+    RuntimeRegistryAccess.installed = { view, store };
+    return RuntimeRegistryAccess.installed;
+  }
+
+  /**
+   * Handshake between framework bundles that each carry their own copy of core (admin + storefront
+   * runtime). The store is handed out until the page finished loading its framework code, then never.
+   */
+  private static readonly STORE = Symbol.for('fromcode.runtime-registry.store');
+
+  private static storeOnce(store: Record<string, any>): Record<string, any> | undefined {
+    return RuntimeRegistryAccess.handshakeOpen() ? store : undefined;
+  }
+
+  private static handshakeOpen(): boolean {
+    return document.readyState !== 'complete';
+  }
+
+  private static refuse(key: string | symbol): boolean {
+    console.warn(`[fromcode] Refused a write to the runtime module registry (${String(key)}).`);
+    return true;
   }
 }
