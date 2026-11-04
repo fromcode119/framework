@@ -55,9 +55,6 @@ export class ClientRuntimeConstants {
       LIVE_BLOCKS_CHANGED: `${ClientRuntimeConstants.EVENT_PREFIX}live-blocks`,
       PUBLIC_SETTINGS_LOADED: `${ClientRuntimeConstants.EVENT_PREFIX}public-settings-loaded`,
     },
-    GLOBAL_KEYS: {
-      LIVE_BLOCKS: '__fromcodeLiveBlocks',
-    },
     STORAGE_KEYS: {
       /**
        * Persisted light/dark scheme. Written by whichever layer owns the toggle

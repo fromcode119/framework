@@ -1,3 +1,4 @@
+import { PagePrefetchScriptView } from '@/components/page-prefetch-script';
 import type { Metadata } from 'next';
 import type { ReactElement, ReactNode } from 'react';
 import { ColorSchemeBootScript } from '@/lib/color-scheme-boot-script';
@@ -73,7 +74,7 @@ export class DocumentHeadView {
         {/* The theme's boot script, inlined so it runs at FIRST PAINT rather than behind the bundle
             chain — see `ThemeHeadModel.loadBootScript`. */}
         {theme.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: theme.inlinedBootScript }} /> : null}
-        {theme.prefetchScript ? <script dangerouslySetInnerHTML={{ __html: theme.prefetchScript }} /> : null}
+        <PagePrefetchScriptView.render payload={theme.prefetchData} />
         {theme.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={theme.versionedEntryUrl} /> : null}
         {/* No `modulepreload` for the theme entry here: this document boots its runtime on the visitor's
             first intent (`RuntimeBootTrigger`), so a parse-time hint only spends the first round trips on

@@ -1,3 +1,4 @@
+import { PagePrefetch } from '@fromcode119/core/client';
 import { SystemIconProvider } from '@/lib/system-icon-provider';
 
 /**
@@ -20,5 +21,8 @@ export class StorefrontRuntimeGlobals {
     // Explicit, ordered registration — this used to happen as a side effect of importing `lib/icons`,
     // so it ran at whatever point the module graph happened to reach that file.
     SystemIconProvider.register();
+
+    // Themes built before `PagePrefetch` read the legacy name; a getter onto the accessor, no setter.
+    PagePrefetch.installLegacyAlias();
   }
 }

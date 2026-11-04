@@ -151,6 +151,8 @@ export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 export { RouteConstants } from '@core/constants/route.constants';
 export { AccountRouteUtils } from '@core/utils/account-route-utils';
 export { RenderLocationUtils } from '@core/utils/render-location-utils';
+export type { IRenderLocation } from '@core/utils/interfaces/render-location.interface';
+export { PagePrefetch } from '@core/page-prefetch';
 export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────

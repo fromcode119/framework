@@ -1,5 +1,5 @@
 import { ResponseDrain } from '@/lib/server-api/response-drain';
-import { ApiPathUtils, PublicAssetUrlUtils, RuntimeConstants, ThemePackageLayout } from '@fromcode119/core/client';
+import { ApiPathUtils, PublicAssetUrlUtils, ThemePackageLayout } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
@@ -29,7 +29,7 @@ export class ThemeHeadModel {
     readonly externalStylesheets: string[],
     readonly versionedEntryUrl: string,
     readonly modulePreloadUrls: string[],
-    readonly prefetchScript: string,
+    readonly prefetchData: Record<string, unknown>,
     readonly lcpPreload: ILcpImagePreload | null,
   ) {}
 
@@ -110,15 +110,12 @@ export class ThemeHeadModel {
       .map((fileName: string) => ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, fileName));
 
     const prefetchData = await ThemePrefetchRequestCache.read();
-    const prefetchScript = Object.keys(prefetchData).length > 0
-      ? `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}=${ThemeDataPrefetcher.safeSerialize(prefetchData)};`
-      : '';
     const prefetchApis = Array.isArray(theme.ui?.prefetchApis) ? theme.ui.prefetchApis : [];
     const lcpPreload = ThemeDataPrefetcher.extractLcpImageUrl(prefetchData, prefetchApis, apiUrl);
 
     return new ThemeHeadModel(
       String(theme.slug), apiUrl, cssVariables, inlinedCss, fallbackCssHrefs, headLinks, inlinedBootScript, externalStylesheets,
-      versionedEntryUrl, modulePreloadUrls, prefetchScript, lcpPreload,
+      versionedEntryUrl, modulePreloadUrls, prefetchData, lcpPreload,
     );
   }
 

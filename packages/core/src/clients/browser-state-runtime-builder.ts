@@ -1,3 +1,8 @@
+/**
+ * @deprecated Builds an inline script that installs a writable `window` global, which any script on the
+ * page can replace. Nothing in the framework calls it; use `BrowserStateClient` instead. Kept exported only
+ * so a bundle that still imports the name does not fail to load.
+ */
 export class BrowserStateRuntimeBuilder {
   static buildInlineHelpers(globalKey: string = '__FC_BROWSER_STATE__'): string {
     const normalizedGlobalKey = String(globalKey || '__FC_BROWSER_STATE__').trim() || '__FC_BROWSER_STATE__';

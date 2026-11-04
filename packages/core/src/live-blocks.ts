@@ -13,15 +13,18 @@ import { EnvUtils } from '@core/utils/env-utils';
  * Themes that don't care about live preview simply don't call useLiveBlocks.
  */
 export class LiveBlocks {
+  /** Held in this module — one core instance serves the editor publisher and the theme in a page. */
+  private static snapshot: ILiveBlocksSnapshot | null = null;
+
   static publish(snapshot: ILiveBlocksSnapshot): void {
     if (EnvUtils.isServer()) return;
-    (window as any)[RuntimeConstants.FRONTEND.GLOBAL_KEYS.LIVE_BLOCKS] = snapshot;
+    LiveBlocks.snapshot = snapshot;
     window.dispatchEvent(new Event(RuntimeConstants.FRONTEND.EVENTS.LIVE_BLOCKS_CHANGED));
   }
 
   static getSnapshot(): ILiveBlocksSnapshot | null {
     if (EnvUtils.isServer()) return null;
-    return ((window as any)[RuntimeConstants.FRONTEND.GLOBAL_KEYS.LIVE_BLOCKS] ?? null) as ILiveBlocksSnapshot | null;
+    return LiveBlocks.snapshot;
   }
 
   static subscribe(handler: () => void): () => void {

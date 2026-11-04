@@ -8,6 +8,11 @@ import { ThemeCssScoper } from '@react/context/theme-css-scoper';
 import { ClientType } from '@fromcode119/core/client';
 
 export class ContextProviderConfigLoaderHooks {
+  /** Theme entries and stylesheets this page has mounted — one `@fromcode119/react` instance per page. */
+  private static readonly loadedThemeEntries = new Set<string>();
+  private static readonly loadedThemeEntryUrls = new Map<string, string>();
+  private static readonly loadedThemeCss = new Set<string>();
+
   static useConfigLoader(args: {
     apiFetch: (path: string, options?: RequestInit & { silent?: boolean; noDedupe?: boolean }) => Promise<any>;
     clientType: ClientType;
@@ -52,8 +57,8 @@ export class ContextProviderConfigLoaderHooks {
         ? themeEntry
         : ApiPathUtils.themeUiAssetUrl(baseUrl, themeSlug, themeEntry);
       const versionedEntryUrl = PublicAssetUrlUtils.appendVersion(entryUrl, PublicAssetUrlUtils.themeAssetStamp(theme));
-      const registry = ((window as any).__fromcodeLoadedThemeEntries ||= new Set<string>()) as Set<string>;
-      const slugRegistry = ((window as any).__fromcodeLoadedThemeEntryUrls ||= new Map<string, string>()) as Map<string, string>;
+      const registry = ContextProviderConfigLoaderHooks.loadedThemeEntries;
+      const slugRegistry = ContextProviderConfigLoaderHooks.loadedThemeEntryUrls;
       const existingEntryUrl = slugRegistry.get(themeSlug) || '';
       if (existingEntryUrl && existingEntryUrl !== versionedEntryUrl) {
         const comparison = ContextProviderConfigLoaderHooks.compareThemeEntryUrls(existingEntryUrl, versionedEntryUrl);
@@ -171,7 +176,7 @@ export class ContextProviderConfigLoaderHooks {
             const inlinedThemeCss = Platform.isBrowser
               && !!document.head.querySelector(`style[data-theme="${CSS.escape(String(theme.slug || ''))}"]`);
             if (theme.ui?.css && !inlinedThemeCss) {
-              const cssRegistry = ((window as any).__fromcodeLoadedThemeCss ||= new Set<string>()) as Set<string>;
+              const cssRegistry = ContextProviderConfigLoaderHooks.loadedThemeCss;
               theme.ui.css.forEach((cssPath: string) => {
                 const fullUrl = cssPath.startsWith('http')
                   ? cssPath

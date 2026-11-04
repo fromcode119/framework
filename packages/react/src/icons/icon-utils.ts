@@ -13,6 +13,9 @@ import { LucideLazyLoader } from '@react/icons/lucide-lazy-loader';
  * rather than .tsx files (project convention).
  */
 export class IconUtils {
+  /** Names already warned about, so each unknown icon warns once per page. */
+  private static readonly reportedMissing = new Set<string>();
+
   /**
    * Creates a stable React forward-ref component that lazily resolves to the
    * real icon at render time via the global {@link FrameworkIconRegistry}.
@@ -36,10 +39,9 @@ export class IconUtils {
       if (!Icon) {
         // A miss is expected while a chunk is in flight, so only warn for names
         // Lucide does not know at all — those will never resolve.
-        if (Platform.isBrowser && (window as any).console && !LucideLazyLoader.has(name)) {
-          if (!(window as any)._missingIcons) (window as any)._missingIcons = new Set();
-          if (!(window as any)._missingIcons.has(name)) {
-            (window as any)._missingIcons.add(name);
+        if (Platform.isBrowser && !LucideLazyLoader.has(name)) {
+          if (!IconUtils.reportedMissing.has(name)) {
+            IconUtils.reportedMissing.add(name);
             console.warn(`[Icons] Icon "${name}" not found in any registered provider.`);
           }
         }
