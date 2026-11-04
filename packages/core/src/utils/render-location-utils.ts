@@ -22,6 +22,15 @@ export class RenderLocationUtils {
     return RenderLocationUtils.published(RuntimeConstants.GLOBALS.RENDER_ORIGIN);
   }
 
+  /**
+   * The page address's query string (`?category=kids`, or `''`). A list filtered by the address painted
+   * the unfiltered list on the server and the filtered one in the browser; read here, both sides agree.
+   */
+  static search(): string {
+    if (!EnvUtils.isServer()) return window.location.search;
+    return RenderLocationUtils.published(RuntimeConstants.GLOBALS.RENDER_SEARCH);
+  }
+
   private static published(key: string): string {
     return String((globalThis as Record<string, unknown>)[key] || '');
   }

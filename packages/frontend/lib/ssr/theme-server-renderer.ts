@@ -42,6 +42,7 @@ export class ThemeServerRenderer {
     notFoundPath?: string;
     requestPath: string;
     requestOrigin?: string;
+    requestSearch?: string;
     contentStyle: Record<string, string> | null;
   }): Promise<ThemeSsrMarkup | null> {
     try {
@@ -59,10 +60,12 @@ export class ThemeServerRenderer {
     notFoundPath?: string;
     requestPath: string;
     requestOrigin?: string;
+    requestSearch?: string;
     contentStyle: Record<string, string> | null;
   }): Promise<ThemeSsrMarkup | null> {
     const { content, locale, contentClassName, contentStyle, notFoundPath, requestPath } = args;
     const requestOrigin = args.requestOrigin || '';
+    const requestSearch = args.requestSearch || '';
     // Started before anything is awaited: neither depends on the config or the theme, and both are
     // per-request cached, so kicking them off here overlaps their round-trips with the theme boot
     // instead of adding two more serial hops to TTFB — which is 12% of this page's LCP.
@@ -73,7 +76,7 @@ export class ThemeServerRenderer {
     // real navigation appeared only after the client booted — a visible change on every first load.
     const prefetchRequest = Promise.all([
       ThemePrefetchRequestCache.read(),
-      PageDocPrefetchRequestCache.read(content),
+      PageDocPrefetchRequestCache.read(content, requestSearch),
     ]).then(([themeWide, pageScoped]) => ({ ...themeWide, ...pageScoped }));
 
     const config = (await FrontendConfigCache.read()) || {};
@@ -83,7 +86,7 @@ export class ThemeServerRenderer {
     const settings = ThemeRenderSettings.from(config);
     const publicApiBaseUrl = ServerApiPaths.buildPublicApiBaseUrl();
     const [serverTranslations, prefetched] = await Promise.all([translationsRequest, prefetchRequest]);
-    const request: IThemeRenderRequest = { content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin, config, serverTranslations, prefetched };
+    const request: IThemeRenderRequest = { content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin, requestSearch, config, serverTranslations, prefetched };
 
     const frontendDir = process.cwd();
     if (ThemeRenderHost.available(frontendDir)) {

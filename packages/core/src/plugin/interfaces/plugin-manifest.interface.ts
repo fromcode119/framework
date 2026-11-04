@@ -9,6 +9,7 @@ import type { IPublicRouteManifest } from '@core/interfaces/public-route-manifes
 import type { IDashboardWidgetManifest } from '@core/interfaces/dashboard-widget-manifest.interface';
 import type { IPluginNetworkDeclaration } from '@core/plugin/consent/interfaces/plugin-network-declaration.interface';
 import type { IPluginReadRoute } from '@core/plugin/interfaces/plugin-read-route.interface';
+import type { IPluginPagePrefetchEntry } from '@core/plugin/interfaces/plugin-page-prefetch-entry.interface';
 
 export interface IPluginManifest {
   // Identity
@@ -157,6 +158,8 @@ export interface IPluginManifest {
      * `DocumentResponseHeaders.ALLOWED` are honoured; anything else is dropped.
      */
     documentHeadersPath?: string;
+    /** Records this plugin's own pages need in their first response — see `IPluginPagePrefetchEntry`. */
+    pagePrefetch?: IPluginPagePrefetchEntry[];
   };
 
   // Marketplace / Organization

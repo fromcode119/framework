@@ -55,7 +55,7 @@ export class StorefrontDocumentRenderer {
       const home = await HomePageResolver.resolve(request.searchParams);
       if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy);
       return StorefrontDocumentRenderer.document({
-        content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, layoutName: home.forcedLayout || '',
+        content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '',
         pageKind: StorefrontPageKind.HOME, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       });
     }
@@ -68,7 +68,7 @@ export class StorefrontDocumentRenderer {
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
       return StorefrontDocumentRenderer.document({
-        content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, layoutName: '',
+        content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       });
     }
@@ -87,7 +87,7 @@ export class StorefrontDocumentRenderer {
    */
   private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy): Promise<Response> {
     return StorefrontDocumentRenderer.document({
-      content: null, resolutionType: undefined, url: request.pathname, requestPath: request.pathname, requestOrigin: request.origin, layoutName: '', pageKind: StorefrontPageKind.NOT_FOUND,
+      content: null, resolutionType: undefined, url: request.pathname, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', pageKind: StorefrontPageKind.NOT_FOUND,
       strategy, status: 404, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
     });
   }
@@ -158,7 +158,7 @@ export class StorefrontDocumentRenderer {
   }
 
   private static async document(args: {
-    content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
+    content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string;
   }): Promise<Response> {
     const content = (args.content as Record<string, unknown> | null) || null;
@@ -174,13 +174,13 @@ export class StorefrontDocumentRenderer {
           : page)),
       ResolvedContentMetadata.buildSiteMetadata(),
       ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url),
-      ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin }),
+      ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch }),
       ThemeHeadModel.load(),
       PluginInjectionRenderer.loadHeadElements(),
       PluginInjectionRenderer.loadBodyStartElements(),
       FrontendConfigCache.read(),
       FrontendTranslationsCache.read(locale),
-      PageDocPrefetchRequestCache.read(args.content),
+      PageDocPrefetchRequestCache.read(args.content, args.requestSearch),
     ]);
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),

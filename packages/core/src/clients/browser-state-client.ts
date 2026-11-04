@@ -1,14 +1,12 @@
 import type { IBrowserCookieOptions } from '@core/clients/interfaces/browser-cookie-options.interface';
 import { EnvUtils } from '@core/utils/env-utils';
+import { RenderLocationUtils } from '@core/utils/render-location-utils';
 
 export class BrowserStateClient {
+  /** A parameter of the page address — the request's during a server render, so both sides read the same. */
   readQueryParamFromWindow(name: string): string {
-    if (EnvUtils.isServer()) {
-      return '';
-    }
-
     try {
-      return String(new URLSearchParams(window.location.search).get(name) || '').trim();
+      return String(new URLSearchParams(RenderLocationUtils.search()).get(name) || '').trim();
     } catch {
       return '';
     }

@@ -12,6 +12,8 @@ export class RuntimeConstants {
      *  synchronous render — the server's `window.location`. Read through `RenderLocationUtils` only. */
     RENDER_PATH: '__ATLANTIS_RENDER_PATH__',
     RENDER_ORIGIN: '__ATLANTIS_RENDER_ORIGIN__',
+    /** The query string of that request (`?a=1`, or empty) — the server's `window.location.search`. */
+    RENDER_SEARCH: '__ATLANTIS_RENDER_SEARCH__',
   } as const;
 
   static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;

@@ -25,7 +25,7 @@ import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render
  */
 export class ThemeWorldRenderer {
   static render(args: { runtime: ThemeSsrRuntime; signature: string; themeSlug: string } & IThemeRenderRequest): ThemeSsrMarkup | null {
-    const { runtime, signature, themeSlug, config, serverTranslations, prefetched, content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin } = args;
+    const { runtime, signature, themeSlug, config, serverTranslations, prefetched, content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin, requestSearch } = args;
     const layouts = ThemeServerRegistry.layoutsFor(signature, themeSlug);
     // The theme DECLARES its default layout (theme.json `defaultLayout`); the framework does not guess a
     // name. This used to fall back to a hardcoded 'DefaultLayout' that no theme declares — it only ever
@@ -89,7 +89,7 @@ export class ThemeWorldRenderer {
     // synchronous, so the set belongs to this render alone.
     const tracker = runtime.frameworkReact.PluginUsageTracker;
     tracker?.reset?.();
-    const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched, { path: requestPath, origin: requestOrigin });
+    const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched, { path: requestPath, origin: requestOrigin, search: requestSearch || '' });
     const usedPlugins: string[] = tracker?.drain?.() ?? [];
     // A `recipe` page's body is an empty box (`ThemeSsrContentTree`): the display slot was never
     // rendered, however many components are registered to it. Claiming otherwise made the browser hold
@@ -117,21 +117,23 @@ export class ThemeWorldRenderer {
     runtime: ThemeSsrRuntime,
     tree: unknown,
     prefetched: Record<string, unknown>,
-    location: { path: string; origin: string },
+    location: { path: string; origin: string; search: string },
   ): string {
     const globals = globalThis as unknown as Record<string, unknown>;
-    const { PAGE_PREFETCH, RENDER_PATH, RENDER_ORIGIN } = RuntimeConstants.GLOBALS;
-    const previous = { prefetch: globals[PAGE_PREFETCH], path: globals[RENDER_PATH], origin: globals[RENDER_ORIGIN] };
+    const { PAGE_PREFETCH, RENDER_PATH, RENDER_ORIGIN, RENDER_SEARCH } = RuntimeConstants.GLOBALS;
+    const previous = { prefetch: globals[PAGE_PREFETCH], path: globals[RENDER_PATH], origin: globals[RENDER_ORIGIN], search: globals[RENDER_SEARCH] };
     globals[PAGE_PREFETCH] = prefetched;
     // The server's `window.location` — see `RenderLocationUtils`.
     globals[RENDER_PATH] = location.path;
     globals[RENDER_ORIGIN] = location.origin;
+    globals[RENDER_SEARCH] = location.search;
     try {
       return runtime.renderToString(tree);
     } finally {
       globals[PAGE_PREFETCH] = previous.prefetch;
       globals[RENDER_PATH] = previous.path;
       globals[RENDER_ORIGIN] = previous.origin;
+      globals[RENDER_SEARCH] = previous.search;
     }
   }
 

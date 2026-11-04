@@ -11,6 +11,8 @@ export class StorefrontDocumentRequest {
     readonly acceptEncoding: string,
     /** The origin the visitor requested — what `window.location.origin` will say in the browser. */
     readonly origin: string,
+    /** The query string as the visitor sent it (`?a=1`, or empty) — what `window.location.search` will say. */
+    readonly search: string = '',
   ) {}
 
   /** The public origin behind the proxy: forwarded host and scheme first, the request URL's otherwise. */
@@ -28,6 +30,6 @@ export class StorefrontDocumentRequest {
       const values = url.searchParams.getAll(key);
       searchParams[key] = values.length > 1 ? values : values[0];
     }
-    return new StorefrontDocumentRequest(clean, `/${clean.join('/')}`, searchParams, String(acceptEncoding || ''), origin);
+    return new StorefrontDocumentRequest(clean, `/${clean.join('/')}`, searchParams, String(acceptEncoding || ''), origin, url.search);
   }
 }
