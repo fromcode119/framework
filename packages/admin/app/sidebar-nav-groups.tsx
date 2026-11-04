@@ -100,6 +100,7 @@ export class SidebarNavGroups extends PureReactor {
                     isMini={isMini}
                     isGroupHeader={item.isGroup}
                     version={plugins.find(p => p.slug === item.pluginSlug)?.version}
+                    pluginSlug={item.pluginSlug}
                     canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
                     showHoverPreview={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
                     preserveActiveAnchor={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
