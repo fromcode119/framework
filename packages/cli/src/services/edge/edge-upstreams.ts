@@ -13,6 +13,14 @@ import { RouteConstants } from '@fromcode119/core';
  * another answers. When none answers, the ones that still accept stay in it: a gateway that is merely
  * slow is better than refusing every visitor, and a hung one ends itself (`GatewayWatchdog`).
  *
+ * When none even accepts its check, every address last resolved is still offered, as a last resort:
+ * a check is one connection under a short timeout, and across a network (the relay in front of the
+ * platform reaches its gateway over the internet) a lossy link fails checks while most connections
+ * still get through. On 2026-11-04 such a link flipped the relay's only gateway in and out of
+ * rotation every two seconds for eight minutes, and each moment out of rotation refused every
+ * visitor outright. A visitor is refused only when nothing is resolved at all, or every address was
+ * tried and refused.
+ *
  * A gateway being replaced stops accepting first (`GatewayListener.stop`), so its check fails within
  * a second and new connections go to the one replacing it; a connection that still reaches it in that
  * second is refused and retried elsewhere (`PlatformEdge`). A new gateway is used from its first
@@ -24,6 +32,8 @@ export class EdgeUpstreams {
   private static readonly HEALTH_PATH = RouteConstants.SEGMENTS.GATEWAY_HEALTH;
 
   private healthy: string[] = [];
+  /** Every address the last successful lookup returned, checked or not — the last resort. */
+  private known: string[] = [];
   private readonly active = new Map<string, number>();
   private readonly silent = new Set<string>();
   private timer: NodeJS.Timeout | null = null;
@@ -48,9 +58,14 @@ export class EdgeUpstreams {
     this.timer = null;
   }
 
-  /** Healthy gateways, the least busy first, leaving out any this connection already tried. */
+  /**
+   * Healthy gateways, the least busy first, leaving out any this connection already tried. When none
+   * is healthy, every known gateway not yet tried: a connection that may get through beats a refusal
+   * that certainly does not.
+   */
   candidates(tried: ReadonlySet<string>): string[] {
-    return this.healthy.filter((address) => !tried.has(address)).sort((a, b) => (this.active.get(a) ?? 0) - (this.active.get(b) ?? 0));
+    const pool = this.healthy.length ? this.healthy : this.known;
+    return pool.filter((address) => !tried.has(address)).sort((a, b) => (this.active.get(a) ?? 0) - (this.active.get(b) ?? 0));
   }
 
   /** A connection to `address` opened (+1) or closed (-1). */
@@ -82,6 +97,7 @@ export class EdgeUpstreams {
     } catch {
       addresses = [];
     }
+    if (addresses.length) this.known = [...addresses].sort();
     const results = await Promise.all(addresses.map(async (address) => ({ address, ...(await EdgeUpstreams.probe(address, this.checkPort)) })));
     const answering = results.filter((result) => result.answered).map((result) => result.address).sort();
     const accepting = results.filter((result) => result.accepted).map((result) => result.address).sort();

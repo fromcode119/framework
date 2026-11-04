@@ -80,6 +80,29 @@ describe('PlatformEdge', () => {
     await expect(new Promise((resolve, reject) => http.get({ host: '127.0.0.1', port: edgePort, path: '/' }, resolve).on('error', reject))).rejects.toThrow();
   });
 
+  it('still sends visitors to its only gateway while that gateway fails its health check', async () => {
+    // A lossy link: the check (here: a port nobody holds) fails, the visitor's connection gets through.
+    const gateway = await GatewayFixture.start('only', '127.0.0.1', 0);
+    const closed = net.createServer();
+    await new Promise<void>((resolve) => closed.listen(0, '127.0.0.1', resolve));
+    const checkPort = (closed.address() as net.AddressInfo).port;
+    await new Promise((resolve) => closed.close(resolve));
+    const upstreams = new EdgeUpstreams('gateways', checkPort, 200, async () => ['127.0.0.1']);
+    const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
+    const [edgePort] = await edge.start();
+    stops.push(() => edge.stop(0), () => gateway.stop(0));
+
+    expect(upstreams.healthyCount).toBe(0);
+    const body = await new Promise<string>((resolve, reject) => {
+      http.get({ host: '127.0.0.1', port: edgePort, path: '/', agent: false }, (res) => {
+        let text = '';
+        res.on('data', (chunk) => { text += chunk; });
+        res.on('end', () => resolve(text));
+      }).on('error', reject);
+    });
+    expect(body.startsWith('only ')).toBe(true);
+  }, 10_000);
+
   it('takes a gateway that accepts but never answers out of rotation while another answers', async () => {
     const hung = await HungGatewayFixture.start('127.0.0.1', 0);
     const port = (hung.address() as net.AddressInfo).port;
