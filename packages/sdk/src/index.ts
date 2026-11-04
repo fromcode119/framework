@@ -89,6 +89,7 @@ export { RuntimeLocationUtils } from '@fromcode119/core/client';
 // server and the browser must render the same thing.
 export { RenderLocationUtils } from '@fromcode119/core/client';
 export { PagePrefetch } from '@fromcode119/core/client';
+export { RuntimeBootHintConstants } from '@fromcode119/core/client';
 export { PublicAssetUrlUtils } from '@fromcode119/core/client';
 // A plugin that ships a storefront editor registers the query params that activate it here; themes and
 // the framework ask `EditorSessionParams.isEditorSession()` instead of keeping a list of their own.
