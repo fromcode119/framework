@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.495] - 2026-11-04
+
+### Fixed
+
+- **core**: load a source theme's page-contract overrides through its own @theme alias ([#1188](https://github.com/fromcode119/framework/pull/1188))
+- **frontend**: drop the window.process shim and the unused BrowserStateRuntimeBuilder ([#1187](https://github.com/fromcode119/framework/pull/1187))
+- **sdk**: the browser SDK carries RuntimeBootHintConstants ([#1186](https://github.com/fromcode119/framework/pull/1186))
+
 ## [0.2.494] - 2026-11-04
 
 ### Added
