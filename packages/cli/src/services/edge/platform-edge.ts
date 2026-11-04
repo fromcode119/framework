@@ -96,7 +96,7 @@ export class PlatformEdge {
     for (let attempt = 0; attempt < PlatformEdge.ATTEMPTS; attempt += 1) {
       const address = this.upstreams.candidates(tried)[0];
       if (!address) {
-        // Nothing healthy (a gateway starting, or all being replaced): look again once before giving up.
+        // Every known gateway tried, or none known (a gateway starting, or all being replaced): look again once before giving up.
         await this.upstreams.check();
         if (!this.upstreams.candidates(tried).length) return null;
         continue;
