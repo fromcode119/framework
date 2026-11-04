@@ -77,7 +77,7 @@ export class FrontendRuntimeEntry {
 
     FrontendRuntimeEntry.mountAssets(config, apiUrl);
     const preloaded = await StorefrontBundleLoader.loadEager(config.activeTheme, config.plugins, apiUrl, config.usedPlugins);
-    const registrations = PreBootRegistrationSeed.consume(window as unknown as Record<string, any>);
+    const registrations = PreBootRegistrationSeed.consume();
     // Every code-split renderer and every icon the server markup draws, resolved before hydration —
     // see OverrideLoaderWarmup and LucideIconWarmup.
     const host = document.getElementById(StorefrontHydrator.ROOT_ID);

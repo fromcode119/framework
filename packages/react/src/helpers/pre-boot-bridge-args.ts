@@ -79,7 +79,7 @@ export class PreBootBridgeArgs {
   /** The queueing stand-in: the SAME queue shape `setupGlobalStubs` has always written. */
   private static queueMethod(type: string): (...args: any[]) => void {
     return (...args: any[]) => {
-      const target = window as unknown as Record<string, any>;
+      const target = PreBootRegistrationSeed.holder;
       (target[PreBootRegistrationSeed.QUEUE_KEY] ||= []).push({ type, args });
     };
   }

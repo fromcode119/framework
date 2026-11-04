@@ -99,7 +99,7 @@ export class ImportMapInstaller {
       if (ImportMapInstaller.RESERVED_IMPORT_NAMES.has(name)) {
         return;
       }
-      runtimeRegistry[name] = mod;
+      RuntimeRegistryAccess.register(name, mod);
       const runtimeModuleAccessor = `(window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}])`;
       const keys =
         name === args.RuntimeConstants.MODULE_NAMES.ADMIN || name === args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS

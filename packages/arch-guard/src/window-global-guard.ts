@@ -23,13 +23,9 @@ export class WindowGlobalGuard {
   static readonly BASELINE: Readonly<Record<string, number>> = {
     // The ONE read-only legacy name of the page prefetch: a getter, no setter, not configurable.
     'core/src/page-prefetch.ts': 1,
-    // The runtime module registry and the pre-boot registration queue: the handoff from the host app to
-    // separately built plugin/theme bundles. Being replaced by native module resolution.
-    'admin/app/services/client-layout-runtime-service.ts': 6,
+    // The runtime module registry: ONE locked binding (non-writable, non-configurable) whose view refuses
+    // every write — only the framework's private store behind it changes.
     'core/src/runtime-registry-access.ts': 1,
-    'react/src/context-bridge.ts': 1,
-    'react/src/context-runtime-bridge.ts': 2,
-    'react/src/helpers/pre-boot-bridge-args.ts': 1,
     // The `process` shim the plugin/theme bundles read; goes with the registry.
     'frontend/runtime/storefront-runtime-globals.ts': 1,
     // Deprecated, called by nothing; kept only so a bundle importing the name still loads.

@@ -104,7 +104,7 @@ class Fixture {
 
 afterEach(() => {
   vi.restoreAllMocks();
-  delete (window as any)._fromcodeQueue;
+  delete (PreBootRegistrationSeed.holder as any)._fromcodeQueue;
 });
 
 describe('PreBootRegistrationSeed', () => {
@@ -146,17 +146,17 @@ describe('PreBootRegistrationSeed', () => {
     expect(residual.map((item) => item.type)).toEqual(['field', 'menuItem']);
   });
 
-  it('consumes the window queue and writes only the residual back', () => {
-    (window as any)._fromcodeQueue = Fixture.queue();
-    const seed = PreBootRegistrationSeed.consume(window as any);
+  it('consumes the private pre-boot queue and writes only the residual back', () => {
+    (PreBootRegistrationSeed.holder as any)._fromcodeQueue = Fixture.queue();
+    const seed = PreBootRegistrationSeed.consume();
     expect(Object.keys(seed.themeLayouts)).toEqual(['DefaultLayout', 'OtherLayout']);
-    expect((window as any)._fromcodeQueue.map((item: { type: string }) => item.type)).toEqual(['field', 'menuItem']);
+    expect((PreBootRegistrationSeed.holder as any)._fromcodeQueue.map((item: { type: string }) => item.type)).toEqual(['field', 'menuItem']);
 
-    (window as any)._fromcodeQueue = [{ type: 'theme', args: ['demo', { layouts: { A: Fixture.Layout } }] }];
-    PreBootRegistrationSeed.consume(window as any);
-    expect((window as any)._fromcodeQueue).toBeUndefined();
+    (PreBootRegistrationSeed.holder as any)._fromcodeQueue = [{ type: 'theme', args: ['demo', { layouts: { A: Fixture.Layout } }] }];
+    PreBootRegistrationSeed.consume();
+    expect((PreBootRegistrationSeed.holder as any)._fromcodeQueue).toBeUndefined();
 
-    expect(PreBootRegistrationSeed.consume(window as any).slots).toEqual({});
+    expect(PreBootRegistrationSeed.consume().slots).toEqual({});
   });
 
   it('is empty when nothing was queued', () => {

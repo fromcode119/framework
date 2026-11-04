@@ -12,12 +12,13 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 class EarlyTranslationsFixture {
   static readonly QUEUE_KEY = '_fromcodeQueue';
 
-  static get queue(): any[] {
-    return ((window as unknown as Record<string, any>)[EarlyTranslationsFixture.QUEUE_KEY] || []) as any[];
+  // The queue lives on the seed module's own holder; modules are re-imported per test, so read the live one.
+  static async queue(): Promise<any[]> {
+    const { PreBootRegistrationSeed } = await import('@fromcode119/react/context/pre-boot-registration-seed');
+    return ((PreBootRegistrationSeed.holder as Record<string, any>)[EarlyTranslationsFixture.QUEUE_KEY] || []) as any[];
   }
 
   static reset(): void {
-    delete (window as unknown as Record<string, any>)[EarlyTranslationsFixture.QUEUE_KEY];
     vi.resetModules();
   }
 }
@@ -31,7 +32,7 @@ describe('ContextBridge.registerTranslations before the bridge is installed', ()
 
     ContextBridge.registerTranslations({ en: { a: { b: 'B' } } }, 'theme');
 
-    expect(EarlyTranslationsFixture.queue).toEqual([{ type: 'translations', args: [{ en: { a: { b: 'B' } } }, 'theme'] }]);
+    expect(await EarlyTranslationsFixture.queue()).toEqual([{ type: 'translations', args: [{ en: { a: { b: 'B' } } }, 'theme'] }]);
   });
 
   it('delegates to the installed bridge and queues nothing once installed', async () => {
@@ -43,7 +44,7 @@ describe('ContextBridge.registerTranslations before the bridge is installed', ()
     ContextBridge.registerTranslations({ en: { a: 'A' } });
 
     expect(registerTranslations).toHaveBeenCalledWith({ en: { a: 'A' } });
-    expect(EarlyTranslationsFixture.queue).toEqual([]);
+    expect(await EarlyTranslationsFixture.queue()).toEqual([]);
   });
 
   it('the account copy registered at module evaluation folds into the provider seed', async () => {
@@ -52,11 +53,11 @@ describe('ContextBridge.registerTranslations before the bridge is installed', ()
     const { PreBootRegistrationSeed } = await import('@fromcode119/react/context/pre-boot-registration-seed');
     const BG = (await import('@fromcode119/react/account/i18n/bg.json')).default as Record<string, any>;
 
-    expect(EarlyTranslationsFixture.queue).toHaveLength(1);
-    const seed = PreBootRegistrationSeed.consume(window as unknown as Record<string, any>);
+    expect(await EarlyTranslationsFixture.queue()).toHaveLength(1);
+    const seed = PreBootRegistrationSeed.consume();
 
     expect(seed.registeredTranslations.bg?.account?.emailPreferences).toEqual(BG.account.emailPreferences);
-    expect(EarlyTranslationsFixture.queue).toEqual([]);
+    expect(await EarlyTranslationsFixture.queue()).toEqual([]);
   });
 
   it('registers the account copy once, however many surfaces call register()', async () => {
@@ -66,6 +67,6 @@ describe('ContextBridge.registerTranslations before the bridge is installed', ()
     AccountTranslations.register();
     AccountTranslations.register();
 
-    expect(EarlyTranslationsFixture.queue).toHaveLength(1);
+    expect(await EarlyTranslationsFixture.queue()).toHaveLength(1);
   });
 });
