@@ -6,6 +6,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.489] - 2026-11-04
+
+### Added
+- **storefront**: a plugin's own page arrives with its records ([#1172](https://github.com/fromcode119/framework/pull/1172))
+
 ## [0.2.488] - 2026-11-04
 
 ### Fixed
