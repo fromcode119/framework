@@ -6,77 +6,100 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.494] - 2026-11-04
+
+### Added
+
+- **arch-guard**: no-window-globals guard ([#1183](https://github.com/fromcode119/framework/pull/1183))
+
+### Fixed
+
+- **runtime**: lock the runtime module registry and move the pre-boot queue off window ([#1184](https://github.com/fromcode119/framework/pull/1184))
+- **runtime**: page data and render location without writable globals ([#1182](https://github.com/fromcode119/framework/pull/1182))
+
 ## [0.2.493] - 2026-11-04
 
 ### Fixed
+
 - **runtime**: page globals carry the framework's prefix, not a release name ([#1180](https://github.com/fromcode119/framework/pull/1180))
 
 ## [0.2.492] - 2026-11-04
 
 ### Fixed
+
 - **cli**: edge retries its only gateway when a connection to it is lost ([#1178](https://github.com/fromcode119/framework/pull/1178))
 
 ## [0.2.491] - 2026-11-04
 
 ### Fixed
+
 - **cli**: edge keeps its last gateway when every health check fails ([#1176](https://github.com/fromcode119/framework/pull/1176))
 
 ## [0.2.490] - 2026-11-04
 
 ### Added
+
 - **admin**: trailing slot on sidebar menu items ([#1174](https://github.com/fromcode119/framework/pull/1174))
 
 ## [0.2.489] - 2026-11-04
 
 ### Added
+
 - **storefront**: a plugin's own page arrives with its records ([#1172](https://github.com/fromcode119/framework/pull/1172))
 
 ## [0.2.488] - 2026-11-04
 
 ### Fixed
+
 - **deploy**: log every platform service to the host journal ([#1170](https://github.com/fromcode119/framework/pull/1170))
 
 ## [0.2.487] - 2026-11-03
 
 ### Fixed
-- **sources**: a pull removes the previous build's output, so a version that drops its admin UI still builds ([#1168](https://github.com/fromcode119/framework/pull/1168))
-- **admin**: no console error on the edit pages of a plugin without settings ([#1168](https://github.com/fromcode119/framework/pull/1168))
-- **api**: warn about an unauthenticated token only for the framework's own Bearer JWT ([#1168](https://github.com/fromcode119/framework/pull/1168))
+
+- Sources keeps stale build output; admin and api log plugin-owned auth as errors ([#1168](https://github.com/fromcode119/framework/pull/1168))
 
 ## [0.2.486] - 2026-11-03
 
 ### Added
+
 - **marketplace**: browse marketplace.fromcodeframework.com by default ([#1165](https://github.com/fromcode119/framework/pull/1165))
 
 ### Fixed
+
 - **admin**: an imported slug survives on a new record ([#1167](https://github.com/fromcode119/framework/pull/1167))
 - **frontend**: never invent an "Untitled" heading for a page with no title ([#1166](https://github.com/fromcode119/framework/pull/1166))
 
 ## [0.2.485] - 2026-11-03
 
 ### Fixed
+
 - **core**: bind each site when a boot migration walks the sites ([#1164](https://github.com/fromcode119/framework/pull/1164))
 
 ## [0.2.484] - 2026-11-03
 
 ### Fixed
+
 - **core**: migration 69 skips tables its role cannot update ([#1163](https://github.com/fromcode119/framework/pull/1163))
 
 ## [0.2.483] - 2026-11-03
 
 ### Fixed
-- **api**: stop answering /api/v1 and rewrite stored v1 addresses ([#1160](https://github.com/fromcode119/framework/pull/1160))
+
 - **deploy**: cap db and redis logs in the host journal ([#1162](https://github.com/fromcode119/framework/pull/1162))
+- **api**: stop answering /api/v1 and rewrite stored v1 addresses ([#1160](https://github.com/fromcode119/framework/pull/1160))
 
 ## [0.2.482] - 2026-11-03
 
 ### Fixed
-- **compose**: local db-secrets one-shot runs the CLI directly ([#1153](https://github.com/fromcode119/framework/pull/1153))
+
 - **deploy**: keep app container logs across releases ([#1158](https://github.com/fromcode119/framework/pull/1158))
+- **compose**: local db-secrets one-shot runs the CLI directly ([#1153](https://github.com/fromcode119/framework/pull/1153))
 
 ## [0.2.481] - 2026-11-03
 
 ### Fixed
+
 - **api**: record when an MCP token was last used ([#1156](https://github.com/fromcode119/framework/pull/1156))
 - **core**: stop leaking temp folders across api restarts ([#1155](https://github.com/fromcode119/framework/pull/1155))
 - **core**: sandboxed plugins see the client content type; add context.auth.holdsPermission ([#1150](https://github.com/fromcode119/framework/pull/1150))
@@ -84,48 +107,52 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ## [0.2.480] - 2026-11-03
 
 ### Added
-- **settings**: per-site Site icon in Settings → General — `/favicon.ico` and `/apple-touch-icon.png` serve the picked file, else the theme's own icon, else the platform mark; an empty field names what is shown ([#1151](https://github.com/fromcode119/framework/pull/1151))
+
+- **settings**: per-site Site icon in Settings → General ([#1151](https://github.com/fromcode119/framework/pull/1151))
 
 ### Fixed
+
 - **setup**: the documented local quick start reaches a working admin ([#1149](https://github.com/fromcode119/framework/pull/1149))
 
 ## [0.2.479] - 2026-11-02
 
 ### Fixed
-- **updates**: a release is offered only once its images are published, so an automatic update no longer fails in the minutes between the tag and the images ([#1147](https://github.com/fromcode119/framework/pull/1147))
+
+- **updates**: offer a release only once its images are published ([#1147](https://github.com/fromcode119/framework/pull/1147))
 
 ## [0.2.478] - 2026-11-02
 
 ### Fixed
-- **core**: a plugin update refreshes its collections' public content methods, so a release that adds `at` is asked without an api restart ([#1145](https://github.com/fromcode119/framework/pull/1145))
+
+- **core**: a plugin update refreshes its collections' public content methods ([#1145](https://github.com/fromcode119/framework/pull/1145))
 
 ## [0.2.477] - 2026-11-02
 
 ### Added
-- **settings**: opt-in usage report — off by default; Settings → General shows the exact report, where it goes, and the last send ([#1143](https://github.com/fromcode119/framework/pull/1143))
 
-### Changed
-- Next.js telemetry is turned off in dev and build ([#1143](https://github.com/fromcode119/framework/pull/1143))
+- opt-in usage report; turn off Next.js telemetry ([#1143](https://github.com/fromcode119/framework/pull/1143))
 
 ## [0.2.476] - 2026-11-02
 
-### Changed
-- **cli**: brand-named commands, binaries and env vars (`fromcode`, `FROMCODE_*`); the release-named `atlantis` / `ATLANTIS_*` ones keep working as deprecated aliases ([#1141](https://github.com/fromcode119/framework/pull/1141))
+_No user-facing changes._
 
 ## [0.2.475] - 2026-11-02
 
 ### Fixed
+
 - **admin**: say refused plugin settings in the console language ([#1139](https://github.com/fromcode119/framework/pull/1139))
 - **admin**: say a required field in the console language ([#1138](https://github.com/fromcode119/framework/pull/1138))
 
 ## [0.2.474] - 2026-11-01
 
 ### Fixed
-- a plugin held for approval stays held when its code is reached ([#1136](https://github.com/fromcode119/framework/pull/1136))
+
+- **core**: a plugin held for approval stays held when its code is reached ([#1136](https://github.com/fromcode119/framework/pull/1136))
 
 ## [0.2.473] - 2026-11-01
 
 ### Fixed
+
 - platform alerts reach the operator, and sites can send through the platform's mail ([#1134](https://github.com/fromcode119/framework/pull/1134))
 
 ## [0.2.472] - 2026-11-01
@@ -135,11 +162,9 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 - **gateway**: restart a gateway that accepts connections but answers none ([#1132](https://github.com/fromcode119/framework/pull/1132))
 - **deploy**: raise the gateway memory limit from 256M to 512M ([#1131](https://github.com/fromcode119/framework/pull/1131))
 
-## [0.2.471] - 2026-10-30
+## [0.2.471] - 2026-10-31
 
-### Changed
-
-- **docs, admin**: the product is named Fromcode Framework; Atlantis is the release codename ([#1128](https://github.com/fromcode119/framework/pull/1128))
+_No user-facing changes._
 
 ## [0.2.470] - 2026-10-30
 
