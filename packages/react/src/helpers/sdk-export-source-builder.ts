@@ -24,7 +24,6 @@ export class SdkExportSourceBuilder {
     'AdminResourceClient',
     'AdminSdkClient',
     'BrowserStateClient',
-    'BrowserStateRuntimeBuilder',
     'SystemAuthClient',
     'SystemAuthSession',
     // Storefront blocks need light/dark. This list is hand-maintained and IS the frontend's import map

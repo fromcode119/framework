@@ -76,7 +76,6 @@ export { AdminGlobalClient } from '@fromcode119/core/client';
 export { AdminResourceClient } from '@fromcode119/core/client';
 export { AdminSdkClient } from '@fromcode119/core/client';
 export { BrowserStateClient } from '@fromcode119/core/client';
-export { BrowserStateRuntimeBuilder } from '@fromcode119/core/client';
 export { SystemAuthClient } from '@fromcode119/core/client';
 export { SystemAuthSession } from '@fromcode119/core/client';
 export type { IBrowserCookieOptions } from '@fromcode119/core/client';

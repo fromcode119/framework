@@ -6,7 +6,6 @@ describe('BridgeObjectBuilder', () => {
     const bridge = BridgeObjectBuilder.build({} as never);
 
     expect(bridge.BrowserStateClient).toBeTypeOf('function');
-    expect(bridge.BrowserStateRuntimeBuilder).toBeTypeOf('function');
     expect(bridge.SystemAuthClient).toBeTypeOf('function');
     expect(bridge.SystemAuthSession).toBeTypeOf('function');
     expect(bridge.ApplicationUrlUtils).toBeTypeOf('function');
