@@ -15,16 +15,17 @@ import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
  *    `window.${RuntimeConstants.GLOBALS.PAGE_PREFETCH}` for the theme.
  */
 export class PageDocPrefetchRequestCache {
-  private static readonly prefetchCache = cache(async (doc: unknown): Promise<Record<string, unknown>> => {
+  private static readonly prefetchCache = cache(async (doc: unknown, requestSearch: string): Promise<Record<string, unknown>> => {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) {
       return {};
     }
-    return PageDocPrefetcher.prefetch(doc, theme);
+    return PageDocPrefetcher.prefetch(doc, theme, config?.plugins, requestSearch);
   });
 
-  static read(doc: unknown): Promise<Record<string, unknown>> {
-    return PageDocPrefetchRequestCache.prefetchCache(doc);
+  /** `requestSearch`: the page address's query string, which plugin-declared page entries read. */
+  static read(doc: unknown, requestSearch = ''): Promise<Record<string, unknown>> {
+    return PageDocPrefetchRequestCache.prefetchCache(doc, requestSearch);
   }
 }

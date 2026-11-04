@@ -2,6 +2,7 @@ import { ApiVersionUtils, LocalizationUtils, RuntimeConstants } from '@fromcode1
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
+import { PluginPagePrefetcher } from '@/lib/theme/plugin-page-prefetcher';
 import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
 import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-from-page-config';
 
@@ -33,7 +34,11 @@ import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-fro
 export class PageDocPrefetcher {
   private static readonly DEFAULT_MAX_VALUES = 3;
 
-  static async prefetch(doc: unknown, theme: Record<string, any>): Promise<Record<string, unknown>> {
+  /**
+   * `plugins` and `requestSearch` (the page address's query string) feed the entries plugins declare for
+   * their own pages — `PluginPagePrefetcher`.
+   */
+  static async prefetch(doc: unknown, theme: Record<string, any>, plugins: unknown = [], requestSearch = ''): Promise<Record<string, unknown>> {
     const apis = Array.isArray(theme?.ui?.prefetchApis)
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
       : [];
@@ -58,7 +63,10 @@ export class PageDocPrefetcher {
       }),
     );
 
-    await PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results);
+    await Promise.all([
+      PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results),
+      PluginPagePrefetcher.prefetch(doc, plugins, requestSearch, internalBase, results),
+    ]);
     return results;
   }
 

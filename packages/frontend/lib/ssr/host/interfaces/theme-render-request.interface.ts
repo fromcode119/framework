@@ -8,6 +8,8 @@ export interface IThemeRenderRequest {
   /** The raw request path and origin — what `window.location` will say in the browser (`RenderLocationUtils`). */
   requestPath: string;
   requestOrigin: string;
+  /** The request's query string (`?a=1`, or empty) — `window.location.search` (`RenderLocationUtils.search`). */
+  requestSearch?: string;
   /** The per-request `/system/frontend` payload (menus, settings, plugins, active theme). */
   config: Record<string, unknown>;
   serverTranslations: Record<string, unknown>;
