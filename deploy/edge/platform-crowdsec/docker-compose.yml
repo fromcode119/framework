@@ -34,8 +34,9 @@ services:
       resources:
         limits:
           memory: 256m
+    # Same as x-platform-logging in deploy/docker-compose.full-stack.yml (an anchor cannot cross files).
     logging:
-      driver: json-file
+      driver: journald
       options:
-        max-size: 10m
-        max-file: "3"
+        tag: "{{.Name}}"
+        labels: com.docker.compose.service

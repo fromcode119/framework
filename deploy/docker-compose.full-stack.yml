@@ -28,9 +28,8 @@
 # rotated and capped by the host's journald (SystemMaxUse, default 10% of the disk, at most 4G).
 # `docker logs` still works. Older lines, across releases, by service:
 #   journalctl COM_DOCKER_COMPOSE_SERVICE=api --since "-7d"
-# db and redis carry it too, so their logs are capped as well; a rolling release never recreates them
-# (`--no-deps`), so the change reaches them only when they are recreated on purpose. edge does not: it
-# is recreated by the next `up` that names it, which takes the platform down.
+# Every service carries it, so every log is capped the same way. A rolling release never recreates db
+# or redis (`--no-deps`); a change to their logging reaches them only when they are recreated on purpose.
 x-platform-logging: &platform-logging
   driver: journald
   options:
@@ -117,6 +116,7 @@ services:
   # A ready HAProxy config is in deploy/edge/haproxy/: EDGE_IMAGE=haproxy:3.0-alpine and
   # EDGE_COMMAND="haproxy -f /app/deploy-edge/haproxy/haproxy.cfg". docs: deploy/DEPLOYMENT.md, "The edge".
   edge:
+    logging: *platform-logging
     build:
       context: .
       dockerfile: Dockerfile

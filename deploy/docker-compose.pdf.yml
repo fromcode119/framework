@@ -35,6 +35,12 @@ services:
       resources:
         limits:
           memory: 1G
+    # Same as x-platform-logging in the full-stack file (an anchor cannot cross files).
+    logging:
+      driver: journald
+      options:
+        tag: "{{.Name}}"
+        labels: com.docker.compose.service
 
 networks:
   framework:
