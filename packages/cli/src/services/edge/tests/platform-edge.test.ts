@@ -81,16 +81,15 @@ describe('PlatformEdge', () => {
   });
 
   it('still sends visitors to its only gateway while that gateway fails its health check', async () => {
-    // A lossy link: the check (here: a port nobody holds) fails, the visitor's connection gets through.
+    // A lossy link: the check port answered once, then stops; the visitor's connection still gets through.
     const gateway = await GatewayFixture.start('only', '127.0.0.1', 0);
-    const closed = net.createServer();
-    await new Promise<void>((resolve) => closed.listen(0, '127.0.0.1', resolve));
-    const checkPort = (closed.address() as net.AddressInfo).port;
-    await new Promise((resolve) => closed.close(resolve));
-    const upstreams = new EdgeUpstreams('gateways', checkPort, 200, async () => ['127.0.0.1']);
+    const check = await GatewayFixture.start('check', '127.0.0.1', 0);
+    const upstreams = new EdgeUpstreams('gateways', check.port, 60_000, async () => ['127.0.0.1']);
     const edge = new PlatformEdge(upstreams, [{ listen: 0, upstreamPort: gateway.port }]);
     const [edgePort] = await edge.start();
     stops.push(() => edge.stop(0), () => gateway.stop(0));
+    await check.stop(0);
+    await upstreams.check();
 
     expect(upstreams.healthyCount).toBe(0);
     const body = await new Promise<string>((resolve, reject) => {
@@ -101,6 +100,25 @@ describe('PlatformEdge', () => {
       }).on('error', reject);
     });
     expect(body.startsWith('only ')).toBe(true);
+  }, 10_000);
+
+  it('offers a failing gateway as a last resort only within a minute of its last accepted check, and only while the lookup returns it', async () => {
+    const check = await GatewayFixture.start('check', '127.0.0.1', 0);
+    let clock = 1_000_000;
+    let resolved = ['127.0.0.1'];
+    const upstreams = new EdgeUpstreams('gateways', check.port, 60_000, async () => resolved, () => clock);
+    await upstreams.check();
+    await check.stop(0);
+    await upstreams.check();
+
+    expect(upstreams.candidates(new Set())).toEqual(['127.0.0.1']);
+    clock += EdgeUpstreams.LAST_RESORT_MS + 1;
+    expect(upstreams.candidates(new Set())).toEqual([]);
+
+    clock -= EdgeUpstreams.LAST_RESORT_MS;
+    resolved = ['10.0.0.9'];
+    await upstreams.check();
+    expect(upstreams.candidates(new Set())).toEqual([]);
   }, 10_000);
 
   it('takes a gateway that accepts but never answers out of rotation while another answers', async () => {
