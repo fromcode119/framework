@@ -5,19 +5,18 @@ export class GlobalReadinessService {
   private static readonly POLL_INTERVAL_MS = 50;
 
   private static resolveAdminModule(): any {
-    const registry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
-    return registry[RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] || registry[RuntimeConstants.MODULE_NAMES.ADMIN] || null;
+    return RuntimeRegistryAccess.get(RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS) || RuntimeRegistryAccess.get(RuntimeConstants.MODULE_NAMES.ADMIN) || null;
   }
 
   static isReady(): boolean {
-    // Everything the admin needs lives under the ONE runtime registry — react, the lucide proxy, the
+    // Everything the admin needs is registered through RuntimeRegistryAccess — react, the lucide proxy, the
     // framework bridge, and the admin module. No bare window.React / window.Fromcode / window.Lucide.
-    const registry = (window as any)?.[RuntimeConstants.GLOBALS.MODULES] || {};
+    const get = RuntimeRegistryAccess.get;
     const mod = GlobalReadinessService.resolveAdminModule();
     return !!(
-      registry[RuntimeRegistryAccess.KEYS.REACT] &&
-      registry[RuntimeRegistryAccess.KEYS.LUCIDE] &&
-      registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] &&
+      get(RuntimeRegistryAccess.KEYS.REACT) &&
+      get(RuntimeRegistryAccess.KEYS.LUCIDE) &&
+      get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE) &&
       mod &&
       typeof mod.Select !== 'undefined' &&
       document.getElementById('fc-runtime-import-map')

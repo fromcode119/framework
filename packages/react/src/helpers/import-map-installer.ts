@@ -14,6 +14,12 @@ export class ImportMapInstaller {
     const imports = ImportMapInstaller.buildStaticImports(args, sources);
     ImportMapInstaller.applyServerModules(imports, args);
     ImportMapInstaller.applyClientModules(imports, args, runtimeRegistry);
+    // Every module in the map reads the runtime host when it evaluates, so the map is published only
+    // once the host holds every registered entry.
+    void RuntimeRegistryAccess.connect().then(() => ImportMapInstaller.publish(imports));
+  }
+
+  private static publish(imports: Record<string, string>): void {
     let script = document.getElementById('fc-runtime-import-map') as HTMLScriptElement;
     if (!script) {
       script = document.createElement('script');
@@ -31,6 +37,14 @@ export class ImportMapInstaller {
     window.dispatchEvent(new CustomEvent('fromcode:import-map-ready'));
   }
 
+  /**
+   * A generated module as a `data:` url. Every one starts with the runtime host import, because its
+   * accessor expressions read the host module, not a window global.
+   */
+  private static moduleUrl(body: string): string {
+    return 'data:application/javascript,' + encodeURIComponent(RuntimeRegistryAccess.moduleSource(body));
+  }
+
   private static buildStaticImports(
     args: IRuntimeBridgeInstallArgs,
     sources: IImportMapSources,
@@ -39,9 +53,9 @@ export class ImportMapInstaller {
     const reactDomExpr = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_DOM);
     return {
       react:
-        `data:application/javascript,const __fcReact = ${reactExpr}; export default __fcReact; export const { useState, useEffect, useMemo, useCallback, useRef, createRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = __fcReact;`,
+        ImportMapInstaller.moduleUrl(`const __fcReact = ${reactExpr}; export default __fcReact; export const { useState, useEffect, useMemo, useCallback, useRef, createRef, createContext, useContext, useReducer, useLayoutEffect, useInsertionEffect, useImperativeHandle, useDebugValue, forwardRef, memo, lazy, Suspense, createElement, cloneElement, isValidElement, startTransition, useTransition, useDeferredValue, useId, useSyncExternalStore, Children, Fragment, StrictMode, Profiler, Component, PureComponent } = __fcReact;`),
       'react-dom':
-        `data:application/javascript,const __fcReactDom = ${reactDomExpr}; export default __fcReactDom; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot, hydrateRoot } = __fcReactDom;`,
+        ImportMapInstaller.moduleUrl(`const __fcReactDom = ${reactDomExpr}; export default __fcReactDom; export const { render, hydrate, findDOMNode, unmountComponentAtNode, createPortal, flushSync, createRoot, hydrateRoot } = __fcReactDom;`),
       // `jsx` and `jsxs` are NOT the same function, and mapping both onto `createElement(type, props)`
       // is what produced "Each child in a list should have a unique key prop" all over the admin for
       // markup that has no list in it. `jsxs` is the automatic runtime's way of saying "this child
@@ -53,20 +67,20 @@ export class ImportMapInstaller {
       // `jsx` keeps passing children untouched, deliberately: there the array IS dynamic (a `.map`),
       // and the warning it raises is a real missing key that must not be silenced.
       'react/jsx-runtime':
-        `data:application/javascript,const __fcR = ${reactExpr}; const __fcProps = (props, key) => key === undefined ? props : { ...(props || {}), key }; const __fcJsx = (type, props, key) => __fcR.createElement(type, __fcProps(props, key)); const __fcJsxs = (type, props, key) => { const p = __fcProps(props, key); if (!p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsx = __fcJsx; export const jsxs = __fcJsxs; export const Fragment = __fcR.Fragment; export default { jsx, jsxs, Fragment };`,
+        ImportMapInstaller.moduleUrl(`const __fcR = ${reactExpr}; const __fcProps = (props, key) => key === undefined ? props : { ...(props || {}), key }; const __fcJsx = (type, props, key) => __fcR.createElement(type, __fcProps(props, key)); const __fcJsxs = (type, props, key) => { const p = __fcProps(props, key); if (!p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsx = __fcJsx; export const jsxs = __fcJsxs; export const Fragment = __fcR.Fragment; export default { jsx, jsxs, Fragment };`),
       // The dev runtime carries the same distinction in its FOURTH argument (`isStaticChildren`).
       'react/jsx-dev-runtime':
-        `data:application/javascript,const __fcR = ${reactExpr}; const __fcJsxDEV = (type, props, key, isStaticChildren) => { const p = key === undefined ? props : { ...(props || {}), key }; if (!isStaticChildren || !p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsxDEV = __fcJsxDEV; export const Fragment = __fcR.Fragment; export default { jsxDEV, Fragment };`,
+        ImportMapInstaller.moduleUrl(`const __fcR = ${reactExpr}; const __fcJsxDEV = (type, props, key, isStaticChildren) => { const p = key === undefined ? props : { ...(props || {}), key }; if (!isStaticChildren || !p || !Array.isArray(p.children)) return __fcR.createElement(type, p); const { children, ...rest } = p; return __fcR.createElement(type, rest, ...children); }; export const jsxDEV = __fcJsxDEV; export const Fragment = __fcR.Fragment; export default { jsxDEV, Fragment };`),
       // A static module written beside the icons at build time (see `LucideIconNodeEmitter.namespaceModule`),
       // not a `data:` URL generated here: enumerating 5,730 icon names and URL-encoding them on every
       // page load was most of the runtime's longest boot task, and 400 KB of this import map.
       'lucide-react': LucideIconAssetUrl.namespaceUrl(),
-      '@fromcode119/react': 'data:application/javascript,' + encodeURIComponent(sources.reactExportSource),
-      '@fromcode119/admin/components': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
-      '@fromcode119/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
-      '@fromcode119/sdk': 'data:application/javascript,' + encodeURIComponent(sources.sdkExportSource),
-      '@fromcode119/sdk/react': 'data:application/javascript,' + encodeURIComponent(sources.sdkReactExportSource),
-      '@fromcode119/sdk/admin': 'data:application/javascript,' + encodeURIComponent(sources.adminExportSource),
+      '@fromcode119/react': ImportMapInstaller.moduleUrl(sources.reactExportSource),
+      '@fromcode119/admin/components': ImportMapInstaller.moduleUrl(sources.adminExportSource),
+      '@fromcode119/admin': ImportMapInstaller.moduleUrl(sources.adminExportSource),
+      '@fromcode119/sdk': ImportMapInstaller.moduleUrl(sources.sdkExportSource),
+      '@fromcode119/sdk/react': ImportMapInstaller.moduleUrl(sources.sdkReactExportSource),
+      '@fromcode119/sdk/admin': ImportMapInstaller.moduleUrl(sources.adminExportSource),
     };
   }
 
@@ -100,7 +114,7 @@ export class ImportMapInstaller {
         return;
       }
       RuntimeRegistryAccess.register(name, mod);
-      const runtimeModuleAccessor = `(window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}[${JSON.stringify(name)}])`;
+      const runtimeModuleAccessor = RuntimeRegistryAccess.accessorExpr(name);
       const keys =
         name === args.RuntimeConstants.MODULE_NAMES.ADMIN || name === args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS
           ? Array.from(
@@ -110,13 +124,11 @@ export class ImportMapInstaller {
               ]),
             )
           : Object.keys(mod || {});
-      const source =
-        'data:application/javascript,' +
-        encodeURIComponent(
-          keys
-            .map((key) => `export const ${key} = ${runtimeModuleAccessor} ? ${runtimeModuleAccessor}.${key} : undefined;`)
-            .join('\n') + `\nexport default ${runtimeModuleAccessor};`,
-        );
+      const source = ImportMapInstaller.moduleUrl(
+        keys
+          .map((key) => `export const ${key} = ${runtimeModuleAccessor} ? ${runtimeModuleAccessor}.${key} : undefined;`)
+          .join('\n') + `\nexport default ${runtimeModuleAccessor};`,
+      );
       imports[name] = source;
       if (name === args.RuntimeConstants.MODULE_NAMES.ADMIN || name === args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS) {
         adminModuleSource = source;

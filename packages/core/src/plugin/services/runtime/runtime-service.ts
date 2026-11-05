@@ -212,7 +212,7 @@ export class RuntimeService {
     }
 
     if (!source) return null;
-    return Buffer.from(source).toString('base64');
+    return Buffer.from(RuntimeRegistryAccess.moduleSource(source)).toString('base64');
   }
 
   public getModules(activePlugins: ILoadedPlugin[]): Record<string, any> {

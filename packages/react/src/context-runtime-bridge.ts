@@ -138,8 +138,7 @@ export class ContextRuntimeBridge {
     bridge: Record<string, unknown>,
     runtimeRegistry: Record<string, any>,
   ): void {
-    const reactModuleAccessor =
-      `window.${args.RuntimeConstants.GLOBALS.MODULES} && window.${args.RuntimeConstants.GLOBALS.MODULES}['@fromcode119/react']`;
+    const reactModuleAccessor = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
     const adminExportSource = AdminExportSourceBuilder.build(args, runtimeRegistry);
     const reactExportSource = ReactExportSourceBuilder.buildReactExportSource(bridge, reactModuleAccessor);
     const sdkReactExportSource = ReactExportSourceBuilder.buildSdkReactExportSource(reactModuleAccessor);

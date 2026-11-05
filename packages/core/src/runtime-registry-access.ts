@@ -1,4 +1,5 @@
 import { RuntimeConstants } from '@core/constants/runtime.constants';
+import { RuntimeHostModule } from '@core/constants/runtime-host-module.constants';
 
 /**
  * Single source of truth for the host→plugin/theme runtime handoff.
@@ -54,14 +55,45 @@ export class RuntimeRegistryAccess {
   }
 
   /**
-   * A JS source EXPRESSION string that reads one module from the registry, null-safe.
-   * Baked into import-map `data:` URL modules and server-side bridge sources.
-   * e.g. `accessorExpr('react')` -> `(window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules['react'])`
+   * A JS source EXPRESSION string that reads one module through the runtime host module.
+   * Baked into import-map `data:` URL modules and server-side bridge sources, which must start with
+   * `RuntimeHostModule.IMPORT` (`moduleSource` adds it).
+   * e.g. `accessorExpr('react')` -> `__fcHostGet("react")`
    */
   static accessorExpr(key: string): string {
-    const g = `window.${RuntimeRegistryAccess.globalName}`;
-    return `(${g} && ${g}[${JSON.stringify(key)}])`;
+    return RuntimeHostModule.expr(key);
   }
+
+  /** A generated module's source, with the host import its accessor expressions need. */
+  static moduleSource(body: string): string {
+    return RuntimeHostModule.withImport(body);
+  }
+
+  /**
+   * Claims the runtime host module's writer and copies every entry registered so far into it.
+   * Called once while the framework boots, BEFORE the import map is published: the generated modules
+   * read the host at evaluation, so the host must hold every entry before any extension bundle loads.
+   * A second framework bundle on the page finds the writer taken and keeps reading only.
+   */
+  static connect(): Promise<void> {
+    if (RuntimeRegistryAccess.connecting) return RuntimeRegistryAccess.connecting;
+    // A variable, not a literal: bundlers leave the import to the browser instead of resolving it.
+    const url = RuntimeHostModule.URL;
+    RuntimeRegistryAccess.connecting = import(/* webpackIgnore: true */ /* @vite-ignore */ url).then((host) => {
+      const writer = host.claim() as ((key: string, value: unknown) => void) | null;
+      if (!writer) {
+        console.warn('[fromcode] The runtime host module is already claimed; this bundle reads it only.');
+        return;
+      }
+      RuntimeRegistryAccess.hostWriter = writer;
+      const store = RuntimeRegistryAccess.install().store;
+      Object.keys(store).forEach((key) => writer(key, store[key]));
+    });
+    return RuntimeRegistryAccess.connecting;
+  }
+
+  private static connecting: Promise<void> | null = null;
+  private static hostWriter: ((key: string, value: unknown) => void) | null = null;
 
   /**
    * The live registry (browser runtime) — a READ-ONLY view for everyone outside the framework.
@@ -75,9 +107,15 @@ export class RuntimeRegistryAccess {
     return RuntimeRegistryAccess.install().view;
   }
 
+  /** Framework-side read of one entry, from the private store rather than the window view. */
+  static get(key: string): any {
+    return RuntimeRegistryAccess.install().store[key];
+  }
+
   /** Framework-only writer. Entries become visible through the read-only view immediately. */
   static register(key: string, value: unknown): void {
     RuntimeRegistryAccess.install().store[key] = value;
+    RuntimeRegistryAccess.hostWriter?.(key, value);
   }
 
   private static installed: { view: Record<string, any>; store: Record<string, any> } | null = null;

@@ -11,6 +11,7 @@ import path from 'node:path';
 // too: it drags reactor's decorators into a tsx-run CLI and throws on an undefined descriptor. This
 // path reaches ONE import-free file, which is what the constants module was written to be.
 import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset.constants';
+import { RuntimeHostModule } from '@fromcode119/core/constants/runtime-host-module.constants';
 
 /**
  * Emits the Lucide icon set as per-icon DATA modules — one tiny ES module per icon holding nothing but
@@ -97,9 +98,8 @@ export class LucideIconNodeEmitter {
    * installed lucide, so it is written here once per version and served as an immutable asset.
    */
   static namespaceModule(kebabs: readonly string[]): string {
-    const registry = `window.${RuntimeAssetConstants.REGISTRY_GLOBAL}`;
     const lines = LucideIconNodeEmitter.exportNames(kebabs).map((name) => `export const ${name} = __fcLucide.${name};`);
-    return [`const __fcLucide = (${registry} && ${registry}["lucide-react"]);`, ...lines, 'export default __fcLucide;', ''].join('\n');
+    return [RuntimeHostModule.IMPORT, `const __fcLucide = ${RuntimeHostModule.expr('lucide-react')};`, ...lines, 'export default __fcLucide;', ''].join('\n');
   }
 
   /** Every `[kebab, iconNode]` pair, by importing each icon module lucide ships and reading its `__iconNode`. */
