@@ -36,6 +36,7 @@ export class MediaOverlayContext {
     if (unique.length === 0) return resolved;
     const rows = await this.manager.db.find(SystemConstants.TABLE.MEDIA, { where: { id: { in: unique } }, limit: unique.length });
     const hash = MediaOverlayStore.hash(normalized);
+    const from = normalized.uploadedFrom ? Date.parse(`${normalized.uploadedFrom}T00:00:00Z`) : null;
     // One address resolution for the whole batch: only the file name differs between images.
     const placeholder = 'overlay-file-placeholder';
     const template = await SiteBaseUrl.apiUrlForCurrentSite(
@@ -45,6 +46,7 @@ export class MediaOverlayContext {
       const visibility = String((row as any).visibility || 'public');
       const mimeType = String((row as any).mime_type ?? '');
       if (visibility !== 'public' || !MediaOverlayContext.IMAGE_TYPES.includes(mimeType)) continue;
+      if (from !== null && !(new Date((row as any).created_at).getTime() >= from)) continue;
       const id = String((row as any).id);
       resolved.set(id, template.replace(placeholder, `${id}.webp`));
     }
@@ -59,12 +61,18 @@ export class MediaOverlayContext {
     };
     const overlayMediaId = String(spec.overlayMediaId ?? '').trim();
     if (!/^\d+$/.test(overlayMediaId)) throw new Error('An overlay needs the id of an image in the media library.');
+    const uploadedFrom = String(spec.uploadedFrom ?? '').trim().slice(0, 10);
     return {
       overlayMediaId,
       position: String(spec.position ?? '').trim(),
       opacityPercent: clamp(spec.opacityPercent, 0, 100),
       sizePercent: clamp(spec.sizePercent, 1, 100),
       marginPercent: clamp(spec.marginPercent, 0, 50),
+      ...(MediaOverlayContext.isDay(uploadedFrom) ? { uploadedFrom } : {}),
     };
+  }
+
+  private static isDay(value: string): boolean {
+    return /^\d{4}-\d{2}-\d{2}$/.test(value) && Number.isFinite(Date.parse(`${value}T00:00:00Z`));
   }
 }

@@ -12,4 +12,9 @@ export interface IMediaOverlaySpec {
   sizePercent: number;
   /** The gap from the anchored edges as a share of the image's shorter side. */
   marginPercent: number;
+  /**
+   * Only images uploaded on or after this day (YYYY-MM-DD) get the overlay; earlier ones keep their own
+   * address — for a library whose older pictures already carry a mark. Absent: every image.
+   */
+  uploadedFrom?: string;
 }

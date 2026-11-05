@@ -26,7 +26,9 @@ export class MediaOverlayStore {
 
   /** A stable short hash of a spec: same spec, same address; any change, a new one. */
   static hash(spec: IMediaOverlaySpec): string {
-    const canonical = JSON.stringify([spec.overlayMediaId, spec.position, spec.opacityPercent, spec.sizePercent, spec.marginPercent]);
+    const values: unknown[] = [spec.overlayMediaId, spec.position, spec.opacityPercent, spec.sizePercent, spec.marginPercent];
+    if (spec.uploadedFrom) values.push(spec.uploadedFrom);
+    const canonical = JSON.stringify(values);
     return crypto.createHash('sha256').update(canonical).digest('hex').slice(0, 16);
   }
 
