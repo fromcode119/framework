@@ -46,7 +46,6 @@ export class ResolvedContentMetadata {
     if (!head) return base;
 
     const canonical = head.canonical || undefined;
-    const languages = await LocaleAlternateLinks.build(url, head.canonical || '');
     const images = head.ogImage ? [head.ogImage] : undefined;
     const ogTitle = head.ogTitle || head.title || undefined;
     const ogDescription = head.ogDescription || head.description || undefined;
@@ -55,7 +54,7 @@ export class ResolvedContentMetadata {
       ...base,
       title: head.title ? { absolute: head.title } : base.title,
       description: head.description || base.description,
-      alternates: canonical ? { canonical, ...(languages ? { languages } : {}) } : base.alternates,
+      alternates: canonical ? { canonical, languages: await LocaleAlternateLinks.build(url, canonical) } : base.alternates,
       robots: ResolvedContentMetadata.parseRobots(head.robots),
       openGraph: {
         title: ogTitle,
