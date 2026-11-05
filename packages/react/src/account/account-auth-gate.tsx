@@ -20,11 +20,17 @@ export class AccountAuthGate extends PluginComponent {
   @prop declare children?: ReactNode;
   @state status: AuthGateState = AuthGateState.CHECKING;
   private mounted = false;
-  
+  private checking = false;
+
   componentDidMount(): void {
     this.mounted = true;
     AccountTranslations.register();
     void this.check();
+  }
+
+  /** The runtime context can arrive after mount; the check starts the moment there is an api to ask. */
+  componentDidUpdate(): void {
+    if (this.status === AuthGateState.CHECKING) void this.check();
   }
 
   componentWillUnmount(): void {
@@ -32,6 +38,13 @@ export class AccountAuthGate extends PluginComponent {
   }
 
   private async check(): Promise<void> {
+    // No api means the plugin runtime has not arrived yet, NOT that the visitor is a guest. The storefront
+    // paints its first frame with no provider (`StorefrontRuntimeGate`) and then remounts the page inside
+    // the runtime. Deciding here sent every signed-in customer to /login: this copy's request threw for
+    // want of an api, and its redirect fired after the remounted gate had already shown the account.
+    // Staying undecided costs nothing — the server guard has already turned guests away.
+    if (!this.api || this.checking) return;
+    this.checking = true;
     try {
       // `/auth/me/person` returns the signed-in person (200) and 401s for guests — the authoritative
       // session probe (`/auth/me` does not exist; `/auth/status` only reports install state).
@@ -47,7 +60,8 @@ export class AccountAuthGate extends PluginComponent {
   }
 
   private redirectToLogin(): void {
-    if (!Platform.isBrowser) return;
+    // A gate that has been unmounted no longer speaks for the page: a remounted twin owns the decision.
+    if (!Platform.isBrowser || !this.mounted) return;
     const next = encodeURIComponent(window.location.pathname + window.location.search);
     // Framework-owned login path (RouteConstants), not a hardcoded literal.
     window.location.replace(`${RouteConstants.SEGMENTS.LOGIN}?next=${next}`);
