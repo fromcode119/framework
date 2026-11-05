@@ -6,10 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
-## [0.2.504] - 2026-11-05
+## [0.2.505] - 2026-11-05
 
 ### Fixed
 
+- **runtime**: never parse an extension bundle before the import map exists ([#1214](https://github.com/fromcode119/framework/pull/1214))
+
+## [0.2.504] - 2026-11-05
+
+### Added
+
+- **media**: an overlay can start from an upload day ([#1212](https://github.com/fromcode119/framework/pull/1212))
+
+### Fixed
+
+- **admin**: marketplace search crashed on an entry without a description ([#1209](https://github.com/fromcode119/framework/pull/1209))
 - **runtime**: name the lucide namespace file by the host it imports ([#1210](https://github.com/fromcode119/framework/pull/1210))
 - **react**: the framework sign-in shell speaks the site's language ([#1208](https://github.com/fromcode119/framework/pull/1208))
 
