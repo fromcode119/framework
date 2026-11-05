@@ -41,4 +41,11 @@ describe('RuntimeHostModule — the runtime handoff as an ES module', () => {
     expect(RuntimeHostModule.URL).toMatch(/^data:text\/javascript,/);
     expect(decodeURIComponent(RuntimeHostModule.URL)).not.toMatch(/window|globalThis|self\./);
   });
+
+  it('names a static file that imports the host by the host itself', () => {
+    // An immutable file importing the host must move to a new url with the host: a browser keeps the old
+    // copy for a year, and that copy imports an older, empty host.
+    expect(RuntimeHostModule.TAG).toMatch(/^[0-9a-z]+$/);
+    expect(RuntimeHostModule.taggedFile('lucide-react')).toBe(`lucide-react.${RuntimeHostModule.TAG}.js`);
+  });
 });
