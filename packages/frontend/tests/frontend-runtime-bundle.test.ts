@@ -131,6 +131,10 @@ describe('storefront runtime bundle', () => {
     expect(typeof registry!['@fromcode119/react'].ContextBridge.registerTheme).toBe('function');
     expect(typeof registry!['@fromcode119/react'].t).toBe('function');
     expect(dom.window.document.getElementById('fc-runtime-import-map')).toBeTruthy();
+    // Theme bundles import these subpaths bare; each resolves to a module already in the map.
+    const map = JSON.parse(String(dom.window.document.getElementById('fc-runtime-import-map')!.textContent)).imports;
+    expect(map['react-dom/client']).toBe(map['react-dom']);
+    expect(map['@fromcode119/sdk/admin/theme-style-variant-select']).toBe(map['@fromcode119/sdk/admin']);
     expect(dom.window._fromcodeQueue).toBeUndefined();
     // The registry binding is locked: a page script can neither replace it nor overwrite an entry.
     expect(Object.getOwnPropertyDescriptor(dom.window, "__fromcodeRuntimeModules")?.configurable).toBe(false);

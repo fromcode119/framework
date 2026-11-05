@@ -165,6 +165,8 @@ export class FromcodeThemeOverridesPlugin {
         if (name.startsWith('_')) continue;
         const fullPath = join(dir, name);
         if (statSync(fullPath).isDirectory()) {
+          // A theme's tests sit beside its renderers; they are not components and import test tooling.
+          if (FromcodeThemeOverridesPlugin.TEST_DIRECTORIES.has(name)) continue;
           walk(fullPath);
         } else if (FromcodeThemeOverridesPlugin.isOverrideComponentFile(name)) {
           const rel = FromcodeThemeOverridesPlugin.normalizePath(relative(rootDir, fullPath));
@@ -194,8 +196,11 @@ export class FromcodeThemeOverridesPlugin {
     }
   }
 
+  private static readonly TEST_DIRECTORIES = new Set(['tests', '__tests__']);
+
   private static isOverrideComponentFile(name: string): boolean {
-    return name.endsWith('.tsx') && !name.endsWith('.interfaces.tsx') && !name.endsWith('.types.tsx');
+    return name.endsWith('.tsx') && !name.endsWith('.interfaces.tsx') && !name.endsWith('.types.tsx')
+      && !/\.(test|spec)\.tsx$/.test(name);
   }
 
   private static normalizePath(path: string): string {

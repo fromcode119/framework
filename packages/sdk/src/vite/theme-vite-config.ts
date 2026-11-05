@@ -6,7 +6,6 @@
 // everywhere the TypeScript path map applies; a Node-loaded build config is not one of those places.
 import react from '@vitejs/plugin-react';
 import autoprefixer from 'autoprefixer';
-import externalGlobals from 'rollup-plugin-external-globals';
 import fs from 'node:fs';
 import path from 'node:path';
 import type { UserConfig } from 'vite';
@@ -18,35 +17,12 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  * driven by env (THEME_DIR, THEME_SLUG), so a theme ships NO build config of its own (no vite.config,
  * tailwind/postcss, build script). Unlike the plugin config, a theme's CSS is PROCESSED normally (bundled +
  * autoprefixed), not inlined as raw text. react / @fromcode119/sdk stay external (resolved at runtime by
- * the frontend import map). A theme is just: src/ components + theme.json + styles + public/.
+ * the runtime import map). A theme is just: src/ components + theme.json + styles + public/.
  *
  * Vite requires the config module to DEFAULT-export its object. That single required export is generated
  * as build glue (see next-build-codegen's `ViteConfigEntryGenerator`) so the authored source stays a plain class.
  */
 export class ThemeViteConfig {
-  /**
-   * The single runtime handoff surface. MUST match `RuntimeConstants.GLOBALS.MODULES` — the theme bundle
-   * loads with NO import map, so its externals are rewritten to read this ONE namespaced registry directly
-   * (no `window.Fromcode` / `window.React` / `window.ReactDOM`). rollup-plugin-external-globals substitutes
-   * the target string verbatim, so a bracketed member expression is a valid global-name target.
-   */
-  private static readonly RUNTIME_REGISTRY = "window['__fromcodeRuntimeModules']";
-
-  private static get bridgeGlobal(): string {
-    return `${ThemeViteConfig.RUNTIME_REGISTRY}['@fromcode119/react']`;
-  }
-
-  /**
-   * The admin component surface a theme's block EDITORS import. Only the admin registers it — the
-   * storefront has no admin components — so a bundle evaluated on the storefront reads an empty module
-   * instead of throwing on `undefined`. It used to point at `bridgeGlobal`, which carries neither the
-   * admin components nor the SDK's own `ThemeStyleVariantSelect`: every name read `undefined`, and the
-   * one block form that used it fell back to raw JSON in the admin.
-   */
-  private static get sdkAdminGlobal(): string {
-    return `(${ThemeViteConfig.RUNTIME_REGISTRY}['@fromcode119/sdk/admin'] || {})`;
-  }
-
   /**
    * Domain-specific vendor chunking belongs to the THEME, not the framework. A theme declares it in its
    * `theme.json`, e.g. `"vendorChunks": { "vendor-stripe": ["@stripe"] }` — so a payment/courier/business
@@ -87,8 +63,6 @@ export class ThemeViteConfig {
     const themeDir = process.env.THEME_DIR as string;
     const themeSlug = process.env.THEME_SLUG || 'theme';
     const extraVendorChunks = ThemeViteConfig.readVendorChunks(themeDir);
-    const registry = ThemeViteConfig.RUNTIME_REGISTRY;
-    const bridge = ThemeViteConfig.bridgeGlobal;
 
     return {
       plugins: [
@@ -133,28 +107,9 @@ export class ThemeViteConfig {
             'react', 'react/jsx-runtime', 'react/jsx-dev-runtime', 'react-dom', 'react-dom/client',
             '@fromcode119/sdk', '@fromcode119/sdk/react', '@fromcode119/sdk/admin', '@fromcode119/sdk/admin/theme-style-variant-select',
           ],
-          // The theme bundle is loaded by the frontend via a plain dynamic import() with NO import map, so
-          // it must contain ZERO bare specifiers — rewrite every external to read the ONE runtime registry
-          // the frontend exposes. (Dropping this shipped a bare `import "@fromcode119/sdk/react"` which the
-          // theme loader cannot resolve → the theme fails to boot. Plugins use the document import map,
-          // a different loader reading the same registry.)
-          plugins: [
-            externalGlobals({
-              react: `${registry}['react']`,
-              'react/jsx-runtime': `${registry}['react/jsx-runtime']`,
-              'react/jsx-dev-runtime': `${registry}['react/jsx-runtime']`,
-              'react-dom': `${registry}['react-dom']`,
-              'react-dom/client': `${registry}['react-dom']`,
-              '@fromcode119/sdk': bridge,
-              '@fromcode119/sdk/react': bridge,
-              '@fromcode119/sdk/admin': ThemeViteConfig.sdkAdminGlobal,
-              // Direct subpath: the theme imports ThemeStyleVariantSelect from its OWN module rather than
-              // the sdk/admin barrel, so that the theme stays loadable on the SERVER (the barrel pulls in
-              // @fromcode119/admin/components, which has no Node implementation). The browser reads it
-              // from the same admin entry as the barrel.
-              '@fromcode119/sdk/admin/theme-style-variant-select': ThemeViteConfig.sdkAdminGlobal,
-            }),
-          ],
+          // Externals stay BARE imports: the storefront and the admin import the bundle only after the
+          // runtime import map is published (RuntimeImportMapReadiness), and the map resolves every one
+          // of them — the same loader plugins use. Nothing reads a window global.
           output: {
             compact: true,
             manualChunks: (id: string) => ThemeViteConfig.chunkFor(id, extraVendorChunks),

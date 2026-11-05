@@ -1,6 +1,6 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 import type { IImportMapSources } from '@react/helpers/interfaces/import-map-sources.interface';
-import { RuntimeConstants, RuntimeRegistryAccess } from '@fromcode119/core/client';
+import { RuntimeConstants, RuntimeImportMapReadiness, RuntimeRegistryAccess } from '@fromcode119/core/client';
 import { LucideIconAssetUrl } from '@react/icons/lucide-icon-asset-url';
 
 export class ImportMapInstaller {
@@ -14,6 +14,7 @@ export class ImportMapInstaller {
     const imports = ImportMapInstaller.buildStaticImports(args, sources);
     ImportMapInstaller.applyServerModules(imports, args);
     ImportMapInstaller.applyClientModules(imports, args, runtimeRegistry);
+    ImportMapInstaller.applySubpathAliases(imports);
     // Every module in the map reads the runtime host when it evaluates, so the map is published only
     // once the host holds every registered entry. A host that cannot load is reported, and the map is
     // still published: extensions then fail loudly at their import instead of the page waiting forever.
@@ -22,11 +23,21 @@ export class ImportMapInstaller {
       .then(() => ImportMapInstaller.publish(imports));
   }
 
+  /**
+   * Subpaths a bundle may import that resolve to a module already in the map: `react-dom/client` is the
+   * same registry entry as `react-dom` (it carries the root factories), and the theme style-variant
+   * control is imported from its own subpath so the theme stays loadable on the server.
+   */
+  private static applySubpathAliases(imports: Record<string, string>): void {
+    imports['react-dom/client'] = imports['react-dom'];
+    imports['@fromcode119/sdk/admin/theme-style-variant-select'] = imports['@fromcode119/sdk/admin'];
+  }
+
   private static publish(imports: Record<string, string>): void {
-    let script = document.getElementById('fc-runtime-import-map') as HTMLScriptElement;
+    let script = document.getElementById(RuntimeImportMapReadiness.SCRIPT_ID) as HTMLScriptElement;
     if (!script) {
       script = document.createElement('script');
-      script.id = 'fc-runtime-import-map';
+      script.id = RuntimeImportMapReadiness.SCRIPT_ID;
       script.type = 'importmap';
       // An inline import map is inline SCRIPT to a Content-Security-Policy, which `'strict-dynamic'`
       // does not cover: it runs only with the page's nonce, taken from a script the page already trusts.
@@ -37,7 +48,7 @@ export class ImportMapInstaller {
     script.textContent = JSON.stringify({ imports });
     // Signal plugin-loaders that the import map is ready so they can start
     // loading theme/plugin bundles without waiting for the 50ms poll interval.
-    window.dispatchEvent(new CustomEvent('fromcode:import-map-ready'));
+    window.dispatchEvent(new CustomEvent(RuntimeImportMapReadiness.READY_EVENT));
   }
 
   /**
