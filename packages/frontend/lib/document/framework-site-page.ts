@@ -1,14 +1,7 @@
 import { AccountRouteUtils, FrameworkPageRecipe, RouteConstants } from '@fromcode119/core/client';
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 import { FrontendCopy } from '@/lib/i18n/frontend-copy';
-
-/** One path the framework owns: the recipe its page carries, its title key, and when it is offered. */
-interface IFrameworkSitePageRoute {
-  readonly recipe: string;
-  readonly titleKey: string;
-  readonly needsAuth: boolean;
-  readonly needsRegistration: boolean;
-}
+import type { IFrameworkSitePageRoute } from './interfaces/framework-site-page-route.interface';
 
 /**
  * The page a site shows at a sign-in or account path when its content has none.
