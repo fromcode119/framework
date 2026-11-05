@@ -123,8 +123,10 @@ const nextConfig = {
       // Root files a plugin declares in `ui.publicRoutes` (`llms.txt`, a feed `.xml` …). An app-router
       // folder cannot take a dynamic segment with a suffix, so they are routed to one handler that asks
       // the plugin route table. Returned as a plain array these run AFTER the filesystem, so the
-      // dedicated `robots.txt` / `sitemap.xml` routes and real files in `public/` still win.
+      // dedicated `robots.txt` / `sitemap.xml` routes and real files in `public/` still win. One folder
+      // level is allowed too, so a plugin can group its files (`feeds/google.xml`).
       { source: '/:file([^/]+\\.(?:txt|xml))', destination: '/fc-public-route/:file' },
+      { source: '/:dir([^/.][^/]*)/:file([^/]+\\.(?:txt|xml))', destination: '/fc-public-route/:dir/:file' },
     ];
   },
   async headers() {

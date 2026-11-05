@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PublicRouteProxy } from '@/lib/public-route-proxy';
 // Route files export only the class; bind the statics locally.
-import { PublicFileRoute } from '@/app/fc-public-route/[file]/route';
+import { PublicFileRoute } from '@/app/fc-public-route/[...file]/route';
 import { SitemapRoute } from '@/app/sitemap.xml/route';
 import { WellKnownFileRoute } from '@/app/.well-known/[file]/route';
 const getPublicFileRoute = PublicFileRoute.GET;
@@ -40,7 +40,7 @@ describe('Public route handlers', () => {
     vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
 
     const result = await getPublicFileRoute(new Request('https://frontend.example.com/feed.xml'), {
-      params: Promise.resolve({ file: 'feed.xml' }),
+      params: Promise.resolve({ file: ['feed.xml'] }),
     });
 
     expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('feed.xml');
@@ -52,7 +52,7 @@ describe('Public route handlers', () => {
     vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
 
     const result = await getPublicFileRoute(new Request('https://frontend.example.com/directory.xml'), {
-      params: Promise.resolve({ file: 'directory.xml' }),
+      params: Promise.resolve({ file: ['directory.xml'] }),
     });
 
     expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('directory.xml');
@@ -64,7 +64,7 @@ describe('Public route handlers', () => {
     vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
 
     const result = await getPublicFileRoute(new Request('https://frontend.example.com/catalog.xml'), {
-      params: Promise.resolve({ file: 'catalog.xml' }),
+      params: Promise.resolve({ file: ['catalog.xml'] }),
     });
 
     expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('catalog.xml');
@@ -76,10 +76,22 @@ describe('Public route handlers', () => {
     vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
 
     const result = await getPublicFileRoute(new Request('https://frontend.example.com/llms.txt'), {
-      params: Promise.resolve({ file: 'llms.txt' }),
+      params: Promise.resolve({ file: ['llms.txt'] }),
     });
 
     expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('llms.txt');
+    expect(result).toBe(response);
+  });
+
+  it('delegates a plugin file one folder deep (e.g. feeds/google.xml) with its folder', async () => {
+    const response = new Response('<rss />');
+    vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
+
+    const result = await getPublicFileRoute(new Request('https://frontend.example.com/feeds/google.xml'), {
+      params: Promise.resolve({ file: ['feeds', 'google.xml'] }),
+    });
+
+    expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('feeds/google.xml');
     expect(result).toBe(response);
   });
 });
