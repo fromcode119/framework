@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import * as path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { RequestContextUtils } from '@core/context/request-context';
+import { StorageIntegrationDefinition } from '@core/integrations/providers/storage-provider';
 
 /**
  * WHERE a site's uploads are written.
@@ -66,5 +67,14 @@ describe('uploads directory scoping', () => {
 
     expect(ProjectPaths.getUploadsRoot()).toBe('/srv/uploads');
     expect(inSite('my-site', () => ProjectPaths.getUploadsDir())).toBe(path.join('/srv/uploads', 'tenants', 'my-site'));
+  });
+
+  it('reads the storage setting from the shared root, so the per-site part is added only once', () => {
+    // The driver adds the site's directory on every write. The setting it starts from therefore has to
+    // be the ROOT even when it is first read inside a site's work (a scheduled task after a restart):
+    // read as the site's own directory, every file that site wrote went to tenants/<site>/tenants/<site>/,
+    // where nothing serves it.
+    const resolved = inSite('my-site', () => StorageIntegrationDefinition.definition.resolveFromEnv!());
+    expect(resolved?.config.uploadDir).toBe(ProjectPaths.getUploadsRoot());
   });
 });
