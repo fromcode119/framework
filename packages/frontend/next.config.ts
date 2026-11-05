@@ -120,13 +120,13 @@ const nextConfig = {
   },
   async rewrites() {
     return [
-      // Root files a plugin declares in `ui.publicRoutes` (`llms.txt`, a feed `.xml` …). An app-router
-      // folder cannot take a dynamic segment with a suffix, so they are routed to one handler that asks
-      // the plugin route table. Returned as a plain array these run AFTER the filesystem, so the
-      // dedicated `robots.txt` / `sitemap.xml` routes and real files in `public/` still win. One folder
-      // level is allowed too, so a plugin can group its files (`feeds/google.xml`).
-      { source: '/:file([^/]+\\.(?:txt|xml))', destination: '/fc-public-route/:file' },
-      { source: '/:dir([^/.][^/]*)/:file([^/]+\\.(?:txt|xml))', destination: '/fc-public-route/:dir/:file' },
+      // Files a plugin declares in `ui.publicRoutes` (`llms.txt`, `feeds/google.xml`, a `.csv` catalogue,
+      // an `.ics` calendar …), at any folder depth. An app-router folder cannot take a dynamic segment
+      // with a suffix, so every machine-readable file type is routed to one handler that asks the plugin
+      // route table and answers 404 for anything no plugin declares; the type the visitor gets is the
+      // one the plugin declares, so a new feed needs no framework change. Returned as a plain array these
+      // run AFTER the filesystem, so `robots.txt` / `sitemap.xml`, `/api`, `/_next` and `public/` still win.
+      { source: '/:dir*/:file([^/]+\\.(?:txt|xml|json|csv|tsv|rss|atom|ics|webmanifest|yaml|yml))', destination: '/fc-public-route/:dir*/:file' },
     ];
   },
   async headers() {

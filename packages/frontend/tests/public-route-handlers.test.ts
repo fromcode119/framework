@@ -83,15 +83,15 @@ describe('Public route handlers', () => {
     expect(result).toBe(response);
   });
 
-  it('delegates a plugin file one folder deep (e.g. feeds/google.xml) with its folder', async () => {
+  it('delegates a plugin file in folders (e.g. feeds/google.xml) with its folder', async () => {
     const response = new Response('<rss />');
     vi.spyOn(PublicRouteProxy, 'getResponse').mockResolvedValue(response);
 
-    const result = await getPublicFileRoute(new Request('https://frontend.example.com/feeds/google.xml'), {
-      params: Promise.resolve({ file: ['feeds', 'google.xml'] }),
+    const result = await getPublicFileRoute(new Request('https://frontend.example.com/feeds/meta/catalog.csv'), {
+      params: Promise.resolve({ file: ['feeds', 'meta', 'catalog.csv'] }),
     });
 
-    expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('feeds/google.xml');
+    expect(PublicRouteProxy.getResponse).toHaveBeenCalledWith('feeds/meta/catalog.csv');
     expect(result).toBe(response);
   });
 });
