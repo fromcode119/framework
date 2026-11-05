@@ -114,4 +114,13 @@ describe('RuntimeLocationUtils', () => {
       expect(RuntimeLocationUtils.isAdminRuntime()).toBe(false);
     });
   });
+
+  it('keeps an unmarked storefront page under /admin out of the admin', () => {
+    withAdminUrl('https://admin.example.test', () => {
+      vi.stubGlobal('document', { documentElement: { getAttribute: () => null } });
+      vi.stubGlobal('window', { location: { href: 'https://shop.example.test/admin/cms' } });
+
+      expect(RuntimeLocationUtils.isAdminRuntime()).toBe(false);
+    });
+  });
 });
