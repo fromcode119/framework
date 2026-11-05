@@ -20,7 +20,7 @@ import { state } from '@fromcode119/react-class-components';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
-import { MarketplacePluginCopy } from './marketplace-plugin-copy';
+import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
@@ -195,14 +195,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
   private get filtered(): IPluginEntry[] {
     const { plugins, searchQuery } = this;
-    const needle = searchQuery.trim().toLocaleLowerCase();
-    if (!needle) return plugins;
-    // Match the words the card shows. A catalog entry may carry no description at all.
-    return plugins.filter((p) => {
-      const installed = this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug);
-      return [MarketplacePluginCopy.label(p, installed), MarketplacePluginCopy.description(p, installed), p.slug]
-        .some((text) => text.toLocaleLowerCase().includes(needle));
-    });
+    return plugins.filter((p) => MarketplacePluginCopy.matches(p, this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug), searchQuery));
   }
 
   render(): ReactElement {

@@ -15,4 +15,12 @@ describe('MarketplacePluginCopy', () => {
     expect(MarketplacePluginCopy.label(entry, undefined)).toBe('Finance Core');
     expect(MarketplacePluginCopy.description(entry, null)).toBe('Wallets, gift cards and the ledger.');
   });
+
+  it('matches a store search on the shown words and the slug, and an entry with no description does not throw', () => {
+    const noDescription = { slug: 'pink-shop', name: 'pink-shop' };
+    expect(MarketplacePluginCopy.matches(noDescription, undefined, 'Search')).toBe(false);
+    expect(MarketplacePluginCopy.matches(noDescription, undefined, 'pink')).toBe(true);
+    expect(MarketplacePluginCopy.matches({ slug: 'finance', ...entry }, { manifest: { name: 'Финанси' } }, 'финан')).toBe(true);
+    expect(MarketplacePluginCopy.matches(noDescription, undefined, '  ')).toBe(true);
+  });
 });

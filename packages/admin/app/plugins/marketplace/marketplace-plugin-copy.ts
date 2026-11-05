@@ -12,4 +12,16 @@ export class MarketplacePluginCopy {
   static description(plugin: { description?: string }, installed?: { manifest?: { description?: string } } | null): string {
     return installed?.manifest?.description || plugin?.description || '';
   }
+
+  /** Whether an entry matches a store search — on the words its card shows, plus its slug. A catalog entry may carry no description. */
+  static matches(
+    plugin: { slug?: string; name?: string; description?: string },
+    installed: { manifest?: { name?: string; description?: string } } | null | undefined,
+    query: string,
+  ): boolean {
+    const needle = query.trim().toLocaleLowerCase();
+    if (!needle) return true;
+    return [MarketplacePluginCopy.label(plugin, installed), MarketplacePluginCopy.description(plugin, installed), plugin?.slug || '']
+      .some((text) => text.toLocaleLowerCase().includes(needle));
+  }
 }
