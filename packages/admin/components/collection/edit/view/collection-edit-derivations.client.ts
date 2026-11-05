@@ -13,6 +13,17 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * `self` is the `CollectionEditPageView` instance, typed loosely to avoid a circular import.
  */
 export class CollectionEditDerivations {
+  /** The form data with each top-level field the form does not hold yet given its schema `defaultValue`, as its control shows it. */
+  static shown(fields: IField[], formData: Record<string, unknown> | null | undefined): Record<string, unknown> {
+    const shown: Record<string, unknown> = { ...(formData || {}) };
+    for (const field of fields) {
+      if (!field.name || field.defaultValue === undefined) continue;
+      const held = shown[field.name];
+      if (held === undefined || held === null || held === '') shown[field.name] = field.defaultValue;
+    }
+    return shown;
+  }
+
   static build(self: any): any {
     const services = AdminServices.getInstance();
     const collection = AdminCollectionUtils.resolveCollection(self.props.collections, self.props.pluginSlug, self.props.slug);
@@ -57,14 +68,22 @@ export class CollectionEditDerivations {
      */
     const isRenderedBySibling = (field: IField) => Boolean((field.admin as any)?.renderedBy);
 
+    /**
+     * What each field's condition is judged against: the form as its controls SHOW it. A field the operator has
+     * not touched shows its schema `defaultValue` (a select reads "On or off" on a new record) and the server saves
+     * that value, so a field shown only while it holds that value must be shown too — judged on the raw form data
+     * it stayed hidden until the operator picked the very option already displayed.
+     */
+    const shownData = CollectionEditDerivations.shown(collection?.fields || [], formData);
+
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
       FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && !isRenderedBySibling(f) && f.name !== 'customPermalink' &&
-      services.validation.evaluateCondition(f.admin?.condition, formData, f.name));
+      services.validation.evaluateCondition(f.admin?.condition, shownData, f.name));
     const sidebarFieldSections = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
       if (field.admin?.hidden || isRenderedBySibling(field) || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
-      if (!services.validation.evaluateCondition(field.admin?.condition, formData, field.name)) return false;
+      if (!services.validation.evaluateCondition(field.admin?.condition, shownData, field.name)) return false;
       if (collection?.admin?.tabs && collection.admin.tabs.length > 0) {
         const fieldTab = field.admin?.tab || collection.admin.tabs[0].name;
         return fieldTab === self.state.activeTab;
