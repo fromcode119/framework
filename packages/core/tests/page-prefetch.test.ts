@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { PagePrefetch } from '@core/page-prefetch';
-import { RuntimeConstants } from '@core/constants/runtime.constants';
 
 describe('PagePrefetch on the server', () => {
   it('answers the payload of the render it is inside, and nothing outside it', () => {
@@ -11,13 +10,10 @@ describe('PagePrefetch on the server', () => {
     expect(PagePrefetch.get('navigation-main')).toBeNull();
   });
 
-  it('cannot be written through, and the legacy name is a read-only view of it', () => {
-    PagePrefetch.installLegacyAlias();
-    const name = RuntimeConstants.GLOBALS.PAGE_PREFETCH;
+  it('cannot be written through, and puts nothing on the global object', () => {
     PagePrefetch.renderWith({ a: 1 }, () => {
       expect(Object.isFrozen(PagePrefetch.all())).toBe(true);
-      expect((globalThis as Record<string, any>)[name].a).toBe(1);
-      expect(() => { (globalThis as Record<string, any>)[name] = { a: 2 }; }).toThrow();
+      expect('__FC_PAGE_PREFETCH__' in globalThis).toBe(false);
       expect(PagePrefetch.get('a')).toBe(1);
     });
   });
