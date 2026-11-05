@@ -16,8 +16,10 @@ export class RuntimeAssetConstants {
   static readonly ICONS_SEGMENT = 'icons';
 
   /**
-   * File name, beside the icon modules, of the static `lucide-react` namespace module: one named export
-   * per icon, each read from the runtime registry. The import map points `lucide-react` at it.
+   * Base name, beside the icon modules, of the static `lucide-react` namespace module: one named export
+   * per icon, each read from the runtime host. The import map points `lucide-react` at it. The file is
+   * `<base>.<host tag>.js` (`RuntimeHostModule.taggedFile`): it is served as immutable, and it imports
+   * the host by its exact url, so a host change must change the file's url too.
    */
-  static readonly LUCIDE_NAMESPACE_FILE = 'lucide-react.js';
+  static readonly LUCIDE_NAMESPACE_BASENAME = 'lucide-react';
 }

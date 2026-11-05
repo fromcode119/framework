@@ -1,4 +1,4 @@
-import { ApplicationUrlUtils, RuntimeAssetConstants, RuntimeLocationUtils } from '@fromcode119/core/client';
+import { ApplicationUrlUtils, RuntimeAssetConstants, RuntimeHostModule, RuntimeLocationUtils } from '@fromcode119/core/client';
 import lucideIconNames from '@react/icons/lucide-icon-names.generated.json';
 
 /**
@@ -28,10 +28,10 @@ export class LucideIconAssetUrl {
 
   /**
    * URL of the static `lucide-react` namespace module the build writes beside the icons
-   * (`RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE`) — what the import map resolves `lucide-react` to.
+   * (`lucide-react.<host tag>.js`, see `RuntimeAssetConstants.LUCIDE_NAMESPACE_BASENAME`) — what the import map resolves `lucide-react` to.
    */
   static namespaceUrl(): string {
-    const relative = `/${RuntimeAssetConstants.SEGMENT}/${RuntimeAssetConstants.ICONS_SEGMENT}/${LucideIconAssetUrl.version}/${RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE}`;
+    const relative = `/${RuntimeAssetConstants.SEGMENT}/${RuntimeAssetConstants.ICONS_SEGMENT}/${LucideIconAssetUrl.version}/${RuntimeHostModule.taggedFile(RuntimeAssetConstants.LUCIDE_NAMESPACE_BASENAME)}`;
     const appPath = RuntimeLocationUtils.isAdminRuntime() ? RuntimeLocationUtils.toAdminPath(relative) : relative;
     return ApplicationUrlUtils.joinApiPath(ApplicationUrlUtils.inferBrowserBaseUrl(), appPath);
   }

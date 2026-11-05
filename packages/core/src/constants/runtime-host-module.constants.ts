@@ -30,6 +30,27 @@ export class RuntimeHostModule {
   /** The one url every importer uses. Identical string → identical module instance. */
   static readonly URL = `data:text/javascript,${encodeURIComponent(RuntimeHostModule.SOURCE)}`;
 
+  /**
+   * A short, stable fingerprint of the host source (FNV-1a, base 36). A static file that imports the host
+   * is cached as immutable, and a browser holding the copy that imports an OLDER host url reads a
+   * different, empty host. Such a file is therefore named by this tag, so a host change is a new url.
+   */
+  static readonly TAG = RuntimeHostModule.fingerprint(RuntimeHostModule.SOURCE);
+
+  /** `<base>.<TAG>.js` — the name of a static file that imports the host. */
+  static taggedFile(base: string): string {
+    return `${base}.${RuntimeHostModule.TAG}.js`;
+  }
+
+  private static fingerprint(text: string): string {
+    let hash = 0x811c9dc5;
+    for (let index = 0; index < text.length; index += 1) {
+      hash ^= text.charCodeAt(index);
+      hash = Math.imul(hash, 0x01000193) >>> 0;
+    }
+    return hash.toString(36);
+  }
+
   /** Local name generated modules read the host through. */
   static readonly GETTER = '__fcHostGet';
 

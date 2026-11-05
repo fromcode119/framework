@@ -73,7 +73,7 @@ describe('emitted lucide icon data modules', () => {
 
 describe('emitted lucide-react namespace module', () => {
   const file = (publicDir: string) =>
-    path.join(LucideIconNodeEmitter.versionDir(publicDir, lucideIconNames.lucideReact), RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE);
+    path.join(LucideIconNodeEmitter.versionDir(publicDir, lucideIconNames.lucideReact), RuntimeHostModule.taggedFile(RuntimeAssetConstants.LUCIDE_NAMESPACE_BASENAME));
 
   it('exists in every app public dir, beside the icons', () => {
     for (const publicDir of LucideIconFixture.publicDirs) expect(existsSync(file(publicDir))).toBe(true);

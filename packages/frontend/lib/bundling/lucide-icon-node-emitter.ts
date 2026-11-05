@@ -131,7 +131,7 @@ export class LucideIconNodeEmitter {
         writeFileSync(path.join(dir, `${kebab}.js`), LucideIconNodeEmitter.iconModule(node), 'utf8');
       }
       writeFileSync(
-        path.join(dir, RuntimeAssetConstants.LUCIDE_NAMESPACE_FILE),
+        path.join(dir, RuntimeHostModule.taggedFile(RuntimeAssetConstants.LUCIDE_NAMESPACE_BASENAME)),
         LucideIconNodeEmitter.namespaceModule(icons.map(([kebab]) => kebab)),
         'utf8',
       );
