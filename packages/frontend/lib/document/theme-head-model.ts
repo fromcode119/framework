@@ -69,7 +69,7 @@ export class ThemeHeadModel {
   get warmupScript(): string {
     const urls = this.warmupUrls;
     if (!urls.length) return '';
-    return `(function(){${JSON.stringify(urls)}.forEach(function(h){var l=document.createElement('link');l.rel='preload';l.as='script';l.crossOrigin='anonymous';l.setAttribute('fetchpriority','low');l.href=h;document.head.appendChild(l);});})();`;
+    return `(function(){${ThemeHeadModel.scriptLiteral(urls)}.forEach(function(h){var l=document.createElement('link');l.rel='preload';l.as='script';l.crossOrigin='anonymous';l.setAttribute('fetchpriority','low');l.href=h;document.head.appendChild(l);});})();`;
   }
 
   /**
@@ -80,8 +80,17 @@ export class ThemeHeadModel {
   get injectorScript(): string {
     if (!this.externalStylesheets.length) return '';
     const sheets = this.externalStylesheets.map((href) =>
-      `var f=document.createElement('link');f.rel='stylesheet';f.href=${JSON.stringify(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`).join('');
+      `var f=document.createElement('link');f.rel='stylesheet';f.href=${ThemeHeadModel.scriptLiteral(href)};f.media='print';f.onload=function(){f.media='all';f.onload=null;};document.head.appendChild(f);`).join('');
     return `(function(){${sheets}})();`;
+  }
+
+  /**
+   * A value as a JS literal that is safe inside an inline `<script>`: JSON alone would let a `</script>`
+   * or `<!--` in a configured url end the script early, so `<`, `>`, `&` and the line separators are
+   * written as unicode escapes.
+   */
+  private static scriptLiteral(value: unknown): string {
+    return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (c) => `\\u${c.charCodeAt(0).toString(16).padStart(4, '0')}`);
   }
 
   static async load(): Promise<ThemeHeadModel | null> {
