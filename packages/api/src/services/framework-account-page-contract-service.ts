@@ -1,4 +1,4 @@
-import { CoreServices, AccountRouteUtils } from '@fromcode119/core';
+import { CoreServices, AccountRouteUtils, FrameworkPageRecipe } from '@fromcode119/core';
 import { PluginDefaultPageContractKind } from '@fromcode119/core';
 import { PluginDefaultPageContractMaterializationMode } from '@fromcode119/core';
 import { PluginDefaultPageContractDependency } from '@fromcode119/core';
@@ -20,7 +20,7 @@ export class FrameworkAccountPageContractService {
             kind: PluginDefaultPageContractKind.INDEX,
             defaultSlug: AccountRouteUtils.base(),
             capability: 'frontend',
-            recipe: 'account.shell',
+            recipe: FrameworkPageRecipe.ACCOUNT,
             materializationMode: PluginDefaultPageContractMaterializationMode.ADOPT_ONLY,
             dependencies: [PluginDefaultPageContractDependency.SETTINGS],
             adoptionHints: [AccountRouteUtils.base(), AccountRouteUtils.base().replace(/^\//, '')],
@@ -31,7 +31,7 @@ export class FrameworkAccountPageContractService {
             kind: PluginDefaultPageContractKind.DETAIL,
             defaultSlug: AccountRouteUtils.sectionPattern(),
             capability: 'frontend',
-            recipe: 'account.shell',
+            recipe: FrameworkPageRecipe.ACCOUNT,
             materializationMode: PluginDefaultPageContractMaterializationMode.SINGLETON_DOCUMENT,
             dependencies: [PluginDefaultPageContractDependency.SETTINGS],
             adoptionHints: [AccountRouteUtils.sectionPattern()],

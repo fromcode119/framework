@@ -1,45 +1,5 @@
 {
   "frontend": {
-    "forgotPasswordClient": {
-      "forgotPassword": "Forgot Password",
-      "enterYourEmailAndWe": "Enter your email and we will send a password reset link.",
-      "email": "Email",
-      "sending": "Sending...",
-      "sendResetLink": "Send Reset Link",
-      "verifyEmail": "Verify email",
-      "needAccountVerification": "Need account verification?"
-    },
-    "registerClient": {
-      "createAccount": "Create Account",
-      "registerToTrackPurchasesAnd": "Register to track purchases and manage customer access.",
-      "openVerificationLink": "Open verification link",
-      "firstName": "First Name",
-      "john": "John",
-      "lastName": "Last Name",
-      "doe": "Doe",
-      "email": "Email",
-      "password": "Password",
-      "min8Characters": "Min. 8 characters",
-      "confirmPassword": "Confirm Password",
-      "repeatPassword": "Repeat password",
-      "creatingAccount": "Creating account...",
-      "register": "Register",
-      "alreadyRegistered": "Already registered?",
-      "signIn": "Sign in"
-    },
-    "resetPasswordClient": {
-      "resetPassword": "Reset Password",
-      "setANewPasswordFor": "Set a new password for your account.",
-      "resetToken": "Reset Token",
-      "pasteResetToken": "Paste reset token",
-      "newPassword": "New Password",
-      "newPassword2": "New password",
-      "confirmPassword": "Confirm Password",
-      "repeatPassword": "Repeat password",
-      "updating": "Updating...",
-      "requestResetLink": "Request reset link",
-      "needANewToken": "Need a new token?"
-    },
     "verifyEmailChangeClient": {
       "confirmEmailChange": "Confirm Email Change",
       "finalizeYourAccountEmailUpdate": "Finalize your account email update.",
@@ -105,6 +65,26 @@
       "previewNote": "Visitors get a holding page.",
       "nonProductionTitle": "Non-production site — nothing leaves it.",
       "nonProductionNote": "No email, payment, shipment or scheduled job will be sent."
+    },
+    "frameworkPages": {
+      "login": {
+        "title": "Sign in"
+      },
+      "register": {
+        "title": "Create account"
+      },
+      "forgotPassword": {
+        "title": "Forgot password"
+      },
+      "resetPassword": {
+        "title": "New password"
+      },
+      "verifyEmail": {
+        "title": "Confirm email"
+      },
+      "account": {
+        "title": "My account"
+      }
     }
   }
 }

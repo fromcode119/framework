@@ -10,11 +10,9 @@ import { FrontendTokenRedemption } from '@/lib/frontend-token-redemption';
  * The default register, verification and password pages posted without it, so every one of them was
  * answered 403 on a site that uses them.
  */
+// Sign-in, registration, password and confirmation pages are the framework's AuthShell forms, which post
+// through the runtime api; it adds the same header (`context-provider-api-hooks`).
 const PAGES = [
-  'register/components/view/register-client.client.tsx',
-  'forgot-password/components/view/forgot-password-client.client.tsx',
-  'reset-password/components/view/reset-password-client.client.tsx',
-  'verify-email/components/view/verify-email-client.client.tsx',
   'verify-email-change/components/view/verify-email-change-client.client.tsx',
 ];
 

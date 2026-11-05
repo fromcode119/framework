@@ -575,3 +575,4 @@ export { AssistantVocabularyRegistryService } from '@core/services/assistant-voc
 export { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
 export { TenantVisibility } from '@core/enums/tenant-visibility.enum';
 export { TenantEnvironment } from '@core/enums/tenant-environment.enum';
+export { FrameworkPageRecipe } from '@core/constants/framework-page-recipe.constants';

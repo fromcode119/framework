@@ -1,5 +1,5 @@
 import { FrontendCopy } from '@/lib/i18n/frontend-copy';
-import { VerificationStatus } from '@/app/verify-email/enums/verification-status.enum';
+import { VerificationStatus } from '@/app/verify-email-change/enums/verification-status.enum';
 import { Reactor, state, bound, prop } from '@fromcode119/react-class-components';
 import Link from 'next/link';
 import { SystemConstants } from '@fromcode119/core/client';

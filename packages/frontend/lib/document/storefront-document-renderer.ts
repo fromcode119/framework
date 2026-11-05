@@ -15,6 +15,7 @@ import { FrontendRuntimeAssetManifest } from '@/lib/document/frontend-runtime-as
 import { StorefrontDocumentRequest } from '@/lib/document/storefront-document-request';
 import { ThemeHeadModel } from '@/lib/document/theme-head-model';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
+import { FrameworkSitePage } from '@/lib/document/framework-site-page';
 import { DocumentContactProtection } from '@/lib/contact/document-contact-protection';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { FrontendLocaleService } from '@/lib/frontend-locale-service';
@@ -76,6 +77,14 @@ export class StorefrontDocumentRenderer {
     if (redirectRule) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);
+    }
+    // A sign-in or account path the site has no page for: the framework's own page, in the theme's layout.
+    const frameworkPage = await FrameworkSitePage.resolve(slug, locale);
+    if (frameworkPage) {
+      return StorefrontDocumentRenderer.document({
+        content: frameworkPage, resolutionType: undefined, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
+        pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
+      });
     }
     return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy);
   }

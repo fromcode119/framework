@@ -36,6 +36,11 @@ export class SystemAuthClient {
     return this.requester.post(SystemApiPaths.ALL.AUTH.REGISTER, payload, options);
   }
 
+  /** Redeem the token from the confirmation email. */
+  verifyEmail(token: string, options?: any): Promise<any> {
+    return this.requester.post(SystemApiPaths.ALL.AUTH.VERIFY_EMAIL, { token }, options);
+  }
+
   resendVerification(email: string, options?: any): Promise<any> {
     return this.requester.post(SystemApiPaths.ALL.AUTH.RESEND_VERIFICATION, { email }, options);
   }

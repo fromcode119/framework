@@ -7,6 +7,7 @@ import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason
  */
 
 import { Request, Response } from 'express';
+import { AuthErrorCode } from '@api/controllers/auth/enums/auth-error-code.enum';
 import { NetworkAddressUtils, RequestSurfaceUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerTokenSupport } from '@api/controllers/auth/auth-controller-token-support';
 import type { ILoginThrottleSettings } from '@api/controllers/auth/interfaces/login-throttle-settings.interface';
@@ -31,17 +32,17 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
   async register(req: Request, res: Response) {
     if (!(await this.isFrontendAuthEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
     if (!(await this.isFrontendRegistrationEnabledForRequest(req))) return res.status(404).json({ error: 'Not found' });
-    if (this.parseUserId((req as any)?.user?.id)) return res.status(409).json({ error: 'You are already signed in' });
+    if (this.parseUserId((req as any)?.user?.id)) return res.status(409).json({ error: 'You are already signed in', code: AuthErrorCode.ALREADY_SIGNED_IN.value });
 
     const { email, password, firstName, lastName, context } = req.body || {};
     const normalizedEmail = this.normalizeEmail(email);
     const flowContext = this.sanitizeAuthFlowContext(context);
 
-    if (!normalizedEmail || !this.isValidEmail(normalizedEmail)) return res.status(400).json({ error: 'A valid email is required' });
+    if (!normalizedEmail || !this.isValidEmail(normalizedEmail)) return res.status(400).json({ error: 'A valid email is required', code: AuthErrorCode.EMAIL_REQUIRED.value });
     const passwordError = await this.validatePasswordAgainstPolicy(String(password || ''), { email: normalizedEmail });
-    if (passwordError) return res.status(400).json({ error: passwordError });
+    if (passwordError) return res.status(400).json(passwordError.body());
     const existing = await this.db.findOne(SystemConstants.TABLE.USERS, { email: normalizedEmail });
-    if (existing) return res.status(409).json({ error: 'Email is already registered' });
+    if (existing) return res.status(409).json({ error: 'Email is already registered', code: AuthErrorCode.EMAIL_TAKEN.value });
 
     const hashedPassword = await this.auth.hashPassword(String(password));
     const newUser: any = await this.db.insert(SystemConstants.TABLE.USERS, {
@@ -102,9 +103,9 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     // Reached from a link in an email or from the page that link opens: it works on every site, whether or
     // not the website itself offers sign-in, since the account it acts on may live in an app.
     const token = CoercionUtils.toString(req.body?.token) || CoercionUtils.toString(req.query?.token);
-    if (!token) return res.status(400).json({ error: 'Verification token is required' });
+    if (!token) return res.status(400).json({ error: 'Verification token is required', code: AuthErrorCode.TOKEN_REQUIRED.value });
     const result = await this.consumeEmailVerificationToken(token);
-    if (!result.ok) return res.status(400).json({ error: result.reason === TokenErrorReason.EXPIRED ? 'Verification link has expired. Please request a new one.' : 'Invalid verification token' });
+    if (!result.ok) return res.status(400).json({ error: result.reason === TokenErrorReason.EXPIRED ? 'Verification link has expired. Please request a new one.' : 'Invalid verification token', code: (result.reason === TokenErrorReason.EXPIRED ? AuthErrorCode.TOKEN_EXPIRED : AuthErrorCode.TOKEN_INVALID).value });
     this.manager.hooks.emit('auth:user:verified', { userId: result.userId, email: result.email, context: result.context });
     await this.manager.writeLog('INFO', `Email verified for user ${result.email}`, 'system', { userId: result.userId, email: result.email, context: result.context }).catch(() => {});
     return res.json({ success: true, message: 'Email verified successfully. You can now sign in.', user: { id: String(result.userId), email: result.email } });
@@ -115,14 +116,14 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     // not the website itself offers sign-in, since the account it acts on may live in an app.
     const { captchaToken } = req.body || {};
     const email = this.normalizeEmail(req.body?.email);
-    if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required' });
+    if (!email || !this.isValidEmail(email)) return res.status(400).json({ error: 'A valid email is required', code: AuthErrorCode.EMAIL_REQUIRED.value });
     const throttleKey = this.getVerificationResendThrottleKey(email, NetworkAddressUtils.resolveClientIp(req) || '');
     const throttleSettings = await this.getVerificationResendThrottleSettings();
     const existingThrottleState = await this.readLoginThrottleState(throttleKey);
 
     if (this.isVerificationResendLocked(existingThrottleState)) {
       return res.status(429).json({
-        error: 'Too many verification email requests. Please try again later.',
+        error: 'Too many verification email requests. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value,
         lockedUntil: existingThrottleState.lockedUntil || null
       });
     }
@@ -131,7 +132,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
 
     if (this.isVerificationResendLocked(throttleState)) {
       return res.status(429).json({
-        error: 'Too many verification email requests. Please try again later.',
+        error: 'Too many verification email requests. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value,
         lockedUntil: throttleState.lockedUntil || null
       });
     }
@@ -139,7 +140,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const requiresCaptcha = this.requiresVerificationResendCaptcha(throttleSettings);
     if (requiresCaptcha && !String(captchaToken || '').trim()) {
       return res.status(400).json({
-        error: 'Captcha verification is required before sending another verification email.',
+        error: 'Captcha verification is required before sending another verification email.', code: AuthErrorCode.CAPTCHA_REQUIRED.value,
         requiresCaptcha: true
       });
     }
@@ -153,13 +154,13 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
         }) as Record<string, unknown> | undefined;
         if (captchaResult && captchaResult.valid === false) {
           return res.status(400).json({
-            error: String(captchaResult.message || 'Captcha verification failed.'),
+            error: String(captchaResult.message || 'Captcha verification failed.'), code: AuthErrorCode.CAPTCHA_FAILED.value,
             requiresCaptcha: true
           });
         }
       } catch (captchaError: unknown) {
         return res.status(400).json({
-          error: captchaError instanceof Error ? captchaError.message : 'Captcha verification failed.',
+          error: captchaError instanceof Error ? captchaError.message : 'Captcha verification failed.', code: AuthErrorCode.CAPTCHA_FAILED.value,
           requiresCaptcha: true
         });
       }
@@ -174,7 +175,7 @@ export abstract class AuthControllerRegistration extends AuthControllerTokenSupp
     const verification = await this.issueEmailVerificationToken(user.id, email);
     const verificationUrl = await this.buildEmailVerificationUrl(req, verification.token);
     const emailSent = await this.sendVerificationEmail({ to: email, verificationUrl, firstName: this.readUserFirstName(user) });
-    if (!emailSent && process.env.NODE_ENV === 'production') return res.status(500).json({ error: 'Unable to send verification email. Please try again later.' });
+    if (!emailSent && process.env.NODE_ENV === 'production') return res.status(500).json({ error: 'Unable to send verification email. Please try again later.', code: AuthErrorCode.EMAIL_SEND_FAILED.value });
     const response: Record<string, any> = { success: true, message: 'Verification email sent.' };
     if (process.env.NODE_ENV !== 'production') { response.verificationUrl = verificationUrl; response.emailDelivery = emailSent ? 'sent' : 'failed'; }
     return res.json(response);

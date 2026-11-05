@@ -53,6 +53,10 @@ export { TokenEmailPreferencesPanelImplementation } from '@react/account/token-e
 export { AuthShell } from '@react/auth/auth-shell';
 export { AuthShellImplementation } from '@react/auth/auth-shell-implementation';
 export { AuthMode } from '@react/auth/enums/auth-mode.enum';
+export { AuthVerifyStatus } from '@react/auth/enums/auth-verify-status.enum';
+export { AuthVerifyForm } from '@react/auth/auth-verify-form';
+// Evaluated for its registration: the framework's sign-in and account page designs (`auth.*`, `account.shell`).
+export { FrameworkPageDesigns } from '@react/view/framework-page-designs';
 export { Override } from '@react/view/override.client';
 export { PluginMountErrorBoundary } from '@react/view/plugin-mount-error-boundary';
 export { NotFoundBody } from '@react/view/not-found-body';

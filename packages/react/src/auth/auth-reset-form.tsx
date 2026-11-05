@@ -25,10 +25,6 @@ export class AuthResetForm extends AuthFormBase<IAuthFormProps, IAuthResetFormSt
       this.setState({ error: this.tr('auth.reset.missingToken', 'This reset link is invalid or has expired. Request a new one.') });
       return;
     }
-    if (password.length < 8) {
-      this.setState({ error: this.tr('auth.reset.tooShort', 'Password must be at least 8 characters.') });
-      return;
-    }
     if (password !== confirm) {
       this.setState({ error: this.tr('auth.reset.mismatch', 'The passwords do not match.') });
       return;
