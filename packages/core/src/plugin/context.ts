@@ -255,7 +255,7 @@ export class PluginContextFactory {
         geo: GeoContextProxy.createGeoProxy(),
         // Schema migrations run on the framework's DDL connection, never the request role.
         migrations: MigrationsContextProxy.createMigrationsProxy(plugin, manager),
-        media: MediaContextProxy.createMediaProxy(manager, security),
+        media: MediaContextProxy.createMediaProxy(manager, security, plugin.manifest.slug),
         redirects: RedirectsContextProxy.createRedirectsProxy(plugin, manager, security),
         recordVersions: RecordVersionsContextProxy.createRecordVersionsProxy(manager),
         roles: RolesContextProxy.createRolesProxy(manager, plugin.manifest.slug),

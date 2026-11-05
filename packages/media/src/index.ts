@@ -10,3 +10,5 @@ export { MediaSvgSanitizer } from '@media/media-svg-sanitizer';
 export { MediaMagicByteValidator } from '@media/media-magic-byte-validator';
 export type { IMediaImageOptimizationOptions } from '@media/interfaces/media-image-optimization-options.interface';
 export type { IMediaImageOptimizationResult } from '@media/interfaces/media-image-optimization-result.interface';
+export { MediaImageOverlay } from '@media/media-image-overlay';
+export type { IMediaImageOverlayOptions } from '@media/interfaces/media-image-overlay-options.interface';

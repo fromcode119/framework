@@ -5,6 +5,7 @@ import { PluginManager } from '@fromcode119/core';
 import { MediaManager } from '@fromcode119/media';
 import { MediaController } from '@api/controllers/media-controller';
 import { MediaIngestService } from '@api/services/media-ingest-service';
+import { MediaOverlayController } from '@api/controllers/media-overlay-controller';
 import { RouteConstants } from '@fromcode119/core';
 
 /**
@@ -23,6 +24,7 @@ import { RouteConstants } from '@fromcode119/core';
  */
 export class MediaRouter extends BaseRouter {
   private controller: MediaController;
+  private overlay: MediaOverlayController;
   private upload: multer.Multer;
 
   constructor(
@@ -32,6 +34,7 @@ export class MediaRouter extends BaseRouter {
   ) {
     super();
     this.controller = new MediaController(manager, mediaManager);
+    this.overlay = new MediaOverlayController((manager as any).db, mediaManager);
     // memoryStorage buffers the whole file in RAM — cap the size so an
     // oversized upload cannot exhaust process memory.
     this.upload = multer({
@@ -41,6 +44,9 @@ export class MediaRouter extends BaseRouter {
   }
 
   protected registerRoutes(): void {
+    // Public, as `/uploads` is: an image with an extension's overlay (a watermark), made once and cached.
+    this.get(RouteConstants.SEGMENTS.MEDIA_OVERLAY, this.overlay.serve);
+
     // File upload
     this.post(RouteConstants.SEGMENTS.MEDIA_UPLOAD, this.auth.guard(['admin']), this.upload.single('file'), 
       this.controller.upload);
