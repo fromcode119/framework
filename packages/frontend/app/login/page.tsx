@@ -6,6 +6,7 @@ import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 import { DynamicPageResolver } from '@/lib/dynamic-page-resolver';
 import { QueryParamUtils } from '@/lib/query-param-utils';
 import { ThemedRouteMetadata } from '@/lib/themed-route-metadata';
+import { FrontendLocaleService } from '@/lib/frontend-locale-service';
 
 /**
  * `/login` — where the account guard sends every signed-out visitor.
@@ -48,6 +49,9 @@ export class LoginPageRoute {
     } catch {
       // fall through to the framework default
     }
-    return <LoginShell />;
+    // The locale the layout puts on `<html lang>`, so the server paints the words the browser will.
+    const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
+    const documentLocale = await FrontendLocaleService.resolveDocumentLocale(routingConfig.strategy);
+    return <LoginShell documentLocale={documentLocale} />;
   }
 }

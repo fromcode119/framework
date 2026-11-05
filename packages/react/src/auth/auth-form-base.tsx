@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Platform } from '@fromcode119/react-class-components';
 import { SdkClient, BrowserStateClient, RouteConstants } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
+import { FrameworkTranslations } from '@react/i18n/framework-translations';
 
 /**
  * Shared base for the framework-default auth forms (login / register / forgot / reset). Owns the
@@ -27,6 +28,13 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
 
   /** Translate with an English default so the framework renders complete even with no locale pack. */
   protected tr(key: string, fallback: string, params?: Record<string, any>): string {
+    // A route that resolved its document locale (the framework /login) reads the framework copy in that
+    // locale on both sides, so the server and the first client render paint the same words.
+    const documentLocale = String((this.props as { documentLocale?: string })?.documentLocale || '');
+    if (documentLocale) {
+      const value = FrameworkTranslations.in(documentLocale, key, params);
+      if (value !== key) return value;
+    }
     return this.t(key, params, fallback);
   }
 

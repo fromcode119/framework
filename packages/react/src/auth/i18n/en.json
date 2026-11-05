@@ -1,0 +1,75 @@
+{
+  "auth": {
+    "signedIn": {
+      "title": "You're signed in",
+      "bodyNamed": "Signed in as {{name}}.",
+      "body": "You are already signed in.",
+      "toAccount": "Go to my account"
+    },
+    "login": {
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordRequired": "Please enter your password.",
+      "failed": "Incorrect email or password.",
+      "title": "Sign in",
+      "subtitle": "Welcome back. Enter your details to continue.",
+      "forgot": "Forgot password?",
+      "submitting": "Signing in…",
+      "submit": "Sign in",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Create one"
+    },
+    "email": "Email",
+    "emailPlaceholder": "you@example.com",
+    "password": "Password",
+    "forgot": {
+      "invalidEmail": "Please enter a valid email address.",
+      "sentTitle": "Check your inbox",
+      "sentBody": "If an account exists for that email, we sent a link to reset your password. The link is valid for a limited time.",
+      "backToLogin": "Back to sign in",
+      "title": "Reset your password",
+      "subtitle": "Enter your account email and we will send you a reset link.",
+      "submitting": "Sending…",
+      "submit": "Send reset link"
+    },
+    "social": {
+      "continueWith": "Continue with {{provider}}",
+      "or": "or"
+    },
+    "reset": {
+      "missingToken": "This reset link is invalid or has expired. Request a new one.",
+      "tooShort": "Password must be at least 8 characters.",
+      "mismatch": "The passwords do not match.",
+      "failed": "Could not reset the password. The link may have expired — request a new one.",
+      "doneTitle": "Password updated",
+      "doneBody": "Your password has been changed. Redirecting you to sign in…",
+      "goToLogin": "Go to sign in",
+      "title": "Set a new password",
+      "subtitle": "Choose a new password for your account.",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm password",
+      "submitting": "Saving…",
+      "submit": "Save new password",
+      "backToLogin": "Back to sign in"
+    },
+    "register": {
+      "passwordHint": "At least 8 characters",
+      "firstNameRequired": "Please enter your first name.",
+      "invalidEmail": "Please enter a valid email address.",
+      "passwordMin": "Password must be at least 8 characters.",
+      "mismatch": "The passwords do not match.",
+      "failed": "Registration failed. Please try again.",
+      "checkInboxTitle": "Check your inbox",
+      "checkInboxBody": "Your account was created. We sent a verification link to your email — confirm it to sign in.",
+      "backToLogin": "Back to sign in",
+      "title": "Create your account",
+      "subtitle": "It only takes a moment to get started.",
+      "firstName": "First name",
+      "lastName": "Last name",
+      "confirmPassword": "Confirm password",
+      "submitting": "Creating account…",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Sign in"
+    }
+  }
+}

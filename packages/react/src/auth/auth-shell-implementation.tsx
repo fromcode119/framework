@@ -10,6 +10,7 @@ import { AuthMode } from '@react/auth/enums/auth-mode.enum';
 import type { IAuthShellProps } from '@react/auth/interfaces/auth-shell-props.interface';
 import type { IAuthShellState } from '@react/auth/interfaces/auth-shell-state.interface';
 import { AuthShell } from '@react/auth/auth-shell';
+import { AuthTranslations } from '@react/auth/auth-translations';
 
 /**
  * The auth surface `AuthShell` renders inside its boundary — the framework-default auth page. A complete,
@@ -41,6 +42,7 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
   }
 
   componentDidMount(): void {
+    AuthTranslations.register();
     // Reset (a token link) is a fresh set-password action even for a signed-in visitor — never short it.
     if (this.state.mode !== AuthMode.RESET) {
       // The marker can arrive without this host's cached user: the server writes it with the session,
@@ -110,10 +112,10 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
   private renderForm(): ReactNode {
     const onSwitchMode = (mode: AuthMode) => this.switchMode(mode);
     switch (this.state.mode) {
-      case AuthMode.REGISTER: return <AuthRegisterForm onSwitchMode={onSwitchMode} />;
-      case AuthMode.FORGOT: return <AuthForgotForm onSwitchMode={onSwitchMode} />;
-      case AuthMode.RESET: return <AuthResetForm onSwitchMode={onSwitchMode} />;
-      default: return <AuthLoginForm onSwitchMode={onSwitchMode} />;
+      case AuthMode.REGISTER: return <AuthRegisterForm onSwitchMode={onSwitchMode} documentLocale={this.props.documentLocale} />;
+      case AuthMode.FORGOT: return <AuthForgotForm onSwitchMode={onSwitchMode} documentLocale={this.props.documentLocale} />;
+      case AuthMode.RESET: return <AuthResetForm onSwitchMode={onSwitchMode} documentLocale={this.props.documentLocale} />;
+      default: return <AuthLoginForm onSwitchMode={onSwitchMode} documentLocale={this.props.documentLocale} />;
     }
   }
 
