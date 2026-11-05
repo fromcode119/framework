@@ -6,6 +6,7 @@ import type { IconNode } from 'lucide-react';
 import { LucideIconAssetUrl } from '@fromcode119/react/icons/lucide-icon-asset-url';
 import { LucideLazyLoader } from '@fromcode119/react/icons/lucide-lazy-loader';
 import lucideIconNames from '@fromcode119/react/icons/lucide-icon-names.generated.json';
+import { RuntimeLocationUtils } from '@fromcode119/core/client';
 
 /**
  * The browser-side icon loader, decoupled from lucide's import table:
@@ -54,8 +55,19 @@ describe('LucideIconAssetUrl', () => {
   it('is served by the admin from its own origin under its base path', () => {
     LoaderFixture.visit('http://admin.framework.local/admin/settings/general');
     expect(LucideIconAssetUrl.for('chevron-down')).toBe(`http://admin.framework.local/admin/fc-runtime/icons/${lucideIconNames.lucideReact}/chevron-down.js`);
-    LoaderFixture.visit('http://localhost:3001/admin/dashboard');
-    expect(LucideIconAssetUrl.for('chevron-down')).toBe(`http://localhost:3001/admin/fc-runtime/icons/${lucideIconNames.lucideReact}/chevron-down.js`);
+    // On a host without the admin role, the console's own document mark is what says "admin".
+    document.documentElement.setAttribute(RuntimeLocationUtils.RUNTIME_ATTRIBUTE, 'admin');
+    try {
+      LoaderFixture.visit('http://localhost:3001/admin/dashboard');
+      expect(LucideIconAssetUrl.for('chevron-down')).toBe(`http://localhost:3001/admin/fc-runtime/icons/${lucideIconNames.lucideReact}/chevron-down.js`);
+    } finally {
+      document.documentElement.removeAttribute(RuntimeLocationUtils.RUNTIME_ATTRIBUTE);
+    }
+  });
+
+  it('is served by the storefront from its root on a storefront page under /admin', () => {
+    LoaderFixture.visit('https://shop.example.test/admin/cms');
+    expect(LucideIconAssetUrl.for('chevron-down')).toBe(`https://shop.example.test/fc-runtime/icons/${lucideIconNames.lucideReact}/chevron-down.js`);
   });
 
   it('is served by a ROOT-served admin (no base path, as the local stack runs it) from its origin root', () => {

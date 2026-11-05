@@ -33,9 +33,11 @@ export class RuntimeLocationUtils {
       return false;
     }
 
+    // The console names itself on its document (also when mounted under a site's path), so the URL
+    // path is not evidence: a storefront page at `/admin/...` (a 404, a page of that name) is the
+    // storefront, and resolving its assets under the console's base path breaks them.
     return RuntimeLocationUtils.readDeclaredRuntime() === ApplicationUrlUtils.ADMIN_APP
-      || ApplicationUrlUtils.hasHostRole(currentUrl, ApplicationUrlUtils.ADMIN_APP)
-      || RequestSurfaceUtils.isAdminPath(currentUrl.pathname);
+      || ApplicationUrlUtils.hasHostRole(currentUrl, ApplicationUrlUtils.ADMIN_APP);
   }
 
   static isFrontendRuntime(): boolean {
