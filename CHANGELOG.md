@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.501] - 2026-11-05
+
+### Added
+
+- **media**: image overlays for extensions, made and cached from the original ([#1203](https://github.com/fromcode119/framework/pull/1203))
+
 ## [0.2.500] - 2026-11-05
 
 ### Added
