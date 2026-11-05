@@ -1,7 +1,7 @@
 import { AccountRouteUtils, FrameworkPageRecipe, RouteConstants } from '@fromcode119/core/client';
 import { FrontendAuthUtils } from '@/lib/frontend-auth-settings';
 import { FrontendCopy } from '@/lib/i18n/frontend-copy';
-import type { IFrameworkSitePageRoute } from './interfaces/framework-site-page-route.interface';
+import type { IFrameworkSitePageRoute } from '@/lib/document/interfaces/framework-site-page-route.interface';
 
 /**
  * The page a site shows at a sign-in or account path when its content has none.
