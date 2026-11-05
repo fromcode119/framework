@@ -10,7 +10,7 @@ import type { RuntimeModuleRef } from '@/app/runtime-module-ref';
  * Same URLs as `PluginLoader` builds (one builder, `PluginLoaderMountService`), so the browser never
  * fetches a bundle twice; the keys returned pre-fill that loader's dedupe set. Order mirrors the
  * server (`ThemeServerRenderer.bootOnce`): the theme first, then the plugins. All fetches are warmed
- * up front with `modulepreload`, so the ordering costs evaluation time only, not network time. Idle
+ * together with `modulepreload` once the import map is published, so the ordering costs evaluation time only, not network time. Idle
  * plugins are NOT loaded here — they keep loading through `PluginLoader` on browser idle, through the
  * live bridge, exactly as before.
  *
@@ -31,10 +31,12 @@ export class StorefrontBundleLoader {
     const pluginRefs = PluginLoaderMountService.pluginRuntimeModules(plugins, apiUrl)
       .filter((ref) => !ref.idle || used.has(ref.pluginSlug));
     const refs = themeRef ? [themeRef, ...pluginRefs] : pluginRefs;
-    refs.forEach(StorefrontBundleLoader.preload);
-
-    // The bundles import bare specifiers that only the runtime import map resolves.
+    // The bundles import bare specifiers that only the runtime import map resolves, and a module the
+    // browser parses before the map exists keeps that resolution failure for the whole document — a
+    // `modulepreload` landing first (a bundle served from cache) poisons the later import. So the
+    // fetches are warmed only once the map is in, still all at once before the ordered imports.
     await RuntimeImportMapReadiness.whenPublished();
+    refs.forEach(StorefrontBundleLoader.preload);
     const loaded = new Set<string>();
     if (themeRef && await StorefrontBundleLoader.load(themeRef)) loaded.add(themeRef.key);
     const results = await Promise.all(pluginRefs.map((ref) => StorefrontBundleLoader.load(ref)));

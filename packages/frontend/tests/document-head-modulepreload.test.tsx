@@ -13,13 +13,14 @@ describe('DocumentHeadView', () => {
     const theme = {
       slug: 'demo', apiUrl: 'https://api.example.test', cssVariables: '', inlinedCss: '', fallbackCssHrefs: [],
       preloadLinks: [], elementLinks: [], inlinedBootScript: '', externalStylesheets: [], prefetchData: {}, lcpPreload: null,
-      injectorScript: '', versionedEntryUrl: 'https://api.example.test/themes/demo/ui/bundle.js?v=1',
-      modulePreloadLinks: ['https://api.example.test/themes/demo/ui/bundle.js?v=1', 'https://api.example.test/themes/demo/ui/chunk-a.js'],
+      injectorScript: '', warmupScript: 'WARMUP', versionedEntryUrl: 'https://api.example.test/themes/demo/ui/bundle.js?v=1',
+      warmupUrls: ['https://api.example.test/themes/demo/ui/bundle.js?v=1', 'https://api.example.test/themes/demo/ui/chunk-a.js'],
     } as unknown as ThemeHeadModel;
     const html = renderToStaticMarkup(DocumentHeadView.render({
       page: {}, site: {}, theme, markup: null, injections: [], runtimeScriptPath: '/fc-runtime/r.js', layoutInlineCss: '',
     }) as any);
     expect(html).toContain('fromcode:theme-entry');
     expect(html).not.toContain('modulepreload');
+    expect(html).not.toContain('WARMUP');
   });
 });

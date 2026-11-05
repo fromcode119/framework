@@ -44,31 +44,38 @@ export class ThemeHeadModel {
   }
 
   /**
-   * The theme entry and its chunks, as `modulepreload` hints for the HEAD.
+   * The theme entry and its chunks, warmed at PARSE time for the App Router head.
    *
-   * These used to be created by the injector script below, after the `load` event AND an idle slice
-   * (`requestIdleCallback(..., {timeout: 1500})`). Measured on `/technologies/php`: `load` at 2,108 ms,
-   * so the entry did not begin downloading until 2,112 ms, its chunks queued behind it, and the theme
-   * did not finish mounting until about SIX SECONDS in. Everything the theme's own script does — the
-   * scroll reveals, the accent word — waited that long with it.
+   * These used to be created after the `load` event AND an idle slice; measured on `/technologies/php`
+   * the theme did not finish mounting until about six seconds in. Starting the download at parse time
+   * fixes that, at `fetchpriority="low"` so the 140 KB entry does not share the first round trips with
+   * the fonts and the LCP image. Only the App Router layout (`ThemeAssets`) warms them: the islands
+   * document boots on intent and emits none (see `DocumentHeadView`).
    *
-   * `modulepreload` in the head is the right tool: it starts the download at parse time instead of a
-   * second and a half after the page finishes loading. Chrome fetches a module preload at HIGH priority,
-   * though, so the head links carry `fetchpriority="low"` — otherwise the theme entry (140 KB on a shop
-   * theme) shares the first round trips with the fonts and the LCP image, and first paint waits on
-   * script nothing paints with. Only the App Router layout (`ThemeAssets`) emits them: the islands
-   * document boots on intent and emits none (see `DocumentHeadView`). It is also NOT the `<link rel="preload" as="script">` that `ThemeAssetsView` warns about —
-   * that one React 19 rewrites without `crossOrigin`, so the bundle downloads twice.
+   * NOT `modulepreload`: a module preload PARSES the file, and the bundle's bare specifiers (`react`,
+   * `react/jsx-runtime`) resolve only through the runtime import map, which the runtime publishes after
+   * it boots. A module parsed before the map keeps that resolution failure for the whole document, so a
+   * head `modulepreload` made the theme import fail whenever the bundle arrived first ("Failed to resolve
+   * module specifier"). A plain `preload as="script"` with `crossorigin` only fetches, and the later module
+   * import reuses the response. It is created from a script because React 19 rewrites a rendered
+   * `<link rel="preload" as="script">` without `crossOrigin`, and the bundle would then download twice.
    */
-  get modulePreloadLinks(): string[] {
+  get warmupUrls(): string[] {
     if (!this.versionedEntryUrl) return [];
     return [this.versionedEntryUrl, ...this.modulePreloadUrls];
   }
 
+  /** The inline script that creates the {@link warmupUrls} preloads. */
+  get warmupScript(): string {
+    const urls = this.warmupUrls;
+    if (!urls.length) return '';
+    return `(function(){${JSON.stringify(urls)}.forEach(function(h){var l=document.createElement('link');l.rel='preload';l.as='script';l.crossOrigin='anonymous';l.setAttribute('fetchpriority','low');l.href=h;document.head.appendChild(l);});})();`;
+  }
+
   /**
    * The inline script that swaps in the external stylesheets (`media="print"` then `all`). Built here,
-   * verbatim from the App Router head, so both documents run the same bytes. The module preloads it
-   * used to carry are now head links — see `modulePreloadLinks`.
+   * verbatim from the App Router head, so both documents run the same bytes. The theme warm-ups
+   * it used to carry are their own script — see `warmupScript`.
    */
   get injectorScript(): string {
     if (!this.externalStylesheets.length) return '';
