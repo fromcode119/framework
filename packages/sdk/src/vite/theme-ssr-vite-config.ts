@@ -27,8 +27,7 @@ import { ThemeEntryGenerator } from './theme-entry-generator';
  *    host process — React (one dispatcher) and `@fromcode119/*` (one `Enum`, one context registry) —
  *    and everything the THEME declares as a runtime dependency, read from its own `package.json`
  *    (see {@link ThemeSsrViteConfig.declaredDependencies}; the framework names no library). The client
- *    bundle rewrites the singletons to the `window` runtime registry (`rollup-plugin-external-globals`)
- *    because it loads with no import map; on the server there IS no registry and Node resolves them
+ *    bundle leaves them as bare imports for the runtime import map; on the server Node resolves them
  *    normally — react/react-dom through the resolve hook in `ThemeSsrRuntime`.
  *    Because those resolve through the THEME's own `node_modules`, which exists in a dev checkout but
  *    not in a freshly installed theme, the PACKAGE has to carry them: `ThemeSsrDependencyCollector`

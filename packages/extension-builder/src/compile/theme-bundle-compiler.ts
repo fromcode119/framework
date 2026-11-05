@@ -116,8 +116,7 @@ export class ThemeBundleCompiler {
   /**
    * Stage the config next to the node_modules that owns `vite`, then generate its `export default`
    * entry there via nextor — same relation and same reasoning as PluginUiViteCompiler.stageConfig:
-   * the config `require`s `@vitejs/plugin-react` (and the theme config `autoprefixer` +
-   * `rollup-plugin-external-globals`) at load time, and Node resolves those from the CONFIG FILE's own
+   * the config `require`s `@vitejs/plugin-react` (and the theme config `autoprefixer`) at load time, and Node resolves those from the CONFIG FILE's own
    * directory upward.
    */
   private async stageConfig(viteDir: string, stagingDir: string, base: string, className: string): Promise<string> {

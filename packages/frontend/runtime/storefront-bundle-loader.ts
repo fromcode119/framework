@@ -1,4 +1,5 @@
 import { PluginLoaderMountService } from '@/app/plugin-loader-mount-service';
+import { RuntimeImportMapReadiness } from '@fromcode119/core/client';
 import type { RuntimeModuleRef } from '@/app/runtime-module-ref';
 
 /**
@@ -32,6 +33,8 @@ export class StorefrontBundleLoader {
     const refs = themeRef ? [themeRef, ...pluginRefs] : pluginRefs;
     refs.forEach(StorefrontBundleLoader.preload);
 
+    // The bundles import bare specifiers that only the runtime import map resolves.
+    await RuntimeImportMapReadiness.whenPublished();
     const loaded = new Set<string>();
     if (themeRef && await StorefrontBundleLoader.load(themeRef)) loaded.add(themeRef.key);
     const results = await Promise.all(pluginRefs.map((ref) => StorefrontBundleLoader.load(ref)));

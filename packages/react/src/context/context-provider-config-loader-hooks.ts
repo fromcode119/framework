@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform } from '@fromcode119/react-class-components';
-import { ApplicationHostUtils, ApiPathUtils, PublicAssetUrlUtils } from '@fromcode119/core/client';
+import { ApplicationHostUtils, ApiPathUtils, PublicAssetUrlUtils, RuntimeImportMapReadiness } from '@fromcode119/core/client';
 import type { ICollectionMetadata } from '@react/interfaces/collection-metadata.interface';
 import type { ISecondaryPanelState } from '@react/interfaces/secondary-panel-state.interface';
 import { ContextProviderStateService } from '@react/context/context-provider-state-service';
@@ -83,6 +83,8 @@ export class ContextProviderConfigLoaderHooks {
         document.head.appendChild(preloadLink);
       }
 
+      // The theme bundle imports bare specifiers that only the runtime import map resolves.
+      await RuntimeImportMapReadiness.whenPublished();
       await import(/* webpackIgnore: true */ versionedEntryUrl);
       registry.add(versionedEntryUrl);
     }, []);

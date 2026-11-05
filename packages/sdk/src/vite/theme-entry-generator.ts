@@ -34,6 +34,9 @@ export class ThemeEntryGenerator {
    */
   static readonly ENTRY_FILENAME = 'theme-entry.generated.jsx';
 
+  /** Negative globs appended to the component lists, so a `**\/*.tsx` pattern never reaches a test. */
+  static readonly TEST_EXCLUSIONS: readonly string[] = ['!./**/*.test.*', '!./**/*.spec.*', '!./**/tests/**', '!./**/__tests__/**'];
+
   static entryPath(themeDir: string): string {
     return path.join(themeDir, 'src', ThemeEntryGenerator.ENTRY_FILENAME);
   }
@@ -97,7 +100,8 @@ export class ThemeEntryGenerator {
     const eager = ThemeEntryGenerator.patterns(build, 'eagerComponents');
     const boot = ThemeEntryGenerator.boot(build);
     // An eagerly-bundled module must be EXCLUDED from the lazy glob, or it lands in both graphs.
-    const lazy = [...components, ...eager.map((pattern) => `!${pattern}`)];
+    // Tests sit beside the components a glob names; they import test tooling and are never shipped.
+    const lazy = [...components, ...eager.map((pattern) => `!${pattern}`), ...(components.length ? ThemeEntryGenerator.TEST_EXCLUSIONS : [])];
 
     const glob = (list: string[], eagerFlag: boolean): string =>
       (list.length
