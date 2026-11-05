@@ -9,11 +9,10 @@ export class ImportMapInstaller {
   static install(
     args: IRuntimeBridgeInstallArgs,
     sources: IImportMapSources,
-    runtimeRegistry: Record<string, any>,
   ): void {
     const imports = ImportMapInstaller.buildStaticImports(args, sources);
     ImportMapInstaller.applyServerModules(imports, args);
-    ImportMapInstaller.applyClientModules(imports, args, runtimeRegistry);
+    ImportMapInstaller.applyClientModules(imports, args);
     ImportMapInstaller.applySubpathAliases(imports);
     // Every module in the map reads the runtime host when it evaluates, so the map is published only
     // once the host holds every registered entry. A host that cannot load is reported, and the map is
@@ -117,7 +116,6 @@ export class ImportMapInstaller {
   private static applyClientModules(
     imports: Record<string, string>,
     args: IRuntimeBridgeInstallArgs,
-    runtimeRegistry: Record<string, any>,
   ): void {
     const currentClientModules = args.runtimeModules;
     if (!currentClientModules) return;

@@ -32,9 +32,8 @@ export class AdminComponentRegistry {
   /** The admin component module if this bundle is running inside the admin, else null. */
   private static module(): Record<string, unknown> | null {
     if (!Platform.isBrowser) return null;
-    const registry = RuntimeRegistryAccess.ensure();
     for (const key of AdminComponentRegistry.moduleKeys) {
-      const candidate = registry[key];
+      const candidate = RuntimeRegistryAccess.get(key);
       if (candidate) return candidate as Record<string, unknown>;
     }
     return null;

@@ -7,8 +7,10 @@
  * see the one store inside it. Nothing is served, nothing is written to a file, and nothing lives on
  * `window`.
  *
- * Writing is a capability, not a property: `claim()` hands out the writer once. The framework claims it
- * while it boots, before any extension bundle is loaded; a later claim gets `null`. Reading (`get`) is
+ * Writing is a capability, not a property: `claim()` hands out the writer. The framework claims it while it
+ * boots, before any extension bundle is loaded. While the document is still loading, a second framework
+ * bundle on the page (each carries its own copy of core) gets the same writer, so both share one store;
+ * once the document has loaded, every later claim gets `null`. Reading (`get`) is
  * open, exactly as reading `import 'react'` is open to any module on the page.
  */
 export class RuntimeHostModule {
@@ -16,10 +18,11 @@ export class RuntimeHostModule {
   private static readonly SOURCE = [
     'const store = new Map();',
     'let claimed = false;',
+    'const write = (key, value) => { store.set(key, value); };',
     'export function claim() {',
-    '  if (claimed) return null;',
+    '  if (claimed && document.readyState === "complete") return null;',
     '  claimed = true;',
-    '  return (key, value) => { store.set(key, value); };',
+    '  return write;',
     '}',
     'export function get(key) { return store.get(key); }',
   ].join('\n');

@@ -37,9 +37,6 @@ export class FrontendRuntimeViteConfig {
   /** Public URL segment the bundle is served from — the framework constant `RouteSegmentUtils` reserves. */
   static readonly PUBLIC_SEGMENT = RuntimeAssetConstants.SEGMENT;
 
-  /** Global the IIFE assigns its (unused) export to; Vite demands a name for the iife format. */
-  private static readonly GLOBAL_NAME = '__fromcodeStorefrontRuntime';
-
   /** `packages/frontend` — this file lives in `packages/frontend/lib/bundling`, two levels down. */
   private static get frontendDir(): string {
     return path.resolve(__dirname, '..', '..');
@@ -153,7 +150,9 @@ export class FrontendRuntimeViteConfig {
         commonjsOptions: { include: [/node_modules/, /[\\/]packages[\\/]frontend[\\/]webpack[\\/]/], transformMixedEsModules: true },
         lib: {
           entry: FrontendRuntimeViteConfig.entryFile,
-          name: FrontendRuntimeViteConfig.GLOBAL_NAME,
+          // Vite demands a name for the iife format. The entry exports nothing, so Rollup never assigns it:
+          // no window global is created (the bundle test pins that).
+          name: 'fcStorefrontRuntime',
           // Classic script, not `type="module"`: the import map is written dynamically by
           // ImportMapInstaller and must precede the first module resolution (plan §3.1). Rollup inlines
           // every dynamic import for this format.

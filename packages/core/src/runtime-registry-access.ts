@@ -1,4 +1,3 @@
-import { RuntimeConstants } from '@core/constants/runtime.constants';
 import { RuntimeHostModule } from '@core/constants/runtime-host-module.constants';
 
 /**
@@ -6,9 +5,8 @@ import { RuntimeHostModule } from '@core/constants/runtime-host-module.constants
  *
  * Plugin and theme bundles are separate ESM graphs; their externalized bare imports
  * (`react`, `react-dom`, `lucide-react`, `@fromcode119/*`) resolve — via import-map `data:` URL
- * modules — to entries on ONE namespaced browser global: `window.__fromcodeRuntimeModules`
- * (`RuntimeConstants.GLOBALS.MODULES`). There is no `window.Fromcode`, `window.React`,
- * `window.ReactDOM`, or `window.Lucide` — every runtime module lives under this registry.
+ * modules — to entries in the runtime HOST MODULE (`RuntimeHostModule`). Nothing lives on `window`:
+ * the framework writes through `register`, and reads through `get`; extensions read through imports.
  *
  * Framework-internal helper: used by the bridge installer, the import-map generators, and the
  * server-side runtime-service. It is NOT a plugin-facing SDK export, so it never touches the
@@ -26,11 +24,7 @@ export class RuntimeRegistryAccess {
     SDK_REACT: '@fromcode119/sdk/react',
   } as const;
 
-  /**
-   * The automatic JSX runtime, built from whichever React the registry holds.
-   * Theme bundles load with NO import map (their externals are rewritten straight to this registry),
-   * so `react/jsx-runtime` must exist here as a real module object, not only in the import map.
-   */
+  /** The automatic JSX runtime, built from whichever React the registry holds. */
   static jsxRuntimeFor(react: any): { jsx: any; jsxs: any; jsxDEV: any; Fragment: any } {
     const withKey = (props: any, key?: any) => (key === undefined ? props : { ...(props || {}), key });
     // `jsx` passes children untouched: an array there IS dynamic (a `.map`), and its key warning is real.
@@ -47,11 +41,6 @@ export class RuntimeRegistryAccess {
     const jsxDEV = (type: any, props: any, key?: any, isStaticChildren?: boolean) =>
       (isStaticChildren ? staticChildren(type, props, key) : jsx(type, props, key));
     return { jsx, jsxs: staticChildren, jsxDEV, Fragment: react.Fragment };
-  }
-
-  /** The window-global registry name (the ONLY runtime handoff surface). */
-  static get globalName(): string {
-    return RuntimeConstants.GLOBALS.MODULES;
   }
 
   /**
@@ -73,20 +62,22 @@ export class RuntimeRegistryAccess {
    * Claims the runtime host module's writer and copies every entry registered so far into it.
    * Called once while the framework boots, BEFORE the import map is published: the generated modules
    * read the host at evaluation, so the host must hold every entry before any extension bundle loads.
-   * A second framework bundle on the page finds the writer taken and keeps reading only.
+   * A second framework bundle that claims while the document is still loading shares the same store;
+   * one that arrives later finds the writer taken and reads the host only.
    */
   static connect(): Promise<void> {
     if (RuntimeRegistryAccess.connecting) return RuntimeRegistryAccess.connecting;
     // A variable, not a literal: bundlers leave the import to the browser instead of resolving it.
     const url = RuntimeHostModule.URL;
     RuntimeRegistryAccess.connecting = import(/* webpackIgnore: true */ /* @vite-ignore */ url).then((host) => {
+      RuntimeRegistryAccess.hostGet = host.get as (key: string) => unknown;
       const writer = host.claim() as ((key: string, value: unknown) => void) | null;
       if (!writer) {
         console.warn('[fromcode] The runtime host module is already claimed; this bundle reads it only.');
         return;
       }
       RuntimeRegistryAccess.hostWriter = writer;
-      const store = RuntimeRegistryAccess.install().store;
+      const store = RuntimeRegistryAccess.store;
       Object.keys(store).forEach((key) => writer(key, store[key]));
     });
     return RuntimeRegistryAccess.connecting;
@@ -94,78 +85,22 @@ export class RuntimeRegistryAccess {
 
   private static connecting: Promise<void> | null = null;
   private static hostWriter: ((key: string, value: unknown) => void) | null = null;
+  private static hostGet: ((key: string) => unknown) | null = null;
+
+  /** This bundle's own entries, private to the framework. Mirrored into the host once connected. */
+  private static readonly store: Record<string, any> = {};
 
   /**
-   * The live registry (browser runtime) — a READ-ONLY view for everyone outside the framework.
-   *
-   * The window binding is non-writable and non-configurable, so no script or console can swap the
-   * registry for its own. Writes through the returned object are refused: a page script cannot
-   * replace `react` or the bridge that every plugin and theme reads. The framework writes only
-   * through `register`, which goes to the private store behind the view.
+   * Framework-side read of one entry: this bundle's own registration, else the shared host (which holds
+   * what another framework bundle on the page registered).
    */
-  static ensure(): Record<string, any> {
-    return RuntimeRegistryAccess.install().view;
-  }
-
-  /** Framework-side read of one entry, from the private store rather than the window view. */
   static get(key: string): any {
-    return RuntimeRegistryAccess.install().store[key];
+    return RuntimeRegistryAccess.store[key] ?? RuntimeRegistryAccess.hostGet?.(key);
   }
 
-  /** Framework-only writer. Entries become visible through the read-only view immediately. */
+  /** Framework-only writer. The entry reaches the host immediately once connected. */
   static register(key: string, value: unknown): void {
-    RuntimeRegistryAccess.install().store[key] = value;
+    RuntimeRegistryAccess.store[key] = value;
     RuntimeRegistryAccess.hostWriter?.(key, value);
-  }
-
-  private static installed: { view: Record<string, any>; store: Record<string, any> } | null = null;
-
-  private static install(): { view: Record<string, any>; store: Record<string, any> } {
-    if (RuntimeRegistryAccess.installed) return RuntimeRegistryAccess.installed;
-    const w = window as unknown as Record<string, any>;
-    const name = RuntimeRegistryAccess.globalName;
-    const existing = Object.getOwnPropertyDescriptor(w, name);
-    // Another framework bundle on this page already installed it: share its store.
-    const shared = existing?.value?.[RuntimeRegistryAccess.STORE];
-    if (shared) {
-      RuntimeRegistryAccess.installed = { view: existing!.value, store: shared };
-      return RuntimeRegistryAccess.installed;
-    }
-    if (existing) {
-      // Installed by a bundle that will not share its store any more: read, never write.
-      console.warn('[fromcode] Runtime module registry is already sealed; this bundle reads it only.');
-      RuntimeRegistryAccess.installed = { view: existing.value, store: {} };
-      return RuntimeRegistryAccess.installed;
-    }
-    const store: Record<string, any> = {};
-    const view = new Proxy(store, {
-      get: (target, key) => (key === RuntimeRegistryAccess.STORE ? RuntimeRegistryAccess.storeOnce(target) : (target as any)[key]),
-      set: (_target, key) => RuntimeRegistryAccess.refuse(key),
-      defineProperty: (_target, key) => RuntimeRegistryAccess.refuse(key),
-      deleteProperty: (_target, key) => RuntimeRegistryAccess.refuse(key),
-      setPrototypeOf: () => false,
-    });
-    Object.defineProperty(w, name, { value: view, writable: false, configurable: false, enumerable: false });
-    RuntimeRegistryAccess.installed = { view, store };
-    return RuntimeRegistryAccess.installed;
-  }
-
-  /**
-   * Handshake between framework bundles that each carry their own copy of core (admin + storefront
-   * runtime). The store is handed out until the page finished loading its framework code, then never.
-   */
-  private static readonly STORE = Symbol.for('fromcode.runtime-registry.store');
-
-  private static storeOnce(store: Record<string, any>): Record<string, any> | undefined {
-    return RuntimeRegistryAccess.handshakeOpen() ? store : undefined;
-  }
-
-  private static handshakeOpen(): boolean {
-    return document.readyState !== 'complete';
-  }
-
-  private static refuse(key: string | symbol): boolean {
-    console.warn(`[fromcode] Refused a write to the runtime module registry (${String(key)}).`);
-    return true;
   }
 }

@@ -1,28 +1,38 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
+import { RuntimeHostModule } from '@core/constants/runtime-host-module.constants';
 import { RuntimeRegistryAccess } from '@core/runtime-registry-access';
 
-describe('RuntimeRegistryAccess — locked runtime module registry', () => {
-  it('lets the framework register, and refuses page-script writes, deletes and replacement', () => {
-    const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+const load = (url: string) => import(/* @vite-ignore */ url);
+
+describe('RuntimeRegistryAccess — no window registry', () => {
+  it('keeps its entries off window entirely', () => {
+    const before = Object.getOwnPropertyNames(window).filter((name) => name.startsWith('__fromcode'));
     const react = { createElement: () => null };
     RuntimeRegistryAccess.register('react', react);
-    const view = RuntimeRegistryAccess.ensure();
-    const name = RuntimeRegistryAccess.globalName;
+    expect(RuntimeRegistryAccess.get('react')).toBe(react);
+    expect(Object.getOwnPropertyNames(window).filter((name) => name.startsWith('__fromcode'))).toEqual(before);
+  });
 
-    (view as any).react = { evil: true };
-    delete (view as any).react;
-    Object.defineProperty(view, 'react', { value: 1 });
-    try { (window as any)[name] = {}; } catch { /* non-writable */ }
+  it('reads what another framework bundle wrote to the shared host', async () => {
+    await RuntimeRegistryAccess.connect();
+    const host = await load(RuntimeHostModule.URL);
+    // A second copy of core writes through the same host; this copy has no entry of its own for the key.
+    expect(RuntimeRegistryAccess.get('other-bundle-only')).toBeUndefined();
+    const before = document.readyState;
+    Object.defineProperty(document, 'readyState', { configurable: true, get: () => 'loading' });
+    try {
+      host.claim()('other-bundle-only', 42);
+    } finally {
+      Object.defineProperty(document, 'readyState', { configurable: true, get: () => before });
+    }
+    expect(RuntimeRegistryAccess.get('other-bundle-only')).toBe(42);
+  });
 
-    expect(view.react).toBe(react);
-    expect((window as any)[name]).toBe(view);
-    expect(Object.getOwnPropertyDescriptor(window, name)).toMatchObject({ writable: false, configurable: false });
-    expect(warn).toHaveBeenCalled();
-
-    // The framework's own writer still replaces an entry (the pre-boot stub → the real bridge).
-    const next = { createElement: () => null };
-    RuntimeRegistryAccess.register('react', next);
-    expect(view.react).toBe(next);
+  it('refuses a writer to anyone once the document has loaded', async () => {
+    await RuntimeRegistryAccess.connect();
+    const host = await load(RuntimeHostModule.URL);
+    expect(document.readyState).toBe('complete');
+    expect(host.claim()).toBeNull();
   });
 });

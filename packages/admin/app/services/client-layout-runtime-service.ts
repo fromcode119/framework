@@ -18,7 +18,7 @@ export class ClientLayoutRuntimeService {
      * nothing had imported it yet.
      *
      * This list is also the SECOND copy of `RuntimeConstants.ADMIN_RUNTIME_EXPORT_KEYS`; the two drift
-     * independently. Verify a change by reading `window.__fromcodeRuntimeModules` in the browser and
+     * independently. Verify a change by importing `@fromcode119/sdk/admin` in the browser and
      * checking that no advertised key is `undefined` — a green build proves nothing here.
      */
     const requiredExports = [

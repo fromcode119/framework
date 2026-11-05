@@ -20,7 +20,7 @@ export class SiteClock {
 
   private static settings(): Record<string, any> | null {
     if (!Platform.isBrowser) return null;
-    const bridge = (window as any)?.[RuntimeRegistryAccess.globalName]?.[RuntimeRegistryAccess.KEYS.REACT_BRIDGE];
+    const bridge = RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
     return bridge?.settings || bridge?.getState?.()?.settings || null;
   }
 }

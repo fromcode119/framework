@@ -1,12 +1,6 @@
 import { ClientRuntimeConstants } from '@core/constants/client-runtime.constants';
-import { RuntimeAssetConstants } from '@core/constants/runtime-asset.constants';
 
 export class RuntimeConstants {
-  static readonly GLOBALS = {
-    FROMCODE: 'Fromcode',
-    MODULES: RuntimeAssetConstants.REGISTRY_GLOBAL,
-  } as const;
-
   static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;
   static readonly ADMIN_UI = ClientRuntimeConstants.ADMIN_UI;
   static readonly FRONTEND = ClientRuntimeConstants.FRONTEND;

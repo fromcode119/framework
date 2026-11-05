@@ -58,7 +58,7 @@ export class RuntimeBridge {
    */
   static getBridge<T = any>(moduleName: string = '@fromcode119/react'): T {
     if (EnvUtils.isServer()) return {} as T;
-    return RuntimeRegistryAccess.ensure()[moduleName] || {};
+    return RuntimeRegistryAccess.get(moduleName) || {};
   }
 
   static async getMetadata(options: { ensureLoaded?: boolean } = {}): Promise<IFrontendRuntimeMetadata> {

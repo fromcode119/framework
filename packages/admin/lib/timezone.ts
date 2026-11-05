@@ -23,7 +23,7 @@ export class TimezoneUtils {
   /** The framework runtime bridge, resolved from the single runtime registry (no window.Fromcode). */
   private static runtimeBridge(): any {
     if (!Platform.isBrowser) return null;
-    return (window as any)?.[RuntimeRegistryAccess.globalName]?.[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] || null;
+    return RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE) || null;
   }
 
   /**

@@ -11,7 +11,7 @@ import { EnvUtils } from '@core/utils/env-utils';
 export class RuntimeSettingsMerge {
   static apply(publicSettings: Record<string, unknown> | null): Record<string, unknown> | null {
     if (EnvUtils.isServer()) return publicSettings;
-    const bridge = RuntimeRegistryAccess.ensure()[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] as
+    const bridge = RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE) as
       { getState?: () => { settings?: Record<string, unknown> }; settings?: Record<string, unknown> } | undefined;
     const runtimeSettings = bridge?.getState?.()?.settings || bridge?.settings;
     if (!publicSettings && !runtimeSettings) return null;
