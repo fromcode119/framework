@@ -1,3 +1,4 @@
+import type { IMediaOverlaySpec } from '@core/media/interfaces/media-overlay-spec.interface';
 import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
 
 /**
@@ -33,4 +34,9 @@ export interface IPluginContextMedia {
    * this site or the file is over the read limit (the admin upload limit, 25 MB).
    */
   read(id: any): Promise<{ filename: string; mimeType: string; size: number; base64: string } | null>;
+  /**
+   * The address of each image id with this extension's overlay laid over it, keyed by id. `spec` is the
+   * overlay as the extension's settings state it now, or null when switched off (the map is then empty).
+   */
+  overlayUrls(ids: any[], spec: IMediaOverlaySpec | null): Promise<Map<string, string>>;
 }

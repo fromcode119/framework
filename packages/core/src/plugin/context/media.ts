@@ -6,6 +6,8 @@ import { MediaIngestBridge } from '@core/plugin/media-ingest-bridge';
 import { MediaFileRemoval } from '@core/media/media-file-removal';
 import type { IPluginMediaIngestInput } from '@core/plugin/interfaces/plugin-media-ingest-input.interface';
 import type { ContextSecurityProxy } from '@core/plugin/context/utils';
+import { MediaOverlayContext } from '@core/plugin/context/media-overlay';
+import type { IMediaOverlaySpec } from '@core/media/interfaces/media-overlay-spec.interface';
 
 export class MediaContextProxy {
   /** Never resolve more than this many ids in one statement, so one call cannot become an unbounded IN list. */
@@ -36,8 +38,17 @@ export class MediaContextProxy {
    * app connects as a non-superuser role, so the tenant filter is enforced by the CONNECTION and
    * applies to every statement here. A plugin cannot resolve another tenant's media by guessing an id.
    */
-  static createMediaProxy(manager: IPluginManagerInterface, security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>) {
+  static createMediaProxy(manager: IPluginManagerInterface, security: ReturnType<typeof ContextSecurityProxy.createSecurityHelpers>, owner: string) {
+    const overlay = new MediaOverlayContext(manager, owner);
     return {
+      /**
+       * The address of each image id with this extension's overlay (a watermark) laid over it, keyed by id.
+       * `spec` is the overlay as the extension's settings state it now, or null when it is switched off;
+       * a change from the stored one drops every image made with the old one. See `MediaOverlayContext`.
+       */
+      async overlayUrls(ids: any[], spec: IMediaOverlaySpec | null): Promise<Map<string, string>> {
+        return overlay.urls(ids, spec);
+      },
       /**
        * Store a file from a public url or base64 bytes as a media record, and return it (with its
        * `id` and public `url`). The ONE write this surface has: a plugin never touches the `media`

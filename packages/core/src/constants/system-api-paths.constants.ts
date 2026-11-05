@@ -214,7 +214,9 @@ export class SystemApiPaths {
       BASE: SystemApiPaths.MEDIA_BASE,
       UPLOAD: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_UPLOAD),
       /** An admin's own view of a file's bytes, whatever storage space it lives in. */
-      ID_RAW: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_ID_RAW)
+      ID_RAW: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_ID_RAW),
+      /** An image with an extension's overlay laid over it, made on first request and cached. */
+      OVERLAY: SystemApiPaths.joinPath(SystemApiPaths.MEDIA_BASE, SystemApiPaths.ROUTE_SEGMENTS.MEDIA_OVERLAY)
     },
     FILES: {
       BASE: SystemApiPaths.FILES_BASE,
