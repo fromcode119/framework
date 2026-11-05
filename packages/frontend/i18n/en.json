@@ -24,8 +24,8 @@
       "repeatPassword": "Repeat password",
       "creatingAccount": "Creating account...",
       "register": "Register",
-      "verifyEmail": "Verify email",
-      "alreadyRegistered": "Already registered?"
+      "alreadyRegistered": "Already registered?",
+      "signIn": "Sign in"
     },
     "resetPasswordClient": {
       "resetPassword": "Reset Password",

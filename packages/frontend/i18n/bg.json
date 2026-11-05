@@ -24,8 +24,8 @@
       "repeatPassword": "Повторете паролата",
       "creatingAccount": "Създаване на профил...",
       "register": "Регистрация",
-      "verifyEmail": "Потвърждаване на имейл",
-      "alreadyRegistered": "Вече имате профил?"
+      "alreadyRegistered": "Вече имате профил?",
+      "signIn": "Вход"
     },
     "resetPasswordClient": {
       "resetPassword": "Нова парола",

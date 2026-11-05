@@ -2,7 +2,7 @@ import { FrontendCopy } from '@/lib/i18n/frontend-copy';
 import type { ChangeEvent, FormEvent } from 'react';
 import { Reactor, state, bound, prop } from '@fromcode119/react-class-components';
 import Link from 'next/link';
-import { SystemConstants } from '@fromcode119/core/client';
+import { RouteConstants, SystemConstants } from '@fromcode119/core/client';
 import { FrontendApiRoutes } from '@/lib/api-routes';
 import { FrontendAuthRequestHeaders } from '@/lib/frontend-auth-request-headers';
 
@@ -199,8 +199,8 @@ export class RegisterPage extends Reactor {
 
           <p className="fc-auth__switch">
             {FrontendCopy.t(this.locale, 'frontend.registerClient.alreadyRegistered')}{' '}
-            <Link href="/verify-email" className="fc-auth__link">
-              {FrontendCopy.t(this.locale, 'frontend.registerClient.verifyEmail')}
+            <Link href={RouteConstants.SEGMENTS.LOGIN} className="fc-auth__link">
+              {FrontendCopy.t(this.locale, 'frontend.registerClient.signIn')}
             </Link>
           </p>
         </div>
