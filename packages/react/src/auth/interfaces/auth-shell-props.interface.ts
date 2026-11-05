@@ -4,4 +4,6 @@ import type { AuthMode } from '@react/auth/enums/auth-mode.enum';
 export interface IAuthShellProps {
   page?: any;
   mode?: AuthMode;
+  /** See `IAuthFormProps.documentLocale`. */
+  documentLocale?: string;
 }
