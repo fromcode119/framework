@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.502] - 2026-11-05
+
+### Fixed
+
+- **frontend**: /login and /account work on a site whose theme seeds neither page ([#1205](https://github.com/fromcode119/framework/pull/1205))
+
 ## [0.2.501] - 2026-11-05
 
 ### Added
