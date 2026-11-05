@@ -1,5 +1,4 @@
 import { EnvUtils } from '@core/utils/env-utils';
-import { RuntimeConstants } from '@core/constants/runtime.constants';
 
 /**
  * The data the server prefetched for the page being rendered (nav menus, page-scoped records, …), keyed
@@ -38,17 +37,6 @@ export class PagePrefetch {
     } finally {
       PagePrefetch.serverPayload = previous;
     }
-  }
-
-  /**
-   * The read-only name themes built before this accessor existed still read
-   * (`globalThis[RuntimeConstants.GLOBALS.PAGE_PREFETCH]`). It is a getter onto `all()` — no setter, not
-   * configurable — so nothing can write through it. Remove once no installed theme reads it.
-   */
-  static installLegacyAlias(): void {
-    const name = RuntimeConstants.GLOBALS.PAGE_PREFETCH;
-    if (Object.getOwnPropertyDescriptor(globalThis, name)) return;
-    Object.defineProperty(globalThis, name, { get: () => PagePrefetch.all(), enumerable: false, configurable: false });
   }
 
   private static readClient(): Readonly<Record<string, unknown>> {

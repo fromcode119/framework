@@ -21,8 +21,6 @@ export class WindowGlobalGuard {
 
   /** Files still allowed their CURRENT number of writes — the runtime registry / boot handoff. */
   static readonly BASELINE: Readonly<Record<string, number>> = {
-    // The ONE read-only legacy name of the page prefetch: a getter, no setter, not configurable.
-    'core/src/page-prefetch.ts': 1,
     // The runtime module registry: ONE locked binding (non-writable, non-configurable) whose view refuses
     // every write — only the framework's private store behind it changes.
     'core/src/runtime-registry-access.ts': 1,

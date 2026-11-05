@@ -121,8 +121,6 @@ export class ThemeWorldRenderer {
     location: IRenderLocation,
   ): string {
     const shared = runtime.frameworkCore as { PagePrefetch: typeof PagePrefetch; RenderLocationUtils: typeof RenderLocationUtils };
-    // The themes built before `PagePrefetch` read the legacy read-only name; it is a getter onto `all()`.
-    shared.PagePrefetch.installLegacyAlias();
     const render = () => runtime.renderToString(tree) as string;
     return PagePrefetch.renderWith(prefetched, () => RenderLocationUtils.renderAt(location, () =>
       shared.PagePrefetch.renderWith(prefetched, () => shared.RenderLocationUtils.renderAt(location, render))));

@@ -5,9 +5,6 @@ export class RuntimeConstants {
   static readonly GLOBALS = {
     FROMCODE: 'Fromcode',
     MODULES: RuntimeAssetConstants.REGISTRY_GLOBAL,
-    /** LEGACY read-only alias of `PagePrefetch.all()` for themes built before the accessor
-     *  (`PagePrefetch.installLegacyAlias`). Read prefetched data through `PagePrefetch` instead. */
-    PAGE_PREFETCH: '__FC_PAGE_PREFETCH__',
   } as const;
 
   static readonly CLIENT_TYPES = ClientRuntimeConstants.CLIENT_TYPES;
