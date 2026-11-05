@@ -71,9 +71,8 @@ export class PluginScaffoldService {
       'export const init = () => {',
       `  console.info('[${slug}] UI initialized.');`,
       '};', '',
-      'if (EnvUtils.isBrowser() && window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/react"]) {',
-      '  init();',
-      '}', '',
+      '// The UI entry is loaded by the runtime, after the framework bridge is installed.',
+      'init();', '',
     ].join('\n');
 
     fs.writeFileSync(path.join(pluginPath, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`, 'utf8');

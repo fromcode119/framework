@@ -20,11 +20,4 @@ export class RuntimeAssetConstants {
    * per icon, each read from the runtime registry. The import map points `lucide-react` at it.
    */
   static readonly LUCIDE_NAMESPACE_FILE = 'lucide-react.js';
-
-  /**
-   * The window global holding the host→bundle runtime registry (`RuntimeConstants.GLOBALS.MODULES`
-   * reads it from here). Declared in this import-free file so the build-time icon emitter can bake it
-   * into the namespace module without importing the rest of the constants graph.
-   */
-  static readonly REGISTRY_GLOBAL = '__fromcodeRuntimeModules';
 }

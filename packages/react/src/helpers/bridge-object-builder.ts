@@ -193,8 +193,8 @@ export class BridgeObjectBuilder {
       ThemeFrontendLayoutRegistrar,
       LayoutTargetKind,
       ThemeOverrideRegistrar,
-      // The theme runtime. A theme bundle reads these off `window.__fromcodeRuntimeModules['@fromcode119/react']`,
-      // which is this object: an export that is in the package index but not here is `undefined` in the browser.
+      // The theme runtime. A theme bundle imports these from `@fromcode119/react` through the import map,
+      // which resolves to this object: an export that is in the package index but not here is `undefined` in the browser.
       ThemeRuntimeContext,
       ThemeComponent,
       ThemeProvider,

@@ -16,7 +16,6 @@ export class GlobalInitializer extends Reactor {
 
             // Pre-boot stub on the ONE runtime registry (no bare window.React / window.Fromcode).
             // The full bridge (installRuntimeBridge) later replaces the @fromcode119/react entry.
-            const registry = RuntimeRegistryAccess.ensure();
             RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT, React);
             // React 19's `react-dom` no longer carries the root factories (they live in `react-dom/client`),
             // but the import map's `react-dom` module destructures `createRoot` / `hydrateRoot` from THIS
@@ -28,7 +27,7 @@ export class GlobalInitializer extends Reactor {
             });
             RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.JSX_RUNTIME, RuntimeRegistryAccess.jsxRuntimeFor(React));
             RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, FrameworkIcons);
-            if (!registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE]) {
+            if (!RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE)) {
                 RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, {
                     useTranslation: ContextHooks.useTranslation,
                     getIcon: FrameworkIcons.getIcon.bind(FrameworkIcons),

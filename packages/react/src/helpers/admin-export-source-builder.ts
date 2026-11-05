@@ -2,10 +2,10 @@ import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge
 import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 
 export class AdminExportSourceBuilder {
-  static build(args: IRuntimeBridgeInstallArgs, runtimeRegistry: Record<string, any>): string {
+  static build(args: IRuntimeBridgeInstallArgs): string {
     const adminModule =
-      runtimeRegistry[args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS] ||
-      runtimeRegistry[args.RuntimeConstants.MODULE_NAMES.ADMIN] ||
+      RuntimeRegistryAccess.get(args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS) ||
+      RuntimeRegistryAccess.get(args.RuntimeConstants.MODULE_NAMES.ADMIN) ||
       {};
     const adminExportKeys = Array.from(
       new Set<string>([

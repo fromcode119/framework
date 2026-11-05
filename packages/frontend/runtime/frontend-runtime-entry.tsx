@@ -40,8 +40,10 @@ import { StorefrontRuntimeRoot } from '@/runtime/view/storefront-runtime-root.cl
  * rather than a top-level statement, the same shape as `PluginUiStorefrontEntry`. A document without a
  * `#fc-runtime-config` (nothing served the islands document yet) gets steps 1–2 and stops: the registry
  * is populated, nothing is mounted, and the console says so.
+ *
+ * Not exported: an iife bundle assigns its exports to a window global, and this one needs none.
  */
-export class FrontendRuntimeEntry {
+class FrontendRuntimeEntry {
   private static readonly booted = FrontendRuntimeEntry.boot();
 
   private static boot(): boolean {

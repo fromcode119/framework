@@ -21,13 +21,12 @@ export class ContextRuntimeBridge {
     // under the ONE namespaced registry. Populating it here — during the pre-boot stub phase —
     // is what lets every import-map data-URL module read the registry directly, with no
     // `window.Fromcode` fallback: the registry is the source at both stub-time and install-time.
-    const registry = RuntimeRegistryAccess.ensure();
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT, args.ReactRef);
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.JSX_RUNTIME, RuntimeRegistryAccess.jsxRuntimeFor(args.ReactRef));
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_DOM, ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef));
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, LucideNamespaceProxy.create(args.getIcon));
 
-    const fc = registry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE] || {};
+    const fc = RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE) || {};
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, fc);
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK, fc);
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK_REACT, fc);
@@ -117,7 +116,6 @@ export class ContextRuntimeBridge {
     const bridge = BridgeObjectBuilder.build(args);
     // The ONE runtime handoff surface. The real bridge replaces the stub written in
     // setupGlobalStubs; React, ReactDOM, and the Lucide proxy live under the same registry.
-    const runtimeRegistry = RuntimeRegistryAccess.ensure();
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_BRIDGE, bridge);
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK, bridge);
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.SDK_REACT, bridge);
@@ -126,27 +124,23 @@ export class ContextRuntimeBridge {
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.REACT_DOM, ContextRuntimeBridge.reactDomEntry(args.ReactDOMRef));
     RuntimeRegistryAccess.register(RuntimeRegistryAccess.KEYS.LUCIDE, LucideNamespaceProxy.create(args.getIcon));
 
-    // Assign LazyLoadClass through an explicit window property chain so webpack cannot tree-shake it —
-    // a property assignment on a local var that merely escapes via window can be elided by webpack.
-    runtimeRegistry[RuntimeRegistryAccess.KEYS.REACT_BRIDGE].LazyLoadClass = LazyLoadClass;
+    bridge.LazyLoadClass = LazyLoadClass;
 
-    ContextRuntimeBridge.installImportMap(args, bridge, runtimeRegistry);
+    ContextRuntimeBridge.installImportMap(args, bridge);
   }
 
   private static installImportMap(
     args: IRuntimeBridgeInstallArgs,
     bridge: Record<string, unknown>,
-    runtimeRegistry: Record<string, any>,
   ): void {
     const reactModuleAccessor = RuntimeRegistryAccess.accessorExpr(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
-    const adminExportSource = AdminExportSourceBuilder.build(args, runtimeRegistry);
+    const adminExportSource = AdminExportSourceBuilder.build(args);
     const reactExportSource = ReactExportSourceBuilder.buildReactExportSource(bridge, reactModuleAccessor);
     const sdkReactExportSource = ReactExportSourceBuilder.buildSdkReactExportSource(reactModuleAccessor);
     const sdkExportSource = SdkExportSourceBuilder.build(reactModuleAccessor);
     ImportMapInstaller.install(
       args,
       { adminExportSource, reactExportSource, sdkReactExportSource, sdkExportSource },
-      runtimeRegistry,
     );
   }
 

@@ -31,7 +31,7 @@ export class IconRegistry {
 
     // 1. Search in the host app's raw FrameworkIcons, published on the runtime registry bridge
     //    (the RAW set — not the lucide proxy — so this never recurses back into getIcon).
-    const bridge = (window as any)?.[RuntimeRegistryAccess.globalName]?.[RuntimeRegistryAccess.KEYS.REACT_BRIDGE];
+    const bridge = RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE);
     const frameworkIcons = bridge?.FrameworkIcons;
     if (frameworkIcons) {
       const hostIcon =

@@ -118,26 +118,16 @@ describe('storefront runtime bundle', () => {
     // This document has none, so the boot says so and stops: nothing is mounted, nothing is fetched.
     dom.window.dispatchEvent(new dom.window.Event('load'));
     await new Promise((resolve) => setTimeout(resolve, 600));
-    const registry = dom.window.__fromcodeRuntimeModules as Record<string, any> | undefined;
-    expect(registry, 'runtime registry was never populated: the entry did not boot').toBeTruthy();
-    expect(Object.keys(registry!)).toEqual(expect.arrayContaining(['react', 'react-dom', 'react/jsx-runtime', 'lucide-react', '@fromcode119/react', '@fromcode119/sdk', '@fromcode119/sdk/react']));
-    // The registry's `react-dom` module is what the import map hands plugin bundles; React 19 moved the
-    // root factories to `react-dom/client`, so the entry must carry them explicitly.
-    expect(typeof registry!['react-dom'].createRoot).toBe('function');
-    expect(typeof registry!['react-dom'].hydrateRoot).toBe('function');
-    // The FULL bridge, not the stub: a theme bundle evaluated against it needs reactor's base classes.
-    expect(typeof registry!['@fromcode119/react'].Reactor).toBe('function');
-    expect(typeof registry!['@fromcode119/react'].ContextBridge).toBe('function');
-    expect(typeof registry!['@fromcode119/react'].ContextBridge.registerTheme).toBe('function');
-    expect(typeof registry!['@fromcode119/react'].t).toBe('function');
-    expect(dom.window.document.getElementById('fc-runtime-import-map')).toBeTruthy();
+    const mapScript = dom.window.document.getElementById('fc-runtime-import-map');
+    expect(mapScript, 'import map was never published: the entry did not boot').toBeTruthy();
+    const map = JSON.parse(String(mapScript!.textContent)).imports;
+    expect(Object.keys(map)).toEqual(expect.arrayContaining(['react', 'react-dom', 'react/jsx-runtime', 'lucide-react', '@fromcode119/react', '@fromcode119/sdk', '@fromcode119/sdk/react']));
+    // The runtime lives in the host module, never on window: no framework global of any name.
+    expect(Object.getOwnPropertyNames(dom.window).filter((name) => name.startsWith('__fromcode'))).toEqual([]);
     // Theme bundles import these subpaths bare; each resolves to a module already in the map.
-    const map = JSON.parse(String(dom.window.document.getElementById('fc-runtime-import-map')!.textContent)).imports;
     expect(map['react-dom/client']).toBe(map['react-dom']);
     expect(map['@fromcode119/sdk/admin/theme-style-variant-select']).toBe(map['@fromcode119/sdk/admin']);
     expect(dom.window._fromcodeQueue).toBeUndefined();
-    // The registry binding is locked: a page script can neither replace it nor overwrite an entry.
-    expect(Object.getOwnPropertyDescriptor(dom.window, "__fromcodeRuntimeModules")?.configurable).toBe(false);
     expect(warnings.some((line) => line.includes('no #fc-runtime-config'))).toBe(true);
     // jsdom cannot import the host module's data: url; the map is still published and the failure is said.
     // (The host itself is exercised in core's runtime-host-module test.)
