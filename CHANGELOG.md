@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.506] - 2026-11-05
+
+### Fixed
+
+- **arch-guard**: no-window-globals scans plugin ui code, ignores strings ([#1218](https://github.com/fromcode119/framework/pull/1218))
+- **auth**: sign-in, registration and account are site pages, not theme pages ([#1217](https://github.com/fromcode119/framework/pull/1217))
+- **react**: a signed-in customer is no longer sent from the account back to /login ([#1216](https://github.com/fromcode119/framework/pull/1216))
+
 ## [0.2.505] - 2026-11-05
 
 ### Fixed
