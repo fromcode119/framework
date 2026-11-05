@@ -7,6 +7,7 @@ import dynamicIconImports from 'lucide-react/dist/esm/dynamicIconImports.js';
 import lucideIconNames from '@fromcode119/react/icons/lucide-icon-names.generated.json';
 import { LucideIconNodeEmitter } from '@/lib/bundling/lucide-icon-node-emitter';
 import { LucideLazyLoader } from '@fromcode119/react/icons/lucide-lazy-loader';
+import { RuntimeHostModule } from '@fromcode119/core/constants/runtime-host-module.constants';
 import { RuntimeAssetConstants } from '@fromcode119/core/constants/runtime-asset.constants';
 
 /**
@@ -85,18 +86,16 @@ describe('emitted lucide-react namespace module', () => {
     expect([...exported].sort()).toEqual([...LucideLazyLoader.iconNames()].sort());
   });
 
-  it('is an ES module that reads every export from the runtime registry', async () => {
+  it('is an ES module that reads every export from the runtime host module', async () => {
     const icon = () => null;
-    const target = globalThis as unknown as { window?: Record<string, unknown> };
-    const previous = target.window;
-    target.window = { [RuntimeAssetConstants.REGISTRY_GLOBAL]: { 'lucide-react': { ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon } } };
-    try {
-      const mod = await import(`${pathToFileURL(file(LucideIconFixture.publicDirs[0])).href}?t=${Date.now()}`);
-      expect(mod.ChevronDown).toBe(icon);
-      expect(mod.LucideChevronDown).toBe(icon);
-      expect(mod.default).toEqual({ ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon });
-    } finally {
-      target.window = previous;
-    }
+    const host = await import(/* @vite-ignore */ RuntimeHostModule.URL);
+    host.claim()('lucide-react', { ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon });
+    const source = readFileSync(file(LucideIconFixture.publicDirs[0]), 'utf8');
+    expect(source.startsWith(RuntimeHostModule.IMPORT)).toBe(true);
+    expect(source).not.toContain('window');
+    const mod = await import(`${pathToFileURL(file(LucideIconFixture.publicDirs[0])).href}?t=${Date.now()}`);
+    expect(mod.ChevronDown).toBe(icon);
+    expect(mod.LucideChevronDown).toBe(icon);
+    expect(mod.default).toEqual({ ChevronDown: icon, ChevronDownIcon: icon, LucideChevronDown: icon });
   });
 });

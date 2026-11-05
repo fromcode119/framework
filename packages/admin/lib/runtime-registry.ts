@@ -1,4 +1,5 @@
 import * as Lucide from 'lucide-react';
+import { RuntimeHostModule } from '@fromcode119/core/constants/runtime-host-module.constants';
 
 export class AdminRuntimeRegistry {
   private static readonly SYSTEM_ICON_NAMES = [
@@ -98,7 +99,8 @@ export class AdminRuntimeRegistry {
         .join('\n');
 
       return [
-        "const __icons = (window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules['lucide-react']) || {};",
+        RuntimeHostModule.IMPORT,
+        `const __icons = ${RuntimeHostModule.expr('lucide-react')} || {};`,
         exports,
         'export default __icons;'
       ]

@@ -6,7 +6,7 @@ export class IconsRegistryRoute {
   /**
    * Framework Icon Registry Proxy (Client-side)
    * This route generates an ESM module that proxies 'lucide-react' imports
-   * to the centralized framework icon registry (window.FrameworkIcons).
+   * to the icons the framework registered with the runtime host module.
    */
 
   static async GET() {

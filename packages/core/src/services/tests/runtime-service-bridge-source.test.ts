@@ -2,6 +2,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { RuntimeService } from '@core/plugin/services/runtime/runtime-service';
+import { RuntimeHostModule } from '@core/constants/runtime-host-module.constants';
 
 // The framework root, derived from this file — stable regardless of the suite's cwd. RuntimeService
 // uses it only to anchor `require.resolve` during key discovery; the bridge SOURCES are compiled
@@ -19,8 +20,9 @@ describe('RuntimeService.generateBridgeSource', () => {
     expect(encoded).toBeTruthy();
 
     const decoded = Buffer.from(String(encoded), 'base64').toString('utf8');
-    const scoped =
-      '((window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/sdk"]) || (window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["@fromcode119/react"]))';
+    expect(decoded.startsWith(RuntimeHostModule.IMPORT)).toBe(true);
+    expect(decoded).not.toContain('window');
+    const scoped = '(__fcHostGet("@fromcode119/sdk") || __fcHostGet("@fromcode119/react"))';
     expect(decoded).toContain(
       `export const BrowserStateClient = ${scoped} ? ${scoped}['BrowserStateClient'] : undefined;`,
     );
@@ -29,7 +31,7 @@ describe('RuntimeService.generateBridgeSource', () => {
     );
   });
 
-  it('resolves browser react exports from the single runtime registry (react key)', () => {
+  it('resolves browser react exports from the runtime host module (react key)', () => {
     const runtimeService = new RuntimeService(FRAMEWORK_ROOT);
     // `react` is a client-handled module (served via the static import map), so it is intentionally
     // absent from getModules(); the bridge source is still generated on demand for the `react` key.
@@ -41,7 +43,8 @@ describe('RuntimeService.generateBridgeSource', () => {
     expect(encoded).toBeTruthy();
 
     const decoded = Buffer.from(String(encoded), 'base64').toString('utf8');
-    const scoped = '((window.__fromcodeRuntimeModules && window.__fromcodeRuntimeModules["react"]))';
+    expect(decoded.startsWith(RuntimeHostModule.IMPORT)).toBe(true);
+    const scoped = '(__fcHostGet("react"))';
     expect(decoded).toContain(`export const useInsertionEffect = ${scoped} ? ${scoped}['useInsertionEffect'] : undefined;`);
     expect(decoded).toContain(`export const useSyncExternalStore = ${scoped} ? ${scoped}['useSyncExternalStore'] : undefined;`);
   });

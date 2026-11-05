@@ -148,6 +148,7 @@ export { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
 export { ConsoleMountUtils } from '@core/utils/console-mount-utils';
 export { RuntimeConstants } from '@core/constants/runtime.constants';
 export { RuntimeRegistryAccess } from '@core/runtime-registry-access';
+export { RuntimeHostModule } from '@core/constants/runtime-host-module.constants';
 export { RouteConstants } from '@core/constants/route.constants';
 export { AccountRouteUtils } from '@core/utils/account-route-utils';
 export { RenderLocationUtils } from '@core/utils/render-location-utils';

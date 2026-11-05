@@ -1,4 +1,5 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
+import { RuntimeRegistryAccess } from '@fromcode119/core/client';
 
 export class AdminExportSourceBuilder {
   static build(args: IRuntimeBridgeInstallArgs, runtimeRegistry: Record<string, any>): string {
@@ -17,9 +18,8 @@ export class AdminExportSourceBuilder {
       return true;
     });
     const adminModuleAccessor =
-      `(window.${args.RuntimeConstants.GLOBALS.MODULES} && ` +
-      `(window.${args.RuntimeConstants.GLOBALS.MODULES}['${args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS}'] || ` +
-      `window.${args.RuntimeConstants.GLOBALS.MODULES}['${args.RuntimeConstants.MODULE_NAMES.ADMIN}']))`;
+      `(${RuntimeRegistryAccess.accessorExpr(args.RuntimeConstants.MODULE_NAMES.ADMIN_COMPONENTS)} || ` +
+      `${RuntimeRegistryAccess.accessorExpr(args.RuntimeConstants.MODULE_NAMES.ADMIN)})`;
     return (
       adminExportKeys
         .map((key) => `export const ${key} = ${adminModuleAccessor} ? ${adminModuleAccessor}.${key} : undefined;`)
