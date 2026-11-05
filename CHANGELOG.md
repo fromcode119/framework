@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.497] - 2026-11-05
+
+### Added
+
+- **frontend**: hreflang alternates for every enabled locale ([#1194](https://github.com/fromcode119/framework/pull/1194))
+- **frontend**: serve plugin public files at any depth and in every feed format ([#1193](https://github.com/fromcode119/framework/pull/1193))
+
+### Fixed
+
+- **admin**: judge field conditions on what the controls show ([#1192](https://github.com/fromcode119/framework/pull/1192))
+
 ## [0.2.496] - 2026-11-05
 
 ### Fixed
