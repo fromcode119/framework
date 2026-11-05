@@ -1,4 +1,5 @@
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { RuntimeImportMapReadiness } from '@fromcode119/core/client';
 import { IAdminPluginMetadata } from '@/app/interfaces/admin-plugin-metadata.interface';
 import type { IPluginAssetLoaderCallbacks } from '@/app/services/interfaces/plugin-asset-loader-callbacks.interface';
 import type { IPluginAssetLoaderContext } from '@/app/services/interfaces/plugin-asset-loader-context.interface';
@@ -20,7 +21,7 @@ export class PluginAssetLoaderService {
     void refreshVersion;
     PluginAssetLoaderService.applyCollections(plugins, callbacks);
     PluginAssetLoaderService.injectAssetLinks(plugins);
-    PluginAssetLoaderService.importEntries(plugins, callbacks);
+    PluginAssetLoaderService.loadEntriesOnceMapped(plugins, callbacks);
   }
 
   /**
@@ -45,7 +46,35 @@ export class PluginAssetLoaderService {
   static applyOne(plugin: IAdminPluginMetadata, callbacks: IPluginAssetLoaderCallbacks): void {
     if (!plugin?.ui?.entryUrl) return;
     PluginAssetLoaderService.injectAssetLinks([plugin]);
-    PluginAssetLoaderService.importEntries([plugin], callbacks);
+    PluginAssetLoaderService.loadEntriesOnceMapped([plugin], callbacks);
+  }
+
+  /**
+   * A plugin entry imports bare specifiers only the runtime import map resolves, and a module the
+   * browser has PARSED before the map exists keeps its resolution failure for the whole document — a
+   * `modulepreload` that lands first poisons the later import. So the entries are preloaded and
+   * imported only once the map is published.
+   */
+  private static loadEntriesOnceMapped(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {
+    void RuntimeImportMapReadiness.whenPublished().then(() => {
+      PluginAssetLoaderService.preloadEntries(plugins);
+      PluginAssetLoaderService.importEntries(plugins, callbacks);
+    });
+  }
+
+  private static preloadEntries(plugins: IAdminPluginMetadata[]): void {
+    for (const plugin of plugins) {
+      const entryUrl = plugin.ui?.entryUrl;
+      if (!entryUrl) continue;
+      const src = `${AdminConstants.API_BASE_URL}${entryUrl}`;
+      if (PluginAssetLoaderService.loadedPluginEntryUrls.has(src)) continue;
+      document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`).forEach(el => el.remove());
+      const link = document.createElement('link');
+      link.rel = 'modulepreload';
+      link.href = src;
+      link.setAttribute('data-plugin', plugin.slug);
+      document.head.appendChild(link);
+    }
   }
 
   private static applyCollections(plugins: IAdminPluginMetadata[], callbacks: IPluginAssetLoaderCallbacks): void {
@@ -73,25 +102,12 @@ export class PluginAssetLoaderService {
   }
 
   private static injectAssetLinks(plugins: IAdminPluginMetadata[]): void {
-    // Pass 1: add all modulepreload and CSS links before any dynamic import.
+    // Pass 1: add the CSS links before any dynamic import (the entry preloads wait for the import map).
     // The entryUrl/cssUrl already carry their own `?v=<mtime>` cache-buster from
     // admin-metadata-service, so we do NOT append the volatile refreshVersion — doing
     // so changed the URL on every refresh tick and re-imported an unchanged bundle,
     // re-registering slots and remounting the plugin page (a visible flash).
     for (const plugin of plugins) {
-      const entryUrl = plugin.ui?.entryUrl;
-      if (entryUrl) {
-        const src = `${AdminConstants.API_BASE_URL}${entryUrl}`;
-        if (!PluginAssetLoaderService.loadedPluginEntryUrls.has(src)) {
-          document.querySelectorAll(`link[rel="modulepreload"][data-plugin="${plugin.slug}"]`).forEach(el => el.remove());
-          const link = document.createElement('link');
-          link.rel = 'modulepreload';
-          link.href = src;
-          link.setAttribute('data-plugin', plugin.slug);
-          document.head.appendChild(link);
-        }
-      }
-
       if (plugin.ui?.cssUrls) {
         plugin.ui.cssUrls.forEach((cssUrl, index) => {
           const href = `${AdminConstants.API_BASE_URL}${cssUrl}`;

@@ -73,17 +73,9 @@ export class ContextProviderConfigLoaderHooks {
 
       slugRegistry.set(themeSlug, versionedEntryUrl);
 
-      const preloadSelector = `link[rel="modulepreload"][href="${versionedEntryUrl}"]`;
-      if (!document.head.querySelector(preloadSelector)) {
-        const preloadLink = document.createElement('link');
-        preloadLink.rel = 'modulepreload';
-        preloadLink.href = versionedEntryUrl;
-        preloadLink.setAttribute('data-theme-entry-preload', versionedEntryUrl);
-        preloadLink.setAttribute('data-theme-slug', themeSlug);
-        document.head.appendChild(preloadLink);
-      }
-
-      // The theme bundle imports bare specifiers that only the runtime import map resolves.
+      // The theme bundle imports bare specifiers that only the runtime import map resolves, and a module
+      // parsed before the map exists keeps that failure for the document, so nothing
+      // fetches it as a module (no `modulepreload` either) before the map is in.
       await RuntimeImportMapReadiness.whenPublished();
       await import(/* webpackIgnore: true */ versionedEntryUrl);
       registry.add(versionedEntryUrl);

@@ -50,10 +50,10 @@ export class ThemeAssetsView {
           {model.inlinedBootScript ? <script dangerouslySetInnerHTML={{ __html: model.inlinedBootScript }} /> : null}
           <PagePrefetchScriptView.render payload={model.prefetchData} />
           {model.versionedEntryUrl ? <meta name="fromcode:theme-entry" content={model.versionedEntryUrl} /> : null}
-          {/* Inline script: modulepreload + non-blocking external stylesheets, so React 19's resource
+          {/* Inline script: non-blocking external stylesheets, so React 19's resource
               hoisting cannot interfere (see ThemeHeadModel.injectorScript). */}
-          {/* The theme entry and its chunks, hinted at PARSE time — see `ThemeHeadModel.modulePreloadLinks`. */}
-          {model.modulePreloadLinks.map((href) => <link key={href} rel="modulepreload" href={href} crossOrigin="anonymous" />)}
+          {/* The theme entry and its chunks, warmed at PARSE time — see `ThemeHeadModel.warmupUrls`. */}
+          {model.warmupScript ? <script dangerouslySetInnerHTML={{ __html: model.warmupScript }} /> : null}
           {model.injectorScript ? <script dangerouslySetInnerHTML={{ __html: model.injectorScript }} /> : null}
         </>
       );
