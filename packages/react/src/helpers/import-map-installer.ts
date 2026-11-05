@@ -15,8 +15,11 @@ export class ImportMapInstaller {
     ImportMapInstaller.applyServerModules(imports, args);
     ImportMapInstaller.applyClientModules(imports, args, runtimeRegistry);
     // Every module in the map reads the runtime host when it evaluates, so the map is published only
-    // once the host holds every registered entry.
-    void RuntimeRegistryAccess.connect().then(() => ImportMapInstaller.publish(imports));
+    // once the host holds every registered entry. A host that cannot load is reported, and the map is
+    // still published: extensions then fail loudly at their import instead of the page waiting forever.
+    void RuntimeRegistryAccess.connect()
+      .catch((error) => console.error('[fromcode] The runtime host module could not be loaded.', error))
+      .then(() => ImportMapInstaller.publish(imports));
   }
 
   private static publish(imports: Record<string, string>): void {

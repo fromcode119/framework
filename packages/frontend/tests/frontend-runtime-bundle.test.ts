@@ -135,6 +135,8 @@ describe('storefront runtime bundle', () => {
     // The registry binding is locked: a page script can neither replace it nor overwrite an entry.
     expect(Object.getOwnPropertyDescriptor(dom.window, "__fromcodeRuntimeModules")?.configurable).toBe(false);
     expect(warnings.some((line) => line.includes('no #fc-runtime-config'))).toBe(true);
+    // jsdom cannot import the host module's data: url; the map is still published and the failure is said.
+    // (The host itself is exercised in core's runtime-host-module test.)
     // No tolerated error any more: the Next router invariant is gone with RouterBridge.
     expect(errors).toEqual([]);
     dom.window.close();
