@@ -170,7 +170,7 @@ export class StorefrontDocumentRenderer {
       // holds even when the plugin that would normally set robots is inactive.
       ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
         .then(async (page) => (args.status === 404 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
-          ? { ...page, robots: { index: false, follow: false } }
+          ? { ...page, robots: { index: false, follow: false }, alternates: page.alternates?.canonical ? { canonical: page.alternates.canonical } : undefined }
           : page)),
       ResolvedContentMetadata.buildSiteMetadata(),
       ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url),
