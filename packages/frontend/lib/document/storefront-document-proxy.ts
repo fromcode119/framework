@@ -12,7 +12,7 @@ import { SiteVisibilityProxyGuard } from '@/lib/document/site-visibility-proxy-g
  * page. Islands is now the only path for content documents; the flag is gone.
  *
  * Rewrites `/` and any path the App Router's `[...slug]` page would have served. The remaining Next
- * pages (`register`, `forgot-password`, `reset-password`, `verify-email*`, `unsubscribe`, `files`) keep their
+ * pages (`login`, `account`, `register`, `forgot-password`, `reset-password`, `verify-email*`, `unsubscribe`, `files`) keep their
  * routes for now (plan §7 open question 2), and everything that is not a document — api proxy, Next
  * internals, the runtime assets, the internal endpoints, files by extension — is excluded by the
  * proxy matcher before this runs. Only GET/HEAD navigations are documents.
@@ -25,10 +25,10 @@ export class StorefrontDocumentProxy {
    * missing here, so every share link emailed to a recipient was rewritten to the document route and
    * answered 404.
    */
-  private static readonly NEXT_PAGE_SEGMENTS = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH, 'fc-document', 'internal', 'api', '_next']);
+  private static readonly NEXT_PAGE_SEGMENTS = new Set(['login', 'account', 'register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH, 'fc-document', 'internal', 'api', '_next']);
 
   /** App Router pages that render the site's theme: they carry its Content-Security-Policy too. */
-  private static readonly THEMED_NEXT_PAGES = new Set(['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH]);
+  private static readonly THEMED_NEXT_PAGES = new Set(['login', 'account', 'register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change', 'unsubscribe', FileSharePageSlug.PATH]);
 
   static async handle(request: NextRequest): Promise<NextResponse | Response> {
     if (request.method !== 'GET' && request.method !== 'HEAD') return NextResponse.next();
