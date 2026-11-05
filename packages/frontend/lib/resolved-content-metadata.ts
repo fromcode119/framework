@@ -5,6 +5,7 @@ import { cache } from 'react';
 import type { Metadata } from 'next';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
+import { LocaleAlternateLinks } from '@/lib/locale-alternate-links';
 
 export class ResolvedContentMetadata {
   static build(content: Record<string, unknown> | null, resolutionType?: string): Metadata {
@@ -45,6 +46,7 @@ export class ResolvedContentMetadata {
     if (!head) return base;
 
     const canonical = head.canonical || undefined;
+    const languages = await LocaleAlternateLinks.build(url, head.canonical || '');
     const images = head.ogImage ? [head.ogImage] : undefined;
     const ogTitle = head.ogTitle || head.title || undefined;
     const ogDescription = head.ogDescription || head.description || undefined;
@@ -53,7 +55,7 @@ export class ResolvedContentMetadata {
       ...base,
       title: head.title ? { absolute: head.title } : base.title,
       description: head.description || base.description,
-      alternates: canonical ? { canonical } : base.alternates,
+      alternates: canonical ? { canonical, ...(languages ? { languages } : {}) } : base.alternates,
       robots: ResolvedContentMetadata.parseRobots(head.robots),
       openGraph: {
         title: ogTitle,

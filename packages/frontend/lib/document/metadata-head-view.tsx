@@ -16,6 +16,7 @@ export class MetadataHeadView {
     const title = MetadataHeadView.resolveTitle(page, site);
     const description = MetadataHeadView.text(page.description) || MetadataHeadView.text(site.description);
     const canonical = MetadataHeadView.text((page.alternates as { canonical?: unknown } | null)?.canonical);
+    const languages = MetadataHeadView.record((page.alternates as { languages?: unknown } | null)?.languages) ?? {};
     const robots = MetadataHeadView.robots(page.robots);
     const og = MetadataHeadView.record(page.openGraph) ?? MetadataHeadView.record(site.openGraph);
     const twitter = MetadataHeadView.record(page.twitter) ?? MetadataHeadView.record(site.twitter);
@@ -26,6 +27,9 @@ export class MetadataHeadView {
         {title ? <title>{title}</title> : null}
         {description ? <meta name="description" content={description} /> : null}
         {canonical ? <link rel="canonical" href={canonical} /> : null}
+        {Object.entries(languages).map(([hrefLang, href]) => (
+          <link key={`alternate-${hrefLang}`} rel="alternate" hrefLang={hrefLang} href={MetadataHeadView.text(href)} />
+        ))}
         {robots ? <meta name="robots" content={robots} /> : null}
         {MetadataHeadView.openGraph(og, MetadataHeadView.text(site.openGraph && (site.openGraph as { siteName?: unknown }).siteName))}
         {MetadataHeadView.twitter(twitter)}
