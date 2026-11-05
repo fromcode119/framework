@@ -5,6 +5,7 @@ import * as path from 'path';
 import { ProjectPaths } from '@core/config/paths';
 import { MediaOverlayStore } from '@core/media/media-overlay-store';
 import { MediaOverlayContext } from '@core/plugin/context/media-overlay';
+import { SiteBaseUrl } from '@core/tenant/site-base-url';
 
 const SPEC = { overlayMediaId: '7', position: 'bottom-right', opacityPercent: 40, sizePercent: 20, marginPercent: 3 };
 
@@ -63,5 +64,27 @@ describe('MediaOverlayStore', () => {
   it('clamps the numbers and requires a media id', () => {
     expect(MediaOverlayContext.normalize({ ...SPEC, opacityPercent: 140, sizePercent: 0, marginPercent: -2 })).toMatchObject({ opacityPercent: 100, sizePercent: 1, marginPercent: 0 });
     expect(() => MediaOverlayContext.normalize({ ...SPEC, overlayMediaId: '' })).toThrow();
+  });
+
+  it('keeps a day to start from, and drops one that is not a date', () => {
+    expect(MediaOverlayContext.normalize({ ...SPEC, uploadedFrom: '2026-11-05' }).uploadedFrom).toBe('2026-11-05');
+    expect(MediaOverlayContext.normalize({ ...SPEC, uploadedFrom: 'soon' })).not.toHaveProperty('uploadedFrom');
+    expect(MediaOverlayStore.hash(SPEC)).not.toBe(MediaOverlayStore.hash({ ...SPEC, uploadedFrom: '2026-11-05' }));
+  });
+
+  it('marks only images uploaded on or after the stated day', async () => {
+    vi.spyOn(SiteBaseUrl, 'apiUrlForCurrentSite').mockImplementation(async (p: string) => `https://shop.test${p}`);
+    const media = [
+      { id: 1, visibility: 'public', mime_type: 'image/jpeg', created_at: '2026-11-04T23:59:59Z' },
+      { id: 2, visibility: 'public', mime_type: 'image/jpeg', created_at: '2026-11-05T00:00:00Z' },
+      { id: 3, visibility: 'public', mime_type: 'image/png', created_at: new Date('2026-12-01T10:00:00Z') },
+    ];
+    const meta = new MemoryMeta();
+    const db = Object.assign(meta, { find: async () => media });
+    const context = new MediaOverlayContext({ db } as never, 'shop');
+    const all = await context.urls([1, 2, 3], SPEC);
+    expect([...all.keys()]).toEqual(['1', '2', '3']);
+    const recent = await context.urls([1, 2, 3], { ...SPEC, uploadedFrom: '2026-11-05' });
+    expect([...recent.keys()]).toEqual(['2', '3']);
   });
 });
