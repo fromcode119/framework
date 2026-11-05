@@ -29,7 +29,18 @@ export class WindowGlobalGuard {
     'core/src/process/spawner-client.ts': 5,
   };
 
-  private static readonly SKIP = new Set(['tests', '__tests__', 'ui', 'ui-ssr', 'migrations']);
+  /**
+   * Tests and migrations only. `ui` and `ui-ssr` used to be skipped too, which by name left out every
+   * plugin's browser code — the one place a page global is actually written.
+   */
+  static readonly SKIP_DIRS: ReadonlySet<string> = new Set(['tests', '__tests__', 'migrations']);
+
+  /** The text of each string literal on a line, blanked: `'…window.x = 1…'` is markup, not a write. */
+  private static readonly LITERAL = /(['"`])(?:\\.|(?!\1)[^\\])*\1/g;
+
+  static code(line: string): string {
+    return line.replace(WindowGlobalGuard.LITERAL, (literal) => `${literal[0]}${' '.repeat(literal.length - 2)}${literal[0]}`);
+  }
 
   /** `const w = window as …` / `const target = globalThis` — a write through the alias is a write to the global. */
   private static readonly ALIAS = /\b(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*(?::[^=]+)?=\s*\(*\s*(?:window|globalThis)\b(?!\s*\.)/g;
@@ -46,8 +57,9 @@ export class WindowGlobalGuard {
       patterns.push(new RegExp(`\\(*\\b(?:${names})\\b\\)*\\s*(?:\\??\\.\\s*[A-Za-z_$][\\w$]*|(?:\\?\\.)?\\[[^\\]]+\\])\\s*(?:\\|\\|=|\\?\\?=|=(?![=>]))`, 'g'));
     }
     const hits: string[] = [];
-    lines.forEach((line, index) => {
-      if (/^\s*(\*|\/\/|\/\*)/.test(line)) return;
+    lines.forEach((raw, index) => {
+      if (/^\s*(\*|\/\/|\/\*)/.test(raw)) return;
+      const line = WindowGlobalGuard.code(raw);
       for (const pattern of patterns) {
         pattern.lastIndex = 0;
         for (const match of line.matchAll(pattern)) hits.push(`${index + 1}: ${match[0].trim().slice(0, 80)}`);
@@ -66,7 +78,7 @@ export class WindowGlobalGuard {
     const findings: string[] = [];
     let scanned = 0;
     for (const { area, dir } of SourceTree.areas()) {
-      const files = SourceTree.files(dir, (name) => /\.tsx?$/.test(name) && !/\.(test|spec)\.tsx?$/.test(name) && !name.endsWith('.d.ts') && !/\.setup\.tsx?$/.test(name), WindowGlobalGuard.SKIP);
+      const files = SourceTree.files(dir, (name) => /\.tsx?$/.test(name) && !/\.(test|spec)\.tsx?$/.test(name) && !name.endsWith('.d.ts') && !/\.setup\.tsx?$/.test(name), WindowGlobalGuard.SKIP_DIRS);
       for (const file of files) {
         scanned++;
         const hits = WindowGlobalGuard.violationsIn(file);
