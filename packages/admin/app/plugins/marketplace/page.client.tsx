@@ -20,6 +20,7 @@ import { state } from '@fromcode119/react-class-components';
 import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PluginConsentHost } from '@/components/plugins/view/plugin-consent-host.client';
+import { MarketplacePluginCopy } from '@/app/plugins/marketplace/marketplace-plugin-copy';
 
 export class MarketplacePage extends AdminComponent implements IPluginBatchSettleHost {
   private mounted = false;
@@ -194,10 +195,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
 
   private get filtered(): IPluginEntry[] {
     const { plugins, searchQuery } = this;
-    return plugins.filter(p =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    return plugins.filter((p) => MarketplacePluginCopy.matches(p, this.installedPlugins.find((i) => (i.manifest?.slug || i.slug) === p.slug), searchQuery));
   }
 
   render(): ReactElement {
