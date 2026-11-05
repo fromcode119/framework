@@ -75,7 +75,7 @@ export class AuthControllerAnonymous extends AuthControllerSso {
     const existing = await this.db.findOne(SystemConstants.TABLE.USERS, { email });
     if (existing) return this.mergeByPassword(req, res, userId, existing, password);
     const passwordError = await this.validatePasswordAgainstPolicy(password, { userId, email });
-    if (passwordError) return res.status(400).json({ error: passwordError });
+    if (passwordError) return res.status(400).json(passwordError.body());
 
     const hashed = await this.auth.hashPassword(password);
     await this.db.update(SystemConstants.TABLE.USERS, { id: userId }, { email, password: hashed, firstName, updatedAt: new Date() });

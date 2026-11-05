@@ -21,7 +21,6 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
     const { firstName, email, password, confirmPassword } = this.state;
     if (!firstName.trim()) return this.tr('auth.register.firstNameRequired', 'Please enter your first name.');
     if (!/\S+@\S+\.\S+/.test(email.trim())) return this.tr('auth.register.invalidEmail', 'Please enter a valid email address.');
-    if (!password || password.length < 8) return this.tr('auth.register.passwordMin', 'Password must be at least 8 characters.');
     if (password !== confirmPassword) return this.tr('auth.register.mismatch', 'The passwords do not match.');
     return '';
   }
@@ -41,7 +40,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
         { silent: true, noDedupe: true },
       );
       if (data && data.success === false) {
-        throw new Error(data?.message || this.tr('auth.register.failed', 'Registration failed. Please try again.'));
+        throw { data };
       }
       if (data?.requiresEmailVerification) {
         this.setState({ verificationPending: true });
@@ -95,7 +94,7 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
           {this.renderField(this.tr('auth.register.firstName', 'First name'), 'text', firstName, (v) => this.setState({ firstName: v }), { autoComplete: 'given-name', name: 'firstName' })}
           {this.renderField(this.tr('auth.register.lastName', 'Last name'), 'text', lastName, (v) => this.setState({ lastName: v }), { autoComplete: 'family-name', name: 'lastName' })}
           {this.renderField(this.tr('auth.email', 'Email'), 'email', email, (v) => this.setState({ email: v }), { autoComplete: 'email', name: 'email', placeholder: this.tr('auth.emailPlaceholder', 'you@example.com') })}
-          {this.renderField(this.tr('auth.password', 'Password'), 'password', password, (v) => this.setState({ password: v }), { autoComplete: 'new-password', name: 'password', placeholder: this.tr('auth.register.passwordHint', 'At least 8 characters') })}
+          {this.renderField(this.tr('auth.password', 'Password'), 'password', password, (v) => this.setState({ password: v }), { autoComplete: 'new-password', name: 'password' })}
           {this.renderField(this.tr('auth.register.confirmPassword', 'Confirm password'), 'password', confirmPassword, (v) => this.setState({ confirmPassword: v }), { autoComplete: 'new-password', name: 'confirmPassword' })}
           <button type="submit" disabled={loading} className="fc-auth__button">
             {loading ? this.tr('auth.register.submitting', 'Creating account…') : this.tr('auth.register.submit', 'Create account')}

@@ -44,7 +44,7 @@ export class AuthControllerSetup extends AuthControllerSignInLink {
       email: normalizedEmail
     });
     if (passwordError) {
-      return res.status(400).json({ error: passwordError });
+      return res.status(400).json(passwordError.body());
     }
 
     const hashedPassword = await this.auth.hashPassword(String(password));

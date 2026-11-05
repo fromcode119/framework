@@ -27,8 +27,19 @@ describe('the framework auth shell copy', () => {
 
   it('every key the forms read is in the copy', () => {
     const dir = join(__dirname, '..', '..', 'react', 'src', 'auth');
-    const used = ['auth-login-form.tsx', 'auth-register-form.tsx', 'auth-forgot-form.tsx', 'auth-reset-form.tsx', 'auth-shell-implementation.tsx', 'auth-social-sign-in.tsx']
+    const used = ['auth-login-form.tsx', 'auth-register-form.tsx', 'auth-forgot-form.tsx', 'auth-reset-form.tsx', 'auth-verify-form.tsx', 'auth-shell-implementation.tsx', 'auth-social-sign-in.tsx']
       .flatMap((file) => [...readFileSync(join(dir, file), 'utf8').matchAll(/this\.tr\('([^']+)'/g)].map((match) => match[1]));
     for (const key of used) expect(FrameworkTranslations.in('bg', key), key).not.toBe(key);
+  });
+
+  it('every refusal code the api sends has words in every language, never the server English', () => {
+    const source = readFileSync(join(__dirname, '..', '..', 'api', 'src', 'controllers', 'auth', 'enums', 'auth-error-code.enum.ts'), 'utf8');
+    const codes = [...source.matchAll(/new AuthErrorCode\('([^']+)'\)/g)].map((match) => match[1]);
+    expect(codes.length).toBeGreaterThan(20);
+    for (const code of codes) {
+      expect(FrameworkTranslations.in('bg', `auth.errors.${code}`), code).not.toBe(`auth.errors.${code}`);
+      expect(FrameworkTranslations.in('en', `auth.errors.${code}`), code).not.toBe(`auth.errors.${code}`);
+    }
+    expect(FrameworkTranslations.in('bg', 'auth.errors.passwordTooShort', { min: 10 })).toBe('Паролата трябва да е поне 10 символа.');
   });
 });

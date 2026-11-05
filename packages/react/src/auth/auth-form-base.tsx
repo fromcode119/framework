@@ -38,15 +38,18 @@ export abstract class AuthFormBase<P = Record<string, unknown>, S = Record<strin
     return this.t(key, params, fallback);
   }
 
-  /** Best-effort human-readable message from a thrown api-client error. */
+  /**
+   * The visitor-facing reason a request was refused, in the page's language. The server sends a `code`
+   * (`AuthErrorCode`) next to its English `error`; the code is translated as `auth.errors.<code>`. A refusal
+   * without a known code shows the form's own translated `fallback` — never the server's English text.
+   */
   protected errorMessage(error: any, fallback: string): string {
-    return String(
-      error?.response?.data?.error
-        || error?.data?.error
-        || error?.body?.error
-        || error?.message
-        || fallback,
-    );
+    const body = error?.response?.data || error?.data || error?.body || error?.payload || {};
+    const code = String(body?.code || '').trim();
+    if (!code) return fallback;
+    const key = `auth.errors.${code}`;
+    const translated = this.tr(key, '', body?.params);
+    return translated && translated !== key ? translated : fallback;
   }
 
   /**

@@ -7,7 +7,8 @@ import { describe, expect, it } from 'vitest';
  * inert text and the page renders as bare HTML. Their design is the framework's `fc-auth__*` classes
  * in app/auth.css — the same ones the AuthShell forms use and themes rebrand.
  */
-const PAGES = ['register', 'forgot-password', 'reset-password', 'verify-email', 'verify-email-change'];
+// Sign-in, registration, password and email confirmation are the framework's AuthShell forms (react).
+const PAGES = ['verify-email-change'];
 const UTILITY = /\b(?:min-h-screen|mx-auto|max-w-\w+|px-\d|py-\d|mt-\d|space-y-\d|rounded-(?:lg|xl|2xl)|bg-(?:slate|indigo|emerald|rose)-\d+|text-(?:slate|indigo|emerald|rose)-\d+|border-(?:slate|emerald|rose)-\d+|grid-cols-\d|inline-flex)\b/;
 
 describe('the default auth pages use the framework auth styles', () => {

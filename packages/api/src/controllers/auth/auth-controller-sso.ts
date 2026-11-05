@@ -2,6 +2,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TokenErrorReason } from '@api/controllers/auth/enums/token-error-reason.enum';
 import { Request, Response } from 'express';
+import { AuthErrorCode } from '@api/controllers/auth/enums/auth-error-code.enum';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { randomBytes } from 'crypto';
 import { AuthControllerRegistration } from '@api/controllers/auth/auth-controller-registration';
@@ -51,7 +52,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
       toContextString(req.get('x-framework-client'));
     const contextHint = this.normalizeResetContextHint(rawContextHint);
     if (!email || !this.isValidEmail(email)) {
-      return res.status(400).json({ error: 'A valid email is required' });
+      return res.status(400).json({ error: 'A valid email is required', code: AuthErrorCode.EMAIL_REQUIRED.value });
     }
 
     const genericMessage = 'If an account exists, a password reset link has been sent.';
@@ -134,7 +135,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
       return res.json({ success: true, emailSent, email: targetEmail });
     } catch (error) {
       this.logger.error(`[AuthController] adminSendPasswordReset failed: ${error}`);
-      return res.status(500).json({ error: 'Failed to send password reset email' });
+      return res.status(500).json({ error: 'Failed to send password reset email', code: AuthErrorCode.EMAIL_SEND_FAILED.value });
     }
   }
 
@@ -145,7 +146,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     const token = CoercionUtils.toString(req.body?.token);
     const newPassword = CoercionUtils.toString(req.body?.newPassword) || CoercionUtils.toString(req.body?.password);
     if (!token || !newPassword) {
-      return res.status(400).json({ error: 'Token and new password are required' });
+      return res.status(400).json({ error: 'Token and new password are required', code: AuthErrorCode.CREDENTIALS_REQUIRED.value });
     }
 
     const tokenResult = await this.consumePasswordResetToken(token);
@@ -153,7 +154,8 @@ export class AuthControllerSso extends AuthControllerRegistration {
       return res.status(400).json({
         error: tokenResult.reason === TokenErrorReason.EXPIRED
           ? 'Password reset link has expired. Please request a new one.'
-          : 'Invalid password reset token'
+          : 'Invalid password reset token',
+        code: (tokenResult.reason === TokenErrorReason.EXPIRED ? AuthErrorCode.TOKEN_EXPIRED : AuthErrorCode.TOKEN_INVALID).value
       });
     }
 
@@ -168,7 +170,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
       currentPasswordHash: String(user.password || '')
     });
     if (passwordError) {
-      return res.status(400).json({ error: passwordError });
+      return res.status(400).json(passwordError.body());
     }
 
     const hashed = await this.auth.hashPassword(newPassword);

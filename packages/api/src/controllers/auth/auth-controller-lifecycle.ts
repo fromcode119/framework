@@ -2,6 +2,7 @@ import { WorkspaceAccessDeniedError } from '@api/services/request/workspace-acce
 import { AccountStatus } from '@api/controllers/auth/enums/account-status.enum';
 import { TwoFactorMethod } from '@fromcode119/core';
 import { Request, Response } from 'express';
+import { AuthErrorCode } from '@api/controllers/auth/enums/auth-error-code.enum';
 import { SecretService } from '@fromcode119/core';
 import { NetworkAddressUtils, SystemConstants } from '@fromcode119/core';
 import { AuthControllerSetup } from '@api/controllers/auth/auth-controller-setup';
@@ -38,19 +39,19 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
 
     try {
       if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password required' });
+        return res.status(400).json({ error: 'Email and password required', code: AuthErrorCode.CREDENTIALS_REQUIRED.value });
       }
 
       if (this.isLoginLocked(throttleState) || this.isLoginLocked(addressState)) {
         return res.status(429).json({
-          error: 'Too many failed login attempts. Please try again later.',
+          error: 'Too many failed login attempts. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value,
           lockedUntil: (this.isLoginLocked(throttleState) ? throttleState : addressState).lockedUntil || null
         });
       }
 
       if (this.requiresCaptcha(throttleState, throttleSettings) && !String(captchaToken || '').trim()) {
         return res.status(400).json({
-          error: 'Captcha verification is required for this login attempt.',
+          error: 'Captcha verification is required for this login attempt.', code: AuthErrorCode.CAPTCHA_REQUIRED.value,
           requiresCaptcha: true
         });
       }
@@ -64,13 +65,13 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
           });
           if (captchaResult && captchaResult.valid === false) {
             return res.status(400).json({
-              error: captchaResult.message || 'Captcha verification failed.',
+              error: captchaResult.message || 'Captcha verification failed.', code: AuthErrorCode.CAPTCHA_FAILED.value,
               requiresCaptcha: true
             });
           }
         } catch (captchaError: any) {
           return res.status(400).json({
-            error: captchaError?.message || 'Captcha verification failed.',
+            error: captchaError?.message || 'Captcha verification failed.', code: AuthErrorCode.CAPTCHA_FAILED.value,
             requiresCaptcha: true
           });
         }
@@ -88,7 +89,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
             ip: NetworkAddressUtils.resolveClientIp(req)
           }).catch(() => {});
           return res.status(403).json({
-            error: 'Account is suspended. Please contact support.'
+            error: 'Account is suspended. Please contact support.', code: AuthErrorCode.ACCOUNT_SUSPENDED.value
           });
         }
 
@@ -101,7 +102,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
             'system',
             { email, ip: NetworkAddressUtils.resolveClientIp(req) }
           ).catch(() => {});
-          return res.status(401).json({ error: 'Invalid email or password' });
+          return res.status(401).json({ error: 'Invalid email or password', code: AuthErrorCode.INVALID_CREDENTIALS.value });
         }
         // An account imported from another platform still carries that platform's hash. It just
         // verified, so replace it with ours now; a failed upgrade must not fail the sign-in.
@@ -114,7 +115,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         if (requiresEmailVerification) {
           await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           return res.status(403).json({
-            error: 'Email not verified',
+            error: 'Email not verified', code: AuthErrorCode.EMAIL_NOT_VERIFIED.value,
             requiresEmailVerification: true,
             message: 'Please verify your email before signing in.'
           });
@@ -124,7 +125,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         if (forceReset) {
           await this.recordLoginFailure(throttleKey, throttleSettings, addressKey);
           return res.status(403).json({
-            error: 'Password reset required before login.',
+            error: 'Password reset required before login.', code: AuthErrorCode.PASSWORD_RESET_REQUIRED.value,
             requiresPasswordReset: true
           });
         }
@@ -170,7 +171,7 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
               'system',
               { userId: user.id, ip: NetworkAddressUtils.resolveClientIp(req) }
             ).catch(() => {});
-            return res.status(401).json({ error: 'Invalid 2FA token or recovery code' });
+            return res.status(401).json({ error: 'Invalid 2FA token or recovery code', code: AuthErrorCode.INVALID_TWO_FACTOR.value });
           }
 
           await this.manager.writeLog(
@@ -224,13 +225,13 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
         'system',
         { email, ip: NetworkAddressUtils.resolveClientIp(req) }
       ).catch(() => {});
-      return res.status(401).json({ error: 'Invalid email or password' });
+      return res.status(401).json({ error: 'Invalid email or password', code: AuthErrorCode.INVALID_CREDENTIALS.value });
     } catch (err: any) {
       if (err instanceof WorkspaceAccessDeniedError) {
         return res.status(403).json({ error: WorkspaceAccessDeniedError.CODE, message: err.message });
       }
       this.logger.error(`[AuthController] Login exception for ${email}: ${err}`);
-      return res.status(500).json({ error: 'Internal server error during login' });
+      return res.status(500).json({ error: 'Internal server error during login', code: AuthErrorCode.SERVER_ERROR.value });
     }
   }
 

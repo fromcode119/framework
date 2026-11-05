@@ -1,5 +1,7 @@
 import { AuthControllerAccountState } from '@api/controllers/auth/auth-controller-account-state';
 import { NetworkAddressUtils, PlatformSettingsService, SystemConstants, TenantMembershipService, TenantMode } from '@fromcode119/core';
+import { AuthErrorCode } from '@api/controllers/auth/enums/auth-error-code.enum';
+import { PasswordPolicyViolation } from '@api/controllers/auth/password-policy-violation';
 import type { IPasswordPolicySettings } from '@api/controllers/auth/interfaces/password-policy-settings.interface';
 
 /**
@@ -49,34 +51,34 @@ export class AuthControllerSettings extends AuthControllerAccountState {
   protected async validatePasswordAgainstPolicy(
     password: string,
     options: { userId?: number; email?: string; currentPasswordHash?: string } = {}
-  ): Promise<string | null> {
+  ): Promise<PasswordPolicyViolation | null> {
     const value = String(password || '');
     const policy = await this.getPasswordPolicySettings();
 
     if (value.length < policy.minLength) {
-      return `Password must be at least ${policy.minLength} characters.`;
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_TOO_SHORT, `Password must be at least ${policy.minLength} characters.`, { min: policy.minLength });
     }
     if (policy.requireUppercase && !/[A-Z]/.test(value)) {
-      return 'Password must include at least one uppercase letter.';
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_NEEDS_UPPERCASE, 'Password must include at least one uppercase letter.');
     }
     if (policy.requireLowercase && !/[a-z]/.test(value)) {
-      return 'Password must include at least one lowercase letter.';
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_NEEDS_LOWERCASE, 'Password must include at least one lowercase letter.');
     }
     if (policy.requireNumber && !/[0-9]/.test(value)) {
-      return 'Password must include at least one number.';
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_NEEDS_NUMBER, 'Password must include at least one number.');
     }
     if (policy.requireSymbol && !/[^A-Za-z0-9]/.test(value)) {
-      return 'Password must include at least one symbol.';
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_NEEDS_SYMBOL, 'Password must include at least one symbol.');
     }
 
     const normalizedEmail = this.normalizeEmail(options.email || '');
     if (normalizedEmail && value.toLowerCase().includes(normalizedEmail.split('@')[0])) {
-      return 'Password must not include your email username.';
+      return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_CONTAINS_EMAIL, 'Password must not include your email username.');
     }
 
     if (options.currentPasswordHash) {
       const matchesCurrent = await this.auth.comparePassword(value, options.currentPasswordHash);
-      if (matchesCurrent) return 'New password must be different from your current password.';
+      if (matchesCurrent) return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_SAME_AS_CURRENT, 'New password must be different from your current password.');
     }
 
     if (options.userId && policy.historyCount > 0) {
@@ -84,7 +86,7 @@ export class AuthControllerSettings extends AuthControllerAccountState {
       const recent = history.slice(0, policy.historyCount);
       for (const hash of recent) {
         const matches = await this.auth.comparePassword(value, hash);
-        if (matches) return `Password must not match your last ${policy.historyCount} password(s).`;
+        if (matches) return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_RECENTLY_USED, `Password must not match your last ${policy.historyCount} password(s).`, { count: policy.historyCount });
       }
     }
 
@@ -95,7 +97,7 @@ export class AuthControllerSettings extends AuthControllerAccountState {
           email: normalizedEmail || undefined
         });
         if (breachResult?.compromised === true) {
-          return 'This password appears in known data breaches. Choose a different password.';
+          return new PasswordPolicyViolation(AuthErrorCode.PASSWORD_BREACHED, 'This password appears in known data breaches. Choose a different password.');
         }
       } catch {
         // Ignore optional breach check provider failures.

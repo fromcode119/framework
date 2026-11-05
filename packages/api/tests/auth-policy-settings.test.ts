@@ -68,8 +68,8 @@ class PolicyProbe extends AuthControllerPolicy {
     return this.getSettingBoolean(key, fallback);
   }
 
-  checkPassword(password: string) {
-    return this.validatePasswordAgainstPolicy(password);
+  async checkPassword(password: string) {
+    return (await this.validatePasswordAgainstPolicy(password))?.message ?? null;
   }
 }
 

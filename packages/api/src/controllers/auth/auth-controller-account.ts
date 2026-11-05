@@ -203,7 +203,7 @@ export class AuthControllerAccount extends AuthControllerSession {
       currentPasswordHash: String(user.password || '')
     });
     if (passwordError) {
-      return res.status(400).json({ error: passwordError });
+      return res.status(400).json(passwordError.body());
     }
 
     const hashed = await this.auth.hashPassword(String(newPassword));
