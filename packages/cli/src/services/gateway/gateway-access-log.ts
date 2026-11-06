@@ -1,4 +1,5 @@
 import http from 'http';
+import { Duplex } from 'stream';
 import { Logger } from '@fromcode119/core';
 
 /**
@@ -15,6 +16,7 @@ import { Logger } from '@fromcode119/core';
  */
 export class GatewayAccessLog {
   private static readonly logger = new Logger({ namespace: 'gateway:http' });
+  private readonly upgradeStatus = new WeakMap<http.IncomingMessage, number | 'refused'>();
 
   constructor(
     private readonly upstreamOf: (req: http.IncomingMessage) => string | undefined,
@@ -38,6 +40,37 @@ export class GatewayAccessLog {
       if (!finished || res.statusCode >= 500) GatewayAccessLog.logger.warn(line);
       else GatewayAccessLog.logger.info(line);
     });
+  }
+
+  /**
+   * A WebSocket upgrade, logged ONCE when its socket closes — the line's duration is how long the connection
+   * lived, and `ws` marks it. Its status is what the upstream answered (`101` when it accepted, another code
+   * when it declined), `refused` when the gateway closed it itself (unknown host, edge protection), and
+   * `failed` when it never got an answer (upstream unreachable, client gone first).
+   */
+  trackUpgrade(req: http.IncomingMessage, socket: Duplex): void {
+    const url = req.url || '/';
+    if (this.skip(url)) return;
+    const start = process.hrtime.bigint();
+    const host = String(req.headers['x-forwarded-host'] || req.headers.host || '-').split(',')[0].trim();
+    const path = url.split('?')[0];
+    socket.once('close', () => {
+      const ms = Number((process.hrtime.bigint() - start) / 1_000_000n);
+      const status = this.upgradeStatus.get(req) ?? 'failed';
+      const line = `${host} ${req.method} ${path} ws ${status} ${ms}ms upstream=${GatewayAccessLog.serviceName(this.upstreamOf(req))}`;
+      if (status === 'failed' || (status !== 'refused' && status >= 500)) GatewayAccessLog.logger.warn(line);
+      else GatewayAccessLog.logger.info(line);
+    });
+  }
+
+  /** What the upstream answered an upgrade with — from the proxy's `proxyReqWs` request. */
+  upgradeAnswered(req: http.IncomingMessage, statusCode: number): void {
+    this.upgradeStatus.set(req, statusCode);
+  }
+
+  /** The gateway closed the upgrade itself, before any upstream saw it. */
+  upgradeRefused(req: http.IncomingMessage): void {
+    this.upgradeStatus.set(req, 'refused');
   }
 
   /** `http://frontend:3000` → `frontend`; nothing forwarded → `gateway`. */

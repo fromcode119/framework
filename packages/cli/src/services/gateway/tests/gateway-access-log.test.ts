@@ -96,4 +96,63 @@ describe('GatewayAccessLog — the gateway access log', () => {
     await server.waitForLines(1);
     expect(server.lines[0]).toEqual({ level: 'info', line: expect.stringMatching(/^console\.example GET \/dashboard 200 \d+ms upstream=admin$/) });
   });
+
+  describe('WebSocket upgrades', () => {
+    /** A server whose upgrades go through the log; `decide` plays the gateway's part for each one. */
+    const upgradeServer = (decide: (log: GatewayAccessLog, req: http.IncomingMessage, socket: net.Socket) => void) => {
+      const lines: Array<{ level: string; line: string }> = [];
+      const spies = [
+        vi.spyOn(Logger.prototype, 'info').mockImplementation((line: string) => { lines.push({ level: 'info', line }); }),
+        vi.spyOn(Logger.prototype, 'warn').mockImplementation((line: string) => { lines.push({ level: 'warn', line }); }),
+      ];
+      const log = new GatewayAccessLog(() => 'http://admin:3001', () => false);
+      const httpServer = http.createServer();
+      httpServer.on('upgrade', (req, socket: net.Socket) => { log.trackUpgrade(req, socket); decide(log, req, socket); });
+      const port = new Promise<number>((resolve) => httpServer.listen(0, '127.0.0.1', () => resolve((httpServer.address() as net.AddressInfo).port)));
+      const stop = async () => { spies.forEach((spy) => spy.mockRestore()); await new Promise((r) => httpServer.close(() => r(null))); };
+      return { lines, port, stop };
+    };
+    const upgradeRequest = (port: number) => new Promise<void>((resolve) => {
+      const socket = net.connect({ port, host: '127.0.0.1' }, () => socket.write(
+        'GET /_next/webpack-hmr?token=abc HTTP/1.1\r\nHost: console.example\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n'));
+      socket.on('data', () => socket.end());
+      socket.on('close', () => resolve());
+      socket.on('error', () => resolve());
+    });
+    const waitFor = async (lines: unknown[]) => { for (let i = 0; i < 100 && !lines.length; i++) await new Promise((r) => setTimeout(r, 10)); };
+
+    it('logs an accepted upgrade once, on close, as ws 101 with its lifetime and upstream — never the query', async () => {
+      const server = upgradeServer((log, req, socket) => {
+        log.upgradeAnswered(req, 101);
+        socket.on('end', () => socket.end()); // a peer closes its side when the client does
+        socket.write('HTTP/1.1 101 Switching Protocols\r\nUpgrade: websocket\r\nConnection: Upgrade\r\n\r\n');
+      });
+      await upgradeRequest(await server.port);
+      await waitFor(server.lines);
+      await server.stop();
+      expect(server.lines).toEqual([{ level: 'info', line: expect.stringMatching(/^console\.example GET \/_next\/webpack-hmr ws 101 \d+ms upstream=admin$/) }]);
+    });
+
+    it('logs an upgrade the gateway closed itself as refused', async () => {
+      const server = upgradeServer((log, req, socket) => { log.upgradeRefused(req); socket.destroy(); });
+      await upgradeRequest(await server.port);
+      await waitFor(server.lines);
+      await server.stop();
+      expect(server.lines).toEqual([{ level: 'info', line: expect.stringContaining(' ws refused ') }]);
+    });
+
+    it('logs an upstream that declined with a server error at warn, and one that never answered as failed', async () => {
+      const declined = upgradeServer((log, req, socket) => { log.upgradeAnswered(req, 503); socket.end('HTTP/1.1 503 Service Unavailable\r\n\r\n'); });
+      await upgradeRequest(await declined.port);
+      await waitFor(declined.lines);
+      await declined.stop();
+      expect(declined.lines).toEqual([{ level: 'warn', line: expect.stringContaining(' ws 503 ') }]);
+
+      const silent = upgradeServer((_log, _req, socket) => { socket.destroy(); });
+      await upgradeRequest(await silent.port);
+      await waitFor(silent.lines);
+      await silent.stop();
+      expect(silent.lines).toEqual([{ level: 'warn', line: expect.stringContaining(' ws failed ') }]);
+    });
+  });
 });

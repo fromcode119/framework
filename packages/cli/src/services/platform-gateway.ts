@@ -59,7 +59,10 @@ export class PlatformGateway {
   private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
   private readonly mountOf = new WeakMap<http.IncomingMessage, string>(); // a console on a site path
   // Health and the reload push are internal calls a watchdog makes every few seconds — not traffic.
-  private readonly accessLog = new GatewayAccessLog((req) => this.targetOf.get(req),
+  // Kept apart from `targetOf`: that one also arms the retry in the proxy error handler, which re-sends an HTTP
+  // request and must never be handed an upgrade's socket.
+  private readonly upgradeTargetOf = new WeakMap<http.IncomingMessage, string>();
+  private readonly accessLog = new GatewayAccessLog((req) => this.targetOf.get(req) ?? this.upgradeTargetOf.get(req),
     (url) => url === PlatformGateway.HEALTH_PATH || url === PlatformGateway.RELOAD_PATH);
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
@@ -108,6 +111,11 @@ export class PlatformGateway {
       if (mount && proxyRes.headers.location) proxyRes.headers.location = GatewayConsoleMount.rewriteLocation(proxyRes.headers.location, mount, PlatformGateway.hostOf(req));
       GatewayHttp2Adapter.toHttp2(proxyRes, req);
     });
+    // What the upstream answered a WebSocket upgrade with, for the access log: 101, or the code it declined with.
+    this.proxy.on('proxyReqWs', (proxyReq, req) => {
+      proxyReq.once('upgrade', () => this.accessLog.upgradeAnswered(req, 101));
+      proxyReq.once('response', (upstream) => this.accessLog.upgradeAnswered(req, upstream.statusCode || 0));
+    });
     this.proxy.on('proxyReq', (proxyReq, req) => {
       const host = String(req.headers.host || '');
       if (host && !proxyReq.getHeader('x-forwarded-host')) proxyReq.setHeader('x-forwarded-host', host);
@@ -154,8 +162,10 @@ export class PlatformGateway {
   }
 
   private upgrade(req: http.IncomingMessage, socket: Duplex, head: Buffer): void {
+    this.accessLog.trackUpgrade(req, socket);
     void this.targetFor(req).then(async (target) => {
-      if (!target || !(await this.edge.allowsUpgrade(req))) { socket.destroy(); return; }
+      if (!target || !(await this.edge.allowsUpgrade(req))) { this.accessLog.upgradeRefused(req); socket.destroy(); return; }
+      this.upgradeTargetOf.set(req, target);
       this.proxy.ws(req, socket, head, { target });
     });
   }
