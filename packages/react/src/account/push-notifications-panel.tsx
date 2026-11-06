@@ -18,6 +18,7 @@ export class AccountPushNotificationsPanel extends PluginComponent {
     key: 'notifications',
     labelKey: 'account.section.notifications',
     priority: 65,
+    group: 'profile',
     descriptionKey: 'account.description.notifications',
   };
 

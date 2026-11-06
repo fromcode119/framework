@@ -18,7 +18,7 @@ export class AccountTwoFactorPanel extends PluginComponent {
   @state token: string = '';
   @state message: string = '';
   @state isError: boolean = false;
-  static readonly accountSection = { key: 'two-factor', labelKey: 'account.section.two-factor', priority: 70, descriptionKey: 'account.description.two-factor' };
+  static readonly accountSection = { key: 'two-factor', labelKey: 'account.section.two-factor', priority: 70, mergeInto: 'security', descriptionKey: 'account.description.two-factor' };
 
   private mounted = false;
   

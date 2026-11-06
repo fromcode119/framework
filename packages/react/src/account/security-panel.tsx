@@ -15,7 +15,7 @@ export class AccountSecurityPanel extends PluginComponent {
   @state saving: boolean = false;
   @state message: string = '';
   @state isError: boolean = false;
-  static readonly accountSection = { key: 'security', labelKey: 'account.section.security', priority: 60, descriptionKey: 'account.description.security' };
+  static readonly accountSection = { key: 'security', labelKey: 'account.section.security', priority: 60, group: 'profile', descriptionKey: 'account.description.security' };
 
   private mounted = false;
   

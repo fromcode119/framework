@@ -52,6 +52,7 @@ export class AccountSectionRegistry {
 
   static build(panels: ISlotComponent[]): AccountSection[] {
     const byKey = new Map<string, AccountSection>();
+    const merged: Array<{ into: string; alias: string; item: ISlotComponent; priority: number; icon?: ReactNode }> = [];
     panels.forEach((item, index) => {
       const entry = item as ISlotComponent | null;
       const meta = ((entry?.component as { accountSection?: Record<string, unknown> } | undefined)?.accountSection) || {};
@@ -60,10 +61,48 @@ export class AccountSectionRegistry {
       const priority = typeof meta.priority === 'number' ? meta.priority : 100;
       const icon = meta.icon as ReactNode | undefined;
       const descriptionKey = meta.descriptionKey ? String(meta.descriptionKey) : undefined;
+      const group = meta.group ? String(meta.group).toLowerCase() : undefined;
+      const groupLabelKey = meta.groupLabelKey ? String(meta.groupLabelKey) : undefined;
+      const into = meta.mergeInto ? String(meta.mergeInto).toLowerCase() : '';
+      if (into && into !== key) {
+        merged.push({ into, alias: key, item, priority, icon });
+        return;
+      }
       const existing = byKey.get(key);
-      if (existing) existing.absorb(item, priority, icon);
-      else byKey.set(key, AccountSection.from(key, labelKey, priority, item, icon, descriptionKey));
+      if (existing) {
+        existing.absorb(item, priority, icon);
+        existing.assignGroup(group, groupLabelKey);
+      } else byKey.set(key, AccountSection.from(key, labelKey, priority, item, icon, descriptionKey, group, groupLabelKey));
+    });
+    // Folded after every section exists, so a merge does not depend on registration order. A merge
+    // whose target is not installed keeps the panel reachable as a section of its own.
+    merged.forEach(({ into, alias, item, priority, icon }) => {
+      const target = byKey.get(into);
+      if (target) {
+        target.items.push(item);
+        target.aliases.push(alias);
+      } else if (byKey.has(alias)) byKey.get(alias)!.absorb(item, priority, icon);
+      else byKey.set(alias, AccountSection.from(alias, alias, priority, item, icon));
     });
     return [...byKey.values()].sort((a, b) => a.priority - b.priority || a.key.localeCompare(b.key));
+  }
+
+  /** The section a URL key opens — by its own key or an alias merged into it. */
+  static resolve(sections: AccountSection[], key: string): AccountSection | undefined {
+    return sections.find((s) => s.answers(key));
+  }
+
+  /**
+   * The nav's grouping: ungrouped sections first, then each group in the order of its earliest
+   * section. Derived from the sections alone, so a replacement shell gets the same grouping.
+   */
+  static groups(sections: AccountSection[]): Array<{ key: string; labelKey: string; sections: AccountSection[] }> {
+    const out: Array<{ key: string; labelKey: string; sections: AccountSection[] }> = [];
+    sections.forEach((section) => {
+      const bucket = out.find((g) => g.key === section.group);
+      if (bucket) bucket.sections.push(section);
+      else out.push({ key: section.group, labelKey: section.groupLabelKey, sections: [section] });
+    });
+    return out.sort((a, b) => Number(Boolean(a.key)) - Number(Boolean(b.key)));
   }
 }

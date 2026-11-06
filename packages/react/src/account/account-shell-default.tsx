@@ -28,6 +28,7 @@ import { AccountClass } from '@react/account/account-class';
 export class AccountShellDefault extends Reactor {
   @prop declare page?: any;
   @state section: string = '';
+  @state query: string = '';
   static contextType = TranslationContext.Context;
   declare context: ContextType<typeof TranslationContext.Context>;
 
@@ -41,7 +42,7 @@ export class AccountShellDefault extends Reactor {
 
   constructor(props: { page?: any }) {
     super(props);
-    this.state = { section: AccountShellDefault.readSectionFromUrl() };
+    this.state = { section: AccountShellDefault.readSectionFromUrl(), query: '' };
   }
 
   /** The requested section — the same answer on the server and in the browser (`RenderLocationUtils`). */
@@ -113,6 +114,45 @@ export class AccountShellDefault extends Reactor {
     );
   }
 
+  /** Sections whose label or description contains the search words; every section when it is empty. */
+  private matches(section: { labelKey: string; descriptionKey: string }, translate: (k: string, p?: any, d?: string) => string): boolean {
+    const needle = this.query.trim().toLocaleLowerCase();
+    if (!needle) return true;
+    const label = translate(section.labelKey, undefined, section.labelKey);
+    const description = translate(section.descriptionKey, undefined, '');
+    return `${label} ${description}`.toLocaleLowerCase().includes(needle);
+  }
+
+  private renderNavGroups(sections: any[], activeKey: string, translate: (k: string, p?: any, d?: string) => string): ReactNode {
+    const groups = AccountSectionRegistry.groups(sections)
+      .map((group) => ({ ...group, sections: group.sections.filter((s) => this.matches(s, translate)) }))
+      .filter((group) => group.sections.length > 0);
+    if (groups.length === 0) {
+      return <p className={AccountClass.of('nav-empty')}>{translate('account.shell.searchEmpty', undefined, 'Nothing matches.')}</p>;
+    }
+    return groups.map((group) => (
+      <div key={group.key || 'ungrouped'} className={AccountClass.of('navgroup')}>
+        {group.key ? <span className={AccountClass.of('navgroup-label')}>{translate(group.labelKey, undefined, group.labelKey)}</span> : null}
+        {group.sections.map((section) => {
+          const isActive = section.key === activeKey;
+          const href = AccountRouteUtils.sectionPath(section.key);
+          return (
+            <a
+              key={section.key}
+              href={href}
+              onClick={(event) => this.handleNavClick(event, section.key, href)}
+              aria-current={isActive ? 'page' : undefined}
+              className={AccountClass.of('navlink', isActive && 'active')}
+            >
+              <span className={AccountClass.of('navicon')} aria-hidden="true">{AccountSectionIcons.for(section.key, section.icon)}</span>
+              <span className={AccountClass.of('navlabel')}>{translate(section.labelKey, undefined, section.labelKey)}</span>
+            </a>
+          );
+        })}
+      </div>
+    ));
+  }
+
   private renderShell(slots: Record<string, any[]>, t?: (k: string, p?: any, d?: string) => string): ReactNode {
     const translate = typeof t === 'function' ? t : (_k: string, _p?: any, d?: string) => d || _k;
     const sections = AccountSectionRegistry.buildAll(slots[this.SLOT_NAME]);
@@ -127,7 +167,7 @@ export class AccountShellDefault extends Reactor {
       );
     }
 
-    const active = sections.find((s) => s.key === this.section) || sections[0];
+    const active = AccountSectionRegistry.resolve(sections, this.section) || sections[0];
     const activeLabel = translate(active.labelKey, undefined, active.labelKey);
 
     return (
@@ -139,21 +179,17 @@ export class AccountShellDefault extends Reactor {
 
         <div className={AccountClass.of('body')}>
           <nav className={AccountClass.of('nav')} aria-label={translate('account.shell.nav', undefined, 'Account sections')}>
-            {sections.map((section) => {
-              const isActive = section.key === active.key;
-              return (
-                <a
-                  key={section.key}
-                  href={AccountRouteUtils.sectionPath(section.key)}
-                  onClick={(event) => this.handleNavClick(event, section.key, AccountRouteUtils.sectionPath(section.key))}
-                  aria-current={isActive ? 'page' : undefined}
-                  className={AccountClass.of('navlink', isActive && 'active')}
-                >
-                  <span className={AccountClass.of('navicon')} aria-hidden="true">{AccountSectionIcons.for(section.key, section.icon)}</span>
-                  <span className={AccountClass.of('navlabel')}>{translate(section.labelKey, undefined, section.labelKey)}</span>
-                </a>
-              );
-            })}
+            <label className={AccountClass.of('search')}>
+              <span className={AccountClass.of('sronly')}>{translate('account.shell.search', undefined, 'Search your account')}</span>
+              <input
+                type="search"
+                className={AccountClass.of('search-input')}
+                value={this.query}
+                placeholder={translate('account.shell.searchPlaceholder', undefined, 'Search your account')}
+                onChange={(event) => this.setState({ query: event.target.value })}
+              />
+            </label>
+            {this.renderNavGroups(sections, active.key, translate)}
           </nav>
 
           <main className={AccountClass.of('main')}>

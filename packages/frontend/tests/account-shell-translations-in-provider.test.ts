@@ -94,7 +94,7 @@ describe('account shell copy inside the provider', () => {
 
     expect(container.textContent).toContain(account.shell.title);
     expect(container.textContent).toContain(account.section.overview);
-    expect(container.textContent).toContain(account.section.emailPreferences);
+    expect(container.textContent).toContain(account.section.notifications);
     expect(container.textContent).toContain(account.emailPreferences.empty);
     expect(container.textContent).toContain(account.emailPreferences.transactionalNote);
     expect(AccountShellInProviderFixture.renderPhaseUpdates(consoleError)).toEqual([]);

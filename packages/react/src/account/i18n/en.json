@@ -3,7 +3,7 @@
     "section": {
       "overview": "Overview",
       "profile": "Profile",
-      "security": "Security",
+      "security": "Sign-in & security",
       "sessions": "Sessions",
       "two-factor": "Two-factor",
       "orders": "Orders",
@@ -13,12 +13,15 @@
       "affiliate": "Partner",
       "emailPreferences": "Email preferences",
       "files": "Files",
-      "notifications": "Notifications"
+      "notifications": "Notifications & email"
     },
     "shell": {
       "title": "My account",
       "nav": "Account sections",
-      "empty": "No account panels are available yet."
+      "empty": "No account panels are available yet.",
+      "search": "Search your account",
+      "searchPlaceholder": "Search your account",
+      "searchEmpty": "Nothing matches."
     },
     "overview": {
       "greeting": "Welcome, {{name}}",
@@ -144,6 +147,9 @@
       "codeSent": "We sent a code to {{phone}}. Enter it to switch texts on.",
       "confirmCode": "Confirm",
       "offersByTextDetail": "News and offers, now and then. Reply STOP to stop them."
+    },
+    "group": {
+      "profile": "Profile"
     }
   }
 }
