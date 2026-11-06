@@ -22,7 +22,7 @@ export class DynamicContentPageRoute {
    * One resolved document → the page tree. Shared by the home-target and slug branches so both get
    * the server-rendered theme chrome; without it the two would drift.
    */
-  private static async renderResolvedContent(content: unknown, strategy: LocaleUrlStrategy, resolutionType: string | undefined, url: string) {
+  private static async renderResolvedContent(content: unknown, strategy: LocaleUrlStrategy, resolutionType: string | undefined, url: string, resolutionPlugin = '') {
     const locale = await FrontendLocaleService.resolveDocumentLocale(strategy);
     // Same head-data query generateMetadata built, so the per-request cache serves both from one fetch.
     const schema = await ResolvedContentMetadata.buildStructuredData((content as Record<string, unknown> | null) || null, resolutionType, url);
@@ -34,6 +34,8 @@ export class DynamicContentPageRoute {
       contentClassName: StorefrontPageKind.CONTENT.contentClassName,
       contentStyle: StorefrontPageKind.CONTENT.contentStyle,
       requestPath: url,
+      resolutionPlugin,
+      resolutionType,
     });
     return (
       <>
@@ -42,7 +44,7 @@ export class DynamicContentPageRoute {
         {/* JSON-LD structured data — body-rendered; Next's Metadata API cannot carry it. */}
         <StructuredDataScriptsView.render schema={schema} />
         {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
-        <PageDocPrefetchView.render content={content} />
+        <PageDocPrefetchView.render content={content} plugin={resolutionPlugin} type={resolutionType || ''} />
         <DynamicContentClient content={content} ssrHtml={ssrMarkup?.bodyHtml || ''} ssrRendersContentSlot={Boolean(ssrMarkup?.rendersContentSlot)} />
       </>
     );
@@ -125,7 +127,7 @@ export class DynamicContentPageRoute {
     if (!slug) {
       const { content, resolution } = await DynamicPageResolver.resolveHomeTarget(locale, fallbackLocale, resolvedSearchParams);
       if (!content) notFound();
-      return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy, resolution?.type, '/');
+      return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy, resolution?.type, '/', resolution?.plugin || '');
     }
     const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, resolvedSearchParams, locale, routingConfig.strategy, true);
     if (resolution?.doc) {
@@ -141,7 +143,7 @@ export class DynamicContentPageRoute {
         searchParams: resolvedSearchParams,
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
-      return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy, resolution.type, `/${slug}`);
+      return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy, resolution.type, `/${slug}`, resolution.plugin);
     }
     // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
     const redirectRule = await DynamicPageResolver.redirectAfterMiss(slug, resolution);

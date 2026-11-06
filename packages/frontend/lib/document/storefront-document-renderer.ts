@@ -58,7 +58,7 @@ export class StorefrontDocumentRenderer {
       const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams));
       if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
       return StorefrontDocumentRenderer.document({
-        content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '', contentPreview: home.resolution?.preview === true,
+        content: home.content, resolutionType: home.resolution?.type, resolutionPlugin: home.resolution?.plugin, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '', contentPreview: home.resolution?.preview === true,
         pageKind: StorefrontPageKind.HOME, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
@@ -75,7 +75,7 @@ export class StorefrontDocumentRenderer {
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
       return StorefrontDocumentRenderer.document({
-        content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', contentPreview: resolution.preview === true,
+        content: resolution.doc, resolutionType: resolution.type, resolutionPlugin: resolution.plugin, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', contentPreview: resolution.preview === true,
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
@@ -174,7 +174,7 @@ export class StorefrontDocumentRenderer {
   }
 
   private static async document(args: {
-    content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
+    content: unknown; resolutionType: string | undefined; resolutionPlugin?: string; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string; contentPreview?: boolean;
   }, timing: DocumentRenderTiming): Promise<Response> {
     const content = (args.content as Record<string, unknown> | null) || null;
@@ -190,13 +190,13 @@ export class StorefrontDocumentRenderer {
           : page))),
       timing.measure('site', ResolvedContentMetadata.buildSiteMetadata()),
       timing.measure('schema', ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url)),
-      timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch, timing })),
+      timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch, resolutionPlugin: args.resolutionPlugin, resolutionType: args.resolutionType, timing })),
       timing.measure('themeHead', ThemeHeadModel.load()),
       timing.measure('headInjections', PluginInjectionRenderer.loadHeadElements()),
       timing.measure('bodyInjections', PluginInjectionRenderer.loadBodyStartElements()),
       timing.measure('frontendConfig', FrontendConfigCache.read()),
       timing.measure('translations', FrontendTranslationsCache.read(locale)),
-      timing.measure('prefetch', PageDocPrefetchRequestCache.read(args.content, args.requestSearch)),
+      timing.measure('prefetch', PageDocPrefetchRequestCache.read(args.content, args.requestSearch, args.resolutionPlugin || '', args.resolutionType || '')),
     ]);
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),

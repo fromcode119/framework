@@ -44,6 +44,9 @@ export class ThemeServerRenderer {
     requestPath: string;
     requestOrigin?: string;
     requestSearch?: string;
+    /** The plugin and collection type the content was resolved from (empty for a page no plugin owns). */
+    resolutionPlugin?: string;
+    resolutionType?: string;
     contentStyle: Record<string, string> | null;
     timing?: DocumentRenderTiming;
   }): Promise<ThemeSsrMarkup | null> {
@@ -63,6 +66,9 @@ export class ThemeServerRenderer {
     requestPath: string;
     requestOrigin?: string;
     requestSearch?: string;
+    /** The plugin and collection type the content was resolved from (empty for a page no plugin owns). */
+    resolutionPlugin?: string;
+    resolutionType?: string;
     contentStyle: Record<string, string> | null;
     timing?: DocumentRenderTiming;
   }): Promise<ThemeSsrMarkup | null> {
@@ -80,7 +86,7 @@ export class ThemeServerRenderer {
     const timing = args.timing ?? new DocumentRenderTiming();
     const prefetchRequest = Promise.all([
       timing.measure('themePrefetch', ThemePrefetchRequestCache.read()),
-      PageDocPrefetchRequestCache.read(content, requestSearch),
+      PageDocPrefetchRequestCache.read(content, requestSearch, args.resolutionPlugin || '', args.resolutionType || ''),
     ]).then(([themeWide, pageScoped]) => ({ ...themeWide, ...pageScoped }));
 
     const config = (await FrontendConfigCache.read()) || {};

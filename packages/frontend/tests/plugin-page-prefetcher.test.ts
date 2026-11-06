@@ -41,6 +41,35 @@ describe('PluginPagePrefetcher', () => {
     expect(results).toEqual({});
   });
 
+  describe('a plugin\'s own record page', () => {
+    const owning = [{ slug: 'shop', ui: { pagePrefetch: [{ collection: 'catalog', key: 'item', path: 'items/:slug' }] } }];
+
+    it('fetches the record\'s route with its own field, for a record the site resolved from that plugin\'s collection', async () => {
+      const fetchEntry = vi.spyOn(ThemeDataPrefetcher, 'fetchEntry').mockResolvedValue({ id: 7, slug: 'бебешка-дрънкалка' });
+      const results = await PageDocPrefetcher.prefetch({ slug: 'бебешка-дрънкалка' }, { ui: {} }, owning, '', { plugin: 'shop', type: 'catalog' });
+      expect(String(fetchEntry.mock.calls[0][0])).toContain(`/plugins/shop/items/${encodeURIComponent('бебешка-дрънкалка')}`);
+      expect(results['shop:item']).toEqual({ query: '', data: { id: 7, slug: 'бебешка-дрънкалка' } });
+    });
+
+    it('fetches nothing for another plugin\'s record, another collection, a page no plugin resolved, or a recipe page', async () => {
+      const fetchEntry = vi.spyOn(ThemeDataPrefetcher, 'fetchEntry').mockResolvedValue({});
+      expect(await PageDocPrefetcher.prefetch({ slug: 'x' }, { ui: {} }, owning, '', { plugin: 'blog', type: 'catalog' })).toEqual({});
+      expect(await PageDocPrefetcher.prefetch({ slug: 'x' }, { ui: {} }, owning, '', { plugin: 'shop', type: 'brands' })).toEqual({});
+      expect(await PageDocPrefetcher.prefetch({ slug: 'x' }, { ui: {} }, owning, '')).toEqual({});
+      expect(await PageDocPrefetcher.prefetch({ slug: 'x', recipe: 'shop.index' }, { ui: {} }, owning, '')).toEqual({});
+      expect(fetchEntry).not.toHaveBeenCalled();
+    });
+
+    it('fills a route only from a field the record holds as one path segment', () => {
+      expect(PluginPagePrefetcher.routeFor('items/:slug', { slug: 'a/b' })).toBe('');
+      expect(PluginPagePrefetcher.routeFor('items/:slug', { slug: '..' })).toBe('');
+      expect(PluginPagePrefetcher.routeFor('items/:slug', { slug: { bg: 'x' } })).toBe('');
+      expect(PluginPagePrefetcher.routeFor('items/:slug', {})).toBe('');
+      expect(PluginPagePrefetcher.routeFor('items/:slug', null)).toBe('');
+      expect(PluginPagePrefetcher.routeFor('items/:slug', { slug: 'rattle' })).toBe('items/rattle');
+    });
+  });
+
   it('takes an address parameter only when the page has it', () => {
     const entry = { query: { limit: '24' }, requestQuery: { category: 'categorySlug', tag: 'tag' } };
     expect(PluginPagePrefetcher.queryOf(entry, new URLSearchParams('tag=red')).toString()).toBe('limit=24&tag=red');
