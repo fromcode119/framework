@@ -1,4 +1,5 @@
 import { Enum } from '@fromcode119/react-class-components/lang';
+import type { IFieldInput } from '@core/interfaces/field-input.interface';
 import { PublicListingSurface } from '@core/public-listing/enums/public-listing-surface.enum';
 
 /**
@@ -87,7 +88,8 @@ export class PublicListing extends Enum {
     options: PublicListing[] = PublicListing.values() as PublicListing[],
     admin: Record<string, unknown> = {},
     labels: Partial<Record<string, string>> = {},
-  ): Record<string, unknown> {
+  ): IFieldInput {
+    // Typed as a collection field, so a collection's `fields` array keeps its element type with it inside.
     return {
       name: PublicListing.FIELD,
       type: 'select',
