@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.524] - 2026-11-06
+
+### Fixed
+
+- **core**: a plugin update always replaces the process running the old code ([#1264](https://github.com/fromcode119/framework/pull/1264))
+
 ## [0.2.523] - 2026-11-06
 
 ### Performance
 
-- **frontend**: sign-in and 404 visits keep the site's cached pages (0.2.523)
+- **frontend**: sign-in and 404 visits keep the site's cached pages (0.2.523) ([#1266](https://github.com/fromcode119/framework/pull/1266))
 
 ## [0.2.522] - 2026-11-06
 
