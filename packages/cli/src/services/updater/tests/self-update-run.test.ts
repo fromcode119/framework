@@ -64,6 +64,19 @@ describe('SelfUpdateRun — rolling, as the deploy command does', () => {
     expect(api.Env).toEqual(['API_URL=x']);
   });
 
+  it('adds a copy of a service on network_mode none without endpoint settings Docker refuses', async () => {
+    const stack = rollingStack();
+    stack.engine.networkModes['extension-host'] = 'none';
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    expect(stack.runningImages('extension-host')).toEqual([`${REG}api:v0.2.400`]);
+    const copy = stack.engine.created.find((c) => c.name === 'site-extension-host-2')!.body;
+    expect(copy.HostConfig.NetworkMode).toBe('none');
+    expect(copy.NetworkingConfig).toBeUndefined();
+  });
+
   it('restarts instead when the release runs a migration the serving release cannot run beside', async () => {
     const stack = rollingStack();
     stack.engine.appliedMigration = 53;
@@ -122,6 +135,16 @@ describe('SelfUpdateRun', () => {
     expect(stack.version).toBe('v0.2.400');
     expect([...stack.engine.containers.values()].some((c) => c.name.endsWith('-previous'))).toBe(false);
     expect(stack.steps[0]).toContain('Downloading');
+  });
+
+  it('replaces a service on network_mode none in place without endpoint settings Docker refuses', async () => {
+    const stack = new Stack();
+    stack.engine.networkModes['extension-host'] = 'none';
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    expect(stack.imageOf('extension-host')).toBe(`${REG}api:v0.2.400`);
   });
 
   it('carries the deployment\'s settings but takes the new image\'s own defaults', async () => {
