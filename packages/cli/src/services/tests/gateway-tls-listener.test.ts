@@ -94,6 +94,37 @@ describe('GatewayTlsListener — what the platform answers a handshake with', ()
     expect(body).toContain('203.0.113.7');
   });
 
+  it('answers from the stored snapshot when it starts while the api is down, then takes the api\'s bundle', async () => {
+    let apiUp = false;
+    const client = new CertificateBundleClient('http://api.invalid/certificates', 60_000,
+      (async () => {
+        if (!apiUp) throw new Error('fetch failed');
+        return { ok: true, json: async () => ({ certificates: [] }) };
+      }) as unknown as typeof fetch,
+      () => bundleJson());
+    listener = new GatewayTlsListener(0, client);
+    listener.start({ request: (_req, res) => { res.writeHead(200); res.end('ok'); }, upgrade: (_r, s) => s.destroy() });
+    await listener.listener!.listening;
+    const port = listener.listener!.port;
+    await client.refresh();
+    await expect(handshake(port, 'served.test')).resolves.toBe('served.test');
+    // The snapshot never counts as fresh: once the api answers, its bundle replaces it.
+    apiUp = true;
+    await client.refresh();
+    expect(client.current?.size).toBe(0);
+    await expect(handshake(port, 'served.test')).rejects.toBeTruthy();
+  });
+
+  it('still refuses every handshake with neither an api nor a snapshot', async () => {
+    const client = new CertificateBundleClient('http://api.invalid/certificates', 60_000,
+      (async () => { throw new Error('fetch failed'); }) as unknown as typeof fetch,
+      () => null);
+    listener = new GatewayTlsListener(0, client);
+    listener.start({ request: (_req, res) => { res.writeHead(200); res.end('ok'); }, upgrade: (_r, s) => s.destroy() });
+    await listener.listener!.listening;
+    await expect(handshake(listener.listener!.port, 'served.test')).rejects.toBeTruthy();
+  });
+
   it('answers a host it has a certificate for', async () => {
     const port = await start();
     await expect(handshake(port, 'served.test')).resolves.toBe('served.test');
