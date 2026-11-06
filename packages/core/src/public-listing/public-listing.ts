@@ -18,10 +18,10 @@ import { PublicListingSurface } from '@core/public-listing/public-listing-surfac
 export class PublicListing extends Enum {
   static readonly FIELD = 'visibility';
 
-  static readonly PUBLIC = new PublicListing('public', 'Public', [PublicListingSurface.CATALOG, PublicListingSurface.SEARCH, PublicListingSurface.SITEMAP]);
-  static readonly CATALOG_ONLY = new PublicListing('catalog_only', 'Catalog Only', [PublicListingSurface.CATALOG, PublicListingSurface.SITEMAP]);
-  static readonly SEARCH_ONLY = new PublicListing('search_only', 'Search Only', [PublicListingSurface.SEARCH]);
-  static readonly HIDDEN = new PublicListing('hidden', 'Hidden', []);
+  static readonly PUBLIC = new PublicListing('public', 'Catalog and search', [PublicListingSurface.CATALOG, PublicListingSurface.SEARCH, PublicListingSurface.SITEMAP]);
+  static readonly CATALOG_ONLY = new PublicListing('catalog_only', 'Catalog only', [PublicListingSurface.CATALOG, PublicListingSurface.SITEMAP]);
+  static readonly SEARCH_ONLY = new PublicListing('search_only', 'Search only', [PublicListingSurface.SEARCH]);
+  static readonly HIDDEN = new PublicListing('hidden', 'Nowhere (its link only)', []);
 
   private constructor(value: string, readonly label: string, private readonly surfaces: PublicListingSurface[]) {
     super(value);
@@ -58,13 +58,18 @@ export class PublicListing extends Enum {
    * The `visibility` collection field, offering only the values that mean something for that collection
    * (a category is never searched, so it offers Public and Hidden). Labels are the owner's to translate.
    */
-  static field(options: PublicListing[] = PublicListing.values() as PublicListing[], admin: Record<string, unknown> = {}): Record<string, unknown> {
+  static field(
+    options: PublicListing[] = PublicListing.values() as PublicListing[],
+    admin: Record<string, unknown> = {},
+    labels: Partial<Record<string, string>> = {},
+  ): Record<string, unknown> {
     return {
       name: PublicListing.FIELD,
       type: 'select',
       label: 'Visibility',
       defaultValue: PublicListing.PUBLIC.value,
-      options: options.map((option) => ({ label: option.label, value: option.value })),
+      // `labels` lets a collection word an option for its own records ("Shown in lists" for a category).
+      options: options.map((option) => ({ label: labels[option.value] ?? option.label, value: option.value })),
       admin: { position: 'sidebar', ...admin },
     };
   }
