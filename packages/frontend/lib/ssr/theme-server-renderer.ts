@@ -14,6 +14,7 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 import { ThemeWorldBuilder } from '@/lib/ssr/theme-world-builder';
 import { ThemeWorldRenderer } from '@/lib/ssr/theme-world-renderer';
 import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render-request.interface';
+import { DocumentRenderTiming } from '@/lib/document/document-render-timing';
 
 /**
  * Renders the active theme's layout AND the page's block flow to HTML on the server, so the storefront
@@ -44,6 +45,7 @@ export class ThemeServerRenderer {
     requestOrigin?: string;
     requestSearch?: string;
     contentStyle: Record<string, string> | null;
+    timing?: DocumentRenderTiming;
   }): Promise<ThemeSsrMarkup | null> {
     try {
       return await ThemeServerRenderer.renderOrThrow(args);
@@ -62,6 +64,7 @@ export class ThemeServerRenderer {
     requestOrigin?: string;
     requestSearch?: string;
     contentStyle: Record<string, string> | null;
+    timing?: DocumentRenderTiming;
   }): Promise<ThemeSsrMarkup | null> {
     const { content, locale, contentClassName, contentStyle, notFoundPath, requestPath } = args;
     const requestOrigin = args.requestOrigin || '';
@@ -74,8 +77,9 @@ export class ThemeServerRenderer {
     // navigation menus) AND the page-scoped ones. Seeding only the page-scoped half left the theme's
     // navbar and footer reading `null` during render, so they painted their STATIC fallback menu and the
     // real navigation appeared only after the client booted — a visible change on every first load.
+    const timing = args.timing ?? new DocumentRenderTiming();
     const prefetchRequest = Promise.all([
-      ThemePrefetchRequestCache.read(),
+      timing.measure('themePrefetch', ThemePrefetchRequestCache.read()),
       PageDocPrefetchRequestCache.read(content, requestSearch),
     ]).then(([themeWide, pageScoped]) => ({ ...themeWide, ...pageScoped }));
 
@@ -85,19 +89,19 @@ export class ThemeServerRenderer {
     if (!generation.themeSlug) return null;
     const settings = ThemeRenderSettings.from(config);
     const publicApiBaseUrl = ServerApiPaths.buildPublicApiBaseUrl();
-    const [serverTranslations, prefetched] = await Promise.all([translationsRequest, prefetchRequest]);
+    const [serverTranslations, prefetched] = await timing.measure('themeInputs', Promise.all([translationsRequest, prefetchRequest]));
     const request: IThemeRenderRequest = { content, locale, contentClassName, contentStyle, notFoundPath, requestPath, requestOrigin, requestSearch, config, serverTranslations, prefetched };
 
     const frontendDir = process.cwd();
     if (ThemeRenderHost.available(frontendDir)) {
-      return ThemeRenderHostPool.render({
+      return timing.measure('themeHost', ThemeRenderHostPool.render({
         generation,
         settings,
         frontendDir,
         boot: { config, publicApiBaseUrl, themesDir: ThemeSsrRuntime.themesDir(), pluginsDir: ThemeSsrRuntime.pluginsDir(), frontendDir },
         request,
         siteId: String((config as { site?: { id?: unknown } }).site?.id ?? ''),
-      });
+      }));
     }
 
     if (!ThemeServerRenderer.inProcessWarned) {

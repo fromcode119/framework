@@ -187,7 +187,7 @@ export class StorefrontDocumentRenderer {
           : page))),
       timing.measure('site', ResolvedContentMetadata.buildSiteMetadata()),
       timing.measure('schema', ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url)),
-      timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch })),
+      timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch, timing })),
       timing.measure('themeHead', ThemeHeadModel.load()),
       timing.measure('headInjections', PluginInjectionRenderer.loadHeadElements()),
       timing.measure('bodyInjections', PluginInjectionRenderer.loadBodyStartElements()),
