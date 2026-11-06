@@ -74,6 +74,8 @@ export class StorefrontDocumentRenderer {
       });
     }
     const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
+    // A rule saying the page is gone for good: the not-found page, answered 410 so crawlers drop it.
+    if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, 410);
     if (redirectRule) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);
@@ -94,10 +96,10 @@ export class StorefrontDocumentRenderer {
    * override wins), status 404, `noindex` — what the App Router's `not-found` renders, as a document
    * the runtime can hydrate. A route handler's `notFound()` would answer with an EMPTY 404 instead.
    */
-  private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy): Promise<Response> {
+  private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy, status = 404): Promise<Response> {
     return StorefrontDocumentRenderer.document({
       content: null, resolutionType: undefined, url: request.pathname, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', pageKind: StorefrontPageKind.NOT_FOUND,
-      strategy, status: 404, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
+      strategy, status, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
     });
   }
 
@@ -178,7 +180,7 @@ export class StorefrontDocumentRenderer {
       // a fact about the site, not about its content, so no plugin gets to contradict it and it
       // holds even when the plugin that would normally set robots is inactive.
       ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
-        .then(async (page) => (args.status === 404 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
+        .then(async (page) => (args.status === 404 || args.status === 410 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
           ? { ...page, robots: { index: false, follow: false }, alternates: page.alternates?.canonical ? { canonical: page.alternates.canonical } : undefined }
           : page)),
       ResolvedContentMetadata.buildSiteMetadata(),

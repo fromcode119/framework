@@ -32,10 +32,15 @@ export class SystemRedirectService {
     if (!fromPath) return null;
     const row = (await this.db.findOne(SystemRedirectService.TABLE, { from_path: fromPath })) as Record<string, unknown> | null;
     if (!row || !SystemRedirectService.isEnabled(row.enabled)) return null;
+    const type = SystemRedirectService.normalizeType(row.type);
     const target = String(row.to_path ?? '').trim();
+    if (type === SystemRedirectService.GONE) {
+      void this.recordHit(row);
+      return { target: '', permanent: true, gone: true };
+    }
     if (!target) return null;
     void this.recordHit(row);
-    return { target, permanent: String(row.type ?? '301') !== '302' };
+    return { target, permanent: type !== '302' };
   }
 
   async list(): Promise<Record<string, unknown>[]> {
@@ -49,7 +54,8 @@ export class SystemRedirectService {
   async create(input: Record<string, unknown>): Promise<Record<string, unknown>> {
     const data = SystemRedirectService.normalizeInput(input);
     if (!data.from_path) throw new Error('A redirect needs a From path starting with /.');
-    if (!data.to_path) throw new Error('A redirect needs a To path or URL.');
+    if (data.type === SystemRedirectService.GONE) data.to_path = '';
+    else if (!data.to_path) throw new Error('A redirect needs a To path or URL.');
     const existing = await this.db.findOne(SystemRedirectService.TABLE, { from_path: data.from_path });
     if (existing) throw new Error(`A redirect from "${data.from_path}" already exists.`);
     const row = await this.db.insert(SystemRedirectService.TABLE, { ...data, hit_count: 0 });
@@ -103,7 +109,7 @@ export class SystemRedirectService {
       id: Number(row.id ?? 0) || 0,
       fromPath: String(row.from_path ?? ''),
       toPath: String(row.to_path ?? ''),
-      type: String(row.type ?? '301') === '302' ? '302' : '301',
+      type: SystemRedirectService.normalizeType(row.type),
       enabled: SystemRedirectService.isEnabled(row.enabled),
       hitCount: Number(row.hit_count ?? 0) || 0,
       notes: String(row.notes ?? ''),
@@ -120,10 +126,19 @@ export class SystemRedirectService {
     };
     setIf(input.fromPath !== undefined, 'from_path', SystemRedirectService.normalizePath(input.fromPath));
     setIf(input.toPath !== undefined, 'to_path', String(input.toPath ?? '').trim());
-    setIf(input.type !== undefined, 'type', String(input.type ?? '301') === '302' ? '302' : '301');
+    setIf(input.type !== undefined, 'type', SystemRedirectService.normalizeType(input.type));
     setIf(input.enabled !== undefined, 'enabled', SystemRedirectService.isEnabled(input.enabled ?? true) ? 1 : 0);
     setIf(input.notes !== undefined, 'notes', String(input.notes ?? ''));
     return data;
+  }
+
+  /** A rule that answers 410 Gone: the page was removed on purpose and has no replacement. */
+  static readonly GONE = '410';
+
+  /** `301` (the default), `302`, or `410` (gone — no target). */
+  private static normalizeType(value: unknown): string {
+    const raw = String(value ?? '301').trim();
+    return raw === '302' || raw === SystemRedirectService.GONE ? raw : '301';
   }
 
   /** `/a/b` for any reasonable operator input; `''` for anything that is not a site path. */

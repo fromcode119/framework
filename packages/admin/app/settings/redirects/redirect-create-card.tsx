@@ -14,6 +14,7 @@ export class RedirectCreateCard extends PureReactor {
     return [
     { label: AdminI18n.t('settings.redirects.301Permanent'), value: '301' },
     { label: AdminI18n.t('settings.redirects.302Temporary'), value: '302' },
+    { label: AdminI18n.t('settings.redirects.410Gone'), value: '410' },
   ];
   }
 
@@ -27,14 +28,19 @@ export class RedirectCreateCard extends PureReactor {
   @state notes = '';
 
   private get canSubmit(): boolean {
-    return Boolean(this.fromPath.trim() && this.toPath.trim()) && !this.isSubmitting;
+    return Boolean(this.fromPath.trim() && (this.gone || this.toPath.trim())) && !this.isSubmitting;
+  }
+
+  /** 410: the page is gone for good, so there is nowhere to send the visitor. */
+  private get gone(): boolean {
+    return this.type === '410';
   }
 
   @bound async handleSubmit(): Promise<void> {
     if (!this.canSubmit) return;
     const created = await this.onCreate({
       fromPath: this.fromPath.trim(),
-      toPath: this.toPath.trim(),
+      toPath: this.gone ? '' : this.toPath.trim(),
       type: this.type,
       notes: this.notes.trim(),
     });
@@ -65,8 +71,9 @@ export class RedirectCreateCard extends PureReactor {
           <div className="flex-1">
             <Input
               label={AdminI18n.t('settings.redirects.toPathOrUrl')}
-              placeholder={AdminI18n.t('settings.redirects.toPathExample')}
-              value={this.toPath}
+              placeholder={this.gone ? AdminI18n.t('settings.redirects.goneNoTarget') : AdminI18n.t('settings.redirects.toPathExample')}
+              disabled={this.gone}
+              value={this.gone ? '' : this.toPath}
               onChange={(event: any) => { this.toPath = String(event?.target?.value ?? ''); }}
             />
           </div>

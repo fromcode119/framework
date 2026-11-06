@@ -43,8 +43,8 @@ export class RedirectRulesCard extends PureReactor {
         <Switch checked={enabled} disabled={busy} onChange={() => this.handleToggle(redirect)} />
         <code className={`truncate max-w-[38%] font-mono text-[12px] ${isDark ? 'text-slate-200' : 'text-slate-800'}`} title={redirect.fromPath}>{redirect.fromPath}</code>
         <FrameworkIcons.ArrowRight size={13} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
-        <code className={`truncate flex-1 font-mono text-[12px] ${isDark ? 'text-slate-300' : 'text-slate-600'}`} title={redirect.toPath}>{redirect.toPath}</code>
-        <Badge variant={redirect.type === '302' ? BadgeVariant.WARNING : BadgeVariant.DEFAULT}>{redirect.type}</Badge>
+        <code className={`truncate flex-1 font-mono text-[12px] ${isDark ? 'text-slate-300' : 'text-slate-600'}`} title={redirect.toPath}>{redirect.type === '410' ? AdminI18n.t('settings.redirects.goneNoTarget') : redirect.toPath}</code>
+        <Badge variant={redirect.type === '302' || redirect.type === '410' ? BadgeVariant.WARNING : BadgeVariant.DEFAULT}>{redirect.type}</Badge>
         <span className={`w-14 text-right tabular-nums text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`} title={AdminI18n.t('settings.redirects.timesMatched')}>
           {Number(redirect.hitCount || 0)}×
         </span>

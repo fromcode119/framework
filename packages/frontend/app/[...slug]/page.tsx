@@ -145,7 +145,7 @@ export class DynamicContentPageRoute {
     }
     // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
     const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
-    if (redirectRule) {
+    if (redirectRule && !redirectRule.gone) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);
     }

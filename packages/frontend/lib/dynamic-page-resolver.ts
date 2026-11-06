@@ -133,7 +133,7 @@ export class DynamicPageResolver {
    * UNREACHABLE API is re-thrown, because "no redirect rule matched" and "we could not ask"
    * are different answers and only the first one justifies a 404.
    */
-  static async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean } | null> {
+  static async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean; gone: boolean } | null> {
     try {
       const query = new URLSearchParams();
       query.set('slug', String(slug || '').replace(/^\/+/, ''));
@@ -141,9 +141,10 @@ export class DynamicPageResolver {
       // referrer and browser (this fetch otherwise carries the storefront server's own).
       query.set('missed', '1');
       const result = await MissedResolutionFetch.fetch(query.toString()) as
-        { type?: string; redirect?: { target?: string; permanent?: boolean } } | null;
+        { type?: string; redirect?: { target?: string; permanent?: boolean; gone?: boolean } } | null;
+      if (result?.type === 'redirect' && result.redirect?.gone === true) return { target: '', permanent: true, gone: true };
       if (result?.type === 'redirect' && result.redirect?.target) {
-        return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false };
+        return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false, gone: false };
       }
     } catch (error) {
       if (error instanceof ServerApiUnreachableError) throw error;
