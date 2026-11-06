@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.521] - 2026-11-06
+
+### Fixed
+
+- **auth**: a ?preview=1 page keeps the administrator for its own browser requests ([#1259](https://github.com/fromcode119/framework/pull/1259))
+
 ## [0.2.520] - 2026-11-06
 
 ### Added
