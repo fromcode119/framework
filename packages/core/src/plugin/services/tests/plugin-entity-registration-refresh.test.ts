@@ -69,4 +69,12 @@ describe('PluginEntityRegistrationService.refreshOwnCollection', () => {
     } as any);
     expect(existing.affectsPages).toBe(false);
   });
+
+  it("takes the release's publicListing, so Visibility applies without an api restart", () => {
+    const existing = registered();
+    new PluginEntityRegistrationService().refreshOwnCollection(existing, {
+      slug: 'products', admin: {}, publicListing: { pinnedBy: ['id', 'slug'] }, fields: [{ name: 'name', type: 'text' }],
+    } as any);
+    expect(existing.publicListing).toEqual({ pinnedBy: ['id', 'slug'] });
+  });
 });
