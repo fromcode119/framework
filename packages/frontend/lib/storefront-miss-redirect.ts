@@ -9,9 +9,14 @@ export class StorefrontMissRedirect {
    * The redirect rule for a path that resolved to no content. A lookup that already reported the miss
    * carries the API's answer (the resolve endpoint consults the redirect registry itself), so asking
    * again would only repeat the whole resolution; any other lookup asks once, as the last word.
+   *
+   * `reportable: false` — the path is not a miss (the framework answers it itself, e.g. sign-in): the
+   * lookup already made carries any rule the API matched, so no second, miss-reporting lookup is made.
+   * That second lookup logged every visit to /login as a 404, moved the site's content revision and
+   * kept the page out of the document cache.
    */
-  static async afterMiss(slug: string, resolution: IResolvedDocResult | null): Promise<IStorefrontRedirectRule | null> {
-    if (resolution?.missReported) return resolution.redirect ?? null;
+  static async afterMiss(slug: string, resolution: IResolvedDocResult | null, reportable = true): Promise<IStorefrontRedirectRule | null> {
+    if (resolution?.missReported || !reportable) return resolution?.redirect ?? null;
     return StorefrontMissRedirect.lookup(slug);
   }
 

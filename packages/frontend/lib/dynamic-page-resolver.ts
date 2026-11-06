@@ -140,8 +140,8 @@ export class DynamicPageResolver {
   }
 
   /** See StorefrontMissRedirect.afterMiss. */
-  static async redirectAfterMiss(slug: string, resolution: IResolvedDocResult | null): Promise<IStorefrontRedirectRule | null> {
-    return StorefrontMissRedirect.afterMiss(slug, resolution);
+  static async redirectAfterMiss(slug: string, resolution: IResolvedDocResult | null, reportable = true): Promise<IStorefrontRedirectRule | null> {
+    return StorefrontMissRedirect.afterMiss(slug, resolution, reportable);
   }
 
   /** See StorefrontMissRedirect.lookup. */

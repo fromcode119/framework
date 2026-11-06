@@ -79,7 +79,7 @@ export class StorefrontDocumentRenderer {
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
-    const redirectRule = await timing.measure('redirect', DynamicPageResolver.redirectAfterMiss(slug, resolution));
+    const redirectRule = await timing.measure('redirect', DynamicPageResolver.redirectAfterMiss(slug, resolution, !frameworkPage));
     // A rule saying the page is gone for good: the not-found page, answered 410 so crawlers drop it.
     if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing, 410);
     if (redirectRule) {

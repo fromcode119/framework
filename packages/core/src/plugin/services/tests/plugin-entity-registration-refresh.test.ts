@@ -61,4 +61,12 @@ describe('PluginEntityRegistrationService.refreshOwnCollection', () => {
     } as any);
     expect(existing.publicContent).toEqual({ list: 'listPublic', at: 'publicAt' });
   });
+
+  it("takes the release's word on whether its rows build pages", () => {
+    const existing = registered();
+    new PluginEntityRegistrationService().refreshOwnCollection(existing, {
+      slug: 'products', admin: {}, affectsPages: false, fields: [{ name: 'name', type: 'text' }],
+    } as any);
+    expect(existing.affectsPages).toBe(false);
+  });
 });
