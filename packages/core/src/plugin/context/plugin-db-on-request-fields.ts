@@ -42,6 +42,17 @@ export class PluginDbOnRequestFields {
     return written.every((name) => derived.has(name));
   }
 
+  /**
+   * Whether a write reaches a table whose collection declares `affectsPages: false` — rows no page is
+   * built from, so the site's kept pages stay current after it.
+   */
+  static reachesNoPage(table: unknown, manager: IPluginManagerInterface): boolean {
+    const reference = PhysicalTableNameUtils.parse(String(table ?? '').trim());
+    if (!reference) return false;
+    const entry = manager.getCollection(PhysicalTableNameUtils.create(reference.pluginSlug, reference.tableName)) as { collection?: ICollection } | null | undefined;
+    return entry?.collection?.affectsPages === false;
+  }
+
   static strip(result: unknown, omitted: readonly string[]): unknown {
     if (omitted.length === 0 || result == null) return result;
     const drop = (row: unknown) => {

@@ -240,9 +240,11 @@ export class DatabaseContextProxy {
               // Audit the write per call, with the table (and the where's record id) as the resource.
               // `insert`/`upsert`'s second arg is the PAYLOAD, never mined for an id — only update/delete carry a
               // where. Fire-and-forget inside logWrite; a denied call never reaches here, so nothing blocked is logged 'allowed'.
-              const derivedOnly = PluginDbOnRequestFields.writesOnlyDerived(prop, args, manager);
+              const derivedOnly = PluginDbOnRequestFields.writesOnlyDerived(prop, args, manager)
+                || (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop) && PluginDbOnRequestFields.reachesNoPage(args[0], manager));
               if (DatabaseContextProxy.WRITE_AUDIT_METHODS.has(prop)) {
-                // An order, a booking, a product can appear on a page; the values a plugin derives (writesOnlyDerived) cannot.
+                // An order, a booking, a product can appear on a page; the values a plugin derives (writesOnlyDerived)
+                // and the rows of a collection declared `affectsPages: false` (a 404 log, a sync status) cannot.
                 if (!derivedOnly) SiteContentRevision.bumpCurrentSite();
                 DatabaseWriteAudit.logWrite(
                   manager,
