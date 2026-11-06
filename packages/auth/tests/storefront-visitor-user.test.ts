@@ -2,11 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { AuthManager } from '@fromcode119/auth';
 
 /** An administrator on the storefront sees the site as a visitor; the console and the preview keep the role. */
-async function signedIn(roles: string[], headers: Record<string, string>) {
+async function signedIn(roles: string[], headers: Record<string, string>, method = 'GET') {
   const auth = new AuthManager('test-secret-123');
   const token = await auth.generateToken({ id: '7', email: 'owner@shop.test', roles, permissions: ['content:read'] } as any);
   const fill = (value: string) => value.replace('TOKEN', token);
-  const req: any = { method: 'GET', path: '/api/v1/system/resolve', url: '/api/v1/system/resolve', headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, fill(v)])), cookies: {}, get: () => '' };
+  const req: any = { method, path: '/api/v1/system/resolve', url: '/api/v1/system/resolve', headers: Object.fromEntries(Object.entries(headers).map(([k, v]) => [k, fill(v)])), cookies: {}, get: () => '' };
   const res: any = { status() { return this; }, json() { return this; } };
   await auth.middleware()(req, res, () => undefined);
   return req.user;
@@ -34,5 +34,6 @@ describe('a storefront session', () => {
     expect((await signedIn(['admin'], { ...page, referer: 'https://shop.test/shop/x?preview=1' })).roles).toContain('admin');
     expect((await signedIn(['admin'], { ...page, referer: 'https://shop.test/shop/x' })).roles).not.toContain('admin');
     expect((await signedIn(['admin'], { ...page, referer: 'https://other.test/shop/x?preview=1' })).roles).not.toContain('admin');
+    expect((await signedIn(['admin'], { ...page, referer: 'https://shop.test/shop/x?preview=1' }, 'POST')).roles).not.toContain('admin');
   });
 });
