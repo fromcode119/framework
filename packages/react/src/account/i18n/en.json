@@ -100,7 +100,10 @@
     "gate": {
       "title": "Please sign in",
       "body": "You need to be signed in to view your account.",
-      "login": "Sign in"
+      "login": "Sign in",
+      "unavailableTitle": "We could not check your sign-in",
+      "unavailableBody": "This is usually brief. Please try again in a moment.",
+      "retry": "Try again"
     },
     "description": {
       "overview": "A snapshot of your account",
