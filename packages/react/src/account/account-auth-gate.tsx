@@ -48,9 +48,10 @@ export class AccountAuthGate extends PluginComponent {
     try {
       // `/auth/me/person` returns the signed-in person (200) and 401s for guests — the authoritative
       // session probe (`/auth/me` does not exist; `/auth/status` only reports install state).
+      // A guest is refused with 401 (thrown); any answer is a session, with or without a person record —
+      // an account that has none yet (an administrator created in the console) is still signed in.
       const res = await AccountAuthClient.of(this.api).get(RouteConstants.SEGMENTS.ME_PERSON, { silent: true });
-      const person = res?.person ?? res?.data?.person ?? null;
-      const ok = Boolean(person && typeof person === 'object' && (person.id || person.userId || person.email));
+      const ok = Boolean(res && typeof res === 'object' && 'person' in res);
       if (this.mounted) this.setState({ status: ok ? AuthGateState.AUTHED : AuthGateState.GUEST });
       if (!ok) this.redirectToLogin();
     } catch {

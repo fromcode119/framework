@@ -57,10 +57,13 @@ export class AccountRouteGuard {
     const outcome = await ServerApiUtils.serverFetchResponseOutcome(AccountRouteGuard.SESSION_PROBE_PATH);
     if (outcome.isUnreachable) return false;
     const response = outcome.value;
+    // The probe sits behind the auth guard: a guest gets 401, so a 200 IS a session. Requiring a person
+    // record as well turned away every account that has none yet — an administrator created in the
+    // console, on a site where the person is not made on read — and sent them back to the login page
+    // after every successful sign-in. The body must still be the probe's own answer (it always carries
+    // `person`, null included) — a 200 from anything else in front of the API is not a session.
     if (!response?.ok) return false;
     const body = await response.json().catch(() => null);
-    const person = body?.person ?? body?.data?.person ?? null;
-    // Mirrors the client gate's test: a 200 alone is not a session, a person is.
-    return Boolean(person && (person.id || person.userId || person.email));
+    return Boolean(body && typeof body === 'object' && 'person' in body);
   }
 }
