@@ -39,6 +39,7 @@ export class SelfUpdateRun {
    * replaced — so those containers are that version, and the update is what pins them.
    */
   static readonly UNPINNED_TAG = 'latest';
+  private static readonly GATEWAY = 'gateway';
 
   private readonly replacement: ContainerReplacement;
 
@@ -77,22 +78,28 @@ export class SelfUpdateRun {
     this.onStep(`Deploy mode: ${plan.mode.value} — ${plan.reason}`);
     if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, previousVersion);
 
+    // The gateway terminates TLS with certificates it fetches from the api. A new gateway started while
+    // the new api still boots has none, and refuses every handshake until it does: so it is replaced
+    // only once the api reports the new version, and the old gateway keeps serving until then.
+    const isGateway = (target: IContainerSummary) => target.Labels[SelfUpdateRun.SERVICE_LABEL] === SelfUpdateRun.GATEWAY;
     const replaced: IReplacedContainer[] = [];
-    try {
-      for (const target of targets) {
-        const service = target.Labels[SelfUpdateRun.SERVICE_LABEL];
-        this.onStep(`Starting the new ${service}`);
-        replaced.push(await this.replacement.replace(service, target.Id, `${SelfUpdateRun.repository(target.Image)}:${tag}`));
+    for (const [batch, waitFor] of [[targets.filter((target) => !isGateway(target)), true], [targets.filter(isGateway), false]] as const) {
+      try {
+        for (const target of batch) {
+          const service = target.Labels[SelfUpdateRun.SERVICE_LABEL];
+          this.onStep(`Starting the new ${service}`);
+          replaced.push(await this.replacement.replace(service, target.Id, `${SelfUpdateRun.repository(target.Image)}:${tag}`));
+        }
+      } catch (error) {
+        await this.rollBack(replaced, previousVersion);
+        return { state: UpdaterState.ROLLED_BACK.value, error: `Could not start the new version: ${(error as Error).message}` };
       }
-    } catch (error) {
-      await this.rollBack(replaced, previousVersion);
-      return { state: UpdaterState.ROLLED_BACK.value, error: `Could not start the new version: ${(error as Error).message}` };
-    }
-
-    this.onStep(`Waiting for the platform to report ${tag}`);
-    if (!(await this.health.reports(tag))) {
-      await this.rollBack(replaced, previousVersion);
-      return { state: UpdaterState.ROLLED_BACK.value, error: `${tag} did not report itself healthy; ${SelfUpdateRun.tag(from)} is serving again.` };
+      if (!waitFor) continue;
+      this.onStep(`Waiting for the platform to report ${tag}`);
+      if (!(await this.health.reports(tag))) {
+        await this.rollBack(replaced, previousVersion);
+        return { state: UpdaterState.ROLLED_BACK.value, error: `${tag} did not report itself healthy; ${SelfUpdateRun.tag(from)} is serving again.` };
+      }
     }
 
     this.onStep('Removing what the update replaced');
