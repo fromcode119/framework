@@ -50,4 +50,13 @@ describe('SiteRevisionMemo', () => {
     const value = await RequestScope.run(async () => read(), { shareKey: 'https://a' });
     expect(value).toBe(2);
   });
+
+  it('asks again for an answer keep() refuses — a 404 lookup reaches the api every time', async () => {
+    let calls = 0;
+    const resolve = SiteRevisionMemo.memo(async (slug: string) => { calls += 1; return slug === 'login' ? { doc: { id: 1 } } : null; }, (r) => Boolean(r?.doc));
+    for (let i = 0; i < 3; i += 1) {
+      await RequestScope.run(async () => { await resolve('login'); await resolve('nope'); }, { shareKey: 'https://a' });
+    }
+    expect(calls).toBe(1 + 3);
+  });
 });

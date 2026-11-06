@@ -1,3 +1,4 @@
+import { SiteRevisionMemo } from '@/lib/site-revision-memo';
 import { RequestScope } from '@/lib/request-scope';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
@@ -29,7 +30,7 @@ export class DynamicPageResolver {
    * then answered a hard 404 for a page that exists — telling crawlers to delist it. An
    * unreachable API must surface as a 5xx, which is honest and retryable.
    */
-  private static readonly resolveFetchCache = RequestScope.memo(async (queryString: string): Promise<Record<string, any> | null> => {
+  private static readonly resolveFetchCache = SiteRevisionMemo.memo(async (queryString: string): Promise<Record<string, any> | null> => {
     const path = ServerApiPaths.buildSystemResolvePath(queryString);
     // A preview navigation is the operator asking to see their own draft, so this one fetch also
     // presents their admin session — the API decides from that identity whether unpublished content
@@ -41,7 +42,7 @@ export class DynamicPageResolver {
       .valueOrThrow(path);
     if (!response || !response.ok) return null;
     return await response.json() as Record<string, any>;
-  });
+  }, (result) => Boolean(result?.doc));
 
   static async readSettingValue(key: string): Promise<string> {
     return FrontendPublicSettings.readSettingValue(key);
