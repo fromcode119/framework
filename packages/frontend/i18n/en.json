@@ -63,6 +63,8 @@
     "siteBanner": {
       "previewTitle": "Not published — only you can see this.",
       "previewNote": "Visitors get a holding page.",
+      "contentPreviewTitle": "Preview — you see this page as an administrator.",
+      "contentPreviewNote": "Visitors may not see it at this address.",
       "nonProductionTitle": "Non-production site — nothing leaves it.",
       "nonProductionNote": "No email, payment, shipment or scheduled job will be sent."
     },

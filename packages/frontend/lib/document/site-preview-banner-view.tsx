@@ -27,4 +27,19 @@ export class SitePreviewBannerView {
       </div>
     );
   }
+
+  /**
+   * This PAGE was read with the operator's preview rights (`?preview=1`): it may be switched off,
+   * hidden or a draft, so what is on screen may not be what a visitor gets at this address.
+   */
+  static renderContent({ visible, locale }: { visible: boolean; locale?: string }): ReactNode {
+    if (!visible) return null;
+    return (
+      <div className="fc-site-preview fc-site-preview--unpublished" role="status">
+        <span className="fc-site-preview__dot" aria-hidden="true" />
+        <span>{FrontendCopy.t(locale, 'frontend.siteBanner.contentPreviewTitle')}</span>
+        <span className="fc-site-preview__note">{FrontendCopy.t(locale, 'frontend.siteBanner.contentPreviewNote')}</span>
+      </div>
+    );
+  }
 }

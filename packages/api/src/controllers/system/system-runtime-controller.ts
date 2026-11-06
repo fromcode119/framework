@@ -173,9 +173,10 @@ export class SystemRuntimeController {
       // Preview is decided by the SESSION, never by the query string. `?preview=1`/`?draft=1` used to
       // be OR-ed in here, so any anonymous visitor could read every draft by asking for one.
       const viewer = await this.contentViewer(req);
+      const previewing = ContentPreviewAccessUtils.canPreviewUnpublished(viewer);
       const result = await this.runtime.resolution.resolveSlug(slug, {
         user: viewer,
-        preview: ContentPreviewAccessUtils.canPreviewUnpublished(viewer),
+        preview: previewing,
         locale: req.query.locale as string,
         fallback_locale: req.query.fallback_locale as string,
         locale_mode: req.query.locale_mode as string,
@@ -185,7 +186,10 @@ export class SystemRuntimeController {
         if (CoercionUtils.toBoolean(req.query.missed)) this.reportMissed(slug, req);
         return res.status(404).json({ error: 'Not found' });
       }
-      res.json(ResolvedDocResponseService.normalizeResult(result));
+      // `preview` tells the storefront this answer was read with the operator's preview rights, so it
+      // can say so on screen: a page a visitor may not see must never look like the live one.
+      const normalized = ResolvedDocResponseService.normalizeResult(result);
+      res.json(previewing ? { ...normalized, preview: true } : normalized);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
