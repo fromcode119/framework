@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.527] - 2026-11-06
+
+### Added
+
+- **react**: section summaries — menu counts, tile lines and a who line from contributors ([#1275](https://github.com/fromcode119/framework/pull/1275))
+
 ## [0.2.526] - 2026-11-06
 
 ### Fixed
@@ -21,7 +27,6 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Fixed
 
 - **core**: PublicListing.field() is typed as a collection field ([#1269](https://github.com/fromcode119/framework/pull/1269))
-- **admin**: offer a theme update only when the marketplace version is newer ([#1268](https://github.com/fromcode119/framework/pull/1268))
 
 ## [0.2.524] - 2026-11-06
 
