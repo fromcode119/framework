@@ -70,7 +70,6 @@ export class ResolutionCollectionScanService {
     collection: ICollection,
     ctx: IResolutionPriorityScanContext,
   ): Promise<Array<{ find: { kind: ResolutionMatchKind; candidate: string }; doc: any }>> {
-    if (!(await this.readable(collection, ctx.options.user))) return [];
     const flags = this.cache.getCollectionFlags(collection);
     const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
     if (flags.hasCustomPermalink) {
@@ -83,7 +82,10 @@ export class ResolutionCollectionScanService {
         finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1 }) });
       }
     }
+    // Readability is asked only of a collection that has something to look up: the answer can cost a
+    // round trip to the plugin's process, and most collections hold neither a slug nor a permalink.
     if (finds.length === 0) return [];
+    if (!(await this.readable(collection, ctx.options.user))) return [];
     const settled = await Promise.allSettled(
       finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
     );
@@ -98,12 +100,16 @@ export class ResolutionCollectionScanService {
 
   /** Pass 2 — permalink-structure search, one query per collection, batched in ordered chunks. */
   async scanStructure(ctx: IResolutionStructureScanContext): Promise<IResolutionScanResult | null> {
-    const jobs: Array<{ collection: ICollection; pluginSlug: string; query: any }> = [];
+    // The query is built FIRST: most collections have nothing to look up for this path, and asking
+    // whether a collection is readable can cost a round trip to its plugin's process. Those that do
+    // have a lookup are asked together, not one after another.
+    const candidates: Array<{ collection: ICollection; pluginSlug: string; query: any }> = [];
     for (const { collection, pluginSlug } of ctx.entries) {
-      if (!(await this.readable(collection, ctx.options.user))) continue;
       const query = this.buildStructureQuery(collection, ctx);
-      if (query) jobs.push({ collection, pluginSlug, query });
+      if (query) candidates.push({ collection, pluginSlug, query });
     }
+    const readable = await Promise.all(candidates.map((c) => this.readable(c.collection, ctx.options.user)));
+    const jobs = candidates.filter((_, index) => readable[index]);
 
     for (let i = 0; i < jobs.length; i += ResolutionCollectionScanService.STRUCTURE_CHUNK_SIZE) {
       const chunk = jobs.slice(i, i + ResolutionCollectionScanService.STRUCTURE_CHUNK_SIZE);
