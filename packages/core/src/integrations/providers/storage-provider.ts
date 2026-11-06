@@ -16,7 +16,9 @@ export class StorageIntegrationDefinition {
     const config: Record<string, any> = {};
 
     if (driver === 'local') {
-      config.uploadDir = ProjectPaths.getUploadsDir();
+      // The ROOT: the driver below adds the site's directory on every write. Read here as the site's own
+      // directory (this can first run inside a site's work), every file would land a second site level down.
+      config.uploadDir = ProjectPaths.getUploadsRoot();
       config.publicUrlBase = process.env.STORAGE_PUBLIC_URL || '/uploads';
     } else if (driver === 's3') {
       config.region = process.env.STORAGE_S3_REGION || 'auto';
