@@ -35,5 +35,11 @@ export class CustomerSignInSettingDescriptors {
       scope: SettingScope.SITE, writable: true, exposed: true,
       seed: { value: 'false', description: "Let apps start people without an account (they can add one later).", group: "security" },
     },
+    // The order of the customer account menu: section keys (the `/account/<key>` address), comma
+    // separated. Blank keeps every section where its plugin placed it; a listed key moves to the front.
+    [SystemConstants.META_KEY.ACCOUNT_SECTION_ORDER]: {
+      scope: SettingScope.SITE, writable: true, exposed: true,
+      seed: { value: '', description: "Order of the customer account sections (comma-separated keys).", group: "security" },
+    },
   };
 }

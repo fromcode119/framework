@@ -18,6 +18,7 @@ export class AccountPushNotificationsPanel extends PluginComponent {
     key: 'notifications',
     labelKey: 'account.section.notifications',
     priority: 65,
+    group: 'profile',
     descriptionKey: 'account.description.notifications',
   };
 
@@ -50,9 +51,18 @@ export class AccountPushNotificationsPanel extends PluginComponent {
     void this.load();
   }
 
+  /** A client that throws before it returns a promise is the same "no devices known" as a failed request. */
+  private async fetchDevices(): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+    try {
+      return await this.system.get(RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS, { silent: true, noDedupe: true });
+    } catch {
+      return null;
+    }
+  }
+
   private async load(): Promise<void> {
     const on = await this.device.isOn().catch(() => false);
-    const devices = await this.system.get(RouteConstants.SEGMENTS.PUSH_SUBSCRIPTIONS, { silent: true, noDedupe: true }).catch(() => null);
+    const devices = await this.fetchDevices();
     const storefront = CoercionUtils.toArray(devices?.devices).filter((device: any) => device?.surface === 'storefront'); // eslint-disable-line @typescript-eslint/no-explicit-any
     this.setState({ on, otherDevices: Math.max(0, storefront.length - (on ? 1 : 0)), loading: false });
   }

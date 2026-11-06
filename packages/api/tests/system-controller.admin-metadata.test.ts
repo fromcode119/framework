@@ -158,7 +158,7 @@ describe('SystemController.getFrontendMetadata public settings', () => {
     // The per-plugin public-settings channel is forwarded verbatim — the fake must be exercised, not
     // merely present, or restoring the method would silently paper over the surface it guards.
     expect(manager.getPublicFrontendPluginSettings).toHaveBeenCalled();
-    expect(response.settings).toEqual(pluginPublicSettings);
+    expect(response.settings).toEqual({ ...pluginPublicSettings, _system: response.publicSettings });
 
     // Only ACTIVE plugins are advertised on the unauthenticated endpoint.
     expect(response.plugins.map((plugin: any) => plugin.slug)).toEqual(['demo']);

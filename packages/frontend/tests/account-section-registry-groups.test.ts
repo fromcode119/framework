@@ -1,0 +1,56 @@
+import { describe, expect, it } from 'vitest';
+import { AccountSectionRegistry } from '@fromcode119/react/account/account-section-registry';
+
+const panel = (accountSection: Record<string, unknown>, pluginSlug = 'p') => ({ component: class { static accountSection = accountSection; }, pluginSlug }) as never;
+
+describe('AccountSectionRegistry groups and merges', () => {
+  it('folds a mergeInto panel into its target and keeps its key reachable', () => {
+    const sections = AccountSectionRegistry.build([
+      panel({ key: 'security', priority: 60, group: 'profile' }),
+      panel({ key: 'sessions', priority: 65, mergeInto: 'security' }),
+    ]);
+    expect(sections.map((s) => s.key)).toEqual(['security']);
+    expect(sections[0].items).toHaveLength(2);
+    expect(AccountSectionRegistry.resolve(sections, 'sessions')?.key).toBe('security');
+  });
+
+  it('keeps a merged panel as its own section when the target is absent', () => {
+    const sections = AccountSectionRegistry.build([panel({ key: 'sessions', mergeInto: 'security' })]);
+    expect(sections.map((s) => s.key)).toEqual(['sessions']);
+  });
+
+  it('lists ungrouped sections first, then groups by their earliest section', () => {
+    const sections = AccountSectionRegistry.build([
+      panel({ key: 'overview', priority: -10 }),
+      panel({ key: 'profile', priority: 0, group: 'profile' }),
+      panel({ key: 'orders', priority: 10, group: 'shopping' }),
+      panel({ key: 'security', priority: 60, group: 'profile' }),
+    ]);
+    const groups = AccountSectionRegistry.groups(sections);
+    expect(groups.map((g) => g.key)).toEqual(['', 'profile', 'shopping']);
+    expect(groups[1].sections.map((s) => s.key)).toEqual(['profile', 'security']);
+    expect(groups[2].labelKey).toBe('account.group.shopping');
+  });
+
+  it('leaves out a section whose offeredWhen answers false for the shop settings', () => {
+    const offeredWhen = (settings: Record<string, unknown>) => settings.invoicesOn === true;
+    const panels = [panel({ key: 'overview' }), panel({ key: 'invoices', offeredWhen })];
+    expect(AccountSectionRegistry.build(panels, {}).map((s) => s.key)).toEqual(['overview']);
+    expect(AccountSectionRegistry.build(panels, { invoicesOn: true }).map((s) => s.key)).toEqual(['invoices', 'overview']);
+  });
+
+  it('puts the sections the operator listed first, in that order, and keeps the rest by priority', () => {
+    const panels = [
+      panel({ key: 'overview', priority: 0 }),
+      panel({ key: 'orders', priority: 10 }),
+      panel({ key: 'security', priority: 60 }),
+      panel({ key: 'sessions', priority: 65, mergeInto: 'security' }),
+      panel({ key: 'wishlist', priority: 30 }),
+    ];
+    const order = (value: string) => ({ _system: { account_section_order: value } });
+    expect(AccountSectionRegistry.build(panels, order('wishlist, sessions')).map((s) => s.key))
+      .toEqual(['wishlist', 'security', 'overview', 'orders']);
+    expect(AccountSectionRegistry.build(panels, order('')).map((s) => s.key))
+      .toEqual(['overview', 'orders', 'wishlist', 'security']);
+  });
+});

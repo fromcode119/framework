@@ -16,7 +16,7 @@ export class AccountSessionsPanel extends PluginComponent {
   @state revokingId: string = '';
   @state error: string = '';
   @state sessions: any[] = [];
-  static readonly accountSection = { key: 'sessions', labelKey: 'account.section.sessions', priority: 65, descriptionKey: 'account.description.sessions' };
+  static readonly accountSection = { key: 'sessions', labelKey: 'account.section.sessions', priority: 65, mergeInto: 'security', descriptionKey: 'account.description.sessions' };
 
   private mounted = false;
   

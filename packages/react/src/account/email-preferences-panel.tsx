@@ -45,6 +45,7 @@ export class AccountEmailPreferencesPanel extends PluginComponent {
     key: 'email-preferences',
     labelKey: 'account.section.emailPreferences',
     priority: 70,
+    mergeInto: 'notifications',
     descriptionKey: 'account.description.emailPreferences',
   };
 

@@ -15,6 +15,8 @@ export class PublicFrontendSettingsService {
     SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED,
     SystemConstants.META_KEY.FRONTEND_REGISTRATION_ENABLED,
     SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION,
+    // The customer account menu order — the account shell sorts its sections by it.
+    SystemConstants.META_KEY.ACCOUNT_SECTION_ORDER,
   ]);
 
   /** Keys the api resolves site-first, then platform, when it acts on them (`AuthControllerSharedInfrastructure.readMetaRow`). */

@@ -26,6 +26,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'site_icon',
     'notification_email',
     'notification_email_cc',
+    'account_section_order',
     'frontend_url',
     'admin_url',
     'site_url',

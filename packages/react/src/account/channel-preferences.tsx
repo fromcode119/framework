@@ -33,8 +33,17 @@ export class AccountChannelPreferences extends PluginComponent {
     void this.load();
   }
 
+  /** A client that throws before it returns a promise is the same "nothing to show" as a failed request. */
+  private async fetchPreferences(): Promise<any> { // eslint-disable-line @typescript-eslint/no-explicit-any
+    try {
+      return await this.system.get(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, { silent: true, noDedupe: true });
+    } catch {
+      return null;
+    }
+  }
+
   private async load(): Promise<void> {
-    const data = await this.system.get(RouteConstants.SEGMENTS.NOTIFICATION_PREFERENCES, { silent: true, noDedupe: true }).catch(() => null);
+    const data = await this.fetchPreferences();
     if (!data) return;
     this.setState({
       loaded: true,

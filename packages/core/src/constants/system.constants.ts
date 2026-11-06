@@ -20,6 +20,13 @@ export class SystemConstants {
    * Well-known keys in the system meta table.
    */
   /**
+   * Where the site's public SYSTEM settings sit inside the runtime `globalSettings`, beside each
+   * plugin's public settings (keyed by plugin slug). A plugin slug cannot start with `_`, so no plugin
+   * can claim it.
+   */
+  static readonly PUBLIC_SETTINGS_NAMESPACE = '_system';
+
+  /**
    * The storefront's default for `META_KEY.SSR_GENERATION_CAP` when the operator has not set one.
    * Mirrored by the Infrastructure page's placeholder — one number, stated in one place.
    */

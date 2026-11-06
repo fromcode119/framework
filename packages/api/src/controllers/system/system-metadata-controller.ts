@@ -195,7 +195,8 @@ export class SystemMetadataController {
       menu,
       plugins,
       publicSettings,
-      settings: pluginPublicSettings,
+      // The runtime `globalSettings`: each plugin's public settings, plus the site's own public ones.
+      settings: { ...pluginPublicSettings, [SystemConstants.PUBLIC_SETTINGS_NAMESPACE]: publicSettings },
       ssrGenerationCap,
       ssrRenderMemoryMb,
       ssrRenderTimeoutMs,
