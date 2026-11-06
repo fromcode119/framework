@@ -21,6 +21,23 @@ describe('read constraint operators', () => {
     expect(ReadConstraintOperators.isOperator(new Date())).toBe(false);
   });
 
+  it('a rule may name the values a field may hold, unset rows included', () => {
+    const policy = new CollectionAccessPolicyService();
+    const listed = { visibility: { $in: ['public', 'catalog_only'], $orNull: true } };
+    expect(ReadConstraintOperators.isOperator(listed.visibility)).toBe(true);
+    expect(policy.matchesReadConstraints({ visibility: 'catalog_only' }, listed)).toBe(true);
+    expect(policy.matchesReadConstraints({ visibility: null }, listed)).toBe(true);
+    expect(policy.matchesReadConstraints({ visibility: 'search_only' }, listed)).toBe(false);
+    expect(policy.matchesReadConstraints({ visibility: 'hidden' }, listed)).toBe(false);
+    expect(policy.matchesReadConstraints({ visibility: null }, { visibility: { $in: ['public'] } })).toBe(false);
+  });
+
+  it('a list read sends a value list as IN, or-null when asked', () => {
+    const db: any = { inArray: vi.fn((c, v) => ({ in: [c, v] })), isNull: vi.fn((c) => ({ isNull: c })), eq: vi.fn((c, v) => ({ eq: [c, v] })), or: vi.fn((...a) => ({ or: a })), and: vi.fn((...a) => ({ and: a })) };
+    const clause = ReadConstraintOperators.buildClause(db, { visibility: 'col' }, { visibility: { $in: ['public'], $orNull: true } });
+    expect(clause).toEqual({ or: [{ isNull: 'col' }, { eq: ['col', ''] }, { in: ['col', ['public']] }] });
+  });
+
   it('a single record is checked the same way', () => {
     const policy = new CollectionAccessPolicyService();
     expect(policy.matchesReadConstraints({ visibility: 'public', publishAt: null, status: 'published' }, rule)).toBe(true);

@@ -45,6 +45,16 @@ export class PublicListing extends Enum {
   }
 
   /**
+   * The same rule as a collection READ RULE constraint, for a public collection's generic list reads:
+   * `{ visibility: { $in: [values listed there], $orNull: true } }`. Apply it to LIST reads only — a read
+   * of one record by its link must still find a Hidden record.
+   */
+  static readConstraint(surface: PublicListingSurface): Record<string, unknown> {
+    const listed = (PublicListing.values() as PublicListing[]).filter((member) => member.lists(surface)).map((member) => member.value);
+    return { [PublicListing.FIELD]: { $in: listed, $orNull: true } };
+  }
+
+  /**
    * The `visibility` collection field, offering only the values that mean something for that collection
    * (a category is never searched, so it offers Public and Hidden). Labels are the owner's to translate.
    */

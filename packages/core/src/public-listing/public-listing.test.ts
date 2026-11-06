@@ -29,4 +29,9 @@ describe('PublicListing', () => {
     expect((field.options as Array<{ value: string }>).map((option) => option.value)).toEqual(['public', 'hidden']);
     expect((PublicListing.field().options as unknown[]).length).toBe(4);
   });
+
+  it('states the catalogue rule as a read constraint, unset rows included', () => {
+    expect(PublicListing.readConstraint(PublicListingSurface.CATALOG)).toEqual({ visibility: { $in: ['public', 'catalog_only'], $orNull: true } });
+    expect(PublicListing.readConstraint(PublicListingSurface.SEARCH)).toEqual({ visibility: { $in: ['public', 'search_only'], $orNull: true } });
+  });
 });

@@ -1,4 +1,5 @@
 import { Sql, type IDatabaseManager } from '@fromcode119/database';
+import type { IReadConstraintOperator } from '@api/services/interfaces/read-constraint-operator.interface';
 
 /**
  * The comparisons a collection's `access.read` rule may use besides an exact value. A rule could only
@@ -7,17 +8,18 @@ import { Sql, type IDatabaseManager } from '@fromcode119/database';
  *
  *   { visibility: { $ne: 'hidden' } }                    — anything but this value (an unset field passes)
  *   { publishAt: { $lte: nowIso, $orNull: true } }       — on or before this value, or unset
+ *   { visibility: { $in: ['public', 'catalog_only'], $orNull: true } } — one of these values, or unset
  *
  * Only a READ RULE's values are read this way; a visitor's query string never is.
  */
 export class ReadConstraintOperators {
-  private static readonly KEYS = new Set(['$ne', '$lte', '$orNull']);
+  private static readonly KEYS = new Set(['$ne', '$lte', '$in', '$orNull']);
 
-  static isOperator(value: unknown): value is { $ne?: unknown; $lte?: unknown; $orNull?: boolean } {
+  static isOperator(value: unknown): value is IReadConstraintOperator {
     if (!value || Object(value) !== value || Array.isArray(value) || value instanceof Date) return false;
     const keys = Object.keys(value as object);
     return keys.length > 0 && keys.every((key) => ReadConstraintOperators.KEYS.has(key))
-      && ('$ne' in (value as object) || '$lte' in (value as object));
+      && ('$ne' in (value as object) || '$lte' in (value as object) || Array.isArray((value as IReadConstraintOperator).$in));
   }
 
   /** The rule's exact values, and its comparisons, apart. */
@@ -35,8 +37,13 @@ export class ReadConstraintOperators {
     const chunks = Object.entries(operators).map(([key, value]) => {
       const column = table[key];
       if (!column) return Sql.query`1 = 0`;
-      const op = value as { $ne?: unknown; $lte?: unknown; $orNull?: boolean };
+      const op = value as IReadConstraintOperator;
       if ('$ne' in op) return Sql.query`${column} IS DISTINCT FROM ${op.$ne as any}`;
+      if (Array.isArray(op.$in)) {
+        // An empty list matches nothing; `$orNull` adds the rows that never had a value (stored before the field).
+        const listed = op.$in.length ? db.inArray(column, op.$in) : Sql.query`1 = 0`;
+        return op.$orNull ? db.or(db.isNull(column), db.eq(column, ''), listed) : listed;
+      }
       return op.$orNull
         ? Sql.query`(${column} IS NULL OR ${column} <= ${op.$lte as any})`
         : Sql.query`${column} <= ${op.$lte as any}`;
@@ -46,9 +53,10 @@ export class ReadConstraintOperators {
   }
 
   /** The same comparison on one record already read — a single-record read checks the rule this way. */
-  static matches(actual: unknown, value: { $ne?: unknown; $lte?: unknown; $orNull?: boolean }): boolean {
+  static matches(actual: unknown, value: IReadConstraintOperator): boolean {
     if ('$ne' in value) return actual !== value.$ne;
     if (actual === null || actual === undefined || actual === '') return value.$orNull === true;
+    if (Array.isArray(value.$in)) return value.$in.includes(actual);
     const left = new Date(actual as string | number | Date).getTime();
     const right = new Date(value.$lte as string | number | Date).getTime();
     if (!Number.isNaN(left) && !Number.isNaN(right)) return left <= right;
