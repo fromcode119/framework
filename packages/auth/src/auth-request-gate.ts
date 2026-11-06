@@ -106,7 +106,7 @@ export class AuthRequestGate {
           if (user) {
             const signedIn = await this.applyTenantRoles(user, tenantId);
             // The storefront's own cookie: the site is seen as a visitor sees it (`StorefrontVisitorUser`).
-            req.user = !isAdminCtx && t !== bearer ? StorefrontVisitorUser.of(signedIn) : signedIn;
+            req.user = !isAdminCtx && t !== bearer ? StorefrontVisitorUser.of(signedIn, req) : signedIn;
             this.logger.debug(`Session validated for ${req.url || 'unknown'}`);
             break;
           }
