@@ -4561,6 +4561,8 @@
     "releasedOn": "Издадена {{date}}",
     "requiresVersion": "Изисква {{version}}",
     "versionBringsImprovements": "v{{version}} носи нови подобрения в дизайна и функции.",
+    "installedVersionLabel": "Инсталирана v{{version}}",
+    "marketplaceVersionLabel": "В пазара v{{version}}",
     "updateAvailableVersion": "Има обновление v{{version}}",
     "noBundledPluginArchivesDetected": "Не са открити включени архиви на плъгини",
     "noRequiredMarketplacePlugins": "Няма нужни плъгини от пазара",

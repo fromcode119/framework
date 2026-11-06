@@ -22,6 +22,7 @@ describe('ThemeMarketplaceInstall — a package from this installation', () => {
       installFromDirectory: vi.fn(async () => ({})),
       installFromZip: vi.fn(async () => ({})),
       installTheme: vi.fn(),
+      getThemes: () => [],
     };
     const install = new ThemeMarketplaceInstall(manager as never, { info: vi.fn() } as never);
     return { manager, install };

@@ -5,6 +5,7 @@ import { CatalogEntry } from '@core/marketplace/contributions/catalog-entry';
 import { CatalogContributionScope } from '@core/marketplace/catalog-contribution-scope';
 import { CoreServices } from '@core/services/core-services';
 import { ExtensionScope } from '@core/plugin/enums/extension-scope.enum';
+import { VersionComparisonService } from '@core/services/version-comparison-service';
 
 /**
  * ThemeUpdateService
@@ -81,7 +82,7 @@ export class ThemeUpdateService {
         const response = await fetch((theme as any).updateUrl.replace('.zip', '.json'));
         if (response.ok) {
           const data = await response.json();
-          if (data.version && data.version !== theme.version) {
+          if (data.version && VersionComparisonService.isGreater(String(data.version), theme.version)) {
             return { available: true, currentVersion: theme.version, latestVersion: data.version, updateUrl: data.downloadUrl || (theme as any).updateUrl };
           }
         }
@@ -91,16 +92,19 @@ export class ThemeUpdateService {
     }
     try {
       const marketplaceThemes = await this.getMarketplaceThemes();
-      const pkg = marketplaceThemes.find((t: any) => t.slug === slug);
+      // The NEWEST offer, and only when it is strictly newer than what is installed. Any different
+      // version used to count, and the first catalogue row was taken, so an older build still in the
+      // catalogue (1.2.6) was announced as an update to an installed 1.2.35 — a downgrade.
+      const pkg = VersionComparisonService.newest(marketplaceThemes.filter((t: any) => t.slug === slug) as Array<Record<string, unknown>>);
       // Coerced, not asserted: an offer may come from a remote catalogue or from a contributor on
       // this installation, and neither is this code's to trust the shape of.
-      const offeredVersion = String((pkg as Record<string, unknown>)?.version ?? '').trim();
-      if (pkg && offeredVersion && offeredVersion !== theme.version) {
+      const offeredVersion = String(pkg?.version ?? '').trim();
+      if (pkg && offeredVersion && VersionComparisonService.isGreater(offeredVersion, theme.version)) {
         return {
           available: true,
           currentVersion: theme.version,
           latestVersion: offeredVersion,
-          updateUrl: String((pkg as Record<string, unknown>)?.downloadUrl ?? '').trim() || undefined,
+          updateUrl: String(pkg.downloadUrl ?? '').trim() || undefined,
         };
       }
     } catch (e) {}
