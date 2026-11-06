@@ -120,6 +120,9 @@ export class PluginEntityRegistrationService {
     // `affectsPages: false` (a 404 log) still moved the site's revision on every write, and every visit
     // to a missing page emptied the site's cached pages until the api restarted.
     existing.affectsPages = incoming.affectsPages;
+    // Which visitor reads its Visibility filters is the release's word too: kept as at boot, a release
+    // that declared `publicListing` listed hidden records to visitors until the api restarted.
+    existing.publicListing = incoming.publicListing;
     // The release's own order first — a field it adds sits where it was declared, not after every
     // field the api already had (an update put a new select under the last field of the form until the
     // api restarted). What the release does not declare keeps its place after them, as at boot: the
