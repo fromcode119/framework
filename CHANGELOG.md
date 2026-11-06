@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.514] - 2026-11-06
+
+### Performance
+
+- **frontend**: a storefront miss resolves once instead of three times ([#1238](https://github.com/fromcode119/framework/pull/1238))
+- **frontend**: keep a theme's stamped css and boot script in memory ([#1239](https://github.com/fromcode119/framework/pull/1239))
+- **frontend**: break theme render into Server-Timing sub-phases ([#1237](https://github.com/fromcode119/framework/pull/1237))
+
 ## [0.2.513] - 2026-11-06
 
 ### Performance
