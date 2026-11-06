@@ -1,3 +1,4 @@
+import { SiteRevisionMemo } from '@/lib/site-revision-memo';
 import { RequestScope } from '@/lib/request-scope';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
@@ -29,7 +30,7 @@ export class DynamicPageResolver {
    * then answered a hard 404 for a page that exists — telling crawlers to delist it. An
    * unreachable API must surface as a 5xx, which is honest and retryable.
    */
-  private static readonly resolveFetchCache = RequestScope.memo(async (queryString: string): Promise<Record<string, any> | null> => {
+  private static readonly resolveFetchCache = SiteRevisionMemo.memo(async (queryString: string): Promise<Record<string, any> | null | undefined> => {
     const path = ServerApiPaths.buildSystemResolvePath(queryString);
     // A preview navigation is the operator asking to see their own draft, so this one fetch also
     // presents their admin session — the API decides from that identity whether unpublished content
@@ -39,9 +40,12 @@ export class DynamicPageResolver {
     const forwardOperatorSession = new URLSearchParams(queryString).get('preview') === '1';
     const response = (await ServerApiUtils.serverFetchResponseOutcome(path, undefined, { forwardOperatorSession }))
       .valueOrThrow(path);
-    if (!response || !response.ok) return null;
+    // `null` is the api's answer "nothing here" (404) and is kept like any answer; any other failure is
+    // `undefined`, which callers read the same way but which is never kept for the next visitor.
+    if (!response) return undefined;
+    if (!response.ok) return response.status === 404 ? null : undefined;
     return await response.json() as Record<string, any>;
-  });
+  }, (result) => result !== undefined);
 
   static async readSettingValue(key: string): Promise<string> {
     return FrontendPublicSettings.readSettingValue(key);

@@ -64,7 +64,11 @@ export class StorefrontDocumentRenderer {
     }
 
     const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
-    const resolution = await timing.measure('resolve', DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy, true));
+    // A path the framework answers itself (sign-in, registration, the account) is no miss when no content
+    // claims it: reporting one logged every visit to /login as a 404 and moved the site's content revision,
+    // which emptied every cached page.
+    const frameworkPage = await FrameworkSitePage.resolve(slug, locale);
+    const resolution = await timing.measure('resolve', DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy, !frameworkPage));
     if (resolution?.doc) {
       const canonicalTarget = CanonicalPathRedirect.resolveTarget({
         canonicalPath: resolution.canonicalPath || await HomePageResolver.homeCanonicalPath(resolution.doc, resolution.type, locale, LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(request.searchParams, 'fallback_locale'))), requestSlug: slug, pathLocale, strategy: routingConfig.strategy, searchParams: request.searchParams,
@@ -83,7 +87,6 @@ export class StorefrontDocumentRenderer {
       redirect(redirectRule.target);
     }
     // A sign-in or account path the site has no page for: the framework's own page, in the theme's layout.
-    const frameworkPage = await FrameworkSitePage.resolve(slug, locale);
     if (frameworkPage) {
       return StorefrontDocumentRenderer.document({
         content: frameworkPage, resolutionType: undefined, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',

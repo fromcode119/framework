@@ -27,7 +27,14 @@ export class SiteRevisionMemo {
   private static readonly entries = new Map<string, Promise<unknown>>();
   private static nextFunctionId = 0;
 
-  static memo<A extends (string | number | boolean)[], R>(fn: (...args: A) => Promise<R>): (...args: A) => Promise<R> {
+  /**
+   * `keep` decides, once the answer is in, whether it may serve later requests; an answer it refuses
+   * is dropped, so the next request asks again (a 404 lookup must reach the api every time to be logged).
+   */
+  static memo<A extends (string | number | boolean)[], R>(
+    fn: (...args: A) => Promise<R>,
+    keep: (value: R) => boolean = () => true,
+  ): (...args: A) => Promise<R> {
     const id = `f${++SiteRevisionMemo.nextFunctionId}`;
     const perRequest = RequestScope.memo(fn);
     return async (...args: A): Promise<R> => {
@@ -44,7 +51,9 @@ export class SiteRevisionMemo {
       }
       const pending = perRequest(...args);
       SiteRevisionMemo.entries.set(key, pending);
-      pending.catch(() => {
+      pending.then((value) => {
+        if (!keep(value) && SiteRevisionMemo.entries.get(key) === pending) SiteRevisionMemo.entries.delete(key);
+      }, () => {
         if (SiteRevisionMemo.entries.get(key) === pending) SiteRevisionMemo.entries.delete(key);
       });
       while (SiteRevisionMemo.entries.size > SiteRevisionMemo.MAX_ENTRIES) {
