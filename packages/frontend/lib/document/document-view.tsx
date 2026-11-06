@@ -22,7 +22,7 @@ import { SiteEnvironmentBannerView } from '@/lib/document/site-environment-banne
  * content can never close the script element.
  */
 export class DocumentView {
-  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, nonProduction, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutInlineCss }: {
+  static render({ lang, page, site, theme, markup, headInjections, bodyStartInjections, preview, contentPreview, nonProduction, schema, pageDocPrefetch, runtimeConfig, runtimeScriptPath, layoutInlineCss }: {
     lang: string;
     page: Metadata;
     site: Metadata;
@@ -32,6 +32,8 @@ export class DocumentView {
     bodyStartInjections: ReactElement[];
     /** Whether this render is somebody looking at a site that is not published yet. */
     preview: boolean;
+    /** Whether this page was read with the operator's preview rights (`?preview=1`). */
+    contentPreview?: boolean;
     /** Whether the site is marked non-production — the same bar the root layout renders. */
     nonProduction: boolean;
     schema: string[];
@@ -49,6 +51,7 @@ export class DocumentView {
               theme renders can sit above it or paint over it. */}
           <SiteBannersView.render bars={[
             SitePreviewBannerView.render({ visible: preview, locale: lang }),
+            SitePreviewBannerView.renderContent({ visible: contentPreview === true && !preview, locale: lang }),
             SiteEnvironmentBannerView.render({ visible: nonProduction, locale: lang }),
           ]} />
           {bodyStartInjections}

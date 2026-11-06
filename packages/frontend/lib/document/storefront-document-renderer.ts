@@ -58,7 +58,7 @@ export class StorefrontDocumentRenderer {
       const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams));
       if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
       return StorefrontDocumentRenderer.document({
-        content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '',
+        content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '', contentPreview: home.resolution?.preview === true,
         pageKind: StorefrontPageKind.HOME, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
@@ -75,7 +75,7 @@ export class StorefrontDocumentRenderer {
       });
       if (canonicalTarget) permanentRedirect(canonicalTarget);
       return StorefrontDocumentRenderer.document({
-        content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
+        content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', contentPreview: resolution.preview === true,
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
@@ -175,7 +175,7 @@ export class StorefrontDocumentRenderer {
 
   private static async document(args: {
     content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
-    status?: number; notFoundPath?: string; acceptEncoding?: string;
+    status?: number; notFoundPath?: string; acceptEncoding?: string; contentPreview?: boolean;
   }, timing: DocumentRenderTiming): Promise<Response> {
     const content = (args.content as Record<string, unknown> | null) || null;
     const locale = await timing.measure('documentLocale', FrontendLocaleService.resolveDocumentLocale(args.strategy));
@@ -221,6 +221,7 @@ export class StorefrontDocumentRenderer {
       // The render already got this far, so the site is either published or this caller may preview
       // it. Only the second case says so on screen.
       preview,
+      contentPreview: args.contentPreview === true,
       // The islands document said nothing about a non-production site while the root layout did.
       nonProduction,
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),

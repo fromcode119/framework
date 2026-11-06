@@ -63,4 +63,9 @@ describe('SiteBannersView', () => {
     expect(html).toContain('Сайт извън производство');
     expect(html).not.toContain('Not published');
   });
+
+  it('says a page opened with ?preview=1 is a preview, and says nothing otherwise', () => {
+    expect(markup([SitePreviewBannerView.renderContent({ visible: true, locale: 'bg' })])).toContain('Преглед — виждате страницата като администратор.');
+    expect(markup([SitePreviewBannerView.renderContent({ visible: false, locale: 'bg' })])).not.toContain('Преглед');
+  });
 });

@@ -135,6 +135,7 @@ export class DynamicPageResolver {
       canonicalPath: String(result?.canonicalPath || '').trim(),
       redirect: StorefrontMissRedirect.of(result),
       missReported,
+      preview: result?.preview === true,
     };
   }
 
@@ -238,6 +239,7 @@ export class DynamicPageResolver {
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
       canonicalPath: String(result?.canonicalPath || '').trim(),
+      preview: result?.preview === true,
     };
   }
 
