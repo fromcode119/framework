@@ -44,6 +44,14 @@ export class RollingDeploy {
       }
     }
     for (const host of ComposeStack.EXTENSION_HOSTS) if (!(await this.rollExtensionHost(host, version))) return false;
+    return this.gateway(version);
+  }
+
+  /**
+   * The gateway alone onto `version` — also after an update that restarted the apps: behind an edge it
+   * rolls whatever the deploy mode, because a gateway runs no migration and there is room for two.
+   */
+  async gateway(version: string): Promise<boolean> {
     // With `edge` holding the public ports the gateway is just another app behind it: a new one beside
     // the old, `edge` sends new connections to whichever answers, and the old one drains. Without an
     // edge it owns the ports itself and can only be restarted — the one gap left.

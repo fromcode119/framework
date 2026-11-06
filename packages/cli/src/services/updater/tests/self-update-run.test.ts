@@ -26,8 +26,10 @@ class Stack {
     return new SelfUpdateRun(this.engine, { reports: async () => { this.createdAtHealth.push(this.engine.created.map((c) => c.name)); return this.healthy; } }, file, 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes)
       .run('0.2.392', '0.2.400');
   }
+  /** The image `service` serves on: its one running container (a rolled one has a new name), else by name. */
   imageOf(service: string) {
-    return this.engine.byName(`site-${service}-1`)?.[1].image;
+    const running = this.runningImages(service);
+    return running.length === 1 ? running[0] : this.engine.byName(`site-${service}-1`)?.[1].image;
   }
   /** The images every running container of `service` is on. */
   runningImages(service: string) {
@@ -156,7 +158,33 @@ describe('SelfUpdateRun', () => {
 
     expect(outcome).toEqual({ state: 'succeeded', error: '' });
     expect(stack.createdAtHealth[0]).toEqual(expect.arrayContaining(['site-api-1', 'site-admin-1', 'site-frontend-1']));
+    expect(stack.createdAtHealth[0].some((name) => name.startsWith('site-gateway-'))).toBe(false);
+    expect(stack.imageOf('gateway')).toBe(`${REG}gateway:v0.2.400`);
+  });
+
+  it('rolls the gateway behind a running edge even when the apps restart, so the edge always has one to send to', async () => {
+    const stack = new Stack();
+
+    await stack.run();
+
+    expect(stack.steps).toContain('Rolling the gateway behind the edge');
+    expect(stack.runningImages('gateway')).toEqual([`${REG}gateway:v0.2.400`]);
+    const gatewayStops = stack.engine.stops.filter((stop) => stop.name.startsWith('site-gateway-'));
+    expect(gatewayStops.length).toBe(1);
+    expect(gatewayStops[0].runningPeers).toBeGreaterThanOrEqual(1);
+  });
+
+  it('replaces the gateway in place, after the api, where no edge runs', async () => {
+    const stack = new Stack();
+    const [edgeId] = [...stack.engine.containers.entries()].find(([, c]) => c.labels['com.docker.compose.service'] === 'edge')!;
+    stack.engine.containers.delete(edgeId);
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    expect(stack.steps).not.toContain('Rolling the gateway behind the edge');
     expect(stack.createdAtHealth[0]).not.toContain('site-gateway-1');
+    expect(stack.engine.created.map((c) => c.name)).toContain('site-gateway-1');
     expect(stack.imageOf('gateway')).toBe(`${REG}gateway:v0.2.400`);
   });
 
@@ -167,7 +195,7 @@ describe('SelfUpdateRun', () => {
     const outcome = await stack.run();
 
     expect(outcome.state).toBe('rolledBack');
-    expect(stack.engine.created.map((c) => c.name)).not.toContain('site-gateway-1');
+    expect(stack.engine.created.some((c) => c.name.startsWith('site-gateway-'))).toBe(false);
     expect(stack.imageOf('gateway')).toBe(`${REG}gateway:v0.2.392`);
   });
 
