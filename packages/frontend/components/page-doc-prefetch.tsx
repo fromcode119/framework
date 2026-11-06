@@ -14,11 +14,12 @@ import { PageDocPrefetchRequestCache } from '@/lib/theme/page-doc-prefetch-reque
  * page data (e.g. the record a page renders) without a client XHR round-trip.
  */
 export class PageDocPrefetchView {
-  static async render({ content }: { content: unknown }) {
+  /** `plugin` / `type`: whom the content was resolved from — the same pair the theme render was given. */
+  static async render({ content, plugin = '', type = '' }: { content: unknown; plugin?: string; type?: string }) {
 
     try {
       // Shared per-request pass — SsrContentShell reads the SAME payloads for its LCP image.
-      const results = await PageDocPrefetchRequestCache.read(content);
+      const results = await PageDocPrefetchRequestCache.read(content, '', plugin, type);
       if (!Object.keys(results).length) return null;
       return <PagePrefetchScriptView.render payload={results} />;
     } catch (error) {

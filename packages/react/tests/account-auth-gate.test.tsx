@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, vi } from 'vitest';
 import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import { AccountAuthGate } from '@react/account/account-auth-gate';
@@ -57,7 +57,7 @@ describe('AccountAuthGate across the runtime remount', () => {
   });
 
   it('still sends a confirmed guest to sign in', async () => {
-    const api = { get: vi.fn(async () => { throw Object.assign(new Error('401'), { status: 401 }); }) };
+    const api = { get: vi.fn(async () => { throw Object.assign(new Error('401'), { statusCode: 401 }); }) };
     render(inRuntime(api));
     await waitFor(() => expect(replace).toHaveBeenCalledWith('/login?next=%2Faccount'));
   });
@@ -68,8 +68,35 @@ describe('AccountAuthGate across the runtime remount', () => {
     const { unmount } = render(inRuntime(api));
     await waitFor(() => expect(api.get).toHaveBeenCalled());
     unmount();
-    refuse(new Error('401'));
+    refuse(Object.assign(new Error('401'), { statusCode: 401 }));
     await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('keeps a rate-limited customer signed in and offers a retry that shows the account', async () => {
+    let calls = 0;
+    const api = { get: vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) throw Object.assign(new Error('Too many requests'), { statusCode: 429 });
+      return { person: { id: 7 } };
+    }) };
+    render(inRuntime(api));
+    await screen.findByText('We could not check your sign-in');
+    expect(screen.queryByText('Orders')).toBeNull();
+    expect(screen.queryByText('Please sign in')).toBeNull();
+    fireEvent.click(screen.getByText('Try again'));
+    await screen.findByText('Orders');
+    expect(api.get).toHaveBeenCalledTimes(2);
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('does not take a server error or a dropped connection for a guest', async () => {
+    for (const error of [Object.assign(new Error('boom'), { statusCode: 503 }), new TypeError('Failed to fetch')]) {
+      const api = { get: vi.fn(async () => { throw error; }) };
+      const { unmount } = render(inRuntime(api));
+      await screen.findByText('We could not check your sign-in');
+      unmount();
+    }
     expect(replace).not.toHaveBeenCalled();
   });
 });

@@ -19,6 +19,7 @@ import { AccountClass } from '@react/account/account-class';
 export class AccountAuthGate extends PluginComponent {
   @prop declare children?: ReactNode;
   @state status: AuthGateState = AuthGateState.CHECKING;
+  private static readonly UNAUTHORIZED = 401;
   private mounted = false;
   private checking = false;
 
@@ -54,11 +55,21 @@ export class AccountAuthGate extends PluginComponent {
       const ok = Boolean(res && typeof res === 'object' && 'person' in res);
       if (this.mounted) this.setState({ status: ok ? AuthGateState.AUTHED : AuthGateState.GUEST });
       if (!ok) this.redirectToLogin();
-    } catch {
-      if (this.mounted) this.setState({ status: AuthGateState.GUEST });
-      this.redirectToLogin();
+    } catch (error) {
+      // Only a 401 says "not signed in". A 429, a 5xx or a dropped connection says nothing about the
+      // session: sending that customer to /login told a signed-in person they were signed out (and the
+      // login page then answered "already signed in"). They get a retry instead; no content is shown.
+      const guest = (error as { statusCode?: number } | null)?.statusCode === AccountAuthGate.UNAUTHORIZED;
+      if (this.mounted) this.setState({ status: guest ? AuthGateState.GUEST : AuthGateState.UNAVAILABLE });
+      if (guest) this.redirectToLogin();
+    } finally {
+      this.checking = false;
     }
   }
+
+  private retry = (): void => {
+    this.setState({ status: AuthGateState.CHECKING });
+  };
 
   private redirectToLogin(): void {
     // A gate that has been unmounted no longer speaks for the page: a remounted twin owns the decision.
@@ -75,6 +86,17 @@ export class AccountAuthGate extends PluginComponent {
     // nothing left the account URL opening to a hole. The shell's shape stands in until the answer
     // arrives; only a CONFIRMED guest sees the prompt.
     if (this.status === AuthGateState.CHECKING) return <AccountShellPlaceholder />;
+    if (this.status === AuthGateState.UNAVAILABLE) {
+      return (
+        <div className={`${AccountClass.ROOT} ${AccountClass.of('gate')}`} role="alert">
+          <h2 className={AccountClass.of('gate-title')}>{this.t('account.gate.unavailableTitle', undefined, 'We could not check your sign-in')}</h2>
+          <p className={AccountClass.of('gate-body')}>{this.t('account.gate.unavailableBody', undefined, 'This is usually brief. Please try again in a moment.')}</p>
+          <button type="button" className={AccountClass.of('btn', 'link')} onClick={this.retry}>
+            {this.t('account.gate.retry', undefined, 'Try again')}
+          </button>
+        </div>
+      );
+    }
     return (
       <div className={`${AccountClass.ROOT} ${AccountClass.of('gate')}`}>
         <h2 className={AccountClass.of('gate-title')}>{this.t('account.gate.title', undefined, 'Please sign in')}</h2>

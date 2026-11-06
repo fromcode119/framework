@@ -5,6 +5,7 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 import { PluginPagePrefetcher } from '@/lib/theme/plugin-page-prefetcher';
 import type { ThemePrefetchApiEntry } from '@/lib/theme/theme-prefetch-api-entry';
 import type { ThemePrefetchFromPageConfig } from '@/lib/theme/theme-prefetch-from-page-config';
+import type { IResolvedDocOrigin } from '@/lib/interfaces/resolved-doc-origin.interface';
 
 /**
  * Per-PAGE companion to ThemeDataPrefetcher. Static `ui.prefetchApis` entries are
@@ -35,10 +36,10 @@ export class PageDocPrefetcher {
   private static readonly DEFAULT_MAX_VALUES = 3;
 
   /**
-   * `plugins` and `requestSearch` (the page address's query string) feed the entries plugins declare for
-   * their own pages — `PluginPagePrefetcher`.
+   * `plugins`, `requestSearch` (the page address's query string) and `origin` (the plugin and collection the
+   * document was resolved from) feed the entries plugins declare for their own pages — `PluginPagePrefetcher`.
    */
-  static async prefetch(doc: unknown, theme: Record<string, any>, plugins: unknown = [], requestSearch = ''): Promise<Record<string, unknown>> {
+  static async prefetch(doc: unknown, theme: Record<string, any>, plugins: unknown = [], requestSearch = '', origin?: IResolvedDocOrigin): Promise<Record<string, unknown>> {
     const apis = Array.isArray(theme?.ui?.prefetchApis)
       ? (theme.ui.prefetchApis as ThemePrefetchApiEntry[])
       : [];
@@ -65,7 +66,7 @@ export class PageDocPrefetcher {
 
     await Promise.all([
       PageDocPrefetcher.prefetchDatasourceBlocks(doc, internalBase, results),
-      PluginPagePrefetcher.prefetch(doc, plugins, requestSearch, internalBase, results),
+      PluginPagePrefetcher.prefetch(doc, plugins, requestSearch, internalBase, results, origin),
     ]);
     return results;
   }

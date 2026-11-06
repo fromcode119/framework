@@ -35,6 +35,8 @@ export class HomePageRoute {
       contentClassName: StorefrontPageKind.HOME.contentClassName,
       contentStyle: StorefrontPageKind.HOME.contentStyle,
       requestPath: '/',
+      resolutionPlugin: resolution?.plugin || '',
+      resolutionType: resolution?.type || '',
     });
     return (
       <>
@@ -43,7 +45,7 @@ export class HomePageRoute {
         {/* JSON-LD structured data — body-rendered; Next's Metadata API cannot carry it. */}
         <StructuredDataScriptsView.render schema={schema} />
         {/* Page-scoped data prefetch (theme.json `fromPage` entries) — body script, pre-theme-boot. */}
-        <PageDocPrefetchView.render content={content} />
+        <PageDocPrefetchView.render content={content} plugin={resolution?.plugin || ''} type={resolution?.type || ''} />
         <HomeClient locale={locale} initialContent={content} forcedLayout={forcedLayout} ssrHtml={ssrMarkup?.bodyHtml || ''} ssrRendersContentSlot={Boolean(ssrMarkup?.rendersContentSlot)} />
       </>
     );

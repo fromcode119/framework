@@ -8,14 +8,23 @@
  * `{ query, data }` — `query` being exactly what was asked, so the component uses the payload only when it
  * would ask the same.
  *
+ * An entry applies either to pages of one `recipe` or to the pages of the plugin's OWN `collection` — a
+ * record the site resolved at an address (a product at its permalink). A record page's route may name the
+ * record's own fields as `:field` segments (`products/:slug`), filled from the resolved record.
+ *
  * Only anonymous-safe routes belong here: the fetch is unauthenticated and the payload lands in shared HTML.
  */
 export interface IPluginPagePrefetchEntry {
   /** The page recipe this applies to (the resolved document's `recipe`). */
-  recipe: string;
+  recipe?: string;
+  /**
+   * Or: the declaring plugin's own collection (its `shortSlug`, as the site names it when it resolves one of
+   * its records at an address) whose record pages this applies to.
+   */
+  collection?: string;
   /** Where the payload lands, after the plugin's slug: `<pluginSlug>:<key>`. */
   key: string;
-  /** The plugin route, relative to its API base (`products`). */
+  /** The plugin route, relative to its API base (`products`); on a record page `:field` takes that field of the record. */
   path: string;
   /** Fixed query parameters. */
   query?: Record<string, string>;
