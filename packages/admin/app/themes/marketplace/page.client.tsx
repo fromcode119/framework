@@ -1,4 +1,4 @@
-import { ThemeMode } from '@fromcode119/core/client';
+import { ThemeMode, VersionComparisonService } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
@@ -47,10 +47,11 @@ export class ThemesMarketplacePage extends AdminComponent {
       const marketplace = Array.isArray(marketData) ? marketData : (marketData.themes || []);
       const installed = Array.isArray(installedRes) ? installedRes : (installedRes.themes || []);
 
-      // Group by slug to show only latest in the list
+      // One card per slug: its newest version, compared numerically. As strings "1.2.6" sorts above
+      // "1.2.35", so an old build left in the catalogue became the card's version.
       const grouped: Record<string, IMarketplaceTheme> = {};
       marketplace.forEach((t: IMarketplaceTheme) => {
-        if (!grouped[t.slug] || t.version > grouped[t.slug].version) {
+        if (!grouped[t.slug] || VersionComparisonService.isGreater(t.version, grouped[t.slug].version)) {
           grouped[t.slug] = t;
         }
       });
@@ -66,7 +67,7 @@ export class ThemesMarketplacePage extends AdminComponent {
     }
   }
 
-  private async handleInstall(slug: string): Promise<void> {
+  private async handleInstall(slug: string, version: string): Promise<void> {
     const notify = this.runtime.notify.notify;
     const triggerRefresh = this.runtime.plugins?.triggerRefresh;
     try {
@@ -75,7 +76,7 @@ export class ThemesMarketplacePage extends AdminComponent {
         notify(NotificationType.SUCCESS, AdminI18n.t('themes.addedToThisSite'), AdminI18n.t('themes.isNowOneOfThis', { slug: slug }));
       } else {
         notify(NotificationType.INFO, AdminI18n.t('themes.installing'), AdminI18n.t('themes.downloadingTheme', { slug: slug }));
-        await AdminApi.post(AdminConstants.ENDPOINTS.THEMES.INSTALL(slug));
+        await AdminApi.post(`${AdminConstants.ENDPOINTS.THEMES.INSTALL(slug)}?version=${encodeURIComponent(version)}`);
         notify(NotificationType.SUCCESS, AdminI18n.t('themes.installed'), AdminI18n.t('themes.themeIsNowAvailable', { slug: slug }));
       }
       if (triggerRefresh) triggerRefresh();
@@ -114,8 +115,10 @@ export class ThemesMarketplacePage extends AdminComponent {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pb-6">
               {themes.map(t => {
                 const installed = installedThemes.find(it => it.slug === t.slug);
-                // A site never updates the shared copy, so it is never offered one.
-                const hasUpdate = !this.siteScope && installed && t.version !== installed.version;
+                // A site never updates the shared copy, so it is never offered one. Only a strictly NEWER
+                // version is an update: an older one in the catalogue would be a downgrade.
+                const installedVersion: string = installed?.version || '';
+                const hasUpdate = !this.siteScope && Boolean(installed) && VersionComparisonService.isGreater(t.version, installedVersion);
 
                 return (
                   <Card
@@ -141,9 +144,16 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.description || AdminI18n.t('themes.aCleanAndModernTheme')}
                         </p>
                         <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+                             {installed && installedVersion && (<>
+                             <div className="flex items-center gap-1.5">
+                               <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
+                               {AdminI18n.t('themes.installedVersionLabel', { version: installedVersion })}
+                             </div>
+                             <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
+                             </>)}
                              <div className="flex items-center gap-1.5">
                                <FrameworkIcons.Shield size={12} className="text-indigo-500/70" />
-                               v{t.version}
+                               {installed ? AdminI18n.t('themes.marketplaceVersionLabel', { version: t.version }) : `v${t.version}`}
                              </div>
                              {t.author && (<>
                              <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-700" />
@@ -174,7 +184,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                             </button>
                           ) : hasUpdate ? (
                             <button
-                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug); }}
+                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Clock size={18} strokeWidth={3} />
@@ -182,7 +192,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                             </button>
                           ) : (
                             <button
-                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug); }}
+                              onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
                               className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Download size={18} strokeWidth={3} />

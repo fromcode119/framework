@@ -4,6 +4,18 @@ export class VersionComparisonService {
     return comparison > 0;
   }
 
+  /**
+   * The row with the highest version, compared numerically ("1.2.35" above "1.2.6"). A catalogue may
+   * list several versions of one extension; its first row is not its newest.
+   */
+  static newest<T extends { version?: unknown }>(rows: readonly T[]): T | undefined {
+    let best: T | undefined;
+    for (const row of rows) {
+      if (!best || VersionComparisonService.isGreater(String(row?.version ?? ''), String(best.version ?? ''))) best = row;
+    }
+    return best;
+  }
+
   static isSame(left: string | null | undefined, right: string | null | undefined): boolean {
     return VersionComparisonService.compare(left, right) === 0;
   }

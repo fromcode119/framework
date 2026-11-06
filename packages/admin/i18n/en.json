@@ -4105,6 +4105,8 @@
     "releasedOn": "Released {{date}}",
     "requiresVersion": "Requires {{version}}",
     "versionBringsImprovements": "v{{version}} brings new design improvements and features.",
+    "installedVersionLabel": "Installed v{{version}}",
+    "marketplaceVersionLabel": "Marketplace v{{version}}",
     "updateAvailableVersion": "Update Available v{{version}}",
     "noBundledPluginArchivesDetected": "No bundled plugin archives detected",
     "noRequiredMarketplacePlugins": "No required marketplace plugins",

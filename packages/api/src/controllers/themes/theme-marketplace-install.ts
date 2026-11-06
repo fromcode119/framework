@@ -1,6 +1,7 @@
 import fs from 'fs';
-import { CatalogSource, CoercionUtils, CoreServices, ExtensionScope, ThemeManager, Logger } from '@fromcode119/core';
+import { CatalogSource, CoercionUtils, CoreServices, ExtensionScope, ThemeManager, Logger, VersionComparisonService } from '@fromcode119/core';
 import { ThemeInstallSource } from '@api/controllers/themes/enums/theme-install-source.enum';
+import { ThemeDowngradeRefusedError } from '@api/controllers/themes/theme-downgrade-refused-error';
 
 /**
  * Installing a theme from THIS platform's marketplace — never from a URL the caller chose. Shared by the
@@ -10,11 +11,22 @@ import { ThemeInstallSource } from '@api/controllers/themes/enums/theme-install-
 export class ThemeMarketplaceInstall {
   constructor(private readonly manager: ThemeManager, private readonly logger: Logger) {}
 
-  /** Where the installed package came from, or null when the marketplace has no such theme. */
+  /**
+   * Where the installed package came from, or null when the marketplace has no such theme.
+   *
+   * Without a version this is the NEWEST offer, not the catalogue's first row. Either way, a version
+   * older than the one installed is refused with ThemeDowngradeRefusedError: an earlier build still in
+   * the catalogue must never roll an installed theme back.
+   */
   async install(slug: string, version?: string): Promise<ThemeInstallSource | null> {
-    const themes = await this.manager.getMarketplaceThemes();
-    const pkg = themes.find((theme: any) => theme.slug === slug && (!version || theme.version === version));
+    const offers = (await this.manager.getMarketplaceThemes()).filter((theme: any) => theme.slug === slug);
+    const pkg = version ? offers.find((theme: any) => theme.version === version) : VersionComparisonService.newest(offers);
     if (!pkg) return null;
+    const installedVersion = CoercionUtils.toString(this.manager.getThemes().find((theme) => theme.slug === slug)?.version);
+    const offeredVersion = CoercionUtils.toString(pkg.version);
+    if (installedVersion && VersionComparisonService.isGreater(installedVersion, offeredVersion)) {
+      throw new ThemeDowngradeRefusedError(slug, installedVersion, offeredVersion);
+    }
 
     // An offer from THIS installation is a file on disk, not a URL. Its catalogue row borrows the
     // marketplace shape, whose only location is `downloadUrl` — so a locally built theme was

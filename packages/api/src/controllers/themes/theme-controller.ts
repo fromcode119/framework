@@ -7,6 +7,7 @@ import { ThemeArchiveSupport } from '@api/controllers/themes/theme-archive-suppo
 import { CoercionUtils } from '@fromcode119/core';
 import { ThemeUploadController } from '@api/controllers/themes/theme-upload-controller';
 import { ThemeMarketplaceInstall } from '@api/controllers/themes/theme-marketplace-install';
+import { ThemeDowngradeRefusedError } from '@api/controllers/themes/theme-downgrade-refused-error';
 
 export class ThemeController extends BaseController {
 
@@ -83,6 +84,7 @@ export class ThemeController extends BaseController {
       if (!mode) return res.status(404).json({ error: `Theme ${slug} ${version ? 'v'+version : ''} not found in marketplace` });
       res.json({ success: true, mode: mode.value });
     } catch (err: any) {
+      if (err instanceof ThemeDowngradeRefusedError) return res.status(409).json({ error: err.message });
       this.logger.error(`Failed to install theme ${slug}: ${err.message}`);
       res.status(500).json({ error: err.message });
     }
