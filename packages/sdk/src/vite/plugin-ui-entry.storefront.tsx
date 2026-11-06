@@ -78,8 +78,10 @@ export class PluginUiStorefrontEntry {
 
   private static registerComponents(): void {
     const context = PluginUiStorefrontEntry.buildContext;
-    for (const mod of Object.values(PluginUiStorefrontEntry.modules)) {
-      for (const value of Object.values(mod)) PluginUiRegistrar.register(value, context);
+    // Each export goes in with its source address (`./file.tsx#ExportName`): the bundle minifies class
+    // names, so two panels can both be called `i`, and a name is no identity to tell them apart by.
+    for (const [file, mod] of Object.entries(PluginUiStorefrontEntry.modules)) {
+      for (const [name, value] of Object.entries(mod)) PluginUiRegistrar.register(value, context, `${file}#${name}`);
     }
   }
 }

@@ -139,6 +139,9 @@ export class RegistrationStateReducers {
     const component = componentObj?.component;
     if (!component) return `missing:${componentObj?.pluginSlug || 'unknown'}`;
     if (typeof component === 'string') return `string:${component}`;
+    // The export address the plugin entry stamped is the identity; a bare name is only a fallback for
+    // components registered by hand, because minified bundles reuse short names across classes.
+    if (typeof component === 'function' && component.registrationId) return `export:${String(component.registrationId)}`;
     if (typeof component === 'function') return `fn:${component.displayName || component.name || 'anonymous'}`;
 
     if ((component as any)?.$$typeof && (component as any)?.type) {

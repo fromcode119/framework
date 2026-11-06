@@ -17,9 +17,18 @@ import type { IPluginUiRegistrarContext } from '@react/interfaces/plugin-ui-regi
  * wants registered — NOT defensive guards against a guaranteed framework contract.
  */
 export class PluginUiRegistrar {
-  static register(value: unknown, ctx: IPluginUiRegistrarContext): void {
+  /**
+   * `exportId` is the export's source address (`./file.tsx#ExportName`), stamped on the class as
+   * `registrationId`. The slot registry folds a re-registration of the same component into its existing
+   * entry, and without this it could only match by class NAME — which minification shortens, so two
+   * different panels of one plugin both named `i` replaced each other and one section vanished.
+   */
+  static register(value: unknown, ctx: IPluginUiRegistrarContext, exportId?: string): void {
     if (typeof value !== 'function') return;
     const c = value as any;
+    if (exportId && !Object.prototype.hasOwnProperty.call(c, 'registrationId')) {
+      Object.defineProperty(c, 'registrationId', { value: exportId, configurable: true });
+    }
     if (Array.isArray(c.slots)) {
       for (const slot of c.slots) ContextBridge.registerSlotComponent(slot, c, ctx.pluginSlug, c.priority ?? 1);
     }
