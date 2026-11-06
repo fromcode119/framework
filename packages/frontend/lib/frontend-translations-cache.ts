@@ -1,10 +1,10 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 
 /**
- * Per-request memoized `/system/i18n?locale=…` payload (React `cache()`), keyed by locale — the same
+ * Per-request memoized `/system/i18n?locale=…` payload (`RequestScope.memo`), keyed by locale — the same
  * dictionary the browser provider loads once it boots.
  *
  * Server-rendering a theme needs it: the layout chrome (nav labels, buttons, footer headings) is all
@@ -12,7 +12,7 @@ import { ServerApiUtils } from '@/lib/server-api/server-api';
  * on hydration. Mirrors `FrontendConfigCache`: per-request only, nothing persists across requests.
  */
 export class FrontendTranslationsCache {
-  private static readonly translationsCache = cache(async (locale: string): Promise<Record<string, unknown>> => {
+  private static readonly translationsCache = RequestScope.memo(async (locale: string): Promise<Record<string, unknown>> => {
     const payload = await ServerApiUtils.serverFetchJson(ServerApiPaths.buildSystemI18nPath(locale));
     return payload && typeof payload === 'object' ? payload as Record<string, unknown> : {};
   });

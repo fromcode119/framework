@@ -1,11 +1,11 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 import { RuntimeConstants } from '@fromcode119/core/client';
 
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
 
 /**
- * Per-request memoized page-scoped prefetch (React `cache()`), mirroring
+ * Per-request memoized page-scoped prefetch (`RequestScope.memo`), mirroring
  * ThemePrefetchRequestCache. Keyed by the resolved document REFERENCE — the page
  * passes the exact same `content` object to both consumers, so the fetch pass
  * runs once per request:
@@ -15,7 +15,7 @@ import { PageDocPrefetcher } from '@/lib/theme/page-doc-prefetcher';
  *    the page's prefetch JSON (`PagePrefetch`) for the theme.
  */
 export class PageDocPrefetchRequestCache {
-  private static readonly prefetchCache = cache(async (doc: unknown, requestSearch: string): Promise<Record<string, unknown>> => {
+  private static readonly prefetchCache = RequestScope.memo(async (doc: unknown, requestSearch: string): Promise<Record<string, unknown>> => {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) {

@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 import { headers } from 'next/headers';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -9,7 +9,7 @@ import { ServerApiUtils } from '@/lib/server-api/server-api';
  * server's own, so the API can report the miss as the visitor made it. Memoized per request.
  */
 export class MissedResolutionFetch {
-  static readonly fetch = cache(async (queryString: string): Promise<Record<string, any> | null> => {
+  static readonly fetch = RequestScope.memo(async (queryString: string): Promise<Record<string, any> | null> => {
     const path = ServerApiPaths.buildSystemResolvePath(queryString);
     const visitor = await headers();
     const visitorHeaders: Record<string, string> = {};

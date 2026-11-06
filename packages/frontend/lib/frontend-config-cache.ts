@@ -1,15 +1,15 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 import { ServerApiUtils } from '@/lib/server-api/server-api';
 import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
 
 /**
- * Per-request memoized `/system/frontend` payload (React `cache()`).
+ * Per-request memoized `/system/frontend` payload (`RequestScope.memo`).
  *
  * One SSR page render previously fetched this identical, user-independent payload
  * up to 4 times (ThemeAssets, PluginInjectionRenderer head + bodyStart,
- * FrontendPublicSettings). React `cache()` dedupes all callers within a single
+ * FrontendPublicSettings). `RequestScope.memo` dedupes all callers within a single
  * request render; nothing persists across requests, so the underlying fetch keeps
  * its `no-store` semantics (see storefront-performance-audit.md §1.2 / Phase 1.2).
  *
@@ -17,7 +17,7 @@ import { ServerFetchOutcome } from '@/lib/server-fetch-outcome';
  * resolution path — the same strategy FrontendPublicSettings already used.
  */
 export class FrontendConfigCache {
-  private static readonly configCache = cache(async (): Promise<ServerFetchOutcome<Record<string, unknown>>> => {
+  private static readonly configCache = RequestScope.memo(async (): Promise<ServerFetchOutcome<Record<string, unknown>>> => {
     const internalOutcome = await ServerApiUtils.serverFetchInternalResponseOutcome(ServerApiPaths.buildSystemFrontendPath());
     const internalResponse = internalOutcome.value;
     if (internalResponse?.ok) {

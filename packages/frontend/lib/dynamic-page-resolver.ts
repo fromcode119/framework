@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 import { AccountRouteUtils, LocalizationUtils } from '@fromcode119/core/client';
@@ -14,7 +14,7 @@ import { MissedResolutionFetch } from '@/lib/missed-resolution-fetch';
 
 export class DynamicPageResolver {
   /**
-   * Per-request memoized `/system/resolve` fetch (React `cache()`), keyed by the
+   * Per-request memoized `/system/resolve` fetch (`RequestScope.memo`), keyed by the
    * FULL query string (slug + locale + fallback_locale + preview) — a primitive key,
    * so `generateMetadata` and the page body dedupe to ONE API round-trip for the
    * identical query (storefront-performance-audit.md §1.2 / Phase 1.2). Per-request
@@ -27,7 +27,7 @@ export class DynamicPageResolver {
    * then answered a hard 404 for a page that exists — telling crawlers to delist it. An
    * unreachable API must surface as a 5xx, which is honest and retryable.
    */
-  private static readonly resolveFetchCache = cache(async (queryString: string): Promise<Record<string, any> | null> => {
+  private static readonly resolveFetchCache = RequestScope.memo(async (queryString: string): Promise<Record<string, any> | null> => {
     const path = ServerApiPaths.buildSystemResolvePath(queryString);
     // A preview navigation is the operator asking to see their own draft, so this one fetch also
     // presents their admin session — the API decides from that identity whether unpublished content

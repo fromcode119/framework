@@ -1,6 +1,6 @@
 import type { IHeadData } from '@/lib/interfaces/head-data.interface';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 
 import type { Metadata } from 'next';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -141,12 +141,12 @@ export class ResolvedContentMetadata {
   }
 
   /**
-   * Per-request memoized head-data fetch (React `cache()`), keyed by the full
+   * Per-request memoized head-data fetch (`RequestScope.memo`), keyed by the full
    * query string (a primitive, so layout `fetchSite` and page `buildEnriched` dedupe
    * whenever they build the identical query). Per-request only — no cross-request
    * persistence (storefront-performance-audit.md §1.2 / Phase 1.2).
    */
-  private static readonly headDataCache = cache(async (queryString: string): Promise<IHeadData | null> => {
+  private static readonly headDataCache = RequestScope.memo(async (queryString: string): Promise<IHeadData | null> => {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
     const path = ServerApiPaths.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);

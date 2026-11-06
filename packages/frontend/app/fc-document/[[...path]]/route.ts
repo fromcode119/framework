@@ -6,6 +6,7 @@ import { DocumentCompression } from '@/lib/document/document-compression';
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { CookieConstants } from '@fromcode119/core/client';
 import { DocumentResponseHeaders } from '@/lib/document/document-response-headers';
+import { RequestScope } from '@/lib/request-scope';
 
 /**
  * The islands document route. Not addressed by visitors: the proxy rewrites `/` and every content
@@ -19,9 +20,13 @@ import { DocumentResponseHeaders } from '@/lib/document/document-response-header
  */
 export class StorefrontDocumentRoute {
   static async GET(request: NextRequest, context: { params: Promise<{ path?: string[] }> }): Promise<Response> {
-    const host = String(request.headers.get('x-forwarded-host') || request.headers.get('host') || '');
-    const response = await StorefrontDocumentRoute.document(request, context);
-    return DocumentResponseHeaders.apply(response, await DocumentResponseHeaders.forSite(host));
+    // One memo for the whole request (RequestScope): the render's many readers of the same site
+    // payload share one fetch instead of each making its own round trip to the api.
+    return RequestScope.run(async () => {
+      const host = String(request.headers.get('x-forwarded-host') || request.headers.get('host') || '');
+      const response = await StorefrontDocumentRoute.document(request, context);
+      return DocumentResponseHeaders.apply(response, await DocumentResponseHeaders.forSite(host));
+    });
   }
 
   private static async document(request: NextRequest, context: { params: Promise<{ path?: string[] }> }): Promise<Response> {
