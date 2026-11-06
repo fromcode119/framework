@@ -118,31 +118,19 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     if (!this.guest && !this.channel) return;
     this.logger.info('plugin files replaced; starting a fresh process with the new code');
     this.restarting = true;
-    try {
-      await this.relaunch();
-    } catch (error) {
-      // Cleared FIRST: stopping the old process starts the crash restart, which sets it again for itself.
-      this.restarting = false;
+    try { await this.relaunch(); } catch (error) {
+      this.restarting = false; // FIRST: stopping the old process starts the crash restart, which sets it again.
       this.abandonOldCode(error);
       throw error;
     }
     this.restarting = false;
   }
 
-  /**
-   * The new code did not start, and the process still serving runs code that is no longer on disk, against
-   * a schema the update's migrations have already changed. Leaving it up made a failed update look like a
-   * successful one: the admin showed the new version while the old code answered every request, until the
-   * extension-host was restarted by hand. It is stopped instead, and the plugin comes back the way it does
-   * after a crash — on the new files, with the restart budget, and disabled WITH the reason if the new
-   * code cannot start at all.
-   */
+  /** The new code did not start: stop the process still running the old code, so the plugin restarts on the new files (or is disabled with the reason). */
   private abandonOldCode(error: unknown): void {
-    const old = this.guest;
-    if (!old) return;
+    const old = this.guest; if (!old) return;
     const reason = error instanceof Error ? error.message : String(error);
     this.logger.error(`the new code did not start (${reason}); stopping process ${old.pid}, which still runs the old code`);
-    // `exited` closes its channel (failing what still waits on it) and starts the crash restart.
     this.exited(null, 'SIGKILL', `could not start its updated code (${reason})`);
     old.kill('SIGKILL');
   }
@@ -173,14 +161,10 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   }
 
   /**
-   * Replaces this plugin's process WITHOUT a gap. The next process starts BESIDE the current one and runs
-   * `onInit` (and `onEnable`) while the current one keeps serving; then it takes over in one step, and the
-   * one it replaced finishes what is in flight (up to the deadline) before it is retired. If the next one
-   * fails, the current one simply keeps serving and the failure is the caller's to report.
-   *
-   * It used to be kill-then-start: until the new process had booted and mounted its routes, the plugin
-   * answered 502 (nothing on the socket) and then 404 (a server with no routes yet), and hooks and jobs
-   * fired in between failed. `drain: false` retires the replaced process at once — one past its deadline.
+   * Replaces this plugin's process WITHOUT a gap: the next process runs `onInit`/`onEnable` BESIDE the
+   * current one, then takes over in one step while the replaced one drains (up to its deadline). If the
+   * next one fails it is retired and the error thrown; `reload` then stops the old one too.
+   * `drain: false` retires the replaced process at once — one past its deadline.
    */
   protected async relaunch(options: { drain: boolean } = { drain: true }): Promise<void> {
     const previous = this.generation && !this.generation.channel.isClosed ? this.generation : null;
@@ -207,10 +191,8 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     if (this.context) {
       PluginHostCollectionPrune.applyAll(this.manager, this.slug, this.logger, next.held.splice(0), (registration) => this.registrations.apply(this.context!, registration));
       for (const name of this.registrations.droppedTasks()) await this.manager.scheduler.unregister(`${this.slug}:${name}`);
-      // A fresh process has an EMPTY memory: everything its PEERS registered into it (a fulfilment
-      // provider, a search provider, a newsletter content provider) is gone with the old one. Say
-      // `plugins:ready` again — the same event peers already re-register on at boot — naming the
-      // plugin that came back, so they register with it once more.
+      // A fresh process has an EMPTY memory: what its PEERS registered into it is gone. Say `plugins:ready`
+      // again (the event peers re-register on at boot), naming this plugin, so they register once more.
       const active = [...this.manager.plugins.values()].filter((p) => PluginState.resolve(p.state) === PluginState.ACTIVE).map((p) => p.manifest.slug);
       this.manager.hooks.emit(PluginHostState.PLUGINS_READY_EVENT, { plugins: active, restarted: this.slug });
     }
@@ -231,8 +213,7 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.proxy.retarget(this.socketPath);
     this.describeResult = generation.described;
     this.sentPeerSignatures = new Map();
-    // A guest that stays up for a minute has earned its restart budget back: three failures in a
-    // lifetime is a broken plugin, three failures a week apart is not.
+      // Up a minute earns the restart budget back: three failures a week apart is not a broken plugin.
     if (this.healthyTimer) clearTimeout(this.healthyTimer);
     this.healthyTimer = setTimeout(() => { this.restarts = 0; }, PluginHostState.HEALTHY_AFTER_MS);
     this.healthyTimer.unref();
@@ -275,12 +256,9 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
   }
 
   /**
-   * A guest learns which peers it may call from the envelope of an invocation. An HTTP request does
-   * not travel that way — it goes straight to the guest's socket — so a guest that serves routes used
-   * to answer them against whatever snapshot its last LIFECYCLE call left behind: the one taken at
-   * BOOT, which excludes every sibling that had not finished loading yet. A shipping plugin booted
-   * about a second before its courier adapter and so could never see it, and the courier's city
-   * search answered an empty list for every query, for the life of the process.
+   * A guest learns which peers it may call from an invocation's envelope. An HTTP request goes straight
+   * to the guest's socket, so routes were answered against the BOOT snapshot — which missed every sibling
+   * still loading (a courier's city search answered an empty list for the life of the process).
    *
    * The snapshot is therefore refreshed before each forwarded request. Peers are tenant-dependent and
    * a guest holds exactly one snapshot, so the comparison is against what was last SENT rather than

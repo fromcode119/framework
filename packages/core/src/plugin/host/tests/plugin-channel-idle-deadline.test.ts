@@ -3,8 +3,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
 
 /**
- * A lifecycle call is held to a deadline on SILENCE. ecommerce 0.1.376's `onInit` rewrote every product of
- * a 4,800-product shop, calling the host the whole time, and the fixed 60 s deadline cut it off — the update
+ * A lifecycle call is held to a deadline on SILENCE. A plugin's `onInit` rewrote every row of
+ * a large catalogue, calling the host the whole time, and the fixed 60 s deadline cut it off — the update
  * was abandoned and the old code kept serving.
  */
 describe('PluginChannel idle deadline', () => {

@@ -39,7 +39,7 @@ export class PluginChannel {
    *
    * `idle: true` makes `timeoutMs` a deadline on SILENCE instead of on the whole request: it fails only
    * after `timeoutMs` in which the peer asked this side nothing. A plugin's `onInit` after an update can
-   * legitimately run for minutes — ecommerce rewrote every product row of a 4,800-product shop — while
+   * legitimately run for minutes — rewriting every row of a large catalogue — while
    * calling the host the whole time; a fixed deadline cut it off at 60 s, the update was abandoned, and the
    * process running the old code went on serving. A process that is really stuck goes quiet, and still fails.
    */
