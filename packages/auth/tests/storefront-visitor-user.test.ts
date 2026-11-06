@@ -28,4 +28,11 @@ describe('a storefront session', () => {
     expect((await signedIn(['admin'], { cookie: 'fc_token=TOKEN', 'x-framework-client': 'admin-ui' })).roles).toContain('admin');
     expect((await signedIn(['admin'], { authorization: 'Bearer TOKEN' })).roles).toContain('admin');
   });
+
+  it('keeps the administrator for what a ?preview=1 page asks from the browser, on the same host only', async () => {
+    const page = { cookie: 'userToken=TOKEN', host: 'shop.test' };
+    expect((await signedIn(['admin'], { ...page, referer: 'https://shop.test/shop/x?preview=1' })).roles).toContain('admin');
+    expect((await signedIn(['admin'], { ...page, referer: 'https://shop.test/shop/x' })).roles).not.toContain('admin');
+    expect((await signedIn(['admin'], { ...page, referer: 'https://other.test/shop/x?preview=1' })).roles).not.toContain('admin');
+  });
 });
