@@ -1,6 +1,7 @@
 import { ResolutionMatchKind } from '@api/services/helpers/enums/resolution-match-kind.enum';
 import { CoercionUtils, type ICollection } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
+import { QueryHelper } from '@api/services/query-helper';
 import { CollectionReadRedaction } from '@api/services/collection-read-redaction';
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
@@ -85,6 +86,7 @@ export class ResolutionCollectionScanService {
     // Readability is asked only of a collection that has something to look up: the answer can cost a
     // round trip to the plugin's process, and most collections hold neither a slug nor a permalink.
     if (finds.length === 0) return [];
+    if (!(await this.anyRowHolds(collection, finds))) return [];
     if (!(await this.readable(collection, ctx.options.user))) return [];
     const settled = await Promise.allSettled(
       finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
@@ -125,6 +127,29 @@ export class ResolutionCollectionScanService {
       }
     }
     return null;
+  }
+
+  /**
+   * Whether ANY row of the collection holds one of the looked-up values, in one indexed query on the raw
+   * table. The REST `find` that follows only ever NARROWS that same equality (access rules, status,
+   * archive, user scope are all AND-ed on), so a collection with no such row cannot match and is skipped
+   * — without its per-candidate finds and the access checks each of them makes, several of which are a
+   * round trip to the collection's plugin process. On a path nothing holds (a 404, a framework page)
+   * that was every such collection, every candidate, every check. A failing pre-check asks as before.
+   */
+  private async anyRowHolds(collection: ICollection, finds: Array<{ query: any }>): Promise<boolean> {
+    try {
+      const table = QueryHelper.getVirtualTable(collection);
+      const clauses = finds.flatMap((f) => (['customPermalink', 'slug'] as const)
+        .filter((field) => f.query[field] !== undefined && table[field])
+        .map((field) => this.db.eq(table[field], f.query[field])));
+      if (clauses.length !== finds.length) return true;
+      const pk = collection.primaryKey || 'id';
+      const rows = await this.db.find(table, { where: this.db.or(...clauses), limit: 1, ...(table[pk] ? { columns: { [pk]: true } } : {}) });
+      return Array.isArray(rows) ? rows.length > 0 : true;
+    } catch {
+      return true;
+    }
   }
 
   /**
