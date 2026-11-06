@@ -48,6 +48,10 @@
         "coursesCompleted": "{{count}} completed",
         "partner": "Partner code",
         "commissionsEarned": "{{amount}} earned"
+      },
+      "tiles": {
+        "twoFactorOn": "Two-factor sign-in: on",
+        "twoFactorOff": "Two-factor sign-in: off"
       }
     },
     "profile": {
