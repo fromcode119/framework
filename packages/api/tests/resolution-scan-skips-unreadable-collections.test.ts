@@ -36,4 +36,18 @@ describe('route resolution and collections the visitor may not read', () => {
     await scan(asked).scanPriority(context({ roles: ['admin'] }));
     expect(asked).toEqual(['forms-list', 'pages']);
   });
+
+  it('never asks whether a collection with nothing to look up is readable', async () => {
+    let accessCalls = 0;
+    const orders = { slug: 'orders', access: { read: () => { accessCalls += 1; return false; } } };
+    const service = new ResolutionCollectionScanService(
+      { findOne: async () => null },
+      { find: async () => ({ docs: [] }) } as any,
+      { getCollectionFlags: (collection: { slug: string }) => ({ hasSlug: collection.slug !== 'orders', hasCustomPermalink: false }) } as any,
+    );
+    const ctx = { ...context(null), entries: [{ collection: orders, pluginSlug: 'plugin-a' }], pathSegments: ['about'], structureSegments: [':slug'] };
+    await service.scanPriority(ctx);
+    await service.scanStructure(ctx);
+    expect(accessCalls).toBe(0);
+  });
 });
