@@ -1,4 +1,4 @@
-import { ThemeMode, ThemeState } from '@fromcode119/core/client';
+import { ThemeMode, ThemeState, VersionComparisonService } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, bound, prop } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
@@ -31,7 +31,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
 
   private get newerVersion(): string | null {
     const { marketplaceVersion, themeDetail } = this.model;
-    return marketplaceVersion && marketplaceVersion !== themeDetail.version ? marketplaceVersion : null;
+    return marketplaceVersion && VersionComparisonService.isGreater(marketplaceVersion, themeDetail.version) ? marketplaceVersion : null;
   }
 
   private updateBanner(version: string): ReactNode {

@@ -1,4 +1,4 @@
-import { ThemeState } from '@fromcode119/core/client';
+import { ThemeState, VersionComparisonService } from '@fromcode119/core/client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { InstalledThemesUploadService } from '@/app/themes/installed/installed-themes-upload-service';
@@ -116,7 +116,7 @@ export class InstalledThemesPageController {
     marketplaceThemes: IInstalledThemeManifest[],
   ): string | null {
     const marketplaceTheme = marketplaceThemes.find((item) => item.slug === installedTheme.slug);
-    if (!marketplaceTheme || marketplaceTheme.version === installedTheme.version) return null;
+    if (!marketplaceTheme || !VersionComparisonService.isGreater(marketplaceTheme.version, installedTheme.version)) return null;
     return marketplaceTheme.version;
   }
 
