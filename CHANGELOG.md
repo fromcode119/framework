@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.512] - 2026-11-06
+
+### Performance
+
+- **api**: serialize the i18n bundle once per translation change ([#1233](https://github.com/fromcode119/framework/pull/1233))
+- **api**: ask collections in parallel chunks when resolving a path ([#1232](https://github.com/fromcode119/framework/pull/1232))
+
 ## [0.2.511] - 2026-11-06
 
 ### Fixed
