@@ -14,6 +14,7 @@ import { GatewayEdgeCheck } from '@cli/services/gateway/challenge/gateway-edge-c
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
 import { GatewayConsoleMount } from '@cli/services/gateway/gateway-console-mount';
 import { GatewayRouteRules } from '@cli/services/gateway/gateway-route-rules';
+import { GatewayAccessLog } from '@cli/services/gateway/gateway-access-log';
 
 /**
  * The platform's own edge (T6 §3.1): the ONE upstream the TLS terminator forwards every host to.
@@ -57,6 +58,9 @@ export class PlatformGateway {
   private readonly retries = new GatewayRetryPolicy();
   private readonly targetOf = new WeakMap<http.IncomingMessage, string>(); // where a retry goes
   private readonly mountOf = new WeakMap<http.IncomingMessage, string>(); // a console on a site path
+  // Health and the reload push are internal calls a watchdog makes every few seconds — not traffic.
+  private readonly accessLog = new GatewayAccessLog((req) => this.targetOf.get(req),
+    (url) => url === PlatformGateway.HEALTH_PATH || url === PlatformGateway.RELOAD_PATH);
   private readonly port = PlatformGateway.readPort();
   private readonly targets: Record<string, string> = {
     [GatewayTarget.API.value]: process.env.API_TARGET_URL || 'http://api:3000',
@@ -115,6 +119,7 @@ export class PlatformGateway {
       // so one aborted request took the whole edge down and every site answered 502 until it restarted.
       res.on('error', (error: Error) => console.warn('[platform-gateway] response error:', error.message));
       req.on('error', (error: Error) => console.warn('[platform-gateway] request error:', error.message));
+      this.accessLog.track(req, res);
       void this.handlePlain(req, res);
     });
     server.on('clientError', (error: Error, socket) => {
@@ -132,7 +137,7 @@ export class PlatformGateway {
     // is routed identically however it arrived — the only difference is which socket it came in on.
     if (this.tls) {
       this.tls.start({
-        request: (req, res) => { void this.handle(req, res); },
+        request: (req, res) => { this.accessLog.track(req, res as http.ServerResponse); void this.handle(req, res); },
         upgrade: (req, socket, head) => { this.upgrade(req, socket, head); },
       });
       void this.certificates.refresh();
