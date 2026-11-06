@@ -43,20 +43,19 @@ export class AuthRegisterForm extends AuthFormBase<IAuthFormProps, IAuthRegister
         throw { data };
       }
       if (data?.requiresEmailVerification) {
-        this.setState({ verificationPending: true });
+        this.setState({ loading: false, verificationPending: true });
         return;
       }
       const loginData = await this.systemAuth.login({ email: email.trim(), password }, { silent: true, noDedupe: true });
       if (loginData?.token) {
         this.session.storeSession(loginData.user);
+        // Stays busy until the next page replaces this one (see AuthLoginForm).
         this.navigateAfterAuth();
         return;
       }
-      this.setState({ verificationPending: true });
+      this.setState({ loading: false, verificationPending: true });
     } catch (error: any) {
-      this.setState({ error: this.errorMessage(error, this.tr('auth.register.failed', 'Registration failed. Please try again.')) });
-    } finally {
-      this.setState({ loading: false });
+      this.setState({ loading: false, error: this.errorMessage(error, this.tr('auth.register.failed', 'Registration failed. Please try again.')) });
     }
   }
 

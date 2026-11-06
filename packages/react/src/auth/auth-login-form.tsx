@@ -49,14 +49,14 @@ export class AuthLoginForm extends AuthFormBase<IAuthFormProps, IAuthLoginFormSt
         // The token itself is NOT stored: the login response already set the server's httpOnly
         // session cookie. `data.token` here only proves the login succeeded.
         this.session.storeSession(data.user);
+        // Stays "Signing in…" until the next page replaces this one: clearing it here showed the idle
+        // button again while a slow account page was still loading, which read as a login that did nothing.
         this.navigateAfterAuth();
         return;
       }
       throw new Error(data?.message || this.tr('auth.login.failed', 'Incorrect email or password.'));
     } catch (error: any) {
-      this.setState({ error: this.errorMessage(error, this.tr('auth.login.failed', 'Incorrect email or password.')) });
-    } finally {
-      this.setState({ loading: false });
+      this.setState({ loading: false, error: this.errorMessage(error, this.tr('auth.login.failed', 'Incorrect email or password.')) });
     }
   }
 
