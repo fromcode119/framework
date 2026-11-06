@@ -48,6 +48,10 @@
         "coursesCompleted": "{{count}} завършени",
         "partner": "Партньорски код",
         "commissionsEarned": "{{amount}} спечелени"
+      },
+      "tiles": {
+        "twoFactorOn": "Двуфакторна защита: включена",
+        "twoFactorOff": "Двуфакторна защита: изключена"
       }
     },
     "profile": {

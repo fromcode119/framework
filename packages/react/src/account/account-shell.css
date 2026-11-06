@@ -52,6 +52,8 @@
 .fc-acct-avatar { display: inline-grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; background: var(--fc-acct-accent); color: var(--fc-acct-bg); font-weight: 800; font-size: 16px; }
 .fc-acct-who-text { display: flex; flex-direction: column; min-width: 0; }
 .fc-acct-who-name { font-weight: 700; font-size: 15px; color: var(--fc-acct-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-acct-who-since { font-size: 12.5px; color: var(--fc-acct-muted); }
+.fc-acct-navcount { margin-left: auto; flex: 0 0 auto; min-width: 22px; padding: 1px 7px; border-radius: 999px; background: var(--fc-acct-bg-soft); color: var(--fc-acct-muted); font-size: 12px; font-weight: 700; text-align: center; }
 .fc-acct-who-email { font-size: 12.5px; color: var(--fc-acct-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-acct-search { display: block; margin-bottom: 8px; }
 .fc-acct-search-input { display: block; width: 100%; padding: 9px 12px; border: 1px solid var(--fc-acct-border); border-radius: 10px; font: inherit; font-size: 14px; background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); }
@@ -79,8 +81,8 @@
 .fc-acct-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
 .fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border: 1px solid var(--fc-acct-border); border-top: 3px solid var(--fc-acct-stat-accent, var(--fc-acct-accent)); border-radius: 16px; background: var(--fc-acct-bg); box-shadow: 0 1px 3px rgba(24, 24, 27, .04); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
 .fc-acct-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(24, 24, 27, .08); }
-.fc-acct-stat-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fc-acct-muted); }
-.fc-acct-stat-value { font-size: 27px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 6px 0 2px; overflow-wrap: anywhere; }
+.fc-acct-stat-label { font-size: 14px; font-weight: 600; color: var(--fc-acct-fg); }
+.fc-acct-stat-value { font-size: 30px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 0 0 4px; overflow-wrap: anywhere; }
 .fc-acct-stat-sub { font-size: 13px; color: var(--fc-acct-muted); }
 
 .fc-acct-quicklinks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
@@ -90,7 +92,9 @@
 .fc-acct-quicklink:hover { border-color: var(--fc-acct-accent); background: var(--fc-acct-accent-soft); }
 .fc-acct-quicklink-icon { flex: 0 0 auto; display: grid; place-items: center; width: 24px; height: 24px; color: var(--fc-acct-accent); }
 .fc-acct-quicklink-icon svg { width: 22px; height: 22px; }
-.fc-acct-quicklink-label { flex: 1 1 auto; min-width: 0; font-weight: 600; font-size: 15px; }
+.fc-acct-quicklink-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.fc-acct-quicklink-label { font-weight: 600; font-size: 15px; }
+.fc-acct-quicklink-summary { font-size: 13px; color: var(--fc-acct-muted); }
 .fc-acct-quicklink-go { flex: 0 0 auto; width: 16px; height: 16px; color: var(--fc-acct-muted); }
 
 /* ── Shared panel primitives ────────────────────────────────────────────────

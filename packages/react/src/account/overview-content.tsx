@@ -13,6 +13,7 @@ import type { IAccountOverviewStat } from '@react/account/interfaces/account-ove
 import type { IAccountOverviewStatContext } from '@react/account/interfaces/account-overview-stat-context.interface';
 import { AccountClass } from '@react/account/account-class';
 import { AccountSectionIcons } from '@react/account/account-section-icons';
+import { AccountSummaryStore } from '@react/account/account-summary-store';
 
 /**
  * Body of the framework account-overview section. Greets the signed-in person and renders the stat
@@ -46,12 +47,14 @@ export class AccountOverviewContent extends PluginComponent {
   @state person: Record<string, any> | null = null;
   @state stats: IAccountOverviewStat[] = [];
   private mounted = false;
-private get client(): any {
+  private unsubscribe?: () => void;
+  private get client(): any {
     return AccountAuthClient.of(this.api);
   }
 
   componentDidMount(): void {
     this.mounted = true;
+    this.unsubscribe = AccountSummaryStore.subscribe(() => this.forceUpdate());
     void this.loadAll();
   }
 
@@ -65,6 +68,7 @@ private get client(): any {
 
   componentWillUnmount(): void {
     this.mounted = false;
+    this.unsubscribe?.();
   }
 
   private async safe(fn: () => any): Promise<any> {
@@ -120,8 +124,8 @@ private get client(): any {
         onClick={(event) => this.follow(event, String(stat.sectionKey || ''), href)}
         style={stat.accent ? accent : undefined}
       >
-        <span className={AccountClass.of('stat-label')}>{stat.label}</span>
         <span className={AccountClass.of('stat-value')}>{stat.value}</span>
+        <span className={AccountClass.of('stat-label')}>{stat.label}</span>
         {stat.sub ? <span className={AccountClass.of('stat-sub')}>{stat.sub}</span> : null}
       </a>
     );
@@ -155,18 +159,20 @@ private get client(): any {
   }
 
   /**
-   * One dashboard tile: icon, label, chevron.
+   * One dashboard tile: icon, label, the section's summary when a contributor gave one, chevron.
    *
    * The icon is what lets someone scan the grid instead of reading twelve labels in sequence, and the
    * chevron says the tile goes somewhere. The one-line description sits on `title` rather than on the
    * page: printed under every label it doubles the height of the dashboard and turns a grid you scan
-   * into a page you read. The glyph is the section's own, so a plugin's section brings its own icon
+   * into a page you read. A summary is different: it is a fact about THIS person ("2 addresses"), the
+   * thing the tile would otherwise make them open the section to learn. The glyph is the section's own, so a plugin's section brings its own icon
    * without the framework knowing it.
    */
   private renderTile(section: AccountSection): ReactNode {
     const href = AccountRouteUtils.sectionPath(section.key);
     const description = section.descriptionKey ? this.t(section.descriptionKey, undefined, '') : '';
     const hint = description && description !== section.descriptionKey ? description : undefined;
+    const summary = AccountSummaryStore.section(section.key);
     return (
       <a
         key={section.key}
@@ -178,7 +184,10 @@ private get client(): any {
         <span className={AccountClass.of('quicklink-icon')} aria-hidden="true">
           {AccountSectionIcons.for(section.key, section.icon)}
         </span>
-        <span className={AccountClass.of('quicklink-label')}>{this.t(section.labelKey, undefined, section.key)}</span>
+        <span className={AccountClass.of('quicklink-text')}>
+          <span className={AccountClass.of('quicklink-label')}>{this.t(section.labelKey, undefined, section.key)}</span>
+          {summary?.text ? <span className={AccountClass.of('quicklink-summary')}>{summary.text}</span> : null}
+        </span>
         <svg className={AccountClass.of('quicklink-go')} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
           <path d="m9 18 6-6-6-6" />
         </svg>

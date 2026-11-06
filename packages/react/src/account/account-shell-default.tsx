@@ -16,6 +16,8 @@ import { AccountSectionRegistry } from '@react/account/account-section-registry'
 import { AccountClass } from '@react/account/account-class';
 import { AccountSignOut } from '@react/account/sign-out';
 import { AccountWho } from '@react/account/account-who';
+import { AccountSummaryLoader } from '@react/account/account-summary-loader';
+import { AccountSummaryStore } from '@react/account/account-summary-store';
 
 /**
  * The framework's DEFAULT account page — the fallback behind the overridable `AccountShell`. Path-aware host for plugin-contributed account panels, shipping a
@@ -42,6 +44,7 @@ export class AccountShellDefault extends Reactor {
    * registering a higher-priority panel for the same section key. */
 
   private boundPopState?: () => void;
+  private unsubscribe?: () => void;
 
   constructor(props: { page?: any }) {
     super(props);
@@ -55,6 +58,8 @@ export class AccountShellDefault extends Reactor {
 
   componentDidMount(): void {
     AccountTranslations.register();
+    // Menu counts come from the shared summaries; re-render when they arrive.
+    this.unsubscribe = AccountSummaryStore.subscribe(() => this.forceUpdate());
     if (Platform.isBrowser) {
       this.boundPopState = () => this.handlePopState();
       window.addEventListener('popstate', this.boundPopState);
@@ -66,6 +71,7 @@ export class AccountShellDefault extends Reactor {
   }
 
   componentWillUnmount(): void {
+    this.unsubscribe?.();
     if (Platform.isBrowser && this.boundPopState) {
       window.removeEventListener('popstate', this.boundPopState);
     }
@@ -153,11 +159,18 @@ export class AccountShellDefault extends Reactor {
             >
               <span className={AccountClass.of('navicon')} aria-hidden="true">{AccountSectionIcons.for(section.key, section.icon)}</span>
               <span className={AccountClass.of('navlabel')}>{translate(section.labelKey, undefined, section.labelKey)}</span>
+              {this.renderCount(section.key)}
             </a>
           );
         })}
       </div>
     ));
+  }
+
+  /** The section's count from its contributor, when it has one; nothing otherwise. */
+  private renderCount(key: string): ReactNode {
+    const count = AccountSummaryStore.section(key)?.count;
+    return count ? <span className={AccountClass.of('navcount')}>{count}</span> : null;
   }
 
   private renderShell(slots: Record<string, any[]>, t?: (k: string, p?: any, d?: string) => string, globalSettings?: Record<string, unknown>): ReactNode {
@@ -186,6 +199,7 @@ export class AccountShellDefault extends Reactor {
 
         <div className={AccountClass.of('body')}>
           <nav className={AccountClass.of('nav')} aria-label={translate('account.shell.nav', undefined, 'Account sections')}>
+            <AccountSummaryLoader contributors={slots['account.overview.stats'] || []} />
             <AccountWho />
             <label className={AccountClass.of('search')}>
               <span className={AccountClass.of('sronly')}>{translate('account.shell.search', undefined, 'Search your account')}</span>
