@@ -172,6 +172,7 @@ export { CollectionLabelUtils } from '@core/collections/collection-label-utils';
 export { CollectionArchive } from '@core/collections/collection-archive';
 export type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 export type { ICollectionPublicContent } from '@core/collections/interfaces/collection-public-content.interface';
+export type { ICollectionPublicListing } from '@core/collections/interfaces/collection-public-listing.interface';
 export type { ICollectionPublicContentSource } from '@core/collections/interfaces/collection-public-content-source.interface';
 export { FrameworkPermissions } from '@core/constants/framework-permissions.constants';
 export type { IPermissionDefinition } from '@core/interfaces/permission-definition.interface';
