@@ -66,10 +66,10 @@ export class AuthShellImplementation extends AuthFormBase<IAuthShellProps, IAuth
    */
   private async confirmStoredSession(user: any): Promise<void> {
     try {
+      // A guest is refused with 401 (thrown below); an answer is a session even without a person record.
       const res = await new SdkClient(this.api).getAuth().get(RouteConstants.SEGMENTS.ME_PERSON, { silent: true });
-      const person = res?.person ?? res?.data?.person ?? null;
-      if (person && (person.id || person.userId || person.email)) {
-        this.setState({ signedInUser: user || person });
+      if (res && typeof res === 'object' && 'person' in res) {
+        this.setState({ signedInUser: user || res?.person || res?.data?.person });
         return;
       }
       this.session.clearSession();

@@ -49,6 +49,13 @@ describe('AccountAuthGate across the runtime remount', () => {
     expect(replace).not.toHaveBeenCalled();
   });
 
+  it('shows the account to a signed-in account that has no person record yet', async () => {
+    const api = { get: vi.fn(async () => ({ person: null })) };
+    render(inRuntime(api));
+    await screen.findByText('Orders');
+    expect(replace).not.toHaveBeenCalled();
+  });
+
   it('still sends a confirmed guest to sign in', async () => {
     const api = { get: vi.fn(async () => { throw Object.assign(new Error('401'), { status: 401 }); }) };
     render(inRuntime(api));

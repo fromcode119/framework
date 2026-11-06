@@ -66,8 +66,13 @@ describe('AccountRouteGuard.enforce', () => {
     ).rejects.toThrow();
   });
 
-  it('treats a 200 with no person as a guest — a status is not a session', async () => {
+  it('lets in a signed-in account that has no person record yet', async () => {
     probeReturning(jsonResponse(200, { person: null }));
+    await expect(AccountRouteGuard.enforce('/account', '/account')).resolves.toBeUndefined();
+  });
+
+  it('treats a 200 that is not the probe answer as a guest', async () => {
+    probeReturning(jsonResponse(200, { status: 'ok' }));
     await expect(AccountRouteGuard.enforce('/account', '/account')).rejects.toThrow();
   });
 
