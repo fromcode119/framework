@@ -155,7 +155,8 @@
       "offersByTextDetail": "News and offers, now and then. Reply STOP to stop them."
     },
     "group": {
-      "profile": "Profile"
+      "profile": "Profile",
+      "documents": "Documents"
     }
   }
 }

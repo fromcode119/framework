@@ -12,7 +12,7 @@ export class AccountProfilePanel extends PluginComponent {
   @state saved: boolean = false;
   @state error: string = '';
   @state person: Record<string, any> | null = null;
-  static readonly accountSection = { key: 'profile', labelKey: 'account.section.profile', priority: 0, group: 'profile', descriptionKey: 'account.description.profile' };
+  static readonly accountSection = { key: 'profile', labelKey: 'account.section.profile', priority: 55, group: 'profile', descriptionKey: 'account.description.profile' };
 
   private mounted = false;
   

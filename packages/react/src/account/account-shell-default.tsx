@@ -15,6 +15,7 @@ import { AccountSectionIcons } from '@react/account/account-section-icons';
 import { AccountSectionRegistry } from '@react/account/account-section-registry';
 import { AccountClass } from '@react/account/account-class';
 import { AccountSignOut } from '@react/account/sign-out';
+import { AccountWho } from '@react/account/account-who';
 
 /**
  * The framework's DEFAULT account page — the fallback behind the overridable `AccountShell`. Path-aware host for plugin-contributed account panels, shipping a
@@ -185,6 +186,7 @@ export class AccountShellDefault extends Reactor {
 
         <div className={AccountClass.of('body')}>
           <nav className={AccountClass.of('nav')} aria-label={translate('account.shell.nav', undefined, 'Account sections')}>
+            <AccountWho />
             <label className={AccountClass.of('search')}>
               <span className={AccountClass.of('sronly')}>{translate('account.shell.search', undefined, 'Search your account')}</span>
               <input
