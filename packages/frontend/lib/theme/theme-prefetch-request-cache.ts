@@ -1,11 +1,11 @@
-import { RequestScope } from '@/lib/request-scope';
+import { SiteRevisionMemo } from '@/lib/site-revision-memo';
 import { RuntimeConstants } from '@fromcode119/core/client';
 
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
 
 /**
- * Per-request memoized theme prefetch (`RequestScope.memo`), mirroring the pattern used by
+ * Memoized theme prefetch — kept across anonymous requests at the site's revision (`SiteRevisionMemo`), per request otherwise, mirroring the pattern used by
  * `DynamicPageResolver.resolveFetchCache` and `ResolvedContentMetadata.headDataCache`.
  *
  * Two server-side consumers share the SAME prefetch pass within one request:
@@ -18,7 +18,7 @@ import { ThemeDataPrefetcher } from '@/lib/theme/theme-data-prefetcher';
  * plugin endpoint is ever hit twice for one document render.
  */
 export class ThemePrefetchRequestCache {
-  private static readonly prefetchCache = RequestScope.memo(async (): Promise<Record<string, unknown>> => {
+  private static readonly prefetchCache = SiteRevisionMemo.memo(async (): Promise<Record<string, unknown>> => {
     const config = await FrontendConfigCache.read() as Record<string, any> | null;
     const theme = config?.activeTheme;
     if (!theme?.slug) {

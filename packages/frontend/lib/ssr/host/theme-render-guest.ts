@@ -5,7 +5,7 @@ import { ThemeSsrRuntime } from '@/lib/ssr/theme-ssr-runtime';
 import { ThemeWorldBuilder } from '@/lib/ssr/theme-world-builder';
 import { ThemeWorldRenderer } from '@/lib/ssr/theme-world-renderer';
 import type { IThemeRenderBoot } from '@/lib/ssr/host/interfaces/theme-render-boot.interface';
-import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render-request.interface';
+import type { IThemeRenderWireRequest } from '@/lib/ssr/host/interfaces/theme-render-wire-request.interface';
 import type { IThemeSsrMarkupParts } from '@/lib/ssr/interfaces/theme-ssr-markup-parts.interface';
 
 /**
@@ -28,7 +28,7 @@ export class ThemeRenderGuest {
   private async handle(type: string, payload: any): Promise<unknown> {
     switch (type) {
       case 'boot': return this.boot(payload as IThemeRenderBoot);
-      case 'render': return this.render(payload as IThemeRenderRequest);
+      case 'render': return this.render(payload as IThemeRenderWireRequest);
       case 'ping': return 'pong';
       case 'stop': setImmediate(() => process.exit(0)); return true;
       default: throw new Error(`render-guest: unknown message "${type}"`);
@@ -44,13 +44,33 @@ export class ThemeRenderGuest {
     return { ready: this.runtime !== null, signature: this.generation.signature };
   }
 
-  private render(request: IThemeRenderRequest): IThemeSsrMarkupParts | null {
+  /** The config and dictionaries sent so far, by fingerprint; least recently used first out. */
+  private readonly kept = new Map<string, Record<string, unknown>>();
+  private static readonly KEPT_MAX = 16;
+
+  private take(ref: string, value: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+    if (value) this.kept.set(ref, value);
+    const found = this.kept.get(ref);
+    if (!found) return undefined;
+    this.kept.delete(ref);
+    this.kept.set(ref, found);
+    while (this.kept.size > ThemeRenderGuest.KEPT_MAX) this.kept.delete(this.kept.keys().next().value as string);
+    return found;
+  }
+
+  private render(wire: IThemeRenderWireRequest): IThemeSsrMarkupParts | { missingRef: true } | null {
     if (!this.runtime || !this.generation) throw new Error('render-guest: render before boot');
+    const { refs, config: sentConfig, serverTranslations: sentTranslations, ...request } = wire;
+    const config = this.take(refs.config, sentConfig);
+    const serverTranslations = this.take(refs.serverTranslations, sentTranslations);
+    if (!config || !serverTranslations) return { missingRef: true };
     const markup = ThemeWorldRenderer.render({
       runtime: this.runtime,
       signature: this.generation.signature,
       themeSlug: this.generation.themeSlug,
       ...request,
+      config,
+      serverTranslations,
     });
     return markup ? markup.toParts() : null;
   }

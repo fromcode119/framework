@@ -7,6 +7,8 @@ import { ThemeRenderSettings } from '@/lib/ssr/host/theme-render-settings';
 import { ThemeSsrGeneration } from '@/lib/ssr/theme-ssr-generation';
 import type { IThemeRenderBoot } from '@/lib/ssr/host/interfaces/theme-render-boot.interface';
 import type { IThemeRenderRequest } from '@/lib/ssr/host/interfaces/theme-render-request.interface';
+import type { IThemeRenderWireRequest } from '@/lib/ssr/host/interfaces/theme-render-wire-request.interface';
+import { PayloadFingerprint } from '@/lib/payload-fingerprint';
 import type { IThemeSsrMarkupParts } from '@/lib/ssr/interfaces/theme-ssr-markup-parts.interface';
 import { ThemeRenderIdentities } from '@/lib/ssr/host/theme-render-identities';
 
@@ -79,9 +81,15 @@ export class ThemeRenderHost {
   /** One page. A render that misses the deadline kills the process: a hung theme must not hold a request open. */
   async render(request: IThemeRenderRequest): Promise<IThemeSsrMarkupParts | null> {
     if (!this.channel || !this.isAlive) return null;
+    const channel = this.channel;
     this.inFlight += 1;
     try {
-      return await this.channel.request<IThemeSsrMarkupParts | null>('render', request, this.settings.timeoutMs);
+      const answer = await channel.request<IThemeSsrMarkupParts | { missingRef: true } | null>('render', this.wire(request, false), this.settings.timeoutMs);
+      // The process dropped a payload it was sent earlier (its own bound): send this one in full.
+      if (answer && 'missingRef' in answer) {
+        return await channel.request<IThemeSsrMarkupParts | null>('render', this.wire(request, true), this.settings.timeoutMs);
+      }
+      return answer;
     } catch (error) {
       console.warn(`[render-host:${this.generation.themeSlug}] render failed: ${error instanceof Error ? error.message : String(error)}`);
       this.stop();
@@ -90,6 +98,23 @@ export class ThemeRenderHost {
       this.inFlight -= 1;
       if (this.retiring && this.inFlight === 0) this.stop();
     }
+  }
+
+  /** The fingerprints this process has been sent, so the same config or dictionary crosses only once. */
+  private readonly sentRefs = new Set<string>();
+
+  private wire(request: IThemeRenderRequest, full: boolean): IThemeRenderWireRequest {
+    const { config, serverTranslations, ...rest } = request;
+    const refs = { config: `c:${PayloadFingerprint.of(config)}`, serverTranslations: `t:${PayloadFingerprint.of(serverTranslations)}` };
+    const wire: IThemeRenderWireRequest = { ...rest, refs };
+    // Marked sent BEFORE the message goes: the channel delivers in order, so a concurrent render that
+    // sends only the ref always reaches the process after the one carrying the value.
+    if (full || !this.sentRefs.has(refs.config)) wire.config = config;
+    if (full || !this.sentRefs.has(refs.serverTranslations)) wire.serverTranslations = serverTranslations;
+    if (this.sentRefs.size > 64) this.sentRefs.clear();
+    this.sentRefs.add(refs.config);
+    this.sentRefs.add(refs.serverTranslations);
+    return wire;
   }
 
   /**

@@ -22,11 +22,15 @@ export class StorefrontDocumentRoute {
   static async GET(request: NextRequest, context: { params: Promise<{ path?: string[] }> }): Promise<Response> {
     // One memo for the whole request (RequestScope): the render's many readers of the same site
     // payload share one fetch instead of each making its own round trip to the api.
+    // An anonymous request (the document cache's own test) may also share the site-wide payloads kept
+    // across requests at the site's current revision (SiteRevisionMemo).
+    const anonymous = StorefrontDocumentCache.cacheable(request.method, request.cookies.getAll().map((cookie) => cookie.name), request.nextUrl.searchParams);
+    const shareKey = anonymous ? StorefrontDocumentRequest.originOf(request.headers, request.nextUrl).toLowerCase() : '';
     return RequestScope.run(async () => {
       const host = String(request.headers.get('x-forwarded-host') || request.headers.get('host') || '');
       const response = await StorefrontDocumentRoute.document(request, context);
       return DocumentResponseHeaders.apply(response, await DocumentResponseHeaders.forSite(host));
-    });
+    }, { shareKey });
   }
 
   private static async document(request: NextRequest, context: { params: Promise<{ path?: string[] }> }): Promise<Response> {

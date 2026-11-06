@@ -1,6 +1,6 @@
 import type { IHeadData } from '@/lib/interfaces/head-data.interface';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
-import { RequestScope } from '@/lib/request-scope';
+import { SiteRevisionMemo } from '@/lib/site-revision-memo';
 
 import type { Metadata } from 'next';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
@@ -143,10 +143,10 @@ export class ResolvedContentMetadata {
   /**
    * Per-request memoized head-data fetch (`RequestScope.memo`), keyed by the full
    * query string (a primitive, so layout `fetchSite` and page `buildEnriched` dedupe
-   * whenever they build the identical query). Per-request only — no cross-request
-   * persistence (storefront-performance-audit.md §1.2 / Phase 1.2).
+   * whenever they build the identical query). Kept across anonymous requests while the site's
+   * content revision is unchanged (`SiteRevisionMemo`), per request otherwise.
    */
-  private static readonly headDataCache = RequestScope.memo(async (queryString: string): Promise<IHeadData | null> => {
+  private static readonly headDataCache = SiteRevisionMemo.memo(async (queryString: string): Promise<IHeadData | null> => {
     const provider = await ResolvedContentMetadata.resolveHeadDataProvider();
     if (!provider) return null;
     const path = ServerApiPaths.buildPluginPath(provider.pluginSlug, provider.headDataPath, queryString);
