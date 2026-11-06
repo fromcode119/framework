@@ -10,6 +10,7 @@ import { AccountFilesPanel } from '@react/account/files-panel';
 import { AccountPushNotificationsPanel } from '@react/account/push-notifications-panel';
 import type { ISlotComponent } from '@react/interfaces/slot-component.interface';
 import { PluginUsageTracker } from '@react/plugin-usage-tracker';
+import { SystemConstants } from '@fromcode119/core/client';
 
 /**
  * Turns the panels registered in the `account.panels` slot into the ordered section list.
@@ -91,7 +92,23 @@ export class AccountSectionRegistry {
       } else if (byKey.has(alias)) byKey.get(alias)!.absorb(item, priority, icon);
       else byKey.set(alias, AccountSection.from(alias, alias, priority, item, icon));
     });
-    return [...byKey.values()].sort((a, b) => a.priority - b.priority || a.key.localeCompare(b.key));
+    const order = AccountSectionRegistry.operatorOrder(globalSettings);
+    const rank = (s: AccountSection) => {
+      const at = order.findIndex((key) => s.answers(key));
+      return at < 0 ? order.length : at;
+    };
+    return [...byKey.values()].sort((a, b) => rank(a) - rank(b) || a.priority - b.priority || a.key.localeCompare(b.key));
+  }
+
+  /**
+   * The order the operator set (Settings → General → Customer sign-in → account section order): section
+   * keys, comma separated. A listed section comes first, in that order; the rest keep their plugin's
+   * priority after it.
+   */
+  private static operatorOrder(globalSettings: Record<string, unknown>): string[] {
+    const system = (globalSettings[SystemConstants.PUBLIC_SETTINGS_NAMESPACE] || {}) as Record<string, unknown>;
+    return String(system[SystemConstants.META_KEY.ACCOUNT_SECTION_ORDER] ?? '')
+      .split(',').map((key) => key.trim()).filter(Boolean);
   }
 
   /** The section a URL key opens — by its own key or an alias merged into it. */

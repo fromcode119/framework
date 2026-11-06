@@ -38,4 +38,19 @@ describe('AccountSectionRegistry groups and merges', () => {
     expect(AccountSectionRegistry.build(panels, {}).map((s) => s.key)).toEqual(['overview']);
     expect(AccountSectionRegistry.build(panels, { invoicesOn: true }).map((s) => s.key)).toEqual(['invoices', 'overview']);
   });
+
+  it('puts the sections the operator listed first, in that order, and keeps the rest by priority', () => {
+    const panels = [
+      panel({ key: 'overview', priority: 0 }),
+      panel({ key: 'orders', priority: 10 }),
+      panel({ key: 'security', priority: 60 }),
+      panel({ key: 'sessions', priority: 65, mergeInto: 'security' }),
+      panel({ key: 'wishlist', priority: 30 }),
+    ];
+    const order = (value: string) => ({ _system: { account_section_order: value } });
+    expect(AccountSectionRegistry.build(panels, order('wishlist, sessions')).map((s) => s.key))
+      .toEqual(['wishlist', 'security', 'overview', 'orders']);
+    expect(AccountSectionRegistry.build(panels, order('')).map((s) => s.key))
+      .toEqual(['overview', 'orders', 'wishlist', 'security']);
+  });
 });

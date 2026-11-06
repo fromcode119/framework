@@ -62,6 +62,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       email_notifications: Boolean(settings.email_notifications),
       notification_email: String(settings.notification_email ?? '').trim(),
       notification_email_cc: String(settings.notification_email_cc ?? '').trim(),
+      account_section_order: String(settings.account_section_order ?? '').split(',').map((key) => key.trim()).filter(Boolean).join(', '),
       frontend_url: String(settings.frontend_url ?? '').trim(),
       admin_url: String(settings.admin_url ?? '').trim(),
       site_url: String(settings.site_url ?? '').trim(),

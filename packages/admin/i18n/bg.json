@@ -1810,7 +1810,10 @@
       "usageReportLoadFailed": "Отчетът не можа да бъде прочетен.",
       "usageReportNeverSent": "Още не е изпращан.",
       "usageReportLastOk": "Изпратен последно {{when}}: {{message}}",
-      "usageReportLastFailed": "Последният опит {{when}} не успя: {{message}}"
+      "usageReportLastFailed": "Последният опит {{when}} не успя: {{message}}",
+      "accountSectionOrder": "Ред на разделите в профила",
+      "accountSectionOrderDescription": "Редът на разделите в менюто на клиентския профил: ключовете им (адресът /account/<ключ>), разделени със запетая. Изброените излизат първи в този ред, а останалите остават след тях в подредбата по подразбиране. Празно оставя подредбата по подразбиране.",
+      "accountSectionOrderPlaceholder": "orders, wishlist, addresses"
     },
     "infrastructure": {
       "siteUploadLimitsUnavailable": "Ограниченията за качване на сайтове не са налични",

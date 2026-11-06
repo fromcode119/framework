@@ -1773,7 +1773,10 @@
       "usageReportLoadFailed": "The usage report could not be read.",
       "usageReportNeverSent": "Not sent yet.",
       "usageReportLastOk": "Last sent {{when}}: {{message}}",
-      "usageReportLastFailed": "Last attempt {{when}} failed: {{message}}"
+      "usageReportLastFailed": "Last attempt {{when}} failed: {{message}}",
+      "accountSectionOrder": "Account section order",
+      "accountSectionOrderDescription": "The order of the sections in the customer account menu: their keys (the address /account/<key>), separated by commas. Listed sections come first in this order; the rest keep their default order after them. Blank keeps the default order.",
+      "accountSectionOrderPlaceholder": "orders, wishlist, addresses"
     },
     "appearance": {
       "appearance": "Appearance",

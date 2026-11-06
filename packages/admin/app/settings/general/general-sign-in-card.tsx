@@ -3,6 +3,7 @@ import type { Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
@@ -56,12 +57,18 @@ export class GeneralSignInCard extends PureReactor {
     this.setSettings((prev) => ({ ...prev, app_anonymous_enabled: val }));
   }
 
+  @bound
+  protected changeAccountSectionOrder(e: { target: { value: string } }): void {
+    const account_section_order = e.target.value;
+    this.setSettings((prev) => ({ ...prev, account_section_order }));
+  }
+
   render(): ReactNode {
     const settings = this.settings;
     const theme = this.theme;
     return (
       <>
-        {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled', 'app_auth_enabled', 'app_registration_enabled', 'app_anonymous_enabled') && (
+        {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled', 'app_auth_enabled', 'app_registration_enabled', 'app_anonymous_enabled', 'account_section_order') && (
           <Card title={AdminI18n.t('settings.general.frontendAuth')}>
             {this.shown('frontend_auth_enabled') && (
               <SettingRow
@@ -132,6 +139,22 @@ export class GeneralSignInCard extends PureReactor {
                   checked={settings.app_anonymous_enabled}
                   onChange={this.changeAppAnonymousEnabled}
                   disabled={!settings.app_auth_enabled || !settings.app_registration_enabled}
+                />
+              </SettingRow>
+            )}
+
+            {this.shown('account_section_order') && (
+              <SettingRow
+                theme={theme}
+                icon={FrameworkIcons.Users}
+                title={AdminI18n.t('settings.general.accountSectionOrder')}
+                description={AdminI18n.t('settings.general.accountSectionOrderDescription')}
+              >
+                <Input
+                  value={settings.account_section_order}
+                  onChange={this.changeAccountSectionOrder}
+                  className="w-full md:w-80 font-bold"
+                  placeholder={AdminI18n.t('settings.general.accountSectionOrderPlaceholder')}
                 />
               </SettingRow>
             )}

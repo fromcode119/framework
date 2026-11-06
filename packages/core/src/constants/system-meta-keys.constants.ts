@@ -4,6 +4,7 @@ import { UsageReportMetaKeys } from '@core/constants/usage-report-meta-keys.cons
 import { CapacityMetaKeys } from '@core/constants/capacity-meta-keys.constants';
 import { RetentionMetaKeys } from '@core/constants/retention-meta-keys.constants';
 import { EdgeMetaKeys } from '@core/constants/edge-meta-keys.constants';
+import { CustomerAccountMetaKeys } from '@core/constants/customer-account-meta-keys.constants';
 import { LocalizationMetaKeys } from '@core/constants/localization-meta-keys.constants';
 
 /**
@@ -122,6 +123,7 @@ export class SystemMetaKeys {
   CERTIFICATE_ACME_CLOUDFLARE_TOKEN: 'certificate_acme_cloudflare_token',
   ...RetentionMetaKeys.ALL,
   ...EdgeMetaKeys.ALL,
+  ...CustomerAccountMetaKeys.ALL,
   /**
    * Whether the platform keeps an IP-location database (DB-IP City Lite, CC BY 4.0) and answers
    * `context.geo.lookup`. `true` installs it and keeps it current monthly; anything else removes it, so
@@ -227,11 +229,6 @@ export class SystemMetaKeys {
   // Routing & Features
   PERMALINK_STRUCTURE: 'permalink_structure',
   ROUTING_HOME_TARGET: 'routing_home_target',
-  FRONTEND_AUTH_ENABLED: 'frontend_auth_enabled',
-  FRONTEND_REGISTRATION_ENABLED: 'frontend_registration_enabled',
-  APP_AUTH_ENABLED: 'app_auth_enabled',
-  APP_REGISTRATION_ENABLED: 'app_registration_enabled',
-  APP_ANONYMOUS_ENABLED: 'app_anonymous_enabled',
   CONTACT_DETAIL_PROTECTION: 'contact_detail_protection',
   EMAIL_NOTIFICATIONS: 'email_notifications',
   NOTIFICATION_EMAIL: 'notification_email',
