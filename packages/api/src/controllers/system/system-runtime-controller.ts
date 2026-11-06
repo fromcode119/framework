@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { I18nResponseBody } from '@api/services/system/i18n-response-body';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { TenantConnectionScope } from '@fromcode119/database';
 import { ContentPreviewAccessUtils, DeploymentKind, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
@@ -159,14 +160,7 @@ export class SystemRuntimeController {
         .filter((plugin) => PluginTenantAccess.isVisibleForCurrentTenant(plugin))
         .map((plugin) => plugin.manifest.slug)
     );
-    const translations = (this.runtime.manager as any).i18n.translations.get(locale) || {};
-    const filtered: any = {};
-    for (const [slug, data] of Object.entries(translations)) {
-      if (activeSlugs.has(slug)) {
-        filtered[slug] = data;
-      }
-    }
-    res.json(filtered);
+    res.type('application/json').send(I18nResponseBody.for((this.runtime.manager as any).i18n, locale, activeSlugs));
   }
 
   async resolveSlug(req: Request, res: Response) {

@@ -4,6 +4,7 @@ import { RequestContextUtils } from '@core/context/request-context';
 export class I18nManager {
   public translations: Map<string, ITranslationMap> = new Map();
   private currentLocale: string;
+  private revisionCount = 0;
 
   constructor(defaultLocale: string = 'en') {
     this.currentLocale = defaultLocale;
@@ -15,6 +16,15 @@ export class I18nManager {
     }
     const localeMap = this.translations.get(locale)!;
     localeMap[namespace] = translations;
+    this.revisionCount += 1;
+  }
+
+  /**
+   * Bumped on every registration, so a caller that derives something costly from the translations
+   * (the serialized `/system/i18n` body) can tell whether what it holds is still current.
+   */
+  revision(): number {
+    return this.revisionCount;
   }
 
   setLocale(locale: string) {
