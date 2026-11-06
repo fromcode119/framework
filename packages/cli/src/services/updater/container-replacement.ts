@@ -18,6 +18,8 @@ import type { IReplacedContainer } from '@cli/services/updater/interfaces/replac
 export class ContainerReplacement {
   static readonly ASIDE_SUFFIX = '-previous';
   private static readonly STOP_TIMEOUT_SECONDS = 30;
+  private static readonly MODES_WITHOUT_ENDPOINTS = ['none', 'host'];
+  private static readonly SHARED_MODE_PREFIX = 'container:';
 
   constructor(private readonly engine: IDockerEngine) {}
 
@@ -58,8 +60,7 @@ export class ContainerReplacement {
     const { Hostname, Image, ...config } = current.Config;
     void Hostname; void Image;
     const imageEnv = new Set(oldImage.Env);
-    const networks = Object.entries(current.NetworkSettings.Networks ?? {});
-    const [first] = networks;
+    const [first] = ContainerReplacement.networks(current);
     return {
       ...config,
       Image: image,
@@ -74,7 +75,18 @@ export class ContainerReplacement {
 
   /** A container create joins ONE network; the rest are connected after it exists. */
   static extraNetworks(current: IContainerInspect): Array<[string, Record<string, any>]> {
-    return Object.entries(current.NetworkSettings.Networks ?? {}).slice(1);
+    return ContainerReplacement.networks(current).slice(1);
+  }
+
+  /**
+   * The networks a copy joins with endpoint settings of its own. A container with `network_mode: none`,
+   * `host` or `container:<id>` shows that mode as its one "network", but Docker refuses any endpoint
+   * settings — aliases included — for it; `HostConfig.NetworkMode` alone gives the copy the same mode.
+   */
+  private static networks(current: IContainerInspect): Array<[string, Record<string, any>]> {
+    const mode = String(current.HostConfig?.NetworkMode ?? '');
+    if (ContainerReplacement.MODES_WITHOUT_ENDPOINTS.includes(mode) || mode.startsWith(ContainerReplacement.SHARED_MODE_PREFIX)) return [];
+    return Object.entries(current.NetworkSettings.Networks ?? {});
   }
 
   /** Aliases are how the other services find this one (`api`, `gateway`); the old container's own id alias is not carried. */

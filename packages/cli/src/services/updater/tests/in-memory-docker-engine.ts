@@ -17,6 +17,8 @@ export class InMemoryDockerEngine implements IDockerEngine {
   /** Every container ever stopped, in order, with the containers of its service still running at that moment. */
   stops: Array<{ name: string; runningPeers: number }> = [];
   created: Array<{ name: string; body: Record<string, any> }> = [];
+  /** Services that run with `network_mode` set (`none` for the sandboxed site extension host). */
+  networkModes: Record<string, string> = {};
   private next = 1;
 
   add(service: string, image: string, project = 'site'): string {
@@ -39,10 +41,12 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async inspect(id: string): Promise<IContainerInspect> {
     const c = this.containers.get(id)!;
+    const mode = this.networkModes[c.labels['com.docker.compose.service']];
     return { Id: id, Name: `/${c.name}`, State: { Running: c.running },
       Config: { Image: c.image, Env: c.env, Cmd: c.cmd, Labels: c.labels, Hostname: id.slice(0, 12) },
-      HostConfig: { RestartPolicy: { Name: 'unless-stopped' } },
-      NetworkSettings: { Networks: { site_framework: { Aliases: ['api', id.slice(0, 12)] }, site_proxy: { Aliases: ['api'] } } } };
+      HostConfig: { RestartPolicy: { Name: 'unless-stopped' }, ...(mode ? { NetworkMode: mode } : {}) },
+      // Docker reports the mode itself as the container's one network, with no aliases.
+      NetworkSettings: { Networks: mode ? { [mode]: { Aliases: null } } : { site_framework: { Aliases: ['api', id.slice(0, 12)] }, site_proxy: { Aliases: ['api'] } } } };
   }
 
   async imageDefaults(): Promise<IImageDefaults> {
@@ -60,6 +64,11 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async createContainer(name: string, body: Record<string, any>): Promise<string> {
     if (this.byName(name)) throw new Error(`name ${name} in use`);
+    // As Docker: a container on `none`, `host` or another container's network takes no endpoint settings.
+    const mode = String(body.HostConfig?.NetworkMode ?? '');
+    if ((['none', 'host'].includes(mode) || mode.startsWith('container:')) && Object.keys(body.NetworkingConfig?.EndpointsConfig ?? {}).length) {
+      throw new Error(`invalid config for network ${mode}: invalid endpoint settings`);
+    }
     const id = `c${this.next++}bbbbbbbbbbbb`;
     this.created.push({ name, body });
     this.containers.set(id, { name, image: body.Image, running: false, labels: body.Labels ?? {}, env: body.Env, cmd: body.Cmd, created: this.next });
