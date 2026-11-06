@@ -6,15 +6,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.523] - 2026-11-06
+
+### Performance
+
+- **frontend**: sign-in and 404 visits keep the site's cached pages (0.2.523)
+
 ## [0.2.522] - 2026-11-06
+
+### Added
+
+- **account**: who block, profile group last, files under documents ([#1261](https://github.com/fromcode119/framework/pull/1261))
 
 ### Fixed
 
 - **account**: only a 401 sends to sign in; plugins prefetch their record pages ([#1262](https://github.com/fromcode119/framework/pull/1262))
-
-### Added
-
-- **account**: who block, profile group last, files under documents; neutral default palette and full-width layout ([#1261](https://github.com/fromcode119/framework/pull/1261))
 
 ## [0.2.521] - 2026-11-06
 
