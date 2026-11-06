@@ -34,4 +34,17 @@ describe('PublicListing', () => {
     expect(PublicListing.readConstraint(PublicListingSurface.CATALOG)).toEqual({ visibility: { $in: ['public', 'catalog_only'], $orNull: true } });
     expect(PublicListing.readConstraint(PublicListingSurface.SEARCH)).toEqual({ visibility: { $in: ['public', 'search_only'], $orNull: true } });
   });
+
+  it('a read of one record by its link finds it; anything else is a list', () => {
+    const keys = ['id', 'slug'];
+    expect(PublicListing.readRule({ params: { id: '7' } }, keys, PublicListingSurface.CATALOG)).toEqual({});
+    expect(PublicListing.readRule({ query: { slug: 'summer' } }, keys, PublicListingSurface.CATALOG)).toEqual({ slug: 'summer' });
+    const list = { visibility: { $in: ['public', 'catalog_only'], $orNull: true } };
+    expect(PublicListing.readRule({ query: {} }, keys, PublicListingSurface.CATALOG)).toEqual(list);
+    expect(PublicListing.readRule(undefined, keys, PublicListingSurface.CATALOG)).toEqual(list);
+    // Values that only LOOK like one record cannot widen into a list of unlisted ones.
+    expect(PublicListing.readRule({ query: { slug: { in: ['a', 'b'] } } }, keys, PublicListingSurface.CATALOG)).toEqual(list);
+    expect(PublicListing.readRule({ query: { slug: ['a', 'b'] } }, keys, PublicListingSurface.CATALOG)).toEqual(list);
+    expect(PublicListing.readRule({ query: { slug: 'a,b' } }, keys, PublicListingSurface.CATALOG)).toEqual(list);
+  });
 });

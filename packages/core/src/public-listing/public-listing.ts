@@ -55,6 +55,31 @@ export class PublicListing extends Enum {
   }
 
   /**
+   * A public collection's read-rule part for listing: a read of ONE record by its link finds it whatever
+   * its Visibility, and any other read is a list and gets {@link readConstraint}.
+   *
+   * One record means a path id, or a single plain value for one of `pinningKeys` (`?slug=summer`). That
+   * value is returned as an equality the read must ALSO satisfy, so a query that only looks pinned
+   * (`?slug[in]=a,b`, a list of values) can never widen into a list of unlisted records.
+   */
+  static readRule(req: unknown, pinningKeys: readonly string[], surface: PublicListingSurface): Record<string, unknown> {
+    const request = req as { params?: Record<string, unknown>; query?: Record<string, unknown> } | null | undefined;
+    if (PublicListing.plainValue(request?.params?.id)) return {};
+    for (const key of pinningKeys) {
+      const value = PublicListing.plainValue(request?.query?.[key]);
+      if (value) return { [key]: value };
+    }
+    return PublicListing.readConstraint(surface);
+  }
+
+  /** A query value naming exactly one thing: a non-empty string or number, never an operator object or a list. */
+  private static plainValue(value: unknown): string {
+    if (value === null || value === undefined || Object(value) === value) return '';
+    const text = String(value).trim();
+    return text.includes(',') ? '' : text;
+  }
+
+  /**
    * The `visibility` collection field, offering only the values that mean something for that collection
    * (a category is never searched, so it offers Public and Hidden). Labels are the owner's to translate.
    */
