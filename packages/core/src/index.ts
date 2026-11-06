@@ -313,6 +313,7 @@ export { HostPermissionVerdict } from '@core/enums/host-permission-verdict.enum'
 export { HostPermission } from '@core/tenant/host-permission';
 export { CertificateBundle } from '@core/certificates/certificate-bundle';
 export { CertificateBundleEntry } from '@core/certificates/certificate-bundle-entry';
+export { CertificateBundleSnapshot } from '@core/certificates/certificate-bundle-snapshot';
 export { CertificateMaterial } from '@core/certificates/certificate-material';
 export { CertificateRecord } from '@core/certificates/certificate-record';
 export { WildcardHostCoverage } from '@core/certificates/wildcard-host-coverage';

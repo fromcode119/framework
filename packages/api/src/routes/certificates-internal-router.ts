@@ -1,5 +1,5 @@
 import express from 'express';
-import { CertificateStoreService, InternalServiceAuth, RouteConstants } from '@fromcode119/core';
+import { CertificateBundleSnapshot, CertificateStoreService, InternalServiceAuth, RouteConstants } from '@fromcode119/core';
 
 /**
  * `GET /internal/certificates` — the certificates and PRIVATE KEYS whatever terminates TLS loads.
@@ -14,7 +14,8 @@ import { CertificateStoreService, InternalServiceAuth, RouteConstants } from '@f
  * - NEVER PUBLISHED THROUGH THE EDGE. Reachable from the internet this is not an information leak,
  *   it is the private keys of every site on the platform.
  * - NEVER CACHED. A cached key outlives the removal of a certificate, and revoking something a cache
- *   still holds is not revoking it.
+ *   still holds is not revoking it. The one copy kept is the gateway's encrypted restart snapshot,
+ *   rewritten here whenever the bundle changes and used only until the gateway's first fetch.
  *
  * No secret configured → the route answers nothing at all, exactly like the routing map, so a
  * deployment that never set one exposes nothing rather than exposing everything.
@@ -35,6 +36,8 @@ export class CertificatesInternalRouter {
     }
 
     const certificates = await this.certificates.edgeBundle();
+    // The gateway's copy for its next restart (see CertificateBundleSnapshot); rewritten only on change.
+    CertificateBundleSnapshot.write({ certificates });
     res.json({ certificates, generatedAt: new Date().toISOString() });
   }
 }
