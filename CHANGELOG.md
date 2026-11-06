@@ -6,7 +6,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.525] - 2026-11-06
+
+### Added
+
+- **api**: collections declare publicListing; the framework applies Visibility to visitor reads ([#1270](https://github.com/fromcode119/framework/pull/1270))
+
+### Fixed
+
+- **core**: PublicListing.field() is typed as a collection field ([#1269](https://github.com/fromcode119/framework/pull/1269))
+- **admin**: offer a theme update only when the marketplace version is newer ([#1268](https://github.com/fromcode119/framework/pull/1268))
+
 ## [0.2.524] - 2026-11-06
+
+### Added
+
+- **sdk**: PublicListing — one rule for where a published record is listed ([#1265](https://github.com/fromcode119/framework/pull/1265))
 
 ### Fixed
 
