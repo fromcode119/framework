@@ -6,12 +6,30 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.519] - 2026-11-06
+
+### Fixed
+
+- **cli**: updater rolls the gateway behind an edge even in restart mode ([#1255](https://github.com/fromcode119/framework/pull/1255))
+
+### Performance
+
+- **frontend**: share page resolves; a framework page is no 404 ([#1254](https://github.com/fromcode119/framework/pull/1254))
+
 ## [0.2.518] - 2026-11-06
+
+### Added
+
+- **account**: grouped nav, search, merged sign-in & security ([#1247](https://github.com/fromcode119/framework/pull/1247))
 
 ### Fixed
 
 - **auth**: an administrator signed in on the storefront sees it as a visitor ([#1252](https://github.com/fromcode119/framework/pull/1252))
 - **gateway**: keep serving HTTPS when the gateway restarts before the api ([#1251](https://github.com/fromcode119/framework/pull/1251))
+
+### Performance
+
+- **core**: writes to collections no page reads keep the content revision ([#1249](https://github.com/fromcode119/framework/pull/1249))
 
 ## [0.2.517] - 2026-11-06
 
