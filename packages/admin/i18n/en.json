@@ -2636,6 +2636,8 @@
       "sendRetiredUrlsToTheir": "Send retired URLs to their replacements",
       "301Permanent": "301 Permanent",
       "302Temporary": "302 Temporary",
+      "410Gone": "410 Gone (removed)",
+      "goneNoTarget": "No page — answers 410",
       "addRedirect": "Add Redirect",
       "fromPath": "From path",
       "toPathOrUrl": "To path or URL",

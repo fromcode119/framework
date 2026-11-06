@@ -40,6 +40,15 @@ describe('DynamicPageResolver.resolveRedirect', () => {
       new Response(JSON.stringify({ type: 'redirect', redirect: { target: '/new', permanent: false } }), { status: 200 }),
     ));
 
-    await expect(DynamicPageResolver.resolveRedirect('/moved')).resolves.toEqual({ target: '/new', permanent: false });
+    await expect(DynamicPageResolver.resolveRedirect('/moved')).resolves.toEqual({ target: '/new', permanent: false, gone: false });
+  });
+
+  it('a rule saying the page is gone has no target to send the visitor to', async () => {
+    vi.mocked(headers).mockResolvedValue(new Headers() as never);
+    vi.spyOn(ServerApiUtils, 'serverFetchResponseOutcome').mockResolvedValue(ServerFetchOutcome.resolved<Response>(
+      new Response(JSON.stringify({ type: 'redirect', redirect: { target: '', permanent: true, gone: true } }), { status: 200 }),
+    ));
+
+    await expect(DynamicPageResolver.resolveRedirect('/removed')).resolves.toEqual({ target: '', permanent: true, gone: true });
   });
 });

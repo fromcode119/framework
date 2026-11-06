@@ -29,18 +29,18 @@ export class McpRedirectTools {
       {
         tool: 'redirects.create',
         title: 'Create a redirect',
-        description: 'Create a URL redirect rule (301 permanent by default, or 302). Same validation and duplicate guard as Settings → Redirects; effective immediately.',
+        description: 'Create a URL redirect rule (301 permanent by default, 302, or 410 gone — no target). Same validation and duplicate guard as Settings → Redirects; effective immediately.',
         readOnly: false,
         permission: 'system:manage',
         inputSchema: McpSchema.object({
           fromPath: McpSchema.string({ description: 'The path to redirect FROM, e.g. "/old-page".' }),
           toPath: McpSchema.string({ description: 'Where it goes — a path ("/new-page") or absolute URL.' }),
-          type: McpSchema.string({ description: '"301" (permanent, default) or "302" (temporary).' }),
+          type: McpSchema.string({ description: '"301" (permanent, default), "302" (temporary) or "410" (gone for good; toPath is ignored).' }),
           notes: McpSchema.string({ description: 'Optional operator note stored with the rule.' }),
         }, ['fromPath', 'toPath']),
         handler: async (input: any = {}) => {
           const type = CoercionUtils.toString(input.type);
-          if (type && type !== '301' && type !== '302') throw new Error('type must be "301" or "302".');
+          if (type && type !== '301' && type !== '302' && type !== '410') throw new Error('type must be "301", "302" or "410".');
           const redirect = await service.create({
             fromPath: input.fromPath,
             toPath: input.toPath,

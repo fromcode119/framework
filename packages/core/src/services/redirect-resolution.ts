@@ -16,4 +16,7 @@ export class RedirectResolution {
 
   /** `true` → 308/301 (permanent), `false` → 307/302. */
   declare permanent: boolean;
+
+  /** The page is gone for good: answer 410 instead of redirecting (`target` is then empty). */
+  declare gone?: boolean;
 }

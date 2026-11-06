@@ -42,7 +42,7 @@ export class RedirectsContextProxy {
             const outcome = await service.ensure({
               fromPath: rule?.fromPath,
               toPath: rule?.toPath,
-              type: rule?.permanent === false ? '302' : '301',
+              type: rule?.gone === true ? SystemRedirectService.GONE : rule?.permanent === false ? '302' : '301',
               enabled: true,
               notes: String(rule?.notes || `Added by plugin "${plugin.manifest.slug}"`),
             });
