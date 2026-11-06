@@ -3,6 +3,7 @@ import type { IUser } from '@auth/interfaces/user.interface';
 import type { IApiKeyValidator } from '@auth/interfaces/api-key-validator.interface';
 import { UserPermissionChecker } from '@auth/permission-checker';
 import { InspectorAccess } from '@auth/inspector-access';
+import { StorefrontVisitorUser } from '@auth/storefront-visitor-user';
 import type { ISessionValidator } from '@auth/interfaces/session-validator.interface';
 
 /**
@@ -52,10 +53,12 @@ export class AuthRequestGate {
       // (non-admin JWT) arrives alongside X-Framework-Client: admin-ui from the visual editor.
       const isAdminCtx = this.isAdminRequestContext(req);
       const authHeader = req.headers.authorization;
+      let bearer = '';
       if (!isAdminCtx && authHeader && authHeader.startsWith('Bearer ')) {
         const t = authHeader.split(' ')[1];
         if (t && t !== 'undefined' && t !== 'null') {
           tokenCandidates.push(t);
+          bearer = t;
         }
       }
 
@@ -101,7 +104,9 @@ export class AuthRequestGate {
           const tenantId = String(req.tenantId ?? '').trim();
           const user = await this.verifyToken(t, tenantId ? { tenantId } : {});
           if (user) {
-            req.user = await this.applyTenantRoles(user, tenantId);
+            const signedIn = await this.applyTenantRoles(user, tenantId);
+            // The storefront's own cookie: the site is seen as a visitor sees it (`StorefrontVisitorUser`).
+            req.user = !isAdminCtx && t !== bearer ? StorefrontVisitorUser.of(signedIn) : signedIn;
             this.logger.debug(`Session validated for ${req.url || 'unknown'}`);
             break;
           }
