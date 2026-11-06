@@ -1,3 +1,4 @@
+import type { ICollectionPublicListing } from '@core/collections/interfaces/collection-public-listing.interface';
 import type { IIndexWhere } from '@core/collections/interfaces/index-where.interface';
 import { CollectionKind } from '@core/enums/collection-kind.enum';
 import type { IAccess } from '@core/interfaces/access.interface';
@@ -43,6 +44,8 @@ export interface ICollection {
   entity?: string;
   /** Records a visitor opens at an address of their own. See {@link ICollectionPublicContent}. */
   publicContent?: ICollectionPublicContent;
+  /** Records carry a Visibility the framework applies to visitors' reads. See {@link ICollectionPublicListing}. */
+  publicListing?: ICollectionPublicListing;
   /** Records can be archived and restored instead of deleted. See {@link ICollectionArchive}. */
   archive?: ICollectionArchive;
   /** Rows the database keeps as written. See {@link ICollectionProtection}. */

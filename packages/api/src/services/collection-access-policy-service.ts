@@ -1,6 +1,6 @@
 import { WriteOperation } from '@api/services/enums/write-operation.enum';
 import { ReadConstraintOperators } from '@api/services/read-constraint-operators';
-import { ICollection, EnvUtils, PermissionGrants, PermissionNames, CollectionPermissionAction, ContentPreviewAccessUtils } from '@fromcode119/core';
+import { ICollection, EnvUtils, PublicListing, PublicListingSurface, PermissionGrants, PermissionNames, CollectionPermissionAction, ContentPreviewAccessUtils } from '@fromcode119/core';
 
 export class CollectionAccessPolicyService {
   /**
@@ -26,11 +26,11 @@ export class CollectionAccessPolicyService {
 
     const accessResult = await this.evaluateAccess(collection.access?.read, req);
     if (accessResult === true) {
-      return {};
+      return this.listingConstraint(collection, req);
     }
 
     if (this.isConstraint(accessResult)) {
-      return accessResult;
+      return { ...this.listingConstraint(collection, req), ...accessResult };
     }
 
     // An EXPLICIT deny from a declared access.read always gates (admins bypass, same as mutations).
@@ -205,6 +205,15 @@ export class CollectionAccessPolicyService {
       CollectionAccessPolicyService.requestPermissions.set(req, pending);
     }
     return pending;
+  }
+
+  /**
+   * What a collection's declared Visibility (`publicListing`) leaves a visitor: the catalogue in a list,
+   * any record read by one of its address keys. An administrator reads every record.
+   */
+  private listingConstraint(collection: ICollection, req: any): Record<string, unknown> {
+    if (!collection.publicListing || this.isAdmin(req?.user)) return {};
+    return PublicListing.readRule(req, collection.publicListing.pinnedBy, PublicListingSurface.CATALOG);
   }
 
   private isAdmin(user: any): boolean {
