@@ -3,6 +3,7 @@ import { Platform, Reactor, bound, prop, state } from '@fromcode119/react-class-
 import { AccountRouteUtils } from '@fromcode119/core/client';
 import { SlotsContext } from '@react/context/slots-context';
 import { TranslationContext } from '@react/context/translation-context';
+import { PluginRuntimeContext } from '@react/view/plugin-runtime-context.client';
 import { AccountTranslations } from '@react/account/account-translations';
 // NOTE: `account-shell.css` is deliberately NOT imported here. A runtime `import '…css'` compiles to a
 // `require()` in `dist`, which makes this package unimportable by NODE — and the stylesheet was never
@@ -107,7 +108,11 @@ export class AccountShellDefault extends Reactor {
       <SlotsContext.Context.Consumer>
         {(slots) => (
           <TranslationContext.Context.Consumer>
-            {(translation) => this.renderShell(slots, translation?.t)}
+            {(translation) => (
+              <PluginRuntimeContext.context.Consumer>
+                {(runtime) => this.renderShell(slots, translation?.t, runtime?.globalSettings)}
+              </PluginRuntimeContext.context.Consumer>
+            )}
           </TranslationContext.Context.Consumer>
         )}
       </SlotsContext.Context.Consumer>
@@ -153,9 +158,9 @@ export class AccountShellDefault extends Reactor {
     ));
   }
 
-  private renderShell(slots: Record<string, any[]>, t?: (k: string, p?: any, d?: string) => string): ReactNode {
+  private renderShell(slots: Record<string, any[]>, t?: (k: string, p?: any, d?: string) => string, globalSettings?: Record<string, unknown>): ReactNode {
     const translate = typeof t === 'function' ? t : (_k: string, _p?: any, d?: string) => d || _k;
-    const sections = AccountSectionRegistry.buildAll(slots[this.SLOT_NAME]);
+    const sections = AccountSectionRegistry.buildAll(slots[this.SLOT_NAME], globalSettings);
 
     if (sections.length === 0) {
       return (

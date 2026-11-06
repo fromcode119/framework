@@ -41,21 +41,28 @@ export class AccountSectionRegistry {
   ] as unknown as ISlotComponent[];
 
   /** Framework panels + everything registered in the `account.panels` slot. The complete account. */
-  static buildAll(slotPanels: ISlotComponent[] | undefined): AccountSection[] {
+  static buildAll(slotPanels: ISlotComponent[] | undefined, globalSettings?: Record<string, unknown>): AccountSection[] {
     // The panels are read straight from the slot — no `<Slot>` renders them — so this is where their
     // plugins are reported as used. Unreported, the page marked those bundles idle, the browser deferred
     // them past hydration, and its first render listed fewer sections than the server had: a mismatch
     // that re-rendered the whole account client-side.
     (slotPanels || []).forEach((panel) => PluginUsageTracker.record(panel?.pluginSlug));
-    return AccountSectionRegistry.build([...AccountSectionRegistry.BUILTIN, ...(slotPanels || [])]);
+    return AccountSectionRegistry.build([...AccountSectionRegistry.BUILTIN, ...(slotPanels || [])], globalSettings);
   }
 
-  static build(panels: ISlotComponent[]): AccountSection[] {
+  /**
+   * A panel may declare `offeredWhen(globalSettings)`: when it answers false the shop has switched the
+   * feature off in its own settings, and the section is left out of the menu instead of opening onto a
+   * "not offered" page. The panel's plugin owns the question; the shell only asks it.
+   */
+  static build(panels: ISlotComponent[], globalSettings: Record<string, unknown> = {}): AccountSection[] {
     const byKey = new Map<string, AccountSection>();
     const merged: Array<{ into: string; alias: string; item: ISlotComponent; priority: number; icon?: ReactNode }> = [];
     panels.forEach((item, index) => {
       const entry = item as ISlotComponent | null;
       const meta = ((entry?.component as { accountSection?: Record<string, unknown> } | undefined)?.accountSection) || {};
+      const offeredWhen = meta.offeredWhen as ((settings: Record<string, unknown>) => boolean) | undefined;
+      if (offeredWhen && !offeredWhen(globalSettings)) return;
       const key = String(meta.key || entry?.pluginSlug || `section-${index}`).toLowerCase();
       const labelKey = String(meta.labelKey || meta.label || meta.key || entry?.pluginSlug || key);
       const priority = typeof meta.priority === 'number' ? meta.priority : 100;

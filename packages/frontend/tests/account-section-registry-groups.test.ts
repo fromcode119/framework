@@ -31,4 +31,11 @@ describe('AccountSectionRegistry groups and merges', () => {
     expect(groups[1].sections.map((s) => s.key)).toEqual(['profile', 'security']);
     expect(groups[2].labelKey).toBe('account.group.shopping');
   });
+
+  it('leaves out a section whose offeredWhen answers false for the shop settings', () => {
+    const offeredWhen = (settings: Record<string, unknown>) => settings.invoicesOn === true;
+    const panels = [panel({ key: 'overview' }), panel({ key: 'invoices', offeredWhen })];
+    expect(AccountSectionRegistry.build(panels, {}).map((s) => s.key)).toEqual(['overview']);
+    expect(AccountSectionRegistry.build(panels, { invoicesOn: true }).map((s) => s.key)).toEqual(['invoices', 'overview']);
+  });
 });
