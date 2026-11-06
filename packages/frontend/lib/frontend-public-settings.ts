@@ -1,4 +1,4 @@
-import { cache } from 'react';
+import { RequestScope } from '@/lib/request-scope';
 
 import { FrontendConfigCache } from '@/lib/frontend-config-cache';
 
@@ -9,7 +9,7 @@ export class FrontendPublicSettings {
    * unreachable makes the router mis-resolve a real page and 404 it — so an unreachable API
    * throws here and the request becomes an honest 5xx.
    */
-  private static readonly settingsMapCache = cache(async (): Promise<Map<string, string>> => {
+  private static readonly settingsMapCache = RequestScope.memo(async (): Promise<Map<string, string>> => {
     const result = (await FrontendConfigCache.readOutcome()).valueOrThrow('/system/frontend');
     const rawSettings = result?.publicSettings as Record<string, unknown> | undefined;
     const map = new Map<string, string>();

@@ -198,18 +198,12 @@ export class OopGuardBaselines {
     'admin/components/collection/collection-edit-page.tsx',
 
     // --- FRONTEND: legitimate React RUNTIME-VALUE consumers -------------------------------------------------
-    // These call React 19's `cache()` for per-request memoization. `cache` is a runtime VALUE, so it MUST stay a
-    // value import — type-ifying it erased it at runtime and broke `next build`
-    // ("ReferenceError: cache is not defined"). Not a migration gap.
-    'frontend/lib/dynamic-page-resolver.ts',
-    'frontend/lib/frontend-config-cache.ts',
-    'frontend/lib/frontend-public-settings.ts',
-    'frontend/lib/frontend-translations-cache.ts',
-    'frontend/lib/missed-resolution-fetch.ts',
+    // `RequestScope` falls back to React 19's `cache()` outside a request scope (server component renders).
+    // `cache` is a runtime VALUE, so it MUST stay a value import — type-ifying it erased it at runtime and
+    // broke `next build` ("ReferenceError: cache is not defined"). Every per-request memo goes through it.
+    'frontend/lib/request-scope.ts',
+    // Builds React elements for plugin head/body injections.
     'frontend/lib/plugin-injection-renderer.ts',
-    'frontend/lib/resolved-content-metadata.ts',
-    'frontend/lib/theme/page-doc-prefetch-request-cache.ts',
-    'frontend/lib/theme/theme-prefetch-request-cache.ts',
     // Async SERVER component (injects theme CSS/head hints). Async server components cannot be React classes.
     'frontend/components/theme-assets.tsx',
 
