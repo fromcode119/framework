@@ -25,7 +25,7 @@ describe('a declared publicListing', () => {
   });
 
   it('keeps a collection rule of its own alongside', async () => {
-    const rule: any = await policy.resolveReadConstraints(collection({ read: { status: 'published' } }), { query: {}, user: null });
+    const rule: any = await policy.resolveReadConstraints(collection({ read: () => ({ status: 'published' }) }), { query: {}, user: null });
     expect(rule).toMatchObject({ status: 'published', visibility: { $orNull: true } });
   });
 
