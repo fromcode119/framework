@@ -123,6 +123,8 @@
 .fc-acct-btn--danger { background: #fee2e2; color: #b91c1c; }
 .fc-acct-btn--danger:hover:not(:disabled) { background: #fecaca; }
 .fc-acct-btn--link { display: inline-block; text-decoration: none; background: var(--fc-acct-accent); }
+.fc-acct-textlink { align-self: flex-start; padding: 0; border: 0; background: none; color: var(--fc-acct-accent); font: inherit; font-size: 14px; text-decoration: underline; cursor: pointer; }
+.fc-acct-textlink:disabled { color: var(--fc-acct-muted); cursor: default; }
 
 /* Sessions */
 .fc-acct-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }

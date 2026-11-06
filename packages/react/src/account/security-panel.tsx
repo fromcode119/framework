@@ -2,7 +2,7 @@ import { state } from '@fromcode119/react-class-components';
 import type { IAccountSecurityPanelState } from '@react/account/interfaces/account-security-panel-state.interface';
 import { PasswordFieldName } from '@react/account/enums/password-field-name.enum';
 import type { ReactNode } from 'react';
-import { RouteConstants } from '@fromcode119/core/client';
+import { RouteConstants, SdkClient } from '@fromcode119/core/client';
 import { PluginComponent } from '@react/view/plugin-component.client';
 import { AccountAuthClient } from '@react/account/auth-client';
 import { AccountClass } from '@react/account/account-class';
@@ -15,6 +15,7 @@ export class AccountSecurityPanel extends PluginComponent {
   @state saving: boolean = false;
   @state message: string = '';
   @state isError: boolean = false;
+  @state resetSent: boolean = false;
   static readonly accountSection = { key: 'security', labelKey: 'account.section.security', priority: 60, group: 'profile', descriptionKey: 'account.description.security' };
 
   private mounted = false;
@@ -30,6 +31,23 @@ export class AccountSecurityPanel extends PluginComponent {
       if (this.mounted) this.setState({ saving: false, isError: false, message: this.t('account.security.changed'), currentPassword: '', newPassword: '' });
     } catch (error: any) {
       if (this.mounted) this.setState({ saving: false, isError: true, message: AccountAuthClient.errorMessage(error, this.t('account.security.failed')) });
+    }
+  }
+
+  /**
+   * Someone who no longer knows the current password cannot use the form above. The reset link goes to
+   * the account's OWN e-mail, read from the person record, so it cannot be pointed at anyone else.
+   */
+  private async sendReset(): Promise<void> {
+    this.setState({ saving: true, message: '', isError: false });
+    try {
+      const result: any = await AccountAuthClient.of(this.api).get(RouteConstants.SEGMENTS.ME_PERSON, { silent: true });
+      const email = String((result?.person ?? result?.data?.person)?.email || '').trim();
+      if (!email) throw new Error(this.t('account.security.resetFailed'));
+      await new SdkClient(this.api).getSystemAuth().forgotPassword({ email, context: 'frontend' }, { silent: true, noDedupe: true });
+      if (this.mounted) this.setState({ saving: false, resetSent: true, message: this.t('account.security.resetSent', { email }) });
+    } catch (error: any) {
+      if (this.mounted) this.setState({ saving: false, isError: true, message: AccountAuthClient.errorMessage(error, this.t('account.security.resetFailed')) });
     }
   }
 
@@ -61,6 +79,9 @@ export class AccountSecurityPanel extends PluginComponent {
           {message ? <p className={AccountClass.of(isError ? 'error' : 'success')}>{message}</p> : null}
           <button className={AccountClass.of('btn')} type="submit" disabled={saving}>
             {saving ? this.t('account.security.saving') : this.t('account.security.change')}
+          </button>
+          <button className={AccountClass.of('textlink')} type="button" disabled={saving || this.resetSent} onClick={() => void this.sendReset()}>
+            {this.t('account.security.forgot')}
           </button>
         </form>
       </div>

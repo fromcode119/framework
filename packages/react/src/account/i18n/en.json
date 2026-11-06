@@ -71,7 +71,10 @@
       "change": "Change password",
       "saving": "Saving…",
       "changed": "Password changed.",
-      "failed": "Could not change password."
+      "failed": "Could not change password.",
+      "forgot": "Forgot your password? Email me a reset link",
+      "resetSent": "We sent a password reset link to {{email}}.",
+      "resetFailed": "The reset link could not be sent."
     },
     "sessions": {
       "loading": "Loading sessions…",
