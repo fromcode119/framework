@@ -212,8 +212,8 @@ services:
       # made a first install impossible — the process that would have created it never started.
       - JWT_SECRET=${JWT_SECRET:-}
       - NODE_ENV=production
-      # The logger's own default is debug, which writes a line for every request. Set LOG_LEVEL=debug
-      # in .env to trace one.
+      # info keeps the access log (one `[http]` line per request) and drops the debug traces. Set
+      # LOG_LEVEL=debug in .env to trace one, or warn to keep only server errors.
       - LOG_LEVEL=${LOG_LEVEL:-info}
       - API_URL=${API_URL:-}
       # The api builds links back into the admin (emails, notifications), so it needs the admin's
