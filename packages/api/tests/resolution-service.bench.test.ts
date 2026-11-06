@@ -1,4 +1,5 @@
 vi.mock('@fromcode119/core', () => ({
+  SiteContentRevision: { current: () => 'e.0.0' },
   RequestContextUtils: {
     getTenantId: vi.fn(() => undefined),
   },
