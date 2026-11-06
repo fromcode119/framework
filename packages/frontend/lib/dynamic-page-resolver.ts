@@ -104,6 +104,7 @@ export class DynamicPageResolver {
     searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
     strategy: LocaleUrlStrategy,
+    reportMiss = false,
   ): Promise<IResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
@@ -112,16 +113,40 @@ export class DynamicPageResolver {
     if (locale) query.set('locale', locale);
     if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
+    // Preview navigations present the operator's session, which only `resolveFetchCache` forwards.
+    const missReported = reportMiss && !QueryParamUtils.isPreviewMode(searchParams);
+    if (missReported) query.set('missed', '1');
 
-    const result = await DynamicPageResolver.resolveFetchCache(query.toString());
-    if (!result) return null;
+    const result = missReported
+      ? await MissedResolutionFetch.fetch(query.toString())
+      : await DynamicPageResolver.resolveFetchCache(query.toString());
+    if (!result) return missReported ? { type: '', plugin: '', doc: null, canonicalPath: '', redirect: null, missReported } : null;
 
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
       canonicalPath: String(result?.canonicalPath || '').trim(),
+      redirect: DynamicPageResolver.redirectOf(result),
+      missReported,
     };
+  }
+
+  /**
+   * The redirect rule for a path that resolved to no content. A lookup that already reported the miss
+   * carries the API's answer (the resolve endpoint consults the redirect registry itself), so asking
+   * again would only repeat the whole resolution; any other lookup asks once, as the last word.
+   */
+  static async redirectAfterMiss(slug: string, resolution: IResolvedDocResult | null): Promise<{ target: string; permanent: boolean; gone: boolean } | null> {
+    if (resolution?.missReported) return resolution.redirect ?? null;
+    return DynamicPageResolver.resolveRedirect(slug);
+  }
+
+  private static redirectOf(result: Record<string, any>): { target: string; permanent: boolean; gone: boolean } | null {
+    if (result?.type !== 'redirect') return null;
+    if (result.redirect?.gone === true) return { target: '', permanent: true, gone: true };
+    if (result.redirect?.target) return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false, gone: false };
+    return null;
   }
 
   /**
@@ -140,12 +165,8 @@ export class DynamicPageResolver {
       // The final lookup before a 404: `missed=1` lets the API report the miss with the VISITOR's
       // referrer and browser (this fetch otherwise carries the storefront server's own).
       query.set('missed', '1');
-      const result = await MissedResolutionFetch.fetch(query.toString()) as
-        { type?: string; redirect?: { target?: string; permanent?: boolean; gone?: boolean } } | null;
-      if (result?.type === 'redirect' && result.redirect?.gone === true) return { target: '', permanent: true, gone: true };
-      if (result?.type === 'redirect' && result.redirect?.target) {
-        return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false, gone: false };
-      }
+      const result = await MissedResolutionFetch.fetch(query.toString());
+      if (result) return DynamicPageResolver.redirectOf(result);
     } catch (error) {
       if (error instanceof ServerApiUnreachableError) throw error;
       /* malformed lookup payload — fall through to the normal 404 */
@@ -163,23 +184,31 @@ export class DynamicPageResolver {
     return result?.doc || null;
   }
 
+  /**
+   * `reportMiss`: this lookup is the request's last word on the path, so the API may report a miss from
+   * it. An account section still has the account base to try, so its first lookup never reports.
+   * (The API normalizes `slug` and `/slug` to the same path, so one lookup covers both spellings.)
+   */
   static async resolveDocWithPermalinkFallbackResult(
     slug: string,
     searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
     strategy: LocaleUrlStrategy,
+    reportMiss = false,
   ): Promise<IResolvedDocResult | null> {
     const cleanSlug = String(slug || '').trim().replace(/^\/+/, '');
     if (!cleanSlug) return null;
 
-    const doc = await DynamicPageResolver.resolveDocResult(cleanSlug, searchParams, localeOverride, strategy);
-    if (doc?.doc) return doc;
-
-    // Lead-slash fallback: helps matching records where permalink was stored WITH a slash.
-    const slashed = await DynamicPageResolver.resolveDocResult(`/${cleanSlug}`, searchParams, localeOverride, strategy);
-    if (slashed?.doc) return slashed;
+    const isAccountSection = DynamicPageResolver.isAccountSection(cleanSlug);
+    const doc = await DynamicPageResolver.resolveDocResult(cleanSlug, searchParams, localeOverride, strategy, reportMiss && !isAccountSection);
+    if (doc?.doc || !isAccountSection) return doc;
 
     return DynamicPageResolver.resolveAccountSection(cleanSlug, searchParams, localeOverride, strategy);
+  }
+
+  private static isAccountSection(cleanSlug: string): boolean {
+    const base = AccountRouteUtils.base().replace(/^\/+|\/+$/g, '');
+    return Boolean(base) && cleanSlug.startsWith(`${base}/`);
   }
 
   /**
