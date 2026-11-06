@@ -19,6 +19,8 @@ export class PluginChannel {
   private readonly pending = new Map<string, { resolve: (value: unknown) => void; reject: (error: Error) => void; timer: NodeJS.Timeout | null }>();
   private handler: ((type: string, payload: any) => Promise<unknown>) | null = null;
   private closed = false;
+  /** When the peer last asked something of this side — the sign that it is working, not stuck. */
+  private lastPeerRequestAt = 0;
 
   constructor(
     private readonly transport: Pick<IMessagePort, 'send' | 'on'>,
@@ -32,17 +34,32 @@ export class PluginChannel {
     this.handler = handler;
   }
 
-  /** Sends a request and waits for its reply; rejects on timeout (`timeoutMs` > 0) or channel close. */
-  request<T = unknown>(type: string, payload: unknown, timeoutMs = 0): Promise<T> {
+  /**
+   * Sends a request and waits for its reply; rejects on timeout (`timeoutMs` > 0) or channel close.
+   *
+   * `idle: true` makes `timeoutMs` a deadline on SILENCE instead of on the whole request: it fails only
+   * after `timeoutMs` in which the peer asked this side nothing. A plugin's `onInit` after an update can
+   * legitimately run for minutes — ecommerce rewrote every product row of a 4,800-product shop — while
+   * calling the host the whole time; a fixed deadline cut it off at 60 s, the update was abandoned, and the
+   * process running the old code went on serving. A process that is really stuck goes quiet, and still fails.
+   */
+  request<T = unknown>(type: string, payload: unknown, timeoutMs = 0, options: { idle?: boolean } = {}): Promise<T> {
     if (this.closed) return Promise.reject(new Error('channel closed'));
     const id = randomUUID();
     return new Promise<T>((resolve, reject) => {
-      const timer = timeoutMs > 0
-        ? setTimeout(() => {
-          this.pending.delete(id);
-          reject(new Error(`${type} timed out after ${timeoutMs}ms`));
-        }, timeoutMs)
-        : null;
+      const startedAt = Date.now();
+      const expire = (): void => {
+        const entry = this.pending.get(id);
+        if (!entry) return;
+        const quietFor = Date.now() - Math.max(startedAt, this.lastPeerRequestAt);
+        if (options.idle && quietFor < timeoutMs) {
+          entry.timer = setTimeout(expire, timeoutMs - quietFor);
+          return;
+        }
+        this.pending.delete(id);
+        reject(new Error(options.idle ? `${type} timed out after ${timeoutMs}ms without any activity` : `${type} timed out after ${timeoutMs}ms`));
+      };
+      const timer = timeoutMs > 0 ? setTimeout(expire, timeoutMs) : null;
       this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timer });
       try {
         this.transport.send({ $fc: 'req', id, type, payload });
@@ -106,6 +123,7 @@ export class PluginChannel {
       return;
     }
     if (message.$fc === 'req') {
+      this.lastPeerRequestAt = Date.now();
       this.answer(message);
     }
   }

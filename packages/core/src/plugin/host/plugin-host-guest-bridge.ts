@@ -120,9 +120,31 @@ export abstract class PluginHostGuestBridge extends PluginHostState {
     this.restarting = true;
     try {
       await this.relaunch();
-    } finally {
+    } catch (error) {
+      // Cleared FIRST: stopping the old process starts the crash restart, which sets it again for itself.
       this.restarting = false;
+      this.abandonOldCode(error);
+      throw error;
     }
+    this.restarting = false;
+  }
+
+  /**
+   * The new code did not start, and the process still serving runs code that is no longer on disk, against
+   * a schema the update's migrations have already changed. Leaving it up made a failed update look like a
+   * successful one: the admin showed the new version while the old code answered every request, until the
+   * extension-host was restarted by hand. It is stopped instead, and the plugin comes back the way it does
+   * after a crash — on the new files, with the restart budget, and disabled WITH the reason if the new
+   * code cannot start at all.
+   */
+  private abandonOldCode(error: unknown): void {
+    const old = this.guest;
+    if (!old) return;
+    const reason = error instanceof Error ? error.message : String(error);
+    this.logger.error(`the new code did not start (${reason}); stopping process ${old.pid}, which still runs the old code`);
+    // `exited` closes its channel (failing what still waits on it) and starts the crash restart.
+    this.exited(null, 'SIGKILL', `could not start its updated code (${reason})`);
+    old.kill('SIGKILL');
   }
 
   /**
