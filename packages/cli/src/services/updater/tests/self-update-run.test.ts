@@ -11,6 +11,8 @@ class Stack {
   version = 'v0.2.392';
   healthy = true;
   steps: string[] = [];
+  /** What had been created each time the api's health was asked. */
+  createdAtHealth: string[][] = [];
   availableBytes = 8 * 1024 ** 3;
   constructor(tag = 'v0.2.392') {
     if (tag === 'latest') this.version = '';
@@ -21,7 +23,7 @@ class Stack {
   run() {
     const file = { read: () => this.version, write: (v: string) => { this.version = v; }, clear: () => { this.version = ''; } };
     const rolling = (stack: any) => new RollingDeploy(stack, async () => undefined, 0, 0);
-    return new SelfUpdateRun(this.engine, { reports: async () => this.healthy }, file, 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes)
+    return new SelfUpdateRun(this.engine, { reports: async () => { this.createdAtHealth.push(this.engine.created.map((c) => c.name)); return this.healthy; } }, file, 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes)
       .run('0.2.392', '0.2.400');
   }
   imageOf(service: string) {
@@ -145,6 +147,28 @@ describe('SelfUpdateRun', () => {
 
     expect(outcome).toEqual({ state: 'succeeded', error: '' });
     expect(stack.imageOf('extension-host')).toBe(`${REG}api:v0.2.400`);
+  });
+
+  it('replaces the gateway only after the new api reports healthy, so TLS never meets an api still booting', async () => {
+    const stack = new Stack();
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    expect(stack.createdAtHealth[0]).toEqual(expect.arrayContaining(['site-api-1', 'site-admin-1', 'site-frontend-1']));
+    expect(stack.createdAtHealth[0]).not.toContain('site-gateway-1');
+    expect(stack.imageOf('gateway')).toBe(`${REG}gateway:v0.2.400`);
+  });
+
+  it('leaves the serving gateway untouched when the new api never reports healthy', async () => {
+    const stack = new Stack();
+    stack.healthy = false;
+
+    const outcome = await stack.run();
+
+    expect(outcome.state).toBe('rolledBack');
+    expect(stack.engine.created.map((c) => c.name)).not.toContain('site-gateway-1');
+    expect(stack.imageOf('gateway')).toBe(`${REG}gateway:v0.2.392`);
   });
 
   it('carries the deployment\'s settings but takes the new image\'s own defaults', async () => {

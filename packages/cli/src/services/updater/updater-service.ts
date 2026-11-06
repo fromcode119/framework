@@ -4,6 +4,7 @@ import { SelfUpdateRun } from '@cli/services/updater/self-update-run';
 import { UpdaterApiClient } from '@cli/services/updater/updater-api-client';
 import { DockerEngineClient } from '@cli/services/updater/docker-engine-client';
 import { EnvVersionFile } from '@cli/services/updater/env-version-file';
+import { UpdaterHandover } from '@cli/services/updater/updater-handover';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IUpdaterStatus } from '@cli/services/updater/interfaces/updater-status.interface';
 
@@ -27,6 +28,8 @@ export class UpdaterService {
   /** The version this process failed to keep; never taken again automatically, whatever the api says. */
   private failedTarget = '';
   private busy = false;
+  /** A successor on the installed version runs; this one only waits to be retired by it. */
+  private handedOver = false;
   private timer: NodeJS.Timeout | null = null;
 
   constructor(
@@ -34,6 +37,8 @@ export class UpdaterService {
     private readonly api: UpdaterApiClient,
     private readonly versionFile: EnvVersionFile,
     private readonly project: string,
+    /** Moves the updater itself onto each version it installs; absent when it does not run in a container. */
+    private readonly handover: UpdaterHandover | null = null,
   ) {}
 
   static async fromEnvironment(): Promise<UpdaterService> {
@@ -48,12 +53,13 @@ export class UpdaterService {
       new UpdaterApiClient(process.env[UpdaterService.ENV_API] || `http://api:3000${ApiVersionUtils.prefix()}`),
       new EnvVersionFile(process.env[UpdaterService.ENV_FILE] || '/app/deploy-project/.env'),
       project,
+      new UpdaterHandover(engine, project, self.Id),
     );
   }
 
   start(): void {
     console.log(`[updater] watching compose project "${this.project}"`);
-    void this.tick();
+    void this.retirePredecessors().then(() => this.tick());
     this.timer = setInterval(() => { void this.tick(); }, UpdaterService.POLL_MS);
   }
 
@@ -69,8 +75,17 @@ export class UpdaterService {
     return EnvUtils.text(UpdaterService.ENV_SWITCH).toLowerCase() === 'off';
   }
 
+  /** An updater this one replaced stops here, before this one acts, so two never update at once. */
+  async retirePredecessors(): Promise<void> {
+    const retired = await this.handover?.retirePredecessors().catch((error: Error) => {
+      console.error(`[updater] could not retire the previous updater: ${error.message}`);
+      return 0;
+    });
+    if (retired) console.log(`[updater] took over from the previous updater (${retired} retired)`);
+  }
+
   async tick(): Promise<void> {
-    if (this.busy) return;
+    if (this.busy || this.handedOver) return;
     BootstrapSecretsService.adopt();
     if (UpdaterService.turnedOff) {
       await this.api.report({ ...UpdaterService.status(UpdaterState.IDLE.value), step: UpdaterService.OFF_STEP });
@@ -105,6 +120,20 @@ export class UpdaterService {
     console.log(`[updater] ${from} -> ${to}: ${outcome.state}${outcome.error ? ` — ${outcome.error}` : ''}`);
     this.failedTarget = outcome.state === UpdaterState.SUCCEEDED.value ? '' : to;
     await this.api.reportUntilStored(this.last);
+    if (outcome.state === UpdaterState.SUCCEEDED.value) await this.handOver(SelfUpdateRun.tag(to));
+  }
+
+  /** The installed version's updater takes over; this one stops acting and is retired by it. */
+  private async handOver(tag: string): Promise<void> {
+    if (!this.handover) return;
+    const handed = await this.handover.handTo(tag).catch((error: Error) => {
+      console.error(`[updater] could not start the updater of ${tag}: ${error.message}`);
+      return false;
+    });
+    if (!handed) return;
+    console.log(`[updater] the updater of ${tag} takes over`);
+    this.handedOver = true;
+    this.stop();
   }
 
   private static status(state: string): IUpdaterStatus {
