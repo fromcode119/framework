@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { TenantMode } from '@fromcode119/core';
 import { SiteOwnedWrites } from '@api/services/system/site-owned-writes';
 
-/** Media and people need a site to belong to wherever the database keeps sites apart. */
+/** Media and people need a chosen site only on a multi-site installation. */
 describe('SiteOwnedWrites', () => {
   afterEach(() => TenantMode.reset());
 
@@ -16,9 +16,9 @@ describe('SiteOwnedWrites', () => {
     expect(SiteOwnedWrites.possible({})).toBe(false);
   });
 
-  it('refuses on a fresh install whose database keeps sites apart but has no site yet', () => {
+  it('allows a single-site installation on a database that could keep sites apart', () => {
     TenantMode.configure({ tenantCount: 0, dialect: 'postgres', isolationSupported: true });
-    expect(SiteOwnedWrites.possible({})).toBe(false);
+    expect(SiteOwnedWrites.possible({})).toBe(true);
   });
 
   it('allows a single-site database that keeps no owner on records', () => {
