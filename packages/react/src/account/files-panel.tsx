@@ -15,6 +15,7 @@ export class AccountFilesPanel extends PluginComponent {
     key: 'files',
     labelKey: 'account.section.files',
     priority: 24,
+    group: 'documents',
     descriptionKey: 'account.description.files',
   };
 

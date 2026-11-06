@@ -7,21 +7,22 @@
    `AccountClass.TOKENS`) inherits the palette every panel paints from without inheriting this layout. */
 .fc-acct,
 .fc-acct-tokens {
-  /* The theme's declared primary colour (theme.json `primaryColor` → `--theme-primary-color`) leads;
-     the violet is only what a theme that declares none gets. */
-  --fc-acct-accent: var(--theme-primary-color, #7c3aed);
+  /* Neutral by default: the theme's declared primary colour (theme.json `primaryColor` →
+     `--theme-primary-color`) leads, and a theme that declares none gets ink, not a brand colour. */
+  --fc-acct-accent: var(--theme-primary-color, #18181b);
   --fc-acct-accent-soft: color-mix(in srgb, var(--fc-acct-accent) 10%, transparent);
-  --fc-acct-fg: #0f172a;
-  --fc-acct-muted: #64748b;
-  --fc-acct-border: #e7e8ee;
+  --fc-acct-fg: #18181b;
+  --fc-acct-muted: #71717a;
+  --fc-acct-border: #e4e4e7;
   --fc-acct-bg: #ffffff;
-  --fc-acct-bg-soft: #f8fafc;
+  --fc-acct-bg-soft: #f4f4f5;
 }
 
 .fc-acct {
-  max-width: 1120px;
+  /* Full width of the page, as the approved account design: the menu on the left, the content filling the rest. */
+  max-width: 1600px;
   margin: 0 auto;
-  padding: 40px 20px 64px;
+  padding: 32px clamp(16px, 3vw, 40px) 64px;
   font-family: inherit;
   color: var(--fc-acct-fg);
 }
@@ -32,11 +33,11 @@
 .fc-acct-header { margin-bottom: 28px; }
 .fc-acct-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fc-acct-accent); }
 .fc-acct-title { font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 0; }
-.fc-acct-body { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 32px; align-items: start; }
-.fc-acct-nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; padding: 12px; border: 1px solid var(--fc-acct-border); border-radius: 18px; background: var(--fc-acct-bg); }
-.fc-acct-navlink { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; text-decoration: none; color: #334155; font-weight: 600; font-size: 14px; transition: background .15s, color .15s; border: 1px solid transparent; }
+.fc-acct-body { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: clamp(24px, 3vw, 48px); align-items: start; }
+.fc-acct-nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; padding: 0; }
+.fc-acct-navlink { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; text-decoration: none; color: var(--fc-acct-fg); font-weight: 500; font-size: 14px; transition: background .15s, color .15s; border: 1px solid transparent; }
 .fc-acct-navlink:hover { background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); }
-.fc-acct-navlink.active { background: var(--fc-acct-accent-soft); color: var(--fc-acct-accent); border-color: transparent; }
+.fc-acct-navlink.active { background: var(--fc-acct-bg-soft); color: var(--fc-acct-accent); font-weight: 700; box-shadow: inset 3px 0 0 var(--fc-acct-accent); }
 /* Switching section no longer reloads the document, so the clicked link KEEPS focus — and a theme's
    global `a:focus` glow then sits on the active item permanently. Suppress the ring for pointer users
    only; `:focus-visible` (keyboard) still gets it. */
@@ -46,6 +47,12 @@
 .fc-acct-navgroup { display: flex; flex-direction: column; gap: 2px; }
 .fc-acct-navgroup + .fc-acct-navgroup { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--fc-acct-border); }
 .fc-acct-navgroup-label { padding: 2px 14px 4px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fc-acct-muted); }
+/* Whose account: initials, name and e-mail at the head of the menu. */
+.fc-acct-who { display: flex; align-items: center; gap: 12px; padding: 6px 6px 14px; margin-bottom: 8px; border-bottom: 1px solid var(--fc-acct-border); }
+.fc-acct-avatar { display: inline-grid; place-items: center; width: 44px; height: 44px; flex: 0 0 44px; border-radius: 50%; background: var(--fc-acct-accent); color: var(--fc-acct-bg); font-weight: 800; font-size: 16px; }
+.fc-acct-who-text { display: flex; flex-direction: column; min-width: 0; }
+.fc-acct-who-name { font-weight: 700; font-size: 15px; color: var(--fc-acct-fg); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-acct-who-email { font-size: 12.5px; color: var(--fc-acct-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-acct-search { display: block; margin-bottom: 8px; }
 .fc-acct-search-input { display: block; width: 100%; padding: 9px 12px; border: 1px solid var(--fc-acct-border); border-radius: 10px; font: inherit; font-size: 14px; background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); }
 .fc-acct-search-input:focus { outline: none; border-color: var(--fc-acct-accent); box-shadow: 0 0 0 3px var(--fc-acct-accent-soft); }
@@ -61,17 +68,17 @@
    The framework's own default design for the account landing page. A theme restyles it by overriding
    these classes; none of it lives in TypeScript. */
 .fc-acct-overview { display: grid; gap: 20px; }
-.fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(15, 23, 42, .04); }
+.fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(24, 24, 27, .04); }
 .fc-acct-card-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fc-acct-muted); margin: 0 0 12px; }
-.fc-acct-greeting { font-size: 15px; font-weight: 600; color: var(--fc-acct-fg); margin: 0 0 4px; }
+.fc-acct-greeting { font-size: clamp(24px, 2.4vw, 32px); font-weight: 800; letter-spacing: -.02em; color: var(--fc-acct-fg); margin: 0 0 4px; }
 .fc-acct-intro { color: var(--fc-acct-muted); font-size: 14px; margin: 0; }
 .fc-acct-loading { color: var(--fc-acct-muted); font-size: 14px; }
 
 /* Stat cards. `--fc-acct-stat-accent` is set per card by the contributing plugin — the only value the
    component passes as an inline style, because the colour belongs to that plugin, not to the framework. */
 .fc-acct-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-.fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border: 1px solid var(--fc-acct-border); border-top: 3px solid var(--fc-acct-stat-accent, var(--fc-acct-accent)); border-radius: 16px; background: var(--fc-acct-bg); box-shadow: 0 1px 3px rgba(15, 23, 42, .04); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
-.fc-acct-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(15, 23, 42, .08); }
+.fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border: 1px solid var(--fc-acct-border); border-top: 3px solid var(--fc-acct-stat-accent, var(--fc-acct-accent)); border-radius: 16px; background: var(--fc-acct-bg); box-shadow: 0 1px 3px rgba(24, 24, 27, .04); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.fc-acct-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(24, 24, 27, .08); }
 .fc-acct-stat-label { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fc-acct-muted); }
 .fc-acct-stat-value { font-size: 27px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 6px 0 2px; overflow-wrap: anywhere; }
 .fc-acct-stat-sub { font-size: 13px; color: var(--fc-acct-muted); }
@@ -135,7 +142,7 @@
 .fc-acct-inline-form .fc-acct-input { width: auto; margin-top: 0; }
 
 /* Auth gate */
-.fc-acct-gate { max-width: 420px; margin: 64px auto; padding: 32px; text-align: center; background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; box-shadow: 0 1px 3px rgba(15, 23, 42, .04); }
+.fc-acct-gate { max-width: 420px; margin: 64px auto; padding: 32px; text-align: center; background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; box-shadow: 0 1px 3px rgba(24, 24, 27, .04); }
 .fc-acct-gate-title { font-size: 20px; font-weight: 700; margin: 0 0 8px; }
 .fc-acct-gate-body { color: var(--fc-acct-muted); font-size: 14px; margin: 0 0 20px; }
 
@@ -187,7 +194,7 @@
 }
 .fc-acct-switch-track::after {
   content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%;
-  background: #fff; box-shadow: 0 1px 2px rgba(15, 23, 42, .25); transition: transform .18s ease;
+  background: #fff; box-shadow: 0 1px 2px rgba(24, 24, 27, .25); transition: transform .18s ease;
 }
 .fc-acct-switch input:checked + .fc-acct-switch-track { background: var(--fc-acct-accent); }
 .fc-acct-switch input:checked + .fc-acct-switch-track::after { transform: translateX(18px); }
