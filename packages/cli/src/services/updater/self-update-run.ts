@@ -40,6 +40,7 @@ export class SelfUpdateRun {
    */
   static readonly UNPINNED_TAG = 'latest';
   private static readonly GATEWAY = 'gateway';
+  private static readonly EDGE = 'edge';
 
   private readonly replacement: ContainerReplacement;
 
@@ -83,7 +84,13 @@ export class SelfUpdateRun {
     // only once the api reports the new version, and the old gateway keeps serving until then.
     const isGateway = (target: IContainerSummary) => target.Labels[SelfUpdateRun.SERVICE_LABEL] === SelfUpdateRun.GATEWAY;
     const replaced: IReplacedContainer[] = [];
-    for (const [batch, waitFor] of [[targets.filter((target) => !isGateway(target)), true], [targets.filter(isGateway), false]] as const) {
+    // Behind a running edge the gateway rolls even here: stopped first and started after, the edge has
+    // no gateway to send a visitor to until it finds the new one — measured at 19 seconds of refused
+    // connections on top of the restart itself.
+    const behindEdge = (await this.engine.listContainers([`${SelfUpdateRun.PROJECT_LABEL}=${this.project}`]))
+      .some((container) => container.Labels[SelfUpdateRun.SERVICE_LABEL] === SelfUpdateRun.EDGE && container.State === 'running');
+    const gateways = targets.filter(isGateway);
+    for (const [batch, waitFor] of [[targets.filter((target) => !isGateway(target)), true], [behindEdge ? [] : gateways, false]] as const) {
       try {
         for (const target of batch) {
           const service = target.Labels[SelfUpdateRun.SERVICE_LABEL];
@@ -99,6 +106,13 @@ export class SelfUpdateRun {
       if (!(await this.health.reports(tag))) {
         await this.rollBack(replaced, previousVersion);
         return { state: UpdaterState.ROLLED_BACK.value, error: `${tag} did not report itself healthy; ${SelfUpdateRun.tag(from)} is serving again.` };
+      }
+    }
+    if (behindEdge && gateways.length) {
+      this.onStep('Rolling the gateway behind the edge');
+      if (!(await this.rolling(this.stackFor(tag)).gateway(tag))) {
+        await this.rollBack(replaced, previousVersion);
+        return { state: UpdaterState.ROLLED_BACK.value, error: `The gateway of ${tag} did not come up; ${SelfUpdateRun.tag(from)} is serving again.` };
       }
     }
 
