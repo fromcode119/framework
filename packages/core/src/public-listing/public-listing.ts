@@ -1,5 +1,5 @@
 import { Enum } from '@fromcode119/react-class-components/lang';
-import { PublicListingSurface } from '@core/public-listing/public-listing-surface.enum';
+import { PublicListingSurface } from '@core/public-listing/enums/public-listing-surface.enum';
 
 /**
  * Where a PUBLISHED record is listed — the second level after "is it public at all". Every value keeps the

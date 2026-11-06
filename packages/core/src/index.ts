@@ -158,7 +158,7 @@ export { RenderLocationUtils } from '@core/utils/render-location-utils';
 export type { IRenderLocation } from '@core/utils/interfaces/render-location.interface';
 export { PagePrefetch } from '@core/page-prefetch';
 export { PublicListing } from '@core/public-listing/public-listing';
-export { PublicListingSurface } from '@core/public-listing/public-listing-surface.enum';
+export { PublicListingSurface } from '@core/public-listing/enums/public-listing-surface.enum';
 export { PublicRouteConstants } from '@core/constants/public-route.constants';
 
 // ── Utility Classes ───────────────────────────────────────────────────────────

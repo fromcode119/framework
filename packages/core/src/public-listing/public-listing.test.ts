@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { PublicListing } from '@core/public-listing/public-listing';
-import { PublicListingSurface } from '@core/public-listing/public-listing-surface.enum';
+import { PublicListingSurface } from '@core/public-listing/enums/public-listing-surface.enum';
 
 const shown = (visibility: unknown) => [PublicListingSurface.CATALOG, PublicListingSurface.SEARCH, PublicListingSurface.SITEMAP]
   .filter((surface) => PublicListing.shownIn({ visibility }, surface)).map((surface) => surface.value);
