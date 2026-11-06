@@ -201,7 +201,10 @@ export class PluginHost extends PluginHostSharedProcesses {
       // through the wait, ten such waits emptied the pool and the guest's own calls then queued behind
       // them — a deadlock until the deadline. The next statement on this side takes a fresh one.
       await TenantConnectionScope.releaseCurrent();
-      const result = await channel.request(String(PluginChannelMessage.INVOKE.value), invocation, work.kind === String(PluginInvocationKind.LIFECYCLE.value) ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs);
+      // Lifecycle work (`onInit` after an update, a backfill in `onEnable`) is held to a deadline on
+      // SILENCE: it fails when the process stops calling back, not because it has a lot to do.
+      const lifecycle = work.kind === String(PluginInvocationKind.LIFECYCLE.value);
+      const result = await channel.request(String(PluginChannelMessage.INVOKE.value), invocation, lifecycle ? PluginHostState.BOOT_TIMEOUT_MS : this.limits.timeoutMs, { idle: lifecycle });
       return this.callbacks.revive(result);
     } finally {
       this.tokens.revoke(token);
