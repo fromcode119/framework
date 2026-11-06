@@ -50,6 +50,8 @@ export class SdkExportSourceBuilder {
     'RuntimeLocationUtils',
     'RenderLocationUtils',
     'PagePrefetch',
+    'PublicListing',
+    'PublicListingSurface',
     'PublicAssetUrlUtils',
     // The editor-session registry: a plugin's storefront bundle registers its activation params through
     // it at evaluation, so the name must resolve from `@fromcode119/sdk` in the browser as well.
