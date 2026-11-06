@@ -114,9 +114,9 @@ describe('ResolutionService micro-bench (worst-case miss over 30 slug-bearing co
     expect(cachedQueries).toBe(0);
     // Parallelism proof (deterministic, CI-safe — wall-clock jitters under parallel jest workers):
     // the old loop awaited every query back-to-back (in-flight never exceeded 1); the restructured
-    // scan runs one collection's 3 candidates (pass 1) / a 4-collection chunk (pass 2) concurrently.
-    expect(concurrency.max).toBeGreaterThanOrEqual(3);
-    expect(concurrency.max).toBeLessThanOrEqual(4); // bounded — never a 120-query stampede
+    // scan runs a 2-collection chunk's candidates (pass 1, 2 × 3) / a 4-collection chunk (pass 2) concurrently.
+    expect(concurrency.max).toBeGreaterThanOrEqual(6);
+    expect(concurrency.max).toBeLessThanOrEqual(6); // bounded — never a 120-query stampede
 
     // eslint-disable-next-line no-console
     console.log(

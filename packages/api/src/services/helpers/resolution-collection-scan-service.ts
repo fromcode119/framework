@@ -29,6 +29,8 @@ import type { IResolutionStructureScanContext } from '@api/services/helpers/inte
  */
 export class ResolutionCollectionScanService {
   private static readonly STRUCTURE_CHUNK_SIZE = 4;
+  /** Collections asked at once in pass 1. Each asks up to three candidates, so at most six queries are in flight. */
+  private static readonly PRIORITY_CHUNK_SIZE = 2;
   private readonly accessPolicy = new CollectionAccessPolicyService();
 
   constructor(
@@ -39,39 +41,59 @@ export class ResolutionCollectionScanService {
 
   /** Pass 1 — custom permalinks first, then exact slugs, per collection in order. */
   async scanPriority(ctx: IResolutionPriorityScanContext): Promise<IResolutionScanResult | null> {
-    for (const { collection, pluginSlug } of ctx.entries) {
-      if (!(await this.readable(collection, ctx.options.user))) continue;
-      const flags = this.cache.getCollectionFlags(collection);
-      const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
-      if (flags.hasCustomPermalink) {
-        for (const candidate of ctx.pathCandidates) {
-          finds.push({ kind: ResolutionMatchKind.CUSTOM, candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1 }) });
+    // Collections are asked in ordered CHUNKS, not one after another. A path no collection holds — a
+    // 404, or a framework page such as /login — visited every collection serially, and on a site with a
+    // dozen collections that was ~300 ms before the not-found page could start. Within a chunk every
+    // collection is asked at once; the answers are still read in the original order, and a later chunk
+    // runs only when no earlier one matched, so the first collection to claim a path still wins.
+    const chunkSize = ResolutionCollectionScanService.PRIORITY_CHUNK_SIZE;
+    for (let i = 0; i < ctx.entries.length; i += chunkSize) {
+      const chunk = ctx.entries.slice(i, i + chunkSize);
+      const answers = await Promise.all(chunk.map((entry) => this.priorityCandidates(entry.collection, ctx)));
+      for (let k = 0; k < chunk.length; k++) {
+        const { collection, pluginSlug } = chunk[k];
+        for (const { find, doc } of answers[k]) {
+          if (await this.isPermalinkDisabled(collection, doc.id, !!ctx.options.preview)) continue;
+          return {
+            type: collection.shortSlug || collection.slug,
+            plugin: pluginSlug,
+            doc: find.kind === ResolutionMatchKind.CUSTOM ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, find.candidate),
+          };
         }
-      }
-      if (flags.hasSlug) {
-        for (const candidate of ctx.slugCandidates) {
-          finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1 }) });
-        }
-      }
-      if (finds.length === 0) continue;
-
-      const settled = await Promise.allSettled(
-        finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
-      );
-      for (let i = 0; i < finds.length; i++) {
-        const outcome = settled[i];
-        const doc = outcome.status === 'fulfilled' ? (outcome.value as any)?.docs?.[0] : undefined;
-        if (!doc) continue;
-        if (await this.isPermalinkDisabled(collection, doc.id, !!ctx.options.preview)) continue;
-        const f = finds[i];
-        return {
-          type: collection.shortSlug || collection.slug,
-          plugin: pluginSlug,
-          doc: f.kind === ResolutionMatchKind.CUSTOM ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, f.candidate),
-        };
       }
     }
     return null;
+  }
+
+  /** One collection's priority lookups (custom permalink, then slug), in candidate order, matches only. */
+  private async priorityCandidates(
+    collection: ICollection,
+    ctx: IResolutionPriorityScanContext,
+  ): Promise<Array<{ find: { kind: ResolutionMatchKind; candidate: string }; doc: any }>> {
+    if (!(await this.readable(collection, ctx.options.user))) return [];
+    const flags = this.cache.getCollectionFlags(collection);
+    const finds: Array<{ kind: ResolutionMatchKind; candidate: string; query: any }> = [];
+    if (flags.hasCustomPermalink) {
+      for (const candidate of ctx.pathCandidates) {
+        finds.push({ kind: ResolutionMatchKind.CUSTOM, candidate, query: ctx.withLocale({ customPermalink: candidate, limit: 1 }) });
+      }
+    }
+    if (flags.hasSlug) {
+      for (const candidate of ctx.slugCandidates) {
+        finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1 }) });
+      }
+    }
+    if (finds.length === 0) return [];
+    const settled = await Promise.allSettled(
+      finds.map((f) => this.restController.find(collection, { query: f.query, user: ctx.options.user, [CollectionReadRedaction.FOR_RESOLUTION]: true } as any)),
+    );
+    const matches: Array<{ find: { kind: ResolutionMatchKind; candidate: string }; doc: any }> = [];
+    for (let i = 0; i < finds.length; i++) {
+      const outcome = settled[i];
+      const doc = outcome.status === 'fulfilled' ? (outcome.value as any)?.docs?.[0] : undefined;
+      if (doc) matches.push({ find: finds[i], doc });
+    }
+    return matches;
   }
 
   /** Pass 2 — permalink-structure search, one query per collection, batched in ordered chunks. */
