@@ -8,6 +8,7 @@ import { QueryParamUtils } from '@/lib/query-param-utils';
 import { AccountRouteGuard } from '@/lib/account-route-guard';
 import { CanonicalPathRedirect } from '@/lib/canonical-path-redirect';
 import { DocumentCompression } from '@/lib/document/document-compression';
+import { DocumentRenderTiming } from '@/lib/document/document-render-timing';
 import { DocumentMarkupRenderer } from '@/lib/document/document-markup-renderer';
 import { DocumentView } from '@/lib/document/document-view';
 import { FrontendLayoutStylesheets } from '@/lib/document/frontend-layout-stylesheets';
@@ -40,29 +41,30 @@ import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
  */
 export class StorefrontDocumentRenderer {
   static async render(request: StorefrontDocumentRequest): Promise<Response> {
+    const timing = new DocumentRenderTiming();
     // FIRST, before any routing or content lookup. The api refuses a private site's content with a
     // 503 and the storefront turns that into a 500, so asking later means the visitor sees an error
     // page instead of a holding page — which is what happened when this check lived further down.
-    if (!(await SiteVisibilityVerdict.isReadable())) return StorefrontDocumentRenderer.holding();
+    if (!(await timing.measure('visibility', SiteVisibilityVerdict.isReadable()))) return StorefrontDocumentRenderer.holding();
 
     if (RouteSegmentUtils.shouldBypassDynamicRouting(request.segments)) notFound();
-    const routingConfig = await DynamicPageResolver.getLocaleRoutingConfig();
+    const routingConfig = await timing.measure('routing', DynamicPageResolver.getLocaleRoutingConfig());
     const { pathLocale, segments } = StorefrontDocumentRenderer.stripPathLocale(request.segments, routingConfig.strategy, routingConfig.enabledLocales);
     if (RouteSegmentUtils.shouldBypassDynamicRouting(segments)) notFound();
     const slug = segments.join('/').trim();
-    await AccountRouteGuard.enforce(`/${slug}`, request.pathname);
+    await timing.measure('session', AccountRouteGuard.enforce(`/${slug}`, request.pathname));
 
     if (!slug) {
-      const home = await HomePageResolver.resolve(request.searchParams);
-      if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy);
+      const home = await timing.measure('resolve', HomePageResolver.resolve(request.searchParams));
+      if (!home.content && !home.forcedLayout) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
       return StorefrontDocumentRenderer.document({
         content: home.content, resolutionType: home.resolution?.type, url: '/', requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: home.forcedLayout || '',
         pageKind: StorefrontPageKind.HOME, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
-      });
+      }, timing);
     }
 
-    const locale = await DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy);
-    const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy);
+    const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
+    const resolution = await timing.measure('resolve', DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy));
     if (resolution?.doc) {
       const canonicalTarget = CanonicalPathRedirect.resolveTarget({
         canonicalPath: resolution.canonicalPath || await HomePageResolver.homeCanonicalPath(resolution.doc, resolution.type, locale, LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(request.searchParams, 'fallback_locale'))), requestSlug: slug, pathLocale, strategy: routingConfig.strategy, searchParams: request.searchParams,
@@ -71,11 +73,11 @@ export class StorefrontDocumentRenderer {
       return StorefrontDocumentRenderer.document({
         content: resolution.doc, resolutionType: resolution.type, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
-      });
+      }, timing);
     }
-    const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
+    const redirectRule = await timing.measure('redirect', DynamicPageResolver.resolveRedirect(slug));
     // A rule saying the page is gone for good: the not-found page, answered 410 so crawlers drop it.
-    if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, 410);
+    if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing, 410);
     if (redirectRule) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);
@@ -86,9 +88,9 @@ export class StorefrontDocumentRenderer {
       return StorefrontDocumentRenderer.document({
         content: frameworkPage, resolutionType: undefined, url: `/${slug}`, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '',
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
-      });
+      }, timing);
     }
-    return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy);
+    return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing);
   }
 
   /**
@@ -96,11 +98,11 @@ export class StorefrontDocumentRenderer {
    * override wins), status 404, `noindex` — what the App Router's `not-found` renders, as a document
    * the runtime can hydrate. A route handler's `notFound()` would answer with an EMPTY 404 instead.
    */
-  private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy, status = 404): Promise<Response> {
+  private static notFoundDocument(request: StorefrontDocumentRequest, strategy: LocaleUrlStrategy, timing: DocumentRenderTiming, status = 404): Promise<Response> {
     return StorefrontDocumentRenderer.document({
       content: null, resolutionType: undefined, url: request.pathname, requestPath: request.pathname, requestOrigin: request.origin, requestSearch: request.search, layoutName: '', pageKind: StorefrontPageKind.NOT_FOUND,
       strategy, status, notFoundPath: request.pathname, acceptEncoding: request.acceptEncoding,
-    });
+    }, timing);
   }
 
   private static stripPathLocale(raw: string[], strategy: LocaleUrlStrategy, enabledLocales: Set<string>): { pathLocale: string; segments: string[] } {
@@ -171,27 +173,27 @@ export class StorefrontDocumentRenderer {
   private static async document(args: {
     content: unknown; resolutionType: string | undefined; url: string; requestPath: string; requestOrigin: string; requestSearch: string; layoutName: string; pageKind: StorefrontPageKind; strategy: LocaleUrlStrategy;
     status?: number; notFoundPath?: string; acceptEncoding?: string;
-  }): Promise<Response> {
+  }, timing: DocumentRenderTiming): Promise<Response> {
     const content = (args.content as Record<string, unknown> | null) || null;
-    const locale = await FrontendLocaleService.resolveDocumentLocale(args.strategy);
+    const locale = await timing.measure('documentLocale', FrontendLocaleService.resolveDocumentLocale(args.strategy));
     const [page, site, schema, markup, theme, headInjections, bodyStartInjections, frontend, translations, pageDocPrefetch] = await Promise.all([
       // The robots directive is the FRAMEWORK's last word, applied after whichever plugin built the
       // head. A 404 is never indexable, and neither is a site that has not been published — that is
       // a fact about the site, not about its content, so no plugin gets to contradict it and it
       // holds even when the plugin that would normally set robots is inactive.
-      ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
+      timing.measure('metadata', ResolvedContentMetadata.buildEnriched(content, args.resolutionType, args.url)
         .then(async (page) => (args.status === 404 || args.status === 410 || !(await SiteVisibilityVerdict.indexableOrUntenanted())
           ? { ...page, robots: { index: false, follow: false }, alternates: page.alternates?.canonical ? { canonical: page.alternates.canonical } : undefined }
-          : page)),
-      ResolvedContentMetadata.buildSiteMetadata(),
-      ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url),
-      ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch }),
-      ThemeHeadModel.load(),
-      PluginInjectionRenderer.loadHeadElements(),
-      PluginInjectionRenderer.loadBodyStartElements(),
-      FrontendConfigCache.read(),
-      FrontendTranslationsCache.read(locale),
-      PageDocPrefetchRequestCache.read(args.content, args.requestSearch),
+          : page))),
+      timing.measure('site', ResolvedContentMetadata.buildSiteMetadata()),
+      timing.measure('schema', ResolvedContentMetadata.buildStructuredData(content, args.resolutionType, args.url)),
+      timing.measure('themeRender', ThemeServerRenderer.render({ content: args.content, locale, contentClassName: args.pageKind.contentClassName, contentStyle: args.pageKind.contentStyle, notFoundPath: args.notFoundPath, requestPath: args.requestPath, requestOrigin: args.requestOrigin, requestSearch: args.requestSearch })),
+      timing.measure('themeHead', ThemeHeadModel.load()),
+      timing.measure('headInjections', PluginInjectionRenderer.loadHeadElements()),
+      timing.measure('bodyInjections', PluginInjectionRenderer.loadBodyStartElements()),
+      timing.measure('frontendConfig', FrontendConfigCache.read()),
+      timing.measure('translations', FrontendTranslationsCache.read(locale)),
+      timing.measure('prefetch', PageDocPrefetchRequestCache.read(args.content, args.requestSearch)),
     ]);
     const runtimeConfig = {
       apiUrl: ServerApiPaths.buildPublicApiBaseUrl(),
@@ -209,23 +211,27 @@ export class StorefrontDocumentRenderer {
       frontend: frontend || {},
       ...StorefrontDocumentRenderer.inlineTranslations(translations, markup?.translationPaths),
     };
-    const html = DocumentMarkupRenderer.render(DocumentView.render, {
+    const preview = await SiteVisibilityVerdict.isPreview();
+    const nonProduction = await SiteVisibilityVerdict.isNonProduction();
+    const html = timing.measureSync('markup', () => DocumentMarkupRenderer.render(DocumentView.render, {
       lang: locale, page, site, theme, markup, headInjections, bodyStartInjections, schema, pageDocPrefetch, runtimeConfig,
       // The render already got this far, so the site is either published or this caller may preview
       // it. Only the second case says so on screen.
-      preview: await SiteVisibilityVerdict.isPreview(),
+      preview,
       // The islands document said nothing about a non-production site while the root layout did.
-      nonProduction: await SiteVisibilityVerdict.isNonProduction(),
+      nonProduction,
       runtimeScriptPath: FrontendRuntimeAssetManifest.runtimeScriptPath(),
       layoutInlineCss: FrontendLayoutStylesheets.inlineCss(),
       status: args.status || 200,
-    });
+    }));
     // The site's "Hide email addresses and phone numbers from harvesters" (Settings → Security). Only 'true'
     // is on — the rule the admin's switch reads, so the storefront never protects what the admin shows off.
     const publicSettings = ((frontend as Record<string, unknown> | null)?.publicSettings || {}) as Record<string, unknown>;
     const protectContacts = String(publicSettings[SystemConstants.META_KEY.CONTACT_DETAIL_PROTECTION] ?? '').trim() === 'true';
     const served = protectContacts ? DocumentContactProtection.protect(html) : html;
-    const encoded = DocumentCompression.encode(`<!DOCTYPE html>${served}`, args.acceptEncoding);
-    return new NextResponse(encoded.body as unknown as BodyInit, { status: args.status || 200, headers: DocumentCompression.headers(encoded.encoding) });
+    const encoded = timing.measureSync('compress', () => DocumentCompression.encode(`<!DOCTYPE html>${served}`, args.acceptEncoding));
+    const headers = new Headers(DocumentCompression.headers(encoded.encoding));
+    headers.set('Server-Timing', timing.header());
+    return new NextResponse(encoded.body as unknown as BodyInit, { status: args.status || 200, headers });
   }
 }
