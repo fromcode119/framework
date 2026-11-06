@@ -29,6 +29,13 @@ export interface ICollection {
   priority?: number;    // Optional: for sorting in the menu
   system?: boolean;      // Optional: mark as system collection
   /**
+   * `false` declares that no page is built from this collection's rows — a log, a sync status, a
+   * queue, analytics events. A write to it then leaves the site's content revision alone, so the
+   * pages and answers kept for that revision stay valid. Left out, every write moves the revision:
+   * over-invalidating is the safe default, and only the collection's owner can say otherwise.
+   */
+  affectsPages?: boolean;
+  /**
    * Declares this collection as the provider of a named entity (`'order'`, `'product'`), so other
    * plugins can point a relationship at it with `relationToEntity` without naming this plugin or its
    * collection. The key is shared vocabulary owned by nobody, like `email`.
