@@ -73,12 +73,12 @@ export class ContainerReplacement {
   }
 
   /** A container create joins ONE network; the rest are connected after it exists. */
-  private static extraNetworks(current: IContainerInspect): Array<[string, Record<string, any>]> {
+  static extraNetworks(current: IContainerInspect): Array<[string, Record<string, any>]> {
     return Object.entries(current.NetworkSettings.Networks ?? {}).slice(1);
   }
 
   /** Aliases are how the other services find this one (`api`, `gateway`); the old container's own id alias is not carried. */
-  private static endpoint(endpoint: Record<string, any>, containerId: string): Record<string, any> {
+  static endpoint(endpoint: Record<string, any>, containerId: string): Record<string, any> {
     const aliases = (endpoint?.Aliases ?? []).filter((alias: string) => alias && !containerId.startsWith(alias));
     return { Aliases: aliases };
   }

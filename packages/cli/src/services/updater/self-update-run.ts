@@ -1,6 +1,10 @@
-import { UpdaterState } from '@fromcode119/core';
+import { DeployMode, UpdaterState } from '@fromcode119/core';
 import { ImageRetention } from '@cli/services/deploy/image-retention';
+import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
+import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 import { ContainerReplacement } from '@cli/services/updater/container-replacement';
+import { EngineStack } from '@cli/services/updater/engine-stack';
+import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
 import type { IContainerSummary } from '@cli/services/updater/interfaces/container-summary.interface';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IReplacedContainer } from '@cli/services/updater/interfaces/replaced-container.interface';
@@ -17,12 +21,18 @@ import type { IUpdateOutcome } from '@cli/services/updater/interfaces/update-out
  * before the swap so a later `docker compose up` agrees with what is running; the api must report the
  * NEW version (a crash-looping image leaves nothing else to tell by); anything short of that puts every
  * replaced container back; old images are removed only after success, keeping the one replaced.
+ *
+ * And it rolls the way the deploy command does — `DeployStrategy` decides, `RollingDeploy` swaps, over
+ * the same Engine API — so an update starts each new app beside the old one and stops the old one only
+ * once the new one answers. It falls back to replacing the containers in place only where the deploy
+ * command would restart too (the operator chose restart, a migration the serving release cannot run
+ * beside, not enough memory), and for an install that names no version yet.
  */
 export class SelfUpdateRun {
   /** Replaced in this order: plugin hosts before the api that drives them, the gateway last. */
   static readonly SERVICES = ['extension-host', 'site-extension-host', 'api', 'admin', 'frontend', 'gateway'];
-  static readonly PROJECT_LABEL = 'com.docker.compose.project';
-  static readonly SERVICE_LABEL = 'com.docker.compose.service';
+  static readonly PROJECT_LABEL = EngineStack.PROJECT_LABEL;
+  static readonly SERVICE_LABEL = EngineStack.SERVICE_LABEL;
   /**
    * The tag the compose files fall back to when `.env` names no `VERSION` (`${VERSION:-latest}`). An
    * install that never wrote one runs every service on it, and the api it serves is the version being
@@ -38,6 +48,8 @@ export class SelfUpdateRun {
     private readonly versionFile: IVersionFile,
     private readonly project: string,
     private readonly onStep: (step: string) => void = () => undefined,
+    private readonly rolling: (stack: IDeployStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
+    private readonly availableBytes?: () => number,
   ) {
     this.replacement = new ContainerReplacement(engine);
   }
@@ -57,6 +69,14 @@ export class SelfUpdateRun {
 
     const previousVersion = this.versionFile.read();
     this.versionFile.write(tag);
+    const unpinned = targets.some((target) => target.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`));
+    const replacedTag = unpinned ? SelfUpdateRun.UNPINNED_TAG : SelfUpdateRun.tag(from);
+    const plan = unpinned
+      ? { mode: DeployMode.RESTART, reason: 'this install names no version yet, so the first update pins one with a restart' }
+      : await new DeployStrategy(this.stackFor(tag)).choose();
+    this.onStep(`Deploy mode: ${plan.mode.value} — ${plan.reason}`);
+    if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, previousVersion);
+
     const replaced: IReplacedContainer[] = [];
     try {
       for (const target of targets) {
@@ -79,8 +99,27 @@ export class SelfUpdateRun {
     for (const done of replaced) await this.replacement.discard(done).catch(() => undefined);
     // The image a rollback would start is the one the replaced containers ran — on an unpinned install
     // that is `latest`, not the version tag, and pruning it would leave nothing to go back to.
-    const unpinned = targets.some((target) => target.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`));
-    await this.prune(tag, unpinned ? SelfUpdateRun.UNPINNED_TAG : SelfUpdateRun.tag(from));
+    await this.prune(tag, replacedTag);
+    return { state: UpdaterState.SUCCEEDED.value, error: '' };
+  }
+
+  /**
+   * Each app is swapped with no gap; a failure rolls the apps already swapped back the same way, so the
+   * operator who gets no downtime on the way up does not get it on the way back either.
+   */
+  private async roll(tag: string, replacedTag: string, previousVersion: string): Promise<IUpdateOutcome> {
+    this.onStep(`Starting each new app beside the running one`);
+    const rolled = await this.rolling(this.stackFor(tag)).run(tag);
+    const healthy = rolled && await this.health.reports(tag);
+    if (!healthy) {
+      this.onStep('Putting the previous version back');
+      const restored = await this.rolling(this.stackFor(replacedTag)).run(replacedTag);
+      if (previousVersion) this.versionFile.write(previousVersion); else this.versionFile.clear();
+      const why = rolled ? `${tag} did not report itself healthy` : `${tag} did not come up`;
+      return { state: UpdaterState.ROLLED_BACK.value, error: restored ? `${why}; ${replacedTag} is serving again.` : `${why}, and putting ${replacedTag} back did not finish — the stack needs a person.` };
+    }
+    this.onStep('Removing what the update replaced');
+    await this.prune(tag, replacedTag);
     return { state: UpdaterState.SUCCEEDED.value, error: '' };
   }
 
@@ -102,6 +141,10 @@ export class SelfUpdateRun {
     // An install that named no version goes back to naming none, so `docker compose up` keeps starting
     // what is serving rather than the version that was just refused.
     if (previousVersion) this.versionFile.write(previousVersion); else this.versionFile.clear();
+  }
+
+  private stackFor(tag: string): EngineStack {
+    return new EngineStack(this.engine, this.project, tag, this.availableBytes);
   }
 
   private async prune(deployed: string, replacedTag: string): Promise<void> {

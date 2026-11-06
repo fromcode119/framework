@@ -5,4 +5,6 @@ export interface IContainerSummary {
   Image: string;
   State: string;
   Labels: Record<string, string>;
+  /** Unix seconds; orders the containers of one service oldest first. */
+  Created?: number;
 }

@@ -33,8 +33,9 @@ describe('DeployCapacity', () => {
 
 /** A stack whose db answers the given mode and migration version, and whose image ships `migrations`. */
 class StackFixture {
-  static stack(options: { mode: string; applied: number; migrations: ShippedMigration[] }): any {
+  static stack(options: { mode: string; applied: number; migrations: ShippedMigration[] }, available = 4_486_000_000): any {
     return {
+      capacity: async (services: readonly string[]) => DeployCapacity.from(FREE.replace('4486000000', String(available)), STATS, services),
       declared: async () => [],
       containerIds: async () => [],
       query: async (sql: string) => (sql.includes('deploy_mode') ? options.mode : String(options.applied)),
@@ -51,48 +52,48 @@ describe('DeployStrategy', () => {
   const migrations = [new ShippedMigration(53, false), new ShippedMigration(54, false)];
 
   it('restarts when the operator chose restart', async () => {
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'restart', applied: 54, migrations }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'restart', applied: 54, migrations }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
   });
 
   it('restarts once for the release that introduces the edge — it must take the ports from the gateway', async () => {
     const stack = { ...StackFixture.stack({ mode: 'rolling', applied: 54, migrations }), declared: async () => ['edge'], containerIds: async () => [] };
-    const plan = await new DeployStrategy(stack as any, StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(stack as any).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
     expect(plan.reason).toContain('introduces the edge');
   });
 
   it('rolls when chosen, with no new migrations and room to spare', async () => {
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.ROLLING);
   });
 
   it('falls back to restart for a release with new core migrations, and says which', async () => {
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 53, migrations }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 53, migrations }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
     expect(plan.reason).toContain('migration 54');
   });
 
   it('rolls a release whose only new migrations declare they are safe beside the serving release', async () => {
     const additive = [...migrations, new ShippedMigration(55, true), new ShippedMigration(56, true)];
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: additive }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: additive }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.ROLLING);
   });
 
   it('restarts when any new migration is not declared safe, and names only those', async () => {
     const mixed = [...migrations, new ShippedMigration(55, true), new ShippedMigration(56, false), new ShippedMigration(57, false)];
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: mixed }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: mixed }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
     expect(plan.reason).toContain('migrations 56, 57');
   });
 
   it('falls back to restart when the image cannot be listed, rather than assuming nothing to migrate', async () => {
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: [] }), StackFixture.shell(4_486_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations: [] }, 4_486_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
   });
 
   it('falls back to restart without the memory for the overlap', async () => {
-    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations }), StackFixture.shell(2_000_000_000)).choose();
+    const plan = await new DeployStrategy(StackFixture.stack({ mode: 'rolling', applied: 54, migrations }, 2_000_000_000)).choose();
     expect(plan.mode).toBe(DeployMode.RESTART);
     expect(plan.reason).toContain('not enough memory');
   });
@@ -295,6 +296,7 @@ describe('DeployService on a failed rolling deploy', () => {
       up: async () => { ups += 1; return 0; },
       query: async (sql: string) => (sql.includes('deploy_mode') ? 'rolling' : '54'),
       shippedMigrations: async () => [new ShippedMigration(54, false)],
+      capacity: async (services: readonly string[]) => DeployCapacity.from(FREE, STATS, services),
       apiLogs: async () => '',
     });
     // A new api container reports whichever version `.env` named when it was started.

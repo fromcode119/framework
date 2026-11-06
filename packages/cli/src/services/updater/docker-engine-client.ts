@@ -85,6 +85,54 @@ export class DockerEngineClient implements IDockerEngine {
     await this.json('DELETE', `/images/${encodeURIComponent(reference)}`);
   }
 
+  async exec(id: string, cmd: string[]): Promise<{ code: number; stdout: string }> {
+    const created = await this.json<{ Id: string }>('POST', `/containers/${encodeURIComponent(id)}/exec`, { AttachStdout: true, AttachStderr: true, Cmd: cmd });
+    const { status, body } = await this.request('POST', `/exec/${created.Id}/start`, { Detach: false, Tty: false }, DockerEngineClient.TIMEOUT_MS, true);
+    if (status >= 400) return { code: 1, stdout: '' };
+    const inspected = await this.json<{ ExitCode: number | null }>('GET', `/exec/${created.Id}/json`);
+    return { code: inspected.ExitCode ?? 1, stdout: DockerEngineClient.demux(body as Buffer, 1) };
+  }
+
+  async logs(id: string, tail: number): Promise<string> {
+    const { status, body } = await this.request('GET', `/containers/${encodeURIComponent(id)}/logs?stdout=1&stderr=1&tail=${tail}`, undefined, DockerEngineClient.TIMEOUT_MS, true);
+    return status >= 400 ? '' : DockerEngineClient.demux(body as Buffer);
+  }
+
+  async top(id: string, psArgs: string): Promise<{ Titles: string[]; Processes: string[][] }> {
+    return this.json('GET', `/containers/${encodeURIComponent(id)}/top?ps_args=${encodeURIComponent(psArgs)}`);
+  }
+
+  /** `docker stats` shows usage minus the inactive page cache (cgroup v2 `inactive_file`, v1 `total_inactive_file`). */
+  async memoryUsage(id: string): Promise<number> {
+    const stats = await this.json<any>('GET', `/containers/${encodeURIComponent(id)}/stats?stream=false`);
+    const memory = stats?.memory_stats ?? {};
+    const cache = Number(memory.stats?.inactive_file ?? memory.stats?.total_inactive_file ?? 0) || 0;
+    return Math.max(0, (Number(memory.usage) || 0) - cache);
+  }
+
+  async wait(id: string): Promise<number> {
+    const { body } = await this.request('POST', `/containers/${encodeURIComponent(id)}/wait`, undefined, DockerEngineClient.PULL_TIMEOUT_MS);
+    try { return Number(JSON.parse(String(body))?.StatusCode ?? 1); } catch { return 1; }
+  }
+
+  /**
+   * A container without a TTY answers logs and exec output as frames: one byte naming the stream
+   * (1 stdout, 2 stderr), three zero bytes, a big-endian length, then that many bytes. Output that does
+   * not frame that way (a container started with a TTY) is returned as it came.
+   */
+  static demux(raw: Buffer, onlyStream?: number): string {
+    const parts: Buffer[] = [];
+    let offset = 0;
+    while (offset + 8 <= raw.length) {
+      const stream = raw[offset];
+      if (stream > 2 || raw[offset + 1] || raw[offset + 2] || raw[offset + 3]) return raw.toString('utf8');
+      const size = raw.readUInt32BE(offset + 4);
+      if (onlyStream === undefined || stream === onlyStream) parts.push(raw.subarray(offset + 8, offset + 8 + size));
+      offset += 8 + size;
+    }
+    return offset === raw.length ? Buffer.concat(parts).toString('utf8') : raw.toString('utf8');
+  }
+
   /** 304 (already started / already stopped) is success: the container is where it was asked to be. */
   private async json<T = unknown>(method: string, path: string, payload?: unknown): Promise<T> {
     const { status, body } = await this.request(method, path, payload, DockerEngineClient.TIMEOUT_MS);
@@ -92,7 +140,9 @@ export class DockerEngineClient implements IDockerEngine {
     return (body ? JSON.parse(body) : undefined) as T;
   }
 
-  private request(method: string, path: string, payload: unknown, timeoutMs: number): Promise<{ status: number; body: string }> {
+  private request(method: string, path: string, payload: unknown, timeoutMs: number): Promise<{ status: number; body: string }>;
+  private request(method: string, path: string, payload: unknown, timeoutMs: number, raw: true): Promise<{ status: number; body: Buffer }>;
+  private request(method: string, path: string, payload: unknown, timeoutMs: number, raw = false): Promise<{ status: number; body: string | Buffer }> {
     return new Promise((resolve, reject) => {
       const data = payload === undefined ? undefined : JSON.stringify(payload);
       const req = http.request({
@@ -102,10 +152,12 @@ export class DockerEngineClient implements IDockerEngine {
         headers: data ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(data) } : {},
         timeout: timeoutMs,
       }, (res) => {
-        let body = '';
-        res.setEncoding('utf8');
-        res.on('data', (chunk) => { body += chunk; });
-        res.on('end', () => resolve({ status: res.statusCode ?? 0, body }));
+        const chunks: Buffer[] = [];
+        res.on('data', (chunk: Buffer) => { chunks.push(chunk); });
+        res.on('end', () => {
+          const body = Buffer.concat(chunks);
+          resolve({ status: res.statusCode ?? 0, body: raw ? body : body.toString('utf8') });
+        });
       });
       req.on('timeout', () => req.destroy(new Error(`${method} ${path.split('?')[0]} timed out`)));
       req.on('error', reject);

@@ -1,6 +1,6 @@
 import { ComposeStack } from '@cli/services/deploy/compose-stack';
-import { DeployCapacity, DeployMode } from '@fromcode119/core';
-import { RemoteShell } from '@cli/services/deploy/remote-shell';
+import { DeployMode } from '@fromcode119/core';
+import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
 
 /**
  * Rolling or restart — the operator's choice, unless the release or the box rules it out.
@@ -18,10 +18,7 @@ export class DeployStrategy {
   /** The apps swapped one at a time; the gateway after them — rolled too when `edge` holds the ports. */
   static readonly ROLLED = ['api', 'admin', 'frontend'] as const;
 
-  constructor(
-    private readonly stack: ComposeStack,
-    private readonly shell: RemoteShell,
-  ) {}
+  constructor(private readonly stack: IDeployStack) {}
 
   /** Call after `.env` names the new version: the migration check reads that image. */
   async choose(): Promise<{ mode: DeployMode; reason: string }> {
@@ -37,11 +34,7 @@ export class DeployStrategy {
     const pending = await this.pendingMigrations();
     if (pending) return { mode: DeployMode.RESTART, reason: `this release runs ${pending} (new core migrations need the old api stopped first)` };
 
-    const capacity = DeployCapacity.from(
-      (await this.shell.run('free -b')).stdout,
-      (await this.shell.run("docker stats --no-stream --format '{{.Name}}|{{.MemUsage}}'")).stdout,
-      DeployStrategy.ROLLED,
-    );
+    const capacity = await this.stack.capacity(DeployStrategy.ROLLED);
     if (!capacity.fits) return { mode: DeployMode.RESTART, reason: `not enough memory: ${capacity.describe()}` };
     return { mode: DeployMode.ROLLING, reason: capacity.describe() };
   }
