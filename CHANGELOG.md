@@ -6,6 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.511] - 2026-11-06
+
+### Fixed
+
+- **api**: a single-site Postgres install can save people and media ([#1229](https://github.com/fromcode119/framework/pull/1229))
+
+### Performance
+
+- **frontend**: fetch each site payload once per storefront request ([#1231](https://github.com/fromcode119/framework/pull/1231))
+- **frontend**: report storefront document render phases as Server-Timing ([#1228](https://github.com/fromcode119/framework/pull/1228))
+
 ## [0.2.510] - 2026-11-06
 
 ### Fixed
