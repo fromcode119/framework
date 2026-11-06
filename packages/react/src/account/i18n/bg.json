@@ -21,7 +21,13 @@
       "empty": "Все още няма налични секции.",
       "search": "Търси в профила",
       "searchPlaceholder": "Търси в профила",
-      "searchEmpty": "Нищо не съвпада."
+      "searchEmpty": "Нищо не съвпада.",
+      "signOut": "Изход",
+      "signOutConfirm": "Да излезете ли от профила?",
+      "signOutYes": "Изход",
+      "signOutNo": "Остани",
+      "signingOut": "Излизане…",
+      "signOutFailed": "Изходът не успя. Опитайте отново."
     },
     "overview": {
       "greeting": "Добре дошли, {{name}}",

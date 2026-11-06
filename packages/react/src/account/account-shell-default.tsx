@@ -14,6 +14,7 @@ import { AccountTranslations } from '@react/account/account-translations';
 import { AccountSectionIcons } from '@react/account/account-section-icons';
 import { AccountSectionRegistry } from '@react/account/account-section-registry';
 import { AccountClass } from '@react/account/account-class';
+import { AccountSignOut } from '@react/account/sign-out';
 
 /**
  * The framework's DEFAULT account page — the fallback behind the overridable `AccountShell`. Path-aware host for plugin-contributed account panels, shipping a
@@ -195,6 +196,7 @@ export class AccountShellDefault extends Reactor {
               />
             </label>
             {this.renderNavGroups(sections, active.key, translate)}
+            <AccountSignOut />
           </nav>
 
           <main className={AccountClass.of('main')}>

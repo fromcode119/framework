@@ -21,7 +21,13 @@
       "empty": "No account panels are available yet.",
       "search": "Search your account",
       "searchPlaceholder": "Search your account",
-      "searchEmpty": "Nothing matches."
+      "searchEmpty": "Nothing matches.",
+      "signOut": "Sign out",
+      "signOutConfirm": "Sign out of your account?",
+      "signOutYes": "Sign out",
+      "signOutNo": "Stay signed in",
+      "signingOut": "Signing out…",
+      "signOutFailed": "Could not sign out. Try again."
     },
     "overview": {
       "greeting": "Welcome, {{name}}",

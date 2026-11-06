@@ -206,3 +206,14 @@
 .fc-acct-group-head .fc-acct-card-title { margin: 0; }
 .fc-acct-group-head .fc-acct-row-meta { margin: 4px 0 0; }
 .fc-acct-note { color: var(--fc-acct-muted); font-size: 13px; margin: 0; }
+
+/* Sign out — at the foot of the menu, confirmed in the page. */
+.fc-acct-signout { margin-top: 12px; padding: 10px 12px; width: 100%; text-align: left; background: transparent; border: 0; border-top: 1px solid var(--fc-acct-border, #e2e8f0); color: var(--fc-acct-muted, #64748b); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.fc-acct-signout:hover { color: var(--fc-acct-fg, #0f172a); }
+.fc-acct-signout-confirm { margin-top: 12px; padding: 12px; border-radius: 10px; background: var(--fc-acct-bg-soft, #f8fafc); display: grid; gap: 8px; font-size: 13px; }
+.fc-acct-signout-error { color: #b91c1c; }
+.fc-acct-signout-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.fc-acct-signout-yes, .fc-acct-signout-no { padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--fc-acct-accent, #334155); }
+.fc-acct-signout-yes { background: var(--fc-acct-accent, #334155); color: #fff; }
+.fc-acct-signout-no { background: transparent; color: var(--fc-acct-accent, #334155); }
+.fc-acct-signout-yes:disabled, .fc-acct-signout-no:disabled { opacity: .55; cursor: default; }
