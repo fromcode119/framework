@@ -1,3 +1,5 @@
+import type { IStorefrontRedirectRule } from '@/lib/interfaces/storefront-redirect-rule.interface';
+
 /** A resolved frontend document (content page or plugin doc) from the dynamic page resolver. */
 export interface IResolvedDocResult {
   type: string;
@@ -9,7 +11,7 @@ export interface IResolvedDocResult {
    */
   canonicalPath: string;
   /** The redirect rule the API matched for this path when nothing resolved to content, or null. */
-  redirect?: { target: string; permanent: boolean; gone: boolean } | null;
+  redirect?: IStorefrontRedirectRule | null;
   /** True when this lookup was the request's last one and told the API to report a miss (`missed=1`). */
   missReported?: boolean;
 }
