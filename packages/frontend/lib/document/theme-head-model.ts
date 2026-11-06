@@ -1,4 +1,4 @@
-import { ResponseDrain } from '@/lib/server-api/response-drain';
+import { ThemeAssetTextCache } from '@/lib/document/theme-asset-text-cache';
 import { ApiPathUtils, PublicAssetUrlUtils, ThemePackageLayout } from '@fromcode119/core/client';
 import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
@@ -168,12 +168,8 @@ export class ThemeHeadModel {
       const publicHref = ApiPathUtils.themeUiAssetUrl(apiUrl, theme.slug, bootFile);
       const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
       const versioned = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
-      const response = await fetch(versioned.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });
-      if (!response.ok) {
-        ResponseDrain.discard(response);
-        return '';
-      }
-      const source = await response.text();
+      const source = await ThemeAssetTextCache.read(versioned.replace(apiUrl, internalBase), Boolean(assetStamp));
+      if (source === null) return '';
       // `</script>` inside the source would close the tag it is being written into.
       return source.replace(/<\/script/gi, '<\\/script');
     } catch {
@@ -189,12 +185,9 @@ export class ThemeHeadModel {
       const internalBase = ServerApiPaths.buildInternalApiBaseUrl();
       const cssResults = await Promise.all(publicHrefs.map(async (publicHref) => {
         const versionedPublicHref = FrontendAssetVersionUrlService.appendVersion(publicHref, assetStamp);
-        const response = await fetch(versionedPublicHref.replace(apiUrl, internalBase), { next: { revalidate: 3600 } });
-        if (!response.ok) {
-          ResponseDrain.discard(response);
-          return '';
-        }
-        return ThemeCssUrlRewriter.rewrite(await response.text(), publicHref);
+        const css = await ThemeAssetTextCache.read(versionedPublicHref.replace(apiUrl, internalBase), Boolean(assetStamp) && publicHref.startsWith(apiUrl));
+        if (css === null) return '';
+        return ThemeCssUrlRewriter.rewrite(css, publicHref);
       }));
       return { inlinedCss: cssResults.join('\n'), fallbackCssHrefs: [] };
     } catch {
