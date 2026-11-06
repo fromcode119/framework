@@ -1,5 +1,5 @@
-import { createHash } from 'node:crypto';
 import { CookieConstants } from '@fromcode119/core/client';
+import { PayloadFingerprint } from '@/lib/payload-fingerprint';
 import type { IStoredDocument } from '@/lib/interfaces/stored-document.interface';
 
 /**
@@ -53,7 +53,7 @@ export class StorefrontDocumentCache {
   static key(args: { origin: string; pathname: string; searchParams: URLSearchParams; locale: string; encoding: string; frontend: Record<string, unknown> | null }): string | null {
     const revision = String(args.frontend?.contentRevision ?? '');
     if (!revision) return null;
-    const fingerprint = createHash('sha1').update(JSON.stringify(args.frontend)).digest('base64url');
+    const fingerprint = PayloadFingerprint.of(args.frontend as Record<string, unknown>);
     const query = [...args.searchParams.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('&');
     return [args.origin.toLowerCase(), args.pathname, query, args.locale, args.encoding, revision, fingerprint].join('|');
   }

@@ -1,4 +1,4 @@
-import { EnvUtils, RequestContextUtils, type ICollection } from '@fromcode119/core';
+import { EnvUtils, RequestContextUtils, SiteContentRevision, type ICollection } from '@fromcode119/core';
 
 /**
  * In-process caches for route resolution (`/system/resolve`) — the hottest storefront SSR path.
@@ -13,10 +13,13 @@ import { EnvUtils, RequestContextUtils, type ICollection } from '@fromcode119/co
  *    gates (paywall/members-only) run with the visitor's identity AFTER `resolveSlugRaw`, so the raw
  *    resolution is identity-free for anonymous visitors and gates still run per request on cache hits.
  *    Values are deep-cloned on write AND read so gates/consumers can never mutate a shared cached doc.
- *    Misses (`null`) are cached too, on a shorter TTL, to absorb 404 storms from URL-probing bots.
- *    TTL is `RESOLVE_CACHE_TTL_MS` (default 30s; `0` disables all result caching). Invalidated on
- *    every collection write hook — content edits are visible immediately when hooks fire, and within
- *    the TTL window otherwise.
+ *    Misses (`null`) are cached too, on a shorter ceiling, to absorb 404 storms from URL-probing bots.
+ *    An entry is served only while the site's content revision (`SiteContentRevision`) is the one it
+ *    was resolved under — the api bumps it on every write that can reach a page, in every api process,
+ *    and the rendered-document cache trusts the same number. It is also cleared on every collection
+ *    write hook. `RESOLVE_CACHE_TTL_MS` (default 10 min; `0` disables all result caching) is only the
+ *    ceiling for what no write announces, such as a page whose publish time arrives. A 30-second
+ *    expiry made every path a visitor had not opened in the last half minute a cold resolve again.
  *
  * 2. **Permalink structure** — replaces a full `_system_meta` table scan per resolve call with a
  *    30s-TTL cached value per site (`_system_meta` is per site), invalidated by the `system:settings:updated` hook (staleness window is
@@ -29,15 +32,15 @@ import { EnvUtils, RequestContextUtils, type ICollection } from '@fromcode119/co
 export class ResolutionCacheService {
   private static readonly MAX_ENTRIES = 500;
   private static readonly PERMALINK_TTL_MS = 30_000;
-  private static readonly NEGATIVE_TTL_MS = 8_000;
+  private static readonly NEGATIVE_TTL_MS = 60_000;
 
   private readonly ttlMs: number;
-  private readonly results = new Map<string, { value: any; expiresAt: number }>();
+  private readonly results = new Map<string, { value: any; expiresAt: number; revision: string }>();
   private readonly permalinks = new Map<string, { value: string; expiresAt: number }>();
   private readonly collectionFlags = new WeakMap<object, { hasCustomPermalink: boolean; hasSlug: boolean }>();
 
   constructor() {
-    this.ttlMs = Math.max(0, EnvUtils.number('RESOLVE_CACHE_TTL_MS', 30_000));
+    this.ttlMs = Math.max(0, EnvUtils.number('RESOLVE_CACHE_TTL_MS', 600_000));
   }
 
   get enabled(): boolean {
@@ -61,7 +64,7 @@ export class ResolutionCacheService {
   getResult(key: string): { value: any } | null {
     const entry = this.results.get(key);
     if (!entry) return null;
-    if (entry.expiresAt <= Date.now()) {
+    if (entry.expiresAt <= Date.now() || entry.revision !== ResolutionCacheService.revision()) {
       this.results.delete(key);
       return null;
     }
@@ -84,7 +87,7 @@ export class ResolutionCacheService {
       if (!oldest.done) this.results.delete(oldest.value);
     }
     const ttl = isNegative ? Math.min(this.ttlMs, ResolutionCacheService.NEGATIVE_TTL_MS) : this.ttlMs;
-    this.results.set(key, { value: stored, expiresAt: Date.now() + ttl });
+    this.results.set(key, { value: stored, expiresAt: Date.now() + ttl, revision: ResolutionCacheService.revision() });
   }
 
   /** Clear cached resolution results (any content write). */
@@ -106,6 +109,11 @@ export class ResolutionCacheService {
     const value = await loader();
     this.permalinks.set(scope, { value, expiresAt: Date.now() + ResolutionCacheService.PERMALINK_TTL_MS });
     return value;
+  }
+
+  /** The content revision of the site this request is served for. */
+  private static revision(): string {
+    return SiteContentRevision.current(ResolutionCacheService.siteScope() || null);
   }
 
   /** The site this request is served for; empty for a deployment with no sites. */

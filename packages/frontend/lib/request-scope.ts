@@ -19,8 +19,23 @@ export class RequestScope {
   private static readonly objectIds = new WeakMap<object, number>();
   private static nextObjectId = 0;
 
-  static run<T>(work: () => Promise<T>): Promise<T> {
-    return RequestScope.storage.run(new Map(), work);
+  private static readonly ANONYMOUS = Symbol('anonymous');
+
+  /**
+   * `shareKey` is set only for a request that carries nothing making its payloads personal (no session
+   * or preview cookie, no query beyond the locale) — the document cache's own test — and names what
+   * those payloads still depend on (the origin they were requested at). Only such a request may read
+   * the site-wide payloads kept across requests (`SiteRevisionMemo`).
+   */
+  static run<T>(work: () => Promise<T>, options: { shareKey?: string } = {}): Promise<T> {
+    const store = new Map<unknown, Map<string, unknown>>();
+    if (options.shareKey) store.set(RequestScope.ANONYMOUS, new Map([['key', options.shareKey]]));
+    return RequestScope.storage.run(store, work);
+  }
+
+  /** The anonymous request's share key; '' for a personal request or outside a scope. */
+  static shareKey(): string {
+    return String(RequestScope.storage.getStore()?.get(RequestScope.ANONYMOUS)?.get('key') ?? '');
   }
 
   static memo<A extends unknown[], R>(fn: (...args: A) => R): (...args: A) => R {

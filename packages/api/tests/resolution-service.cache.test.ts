@@ -1,4 +1,4 @@
-const siteContext = vi.hoisted(() => ({ tenantId: undefined as string | undefined }));
+const siteContext = vi.hoisted(() => ({ tenantId: undefined as string | undefined, revision: 0 }));
 /** Signal handlers the service registered, by signal value: the settings save now arrives as a ProcessSignal. */
 const signalHandlers = vi.hoisted(() => ({} as Record<string, (payload: any, local: boolean) => void>));
 
@@ -13,6 +13,9 @@ vi.mock('@fromcode119/core', () => ({
   },
   RequestContextUtils: {
     getTenantId: vi.fn(() => siteContext.tenantId),
+  },
+  SiteContentRevision: {
+    current: vi.fn((tenantId: string | null) => `e.${siteContext.revision}.${tenantId ?? ''}`),
   },
   PluginTenantAccess: {
     warm: vi.fn(async () => undefined),
@@ -236,6 +239,18 @@ describe('ResolutionService anonymous result cache', () => {
     await service.resolveSlug('/contact', {});
     const afterFirst = find.mock.calls.length;
     await sleep(70);
+    await service.resolveSlug('/contact', {});
+    expect(find.mock.calls.length).toBeGreaterThan(afterFirst);
+  });
+
+  it('drops a cached result once the site content revision moves, however young it is', async () => {
+    const { service, find } = buildHarness({ findImpl: matchContact });
+
+    await service.resolveSlug('/contact', {});
+    const afterFirst = find.mock.calls.length;
+    await service.resolveSlug('/contact', {});
+    expect(find.mock.calls.length).toBe(afterFirst);
+    siteContext.revision += 1;
     await service.resolveSlug('/contact', {});
     expect(find.mock.calls.length).toBeGreaterThan(afterFirst);
   });
