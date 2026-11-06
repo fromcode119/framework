@@ -64,7 +64,7 @@ export class StorefrontDocumentRenderer {
     }
 
     const locale = await timing.measure('locale', DynamicPageResolver.resolveLocale(request.searchParams, pathLocale, routingConfig.strategy));
-    const resolution = await timing.measure('resolve', DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy));
+    const resolution = await timing.measure('resolve', DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, request.searchParams, locale, routingConfig.strategy, true));
     if (resolution?.doc) {
       const canonicalTarget = CanonicalPathRedirect.resolveTarget({
         canonicalPath: resolution.canonicalPath || await HomePageResolver.homeCanonicalPath(resolution.doc, resolution.type, locale, LocalizationUtils.normalizeLocaleCode(QueryParamUtils.readSearchValue(request.searchParams, 'fallback_locale'))), requestSlug: slug, pathLocale, strategy: routingConfig.strategy, searchParams: request.searchParams,
@@ -75,7 +75,7 @@ export class StorefrontDocumentRenderer {
         pageKind: StorefrontPageKind.CONTENT, strategy: routingConfig.strategy, acceptEncoding: request.acceptEncoding,
       }, timing);
     }
-    const redirectRule = await timing.measure('redirect', DynamicPageResolver.resolveRedirect(slug));
+    const redirectRule = await timing.measure('redirect', DynamicPageResolver.redirectAfterMiss(slug, resolution));
     // A rule saying the page is gone for good: the not-found page, answered 410 so crawlers drop it.
     if (redirectRule?.gone) return StorefrontDocumentRenderer.notFoundDocument(request, routingConfig.strategy, timing, 410);
     if (redirectRule) {

@@ -127,7 +127,7 @@ export class DynamicContentPageRoute {
       if (!content) notFound();
       return DynamicContentPageRoute.renderResolvedContent(content, routingConfig.strategy, resolution?.type, '/');
     }
-    const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, resolvedSearchParams, locale, routingConfig.strategy);
+    const resolution = await DynamicPageResolver.resolveDocWithPermalinkFallbackResult(slug, resolvedSearchParams, locale, routingConfig.strategy, true);
     if (resolution?.doc) {
       // The document resolved — but a document has ONE home, and several routes can match the same
       // one (a product's own permalink and the generic `/shop/:slug` detail route both find it). Send
@@ -144,7 +144,7 @@ export class DynamicContentPageRoute {
       return DynamicContentPageRoute.renderResolvedContent(resolution.doc, routingConfig.strategy, resolution.type, `/${slug}`);
     }
     // Nothing resolved at this path — honour a configured SEO redirect (retired URL) before 404ing.
-    const redirectRule = await DynamicPageResolver.resolveRedirect(slug);
+    const redirectRule = await DynamicPageResolver.redirectAfterMiss(slug, resolution);
     if (redirectRule && !redirectRule.gone) {
       if (redirectRule.permanent) permanentRedirect(redirectRule.target);
       redirect(redirectRule.target);

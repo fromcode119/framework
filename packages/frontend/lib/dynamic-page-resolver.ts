@@ -11,6 +11,8 @@ import { LocaleUrlStrategy } from '@fromcode119/core/client';
 import { IResolvedDocResult } from '@/lib/interfaces/resolved-doc-result.interface';
 import { ServerApiUnreachableError } from '@/lib/server-api-unreachable-error';
 import { MissedResolutionFetch } from '@/lib/missed-resolution-fetch';
+import { StorefrontMissRedirect } from '@/lib/storefront-miss-redirect';
+import type { IStorefrontRedirectRule } from '@/lib/interfaces/storefront-redirect-rule.interface';
 
 export class DynamicPageResolver {
   /**
@@ -104,6 +106,7 @@ export class DynamicPageResolver {
     searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
     strategy: LocaleUrlStrategy,
+    reportMiss = false,
   ): Promise<IResolvedDocResult | null> {
     const query = new URLSearchParams();
     query.set('slug', slug);
@@ -112,45 +115,33 @@ export class DynamicPageResolver {
     if (locale) query.set('locale', locale);
     if (fallbackLocale) query.set('fallback_locale', fallbackLocale);
     if (QueryParamUtils.isPreviewMode(searchParams)) query.set('preview', '1');
+    // Preview navigations present the operator's session, which only `resolveFetchCache` forwards.
+    const missReported = reportMiss && !QueryParamUtils.isPreviewMode(searchParams);
+    if (missReported) query.set('missed', '1');
 
-    const result = await DynamicPageResolver.resolveFetchCache(query.toString());
-    if (!result) return null;
+    const result = missReported
+      ? await MissedResolutionFetch.fetch(query.toString())
+      : await DynamicPageResolver.resolveFetchCache(query.toString());
+    if (!result) return missReported ? { type: '', plugin: '', doc: null, canonicalPath: '', redirect: null, missReported } : null;
 
     return {
       type: String(result?.type || '').trim(),
       plugin: String(result?.plugin || '').trim(),
       doc: ResolvedContentShape.normalize((result?.doc as Record<string, unknown> | null) || null),
       canonicalPath: String(result?.canonicalPath || '').trim(),
+      redirect: StorefrontMissRedirect.of(result),
+      missReported,
     };
   }
 
-  /**
-   * Looks up a configured redirect rule for a would-be-404 path via the framework's OWN resolve endpoint.
-   * The framework's route resolver consults a plugin-agnostic redirect registry (a redirect plugin, a content
-   * table, … register into it) and returns a `redirect` resolution — so the frontend never names a plugin.
-   * Returns the target + whether it's permanent (308) or temporary (307), or null when no rule matches.
-   * A malformed payload resolves to null so a lookup quirk never breaks the page — but an
-   * UNREACHABLE API is re-thrown, because "no redirect rule matched" and "we could not ask"
-   * are different answers and only the first one justifies a 404.
-   */
-  static async resolveRedirect(slug: string): Promise<{ target: string; permanent: boolean; gone: boolean } | null> {
-    try {
-      const query = new URLSearchParams();
-      query.set('slug', String(slug || '').replace(/^\/+/, ''));
-      // The final lookup before a 404: `missed=1` lets the API report the miss with the VISITOR's
-      // referrer and browser (this fetch otherwise carries the storefront server's own).
-      query.set('missed', '1');
-      const result = await MissedResolutionFetch.fetch(query.toString()) as
-        { type?: string; redirect?: { target?: string; permanent?: boolean; gone?: boolean } } | null;
-      if (result?.type === 'redirect' && result.redirect?.gone === true) return { target: '', permanent: true, gone: true };
-      if (result?.type === 'redirect' && result.redirect?.target) {
-        return { target: String(result.redirect.target), permanent: result.redirect.permanent !== false, gone: false };
-      }
-    } catch (error) {
-      if (error instanceof ServerApiUnreachableError) throw error;
-      /* malformed lookup payload — fall through to the normal 404 */
-    }
-    return null;
+  /** See StorefrontMissRedirect.afterMiss. */
+  static async redirectAfterMiss(slug: string, resolution: IResolvedDocResult | null): Promise<IStorefrontRedirectRule | null> {
+    return StorefrontMissRedirect.afterMiss(slug, resolution);
+  }
+
+  /** See StorefrontMissRedirect.lookup. */
+  static async resolveRedirect(slug: string): Promise<IStorefrontRedirectRule | null> {
+    return StorefrontMissRedirect.lookup(slug);
   }
 
   static async resolveDocWithPermalinkFallback(
@@ -163,23 +154,31 @@ export class DynamicPageResolver {
     return result?.doc || null;
   }
 
+  /**
+   * `reportMiss`: this lookup is the request's last word on the path, so the API may report a miss from
+   * it. An account section still has the account base to try, so its first lookup never reports.
+   * (The API normalizes `slug` and `/slug` to the same path, so one lookup covers both spellings.)
+   */
   static async resolveDocWithPermalinkFallbackResult(
     slug: string,
     searchParams: Record<string, string | string[] | undefined> | undefined,
     localeOverride: string | undefined,
     strategy: LocaleUrlStrategy,
+    reportMiss = false,
   ): Promise<IResolvedDocResult | null> {
     const cleanSlug = String(slug || '').trim().replace(/^\/+/, '');
     if (!cleanSlug) return null;
 
-    const doc = await DynamicPageResolver.resolveDocResult(cleanSlug, searchParams, localeOverride, strategy);
-    if (doc?.doc) return doc;
-
-    // Lead-slash fallback: helps matching records where permalink was stored WITH a slash.
-    const slashed = await DynamicPageResolver.resolveDocResult(`/${cleanSlug}`, searchParams, localeOverride, strategy);
-    if (slashed?.doc) return slashed;
+    const isAccountSection = DynamicPageResolver.isAccountSection(cleanSlug);
+    const doc = await DynamicPageResolver.resolveDocResult(cleanSlug, searchParams, localeOverride, strategy, reportMiss && !isAccountSection);
+    if (doc?.doc || !isAccountSection) return doc;
 
     return DynamicPageResolver.resolveAccountSection(cleanSlug, searchParams, localeOverride, strategy);
+  }
+
+  private static isAccountSection(cleanSlug: string): boolean {
+    const base = AccountRouteUtils.base().replace(/^\/+|\/+$/g, '');
+    return Boolean(base) && cleanSlug.startsWith(`${base}/`);
   }
 
   /**
