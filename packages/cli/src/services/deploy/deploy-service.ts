@@ -61,7 +61,7 @@ export class DeployService {
     await this.versions.handUpdatesToThisCli();
     // The operator's deploy mode (Settings → Infrastructure), unless this release or this box rules
     // rolling out — and then it says why, rather than silently taking the sites down.
-    const plan = await new DeployStrategy(this.stack, this.shell).choose();
+    const plan = await new DeployStrategy(this.stack).choose();
     console.log(chalk.blue(`Deploy mode: ${plan.mode.value} — ${plan.reason}.`));
     if (plan.mode === DeployMode.ROLLING) {
       if (!await this.rolling(this.stack).run(version)) {

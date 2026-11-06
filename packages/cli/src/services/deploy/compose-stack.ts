@@ -1,6 +1,7 @@
-import { ApiPathUtils, RouteConstants } from '@fromcode119/core';
+import { ApiPathUtils, DeployCapacity, RouteConstants } from '@fromcode119/core';
 import { RemoteShell } from '@cli/services/deploy/remote-shell';
 import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
+import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
 
 /**
  * The compose stack on the target.
@@ -10,7 +11,7 @@ import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
  * and a pull without it reports "No image to be pulled" and changes nothing while looking like it
  * worked.
  */
-export class ComposeStack {
+export class ComposeStack implements IDeployStack {
   /**
    * The gateway is in this list because it was silently left out of it.
    *
@@ -197,6 +198,15 @@ export class ComposeStack {
   async publicStatus(address: string): Promise<string> {
     const result = await this.shell.run(`curl -s -o /dev/null -m 5 -w '%{http_code}' http://${address}/`);
     return result.stdout.trim() || '000';
+  }
+
+  /** `free -b` for the box's available memory, `docker stats` for what each app holds now. */
+  async capacity(services: readonly string[]): Promise<DeployCapacity> {
+    return DeployCapacity.from(
+      (await this.shell.run('free -b')).stdout,
+      (await this.shell.run("docker stats --no-stream --format '{{.Name}}|{{.MemUsage}}'")).stdout,
+      services,
+    );
   }
 
   async apiLogs(lines: number): Promise<string> {

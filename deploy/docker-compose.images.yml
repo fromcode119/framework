@@ -53,9 +53,11 @@ services:
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
 
   # Installs new platform versions on this machine, as Settings → Updates decides: automatically, or when
-  # an operator presses Update now; a release marked breaking always waits for the button. It swaps the
-  # containers above for the new version's, waits for the api to report that version, and puts the old
-  # ones back if it does not. It needs the Docker socket to do that, and this deployment's folder to
+  # an operator presses Update now; a release marked breaking always waits for the button. It rolls the
+  # containers above to the new version the way the deploy command does — each new app starts beside the
+  # running one, which stops only once the new one answers — waits for the api to report that version,
+  # and rolls the old ones back if it does not. Where the deploy command would restart (deploy mode set
+  # to restart, a migration the serving release cannot run beside, too little memory) it restarts too. It needs the Docker socket to do that, and this deployment's folder to
   # record the version in `.env` so a later `docker compose up` starts the same one.
   #
   # FROMCODE_UPDATER=off in `.env` stops it for a deployment that is updated some other way (a deploy

@@ -30,14 +30,20 @@ export class DeploymentVersionStore {
 
   /**
    * A target this CLI deploys is updated by this CLI, not by the platform's own updater service: two
-   * deployers on one box race, and the updater restarts each app where this CLI rolls with no gap. So a
-   * `.env` that says nothing about the updater is told `FROMCODE_UPDATER=off`. An explicit value — an
-   * operator who wants the box to update itself — is left exactly as it is, under EITHER spelling:
-   * appending the new name beside an old `ATLANTIS_UPDATER=on` would quietly overrule that operator.
+   * deployers on one box race each other. So a `.env` that says nothing about the updater is told
+   * `FROMCODE_UPDATER=off`. An explicit value — an operator who wants the box to update itself — is kept
+   * exactly as it is. A value under the release-named spelling `ATLANTIS_UPDATER` is moved to the
+   * current name with the same value, so a box never carries the old name past its next deploy — and
+   * never both, which would leave two switches disagreeing about one updater.
    */
   async handUpdatesToThisCli(): Promise<void> {
+    const key = DeploymentVersionStore.UPDATER_KEY;
+    const legacy = DeploymentVersionStore.LEGACY_UPDATER_KEY;
     await this.shell.runOrThrow(
-      `grep -qE '^(${DeploymentVersionStore.UPDATER_KEY}|${DeploymentVersionStore.LEGACY_UPDATER_KEY})=' .env || { [ -z "$(tail -c1 .env)" ] || echo >> .env; printf '%s=off\\n' '${DeploymentVersionStore.UPDATER_KEY}' >> .env; }`,
+      `grep -qE '^${key}=' .env || ! grep -qE '^${legacy}=' .env || { sed -i.bak 's/^${legacy}=/${key}=/' .env && rm -f .env.bak; }`,
+    );
+    await this.shell.runOrThrow(
+      `grep -qE '^${key}=' .env || { [ -z "$(tail -c1 .env)" ] || echo >> .env; printf '%s=off\\n' '${key}' >> .env; }`,
     );
   }
 

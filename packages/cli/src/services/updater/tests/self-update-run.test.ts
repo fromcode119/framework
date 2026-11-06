@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { SelfUpdateRun } from '@cli/services/updater/self-update-run';
 import { InMemoryDockerEngine } from '@cli/services/updater/tests/in-memory-docker-engine';
+import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 
 const REG = 'ghcr.io/fromcode119/framework-';
 const SERVICES = { api: 'api', 'extension-host': 'api', admin: 'admin', frontend: 'frontend', gateway: 'gateway', edge: 'gateway' } as const;
@@ -10,6 +11,7 @@ class Stack {
   version = 'v0.2.392';
   healthy = true;
   steps: string[] = [];
+  availableBytes = 8 * 1024 ** 3;
   constructor(tag = 'v0.2.392') {
     if (tag === 'latest') this.version = '';
     for (const [service, image] of Object.entries(SERVICES)) this.engine.add(service, `${REG}${image}:${tag}`);
@@ -18,12 +20,94 @@ class Stack {
   }
   run() {
     const file = { read: () => this.version, write: (v: string) => { this.version = v; }, clear: () => { this.version = ''; } };
-    return new SelfUpdateRun(this.engine, { reports: async () => this.healthy }, file, 'site', (s) => this.steps.push(s)).run('0.2.392', '0.2.400');
+    const rolling = (stack: any) => new RollingDeploy(stack, async () => undefined, 0, 0);
+    return new SelfUpdateRun(this.engine, { reports: async () => this.healthy }, file, 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes)
+      .run('0.2.392', '0.2.400');
   }
   imageOf(service: string) {
     return this.engine.byName(`site-${service}-1`)?.[1].image;
   }
+  /** The images every running container of `service` is on. */
+  runningImages(service: string) {
+    return [...this.engine.containers.values()].filter((c) => c.running && c.labels['com.docker.compose.service'] === service).map((c) => c.image);
+  }
 }
+
+describe('SelfUpdateRun — rolling, as the deploy command does', () => {
+  const APPS = ['api', 'extension-host', 'admin', 'frontend', 'gateway'];
+  const rollingStack = () => { const stack = new Stack(); stack.engine.deployMode = 'rolling'; return stack; };
+
+  it('starts each new app beside the running one and stops the old one only after the new one answers', async () => {
+    const stack = rollingStack();
+
+    const outcome = await stack.run();
+
+    expect(outcome).toEqual({ state: 'succeeded', error: '' });
+    expect(stack.steps.some((step) => step.startsWith('Deploy mode: rolling'))).toBe(true);
+    for (const service of APPS) expect(stack.runningImages(service)).toEqual([`${REG}${SERVICES[service as keyof typeof SERVICES]}:v0.2.400`]);
+    // Never a moment with no copy of an app running: each old one stopped while its replacement ran.
+    const platformStops = stack.engine.stops.filter((stop) => APPS.some((service) => stop.name.startsWith(`site-${service}-`)));
+    expect(platformStops.length).toBe(APPS.length);
+    for (const stop of platformStops) expect(stop.runningPeers).toBeGreaterThanOrEqual(1);
+    expect(stack.engine.byName('site-api-2')![1].labels['com.docker.compose.container-number']).toBe('2');
+    expect(stack.runningImages('edge')).toEqual([`${REG}gateway:v0.2.392`]);
+    expect(stack.version).toBe('v0.2.400');
+  });
+
+  it('names the new copy on the network as the old one was, minus the old copy\'s own name', async () => {
+    const stack = rollingStack();
+
+    await stack.run();
+
+    const api = stack.engine.created.find((c) => c.name === 'site-api-2')!.body;
+    expect(api.NetworkingConfig.EndpointsConfig.site_framework.Aliases).toEqual(['api', 'site-api-2']);
+    expect(api.Env).toEqual(['API_URL=x']);
+  });
+
+  it('restarts instead when the release runs a migration the serving release cannot run beside', async () => {
+    const stack = rollingStack();
+    stack.engine.appliedMigration = 53;
+
+    const outcome = await stack.run();
+
+    expect(outcome.state).toBe('succeeded');
+    expect(stack.steps.find((step) => step.startsWith('Deploy mode:'))).toContain('migration 54');
+    expect(stack.engine.byName('site-api-2')).toBeUndefined();
+  });
+
+  it('restarts instead when the machine has no room for a second copy', async () => {
+    const stack = rollingStack();
+    stack.availableBytes = 300 * 1024 ** 2;
+
+    await stack.run();
+
+    expect(stack.steps.find((step) => step.startsWith('Deploy mode:'))).toContain('not enough memory');
+  });
+
+  it('rolls the apps it already swapped back, with no gap either, when a new one will not start', async () => {
+    const stack = rollingStack();
+    stack.engine.failStartFor = 'admin';
+
+    const outcome = await stack.run();
+
+    expect(outcome.state).toBe('rolledBack');
+    expect(outcome.error).toContain('v0.2.392 is serving again');
+    for (const service of APPS) expect(stack.runningImages(service)).toEqual([`${REG}${SERVICES[service as keyof typeof SERVICES]}:v0.2.392`]);
+    for (const stop of stack.engine.stops) expect(stop.runningPeers).toBeGreaterThanOrEqual(1);
+    expect(stack.version).toBe('v0.2.392');
+  });
+
+  it('rolls back when the new version never reports itself healthy', async () => {
+    const stack = rollingStack();
+    stack.healthy = false;
+
+    const outcome = await stack.run();
+
+    expect(outcome.state).toBe('rolledBack');
+    expect(stack.runningImages('api')).toEqual([`${REG}api:v0.2.392`]);
+    expect(stack.version).toBe('v0.2.392');
+  });
+});
 
 describe('SelfUpdateRun', () => {
   it('moves every platform service to the new version, keeps the database and edge, and records the version', async () => {

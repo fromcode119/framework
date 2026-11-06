@@ -52,9 +52,16 @@ describe('DeploymentVersionStore.handUpdatesToThisCli', () => {
     expect(read()).toBe('VERSION=v0.2.392\nFROMCODE_UPDATER=on\n');
   });
 
-  it('honours the choice under the release-named spelling an existing .env carries', async () => {
-    const { store, read } = target('VERSION=v0.2.392\nATLANTIS_UPDATER=on\n');
+  it('moves a choice under the release-named spelling to the current name, keeping its value', async () => {
+    const { store, read } = target('VERSION=v0.2.392\nATLANTIS_UPDATER=on\nOTHER=1\n');
     await store.handUpdatesToThisCli();
-    expect(read()).toBe('VERSION=v0.2.392\nATLANTIS_UPDATER=on\n');
+    await store.handUpdatesToThisCli();
+    expect(read()).toBe('VERSION=v0.2.392\nFROMCODE_UPDATER=on\nOTHER=1\n');
+  });
+
+  it('keeps the current name when a .env already carries both, and renames nothing', async () => {
+    const { store, read } = target('FROMCODE_UPDATER=off\nATLANTIS_UPDATER=on\n');
+    await store.handUpdatesToThisCli();
+    expect(read()).toBe('FROMCODE_UPDATER=off\nATLANTIS_UPDATER=on\n');
   });
 });

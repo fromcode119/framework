@@ -1,6 +1,7 @@
 import chalk from 'chalk';
 import { ComposeStack } from '@cli/services/deploy/compose-stack';
 import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
+import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
 import { ReleaseHealthProbe } from '@cli/services/deploy/release-health-probe';
 import { ApiPathUtils, RouteConstants, SystemConstants } from '@fromcode119/core';
 
@@ -27,7 +28,7 @@ export class RollingDeploy {
   private static readonly INTERVAL_MS = 5_000;
 
   constructor(
-    private readonly stack: ComposeStack,
+    private readonly stack: IDeployStack,
     private readonly sleep: (ms: number) => Promise<void> = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
     private readonly readyTimeoutMs: number = RollingDeploy.READY_TIMEOUT_MS,
     private readonly moveTimeoutMs: number = RollingDeploy.MOVE_TIMEOUT_MS,

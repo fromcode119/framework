@@ -25,4 +25,14 @@ export interface IDockerEngine {
   /** Every local image as `repository:tag`. */
   listImages(): Promise<string[]>;
   removeImage(reference: string): Promise<void>;
+  /** Runs `cmd` inside a running container; its exit code and what it printed on stdout. */
+  exec(id: string, cmd: string[]): Promise<{ code: number; stdout: string }>;
+  /** The last `tail` lines a container printed, stdout and stderr together. */
+  logs(id: string, tail: number): Promise<string>;
+  /** `docker top`: the rows of `ps` run with `psArgs` inside the container. */
+  top(id: string, psArgs: string): Promise<{ Titles: string[]; Processes: string[][] }>;
+  /** The memory a container holds now, in bytes, as `docker stats` counts it (page cache excluded). */
+  memoryUsage(id: string): Promise<number>;
+  /** Waits for a container to exit; its exit code. */
+  wait(id: string): Promise<number>;
 }
