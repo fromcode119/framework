@@ -6,7 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.515] - 2026-11-06
+
+### Performance
+
+- **api**: a path no table holds skips the collection's REST finds ([#1242](https://github.com/fromcode119/framework/pull/1242))
+
 ## [0.2.514] - 2026-11-06
+
+### Added
+
+- **cli**: updater rolls each app with no gap, like the deploy command ([#1240](https://github.com/fromcode119/framework/pull/1240))
 
 ### Performance
 
