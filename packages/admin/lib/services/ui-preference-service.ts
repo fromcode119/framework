@@ -60,7 +60,9 @@ export class UiPreferenceService extends BaseService {
       return true;
     }
 
-    return this.browserState.readLocalString(UiPreferenceService.ADVANCED_MODE_KEY) === 'true';
+    // The console opens on the admin unless this browser chose otherwise. Defaulting to the assistant
+    // sent every new address (a domain switch, a new browser, cleared site data) straight into it.
+    return this.browserState.readLocalString(UiPreferenceService.ADVANCED_MODE_KEY) !== 'false';
   }
 
   writeAdvancedMode(enabled: boolean): void {
