@@ -79,23 +79,12 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     return `${String(baseUrl || '').replace(/\/+$/, '')}${path.startsWith('/') ? path : `/${path}`}`;
   }
 
+  /**
+   * The admin URL in Settings names the console exactly, path included: `https://console.example.com`
+   * is a console at the root of its host, `https://shop.example.com/admin` one mounted under a site.
+   * Appending a default path to the first sent every reset link to a page that never loads.
+   */
   protected normalizeAdminBaseUrl(baseUrl: string): string {
-    const normalizedBaseUrl = String(baseUrl || '').trim().replace(/\/+$/, '');
-    if (!normalizedBaseUrl) {
-      return '';
-    }
-
-    const configuredBasePath = ApplicationUrlUtils.readAppBasePathFromEnvironment(ApplicationUrlUtils.ADMIN_APP)
-      || AppPathConstants.ADMIN.ADMIN.BASE;
-    if (!configuredBasePath || configuredBasePath === '/') {
-      return normalizedBaseUrl;
-    }
-
-    const existingPath = ApplicationUrlUtils.deriveBasePathFromUrl(normalizedBaseUrl, '');
-    if (existingPath) {
-      return normalizedBaseUrl;
-    }
-
-    return this.joinBaseUrl(normalizedBaseUrl, configuredBasePath);
+    return String(baseUrl || '').trim().replace(/\/+$/, '');
   }
 }
