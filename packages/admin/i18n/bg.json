@@ -2986,7 +2986,14 @@
       "add": "Добави",
       "notesOptional": "Бележки (по избор)",
       "whyThisRedirectExists": "Защо съществува това пренасочване",
-      "toPathExample": "/nova-stranitsa или https://…"
+      "toPathExample": "/nova-stranitsa или https://…",
+      "rulesCount": "Правила · {{total}}",
+      "searchRules": "Търси в „от“, „към“ или бележки…",
+      "noRulesMatch": "Няма правило за „{{search}}“.",
+      "editTarget": "Промени накъде води {{fromPath}}",
+      "save": "Запази",
+      "cancel": "Отказ",
+      "redirectFromUpdated": "Пренасочването от {{fromPath}} вече води към {{toPath}}."
     },
     "routing": {
       "theRoutingSettingsRequestFailed": "Заявката за настройките на маршрутите е неуспешна.",

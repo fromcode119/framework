@@ -26,8 +26,34 @@ export class RedirectsSettingsPage extends AdminComponent {
   @state redirects: Record<string, any>[] | null = null;
   @state loadError: string | null = null;
   @state busyId = 0;
+  @state search = '';
+  @state page = 1;
+  @state total = 0;
+  private static readonly PAGE_SIZE = 50;
+  private searchTimer: ReturnType<typeof setTimeout> | null = null;
 
   async componentDidMount(): Promise<void> {
+    await this.loadRedirects();
+  }
+
+  componentWillUnmount(): void {
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+  }
+
+  /** Typing narrows the list after a short pause, from page 1 — every keystroke is not a request. */
+  @bound
+  handleSearch(search: string): void {
+    this.search = search;
+    if (this.searchTimer) clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => {
+      this.page = 1;
+      void this.loadRedirects();
+    }, 300);
+  }
+
+  @bound
+  async handlePageChange(page: number): Promise<void> {
+    this.page = page;
     await this.loadRedirects();
   }
 
@@ -40,7 +66,9 @@ export class RedirectsSettingsPage extends AdminComponent {
   private async loadRedirects(): Promise<void> {
     this.loadError = null;
     try {
-      this.redirects = await RedirectsApiClient.list();
+      const result = await RedirectsApiClient.list({ search: this.search.trim(), page: this.page, limit: RedirectsSettingsPage.PAGE_SIZE });
+      this.redirects = result.redirects;
+      this.total = result.total;
     } catch (error: any) {
       this.redirects = null;
       this.loadError = error?.message || AdminI18n.t('settings.redirects.theRedirectsRequestFailed');
@@ -59,6 +87,7 @@ export class RedirectsSettingsPage extends AdminComponent {
     try {
       const created = await RedirectsApiClient.create(input);
       this.redirects = [created, ...(this.redirects || [])];
+      this.total += 1;
       this.notify(AdminI18n.t('settings.redirects.redirectFromCreated', { fromPath: created.fromPath }), NotificationType.SUCCESS);
       return true;
     } catch (error: any) {
@@ -83,11 +112,28 @@ export class RedirectsSettingsPage extends AdminComponent {
   }
 
   @bound
+  async handleRetarget(redirect: Record<string, any>, toPath: string): Promise<boolean> {
+    this.busyId = Number(redirect.id) || 0;
+    try {
+      const updated = await RedirectsApiClient.update(Number(redirect.id), { toPath });
+      this.redirects = (this.redirects || []).map((row) => (row.id === updated.id ? updated : row));
+      this.notify(AdminI18n.t('settings.redirects.redirectFromUpdated', { fromPath: updated.fromPath, toPath: updated.toPath }), NotificationType.SUCCESS);
+      return true;
+    } catch (error: any) {
+      this.notify(error?.message || AdminI18n.t('settings.redirects.theRedirectCouldNotBe2'), NotificationType.ERROR);
+      return false;
+    } finally {
+      this.busyId = 0;
+    }
+  }
+
+  @bound
   async handleDelete(redirect: Record<string, any>): Promise<void> {
     this.busyId = Number(redirect.id) || 0;
     try {
       await RedirectsApiClient.remove(Number(redirect.id));
       this.redirects = (this.redirects || []).filter((row) => row.id !== redirect.id);
+      this.total = Math.max(0, this.total - 1);
       this.notify(AdminI18n.t('settings.redirects.redirectFromDeleted', { fromPath: redirect.fromPath }), NotificationType.SUCCESS);
     } catch (error: any) {
       this.notify(error?.message || AdminI18n.t('settings.redirects.theRedirectCouldNotBe3'), NotificationType.ERROR);
@@ -131,6 +177,13 @@ export class RedirectsSettingsPage extends AdminComponent {
             busyId={this.busyId}
             onToggle={this.handleToggle}
             onDelete={this.handleDelete}
+            onRetarget={this.handleRetarget}
+            total={this.total}
+            page={this.page}
+            limit={RedirectsSettingsPage.PAGE_SIZE}
+            search={this.search}
+            onSearch={this.handleSearch}
+            onPageChange={this.handlePageChange}
           />
         </div>
       </div>

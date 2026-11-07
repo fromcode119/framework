@@ -32,6 +32,7 @@ export { SystemRedirectService } from '@core/services/system-redirect-service';
 export { CanonicalPathResolverRegistryService } from '@core/services/canonical-path-resolver-registry-service';
 export type { ICanonicalPathResolver } from '@core/services/interfaces/canonical-path-resolver.interface';
 export { RedirectResolution } from '@core/services/redirect-resolution';
+export type { RedirectListPage } from '@core/services/redirect-list-page';
 export type { IRedirectResolver } from '@core/services/interfaces/redirect-resolver.interface';
 
 export { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';

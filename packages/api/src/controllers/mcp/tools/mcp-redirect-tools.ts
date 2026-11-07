@@ -17,13 +17,17 @@ export class McpRedirectTools {
       {
         tool: 'redirects.list',
         title: 'List redirects',
-        description: 'List the platform\'s URL redirect rules (from, to, type, enabled, hit count), newest first.',
+        description: 'List the platform\'s URL redirect rules (from, to, type, enabled, hit count), newest first, one page at a time. `total` is how many match; `search` matches the from path, to path and notes.',
         readOnly: true,
         permission: 'system:view',
-        inputSchema: McpSchema.object({}),
-        handler: async () => {
-          const items = await service.list();
-          return { items, count: items.length };
+        inputSchema: McpSchema.object({
+          search: McpSchema.string({ description: 'Optional text to find in the from path, to path or notes, e.g. "/brand/".' }),
+          page: McpSchema.number({ description: 'Page number, from 1.' }),
+          limit: McpSchema.number({ description: 'Rules per page (default 50, at most 1000).' }),
+        }),
+        handler: async (input: any) => {
+          const result = await service.list({ search: input?.search, page: input?.page, limit: input?.limit });
+          return { items: result.redirects, count: result.redirects.length, total: result.total, page: result.page, limit: result.limit };
         },
       },
       {

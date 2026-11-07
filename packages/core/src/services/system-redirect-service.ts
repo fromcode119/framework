@@ -1,6 +1,7 @@
 import type { IDatabaseManager } from '@fromcode119/database';
 import { CoreServices } from '@core/services/core-services';
 import type { RedirectResolution } from '@core/services/redirect-resolution';
+import type { RedirectListPage } from '@core/services/redirect-list-page';
 
 /**
  * The framework's own URL-redirect rules — ONE store (`_system_redirects`), one admin surface
@@ -17,6 +18,7 @@ import type { RedirectResolution } from '@core/services/redirect-resolution';
 export class SystemRedirectService {
   private static readonly TABLE = '_system_redirects';
   private static readonly LIST_MAX = 1000;
+  private static readonly PAGE_DEFAULT = 50;
 
   constructor(private readonly db: IDatabaseManager) {}
 
@@ -43,12 +45,26 @@ export class SystemRedirectService {
     return { target, permanent: type !== '302' };
   }
 
-  async list(): Promise<Record<string, unknown>[]> {
+  /**
+   * One page of rules, newest first, with the TOTAL that matches — a store holds thousands of rules
+   * (an import writes one per retired URL), so the operator pages and searches instead of seeing a
+   * silently truncated slice. `search` matches the From path, To path and notes.
+   */
+  async list(options: { search?: string; page?: number; limit?: number } = {}): Promise<RedirectListPage> {
+    const limit = Math.min(SystemRedirectService.LIST_MAX, Math.max(1, Math.floor(Number(options.limit) || SystemRedirectService.PAGE_DEFAULT)));
+    const page = Math.max(1, Math.floor(Number(options.page) || 1));
+    const value = String(options.search ?? '').trim();
+    const search = value ? { columns: ['from_path', 'to_path', 'notes'], value } : undefined;
     const rows = (await this.db.find(SystemRedirectService.TABLE, {
-      limit: SystemRedirectService.LIST_MAX,
+      limit,
+      offset: (page - 1) * limit,
       orderBy: { created_at: 'desc' },
+      ...(search ? { search } : {}),
     })) as Record<string, unknown>[];
-    return rows.map((row) => SystemRedirectService.mapRow(row));
+    const total = search
+      ? ((await this.db.find(SystemRedirectService.TABLE, { columns: { id: true }, search })) as unknown[]).length
+      : await this.db.count(SystemRedirectService.TABLE);
+    return { redirects: rows.map((row) => SystemRedirectService.mapRow(row)), total, page, limit };
   }
 
   async create(input: Record<string, unknown>): Promise<Record<string, unknown>> {

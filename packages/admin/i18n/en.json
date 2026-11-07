@@ -2647,7 +2647,14 @@
       "add": "Add",
       "notesOptional": "Notes (optional)",
       "whyThisRedirectExists": "Why this redirect exists",
-      "toPathExample": "/new-page or https://…"
+      "toPathExample": "/new-page or https://…",
+      "rulesCount": "Rules · {{total}}",
+      "searchRules": "Search from, to or notes…",
+      "noRulesMatch": "No rule matches “{{search}}”.",
+      "editTarget": "Change where {{fromPath}} goes",
+      "save": "Save",
+      "cancel": "Cancel",
+      "redirectFromUpdated": "Redirect from {{fromPath}} now goes to {{toPath}}."
     },
     "routing": {
       "theRoutingSettingsRequestFailed": "The routing settings request failed.",
