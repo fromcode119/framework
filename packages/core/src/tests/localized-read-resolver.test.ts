@@ -52,6 +52,18 @@ describe('LocalizedReadResolver.resolveResult', () => {
     expect(resolved.name).toBe('Примерен запис');
   });
 
+  it('reads a script variant apart, and falls back to its language when it has none', () => {
+    const row = { id: 1, name: { en: 'Calm', zh: '平静', 'zh-hant': '平靜', fil: 'Kalmado' } };
+    const read = (locale: string) => (runInLocale(locale, () =>
+      LocalizedReadResolver.resolveResult(row, '@alpha/products', managerFor(PRODUCT_FIELDS))) as any).name;
+    expect(read('zh-TW')).toBe('平靜');
+    expect(read('zh')).toBe('平静');
+    expect(read('fil')).toBe('Kalmado');
+    const plain = { id: 1, name: { en: 'Calm', zh: '平静' } };
+    expect((runInLocale('zh-Hant', () =>
+      LocalizedReadResolver.resolveResult(plain, '@alpha/products', managerFor(PRODUCT_FIELDS))) as any).name).toBe('平静');
+  });
+
   it('leaves a legacy flat string exactly as stored — the property that makes rollout safe', () => {
     const row = { id: 1, name: 'Примерен запис', description: 'Кратко описание' };
     const resolved = runInLocale('en', () =>

@@ -1,0 +1,92 @@
+/**
+ * Reads a BCP 47 language tag the way translations are keyed: by language, and by script when the script
+ * changes what a reader can read. `en-US` and `en` read the same text, so both key `en`; `zh-Hant` and
+ * `zh-TW` are written in a different script from `zh`, so both key `zh-hant`.
+ *
+ * What counts as a language, and which script a region writes in, comes from the runtime's own locale
+ * data (`Intl`), never from a list kept here:
+ * - a two-letter language is always one;
+ * - a three-letter language is one only when it has no two-letter code and the locale data names it
+ *   (`fil`, `haw`, `yue`) — `eng` is `en`, and `max` or `faq` are not languages at all, so a settings
+ *   object with such keys is never mistaken for translations;
+ * - the script is kept only when it differs from the language's usual one (`sr-Latn`, `zh-Hant`), and a
+ *   region that implies another script brings it (`zh-TW` → `zh-hant`).
+ *
+ * A runtime without that locale data (some phone engines) still reads two-letter languages and written
+ * scripts; it only stops recognising three-letter languages and region-implied scripts.
+ */
+export class LocaleTag {
+  private static readonly SHAPE = /^([a-z]{2,3})((?:-[a-z0-9]{1,8})*)$/;
+  private static readonly SCRIPT = /^[a-z]{4}$/;
+  private static readonly cache = new Map<string, string>();
+  private static readonly languages = new Map<string, boolean>();
+  private static names: Intl.DisplayNames | null | undefined;
+
+  /** The tag lower-cased with `-` separators, or '' when its language is not one. */
+  static full(value: unknown): string {
+    const raw = String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+    const match = LocaleTag.SHAPE.exec(raw);
+    if (!match || !LocaleTag.isLanguage(match[1])) return '';
+    return raw;
+  }
+
+  /** The key translations are stored under: the language, plus the script when it is not the usual one. */
+  static key(value: unknown): string {
+    const tag = LocaleTag.full(value);
+    if (!tag) return '';
+    const cached = LocaleTag.cache.get(tag);
+    if (cached !== undefined) return cached;
+    const language = LocaleTag.language(tag);
+    const script = LocaleTag.script(tag);
+    const key = script && script !== LocaleTag.script(language) ? `${language}-${script}` : language;
+    LocaleTag.cache.set(tag, key);
+    return key;
+  }
+
+  /** The language alone: `zh-hant` → `zh`. */
+  static language(tag: string): string {
+    return String(tag).split('-')[0];
+  }
+
+  private static isLanguage(code: string): boolean {
+    if (code.length === 2) return true;
+    const known = LocaleTag.languages.get(code);
+    if (known !== undefined) return known;
+    const found = LocaleTag.isThreeLetterLanguage(code);
+    LocaleTag.languages.set(code, found);
+    return found;
+  }
+
+  private static isThreeLetterLanguage(code: string): boolean {
+    const names = LocaleTag.displayNames();
+    if (!names) return false;
+    try {
+      // A code with a two-letter twin (`eng`, `bul`) canonicalises to it; that twin is the key to use.
+      if (Intl.getCanonicalLocales(code)[0] !== code) return false;
+      return Boolean(names.of(code));
+    } catch {
+      return false;
+    }
+  }
+
+  /** The script the tag is written in: the one it names, else the one its language and region imply. */
+  private static script(tag: string): string {
+    const named = tag.split('-').slice(1).find((part) => LocaleTag.SCRIPT.test(part));
+    if (named) return named;
+    try {
+      return String(new Intl.Locale(tag).maximize().script ?? '').toLowerCase();
+    } catch {
+      return '';
+    }
+  }
+
+  private static displayNames(): Intl.DisplayNames | null {
+    if (LocaleTag.names !== undefined) return LocaleTag.names;
+    try {
+      LocaleTag.names = new Intl.DisplayNames(['en'], { type: 'language', fallback: 'none' });
+    } catch {
+      LocaleTag.names = null;
+    }
+    return LocaleTag.names;
+  }
+}

@@ -12,6 +12,7 @@
  * theme, nothing (i.e. the plugin layer) from a plugin. {@link resolveEffective} then merges the layers
  * in a fixed order. See that method for why the layer cannot be inferred from load order.
  */
+import { LocalizationUtils } from '@fromcode119/core/client';
 import { Platform } from '@fromcode119/react-class-components';
 
 export class FrontendI18nService {
@@ -21,15 +22,15 @@ export class FrontendI18nService {
   static readonly THEME_LAYER = 'theme';
 
   /** A registration payload is a per-locale map when every top-level key is a locale code
-   * (e.g. `en`, `bg`, `pt-BR`) and every value is a plain object. Plugin namespaces are
-   * never 2-letter codes, so a flat namespaced dict is correctly treated as legacy. */
+   * (e.g. `en`, `bg`, `pt-BR`, `zh-Hant`, `fil`) and every value is a plain object. A plugin namespace
+   * is not a language the locale data knows, so a flat namespaced dict is correctly treated as legacy. */
   static isLocaleMap(input: Record<string, any>): boolean {
     if (!input || typeof input !== 'object' || Array.isArray(input)) return false;
     const keys = Object.keys(input);
     if (keys.length === 0) return false;
     return keys.every(
       (key) =>
-        /^[a-z]{2}(-[A-Za-z]{2})?$/.test(key) &&
+        Boolean(LocalizationUtils.normalizeLocaleCode(key)) &&
         input[key] &&
         typeof input[key] === 'object' &&
         !Array.isArray(input[key]),
