@@ -105,7 +105,7 @@ export class SiteChangedElsewhereBar extends AdminComponent {
           <FrameworkIcons.Warning size={14} />
           <span>{AdminI18n.t('shell.siteChanged.text', { now: this.nameOf(now), opened: this.nameOf(opened) })}</span>
         </span>
-        <span className="ml-auto flex items-center gap-2">
+        <span className="ms-auto flex items-center gap-2">
           <button type="button" onClick={() => { void this.goBack(); }} className={button}>
             <FrameworkIcons.ArrowLeft size={13} />
             {AdminI18n.t('shell.siteChanged.back', { opened: this.nameOf(opened) })}

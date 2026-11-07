@@ -60,7 +60,7 @@ export class Dropdown extends DropdownPositioning {
     return (
     <>
       <div
-        className={`relative text-left ${this.block ? 'block w-full' : 'inline-block'}`}
+        className={`relative text-start ${this.block ? 'block w-full' : 'inline-block'}`}
         ref={this.triggerRef}
         onClick={this.toggleOpen}
       >
@@ -156,7 +156,7 @@ export class Dropdown extends DropdownPositioning {
                           {item.icon}
                         </span>
                       )}
-                      <span className="min-w-0 flex-1 text-left">
+                      <span className="min-w-0 flex-1 text-start">
                         <span className="block truncate">{item.label}</span>
                         {item.detail ? (
                           <span className="block truncate text-[11px] font-normal text-slate-400">{item.detail}</span>
@@ -168,7 +168,7 @@ export class Dropdown extends DropdownPositioning {
                         */}
                       {item.selectable ? (
                         <span
-                          className={`ml-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
+                          className={`ms-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
                             item.selected
                               ? 'border-indigo-500 bg-indigo-500'
                               : 'border-slate-300 dark:border-slate-600'

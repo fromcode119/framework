@@ -169,7 +169,7 @@ export class MediaShareDialog extends AdminComponent {
               <Button variant={ButtonVariant.GHOST} onClick={() => this.handleRevokeShare(group.shareId)}>{AdminI18n.t('media.revokeAll')}</Button>
             </div>
             {group.grants.map((grant: any) => (
-              <div key={grant.id} className="flex items-center justify-between gap-3 py-1.5 pl-3">
+              <div key={grant.id} className="flex items-center justify-between gap-3 py-1.5 ps-3">
                 <div className="min-w-0">
                   <p className={`text-[11px] truncate ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{grant.email}</p>
                   <p className={`text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{this.grantStatus(grant)}</p>

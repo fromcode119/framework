@@ -36,7 +36,7 @@ export class MediaPickerTile extends PureReactor {
         <MediaThumbnail item={item} />
 
         {selected ? (
-          <div className="absolute top-2 right-2 bg-indigo-500 text-white rounded-full p-1 shadow-lg animate-in zoom-in-0">
+          <div className="absolute top-2 end-2 bg-indigo-500 text-white rounded-full p-1 shadow-lg animate-in zoom-in-0">
             <Check size={12} />
           </div>
         ) : null}

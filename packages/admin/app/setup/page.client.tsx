@@ -19,7 +19,7 @@ import { SetupPageSteps } from '@/app/setup/page-steps.client';
 export class SetupPage extends SetupPageSteps {
   async componentDidMount(): Promise<void> {
     this.mounted = true;
-    this.locale = this.browserLocale;
+    void this.handleLocaleChange(this.browserLocale);
     this.timezone = TimezoneUtils.resolveSystemTimezone();
     // The origin the operator actually reached this page on. Derived, never invented — and shown
     // for confirmation on the last step rather than written silently.

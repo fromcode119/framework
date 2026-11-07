@@ -101,12 +101,18 @@ export abstract class DropdownPositioning extends Reactor {
     const available = window.innerHeight - viewportPadding * 2;
     const height = Math.min(menuHeight || available, available);
 
-    const preferredLeft = rect.right + gap;
-    const fitsRight = preferredLeft + menuWidth + viewportPadding <= window.innerWidth;
+    // Beside means on the trigger's END side: to its right, or to its left in a right-to-left console.
+    const after = rect.right + gap;
+    const before = rect.left - menuWidth - gap;
+    const fitsAfter = after + menuWidth + viewportPadding <= window.innerWidth;
+    const fitsBefore = before >= viewportPadding;
+    const left = DropdownPositioning.isRtl()
+      ? (fitsBefore ? before : after)
+      : (fitsAfter ? after : Math.max(viewportPadding, before));
 
     this.coords = {
       top: Math.max(viewportPadding, Math.min(rect.bottom - height, window.innerHeight - height - viewportPadding)),
-      left: fitsRight ? preferredLeft : Math.max(viewportPadding, rect.left - menuWidth - gap),
+      left,
       width: rect.width,
       maxHeight: available,
       direction: DropdownDirection.UP,
@@ -121,9 +127,15 @@ export abstract class DropdownPositioning extends Reactor {
    * button in the header — opened a panel that ran off the screen and could not be reached. The preferred
    * edge is still honoured; it is only pulled back when it would leave the viewport.
    */
+  private static isRtl(): boolean {
+    return document.documentElement.dir === 'rtl';
+  }
+
   protected clampedLeft(rect: DOMRect, viewportPadding: number): number {
     const menuWidth = this.menuRef.current?.offsetWidth || this.measuredWidth || rect.width;
-    const preferred = this.align === HorizontalAlign.LEFT ? rect.left : rect.right - menuWidth;
+    // The alignment names a side in reading order, so a right-to-left console mirrors it.
+    const alignsLeftEdge = (this.align === HorizontalAlign.LEFT) !== DropdownPositioning.isRtl();
+    const preferred = alignsLeftEdge ? rect.left : rect.right - menuWidth;
     const rightLimit = window.innerWidth - menuWidth - viewportPadding;
     return Math.max(viewportPadding, Math.min(preferred, rightLimit));
   }

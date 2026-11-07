@@ -74,7 +74,7 @@ export class CollectionListCard extends PureReactor {
     const hasMedia = Boolean(layout.mediaField) && MediaRelationFieldUtils.getSelectedIds(row[layout.mediaField]).length > 0;
     return (
       <div data-row-id={String(row.id)} className={`border-t border-slate-100 dark:border-slate-800/70 first:border-t-0 ${this.expanded ? 'bg-slate-50/80 dark:bg-slate-800/30' : ''} ${this.className || ''}`}>
-        <div className={`flex gap-3 pl-3 pr-4 py-3 cursor-pointer ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`} onClick={this.open}>
+        <div className={`flex gap-3 ps-3 pe-4 py-3 cursor-pointer ${this.selected ? 'bg-indigo-50/60 dark:bg-indigo-500/10' : ''}`} onClick={this.open}>
           <button type="button" onClick={this.toggle} aria-pressed={this.selected} aria-label={AdminI18n.t('collection.list.selectRecord')} className="shrink-0 self-start p-1 -m-0.5">
             <Checkbox checked={this.selected} presentational />
           </button>
@@ -88,7 +88,7 @@ export class CollectionListCard extends PureReactor {
               {layout.trailingField ? (
                 // The label sits ABOVE the value: beside it, a long one ("Lifetime Value (LTV)") left the
                 // title a sliver of the card.
-                <div className="shrink-0 max-w-[45%] flex flex-col items-end text-right leading-tight">
+                <div className="shrink-0 max-w-[45%] flex flex-col items-end text-end leading-tight">
                   {layout.valueLabels[layout.trailingField] ? <span className="max-w-full truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
                   <span className="text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
                 </div>

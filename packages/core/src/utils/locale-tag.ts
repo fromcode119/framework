@@ -18,6 +18,10 @@
 export class LocaleTag {
   private static readonly SHAPE = /^([a-z]{2,3})((?:-[a-z0-9]{1,8})*)$/;
   private static readonly SCRIPT = /^[a-z]{4}$/;
+  /** The ISO 15924 scripts Unicode writes right to left (Bidi_Class R/AL), lower-cased. */
+  private static readonly RTL_SCRIPTS = new Set([
+    'adlm', 'arab', 'hebr', 'mand', 'mend', 'nkoo', 'rohg', 'samr', 'syrc', 'thaa', 'yezi',
+  ]);
   /** Longer than any real tag (BCP 47 practice keeps them within 35); a request can carry anything. */
   private static readonly MAX_LENGTH = 35;
   /** The caches are filled from request input, so each is emptied once it holds this many. */
@@ -46,6 +50,17 @@ export class LocaleTag {
     const key = script && script !== LocaleTag.script(language) ? `${language}-${script}` : language;
     LocaleTag.remember(LocaleTag.cache, tag, key);
     return key;
+  }
+
+  /**
+   * Which way the tag's text runs: `rtl` when its script is written right to left (`ar`, `he`, `fa`,
+   * `ur`, `az-Arab`), else `ltr`. The script is the one the tag names or the one the locale data implies
+   * for its language and region; the right-to-left scripts are Unicode's (`RTL_SCRIPTS`).
+   */
+  static direction(value: unknown): 'rtl' | 'ltr' {
+    const tag = LocaleTag.full(value);
+    if (!tag) return 'ltr';
+    return LocaleTag.RTL_SCRIPTS.has(LocaleTag.script(tag)) ? 'rtl' : 'ltr';
   }
 
   /** The language alone: `zh-hant` → `zh`. */

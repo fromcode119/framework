@@ -116,7 +116,7 @@ export class CollectionListRowActions extends PureReactor {
     return (
       // Two groups that each stay on one line: on a narrow card the plugin's actions and the built-in
       // icons wrap as wholes, instead of the last icon dropping alone or the row running off the card.
-      <div className={`ml-auto flex items-center justify-end gap-x-0.5 gap-y-1.5 whitespace-nowrap ${this.compact ? 'flex-wrap' : 'flex-nowrap'}`} onClick={this.stop}>
+      <div className={`ms-auto flex items-center justify-end gap-x-0.5 gap-y-1.5 whitespace-nowrap ${this.compact ? 'flex-wrap' : 'flex-nowrap'}`} onClick={this.stop}>
         {/* A plugin's own row actions — "Payment received" on an order — on a card as in the table: on a
             phone they are the fastest way to act on a record, and leaving them out hid them entirely. */}
         <span className="inline-flex flex-nowrap items-center gap-0.5 empty:hidden">

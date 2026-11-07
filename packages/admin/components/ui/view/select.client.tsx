@@ -184,7 +184,7 @@ export class Select extends Reactor {
           type="button"
           disabled={disabled}
           onClick={() => !disabled && setIsOpen(!isOpen)}
-          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center text-left group overflow-hidden relative ${triggerClassName}`)} ${triggerThemeClasses} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+          className={`${UiFieldUtils.getFieldClasses(size, `flex items-center text-start group overflow-hidden relative ${triggerClassName}`)} ${triggerThemeClasses} ${isOpen ? 'border-indigo-600 ring-4 ring-indigo-500/10' : ''} ${disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
         >
           <span className={`relative z-10 min-w-0 flex-1 truncate ${!selectedOption ? emptyLabelThemeClasses : ''}`}>
              <div className="flex flex-col leading-none">
@@ -200,7 +200,7 @@ export class Select extends Reactor {
               span used to gain `pr-5` when clearable, which shifted the chevron 20px inward — onto
               exactly the `right-8` slot the clear button occupies, so the two drew on top of each
               other. Padding moved the wrong element. */}
-          <span className="relative z-10 ml-2 flex flex-shrink-0 items-center">
+          <span className="relative z-10 ms-2 flex flex-shrink-0 items-center">
             {isLoading ? (
               <div className={`h-3.5 w-3.5 animate-spin rounded-full border-2 ${isDarkTheme ? 'border-slate-700 border-t-slate-400' : 'border-slate-200 border-t-slate-400'}`} />
             ) : (
@@ -233,7 +233,7 @@ export class Select extends Reactor {
               onSearchChange?.('');
               setIsOpen(false);
             }}
-            className={`absolute top-1/2 right-9 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
+            className={`absolute top-1/2 end-9 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
               isDarkTheme
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'

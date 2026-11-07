@@ -61,6 +61,11 @@ export class LocalizationUtils {
     return LocaleTag.full(value) || LocaleTag.key(value);
   }
 
+  /** `rtl` for a locale whose script is written right to left (`ar`, `he`, `fa`), else `ltr` — the `dir` to render it with. */
+  static textDirection(locale: unknown): 'rtl' | 'ltr' {
+    return LocaleTag.direction(locale);
+  }
+
   /** The value a locale map holds for `locale`: its own key first, then its language alone (`zh-hant` → `zh`). */
   static pickLocaleSlot(map: Record<string, unknown>, locale: string): unknown {
     const key = LocalizationUtils.normalizeLocaleCode(locale, { short: true });

@@ -210,7 +210,7 @@ export class MediaSharesPanel extends AdminComponent {
         {this.shares.map((share: any) => (
           <Card key={share.id} className={`p-0 overflow-hidden ${AdminClass.SURFACE}`}>
             <div className="flex items-start justify-between gap-3 px-4 py-3">
-              <button type="button" className="text-left min-w-0 flex-1" onClick={() => this.handleToggle(share.id)}>
+              <button type="button" className="text-start min-w-0 flex-1" onClick={() => this.handleToggle(share.id)}>
                 <div className="flex items-center gap-2">
                   <span className="text-[13px] font-semibold truncate">{share.title}</span>
                   {share.activeCount === 0 ? (

@@ -98,7 +98,7 @@ export class RedirectRulesCard extends PureReactor {
         type="button"
         title={AdminI18n.t('settings.redirects.editTarget', { fromPath: redirect.fromPath })}
         onClick={() => this.startEdit(redirect)}
-        className={`truncate flex-1 text-left font-mono text-[12px] rounded px-1 -mx-1 ${isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50'}`}
+        className={`truncate flex-1 text-start font-mono text-[12px] rounded px-1 -mx-1 ${isDark ? 'text-slate-300 hover:bg-slate-800' : 'text-slate-600 hover:bg-slate-50'}`}
       >
         {redirect.toPath}
       </button>
@@ -119,7 +119,7 @@ export class RedirectRulesCard extends PureReactor {
         <FrameworkIcons.ArrowRight size={13} className={isDark ? 'text-slate-600' : 'text-slate-300'} />
         {this.renderTarget(redirect)}
         <Badge variant={redirect.type === '302' || redirect.type === '410' ? BadgeVariant.WARNING : BadgeVariant.DEFAULT}>{redirect.type}</Badge>
-        <span className={`w-14 text-right tabular-nums text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`} title={AdminI18n.t('settings.redirects.timesMatched')}>
+        <span className={`w-14 text-end tabular-nums text-[12px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`} title={AdminI18n.t('settings.redirects.timesMatched')}>
           {Number(redirect.hitCount || 0)}×
         </span>
         <button

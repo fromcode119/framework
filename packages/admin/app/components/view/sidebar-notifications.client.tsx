@@ -131,12 +131,12 @@ export class SidebarNotifications extends AdminComponent {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>
           <FrameworkIcons.Bell size={18} className="text-slate-500 dark:text-slate-400" />
-          {this.unread ? <span className="absolute right-2 top-0.5 h-2 w-2 rounded-full bg-indigo-600" /> : null}
+          {this.unread ? <span className="absolute end-2 top-0.5 h-2 w-2 rounded-full bg-indigo-600" /> : null}
         </span>
       );
     }
     return (
-      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-left text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70">
+      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70">
         <FrameworkIcons.Bell size={16} className="shrink-0 text-slate-400" />
         <span className="flex-1 truncate">{AdminI18n.t('shell.notifications.title')}</span>
         {badge}

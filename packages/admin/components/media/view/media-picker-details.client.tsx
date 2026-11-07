@@ -29,7 +29,7 @@ export class MediaPickerDetails extends PureReactor {
     }
 
     return (
-      <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pr-2">
+      <div className="space-y-6 flex-1 overflow-y-auto custom-scrollbar pe-2">
         <div className="aspect-video rounded-lg bg-slate-100 dark:bg-slate-800 overflow-hidden border border-slate-200 dark:border-slate-700">
           <MediaThumbnail item={item} contain />
         </div>

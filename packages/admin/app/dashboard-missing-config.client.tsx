@@ -46,12 +46,12 @@ export class DashboardMissingConfig extends AdminComponent {
               key={String(item.key)}
               type="button"
               onClick={() => this.go(String(item.actionPath))}
-              className="group/row flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
+              className="group/row flex w-full items-center gap-2.5 px-3 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50"
             >
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${item.done ? 'bg-emerald-500' : 'bg-amber-500'}`} />
               <span className="shrink-0 text-[12px] text-slate-700 dark:text-slate-200">{String(item.title)}</span>
               <span
-                className={`min-w-0 flex-1 truncate text-right text-[11px] ${
+                className={`min-w-0 flex-1 truncate text-end text-[11px] ${
                   item.done ? 'text-slate-500' : 'text-amber-600 dark:text-amber-500'
                 }`}
               >

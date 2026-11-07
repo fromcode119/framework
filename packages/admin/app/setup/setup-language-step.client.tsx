@@ -20,7 +20,7 @@ export class SetupLanguageStep extends PureReactor {
   private optionClass(option: string): string {
     const selected = option === this.locale;
     return [
-      'w-full flex items-center justify-between gap-3 p-4 rounded-xl border text-left transition-colors',
+      'w-full flex items-center justify-between gap-3 p-4 rounded-xl border text-start transition-colors',
       selected
         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
         : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300',

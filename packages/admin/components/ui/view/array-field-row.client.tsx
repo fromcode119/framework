@@ -54,11 +54,11 @@ export class ArrayFieldRow extends PureReactor {
           theme === ThemeMode.DARK ? 'bg-slate-900/30 border-slate-800' : 'bg-slate-50 border-slate-200'
         }`}
       >
-        <div className="absolute top-4 right-4 flex items-center gap-1">
+        <div className="absolute top-4 end-4 flex items-center gap-1">
           <div
             onMouseEnter={() => onSetHandleHovered(index)}
             onMouseLeave={() => onSetHandleHovered(null)}
-            className={`cursor-grab active:cursor-grabbing p-1.5 rounded-lg transition-colors mr-2 ${
+            className={`cursor-grab active:cursor-grabbing p-1.5 rounded-lg transition-colors me-2 ${
               theme === ThemeMode.DARK ? 'text-slate-700 hover:text-indigo-400' : 'text-slate-200 hover:text-indigo-500'
             }`}
           >
@@ -80,7 +80,7 @@ export class ArrayFieldRow extends PureReactor {
           </button>
           <button
             onClick={() => onRemove(index)}
-            className="p-1 rounded-lg hover:bg-rose-500 hover:text-white text-rose-500/50 transition-all ml-0.5"
+            className="p-1 rounded-lg hover:bg-rose-500 hover:text-white text-rose-500/50 transition-all ms-0.5"
           >
             <FrameworkIcons.Trash size={12} />
           </button>

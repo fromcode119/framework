@@ -44,7 +44,7 @@ export class MediaItemCard extends MediaItemCardState {
           <Checkbox
             checked={this.selected}
             onChange={this.onToggleSelected}
-            className={`absolute top-2 left-2 z-10 transition-opacity ${this.selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
+            className={`absolute top-2 start-2 z-10 transition-opacity ${this.selected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}
           />
         )}
 
@@ -60,7 +60,7 @@ export class MediaItemCard extends MediaItemCardState {
           )}
           {/* The badge, not a placeholder: the artwork is visible AND the file is marked protected. */}
           {this.isPrivate ? (
-            <span className="absolute top-2 right-2 z-10 inline-flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
+            <span className="absolute top-2 end-2 z-10 inline-flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-widest text-white">
               <FrameworkIcons.Lock size={10} /> {AdminI18n.t('media.private')}
             </span>
           ) : null}
@@ -69,7 +69,7 @@ export class MediaItemCard extends MediaItemCardState {
               Without the Theme mark the operator sees controls missing from some tiles and not others
               with nothing on screen accounting for the difference. */}
           {this.isReadOnly || item.optimizedUrl ? (
-            <span className="absolute bottom-2 left-2 z-10 flex gap-1">
+            <span className="absolute bottom-2 start-2 z-10 flex gap-1">
               {this.isReadOnly ? (
                 <span className="rounded-md bg-white/90 px-1.5 py-0.5 text-[10px] font-semibold text-slate-700 shadow-sm dark:bg-slate-900/90 dark:text-slate-200">{AdminI18n.t('media.theme')}</span>
               ) : null}
@@ -184,12 +184,12 @@ export class MediaItemCard extends MediaItemCardState {
               type="button"
               onClick={this.onEdit}
               title={AdminI18n.t('media.openDetails')}
-              className={`block w-full cursor-pointer truncate text-left font-semibold text-sm hover:underline ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
+              className={`block w-full cursor-pointer truncate text-start font-semibold text-sm hover:underline ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}
             >
               {item.originalName}
             </button>
          </div>
-         <div className="hidden md:block w-20 text-right text-[11px] text-slate-500 font-medium tabular-nums flex-shrink-0">
+         <div className="hidden md:block w-20 text-end text-[11px] text-slate-500 font-medium tabular-nums flex-shrink-0">
             {this.sizeLabel}
          </div>
          <div className="hidden lg:block w-24 text-[11px] text-slate-500 font-medium truncate flex-shrink-0">

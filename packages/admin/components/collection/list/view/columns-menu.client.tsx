@@ -22,7 +22,7 @@ export class CollectionColumnsMenu extends PureReactor {
     const hiddenColumns = allColumns.filter((c) => !visibleColumnIds.includes(c.id));
     return (
       <div
-        className={`absolute right-0 mt-3 w-72 max-w-[92vw] rounded-xl border shadow-2xl p-2 z-30 animate-in fade-in zoom-in duration-200 ${
+        className={`absolute end-0 mt-3 w-72 max-w-[92vw] rounded-xl border shadow-2xl p-2 z-30 animate-in fade-in zoom-in duration-200 ${
           isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
         }`}
       >
@@ -32,7 +32,7 @@ export class CollectionColumnsMenu extends PureReactor {
         <div className="px-2.5 pb-2 text-[10px] leading-relaxed text-slate-400">
           {AdminI18n.t('collection.list.pinnedHint')}
         </div>
-        <div className="max-h-80 overflow-auto pr-1 space-y-0.5 custom-scrollbar">
+        <div className="max-h-80 overflow-auto pe-1 space-y-0.5 custom-scrollbar">
           {visibleColumns.map((column: any, idx: number) => (
             <div
               key={column.id}
@@ -113,7 +113,7 @@ export class CollectionColumnsMenu extends PureReactor {
                   key={column.id}
                   type="button"
                   onClick={() => toggleColumn(column.id)}
-                  className={`w-full px-2.5 py-2.5 rounded-xl text-left text-xs font-bold transition-all flex items-center gap-3 ${
+                  className={`w-full px-2.5 py-2.5 rounded-xl text-start text-xs font-bold transition-all flex items-center gap-3 ${
                     isDark
                       ? 'text-slate-400 hover:bg-slate-900 hover:text-slate-200'
                       : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'

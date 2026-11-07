@@ -68,7 +68,7 @@ export class BuildSourceAdvancedFields extends PureReactor {
   render(): ReactNode {
     return (
       <div className="rounded-xl border border-slate-200 dark:border-slate-800">
-        <button type="button" onClick={this.onToggle} aria-expanded={this.open} className="flex w-full items-center gap-3 px-4 py-3 text-left">
+        <button type="button" onClick={this.onToggle} aria-expanded={this.open} className="flex w-full items-center gap-3 px-4 py-3 text-start">
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold text-slate-900 dark:text-white">{AdminI18n.t('sources.advanced')}</span>
             {!this.open ? <span className="block truncate text-xs text-slate-500 dark:text-slate-400">{this.summary}</span> : null}

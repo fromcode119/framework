@@ -22,7 +22,7 @@ export class DashboardQuickActions extends PureReactor {
             key={a.href}
             type="button"
             onClick={() => onNavigate(a.href)}
-            className={`group flex items-center gap-2.5 ${AdminClass.SURFACE} px-3 py-2.5 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/5`}
+            className={`group flex items-center gap-2.5 ${AdminClass.SURFACE} px-3 py-2.5 text-start transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:hover:border-indigo-500/40 dark:hover:bg-indigo-500/5`}
           >
             <span className="h-8 w-8 shrink-0 flex items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors dark:bg-indigo-500/10 dark:text-indigo-400 [&_svg]:h-4 [&_svg]:w-4">
               <Icon name={a.icon} size={16} />

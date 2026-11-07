@@ -60,7 +60,7 @@ export class PermalinkField extends PureReactor {
         aria-checked={isDisabled}
         onClick={this.onToggle}
         disabled={disabled}
-        className={`flex items-center gap-2.5 w-full text-left select-none text-[12px] font-semibold transition-colors ${
+        className={`flex items-center gap-2.5 w-full text-start select-none text-[12px] font-semibold transition-colors ${
           disabled ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
         } ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
       >

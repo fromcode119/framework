@@ -147,7 +147,7 @@ export class CertificateHostTable extends AdminComponent {
           {this.renderDnsInstructions(entry)}
         </div>
 
-        <div className="flex items-center gap-2 shrink-0 ml-auto">
+        <div className="flex items-center gap-2 shrink-0 ms-auto">
           <span className={`text-[11px] tabular-nums ${
             entry.needsAttention ? (dark ? 'text-amber-400' : 'text-amber-600') : (dark ? 'text-slate-500' : 'text-slate-400')}`}
           >

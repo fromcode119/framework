@@ -30,7 +30,7 @@ export class ListFooter extends PureReactor {
                 the system cluster." Both implied a distributed cluster topology that does not exist —
                 the same fabrication as the dashboard-footer "distributed cluster node" line. The
                 record count is real, so it stays; the invented infrastructure around it does not. */}
-            <p className="text-xs font-semibold text-slate-400 tracking-wide text-center md:text-left">
+            <p className="text-xs font-semibold text-slate-400 tracking-wide text-center md:text-start">
               {AdminI18n.t(this.total === 1 ? 'collection.list.countOne' : 'collection.list.countMany', { count: this.total })}
             </p>
 

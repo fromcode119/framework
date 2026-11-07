@@ -55,7 +55,7 @@ export class ThemeSettingsOverviewPanel extends PureReactor {
     return (
       <div key={label} className="flex items-center justify-between gap-4 py-1.5 text-[13px]">
         <span className={dark ? 'text-slate-400' : 'text-slate-500'}>{label}</span>
-        <span className={`text-right font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</span>
+        <span className={`text-end font-medium ${dark ? 'text-slate-100' : 'text-slate-800'}`}>{value}</span>
       </div>
     );
   }

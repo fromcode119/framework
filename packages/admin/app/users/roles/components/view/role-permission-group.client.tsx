@@ -87,7 +87,7 @@ export class RolePermissionGroup extends PureReactor {
         <table className="w-full text-xs">
           <thead>
             <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
-              <th className="px-3 py-2 text-left">{AdminI18n.t('users.collection')}</th>
+              <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
               {RolePermissionSelection.ACTIONS.map((action) => (
                 <th key={action} className="w-16 px-2 py-2 text-center">{action}</th>
               ))}
@@ -132,7 +132,7 @@ export class RolePermissionGroup extends PureReactor {
     const total = RolePermissionSelection.namesOf(group).length;
     return (
       <section className="rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900/50">
-        <button type="button" onClick={this.toggleOpen} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left">
+        <button type="button" onClick={this.toggleOpen} className="flex w-full items-center justify-between gap-3 px-4 py-3 text-start">
           <span className="flex items-center gap-2">
             {this.expanded ? <FrameworkIcons.ChevronDown size={14} className="text-slate-400" /> : <FrameworkIcons.ChevronRight size={14} className="text-slate-400" />}
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.label}</span>

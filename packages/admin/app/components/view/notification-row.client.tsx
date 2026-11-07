@@ -39,7 +39,7 @@ export class NotificationRow extends PureReactor {
     const { notification } = this;
     const source = CoercionUtils.toString(notification.source);
     return (
-      <div className="pb-3.5 pl-9 pr-4">
+      <div className="pb-3.5 ps-9 pe-4">
         <p className="whitespace-pre-wrap break-words text-[12.5px] leading-relaxed text-slate-600 dark:text-slate-300">
           {CoercionUtils.toString(notification.body)}
         </p>
@@ -65,7 +65,7 @@ export class NotificationRow extends PureReactor {
     return (
       <div className="border-b border-slate-100 last:border-b-0 dark:border-slate-800/70">
         <button type="button" aria-expanded={expanded} onClick={this.toggle}
-          className="flex w-full items-start gap-3 px-4 py-3 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
+          className="flex w-full items-start gap-3 px-4 py-3 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/60">
           <span aria-hidden="true" className={`mt-[7px] h-2 w-2 shrink-0 rounded-full ${unread ? 'bg-indigo-600' : 'bg-transparent'}`} />
           <span className="min-w-0 flex-1">
             <span className="flex items-baseline justify-between gap-3">

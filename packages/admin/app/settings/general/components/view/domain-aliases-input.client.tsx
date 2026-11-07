@@ -97,7 +97,7 @@ export class DomainAliasesInput extends Reactor {
                 data-alias={alias}
                 onClick={this.handleRemoveClick}
                 disabled={this.disabled}
-                className={`ml-0.5 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                className={`ms-0.5 rounded transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
                   isDark ? 'text-slate-400 hover:text-rose-400' : 'text-slate-400 hover:text-rose-600'
                 }`}
               >

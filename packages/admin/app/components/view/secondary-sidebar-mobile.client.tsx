@@ -38,7 +38,7 @@ export class SecondarySidebarMobile extends PureReactor {
         aria-expanded={this.isOpen}
         aria-controls={AdminConstants.SECONDARY_SIDEBAR.PANEL_ID}
         onClick={this.onOpen}
-        className={`fixed z-[170] ${AdminClass.SURFACE} text-slate-700 dark:text-slate-200 hover:border-indigo-400/70 transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 right-6 h-12 w-12' : 'bottom-6 left-[84px] h-10 w-10'}`}
+        className={`fixed z-[170] ${AdminClass.SURFACE} text-slate-700 dark:text-slate-200 hover:border-indigo-400/70 transition-colors ${this.mode === SecondarySidebarMode.MOBILE ? 'bottom-6 end-6 h-12 w-12' : 'bottom-6 start-[84px] h-10 w-10'}`}
       >
         <FrameworkIcons.Right size={18} />
       </button>
@@ -52,7 +52,7 @@ export class SecondarySidebarMobile extends PureReactor {
             role="dialog"
             aria-modal="true"
             aria-label={AdminI18n.t('shell.nav.secondary')}
-            className={`absolute top-0 bottom-0 w-[var(--secondary-sidebar-width)] overflow-hidden bg-white shadow-2xl dark:bg-[#020617] flex ${this.mode === SecondarySidebarMode.MOBILE ? 'right-0' : 'left-[72px] shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)]'}`}
+            className={`absolute top-0 bottom-0 w-[var(--secondary-sidebar-width)] overflow-hidden bg-white shadow-2xl dark:bg-[#020617] flex ${this.mode === SecondarySidebarMode.MOBILE ? 'end-0' : 'start-[72px] shadow-[-18px_0_36px_-28px_rgba(79,70,229,0.26),-10px_0_24px_-24px_rgba(15,23,42,0.22)] dark:shadow-[-18px_0_36px_-28px_rgba(99,102,241,0.18),-10px_0_24px_-24px_rgba(2,6,23,0.88)]'}`}
             onKeyDown={this.onOverlayKeyDown}
           >
             <div className="flex min-w-0 flex-1 flex-col">

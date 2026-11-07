@@ -200,7 +200,7 @@ export class MediaPicker extends Reactor {
                 onConfirm={this.handleConfirm}
               />
             </div>
-            <div className={`${this.selectedItem ? 'flex' : 'hidden md:flex'} max-h-[45%] md:max-h-none w-full md:w-80 shrink-0 overflow-y-auto border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800 p-4 md:p-6 bg-white dark:bg-slate-900 flex-col`}>
+            <div className={`${this.selectedItem ? 'flex' : 'hidden md:flex'} max-h-[45%] md:max-h-none w-full md:w-80 shrink-0 overflow-y-auto border-t md:border-t-0 md:border-s border-slate-100 dark:border-slate-800 p-4 md:p-6 bg-white dark:bg-slate-900 flex-col`}>
               <MediaPickerDetails item={this.selectedItem} onConfirm={this.handleConfirm} />
             </div>
           </div>

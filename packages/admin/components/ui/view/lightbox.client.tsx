@@ -68,7 +68,7 @@ export class Lightbox extends Reactor {
 
       {/* Close Button */}
       <button
-        className="absolute top-6 right-6 lg:top-10 lg:right-10 h-14 w-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all z-[110] border border-white/10 active:scale-90"
+        className="absolute top-6 end-6 lg:top-10 lg:end-10 h-14 w-14 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-all z-[110] border border-white/10 active:scale-90"
         onClick={(e) => { e.stopPropagation(); onClose(); }}
       >
         <FrameworkIcons.Close size={28} strokeWidth={2.5} />
@@ -77,7 +77,7 @@ export class Lightbox extends Reactor {
       {/* Navigation - Left */}
       {images.length > 1 && (
         <button
-          className="absolute left-6 lg:left-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
+          className="absolute start-6 lg:start-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
           onClick={(e) => { e.stopPropagation(); handlePrev(); }}
         >
           <FrameworkIcons.Left size={40} strokeWidth={2} className="group-hover:-translate-x-1 transition-transform" />
@@ -87,7 +87,7 @@ export class Lightbox extends Reactor {
       {/* Navigation - Right */}
       {images.length > 1 && (
         <button
-          className="absolute right-6 lg:right-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
+          className="absolute end-6 lg:end-12 h-20 w-20 rounded-full bg-white/5 text-white flex items-center justify-center hover:bg-white/15 transition-all z-[110] border border-white/5 group active:scale-90"
           onClick={(e) => { e.stopPropagation(); handleNext(); }}
         >
           <FrameworkIcons.Right size={40} strokeWidth={2} className="group-hover:translate-x-1 transition-transform" />
@@ -103,7 +103,7 @@ export class Lightbox extends Reactor {
             className="max-w-full max-h-[85vh] lg:max-h-[90vh] object-contain rounded-xl shadow-[0_80px_160px_-30px_rgba(0,0,0,0.7)] animate-in zoom-in-95 duration-700 ring-1 ring-white/20"
           />
 
-          <div className="absolute -bottom-16 left-0 right-0 text-center space-y-1">
+          <div className="absolute -bottom-16 start-0 end-0 text-center space-y-1">
              <p className="text-white text-[11px] font-semibold tracking-widest drop-shadow-xl opacity-80">
                 {title || AdminI18n.t('ui.lightbox.title')}
              </p>

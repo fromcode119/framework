@@ -53,7 +53,7 @@ export class PluginProcessCard extends AdminComponent {
             {description && <p className="text-sm text-slate-500 mt-1 max-w-sm">{description}</p>}
           </div>
         </div>
-        <div className={`text-sm md:text-right ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{value}</div>
+        <div className={`text-sm md:text-end ${dark ? 'text-slate-300' : 'text-slate-700'}`}>{value}</div>
       </div>
     );
   }

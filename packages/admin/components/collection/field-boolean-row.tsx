@@ -33,7 +33,7 @@ export class FieldBooleanRow extends PureReactor {
             className={`block text-[13px] font-medium text-slate-800 dark:text-slate-100 ${this.disabled ? 'cursor-not-allowed opacity-70' : 'cursor-pointer select-none'}`}
           >
             {this.label}
-            {this.required ? <span className="ml-0.5 text-rose-500">*</span> : null}
+            {this.required ? <span className="ms-0.5 text-rose-500">*</span> : null}
           </span>
           {this.description ? <p className="mt-0.5 text-[12px] leading-snug text-slate-500 dark:text-slate-400">{this.description}</p> : null}
         </div>

@@ -123,7 +123,7 @@ export class Marketplace extends AdminComponent {
                 className={`group flex flex-col h-full border-0 relative transition-all duration-700 cursor-pointer overflow-hidden rounded-xl ${theme === ThemeMode.DARK ? 'bg-slate-900/40 hover:bg-slate-900/60 ring-1 ring-white/5' : 'bg-white hover:shadow-indigo-500/20'}`}
               >
                 {/* Massive subtle background icon */}
-                <div className="absolute -right-12 -top-12 opacity-[0.03] transition-transform duration-1000 group-hover:scale-150 group-hover:rotate-12">
+                <div className="absolute -end-12 -top-12 opacity-[0.03] transition-transform duration-1000 group-hover:scale-150 group-hover:rotate-12">
                    <FrameworkIcons.Plugins size={320} />
                 </div>
 

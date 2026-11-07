@@ -346,28 +346,28 @@ html.dark {
 .fc-dropzone__file { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .fc-dropzone__name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-dropzone__meta { font-size: 12px; color: var(--fc-text-muted, #64748b); }
-.fc-dropzone__clear { margin-left: auto; display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--fc-text-muted, #64748b); cursor: pointer; }
+.fc-dropzone__clear { margin-inline-start: auto; display: grid; place-items: center; width: 24px; height: 24px; flex: none; border: 0; border-radius: 6px; background: transparent; color: var(--fc-text-muted, #64748b); cursor: pointer; }
 .fc-dropzone__clear:hover { background: var(--fc-surface, #ffffff); color: var(--fc-text, #0f172a); }
 
 /* Progress replaces the clear control rather than sitting beside it: while bytes are moving, the
    only useful action is waiting. */
-.fc-dropzone__progress { margin-left: auto; display: flex; align-items: center; gap: 8px; flex: none; }
+.fc-dropzone__progress { margin-inline-start: auto; display: flex; align-items: center; gap: 8px; flex: none; }
 .fc-dropzone__track { display: block; width: 140px; height: 6px; border-radius: 999px; background: var(--fc-border, #e2e8f0); overflow: hidden; }
 .fc-dropzone__bar { display: block; width: 0; height: 100%; border-radius: 999px; background: var(--fc-accent, #4f46e5); transition: width .2s ease; }
-.fc-dropzone__percent { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fc-text-muted, #64748b); min-width: 34px; text-align: right; }
+.fc-dropzone__percent { font-size: 12px; font-variant-numeric: tabular-nums; color: var(--fc-text-muted, #64748b); min-width: 34px; text-align: end; }
 @media (max-width: 640px) {
   .fc-dropzone__progress { width: 100%; margin: 8px 0 0 48px; }
   .fc-dropzone__track { flex: 1; width: auto; }
 }
 .fc-sites__danger { border-color: rgba(220, 38, 38, 0.35); }
-.fc-sites__warnings, .fc-sites__blockers { margin: 8px 0; padding-left: 18px; font-size: 12px; line-height: 1.5; }
+.fc-sites__warnings, .fc-sites__blockers { margin: 8px 0; padding-inline-start: 18px; font-size: 12px; line-height: 1.5; }
 .fc-sites__blockers { color: var(--fc-danger-strong); font-weight: 600; }
 .fc-sites__warnings { color: var(--fc-warning-strong); }
 .fc-site-form { display: flex; flex-direction: column; gap: 12px; }
 /* Counts as tiles, not a run-on line: a number and the word for it, wrapping on a narrow screen.
    The old line joined every kind with a separator and read as one long sentence. */
 .fc-import-plan__tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)); gap: 8px; margin: 8px 0 4px; }
-.fc-import-plan__tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 3px; text-align: left; }
+.fc-import-plan__tile { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 13px; display: flex; flex-direction: column; gap: 3px; text-align: start; }
 .fc-import-plan__tile-count { font-size: 21px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .fc-import-plan__tile-label { font-size: 12px; color: var(--muted-foreground); }
 /* The kinds with no human name, as one more count in the same row rather than a line of prose under
@@ -388,7 +388,7 @@ html.dark {
 .fc-import-plan__note-head b { font-size: 12.5px; font-weight: 600; }
 .fc-import-plan__note-mark { flex: 0 0 20px; width: 20px; height: 20px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .fc-import-plan__note-body { margin: 0; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); }
-.fc-import-plan__note-list { margin: 0; padding-left: 16px; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); }
+.fc-import-plan__note-list { margin: 0; padding-inline-start: 16px; font-size: 12.5px; line-height: 1.55; color: var(--muted-foreground); }
 .fc-import-plan__note-list li + li { margin-top: 3px; }
 .fc-import-plan__note--ok .fc-import-plan__note-mark { background: var(--fc-success-soft); color: var(--fc-success-strong); }
 .fc-import-plan__note--act { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); }
@@ -400,7 +400,7 @@ html.dark {
    thing in the card and they say what to do. */
 .fc-import-plan__blockers { border: 1px solid var(--fc-danger-soft-border); background: var(--fc-danger-soft); border-radius: 10px; padding: 13px 14px; }
 .fc-import-plan__blockers b { font-size: 12.5px; color: var(--fc-danger-strong); }
-.fc-import-plan__blockers ul { margin: 6px 0 0; padding-left: 17px; font-size: 12.5px; line-height: 1.6; color: var(--fc-danger-strong); }
+.fc-import-plan__blockers ul { margin: 6px 0 0; padding-inline-start: 17px; font-size: 12.5px; line-height: 1.6; color: var(--fc-danger-strong); }
 .fc-site-form__grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px 16px; }
 /* A field whose label wraps to two lines is taller than its neighbours, and its control used to sit
    that much lower — the row read as a broken line of inputs. Each field is a flex column stretched to
@@ -418,7 +418,7 @@ html.dark {
 .fc-site-form__plugin { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
 .fc-site-form__plugin-state { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; text-decoration: none; }
 .fc-site-form__plugin-state:hover { color: var(--primary); text-decoration: underline; }
-.fc-site-form__count { font-size: 11px; color: var(--muted-foreground); margin-left: 8px; font-weight: 500; }
+.fc-site-form__count { font-size: 11px; color: var(--muted-foreground); margin-inline-start: 8px; font-weight: 500; }
 .fc-site-form__meta { font-size: 11px; color: var(--muted-foreground); margin-top: 4px; }
 .fc-site-form__meta code { font-family: var(--font-mono, monospace); }
 /* What each host serves: one row per host, the FULL hostname beside its role. A row, never a grid
@@ -448,7 +448,7 @@ html.dark {
 .fc-sites__export { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .fc-sites__export-meta { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; }
 .fc-sites__paging { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 10px; }
-.fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); margin-right: 4px; }
+.fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); margin-inline-end: 4px; }
 .fc-sites__card-action { display: flex; justify-content: flex-end; margin-bottom: 4px; }
 .fc-sites__grant-label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 8px; }
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
@@ -468,7 +468,7 @@ html.dark {
 .fc-import-card__body { padding: 16px; }
 .fc-import-card__foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 16px; background: var(--muted); border-top: 1px solid var(--border); }
 .fc-import-card__foot-text { flex: 1 1 260px; font-size: 12.5px; color: var(--muted-foreground); }
-.fc-import-card__pill { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.fc-import-card__pill { margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
 .fc-import-card__pill-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 .fc-import-card__pill--ready { background: var(--fc-success-soft); color: var(--fc-success-strong); }
 .fc-import-card__pill--blocked { background: var(--fc-danger-soft); color: var(--fc-danger-strong); }
@@ -478,7 +478,7 @@ html.dark {
 .fc-import-step__tick { flex: 0 0 18px; width: 18px; height: 18px; border-radius: 50%; background: var(--fc-success-soft); color: var(--fc-success-strong); display: flex; align-items: center; justify-content: center; font-size: 11px; }
 .fc-import-step__title { font-weight: 600; }
 .fc-import-step__value { color: var(--muted-foreground); min-width: 0; overflow-wrap: anywhere; }
-.fc-import-step__action { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--primary); background: none; border: 0; padding: 0; cursor: pointer; }
+.fc-import-step__action { margin-inline-start: auto; font-size: 12px; font-weight: 600; color: var(--primary); background: none; border: 0; padding: 0; cursor: pointer; }
 .fc-import-step__action:hover { text-decoration: underline; }
 
 /* ── Full detail: four chips, one panel. Three stacked `<details>` at the foot of the card each gave
@@ -513,7 +513,7 @@ html.dark {
 .fc-import-rec__group { display: flex; align-items: center; gap: 9px; padding: 11px 14px; background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .fc-import-rec__group-mark { flex: 0 0 19px; width: 19px; height: 19px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; }
 .fc-import-rec__group b { font-size: 12.5px; font-weight: 600; }
-.fc-import-rec__group-count { margin-left: auto; font-size: 11.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.fc-import-rec__group-count { margin-inline-start: auto; font-size: 11.5px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
 .fc-import-rec__group--ok .fc-import-rec__group-mark { background: var(--fc-success-soft); color: var(--fc-success-strong); }
 .fc-import-rec__group--part { background: var(--fc-warning-soft); border-color: var(--fc-warning-soft-border); }
 .fc-import-rec__group--part .fc-import-rec__group-mark { background: var(--fc-warning-mark); color: var(--fc-warning-strong); }
@@ -557,7 +557,7 @@ html.dark {
 .fc-import-rec__lost { color: var(--fc-warning-strong); }
 
 .fc-import-rec__fold { display: flex; align-items: center; gap: 9px; padding: 11px 14px; font-size: 12.5px; color: var(--muted-foreground); cursor: pointer; border-top: 1px solid var(--border); }
-.fc-import-rec__fold-action { margin-left: auto; font-size: 11.5px; }
+.fc-import-rec__fold-action { margin-inline-start: auto; font-size: 11.5px; }
 .fc-import-rec__foldbox { padding: 11px 14px 14px; font-size: 12px; line-height: 1.7; color: var(--muted-foreground); }
 .fc-import-rec__foldline { margin: 0 0 4px; }
 
@@ -673,6 +673,16 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-edit-sticky { position: sticky; align-self: start; }
 
 /* A menu item's trailing slot (sidebar-nav-item-view): after the label, or on the icon's corner collapsed. */
-.fc-nav-item-trailing { margin-left: auto; display: inline-flex; align-items: center; }
+.fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
-.fc-nav-item-trailing--mini { position: absolute; top: -2px; right: -2px; margin-left: 0; }
+.fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }
+
+/*
+ * Right to left (`<html dir="rtl">`, set from the console language). Layout already mirrors through
+ * logical sides; an arrow or chevron that means "forward" or "back" has to point the other way too.
+ * The `scale` property composes with an element's own `transform`, so a hover nudge or a rotated
+ * disclosure chevron keeps working, mirrored.
+ */
+[dir='rtl'] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right, .lucide-chevrons-left, .lucide-chevrons-right, .lucide-arrow-left-to-line, .lucide-arrow-right-to-line) {
+  scale: -1 1;
+}

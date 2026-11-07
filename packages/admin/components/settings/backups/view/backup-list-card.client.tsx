@@ -109,7 +109,7 @@ export class BackupListCard extends AdminComponent {
               </div>
 
               <div className={`overflow-x-auto rounded-lg border ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
-                <table className="min-w-full divide-y divide-slate-200/80 text-left dark:divide-slate-800">
+                <table className="min-w-full divide-y divide-slate-200/80 text-start dark:divide-slate-800">
                   <thead>
                     <tr className="text-[10px] uppercase tracking-[0.18em] text-slate-500">
                       <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.backup')}</th>
@@ -117,7 +117,7 @@ export class BackupListCard extends AdminComponent {
                       <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.modified')}</th>
                       <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.size')}</th>
                       <th className="px-5 py-4 font-bold">{AdminI18n.t('settings.components.storage')}</th>
-                      <th className="px-5 py-4 font-bold text-right">{AdminI18n.t('settings.components.actions')}</th>
+                      <th className="px-5 py-4 font-bold text-end">{AdminI18n.t('settings.components.actions')}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-200/80 dark:divide-slate-800">

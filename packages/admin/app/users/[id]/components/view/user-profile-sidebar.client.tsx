@@ -62,7 +62,7 @@ export class UserProfileSidebar extends PureReactor {
            <p className="text-xs font-bold leading-relaxed text-slate-500">
              {AdminI18n.t('users.modifyingUserRolesOrPermissions')}
            </p>
-           <FrameworkIcons.Shield className="absolute -bottom-4 -right-4 text-indigo-500/10" size={100} />
+           <FrameworkIcons.Shield className="absolute -bottom-4 -end-4 text-indigo-500/10" size={100} />
         </div>}
       </div>
     );

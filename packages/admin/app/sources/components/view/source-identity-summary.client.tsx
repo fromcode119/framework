@@ -34,7 +34,7 @@ export class SourceIdentitySummary extends PureReactor {
           <div className="min-w-0">
             <p className="text-sm font-semibold text-slate-900 dark:text-white">
               {this.slug}
-              <span className="ml-2 text-xs font-medium text-slate-500 dark:text-slate-400">{this.kind} · {this.vendor}</span>
+              <span className="ms-2 text-xs font-medium text-slate-500 dark:text-slate-400">{this.kind} · {this.vendor}</span>
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400">{AdminI18n.t('sources.readFromTheManifest')}</p>
           </div>

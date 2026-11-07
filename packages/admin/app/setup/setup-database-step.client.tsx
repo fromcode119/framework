@@ -57,11 +57,11 @@ export class SetupDatabaseStep extends PureReactor {
 
   private optionClass(value: string, isAvailable: boolean): string {
     if (!isAvailable) {
-      return 'w-full p-4 rounded-xl border text-left border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed';
+      return 'w-full p-4 rounded-xl border text-start border-slate-200 dark:border-slate-800 opacity-60 cursor-not-allowed';
     }
     const selected = value === this.driver;
     return [
-      'w-full p-4 rounded-xl border text-left transition-colors',
+      'w-full p-4 rounded-xl border text-start transition-colors',
       selected
         ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-500/10'
         : 'border-slate-200 dark:border-slate-800 hover:border-indigo-300',

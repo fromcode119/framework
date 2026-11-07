@@ -107,7 +107,7 @@ export class LoginForm extends PureReactor {
             {this.requiresTwoFactor
               ? AdminI18n.t(this.twoFactorMethod === TwoFactorMethod.TOTP ? 'login.verifyTotp' : 'login.useRecovery')
               : AdminI18n.t('login.signIn')}
-            {!this.isLoading && <FrameworkIcons.ArrowRight size={18} className="ml-2" />}
+            {!this.isLoading && <FrameworkIcons.ArrowRight size={18} className="ms-2" />}
           </Button>
         </form>
       </div>

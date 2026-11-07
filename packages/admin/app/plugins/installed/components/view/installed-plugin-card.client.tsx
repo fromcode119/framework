@@ -126,7 +126,7 @@ export class InstalledPluginCard extends PureReactor {
             ) : null}
           </div>
 
-          <div className={`flex items-center gap-0.5 pl-3 border-l ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+          <div className={`flex items-center gap-0.5 ps-3 border-s ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
           <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.open')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></AdminLink>
           <AdminLink href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></AdminLink>
           {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.remove')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}

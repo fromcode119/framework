@@ -32,7 +32,7 @@ export class SettingRow extends PureReactor {
             <p className={`text-[13px] mt-0.5 max-w-md leading-relaxed ${this.isDark ? 'text-slate-400' : 'text-slate-500'}`}>{this.description}</p>
           </div>
         </div>
-        <div className={this.wide ? 'md:pl-11 w-full' : 'flex-shrink-0'}>
+        <div className={this.wide ? 'md:ps-11 w-full' : 'flex-shrink-0'}>
           {this.children}
         </div>
       </div>

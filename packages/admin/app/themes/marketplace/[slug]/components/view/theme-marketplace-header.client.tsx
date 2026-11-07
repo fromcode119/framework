@@ -44,11 +44,11 @@ export class ThemeMarketplaceHeader extends PureReactor {
               {theme.name}
             </h1>
             {allVersions.length > 1 && (
-              <div className="ml-2">
+              <div className="ms-2">
                 <Dropdown
                   align="left"
                   trigger={
-                    <div className={`flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
+                    <div className={`flex items-center gap-2 ps-3 pe-2 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
                       <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('themes.latest') : ''}</span>
                       <div className={`transition-colors ${adminTheme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                         <FrameworkIcons.Down size={14} strokeWidth={3} />

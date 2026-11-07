@@ -86,7 +86,7 @@ export class RevisionModal extends PureReactor {
                      
                      return (
                       <div key={key} className={`grid grid-cols-2 group border-b border-slate-100 dark:border-slate-800 last:border-0 ${hasChanged ? 'bg-indigo-500/5' : ''}`}>
-                         <div className="p-4 border-r border-slate-100 dark:border-slate-800">
+                         <div className="p-4 border-e border-slate-100 dark:border-slate-800">
                             <span className="text-[10px] font-bold text-slate-400 uppercase block mb-1">{key}</span>
                             <div className="text-[11px] font-semibold text-slate-500 line-clamp-3">
                                {typeof curVal === 'object' ? JSON.stringify(curVal) : (curVal === undefined ? <span className="italic opacity-50">{AdminI18n.t('collection.revision.empty')}</span> : String(curVal))}
@@ -122,7 +122,7 @@ export class RevisionModal extends PureReactor {
                   disabled={currentRevIndex >= revisions.length - 1}
                   onClick={() => setSelectedRevision(revisions[currentRevIndex + 1])}
                 >
-                   <FrameworkIcons.Left size={12} className="mr-2" />
+                   <FrameworkIcons.Left size={12} className="me-2" />
                    {AdminI18n.t('collection.revision.older')}
                 </Button>
                 <Button 
@@ -132,7 +132,7 @@ export class RevisionModal extends PureReactor {
                   onClick={() => setSelectedRevision(revisions[currentRevIndex - 1])}
                 >
                    {AdminI18n.t('collection.revision.newer')}
-                   <FrameworkIcons.Right size={12} className="ml-2" />
+                   <FrameworkIcons.Right size={12} className="ms-2" />
                 </Button>
              </div>
              <div className="flex items-center gap-3">

@@ -151,7 +151,7 @@ export class PersonField extends Reactor {
       <ul className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-xl border border-slate-200 dark:divide-slate-800 dark:border-slate-700">
         {this.results.map((person) => (
           <li key={person.id}>
-            <button type="button" onClick={() => this.pick(person)} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-left hover:bg-slate-50 dark:hover:bg-slate-800/60">
+            <button type="button" onClick={() => this.pick(person)} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-start hover:bg-slate-50 dark:hover:bg-slate-800/60">
               <span className="min-w-0">
                 <span className="block truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</span>
                 <span className="block truncate text-[11.5px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>

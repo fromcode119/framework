@@ -42,7 +42,7 @@ export class NewUserRolesCard extends PureReactor {
                       key={role.slug}
                       type="button"
                       onClick={() => onToggleRole(role.slug)}
-                      className={`text-left rounded-xl border p-4 transition-all ${
+                      className={`text-start rounded-xl border p-4 transition-all ${
                         selected
                           ? theme === ThemeMode.DARK
                             ? 'border-indigo-500 bg-indigo-500/10'

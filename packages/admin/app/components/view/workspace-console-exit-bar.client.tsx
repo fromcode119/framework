@@ -76,7 +76,7 @@ export class WorkspaceConsoleExitBar extends AdminComponent {
           <FrameworkIcons.Eye size={14} />
           <span className="truncate">{AdminI18n.t('shell.workspaceConsole.viewing', { name: current.label })}</span>
         </span>
-        <span className="ml-auto flex items-center gap-2">
+        <span className="ms-auto flex items-center gap-2">
           <button type="button" onClick={() => { void this.configure(); }} className="inline-flex items-center gap-1.5 rounded-md border border-slate-300 bg-white px-2.5 py-1 font-semibold text-slate-700 transition-colors hover:bg-slate-100 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200 dark:hover:bg-slate-700">
             <FrameworkIcons.Settings size={13} />
             {AdminI18n.t('shell.workspaceConsole.configure')}

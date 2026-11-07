@@ -92,7 +92,7 @@ export class DependencyDialog extends AdminComponent {
             </button>
           </div>
 
-          <div className="mt-4 space-y-2 max-h-[40vh] overflow-y-auto pr-2 custom-scrollbar">
+          <div className="mt-4 space-y-2 max-h-[40vh] overflow-y-auto pe-2 custom-scrollbar">
             {issues.map((issue, idx) => (
               <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800 transition-all hover:bg-slate-100 dark:hover:bg-slate-800">
                 <div className={`h-10 w-10 rounded-xl flex items-center justify-center border shadow-sm ${

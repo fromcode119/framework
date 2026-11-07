@@ -63,7 +63,7 @@ export class TagFieldSuggestions extends PureReactor {
                       e.preventDefault();
                       onAdd(suggestion.value);
                     }}
-                    className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group ${
+                    className={`w-full text-start px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center justify-between group ${
                         theme === ThemeMode.DARK
                         ? 'hover:bg-slate-800 text-slate-300 hover:text-white'
                         : 'hover:bg-indigo-50 text-slate-600 hover:text-indigo-600'
@@ -88,7 +88,7 @@ export class TagFieldSuggestions extends PureReactor {
                   e.preventDefault();
                   onAdd(inputValue);
                 }}
-                className={`w-full text-left px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center gap-3 group mt-1 ${
+                className={`w-full text-start px-3.5 py-2 text-[13px] rounded-lg transition-all duration-200 flex items-center gap-3 group mt-1 ${
                     theme === ThemeMode.DARK
                     ? 'bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400'
                     : 'bg-indigo-50 hover:bg-indigo-100 text-indigo-600'

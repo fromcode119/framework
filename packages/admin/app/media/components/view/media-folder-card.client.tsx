@@ -63,7 +63,7 @@ export class MediaFolderCard extends PureReactor {
           {viewMode === ViewMode.GRID && <div className="text-[10px] text-slate-500 tracking-wide font-semibold mt-1">{AdminI18n.t('media.folder')}</div>}
         </div>
 
-        <div className={`absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === ViewMode.LIST ? 'static ml-auto opacity-100' : ''}`}>
+        <div className={`absolute top-2 end-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity ${viewMode === ViewMode.LIST ? 'static ms-auto opacity-100' : ''}`}>
            <button
             onClick={this.rename}
             className={`p-2 rounded-lg transition-colors ${theme === ThemeMode.DARK ? 'bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white' : 'bg-white shadow-sm border border-slate-100 hover:bg-slate-50 text-slate-500'}`}

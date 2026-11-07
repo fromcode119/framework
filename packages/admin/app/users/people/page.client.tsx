@@ -172,11 +172,11 @@ export class PeoplePage extends AdminComponent {
           {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
 
           <div className="relative flex-1 group">
-            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"><FrameworkIcons.Search size={18} /></div>
+            <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400"><FrameworkIcons.Search size={18} /></div>
             <input
               type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
               onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-              className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+              className={`w-full h-9 rounded-lg ps-11 pe-4 outline-none border text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
             />
           </div>
 
@@ -202,7 +202,7 @@ export class PeoplePage extends AdminComponent {
                     {AdminI18n.t('users.edit')}
                   </Button>
                   {(person.userId != null && person.userId !== '') ? (
-                    <span className="text-[11px] font-bold text-slate-400 pr-2">{AdminI18n.t('users.linked')}</span>
+                    <span className="text-[11px] font-bold text-slate-400 pe-2">{AdminI18n.t('users.linked')}</span>
                   ) : (
                     <Button
                       variant={ButtonVariant.SECONDARY}

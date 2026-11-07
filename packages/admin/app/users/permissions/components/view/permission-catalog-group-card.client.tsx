@@ -42,14 +42,14 @@ export class PermissionCatalogGroupCard extends PureReactor {
             <table className="w-full text-xs">
               <thead>
                 <tr className="text-[10px] font-semibold uppercase tracking-tight text-slate-400">
-                  <th className="py-2 pr-4 text-left">{AdminI18n.t('users.permission')}</th>
-                  <th className="py-2 text-left">{AdminI18n.t('users.grantedBy')}</th>
+                  <th className="py-2 pe-4 text-start">{AdminI18n.t('users.permission')}</th>
+                  <th className="py-2 text-start">{AdminI18n.t('users.grantedBy')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {named.map((permission) => (
                   <tr key={permission.name}>
-                    <td className="py-2.5 pr-4 align-top">
+                    <td className="py-2.5 pe-4 align-top">
                       <span className="flex flex-col gap-0.5">
                         <span className="font-semibold text-slate-800 dark:text-slate-100">{permission.label}</span>
                         <span className="text-[11px] text-slate-500">{permission.description}</span>
@@ -67,8 +67,8 @@ export class PermissionCatalogGroupCard extends PureReactor {
               <table className="w-full text-xs">
                 <thead>
                   <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
-                    <th className="px-3 py-2 text-left">{AdminI18n.t('users.collection')}</th>
-                    {RolePermissionSelection.ACTIONS.map((action) => <th key={action} className="px-3 py-2 text-left">{action}</th>)}
+                    <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
+                    {RolePermissionSelection.ACTIONS.map((action) => <th key={action} className="px-3 py-2 text-start">{action}</th>)}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800">

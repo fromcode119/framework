@@ -33,7 +33,7 @@ export class BuildStatusBadge extends PureReactor {
   render(): ReactNode {
     return (
       <Badge variant={this.variant}>
-        {this.status === 'building' ? <Loader2 size={11} className="mr-1 inline animate-spin" /> : null}
+        {this.status === 'building' ? <Loader2 size={11} className="me-1 inline animate-spin" /> : null}
         {this.label}
       </Badge>
     );

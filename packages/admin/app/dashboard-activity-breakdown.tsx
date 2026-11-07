@@ -33,7 +33,7 @@ export class DashboardActivityBreakdown extends PureReactor {
                 <div className="flex-1 h-2 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
                   <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.max(6, (r.value / max) * 100)}%` }} />
                 </div>
-                <span className="w-8 shrink-0 text-right text-xs tabular-nums text-slate-500">{r.value}</span>
+                <span className="w-8 shrink-0 text-end text-xs tabular-nums text-slate-500">{r.value}</span>
               </div>
             ))}
           </div>

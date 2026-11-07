@@ -51,7 +51,7 @@ export class NotificationProvider extends Reactor {
     return (
       <NotificationContextStore.context.Provider value={this.value}>
         {this.children}
-        <div className="fixed bottom-6 right-6 z-[9999] flex min-w-[320px] max-w-[420px] flex-col gap-3">
+        <div className="fixed bottom-6 end-6 z-[9999] flex min-w-[320px] max-w-[420px] flex-col gap-3">
           {this.notifications.map((notification) => (
             <div
               key={notification.id}

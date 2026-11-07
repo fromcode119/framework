@@ -201,7 +201,7 @@ export class NavItemView extends Reactor {
         </div>
 
         {hasChildren && expanded && !isMini && (
-          <div className="relative ml-[18px] mt-0.5 mb-1 flex flex-col gap-px border-l border-slate-200/70 pl-2 dark:border-slate-800">
+          <div className="relative ms-[18px] mt-0.5 mb-1 flex flex-col gap-px border-s border-slate-200/70 ps-2 dark:border-slate-800">
             {children.map((child) => {
               const isSubActive = NavUtils.normalizePath(child.path) === activeChildPath;
               return (
@@ -209,14 +209,14 @@ export class NavItemView extends Reactor {
                   key={child.path}
                   href={child.path}
                   onClick={onClick}
-                  className={`relative flex items-center gap-2.5 rounded-lg py-1.5 pl-3 pr-2 text-[12px] transition-colors duration-150 ${
+                  className={`relative flex items-center gap-2.5 rounded-lg py-1.5 ps-3 pe-2 text-[12px] transition-colors duration-150 ${
                     isSubActive
                       ? 'font-semibold text-indigo-600 dark:text-indigo-400'
                       : 'font-medium text-slate-400 hover:bg-slate-100/70 hover:text-slate-800 dark:text-slate-500 dark:hover:bg-slate-800/40 dark:hover:text-slate-200'
                   }`}
                 >
                   {isSubActive && (
-                    <span className="absolute left-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
+                    <span className="absolute start-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
                   )}
                   <span className="whitespace-nowrap tracking-[-0.01em]">{AdminNavText.menuLabel(child)}</span>
                   {this.renderTrailing(child.path, isSubActive, false)}

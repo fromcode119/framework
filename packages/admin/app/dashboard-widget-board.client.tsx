@@ -115,10 +115,10 @@ export class DashboardWidgetBoard extends AdminComponent {
   private renderToolbar(): ReactNode {
     return (
       <div className="flex flex-wrap items-center justify-end gap-2">
-        {this.saveFailed ? <span className="mr-auto text-[12px] text-rose-600">{AdminI18n.t('dashboard.widgets.saveFailed')}</span> : null}
+        {this.saveFailed ? <span className="me-auto text-[12px] text-rose-600">{AdminI18n.t('dashboard.widgets.saveFailed')}</span> : null}
         {this.editing ? (
           <>
-            <span className="mr-auto text-[12px] text-slate-500">{AdminI18n.t('dashboard.widgets.editHint')}</span>
+            <span className="me-auto text-[12px] text-slate-500">{AdminI18n.t('dashboard.widgets.editHint')}</span>
             <Button size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={() => this.reset()}>
               <FrameworkIcons.Refresh size={14} /> {AdminI18n.t('dashboard.widgets.reset')}
             </Button>

@@ -98,7 +98,7 @@ export class EditPageMain extends PureReactor {
         type="button"
         aria-expanded={open}
         onClick={() => this.openSections = { ...this.openSections, [section.key]: !open }}
-        className={`flex w-full items-center gap-2 text-left ${open ? 'mb-4' : ''}`}
+        className={`flex w-full items-center gap-2 text-start ${open ? 'mb-4' : ''}`}
       >
         <Chevron size={15} className="shrink-0 text-slate-400" />
         <h2 className="min-w-0 flex-1 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{section.title}</h2>

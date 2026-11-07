@@ -170,7 +170,7 @@ export class InlineEditValue extends PureReactor {
               onClick={this.pick}
               disabled={this.saving}
               aria-pressed={choice.value === current}
-              className={`h-9 px-3 rounded-lg text-left text-[13px] font-semibold inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
+              className={`h-9 px-3 rounded-lg text-start text-[13px] font-semibold inline-flex items-center justify-between transition-colors disabled:opacity-60 ${
                 choice.value === current
                   ? 'bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300'
                   : 'text-slate-700 hover:bg-slate-50 dark:text-slate-200 dark:hover:bg-slate-800'
@@ -193,7 +193,7 @@ export class InlineEditValue extends PureReactor {
           ref={this.trigger}
           onClick={this.start}
           title={AdminI18n.t('collection.list.inlineEditHint', { label: this.field.label || this.field.name })}
-          className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-left transition-colors ${
+          className={`-mx-1.5 -my-0.5 px-1.5 py-0.5 rounded-md border border-dashed text-start transition-colors ${
             this.open
               ? 'border-indigo-400 bg-indigo-50 dark:bg-indigo-500/10'
               : 'border-transparent hover:border-indigo-300 hover:bg-indigo-50/60 dark:hover:border-indigo-500/50 dark:hover:bg-indigo-500/10'
