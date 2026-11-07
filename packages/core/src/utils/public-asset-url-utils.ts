@@ -4,14 +4,26 @@ import { ApplicationHostUtils } from '@core/utils/application-host-utils';
 import { StorageConstants } from '@core/constants/storage.constants';
 import { PublicRouteConstants } from '@core/constants/public-route.constants';
 import { RuntimeBridge } from '@core/runtime-bridge';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+import { RenderLocationUtils } from '@core/utils/render-location-utils';
 import { EnvUtils } from '@core/utils/env-utils';
 import { OptimizedImageUrlUtils } from '@core/utils/optimized-image-url-utils';
 
 export class PublicAssetUrlUtils {
   static readonly uploadBasePath = String(StorageConstants.ALL.DEFAULT_PUBLIC_URL).trim();
 
+  /**
+   * The base a PUBLIC asset address is built on — something a visitor's browser can open. On a server
+   * that is the page being rendered, else the api URL set in Settings, else nothing: a same-origin path
+   * (`/uploads/x.webp`), which the gateway serves on every app host. Never the deployment's internal
+   * api address — `http://api:3000/uploads/...` reached browsers as a broken image once the api URL
+   * stopped coming from the environment (0.2.532).
+   */
   static resolveApiBaseUrl(): string {
-    return RuntimeBridge.resolveApiBaseUrl();
+    if (!EnvUtils.isServer()) return RuntimeBridge.resolveApiBaseUrl();
+    return ApplicationUrlUtils.normalizeBaseUrlCandidate(RenderLocationUtils.origin())
+      || ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)
+      || '';
   }
 
   static absoluteUrl(value: any, apiBaseUrl = PublicAssetUrlUtils.resolveApiBaseUrl()): string {
