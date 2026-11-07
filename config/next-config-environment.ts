@@ -18,21 +18,11 @@ export class NextConfigEnvironment {
       path.join(rootDir, '.env'),
     ];
 
-    let loadedAnyFile = false;
+    // Never `.env.example`: it ships in every image, and its developer values became the running
+    // config of any container that had no `.env` — `INTERNAL_API_URL=http://localhost:3000` pointed the
+    // storefront at ITSELF, and every page fetched itself until the process stopped answering.
     for (const envFile of envFiles) {
-      if (!fs.existsSync(envFile)) {
-        continue;
-      }
-
-      dotenv.config({ path: envFile, override: false });
-      loadedAnyFile = true;
-    }
-
-    if (!loadedAnyFile) {
-      const exampleEnvFile = path.join(rootDir, '.env.example');
-      if (fs.existsSync(exampleEnvFile)) {
-        dotenv.config({ path: exampleEnvFile, override: false });
-      }
+      if (fs.existsSync(envFile)) dotenv.config({ path: envFile, override: false });
     }
 
     NextConfigEnvironment.environmentInitialized = true;
