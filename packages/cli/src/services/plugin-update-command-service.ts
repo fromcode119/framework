@@ -1,103 +1,74 @@
 import { Command } from 'commander';
 import chalk from 'chalk';
-import semver from 'semver';
-import { SystemConstants } from '@fromcode119/core';
-import { CliUtils } from '@cli/utils';
+import { RunningPlatformApi } from '@cli/services/running-platform-api';
+import { PluginMarketplaceInstall } from '@cli/services/plugin-marketplace-install';
 
 /**
- * Terminal download + update for installed plugins, straight from the marketplace registry.
- * `outdated` compares each installed plugin (the `_system_plugins` registry) against the catalog;
- * `update <slug>` downloads the latest package (with its dependencies) and overwrites the plugin
- * on disk, then reconciles the registry row. Restart the API afterwards so the new code loads.
+ * `plugin install|update|outdated` from a terminal, through the running platform.
+ *
+ * These used to download the package and overwrite the plugin folder from the CLI's own process, then
+ * patch the registry row and ask for an api restart: no verification, no per-site record, no swap of the
+ * live plugin, nothing told to the other api processes — and a restart that took the shop down. They now
+ * ask the running api, with a platform admin's API token, to do what the admin's button does.
  */
 export class PluginUpdateCommandService {
-  private static readonly TABLE = SystemConstants.TABLE.PLUGINS;
-
   static register(plugin: Command): void {
     plugin
-      .command('outdated')
-      .description('List installed plugins that have a newer version in the marketplace')
-      .action(async () => {
-        await PluginUpdateCommandService.listOutdated();
+      .command('install <slug>')
+      .description('Install a plugin from the marketplace through the running platform (as the admin does)')
+      .option('--version <version>', 'Install a specific version instead of the latest')
+      .option('--api <url>', `The platform api (default: $${RunningPlatformApi.URL_ENV}, else this machine)`)
+      .action(async (slug: string, options: { version?: string; api?: string }) => {
+        await PluginUpdateCommandService.install(slug, options);
       });
 
     plugin
       .command('update <slug>')
-      .description('Download and install the latest version of an installed plugin')
+      .description('Update an installed plugin from the marketplace through the running platform (as the admin does)')
       .option('--version <version>', 'Install a specific version instead of the latest')
-      .action(async (slug: string, options: { version?: string }) => {
-        await PluginUpdateCommandService.update(slug, options.version);
+      .option('--api <url>', `The platform api (default: $${RunningPlatformApi.URL_ENV}, else this machine)`)
+      .action(async (slug: string, options: { version?: string; api?: string }) => {
+        await PluginUpdateCommandService.install(slug, options);
+      });
+
+    plugin
+      .command('outdated')
+      .description('List installed plugins that have a newer version in the marketplace')
+      .option('--api <url>', `The platform api (default: $${RunningPlatformApi.URL_ENV}, else this machine)`)
+      .action(async (options: { api?: string }) => {
+        await PluginUpdateCommandService.listOutdated(options.api);
       });
   }
 
-  /** True when `latest` is a strictly greater semver than `current` (lenient on non-semver strings). */
-  private static isNewer(latest: string | undefined, current: string): boolean {
-    if (!latest) return false;
-    const a = semver.coerce(latest);
-    const b = semver.coerce(current);
-    if (a && b) return semver.gt(a, b);
-    return latest !== current;
-  }
-
-  private static async listOutdated(): Promise<void> {
-    const db = await CliUtils.getDatabase();
+  private static async install(slug: string, options: { version?: string; api?: string }): Promise<void> {
+    const name = String(slug || '').trim();
     try {
-      const installed = await db.find(PluginUpdateCommandService.TABLE, { orderBy: { slug: 'asc' }, limit: 1000 });
-      const catalog = await CliUtils.getMarketplace().fetchCatalog();
-      const latestBySlug = new Map(catalog.map((p: any) => [String(p.slug), String(p.version)]));
-
-      if (!catalog.length) {
-        console.log(chalk.yellow('\nMarketplace catalog is empty or unreachable (check MARKETPLACE_URL).'));
-        process.exit(0);
-      }
-
-      const outdated = installed
-        .map((row: any) => ({ slug: String(row.slug), current: String(row.version || '0.0.0'), latest: latestBySlug.get(String(row.slug)) }))
-        .filter((p) => PluginUpdateCommandService.isNewer(p.latest, p.current));
-
-      if (!outdated.length) {
-        console.log(chalk.green('\nAll installed plugins are up to date.'));
-        process.exit(0);
-      }
-
-      console.log(chalk.white(`\n${outdated.length} plugin(s) with a different marketplace version:`));
-      console.log(chalk.gray('--------------------------------------------------'));
-      for (const p of outdated) {
-        console.log(`${chalk.bold(p.slug)}  ${chalk.gray(p.current)} ${chalk.gray('→')} ${chalk.green(p.latest)}`);
-      }
-      console.log(chalk.gray('\nRun "fromcode plugin update <slug>" to apply.'));
+      const installer = new PluginMarketplaceInstall(RunningPlatformApi.connect(options.api));
+      console.log(chalk.blue(`\nInstalling ${chalk.bold(name)}${options.version ? ` v${options.version}` : ' (latest)'} from the marketplace...`));
+      await installer.run(name, options.version, (line) => console.log(chalk.gray(`  ${line}`)));
+      const version = await installer.installedVersion(name);
+      console.log(chalk.green(`\n✔ ${chalk.bold(name)}${version ? ` v${version}` : ''} is installed and running on the platform.`));
       process.exit(0);
     } catch (error: any) {
-      console.error(chalk.red('Failed to check for plugin updates:'), error.message);
+      console.error(chalk.red(`\n${name} was not installed:`), error.message);
       process.exit(1);
     }
   }
 
-  private static async update(slug: string, version?: string): Promise<void> {
-    const normalizedSlug = String(slug || '').trim();
-    const db = await CliUtils.getDatabase();
+  private static async listOutdated(apiUrl?: string): Promise<void> {
     try {
-      const existing = await db.findOne(PluginUpdateCommandService.TABLE, { slug: normalizedSlug });
-      if (!existing) {
-        console.error(chalk.red(`Plugin "${normalizedSlug}" is not installed. Use "fromcode plugin install ${normalizedSlug}".`));
-        process.exit(1);
+      const outdated = await new PluginMarketplaceInstall(RunningPlatformApi.connect(apiUrl)).outdated();
+      if (!outdated.length) {
+        console.log(chalk.green('\nAll installed plugins are up to date.'));
+        process.exit(0);
       }
-
-      console.log(chalk.blue(`\nDownloading ${chalk.bold(normalizedSlug)}${version ? ` v${version}` : ' (latest)'} from the marketplace...`));
-      const manifest = await CliUtils.getMarketplace().downloadAndInstall(normalizedSlug, new Set(), undefined, version);
-      const newVersion = String((manifest as any)?.version || version || '');
-
-      await db.update(
-        PluginUpdateCommandService.TABLE,
-        { slug: normalizedSlug },
-        { version: newVersion, latestVersion: newVersion, hasUpdate: 0, updatedAt: new Date().toISOString() },
-      );
-
-      console.log(chalk.green(`\n✔ ${chalk.bold(normalizedSlug)} updated to v${newVersion}.`));
-      console.log(chalk.gray('Restart the API process so the new plugin code loads.'));
+      console.log(chalk.white(`\n${outdated.length} plugin(s) with a newer marketplace version:`));
+      console.log(chalk.gray('--------------------------------------------------'));
+      for (const p of outdated) console.log(`${chalk.bold(p.slug)}  ${chalk.gray(p.current)} ${chalk.gray('→')} ${chalk.green(p.latest)}`);
+      console.log(chalk.gray('\nRun "fromcode plugin update <slug>" to apply.'));
       process.exit(0);
     } catch (error: any) {
-      console.error(chalk.red('\nPlugin update failed:'), error.message);
+      console.error(chalk.red('Failed to check for plugin updates:'), error.message);
       process.exit(1);
     }
   }
