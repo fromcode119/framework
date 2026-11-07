@@ -9,6 +9,7 @@ import type { IAccountSectionSummary } from '@react/account/interfaces/account-s
 export class AccountSummaryStore {
   private static current: IAccountSummaries = {};
   private static readonly listeners = new Set<() => void>();
+  private static readonly reloaders = new Set<() => void>();
 
   static get(): IAccountSummaries {
     return AccountSummaryStore.current;
@@ -22,6 +23,20 @@ export class AccountSummaryStore {
     AccountSummaryStore.listeners.add(listener);
     return () => { AccountSummaryStore.listeners.delete(listener); };
   }
+
+  /** Registers the loader that refetches the summaries; returns the unregister call. */
+  static onReload(reloader: () => void): () => void {
+    AccountSummaryStore.reloaders.add(reloader);
+    return () => { AccountSummaryStore.reloaders.delete(reloader); };
+  }
+
+  /**
+   * Asks for fresh summaries — called by a panel after it adds or removes something, so the menu
+   * count and the overview line follow the change instead of waiting for the next page load.
+   */
+  static readonly reload = (): void => {
+    AccountSummaryStore.reloaders.forEach((reloader) => reloader());
+  };
 
   /** Merge the answers in order; a later contributor adds to a section, it never erases one. */
   static set(parts: IAccountSummaries[]): void {

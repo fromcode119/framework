@@ -15,9 +15,11 @@ import type { IAccountSummaries } from '@react/account/interfaces/account-summar
 export class AccountSummaryLoader extends PluginComponent {
   @prop declare contributors: ISlotComponent[];
   private mounted = false;
+  private stopReload: (() => void) | null = null;
 
   componentDidMount(): void {
     this.mounted = true;
+    this.stopReload = AccountSummaryStore.onReload(() => { void this.load(); });
     void this.load();
   }
 
@@ -28,6 +30,7 @@ export class AccountSummaryLoader extends PluginComponent {
 
   componentWillUnmount(): void {
     this.mounted = false;
+    this.stopReload?.();
   }
 
   private async attempt(fn: () => any): Promise<IAccountSummaries | null> {

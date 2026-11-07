@@ -22,4 +22,13 @@ describe('AccountSummaryStore', () => {
     AccountSummaryStore.set([]);
     expect(listener).toHaveBeenCalledTimes(1);
   });
+
+  it('runs every registered reloader on reload, and stops after unregistering', () => {
+    const reloader = vi.fn();
+    const stop = AccountSummaryStore.onReload(reloader);
+    AccountSummaryStore.reload();
+    stop();
+    AccountSummaryStore.reload();
+    expect(reloader).toHaveBeenCalledTimes(1);
+  });
 });

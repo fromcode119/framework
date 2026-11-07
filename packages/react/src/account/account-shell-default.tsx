@@ -222,6 +222,7 @@ export class AccountShellDefault extends Reactor {
               // `sections` lets a panel link to other sections without knowing which plugins are
               // installed; `navigate` lets those links switch section in-shell, exactly like the nav —
               // a plain <a> would do a full document load and flash the site's default page first.
+              // `summariesChanged` is for a panel that added or removed something: the menu counts refetch.
               return (
                 <Panel
                   key={`${item.pluginSlug || 'p'}-${index}`}
@@ -229,6 +230,7 @@ export class AccountShellDefault extends Reactor {
                   section={active.key}
                   sections={sections}
                   navigate={this.navigateToSection}
+                  summariesChanged={AccountSummaryStore.reload}
                 />
               );
             })}
