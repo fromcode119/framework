@@ -1,4 +1,5 @@
 import { UrlUtils } from '@core/utils/url-utils';
+import { LegacyInternalApiUrl } from '@core/legacy-internal-api-url';
 
 /**
  * Internal resolution helpers for {@link ApplicationUrlUtils}. Not part of the
@@ -100,10 +101,12 @@ export class ApplicationUrlResolver {
       return '';
     }
 
-    return ApplicationUrlResolver.readEnvironmentBaseUrl([envKey], {
-      stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP,
-    });
+    const options = { stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP };
+    const declared = ApplicationUrlResolver.readEnvironmentBaseUrl([envKey], options);
+    if (declared || normalizedApp !== ApplicationUrlResolver.API_APP) return declared;
+    return LegacyInternalApiUrl.accept(ApplicationUrlResolver.normalizeBaseUrlCandidate(process.env.API_URL, options));
   }
+
 
   /**
    * Base paths already worked out, keyed by the configured URL they come from. Read on every request

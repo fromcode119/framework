@@ -38,11 +38,13 @@ export class AppLauncherMain {
     const appRequire = createRequire(path.join(dir, 'package.json'));
     const { nextStart } = appRequire('next/dist/cli/next-start') as { nextStart: (options: { port: number; hostname: string }, directory: string) => Promise<void> };
     if (app !== 'frontend') {
+      ApplicationUrlUtils.recordOwnPorts([port]);
       await nextStart({ port, hostname }, dir);
       return;
     }
     const warmUp = FrontendWarmup.listen(port, hostname);
     const privatePort = warmUp.port;
+    ApplicationUrlUtils.recordOwnPorts([port, privatePort]);
     const servers = await PublicServerHandover.capture(() => nextStart(warmUp, dir));
     const next = PublicServerHandover.listeningOn(servers, privatePort);
     if (!next) throw new Error(`The frontend did not start on its private port ${privatePort}.`);
