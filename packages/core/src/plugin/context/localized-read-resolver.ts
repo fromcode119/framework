@@ -97,12 +97,14 @@ export class LocalizedReadResolver {
   }
 
   /**
-   * The active locale's value, else the first locale carrying one. `null`/`''`/`undefined` slots are
+   * The active locale's value (its language's when the script variant has none: `zh-hant` → `zh`), else
+   * the first locale carrying one. `null`/`''`/`undefined` slots are
    * skipped so a half-translated record falls through to the locale that actually has the copy instead
    * of rendering blank.
    */
   private static pickLocaleValue(localeMap: Record<string, unknown>, locale: string): unknown {
-    if (locale && LocalizedReadResolver.isMeaningful(localeMap[locale])) return localeMap[locale];
+    const own = locale ? LocalizationUtils.pickLocaleSlot(localeMap, locale) : undefined;
+    if (LocalizedReadResolver.isMeaningful(own)) return own;
 
     for (const value of Object.values(localeMap)) {
       if (LocalizedReadResolver.isMeaningful(value)) return value;

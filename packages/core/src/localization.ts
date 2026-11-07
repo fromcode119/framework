@@ -4,6 +4,7 @@ import { CookieConstants } from '@core/constants/cookie.constants';
 import type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-options.interface';
 import type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
 import { EnvUtils } from '@core/utils/env-utils';
+import { LocaleTag } from '@core/utils/locale-tag';
 
 /**
  * Utilities for locale code normalisation, localised value detection, and
@@ -50,16 +51,23 @@ export class LocalizationUtils {
     return '';
   }
 
+  /**
+   * A locale code lower-cased with `-` separators, or '' when it is not one. `short` gives the key
+   * translations are stored under — the language, plus its script when that is not the usual one
+   * (`en-US` → `en`, `zh-TW` → `zh-hant`); see `LocaleTag`.
+   */
   static normalizeLocaleCode(value: unknown, options: INormalizeLocaleOptions = {}): string {
-    const raw = String(value || '').trim().toLowerCase().replace(/_/g, '-');
-    if (!raw) return '';
-    if (options.short) {
-      const short = raw.split('-')[0];
-      return /^[a-z]{2}$/.test(short) ? short : '';
-    }
-    if (/^[a-z]{2}(?:-[a-z0-9]{2,8})*$/.test(raw)) return raw;
-    const short = raw.split('-')[0];
-    return /^[a-z]{2}$/.test(short) ? short : '';
+    if (options.short) return LocaleTag.key(value);
+    return LocaleTag.full(value) || LocaleTag.key(value);
+  }
+
+  /** The value a locale map holds for `locale`: its own key first, then its language alone (`zh-hant` → `zh`). */
+  static pickLocaleSlot(map: Record<string, unknown>, locale: string): unknown {
+    const key = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    if (!key) return undefined;
+    if (LocalizationUtils.hasLocalizedValue(map[key])) return map[key];
+    const language = LocaleTag.language(key);
+    return language !== key && LocalizationUtils.hasLocalizedValue(map[language]) ? map[language] : undefined;
   }
 
   static hasLocalizedValue(value: unknown): boolean {
@@ -107,8 +115,10 @@ export class LocalizationUtils {
       if (code) normalized[code] = entry;
     });
 
-    if (LocalizationUtils.hasLocalizedValue(normalized[localeCode])) return String(normalized[localeCode]).trim();
-    if (LocalizationUtils.hasLocalizedValue(normalized[fallbackCode])) return String(normalized[fallbackCode]).trim();
+    const own = LocalizationUtils.pickLocaleSlot(normalized, localeCode);
+    if (own !== undefined) return String(own).trim();
+    const fallbackValue = LocalizationUtils.pickLocaleSlot(normalized, fallbackCode);
+    if (fallbackValue !== undefined) return String(fallbackValue).trim();
     const first = Object.values(normalized).find((entry) => LocalizationUtils.hasLocalizedValue(entry));
     return first !== undefined ? String(first).trim() : '';
   }
@@ -133,12 +143,14 @@ export class LocalizationUtils {
         options.preferredLocale || (EnvUtils.isBrowser() ? navigator.language : ''),
       );
       const fallbackLocale = LocalizationUtils.normalizeLocaleCode(options.fallbackLocale || 'en');
-      const preferredShort = preferredLocale.split('-')[0];
-      const fallbackShort = fallbackLocale.split('-')[0];
+      const preferredKey = LocalizationUtils.normalizeLocaleCode(preferredLocale, { short: true });
+      const preferredShort = LocaleTag.language(preferredLocale);
+      const fallbackShort = LocaleTag.language(fallbackLocale);
 
       const map = value as Record<string, unknown>;
       const direct =
         LocalizationUtils.resolveAnyString(map[preferredLocale], options) ||
+        LocalizationUtils.resolveAnyString(map[preferredKey], options) ||
         LocalizationUtils.resolveAnyString(map[preferredShort], options) ||
         LocalizationUtils.resolveAnyString(map[fallbackLocale], options) ||
         LocalizationUtils.resolveAnyString(map[fallbackShort], options);
@@ -226,7 +238,7 @@ export class LocalizationUtils {
     const normalized = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
     if (!normalized) return '';
     const map = LocalizationUtils.toLocaleMap(value);
-    return String(map[normalized] || '').trim();
+    return String(LocalizationUtils.pickLocaleSlot(map, normalized) ?? '').trim();
   }
 
   /** Patch a single locale slot on a field value, returning a new locale map. */
