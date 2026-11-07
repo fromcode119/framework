@@ -55,6 +55,11 @@ export class GeneralBrandCard extends PureReactor {
   }
 
   @bound
+  protected onApiUrlChange(e: ChangeEvent<HTMLInputElement>): void {
+    this.patchSetting('api_url', e.target.value);
+  }
+
+  @bound
   protected onSiteUrlChange(e: ChangeEvent<HTMLInputElement>): void {
     this.patchSetting('site_url', e.target.value);
   }
@@ -161,6 +166,27 @@ export class GeneralBrandCard extends PureReactor {
               onChange={this.onAdminUrlChange}
               className="w-full md:w-64 font-bold"
               placeholder="https://admin.example.com"
+            />
+          </SettingRow>
+        )}
+
+        {this.shown('api_url') && (
+          <SettingRow
+            theme={theme}
+            icon={FrameworkIcons.Globe}
+            title={AdminI18n.t('settings.general.apiUrl')}
+            description={AdminI18n.t('settings.general.apiUrlDescription')}
+            explanation={(
+              <Explanation>
+                <p>{AdminI18n.t('settings.general.apiUrlExplanation')}</p>
+              </Explanation>
+            )}
+          >
+            <Input
+              value={settings.api_url}
+              onChange={this.onApiUrlChange}
+              className="w-full md:w-64 font-bold"
+              placeholder="https://example.com"
             />
           </SettingRow>
         )}

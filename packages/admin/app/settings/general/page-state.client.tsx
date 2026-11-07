@@ -29,6 +29,7 @@ export abstract class GeneralSettingsPageState extends AdminComponent {
     'account_section_order',
     'frontend_url',
     'admin_url',
+    'api_url',
     'site_url',
     'site_environment',
     'marketplace_url',

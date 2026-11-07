@@ -65,6 +65,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       account_section_order: String(settings.account_section_order ?? '').split(',').map((key) => key.trim()).filter(Boolean).join(', '),
       frontend_url: String(settings.frontend_url ?? '').trim(),
       admin_url: String(settings.admin_url ?? '').trim(),
+      api_url: String(settings.api_url ?? '').trim(),
       site_url: String(settings.site_url ?? '').trim(),
       marketplace_url: String(settings.marketplace_url ?? '').trim(),
       framework_repository: String(settings.framework_repository ?? '').trim(),
