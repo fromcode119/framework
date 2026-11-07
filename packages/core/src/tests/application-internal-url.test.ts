@@ -5,9 +5,8 @@ import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
  * Three properties, each load-bearing.
  *
  * 1. The internal address wins, so one stack talks to itself by Compose service name.
- * 2. An EMPTY value is not a value — a split deployment clears the variable and the app's own
- *    `ADMIN_URL`/`FRONTEND_URL` takes over. Treat `''` as configured and that deployment POSTs at
- *    nothing.
+ * 2. A public domain variable is never a fallback: a domain is not deployment configuration, and an
+ *    empty internal address means "not running here".
  * 3. It reads the ENVIRONMENT ONLY. This one is a security boundary: the resolved address is where the
  *    internal secret gets sent, and the DB-backed reader answers for the frontend out of `site_url`
  *    even on a deployment that runs no frontend.
@@ -29,14 +28,14 @@ describe('ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment', () => {
     expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('admin')).toBe('http://admin:3000');
   });
 
-  it('falls back to the app\'s own public URL env var when the internal one is empty or unset', () => {
+  it('never falls back to a public domain variable when the internal one is empty or unset', () => {
     process.env.FRONTEND_URL = 'https://shop.example.com';
 
     process.env.INTERNAL_FRONTEND_URL = '';
-    expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('frontend')).toBe('https://shop.example.com');
+    expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('frontend')).toBe('');
 
     delete process.env.INTERNAL_FRONTEND_URL;
-    expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('frontend')).toBe('https://shop.example.com');
+    expect(ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment('frontend')).toBe('');
   });
 
   /**

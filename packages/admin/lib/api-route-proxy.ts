@@ -9,9 +9,8 @@ import { ApplicationUrlUtils } from '@fromcode119/core/utils/application-url-uti
 /**
  * Same-origin proxy to the framework API — the admin's twin of the storefront's.
  *
- * The admin bundle calls the API on the host it was served from: `NEXT_PUBLIC_API_URL` is inlined at
- * image BUILD time, so a published image carries none and `RuntimeBridge.resolveApiBaseUrl()` falls
- * through to `window.location.origin`. Behind the framework gateway those `/api/*` paths never reach
+ * The admin bundle calls the API on the host it was served from: `RuntimeBridge.resolveApiBaseUrl()`
+ * answers `window.location.origin`. Behind the framework gateway those `/api/*` paths never reach
  * this route; a deployment behind its own proxy (Traefik, nginx, Caddy) has nothing else serving
  * them, and the admin answered every one with its 404 HTML page — the whole console failed on
  * `Unexpected token '<'`, including the first-run setup screen. This is what that deployment falls
@@ -49,15 +48,10 @@ export class AdminApiRouteProxy {
 
   /**
    * The INTERNAL address, so the call stays on the container network instead of going back out
-   * through the public proxy and its TLS. Compose sets `API_URL` from `INTERNAL_API_URL` for exactly
-   * this; core's candidates cover a deployment that set neither. An unresolved base is reported as a
-   * 502 above rather than guessed at.
+   * through the public proxy and its TLS: `INTERNAL_API_URL`, else the container service. An
+   * unresolved base is reported as a 502 above rather than guessed at.
    */
   private static resolveUpstreamBaseUrl(): string {
-    const configured = String(process.env.INTERNAL_API_URL || process.env.API_URL || '').trim();
-    if (configured) {
-      return configured.replace(/\/+$/, '');
-    }
     return ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '';
   }
 

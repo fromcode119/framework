@@ -14,8 +14,6 @@ services:
       target: gateway-only
     environment:
       - PORT=3000
-      - API_URL=${API_PUBLIC_URL}
-      - ADMIN_URL=${ADMIN_PUBLIC_URL}
       - API_TARGET_URL=http://api:3000
       - ADMIN_TARGET_URL=http://admin:3000
     depends_on:
@@ -35,7 +33,6 @@ services:
       - DATABASE_URL=${DATABASE_URL:?Set the runtime DATABASE_URL in your deployment environment}
       - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
-      - API_URL=${API_PUBLIC_URL}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
       - APPEARANCE_DIR=/app/appearance
@@ -45,8 +42,8 @@ services:
       # Same value on every service of the deployment; unset means those endpoints reject every call.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       # The admin is in THIS stack, so its service name resolves. The frontend is deployed separately
-      # here, where a service name would not resolve across stacks — leave it empty and the framework
-      # falls back to the public FRONTEND_URL, or set it to an address the api can actually reach.
+      # here, where a service name would not resolve across stacks — set it to an address the api can
+      # actually reach, or leave it empty to mark the frontend as not reachable from here.
       - INTERNAL_ADMIN_URL=${INTERNAL_ADMIN_URL:-http://admin:3000}
       - INTERNAL_FRONTEND_URL=${INTERNAL_FRONTEND_URL:-}
     depends_on:
@@ -76,9 +73,7 @@ services:
       target: admin-only
     command: npm run start --workspace=@fromcode119/admin
     environment:
-      - API_URL=http://api:3000
-      - NEXT_PUBLIC_API_URL=${API_PUBLIC_URL}
-      - ADMIN_URL=${ADMIN_PUBLIC_URL}
+      - INTERNAL_API_URL=${INTERNAL_API_URL:-http://api:3000}
       # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
       # Same value on every service of the deployment; unset means those endpoints reject every call.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}

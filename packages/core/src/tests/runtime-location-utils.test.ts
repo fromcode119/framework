@@ -1,16 +1,16 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { RuntimeLocationUtils } from '@core/utils/runtime-location-utils';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 
-/** Runs `body` with the admin URL declared, restoring whatever was there. */
+/** Runs `body` with the admin URL configured in Settings, restoring whatever was there. */
 const withAdminUrl = (url: string, body: () => void): void => {
-  const adminUrl = process.env.ADMIN_URL;
   const publicBasePath = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH;
-  process.env.ADMIN_URL = url;
+  ApplicationUrlUtils.registerAppUrlSettingsReader((app) => (app === ApplicationUrlUtils.ADMIN_APP ? url : null));
   process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = '';
   try {
     body();
   } finally {
-    process.env.ADMIN_URL = adminUrl;
+    ApplicationUrlUtils.registerAppUrlSettingsReader(null);
     process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = publicBasePath;
   }
 };
@@ -74,21 +74,15 @@ describe('RuntimeLocationUtils', () => {
   });
 
   it('falls back to the configured admin base path when no admin segment is present in the current browser location', () => {
-    const originalAdminUrl = process.env.ADMIN_URL;
-    const originalNextPublicAdminBasePath = process.env.NEXT_PUBLIC_ADMIN_BASE_PATH;
-
-    process.env.ADMIN_URL = 'https://example.test/dashboard/admin';
-    process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = '';
     vi.stubGlobal('window', {
       location: {
         href: 'https://example.test/account',
       },
     });
 
-    expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/dashboard/admin/consent');
-
-    process.env.ADMIN_URL = originalAdminUrl;
-    process.env.NEXT_PUBLIC_ADMIN_BASE_PATH = originalNextPublicAdminBasePath;
+    withAdminUrl('https://example.test/dashboard/admin', () => {
+      expect(RuntimeLocationUtils.toAdminPath('/consent')).toBe('/dashboard/admin/consent');
+    });
   });
 
   /**

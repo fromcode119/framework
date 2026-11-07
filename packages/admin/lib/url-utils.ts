@@ -25,10 +25,6 @@ export class AdminUrlUtils {
         explicitValue ||
         settingsFrontend ||
         settingsSite ||
-        AdminUrlUtils.toNonEmptyString(process.env.FRONTEND_URL) ||
-        AdminUrlUtils.toNonEmptyString(process.env.NEXT_PUBLIC_SITE_URL) ||
-        AdminUrlUtils.toNonEmptyString(process.env.PUBLIC_APP_URL) ||
-        AdminUrlUtils.toNonEmptyString(process.env.APP_URL) ||
         ApplicationUrlUtils.inferBrowserBaseUrl(ApplicationUrlUtils.FRONTEND_APP) ||
         fallbackValue;
 

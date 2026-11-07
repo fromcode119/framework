@@ -25,31 +25,25 @@ describe('ServerApiPaths.getServerApiPrefixes', () => {
     process.env = { ...originalEnv };
   });
 
-  it('excludes the browser-facing NEXT_PUBLIC_API_URL when a server-side base is configured', () => {
-    process.env.API_URL = 'http://api:3000';
-    process.env.NEXT_PUBLIC_API_URL = 'http://api.framework.local';
-
-    const prefixes = ServerApiPaths.getServerApiPrefixes();
-
-    expect(prefixes.some((prefix) => prefix.startsWith('http://api:3000'))).toBe(true);
-    expect(prefixes.some((prefix) => prefix.includes('api.framework.local'))).toBe(false);
-  });
-
-  it('prefers INTERNAL_API_URL ahead of API_URL', () => {
+  it('uses only INTERNAL_API_URL when the deployment names one — never a public domain variable', () => {
     process.env.INTERNAL_API_URL = 'http://api-internal:3000';
-    process.env.API_URL = 'http://api:3000';
+    process.env.API_URL = 'https://api.example.com';
+    process.env.NEXT_PUBLIC_API_URL = 'http://api.framework.local';
 
     const prefixes = ServerApiPaths.getServerApiPrefixes();
 
     expect(prefixes[0].startsWith('http://api-internal:3000')).toBe(true);
+    expect(prefixes.some((prefix) => prefix.includes('api.example.com') || prefix.includes('api.framework.local'))).toBe(false);
   });
 
-  it('still falls back to the public URL when nothing server-side is configured', () => {
+  it('falls back to the container service when nothing internal is named — not to a domain', () => {
     process.env.NEXT_PUBLIC_API_URL = 'http://api.framework.local';
+    process.env.API_URL = 'https://api.example.com';
 
     const prefixes = ServerApiPaths.getServerApiPrefixes();
 
-    expect(prefixes.some((prefix) => prefix.includes('api.framework.local'))).toBe(true);
+    expect(prefixes[0].startsWith('http://api:3000')).toBe(true);
+    expect(prefixes.some((prefix) => prefix.includes('api.example.com') || prefix.includes('api.framework.local'))).toBe(false);
   });
 });
 

@@ -55,19 +55,19 @@ export class SystemSettingDescriptors {
     },
     [SystemConstants.META_KEY.SITE_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true, members: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().siteUrl, description: "Used only when Frontend URL is blank, as the same frontend address. Leave blank on a multi-site platform.", group: "General" },
+      seed: { value: '', description: "Used only when Frontend URL is blank, as the same frontend address. Leave blank on a multi-site platform.", group: "General" },
     },
     [SystemConstants.META_KEY.FRONTEND_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true, members: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().frontendUrl, description: "This deployment's frontend address. On a multi-site platform leave blank — a value here replaces every site's own domain in emails, sitemaps and links.", group: "General" },
+      seed: { value: '', description: "This deployment's frontend address. On a multi-site platform leave blank — a value here replaces every site's own domain in emails, sitemaps and links.", group: "General" },
     },
     [SystemConstants.META_KEY.ADMIN_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().adminUrl, description: "The platform console's address — it opens the console of every site.", group: "General" },
+      seed: { value: '', description: "The platform console's address — it opens the console of every site.", group: "General" },
     },
     [SystemConstants.META_KEY.API_URL]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().apiUrl, description: "The public base URL of the API. Blank uses the domain the admin and sites are served from.", group: "General" },
+      seed: { value: '', description: "The public base URL of the API. Blank uses the domain the admin and sites are served from.", group: "General" },
     },
     // ONE key for the platform and for every site — INHERITED, so a site may set its own and a site
     // that has not inherits the operator's. See SettingScope.INHERITED for why this needs no second key. `_system_meta` is keyed `(key, tenant_id)`, so a
@@ -106,7 +106,7 @@ export class SystemSettingDescriptors {
     }, // candidate for PLATFORM (Phase 2)
     [SystemConstants.META_KEY.PLATFORM_DOMAIN]: {
       scope: SettingScope.SITE, writable: true, exposed: true,
-      seed: { value: () => SystemSettingSeedDefaults.urlDefaults().platformDomain, description: "Root domain for the entire platform setup.", group: "General" },
+      seed: { value: '', description: "Root domain for the entire platform setup.", group: "General" },
     }, // candidate for PLATFORM (Phase 2)
     [SystemConstants.META_KEY.TELEMETRY_ENABLED]: { scope: SettingScope.SITE, writable: true, exposed: true }, // candidate for PLATFORM (Phase 2)
 

@@ -101,11 +101,10 @@ export class ThemeArchiveSupport {
     }
 
     const configuredUrls = [
-      // Setting-first: the api's public URL is an admin setting now, and an operator who changed it
-      // there would otherwise still be validated against the stale env value.
-      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP) || process.env.API_URL,
-      process.env.FRONTEND_URL,
-      process.env.ADMIN_URL,
+      // The app addresses configured in Settings — a domain is never read from the environment.
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       process.env.MARKETPLACE_URL,
     ]
       .map((value) => String(value || '').trim().toLowerCase())

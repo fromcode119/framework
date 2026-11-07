@@ -41,12 +41,8 @@ From the repository root:
 cp .env.example .env
 ```
 
-Important variables to review:
+Important variables to review (domains are not among them — they are set in Settings → General):
 
-- `API_URL=http://api.framework.local`
-- `NEXT_PUBLIC_API_URL=http://api.framework.local`
-- `ADMIN_URL=http://admin.framework.local`
-- `FRONTEND_URL=http://frontend.framework.local`
 - `CORS_ALLOWED_DOMAINS=framework.local,api.framework.local,admin.framework.local`
 - `PLUGINS_DIR=/app/plugins`
 - `THEMES_DIR=/app/themes`

@@ -13,7 +13,7 @@ export class ServerApiPaths {
 
   static buildInternalApiBaseUrl(): string {
     return String(
-      process.env.INTERNAL_API_URL || process.env.API_URL || ServerApiPaths.buildFrontendApiBaseUrl(),
+      process.env.INTERNAL_API_URL || ServerApiPaths.buildFrontendApiBaseUrl(),
     )
       .trim()
       .replace(/\/+$/, '');
@@ -63,27 +63,14 @@ export class ServerApiPaths {
   /**
    * The API bases a SERVER render may fetch through, in priority order.
    *
-   * `NEXT_PUBLIC_API_URL` is deliberately absent while any server-side base is configured. It is
-   * the BROWSER-facing URL: in a container deployment that public hostname does not resolve from
-   * inside the frontend container at all. Including it made every fallback attempt stall the full
-   * DNS timeout (measured: 8s of `EAI_AGAIN` per attempt) and — far worse — saturate the container
-   * resolver, after which the healthy server-side base ALSO failed to resolve. That cascade is what
-   * turned published pages into intermittent hard 404s. It stays as a last resort only when nothing
-   * server-side is configured, so an initial setup that only sets the public URL still works.
+   * Only deployment-internal addresses: `INTERNAL_API_URL` when the deployment names one, otherwise the
+   * container service and loopback candidates. Never a public domain — a domain is set in the admin,
+   * not here, and in a container the public hostname may not even resolve (measured: 8s of `EAI_AGAIN`
+   * per attempt, then a saturated resolver that took the healthy base down with it).
    */
   static getServerApiPrefixes(): string[] {
-    const bases = ServerApiPaths.normalizeApiBases([
-      process.env.INTERNAL_API_URL,
-      process.env.API_URL,
-    ]);
+    const bases = ServerApiPaths.normalizeApiBases([process.env.INTERNAL_API_URL]);
 
-    if (bases.length === 0) {
-      bases.push(...ServerApiPaths.normalizeApiBases([process.env.NEXT_PUBLIC_API_URL]));
-    }
-
-    // Only add localhost fallbacks when NO primary URL is configured
-    // (avoids useless connection attempts in Docker where localhost != API)
-    // real API base is configured (prevents silent failures during initial setup).
     if (bases.length === 0) {
       for (const fallback of ApplicationUrlUtils.getServerApiBaseUrlCandidates()) {
         if (!bases.includes(fallback)) bases.push(fallback);
@@ -98,7 +85,6 @@ export class ServerApiPaths {
     return values
       .map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true }))
       .filter(Boolean)
-      .filter((value) => !ServerApiPaths.isLikelyFrontendBase(value))
       .map(ServerApiPaths.trimTrailingSlash);
   }
 
@@ -115,44 +101,19 @@ export class ServerApiPaths {
    * resized images. It is baked into server-rendered HTML, so it must be an address the visitor can
    * reach, and EMPTY (a relative path) when there is none.
    *
-   * It previously read `API_URL` too and fell back to a localhost base. Both are addresses of this
-   * SERVER, not of the visitor's browser: in a container `API_URL` is `http://api:3000`, so a
-   * deployment that set no public URL emitted `http://api:3000/api/themes/<t>/ui/bundle.js` and
-   * `src:url(http://api:3000/.../font.woff)` into the page — a theme that cannot load and fonts that
-   * cannot resolve, with nothing in the server log to say so. The localhost fallback was the same
-   * mistake with a friendlier hostname, and an invented value besides.
-   *
-   * Empty is the correct answer when nothing public is configured: `ApiPathUtils.joinApiPath` turns an
+   * Always EMPTY — a relative path. A domain is never deployment configuration, and the visitor's own
+   * host is the right origin on every site of a multi-site platform. `ApiPathUtils.joinApiPath` turns an
    * empty base into a leading-slash RELATIVE path, which the visitor's own host serves — the gateway
    * routes `/api/*` on any app host to the api, and the app's own `/api` proxy covers a deployment
    * with no gateway. Same-origin is also what the browser already does for its api calls.
    */
   static buildPublicApiBaseUrl(): string {
-    return ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL'], { stripApiPath: true });
+    return '';
   }
 
 
   static trimTrailingSlash(value: string): string {
     return value.replace(/\/+$/, '');
-  }
-
-
-  static isLikelyFrontendBase(value: string): boolean {
-    try {
-      const candidate = new URL(ApplicationUrlUtils.normalizeBaseUrlCandidate(value)).origin.toLowerCase();
-      const configuredFrontendOrigins = [
-        process.env.FRONTEND_URL,
-      ]
-        .map((origin) => ApplicationUrlUtils.normalizeBaseUrlCandidate(origin))
-        .filter(Boolean)
-        .map((origin) => {
-          try { return new URL(origin).origin.toLowerCase(); } catch { return ''; }
-        })
-        .filter(Boolean);
-      return configuredFrontendOrigins.includes(candidate);
-    } catch {
-      return false;
-    }
   }
 
 

@@ -68,7 +68,7 @@ export class AdminIndexingPolicy {
   /**
    * Where to ask, from inside the admin's own process.
    *
-   * `API_URL` first: it is the in-cluster address, so this never leaves the network or pays for TLS,
+   * The in-cluster address (`INTERNAL_API_URL`, else the container service), so this never leaves the network or pays for TLS,
    * and it keeps working when the public hostname does not resolve from inside the container.
    *
    * The `/api` segment is not optional — the api mounts its versioned routes under it. Asking for
@@ -76,8 +76,7 @@ export class AdminIndexingPolicy {
    * by refusing, so the setting looked dead while being read perfectly.
    */
   private static hostEndpoint(): string {
-    const base = String(process.env.API_URL || '').trim()
-      || ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    const base = ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '';
     return ApplicationUrlUtils.joinApiPath(base.replace(/\/+$/, ''), ApiPathUtils.authPath(RouteConstants.SEGMENTS.HOST_INFO));
   }
 

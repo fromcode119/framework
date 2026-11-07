@@ -14,10 +14,13 @@ as needed.
 | `PORT` | `3000` | API server port |
 | `ADMIN_PORT` | `3001` | Admin panel port |
 | `FRONTEND_PORT` | `3002` | Frontend server port |
-| `NEXT_PUBLIC_API_URL` | _(empty)_ | Base for asset URLs in server-rendered pages. Empty means relative, i.e. the visitor's own host. The browser always calls the API on the page's own origin regardless of this. |
-| `API_URL` | _(empty)_ | Server-to-server API URL — use the Docker service name in containers, e.g. `http://api:3000`. On the api itself it seeds the public API URL on first boot; change it afterwards in Settings → General. |
+| `INTERNAL_API_URL` | `http://api:3000` | Server-to-server API address for the admin and storefront servers — the Docker service name in containers. Never a domain: the browser always calls the API on the page's own host. |
 | `CORS_ALLOWED_DOMAINS` | `localhost` | Comma-separated allowed origins |
 | `DEFAULT_LOCALE` | `en` | Default language/locale |
+
+Domains are not environment variables. Install on the server's IP: the setup wizard records the address
+it was opened on, and the api, admin and storefront addresses are changed afterwards in
+Settings → General. Links, CORS, routing and certificates read them from there.
 
 ## Database (PostgreSQL)
 

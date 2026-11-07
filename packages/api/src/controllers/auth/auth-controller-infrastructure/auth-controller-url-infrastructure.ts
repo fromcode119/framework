@@ -20,13 +20,6 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.FRONTEND_URL)) || '').trim();
     if (configuredInDb) return configuredInDb.replace(/\/+$/, '');
 
-    const configured =
-      process.env.FRONTEND_URL ||
-      process.env.PUBLIC_APP_URL ||
-      process.env.APP_URL;
-
-    if (configured) return configured.replace(/\/+$/, '');
-
     const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
     if (siteUrl) return siteUrl.replace(/\/+$/, '');
 
@@ -39,9 +32,6 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
   protected async getAdminBaseUrl(req: Request): Promise<string> {
     const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL)) || '').trim();
     if (configuredInDb) return this.normalizeAdminBaseUrl(configuredInDb);
-
-    const configured = process.env.ADMIN_URL;
-    if (configured) return this.normalizeAdminBaseUrl(configured);
 
     const { host, proto } = this.getRequestHostAndProto(req);
     if (host) {

@@ -14,9 +14,10 @@ export class ApplicationUrlResolver {
 
   private static appUrlSettingsReader: ((app: string) => string | null) | null = null;
 
-  /** Pass `null` to unregister — the resolver then reads the environment alone. */
+  /** Pass `null` to unregister — every public app URL then resolves to `''` (relative). */
   static registerAppUrlSettingsReader(reader: ((app: string) => string | null) | null): void {
     ApplicationUrlResolver.appUrlSettingsReader = reader;
+    ApplicationUrlResolver.basePaths.clear();
   }
 
   static normalizeBaseUrlCandidate(
@@ -49,126 +50,104 @@ export class ApplicationUrlResolver {
     return '';
   }
 
+  /**
+   * An app's PUBLIC address — from admin Settings and nowhere else.
+   *
+   * A domain is never deployment configuration. An install is reached by its IP first; the setup
+   * wizard records the address it was reached on, and every later change is made in Settings →
+   * General. An environment variable used to be read as the fallback, which made a second, invisible
+   * source of the same value: a domain change in the admin could be silently outranked by a value
+   * nobody could see from the console. `''` means "not configured" and callers use a relative path.
+   *
+   * The name is kept for the extensions that already call it.
+   */
   static readAppBaseUrlFromEnvironment(app: string): string {
     const normalizedApp = String(app || '').trim().toLowerCase();
-
-    let envKeys: string[];
-    if (normalizedApp === ApplicationUrlResolver.API_APP) {
-      envKeys = ['API_URL', 'NEXT_PUBLIC_API_URL'];
-    } else if (normalizedApp === ApplicationUrlResolver.ADMIN_APP) {
-      envKeys = ['ADMIN_URL'];
-    } else if (normalizedApp === ApplicationUrlResolver.FRONTEND_APP) {
-      envKeys = ['FRONTEND_URL', 'NEXT_PUBLIC_SITE_URL', 'PUBLIC_APP_URL', 'APP_URL'];
-    } else {
+    if (
+      normalizedApp !== ApplicationUrlResolver.API_APP
+      && normalizedApp !== ApplicationUrlResolver.ADMIN_APP
+      && normalizedApp !== ApplicationUrlResolver.FRONTEND_APP
+    ) {
       return '';
     }
-    const stripApiPath = normalizedApp === ApplicationUrlResolver.API_APP;
-
-    // Setting-first, matching how CORS already resolves these URLs: a value configured in
-    // admin Settings is authoritative; the env var is the fallback when the setting is
-    // empty. This keeps the admin UI meaningful (what you set takes effect) and consistent
-    // across CORS, links, emails and PDFs.
-    if (ApplicationUrlResolver.appUrlSettingsReader) {
-      const fromSetting = ApplicationUrlResolver.normalizeBaseUrlCandidate(
-        ApplicationUrlResolver.appUrlSettingsReader(normalizedApp),
-        { stripApiPath },
-      );
-      if (fromSetting) {
-        return UrlUtils.trimTrailingSlash(fromSetting);
-      }
+    if (!ApplicationUrlResolver.appUrlSettingsReader) {
+      return '';
     }
-    return UrlUtils.trimTrailingSlash(
-      ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, { stripApiPath }),
+    return ApplicationUrlResolver.normalizeBaseUrlCandidate(
+      ApplicationUrlResolver.appUrlSettingsReader(normalizedApp),
+      { stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP },
     );
   }
 
   /**
-   * Deployment-internal address for an app — the ENVIRONMENT only, deliberately.
+   * Deployment-internal address for an app — the `INTERNAL_*` environment variables only.
    *
-   * Unlike {@link readAppBaseUrlFromEnvironment} this does NOT consult the DB-backed settings reader,
-   * and that omission is the point. See the public façade
+   * These name a container (`http://api:3000`), never a domain, and they never consult the DB-backed
+   * settings reader. See the public façade
    * {@link ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment} for why.
    */
   static readAppInternalBaseUrlFromEnvironment(app: string): string {
     const normalizedApp = String(app || '').trim().toLowerCase();
 
-    let envKeys: string[];
+    let envKey: string;
     if (normalizedApp === ApplicationUrlResolver.API_APP) {
-      envKeys = ['INTERNAL_API_URL', 'API_URL'];
+      envKey = 'INTERNAL_API_URL';
     } else if (normalizedApp === ApplicationUrlResolver.ADMIN_APP) {
-      envKeys = ['INTERNAL_ADMIN_URL', 'ADMIN_URL'];
+      envKey = 'INTERNAL_ADMIN_URL';
     } else if (normalizedApp === ApplicationUrlResolver.FRONTEND_APP) {
-      envKeys = ['INTERNAL_FRONTEND_URL', 'FRONTEND_URL'];
+      envKey = 'INTERNAL_FRONTEND_URL';
     } else {
       return '';
     }
 
-    // Only the app's OWN canonical URL variable is accepted as the fallback. The generic aliases
-    // `readAppBaseUrlFromEnvironment` allows for the frontend (`NEXT_PUBLIC_SITE_URL`, `APP_URL`, …)
-    // are excluded: they routinely name a marketing site rather than the storefront app, and this
-    // address decides where a credential is sent.
-    return UrlUtils.trimTrailingSlash(
-      ApplicationUrlResolver.readEnvironmentBaseUrl(envKeys, {
-        stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP,
-      }),
-    );
+    return ApplicationUrlResolver.readEnvironmentBaseUrl([envKey], {
+      stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP,
+    });
   }
 
   /**
-   * Base paths already worked out, per app and the environment values they come from. Read on every
-   * request (the api's route table, the request-surface checks), and each read parsed URLs: measured
-   * under load, 12% of the api's CPU. Keyed by the values themselves, so a changed environment is read
-   * afresh.
+   * Base paths already worked out, keyed by the configured URL they come from. Read on every request
+   * (the api's route table, the request-surface checks), and each read parsed URLs: measured under
+   * load, 12% of the api's CPU. Keyed by the value itself, so a URL changed in Settings is read afresh.
    */
   private static readonly basePaths = new Map<string, string>();
 
-  /** The environment variables each app's base path is derived from, in computeAppBasePath's order. */
-  private static readonly BASE_PATH_SOURCES: Readonly<Record<string, readonly [string, string]>> = {
-    [ApplicationUrlResolver.API_APP]: ['API_URL', 'NEXT_PUBLIC_API_URL'],
-    [ApplicationUrlResolver.ADMIN_APP]: ['ADMIN_URL', 'NEXT_PUBLIC_ADMIN_BASE_PATH'],
-    [ApplicationUrlResolver.FRONTEND_APP]: ['FRONTEND_URL', 'NEXT_PUBLIC_FRONTEND_URL'],
-  };
-
+  /**
+   * The path an app is mounted on (`/admin`, `/api`) — taken from its configured URL in Settings.
+   *
+   * The admin's build-time mount (`NEXT_PUBLIC_ADMIN_BASE_PATH`) is a PATH baked into the bundle, not a
+   * domain, and stays the admin's fallback when no admin URL is configured yet.
+   */
   static readAppBasePathFromEnvironment(app: string): string {
-    const env = typeof process !== 'undefined' && process?.env ? process.env : ({} as Record<string, string | undefined>);
-    // Only the two variables this app's path is derived from (computeAppBasePath): each read of the
-    // environment is a call into the runtime, and this runs several times per request.
-    const [first, second] = ApplicationUrlResolver.BASE_PATH_SOURCES[app] ?? [];
-    const key = first ? `${app}\u0000${env[first] ?? ''}\u0000${env[second] ?? ''}` : app;
+    const normalizedApp = String(app || '').trim().toLowerCase();
+    const configured = ApplicationUrlResolver.appUrlSettingsReader?.(normalizedApp) ?? '';
+    const key = `${normalizedApp}\u0000${configured}`;
     const known = ApplicationUrlResolver.basePaths.get(key);
     if (known !== undefined) return known;
-    const value = ApplicationUrlResolver.computeAppBasePath(app);
+    const value = ApplicationUrlResolver.computeAppBasePath(normalizedApp, configured);
     if (ApplicationUrlResolver.basePaths.size > 64) ApplicationUrlResolver.basePaths.clear();
     ApplicationUrlResolver.basePaths.set(key, value);
     return value;
   }
 
-  private static computeAppBasePath(app: string): string {
-    const normalizedApp = String(app || '').trim().toLowerCase();
-    if (normalizedApp === ApplicationUrlResolver.API_APP) {
-      return ApplicationUrlResolver.deriveBasePathFromUrl(
-        process.env.API_URL || process.env.NEXT_PUBLIC_API_URL || '',
-        ApplicationUrlResolver.defaultBasePathForApp(normalizedApp),
-      );
+  private static computeAppBasePath(app: string, configured: string): string {
+    // The api's mount is the same in every process — the gateway, the admin and the storefront cannot
+    // read Settings, so a path taken from the configured api URL would differ between them.
+    if (app === ApplicationUrlResolver.API_APP) {
+      return ApplicationUrlResolver.defaultBasePathForApp(app);
     }
 
-    if (normalizedApp === ApplicationUrlResolver.ADMIN_APP) {
-      const fromAdminUrl = ApplicationUrlResolver.deriveBasePathFromUrl(
-        process.env.ADMIN_URL || '',
-        ApplicationUrlResolver.defaultBasePathForApp(normalizedApp),
-      );
+    if (app === ApplicationUrlResolver.ADMIN_APP) {
+      const fromAdminUrl = ApplicationUrlResolver.deriveBasePathFromUrl(configured, '');
       if (fromAdminUrl) {
         return fromAdminUrl;
       }
-
-      return ApplicationUrlResolver.normalizePathPrefix(process.env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
+      const env = typeof process !== 'undefined' && process?.env ? process.env : ({} as Record<string, string | undefined>);
+      return ApplicationUrlResolver.normalizePathPrefix(env.NEXT_PUBLIC_ADMIN_BASE_PATH || '');
     }
 
-    if (normalizedApp === ApplicationUrlResolver.FRONTEND_APP) {
-      return ApplicationUrlResolver.deriveBasePathFromUrl(
-        process.env.FRONTEND_URL || process.env.NEXT_PUBLIC_FRONTEND_URL || '',
-        '',
-      );
+    if (app === ApplicationUrlResolver.FRONTEND_APP) {
+      return ApplicationUrlResolver.deriveBasePathFromUrl(configured, '');
     }
 
     return '';

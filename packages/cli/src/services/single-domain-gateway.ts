@@ -79,9 +79,6 @@ export class SingleDomainGateway {
     if (this.frontendTarget) {
       console.log(`[single-domain-gateway] Frontend target: ${this.frontendTarget}`);
     }
-    console.log(`[single-domain-gateway] API public URL: ${String(process.env.API_URL || '').trim() || '(not set)'}`);
-    console.log(`[single-domain-gateway] Admin public URL: ${String(process.env.ADMIN_URL || '').trim() || '(not set)'}`);
-    console.log(`[single-domain-gateway] Frontend public URL: ${String(process.env.FRONTEND_URL || '').trim() || '(not set)'}`);
   }
 
   private static readPort(): number {

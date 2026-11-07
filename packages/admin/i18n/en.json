@@ -1726,7 +1726,7 @@
       "theVerifyButtonAndLink": "The verify button and link.",
       "add": "Add",
       "frontendUrlMultiSite": "<strong>On a multi-site platform, leave it blank.</strong> A value here is read before the request is, so it replaces <em>every</em> site’s own domain everywhere in that list. Blank falls back to <code>FRONTEND_URL</code> in the environment, then to the host that made the request — which is how each site gets its own address.",
-      "adminUrlFallback": "Blank falls back to <code>ADMIN_URL</code> in the environment, then to the host that made the request. Unlike the two above, this one belongs to the platform, however many sites it serves.",
+      "adminUrlFallback": "Blank falls back to the host that made the request. Unlike the two above, this one belongs to the platform, however many sites it serves.",
       "siteUrlMultiSite": "<strong>On a multi-site platform, leave it blank</strong>, for the same reason as Frontend URL.",
       "marketplaceUrlSite": "Where THIS site browses for plugins and themes. Blank uses the platform’s marketplace; <code>off</code> turns this site’s marketplace off. A catalogue that cannot be reached shows an empty marketplace rather than an error.",
       "marketplaceUrlPlatform": "Where the platform browses for plugins, themes and appearances, and checks for updates, and what every site that has not set its own uses. Blank uses this deployment’s <code>MARKETPLACE_URL</code> environment value, and <code>{{address}}</code> when that is unset; <code>off</code> turns the marketplace off.",

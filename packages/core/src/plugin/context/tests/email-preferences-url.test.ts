@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { EmailContextProxy } from '@core/plugin/context/email';
 import { EmailPreferencesTokenService } from '@core/email/email-preferences-token-service';
 import { SigningSecretService } from '@core/security/signing-secret-service';
@@ -22,8 +23,10 @@ describe('context.email.buildPreferencesUrl', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     vi.spyOn(SigningSecretService, 'signingKey').mockResolvedValue(SECRET);
-    process.env.FRONTEND_URL = 'https://shop.example.com';
+    ApplicationUrlUtils.registerAppUrlSettingsReader((app) => (app === ApplicationUrlUtils.FRONTEND_APP ? 'https://shop.example.com' : null));
   });
+
+  afterEach(() => ApplicationUrlUtils.registerAppUrlSettingsReader(null));
 
   it('builds a frontend link carrying a token that resolves back to the address', async () => {
     const url = await email().buildPreferencesUrl('Buyer@Example.COM');

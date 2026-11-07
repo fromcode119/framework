@@ -11,8 +11,6 @@ export class EnvConfig {
     PORT: z.string().transform((v) => parseInt(v, 10)).default('4000'),
 
     // Service Discovery & External Networking
-    API_URL: z.string().url().optional(),
-    ADMIN_URL: z.string().url().optional(),
     // Accepts marketplace site URL, API/feed URL, local file path, or "off"/"false"/"disabled" to disable marketplace.
     // No built-in host: blank means no marketplace until an operator names one (env or Settings → General).
     MARKETPLACE_URL: z.string().default(''),
