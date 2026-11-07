@@ -9,8 +9,13 @@ import { SystemRedirectService } from '@fromcode119/core';
 export class SystemRedirectsController {
   constructor(private readonly service: SystemRedirectService) {}
 
-  async list(_req: Request, res: Response): Promise<void> {
-    res.json({ redirects: await this.service.list() });
+  async list(req: Request, res: Response): Promise<void> {
+    const query = req.query || {};
+    res.json(await this.service.list({
+      search: String(query.search ?? ''),
+      page: Number(query.page) || 1,
+      limit: Number(query.limit) || undefined,
+    }));
   }
 
   async create(req: Request, res: Response): Promise<void> {

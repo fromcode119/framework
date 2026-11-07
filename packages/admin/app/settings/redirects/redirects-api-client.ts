@@ -15,9 +15,13 @@ export class RedirectsApiClient {
     return ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_REDIRECT, { id });
   }
 
-  static async list(): Promise<Record<string, any>[]> {
-    const response = await AdminApi.get(RedirectsApiClient.BASE, { noDedupe: true });
-    return Array.isArray(response?.redirects) ? response.redirects : [];
+  /** One page of rules plus how many match — the store holds thousands, so the list never truncates silently. */
+  static async list(query: { search: string; page: number; limit: number }): Promise<{ redirects: Record<string, any>[]; total: number }> {
+    const params = new URLSearchParams({ page: String(query.page), limit: String(query.limit) });
+    if (query.search) params.set('search', query.search);
+    const response = await AdminApi.get(`${RedirectsApiClient.BASE}?${params.toString()}`, { noDedupe: true });
+    const redirects = Array.isArray(response?.redirects) ? response.redirects : [];
+    return { redirects, total: Number(response?.total) || 0 };
   }
 
   static async create(input: { fromPath: string; toPath: string; type: string; notes: string }): Promise<Record<string, any>> {
