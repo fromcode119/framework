@@ -1,4 +1,5 @@
 import { UrlUtils } from '@core/utils/url-utils';
+import { LegacyInternalApiUrl } from '@core/legacy-internal-api-url';
 
 /**
  * Internal resolution helpers for {@link ApplicationUrlUtils}. Not part of the
@@ -103,31 +104,9 @@ export class ApplicationUrlResolver {
     const options = { stripApiPath: normalizedApp === ApplicationUrlResolver.API_APP };
     const declared = ApplicationUrlResolver.readEnvironmentBaseUrl([envKey], options);
     if (declared || normalizedApp !== ApplicationUrlResolver.API_APP) return declared;
-    return ApplicationUrlResolver.readLegacyInternalApiUrl(options);
+    return LegacyInternalApiUrl.accept(ApplicationUrlResolver.normalizeBaseUrlCandidate(process.env.API_URL, options));
   }
 
-  /**
-   * Containers created before `INTERNAL_API_URL` existed were told where their api is by `API_URL`,
-   * and the updater carries a container's environment forward unchanged — so on an existing install
-   * that is the ONLY address the admin and the storefront have for their api. Ignoring it left the
-   * storefront with nothing but loopback guesses and took a shop down (0.2.532).
-   *
-   * Read strictly as that internal wiring: only a container service name (`http://api:3000`) or a
-   * loopback/IP address is accepted. A domain in it (`https://shop.example.com/api`) is ignored — a
-   * public address is set in Settings, never here.
-   */
-  private static readLegacyInternalApiUrl(options: { stripApiPath?: boolean }): string {
-    const value = ApplicationUrlResolver.normalizeBaseUrlCandidate(process.env.API_URL, options);
-    if (!value) return '';
-    try {
-      const host = new URL(value).hostname;
-      const isServiceName = !host.includes('.');
-      const isAddress = /^\d{1,3}(\.\d{1,3}){3}$/.test(host) || host.startsWith('[');
-      return isServiceName || isAddress ? value : '';
-    } catch {
-      return '';
-    }
-  }
 
   /**
    * Base paths already worked out, keyed by the configured URL they come from. Read on every request
