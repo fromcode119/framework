@@ -1776,7 +1776,10 @@
       "usageReportLastFailed": "Last attempt {{when}} failed: {{message}}",
       "accountSectionOrder": "Account section order",
       "accountSectionOrderDescription": "The order of the sections in the customer account menu: their keys (the address /account/<key>), separated by commas. Listed sections come first in this order; the rest keep their default order after them. Blank keeps the default order.",
-      "accountSectionOrderPlaceholder": "orders, wishlist, addresses"
+      "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
+      "apiUrl": "API address (API URL)",
+      "apiUrlDescription": "The public address of the platform API. The gateway sends every request for this host to the API, not to the site.",
+      "apiUrlExplanation": "Use one of the site's own addresses (requests go to its /api path) or a dedicated host such as api.example.com. When you move the site to a new domain, change this too: a host left here stops serving the site. Blank uses the address the request came from."
     },
     "appearance": {
       "appearance": "Appearance",

@@ -1813,7 +1813,10 @@
       "usageReportLastFailed": "Последният опит {{when}} не успя: {{message}}",
       "accountSectionOrder": "Ред на разделите в профила",
       "accountSectionOrderDescription": "Редът на разделите в менюто на клиентския профил: ключовете им (адресът /account/<ключ>), разделени със запетая. Изброените излизат първи в този ред, а останалите остават след тях в подредбата по подразбиране. Празно оставя подредбата по подразбиране.",
-      "accountSectionOrderPlaceholder": "orders, wishlist, addresses"
+      "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
+      "apiUrl": "Адрес на API (API URL)",
+      "apiUrlDescription": "Публичният адрес на API-то на платформата. Шлюзът праща всяка заявка за този хост към API-то, а не към сайта.",
+      "apiUrlExplanation": "Използвайте един от адресите на сайта (заявките отиват на пътя му /api) или отделен хост като api.example.com. Когато местите сайта на нов домейн, сменете и този: хост, оставен тук, спира да обслужва сайта. Празно използва адреса, от който е дошла заявката."
     },
     "infrastructure": {
       "siteUploadLimitsUnavailable": "Ограниченията за качване на сайтове не са налични",
