@@ -44,4 +44,12 @@ describe('CollectionFieldGuard', () => {
       })
     ).toBe(false);
   });
+  it('refuses a reserved root in a page address, but not in a field that says it is no page', () => {
+    const guard = new CollectionFieldGuard({} as any);
+    const page = { slug: 'pages', fields: [{ name: 'path', type: 'text' }] } as any;
+    const source = { slug: 'sources', fields: [{ name: 'path', type: 'text', permalink: false }] } as any;
+
+    expect(() => guard.assertPermalinkNotReserved(page, { path: '/plugins/zen-myself/favorites' })).toThrow(/reserved/);
+    expect(() => guard.assertPermalinkNotReserved(source, { path: '/plugins/zen-myself/favorites' })).not.toThrow();
+  });
 });
