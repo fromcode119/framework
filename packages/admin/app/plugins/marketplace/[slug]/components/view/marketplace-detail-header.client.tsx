@@ -59,11 +59,11 @@ export class MarketplaceDetailHeader extends PureReactor {
                  <div className="flex items-center gap-3">
                     <h2 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{MarketplacePluginCopy.label(plugin, installedPlugin)}</h2>
                     {allVersions.length > 1 && (
-                      <div className="ml-4">
+                      <div className="ms-4">
                         <Dropdown
                           align="left"
                           trigger={
-                            <div className={`flex items-center gap-3 pl-4 pr-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
+                            <div className={`flex items-center gap-3 ps-4 pe-3 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
                               <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('plugins.list.latest') : ''}</span>
                               <div className={`transition-colors ${theme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                                 <FrameworkIcons.Down size={14} strokeWidth={3} />

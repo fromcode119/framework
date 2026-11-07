@@ -162,7 +162,7 @@ export class UsersPage extends AdminComponent {
 
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 group">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+              <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                 <FrameworkIcons.Search size={18} />
               </div>
               <input
@@ -170,7 +170,7 @@ export class UsersPage extends AdminComponent {
                 placeholder={AdminI18n.t('users.searchUserBaseByName')}
                 value={searchQuery}
                 onChange={(e) => { this.searchQuery = e.target.value; }}
-                className={`w-full h-9 rounded-lg pl-11 pr-4 outline-none border transition-colors text-[13px] font-medium tracking-tight ${
+                className={`w-full h-9 rounded-lg ps-11 pe-4 outline-none border transition-colors text-[13px] font-medium tracking-tight ${
                   theme === ThemeMode.DARK
                     ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900'
                     : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'

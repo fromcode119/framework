@@ -17,7 +17,7 @@ export class DetailSplit extends PureReactor {
     return (
       <div className="grid grid-cols-1 md:grid-cols-[minmax(0,1fr)_280px]">
         <div className="min-w-0 space-y-6 p-6">{this.main}</div>
-        <aside className={`space-y-6 border-t p-6 md:border-l md:border-t-0 ${dark ? 'border-slate-800 bg-slate-950/30' : 'border-slate-100 bg-slate-50/70'}`}>
+        <aside className={`space-y-6 border-t p-6 md:border-s md:border-t-0 ${dark ? 'border-slate-800 bg-slate-950/30' : 'border-slate-100 bg-slate-50/70'}`}>
           {this.aside}
         </aside>
       </div>

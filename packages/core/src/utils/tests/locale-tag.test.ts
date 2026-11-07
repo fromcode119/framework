@@ -37,6 +37,11 @@ describe('LocaleTag', () => {
     expect(LocaleTag.key('cms')).toBe('');
   });
 
+  it('knows which way a language is written', () => {
+    for (const rtl of ['ar', 'he', 'fa', 'ur', 'ar-EG', 'he-IL', 'az-Arab', 'pa-Arab']) expect(LocaleTag.direction(rtl).value).toBe('rtl');
+    for (const ltr of ['en', 'bg', 'zh-hant', 'fil', 'az', 'pa', 'th', '', 'max']) expect(LocaleTag.direction(ltr).value).toBe('ltr');
+  });
+
   it('refuses a tag longer than any real one', () => {
     expect(LocaleTag.key(`en-${'a'.repeat(40)}`)).toBe('');
   });

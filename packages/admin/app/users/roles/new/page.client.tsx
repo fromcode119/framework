@@ -115,7 +115,7 @@ export class NewRolePage extends AdminComponent {
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 pl-1">{AdminI18n.t('users.description')}</label>
+                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
                     <textarea
                       className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
                         theme === ThemeMode.DARK ? 'bg-slate-950/50 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'

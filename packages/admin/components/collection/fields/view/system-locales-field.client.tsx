@@ -104,7 +104,7 @@ export class SystemLocalesField extends Reactor {
                     : isDark ? 'border-slate-800 text-slate-400 hover:text-slate-200' : 'border-slate-200 text-slate-500 hover:text-slate-800'
                 } ${this.isReadOnly ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {isSelected && <span className="mr-1.5 opacity-70">{position + 1}</span>}
+                {isSelected && <span className="me-1.5 opacity-70">{position + 1}</span>}
                 {option.label}
               </button>
               {isSelected && position > 0 && !this.isReadOnly && (
@@ -112,7 +112,7 @@ export class SystemLocalesField extends Reactor {
                   type="button"
                   onClick={() => this.moveEarlier(option.value)}
                   title={AdminI18n.t('ui.locales.moveEarlier')}
-                  className="ml-0.5 px-1 py-1 text-[11px] text-slate-400 hover:text-indigo-500 transition-colors"
+                  className="ms-0.5 px-1 py-1 text-[11px] text-slate-400 hover:text-indigo-500 transition-colors"
                 >
                   ↑
                 </button>

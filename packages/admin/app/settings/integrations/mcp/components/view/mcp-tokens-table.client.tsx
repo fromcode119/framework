@@ -51,25 +51,25 @@ export class McpTokensTable extends AdminComponent {
     return (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b border-slate-100 dark:border-slate-800 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-slate-100 dark:border-slate-800 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
             <tr>
-              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.label')}</th>
-              {this.multiTenant ? <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.site')}</th> : null}
-              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.scopes')}</th>
-              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.created')}</th>
-              <th className="py-3 pr-4">{AdminI18n.t('settings.integrations.lastUsed')}</th>
+              <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.label')}</th>
+              {this.multiTenant ? <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.site')}</th> : null}
+              <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.scopes')}</th>
+              <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.created')}</th>
+              <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.lastUsed')}</th>
               <th className="py-3" />
             </tr>
           </thead>
           <tbody>
             {this.tokens.map((token) => (
               <tr key={token.tokenId} className="border-b border-slate-100 last:border-0 dark:border-slate-800">
-                <td className="py-3 pr-4 font-semibold text-slate-900 dark:text-white">{token.label}</td>
-                {this.multiTenant ? <td className="py-3 pr-4">{this.siteCell(token)}</td> : null}
-                <td className="py-3 pr-4">{this.scopesCell(token)}</td>
-                <td className="py-3 pr-4 text-slate-500">{token.createdAt || '—'}</td>
-                <td className="py-3 pr-4 text-slate-500">{token.lastUsedAt || AdminI18n.t('settings.integrations.never')}</td>
-                <td className="py-3 text-right">
+                <td className="py-3 pe-4 font-semibold text-slate-900 dark:text-white">{token.label}</td>
+                {this.multiTenant ? <td className="py-3 pe-4">{this.siteCell(token)}</td> : null}
+                <td className="py-3 pe-4">{this.scopesCell(token)}</td>
+                <td className="py-3 pe-4 text-slate-500">{token.createdAt || '—'}</td>
+                <td className="py-3 pe-4 text-slate-500">{token.lastUsedAt || AdminI18n.t('settings.integrations.never')}</td>
+                <td className="py-3 text-end">
                   <Button variant={ButtonVariant.DANGER} size={FieldSize.SM} onClick={() => this.onRevoke(token)}>
                     {AdminI18n.t('settings.integrations.revoke')}
                   </Button>

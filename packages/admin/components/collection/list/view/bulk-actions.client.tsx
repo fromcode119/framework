@@ -53,7 +53,7 @@ export class BulkActions extends PureReactor {
       <div className={`flex items-center flex-wrap gap-1 p-1 rounded-xl animate-in slide-in-from-top-2 duration-300 border shadow-sm ${
         theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-slate-100 border-slate-200'
       }`}>
-        <div className="px-3 py-2 text-xs font-bold tracking-tight text-indigo-500 border-r border-slate-200 dark:border-slate-800 mr-1">
+        <div className="px-3 py-2 text-xs font-bold tracking-tight text-indigo-500 border-e border-slate-200 dark:border-slate-800 me-1">
           {AdminI18n.t('collection.list.selected', { count: selectedIds.length })}
         </div>
 

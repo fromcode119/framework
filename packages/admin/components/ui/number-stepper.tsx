@@ -128,11 +128,11 @@ export class NumberStepper extends PureReactor {
       <div className="relative">
         {this.renderInput(true)}
         <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement}
-          className={`${btn} left-px rounded-l-[calc(var(--radius)_-_1px)]`}>
+          className={`${btn} start-px rounded-l-[calc(var(--radius)_-_1px)]`}>
           <FrameworkIcons.Minus size={sm ? 13 : 15} strokeWidth={2.25} />
         </button>
         <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment}
-          className={`${btn} right-px rounded-r-[calc(var(--radius)_-_1px)]`}>
+          className={`${btn} end-px rounded-r-[calc(var(--radius)_-_1px)]`}>
           <FrameworkIcons.Plus size={sm ? 13 : 15} strokeWidth={2.25} />
         </button>
       </div>

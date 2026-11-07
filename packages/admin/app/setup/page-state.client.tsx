@@ -2,7 +2,8 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { bound, state } from '@fromcode119/react-class-components';
 import { AdminDictionary } from '@/lib/i18n/admin-dictionary';
 import { SetupStep } from '@/app/setup/enums/setup-step.enum';
-import { SetupPhase } from '@fromcode119/core/client';
+import { LocalizationUtils, SetupPhase } from '@fromcode119/core/client';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { ISetupDatabaseOptions } from '@/app/setup/interfaces/setup-database-options.interface';
 import type { ISetupDatabaseServer } from '@/app/setup/interfaces/setup-database-server.interface';
 import type { ISetupAccountErrors } from '@/app/setup/interfaces/setup-account-errors.interface';
@@ -62,17 +63,20 @@ export abstract class SetupPageState extends AdminComponent {
   /** Their browser's language when the console speaks it, otherwise the dictionary every key is written in. */
   protected get browserLocale(): string {
     const preferred = String(navigator?.language || '').trim();
-    return AdminDictionary.has(preferred) ? preferred.toLowerCase().split('-')[0] : AdminDictionary.FALLBACK_LOCALE;
+    return AdminDictionary.has(preferred) ? LocalizationUtils.normalizeLocaleCode(preferred, { short: true }) : AdminDictionary.FALLBACK_LOCALE;
   }
 
   protected text(key: string): string {
     return AdminDictionary.translate(this.locale, key);
   }
 
+  /** Switches the wizard once the language's words are here, so a step never renders half in English. */
   @bound
-  handleLocaleChange(locale: string): void {
+  async handleLocaleChange(locale: string): Promise<void> {
+    await AdminDictionary.load(locale).catch(() => undefined);
+    if (!AdminDictionary.isLoaded(locale)) return;
     this.locale = locale;
-    document.documentElement.lang = locale;
+    AdminI18n.markDocument(locale);
   }
 
   @bound handleEmailChange(value: string): void { this.email = value; }

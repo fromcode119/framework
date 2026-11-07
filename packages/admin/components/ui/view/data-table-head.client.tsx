@@ -30,7 +30,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
 
   /** Opaque so scrolled columns cannot show through, and a divider so the run reads as pinned. */
   private static readonly PINNED = 'sticky z-20 bg-slate-100 dark:bg-slate-900';
-  private static readonly PINNED_EDGE = 'border-r border-slate-200 dark:border-slate-700';
+  private static readonly PINNED_EDGE = 'border-e border-slate-200 dark:border-slate-700';
 
   private sortIcon(columnId: string): ReactNode {
     if (this.currentSort === columnId) return <FrameworkIcons.Up size={12} />;
@@ -54,7 +54,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
           {selectable && (
             <th
               className={`px-3 py-3 w-4 ${stickyCount > 0 ? DataTableHead.PINNED : ''}`}
-              style={stickyCount > 0 ? { left: checkboxOffset ?? 0 } : undefined}
+              style={stickyCount > 0 ? { insetInlineStart: checkboxOffset ?? 0 } : undefined}
             >
               <Checkbox checked={allSelected} indeterminate={someSelected && !allSelected} onChange={this.handleToggleAll} />
             </th>
@@ -65,7 +65,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
               <th
                 key={col.id}
                 className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${isPinned ? DataTableHead.PINNED : ''} ${isPinned && index === stickyCount - 1 ? DataTableHead.PINNED_EDGE : ''} ${col.className || ''}`}
-                style={isPinned ? { left: columnOffsetAt(index) ?? 0 } : undefined}
+                style={isPinned ? { insetInlineStart: columnOffsetAt(index) ?? 0 } : undefined}
                 onClick={() => col.sortable && this.onSort?.(col.id)}
               >
                 <div className="flex items-center gap-2">
@@ -76,7 +76,7 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
             );
           })}
           {hasActions && (
-            <th className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-right tracking-wide ${
+            <th className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-end tracking-wide ${
               this.stickyActions ? 'sticky right-0 z-20 bg-slate-100 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700' : ''
             }`}>
               {AdminI18n.t('ui.table.actions')}

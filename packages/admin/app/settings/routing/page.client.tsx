@@ -137,7 +137,7 @@ export class RoutingPage extends RoutingPageActions {
                     <button
                       key={preset.value}
                       onClick={() => this.setStructure(preset.value)}
-                      className={`flex items-center justify-between p-4 rounded-xl border text-left transition-all ${structure === preset.value
+                      className={`flex items-center justify-between p-4 rounded-xl border text-start transition-all ${structure === preset.value
                           ? 'border-indigo-600 bg-indigo-600/5 ring-1 ring-indigo-600'
                           : theme === ThemeMode.DARK
                             ? 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
@@ -167,7 +167,7 @@ export class RoutingPage extends RoutingPageActions {
                 <div className="flex gap-3">
                   <div className={`flex-1 flex items-center px-4 ${AdminClass.SURFACE} transition-all focus-within:ring-4 focus-within:ring-indigo-600/10 focus-within:border-indigo-600 ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
                     }`}>
-                    <span className="text-slate-400 font-mono text-sm border-r pr-3 mr-3 py-2.5">https://yourdomain.com</span>
+                    <span className="text-slate-400 font-mono text-sm border-e pe-3 me-3 py-2.5">https://yourdomain.com</span>
                     <input
                       value={structure}
                       onChange={(e) => this.setStructure(e.target.value)}
@@ -189,7 +189,7 @@ export class RoutingPage extends RoutingPageActions {
                 <button
                   key={tag.label}
                   onClick={() => this.appendPlaceholder(tag.label)}
-                  className={`p-5 rounded-xl border text-left transition-all hover:scale-[1.02] group ${theme === ThemeMode.DARK
+                  className={`p-5 rounded-xl border text-start transition-all hover:scale-[1.02] group ${theme === ThemeMode.DARK
                       ? 'border-slate-800 bg-slate-900/40 hover:bg-slate-800/60'
                       : 'border-slate-100 bg-white hover:shadow-xl hover:shadow-indigo-600/5'
                     }`}

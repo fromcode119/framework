@@ -19,13 +19,13 @@ export class VisualMenuItem extends PureReactor {
     return (
       <div
           className={`relative group flex gap-3 transition-all duration-300 animate-in fade-in slide-in-from-left-2`}
-          style={{ paddingLeft: `${(item.depth || 0) * 24}px` }}
+          style={{ paddingInlineStart: `${(item.depth || 0) * 24}px` }}
       >
           {/* Visual Branch Line */}
           {(item.depth || 0) > 0 && (
-              <div className="absolute left-0 top-0 bottom-0 flex items-center" style={{ width: `${(item.depth || 0) * 24}px` }}>
-                   <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-3 h-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'}`} />
-                   <div className={`absolute left-3 top-0 bottom-1/2 w-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'} ${index === 0 ? 'hidden' : ''}`} />
+              <div className="absolute start-0 top-0 bottom-0 flex items-center" style={{ width: `${(item.depth || 0) * 24}px` }}>
+                   <div className={`absolute start-3 top-1/2 -translate-y-1/2 w-3 h-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'}`} />
+                   <div className={`absolute start-3 top-0 bottom-1/2 w-[1px] rounded-full ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'} ${index === 0 ? 'hidden' : ''}`} />
               </div>
           )}
 
@@ -59,7 +59,7 @@ export class VisualMenuItem extends PureReactor {
                   <div className={`w-[1px] h-3 mx-0.5 ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200'}`} />
                   <button
                       onClick={() => onRemove(index)}
-                      className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-rose-500/40 transition-all ml-0.5"
+                      className="p-1.5 rounded-lg hover:bg-rose-500/10 hover:text-rose-500 text-rose-500/40 transition-all ms-0.5"
                   >
                       <FrameworkIcons.Trash size={12} />
                   </button>

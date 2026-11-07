@@ -60,7 +60,7 @@ export class SidebarVersions extends PureReactor {
 } = this;
   return (
     <Card title={AdminI18n.t('collection.edit.versions')}>
-      <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+      <div className="space-y-4 max-h-[400px] overflow-y-auto pe-2 custom-scrollbar">
           {revisions.length === 0 && !revisionsLoading && (
             <p className="text-[10px] text-slate-400 font-semibold italic py-2">{AdminI18n.t('collection.edit.noVersions')}</p>
           )}

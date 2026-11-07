@@ -127,7 +127,7 @@ export class ColorField extends AdminComponent {
           disabled={disabled}
           onClick={this.toggle}
           aria-label={AdminI18n.t('ui.color.choose')}
-          className={`inline-flex items-center gap-2.5 h-10 pl-1.5 pr-3 rounded-lg border bg-white dark:bg-slate-900 transition-colors disabled:opacity-50 ${open ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
+          className={`inline-flex items-center gap-2.5 h-10 ps-1.5 pe-3 rounded-lg border bg-white dark:bg-slate-900 transition-colors disabled:opacity-50 ${open ? 'border-indigo-500 ring-4 ring-indigo-500/10' : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'}`}
         >
           <span
             className="h-7 w-7 rounded-lg ring-1 ring-black/10 dark:ring-white/15 shrink-0"

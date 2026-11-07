@@ -75,7 +75,7 @@ export class UploadPreviewDialog extends PureReactor {
             </button>
           </div>
 
-          <div className="mt-6 space-y-4 max-h-[45vh] overflow-auto pr-1">
+          <div className="mt-6 space-y-4 max-h-[45vh] overflow-auto pe-1">
             {sections.map((section) => (
               <div
                 key={section.title}

@@ -5,6 +5,7 @@ import type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-
 import type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
 import { EnvUtils } from '@core/utils/env-utils';
 import { LocaleTag } from '@core/utils/locale-tag';
+import type { TextDirection } from '@core/enums/text-direction.enum';
 
 /**
  * Utilities for locale code normalisation, localised value detection, and
@@ -59,6 +60,11 @@ export class LocalizationUtils {
   static normalizeLocaleCode(value: unknown, options: INormalizeLocaleOptions = {}): string {
     if (options.short) return LocaleTag.key(value);
     return LocaleTag.full(value) || LocaleTag.key(value);
+  }
+
+  /** `rtl` for a locale whose script is written right to left (`ar`, `he`, `fa`), else `ltr` — the `dir` to render it with. */
+  static textDirection(locale: unknown): TextDirection {
+    return LocaleTag.direction(locale);
   }
 
   /** The value a locale map holds for `locale`: its own key first, then its language alone (`zh-hant` → `zh`). */

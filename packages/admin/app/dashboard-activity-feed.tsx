@@ -31,7 +31,7 @@ export class DashboardActivityFeed extends PureReactor {
              onClick={onViewAll}
              className="text-[11px] font-medium px-3 group text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors dark:text-indigo-400 dark:hover:bg-slate-800"
            >
-              {AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} className="ml-1.5 group-hover:translate-x-0.5 transition-transform" />
+              {AdminI18n.t('dashboard.viewAll')} <FrameworkIcons.ArrowRight size={13} className="ms-1.5 group-hover:translate-x-0.5 transition-transform" />
            </Button>
         </div>
 

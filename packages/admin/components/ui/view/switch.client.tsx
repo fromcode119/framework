@@ -55,7 +55,7 @@ export class Switch extends PureReactor {
           aria-hidden="true"
           className={`
             pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-sm ring-1 ring-black/5 transition-transform duration-200 ease-out
-            ${checked ? 'translate-x-[22px]' : 'translate-x-0.5'}
+            ${checked ? 'translate-x-[22px] rtl:-translate-x-[22px]' : 'translate-x-0.5 rtl:-translate-x-0.5'}
           `}
         />
       </button>

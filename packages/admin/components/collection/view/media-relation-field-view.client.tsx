@@ -63,7 +63,7 @@ export class MediaRelationFieldView extends PureReactor {
       <div className="relative w-full aspect-video rounded-[var(--radius)] overflow-hidden border border-slate-200 dark:border-slate-800">
         <img src={preview.url} alt={preview.filename || AdminI18n.t('ui.media.selected')} className={`w-full h-full ${this.wholeImage ? 'object-contain p-3' : 'object-cover'}`} />
         <button type="button" onClick={this.handleRemoveSingle} aria-label={label} title={label}
-          className="absolute top-2 right-2 w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-600 shadow">
+          className="absolute top-2 end-2 w-8 h-8 inline-flex items-center justify-center rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-500 hover:text-rose-600 shadow">
           <FrameworkIcons.X size={14} />
         </button>
       </div>

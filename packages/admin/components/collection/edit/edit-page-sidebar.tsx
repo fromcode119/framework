@@ -103,10 +103,10 @@ export class EditPageSidebar extends PureReactor {
                 aria-checked={Boolean(formData.disablePermalink)}
                 onClick={() => !saving && handleInputChange('disablePermalink', !formData.disablePermalink)}
                 disabled={saving}
-                className={`flex items-center gap-2.5 mt-4 w-full text-left select-none text-[12px] font-semibold transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
+                className={`flex items-center gap-2.5 mt-4 w-full text-start select-none text-[12px] font-semibold transition-colors ${saving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'} ${theme === ThemeMode.DARK ? 'text-slate-300' : 'text-slate-600'}`}
               >
                 <div className={`relative shrink-0 w-8 h-[18px] rounded-full transition-colors ${Boolean(formData.disablePermalink) ? 'bg-rose-500' : theme === ThemeMode.DARK ? 'bg-slate-700' : 'bg-slate-200'}`}>
-                  <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${Boolean(formData.disablePermalink) ? 'translate-x-[18px]' : 'translate-x-0.5'}`} />
+                  <span className={`absolute top-0.5 w-3.5 h-3.5 rounded-full bg-white shadow transition-transform ${Boolean(formData.disablePermalink) ? 'translate-x-[18px] rtl:-translate-x-[18px]' : 'translate-x-0.5 rtl:-translate-x-0.5'}`} />
                 </div>
                 {AdminI18n.t('ui.permalink.disable')}
               </button>

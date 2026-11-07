@@ -28,7 +28,7 @@ export class PendingReleaseList extends PureReactor {
         </p>
         <ol className="space-y-3">
           {this.releases.map((release) => (
-            <li key={release.version} className="border-l-2 border-slate-200 pl-3 dark:border-slate-700">
+            <li key={release.version} className="border-s-2 border-slate-200 ps-3 dark:border-slate-700">
               <p className="font-mono text-[12px] font-semibold text-slate-800 dark:text-slate-100">
                 v{release.version}
               </p>

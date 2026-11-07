@@ -34,7 +34,7 @@ export class PluginOverviewUpdate extends PureReactor {
           ) : null}
         </div>
         {changes.length ? (
-          <ul className={`mt-2 space-y-1 pl-7 text-[13px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
+          <ul className={`mt-2 space-y-1 ps-7 text-[13px] ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
             {changes.map((change) => <li key={change} className="list-disc">{change}</li>)}
           </ul>
         ) : null}

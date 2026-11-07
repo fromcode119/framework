@@ -5,6 +5,7 @@ const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
+    "./lib/**/*.{js,ts,jsx,tsx}", // class constants (`lib/ui.ts`) the components above compose
     "../../packages/ai/src/**/*.{js,ts,jsx,tsx,mdx}", // Forge UI mounted via admin slot
     // Plugin admin UI is deliberately ABSENT here, and no glob or generated list belongs in its place.
     //

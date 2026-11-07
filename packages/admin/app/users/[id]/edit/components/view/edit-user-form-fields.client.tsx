@@ -41,7 +41,7 @@ export class EditUserFormFields extends PureReactor {
            ) : null}
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.eMailAddress')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.eMailAddress')}</label>
                  <Input
                     placeholder="user@example.com"
                     value={formData.email}
@@ -51,7 +51,7 @@ export class EditUserFormFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.username')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.username')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.usernamePlaceholder')}
                     value={formData.username}
@@ -60,7 +60,7 @@ export class EditUserFormFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.firstName')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.firstName')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.john')}
                     value={formData.firstName}
@@ -69,7 +69,7 @@ export class EditUserFormFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.lastName')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.lastName')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.doe')}
                     value={formData.lastName}
@@ -88,7 +88,7 @@ export class EditUserFormFields extends PureReactor {
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
               {this.selfService ? (
               <div className="space-y-2 md:col-span-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.currentPassword')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.currentPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"
@@ -99,7 +99,7 @@ export class EditUserFormFields extends PureReactor {
               </div>
               ) : null}
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.newPassword')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.newPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"
@@ -108,7 +108,7 @@ export class EditUserFormFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.confirmPassword')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.confirmPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"
@@ -125,7 +125,7 @@ export class EditUserFormFields extends PureReactor {
         <Card title={AdminI18n.t('users.accountAccessControls')} icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.accountStatus')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.accountStatus')}</label>
                  <div className="flex items-center gap-3">
                     <Button
                       type="button"
@@ -148,7 +148,7 @@ export class EditUserFormFields extends PureReactor {
                  </div>
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.forcePasswordReset')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.forcePasswordReset')}</label>
                  <div className="pt-2">
                    <Switch
                      checked={formData.forcePasswordReset ?? false}

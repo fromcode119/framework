@@ -22,7 +22,7 @@ export class DashboardWidgetPicker extends PureReactor {
                 <button
                   type="button"
                   onClick={() => this.onAdd(definition)}
-                  className="flex h-full w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-left transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/40"
+                  className="flex h-full w-full items-start gap-3 rounded-xl border border-slate-200 bg-white p-3 text-start transition-colors hover:border-indigo-300 hover:bg-indigo-50/40 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-indigo-500/40"
                 >
                   <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:text-indigo-400">
                     <FrameworkIcons.Plus size={14} />

@@ -51,7 +51,7 @@ export class FieldLocaleSwitcher extends PureReactor {
           // raising only this menu left the next field's chip painted over it.
           <div
             role="menu"
-            className={`absolute right-0 mt-2 min-w-[220px] rounded-xl border shadow-xl z-30 p-1.5 ${
+            className={`absolute end-0 mt-2 min-w-[220px] rounded-xl border shadow-xl z-30 p-1.5 ${
               theme === ThemeMode.DARK
                 ? 'bg-slate-950 border-slate-800'
                 : 'bg-white border-slate-200'
@@ -74,7 +74,7 @@ export class FieldLocaleSwitcher extends PureReactor {
                   key={locale.code}
                   type="button"
                   onClick={() => onSelect(locale.code)}
-                  className={`w-full text-left px-2.5 py-2 rounded-[var(--radius)] text-xs font-medium transition-colors flex items-center justify-between ${
+                  className={`w-full text-start px-2.5 py-2 rounded-[var(--radius)] text-xs font-medium transition-colors flex items-center justify-between ${
                     isActive
                       ? 'bg-indigo-600 text-white'
                       : theme === ThemeMode.DARK
@@ -83,7 +83,7 @@ export class FieldLocaleSwitcher extends PureReactor {
                   }`}
                 >
                   <span className="truncate">{locale.label}</span>
-                  <span className={`ml-2 ${isActive ? 'text-indigo-100' : 'opacity-70'}`}>{locale.code.toUpperCase()}</span>
+                  <span className={`ms-2 ${isActive ? 'text-indigo-100' : 'opacity-70'}`}>{locale.code.toUpperCase()}</span>
                 </button>
               );
             })}

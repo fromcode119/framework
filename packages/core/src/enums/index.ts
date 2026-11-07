@@ -32,3 +32,4 @@ export * from '@core/enums/theme-setting-type.enum';
 export * from '@core/enums/two-factor-method.enum';
 export * from '@core/enums/ui-scope.enum';
 export * from '@core/enums/time-format.enum';
+export * from '@core/enums/text-direction.enum';

@@ -41,7 +41,7 @@ export class SettingRow extends PureReactor {
             {this.explanation}
           </div>
         </div>
-        <div className={this.stacked ? 'md:pl-12' : 'flex-shrink-0'}>
+        <div className={this.stacked ? 'md:ps-12' : 'flex-shrink-0'}>
           {this.children}
         </div>
       </div>

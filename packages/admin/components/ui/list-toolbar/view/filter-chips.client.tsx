@@ -29,7 +29,7 @@ export class FilterChips extends PureReactor {
         {active.map((filter) => (
           <span
             key={filter.key}
-            className="shrink-0 inline-flex items-center gap-1.5 h-7 pl-3 pr-1.5 rounded-full whitespace-nowrap text-[12px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+            className="shrink-0 inline-flex items-center gap-1.5 h-7 ps-3 pe-1.5 rounded-full whitespace-nowrap text-[12px] font-semibold bg-indigo-50 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
           >
             {filter.label}: {filter.valueLabel}
             <button

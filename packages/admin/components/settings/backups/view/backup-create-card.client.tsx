@@ -158,7 +158,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
                 type="button"
                 disabled={isCreating}
                 onClick={() => onToggleSection(option.key)}
-                className={`rounded-lg border p-5 text-left transition-all ${isSelected
+                className={`rounded-lg border p-5 text-start transition-all ${isSelected
                   ? theme === ThemeMode.DARK
                     ? 'border-indigo-500/40 bg-indigo-500/10 shadow-[0_16px_40px_-24px_rgba(99,102,241,0.55)]'
                     : 'border-indigo-200 bg-indigo-50/80 shadow-[0_16px_40px_-24px_rgba(79,70,229,0.35)]'

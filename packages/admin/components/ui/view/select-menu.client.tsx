@@ -81,7 +81,7 @@ export class SelectMenu extends PureReactor {
               {searchable && (
                 <div className="p-2 border-b border-slate-100 dark:border-slate-800">
                   <div className="relative group">
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+                    <div className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                       <FrameworkIcons.Search size={12} />
                     </div>
                     <input
@@ -90,7 +90,7 @@ export class SelectMenu extends PureReactor {
                       placeholder={AdminI18n.t('ui.select.search')}
                       value={searchValue}
                       onChange={(e) => onSearchChange(e.target.value)}
-                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `pl-8 ${searchInputThemeClasses}`)}
+                      className={UiFieldUtils.getFieldClasses(FieldSize.SM, `ps-8 ${searchInputThemeClasses}`)}
                     />
                   </div>
                 </div>
@@ -101,7 +101,7 @@ export class SelectMenu extends PureReactor {
                   <button
                     type="button"
                     onClick={() => onCreate?.(searchValue.trim())}
-                    className={`w-full text-left px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-semibold ${
+                    className={`w-full text-start px-3.5 py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center gap-2 mb-0.5 font-semibold ${
                       theme === ThemeMode.DARK
                         ? 'text-indigo-300 hover:bg-indigo-500/10'
                         : 'text-indigo-600 hover:bg-indigo-50'
@@ -145,7 +145,7 @@ export class SelectMenu extends PureReactor {
                           key={`${group.name}:${section.name}:${typeof opt.value === 'object' ? JSON.stringify(opt.value) : opt.value}:${opt.label}`}
                           type="button"
                           onClick={() => onSelect(SelectUtils.normalizeValue(opt.value))}
-                          className={`w-full text-left ${section.name ? 'pl-8 pr-3' : 'px-3.5'} py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
+                          className={`w-full text-start ${section.name ? 'ps-8 pe-3' : 'px-3.5'} py-2.5 text-[12px] rounded-lg transition-all duration-200 flex items-center justify-between group relative overflow-hidden mb-0.5 ${
                             (selectedOption && selectedOption === opt)
                               ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20'
                               : theme === ThemeMode.DARK

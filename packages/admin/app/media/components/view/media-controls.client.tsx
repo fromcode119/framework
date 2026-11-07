@@ -98,7 +98,7 @@ export class MediaControls extends PureReactor {
           <div className={`p-4 rounded-xl border flex items-center gap-3 animate-in slide-in-from-top-2 duration-300 ${theme === ThemeMode.DARK ? 'bg-red-500/10 border-red-500/20 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}>
             <FrameworkIcons.Alert size={18} />
             <span className="text-sm font-medium">{error}</span>
-            <button onClick={this.dismissError} className="ml-auto hover:opacity-70">
+            <button onClick={this.dismissError} className="ms-auto hover:opacity-70">
               <FrameworkIcons.Close size={16} />
             </button>
           </div>
@@ -122,13 +122,13 @@ export class MediaControls extends PureReactor {
           </div>
 
           <div className="relative flex-1 min-w-0 group">
-            <FrameworkIcons.Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
+            <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
             <input
               type="text"
               placeholder={AdminI18n.t('media.searchMedia')}
               value={searchQuery}
               onChange={this.onSearchChange}
-              className={`w-full ${AdminClass.SURFACE} py-2 pl-12 pr-4 text-[13px] outline-none border transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
+              className={`w-full ${AdminClass.SURFACE} py-2 ps-12 pe-4 text-[13px] outline-none border transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
             />
           </div>
           {this.activeView === 'files' ? (

@@ -41,13 +41,13 @@ export class MediaPickerToolbar extends Reactor {
     return (
       <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
         <div className="relative flex-1 min-w-[12rem] group">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
+          <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
           <input
             type="text"
             placeholder={AdminI18n.t('mediaPicker.searchMedia')}
             value={search}
             onChange={this.handleSearchChange}
-            className={`w-full h-10 pl-10 pr-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
+            className={`w-full h-10 ps-10 pe-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
           />
         </div>
         <input

@@ -59,7 +59,7 @@ export class SiteChooser extends AdminComponent {
         type="button"
         disabled={!!this.busy}
         onClick={() => this.choose(site.id)}
-        className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-left transition-colors hover:border-indigo-400 hover:bg-indigo-50/40 disabled:opacity-60 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500 dark:hover:bg-slate-900"
+        className="flex w-full items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-3 text-start transition-colors hover:border-indigo-400 hover:bg-indigo-50/40 disabled:opacity-60 dark:border-slate-800 dark:bg-slate-900/60 dark:hover:border-indigo-500 dark:hover:bg-slate-900"
       >
         <FrameworkIcons.Globe size={15} className="shrink-0 text-indigo-500" />
         <span className="min-w-0 flex-1">

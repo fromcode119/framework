@@ -16,7 +16,7 @@ export class NewUserAccountFields extends PureReactor {
         <Card title={AdminI18n.t('users.accountDetails')}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.eMailAddress')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.eMailAddress')}</label>
                  <Input
                     placeholder="name@company.com"
                     value={formData.email}
@@ -26,7 +26,7 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.username')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.username')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.usernamePlaceholder')}
                     value={formData.username}
@@ -35,7 +35,7 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.firstName')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.firstName')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.firstName2')}
                     value={formData.firstName}
@@ -44,7 +44,7 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.lastName')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.lastName')}</label>
                  <Input
                     placeholder={AdminI18n.t('users.lastName2')}
                     value={formData.lastName}
@@ -58,7 +58,7 @@ export class NewUserAccountFields extends PureReactor {
         <Card title={AdminI18n.t('users.securitySetup')}>
            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.initialPassword')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.initialPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"
@@ -70,7 +70,7 @@ export class NewUserAccountFields extends PureReactor {
                  />
               </div>
               <div className="space-y-2">
-                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.confirmPassword')}</label>
+                 <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.confirmPassword')}</label>
                  <Input
                     type="password"
                     placeholder="••••••••"

@@ -115,7 +115,7 @@ export class UserRolesPage extends AdminComponent {
                   key={role.slug}
                   type="button"
                   onClick={() => this.toggleRole(role.slug)}
-                  className={`w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${
+                  className={`w-full text-start flex items-center gap-3 px-4 py-3 rounded-xl border transition-colors ${
                     isSelected
                       ? (dark ? 'bg-indigo-500/10 border-indigo-500/60' : 'bg-indigo-50 border-indigo-300')
                       : (dark ? 'bg-slate-900/40 border-slate-800 hover:bg-slate-900' : 'bg-white border-slate-200 hover:bg-slate-50')

@@ -35,7 +35,7 @@ export class FieldRendererHeader extends PureReactor {
         {!field.admin?.hideLabel && (
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
-          {field.required && <span className="text-rose-500 ml-1 font-semibold font-sans">*</span>}
+          {field.required && <span className="text-rose-500 ms-1 font-semibold font-sans">*</span>}
         </label>
         )}
 

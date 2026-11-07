@@ -66,7 +66,7 @@ export class DashboardRecentEdits extends AdminComponent {
               key={`${edit.collectionSlug}:${edit.recordId}`}
               type="button"
               onClick={() => this.open(edit)}
-              className="flex w-full items-center gap-2.5 px-3 py-2 text-left transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
+              className="flex w-full items-center gap-2.5 px-3 py-2 text-start transition-colors hover:bg-slate-50 dark:hover:bg-slate-900/40"
             >
               <span className="min-w-0 flex-1 truncate text-[12px] text-slate-700 dark:text-slate-200">
                 {/* A localized title is a MAP keyed by locale, not a string; `String()` printed

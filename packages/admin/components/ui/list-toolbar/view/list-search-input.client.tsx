@@ -25,7 +25,7 @@ export class ListSearchInput extends PureReactor {
   render(): ReactNode {
     return (
       <div className="relative group flex-1 min-w-0">
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
+        <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
           <FrameworkIcons.Search size={18} />
         </div>
         <input
@@ -33,7 +33,7 @@ export class ListSearchInput extends PureReactor {
           placeholder={this.placeholder}
           value={this.value}
           onChange={this.handleChange}
-          className={`w-full h-11 pl-12 pr-4 rounded-xl border transition-all text-sm font-semibold outline-none text-ellipsis ${this.inputClass}`}
+          className={`w-full h-11 ps-12 pe-4 rounded-xl border transition-all text-sm font-semibold outline-none text-ellipsis ${this.inputClass}`}
         />
       </div>
     );

@@ -242,7 +242,7 @@ export class SidebarAccountCard extends AdminComponent {
     }
 
     return (
-      <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-left transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
+      <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
         {this.avatar(AvatarSize.SMALL)}
         <span className="flex min-w-0 flex-1 flex-col">
           <span className="truncate text-[12.5px] font-semibold leading-tight text-slate-800 dark:text-slate-100">

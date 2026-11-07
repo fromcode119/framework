@@ -56,7 +56,7 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
         {selectable && (
           <td
             className={`px-3 py-2.5 w-4 ${stickyCount > 0 ? this.pinnedClass : ''}`}
-            style={stickyCount > 0 ? { left: stickyOffsets[0] ?? 0 } : undefined}
+            style={stickyCount > 0 ? { insetInlineStart: stickyOffsets[0] ?? 0 } : undefined}
             onClick={this.handleToggleOne}
           >
             {/* The cell's onClick above carries the event (shift-range select), so the box renders
@@ -69,8 +69,8 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
           return (
             <td
               key={col.id}
-              className={`px-3 py-2.5 ${isPinned ? this.pinnedClass : ''} ${isPinned && index === stickyCount - 1 ? 'border-r border-slate-200 dark:border-slate-700' : ''} ${col.className || ''}`}
-              style={isPinned ? { left: columnOffsetAt(index) } : undefined}
+              className={`px-3 py-2.5 ${isPinned ? this.pinnedClass : ''} ${isPinned && index === stickyCount - 1 ? 'border-e border-slate-200 dark:border-slate-700' : ''} ${col.className || ''}`}
+              style={isPinned ? { insetInlineStart: columnOffsetAt(index) } : undefined}
             >
               <div className="text-[13px] font-semibold tracking-tight text-slate-700 dark:text-slate-300">
                 {typeof col.accessor === 'function' ? col.accessor(row) : (String(row[col.accessor]) || '-')}
@@ -79,8 +79,8 @@ export class DataTableRow<T extends { id: any }> extends PureReactor {
           );
         })}
         {actions && (
-          <td className={`px-3 py-2 text-right ${this.stickyActions
-            ? `sticky right-0 z-10 border-l border-slate-200 dark:border-slate-700 ${selected ? 'bg-indigo-50 dark:bg-slate-900' : 'bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800'}`
+          <td className={`px-3 py-2 text-end ${this.stickyActions
+            ? `sticky end-0 z-10 border-s border-slate-200 dark:border-slate-700 ${selected ? 'bg-indigo-50 dark:bg-slate-900' : 'bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800'}`
             : ''}`}
           >
             {actions(row)}

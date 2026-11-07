@@ -18,7 +18,7 @@ export class NewUserAccessControls extends PureReactor {
       <Card title={AdminI18n.t('users.accessControls')}>
          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-2">
             <div className="space-y-2">
-               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.accountStatus')}</label>
+               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.accountStatus')}</label>
                <div className="flex items-center gap-3">
                   <Button
                     type="button"
@@ -41,7 +41,7 @@ export class NewUserAccessControls extends PureReactor {
                </div>
             </div>
             <div className="space-y-2">
-               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ml-1">{AdminI18n.t('users.forcePasswordReset')}</label>
+               <label className="text-[10px] font-bold uppercase tracking-tight text-slate-500 ms-1">{AdminI18n.t('users.forcePasswordReset')}</label>
                <div className="pt-2">
                  <Switch
                    checked={formData.forcePasswordReset ?? false}

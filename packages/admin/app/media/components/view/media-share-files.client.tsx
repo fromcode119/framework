@@ -54,7 +54,7 @@ export class MediaShareFiles extends AdminComponent {
         {files.map((file: any) => (
           <span
             key={file.id}
-            className={`inline-flex items-center gap-2 rounded-lg py-1 pl-1 pr-2.5 text-[11px] max-w-full ${
+            className={`inline-flex items-center gap-2 rounded-lg py-1 ps-1 pe-2.5 text-[11px] max-w-full ${
               dark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-700'
             }`}
             title={file.name}
