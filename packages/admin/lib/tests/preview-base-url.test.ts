@@ -33,14 +33,13 @@ describe('AdminUrlUtils.resolvePreviewBaseUrl', () => {
       .toBe('http://shop.platform.example');
   });
 
-  it('puts the site’s storefront before the environment', () => {
+  it('never reads a domain from the environment', () => {
     process.env.FRONTEND_URL = 'https://platform.example.com';
+    expect(AdminUrlUtils.resolvePreviewBaseUrl({}, '')).not.toBe('https://platform.example.com');
     expect(AdminUrlUtils.resolvePreviewBaseUrl({}, 'https://shop.example.com/')).toBe('https://shop.example.com');
   });
 
   it('keeps the previous resolution when no site is bound', () => {
     expect(AdminUrlUtils.resolvePreviewBaseUrl({ frontend_url: 'https://front.example' }, '')).toBe('https://front.example');
-    process.env.FRONTEND_URL = 'https://platform.example.com';
-    expect(AdminUrlUtils.resolvePreviewBaseUrl({}, '')).toBe('https://platform.example.com');
   });
 });

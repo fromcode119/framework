@@ -61,8 +61,7 @@ export class AdminConsoleBrand {
 
   /** The api's public host route, from inside the admin's own process — see `AdminIndexingPolicy.hostEndpoint`. */
   private static hostEndpoint(): string {
-    const base = String(process.env.API_URL || '').trim()
-      || ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    const base = ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '';
     return ApplicationUrlUtils.joinApiPath(base.replace(/\/+$/, ''), ApiPathUtils.authPath(RouteConstants.SEGMENTS.HOST_INFO));
   }
 }

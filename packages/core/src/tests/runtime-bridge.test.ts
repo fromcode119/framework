@@ -29,10 +29,11 @@ describe('RuntimeBridge', () => {
     expect(RuntimeBridge.resolveApiBaseUrl()).toBe('http://admin.framework.local');
   });
 
-  it('still resolves the configured api url on the SERVER, which has no origin', () => {
+  it('resolves the internal api service on the SERVER, never a domain from the environment', () => {
     vi.stubEnv('NEXT_PUBLIC_API_URL', 'http://api.framework.local');
+    vi.stubEnv('INTERNAL_API_URL', 'http://api:3000');
 
-    expect(RuntimeBridge.resolveApiBaseUrl()).toBe('http://api.framework.local');
+    expect(RuntimeBridge.resolveApiBaseUrl()).toBe('http://api:3000');
   });
 
 });

@@ -21,11 +21,13 @@ import { TenantHostRole } from '@core/tenant/tenant-host-role';
  * platform.
  */
 
-const ENV = { FRONTEND_URL: process.env.FRONTEND_URL, API_URL: process.env.API_URL, ADMIN_URL: process.env.ADMIN_URL };
+/** The app URLs as Settings would hold them — the only place a platform address comes from. */
+const urls: Record<string, string> = {};
+ApplicationUrlUtils.registerAppUrlSettingsReader((app) => urls[app] || null);
 
 const withUrls = (frontend: string, api: string) => {
-  if (frontend) process.env.FRONTEND_URL = frontend; else delete process.env.FRONTEND_URL;
-  if (api) process.env.API_URL = api; else delete process.env.API_URL;
+  urls[ApplicationUrlUtils.FRONTEND_APP] = frontend;
+  urls[ApplicationUrlUtils.API_APP] = api;
 };
 
 const tenant = (primaryHost: string, aliases: string[] = []) => ({
@@ -48,8 +50,7 @@ afterEach(() => {
   SiteBaseUrl.reset();
   TenantMode.reset();
   vi.restoreAllMocks();
-  withUrls(ENV.FRONTEND_URL ?? '', ENV.API_URL ?? '');
-  if (ENV.ADMIN_URL) process.env.ADMIN_URL = ENV.ADMIN_URL; else delete process.env.ADMIN_URL;
+  for (const key of Object.keys(urls)) delete urls[key];
 });
 
 describe('a site’s own base URL', () => {
@@ -129,7 +130,7 @@ describe('a site’s own base URL', () => {
     // A multi-site platform configures its console and api but no single storefront address.
     multiTenant();
     withUrls('', '');
-    process.env.ADMIN_URL = 'https://console.platform.example';
+    urls[ApplicationUrlUtils.ADMIN_APP] = 'https://console.platform.example';
     wire(tenant('fromcode.example'));
 
     expect(await inSite('my-site', () => SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP)))
@@ -140,7 +141,7 @@ describe('a site’s own base URL', () => {
     // The whole answer would be a guess: the host is known, the scheme is not.
     multiTenant();
     withUrls('', '');
-    delete process.env.ADMIN_URL;
+    delete urls[ApplicationUrlUtils.ADMIN_APP];
     wire(tenant('shop.customer.example'));
 
     expect(await inSite('my-site', () => SiteBaseUrl.forCurrentSite(ApplicationUrlUtils.FRONTEND_APP))).toBe('');
@@ -258,7 +259,7 @@ describe('the console an operator reports being on', () => {
 
   it('is kept for the platform console, the site itself and a workspace', async () => {
     multiTenant();
-    process.env.ADMIN_URL = 'https://console.platform.example';
+    urls[ApplicationUrlUtils.ADMIN_APP] = 'https://console.platform.example';
     wireHosts();
     expect(await SiteBaseUrl.consoleOrigin('https://console.platform.example', 'my-site')).toBe('https://console.platform.example');
     expect(await SiteBaseUrl.consoleOrigin('https://shop.customer.example', 'my-site')).toBe('https://shop.customer.example');
@@ -267,7 +268,7 @@ describe('the console an operator reports being on', () => {
 
   it('is refused for a foreign host, another site, a downgraded scheme or garbage', async () => {
     multiTenant();
-    process.env.ADMIN_URL = 'https://console.platform.example';
+    urls[ApplicationUrlUtils.ADMIN_APP] = 'https://console.platform.example';
     wireHosts();
     expect(await SiteBaseUrl.consoleOrigin('https://evil.example', 'my-site')).toBe('');
     expect(await SiteBaseUrl.consoleOrigin('https://other.customer.example', 'my-site')).toBe('');

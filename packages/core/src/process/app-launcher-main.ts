@@ -5,6 +5,7 @@ import { PrivilegeDrop } from '@core/process/privilege-drop';
 import { ProcessEntry } from '@core/process/process-entry';
 import { FrontendWarmup } from '@core/process/frontend-warmup';
 import { PublicServerHandover } from '@core/process/public-server-handover';
+import { ApplicationUrlUtils } from '@core/utils/application-url-utils';
 
 /**
  * Starts a Next app (admin or frontend) the way the container needs it started: as root for one
@@ -45,7 +46,7 @@ export class AppLauncherMain {
     const servers = await PublicServerHandover.capture(() => nextStart(warmUp, dir));
     const next = PublicServerHandover.listeningOn(servers, privatePort);
     if (!next) throw new Error(`The frontend did not start on its private port ${privatePort}.`);
-    await new FrontendWarmup(String(process.env.API_URL ?? '').trim(), privatePort).run();
+    await new FrontendWarmup(ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '', privatePort).run();
     await PublicServerHandover.open(next, port, hostname);
     console.log(`[app-launcher] frontend takes visitors on ${hostname}:${port}`);
   }

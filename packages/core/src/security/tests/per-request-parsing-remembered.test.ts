@@ -41,15 +41,16 @@ describe('edge provider per address, remembered', () => {
   });
 });
 
-describe('app base path from the environment, remembered', () => {
-  const saved = { API_URL: process.env.API_URL, ADMIN_URL: process.env.ADMIN_URL };
-  afterEach(() => { process.env.API_URL = saved.API_URL; process.env.ADMIN_URL = saved.ADMIN_URL; if (saved.API_URL === undefined) delete process.env.API_URL; if (saved.ADMIN_URL === undefined) delete process.env.ADMIN_URL; });
+describe('app base path from the configured URL, remembered', () => {
+  let adminUrl = '';
+  afterEach(() => { ApplicationUrlResolver.registerAppUrlSettingsReader(null); });
 
-  it('follows a changed environment instead of keeping the first answer', () => {
-    process.env.ADMIN_URL = 'https://example.test/console';
+  it('follows a URL changed in Settings instead of keeping the first answer', () => {
+    ApplicationUrlResolver.registerAppUrlSettingsReader((app) => (app === 'admin' ? adminUrl : null));
+    adminUrl = 'https://example.test/console';
     expect(ApplicationUrlResolver.readAppBasePathFromEnvironment('admin')).toBe('/console');
     expect(ApplicationUrlResolver.readAppBasePathFromEnvironment('admin')).toBe('/console');
-    process.env.ADMIN_URL = 'https://example.test/manage';
+    adminUrl = 'https://example.test/manage';
     expect(ApplicationUrlResolver.readAppBasePathFromEnvironment('admin')).toBe('/manage');
   });
 });

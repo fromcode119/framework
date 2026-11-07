@@ -32,8 +32,8 @@ export class RuntimeBridge {
    * with the Host intact, which is what makes same-origin correct rather than merely convenient — it
    * is also how the storefront has worked since the equivalent fix there.
    *
-   * SERVER-side is unchanged: SSR and the `/api` proxy still resolve `NEXT_PUBLIC_API_URL`/`API_URL`
-   * (and the proxy prefers `INTERNAL_API_URL`), because a server has no origin to speak of.
+   * SERVER-side is unchanged: SSR and the `/api` proxy still resolve the deployment's internal api address
+   * (`INTERNAL_API_URL`, else the container service), because a server has no origin to speak of.
    */
   static resolveApiBaseUrl(options: { fallbackHost?: string } = {}): string {
     const fallbackBaseUrl = RuntimeBridge.normalizeApiBaseUrlCandidate(options.fallbackHost);
@@ -43,7 +43,7 @@ export class RuntimeBridge {
       // anything else here renders a different URL on each side of hydration. See `RenderLocationUtils`.
       return ApplicationUrlUtils.normalizeBaseUrlCandidate(RenderLocationUtils.origin())
         || RuntimeBridge.normalizeApiBaseUrlCandidate(
-          ApplicationUrlUtils.readEnvironmentBaseUrl(['NEXT_PUBLIC_API_URL', 'API_URL'], { stripApiPath: true }),
+          ApplicationUrlUtils.getServerApiBaseUrlCandidates()[0] || '',
         )
         || fallbackBaseUrl;
     }

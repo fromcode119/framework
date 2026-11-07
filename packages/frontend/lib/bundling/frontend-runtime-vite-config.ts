@@ -116,7 +116,6 @@ export class FrontendRuntimeViteConfig {
         // Next inlines these at build; the IIFE has no `process` until GlobalInitializer installs the
         // browser shim, so every build-time env read in the graph must be resolved statically.
         'process.env.NODE_ENV': JSON.stringify('production'),
-        'process.env.NEXT_PUBLIC_API_URL': JSON.stringify(process.env.NEXT_PUBLIC_API_URL || ''),
         'process.env.NEXT_PUBLIC_API_ORIGIN_MAP': JSON.stringify(process.env.NEXT_PUBLIC_API_ORIGIN_MAP || ''),
         'process.env': '{}',
       },

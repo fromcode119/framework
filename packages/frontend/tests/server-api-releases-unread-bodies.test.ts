@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ServerApiUtils } from '@/lib/server-api/server-api';
+import { ServerApiPaths } from '@/lib/server-api/server-api-paths';
 
 /**
  * A response the fallback loop moves past is never read. Unread, its body keeps the connection to
@@ -20,8 +21,7 @@ describe('ServerApiUtils releases the api responses it does not read', () => {
 
   beforeEach(() => {
     cancelled = [];
-    process.env.INTERNAL_API_URL = 'http://api-a:3000';
-    process.env.API_URL = 'http://api-b:3000';
+    vi.spyOn(ServerApiPaths, 'getServerApiPrefixes').mockReturnValue(['http://api-a:3000/api/v1', 'http://api-b:3000/api/v1']);
     vi.spyOn(ServerApiUtils, 'buildForwardedAuthHeaders').mockResolvedValue(new Headers());
   });
 

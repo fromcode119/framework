@@ -16,7 +16,6 @@ services:
       - DATABASE_URL=${DATABASE_URL:?Set the runtime DATABASE_URL in your deployment environment}
       - REDIS_URL=${REDIS_URL}
       - NODE_ENV=production
-      - API_URL=${API_PUBLIC_URL}
       - MARKETPLACE_URL=${MARKETPLACE_URL}
       - PLUGINS_DIR=/app/plugins
       - THEMES_DIR=/app/themes
@@ -28,8 +27,8 @@ services:
       # Same value on every service of the deployment; unset means those endpoints reject every call.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}
       # The admin and frontend are separate stacks here, so a Compose service name would not resolve.
-      # Empty falls back to the public ADMIN_URL / FRONTEND_URL; set them to an address this container
-      # can actually reach if the public hostnames are not routable from inside.
+      # Set them to an address this container can actually reach; empty marks that app as not
+      # reachable from here, and its restart button as unavailable.
       - INTERNAL_ADMIN_URL=${INTERNAL_ADMIN_URL:-}
       - INTERNAL_FRONTEND_URL=${INTERNAL_FRONTEND_URL:-}
     depends_on:

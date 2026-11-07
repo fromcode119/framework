@@ -3,15 +3,14 @@ import { ApiPathUtils, ApiVersionUtils, RealtimeRoomClient, TenantRecord, Tenant
 import { GatewayApiHostPath } from '@cli/services/gateway/gateway-api-host-path';
 
 /**
- * The three ways a deployment reaches its api, end to end through the gateway:
+ * The two ways a deployment reaches its api, end to end through the gateway:
  *
- * - the default base path (`example.com/api/...`), when `API_URL` names no path;
- * - a custom base path (`example.com/data/...`), when `API_URL` names one;
- * - the ROOT of a host declared to be the api (`api.example.com/...`), under either base path.
+ * - the base path (`example.com/api/...`) on any app host;
+ * - the ROOT of a host declared to be the api (`api.example.com/...`).
  *
- * The api always mounts under its base path; a host the operator declared as the api (Sites → host
- * role, or the deployment's own `API_URL` host) is served at its root by the gateway putting the base
- * path back. So REST, GraphQL, the realtime socket and the auth routes all answer at both addresses.
+ * The api always mounts under `/api` — the same in every process, none of which reads a domain from
+ * the environment. A host the operator declared as the api (Sites → host role, or the api URL in
+ * Settings) is served at its root by the gateway putting the base path back. So REST, GraphQL, the realtime socket and the auth routes all answer at both addresses.
  */
 const site = TenantRecord.from({
   id: 'acme', slug: 'acme', primary_host: 'example.com', host_aliases: '["data.example.com"]',
@@ -51,15 +50,10 @@ describe('api base path modes', () => {
     expect(surfaces().every((path) => path.startsWith('/api/'))).toBe(true);
   });
 
-  it('custom: an API_URL with a path mounts the api there, and a storefront reaches it on that path', () => {
+  it('the api mount never follows a path in an environment variable', () => {
     useApiUrl('https://example.com/data');
-    expect(ApiVersionUtils.API_BASE_PATH).toBe('/data');
-    const map = mapFor('https://example.com/data');
-    for (const path of surfaces()) {
-      expect(path.startsWith('/data/')).toBe(true);
-      // The storefront's own host is not the api: its paths pass through untouched.
-      expect(GatewayApiHostPath.upstream(map, 'example.com', path)).toBe(path);
-    }
+    expect(ApiVersionUtils.API_BASE_PATH).toBe('/api');
+    expect(surfaces().every((path) => path.startsWith('/api/'))).toBe(true);
   });
 
   it('root: a host DECLARED as the api answers every surface at its root, under the default base path', () => {
@@ -73,14 +67,6 @@ describe('api base path modes', () => {
       // The /api address keeps working on the same host.
       for (const path of surfaces()) expect(GatewayApiHostPath.upstream(map, host, path)).toBe(path);
     }
-  });
-
-  it('root: under a custom base path the declared api host puts that path back, not /api', () => {
-    useApiUrl('https://example.com/data');
-    const map = mapFor('https://example.com/data');
-    expect(GatewayApiHostPath.upstream(map, 'data.example.com', '/collections/pages')).toBe('/data/collections/pages');
-    expect(GatewayApiHostPath.upstream(map, 'data.example.com', '/socket')).toBe(RealtimeRoomClient.socketPath());
-    expect(GatewayApiHostPath.upstream(map, 'data.example.com', '/data/graphql')).toBe('/data/graphql');
   });
 
   it('root is decided by the host role the operator set, never by the hostname', () => {

@@ -17,8 +17,8 @@ describe('ApiVersionUtils', () => {
     expect(ApiVersionUtils.prefix()).toBe('/api');
   });
 
-  it('follows a configured base path', () => {
+  it('never takes its base path from a domain in the environment', () => {
     vi.stubEnv('API_URL', 'https://example.com/mapi');
-    expect(ApiVersionUtils.prefix()).toBe('/mapi');
+    expect(ApiVersionUtils.prefix()).not.toContain('/mapi');
   });
 });

@@ -15,10 +15,10 @@ describe('ServerApiPaths.buildPublicApiBaseUrl', () => {
     vi.unstubAllEnvs();
   });
 
-  it('uses the PUBLIC url when the deployment has one', () => {
+  it('ignores a domain in the environment — a domain is set in the admin, and paths stay relative', () => {
     vi.stubEnv('NEXT_PUBLIC_API_URL', 'https://api.example.com');
 
-    expect(ServerApiPaths.buildPublicApiBaseUrl()).toBe('https://api.example.com');
+    expect(ServerApiPaths.buildPublicApiBaseUrl()).toBe('');
   });
 
   it('is EMPTY when none is configured, so the paths come out relative', () => {

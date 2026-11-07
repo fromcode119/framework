@@ -11,7 +11,7 @@ export class FrontendApiBaseUrl {
    * paths route straight to the api; without it the storefront's own `/api` route proxies them, for
    * every method.
    *
-   * On the SERVER there is no origin to speak of, so the configured base still answers.
+   * On the SERVER there is no origin to speak of: the caller's explicit base answers, else a relative path.
    */
   static resolveFrontendApiBaseUrl(explicit?: string): string {
       if (EnvUtils.isBrowser()) {
@@ -21,9 +21,6 @@ export class FrontendApiBaseUrl {
 
       const fromExplicit = FrontendApiBaseUrl.normalizeCandidate(String(explicit || ''));
       if (fromExplicit) return fromExplicit;
-
-      const fromEnv = FrontendApiBaseUrl.normalizeCandidate(String(process.env.NEXT_PUBLIC_API_URL || ''));
-      if (fromEnv) return fromEnv;
 
       return '';
   }

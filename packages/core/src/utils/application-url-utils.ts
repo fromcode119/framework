@@ -30,7 +30,7 @@ export class ApplicationUrlUtils {
   }
 
   /**
-   * Wire the DB-backed app URL settings. NOTE: the setting takes precedence over the env var (see
+   * Wire the DB-backed app URL settings — the ONLY source of an app's public address (see
    * {@link readAppBaseUrlFromEnvironment}); pass `null` to unregister. This reader is deliberately NOT
    * consulted by {@link readAppInternalBaseUrlFromEnvironment}.
    */
@@ -39,7 +39,8 @@ export class ApplicationUrlUtils {
   }
 
   /**
-   * Resolves the configured base URL for an app, ALWAYS returning a clean base with NO
+   * Resolves the base URL configured for an app in admin Settings (never the environment — a domain
+   * is not deployment configuration; the name is kept for existing callers), ALWAYS returning a clean base with NO
    * trailing slash, or '' when unresolved. Callers MUST NOT post-process the return (no
    * `.replace(/\/+$/, '')`, no manual slash-joining) — use {@link joinApiPath} to append a
    * path. The empty-string case is the deliberate "no URL configured" contract; callers fall
@@ -100,8 +101,13 @@ export class ApplicationUrlUtils {
     return ApplicationUrlResolver.readAppBasePathFromEnvironment(app);
   }
 
+  /**
+   * Where a SERVER process reaches the api, in order: the deployment's internal address
+   * (`INTERNAL_API_URL`), the api URL configured in Settings, then the container service and loopback.
+   */
   static getServerApiBaseUrlCandidates(): string[] {
     const values = [
+      ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       ApplicationUrlUtils.DOCKER_INTERNAL_API_BASE_URL,
       ApplicationUrlUtils.LOCALHOST_PRIMARY_API_BASE_URL,

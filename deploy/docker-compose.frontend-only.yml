@@ -8,8 +8,9 @@ services:
       target: base
     command: npm run start --workspace=@fromcode119/frontend
     environment:
-      - API_URL=${EXTERNAL_API_URL}
-      - NEXT_PUBLIC_API_URL=${EXTERNAL_API_URL}
+      # Where this server reaches the api (a separate stack). Server-to-server only: the visitor's
+      # browser always calls the api on the page's own host.
+      - INTERNAL_API_URL=${EXTERNAL_API_URL}
       # Shared secret for api -> admin/frontend calls (Settings -> Infrastructure restart buttons).
       # Same value on every service of the deployment; unset means those endpoints reject every call.
       - INTERNAL_SERVICE_SECRET=${INTERNAL_SERVICE_SECRET:-}

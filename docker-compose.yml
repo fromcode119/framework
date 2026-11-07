@@ -65,7 +65,6 @@ services:
       - GITHUB_TOKEN=${GITHUB_TOKEN:-}
       - DB_DIALECT=${DB_DIALECT:-sqlite}
       - DATABASE_MIGRATION_URL=${DATABASE_MIGRATION_URL:-}
-      - FRONTEND_URL=${FRONTEND_URL:-http://frontend.framework.local}
       - CORS_ALLOWED_DOMAINS=${CORS_ALLOWED_DOMAINS:-framework.local,api.framework.local,admin.framework.local,frontend.framework.local,localhost}
       - MARKETPLACE_URL=${MARKETPLACE_URL:-http://marketplace.framework.local}
       - COOKIE_DOMAIN=${COOKIE_DOMAIN:-.framework.local}
