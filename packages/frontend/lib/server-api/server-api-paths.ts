@@ -13,7 +13,7 @@ export class ServerApiPaths {
 
   static buildInternalApiBaseUrl(): string {
     return String(
-      process.env.INTERNAL_API_URL || ServerApiPaths.buildFrontendApiBaseUrl(),
+      ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP) || ServerApiPaths.buildFrontendApiBaseUrl(),
     )
       .trim()
       .replace(/\/+$/, '');
@@ -69,7 +69,7 @@ export class ServerApiPaths {
    * per attempt, then a saturated resolver that took the healthy base down with it).
    */
   static getServerApiPrefixes(): string[] {
-    const bases = ServerApiPaths.normalizeApiBases([process.env.INTERNAL_API_URL]);
+    const bases = ServerApiPaths.normalizeApiBases([ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)]);
 
     if (bases.length === 0) {
       for (const fallback of ApplicationUrlUtils.getServerApiBaseUrlCandidates()) {

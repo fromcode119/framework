@@ -14,6 +14,7 @@ export class ApplicationUrlUtils {
   static readonly LOCALHOST_PRIMARY_API_BASE_URL = 'http://localhost:3000';
 
   static readonly LOCALHOST_FALLBACK_API_BASE_URL = 'http://localhost:4000';
+  static readonly OWN_PORTS_ENV = 'FROMCODE_OWN_LISTEN_PORTS';
 
   static normalizeBaseUrlCandidate(
     value: unknown,
@@ -114,7 +115,27 @@ export class ApplicationUrlUtils {
       ApplicationUrlUtils.LOCALHOST_FALLBACK_API_BASE_URL,
     ];
 
-    return ApplicationUrlResolver.unique(values.map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true })));
+    return ApplicationUrlResolver.unique(values.map((value) => ApplicationUrlUtils.normalizeBaseUrlCandidate(value, { stripApiPath: true })))
+      .filter((value) => !ApplicationUrlUtils.isOwnLoopbackAddress(value));
+  }
+
+  /**
+   * The admin and the storefront are launched on the same port numbers the api uses in a container
+   * (3000). A loopback guess on one of those ports reaches THIS process, not the api — each request it
+   * serves then fetches itself again, and the process drowns in its own calls. The launcher records the
+   * ports it listens on so those guesses are skipped.
+   */
+  static recordOwnPorts(ports: number[]): void {
+    process.env[ApplicationUrlUtils.OWN_PORTS_ENV] = ports.filter((port) => Number.isFinite(port) && port > 0).join(',');
+  }
+
+  private static isOwnLoopbackAddress(value: string): boolean {
+    const ownPorts = String(process.env[ApplicationUrlUtils.OWN_PORTS_ENV] || '').split(',').filter(Boolean);
+    if (!ownPorts.length) return false;
+    const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
+    if (!parsed || !ApplicationUrlUtils.isLoopbackCandidate(parsed)) return false;
+    const port = parsed.port || (parsed.protocol === 'https:' ? '443' : '80');
+    return ownPorts.includes(port);
   }
 
   static derivePlatformDomain(...values: Array<unknown>): string {
