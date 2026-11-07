@@ -4,6 +4,7 @@ import { McpRedirectTools } from '@api/controllers/mcp/tools/mcp-redirect-tools'
 const buildDeps = (existing: any = null) => ({
   db: {
     find: vi.fn(async () => [{ id: 1, from_path: '/old', to_path: '/new', type: '301', enabled: 1, hit_count: 3, notes: '', created_at: 'T', updated_at: 'T' }]),
+    count: vi.fn(async () => 1),
     findOne: vi.fn(async () => existing),
     insert: vi.fn(async (_t: string, data: any) => ({ id: 9, ...data })),
   },
@@ -25,6 +26,7 @@ describe('McpRedirectTools — the framework-owned redirect store', () => {
 
   it('list maps rows to the camelCase edge shape', async () => {
     const result: any = await tool(buildDeps(), 'redirects.list').handler({}, {});
+    expect(result.total).toBe(1);
     expect(result.items[0]).toMatchObject({ fromPath: '/old', toPath: '/new', type: '301', enabled: true, hitCount: 3 });
   });
 
