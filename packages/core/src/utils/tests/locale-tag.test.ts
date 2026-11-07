@@ -38,8 +38,8 @@ describe('LocaleTag', () => {
   });
 
   it('knows which way a language is written', () => {
-    for (const rtl of ['ar', 'he', 'fa', 'ur', 'ar-EG', 'he-IL', 'az-Arab', 'pa-Arab']) expect(LocaleTag.direction(rtl)).toBe('rtl');
-    for (const ltr of ['en', 'bg', 'zh-hant', 'fil', 'az', 'pa', 'th', '', 'max']) expect(LocaleTag.direction(ltr)).toBe('ltr');
+    for (const rtl of ['ar', 'he', 'fa', 'ur', 'ar-EG', 'he-IL', 'az-Arab', 'pa-Arab']) expect(LocaleTag.direction(rtl).value).toBe('rtl');
+    for (const ltr of ['en', 'bg', 'zh-hant', 'fil', 'az', 'pa', 'th', '', 'max']) expect(LocaleTag.direction(ltr).value).toBe('ltr');
   });
 
   it('refuses a tag longer than any real one', () => {

@@ -5,6 +5,7 @@ import type { INormalizeLocaleOptions } from '@core/interfaces/normalize-locale-
 import type { IResolveAnyStringOptions } from '@core/interfaces/resolve-any-string-options.interface';
 import { EnvUtils } from '@core/utils/env-utils';
 import { LocaleTag } from '@core/utils/locale-tag';
+import type { TextDirection } from '@core/enums/text-direction.enum';
 
 /**
  * Utilities for locale code normalisation, localised value detection, and
@@ -62,7 +63,7 @@ export class LocalizationUtils {
   }
 
   /** `rtl` for a locale whose script is written right to left (`ar`, `he`, `fa`), else `ltr` — the `dir` to render it with. */
-  static textDirection(locale: unknown): 'rtl' | 'ltr' {
+  static textDirection(locale: unknown): TextDirection {
     return LocaleTag.direction(locale);
   }
 

@@ -15,6 +15,8 @@
  * A runtime without that locale data (some phone engines) still reads two-letter languages and written
  * scripts; it only stops recognising three-letter languages and region-implied scripts.
  */
+import { TextDirection } from '@core/enums/text-direction.enum';
+
 export class LocaleTag {
   private static readonly SHAPE = /^([a-z]{2,3})((?:-[a-z0-9]{1,8})*)$/;
   private static readonly SCRIPT = /^[a-z]{4}$/;
@@ -57,10 +59,10 @@ export class LocaleTag {
    * `ur`, `az-Arab`), else `ltr`. The script is the one the tag names or the one the locale data implies
    * for its language and region; the right-to-left scripts are Unicode's (`RTL_SCRIPTS`).
    */
-  static direction(value: unknown): 'rtl' | 'ltr' {
+  static direction(value: unknown): TextDirection {
     const tag = LocaleTag.full(value);
-    if (!tag) return 'ltr';
-    return LocaleTag.RTL_SCRIPTS.has(LocaleTag.script(tag)) ? 'rtl' : 'ltr';
+    if (!tag) return TextDirection.LTR;
+    return LocaleTag.RTL_SCRIPTS.has(LocaleTag.script(tag)) ? TextDirection.RTL : TextDirection.LTR;
   }
 
   /** The language alone: `zh-hant` → `zh`. */

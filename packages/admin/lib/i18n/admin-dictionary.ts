@@ -1,6 +1,6 @@
 import bg from '@/i18n/bg.json';
 import en from '@/i18n/en.json';
-import { LocalizationUtils } from '@fromcode119/core/client';
+import { LocalizationUtils, TextDirection } from '@fromcode119/core/client';
 
 /**
  * The admin console's OWN copy, shipped with the console.
@@ -95,7 +95,7 @@ export class AdminDictionary {
   }
 
   /** `rtl` for a language written right to left, which the console then lays out mirrored. */
-  static direction(locale: string): 'rtl' | 'ltr' {
+  static direction(locale: string): TextDirection {
     return LocalizationUtils.textDirection(AdminDictionary.normalize(locale));
   }
 

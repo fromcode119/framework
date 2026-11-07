@@ -56,10 +56,10 @@ describe('AdminDictionary', () => {
   });
 
   it('lays out Arabic and Hebrew right to left, and everything else left to right', () => {
-    expect(AdminDictionary.direction('ar')).toBe('rtl');
-    expect(AdminDictionary.direction('he-IL')).toBe('rtl');
-    expect(AdminDictionary.direction('bg')).toBe('ltr');
-    expect(AdminDictionary.direction('zh-hant')).toBe('ltr');
+    expect(AdminDictionary.direction('ar').value).toBe('rtl');
+    expect(AdminDictionary.direction('he-IL').value).toBe('rtl');
+    expect(AdminDictionary.direction('bg').value).toBe('ltr');
+    expect(AdminDictionary.direction('zh-hant').value).toBe('ltr');
   });
 
   it('names each language in that language, which is the only name its reader recognises', () => {

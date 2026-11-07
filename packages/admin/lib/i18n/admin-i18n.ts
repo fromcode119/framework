@@ -73,7 +73,7 @@ export class AdminI18n {
   static markDocument(locale: string): void {
     if (!Platform.isBrowser) return;
     document.documentElement.lang = locale;
-    document.documentElement.dir = AdminDictionary.direction(locale);
+    document.documentElement.dir = AdminDictionary.direction(locale).value;
   }
 
   private static apply(next: string): void {
