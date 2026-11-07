@@ -13,7 +13,7 @@ export class ServerApiPaths {
 
   static buildInternalApiBaseUrl(): string {
     return String(
-      ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP) || ServerApiPaths.buildFrontendApiBaseUrl(),
+      ServerApiPaths.readInternalApiBase() || ServerApiPaths.buildFrontendApiBaseUrl(),
     )
       .trim()
       .replace(/\/+$/, '');
@@ -60,6 +60,12 @@ export class ServerApiPaths {
   }
 
 
+  /** The deployment's internal api address — never this process's own port (it would fetch itself). */
+  private static readInternalApiBase(): string {
+    const base = ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP);
+    return base && !ApplicationUrlUtils.isOwnLoopbackAddress(base) ? base : '';
+  }
+
   /**
    * The API bases a SERVER render may fetch through, in priority order.
    *
@@ -69,7 +75,7 @@ export class ServerApiPaths {
    * per attempt, then a saturated resolver that took the healthy base down with it).
    */
   static getServerApiPrefixes(): string[] {
-    const bases = ServerApiPaths.normalizeApiBases([ApplicationUrlUtils.readAppInternalBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)]);
+    const bases = ServerApiPaths.normalizeApiBases([ServerApiPaths.readInternalApiBase()]);
 
     if (bases.length === 0) {
       for (const fallback of ApplicationUrlUtils.getServerApiBaseUrlCandidates()) {

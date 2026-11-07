@@ -129,7 +129,7 @@ export class ApplicationUrlUtils {
     process.env[ApplicationUrlUtils.OWN_PORTS_ENV] = ports.filter((port) => Number.isFinite(port) && port > 0).join(',');
   }
 
-  private static isOwnLoopbackAddress(value: string): boolean {
+  static isOwnLoopbackAddress(value: string): boolean {
     const ownPorts = String(process.env[ApplicationUrlUtils.OWN_PORTS_ENV] || '').split(',').filter(Boolean);
     if (!ownPorts.length) return false;
     const parsed = ApplicationUrlUtils.parseAbsoluteUrl(value);
