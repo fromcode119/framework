@@ -130,7 +130,8 @@ export class CollectionFieldGuard {
   assertPermalinkNotReserved(collection: ICollection, data: Record<string, any>) {
     if (!collection || !data || typeof data !== 'object') return;
     const permalinkFields = ['slug', 'customPermalink', 'path', 'permalink'];
-    const existingFields = new Set((collection.fields || []).map((f) => String(f?.name || '')));
+    // A field that says it is not a page's address (`permalink: false`) is not one, whatever its name.
+    const existingFields = new Set((collection.fields || []).filter((f) => f?.permalink !== false).map((f) => String(f?.name || '')));
     const targetFields = permalinkFields.filter((n) => existingFields.has(n) && data[n] !== undefined && data[n] !== null);
     if (!targetFields.length) return;
 

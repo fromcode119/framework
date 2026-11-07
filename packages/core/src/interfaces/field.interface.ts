@@ -58,6 +58,13 @@ export interface IField {
    * does not carry it. Staff reading the whole collection still see it in the console.
    */
   readOnRequest?: boolean;
+  /**
+   * `false`: the value is an address that is not a page on the site (an API path a phone reads, a route a
+   * request goes to). A field named `slug`, `customPermalink`, `path` or `permalink` is taken as a page's
+   * address and refused when it starts with a reserved root such as `/api` or `/plugins`; this field is
+   * left out of that check.
+   */
+  permalink?: boolean;
   min?: number; // For number
   max?: number; // For number
   minLength?: number; // For text
