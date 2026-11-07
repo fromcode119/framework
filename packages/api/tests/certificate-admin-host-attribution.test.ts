@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { AcmeSettings, TenantRecord } from '@fromcode119/core';
+import { AcmeSettings, ApplicationUrlUtils, TenantRecord } from '@fromcode119/core';
+
+/** The platform's app URLs, as Settings → General stores them. */
+const withUrls = (urls: Record<string, string>) =>
+  ApplicationUrlUtils.registerAppUrlSettingsReader((app) => urls[app] || null);
 import { CertificateAdminService } from '@api/services/certificates/certificate-admin-service';
 
 /**
@@ -28,6 +32,7 @@ const hostsOf = async (result: Record<string, unknown>) =>
 
 afterEach(() => {
   vi.unstubAllEnvs();
+  ApplicationUrlUtils.registerAppUrlSettingsReader(null);
   vi.restoreAllMocks();
 });
 
@@ -39,13 +44,11 @@ describe('CertificateAdminService host attribution', () => {
   } as never);
 
   it('attributes a host to its SITE even when a platform URL names the same host', async () => {
-    // A single-site deployment looks exactly like this: FRONTEND_URL is the site's own address.
+    // A single-site deployment looks exactly like this: the frontend URL setting is the site's own address.
     // The platform pass used to claim it first with no tenant, and the site's Domains tab — which
     // filters by tenant — then reported that the site had no hosts at all.
     stubAcme();
-    vi.stubEnv('FRONTEND_URL', 'https://acme.example.com');
-    vi.stubEnv('ADMIN_URL', 'https://console.example.com');
-    vi.stubEnv('API_URL', 'https://api.example.com');
+    withUrls({ [ApplicationUrlUtils.FRONTEND_APP]: 'https://acme.example.com', [ApplicationUrlUtils.ADMIN_APP]: 'https://console.example.com', [ApplicationUrlUtils.API_APP]: 'https://api.example.com' });
 
     const acme = await service([tenant('acme', 'acme.example.com')]).forTenant('acme');
 
@@ -56,9 +59,7 @@ describe('CertificateAdminService host attribution', () => {
 
   it('still lists a platform host that belongs to no site', async () => {
     stubAcme();
-    vi.stubEnv('FRONTEND_URL', '');
-    vi.stubEnv('ADMIN_URL', 'https://console.example.com');
-    vi.stubEnv('API_URL', '');
+    withUrls({ [ApplicationUrlUtils.ADMIN_APP]: 'https://console.example.com' });
 
     const all = await service([tenant('acme', 'acme.example.com')]).overview();
     const hosts = await hostsOf(all);
@@ -69,9 +70,7 @@ describe('CertificateAdminService host attribution', () => {
 
   it('keeps aliases with their site, and never invents a host from an unconfigured URL', async () => {
     stubAcme();
-    vi.stubEnv('FRONTEND_URL', '');
-    vi.stubEnv('ADMIN_URL', '');
-    vi.stubEnv('API_URL', '');
+    withUrls({});
 
     const hosts = await hostsOf(await service([tenant('acme', 'acme.example.com', ['www.acme.example.com'])]).overview());
 

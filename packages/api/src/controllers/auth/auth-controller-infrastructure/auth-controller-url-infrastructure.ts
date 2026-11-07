@@ -4,9 +4,10 @@ import { ApiConfig } from '@api/config/api-config';
 import { AuthControllerSharedInfrastructure } from '@api/controllers/auth/auth-controller-infrastructure/auth-controller-shared-infrastructure';
 
 /**
- * The base of every link the platform emails (reset, verification, email change). Only configured
- * addresses and the host the request was routed to are used — never a header the caller writes freely,
- * since the link carries a single-use token.
+ * The base of every link the platform emails (reset, verification, email change). Only addresses
+ * configured in Settings (or the bound site's own host) are used — never the request's Host or
+ * X-Forwarded-Host, which the caller writes freely: the link carries a single-use token, and a forged
+ * host would mail that token to an attacker's server. Nothing configured → no link is sent.
  */
 export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrastructure {
   protected async getFrontendBaseUrl(req: Request): Promise<string> {
@@ -23,27 +24,19 @@ export class AuthControllerUrlInfrastructure extends AuthControllerSharedInfrast
     const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
     if (siteUrl) return siteUrl.replace(/\/+$/, '');
 
-    const { host, proto } = this.getRequestHostAndProto(req);
-    if (host) return `${proto}://${host}`;
-
-    throw new Error('Frontend base URL is not configured. Set frontend_url or provide a resolvable request origin.');
+    throw new Error('Frontend base URL is not configured. Set the storefront URL in Settings → General.');
   }
 
   protected async getAdminBaseUrl(req: Request): Promise<string> {
     const configuredInDb = String((await this.getMetaValue(SystemConstants.META_KEY.ADMIN_URL)) || '').trim();
     if (configuredInDb) return this.normalizeAdminBaseUrl(configuredInDb);
 
-    const { host, proto } = this.getRequestHostAndProto(req);
-    if (host) {
-      return `${proto}://${host}${AppPathConstants.ADMIN.ADMIN.BASE}`;
-    }
-
     const siteUrl = String((await this.getMetaValue(SystemConstants.META_KEY.SITE_URL)) || '').trim();
     if (siteUrl) {
       return this.joinBaseUrl(siteUrl, AppPathConstants.ADMIN.ADMIN.BASE);
     }
 
-    throw new Error('Admin base URL is not configured. Set admin_url or provide a resolvable request origin.');
+    throw new Error('Admin base URL is not configured. Set the admin URL in Settings → General.');
   }
 
   protected async buildEmailVerificationUrl(req: Request, token: string): Promise<string> {
