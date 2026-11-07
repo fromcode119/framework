@@ -1,6 +1,7 @@
 import net from 'net';
 import { EdgeUpstreams } from '@cli/services/edge/edge-upstreams';
 import { GatewayProxyProtocol } from '@cli/services/gateway/gateway-proxy-protocol';
+import { EdgeConnectionLog } from '@cli/services/edge/edge-connection-log';
 
 /**
  * The platform's `edge`: holds the public ports and passes every connection, untouched, to a gateway.
@@ -28,6 +29,8 @@ export class PlatformEdge {
     private readonly upstreams: EdgeUpstreams,
     /** Public port → the gateway's port it forwards to. */
     private readonly routes: Array<{ listen: number; upstreamPort: number }>,
+    /** Only what no gateway can log: a connection dropped, retried, or abandoned before a gateway took it. */
+    private readonly log: EdgeConnectionLog = new EdgeConnectionLog(),
   ) {}
 
   /** From the environment: 80 → the gateway's HTTP port, 443 → its TLS port. */
@@ -77,9 +80,17 @@ export class PlatformEdge {
     client.once('close', () => this.open.delete(client));
     client.on('error', () => client.destroy());
     const header = GatewayProxyProtocol.header(String(client.remoteAddress ?? ''), client.remotePort ?? 0, String(client.localAddress ?? ''), client.localPort ?? 0);
-    void this.connect(upstreamPort, header, new Set()).then((upstream) => {
-      if (!upstream) { client.destroy(); return; }
+    const startedAt = Date.now();
+    const publicPort = client.localPort ?? 0;
+    const attempt = { tried: new Set<string>(), refused: new Set<string>(), attempts: 0 };
+    void this.connect(upstreamPort, header, attempt).then((upstream) => {
+      if (!upstream) {
+        this.log.dropped(publicPort, startedAt, attempt.tried, attempt.attempts);
+        client.destroy();
+        return;
+      }
       if (client.destroyed) { upstream.socket.destroy(); return; }
+      if (attempt.refused.size) this.log.retried(publicPort, startedAt, upstream.address, attempt.refused, attempt.attempts);
       this.upstreams.count(upstream.address, 1);
       upstream.socket.once('close', () => this.upstreams.count(upstream.address, -1));
       upstream.socket.on('error', () => client.destroy());
@@ -92,7 +103,8 @@ export class PlatformEdge {
   }
 
   /** A connection to a gateway that accepts it, with the header already sent — or null when none does. */
-  private async connect(port: number, header: Buffer, tried: Set<string>): Promise<{ address: string; socket: net.Socket } | null> {
+  private async connect(port: number, header: Buffer, progress: { tried: Set<string>; refused: Set<string>; attempts: number }): Promise<{ address: string; socket: net.Socket } | null> {
+    const tried = progress.tried;
     for (let attempt = 0; attempt < PlatformEdge.ATTEMPTS; attempt += 1) {
       // A gateway not yet tried first. With every one tried, the attempts left go to them again: across a
       // lossy link a second connection often gets through where the first was lost, and with a single
@@ -106,12 +118,14 @@ export class PlatformEdge {
         if (!address) return null;
       }
       tried.add(address);
+      progress.attempts += 1;
       const socket = await PlatformEdge.open(address, port);
       if (socket) {
         socket.write(header);
         return { address, socket };
       }
       this.upstreams.refused(address);
+      progress.refused.add(address);
     }
     return null;
   }

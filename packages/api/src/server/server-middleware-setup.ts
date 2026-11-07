@@ -15,6 +15,7 @@ import { ApiKeyTenantResolver } from '@api/services/request/api-key-tenant-resol
 import { PublicSystemRouteUtils } from '@api/utils/public-system-route-utils';
 import { TenantExemptRouteUtils } from '@api/utils/tenant-exempt-route-utils';
 import { JsonCompressionMiddleware } from '@api/middlewares/json-compression-middleware';
+import { RequestLoggerMiddleware } from '@api/middlewares/request-logger-middleware';
 import { SecurityHeadersMiddleware } from '@api/middlewares/security-headers-middleware';
 import { PlatformRobotsHeaderMiddleware } from '@api/middlewares/platform-robots-header-middleware';
 import { PluginRouteRobotsHeaderMiddleware } from '@api/middlewares/plugin-route-robots-header-middleware';
@@ -48,6 +49,8 @@ export class ServerMiddlewareSetup {
     this.app.use(new SecurityHeadersMiddleware().middleware());
     // Every finished response counts toward the monitor's api error rate (see PlatformHealthChecks).
     this.app.use((req, res, next) => { res.on('finish', () => ApiOutcomeCounter.record(res.statusCode, req.method, req.originalUrl, ApiOutcomeCounter.isRefusal(res))); next(); });
+    // The access log — one line per finished response, refusals included, so it is mounted this early.
+    this.app.use(new RequestLoggerMiddleware().middleware());
     // Requests queued for a database connection look idle from elsewhere (DatabasePoolWatch); open requests name who.
     this.app.use(InFlightRequests.middleware());
     new DatabasePoolWatch().start();
@@ -126,10 +129,7 @@ export class ServerMiddlewareSetup {
         req.url.includes(probeRoutes.READY) ||
         req.url.includes(ApiConfig.getInstance().routes.system.HEALTH) ||
         req.url.includes(ApiConfig.getInstance().routes.system.STATUS);
-      if (!isNoise) {
-        const cookieNames = Object.keys(req.cookies || {});
-        this.logger.debug(`${req.method} ${req.url} - User: ${req.user ? req.user.email : 'None'} - HasToken: ${hasToken} - CookieNames: ${cookieNames.join(',') || 'none'}`);
-      }
+      // The request itself is in the access log (RequestLoggerMiddleware); this only flags a dead token.
       if (!req.user && hasToken && !isNoise) this.logger.warn(`Token present but user not authenticated for ${req.url}. Possibly expired or invalid format.`);
       next();
     });
