@@ -123,7 +123,11 @@ export class LocalizationService {
       .map((value) => LocalizationUtils.normalizeLocaleCode(value))
       .filter(Boolean);
 
-    const chain = Array.from(new Set([requestedLocale, defaultLocale, fallbackLocale, ...enabledLocales].filter(Boolean)));
+    // A translation is stored under its language (and script), so `en-US` reads `en`, `zh-TW` reads
+    // `zh-hant` then `zh`, and `fil-PH` reads `fil` — before the default language takes over.
+    const chain = Array.from(new Set([requestedLocale, defaultLocale, fallbackLocale, ...enabledLocales]
+      .flatMap((locale) => LocalizationService.readingKeys(locale))
+      .filter(Boolean)));
     const context = {
       locale: requestedLocale || defaultLocale,
       defaultLocale,
@@ -133,6 +137,12 @@ export class LocalizationService {
 
     if (req) req._fcLocaleContext = context;
     return context;
+  }
+
+  /** The keys a locale's translation can be stored under, most specific first: `zh-tw` → zh-tw, zh-hant, zh. */
+  private static readingKeys(locale: string): string[] {
+    const key = LocalizationUtils.normalizeLocaleCode(locale, { short: true });
+    return [locale, key, key.split('-')[0]];
   }
 
   public transformOutgoingData(
