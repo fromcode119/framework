@@ -8,7 +8,6 @@ export class PluginMarketplaceCommandService {
   static register(plugin: Command): void {
     PluginMarketplaceCommandService.registerPack(plugin);
     PluginMarketplaceCommandService.registerSearch(plugin);
-    PluginMarketplaceCommandService.registerInstall(plugin);
   }
 
   private static registerPack(plugin: Command): void {
@@ -62,25 +61,6 @@ export class PluginMarketplaceCommandService {
           }
         } catch (error: any) {
           console.error(chalk.red('Error searching marketplace:'), error.message);
-        }
-      });
-  }
-
-  private static registerInstall(plugin: Command): void {
-    plugin
-      .command('install <slug>')
-      .description('Install a plugin from the marketplace')
-      .action(async (slug) => {
-        try {
-          const marketplace = CliUtils.getMarketplace();
-          console.log(chalk.blue(`\nInstalling plugin: ${chalk.bold(slug)}...`));
-
-          const manifest = await marketplace.downloadAndInstall(slug);
-
-          console.log(chalk.green(`\nPlugin ${chalk.bold(slug)} (v${manifest.version}) installed successfully!`));
-
-        } catch (error: any) {
-          console.error(chalk.red('\nInstallation failed:'), error.message);
         }
       });
   }
