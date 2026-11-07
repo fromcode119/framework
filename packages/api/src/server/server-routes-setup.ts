@@ -221,7 +221,7 @@ export class ServerRoutesSetup {
     vApi.use(new RoutingRouter(tenantRegistry, this.settingsCache, new EdgeProtectionReader((this.manager as any).db, this.settingsCache)).router);
     // The same truth as the routing map, asked one host at a time — what an edge doing on-demand TLS
     // needs at handshake time, when it cannot poll a list or send a header.
-    vApi.use(new HostPermitRouter(tenantRegistry).router);
+    vApi.use(new HostPermitRouter(tenantRegistry, this.settingsCache).router);
     vApi.use(new UpdaterRouter(new UpdaterStatusStore((this.manager as any).db)).router);
     // The certificates and private keys whatever terminates TLS loads. Secret-only, never cached,
     // and it must never be published through the edge — see CertificatesInternalRouter.

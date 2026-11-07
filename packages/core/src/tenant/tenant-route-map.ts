@@ -46,7 +46,7 @@ export class TenantRouteMap {
     return new TenantRouteMap(this.byHost.values(), this.setup, this.relays, protection);
   }
 
-  static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }, setup = false): TenantRouteMap {
+  static build(tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string; aliases?: readonly string[] }, setup = false): TenantRouteMap {
     const routes: TenantRoute[] = [];
     const platformHost = (value: string | undefined, target: GatewayTarget, consolePath = '') => {
       const host = TenantRouteMap.hostOf(value);
@@ -58,6 +58,13 @@ export class TenantRouteMap {
     // mount a site's "Console path" uses.
     const adminHost = TenantRouteMap.hostOf(platform.admin);
     const consolePath = adminHost && adminHost === TenantRouteMap.hostOf(platform.frontend) ? TenantRouteMap.pathOf(platform.admin) : '';
+    // Settings → General → Domain aliases of a SINGLE-site install: more names for its storefront
+    // (`www.shop.com`, the old `shop.example.com`). They were trusted for CORS and nothing else, so the
+    // gateway had no route for them and the edge refused them a certificate. With sites, each site
+    // declares its own aliases and those win. Added first, so a platform host always wins over one.
+    if (!tenants.length && TenantRouteMap.hostOf(platform.frontend)) {
+      for (const alias of platform.aliases || []) platformHost(`https://${alias}`, GatewayTarget.FRONTEND, consolePath);
+    }
     if (!consolePath) platformHost(platform.admin, GatewayTarget.ADMIN);
     platformHost(platform.api, GatewayTarget.API);
     platformHost(platform.frontend, GatewayTarget.FRONTEND, consolePath);

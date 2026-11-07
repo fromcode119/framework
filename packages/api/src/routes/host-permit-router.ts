@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationUrlUtils, HostPermission, InternalServiceAuth, RouteConstants } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, HostPermission, InternalServiceAuth, RouteConstants, SystemConstants } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 
 /**
@@ -32,7 +32,11 @@ export class HostPermitRouter {
     /^f[cd][0-9a-f]{2}:/i,
   ];
 
-  constructor(private readonly tenants: TenantRegistryService) {
+  constructor(
+    private readonly tenants: TenantRegistryService,
+    /** The platform settings cache: a single-site install's domain aliases are certified too. */
+    private readonly settingsCache: Map<string, string> = new Map(),
+  ) {
     this.router.get(RouteConstants.SEGMENTS.INTERNAL_HOST_PERMIT, (req, res) => { void this.permit(req, res); });
   }
 
@@ -50,6 +54,7 @@ export class HostPermitRouter {
       admin: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       api: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      aliases: ApplicationDomainSettingsUtils.parseDomainAliases(this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES)),
     });
 
     // The body never lists anything. A refusal says only that this name is not served — it must not
