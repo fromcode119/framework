@@ -36,6 +36,10 @@ describe('LocaleTag', () => {
     expect(LocaleTag.key('faq')).toBe('');
     expect(LocaleTag.key('cms')).toBe('');
   });
+
+  it('refuses a tag longer than any real one', () => {
+    expect(LocaleTag.key(`en-${'a'.repeat(40)}`)).toBe('');
+  });
 });
 
 describe('LocalizationUtils with script and three-letter locales', () => {

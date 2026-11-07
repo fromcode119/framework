@@ -18,6 +18,10 @@
 export class LocaleTag {
   private static readonly SHAPE = /^([a-z]{2,3})((?:-[a-z0-9]{1,8})*)$/;
   private static readonly SCRIPT = /^[a-z]{4}$/;
+  /** Longer than any real tag (BCP 47 practice keeps them within 35); a request can carry anything. */
+  private static readonly MAX_LENGTH = 35;
+  /** The caches are filled from request input, so each is emptied once it holds this many. */
+  private static readonly MAX_CACHED = 500;
   private static readonly cache = new Map<string, string>();
   private static readonly languages = new Map<string, boolean>();
   private static names: Intl.DisplayNames | null | undefined;
@@ -25,6 +29,7 @@ export class LocaleTag {
   /** The tag lower-cased with `-` separators, or '' when its language is not one. */
   static full(value: unknown): string {
     const raw = String(value ?? '').trim().toLowerCase().replace(/_/g, '-');
+    if (raw.length > LocaleTag.MAX_LENGTH) return '';
     const match = LocaleTag.SHAPE.exec(raw);
     if (!match || !LocaleTag.isLanguage(match[1])) return '';
     return raw;
@@ -39,7 +44,7 @@ export class LocaleTag {
     const language = LocaleTag.language(tag);
     const script = LocaleTag.script(tag);
     const key = script && script !== LocaleTag.script(language) ? `${language}-${script}` : language;
-    LocaleTag.cache.set(tag, key);
+    LocaleTag.remember(LocaleTag.cache, tag, key);
     return key;
   }
 
@@ -53,7 +58,7 @@ export class LocaleTag {
     const known = LocaleTag.languages.get(code);
     if (known !== undefined) return known;
     const found = LocaleTag.isThreeLetterLanguage(code);
-    LocaleTag.languages.set(code, found);
+    LocaleTag.remember(LocaleTag.languages, code, found);
     return found;
   }
 
@@ -78,6 +83,11 @@ export class LocaleTag {
     } catch {
       return '';
     }
+  }
+
+  private static remember<T>(cache: Map<string, T>, key: string, value: T): void {
+    if (cache.size >= LocaleTag.MAX_CACHED) cache.clear();
+    cache.set(key, value);
   }
 
   private static displayNames(): Intl.DisplayNames | null {
