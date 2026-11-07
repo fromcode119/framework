@@ -30,7 +30,7 @@ export class HostPermission {
    * operator out of the site they are building. Visibility decides who may READ a site, never
    * whether it may have a certificate.
    */
-  static decide(host: unknown, tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string }): HostPermissionVerdict {
+  static decide(host: unknown, tenants: readonly TenantRecord[], platform: { admin?: string; api?: string; frontend?: string; aliases?: readonly string[] }): HostPermissionVerdict {
     const needle = HostPermission.normalize(host);
     if (!needle) return HostPermissionVerdict.UNKNOWN;
 

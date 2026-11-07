@@ -1,5 +1,5 @@
 import express from 'express';
-import { ApplicationUrlUtils, EdgeProtectionReader, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
+import { ApplicationDomainSettingsUtils, ApplicationUrlUtils, EdgeProtectionReader, InternalServiceAuth, NetworkAddressUtils, RouteConstants, SystemConstants, TenantRouteMap } from '@fromcode119/core';
 import type { TenantRegistryService } from '@fromcode119/core';
 import { SetupMode } from '@fromcode119/core';
 
@@ -34,6 +34,7 @@ export class RoutingRouter {
       admin: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.ADMIN_APP),
       api: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP),
       frontend: ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.FRONTEND_APP),
+      aliases: ApplicationDomainSettingsUtils.parseDomainAliases(this.settingsCache.get(SystemConstants.META_KEY.DOMAIN_ALIASES)),
     }, SetupMode.isActive()).withRelays(NetworkAddressUtils.parseList(this.settingsCache.get(SystemConstants.META_KEY.TRUSTED_RELAYS)));
     const map = this.protection ? built.withProtection(await this.protection.read(tenants.map((tenant) => tenant.id))) : built;
     res.setHeader('Cache-Control', 'no-store');
