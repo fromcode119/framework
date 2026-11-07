@@ -3,6 +3,7 @@ import {
   CertificateHostRole, CertificateRecord, CertificateRejection, CertificateSource, AcmeSettings, CertificateStoreService,
   CertificateValidationError, PlatformAddressDetection, SecretService, TenantRegistryService,
 } from '@fromcode119/core';
+import { SingleSiteAliasHosts } from '@api/services/certificates/single-site-alias-hosts';
 import { CertificateAutomationStatus } from '@api/services/certificates/certificate-automation-status';
 import { GatewayReloadClient } from '@api/services/tenants/gateway-reload-client';
 import { CertificateHostEntry } from '@api/services/certificates/certificate-host-entry';
@@ -32,6 +33,7 @@ export class CertificateAdminService {
     private readonly cloudflareTokens: AcmeCloudflareTokenStore,
     private readonly reload: GatewayReloadClient = new GatewayReloadClient(),
     private readonly edgeStatus: GatewayTlsStatusClient = new GatewayTlsStatusClient(),
+    private readonly settingsCache: Map<string, string> = new Map(),
   ) {
     this.dnsTokens = new AcmeDnsTokenResolver(this.cloudflareTokens);
     this.automationStatus = new CertificateAutomationStatus(this.dnsTokens);
@@ -253,7 +255,8 @@ export class CertificateAdminService {
     // Domains tab, which filters by tenant, said "no hosts are configured on this platform yet"
     // about a site that plainly had one. The tenant is the more specific claim: it says WHOSE host
     // this is, which is the question this list exists to answer.
-    for (const tenant of await this.tenants.list()) {
+    const tenants = await this.tenants.list();
+    for (const tenant of tenants) {
       for (const host of tenant.hosts()) {
         const normalized = CertificateAdminService.normalize(host);
         if (!normalized || hosts.has(normalized)) continue;
@@ -272,6 +275,9 @@ export class CertificateAdminService {
     for (const [url, role] of platform) {
       const host = CertificateAdminService.hostOfUrl(url);
       if (host && !hosts.has(host)) hosts.set(host, new CertificateHostEntry(host, role, null, null, null));
+    }
+    for (const host of SingleSiteAliasHosts.read(this.settingsCache, tenants.length)) {
+      if (!hosts.has(host)) hosts.set(host, new CertificateHostEntry(host, CertificateHostRole.ALIAS, null, null, null));
     }
 
     return hosts;
