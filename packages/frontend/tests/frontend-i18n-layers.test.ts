@@ -56,6 +56,23 @@ describe('FrontendI18nService layering', () => {
     expect(FrontendI18nService.translate(dict, 'only.onServer')).toBe('yes');
   });
 
+  it('serves a language the plugin bundle does not carry from the server, over its English fallback', () => {
+    // A bundle carries English and Bulgarian and registers English flat as the fallback; German
+    // reaches the browser only from `/system/i18n`. The fallback must not paint over it.
+    const bundled = FrontendI18nService.foldRegistration(
+      FrontendI18nService.foldRegistration({}, { en: { upsilon: { title: 'Reviews', onlyBundle: 'Bundle' } } }),
+      { upsilon: { title: 'Reviews', onlyBundle: 'Bundle' } },
+    );
+    const dict = FrontendI18nService.resolveEffective({ upsilon: { title: 'Bewertungen' } }, bundled, 'de-AT');
+    expect(FrontendI18nService.translate(dict, 'upsilon.title')).toBe('Bewertungen');
+    expect(FrontendI18nService.translate(dict, 'upsilon.onlyBundle')).toBe('Bundle');
+  });
+
+  it('keeps a bundled language over the server copy of the same key', () => {
+    const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg');
+    expect(FrontendI18nService.translate(dict, 'upsilon.shared')).toBe('plugin');
+  });
+
   it('resolves the same way with no theme layer at all (plugin-only install)', () => {
     const dict = FrontendI18nService.resolveEffective(server, pluginLayer, 'bg');
     expect(FrontendI18nService.translate(dict, 'upsilon.reviews.title')).toBe('Отзиви за курсове');
