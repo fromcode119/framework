@@ -67,6 +67,17 @@ export class RequestServerTiming {
     if (recorder) RequestServerTiming.add(recorder, name, ms);
   }
 
+  /** Adds `ms` and `count` runs to the step `name`: a step whose runs were counted elsewhere. */
+  static recordTotal(name: string, ms: number, count: number): void {
+    const recorder = RequestServerTiming.storage.getStore();
+    if (recorder && Number.isInteger(count) && count > 0) RequestServerTiming.add(recorder, name, ms, count);
+  }
+
+  /** Runs `contribute` just before the header is written: for a step that is still adding up while the request runs. */
+  static beforeWrite(contribute: () => void): void {
+    RequestServerTiming.storage.getStore()?.late.push(contribute);
+  }
+
   /** The request reached the code that answers it: what came before is the platform's own work (`api-pre`). Once per request. */
   static handlerReached(): void {
     const recorder = RequestServerTiming.storage.getStore();
@@ -97,8 +108,8 @@ export class RequestServerTiming {
     return true;
   }
 
-  private static add(recorder: RequestTimingRecorder, name: string, ms: number): void {
-    if (RequestServerTiming.NAME.test(name) && Number.isFinite(ms) && ms >= 0) recorder.add(name, ms);
+  private static add(recorder: RequestTimingRecorder, name: string, ms: number, count = 1): void {
+    if (RequestServerTiming.NAME.test(name) && Number.isFinite(ms) && ms >= 0) recorder.add(name, ms, count);
   }
 
   private static write(req: Request, res: Response, recorder: RequestTimingRecorder, gated: boolean): void {
@@ -107,6 +118,9 @@ export class RequestServerTiming {
       // A plugin process answered with timings of its own: they are held to the same rule.
       res.removeHeader('Server-Timing');
       return;
+    }
+    for (const contribute of recorder.late) {
+      try { contribute(); } catch { /* a step that cannot be counted is left out; the answer is not held up */ }
     }
     const mine = RequestServerTiming.format(recorder);
     if (!mine) return;

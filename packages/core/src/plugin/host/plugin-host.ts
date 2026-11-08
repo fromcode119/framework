@@ -230,6 +230,12 @@ export class PluginHost extends PluginHostSharedProcesses {
       const target = targetPath ?? PluginHost.pluginPath(this.slug, `${req.baseUrl || ''}${req.url || ''}`) ?? req.url;
       // Same reason as in `invoke`: the guest serves this request for as long as it likes; the api's
       // connection must not sit idle in the meantime.
+      RequestServerTiming.beforeWrite(() => {
+        const rpc = this.tokens.resolve(token)?.rpc;
+        if (!rpc) return;
+        RequestServerTiming.recordTotal('plugin-rpc-host', rpc.ms, rpc.count);
+        for (const [kind, by] of rpc.by) RequestServerTiming.recordTotal(`rpc-${kind}`, by.ms, by.count);
+      });
       await RequestServerTiming.step('plugin-sync', () => this.syncPeers(store));
       await RequestServerTiming.step('plugin-release', () => TenantConnectionScope.releaseCurrent());
       await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), ...PluginHost.cacheScope(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));

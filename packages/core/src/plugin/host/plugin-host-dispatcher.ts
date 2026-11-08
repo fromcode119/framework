@@ -1,3 +1,4 @@
+import { performance } from 'perf_hooks';
 import { RequestContextUtils } from '@core/context/request-context';
 import { CoreServices } from '@core/services/core-services';
 import { AssistantVocabularyRole } from '@core/services/enums/assistant-vocabulary-role.enum';
@@ -46,15 +47,30 @@ export class PluginHostDispatcher {
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
     PluginHostCallPolicy.assert(this.slug, call, context, invocation.kind);
     const execute = () => this.walk(this.root(context, call.root), call.steps, call.root, jsonRows);
-    // No store means the invocation was not started from a request (boot, a scheduler tick): the call
-    // runs OUTSIDE any request context, exactly as the in-process plugin's would, so the context's own
-    // untenanted-boot handling applies (skip-and-warn) instead of "no tenant in the request" rejections.
-    if (!invocation.store) return execute();
-    const store = invocation.store;
-    // The invocation's lease, not a scope per call: a guest serving one request calls back statement by
-    // statement, and binding a connection to the site for each of them was most of its database time.
-    const lease = this.tokens.leaseFor(String(call.token), (tenantId) => this.db.tenantLease(tenantId));
-    return RequestContextUtils.storage.run(store, () => (lease ? lease.run(execute) : execute()));
+    // The host's own time on this call, kept on the invocation: the plugin process times the same call from
+    // its side, and what the two differ by is the way there and back (`plugin-rpc-host`, RequestServerTiming).
+    const started = performance.now();
+    try {
+      // No store means the invocation was not started from a request (boot, a scheduler tick): the call
+      // runs OUTSIDE any request context, exactly as the in-process plugin's would, so the context's own
+      // untenanted-boot handling applies (skip-and-warn) instead of "no tenant in the request" rejections.
+      if (!invocation.store) return await execute();
+      const store = invocation.store;
+      // The invocation's lease, not a scope per call: a guest serving one request calls back statement by
+      // statement, and binding a connection to the site for each of them was most of its database time.
+      const lease = this.tokens.leaseFor(String(call.token), (tenantId) => this.db.tenantLease(tenantId));
+      return await RequestContextUtils.storage.run(store, () => (lease ? lease.run(execute) : execute()));
+    } finally {
+      const took = performance.now() - started;
+      invocation.rpc.ms += took;
+      invocation.rpc.count += 1;
+      // By kind of call (`db-find`, `settings-get`): the names are the platform's own surface, never data.
+      const kind = call.steps.slice(0, 2).map((step) => String(step.name).toLowerCase().replace(/[^a-z0-9]+/g, '-')).join('-').slice(0, 28);
+      const by = invocation.rpc.by.get(kind) ?? { ms: 0, count: 0 };
+      by.ms += took;
+      by.count += 1;
+      invocation.rpc.by.set(kind, by);
+    }
   }
 
   /**
