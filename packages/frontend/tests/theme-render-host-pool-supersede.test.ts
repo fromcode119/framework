@@ -62,4 +62,27 @@ describe('ThemeRenderHostPool superseded worlds', () => {
     expect(state).toEqual({ a1: true, b1: false, a2: false });
     expect([...pool.hosts.keys()].sort()).toEqual(['a2', 'b1']);
   });
+  it('a single-site install (no site id) retires the world an update replaced', async () => {
+    // Standalone deployments carry no site id; the replaced world used to stay resident until the cap pushed it out.
+    await render('', 'v1');
+    await render('', 'v2');
+    await render('', 'v3');
+    expect(started.map((host) => [host.signature, host.retired])).toEqual([['v1', true], ['v2', true], ['v3', false]]);
+    expect([...pool.hosts.keys()]).toEqual(['v3']);
+  });
+
+  it('a single-site install never brings a replaced world back for a request carrying the old config', async () => {
+    await render('', 'v1');
+    await render('', 'v2');
+    await render('', 'v1');
+    expect(started.map((host) => host.signature)).toEqual(['v1', 'v2']);
+  });
+
+  it('trims to a cap that was lowered, on the next render, without waiting for a new world to be built', async () => {
+    await render('a', 'a1', 5);
+    await render('b', 'b1', 5);
+    await render('c', 'c1', 5);
+    await render('c', 'c1', 2); // the operator lowered the cap; c1 already exists, nothing new is built
+    expect([...pool.hosts.keys()].sort()).toEqual(['b1', 'c1']);
+  });
 });
