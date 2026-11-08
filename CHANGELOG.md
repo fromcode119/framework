@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.551] - 2026-11-08
+
+### Performance
+
+- **api**: ask which collections hold a path eight at a time ([#1330](https://github.com/fromcode119/framework/pull/1330))
+- **api**: say what each middleware of the request chain spent ([#1329](https://github.com/fromcode119/framework/pull/1329))
+
 ## [0.2.550] - 2026-11-08
 
 ### Performance
