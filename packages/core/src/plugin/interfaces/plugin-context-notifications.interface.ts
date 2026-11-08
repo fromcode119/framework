@@ -10,10 +10,22 @@ export interface IPluginContextNotifications {
    * deduped/lowercased. Best-effort: never throws; returns how many recipients were resolved and
    * how many sends succeeded. Pass a ready-built `message` (subject + html/text) — the plugin owns
    * the copy/templates, the framework owns who-gets-it and the sending.
+   *
+   * `category` files the alert under a stream this plugin declared with `context.email.registerCategory`
+   * (audience `admin`). Each administrator can then switch that stream off in their own profile, and the
+   * framework withholds the email and the bell from them. Without one, everyone gets it.
    */
+  /**
+   * Declare an alert this plugin sends to administrators — call in `onInit`. It appears in each
+   * administrator's profile with a switch, and `notifyAdmins(..., { category: key })` then withholds the
+   * email and the bell from whoever switched it off. `locked` shows it with its switch held on, for an
+   * alert whose silence would leave the site unwatched. Needs no capability: it only names a stream.
+   * `labelKey`/`descriptionKey` are keys in this plugin's own dictionary.
+   */
+  registerAdminAlert(alert: { key: string; labelKey: string; descriptionKey: string; locked?: boolean }): void;
   notifyAdmins(
     message: { subject: string; html?: string; text?: string },
-    options?: { extraRecipients?: string[] },
+    options?: { extraRecipients?: string[]; category?: string },
   ): Promise<{ recipients: number; sent: number }>;
   /**
    * Persist an in-app inbox notification for ONE user (framework `_system_notifications`; surfaced by

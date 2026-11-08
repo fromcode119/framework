@@ -3490,6 +3490,14 @@
         "choice": "Listeden bir seçim",
         "choices": "Listeden birden çok seçim"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Yöneticilere gönderilen uyarılar",
+      "alertsIntro": "Hangi uyarıları e-posta ve konsol zili üzerinden alacağınızı seçin. Bu siteyi yöneten diğer kişiler bunları almaya devam eder.",
+      "emailsTitle": "Aldığınız e-postalar",
+      "emailsIntro": "Adresinize gönderilen isteğe bağlı e-postalar. Makbuzlar ve hesap güvenliği e-postaları her zaman gönderilir.",
+      "locked": "Her zaman açık — kapatılamaz.",
+      "failed": "Bildirim ayarlarınız kaydedilemedi. Tekrar deneyin."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Zamanlandı",
         "active": "Çalışıyor",
         "failed": "Başarısız"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Eklenti sorunları",
+        "description": "Bir eklenti başlatılamadı veya çalışmıyor."
+      },
+      "pluginApproval": {
+        "label": "Eklenti onayları",
+        "description": "Bir eklenti onayınızı bekliyor veya yeni yetenekler için onaylandı."
+      },
+      "certificateExpiry": {
+        "label": "Sertifika sona ermesi",
+        "description": "Bir sertifikanın süresi dolmak üzere."
+      },
+      "monitoring": {
+        "label": "Site izleme",
+        "description": "Siteniz veya bir hizmet çalışmıyor ya da sağlıksız durumda; ayrıca düzeldiğinde."
       }
     }
   }

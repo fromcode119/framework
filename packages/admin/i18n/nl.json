@@ -3490,6 +3490,14 @@
         "choice": "Eén uit een lijst",
         "choices": "Meerdere uit een lijst"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Meldingen naar beheerders",
+      "alertsIntro": "Kies welke meldingen je ontvangt, per e-mail en in de bel van de console. Anderen die deze site beheren blijven ze ontvangen.",
+      "emailsTitle": "E-mails die je ontvangt",
+      "emailsIntro": "Optionele e-mails naar je adres. Bonnen en e-mails over accountbeveiliging worden altijd verzonden.",
+      "locked": "Altijd aan — kan niet worden uitgezet.",
+      "failed": "Je meldingsinstellingen konden niet worden opgeslagen. Probeer het opnieuw."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Gepland",
         "active": "Bezig",
         "failed": "Mislukt"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Pluginproblemen",
+        "description": "Een plugin kon niet starten of werkt niet."
+      },
+      "pluginApproval": {
+        "label": "Plugingoedkeuringen",
+        "description": "Een plugin wacht op je goedkeuring of is goedgekeurd voor nieuwe mogelijkheden."
+      },
+      "certificateExpiry": {
+        "label": "Verlopen van certificaten",
+        "description": "Een certificaat verloopt binnenkort."
+      },
+      "monitoring": {
+        "label": "Sitebewaking",
+        "description": "Je site of een dienst is offline of werkt niet goed, en wanneer dit is hersteld."
       }
     }
   }

@@ -7,6 +7,7 @@ import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-s
 import type { IFromcodePlugin } from '@core/interfaces/fromcode-plugin.interface';
 import { PluginConsentSet } from '@core/plugin/consent/plugin-consent-set';
 import type { PluginApprovalGate } from '@core/plugin/services/runtime/plugin-approval-gate';
+import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 
 /**
  * What state a plugin should come back in, given what the registry saved and what the plugin now
@@ -102,7 +103,7 @@ export class PluginRegistrationState {
           await notifications.notifyAdmins({
             subject: `[Fromcode Framework] Auto-approved new capabilities for "${slug}"`,
             text: `"${slug}" now asks for [${missing.join(', ')}] and was auto-approved (AUTO_APPROVE_PLUGIN_CAPABILITIES on, plugin trusted). Review in Admin -> Plugins if unexpected.`,
-          });
+          }, { category: FrameworkAdminAlerts.PLUGIN_APPROVAL });
         } catch { /* best-effort */ }
       } else {
         // It asks for more than was approved. Do NOT silently deactivate (that looked like a deliberate

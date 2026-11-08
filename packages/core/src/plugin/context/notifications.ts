@@ -11,6 +11,8 @@ import { PushSurface } from '@core/push/enums/push-surface.enum';
 import { PersonNotifier } from '@core/notifications/person-notifier';
 import { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
 import { FrameworkEmailLayout } from '@core/email/framework-email-layout';
+import { EmailSuppressionService } from '@core/email/email-suppression-service';
+import { EmailCategoryAudience } from '@core/email/enums/email-category-audience.enum';
 
 /**
  * Framework-owned notification dispatch. Generic cross-cutting work — "who are the platform admins"
@@ -82,6 +84,24 @@ export class NotificationsContextProxy {
    * General (`notification_email` + `notification_email_cc`) and every admin-role user. Exposed so a screen
    * can show who an alert reaches without sending one.
    */
+  /**
+   * The stream an alert is filed under, or `''` when it must reach everyone. Only a DECLARED `admin`
+   * stream can be muted, and a `locked` one never is — it is sent unlabelled, so no opt-out, old or new,
+   * can reach it. An unknown key is treated as no stream at all rather than silently muting something
+   * nobody can see in a profile.
+   */
+  private static mutableStream(manager: IPluginManagerInterface, key: unknown): string {
+    const stream = (manager as any).emailCategories?.get?.(key);
+    return stream && stream.audience === EmailCategoryAudience.ADMIN && !stream.locked ? String(stream.key) : '';
+  }
+
+  /** Whether this administrator switched the stream off in their profile. The bell follows the email. */
+  private static async mutedBy(manager: IPluginManagerInterface, userId: number, stream: string): Promise<boolean> {
+    const user = await manager.db.findOne(SystemConstants.TABLE.USERS, { id: userId }).catch(() => null);
+    const email = String((user as any)?.email ?? '').trim();
+    return email ? EmailSuppressionService.isSuppressed(manager.db, email, stream) : false;
+  }
+
   static async adminRecipients(manager: IPluginManagerInterface, extraRecipients: string[] = []): Promise<string[]> {
     const recipients = new Set<string>();
     const addEmails = (value: unknown) => {
@@ -137,19 +157,35 @@ export class NotificationsContextProxy {
         return userId ? notifier.notify({ ...message, userId, category }) : { pushed: 0, texted: false };
       },
 
+      /**
+       * Declare an alert this plugin sends to the administrators, so each of them can switch it off in
+       * their own profile. Call it in `onInit`; the registry is rebuilt on every boot from what is
+       * installed. The plugin owns the words (i18n keys in its own dictionary) and the key it files its
+       * `notifyAdmins` calls under — the framework owns the list, the switches and the enforcement.
+       *
+       * No `email` capability is needed: this only names a stream, it sends nothing.
+       */
+      registerAdminAlert(alert: { key: string; labelKey: string; descriptionKey: string; locked?: boolean }): void {
+        (manager as any).emailCategories?.register({ ...alert, pluginSlug: sourceSlug, audience: EmailCategoryAudience.ADMIN });
+      },
+
       async notifyAdmins(
         message: { subject: string; html?: string; text?: string },
-        options: { extraRecipients?: string[] } = {},
+        options: { extraRecipients?: string[]; category?: string } = {},
       ): Promise<{ recipients: number; sent: number }> {
         // Arbitrary addresses make this a way to send the platform's mail to anyone, so they need the
         // same capability as sending mail directly. Admin recipients need nothing extra.
         if ((options.extraRecipients || []).length && security && !security.hasCapability('email')) security.handleViolation('email');
         const list = await NotificationsContextProxy.adminRecipients(manager, options.extraRecipients);
+        // The stream this alert belongs to. Mail carrying it is withheld, per address, from anyone who
+        // switched it off (the send driver enforces that); the bell is withheld below.
+        const stream = NotificationsContextProxy.mutableStream(manager, options.category);
 
         // In-app inbox rows for every admin user (bell badge) — alongside the emails, best-effort.
         try {
           const adminIds = await RolesContextProxy.createRolesProxy(manager).listUserIdsWithRole('admin');
           for (const adminId of (Array.isArray(adminIds) ? adminIds : [])) {
+            if (stream && await NotificationsContextProxy.mutedBy(manager, Number(adminId), stream)) continue;
             await NotificationsContextProxy.alert(
               manager,
               Number(adminId),
@@ -179,7 +215,7 @@ export class NotificationsContextProxy {
         let sent = 0;
         for (const to of list) {
           try {
-            await email.send({ to, subject: message.subject, html, text: message.text });
+            await email.send({ to, subject: message.subject, html, text: message.text, ...(stream ? { category: stream } : {}) });
             sent += 1;
           } catch { /* best-effort per recipient — one failure never blocks the rest */ }
         }

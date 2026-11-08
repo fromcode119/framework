@@ -119,6 +119,8 @@ export class AdminConstants {
     SETTINGS_PLATFORM_KEYS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
     SETTINGS_AUDIT_TABLES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_AUDIT_TABLES),
     PERSONAL_DATA_POLICY: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PERSONAL_DATA_POLICY),
+    /** The signed-in person's own email streams; `?audience=admin` for the alerts sent to administrators. */
+    EMAIL_PREFERENCES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.EMAIL_PREFERENCES),
     BACKUPS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
     BACKUP: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),
     BACKUP_CREATE_SYSTEM: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_CREATE_SYSTEM),

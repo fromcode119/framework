@@ -1,4 +1,5 @@
 import type { IEmailCategory } from '@core/email/interfaces/email-category.interface';
+import { EmailCategoryAudience } from '@core/email/enums/email-category-audience.enum';
 
 /**
  * The opt-outable email streams a person can be asked about.
@@ -32,12 +33,19 @@ export class EmailCategoryRegistry {
       labelKey: String(category?.labelKey || '').trim(),
       descriptionKey: String(category?.descriptionKey || '').trim(),
       pluginSlug: String(category?.pluginSlug || '').trim(),
+      audience: category?.audience === EmailCategoryAudience.ADMIN ? EmailCategoryAudience.ADMIN : EmailCategoryAudience.PERSON,
+      locked: category?.audience === EmailCategoryAudience.ADMIN && category?.locked === true,
     });
   }
 
-  /** Every declared stream, in registration order. */
-  list(): IEmailCategory[] {
-    return [...this.categories.values()];
+  /** Every declared stream, in registration order — or just those asked of one `audience`. */
+  list(audience?: EmailCategoryAudience): IEmailCategory[] {
+    const all = [...this.categories.values()];
+    return audience ? all.filter((category) => category.audience === audience) : all;
+  }
+
+  get(key: unknown): IEmailCategory | undefined {
+    return this.categories.get(String(key || '').trim());
   }
 
   /** The plugin that declared `key`, or '' when nobody (or the framework) did. */

@@ -3490,6 +3490,14 @@
         "choice": "Viens no saraksta",
         "choices": "Vairāki no saraksta"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Administratoriem sūtītie brīdinājumi",
+      "alertsIntro": "Izvēlieties, kurus brīdinājumus saņemat e-pastā un konsoles zvaniņā. Pārējie šīs vietnes pārvaldītāji tos turpina saņemt.",
+      "emailsTitle": "E-pasti, ko saņemat",
+      "emailsIntro": "Neobligāti e-pasti, kas tiek sūtīti uz jūsu adresi. Kvītis un konta drošības e-pasti tiek sūtīti vienmēr.",
+      "locked": "Vienmēr ieslēgts — to nevar izslēgt.",
+      "failed": "Jūsu paziņojumu iestatījumus neizdevās saglabāt. Mēģiniet vēlreiz."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Ieplānots",
         "active": "Darbojas",
         "failed": "Neizdevās"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Spraudņu problēmas",
+        "description": "Spraudni neizdevās startēt, vai tas nedarbojas."
+      },
+      "pluginApproval": {
+        "label": "Spraudņu apstiprinājumi",
+        "description": "Spraudnis gaida jūsu apstiprinājumu vai tika apstiprināts jaunām iespējām."
+      },
+      "certificateExpiry": {
+        "label": "Sertifikāta derīguma beigas",
+        "description": "Sertifikāta derīguma termiņš drīz beigsies."
+      },
+      "monitoring": {
+        "label": "Vietnes uzraudzība",
+        "description": "Jūsu vietne vai pakalpojums nedarbojas vai darbojas kļūdaini, kā arī kad tas atjaunojas."
       }
     }
   }

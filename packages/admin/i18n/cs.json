@@ -3490,6 +3490,14 @@
         "choice": "Jedna položka ze seznamu",
         "choices": "Více položek ze seznamu"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Upozornění odesílaná správcům",
+      "alertsIntro": "Vyberte, která upozornění vám budou chodit e-mailem a do zvonku v konzoli. Ostatní správci tohoto webu je dál dostávají.",
+      "emailsTitle": "E-maily, které dostáváte",
+      "emailsIntro": "Volitelné e-maily odesílané na vaši adresu. Potvrzení a e-maily o zabezpečení účtu se odesílají vždy.",
+      "locked": "Vždy zapnuto — nelze vypnout.",
+      "failed": "Nastavení oznámení se nepodařilo uložit. Zkuste to znovu."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Naplánováno",
         "active": "Probíhá",
         "failed": "Selhalo"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problémy s pluginy",
+        "description": "Plugin se nepodařilo spustit nebo nefunguje."
+      },
+      "pluginApproval": {
+        "label": "Schvalování pluginů",
+        "description": "Plugin čeká na vaše schválení nebo byl schválen pro nové funkce."
+      },
+      "certificateExpiry": {
+        "label": "Vypršení certifikátu",
+        "description": "Platnost certifikátu brzy vyprší."
+      },
+      "monitoring": {
+        "label": "Monitorování webu",
+        "description": "Váš web nebo služba nefunguje či má potíže a také když se obnoví."
       }
     }
   }

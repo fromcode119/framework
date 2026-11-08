@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { EmailPreferencesTokenService } from '@fromcode119/core';
+import { EmailCategoryAudience, EmailPreferencesTokenService } from '@fromcode119/core';
 import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
 
 const SECRET = 'a'.repeat(64);
@@ -34,7 +34,9 @@ describe('SystemEmailPreferencesTokenController', () => {
           { key: 'review-invitation', labelKey: 'sp.review', descriptionKey: 'sp.reviewHelp', pluginSlug: 'reviews' },
           { key: 'broadcast', labelKey: 'bc.broadcast', descriptionKey: 'bc.broadcastHelp', pluginSlug: 'kappa' },
         ],
-        has: (key: string) => ['review-invitation', 'broadcast'].includes(key),
+        has: (key: string) => ['review-invitation', 'broadcast', 'admin-stock'].includes(key),
+        get: (key: string) => ({ 'admin-stock': { key: 'admin-stock', pluginSlug: 'shop', audience: EmailCategoryAudience.ADMIN } } as Record<string, any>)[key]
+          ?? (['review-invitation', 'broadcast'].includes(key) ? { key, audience: EmailCategoryAudience.PERSON } : undefined),
       },
       integrations: {
         email: {
@@ -133,5 +135,23 @@ describe('SystemEmailPreferencesTokenController', () => {
 
     expect(res.statusCode).toBe(400);
     expect(suppressed).toEqual([]);
+  });
+
+  /** A link in an email proves an address, not a role: administrators' alerts are not reachable by one. */
+  it('refuses to change an alert sent to administrators', async () => {
+    const res = response();
+    await controller().update({
+      body: { token: validToken(), key: 'admin-stock', subscribed: false },
+      query: {},
+    } as any, res);
+
+    expect(res.statusCode).toBe(403);
+    expect(suppressed).toEqual([]);
+  });
+
+  it('refuses to list the administrators\' alerts', async () => {
+    const res = response();
+    await controller().list({ query: { token: validToken(), audience: 'admin' } } as any, res);
+    expect(res.statusCode).toBe(403);
   });
 });

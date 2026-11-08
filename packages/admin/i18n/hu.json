@@ -3490,6 +3490,14 @@
         "choice": "Egy a listából",
         "choices": "Több a listából"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Az adminisztrátoroknak küldött riasztások",
+      "alertsIntro": "Válassza ki, mely riasztásokat kapja meg e-mailben és a konzol harangjában. Az oldal többi kezelője továbbra is megkapja őket.",
+      "emailsTitle": "Az Ön által kapott e-mailek",
+      "emailsIntro": "A címére küldött opcionális e-mailek. A nyugták és a fiókbiztonsági e-mailek mindig elküldésre kerülnek.",
+      "locked": "Mindig be van kapcsolva — nem kapcsolható ki.",
+      "failed": "Az értesítési beállításokat nem sikerült menteni. Próbálja újra."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Ütemezve",
         "active": "Fut",
         "failed": "Sikertelen"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Bővítményproblémák",
+        "description": "Egy bővítmény nem indult el, vagy nem működik."
+      },
+      "pluginApproval": {
+        "label": "Bővítmények jóváhagyása",
+        "description": "Egy bővítmény a jóváhagyására vár, vagy új képességekhez jóváhagyták."
+      },
+      "certificateExpiry": {
+        "label": "Tanúsítvány lejárata",
+        "description": "Egy tanúsítvány hamarosan lejár."
+      },
+      "monitoring": {
+        "label": "Webhelyfigyelés",
+        "description": "A webhelye vagy egy szolgáltatás nem elérhető vagy hibás, valamint amikor helyreáll."
       }
     }
   }

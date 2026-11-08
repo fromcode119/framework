@@ -3490,6 +3490,14 @@
         "choice": "Una dintr-o listă",
         "choices": "Mai multe dintr-o listă"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alerte trimise administratorilor",
+      "alertsIntro": "Alege ce alerte primești, prin e-mail și în clopoțelul consolei. Ceilalți care administrează acest site le primesc în continuare.",
+      "emailsTitle": "E-mailuri pe care le primești",
+      "emailsIntro": "E-mailuri opționale trimise la adresa ta. Chitanțele și e-mailurile de securitate a contului se trimit întotdeauna.",
+      "locked": "Mereu activat — nu poate fi dezactivat.",
+      "failed": "Setările tale de notificare nu au putut fi salvate. Încearcă din nou."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Programată",
         "active": "În execuție",
         "failed": "Eșuată"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Probleme cu pluginurile",
+        "description": "Un plugin nu a putut porni sau nu funcționează."
+      },
+      "pluginApproval": {
+        "label": "Aprobări pentru pluginuri",
+        "description": "Un plugin așteaptă aprobarea ta sau a fost aprobat pentru capabilități noi."
+      },
+      "certificateExpiry": {
+        "label": "Expirarea certificatelor",
+        "description": "Un certificat urmează să expire."
+      },
+      "monitoring": {
+        "label": "Monitorizarea site-ului",
+        "description": "Site-ul tău sau un serviciu este oprit sau nefuncțional, și când își revine."
       }
     }
   }

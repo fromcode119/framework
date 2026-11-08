@@ -15,6 +15,7 @@ import { MigrationManager } from '@core/database/migration-manager';
 import { TenantMode } from '@core/tenant/tenant-mode';
 import { Logger } from '@core/logging';
 import { I18nManager } from '@core/i18n/i18n-manager';
+import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 import { EmailCategoryRegistry } from '@core/email/email-category-registry';
 import { DatabaseFactory, DatabaseConnectionUrls, IDatabaseManager } from '@fromcode119/database';
 import { SchedulerService } from '@fromcode119/scheduler';
@@ -112,6 +113,7 @@ export class PluginManager extends PluginManagerApi implements IPluginManagerInt
     this.apiHost = null;
     this.hooks = new HookManager();
     this.emailCategories = new EmailCategoryRegistry();
+    FrameworkAdminAlerts.register(this.emailCategories);
     this.middlewares = new MiddlewareManager();
     this.auth = null;
     this.themeManager = null;

@@ -3490,6 +3490,14 @@
         "choice": "Én fra en liste",
         "choices": "Flere fra en liste"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Beskeder sendt til administratorer",
+      "alertsIntro": "Vælg, hvilke beskeder du modtager, via e-mail og konsolklokken. Andre, der administrerer dette websted, modtager dem fortsat.",
+      "emailsTitle": "E-mails, du modtager",
+      "emailsIntro": "Valgfrie e-mails sendt til din adresse. Kvitteringer og e-mails om kontosikkerhed sendes altid.",
+      "locked": "Altid slået til — kan ikke slås fra.",
+      "failed": "Dine notifikationsindstillinger kunne ikke gemmes. Prøv igen."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Planlagt",
         "active": "Kører",
         "failed": "Mislykkedes"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemer med plugins",
+        "description": "Et plugin kunne ikke starte eller fungerer ikke."
+      },
+      "pluginApproval": {
+        "label": "Godkendelse af plugins",
+        "description": "Et plugin venter på din godkendelse eller er godkendt til nye funktioner."
+      },
+      "certificateExpiry": {
+        "label": "Certifikatudløb",
+        "description": "Et certifikat er ved at udløbe."
+      },
+      "monitoring": {
+        "label": "Overvågning af websted",
+        "description": "Dit websted eller en tjeneste er nede eller fungerer ikke korrekt, og når det er oppe igen."
       }
     }
   }

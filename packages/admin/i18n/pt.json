@@ -3490,6 +3490,14 @@
         "choice": "Um de uma lista",
         "choices": "Vários de uma lista"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alertas enviados aos administradores",
+      "alertsIntro": "Escolha quais alertas você recebe, por e-mail e no sino do console. Outras pessoas que gerenciam este site continuam a recebê-los.",
+      "emailsTitle": "E-mails que você recebe",
+      "emailsIntro": "E-mails opcionais enviados para o seu endereço. Recibos e e-mails de segurança da conta são sempre enviados.",
+      "locked": "Sempre ativado — não pode ser desativado.",
+      "failed": "Não foi possível salvar suas configurações de notificação. Tente novamente."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Agendada",
         "active": "Em execução",
         "failed": "Falhou"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemas de plugins",
+        "description": "Um plugin não conseguiu iniciar ou não está funcionando."
+      },
+      "pluginApproval": {
+        "label": "Aprovações de plugins",
+        "description": "Um plugin aguarda sua aprovação ou foi aprovado para novos recursos."
+      },
+      "certificateExpiry": {
+        "label": "Expiração de certificados",
+        "description": "Um certificado está prestes a expirar."
+      },
+      "monitoring": {
+        "label": "Monitoramento do site",
+        "description": "Seu site ou um serviço está fora do ar ou com problemas, e quando se recupera."
       }
     }
   }

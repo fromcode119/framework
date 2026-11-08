@@ -3490,6 +3490,14 @@
         "choice": "Ett fra en liste",
         "choices": "Flere fra en liste"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Varsler sendt til administratorer",
+      "alertsIntro": "Velg hvilke varsler du mottar, på e-post og i konsollklokken. Andre som administrerer dette nettstedet fortsetter å motta dem.",
+      "emailsTitle": "E-poster du mottar",
+      "emailsIntro": "Valgfrie e-poster sendt til adressen din. Kvitteringer og e-poster om kontosikkerhet sendes alltid.",
+      "locked": "Alltid på — kan ikke slås av.",
+      "failed": "Varslingsinnstillingene dine kunne ikke lagres. Prøv igjen."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Planlagt",
         "active": "Kjører",
         "failed": "Mislyktes"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemer med plugins",
+        "description": "En plugin kunne ikke starte eller fungerer ikke."
+      },
+      "pluginApproval": {
+        "label": "Godkjenning av plugins",
+        "description": "En plugin venter på godkjenningen din, eller ble godkjent for nye funksjoner."
+      },
+      "certificateExpiry": {
+        "label": "Utløp av sertifikat",
+        "description": "Et sertifikat er i ferd med å utløpe."
+      },
+      "monitoring": {
+        "label": "Overvåking av nettstedet",
+        "description": "Nettstedet ditt eller en tjeneste er nede eller fungerer dårlig, og når det er tilbake."
       }
     }
   }

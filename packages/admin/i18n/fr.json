@@ -3490,6 +3490,14 @@
         "choice": "Un élément d’une liste",
         "choices": "Plusieurs éléments d’une liste"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alertes envoyées aux administrateurs",
+      "alertsIntro": "Choisissez les alertes que vous recevez, par e-mail et dans la cloche de la console. Les autres personnes qui gèrent ce site continuent de les recevoir.",
+      "emailsTitle": "E-mails que vous recevez",
+      "emailsIntro": "E-mails facultatifs envoyés à votre adresse. Les reçus et les e-mails de sécurité du compte sont toujours envoyés.",
+      "locked": "Toujours activé — impossible de le désactiver.",
+      "failed": "Vos paramètres de notification n'ont pas pu être enregistrés. Réessayez."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Planifiée",
         "active": "En cours",
         "failed": "Échec"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problèmes de plugins",
+        "description": "Un plugin n'a pas pu démarrer ou ne fonctionne pas."
+      },
+      "pluginApproval": {
+        "label": "Approbations de plugins",
+        "description": "Un plugin attend votre approbation ou a été approuvé pour de nouvelles capacités."
+      },
+      "certificateExpiry": {
+        "label": "Expiration des certificats",
+        "description": "Un certificat est sur le point d'expirer."
+      },
+      "monitoring": {
+        "label": "Surveillance du site",
+        "description": "Votre site ou un service est hors service ou en mauvais état, ainsi que son rétablissement."
       }
     }
   }

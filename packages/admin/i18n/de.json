@@ -3490,6 +3490,14 @@
         "choice": "Eins aus einer Liste",
         "choices": "Mehrere aus einer Liste"
       }
+    },
+    "notifications": {
+      "alertsTitle": "An Administratoren gesendete Benachrichtigungen",
+      "alertsIntro": "Wählen Sie, welche Benachrichtigungen Sie per E-Mail und über die Glocke der Konsole erhalten. Andere Personen, die diese Website verwalten, erhalten sie weiterhin.",
+      "emailsTitle": "E-Mails, die Sie erhalten",
+      "emailsIntro": "Optionale E-Mails an Ihre Adresse. Quittungen und E-Mails zur Kontosicherheit werden immer gesendet.",
+      "locked": "Immer aktiv — kann nicht ausgeschaltet werden.",
+      "failed": "Ihre Benachrichtigungseinstellungen konnten nicht gespeichert werden. Versuchen Sie es erneut."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Geplant",
         "active": "Läuft",
         "failed": "Fehlgeschlagen"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Plugin-Probleme",
+        "description": "Ein Plugin konnte nicht gestartet werden oder funktioniert nicht."
+      },
+      "pluginApproval": {
+        "label": "Plugin-Freigaben",
+        "description": "Ein Plugin wartet auf Ihre Freigabe oder wurde für neue Funktionen freigegeben."
+      },
+      "certificateExpiry": {
+        "label": "Ablauf von Zertifikaten",
+        "description": "Ein Zertifikat läuft bald ab."
+      },
+      "monitoring": {
+        "label": "Website-Überwachung",
+        "description": "Ihre Website oder ein Dienst ist ausgefallen oder gestört, sowie wenn sie wieder läuft."
       }
     }
   }

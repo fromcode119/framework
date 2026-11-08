@@ -3490,6 +3490,14 @@
         "choice": "清單中單選",
         "choices": "清單中多選"
       }
+    },
+    "notifications": {
+      "alertsTitle": "傳送給管理員的警示",
+      "alertsIntro": "選擇您要透過電子郵件和主控台鈴鐺接收哪些警示。其他管理此網站的人員仍會繼續收到。",
+      "emailsTitle": "您收到的電子郵件",
+      "emailsIntro": "傳送至您信箱的選用電子郵件。收據和帳戶安全電子郵件一律會寄送。",
+      "locked": "一律開啟 — 無法關閉。",
+      "failed": "無法儲存您的通知設定。請再試一次。"
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "已排程",
         "active": "執行中",
         "failed": "失敗"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "外掛程式問題",
+        "description": "外掛程式無法啟動或無法運作。"
+      },
+      "pluginApproval": {
+        "label": "外掛程式核准",
+        "description": "有外掛程式正在等待您的核准，或已核准使用新功能。"
+      },
+      "certificateExpiry": {
+        "label": "憑證到期",
+        "description": "憑證即將到期。"
+      },
+      "monitoring": {
+        "label": "網站監控",
+        "description": "您的網站或某項服務停止運作或狀況不佳，以及恢復正常時。"
       }
     }
   }

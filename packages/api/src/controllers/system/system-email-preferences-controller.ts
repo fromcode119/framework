@@ -1,4 +1,5 @@
 import type { Request, Response } from 'express';
+import { EmailCategoryAudience } from '@fromcode119/core';
 
 /**
  * A person's own email-stream preferences.
@@ -34,6 +35,18 @@ export class SystemEmailPreferencesController {
     return 'account:email-preferences';
   }
 
+  /**
+   * Whether this request may manage a stream of `audience`. Person streams are anyone's own; the alerts
+   * sent to administrators are only for an administrator, so a customer cannot even list them. The
+   * token-authenticated twin overrides this to refuse them outright: a link in an email proves an
+   * address, not a role.
+   */
+  protected mayManage(req: Request, audience: EmailCategoryAudience): boolean {
+    if (audience === EmailCategoryAudience.PERSON) return true;
+    const roles = (req as any).user?.roles; // eslint-disable-line @typescript-eslint/no-explicit-any
+    return Array.isArray(roles) && roles.includes('admin');
+  }
+
   async list(req: Request, res: Response): Promise<void> {
     try {
       const address = await this.resolveAddress(req);
@@ -42,14 +55,27 @@ export class SystemEmailPreferencesController {
         return;
       }
 
-      const categories = this.manager?.emailCategories?.list?.() ?? [];
+      // Each surface asks for its own kind: the account screen for what a person receives, the profile
+      // screen in the console (`?audience=admin`) for the alerts an administrator receives.
+      const audience = String((req.query as any)?.audience || '') === EmailCategoryAudience.ADMIN.value ? EmailCategoryAudience.ADMIN : EmailCategoryAudience.PERSON; // eslint-disable-line @typescript-eslint/no-explicit-any
+      if (!this.mayManage(req, audience)) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+
+      const categories = this.manager?.emailCategories?.list?.(audience) ?? [];
       const preferences = await Promise.all(categories.map(async (category: any) => ({
         key: category.key,
-        label: this.translate(category.labelKey, category.key),
+        label: this.translate(category.labelKey, audience === EmailCategoryAudience.ADMIN ? '' : category.key),
         description: this.translate(category.descriptionKey, ''),
+        // Left for the caller when no dictionary on the server holds them (the framework's own alerts
+        // are worded in the console's dictionary, not a plugin's).
+        labelKey: category.labelKey,
+        descriptionKey: category.descriptionKey,
+        locked: category.locked === true,
         // `subscribed` rather than `suppressed`: the screen asks "do you want this?", and a toggle
-        // whose ON means "off" is how preference screens get inverted.
-        subscribed: !(await this.email?.isSuppressed?.(address, category.key)),
+        // whose ON means "off" is how preference screens get inverted. A locked alert is always on.
+        subscribed: category.locked === true || !(await this.email?.isSuppressed?.(address, category.key)),
       })));
 
       res.json({ address, preferences });
@@ -69,8 +95,18 @@ export class SystemEmailPreferencesController {
       const key = String((req.body as any)?.key || '').trim(); // eslint-disable-line @typescript-eslint/no-explicit-any
       // An unknown key must be refused, not silently written: the suppression list would happily store
       // a typo'd category forever, suppressing a stream that does not exist while the real one keeps sending.
-      if (!this.manager?.emailCategories?.has?.(key)) {
+      const category = this.manager?.emailCategories?.get?.(key);
+      if (!category) {
         res.status(400).json({ error: 'Unknown email category' });
+        return;
+      }
+      if (!this.mayManage(req, category.audience === EmailCategoryAudience.ADMIN ? EmailCategoryAudience.ADMIN : EmailCategoryAudience.PERSON)) {
+        res.status(403).json({ error: 'Forbidden' });
+        return;
+      }
+      // Its silence would leave the site unwatched, so the switch is not the person's to flip.
+      if (category.locked === true) {
+        res.status(409).json({ error: 'This alert cannot be switched off' });
         return;
       }
 

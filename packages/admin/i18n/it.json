@@ -3490,6 +3490,14 @@
         "choice": "Una voce da un elenco",
         "choices": "Più voci da un elenco"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Avvisi inviati agli amministratori",
+      "alertsIntro": "Scegli quali avvisi ricevere, via e-mail e nella campanella della console. Le altre persone che gestiscono questo sito continuano a riceverli.",
+      "emailsTitle": "E-mail che ricevi",
+      "emailsIntro": "E-mail facoltative inviate al tuo indirizzo. Le ricevute e le e-mail sulla sicurezza dell'account vengono sempre inviate.",
+      "locked": "Sempre attivo — non può essere disattivato.",
+      "failed": "Non è stato possibile salvare le tue impostazioni di notifica. Riprova."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Pianificato",
         "active": "In esecuzione",
         "failed": "Non riuscito"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemi dei plugin",
+        "description": "Un plugin non si è avviato o non funziona."
+      },
+      "pluginApproval": {
+        "label": "Approvazioni dei plugin",
+        "description": "Un plugin attende la tua approvazione oppure è stato approvato per nuove funzionalità."
+      },
+      "certificateExpiry": {
+        "label": "Scadenza dei certificati",
+        "description": "Un certificato sta per scadere."
+      },
+      "monitoring": {
+        "label": "Monitoraggio del sito",
+        "description": "Il tuo sito o un servizio non è raggiungibile o non funziona correttamente, e quando torna operativo."
       }
     }
   }

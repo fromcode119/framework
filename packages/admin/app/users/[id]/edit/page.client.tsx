@@ -6,6 +6,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { EditUserHeader } from '@/app/users/[id]/edit/components/view/edit-user-header.client';
 import { EditUserFormFields } from '@/app/users/[id]/edit/components/view/edit-user-form-fields.client';
+import { EditUserNotifications } from '@/app/users/[id]/edit/components/view/edit-user-notifications.client';
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { SelfAccount } from '@/lib/self-account';
@@ -155,6 +156,11 @@ export class EditUserPage extends AdminComponent {
                  </div>
               )}
            </form>
+
+           {/* Your OWN account only: the preferences are the session's, never another person's to set. */}
+           {SelfAccount.isOwn(this.auth?.user, id) ? (
+             <div className="mt-6"><EditUserNotifications /></div>
+           ) : null}
         </div>
       </div>
     );

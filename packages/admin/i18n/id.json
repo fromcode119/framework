@@ -3490,6 +3490,14 @@
         "choice": "Satu dari daftar",
         "choices": "Beberapa dari daftar"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Peringatan yang dikirim ke administrator",
+      "alertsIntro": "Pilih peringatan yang Anda terima, melalui email dan lonceng konsol. Orang lain yang mengelola situs ini tetap menerimanya.",
+      "emailsTitle": "Email yang Anda terima",
+      "emailsIntro": "Email opsional yang dikirim ke alamat Anda. Tanda terima dan email keamanan akun selalu dikirim.",
+      "locked": "Selalu aktif — tidak dapat dimatikan.",
+      "failed": "Pengaturan notifikasi Anda tidak dapat disimpan. Coba lagi."
     }
   },
   "scope": {
@@ -4669,6 +4677,26 @@
         "delayed": "Terjadwal",
         "active": "Berjalan",
         "failed": "Gagal"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Masalah plugin",
+        "description": "Plugin gagal dijalankan atau tidak berfungsi."
+      },
+      "pluginApproval": {
+        "label": "Persetujuan plugin",
+        "description": "Plugin menunggu persetujuan Anda, atau disetujui untuk kemampuan baru."
+      },
+      "certificateExpiry": {
+        "label": "Masa berlaku sertifikat",
+        "description": "Sertifikat akan segera kedaluwarsa."
+      },
+      "monitoring": {
+        "label": "Pemantauan situs",
+        "description": "Situs atau layanan Anda tidak aktif atau bermasalah, dan saat sudah pulih."
       }
     }
   }
