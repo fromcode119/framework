@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from 'express';
-import { ApiResponseCache, CoercionUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, TenantMode } from '@fromcode119/core';
+import { ApiResponseCache, CoercionUtils, Logger, PluginState, PluginTenantAccess, ReadRouteMatch, RequestServerTiming, TenantMode } from '@fromcode119/core';
 import type { ICollection, IPluginReadRoute, PluginManager } from '@fromcode119/core';
 import { Sql } from '@fromcode119/database';
 import type { RESTController } from '@api/controllers/rest/rest-controller';
@@ -35,7 +35,8 @@ export class PluginReadRoutes {
     if (!match) return next();
     // A read route that fails is a bug to see, not a visitor's error: it is logged, and the plugin
     // answers the request as it did before the route existed.
-    const answer = () => void this.answer(req, res, next, match.route, match.collection, match.params).catch((error: unknown) => {
+    // Timed as `read-route`: a record the plugin has not prepared costs this read before the plugin answers it.
+    const answer = () => void RequestServerTiming.step('read-route', () => this.answer(req, res, next, match.route, match.collection, match.params)).catch((error: unknown) => {
       PluginReadRoutes.logger.error(`Read route ${req.path} failed; the plugin answers instead: ${String((error as any)?.message || error)}`);
       if (!res.headersSent) next();
     });

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { Sql, SqlRenderer } from '@fromcode119/database';
 import { ResolutionCollectionScanService } from '@api/services/helpers/resolution-collection-scan-service';
 
 /**
@@ -81,7 +82,53 @@ describe('route resolution asks the table before the REST find', () => {
     const result = await service.scanPriority(context(entries));
     expect(result).toMatchObject({ type: 'c10', doc: { id: 10 } });
     expect(widest).toBe(8);
-    // The window holding the match is asked in full, and the next window is never asked.
-    expect(queried).toBe(16);
+    // Without the one statement every collection is asked, window by window (the match is read in order after).
+    expect(queried).toBe(20);
+  });
+
+  it('asks every collection in ONE statement and still reads the first holder in order', async () => {
+    const statements: unknown[] = [];
+    const db = {
+      findOne: async () => null,
+      eq: Sql.eq,
+      or: Sql.or,
+      find: async () => { throw new Error('a per-collection query must not run'); },
+      // The 11th and 13th collections hold the path.
+      execute: async (statement: unknown) => { statements.push(statement); return { rows: [{ position: 10 }, { position: 12 }] }; },
+    };
+    const restFinds: string[] = [];
+    const service = new ResolutionCollectionScanService(
+      db,
+      { find: async (c: { slug: string }) => { restFinds.push(c.slug); return { docs: [{ id: c.slug === 'c10' ? 10 : 12 }] }; } } as any,
+      flags,
+    );
+    const entries = Array.from({ length: 20 }, (_, i) => ({ collection: collection(`c${i}`), pluginSlug: `p${i}` }));
+    const result = await service.scanPriority(context(entries));
+    expect(statements).toHaveLength(1);
+    // Rendered for Postgres: one `exists` per collection, the looked-up values bound and never written into the text.
+    const { text, params } = SqlRenderer.POSTGRES.render(statements[0]);
+    expect(text.split(' union all ')).toHaveLength(20);
+    expect(text).toMatch(/^select 0 as position where exists \(select 1 from "c0" where /);
+    expect(text).toContain('select 19 as position where exists (select 1 from "c19" where ');
+    expect(text).not.toContain('about');
+    expect(params).toContain('about');
+    expect(result).toMatchObject({ type: 'c10', doc: { id: 10 } });
+    // Only the holders are asked in full: the 11th, which wins, and not the 13th nor any other.
+    expect(restFinds.every((slug) => slug === 'c10' || slug === 'c12')).toBe(true);
+  });
+
+  it('splits a hundred collections into statements of fifty-four, asked together', async () => {
+    const statements: unknown[] = [];
+    const db = {
+      findOne: async () => null,
+      eq: (column: unknown, value: unknown) => ({ column, value }),
+      or: (...clauses: unknown[]) => clauses,
+      find: async () => { throw new Error('a per-collection query must not run'); },
+      execute: async (statement: unknown) => { statements.push(statement); return { rows: [] }; },
+    };
+    const service = new ResolutionCollectionScanService(db, { find: async () => ({ docs: [] }) } as any, flags);
+    const entries = Array.from({ length: 107 }, (_, i) => ({ collection: collection(`c${i}`), pluginSlug: `p${i}` }));
+    expect(await service.scanPriority(context(entries))).toBeNull();
+    expect(statements).toHaveLength(2);
   });
 });

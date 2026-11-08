@@ -7,6 +7,7 @@ import { CollectionReadRedaction } from '@api/services/collection-read-redaction
 import { ResolutionCacheService } from '@api/services/helpers/resolution-cache-service';
 import { CollectionAccessPolicyService } from '@api/services/collection-access-policy-service';
 import type { IResolutionPriorityScanContext } from '@api/services/helpers/interfaces/resolution-priority-scan-context.interface';
+import { ResolutionPathHolders } from '@api/services/helpers/resolution-path-holders';
 import type { IResolutionLookup } from '@api/services/helpers/interfaces/resolution-lookup.interface';
 import type { IResolutionScanResult } from '@api/services/helpers/interfaces/resolution-scan-result.interface';
 import type { IResolutionStructureScanContext } from '@api/services/helpers/interfaces/resolution-structure-scan-context.interface';
@@ -46,39 +47,48 @@ export class ResolutionCollectionScanService {
 
   /** Pass 1 — custom permalinks first, then exact slugs, per collection in order. */
   async scanPriority(ctx: IResolutionPriorityScanContext): Promise<IResolutionScanResult | null> {
-    // Which collections hold the path is asked in WINDOWS of PRECHECK_WINDOW at once: one indexed query each, so a
-    // site with a hundred collections is a dozen rounds instead of fifty. Only the collections that hold one of
-    // the values are then asked in full, in ordered CHUNKS (below), and the answers are read in the original
-    // order: the first collection to claim a path still wins, and a later window runs only when no earlier matched.
-    const window = ResolutionCollectionScanService.PRECHECK_WINDOW;
+    // Which collections hold the path is asked first, for all of them at once (ResolutionPathHolders). Only those
+    // that hold one of the values are then asked in full, in ordered CHUNKS: the answers are read in the original
+    // order, so the first collection to claim a path still wins.
+    const holders = await RequestServerTiming.step('resolve-precheck', () => this.holders(ctx));
     const chunkSize = ResolutionCollectionScanService.PRIORITY_CHUNK_SIZE;
-    for (let w = 0; w < ctx.entries.length; w += window) {
-      const entries = ctx.entries.slice(w, w + window);
-      const holders = (await RequestServerTiming.step('resolve-precheck', () => Promise.all(entries.map((entry) => this.lookupsFor(entry.collection, ctx)))))
-        .map((finds, k) => ({ entry: entries[k], finds }))
-        .filter((holder) => holder.finds.length > 0);
-      for (let i = 0; i < holders.length; i += chunkSize) {
-        const chunk = holders.slice(i, i + chunkSize);
-        // Summed over the collections asked at once, so its total is work, not wall time (the step around the scan is that).
-        const answers = await Promise.all(chunk.map((holder) => RequestServerTiming.step('resolve-collection', () => this.priorityCandidates(holder.entry.collection, holder.finds, ctx))));
-        for (let k = 0; k < chunk.length; k++) {
-          const { collection, pluginSlug } = chunk[k].entry;
-          for (const { find, doc } of answers[k]) {
-            if (await this.isPermalinkDisabled(collection, doc.id, !!ctx.options.preview)) continue;
-            return {
-              type: collection.shortSlug || collection.slug,
-              plugin: pluginSlug,
-              doc: find.kind === ResolutionMatchKind.CUSTOM ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, find.candidate),
-            };
-          }
+    for (let i = 0; i < holders.length; i += chunkSize) {
+      const chunk = holders.slice(i, i + chunkSize);
+      // Summed over the collections asked at once, so its total is work, not wall time (the step around the scan is that).
+      const answers = await Promise.all(chunk.map((holder) => RequestServerTiming.step('resolve-collection', () => this.priorityCandidates(holder.entry.collection, holder.finds, ctx))));
+      for (let k = 0; k < chunk.length; k++) {
+        const { collection, pluginSlug } = chunk[k].entry;
+        for (const { find, doc } of answers[k]) {
+          if (await this.isPermalinkDisabled(collection, doc.id, !!ctx.options.preview)) continue;
+          return {
+            type: collection.shortSlug || collection.slug,
+            plugin: pluginSlug,
+            doc: find.kind === ResolutionMatchKind.CUSTOM ? ctx.presentCustom(doc, collection) : ctx.presentSlug(doc, collection, find.candidate),
+          };
         }
       }
     }
     return null;
   }
 
-  /** The lookups one collection has for this path (custom permalink, then slug), or none when no row holds any of them. */
-  private async lookupsFor(collection: ICollection, ctx: IResolutionPriorityScanContext): Promise<IResolutionLookup[]> {
+  /** The collections that may hold the path, in registration order, each with its lookups. */
+  private async holders(ctx: IResolutionPriorityScanContext): Promise<Array<{ entry: IResolutionPriorityScanContext['entries'][number]; finds: IResolutionLookup[] }>> {
+    const asked = ctx.entries.map((entry) => ({ entry, collection: entry.collection, finds: this.lookupsFor(entry.collection, ctx) })).filter((candidate) => candidate.finds.length > 0);
+    const holding = await new ResolutionPathHolders(this.db).which(asked);
+    if (holding) return asked.filter((_, position) => holding.has(position));
+    // The one statement could not be asked: each collection is asked as before, a window at a time.
+    const window = ResolutionCollectionScanService.PRECHECK_WINDOW;
+    const kept: typeof asked = [];
+    for (let w = 0; w < asked.length; w += window) {
+      const part = asked.slice(w, w + window);
+      const answers = await Promise.all(part.map((candidate) => this.anyRowHolds(candidate.collection, candidate.finds)));
+      part.forEach((candidate, k) => { if (answers[k]) kept.push(candidate); });
+    }
+    return kept;
+  }
+
+  /** The lookups one collection has for this path: custom permalink candidates, then slug candidates. */
+  private lookupsFor(collection: ICollection, ctx: IResolutionPriorityScanContext): IResolutionLookup[] {
     const flags = this.cache.getCollectionFlags(collection);
     const finds: IResolutionLookup[] = [];
     if (flags.hasCustomPermalink) {
@@ -91,9 +101,7 @@ export class ResolutionCollectionScanService {
         finds.push({ kind: ResolutionMatchKind.SLUG, candidate, query: ctx.withLocale({ slug: candidate, limit: 1 }) });
       }
     }
-    // Most collections hold neither a slug nor a permalink, and most of the rest hold none of these values.
-    if (finds.length === 0) return [];
-    return (await this.anyRowHolds(collection, finds)) ? finds : [];
+    return finds;
   }
 
   /** One collection's priority lookups, in candidate order, matches only. */
