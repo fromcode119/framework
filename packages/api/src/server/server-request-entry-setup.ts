@@ -1,5 +1,6 @@
 import type express from 'express';
 import { EnvUtils, NetworkAddressUtils, RequestServerTiming } from '@fromcode119/core';
+import { RequestMiddlewareTiming } from '@api/server/request-middleware-timing';
 
 /** How a request is read before ANY middleware sees it: who sent it, and when it began. */
 export class ServerRequestEntrySetup {
@@ -16,5 +17,7 @@ export class ServerRequestEntrySetup {
     // First of every middleware, so the time they spend is counted (`api-pre`) and every step a request
     // takes can say so in its `Server-Timing` — for an anonymous read only (RequestServerTiming).
     app.use(RequestServerTiming.middleware({ gated: true, totalAs: 'api-total' }));
+    // …and each middleware mounted after it says what IT spent (`mw1`, `mw2`, …), so `api-pre` can be taken apart.
+    RequestMiddlewareTiming.instrument(app);
   }
 }
