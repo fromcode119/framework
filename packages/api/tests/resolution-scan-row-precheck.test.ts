@@ -55,4 +55,33 @@ describe('route resolution asks the table before the REST find', () => {
     expect(result).toMatchObject({ type: 'pages', doc: { id: 7 } });
     expect(restFinds.every((slug) => slug === 'pages')).toBe(true);
   });
+
+  it('asks which collections hold the path eight at a time, and the first in order still wins', async () => {
+    let inFlight = 0; let widest = 0; let queried = 0;
+    const slow = {
+      findOne: async () => null,
+      eq: (column: unknown, value: unknown) => ({ column, value }),
+      or: (...clauses: unknown[]) => clauses,
+      find: async () => {
+        const call = queried++;
+        inFlight += 1; widest = Math.max(widest, inFlight);
+        await new Promise((resolve) => setTimeout(resolve, 5));
+        inFlight -= 1;
+        // The 11th and 13th collections both hold the path; the 11th is first in order.
+        return call === 10 || call === 12 ? [{ id: 1 }] : [];
+      },
+    };
+    const restFinds: string[] = [];
+    const service = new ResolutionCollectionScanService(
+      slow,
+      { find: async (c: { slug: string }) => { restFinds.push(c.slug); return { docs: [{ id: c.slug === 'c10' ? 10 : 12 }] }; } } as any,
+      flags,
+    );
+    const entries = Array.from({ length: 20 }, (_, i) => ({ collection: collection(`c${i}`), pluginSlug: `p${i}` }));
+    const result = await service.scanPriority(context(entries));
+    expect(result).toMatchObject({ type: 'c10', doc: { id: 10 } });
+    expect(widest).toBe(8);
+    // The window holding the match is asked in full, and the next window is never asked.
+    expect(queried).toBe(16);
+  });
 });
