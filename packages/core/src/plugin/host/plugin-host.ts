@@ -26,6 +26,7 @@ import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-
 import { PluginHostOutage } from '@core/plugin/host/outage/plugin-host-outage';
 import { PluginChannelMessage } from '@core/plugin/host/enums/plugin-channel-message.enum';
 import { SiteContentRevision } from '@core/tenant/site-content-revision';
+import { RequestServerTiming } from '@core/context/request-server-timing';
 import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 
 /**
@@ -218,6 +219,8 @@ export class PluginHost extends PluginHostSharedProcesses {
   }
 
   private async forwardRequest(req: Request, res: Response, next: NextFunction, targetPath?: string, originalUrl?: string): Promise<void> {
+    // Everything the request did before reaching a plugin (the middleware, the sign-in and site checks) is the platform's own.
+    RequestServerTiming.handlerReached();
     if (!this.channel || this.channel.isClosed) return this.outage.handle(req, res, next, targetPath);
     const store = RequestContextUtils.storage.getStore();
     const token = this.tokens.mint('route', store);
@@ -227,8 +230,8 @@ export class PluginHost extends PluginHostSharedProcesses {
       const target = targetPath ?? PluginHost.pluginPath(this.slug, `${req.baseUrl || ''}${req.url || ''}`) ?? req.url;
       // Same reason as in `invoke`: the guest serves this request for as long as it likes; the api's
       // connection must not sit idle in the meantime.
-      await this.syncPeers(store);
-      await TenantConnectionScope.releaseCurrent();
+      await RequestServerTiming.step('plugin-sync', () => this.syncPeers(store));
+      await RequestServerTiming.step('plugin-release', () => TenantConnectionScope.releaseCurrent());
       await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), ...PluginHost.cacheScope(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
     } finally {
       this.tokens.revoke(token);

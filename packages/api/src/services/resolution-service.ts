@@ -1,4 +1,4 @@
-import { ProcessSignal, ProcessSignals } from '@fromcode119/core';
+import { ProcessSignal, ProcessSignals, RequestServerTiming } from '@fromcode119/core';
 import { CoreServices, PluginManager, PluginTenantAccess, RequestContextUtils, type IResolvedPluginDefaultPageContract, ThemeManager, SystemConstants, type ICollection, PluginState } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
 import { ResolutionContractMatchService } from '@api/services/helpers/resolution-contract-match-service';
@@ -60,22 +60,22 @@ export class ResolutionService {
     fallback_locale?: string;
     locale_mode?: string;
   }) {
-    const resolved = await this.resolveSlugRaw(slug, options);
+    const resolved = await RequestServerTiming.step('resolve-raw', () => this.resolveSlugRaw(slug, options));
     // Run the resolved document through any plugin-registered content-resolution
     // gates (e.g. members-only paywall gating). The framework holds no knowledge
     // of what the gates do; plugins register them via CoreServices during onInit.
     // NOTE: gates run per-request with the visitor's identity — the raw-resolution
     // cache below deliberately sits BEFORE this step and never short-circuits it.
-    const gated = await CoreServices.getInstance().contentResolutionGates.apply(resolved, {
+    const gated = await RequestServerTiming.step('resolve-gates', () => CoreServices.getInstance().contentResolutionGates.apply(resolved, {
       user: options.user,
       preview: options.preview,
-    });
-    if (gated) return this.withCanonicalPath(await this.forVisitor(gated, options.user));
+    }));
+    if (gated) return RequestServerTiming.step('resolve-canonical', async () => this.withCanonicalPath(await RequestServerTiming.step('resolve-visitor', () => this.forVisitor(gated, options.user))));
 
     // Nothing resolved to content — consult plugin-registered redirect resolvers
     // (e.g. a redirect plugin's retired-URL rules) before returning null. The framework
     // stays plugin-agnostic: it only asks the registry and shapes a redirect result.
-    const redirect = await this.resolveRedirect(slug);
+    const redirect = await RequestServerTiming.step('resolve-redirect', () => this.resolveRedirect(slug));
     if (redirect) {
       return { type: 'redirect', plugin: '', doc: null, redirect };
     }
@@ -160,7 +160,7 @@ export class ResolutionService {
     const isRootRequest = normalizedInput === '/' || normalizedSlug === '';
     const pathSegments = normalizedSlug.split('/').filter(Boolean);
 
-    const permalinkStructure = await this.cache.getPermalinkStructure(() => this.loadPermalinkStructure());
+    const permalinkStructure = await RequestServerTiming.step('resolve-permalinks', () => this.cache.getPermalinkStructure(() => this.loadPermalinkStructure()));
 
     const structureSegments = permalinkStructure.split('/').filter(Boolean);
     const pathCandidates = Array.from(new Set([
@@ -181,7 +181,7 @@ export class ResolutionService {
       return q;
     };
 
-    const resolvedContracts = await this.resolveDefaultPageContracts();
+    const resolvedContracts = await RequestServerTiming.step('resolve-contracts', () => this.resolveDefaultPageContracts());
 
     const activePlugins = new Set(this.manager.getPlugins().filter(p => p.state === PluginState.ACTIVE).map(p => p.manifest.slug));
     const collections = this.manager.registeredCollections;
@@ -194,7 +194,7 @@ export class ResolutionService {
     }
 
     // 1. Priority Search (Custom Permalinks, then exact slugs)
-    const priorityMatch = await this.scanner.scanPriority({
+    const priorityMatch = await RequestServerTiming.step('resolve-scan-priority', () => this.scanner.scanPriority({
       entries,
       options,
       withLocale,
@@ -207,17 +207,17 @@ export class ResolutionService {
           ExactPageContractPresenter.apply(doc, collection, normalizedInput, resolvedContracts),
           candidate,
         ),
-    });
+    }));
     if (priorityMatch) return priorityMatch;
 
-    const contractMatch = await this.contractMatcher.resolve(
+    const contractMatch = await RequestServerTiming.step('resolve-contract-match', () => this.contractMatcher.resolve(
       normalizedInput,
       resolvedContracts,
       collections,
       activePlugins,
       withLocale,
       options,
-    );
+    ));
     if (contractMatch) {
       const contractCollection = this.findResolvedCollection(collections, contractMatch.type, contractMatch.plugin);
       if (contractCollection && await this.scanner.isPermalinkDisabled(contractCollection, contractMatch.doc?.id, !!options.preview)) {
@@ -227,7 +227,7 @@ export class ResolutionService {
     }
 
     // 2. Structure Search
-    return this.scanner.scanStructure({ entries, options, withLocale, pathSegments, structureSegments });
+    return RequestServerTiming.step('resolve-scan-structure', () => this.scanner.scanStructure({ entries, options, withLocale, pathSegments, structureSegments }));
   }
 
   private async loadPermalinkStructure(): Promise<string> {

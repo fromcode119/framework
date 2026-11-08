@@ -1,3 +1,4 @@
+import { RequestServerTiming } from '@core/context/request-server-timing';
 import { PluginPeerUnavailableError } from '@core/plugin/host/plugin-peer-unavailable-error';
 import { AsyncLocalStorage } from 'async_hooks';
 import { PluginChannel } from '@core/plugin/host/plugin-channel';
@@ -57,8 +58,12 @@ export class PluginGuestRemote {
    * inside the handler the host invoked — so a chain awaited later still belongs to its invocation.
    */
   async call(root: IPluginRemoteCall['root'], steps: IPluginRemoteCall['steps'], token: string | null = PluginGuestRemote.currentToken()): Promise<unknown> {
-    const result = await PluginGuestRemote.channelFor(this.channel).request(String(PluginChannelMessage.CALL.value), { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
-    return PluginJsonRows.isDbFind(root, steps) && PluginJsonRows.is(result) ? PluginJsonRows.decode(result) : this.rehydrate(result, root, steps, token);
+    // Every call back to the platform (the database, settings, another plugin) is a round trip out of this
+    // process; a request's total is what shows how chatty a handler is (RequestServerTiming).
+    return RequestServerTiming.step('plugin-host-calls', async () => {
+      const result = await PluginGuestRemote.channelFor(this.channel).request(String(PluginChannelMessage.CALL.value), { root, steps, token: token ?? PluginGuestRemote.currentToken() } satisfies IPluginRemoteCall, this.timeoutMs);
+      return PluginJsonRows.isDbFind(root, steps) && PluginJsonRows.is(result) ? PluginJsonRows.decode(result) : this.rehydrate(result, root, steps, token);
+    });
   }
 
   /**

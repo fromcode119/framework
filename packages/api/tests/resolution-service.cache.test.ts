@@ -3,6 +3,7 @@ const siteContext = vi.hoisted(() => ({ tenantId: undefined as string | undefine
 const signalHandlers = vi.hoisted(() => ({} as Record<string, (payload: any, local: boolean) => void>));
 
 vi.mock('@fromcode119/core', () => ({
+  RequestServerTiming: { step: (_name: string, work: () => unknown) => work(), record: () => undefined, handlerReached: () => undefined },
   ProcessSignal: {
     SETTINGS_WRITTEN: { value: 'settings-written' },
     CACHE_PURGED: { value: 'cache-purged' },

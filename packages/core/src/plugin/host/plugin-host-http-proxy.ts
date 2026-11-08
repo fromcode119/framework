@@ -1,4 +1,6 @@
 import http from 'http';
+import { performance } from 'perf_hooks';
+import { RequestServerTiming } from '@core/context/request-server-timing';
 import zlib from 'zlib';
 import type { Request, Response, NextFunction } from 'express';
 import { PluginGuestConnections } from '@core/plugin/host/connections/plugin-guest-connections';
@@ -135,6 +137,7 @@ export class PluginHostHttpProxy {
         resolve();
       };
 
+      const sentAt = performance.now();
       const upstream = http.request({
         socketPath,
         method: req.method,
@@ -142,6 +145,8 @@ export class PluginHostHttpProxy {
         headers: headers as http.OutgoingHttpHeaders,
         timeout: timeoutMs,
       }, (reply) => {
+        // From sending the request to the plugin's answer starting: its handler plus the way there and back.
+        RequestServerTiming.record('plugin-upstream', performance.now() - sentAt);
         if (reply.headers[PluginGuestHttp.HEADER_NEXT]) {
           reply.resume();
           reply.on('end', () => { finish(); next(); });

@@ -1,3 +1,4 @@
+import { RequestServerTiming } from '@fromcode119/core';
 import { ResolutionMatchKind } from '@api/services/helpers/enums/resolution-match-kind.enum';
 import { CoercionUtils, type ICollection } from '@fromcode119/core';
 import { RESTController } from '@api/controllers/rest/rest-controller';
@@ -50,7 +51,8 @@ export class ResolutionCollectionScanService {
     const chunkSize = ResolutionCollectionScanService.PRIORITY_CHUNK_SIZE;
     for (let i = 0; i < ctx.entries.length; i += chunkSize) {
       const chunk = ctx.entries.slice(i, i + chunkSize);
-      const answers = await Promise.all(chunk.map((entry) => this.priorityCandidates(entry.collection, ctx)));
+      // Summed over the collections asked at once, so its total is work, not wall time (the step around the scan is that).
+      const answers = await Promise.all(chunk.map((entry) => RequestServerTiming.step('resolve-collection', () => this.priorityCandidates(entry.collection, ctx))));
       for (let k = 0; k < chunk.length; k++) {
         const { collection, pluginSlug } = chunk[k];
         for (const { find, doc } of answers[k]) {

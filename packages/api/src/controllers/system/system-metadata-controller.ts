@@ -1,4 +1,4 @@
-import { PluginOwners, PluginTenantAccess, RequestContextUtils, SiteContentRevision, StandaloneSitePolicy, TenantMode, TenantResolverService, AdminScope } from '@fromcode119/core';
+import { PluginOwners, PluginTenantAccess, RequestContextUtils, RequestServerTiming, SiteContentRevision, StandaloneSitePolicy, TenantMode, TenantResolverService, AdminScope } from '@fromcode119/core';
 import { Request, Response } from 'express';
 import { ApplicationUrlUtils, Logger, PluginState, SiteIconResolver, StorefrontContentSecurityPolicy, SystemConstants, SystemSettingsExposureUtils, ThemeState } from '@fromcode119/core';
 import path from 'path';
@@ -97,7 +97,8 @@ export class SystemMetadataController {
 
   async getFrontendMetadata(req: Request, res: Response) {
     // Every storefront page waits on this answer; when it is slow, the log says which step was.
-    const steps = new StepTimer();
+    RequestServerTiming.handlerReached();
+    const steps = new StepTimer(undefined, (name, ms) => RequestServerTiming.record(`fm-${name.replace(/[A-Z]/g, (c) => `-${c.toLowerCase()}`)}`, ms));
     const metadata = await this.runtime.themeManager.getFrontendMetadata(this.runtime.manager.getRuntimeModules());
     steps.mark('theme');
     // Both axes (T2): a tenant's storefront lists — and server-renders with — only the plugins its site
@@ -123,6 +124,7 @@ export class SystemMetadataController {
         },
     }));
 
+    steps.mark('plugins');
     // The site's parts — the same for every visitor of this site at this revision, with this plugin set
     // and theme — kept per site (FrontendMetadataCache). Nothing in them depends on who is asking.
     const signature = JSON.stringify([
@@ -150,8 +152,6 @@ export class SystemMetadataController {
       (slug) => String((adminMetadata?.plugins || []).find((plugin: any) => plugin?.slug === slug)?.admin?.label || ''),
     );
     steps.mark('menu');
-    const slow = steps.slowReport(SystemMetadataController.SLOW_FRONTEND_METADATA_MS);
-    if (slow) SystemMetadataController.logger.warn(`Slow /system/frontend for ${String(req.headers['x-forwarded-host'] || req.headers.host || '')}: ${slow}`);
 
     // A private site's answer is not cacheable at the edge: it changes the moment somebody presses
     // Publish, and a cached "closed" would outlive the decision. A console request is never shared
@@ -163,7 +163,11 @@ export class SystemMetadataController {
     const standalone = !site && !TenantMode.isEnabled()
       ? { isProduction: await StandaloneSitePolicy.isProduction(), isIndexable: await StandaloneSitePolicy.isIndexable() }
       : null;
-    res.json({
+    steps.mark('standalone');
+    const contentSecurityPolicy = StorefrontContentSecurityPolicy.of(this.runtime.themeManager.getThemes().find((theme) => theme.state === ThemeState.ACTIVE) ?? null, plugins,
+      [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)], pluginPublicSettings);
+    steps.mark('csp');
+    const payload = {
       ...metadata,
       standalone,
       site: site
@@ -208,9 +212,12 @@ export class SystemMetadataController {
       contentRevision: SiteContentRevision.current(tenantId),
       // Where a site's OWN theme may load from and send to; null for a platform theme. The storefront
       // sends it as the Content-Security-Policy of every page.
-      contentSecurityPolicy: StorefrontContentSecurityPolicy.of(this.runtime.themeManager.getThemes().find((theme) => theme.state === ThemeState.ACTIVE) ?? null, plugins,
-        [ApplicationUrlUtils.readAppBaseUrlFromEnvironment(ApplicationUrlUtils.API_APP)], pluginPublicSettings),
-    });
+      contentSecurityPolicy,
+    };
+    // What is left of `api-total` once `api-pre` and these steps are taken off is this answer's serialising and sending.
+    const slow = steps.slowReport(SystemMetadataController.SLOW_FRONTEND_METADATA_MS);
+    if (slow) SystemMetadataController.logger.warn(`Slow /system/frontend for ${String(req.headers['x-forwarded-host'] || req.headers.host || '')}: ${slow}`);
+    res.json(payload);
   }
   /** The site's parts of `/system/frontend`; `steps` records where a fresh computation spends its time. */
   private async computeFrontendParts(steps: StepTimer): Promise<IFrontendMetadataParts> {
