@@ -2,25 +2,8 @@ import { AsyncLocalStorage } from 'async_hooks';
 import { performance } from 'perf_hooks';
 import type { Request, Response, NextFunction } from 'express';
 import { CookieConstants } from '@core/constants/cookie.constants';
-
-interface IStepTotal {
-  ms: number;
-  count: number;
-}
-
-/** What one request records: when it began, and the time each named step took. */
-class Recorder {
-  readonly began = performance.now();
-  readonly steps = new Map<string, IStepTotal>();
-  handlerReached = false;
-
-  add(name: string, ms: number): void {
-    const total = this.steps.get(name) ?? { ms: 0, count: 0 };
-    total.ms += ms;
-    total.count += 1;
-    this.steps.set(name, total);
-  }
-}
+import { RequestTimingRecorder } from '@core/context/request-timing-recorder';
+import type { IRequestTimingStepTotal } from '@core/context/interfaces/request-timing-step-total.interface';
 
 /**
  * Where the time of one request went, reported in its `Server-Timing` header.
@@ -37,7 +20,7 @@ class Recorder {
  * that carries its own `Server-Timing` is held to the same rule and loses it for those callers.
  */
 export class RequestServerTiming {
-  private static readonly storage = new AsyncLocalStorage<Recorder>();
+  private static readonly storage = new AsyncLocalStorage<RequestTimingRecorder>();
 
   /** A step name is a short token the header can carry as is; anything else is not recorded. */
   private static readonly NAME = /^[a-z][a-z0-9-]{0,39}$/;
@@ -55,7 +38,7 @@ export class RequestServerTiming {
    */
   static middleware(options: { gated: boolean; totalAs?: string } = { gated: true }) {
     return (req: Request, res: Response, next: NextFunction): void => {
-      const recorder = new Recorder();
+      const recorder = new RequestTimingRecorder();
       const writeHead = res.writeHead;
       (res as { writeHead: unknown }).writeHead = function (this: Response, ...args: unknown[]): Response {
         if (options.totalAs) RequestServerTiming.add(recorder, options.totalAs, performance.now() - recorder.began);
@@ -93,7 +76,7 @@ export class RequestServerTiming {
   }
 
   /** The header value for what is recorded so far; '' when nothing is. */
-  static format(recorder: { steps: ReadonlyMap<string, IStepTotal> }): string {
+  static format(recorder: { steps: ReadonlyMap<string, IRequestTimingStepTotal> }): string {
     return [...recorder.steps.entries()]
       .map(([name, total]) => `${name};dur=${total.ms.toFixed(1)}${total.count > 1 ? `;desc="${total.count}x"` : ''}`)
       .join(', ');
@@ -114,11 +97,11 @@ export class RequestServerTiming {
     return true;
   }
 
-  private static add(recorder: Recorder, name: string, ms: number): void {
+  private static add(recorder: RequestTimingRecorder, name: string, ms: number): void {
     if (RequestServerTiming.NAME.test(name) && Number.isFinite(ms) && ms >= 0) recorder.add(name, ms);
   }
 
-  private static write(req: Request, res: Response, recorder: Recorder, gated: boolean): void {
+  private static write(req: Request, res: Response, recorder: RequestTimingRecorder, gated: boolean): void {
     if (res.headersSent) return;
     if (gated && !RequestServerTiming.allows(req)) {
       // A plugin process answered with timings of its own: they are held to the same rule.

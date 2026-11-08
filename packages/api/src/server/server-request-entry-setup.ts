@@ -1,7 +1,7 @@
 import type express from 'express';
-import { EnvUtils, NetworkAddressUtils } from '@fromcode119/core';
+import { EnvUtils, NetworkAddressUtils, RequestServerTiming } from '@fromcode119/core';
 
-/** How a request is read before ANY middleware sees it: who sent it. */
+/** How a request is read before ANY middleware sees it: who sent it, and when it began. */
 export class ServerRequestEntrySetup {
   static apply(app: express.Express): void {
     // Support nested proxies (e.g. Traefik -> Nginx -> Node). In containerized deployments the reverse
@@ -13,5 +13,8 @@ export class ServerRequestEntrySetup {
       if (EnvUtils.isDevelopment()) return true;
       return NetworkAddressUtils.isPrivate(ip);
     });
+    // First of every middleware, so the time they spend is counted (`api-pre`) and every step a request
+    // takes can say so in its `Server-Timing` — for an anonymous read only (RequestServerTiming).
+    app.use(RequestServerTiming.middleware({ gated: true, totalAs: 'api-total' }));
   }
 }
