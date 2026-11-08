@@ -72,6 +72,12 @@ export class FrontendI18nService {
    * Within a layer the order is unchanged: locale-agnostic (wildcard) registrations first, then the
    * active locale's (most specific wins). Across layers the whole theme layer beats the whole plugin
    * layer, so a theme override applies whether the theme registered before or after the plugin.
+   *
+   * The plugin layer's WILDCARD sits under the server copy, not over it. A plugin bundle carries only
+   * the languages it is built with and registers English as that wildcard, the fallback for a key its
+   * file lacks; every other language reaches the browser from the server (`/system/i18n`, the active
+   * locale only, so no bundle grows with each language). A fallback above the server would replace
+   * that language with English everywhere.
    */
   static resolveEffective(
     server: Record<string, any>,
@@ -79,13 +85,18 @@ export class FrontendI18nService {
     locale: string,
     themeByLocale: Record<string, Record<string, any>> = {},
   ): Record<string, any> {
-    return FrontendI18nService.deepMerge(
-      FrontendI18nService.deepMerge(
-        server || {},
-        FrontendI18nService.resolveLayer(registeredByLocale, locale),
-      ),
-      FrontendI18nService.resolveLayer(themeByLocale, locale),
+    const registered = registeredByLocale || {};
+    const plugin = FrontendI18nService.deepMerge(
+      FrontendI18nService.deepMerge(registered[FrontendI18nService.WILDCARD] || {}, server || {}),
+      FrontendI18nService.localeBucket(registered, locale),
     );
+    return FrontendI18nService.deepMerge(plugin, FrontendI18nService.resolveLayer(themeByLocale, locale));
+  }
+
+  /** The active locale's own bucket — the exact tag, else its base language — without the wildcard. */
+  static localeBucket(byLocale: Record<string, Record<string, any>>, locale: string): Record<string, any> {
+    const norm = FrontendI18nService.normalizeLocale(locale);
+    return byLocale[norm] || byLocale[FrontendI18nService.baseLocale(norm)] || {};
   }
 
   /** One registration layer flattened for the active locale: wildcard first, active locale over it. */
