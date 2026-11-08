@@ -193,6 +193,20 @@ export class ResolutionService {
       entries.push({ collection, pluginSlug });
     }
 
+    // The contract match asks nothing of the scan below, and a path no collection holds goes on to it, so it
+    // is started now and the two run together instead of one after the other (Server-Timing on a product's
+    // address: the scan 21 ms, then the match 18 ms). Read only after the scan found nothing, so a custom
+    // permalink or an exact slug still wins over a contract; a failure is the caller's only then, as before.
+    const contractStarted = RequestServerTiming.step('resolve-contract-match', () => this.contractMatcher.resolve(
+      normalizedInput,
+      resolvedContracts,
+      collections,
+      activePlugins,
+      withLocale,
+      options,
+    ));
+    contractStarted.catch(() => undefined);
+
     // 1. Priority Search (Custom Permalinks, then exact slugs)
     const priorityMatch = await RequestServerTiming.step('resolve-scan-priority', () => this.scanner.scanPriority({
       entries,
@@ -210,14 +224,7 @@ export class ResolutionService {
     }));
     if (priorityMatch) return priorityMatch;
 
-    const contractMatch = await RequestServerTiming.step('resolve-contract-match', () => this.contractMatcher.resolve(
-      normalizedInput,
-      resolvedContracts,
-      collections,
-      activePlugins,
-      withLocale,
-      options,
-    ));
+    const contractMatch = await contractStarted;
     if (contractMatch) {
       const contractCollection = this.findResolvedCollection(collections, contractMatch.type, contractMatch.plugin);
       if (contractCollection && await this.scanner.isPermalinkDisabled(contractCollection, contractMatch.doc?.id, !!options.preview)) {
