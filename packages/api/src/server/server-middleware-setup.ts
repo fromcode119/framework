@@ -1,7 +1,7 @@
 /** ServerMiddlewareSetup — configures Express middlewares. Extracted from APIServer (ARC-007). */
 
 import express from 'express';
-import { ApiOutcomeCounter, ApiPathUtils, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
+import { ApiOutcomeCounter, ApiPathUtils, CookieConstants, Logger, MiddlewareStage, PluginManager, RequestContextUtils, RequestServerTiming, RequestSurfaceUtils, TenantMode, TenantResolutionRefusal } from '@fromcode119/core';
 import { DatabasePoolWatch } from '@api/server/database-pool-watch';
 import { InFlightRequests } from '@api/server/in-flight-requests';
 import { AuthManager } from '@fromcode119/auth';
@@ -44,6 +44,9 @@ export class ServerMiddlewareSetup {
   ) {}
 
   setup() {
+    // Before anything else, so the time the middleware below spends is counted (`api-pre`) and every step
+    // a request takes can say so in its `Server-Timing` — for an anonymous read only (RequestServerTiming).
+    this.app.use(RequestServerTiming.middleware({ gated: true, totalAs: 'api-total' }));
     // First, so every response carries them — including an error or a refusal sent by a later middleware.
     this.app.disable('x-powered-by');
     this.app.use(new SecurityHeadersMiddleware().middleware());

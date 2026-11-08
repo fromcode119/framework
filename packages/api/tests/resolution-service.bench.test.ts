@@ -1,4 +1,5 @@
 vi.mock('@fromcode119/core', () => ({
+  RequestServerTiming: { step: (_name: string, work: () => unknown) => work(), record: () => undefined, handlerReached: () => undefined },
   SiteContentRevision: { current: () => 'e.0.0' },
   RequestContextUtils: {
     getTenantId: vi.fn(() => undefined),

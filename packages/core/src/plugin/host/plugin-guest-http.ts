@@ -1,3 +1,4 @@
+import { RequestServerTiming } from '@core/context/request-server-timing';
 import fs from 'fs';
 import express from 'express';
 import type { Express, Router, Request, Response, NextFunction } from 'express';
@@ -265,7 +266,7 @@ export class PluginGuestHttp {
     };
   }
 
-  private enterInvocation(req: Request, _res: Response, next: NextFunction): void {
+  private enterInvocation(req: Request, res: Response, next: NextFunction): void {
     // Read before the private headers are stripped below; the body parsers (which run after this) check it.
     (req as any).fcKeepRawBody = Boolean(req.headers[PluginGuestHttp.HEADER_RAW_BODY]);
     const token = String(req.headers[PluginGuestHttp.HEADER_TOKEN] ?? '');
@@ -289,8 +290,12 @@ export class PluginGuestHttp {
     // host resolved, or every per-address limit a plugin keeps (NetworkAddressUtils.resolveClientIp)
     // sees nothing and silently never applies.
     Object.defineProperty(req, 'ip', { value: clientIp || undefined, configurable: true, enumerable: true });
-    PluginGuestRemote.invocation.run({ token, tenantId, ...cacheScope, channel: this.channelFor(connectionId) }, () => {
-      RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
+    // What this process spent on the request, reported to the api that called it (which decides who may
+    // be told): the handler, and the calls it made back to the platform (PluginGuestRemote.call).
+    RequestServerTiming.middleware({ gated: false, totalAs: 'plugin-handler' })(req, res, () => {
+      PluginGuestRemote.invocation.run({ token, tenantId, ...cacheScope, channel: this.channelFor(connectionId) }, () => {
+        RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
+      });
     });
   }
 }

@@ -403,6 +403,7 @@ export { MarketplaceDefaults } from '@core/marketplace/marketplace-defaults';
 export { SiteMarketplaceUrl } from '@core/marketplace/site-marketplace-url';
 export { SiteBaseUrl } from '@core/tenant/site-base-url';
 export { SiteContentRevision } from '@core/tenant/site-content-revision';
+export { RequestServerTiming } from '@core/context/request-server-timing';
 export { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 export { PluginPlatformRoute } from '@core/plugin/context/plugin-platform-route';
 export { PluginPlatformSettings } from '@core/plugin/platform/plugin-platform-settings';

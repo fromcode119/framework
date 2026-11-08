@@ -6,7 +6,7 @@ import { ContentPreviewAccessUtils, DeploymentKind, PluginState, PluginTenantAcc
 import { SelfUpdateScreenService } from '@api/services/system/self-update-screen-service';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
-import { CoercionUtils, HookEventUtils, RequestContextUtils } from '@fromcode119/core';
+import { CoercionUtils, HookEventUtils, RequestContextUtils, RequestServerTiming } from '@fromcode119/core';
 import { SitePreviewViewer } from '@api/services/tenants/site-preview-viewer';
 
 export class SystemRuntimeController {
@@ -172,7 +172,8 @@ export class SystemRuntimeController {
 
       // Preview is decided by the SESSION, never by the query string. `?preview=1`/`?draft=1` used to
       // be OR-ed in here, so any anonymous visitor could read every draft by asking for one.
-      const viewer = await this.contentViewer(req);
+      RequestServerTiming.handlerReached();
+      const viewer = await RequestServerTiming.step('resolve-viewer', () => this.contentViewer(req));
       const previewing = ContentPreviewAccessUtils.canPreviewUnpublished(viewer);
       const result = await this.runtime.resolution.resolveSlug(slug, {
         user: viewer,
