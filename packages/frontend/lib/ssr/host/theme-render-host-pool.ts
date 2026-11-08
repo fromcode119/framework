@@ -33,6 +33,9 @@ export class ThemeRenderHostPool {
   private static births = new Map<string, number>();
   private static born = 0;
 
+  /** The site key of an install that carries no site id (a single-site deployment). */
+  private static readonly STANDALONE_SITE = '\u0000standalone';
+
   static async render(args: {
     generation: ThemeSsrGeneration;
     settings: ThemeRenderSettings;
@@ -42,7 +45,10 @@ export class ThemeRenderHostPool {
     /** The site this page belongs to — what ties a new generation to the one it supersedes. */
     siteId: string;
   }): Promise<ThemeSsrMarkup | null> {
-    const { generation, settings, frontendDir, boot, request, siteId } = args;
+    const { generation, settings, frontendDir, boot, request } = args;
+    // A single-site install carries no site id. It is still ONE site: without a key here its replaced
+    // worlds were never retired, and each update left a process resident until the cap pushed it out.
+    const siteId = args.siteId || ThemeRenderHostPool.STANDALONE_SITE;
     const key = generation.signature;
     // A request still carrying the config from before an update must not bring the world it replaced
     // back to life; that one page renders client-side, as any server-render miss does.
@@ -66,6 +72,10 @@ export class ThemeRenderHostPool {
     }
     if (!host) return null;
     ThemeRenderHostPool.moveSite(siteId, key);
+    // The cap is an operator setting and may be lowered while worlds are resident: trim to it now, not
+    // only when the next world happens to be built. AFTER moveSite, which retires the world this site
+    // left — trimming first would count that one as resident and evict another site's live world.
+    ThemeRenderHostPool.evictAbove(settings.generationCap, key);
     const parts = await host.render(request);
     return parts ? ThemeSsrMarkup.fromParts(parts) : null;
   }
