@@ -1,5 +1,5 @@
 import { Reactor } from '@fromcode119/react-class-components';
-import { SystemApiPaths } from '@fromcode119/core/client';
+import { SystemApiPaths, ThemeCssVariable } from '@fromcode119/core/client';
 import { PluginContextRegistry } from '@fromcode119/react/plugin-context';
 import { AccountSlotRegistrar } from '@/components/account/account-slot-registrar';
 import { ContextBridge } from '@fromcode119/react/context-bridge';
@@ -64,7 +64,7 @@ export class ThemeInitializer extends Reactor {
     this.appliedThemeVariables = themeVariables;
     const root = document.documentElement;
     Object.entries(themeVariables || {}).forEach(([key, value]) => {
-      root.style.setProperty(`--theme-${key}`, value as string);
+      root.style.setProperty(ThemeCssVariable.propertyFor(key), value as string);
     });
   }
 

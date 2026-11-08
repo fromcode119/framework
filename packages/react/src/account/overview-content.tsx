@@ -146,7 +146,10 @@ export class AccountOverviewContent extends PluginComponent {
    * (which belong to the plugins that registered them, not to the framework). The overview itself is skipped.
    */
   private renderQuickLinks(): ReactNode {
-    const links = (this.sections || []).filter((section) => section.key !== AccountOverviewContent.OWN_SECTION);
+    // Only sections with something to SAY about this person ("2 addresses", "Two-factor: off") earn a tile.
+    // Every section is already one click away in the menu; a grid repeating the menu with empty tiles
+    // buried the few that carried a fact.
+    const links = (this.sections || []).filter((section) => section.key !== AccountOverviewContent.OWN_SECTION && Boolean(AccountSummaryStore.section(section.key)?.text));
     if (links.length === 0) return null;
     return (
       <section className={AccountClass.of('card')}>

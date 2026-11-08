@@ -171,6 +171,7 @@ export { ThemeState } from '@core/theme/enums/theme-state.enum';
 //
 // `ThemePackageLayout` stays: it touches neither module and resolves names from values it is given.
 export { ThemePackageLayout } from '@core/theme/theme-package-layout';
+export { ThemeCssVariable } from '@core/theme/theme-css-variable';
 export { Plugins } from '@core/plugin/plugins';
 export { PluginsFacade } from '@core/plugin/plugins-facade';
 export { NamespacedPluginsFacade } from '@core/plugin/namespaced-plugins-facade';
