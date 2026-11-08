@@ -4,6 +4,7 @@ import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
 import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
 import { ProcessSignals } from '@core/signals/process-signals';
+import { TenantMode } from '@core/tenant/tenant-mode';
 
 /**
  * Resolver for NON-secret, NON-bootstrap platform configuration that may live either
@@ -33,14 +34,27 @@ export class PlatformSettingsService {
   /**
    * What a platform setting read, kept for the next reader. These are read by every storefront render and
    * every internal call (the single-site policy alone read two per `/system/frontend`), and each read was
-   * its own database round trip. A saved setting announces itself (SETTINGS_WRITTEN, CACHE_PURGED — the
-   * signals the api's other caches follow), and no entry outlives the operator's maximum age (Settings →
-   * Infrastructure → API response cache; 0 keeps nothing), which bounds a write that announced nothing.
+   * its own database round trip.
+   *
+   * WHAT IS KEPT, and why only that:
+   *  - Only on a single-site deployment. The reader runs on whatever connection the caller holds, and on a
+   *    deployment with sites that connection may be bound to one, where the rows it can see are not the
+   *    platform's; an answer read there must never be served to a caller who is not in that scope.
+   *  - Only a key the settings screen writes (SystemSettingRegistry.isWritable). Those writes announce
+   *    themselves; a key some other part of the platform writes (an update's status) announces nothing,
+   *    so it is read every time.
+   *
+   * WHAT ENDS IT. A saved setting announces itself (SETTINGS_WRITTEN, CACHE_PURGED — the signals the api's
+   * other caches follow), and no entry outlives the operator's maximum age (Settings → Infrastructure → API
+   * response cache; 0 keeps nothing), which bounds a write that announced nothing. A read that was in
+   * flight when an announcement came is not kept (`generation`): it may carry the value from before it.
    */
   private static readonly kept = new Map<string, { value: string | null; at: number }>();
 
+  private static generation = 0;
+
   private static readonly forgetting = [ProcessSignal.SETTINGS_WRITTEN, ProcessSignal.CACHE_PURGED]
-    .map((signal) => ProcessSignals.on(signal, () => PlatformSettingsService.kept.clear()));
+    .map((signal) => ProcessSignals.on(signal, () => { PlatformSettingsService.generation += 1; PlatformSettingsService.kept.clear(); }));
 
   /** Wire the `_system_meta` reader once the DB is up (called during server/plugin boot). */
   public static registerAccessor(accessor: (key: string) => Promise<string | null>): void {
@@ -62,15 +76,17 @@ export class PlatformSettingsService {
       throw new PlatformSettingScopeError(key);
     }
     if (!this.accessor) return null;
-    const maxAgeMs = ApiResponseCache.maxAgeSeconds() * 1000;
+    const maxAgeMs = !TenantMode.isEnabled() && SystemSettingRegistry.isWritable(key) ? ApiResponseCache.maxAgeSeconds() * 1000 : 0;
     const held = maxAgeMs > 0 ? this.kept.get(key) : undefined;
     if (held && Date.now() - held.at < maxAgeMs) return held.value;
+    const generation = this.generation;
     try {
       const value = await this.accessor(key);
       const trimmed = typeof value === 'string' ? value.trim() : '';
       const read = trimmed ? trimmed : null;
-      // Only an answer is kept: a failed read (below) is asked again by the next reader.
-      if (maxAgeMs > 0) this.kept.set(key, { value: read, at: Date.now() });
+      // Only an answer is kept: a failed read (below) is asked again by the next reader, and so is one
+      // that was in flight when a saved setting announced itself.
+      if (maxAgeMs > 0 && generation === this.generation) this.kept.set(key, { value: read, at: Date.now() });
       return read;
     } catch (err) {
       this.logger.warn(`Failed to read platform setting "${key}": ${err}`);

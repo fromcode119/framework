@@ -3,6 +3,9 @@ import { PlatformSettingsService } from '@core/management/platform-settings-serv
 import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
 import { ProcessSignals } from '@core/signals/process-signals';
 import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
+import { TenantMode } from '@core/tenant/tenant-mode';
+import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+import { SystemConstants } from '@core/constants/system.constants';
 
 /**
  * A platform setting is read by every storefront render and every internal call; each read was a database
@@ -19,10 +22,11 @@ describe('PlatformSettingsService keeps what it read', () => {
     reads = 0;
     age = 60;
     service.kept.clear();
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(false);
     ApiResponseCache.useMaxAge(() => age);
     PlatformSettingsService.registerAccessor(async (key: string) => { reads += 1; return stored[key] ?? null; });
   });
-  afterEach(() => { vi.useRealTimers(); ApiResponseCache.useMaxAge(() => 0); service.kept.clear(); });
+  afterEach(() => { vi.restoreAllMocks(); vi.useRealTimers(); ApiResponseCache.useMaxAge(() => 0); service.kept.clear(); });
 
   it('reads a setting once, however many readers ask', async () => {
     expect(await PlatformSettingsService.getSetting('site_search_indexing')).toBe('true');
@@ -76,6 +80,39 @@ describe('PlatformSettingsService keeps what it read', () => {
 
   it('still refuses a site-scoped key before anything is kept', async () => {
     await expect(PlatformSettingsService.getSetting('default_locale')).rejects.toThrow();
+    expect(service.kept.size).toBe(0);
+  });
+  it('keeps nothing on a deployment with sites: the connection a read runs on may be bound to one, and see other rows', async () => {
+    vi.spyOn(TenantMode, 'isEnabled').mockReturnValue(true);
+    await PlatformSettingsService.getSetting('site_search_indexing');
+    await PlatformSettingsService.getSetting('site_search_indexing');
+    expect(reads).toBe(2);
+    expect(service.kept.size).toBe(0);
+  });
+
+  it('keeps nothing for a key the settings screen does not write — nothing announces its change', async () => {
+    const key = SystemConstants.META_KEY.FRAMEWORK_UPDATE_STATUS;
+    expect(SystemSettingRegistry.isWritable(key)).toBe(false);
+    stored[key] = 'a';
+    await PlatformSettingsService.getSetting(key);
+    stored[key] = 'b';
+    expect(await PlatformSettingsService.getSetting(key)).toBe('b');
+    expect(reads).toBe(2);
+  });
+
+  it('does not keep a read that was in flight when a saved setting announced itself: it may hold the value from before', async () => {
+    let release: () => void = () => undefined;
+    PlatformSettingsService.registerAccessor(async (key: string) => {
+      reads += 1;
+      const before = stored[key] ?? null;
+      await new Promise<void>((resolve) => { release = resolve; });
+      return before;
+    });
+    const inFlight = PlatformSettingsService.getSetting('site_search_indexing');
+    stored.site_search_indexing = 'false';
+    ProcessSignals.announce(ProcessSignal.SETTINGS_WRITTEN, { keys: ['site_search_indexing'] });
+    release();
+    expect(await inFlight).toBe('true');
     expect(service.kept.size).toBe(0);
   });
 });
