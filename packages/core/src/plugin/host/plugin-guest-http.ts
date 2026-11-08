@@ -290,8 +290,7 @@ export class PluginGuestHttp {
     // host resolved, or every per-address limit a plugin keeps (NetworkAddressUtils.resolveClientIp)
     // sees nothing and silently never applies.
     Object.defineProperty(req, 'ip', { value: clientIp || undefined, configurable: true, enumerable: true });
-    // What this process spent on the request, reported to the api that called it (which decides who may
-    // be told): the handler, and the calls it made back to the platform (PluginGuestRemote.call).
+    // Reported to the api that called (it decides who is told): the handler and its calls back to the platform.
     RequestServerTiming.middleware({ gated: false, totalAs: 'plugin-handler' })(req, res, () => {
       PluginGuestRemote.invocation.run({ token, tenantId, ...cacheScope, channel: this.channelFor(connectionId) }, () => {
         RequestContextUtils.storage.run({ locale, tenantId: tenantId ?? undefined, siteLocale }, () => next());
