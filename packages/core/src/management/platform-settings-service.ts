@@ -1,6 +1,9 @@
 import { Logger } from '@core/logging';
 import { PlatformSettingScopeError } from '@core/settings/platform-setting-scope-error';
 import { SystemSettingRegistry } from '@core/settings/system-setting-registry';
+import { ApiResponseCache } from '@core/plugin/context/api-response-cache';
+import { ProcessSignal } from '@core/signals/enums/process-signal.enum';
+import { ProcessSignals } from '@core/signals/process-signals';
 
 /**
  * Resolver for NON-secret, NON-bootstrap platform configuration that may live either
@@ -27,6 +30,18 @@ export class PlatformSettingsService {
   private static logger = new Logger({ namespace: 'platform-settings' });
   private static accessor: ((key: string) => Promise<string | null>) | null = null;
 
+  /**
+   * What a platform setting read, kept for the next reader. These are read by every storefront render and
+   * every internal call (the single-site policy alone read two per `/system/frontend`), and each read was
+   * its own database round trip. A saved setting announces itself (SETTINGS_WRITTEN, CACHE_PURGED — the
+   * signals the api's other caches follow), and no entry outlives the operator's maximum age (Settings →
+   * Infrastructure → API response cache; 0 keeps nothing), which bounds a write that announced nothing.
+   */
+  private static readonly kept = new Map<string, { value: string | null; at: number }>();
+
+  private static readonly forgetting = [ProcessSignal.SETTINGS_WRITTEN, ProcessSignal.CACHE_PURGED]
+    .map((signal) => ProcessSignals.on(signal, () => PlatformSettingsService.kept.clear()));
+
   /** Wire the `_system_meta` reader once the DB is up (called during server/plugin boot). */
   public static registerAccessor(accessor: (key: string) => Promise<string | null>): void {
     this.accessor = accessor;
@@ -47,10 +62,16 @@ export class PlatformSettingsService {
       throw new PlatformSettingScopeError(key);
     }
     if (!this.accessor) return null;
+    const maxAgeMs = ApiResponseCache.maxAgeSeconds() * 1000;
+    const held = maxAgeMs > 0 ? this.kept.get(key) : undefined;
+    if (held && Date.now() - held.at < maxAgeMs) return held.value;
     try {
       const value = await this.accessor(key);
       const trimmed = typeof value === 'string' ? value.trim() : '';
-      return trimmed ? trimmed : null;
+      const read = trimmed ? trimmed : null;
+      // Only an answer is kept: a failed read (below) is asked again by the next reader.
+      if (maxAgeMs > 0) this.kept.set(key, { value: read, at: Date.now() });
+      return read;
     } catch (err) {
       this.logger.warn(`Failed to read platform setting "${key}": ${err}`);
       return null;
