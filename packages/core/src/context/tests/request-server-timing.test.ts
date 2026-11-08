@@ -72,6 +72,37 @@ describe('RequestServerTiming recording', () => {
   });
 });
 
+describe('RequestServerTiming steps counted elsewhere', () => {
+  it('adds a total with its own run count, and keeps adding what a late contributor reports', async () => {
+    let header = '';
+    await new Promise<void>((resolve) => RequestServerTiming.middleware()({ method: 'GET', headers: {}, originalUrl: '/' } as any, { writeHead() { return this; }, headersSent: false } as any, () => {
+      RequestServerTiming.recordTotal('rpc', 12.5, 4);
+      RequestServerTiming.recordTotal('rpc', 2.5, 1);
+      RequestServerTiming.recordTotal('zero', 1, 0);
+      RequestServerTiming.recordTotal('fraction', 1, 1.5);
+      header = RequestServerTiming.format((RequestServerTiming as any).storage.getStore());
+      resolve();
+    }));
+    expect(header).toBe('rpc;dur=15.0;desc="5x"');
+  });
+
+  it('runs a late contributor as the header is written, and survives one that throws', async () => {
+    const app = express();
+    app.use(RequestServerTiming.middleware());
+    app.use((_req, res) => {
+      RequestServerTiming.beforeWrite(() => { throw new Error('cannot count'); });
+      RequestServerTiming.beforeWrite(() => RequestServerTiming.recordTotal('late', 3, 2));
+      res.json({ ok: true });
+    });
+    const server = app.listen(0);
+    try {
+      const reply = await fetch(`http://127.0.0.1:${(server.address() as AddressInfo).port}/x`);
+      expect(reply.status).toBe(200);
+      expect(reply.headers.get('server-timing')).toMatch(/^late;dur=3\.0;desc="2x"$/);
+    } finally { server.close(); }
+  });
+});
+
 describe('RequestServerTiming over HTTP', () => {
   const serve = async (gated: boolean, handler: express.RequestHandler, pre?: express.RequestHandler) => {
     const app = express();

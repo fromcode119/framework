@@ -18,19 +18,19 @@ import type { ITenantScopeLease } from '@fromcode119/database';
  * calls reuse while this one piece of work runs. Revoking the token closes it.
  */
 export class PluginInvocationTokens {
-  private readonly live = new Map<string, { store: IRequestStore | undefined; tenantId: string | null; kind: string }>();
+  private readonly live = new Map<string, { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }> } }>();
   private readonly leases = new Map<string, ITenantScopeLease>();
 
   /** Mints a token for one invocation; `store` is the request context to re-enter for its calls. */
   mint(kind: string, store: IRequestStore | undefined): string {
     const token = `${kind}:${randomBytes(18).toString('base64url')}`;
     const tenantId = String(store?.tenantId ?? '').trim() || null;
-    this.live.set(token, { store, tenantId, kind });
+    this.live.set(token, { store, tenantId, kind, rpc: { ms: 0, count: 0, by: new Map() } });
     return token;
   }
 
   /** The invocation a token was minted for, or null — never a guess. */
-  resolve(token: unknown): { store: IRequestStore | undefined; tenantId: string | null; kind: string } | null {
+  resolve(token: unknown): { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }> } } | null {
     if (typeof token !== 'string' || !token) return null;
     return this.live.get(token) ?? null;
   }

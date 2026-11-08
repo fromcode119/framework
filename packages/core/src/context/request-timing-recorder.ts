@@ -6,11 +6,13 @@ export class RequestTimingRecorder {
   readonly began = performance.now();
   readonly steps = new Map<string, IRequestTimingStepTotal>();
   handlerReached = false;
+  /** Work that adds its steps just before the header is written, when what it counts is complete. */
+  readonly late: Array<() => void> = [];
 
-  add(name: string, ms: number): void {
+  add(name: string, ms: number, count = 1): void {
     const total = this.steps.get(name) ?? { ms: 0, count: 0 };
     total.ms += ms;
-    total.count += 1;
+    total.count += count;
     this.steps.set(name, total);
   }
 }
