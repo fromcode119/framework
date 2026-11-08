@@ -2907,6 +2907,18 @@
         "requested": "Opdateringstjenesten installerer v{{version}} inden for et minut. Status vises på denne side.",
         "unknown": "Der kunne ikke søges efter nye versioner lige nu (udgivelseskilden svarede ikke). Opdateringstjenesten prøver igen om et par minutter.",
         "heldFailed": "Opdateringen til v{{version}} kunne ikke bevares, så den tidligere version kører, og v{{version}} forsøges ikke igen automatisk. {{error}} Tryk på knappen Installer for at prøve igen."
+      },
+      "pluginAuto": {
+        "automatic": "Installer opdateringer til markedsplads-plugins automatisk",
+        "automaticExplained": "Nyere versioner af installerede markedsplads-plugins installeres af sig selv, tjekket hver time. En version, der beder om en ny tilladelse, venter altid på din godkendelse under Plugins.",
+        "off": "Automatiske plugin-opdateringer er slået fra. Opdater selv plugins fra markedspladsen.",
+        "notChecked": "Ikke tjekket endnu. Det første tjek køres kort efter platformen starter, derefter hver time.",
+        "current": "Tjekket {{at}}. Hvert installeret plugin har sin nyeste version fra markedspladsen.",
+        "updated": "Tjekket {{at}}. Senest installeret {{when}}: {{plugins}}.",
+        "failed": "Tjekket {{at}}. Disse kunne ikke opdateres: {{failed}}. Opdater dem fra markedspladsen for at se hele fejlen.",
+        "unreachable": "Tjekket {{at}}, men markedspladsen svarede ikke: {{error}}. Den prøves igen om en time.",
+        "saveFailed": "Indstillingen kunne ikke gemmes",
+        "loadFailed": "Indstillingen kunne ikke indlæses"
       }
     },
     "components": {

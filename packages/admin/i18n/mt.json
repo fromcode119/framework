@@ -2907,6 +2907,18 @@
         "requested": "Is-servizz tal-aġġornament jinstalla v{{version}} fi żmien minuta. Il-progress jidher f'din il-paġna.",
         "unknown": "Il-verżjonijiet il-ġodda ma setgħux jiġu vverifikati bħalissa (is-sors tal-verżjonijiet ma weġibx). Is-servizz tal-aġġornament jerġa' jipprova fi ftit minuti.",
         "heldFailed": "L-aġġornament għal v{{version}} ma setax jinżamm, għalhekk il-verżjoni ta' qabel qed taħdem u v{{version}} mhix ser terġa' tiġi ppruvata awtomatikament. {{error}} Agħfas il-buttuna Installa biex terġa' tipprova."
+      },
+      "pluginAuto": {
+        "automatic": "Installa l-aġġornamenti tal-plugins mis-suq awtomatikament",
+        "automaticExplained": "Verżjonijiet aktar ġodda tal-plugins installati mis-suq jiġu installati waħedhom, bi kontroll kull siegħa. Verżjoni li titlob permess ġdid dejjem tistenna l-approvazzjoni tiegħek fi Plugins.",
+        "off": "L-aġġornament awtomatiku tal-plugins huwa mitfi. Aġġorna l-plugins mis-suq inti stess.",
+        "notChecked": "Għadu ma ġiex ikkontrollat. L-ewwel kontroll jitħaddem ftit wara li tibda l-pjattaforma, imbagħad kull siegħa.",
+        "current": "Ikkontrollat {{at}}. Kull plugin installat jinsab fl-aħħar verżjoni tas-suq tiegħu.",
+        "updated": "Ikkontrollat {{at}}. L-aħħar installat {{when}}: {{plugins}}.",
+        "failed": "Ikkontrollat {{at}}. Dawn ma setgħux jiġu aġġornati: {{failed}}. Aġġornahom mis-suq biex tara l-iżball sħiħ.",
+        "unreachable": "Ikkontrollat {{at}}, iżda s-suq ma weġibx: {{error}}. Jerġa’ jiġi ppruvat f’siegħa.",
+        "saveFailed": "Is-setting ma setax jiġi salvat",
+        "loadFailed": "Is-setting ma setax jittella’"
       }
     },
     "components": {

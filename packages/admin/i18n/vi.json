@@ -2907,6 +2907,18 @@
         "requested": "Trình cập nhật sẽ cài đặt v{{version}} trong vòng một phút. Tiến trình được hiển thị trên trang này.",
         "unknown": "Hiện không thể kiểm tra phiên bản mới (nguồn phát hành không phản hồi). Trình cập nhật sẽ thử lại sau vài phút.",
         "heldFailed": "Không thể giữ bản cập nhật lên v{{version}}, nên phiên bản trước đang chạy và v{{version}} sẽ không được thử lại tự động. {{error}} Nhấn nút Cài đặt để thử lại."
+      },
+      "pluginAuto": {
+        "automatic": "Tự động cài đặt bản cập nhật plugin từ chợ ứng dụng",
+        "automaticExplained": "Các phiên bản mới hơn của plugin chợ ứng dụng đã cài sẽ tự cài đặt, kiểm tra mỗi giờ. Phiên bản yêu cầu quyền mới luôn chờ bạn phê duyệt trong mục Plugin.",
+        "off": "Cập nhật plugin tự động đang tắt. Hãy tự cập nhật plugin từ chợ ứng dụng.",
+        "notChecked": "Chưa kiểm tra. Lần kiểm tra đầu tiên chạy ngay sau khi nền tảng khởi động, sau đó mỗi giờ.",
+        "current": "Đã kiểm tra {{at}}. Mọi plugin đã cài đều ở phiên bản chợ ứng dụng mới nhất.",
+        "updated": "Đã kiểm tra {{at}}. Cài gần nhất {{when}}: {{plugins}}.",
+        "failed": "Đã kiểm tra {{at}}. Không thể cập nhật những plugin này: {{failed}}. Cập nhật chúng từ chợ ứng dụng để xem lỗi đầy đủ.",
+        "unreachable": "Đã kiểm tra {{at}}, nhưng chợ ứng dụng không phản hồi: {{error}}. Sẽ thử lại sau một giờ.",
+        "saveFailed": "Không thể lưu cài đặt",
+        "loadFailed": "Không thể tải cài đặt"
       }
     },
     "components": {

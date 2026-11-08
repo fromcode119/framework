@@ -2907,6 +2907,18 @@
         "requested": "Ii-install ng updater ang v{{version}} sa loob ng isang minuto. Ipinapakita sa page na ito ang progreso.",
         "unknown": "Hindi ma-check ang mga bagong bersyon ngayon (hindi sumagot ang pinagmumulan ng release). Susubukan muli ng updater sa loob ng ilang minuto.",
         "heldFailed": "Hindi napanatili ang pag-update sa v{{version}}, kaya tumatakbo ang dating bersyon at hindi na awtomatikong susubukan muli ang v{{version}}. {{error}} Pindutin ang button na I-install para subukan ito muli."
+      },
+      "pluginAuto": {
+        "automatic": "Awtomatikong i-install ang mga update ng plugin mula sa marketplace",
+        "automaticExplained": "Ang mga mas bagong bersyon ng mga naka-install na plugin mula sa marketplace ay kusang nagi-install, sinusuri kada oras. Ang bersyong humihingi ng bagong pahintulot ay palaging naghihintay ng iyong pag-apruba sa Mga Plugin.",
+        "off": "Naka-off ang awtomatikong pag-update ng plugin. I-update mo mismo ang mga plugin mula sa marketplace.",
+        "notChecked": "Hindi pa nasusuri. Tumatakbo ang unang pagsusuri ilang sandali matapos mag-start ang platform, pagkatapos ay kada oras.",
+        "current": "Sinuri {{at}}. Bawat naka-install na plugin ay nasa pinakabagong bersyon nito sa marketplace.",
+        "updated": "Sinuri {{at}}. Huling na-install {{when}}: {{plugins}}.",
+        "failed": "Sinuri {{at}}. Hindi ma-update ang mga ito: {{failed}}. I-update ang mga ito mula sa marketplace para makita ang buong error.",
+        "unreachable": "Sinuri {{at}}, ngunit hindi sumagot ang marketplace: {{error}}. Susubukan muli pagkalipas ng isang oras.",
+        "saveFailed": "Hindi ma-save ang setting",
+        "loadFailed": "Hindi ma-load ang setting"
       }
     },
     "components": {

@@ -18,6 +18,7 @@ import { CompactPageHeader } from '@/components/ui/view/compact-page-header.clie
 import { AdminClass } from '@/lib/admin-class';
 import { PendingReleaseList } from '@/app/settings/updates/pending-release-list.client';
 import { SelfUpdatePanel } from '@/app/settings/updates/self-update-panel.client';
+import { PluginAutoUpdatePanel } from '@/app/settings/updates/plugin-auto-update-panel.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UpdatesPage extends AdminComponent {
@@ -276,6 +277,7 @@ export class UpdatesPage extends AdminComponent {
 
           {/* Below the card, not in it: the card clips a decorative glow, and focusing a control inside scrolled it sideways. */}
           {status?.selfUpdate && <SelfUpdatePanel selfUpdate={status.selfUpdate} onChanged={this.fetchStatus} onPolled={this.takeStatus} />}
+          <PluginAutoUpdatePanel />
 
           {status?.lastUpdated && (
             <div className="text-center text-[10px] font-bold tracking-tight text-slate-500 opacity-40">

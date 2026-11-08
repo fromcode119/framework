@@ -2907,6 +2907,18 @@
         "requested": "Suiteálann an nuashonraitheoir v{{version}} laistigh de nóiméad. Taispeántar an dul chun cinn ar an leathanach seo.",
         "unknown": "Níorbh fhéidir leaganacha nua a sheiceáil díreach anois (níor fhreagair foinse na n-eisiúintí). Déanfaidh an nuashonraitheoir iarracht arís i gceann cúpla nóiméad.",
         "heldFailed": "Níorbh fhéidir an nuashonrú go v{{version}} a choinneáil, mar sin tá an leagan roimhe seo ag rith agus ní dhéanfar v{{version}} a thriail arís go huathoibríoch. {{error}} Brúigh an cnaipe Suiteáil chun é a thriail arís."
+      },
+      "pluginAuto": {
+        "automatic": "Suiteáil nuashonruithe breiseán ón margadh go huathoibríoch",
+        "automaticExplained": "Suiteáiltear leaganacha níos nuaí de bhreiseáin an mhargaidh atá suiteáilte astu féin, seiceáil gach uair an chloig. Fanann leagan a iarrann cead nua i gcónaí le do cheadú faoi Bhreiseáin.",
+        "off": "Tá nuashonrú uathoibríoch na mbreiseán múchta. Nuashonraigh na breiseáin ón margadh tú féin.",
+        "notChecked": "Gan seiceáil fós. Ritheann an chéad seiceáil go gairid tar éis don ardán tosú, ansin gach uair an chloig.",
+        "current": "Seiceáladh {{at}}. Tá gach breiseán suiteáilte ar an leagan margaidh is déanaí aige.",
+        "updated": "Seiceáladh {{at}}. Suiteáladh is déanaí {{when}}: {{plugins}}.",
+        "failed": "Seiceáladh {{at}}. Níorbh fhéidir iad seo a nuashonrú: {{failed}}. Nuashonraigh ón margadh iad chun an earráid iomlán a fheiceáil.",
+        "unreachable": "Seiceáladh {{at}}, ach níor fhreagair an margadh: {{error}}. Déanfar iarracht arís i gceann uair an chloig.",
+        "saveFailed": "Níorbh fhéidir an socrú a shábháil",
+        "loadFailed": "Níorbh fhéidir an socrú a lódáil"
       }
     },
     "components": {

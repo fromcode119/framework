@@ -2907,6 +2907,18 @@
         "requested": "Storitev za posodabljanje bo v minuti namestila v{{version}}. Napredek je prikazan na tej strani.",
         "unknown": "Novih različic trenutno ni bilo mogoče preveriti (vir izdaj se ni odzval). Storitev za posodabljanje bo poskusila znova čez nekaj minut.",
         "heldFailed": "Posodobitve na v{{version}} ni bilo mogoče obdržati, zato deluje prejšnja različica in v{{version}} se ne bo samodejno poskusila znova. {{error}} Za ponoven poskus pritisnite gumb Namesti."
+      },
+      "pluginAuto": {
+        "automatic": "Samodejno namesti posodobitve vtičnikov s tržnice",
+        "automaticExplained": "Novejše različice nameščenih vtičnikov s tržnice se namestijo same, preverjanje vsako uro. Različica, ki zahteva novo dovoljenje, vedno čaka na vašo odobritev v razdelku Vtičniki.",
+        "off": "Samodejno posodabljanje vtičnikov je izklopljeno. Vtičnike s tržnice posodobite sami.",
+        "notChecked": "Še ni preverjeno. Prvo preverjanje se izvede kmalu po zagonu platforme, nato vsako uro.",
+        "current": "Preverjeno {{at}}. Vsak nameščen vtičnik je v svoji najnovejši različici s tržnice.",
+        "updated": "Preverjeno {{at}}. Nazadnje nameščeno {{when}}: {{plugins}}.",
+        "failed": "Preverjeno {{at}}. Teh ni bilo mogoče posodobiti: {{failed}}. Posodobite jih s tržnice, da vidite celotno napako.",
+        "unreachable": "Preverjeno {{at}}, a tržnica ni odgovorila: {{error}}. Čez eno uro bo poskus ponovljen.",
+        "saveFailed": "Nastavitve ni bilo mogoče shraniti",
+        "loadFailed": "Nastavitve ni bilo mogoče naložiti"
       }
     },
     "components": {

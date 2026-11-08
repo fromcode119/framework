@@ -2907,6 +2907,18 @@
         "requested": "Le service de mise à jour installera la v{{version}} dans la minute. La progression s'affiche sur cette page.",
         "unknown": "Impossible de rechercher de nouvelles versions pour le moment (la source des versions n'a pas répondu). Le service de mise à jour réessaiera dans quelques minutes.",
         "heldFailed": "La mise à jour vers la v{{version}} n'a pas pu être conservée : la version précédente est en service et la v{{version}} ne sera plus tentée automatiquement. {{error}} Cliquez sur le bouton Installer pour réessayer."
+      },
+      "pluginAuto": {
+        "automatic": "Installer automatiquement les mises à jour des plugins de la marketplace",
+        "automaticExplained": "Les versions plus récentes des plugins installés depuis la marketplace s’installent toutes seules, vérification toutes les heures. Une version qui demande une nouvelle autorisation attend toujours votre validation dans Plugins.",
+        "off": "Les mises à jour automatiques des plugins sont désactivées. Mettez à jour les plugins depuis la marketplace vous-même.",
+        "notChecked": "Pas encore vérifié. La première vérification a lieu peu après le démarrage de la plateforme, puis toutes les heures.",
+        "current": "Vérifié {{at}}. Chaque plugin installé est à sa dernière version de la marketplace.",
+        "updated": "Vérifié {{at}}. Dernière installation {{when}} : {{plugins}}.",
+        "failed": "Vérifié {{at}}. Ceux-ci n’ont pas pu être mis à jour : {{failed}}. Mettez-les à jour depuis la marketplace pour voir l’erreur complète.",
+        "unreachable": "Vérifié {{at}}, mais la marketplace n’a pas répondu : {{error}}. Une nouvelle tentative a lieu dans une heure.",
+        "saveFailed": "Le réglage n’a pas pu être enregistré",
+        "loadFailed": "Le réglage n’a pas pu être chargé"
       }
     },
     "components": {

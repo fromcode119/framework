@@ -2907,6 +2907,18 @@
         "requested": "A frissítő egy percen belül telepíti a v{{version}} verziót. A folyamat ezen az oldalon követhető.",
         "unknown": "Az új verziókat most nem sikerült ellenőrizni (a kiadási forrás nem válaszolt). A frissítő néhány perc múlva újrapróbálja.",
         "heldFailed": "A v{{version}} verzióra való frissítést nem sikerült megtartani, ezért az előző verzió fut, és a v{{version}} automatikusan nem kerül újrapróbálásra. {{error}} Az újrapróbáláshoz nyomja meg a Telepítés gombot."
+      },
+      "pluginAuto": {
+        "automatic": "Piactéri bővítményfrissítések automatikus telepítése",
+        "automaticExplained": "A telepített piactéri bővítmények újabb verziói maguktól települnek, óránkénti ellenőrzéssel. Az új engedélyt kérő verzió mindig a jóváhagyásodra vár a Bővítmények menüben.",
+        "off": "A bővítmények automatikus frissítése ki van kapcsolva. Frissítsd a bővítményeket a piactérről magad.",
+        "notChecked": "Még nincs ellenőrizve. Az első ellenőrzés röviddel a platform indulása után fut le, azután óránként.",
+        "current": "Ellenőrizve {{at}}. Minden telepített bővítmény a legújabb piactéri verzióján van.",
+        "updated": "Ellenőrizve {{at}}. Utoljára telepítve {{when}}: {{plugins}}.",
+        "failed": "Ellenőrizve {{at}}. Ezeket nem sikerült frissíteni: {{failed}}. Frissítsd őket a piactérről a teljes hiba megtekintéséhez.",
+        "unreachable": "Ellenőrizve {{at}}, de a piactér nem válaszolt: {{error}}. Egy óra múlva újra megpróbálja.",
+        "saveFailed": "A beállítást nem sikerült menteni",
+        "loadFailed": "A beállítást nem sikerült betölteni"
       }
     },
     "components": {

@@ -2907,6 +2907,18 @@
         "requested": "Oppdateringstjenesten installerer v{{version}} innen ett minutt. Fremdriften vises på denne siden.",
         "unknown": "Kunne ikke se etter nye versjoner akkurat nå (utgivelseskilden svarte ikke). Oppdateringstjenesten prøver igjen om noen minutter.",
         "heldFailed": "Oppdateringen til v{{version}} kunne ikke beholdes, så den forrige versjonen kjører, og v{{version}} prøves ikke på nytt automatisk. {{error}} Trykk på Installer-knappen for å prøve igjen."
+      },
+      "pluginAuto": {
+        "automatic": "Installer oppdateringer av markedsplass-utvidelser automatisk",
+        "automaticExplained": "Nyere versjoner av installerte markedsplass-utvidelser installeres av seg selv, sjekket hver time. En versjon som ber om en ny tillatelse, venter alltid på din godkjenning under Utvidelser.",
+        "off": "Automatisk oppdatering av utvidelser er av. Oppdater utvidelser fra markedsplassen selv.",
+        "notChecked": "Ikke sjekket ennå. Den første sjekken kjøres kort tid etter at plattformen starter, deretter hver time.",
+        "current": "Sjekket {{at}}. Hver installert utvidelse har sin nyeste markedsplassversjon.",
+        "updated": "Sjekket {{at}}. Sist installert {{when}}: {{plugins}}.",
+        "failed": "Sjekket {{at}}. Disse kunne ikke oppdateres: {{failed}}. Oppdater dem fra markedsplassen for å se hele feilen.",
+        "unreachable": "Sjekket {{at}}, men markedsplassen svarte ikke: {{error}}. Den prøves igjen om en time.",
+        "saveFailed": "Innstillingen kunne ikke lagres",
+        "loadFailed": "Innstillingen kunne ikke lastes"
       }
     },
     "components": {

@@ -2907,6 +2907,18 @@
         "requested": "The updater installs v{{version}} within a minute. Progress is shown on this page.",
         "unknown": "New versions could not be checked just now (the release source did not answer). The updater tries again in a few minutes.",
         "heldFailed": "The update to v{{version}} could not be kept, so the previous version is running and v{{version}} is not tried again automatically. {{error}} Press the Install button to try it again."
+      },
+      "pluginAuto": {
+        "automatic": "Install marketplace plugin updates automatically",
+        "automaticExplained": "Newer versions of installed marketplace plugins are installed by themselves, checked every hour. A version that asks for a new permission always waits for your approval in Plugins.",
+        "off": "Automatic plugin updates are off. Update plugins from the marketplace yourself.",
+        "notChecked": "Not checked yet. The first check runs shortly after the platform starts, then every hour.",
+        "current": "Checked {{at}}. Every installed plugin is at its latest marketplace version.",
+        "updated": "Checked {{at}}. Last installed {{when}}: {{plugins}}.",
+        "failed": "Checked {{at}}. These could not be updated: {{failed}}. Update them from the marketplace to see the full error.",
+        "unreachable": "Checked {{at}}, but the marketplace did not answer: {{error}}. It is tried again in an hour.",
+        "saveFailed": "The setting could not be saved",
+        "loadFailed": "The setting could not be loaded"
       }
     },
     "components": {

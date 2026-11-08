@@ -2907,6 +2907,18 @@
         "requested": "El servicio de actualización instalará la v{{version}} en menos de un minuto. El progreso se muestra en esta página.",
         "unknown": "No se han podido buscar nuevas versiones en este momento (el origen de las versiones no respondió). El servicio de actualización lo volverá a intentar en unos minutos.",
         "heldFailed": "No se pudo mantener la actualización a la v{{version}}, por lo que se está ejecutando la versión anterior y la v{{version}} no se volverá a intentar automáticamente. {{error}} Pulse el botón Instalar para intentarlo de nuevo."
+      },
+      "pluginAuto": {
+        "automatic": "Instalar las actualizaciones de plugins del mercado automáticamente",
+        "automaticExplained": "Las versiones más nuevas de los plugins del mercado instalados se instalan solas, con comprobación cada hora. Una versión que pide un permiso nuevo siempre espera tu aprobación en Plugins.",
+        "off": "Las actualizaciones automáticas de plugins están desactivadas. Actualiza los plugins del mercado tú mismo.",
+        "notChecked": "Aún sin comprobar. La primera comprobación se ejecuta poco después de que arranque la plataforma, luego cada hora.",
+        "current": "Comprobado {{at}}. Cada plugin instalado está en su última versión del mercado.",
+        "updated": "Comprobado {{at}}. Última instalación {{when}}: {{plugins}}.",
+        "failed": "Comprobado {{at}}. Estos no se pudieron actualizar: {{failed}}. Actualízalos desde el mercado para ver el error completo.",
+        "unreachable": "Comprobado {{at}}, pero el mercado no respondió: {{error}}. Se vuelve a intentar en una hora.",
+        "saveFailed": "No se pudo guardar el ajuste",
+        "loadFailed": "No se pudo cargar el ajuste"
       }
     },
     "components": {

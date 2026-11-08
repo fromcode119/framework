@@ -2907,6 +2907,18 @@
         "requested": "Aktualizátor nainštaluje v{{version}} do minúty. Priebeh sa zobrazuje na tejto stránke.",
         "unknown": "Nové verzie sa momentálne nepodarilo skontrolovať (zdroj vydaní neodpovedal). Aktualizátor to skúsi znova o niekoľko minút.",
         "heldFailed": "Aktualizáciu na v{{version}} sa nepodarilo zachovať, preto beží predchádzajúca verzia a v{{version}} sa automaticky znova neskúša. {{error}} Ak to chcete skúsiť znova, stlačte tlačidlo Inštalovať."
+      },
+      "pluginAuto": {
+        "automatic": "Automaticky inštalovať aktualizácie pluginov z trhoviska",
+        "automaticExplained": "Novšie verzie nainštalovaných pluginov z trhoviska sa inštalujú samy, kontrola každú hodinu. Verzia, ktorá žiada o nové povolenie, vždy čaká na vaše schválenie v sekcii Pluginy.",
+        "off": "Automatické aktualizácie pluginov sú vypnuté. Aktualizujte pluginy z trhoviska ručne.",
+        "notChecked": "Zatiaľ neskontrolované. Prvá kontrola prebehne krátko po spustení platformy, potom každú hodinu.",
+        "current": "Skontrolované {{at}}. Každý nainštalovaný plugin má najnovšiu verziu z trhoviska.",
+        "updated": "Skontrolované {{at}}. Naposledy nainštalované {{when}}: {{plugins}}.",
+        "failed": "Skontrolované {{at}}. Tieto sa nepodarilo aktualizovať: {{failed}}. Aktualizujte ich z trhoviska, aby ste videli celú chybu.",
+        "unreachable": "Skontrolované {{at}}, ale trhovisko neodpovedalo: {{error}}. Skúsi sa znova o hodinu.",
+        "saveFailed": "Nastavenie sa nepodarilo uložiť",
+        "loadFailed": "Nastavenie sa nepodarilo načítať"
       }
     },
     "components": {

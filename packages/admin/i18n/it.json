@@ -2907,6 +2907,18 @@
         "requested": "Il servizio di aggiornamento installerà la v{{version}} entro un minuto. L'avanzamento è mostrato in questa pagina.",
         "unknown": "Al momento non è stato possibile verificare le nuove versioni (la fonte delle versioni non ha risposto). Il servizio di aggiornamento riproverà tra qualche minuto.",
         "heldFailed": "Non è stato possibile mantenere l'aggiornamento alla v{{version}}, quindi è in esecuzione la versione precedente e la v{{version}} non verrà riprovata automaticamente. {{error}} Premi il pulsante Installa per riprovare."
+      },
+      "pluginAuto": {
+        "automatic": "Installa automaticamente gli aggiornamenti dei plugin dal marketplace",
+        "automaticExplained": "Le versioni più recenti dei plugin del marketplace installati si installano da sole, con controllo ogni ora. Una versione che richiede un nuovo permesso attende sempre la tua approvazione in Plugin.",
+        "off": "Gli aggiornamenti automatici dei plugin sono disattivati. Aggiorna i plugin dal marketplace manualmente.",
+        "notChecked": "Non ancora controllato. Il primo controllo viene eseguito poco dopo l’avvio della piattaforma, poi ogni ora.",
+        "current": "Controllato {{at}}. Ogni plugin installato è alla sua ultima versione del marketplace.",
+        "updated": "Controllato {{at}}. Ultima installazione {{when}}: {{plugins}}.",
+        "failed": "Controllato {{at}}. Questi non è stato possibile aggiornarli: {{failed}}. Aggiornali dal marketplace per vedere l’errore completo.",
+        "unreachable": "Controllato {{at}}, ma il marketplace non ha risposto: {{error}}. Verrà ritentato tra un’ora.",
+        "saveFailed": "Impossibile salvare l’impostazione",
+        "loadFailed": "Impossibile caricare l’impostazione"
       }
     },
     "components": {

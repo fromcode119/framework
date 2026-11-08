@@ -2907,6 +2907,18 @@
         "requested": "Pembaru akan memasang v{{version}} dalam satu menit. Progres ditampilkan di halaman ini.",
         "unknown": "Versi baru tidak dapat diperiksa saat ini (sumber rilis tidak merespons). Pembaru akan mencoba lagi dalam beberapa menit.",
         "heldFailed": "Pembaruan ke v{{version}} tidak dapat dipertahankan, sehingga versi sebelumnya sedang berjalan dan v{{version}} tidak dicoba lagi secara otomatis. {{error}} Tekan tombol Pasang untuk mencobanya lagi."
+      },
+      "pluginAuto": {
+        "automatic": "Pasang pembaruan plugin marketplace secara otomatis",
+        "automaticExplained": "Versi lebih baru dari plugin marketplace yang terpasang akan terpasang sendiri, diperiksa setiap jam. Versi yang meminta izin baru selalu menunggu persetujuan Anda di Plugin.",
+        "off": "Pembaruan plugin otomatis nonaktif. Perbarui plugin dari marketplace sendiri.",
+        "notChecked": "Belum diperiksa. Pemeriksaan pertama berjalan tak lama setelah platform dimulai, lalu setiap jam.",
+        "current": "Diperiksa {{at}}. Setiap plugin terpasang berada pada versi marketplace terbarunya.",
+        "updated": "Diperiksa {{at}}. Terakhir dipasang {{when}}: {{plugins}}.",
+        "failed": "Diperiksa {{at}}. Ini tidak dapat diperbarui: {{failed}}. Perbarui dari marketplace untuk melihat kesalahan lengkapnya.",
+        "unreachable": "Diperiksa {{at}}, tetapi marketplace tidak menjawab: {{error}}. Akan dicoba lagi dalam satu jam.",
+        "saveFailed": "Pengaturan tidak dapat disimpan",
+        "loadFailed": "Pengaturan tidak dapat dimuat"
       }
     },
     "components": {

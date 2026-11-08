@@ -2907,6 +2907,18 @@
         "requested": "De updater installeert v{{version}} binnen een minuut. De voortgang wordt op deze pagina getoond.",
         "unknown": "Er kon zojuist niet op nieuwe versies worden gecontroleerd (de releasebron reageerde niet). De updater probeert het over enkele minuten opnieuw.",
         "heldFailed": "De update naar v{{version}} kon niet worden behouden. De vorige versie draait en v{{version}} wordt niet automatisch opnieuw geprobeerd. {{error}} Druk op de knop Installeren om het opnieuw te proberen."
+      },
+      "pluginAuto": {
+        "automatic": "Marktplaats-plug-inupdates automatisch installeren",
+        "automaticExplained": "Nieuwere versies van geïnstalleerde marktplaats-plug-ins worden vanzelf geïnstalleerd, elk uur gecontroleerd. Een versie die een nieuwe toestemming vraagt, wacht altijd op je goedkeuring onder Plug-ins.",
+        "off": "Automatische plug-inupdates staan uit. Werk plug-ins zelf bij vanaf de marktplaats.",
+        "notChecked": "Nog niet gecontroleerd. De eerste controle loopt kort nadat het platform start, daarna elk uur.",
+        "current": "Gecontroleerd {{at}}. Elke geïnstalleerde plug-in heeft zijn nieuwste marktplaatsversie.",
+        "updated": "Gecontroleerd {{at}}. Laatst geïnstalleerd {{when}}: {{plugins}}.",
+        "failed": "Gecontroleerd {{at}}. Deze konden niet worden bijgewerkt: {{failed}}. Werk ze bij vanaf de marktplaats om de volledige fout te zien.",
+        "unreachable": "Gecontroleerd {{at}}, maar de marktplaats antwoordde niet: {{error}}. Over een uur wordt het opnieuw geprobeerd.",
+        "saveFailed": "De instelling kon niet worden opgeslagen",
+        "loadFailed": "De instelling kon niet worden geladen"
       }
     },
     "components": {

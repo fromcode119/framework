@@ -2907,6 +2907,18 @@
         "requested": "Služba aktualizací nainstaluje v{{version}} do minuty. Průběh se zobrazuje na této stránce.",
         "unknown": "Nové verze nyní nelze zkontrolovat (zdroj vydání neodpověděl). Služba aktualizací to zkusí znovu za několik minut.",
         "heldFailed": "Aktualizaci na v{{version}} se nepodařilo zachovat, proto běží předchozí verze a v{{version}} se automaticky znovu nezkouší. {{error}} Chcete-li to zkusit znovu, stiskněte tlačítko Nainstalovat."
+      },
+      "pluginAuto": {
+        "automatic": "Aktualizace pluginů z tržiště instalovat automaticky",
+        "automaticExplained": "Novější verze nainstalovaných pluginů z tržiště se instalují samy, kontrola každou hodinu. Verze, která žádá o nové oprávnění, vždy čeká na vaše schválení v sekci Pluginy.",
+        "off": "Automatické aktualizace pluginů jsou vypnuté. Aktualizujte pluginy z tržiště ručně.",
+        "notChecked": "Zatím nezkontrolováno. První kontrola proběhne krátce po spuštění platformy, poté každou hodinu.",
+        "current": "Zkontrolováno {{at}}. Každý nainstalovaný plugin má nejnovější verzi z tržiště.",
+        "updated": "Zkontrolováno {{at}}. Naposledy nainstalováno {{when}}: {{plugins}}.",
+        "failed": "Zkontrolováno {{at}}. Tyto se nepodařilo aktualizovat: {{failed}}. Aktualizujte je z tržiště, abyste viděli úplnou chybu.",
+        "unreachable": "Zkontrolováno {{at}}, ale tržiště neodpovědělo: {{error}}. Zkusí se znovu za hodinu.",
+        "saveFailed": "Nastavení se nepodařilo uložit",
+        "loadFailed": "Nastavení se nepodařilo načíst"
       }
     },
     "components": {

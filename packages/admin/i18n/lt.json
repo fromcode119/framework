@@ -2907,6 +2907,18 @@
         "requested": "Atnaujinimo tarnyba įdiegs v{{version}} per minutę. Eiga rodoma šiame puslapyje.",
         "unknown": "Šiuo metu nepavyko patikrinti naujų versijų (versijų šaltinis neatsakė). Atnaujinimo tarnyba bandys dar kartą po kelių minučių.",
         "heldFailed": "Atnaujinimo į v{{version}} nepavyko išlaikyti, todėl veikia ankstesnė versija, o v{{version}} automatiškai nebebandoma diegti. {{error}} Spustelėkite mygtuką „Įdiegti“, kad bandytumėte dar kartą."
+      },
+      "pluginAuto": {
+        "automatic": "Automatiškai diegti prekyvietės papildinių naujinius",
+        "automaticExplained": "Naujesnės įdiegtų prekyvietės papildinių versijos įsidiegia pačios, tikrinama kas valandą. Versija, prašanti naujo leidimo, visada laukia jūsų patvirtinimo skiltyje Papildiniai.",
+        "off": "Automatinis papildinių naujinimas išjungtas. Naujinkite papildinius iš prekyvietės patys.",
+        "notChecked": "Dar nepatikrinta. Pirmas patikrinimas vykdomas netrukus po platformos paleidimo, vėliau kas valandą.",
+        "current": "Patikrinta {{at}}. Kiekvienas įdiegtas papildinys yra naujausios prekyvietės versijos.",
+        "updated": "Patikrinta {{at}}. Paskutinį kartą įdiegta {{when}}: {{plugins}}.",
+        "failed": "Patikrinta {{at}}. Šių nepavyko atnaujinti: {{failed}}. Atnaujinkite juos iš prekyvietės, kad pamatytumėte visą klaidą.",
+        "unreachable": "Patikrinta {{at}}, bet prekyvietė neatsakė: {{error}}. Bus bandoma dar kartą po valandos.",
+        "saveFailed": "Nepavyko išsaugoti nustatymo",
+        "loadFailed": "Nepavyko įkelti nustatymo"
       }
     },
     "components": {
