@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { HookEventUtils, HookManager, CollectionHookPhase } from '@fromcode119/core';
+import { HookEventUtils, HookManager, CollectionHookPhase, SiteContentRevision } from '@fromcode119/core';
 import type { ICollection } from '@fromcode119/core';
 import { RestControllerRuntime } from '@api/controllers/rest/rest-controller-runtime';
 import type { IDatabaseManager } from '@fromcode119/database';
@@ -141,5 +141,13 @@ describe('RestControllerRuntime collection hooks', () => {
     runtimeWith(hooks).emitCollectionEvent(orders(), 'saved', { id: 7 });
 
     expect(seen).toEqual(['collection:beta-orders:saved']);
+  });
+  it('moves the site revision on a write, but not for a collection that affects no page', () => {
+    const runtime = runtimeWith(new HookManager());
+    const before = SiteContentRevision.current(null);
+    runtime.emitCollectionEvent({ ...orders(), affectsPages: false }, 'saved', { id: 7 });
+    expect(SiteContentRevision.current(null)).toBe(before);
+    runtime.emitCollectionEvent(orders(), 'saved', { id: 7 });
+    expect(SiteContentRevision.current(null)).not.toBe(before);
   });
 });
