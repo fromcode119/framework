@@ -136,7 +136,8 @@ export class RestControllerRuntime {
     // Every collection write through the admin passes here, inside the request that made it: the
     // site's rendered pages may now be stale. Called directly rather than from a hook listener, so it
     // runs in the request's own site scope whatever the hook adapter does with the event.
-    SiteContentRevision.bumpCurrentSite();
+    // A collection declared `affectsPages: false` (a log, a visitor's cart) is built into no page.
+    if (collection.affectsPages !== false) SiteContentRevision.bumpCurrentSite();
     if (this.hooks) {
       // Hand-built from `collection.slug` this carried the same physical-vs-declared mismatch as
       // callCollectionHook. One identity rule, one place that knows the event format. `action` here is
