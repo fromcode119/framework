@@ -19,10 +19,9 @@
 }
 
 .fc-acct {
-  /* Full width of the page, as the approved account design: the menu on the left, the content filling the rest. */
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 32px clamp(16px, 3vw, 40px) 64px;
+  /* Full width of the page, as the approved account design: the menu on the left, the content filling the
+     rest. No cap of its own — a theme that wants a narrower page sets it on its own container. */
+  padding: 32px clamp(16px, 3vw, 48px) 64px;
   font-family: inherit;
   color: var(--fc-acct-fg);
 }
@@ -30,9 +29,10 @@
 .fc-acct *,
 .fc-acct-tokens * { box-sizing: border-box; }
 .fc-acct-empty { color: var(--fc-acct-muted); padding: 48px 0; text-align: center; }
-.fc-acct-header { margin-bottom: 28px; }
+.fc-acct-header { display: grid; gap: 4px; margin-bottom: 4px; }
+.fc-acct-lead { margin: 0; font-size: 15px; color: var(--fc-acct-muted); max-width: 65ch; }
 .fc-acct-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; color: var(--fc-acct-accent); }
-.fc-acct-title { font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -.02em; margin: 6px 0 0; }
+.fc-acct-title { font-size: 28px; line-height: 1.15; font-weight: 700; letter-spacing: -.01em; margin: 0; text-wrap: balance; }
 .fc-acct-body { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: clamp(24px, 3vw, 48px); align-items: start; }
 .fc-acct-nav { position: sticky; top: 24px; display: flex; flex-direction: column; gap: 4px; padding: 0; }
 .fc-acct-navlink { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 12px; text-decoration: none; color: var(--fc-acct-fg); font-weight: 500; font-size: 14px; transition: background .15s, color .15s; border: 1px solid transparent; }
@@ -44,6 +44,7 @@
 .fc-acct-navlink:focus:not(:focus-visible),
 .fc-acct-stat:focus:not(:focus-visible),
 .fc-acct-quicklink:focus:not(:focus-visible) { outline: none; box-shadow: none; }
+.fc-acct-navlist { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .fc-acct-navgroup { display: flex; flex-direction: column; gap: 2px; }
 .fc-acct-navgroup + .fc-acct-navgroup { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--fc-acct-border); }
 .fc-acct-navgroup-label { padding: 2px 14px 4px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--fc-acct-muted); }
@@ -156,13 +157,15 @@
   .fc-acct { padding: 24px 14px 48px; }
   .fc-acct-title { font-size: 26px; }
   .fc-acct-body { grid-template-columns: 1fr; gap: 18px; }
-  .fc-acct-nav { position: static; flex-direction: row; flex-wrap: wrap; gap: 6px; padding: 8px; }
-  .fc-acct-navlink { padding: 9px 12px; font-size: 13px; }
-  .fc-acct-navlabel { white-space: normal; }
-  .fc-acct-search { flex: 1 0 100%; }
-  .fc-acct-navgroup { flex-direction: row; flex-wrap: wrap; gap: 6px; flex: 1 0 100%; }
-  .fc-acct-navgroup + .fc-acct-navgroup { margin-top: 4px; padding-top: 6px; }
-  .fc-acct-navgroup-label { flex: 1 0 100%; padding: 0 4px; }
+  /* Phone and tablet: the sections become one scrolling row of chips above the content, not a list that pushes it down. */
+  .fc-acct-nav { position: static; gap: 10px; min-width: 0; }
+  .fc-acct-who { display: none; }
+  .fc-acct-navlist { flex-direction: row; gap: 8px; overflow-x: auto; scroll-padding-inline: 16px; scrollbar-width: none; padding-bottom: 2px; }
+  .fc-acct-navlist::-webkit-scrollbar { display: none; }
+  .fc-acct-navgroup, .fc-acct-navgroup + .fc-acct-navgroup { display: contents; }
+  .fc-acct-navgroup-label, .fc-acct-navicon { display: none; }
+  .fc-acct-navlink { flex: none; padding: 7px 14px; font-size: 13px; border: 1px solid var(--fc-acct-border); border-radius: 999px; white-space: nowrap; }
+  .fc-acct-navlink.active { box-shadow: none; border-color: var(--fc-acct-accent); }
 }
 
 /* ── Skeleton ───────────────────────────────────────────────────────────────

@@ -1,4 +1,5 @@
 import type { IThemeManifest } from '@core/theme/interfaces/theme-manifest.interface';
+import { ThemeCssVariable } from '@core/theme/theme-css-variable';
 import { SystemConstants } from '@core/constants/system.constants';
 import { ThemeState } from '@core/theme/enums/theme-state.enum';
 import { ThemeAssetFingerprintService } from '@core/theme/theme-asset-fingerprint-service';
@@ -137,7 +138,7 @@ export class ThemeConfigService {
 
   private generateCssVariables(variables: Record<string, string>): string {
     const lines = Object.entries(variables).map(([key, value]) => {
-      const cssKey = key.startsWith('--') ? key : `--theme-${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`;
+      const cssKey = ThemeCssVariable.propertyFor(key);
       // Strip chars that can break out of the CSS context or close the surrounding <style> tag
       const safeValue = String(value).replace(/[<>"'\\]|\/\*/g, '');
       return `${cssKey}: ${safeValue};`;

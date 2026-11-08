@@ -64,10 +64,21 @@ export class AccountShellDefault extends Reactor {
       this.boundPopState = () => this.handlePopState();
       window.addEventListener('popstate', this.boundPopState);
     }
+    this.revealActiveLink();
   }
 
   componentDidUpdate(): void {
     AccountTranslations.register();
+    this.revealActiveLink();
+  }
+
+  /** On narrow screens the menu is one sideways-scrolling row: keep the open section's chip in view (sideways only, never the page). */
+  private revealActiveLink(): void {
+    if (!Platform.isBrowser) return;
+    const list = document.querySelector<HTMLElement>(`.${AccountClass.of('navlist')}`);
+    const link = list?.querySelector<HTMLElement>(`.${AccountClass.of('navlink')}.active`);
+    if (!list || !link || list.scrollWidth <= list.clientWidth) return;
+    list.scrollLeft = link.offsetLeft - list.offsetLeft - (list.clientWidth - link.offsetWidth) / 2;
   }
 
   componentWillUnmount(): void {
@@ -189,14 +200,10 @@ export class AccountShellDefault extends Reactor {
 
     const active = AccountSectionRegistry.resolve(sections, this.section) || sections[0];
     const activeLabel = translate(active.labelKey, undefined, active.labelKey);
+    const activeDescription = active.descriptionKey ? translate(active.descriptionKey, undefined, '') : '';
 
     return (
       <div className={AccountClass.of()}>
-        <header className={AccountClass.of('header')}>
-          <div className={AccountClass.of('eyebrow')}>{translate('account.shell.title', undefined, 'My account')}</div>
-          <h1 className={AccountClass.of('title')}>{activeLabel}</h1>
-        </header>
-
         <div className={AccountClass.of('body')}>
           <nav className={AccountClass.of('nav')} aria-label={translate('account.shell.nav', undefined, 'Account sections')}>
             <AccountSummaryLoader contributors={slots['account.overview.stats'] || []} />
@@ -211,11 +218,15 @@ export class AccountShellDefault extends Reactor {
                 onChange={(event) => this.setState({ query: event.target.value })}
               />
             </label>
-            {this.renderNavGroups(sections, active.key, translate)}
+            <div className={AccountClass.of('navlist')}>{this.renderNavGroups(sections, active.key, translate)}</div>
             <AccountSignOut />
           </nav>
 
           <main className={AccountClass.of('main')}>
+            <header className={AccountClass.of('header')}>
+              <h1 className={AccountClass.of('title')}>{activeLabel}</h1>
+              {activeDescription ? <p className={AccountClass.of('lead')}>{activeDescription}</p> : null}
+            </header>
             {active.items.map((item, index) => {
               if (!item?.component) return null;
               const Panel = item.component as ComponentType<any>;

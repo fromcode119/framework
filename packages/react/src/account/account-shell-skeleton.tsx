@@ -28,15 +28,14 @@ export class AccountShellSkeleton extends PureReactor {
   render(): ReactNode {
     return (
       <div className={AccountClass.ROOT} aria-busy="true" aria-live="polite">
-        <header className={AccountClass.of('header')}>
-          <div className={AccountClass.of('eyebrow')}>&nbsp;</div>
-          <div className={AccountClass.of('skeleton-title')} />
-        </header>
         <div className={AccountClass.of('body')}>
           <nav className={AccountClass.of('nav')} aria-hidden="true">
             {AccountShellSkeleton.rows(AccountShellSkeleton.NAV_ROWS, AccountClass.of('skeleton-navlink'))}
           </nav>
           <main className={AccountClass.of('main')}>
+            <header className={AccountClass.of('header')}>
+              <div className={AccountClass.of('skeleton-title')} />
+            </header>
             <div className={AccountClass.of('card')}>
               {AccountShellSkeleton.rows(AccountShellSkeleton.BODY_ROWS, AccountClass.of('skeleton-line'))}
             </div>

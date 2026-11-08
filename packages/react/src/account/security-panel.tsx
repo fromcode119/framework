@@ -70,7 +70,7 @@ export class AccountSecurityPanel extends PluginComponent {
     const { saving, message, isError } = this;
     return (
       <div className={AccountClass.of('card')}>
-        <h2 className={AccountClass.of('h2')}>{this.t('account.section.security')}</h2>
+        <h2 className={AccountClass.of('h2')}>{this.t('account.security.heading')}</h2>
         <form className={AccountClass.of('form')} onSubmit={(e) => { e.preventDefault(); void this.submit(); }}>
           {/* Hidden username field for password-manager / accessibility (browsers warn without one). */}
           <input className={AccountClass.of('sronly')} type="text" name="username" autoComplete="username" aria-hidden="true" tabIndex={-1} readOnly value="" />
