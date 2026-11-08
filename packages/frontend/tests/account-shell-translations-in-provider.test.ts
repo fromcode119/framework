@@ -92,7 +92,7 @@ describe('account shell copy inside the provider', () => {
       AccountShellInProviderFixture.seed(PreBootRegistrationSeed.consume()),
     );
 
-    expect(container.textContent).toContain(account.shell.title);
+    expect(container.textContent).toContain(account.description.notifications);
     expect(container.textContent).toContain(account.section.overview);
     expect(container.textContent).toContain(account.section.notifications);
     expect(container.textContent).toContain(account.emailPreferences.empty);
@@ -107,7 +107,7 @@ describe('account shell copy inside the provider', () => {
 
     const container = await AccountShellInProviderFixture.mount(AccountShellInProviderFixture.seed(PreBootRegistrationSeed.empty()));
 
-    expect(container.textContent).toContain(account.shell.title);
+    expect(container.textContent).toContain(account.description.notifications);
     expect(container.textContent).toContain(account.section.security);
     expect(container.textContent).toContain(account.emailPreferences.empty);
     expect(container.textContent).toContain(account.emailPreferences.transactionalNote);
