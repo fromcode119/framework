@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.553] - 2026-11-09
+
+### Added
+
+- **updates**: install newer marketplace plugin versions automatically ([#1334](https://github.com/fromcode119/framework/pull/1334))
+
 ## [0.2.552] - 2026-11-09
 
 ### Performance
 
-- **api**: ask which collections hold a path in one statement ([#1332](https://github.com/fromcode119/framework/pull/1332))
+- **api**: ask which collections hold a path in one statement; time the read route ([#1332](https://github.com/fromcode119/framework/pull/1332))
 
 ## [0.2.551] - 2026-11-08
 
@@ -23,8 +29,8 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Performance
 
-- **api**: start a page contract's match together with the priority scan ([#1326](https://github.com/fromcode119/framework/pull/1326))
 - **core**: time the host's side of a plugin's calls back to the platform ([#1327](https://github.com/fromcode119/framework/pull/1327))
+- **api**: start a page contract's match together with the priority scan ([#1326](https://github.com/fromcode119/framework/pull/1326))
 
 ## [0.2.549] - 2026-11-08
 
