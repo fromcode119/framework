@@ -20,8 +20,19 @@ on:
   pull_request:
 
 jobs:
-  test:
+  # THREE SHARDS, EACH WITH ITS OWN SERVICES. One runner ran every test in a single process (~5 of a
+  # ~7 minute job). `vitest --shard=N/3` splits the test FILES three ways; each shard provisions its
+  # own Postgres, Redis and MySQL containers, so no suite can see another shard's tables or rows.
+  # Every file lands in exactly one shard. `test` below is the required check: it stays named `test`.
+  shard:
+    name: Test shard ${{ matrix.shard }}/3
     runs-on: ubuntu-latest
+    strategy:
+      # A red shard must not cancel the others: the failing shard's log is the one to read, and the
+      # other two finishing says whether the failure is isolated.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3]
 
     # Service images come from Google's mirror of Docker Hub's official images. Pulled from Docker Hub
     # itself they are anonymous, and the CI runners share one address: once the hourly allowance is
@@ -116,7 +127,7 @@ jobs:
       # Only the suites' OWN variables are exported here. `DATABASE_URL` deliberately is not: it would
       # be visible to all 3,053 tests, and a unit test that quietly reached a real database instead of
       # its fixture is exactly the kind of accident this file is meant to prevent.
-      - name: Run the suite
+      - name: Run the suite (shard ${{ matrix.shard }}/3)
         env:
           TENANT_TEST_DATABASE_URL: postgresql://fromcode_app:app_ci_only@127.0.0.1:5432/fromcode
           TENANT_TEST_OWNER_URL: postgresql://fromcode_owner:owner_ci_only@127.0.0.1:5432/fromcode
@@ -127,4 +138,18 @@ jobs:
           MYSQL_TEST_URL: mysql://root:rootpw@127.0.0.1:3306/mysql
         # A shared runner is sometimes several times slower than usual; at the 5 s default a correct
         # suite then fails on timeouts alone and has to be run again from the start.
-        run: npm run test:framework -- --testTimeout=30000
+        run: npm run test:framework -- --testTimeout=30000 --shard=${{ matrix.shard }}/3
+
+  # The single check that means "every test passed". It is named `test`, the name this workflow's job
+  # always had, so a branch rule or reviewer looking for `Tests / test` still finds it. `always()` so a
+  # failed or cancelled shard turns it red instead of leaving it skipped, which reads as neutral.
+  test:
+    name: test
+    needs: shard
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: All shards passed
+        run: |
+          echo "shards: ${{ needs.shard.result }}"
+          test "${{ needs.shard.result }}" = "success"
