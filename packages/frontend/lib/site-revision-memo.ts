@@ -23,8 +23,16 @@ import { PayloadFingerprint } from '@/lib/payload-fingerprint';
  * A failed fetch is never kept. Bounded: least recently used first out.
  */
 export class SiteRevisionMemo {
-  private static readonly MAX_ENTRIES = 256;
-  private static readonly entries = new Map<string, Promise<unknown>>();
+  /**
+   * Bounded per memoised function AND per site, then in total. One shared list of 256 let a crawl of one
+   * site's product pages — or of any other site on the platform — push out every other site's dictionary,
+   * menus and head data, so a page visited a minute earlier fetched them all again (80–140 ms more).
+   */
+  private static readonly MAX_PER_PARTITION = 256;
+  private static readonly MAX_ENTRIES = 1024;
+  /** Partition (function + site) → its entries, both in least-recently-used-first order. */
+  private static readonly partitions = new Map<string, Map<string, Promise<unknown>>>();
+  private static size = 0;
   private static nextFunctionId = 0;
 
   /**
@@ -42,26 +50,51 @@ export class SiteRevisionMemo {
       if (!shareKey) return perRequest(...args);
       const revision = await SiteRevisionMemo.revisionKey();
       if (!revision) return perRequest(...args);
-      const key = [id, shareKey, revision, ...args.map((arg) => `${typeof arg}:${String(arg)}`)].join('\u0000');
-      const kept = SiteRevisionMemo.entries.get(key) as Promise<R> | undefined;
+      const key = [revision, ...args.map((arg) => `${typeof arg}:${String(arg)}`)].join('\u0000');
+      const partitionKey = `${id}\u0000${shareKey}`;
+      const partition = SiteRevisionMemo.touch(partitionKey);
+      const kept = partition.get(key) as Promise<R> | undefined;
       if (kept) {
-        SiteRevisionMemo.entries.delete(key);
-        SiteRevisionMemo.entries.set(key, kept);
+        partition.delete(key);
+        partition.set(key, kept);
         return kept;
       }
       const pending = perRequest(...args);
-      SiteRevisionMemo.entries.set(key, pending);
-      pending.then((value) => {
-        if (!keep(value) && SiteRevisionMemo.entries.get(key) === pending) SiteRevisionMemo.entries.delete(key);
-      }, () => {
-        if (SiteRevisionMemo.entries.get(key) === pending) SiteRevisionMemo.entries.delete(key);
-      });
-      while (SiteRevisionMemo.entries.size > SiteRevisionMemo.MAX_ENTRIES) {
-        const oldest = SiteRevisionMemo.entries.keys().next().value as string;
-        SiteRevisionMemo.entries.delete(oldest);
-      }
+      partition.set(key, pending);
+      SiteRevisionMemo.size++;
+      const drop = () => {
+        if (partition.get(key) !== pending) return;
+        partition.delete(key);
+        SiteRevisionMemo.size--;
+      };
+      pending.then((value) => { if (!keep(value)) drop(); }, drop);
+      SiteRevisionMemo.evict(partition);
       return pending;
     };
+  }
+
+  /** The partition, moved to most recently used. */
+  private static touch(partitionKey: string): Map<string, Promise<unknown>> {
+    const partition = SiteRevisionMemo.partitions.get(partitionKey) ?? new Map<string, Promise<unknown>>();
+    SiteRevisionMemo.partitions.delete(partitionKey);
+    SiteRevisionMemo.partitions.set(partitionKey, partition);
+    return partition;
+  }
+
+  /** Oldest first: inside the partition past its own bound, then from the least recently used partition. */
+  private static evict(partition: Map<string, Promise<unknown>>): void {
+    while (partition.size > SiteRevisionMemo.MAX_PER_PARTITION) SiteRevisionMemo.dropOldest(partition);
+    for (const [partitionKey, oldest] of SiteRevisionMemo.partitions) {
+      if (SiteRevisionMemo.size <= SiteRevisionMemo.MAX_ENTRIES) break;
+      while (oldest.size && SiteRevisionMemo.size > SiteRevisionMemo.MAX_ENTRIES) SiteRevisionMemo.dropOldest(oldest);
+      if (!oldest.size) SiteRevisionMemo.partitions.delete(partitionKey);
+    }
+  }
+
+  private static dropOldest(partition: Map<string, Promise<unknown>>): void {
+    const oldest = partition.keys().next().value as string;
+    partition.delete(oldest);
+    SiteRevisionMemo.size--;
   }
 
   /** `contentRevision` + a fingerprint of this request's `/system/frontend` payload; '' when it carries none. */
@@ -74,6 +107,7 @@ export class SiteRevisionMemo {
 
   /** Test seam. */
   static reset(): void {
-    SiteRevisionMemo.entries.clear();
+    SiteRevisionMemo.partitions.clear();
+    SiteRevisionMemo.size = 0;
   }
 }

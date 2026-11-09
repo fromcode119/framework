@@ -59,4 +59,25 @@ describe('SiteRevisionMemo', () => {
     }
     expect(calls).toBe(1 + 3);
   });
+
+  it('keeps a site-wide answer while another function or another site fills its own bound', async () => {
+    let dictionaryCalls = 0;
+    const dictionary = SiteRevisionMemo.memo(async () => { dictionaryCalls += 1; return 'words'; });
+    const page = SiteRevisionMemo.memo(async (slug: string) => slug);
+    await RequestScope.run(async () => { await dictionary(); }, { shareKey: 'https://a' });
+    // A crawl: far more distinct pages than one bound, on this site and on another.
+    await RequestScope.run(async () => { for (let i = 0; i < 600; i++) await page(`p${i}`); }, { shareKey: 'https://a' });
+    await RequestScope.run(async () => { for (let i = 0; i < 600; i++) await page(`p${i}`); }, { shareKey: 'https://b' });
+    await RequestScope.run(async () => { await dictionary(); }, { shareKey: 'https://a' });
+    expect(dictionaryCalls).toBe(1);
+  });
+
+  it('bounds one function on one site to its own most recent entries', async () => {
+    let calls = 0;
+    const page = SiteRevisionMemo.memo(async (slug: string) => { calls += 1; return slug; });
+    await RequestScope.run(async () => { for (let i = 0; i < 300; i++) await page(`p${i}`); }, { shareKey: 'https://a' });
+    calls = 0;
+    await RequestScope.run(async () => { await page('p299'); await page('p0'); }, { shareKey: 'https://a' });
+    expect(calls).toBe(1);
+  });
 });
