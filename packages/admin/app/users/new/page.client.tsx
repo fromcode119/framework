@@ -112,7 +112,7 @@ export class NewUserPage extends AdminComponent {
           onSubmit={this.handleSubmit}
         />
 
-        <div className="flex-1 w-full max-w-4xl mx-auto px-6 py-12">
+        <div className="flex-1 w-full px-6 lg:px-8 py-12">
            <form onSubmit={this.handleSubmit} className="space-y-8">
               <NewUserAccountFields
                 formData={formData}
