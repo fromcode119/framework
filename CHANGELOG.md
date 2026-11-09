@@ -15,6 +15,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Fixed
 
 - **frontend**: bound the memo's partitions and drop empty ones ([#1355](https://github.com/fromcode119/framework/pull/1355))
+- **frontend**: count an evicted memo partition once ([#1356](https://github.com/fromcode119/framework/pull/1356))
 
 ## [0.2.557] - 2026-11-09
 
