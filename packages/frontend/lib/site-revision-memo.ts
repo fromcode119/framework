@@ -30,6 +30,8 @@ export class SiteRevisionMemo {
    */
   private static readonly MAX_PER_PARTITION = 256;
   private static readonly MAX_ENTRIES = 1024;
+  /** Partitions are keyed by the request's origin, which a client chooses: their number is bounded too. */
+  private static readonly MAX_PARTITIONS = 128;
   /** Partition (function + site) → its entries, both in least-recently-used-first order. */
   private static readonly partitions = new Map<string, Map<string, Promise<unknown>>>();
   private static size = 0;
@@ -66,6 +68,7 @@ export class SiteRevisionMemo {
         if (partition.get(key) !== pending) return;
         partition.delete(key);
         SiteRevisionMemo.size--;
+        if (!partition.size && SiteRevisionMemo.partitions.get(partitionKey) === partition) SiteRevisionMemo.partitions.delete(partitionKey);
       };
       pending.then((value) => { if (!keep(value)) drop(); }, drop);
       SiteRevisionMemo.evict(partition);
@@ -84,6 +87,11 @@ export class SiteRevisionMemo {
   /** Oldest first: inside the partition past its own bound, then from the least recently used partition. */
   private static evict(partition: Map<string, Promise<unknown>>): void {
     while (partition.size > SiteRevisionMemo.MAX_PER_PARTITION) SiteRevisionMemo.dropOldest(partition);
+    while (SiteRevisionMemo.partitions.size > SiteRevisionMemo.MAX_PARTITIONS) {
+      const [partitionKey, oldest] = SiteRevisionMemo.partitions.entries().next().value as [string, Map<string, Promise<unknown>>];
+      SiteRevisionMemo.size -= oldest.size;
+      SiteRevisionMemo.partitions.delete(partitionKey);
+    }
     for (const [partitionKey, oldest] of SiteRevisionMemo.partitions) {
       if (SiteRevisionMemo.size <= SiteRevisionMemo.MAX_ENTRIES) break;
       while (oldest.size && SiteRevisionMemo.size > SiteRevisionMemo.MAX_ENTRIES) SiteRevisionMemo.dropOldest(oldest);

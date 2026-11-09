@@ -80,4 +80,15 @@ describe('SiteRevisionMemo', () => {
     await RequestScope.run(async () => { await page('p299'); await page('p0'); }, { shareKey: 'https://a' });
     expect(calls).toBe(1);
   });
+
+  it('leaves no partition behind for an answer it does not keep, and bounds how many origins it holds', async () => {
+    const missing = SiteRevisionMemo.memo(async () => null, () => false);
+    const page = SiteRevisionMemo.memo(async (slug: string) => slug);
+    for (let i = 0; i < 50; i++) await RequestScope.run(async () => { await missing(); }, { shareKey: `https://forged-${i}` });
+    await Promise.resolve();
+    expect((SiteRevisionMemo as any).partitions.size).toBe(0);
+    for (let i = 0; i < 500; i++) await RequestScope.run(async () => { await page('x'); }, { shareKey: `https://forged-${i}` });
+    expect((SiteRevisionMemo as any).partitions.size).toBeLessThanOrEqual(128);
+    expect((SiteRevisionMemo as any).size).toBeLessThanOrEqual(128);
+  });
 });
