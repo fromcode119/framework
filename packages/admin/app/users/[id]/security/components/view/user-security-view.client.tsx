@@ -34,7 +34,7 @@ export class UserSecurityView extends PureReactor {
   return (
     <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
       <UserSecurityHeader backHref={model.routerBackHref} email={model.user.email || ''} isDark={model.themeMode === ThemeMode.DARK} />
-      <div className="flex-1 w-full max-w-3xl mx-auto px-6 py-12 space-y-8">
+      <div className="flex-1 w-full px-6 lg:px-8 py-12 space-y-8">
         <TwoFactorSecurityCard copyRecoveryCodes={model.copyRecoveryCodes} generatedRecoveryCodes={model.generatedRecoveryCodes} handleDisable2FA={model.handleDisable2FA} handleEnable2FA={model.handleEnable2FA} handleRegenerateRecoveryCodes={model.handleRegenerateRecoveryCodes} handleVerify2FA={model.handleVerify2FA} isDark={model.themeMode === ThemeMode.DARK} isEnabling={model.isEnabling} isRegeneratingCodes={model.isRegeneratingCodes} isVerifying={model.isVerifying} qrCode={model.qrCode} recoveryCodesRemaining={model.recoveryCodesRemaining} secret={model.secret} setVerificationCode={model.setVerificationCode} twoFactorEnabled={model.twoFactorEnabled} verificationCode={model.verificationCode} />
         <SecurityRecommendationsCard isAdministrator={UserSecurityPageService.isAdministrator(model.user)} isDark={model.themeMode === ThemeMode.DARK} twoFactorEnabled={model.twoFactorEnabled} />
         {model.isSelf ? <>

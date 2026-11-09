@@ -138,7 +138,7 @@ export class EditUserPage extends AdminComponent {
           onSubmit={(e) => this.handleSubmit(e)}
         />
 
-        <div className="flex-1 w-full max-w-4xl mx-auto px-6 lg:px-8 py-6">
+        <div className="flex-1 w-full px-6 lg:px-8 py-6">
            <form onSubmit={(e) => this.handleSubmit(e)} className="space-y-6">
               <EditUserFormFields
                 formData={formData}
