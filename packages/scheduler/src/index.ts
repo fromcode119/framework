@@ -40,7 +40,7 @@ export class SchedulerService {
     this.queueManager = options.queueManager;
     this.claims = new SchedulerRunClaim(db, SchedulerService.SCHEDULER_TASKS_TABLE);
     this.journal = new SchedulerRunJournal(db);
-    this.cron = new SchedulerCronTimers((name, slotMs) => this.runClaimedCron(name, slotMs), SchedulerService.logger);
+    this.cron = new SchedulerCronTimers((name, slotMs, firedAt) => this.runClaimedCron(name, slotMs, firedAt), SchedulerService.logger);
   }
 
   /**
@@ -229,8 +229,8 @@ export class SchedulerService {
   }
 
   /** Runs a cron firing only if this instance claimed it (see SchedulerRunClaim). */
-  private async runClaimedCron(name: string, slotMs: number): Promise<void> {
-    if (!(await this.claims.claimCron(name, new Date(), slotMs))) {
+  private async runClaimedCron(name: string, slotMs: number, firedAt: Date): Promise<void> {
+    if (!(await this.claims.claimCron(name, firedAt, slotMs))) {
       SchedulerService.logger.debug(`Task "${name}" was claimed by another instance for this slot; skipping.`);
       return;
     }
