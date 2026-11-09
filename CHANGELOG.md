@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.555] - 2026-11-09
+
+### Fixed
+
+- **admin**: render user-account pages full-width like the rest of the console ([#1341](https://github.com/fromcode119/framework/pull/1341))
+- **arch-guard**: fail every extension that writes a versioned api path ([#1342](https://github.com/fromcode119/framework/pull/1342))
+
 ## [0.2.554] - 2026-11-09
 
 ### Performance
