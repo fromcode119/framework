@@ -71,6 +71,13 @@ export class AccountOverviewContent extends PluginComponent {
     this.unsubscribe?.();
   }
 
+  /** A card that opens a section only while that section is in the menu: one the shop switched off
+   *  (a wishlist turned off in its settings) would otherwise be a tile that leads nowhere. */
+  private offeredStats(): IAccountOverviewStat[] {
+    const offered = new Set((this.sections || []).map((section) => section.key));
+    return (this.stats || []).filter((stat) => stat.href || !stat.sectionKey || offered.has(String(stat.sectionKey)));
+  }
+
   private async safe(fn: () => any): Promise<any> {
     try { const value = fn(); return value && typeof value.then === 'function' ? await value : value; } catch { return null; }
   }
@@ -213,7 +220,8 @@ export class AccountOverviewContent extends PluginComponent {
   }
 
   render(): ReactNode {
-    const { loading, person, stats } = this;
+    const { loading, person } = this;
+    const stats = this.offeredStats();
     const name = String(person?.displayName || person?.firstName || '').trim();
     return (
       <div className={AccountClass.of('overview')}>
