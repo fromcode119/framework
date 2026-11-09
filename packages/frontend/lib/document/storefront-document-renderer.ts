@@ -42,11 +42,18 @@ import { StorefrontPageKind } from '@/runtime/storefront-page-kind';
 export class StorefrontDocumentRenderer {
   static async render(request: StorefrontDocumentRequest): Promise<Response> {
     const timing = new DocumentRenderTiming();
-    // FIRST, before any routing or content lookup. The api refuses a private site's content with a
-    // 503 and the storefront turns that into a 500, so asking later means the visitor sees an error
-    // page instead of a holding page — which is what happened when this check lived further down.
+    // The route starts beside the visibility check instead of after it: waiting for the verdict first put
+    // its whole round trip in front of every page. The verdict still DECIDES first — a private site gets
+    // the holding page and the route's answer (or the api's 503 for its content) is discarded unseen.
+    // A redirect or not-found the route throws is held as a value, so it cannot fire before the verdict.
+    const routed = StorefrontDocumentRenderer.route(request, timing).then((response) => ({ response }), (error: unknown) => ({ error }));
     if (!(await timing.measure('visibility', SiteVisibilityVerdict.isReadable()))) return StorefrontDocumentRenderer.holding();
+    const outcome = await routed;
+    if ('error' in outcome) throw outcome.error;
+    return outcome.response;
+  }
 
+  private static async route(request: StorefrontDocumentRequest, timing: DocumentRenderTiming): Promise<Response> {
     if (RouteSegmentUtils.shouldBypassDynamicRouting(request.segments)) notFound();
     const routingConfig = await timing.measure('routing', DynamicPageResolver.getLocaleRoutingConfig());
     const { pathLocale, segments } = StorefrontDocumentRenderer.stripPathLocale(request.segments, routingConfig.strategy, routingConfig.enabledLocales);
