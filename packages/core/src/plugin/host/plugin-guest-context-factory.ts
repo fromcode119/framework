@@ -64,7 +64,14 @@ export class PluginGuestContextFactory {
       tenants: {
         forEach: (work: () => Promise<void>) =>
           register({ kind: String(PluginGuestRegistrationKind.TENANTS_FOR_EACH.value), handlerId: this.handlers.keep('tenants', work) }) as Promise<number>,
-        current: () => remote.call('context', [{ name: 'tenants' }, { name: 'current', args: [] }]),
+        // The host's `current()` is exactly the request's tenant, and the invocation the guest runs in
+        // already carries it (`PluginGuestRemote.invocation`): answered here, with no call back to the
+        // host. A product compute asked for it twice per page, each a round trip across the process
+        // boundary. Outside an invocation (no store) the host answers, as before.
+        current: () => {
+          const store = PluginGuestRemote.invocation.getStore();
+          return store ? Promise.resolve(store.tenantId ?? null) : remote.call('context', [{ name: 'tenants' }, { name: 'current', args: [] }]);
+        },
         isMultiSite: () => remote.call('context', [{ name: 'tenants' }, { name: 'isMultiSite', args: [] }]),
         // Forwarded like the two above, and it has to be: an isolated plugin has no tenant resolver
         // and no database connection of its own, so the HOST is the only side that can answer which
