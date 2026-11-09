@@ -25,7 +25,7 @@ describe('SchedulerCronTimers', () => {
   });
 
   it('gives each task its own fixed offset within the spread window, so a quarter hour does not fire them all at once', () => {
-    const names = ['ecommerce-price-history-check', 'ecommerce-public-cards', 'cms-normalise-stored-values', 'finance-normalise-stored-values', 'certificate-issuance', 'platform-monitor'];
+    const names = ['alpha-history-check', 'alpha-public-cards', 'beta-normalise-values', 'gamma-normalise-values', 'platform-issuance', 'platform-monitor'];
     const offsets = names.map((name) => SchedulerCronTimers.offsetMs(name, 60_000));
     for (const offset of offsets) {
       expect(offset).toBeGreaterThanOrEqual(0);
