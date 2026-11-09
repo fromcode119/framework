@@ -20,12 +20,60 @@ on:
   pull_request:
 
 jobs:
+  # BUILD ONCE, SHARE WITH THE SHARDS. The packages, the storefront runtime bundle and the CLI take
+  # ~100 s to build and are identical for every shard, so they are built here a single time and handed
+  # over as one archive of everything the build wrote (all git-ignored, non-`node_modules` files).
+  # Listing the outputs by rule rather than by path means a new package's `dist` cannot be forgotten.
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the framework
+        uses: actions/checkout@v5
+
+      # 22, matching NODE_BASE_IMAGE in the Dockerfile.
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      # The suite imports BUILT output for the packages that ship as `dist` (core, react, sdk).
+      - name: Build the packages the tests import
+        run: npm run build:packages
+
+      # `frontend-runtime-bundle.test.ts` deliberately fails when the bundle has not been built.
+      - name: Build the storefront runtime bundle
+        run: npm run build:frontend-runtime
+
+      # `fromcode db` runs the roles and migrations the shards set up.
+      - name: Build the CLI
+        run: npm run build --workspace=@fromcode119/cli
+
+      - name: Archive the build output
+        run: |
+          git ls-files --others --ignored --exclude-standard | grep -Ev '(^|/)node_modules/' > "$RUNNER_TEMP/built.txt"
+          wc -l "$RUNNER_TEMP/built.txt"
+          tar -czf "$RUNNER_TEMP/built.tgz" -T "$RUNNER_TEMP/built.txt"
+          ls -lh "$RUNNER_TEMP/built.tgz"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: built
+          path: ${{ runner.temp }}/built.tgz
+          compression-level: 0
+          retention-days: 1
+          if-no-files-found: error
+
   # THREE SHARDS, EACH WITH ITS OWN SERVICES. One runner ran every test in a single process (~5 of a
   # ~7 minute job). `vitest --shard=N/3` splits the test FILES three ways; each shard provisions its
   # own Postgres, Redis and MySQL containers, so no suite can see another shard's tables or rows.
   # Every file lands in exactly one shard. `test` below is the required check: it stays named `test`.
   shard:
     name: Test shard ${{ matrix.shard }}/3
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       # A red shard must not cancel the others: the failing shard's log is the one to read, and the
@@ -92,21 +140,15 @@ jobs:
       - name: Install
         run: npm ci
 
-      # The suite imports BUILT output for the packages that ship as `dist` (core, react, sdk), the
-      # same reason the guard workflow builds them. A CI checkout starts without any of them.
-      - name: Build the packages the tests import
-        run: npm run build:packages
+      # The build output comes from the `build` job. It is unpacked AFTER `npm ci`, which owns
+      # `node_modules` and would not touch it, but the workspace links there point at these `dist`s.
+      - uses: actions/download-artifact@v5
+        with:
+          name: built
+          path: ${{ runner.temp }}
 
-      # The storefront runtime bundle is a build ARTIFACT, and `frontend-runtime-bundle.test.ts`
-      # deliberately fails when it has not been built — it guards the bundle's contents and its size
-      # ratchet, neither of which means anything against a stale or absent file.
-      - name: Build the storefront runtime bundle
-        run: npm run build:frontend-runtime
-
-      # `fromcode db` — the roles and migrations below run through the framework's own commands rather
-      # than a SQL fixture kept beside them, so what CI sets up cannot drift from what a deployment does.
-      - name: Build the CLI
-        run: npm run build --workspace=@fromcode119/cli
+      - name: Unpack the build output
+        run: tar -xzf "$RUNNER_TEMP/built.tgz"
 
       # The two logins tenant isolation is defined in terms of: an owner that runs DDL, and a runtime
       # role that is NOSUPERUSER / NOBYPASSRLS — without which every policy is decorative and every
