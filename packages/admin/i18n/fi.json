@@ -3497,7 +3497,9 @@
       "emailsTitle": "Saamasi sähköpostit",
       "emailsIntro": "Valinnaisia sähköposteja osoitteeseesi. Kuitit ja tilin turvallisuutta koskevat sähköpostit lähetetään aina.",
       "locked": "Aina käytössä — ei voi poistaa käytöstä.",
-      "failed": "Ilmoitusasetuksiasi ei voitu tallentaa. Yritä uudelleen."
+      "failed": "Ilmoitusasetuksiasi ei voitu tallentaa. Yritä uudelleen.",
+      "alertsIntroOther": "Valitse, mitkä hälytykset tämä henkilö saa sähköpostitse ja konsolin kellossa. Muut tätä sivustoa hallinnoivat saavat ne edelleen.",
+      "emailsIntroOther": "Valinnaisia sähköposteja tämän henkilön osoitteeseen. Kuitit ja tilin turvallisuutta koskevat sähköpostit lähetetään aina."
     }
   },
   "scope": {

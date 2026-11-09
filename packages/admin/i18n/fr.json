@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-mails que vous recevez",
       "emailsIntro": "E-mails facultatifs envoyés à votre adresse. Les reçus et les e-mails de sécurité du compte sont toujours envoyés.",
       "locked": "Toujours activé — impossible de le désactiver.",
-      "failed": "Vos paramètres de notification n'ont pas pu être enregistrés. Réessayez."
+      "failed": "Vos paramètres de notification n'ont pas pu être enregistrés. Réessayez.",
+      "alertsIntroOther": "Choisissez les alertes que cette personne reçoit, par e-mail et dans la cloche de la console. Les autres personnes qui gèrent ce site continuent de les recevoir.",
+      "emailsIntroOther": "E-mails facultatifs envoyés à l'adresse de cette personne. Les reçus et les e-mails de sécurité du compte sont toujours envoyés."
     }
   },
   "scope": {

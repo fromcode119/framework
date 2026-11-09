@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-pasti, ko saņemat",
       "emailsIntro": "Neobligāti e-pasti, kas tiek sūtīti uz jūsu adresi. Kvītis un konta drošības e-pasti tiek sūtīti vienmēr.",
       "locked": "Vienmēr ieslēgts — to nevar izslēgt.",
-      "failed": "Jūsu paziņojumu iestatījumus neizdevās saglabāt. Mēģiniet vēlreiz."
+      "failed": "Jūsu paziņojumu iestatījumus neizdevās saglabāt. Mēģiniet vēlreiz.",
+      "alertsIntroOther": "Izvēlieties, kurus brīdinājumus šī persona saņem e-pastā un konsoles zvaniņā. Pārējie šīs vietnes pārvaldītāji tos turpina saņemt.",
+      "emailsIntroOther": "Neobligāti e-pasti, kas tiek sūtīti uz šīs personas adresi. Kvītis un konta drošības e-pasti tiek sūtīti vienmēr."
     }
   },
   "scope": {

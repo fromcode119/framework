@@ -3497,7 +3497,9 @@
       "emailsTitle": "Email bạn nhận được",
       "emailsIntro": "Email tùy chọn gửi đến địa chỉ của bạn. Biên lai và email bảo mật tài khoản luôn được gửi.",
       "locked": "Luôn bật — không thể tắt.",
-      "failed": "Không thể lưu cài đặt thông báo của bạn. Vui lòng thử lại."
+      "failed": "Không thể lưu cài đặt thông báo của bạn. Vui lòng thử lại.",
+      "alertsIntroOther": "Chọn những cảnh báo người này nhận qua email và chuông của bảng điều khiển. Những người khác quản lý trang web này vẫn tiếp tục nhận chúng.",
+      "emailsIntroOther": "Email tùy chọn gửi đến địa chỉ của người này. Biên lai và email bảo mật tài khoản luôn được gửi."
     }
   },
   "scope": {

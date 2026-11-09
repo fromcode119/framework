@@ -10,6 +10,7 @@ import { SystemController } from '@api/controllers/system/system-controller';
 import { SystemBackupController } from '@api/controllers/system/system-backup-controller';
 import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
 import { SystemEmailPreferencesTokenController } from '@api/controllers/system/system-email-preferences-token-controller';
+import { SystemUserEmailPreferencesController } from '@api/controllers/system/system-user-email-preferences-controller';
 import { SystemPushController } from '@api/controllers/system/system-push-controller';
 import { SystemNotificationPreferencesController } from '@api/controllers/system/system-notification-preferences-controller';
 import { SystemStorefrontNoticeController } from '@api/controllers/system/system-storefront-notice-controller';
@@ -62,6 +63,7 @@ export class SystemRouter extends SystemPlatformRoutes {
     const translate = (key: string, fallback: string) => (manager as any).i18n?.translateOrFallback?.(key, fallback) ?? fallback;
     this.emailPreferencesController = new SystemEmailPreferencesController(manager, translate);
     this.emailPreferencesTokenController = new SystemEmailPreferencesTokenController(manager, translate);
+    this.userEmailPreferencesController = new SystemUserEmailPreferencesController(manager, translate);
     this.pushController = new SystemPushController(manager);
     this.notificationPreferencesController = new SystemNotificationPreferencesController(manager);
     this.storefrontNoticeController = new SystemStorefrontNoticeController(manager as any);

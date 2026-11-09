@@ -3497,7 +3497,9 @@
       "emailsTitle": "Mga email na natatanggap mo",
       "emailsIntro": "Mga opsyonal na email na ipinapadala sa iyong address. Palaging ipinapadala ang mga resibo at email tungkol sa seguridad ng account.",
       "locked": "Palaging naka-on — hindi ito maaaring i-off.",
-      "failed": "Hindi na-save ang iyong mga setting ng notification. Subukan muli."
+      "failed": "Hindi na-save ang iyong mga setting ng notification. Subukan muli.",
+      "alertsIntroOther": "Piliin kung aling mga alerto ang matatanggap ng taong ito, sa email at sa bell ng console. Patuloy pa rin silang matatanggap ng iba pang namamahala sa site na ito.",
+      "emailsIntroOther": "Mga opsyonal na email na ipinapadala sa address ng taong ito. Palaging ipinapadala ang mga resibo at email tungkol sa seguridad ng account."
     }
   },
   "scope": {

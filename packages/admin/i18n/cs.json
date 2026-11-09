@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-maily, které dostáváte",
       "emailsIntro": "Volitelné e-maily odesílané na vaši adresu. Potvrzení a e-maily o zabezpečení účtu se odesílají vždy.",
       "locked": "Vždy zapnuto — nelze vypnout.",
-      "failed": "Nastavení oznámení se nepodařilo uložit. Zkuste to znovu."
+      "failed": "Nastavení oznámení se nepodařilo uložit. Zkuste to znovu.",
+      "alertsIntroOther": "Vyberte, která upozornění bude tato osoba dostávat e-mailem a do zvonku v konzoli. Ostatní správci tohoto webu je dál dostávají.",
+      "emailsIntroOther": "Volitelné e-maily odesílané na adresu této osoby. Potvrzení a e-maily o zabezpečení účtu se odesílají vždy."
     }
   },
   "scope": {

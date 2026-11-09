@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-Mails, die Sie erhalten",
       "emailsIntro": "Optionale E-Mails an Ihre Adresse. Quittungen und E-Mails zur Kontosicherheit werden immer gesendet.",
       "locked": "Immer aktiv — kann nicht ausgeschaltet werden.",
-      "failed": "Ihre Benachrichtigungseinstellungen konnten nicht gespeichert werden. Versuchen Sie es erneut."
+      "failed": "Ihre Benachrichtigungseinstellungen konnten nicht gespeichert werden. Versuchen Sie es erneut.",
+      "alertsIntroOther": "Wählen Sie, welche Benachrichtigungen diese Person per E-Mail und über die Glocke der Konsole erhält. Andere Personen, die diese Website verwalten, erhalten sie weiterhin.",
+      "emailsIntroOther": "Optionale E-Mails an die Adresse dieser Person. Quittungen und E-Mails zur Kontosicherheit werden immer gesendet."
     }
   },
   "scope": {

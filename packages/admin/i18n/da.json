@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-mails, du modtager",
       "emailsIntro": "Valgfrie e-mails sendt til din adresse. Kvitteringer og e-mails om kontosikkerhed sendes altid.",
       "locked": "Altid slået til — kan ikke slås fra.",
-      "failed": "Dine notifikationsindstillinger kunne ikke gemmes. Prøv igen."
+      "failed": "Dine notifikationsindstillinger kunne ikke gemmes. Prøv igen.",
+      "alertsIntroOther": "Vælg, hvilke beskeder denne person modtager, via e-mail og konsolklokken. Andre, der administrerer dette websted, modtager dem fortsat.",
+      "emailsIntroOther": "Valgfrie e-mails sendt til denne persons adresse. Kvitteringer og e-mails om kontosikkerhed sendes altid."
     }
   },
   "scope": {

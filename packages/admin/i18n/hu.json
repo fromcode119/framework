@@ -3497,7 +3497,9 @@
       "emailsTitle": "Az Ön által kapott e-mailek",
       "emailsIntro": "A címére küldött opcionális e-mailek. A nyugták és a fiókbiztonsági e-mailek mindig elküldésre kerülnek.",
       "locked": "Mindig be van kapcsolva — nem kapcsolható ki.",
-      "failed": "Az értesítési beállításokat nem sikerült menteni. Próbálja újra."
+      "failed": "Az értesítési beállításokat nem sikerült menteni. Próbálja újra.",
+      "alertsIntroOther": "Válassza ki, mely riasztásokat kapja meg ez a személy e-mailben és a konzol harangjában. Az oldal többi kezelője továbbra is megkapja őket.",
+      "emailsIntroOther": "A személy címére küldött opcionális e-mailek. A nyugták és a fiókbiztonsági e-mailek mindig elküldésre kerülnek."
     }
   },
   "scope": {

@@ -3497,7 +3497,9 @@
       "emailsTitle": "El. laiškai, kuriuos gaunate",
       "emailsIntro": "Neprivalomi el. laiškai, siunčiami jūsų adresu. Kvitai ir paskyros saugumo laiškai siunčiami visada.",
       "locked": "Visada įjungta — jos išjungti negalima.",
-      "failed": "Nepavyko išsaugoti jūsų pranešimų nustatymų. Bandykite dar kartą."
+      "failed": "Nepavyko išsaugoti jūsų pranešimų nustatymų. Bandykite dar kartą.",
+      "alertsIntroOther": "Pasirinkite, kuriuos įspėjimus šis asmuo gauna el. paštu ir konsolės varpelyje. Kiti šią svetainę valdantys asmenys juos toliau gauna.",
+      "emailsIntroOther": "Neprivalomi el. laiškai, siunčiami šio asmens adresu. Kvitai ir paskyros saugumo laiškai siunčiami visada."
     }
   },
   "scope": {

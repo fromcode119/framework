@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-mails die je ontvangt",
       "emailsIntro": "Optionele e-mails naar je adres. Bonnen en e-mails over accountbeveiliging worden altijd verzonden.",
       "locked": "Altijd aan — kan niet worden uitgezet.",
-      "failed": "Je meldingsinstellingen konden niet worden opgeslagen. Probeer het opnieuw."
+      "failed": "Je meldingsinstellingen konden niet worden opgeslagen. Probeer het opnieuw.",
+      "alertsIntroOther": "Kies welke meldingen deze persoon ontvangt, per e-mail en in de bel van de console. Anderen die deze site beheren blijven ze ontvangen.",
+      "emailsIntroOther": "Optionele e-mails naar het adres van deze persoon. Bonnen en e-mails over accountbeveiliging worden altijd verzonden."
     }
   },
   "scope": {

@@ -3497,7 +3497,9 @@
       "emailsTitle": "Email yang Anda terima",
       "emailsIntro": "Email opsional yang dikirim ke alamat Anda. Tanda terima dan email keamanan akun selalu dikirim.",
       "locked": "Selalu aktif — tidak dapat dimatikan.",
-      "failed": "Pengaturan notifikasi Anda tidak dapat disimpan. Coba lagi."
+      "failed": "Pengaturan notifikasi Anda tidak dapat disimpan. Coba lagi.",
+      "alertsIntroOther": "Pilih peringatan yang diterima orang ini, melalui email dan lonceng konsol. Orang lain yang mengelola situs ini tetap menerimanya.",
+      "emailsIntroOther": "Email opsional yang dikirim ke alamat orang ini. Tanda terima dan email keamanan akun selalu dikirim."
     }
   },
   "scope": {

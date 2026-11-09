@@ -25,6 +25,7 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
   protected declare auditTableCatalogController: any;
   protected declare emailPreferencesController: any;
   protected declare emailPreferencesTokenController: any;
+  protected declare userEmailPreferencesController: any;
   protected declare pushController: any;
   protected declare notificationPreferencesController: any;
   protected declare storefrontNoticeController: any;
@@ -111,6 +112,11 @@ export abstract class SystemPlatformRoutes extends BaseRouter {
       this.controller.saveUser);
     this.delete(RouteConstants.SEGMENTS.ADMIN_USERS_ID, this.auth.requirePermission('users:manage'), 
       this.controller.deleteUser);
+    // Another person's email streams and alert switches, set by an administrator on their behalf.
+    this.get(RouteConstants.SEGMENTS.ADMIN_USERS_EMAIL_PREFERENCES, this.auth.requirePermission('users:view'),
+      (req: any, res: any) => this.userEmailPreferencesController.list(req, res));
+    this.post(RouteConstants.SEGMENTS.ADMIN_USERS_EMAIL_PREFERENCES, this.auth.requirePermission('users:manage'),
+      (req: any, res: any) => this.userEmailPreferencesController.update(req, res));
     this.post(RouteConstants.SEGMENTS.ADMIN_USERS_ROLES, this.auth.requirePermission('users:manage'),
       this.controller.saveUserRoles);
     // Deliberately NOT behind PlatformAdminGuard: that guard passes every admin on a single-tenant

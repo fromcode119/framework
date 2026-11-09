@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-kirjad, mida saad",
       "emailsIntro": "Valikulised e-kirjad sinu aadressile. Kviitungid ja konto turvalisuse e-kirjad saadetakse alati.",
       "locked": "Alati sees — seda ei saa välja lülitada.",
-      "failed": "Sinu teavitusseadeid ei õnnestunud salvestada. Proovi uuesti."
+      "failed": "Sinu teavitusseadeid ei õnnestunud salvestada. Proovi uuesti.",
+      "alertsIntroOther": "Vali, millised teavitused sellele inimesele e-posti ja konsooli kella kaudu jõuavad. Teised selle saidi haldajad saavad neid edasi.",
+      "emailsIntroOther": "Valikulised e-kirjad selle inimese aadressile. Kviitungid ja konto turvalisuse e-kirjad saadetakse alati."
     }
   },
   "scope": {

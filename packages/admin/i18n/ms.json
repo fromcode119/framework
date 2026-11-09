@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-mel yang anda terima",
       "emailsIntro": "E-mel pilihan yang dihantar ke alamat anda. Resit dan e-mel keselamatan akaun sentiasa dihantar.",
       "locked": "Sentiasa aktif — tidak boleh dimatikan.",
-      "failed": "Tetapan pemberitahuan anda tidak dapat disimpan. Cuba lagi."
+      "failed": "Tetapan pemberitahuan anda tidak dapat disimpan. Cuba lagi.",
+      "alertsIntroOther": "Pilih makluman yang diterima orang ini, melalui e-mel dan loceng konsol. Orang lain yang mengurus tapak ini terus menerimanya.",
+      "emailsIntroOther": "E-mel pilihan yang dihantar ke alamat orang ini. Resit dan e-mel keselamatan akaun sentiasa dihantar."
     }
   },
   "scope": {

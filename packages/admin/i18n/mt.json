@@ -3497,7 +3497,9 @@
       "emailsTitle": "Emails li tirċievi",
       "emailsIntro": "Emails fakultattivi mibgħuta fl-indirizz tiegħek. Irċevuti u emails dwar is-sigurtà tal-kont dejjem jintbagħtu.",
       "locked": "Dejjem mixgħul — ma jistax jintefa.",
-      "failed": "L-issettings tan-notifiki tiegħek ma setgħux jinħażnu. Erġa' pprova."
+      "failed": "L-issettings tan-notifiki tiegħek ma setgħux jinħażnu. Erġa' pprova.",
+      "alertsIntroOther": "Agħżel liema twissijiet jirċievi din il-persuna, bl-email u fil-qanpiena tal-konsol. Oħrajn li jmexxu dan is-sit ikomplu jirċevuhom.",
+      "emailsIntroOther": "Emails fakultattivi mibgħuta fl-indirizz ta' din il-persuna. Irċevuti u emails dwar is-sigurtà tal-kont dejjem jintbagħtu."
     }
   },
   "scope": {

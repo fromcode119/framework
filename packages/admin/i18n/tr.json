@@ -3497,7 +3497,9 @@
       "emailsTitle": "Aldığınız e-postalar",
       "emailsIntro": "Adresinize gönderilen isteğe bağlı e-postalar. Makbuzlar ve hesap güvenliği e-postaları her zaman gönderilir.",
       "locked": "Her zaman açık — kapatılamaz.",
-      "failed": "Bildirim ayarlarınız kaydedilemedi. Tekrar deneyin."
+      "failed": "Bildirim ayarlarınız kaydedilemedi. Tekrar deneyin.",
+      "alertsIntroOther": "Bu kişinin hangi uyarıları e-posta ve konsol zili üzerinden alacağını seçin. Bu siteyi yöneten diğer kişiler bunları almaya devam eder.",
+      "emailsIntroOther": "Bu kişinin adresine gönderilen isteğe bağlı e-postalar. Makbuzlar ve hesap güvenliği e-postaları her zaman gönderilir."
     }
   },
   "scope": {

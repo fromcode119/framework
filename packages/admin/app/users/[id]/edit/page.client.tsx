@@ -157,10 +157,9 @@ export class EditUserPage extends AdminComponent {
               )}
            </form>
 
-           {/* Your OWN account only: the preferences are the session's, never another person's to set. */}
-           {SelfAccount.isOwn(this.auth?.user, id) ? (
-             <div className="mt-6"><EditUserNotifications /></div>
-           ) : null}
+           {/* Your own switches act for the session; for someone else an administrator sets theirs through
+               the admin route, which checks the account belongs to this site. */}
+           <div className="mt-6"><EditUserNotifications userId={SelfAccount.isOwn(this.auth?.user, id) ? undefined : id} /></div>
         </div>
       </div>
     );

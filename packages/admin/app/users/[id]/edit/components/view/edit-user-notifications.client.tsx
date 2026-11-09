@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { state } from '@fromcode119/react-class-components';
+import { prop, state } from '@fromcode119/react-class-components';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -10,11 +10,13 @@ import { FrameworkIcons } from '@fromcode119/react';
 import type { IAlertPreference } from '@/app/users/[id]/edit/interfaces/alert-preference.interface';
 
 /**
- * What the signed-in person is emailed, and the switch for each — on their OWN profile only.
+ * What a person is emailed, and the switch for each.
  *
- * Two lists, both read from the framework's preferences API, which takes the address from the session:
- * the alerts sent to administrators (an administrator only — everyone else is refused the list and sees
- * no section), and the optional emails any member receives. Nothing is hardcoded here: a plugin that
+ * On someone's OWN profile it acts for the signed-in session (the framework takes the address from it);
+ * given a `userId`, an administrator sets another person's, through the admin route that checks the
+ * account belongs to this site. Two lists either way: the alerts sent to administrators (offered only for
+ * an administrator — anyone else is refused the list and sees no section), and the optional emails any
+ * member receives. Nothing is hardcoded here: a plugin that
  * declares a stream appears with its own words, and the framework's own alerts are worded in this
  * console's dictionary.
  *
@@ -22,6 +24,11 @@ import type { IAlertPreference } from '@/app/users/[id]/edit/interfaces/alert-pr
  * form's Save does not carry it.
  */
 export class EditUserNotifications extends AdminComponent {
+  declare props: Pick<EditUserNotifications, 'userId'>;
+
+  /** Set when an administrator is editing ANOTHER person; omitted on one's own profile. */
+  @prop declare userId?: string;
+
   @state loading = true;
   @state saving = '';
   @state failed = false;
@@ -43,9 +50,16 @@ export class EditUserNotifications extends AdminComponent {
     this.mounted = false;
   }
 
+  /** Another person's streams are read and written on the admin route; one's own on the session's. */
+  private get endpoint(): string {
+    return this.userId
+      ? AdminConstants.ENDPOINTS.SYSTEM.USER_EMAIL_PREFERENCES(this.userId)
+      : AdminConstants.ENDPOINTS.SYSTEM.EMAIL_PREFERENCES;
+  }
+
   private async fetchStreams(audience: string): Promise<IAlertPreference[]> {
     try {
-      const data = await AdminApi.get(`${AdminConstants.ENDPOINTS.SYSTEM.EMAIL_PREFERENCES}?audience=${audience}`);
+      const data = await AdminApi.get(`${this.endpoint}?audience=${audience}`);
       return Array.isArray(data?.preferences) ? data.preferences : [];
     } catch (err: any) {
       // Not an administrator: the alerts are not theirs to see, which is an empty list, not a failure.
@@ -72,7 +86,7 @@ export class EditUserNotifications extends AdminComponent {
     this.saving = key;
     this.failed = false;
     try {
-      await AdminApi.post(AdminConstants.ENDPOINTS.SYSTEM.EMAIL_PREFERENCES, { key, subscribed });
+      await AdminApi.post(this.endpoint, { key, subscribed });
     } catch {
       if (this.mounted) this.failed = true;
     }
@@ -131,8 +145,8 @@ export class EditUserNotifications extends AdminComponent {
             {AdminI18n.t('users.notifications.failed')}
           </div>
         ) : null}
-        {this.renderList(AdminI18n.t('users.notifications.alertsTitle'), AdminI18n.t('users.notifications.alertsIntro'), alerts)}
-        {this.renderList(AdminI18n.t('users.notifications.emailsTitle'), AdminI18n.t('users.notifications.emailsIntro'), emails)}
+        {this.renderList(AdminI18n.t('users.notifications.alertsTitle'), AdminI18n.t(this.userId ? 'users.notifications.alertsIntroOther' : 'users.notifications.alertsIntro'), alerts)}
+        {this.renderList(AdminI18n.t('users.notifications.emailsTitle'), AdminI18n.t(this.userId ? 'users.notifications.emailsIntroOther' : 'users.notifications.emailsIntro'), emails)}
       </div>
     );
   }

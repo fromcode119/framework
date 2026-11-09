@@ -3497,7 +3497,9 @@
       "emailsTitle": "Ríomhphoist a gheobhaidh tú",
       "emailsIntro": "Ríomhphoist roghnacha a sheoltar chuig do sheoladh. Seoltar admhálacha agus ríomhphoist slándála cuntais i gcónaí.",
       "locked": "I gcónaí ar siúl — ní féidir é a mhúchadh.",
-      "failed": "Níorbh fhéidir do shocruithe fógra a shábháil. Bain triail eile as."
+      "failed": "Níorbh fhéidir do shocruithe fógra a shábháil. Bain triail eile as.",
+      "alertsIntroOther": "Roghnaigh cé na foláirimh a thagann chuig an duine seo, trí ríomhphost agus i gclog na consóle. Leanann daoine eile a bhainistíonn an suíomh seo orthu a fháil.",
+      "emailsIntroOther": "Ríomhphoist roghnacha a sheoltar chuig seoladh an duine seo. Seoltar admhálacha agus ríomhphoist slándála cuntais i gcónaí."
     }
   },
   "scope": {

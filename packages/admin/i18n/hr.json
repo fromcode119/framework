@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-poruke koje primate",
       "emailsIntro": "Neobavezne e-poruke koje se šalju na vašu adresu. Potvrde o plaćanju i e-poruke o sigurnosti računa šalju se uvijek.",
       "locked": "Uvijek uključeno — ne može se isključiti.",
-      "failed": "Vaše postavke obavijesti nije bilo moguće spremiti. Pokušajte ponovno."
+      "failed": "Vaše postavke obavijesti nije bilo moguće spremiti. Pokušajte ponovno.",
+      "alertsIntroOther": "Odaberite koja upozorenja prima ova osoba, putem e-pošte i zvonca konzole. Ostali koji upravljaju ovom stranicom i dalje ih primaju.",
+      "emailsIntroOther": "Neobavezne e-poruke koje se šalju na adresu ove osobe. Potvrde o plaćanju i e-poruke o sigurnosti računa šalju se uvijek."
     }
   },
   "scope": {

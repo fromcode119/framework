@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-pošta, ki jo prejemate",
       "emailsIntro": "Izbirna e-pošta, poslana na vaš naslov. Potrdila o plačilu in e-pošta o varnosti računa se pošiljajo vedno.",
       "locked": "Vedno vklopljeno — ni ga mogoče izklopiti.",
-      "failed": "Nastavitev obvestil ni bilo mogoče shraniti. Poskusite znova."
+      "failed": "Nastavitev obvestil ni bilo mogoče shraniti. Poskusite znova.",
+      "alertsIntroOther": "Izberite, katera opozorila prejema ta oseba po e-pošti in v zvončku konzole. Drugi, ki upravljajo to spletno mesto, jih še naprej prejemajo.",
+      "emailsIntroOther": "Izbirna e-pošta, poslana na naslov te osebe. Potrdila o plačilu in e-pošta o varnosti računa se pošiljajo vedno."
     }
   },
   "scope": {

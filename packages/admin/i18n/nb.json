@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-poster du mottar",
       "emailsIntro": "Valgfrie e-poster sendt til adressen din. Kvitteringer og e-poster om kontosikkerhet sendes alltid.",
       "locked": "Alltid på — kan ikke slås av.",
-      "failed": "Varslingsinnstillingene dine kunne ikke lagres. Prøv igjen."
+      "failed": "Varslingsinnstillingene dine kunne ikke lagres. Prøv igjen.",
+      "alertsIntroOther": "Velg hvilke varsler denne personen mottar, på e-post og i konsollklokken. Andre som administrerer dette nettstedet fortsetter å motta dem.",
+      "emailsIntroOther": "Valgfrie e-poster sendt til adressen til denne personen. Kvitteringer og e-poster om kontosikkerhet sendes alltid."
     }
   },
   "scope": {

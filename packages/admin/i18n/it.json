@@ -3497,7 +3497,9 @@
       "emailsTitle": "E-mail che ricevi",
       "emailsIntro": "E-mail facoltative inviate al tuo indirizzo. Le ricevute e le e-mail sulla sicurezza dell'account vengono sempre inviate.",
       "locked": "Sempre attivo — non può essere disattivato.",
-      "failed": "Non è stato possibile salvare le tue impostazioni di notifica. Riprova."
+      "failed": "Non è stato possibile salvare le tue impostazioni di notifica. Riprova.",
+      "alertsIntroOther": "Scegli quali avvisi riceve questa persona, via e-mail e nella campanella della console. Le altre persone che gestiscono questo sito continuano a riceverli.",
+      "emailsIntroOther": "E-mail facoltative inviate all'indirizzo di questa persona. Le ricevute e le e-mail sulla sicurezza dell'account vengono sempre inviate."
     }
   },
   "scope": {
