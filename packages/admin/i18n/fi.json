@@ -2907,6 +2907,18 @@
         "requested": "Päivityspalvelu asentaa version v{{version}} minuutin kuluessa. Edistyminen näkyy tällä sivulla.",
         "unknown": "Uusia versioita ei voitu tarkistaa juuri nyt (julkaisulähde ei vastannut). Päivityspalvelu yrittää uudelleen muutaman minuutin kuluttua.",
         "heldFailed": "Päivitystä versioon v{{version}} ei voitu pitää voimassa, joten edellinen versio on käytössä eikä versiota v{{version}} yritetä automaattisesti uudelleen. {{error}} Yritä uudelleen painamalla Asenna-painiketta."
+      },
+      "pluginAuto": {
+        "automatic": "Asenna kaupan laajennusten päivitykset automaattisesti",
+        "automaticExplained": "Asennettujen kauppalaajennusten uudemmat versiot asentuvat itsestään, tarkistus joka tunti. Versio, joka pyytää uutta käyttöoikeutta, odottaa aina hyväksyntääsi Laajennukset-kohdassa.",
+        "off": "Laajennusten automaattinen päivitys on pois päältä. Päivitä laajennukset kaupasta itse.",
+        "notChecked": "Ei vielä tarkistettu. Ensimmäinen tarkistus tehdään pian alustan käynnistyttyä, sitten joka tunti.",
+        "current": "Tarkistettu {{at}}. Jokainen asennettu laajennus on uusimmassa kauppaversiossaan.",
+        "updated": "Tarkistettu {{at}}. Viimeksi asennettu {{when}}: {{plugins}}.",
+        "failed": "Tarkistettu {{at}}. Näitä ei voitu päivittää: {{failed}}. Päivitä ne kaupasta nähdäksesi koko virheen.",
+        "unreachable": "Tarkistettu {{at}}, mutta kauppa ei vastannut: {{error}}. Yritetään uudelleen tunnin kuluttua.",
+        "saveFailed": "Asetusta ei voitu tallentaa",
+        "loadFailed": "Asetusta ei voitu ladata"
       }
     },
     "components": {

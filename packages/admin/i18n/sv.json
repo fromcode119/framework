@@ -2907,6 +2907,18 @@
         "requested": "Uppdateraren installerar v{{version}} inom en minut. Förloppet visas på den här sidan.",
         "unknown": "Det gick inte att söka efter nya versioner just nu (versionskällan svarade inte). Uppdateraren försöker igen om några minuter.",
         "heldFailed": "Uppdateringen till v{{version}} kunde inte behållas, så den tidigare versionen körs och v{{version}} provas inte igen automatiskt. {{error}} Tryck på knappen Installera för att försöka igen."
+      },
+      "pluginAuto": {
+        "automatic": "Installera uppdateringar av marknadsplatstillägg automatiskt",
+        "automaticExplained": "Nyare versioner av installerade marknadsplatstillägg installeras av sig själva, kontrolleras varje timme. En version som begär en ny behörighet väntar alltid på ditt godkännande under Tillägg.",
+        "off": "Automatisk uppdatering av tillägg är av. Uppdatera tillägg från marknadsplatsen själv.",
+        "notChecked": "Inte kontrollerat ännu. Den första kontrollen körs strax efter att plattformen startat, sedan varje timme.",
+        "current": "Kontrollerat {{at}}. Varje installerat tillägg har sin senaste marknadsplatsversion.",
+        "updated": "Kontrollerat {{at}}. Senast installerat {{when}}: {{plugins}}.",
+        "failed": "Kontrollerat {{at}}. Dessa kunde inte uppdateras: {{failed}}. Uppdatera dem från marknadsplatsen för att se hela felet.",
+        "unreachable": "Kontrollerat {{at}}, men marknadsplatsen svarade inte: {{error}}. Nytt försök om en timme.",
+        "saveFailed": "Inställningen kunde inte sparas",
+        "loadFailed": "Inställningen kunde inte läsas in"
       }
     },
     "components": {

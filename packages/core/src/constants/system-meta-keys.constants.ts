@@ -292,6 +292,8 @@ export class SystemMetaKeys {
   /** Minutes between Sources' checks of its sources for new commits; 0 turns the automatic checks off. */
   SOURCES_CHECK_INTERVAL_MINUTES: 'sources_check_interval_minutes',
   /** Settings → Updates: automatic switch, the "Update now" request, and the updater's last report. */
-  FRAMEWORK_AUTO_UPDATE: 'framework_auto_update', FRAMEWORK_UPDATE_REQUEST: 'framework_update_request', FRAMEWORK_UPDATE_STATUS: 'framework_update_status'
+  FRAMEWORK_AUTO_UPDATE: 'framework_auto_update', FRAMEWORK_UPDATE_REQUEST: 'framework_update_request', FRAMEWORK_UPDATE_STATUS: 'framework_update_status',
+  /** Settings → Updates: install marketplace plugin updates automatically, and the last automatic run's report. */
+  PLUGINS_AUTO_UPDATE: 'plugins_auto_update', PLUGINS_AUTO_UPDATE_STATUS: 'plugins_auto_update_status'
   } as const;
 }

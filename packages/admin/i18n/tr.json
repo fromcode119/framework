@@ -2907,6 +2907,18 @@
         "requested": "Güncelleyici v{{version}} sürümünü bir dakika içinde yükleyecek. İlerleme bu sayfada gösterilir.",
         "unknown": "Yeni sürümler şu anda denetlenemedi (sürüm kaynağı yanıt vermedi). Güncelleyici birkaç dakika içinde yeniden deneyecek.",
         "heldFailed": "v{{version}} sürümüne güncelleme korunamadı; önceki sürüm çalışıyor ve v{{version}} otomatik olarak yeniden denenmeyecek. {{error}} Yeniden denemek için Yükle düğmesine basın."
+      },
+      "pluginAuto": {
+        "automatic": "Market eklenti güncellemelerini otomatik yükle",
+        "automaticExplained": "Kurulu market eklentilerinin daha yeni sürümleri kendiliğinden kurulur, her saat kontrol edilir. Yeni bir izin isteyen sürüm her zaman Eklentiler bölümünde onayınızı bekler.",
+        "off": "Otomatik eklenti güncellemesi kapalı. Eklentileri marketten kendiniz güncelleyin.",
+        "notChecked": "Henüz kontrol edilmedi. İlk kontrol, platform başladıktan kısa süre sonra, ardından her saat çalışır.",
+        "current": "{{at}} kontrol edildi. Kurulu her eklenti en son market sürümünde.",
+        "updated": "{{at}} kontrol edildi. Son kurulan {{when}}: {{plugins}}.",
+        "failed": "{{at}} kontrol edildi. Bunlar güncellenemedi: {{failed}}. Tam hatayı görmek için bunları marketten güncelleyin.",
+        "unreachable": "{{at}} kontrol edildi, ancak market yanıt vermedi: {{error}}. Bir saat sonra yeniden denenecek.",
+        "saveFailed": "Ayar kaydedilemedi",
+        "loadFailed": "Ayar yüklenemedi"
       }
     },
     "components": {

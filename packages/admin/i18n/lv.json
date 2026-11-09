@@ -2907,6 +2907,18 @@
         "requested": "Atjauninātājs instalēs v{{version}} minūtes laikā. Progress tiek rādīts šajā lapā.",
         "unknown": "Pašlaik neizdevās pārbaudīt jaunas versijas (laidienu avots neatbildēja). Atjauninātājs mēģinās vēlreiz pēc dažām minūtēm.",
         "heldFailed": "Atjauninājumu uz v{{version}} neizdevās paturēt, tāpēc darbojas iepriekšējā versija un v{{version}} netiks automātiski mēģināta vēlreiz. {{error}} Nospiediet pogu Instalēt, lai mēģinātu vēlreiz."
+      },
+      "pluginAuto": {
+        "automatic": "Automātiski instalēt veikala spraudņu atjauninājumus",
+        "automaticExplained": "Instalēto veikala spraudņu jaunākās versijas instalējas pašas, pārbaude ik stundu. Versija, kas pieprasa jaunu atļauju, vienmēr gaida jūsu apstiprinājumu sadaļā Spraudņi.",
+        "off": "Spraudņu automātiskā atjaunināšana ir izslēgta. Atjauniniet spraudņus no veikala paši.",
+        "notChecked": "Vēl nav pārbaudīts. Pirmā pārbaude notiek neilgi pēc platformas palaišanas, pēc tam ik stundu.",
+        "current": "Pārbaudīts {{at}}. Katrs instalētais spraudnis ir savā jaunākajā veikala versijā.",
+        "updated": "Pārbaudīts {{at}}. Pēdējoreiz instalēts {{when}}: {{plugins}}.",
+        "failed": "Pārbaudīts {{at}}. Šos neizdevās atjaunināt: {{failed}}. Atjauniniet tos no veikala, lai redzētu pilnu kļūdu.",
+        "unreachable": "Pārbaudīts {{at}}, bet veikals neatbildēja: {{error}}. Pēc stundas tiks mēģināts vēlreiz.",
+        "saveFailed": "Iestatījumu neizdevās saglabāt",
+        "loadFailed": "Iestatījumu neizdevās ielādēt"
       }
     },
     "components": {

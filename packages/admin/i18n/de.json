@@ -2907,6 +2907,18 @@
         "requested": "Der Updater installiert v{{version}} innerhalb einer Minute. Der Fortschritt wird auf dieser Seite angezeigt.",
         "unknown": "Neue Versionen konnten gerade nicht geprüft werden (die Release-Quelle hat nicht geantwortet). Der Updater versucht es in einigen Minuten erneut.",
         "heldFailed": "Das Update auf v{{version}} konnte nicht beibehalten werden. Daher läuft die vorherige Version, und v{{version}} wird nicht erneut automatisch versucht. {{error}} Klicken Sie auf „Installieren“, um es erneut zu versuchen."
+      },
+      "pluginAuto": {
+        "automatic": "Marktplatz-Plugin-Updates automatisch installieren",
+        "automaticExplained": "Neuere Versionen installierter Marktplatz-Plugins werden von selbst installiert, stündlich geprüft. Eine Version, die eine neue Berechtigung anfordert, wartet immer auf Ihre Freigabe unter Plugins.",
+        "off": "Automatische Plugin-Updates sind aus. Aktualisieren Sie Plugins selbst über den Marktplatz.",
+        "notChecked": "Noch nicht geprüft. Die erste Prüfung läuft kurz nach dem Start der Plattform, danach stündlich.",
+        "current": "Geprüft {{at}}. Jedes installierte Plugin hat seine neueste Marktplatz-Version.",
+        "updated": "Geprüft {{at}}. Zuletzt installiert {{when}}: {{plugins}}.",
+        "failed": "Geprüft {{at}}. Diese konnten nicht aktualisiert werden: {{failed}}. Aktualisieren Sie sie über den Marktplatz, um den vollständigen Fehler zu sehen.",
+        "unreachable": "Geprüft {{at}}, aber der Marktplatz hat nicht geantwortet: {{error}}. Es wird in einer Stunde erneut versucht.",
+        "saveFailed": "Die Einstellung konnte nicht gespeichert werden",
+        "loadFailed": "Die Einstellung konnte nicht geladen werden"
       }
     },
     "components": {

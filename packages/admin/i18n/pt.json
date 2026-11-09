@@ -2907,6 +2907,18 @@
         "requested": "O serviço de atualização instala a v{{version}} no espaço de um minuto. O progresso é apresentado nesta página.",
         "unknown": "Não foi possível procurar novas versões neste momento (a origem das versões não respondeu). O serviço de atualização tentará novamente dentro de alguns minutos.",
         "heldFailed": "Não foi possível manter a atualização para v{{version}}, pelo que a versão anterior está em execução e a v{{version}} não será tentada novamente de forma automática. {{error}} Prima o botão Instalar para tentar novamente."
+      },
+      "pluginAuto": {
+        "automatic": "Instalar automaticamente as atualizações de plugins do marketplace",
+        "automaticExplained": "As versões mais recentes dos plugins do marketplace instalados instalam-se sozinhas, com verificação a cada hora. Uma versão que pede uma nova permissão aguarda sempre a sua aprovação em Plugins.",
+        "off": "As atualizações automáticas de plugins estão desativadas. Atualize os plugins do marketplace você mesmo.",
+        "notChecked": "Ainda não verificado. A primeira verificação é executada pouco depois de a plataforma iniciar, depois a cada hora.",
+        "current": "Verificado {{at}}. Cada plugin instalado está na sua versão mais recente do marketplace.",
+        "updated": "Verificado {{at}}. Última instalação {{when}}: {{plugins}}.",
+        "failed": "Verificado {{at}}. Estes não puderam ser atualizados: {{failed}}. Atualize-os a partir do marketplace para ver o erro completo.",
+        "unreachable": "Verificado {{at}}, mas o marketplace não respondeu: {{error}}. Será tentado novamente dentro de uma hora.",
+        "saveFailed": "Não foi possível guardar a definição",
+        "loadFailed": "Não foi possível carregar a definição"
       }
     },
     "components": {

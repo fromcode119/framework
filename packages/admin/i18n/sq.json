@@ -2907,6 +2907,18 @@
         "requested": "Shërbimi i përditësimit do të instalojë v{{version}} brenda një minute. Ecuria shfaqet në këtë faqe.",
         "unknown": "Versionet e reja nuk mund të kontrolloheshin tani (burimi i versioneve nuk u përgjigj). Shërbimi i përditësimit do të provojë sërish pas pak minutash.",
         "heldFailed": "Përditësimi në v{{version}} nuk mund të mbahej, prandaj po funksionon versioni i mëparshëm dhe v{{version}} nuk do të provohet më automatikisht. {{error}} Shtypni butonin Instalo për ta provuar sërish."
+      },
+      "pluginAuto": {
+        "automatic": "Instalo automatikisht përditësimet e shtojcave nga tregu",
+        "automaticExplained": "Versionet më të reja të shtojcave të instaluara nga tregu instalohen vetë, me kontroll çdo orë. Një version që kërkon një leje të re pret gjithmonë miratimin tënd te Shtojcat.",
+        "off": "Përditësimi automatik i shtojcave është i fikur. Përditëso shtojcat nga tregu vetë.",
+        "notChecked": "Ende i pakontrolluar. Kontrolli i parë niset pak pas nisjes së platformës, pastaj çdo orë.",
+        "current": "Kontrolluar {{at}}. Çdo shtojcë e instaluar është në versionin e saj më të ri nga tregu.",
+        "updated": "Kontrolluar {{at}}. Instaluar së fundi {{when}}: {{plugins}}.",
+        "failed": "Kontrolluar {{at}}. Këto nuk u përditësuan dot: {{failed}}. Përditësoji nga tregu për të parë gabimin e plotë.",
+        "unreachable": "Kontrolluar {{at}}, por tregu nuk u përgjigj: {{error}}. Do të provohet sërish pas një ore.",
+        "saveFailed": "Cilësimi nuk u ruajt dot",
+        "loadFailed": "Cilësimi nuk u ngarkua dot"
       }
     },
     "components": {

@@ -1,4 +1,5 @@
 import { SystemConstants, UpdaterState } from '@fromcode119/core';
+import { PlatformMetaStore } from '@api/services/system/platform-meta-store';
 
 /**
  * The two platform settings the updater and Settings → Updates share: the version an operator asked for,
@@ -9,7 +10,11 @@ export class UpdaterStatusStore {
   static readonly SILENT_AFTER_MS = 5 * 60 * 1000;
   private static readonly FINISHED = [UpdaterState.SUCCEEDED.value, UpdaterState.FAILED.value, UpdaterState.ROLLED_BACK.value];
 
-  constructor(private readonly db: any) {}
+  private readonly meta: PlatformMetaStore;
+
+  constructor(db: any) {
+    this.meta = new PlatformMetaStore(db);
+  }
 
   async request(version: string): Promise<void> {
     await this.write(SystemConstants.META_KEY.FRAMEWORK_UPDATE_REQUEST, version);
@@ -52,21 +57,11 @@ export class UpdaterStatusStore {
     return Number.isFinite(at) && now - at < UpdaterStatusStore.SILENT_AFTER_MS;
   }
 
-  private async read(key: string): Promise<string | null> {
-    return this.db.withPlatformAdmin(async () => {
-      const rows = await this.db.find(SystemConstants.TABLE.META, { where: { key } });
-      const row = (Array.isArray(rows) ? rows : []).find((entry: any) => (entry?.tenant_id ?? entry?.tenantId ?? null) === null);
-      return row ? String(row.value ?? '') : null;
-    });
+  private read(key: string): Promise<string | null> {
+    return this.meta.read(key);
   }
 
-  private async write(key: string, value: string): Promise<void> {
-    await this.db.withPlatformAdmin(async () => {
-      if ((await this.read(key)) !== null) {
-        await this.db.update(SystemConstants.TABLE.META, { key }, { value });
-        return;
-      }
-      await this.db.insert(SystemConstants.TABLE.META, { key, value });
-    });
+  private write(key: string, value: string): Promise<void> {
+    return this.meta.write(key, value);
   }
 }

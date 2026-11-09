@@ -2907,6 +2907,18 @@
         "requested": "Uuendaja paigaldab versiooni v{{version}} minuti jooksul. Edenemist näidatakse sellel lehel.",
         "unknown": "Uusi versioone ei õnnestunud praegu kontrollida (väljalaskeallikas ei vastanud). Uuendaja proovib mõne minuti pärast uuesti.",
         "heldFailed": "Uuendust versioonile v{{version}} ei õnnestunud säilitada, seega töötab eelmine versioon ja versiooni v{{version}} automaatselt uuesti ei proovita. {{error}} Uuesti proovimiseks vajutage nuppu Paigalda."
+      },
+      "pluginAuto": {
+        "automatic": "Paigalda poe pluginate uuendused automaatselt",
+        "automaticExplained": "Paigaldatud poe pluginate uuemad versioonid paigaldatakse ise, kontroll iga tunni tagant. Versioon, mis küsib uut luba, ootab alati sinu kinnitust jaotises Pluginad.",
+        "off": "Pluginate automaatne uuendamine on väljas. Uuenda pluginaid poest ise.",
+        "notChecked": "Veel kontrollimata. Esimene kontroll toimub veidi pärast platvormi käivitumist, seejärel iga tunni tagant.",
+        "current": "Kontrollitud {{at}}. Iga paigaldatud plugin on oma uusimas poeversioonis.",
+        "updated": "Kontrollitud {{at}}. Viimati paigaldatud {{when}}: {{plugins}}.",
+        "failed": "Kontrollitud {{at}}. Neid ei õnnestunud uuendada: {{failed}}. Uuenda neid poest, et näha täielikku viga.",
+        "unreachable": "Kontrollitud {{at}}, kuid pood ei vastanud: {{error}}. Proovitakse uuesti tunni pärast.",
+        "saveFailed": "Sätet ei õnnestunud salvestada",
+        "loadFailed": "Sätet ei õnnestunud laadida"
       }
     },
     "components": {

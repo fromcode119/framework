@@ -2907,6 +2907,18 @@
         "requested": "Pengemas kini akan memasang v{{version}} dalam masa seminit. Kemajuan ditunjukkan pada halaman ini.",
         "unknown": "Versi baharu tidak dapat disemak sebentar tadi (sumber keluaran tidak menjawab). Pengemas kini akan mencuba lagi dalam beberapa minit.",
         "heldFailed": "Kemas kini ke v{{version}} tidak dapat dikekalkan, jadi versi sebelumnya sedang berjalan dan v{{version}} tidak akan dicuba lagi secara automatik. {{error}} Tekan butang Pasang untuk mencubanya semula."
+      },
+      "pluginAuto": {
+        "automatic": "Pasang kemas kini pemalam pasaran secara automatik",
+        "automaticExplained": "Versi lebih baharu bagi pemalam pasaran yang dipasang akan dipasang dengan sendirinya, disemak setiap jam. Versi yang meminta kebenaran baharu sentiasa menunggu kelulusan anda dalam Pemalam.",
+        "off": "Kemas kini automatik pemalam dimatikan. Kemas kini pemalam dari pasaran sendiri.",
+        "notChecked": "Belum disemak. Semakan pertama berjalan sebentar selepas platform bermula, kemudian setiap jam.",
+        "current": "Disemak {{at}}. Setiap pemalam yang dipasang berada pada versi pasaran terbarunya.",
+        "updated": "Disemak {{at}}. Terakhir dipasang {{when}}: {{plugins}}.",
+        "failed": "Disemak {{at}}. Ini tidak dapat dikemas kini: {{failed}}. Kemas kini daripada pasaran untuk melihat ralat penuh.",
+        "unreachable": "Disemak {{at}}, tetapi pasaran tidak menjawab: {{error}}. Akan dicuba semula dalam sejam.",
+        "saveFailed": "Tetapan tidak dapat disimpan",
+        "loadFailed": "Tetapan tidak dapat dimuatkan"
       }
     },
     "components": {

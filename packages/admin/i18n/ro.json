@@ -2907,6 +2907,18 @@
         "requested": "Serviciul de actualizare instalează v{{version}} în cel mult un minut. Progresul este afișat pe această pagină.",
         "unknown": "Nu s-au putut căuta versiuni noi acum (sursa versiunilor nu a răspuns). Serviciul de actualizare va încerca din nou în câteva minute.",
         "heldFailed": "Actualizarea la v{{version}} nu a putut fi păstrată, așa că rulează versiunea anterioară, iar v{{version}} nu va mai fi încercată automat. {{error}} Apăsați butonul Instalează pentru a încerca din nou."
+      },
+      "pluginAuto": {
+        "automatic": "Instalează automat actualizările pluginurilor din marketplace",
+        "automaticExplained": "Versiunile mai noi ale pluginurilor din marketplace instalate se instalează singure, verificare în fiecare oră. O versiune care cere o permisiune nouă așteaptă întotdeauna aprobarea ta în Pluginuri.",
+        "off": "Actualizarea automată a pluginurilor este dezactivată. Actualizează pluginurile din marketplace manual.",
+        "notChecked": "Încă neverificat. Prima verificare rulează la scurt timp după pornirea platformei, apoi în fiecare oră.",
+        "current": "Verificat {{at}}. Fiecare plugin instalat este la cea mai recentă versiune din marketplace.",
+        "updated": "Verificat {{at}}. Ultima instalare {{when}}: {{plugins}}.",
+        "failed": "Verificat {{at}}. Acestea nu au putut fi actualizate: {{failed}}. Actualizează-le din marketplace pentru a vedea eroarea completă.",
+        "unreachable": "Verificat {{at}}, dar marketplace-ul nu a răspuns: {{error}}. Se va încerca din nou peste o oră.",
+        "saveFailed": "Setarea nu a putut fi salvată",
+        "loadFailed": "Setarea nu a putut fi încărcată"
       }
     },
     "components": {

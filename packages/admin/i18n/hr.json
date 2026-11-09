@@ -2907,6 +2907,18 @@
         "requested": "Usluga za ažuriranje instalirat će v{{version}} unutar minute. Napredak je prikazan na ovoj stranici.",
         "unknown": "Nove verzije trenutačno nije moguće provjeriti (izvor izdanja nije odgovorio). Usluga za ažuriranje pokušat će ponovno za nekoliko minuta.",
         "heldFailed": "Ažuriranje na v{{version}} nije se moglo zadržati, pa radi prethodna verzija i v{{version}} se neće ponovno automatski pokušati. {{error}} Pritisnite gumb Instaliraj za ponovni pokušaj."
+      },
+      "pluginAuto": {
+        "automatic": "Automatski instaliraj ažuriranja dodataka s tržnice",
+        "automaticExplained": "Novije verzije instaliranih dodataka s tržnice instaliraju se same, provjera svaki sat. Verzija koja traži novo dopuštenje uvijek čeka vaše odobrenje u odjeljku Dodaci.",
+        "off": "Automatsko ažuriranje dodataka je isključeno. Ažurirajte dodatke s tržnice sami.",
+        "notChecked": "Još nije provjereno. Prva provjera pokreće se ubrzo nakon pokretanja platforme, zatim svaki sat.",
+        "current": "Provjereno {{at}}. Svaki instalirani dodatak na najnovijoj je verziji s tržnice.",
+        "updated": "Provjereno {{at}}. Zadnje instalirano {{when}}: {{plugins}}.",
+        "failed": "Provjereno {{at}}. Ove nije bilo moguće ažurirati: {{failed}}. Ažurirajte ih s tržnice da vidite cijelu pogrešku.",
+        "unreachable": "Provjereno {{at}}, ali tržnica nije odgovorila: {{error}}. Pokušat će se ponovno za sat vremena.",
+        "saveFailed": "Postavku nije bilo moguće spremiti",
+        "loadFailed": "Postavku nije bilo moguće učitati"
       }
     },
     "components": {

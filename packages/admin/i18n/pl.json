@@ -2907,6 +2907,18 @@
         "requested": "Usługa aktualizacji zainstaluje v{{version}} w ciągu minuty. Postęp jest widoczny na tej stronie.",
         "unknown": "Nie udało się teraz sprawdzić nowych wersji (źródło wydań nie odpowiedziało). Usługa aktualizacji spróbuje ponownie za kilka minut.",
         "heldFailed": "Nie udało się utrzymać aktualizacji do v{{version}}, więc działa poprzednia wersja, a v{{version}} nie będzie ponownie instalowana automatycznie. {{error}} Kliknij przycisk Zainstaluj, aby spróbować ponownie."
+      },
+      "pluginAuto": {
+        "automatic": "Automatycznie instaluj aktualizacje wtyczek z marketplace",
+        "automaticExplained": "Nowsze wersje zainstalowanych wtyczek z marketplace instalują się same, sprawdzane co godzinę. Wersja prosząca o nowe uprawnienie zawsze czeka na Twoją zgodę w sekcji Wtyczki.",
+        "off": "Automatyczne aktualizacje wtyczek są wyłączone. Aktualizuj wtyczki z marketplace samodzielnie.",
+        "notChecked": "Jeszcze nie sprawdzono. Pierwsze sprawdzenie następuje krótko po uruchomieniu platformy, potem co godzinę.",
+        "current": "Sprawdzono {{at}}. Każda zainstalowana wtyczka jest w najnowszej wersji z marketplace.",
+        "updated": "Sprawdzono {{at}}. Ostatnio zainstalowano {{when}}: {{plugins}}.",
+        "failed": "Sprawdzono {{at}}. Tych nie udało się zaktualizować: {{failed}}. Zaktualizuj je z marketplace, aby zobaczyć pełny błąd.",
+        "unreachable": "Sprawdzono {{at}}, ale marketplace nie odpowiedział: {{error}}. Ponowna próba za godzinę.",
+        "saveFailed": "Nie udało się zapisać ustawienia",
+        "loadFailed": "Nie udało się wczytać ustawienia"
       }
     },
     "components": {

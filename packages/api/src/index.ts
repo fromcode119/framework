@@ -7,6 +7,7 @@ import { ApiWorkerSupervisor } from '@api/server/api-worker-supervisor';
 import cookieParser from 'cookie-parser';
 import * as http from 'http';
 import { PluginManager, ThemeManager, Logger, RecordVersions, WebSocketManager, RealtimeRoomTokens, RealtimeRoomClient, ProcessSignals, RedisProcessSignalTransport, ProcessScratchDirectory, ArchiveUploadSessionService } from '@fromcode119/core';
+import { PluginAutoUpdater } from '@api/services/plugin-auto-updater';
 import { SystemConstants, ApplicationUrlUtils, LocalizationUtils, PrivateStorageDriverFactory, RouteConstants, AsyncRouteGuard, AuditOutcome, JournalRetentionService, JournalRetentionTargets, GeoDatabaseUpdater, ApiWorkers } from '@fromcode119/core';
 import { AuthManager } from '@fromcode119/auth';
 import { MediaManager } from '@fromcode119/media';
@@ -138,6 +139,7 @@ export class APIServer {
     // The IP-location database follows its switch (Settings → Infrastructure): installed and kept
     // current while on, removed while off. Downloaded here only (by the first worker); the extension host reads the file.
     if (ApiWorkers.isFirstWorker()) GeoDatabaseUpdater.for((this.manager as any).db, this.logger).start();
+    PluginAutoUpdater.for(this.manager, (this.manager as any).db, this.logger).start(); // marketplace plugins: Settings → Updates switch, hourly
 
     // Let ApplicationUrlUtils resolve the app URLs from the DB-backed settings, so a URL changed in
     // admin Settings propagates to links, emails and PDFs — not only to CORS. Reads the same sync
@@ -211,6 +213,7 @@ export class APIServer {
     }
     this.logRetention.stop();
     GeoDatabaseUpdater.for((this.manager as any).db, this.logger).stop();
+    PluginAutoUpdater.for(this.manager, (this.manager as any).db, this.logger).stop();
     await this.manager.shutdown();
     this.logger.info('API Server shut down complete.');
   }
