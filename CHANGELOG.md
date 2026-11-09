@@ -29,6 +29,10 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 - **scheduler**: spread cron tasks across the minute instead of firing them all at once ([#1344](https://github.com/fromcode119/framework/pull/1344))
 
+### Changed
+
+- **ci**: shard the test suite across three parallel jobs ([#1346](https://github.com/fromcode119/framework/pull/1346))
+
 ## [0.2.554] - 2026-11-09
 
 ### Performance
