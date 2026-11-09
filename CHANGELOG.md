@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.557] - 2026-11-09
+
+### Performance
+
+- **frontend**: start the page route beside the visibility check ([#1351](https://github.com/fromcode119/framework/pull/1351))
+
 ## [0.2.556] - 2026-11-09
 
 ### Added
@@ -22,10 +28,6 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Performance
 
 - **scheduler**: spread cron tasks across the minute instead of firing them all at once ([#1344](https://github.com/fromcode119/framework/pull/1344))
-
-### Changed
-
-- **ci**: shard the test suite across three parallel jobs ([#1346](https://github.com/fromcode119/framework/pull/1346))
 
 ## [0.2.554] - 2026-11-09
 
