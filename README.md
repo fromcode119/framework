@@ -12,6 +12,8 @@
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22+-green?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![TypeScript 5+](https://img.shields.io/badge/TypeScript-5+-blue?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React 19](https://img.shields.io/badge/React-19-cyan?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![Sponsor](https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white)](https://github.com/sponsors/fromcode119)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20me%20a%20coffee-FFDD00?style=for-the-badge&logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/fromcode119)
 
 ---
 
@@ -248,6 +250,13 @@ checks a change must pass, branch/commit conventions, and how pull requests are 
 follows the [Contributor Covenant](CODE_OF_CONDUCT.md).
 
 ---
+
+## 💖 Support the project
+
+Fromcode Framework is free and MIT-licensed. If it saves you time, you can support its development:
+
+- **[GitHub Sponsors](https://github.com/sponsors/fromcode119)** — monthly or one-time
+- **[Buy Me a Coffee](https://buymeacoffee.com/fromcode119)** — a one-off thank you
 
 ## 📜 License
 
