@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { PluginGuestContextFactory } from '@core/plugin/host/plugin-guest-context-factory';
 import { TenantsContextProxy } from '@core/plugin/context/tenants';
+import { PluginGuestRemote } from '@core/plugin/host/plugin-guest-remote';
 
 /**
  * An ISOLATED plugin's `context.tenants` must offer what an in-process one does.
@@ -62,4 +63,18 @@ describe('isolated guest context.tenants', () => {
       { name: 'apiUrl', args: ['/api/plugins/chi/webhook'] },
     ]);
   });
+
+  it('answers current() from the running invocation, without a call back to the host', async () => {
+    const { tenants, remote } = guestTenants();
+    const seen = await PluginGuestRemote.invocation.run({ token: 't1', tenantId: 'site-7' }, () => (tenants as any).current());
+    expect(seen).toBe('site-7');
+    expect(remote.call).not.toHaveBeenCalled();
+  });
+
+  it('forwards current() to the host when it runs outside an invocation', async () => {
+    const { tenants, remote } = guestTenants();
+    await (tenants as any).current();
+    expect(remote.call).toHaveBeenCalledWith('context', [{ name: 'tenants' }, { name: 'current', args: [] }]);
+  });
+
 });
