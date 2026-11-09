@@ -38,6 +38,8 @@ export class AccountShellDefault extends Reactor {
   declare context: ContextType<typeof TranslationContext.Context>;
 
   private readonly SLOT_NAME = 'account.panels';
+  /** The framework's own overview section, which renders its own heading. */
+  private static readonly OVERVIEW = 'overview';
 
   /** Framework-default account sections, owned by the framework (not a plugin). Plugins contribute
    * additional sections (orders, courses, …) via the `account.panels` slot and may override these by
@@ -223,10 +225,14 @@ export class AccountShellDefault extends Reactor {
           </nav>
 
           <main className={AccountClass.of('main')}>
-            <header className={AccountClass.of('header')}>
-              <h1 className={AccountClass.of('title')}>{activeLabel}</h1>
-              {activeDescription ? <p className={AccountClass.of('lead')}>{activeDescription}</p> : null}
-            </header>
+            {/* The overview heads itself: its title is the greeting ("Hello, Rosen"), and a second
+                "Overview" heading above it would say the same thing twice. */}
+            {active.key === AccountShellDefault.OVERVIEW ? null : (
+              <header className={AccountClass.of('header')}>
+                <h1 className={AccountClass.of('title')}>{activeLabel}</h1>
+                {activeDescription ? <p className={AccountClass.of('lead')}>{activeDescription}</p> : null}
+              </header>
+            )}
             {active.items.map((item, index) => {
               if (!item?.component) return null;
               const Panel = item.component as ComponentType<any>;

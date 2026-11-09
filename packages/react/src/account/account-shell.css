@@ -73,17 +73,16 @@
 .fc-acct-overview { display: grid; gap: 20px; }
 .fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(24, 24, 27, .04); }
 .fc-acct-card-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fc-acct-muted); margin: 0 0 12px; }
-.fc-acct-greeting { font-size: clamp(24px, 2.4vw, 32px); font-weight: 800; letter-spacing: -.02em; color: var(--fc-acct-fg); margin: 0 0 4px; }
 .fc-acct-intro { color: var(--fc-acct-muted); font-size: 14px; margin: 0; }
 .fc-acct-loading { color: var(--fc-acct-muted); font-size: 14px; }
 
 /* Stat cards. `--fc-acct-stat-accent` is set per card by the contributing plugin — the only value the
    component passes as an inline style, because the colour belongs to that plugin, not to the framework. */
-.fc-acct-stats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
-.fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 18px 20px; border: 1px solid var(--fc-acct-border); border-top: 3px solid var(--fc-acct-stat-accent, var(--fc-acct-accent)); border-radius: 16px; background: var(--fc-acct-bg); box-shadow: 0 1px 3px rgba(24, 24, 27, .04); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
-.fc-acct-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(24, 24, 27, .08); }
-.fc-acct-stat-label { font-size: 14px; font-weight: 600; color: var(--fc-acct-fg); }
-.fc-acct-stat-value { font-size: 30px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 0 0 4px; overflow-wrap: anywhere; }
+.fc-acct-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.fc-acct-stat { display: flex; flex-direction: column; gap: 2px; padding: 16px 18px; border: 1px solid var(--fc-acct-border); border-radius: 16px; background: var(--fc-acct-bg); text-decoration: none; color: inherit; transition: transform .15s, box-shadow .15s, border-color .15s; }
+.fc-acct-stat:hover { transform: translateY(-2px); border-color: var(--fc-acct-stat-accent, var(--fc-acct-accent)); box-shadow: 0 10px 24px rgba(24, 24, 27, .08); }
+.fc-acct-stat-label { font-size: 13px; font-weight: 500; color: var(--fc-acct-muted); }
+.fc-acct-stat-value { font-size: 26px; font-weight: 800; line-height: 1.1; color: var(--fc-acct-fg); margin: 0 0 4px; overflow-wrap: anywhere; }
 .fc-acct-stat-sub { font-size: 13px; color: var(--fc-acct-muted); }
 
 .fc-acct-quicklinks { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
