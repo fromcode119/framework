@@ -44,7 +44,7 @@ describe('SystemUserEmailPreferencesController', () => {
 
   it("lists an administrator's alerts for the account in the route", async () => {
     const res = response();
-    await controller().list({ params: { id: '17' }, query: { audience: 'admin' }, user: { id: 1 } } as any, res);
+    await controller().list({ params: { id: '17' }, query: { audience: 'admin' }, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.statusCode).toBe(200);
     expect(res.body.address).toBe('boss@site.test');
     expect(res.body.preferences.map((p: any) => p.key)).toEqual(['admin-low-stock']);
@@ -52,33 +52,46 @@ describe('SystemUserEmailPreferencesController', () => {
 
   it('offers no administrator alerts for an account that is not an administrator', async () => {
     const res = response();
-    await controller().list({ params: { id: '18' }, query: { audience: 'admin' }, user: { id: 1 } } as any, res);
+    await controller().list({ params: { id: '18' }, query: { audience: 'admin' }, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.statusCode).toBe(403);
   });
 
   it("still lists a non-administrator's own optional emails", async () => {
     const res = response();
-    await controller().list({ params: { id: '18' }, query: {}, user: { id: 1 } } as any, res);
+    await controller().list({ params: { id: '18' }, query: {}, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.body.preferences.map((p: any) => p.key)).toEqual(['broadcast']);
   });
 
   it('acts on the account in the ROUTE, ignoring any address in the body', async () => {
     const res = response();
-    await controller().update({ params: { id: '17' }, body: { key: 'admin-low-stock', subscribed: false, address: 'victim@x.test', userId: 18 }, user: { id: 1 } } as any, res);
+    await controller().update({ params: { id: '17' }, body: { key: 'admin-low-stock', subscribed: false, address: 'victim@x.test', userId: 18 }, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.statusCode).toBe(200);
     expect(suppressed).toEqual([['boss@site.test', 'admin-low-stock', 'admin:user-preferences']]);
   });
 
   it('refuses an admin alert for an account that is not an administrator', async () => {
     const res = response();
-    await controller().update({ params: { id: '18' }, body: { key: 'admin-low-stock', subscribed: false }, user: { id: 1 } } as any, res);
+    await controller().update({ params: { id: '18' }, body: { key: 'admin-low-stock', subscribed: false }, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.statusCode).toBe(403);
     expect(suppressed).toEqual([]);
   });
 
+  it('keeps a staff manager who is not an administrator from muting an administrator\'s alerts', async () => {
+    const res = response();
+    await controller().update({ params: { id: '17' }, body: { key: 'admin-low-stock', subscribed: false }, user: { id: 5, roles: ['staff'] } } as any, res);
+    expect(res.statusCode).toBe(403);
+    expect(suppressed).toEqual([]);
+  });
+
+  it('still lets that staff manager set a person\'s optional emails', async () => {
+    const res = response();
+    await controller().update({ params: { id: '18' }, body: { key: 'broadcast', subscribed: false }, user: { id: 5, roles: ['staff'] } } as any, res);
+    expect(res.statusCode).toBe(200);
+  });
+
   it('answers not found for an unknown account, never touching the list', async () => {
     const res = response();
-    await controller().update({ params: { id: '999' }, body: { key: 'broadcast', subscribed: false }, user: { id: 1 } } as any, res);
+    await controller().update({ params: { id: '999' }, body: { key: 'broadcast', subscribed: false }, user: { id: 1, roles: ['admin'] } } as any, res);
     expect(res.statusCode).toBe(404);
     expect(suppressed).toEqual([]);
   });

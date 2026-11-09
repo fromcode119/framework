@@ -56,7 +56,13 @@ export class SystemUserEmailPreferencesController extends SystemEmailPreferences
     return (req as any)[SystemUserEmailPreferencesController.TARGET]?.email ?? ''; // eslint-disable-line @typescript-eslint/no-explicit-any
   }
 
+  /**
+   * An administrator's alerts are muted only by another administrator: `users:manage` alone must not be
+   * enough to silence what an administrator is told, so the caller is held to the same rule as the
+   * person's own screen, AND the account must be one the alerts are sent to.
+   */
   protected mayManage(req: Request, audience: EmailCategoryAudience): boolean {
+    if (!super.mayManage(req, audience)) return false;
     if (audience === EmailCategoryAudience.PERSON) return true;
     return (req as any)[SystemUserEmailPreferencesController.TARGET]?.isAdmin === true; // eslint-disable-line @typescript-eslint/no-explicit-any
   }
