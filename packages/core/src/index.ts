@@ -98,6 +98,7 @@ export { ExpoPushTransport } from '@core/push/expo-push-transport';
 export { ChannelConsentStore } from '@core/notifications/channel-consent-store';
 export { ConsentChannel } from '@core/notifications/enums/consent-channel.enum';
 export { NotificationCategory } from '@core/notifications/enums/notification-category.enum';
+export { EmailCategoryAudience } from '@core/email/enums/email-category-audience.enum';
 export { PersonNotifier } from '@core/notifications/person-notifier';
 export { PhoneNumber } from '@core/notifications/phone-number';
 export { StorefrontNoticeTokens } from '@core/storefront-notice/storefront-notice-tokens';

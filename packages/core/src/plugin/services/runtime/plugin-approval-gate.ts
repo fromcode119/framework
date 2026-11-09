@@ -14,6 +14,7 @@ import { PluginRegistryHealth } from '@core/plugin/services/enums/plugin-registr
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
 import { PluginStateService } from '@core/plugin/services/runtime/plugin-state-service';
 import { PluginTeardownService } from '@core/plugin/services/runtime/plugin-teardown-service';
+import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 
 /**
  * The one place a plugin's approval is checked, granted and withheld.
@@ -115,7 +116,7 @@ export class PluginApprovalGate {
 
   private async notify(subject: string, text: string): Promise<void> {
     try {
-      await NotificationsContextProxy.createNotificationsProxy(this.manager, 'core').notifyAdmins({ subject, text });
+      await NotificationsContextProxy.createNotificationsProxy(this.manager, 'core').notifyAdmins({ subject, text }, { category: FrameworkAdminAlerts.PLUGIN_APPROVAL });
     } catch {
       // Best effort: the hold itself is recorded, and the console shows it whether or not mail goes out.
     }

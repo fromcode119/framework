@@ -3502,6 +3502,16 @@
         "choice": "单选",
         "choices": "多选"
       }
+    },
+    "notifications": {
+      "alertsTitle": "发送给管理员的提醒",
+      "alertsIntro": "选择您要通过电子邮件和控制台铃铛接收哪些提醒。其他管理此网站的人仍会继续收到。",
+      "emailsTitle": "您收到的电子邮件",
+      "emailsIntro": "发送到您邮箱的可选电子邮件。收据和账户安全邮件始终会发送。",
+      "locked": "始终开启 — 无法关闭。",
+      "failed": "无法保存您的通知设置。请重试。",
+      "alertsIntroOther": "选择此人要通过电子邮件和控制台铃铛接收哪些提醒。其他管理此网站的人仍会继续收到。",
+      "emailsIntroOther": "发送到此人邮箱的可选电子邮件。收据和账户安全邮件始终会发送。"
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "已计划",
         "active": "运行中",
         "failed": "失败"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "插件问题",
+        "description": "插件启动失败或无法正常工作。"
+      },
+      "pluginApproval": {
+        "label": "插件审批",
+        "description": "有插件正在等待您的批准，或已获批使用新功能。"
+      },
+      "certificateExpiry": {
+        "label": "证书到期",
+        "description": "证书即将到期。"
+      },
+      "monitoring": {
+        "label": "站点监控",
+        "description": "您的站点或某项服务宕机或运行异常，以及恢复正常时。"
       }
     }
   }

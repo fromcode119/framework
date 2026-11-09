@@ -3502,6 +3502,16 @@
         "choice": "Vienas iš sąrašo",
         "choices": "Keli iš sąrašo"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Administratoriams siunčiami įspėjimai",
+      "alertsIntro": "Pasirinkite, kuriuos įspėjimus gaunate el. paštu ir konsolės varpelyje. Kiti šią svetainę valdantys asmenys juos toliau gauna.",
+      "emailsTitle": "El. laiškai, kuriuos gaunate",
+      "emailsIntro": "Neprivalomi el. laiškai, siunčiami jūsų adresu. Kvitai ir paskyros saugumo laiškai siunčiami visada.",
+      "locked": "Visada įjungta — jos išjungti negalima.",
+      "failed": "Nepavyko išsaugoti jūsų pranešimų nustatymų. Bandykite dar kartą.",
+      "alertsIntroOther": "Pasirinkite, kuriuos įspėjimus šis asmuo gauna el. paštu ir konsolės varpelyje. Kiti šią svetainę valdantys asmenys juos toliau gauna.",
+      "emailsIntroOther": "Neprivalomi el. laiškai, siunčiami šio asmens adresu. Kvitai ir paskyros saugumo laiškai siunčiami visada."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Suplanuota",
         "active": "Vykdoma",
         "failed": "Nepavyko"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Papildinių problemos",
+        "description": "Papildinio nepavyko paleisti arba jis neveikia."
+      },
+      "pluginApproval": {
+        "label": "Papildinių patvirtinimai",
+        "description": "Papildinys laukia jūsų patvirtinimo arba buvo patvirtintas naujoms galimybėms."
+      },
+      "certificateExpiry": {
+        "label": "Sertifikato galiojimo pabaiga",
+        "description": "Sertifikato galiojimas netrukus baigsis."
+      },
+      "monitoring": {
+        "label": "Svetainės stebėsena",
+        "description": "Jūsų svetainė ar paslauga neveikia arba veikia netinkamai, taip pat kai ji atsigauna."
       }
     }
   }

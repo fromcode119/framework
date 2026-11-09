@@ -3502,6 +3502,16 @@
         "choice": "Jedna z listy",
         "choices": "Kilka z listy"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alerty wysyłane do administratorów",
+      "alertsIntro": "Wybierz, które alerty otrzymujesz, e-mailem i w dzwonku konsoli. Inne osoby zarządzające tą witryną nadal je otrzymują.",
+      "emailsTitle": "E-maile, które otrzymujesz",
+      "emailsIntro": "Opcjonalne e-maile wysyłane na Twój adres. Potwierdzenia i e-maile dotyczące bezpieczeństwa konta są wysyłane zawsze.",
+      "locked": "Zawsze włączone — nie można tego wyłączyć.",
+      "failed": "Nie udało się zapisać ustawień powiadomień. Spróbuj ponownie.",
+      "alertsIntroOther": "Wybierz, które alerty otrzymuje ta osoba, e-mailem i w dzwonku konsoli. Inne osoby zarządzające tą witryną nadal je otrzymują.",
+      "emailsIntroOther": "Opcjonalne e-maile wysyłane na adres tej osoby. Potwierdzenia i e-maile dotyczące bezpieczeństwa konta są wysyłane zawsze."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Zaplanowane",
         "active": "W toku",
         "failed": "Nieudane"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemy z wtyczkami",
+        "description": "Wtyczka nie uruchomiła się lub nie działa."
+      },
+      "pluginApproval": {
+        "label": "Zatwierdzenia wtyczek",
+        "description": "Wtyczka czeka na Twoje zatwierdzenie lub została zatwierdzona dla nowych możliwości."
+      },
+      "certificateExpiry": {
+        "label": "Wygaśnięcie certyfikatu",
+        "description": "Certyfikat wkrótce wygaśnie."
+      },
+      "monitoring": {
+        "label": "Monitorowanie witryny",
+        "description": "Twoja witryna lub usługa nie działa albo działa nieprawidłowo, a także kiedy wróci do normy."
       }
     }
   }

@@ -6,6 +6,7 @@ import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { EditUserHeader } from '@/app/users/[id]/edit/components/view/edit-user-header.client';
 import { EditUserFormFields } from '@/app/users/[id]/edit/components/view/edit-user-form-fields.client';
+import { EditUserNotifications } from '@/app/users/[id]/edit/components/view/edit-user-notifications.client';
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { SelfAccount } from '@/lib/self-account';
@@ -155,6 +156,10 @@ export class EditUserPage extends AdminComponent {
                  </div>
               )}
            </form>
+
+           {/* Your own switches act for the session; for someone else an administrator sets theirs through
+               the admin route, which checks the account belongs to this site. */}
+           <div className="mt-6"><EditUserNotifications userId={SelfAccount.isOwn(this.auth?.user, id) ? undefined : id} /></div>
         </div>
       </div>
     );

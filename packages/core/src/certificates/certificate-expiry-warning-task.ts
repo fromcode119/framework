@@ -4,6 +4,7 @@ import { CertificateStoreService } from '@core/certificates/certificate-store-se
 import { Logger } from '@core/logging';
 import { NotificationsContextProxy } from '@core/plugin/context/notifications';
 import { PluginEmailTemplateFileService } from '@core/plugin/services/plugin-email-template-file-service';
+import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 
 /**
  * Warns somebody before a certificate runs out.
@@ -65,7 +66,7 @@ export class CertificateExpiryWarningTask {
     });
 
     try {
-      await NotificationsContextProxy.createNotificationsProxy(this.manager, 'system').notifyAdmins(message);
+      await NotificationsContextProxy.createNotificationsProxy(this.manager, 'system').notifyAdmins(message, { category: FrameworkAdminAlerts.CERTIFICATE_EXPIRY });
     } catch (error: any) {
       // A failed send must not stop the sweep: the next certificate in the list may be the one
       // expiring today.

@@ -119,6 +119,8 @@ export class AdminConstants {
     SETTINGS_PLATFORM_KEYS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_PLATFORM_KEYS),
     SETTINGS_AUDIT_TABLES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_SETTINGS_AUDIT_TABLES),
     PERSONAL_DATA_POLICY: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PERSONAL_DATA_POLICY),
+    /** The signed-in person's own email streams; `?audience=admin` for the alerts sent to administrators. */
+    EMAIL_PREFERENCES: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.EMAIL_PREFERENCES),
     BACKUPS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUPS),
     BACKUP: (id: string) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP, { id })),
     BACKUP_CREATE_SYSTEM: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_BACKUP_CREATE_SYSTEM),
@@ -182,6 +184,8 @@ export class AdminConstants {
     PERMISSIONS: AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_PERMISSIONS),
     USERS: AdminApiPaths.v(SystemConstants.API_PATH.SYSTEM.ADMIN_USERS),
     USER: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_USER, { id })),
+    /** ANOTHER person's email streams and alert switches, as set by an administrator (`users:view` / `users:manage`). */
+    USER_EMAIL_PREFERENCES: (id: string | number) => AdminApiPaths.v(ApiPathUtils.fillPath(SystemConstants.API_PATH.SYSTEM.ADMIN_USER_EMAIL_PREFERENCES, { id })),
     USER_2FA: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_2FA_DISABLE, { id }),
     USER_2FA_STATUS: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_2FA_STATUS, { id }),
     USER_2FA_SETUP: (id: string | number) => AdminApiPaths.versionedRoute(SystemConstants.API_PATH.SYSTEM.BASE, RouteConstants.SEGMENTS.ADMIN_USERS_2FA_SETUP, { id }),

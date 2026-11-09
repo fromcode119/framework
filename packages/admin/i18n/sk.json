@@ -3502,6 +3502,16 @@
         "choice": "Jedna zo zoznamu",
         "choices": "Viacero zo zoznamu"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Upozornenia odosielané správcom",
+      "alertsIntro": "Vyberte, ktoré upozornenia dostávate e-mailom a v zvončeku konzoly. Ostatní správcovia tohto webu ich naďalej dostávajú.",
+      "emailsTitle": "E-maily, ktoré dostávate",
+      "emailsIntro": "Voliteľné e-maily odosielané na vašu adresu. Potvrdenia a e-maily o zabezpečení účtu sa odosielajú vždy.",
+      "locked": "Vždy zapnuté — nedá sa vypnúť.",
+      "failed": "Nastavenia upozornení sa nepodarilo uložiť. Skúste to znova.",
+      "alertsIntroOther": "Vyberte, ktoré upozornenia bude táto osoba dostávať e-mailom a v zvončeku konzoly. Ostatní správcovia tohto webu ich naďalej dostávajú.",
+      "emailsIntroOther": "Voliteľné e-maily odosielané na adresu tejto osoby. Potvrdenia a e-maily o zabezpečení účtu sa odosielajú vždy."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Naplánované",
         "active": "Beží",
         "failed": "Zlyhalo"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problémy s pluginmi",
+        "description": "Plugin sa nepodarilo spustiť alebo nefunguje."
+      },
+      "pluginApproval": {
+        "label": "Schvaľovanie pluginov",
+        "description": "Plugin čaká na vaše schválenie alebo bol schválený pre nové funkcie."
+      },
+      "certificateExpiry": {
+        "label": "Vypršanie certifikátu",
+        "description": "Platnosť certifikátu čoskoro vyprší."
+      },
+      "monitoring": {
+        "label": "Monitorovanie webu",
+        "description": "Váš web alebo služba nefunguje alebo má problémy, a keď sa obnoví."
       }
     }
   }

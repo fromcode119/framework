@@ -1,5 +1,5 @@
 import type { Request } from 'express';
-import { EmailPreferencesTokenService, MetaContextProxy, SigningSecretService } from '@fromcode119/core';
+import { EmailCategoryAudience, EmailPreferencesTokenService, MetaContextProxy, SigningSecretService } from '@fromcode119/core';
 import { SystemEmailPreferencesController } from '@api/controllers/system/system-email-preferences-controller';
 
 /**
@@ -35,6 +35,11 @@ export class SystemEmailPreferencesTokenController extends SystemEmailPreference
       // A signing key that cannot be resolved means "cannot verify", which must read as "reject".
       return '';
     }
+  }
+
+  /** A link proves an address, never a role: the alerts sent to administrators are not reachable from one. */
+  protected mayManage(_req: Request, audience: EmailCategoryAudience): boolean {
+    return audience === EmailCategoryAudience.PERSON;
   }
 
   protected get suppressionSource(): string {

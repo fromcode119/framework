@@ -3502,6 +3502,16 @@
         "choice": "Yksi luettelosta",
         "choices": "Useita luettelosta"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Ylläpitäjille lähetetyt hälytykset",
+      "alertsIntro": "Valitse, mitkä hälytykset saat sähköpostitse ja konsolin kellossa. Muut tätä sivustoa hallinnoivat saavat ne edelleen.",
+      "emailsTitle": "Saamasi sähköpostit",
+      "emailsIntro": "Valinnaisia sähköposteja osoitteeseesi. Kuitit ja tilin turvallisuutta koskevat sähköpostit lähetetään aina.",
+      "locked": "Aina käytössä — ei voi poistaa käytöstä.",
+      "failed": "Ilmoitusasetuksiasi ei voitu tallentaa. Yritä uudelleen.",
+      "alertsIntroOther": "Valitse, mitkä hälytykset tämä henkilö saa sähköpostitse ja konsolin kellossa. Muut tätä sivustoa hallinnoivat saavat ne edelleen.",
+      "emailsIntroOther": "Valinnaisia sähköposteja tämän henkilön osoitteeseen. Kuitit ja tilin turvallisuutta koskevat sähköpostit lähetetään aina."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Ajastettu",
         "active": "Käynnissä",
         "failed": "Epäonnistui"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Lisäosien ongelmat",
+        "description": "Lisäosa ei käynnistynyt tai ei toimi."
+      },
+      "pluginApproval": {
+        "label": "Lisäosien hyväksynnät",
+        "description": "Lisäosa odottaa hyväksyntääsi tai se hyväksyttiin uusille ominaisuuksille."
+      },
+      "certificateExpiry": {
+        "label": "Varmenteen vanheneminen",
+        "description": "Varmenne on vanhenemassa."
+      },
+      "monitoring": {
+        "label": "Sivuston valvonta",
+        "description": "Sivustosi tai palvelu on alhaalla tai toimii huonosti, sekä kun se palautuu."
       }
     }
   }

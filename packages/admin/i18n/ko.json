@@ -3502,6 +3502,16 @@
         "choice": "목록에서 하나 선택",
         "choices": "목록에서 여러 개 선택"
       }
+    },
+    "notifications": {
+      "alertsTitle": "관리자에게 전송되는 알림",
+      "alertsIntro": "이메일과 콘솔 벨로 받을 알림을 선택하세요. 이 사이트를 관리하는 다른 사람들은 계속 알림을 받습니다.",
+      "emailsTitle": "받는 이메일",
+      "emailsIntro": "회원님의 주소로 전송되는 선택 이메일입니다. 영수증과 계정 보안 이메일은 항상 전송됩니다.",
+      "locked": "항상 켜짐 — 끌 수 없습니다.",
+      "failed": "알림 설정을 저장하지 못했습니다. 다시 시도하세요.",
+      "alertsIntroOther": "이 사람이 이메일과 콘솔 벨로 받을 알림을 선택하세요. 이 사이트를 관리하는 다른 사람들은 계속 알림을 받습니다.",
+      "emailsIntroOther": "이 사람의 주소로 전송되는 선택 이메일입니다. 영수증과 계정 보안 이메일은 항상 전송됩니다."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "예약됨",
         "active": "실행 중",
         "failed": "실패"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "플러그인 문제",
+        "description": "플러그인이 시작되지 못했거나 작동하지 않습니다."
+      },
+      "pluginApproval": {
+        "label": "플러그인 승인",
+        "description": "플러그인이 승인을 기다리고 있거나 새 기능에 대해 승인되었습니다."
+      },
+      "certificateExpiry": {
+        "label": "인증서 만료",
+        "description": "인증서가 곧 만료됩니다."
+      },
+      "monitoring": {
+        "label": "사이트 모니터링",
+        "description": "사이트 또는 서비스가 중단되었거나 상태가 좋지 않을 때와 복구되었을 때."
       }
     }
   }

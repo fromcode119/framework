@@ -12,6 +12,7 @@ import type { IPluginHealthNotificationData } from '@core/plugin/services/interf
 import { PluginHealthReportService } from '@core/plugin/services/health/plugin-health-report-service';
 import { PluginHealthAlertMemory } from '@core/plugin/services/health/plugin-health-alert-memory';
 import { PluginState } from '@core/plugin/services/enums/plugin-state.enum';
+import { FrameworkAdminAlerts } from '@core/email/framework-admin-alerts';
 
 /**
  * What boot found wrong: which plugins are HELD on a capability change, what drifted, and the health
@@ -91,7 +92,7 @@ export class PluginBootHealthReporter {
       if (summary) {
         const message = PluginHealthNotificationTemplateService.render(summary);
         const notifications = NotificationsContextProxy.createNotificationsProxy(this.manager, 'core');
-        await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html });
+        await notifications.notifyAdmins({ subject: message.subject, text: message.text, html: message.html }, { category: FrameworkAdminAlerts.PLUGIN_HEALTH });
         this.logger.warn(message.subject);
       }
       await memory.remember(current);

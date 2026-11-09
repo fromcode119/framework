@@ -3502,6 +3502,16 @@
         "choice": "One of a list",
         "choices": "Several of a list"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alerts sent to administrators",
+      "alertsIntro": "Choose which alerts reach you, by email and in the console bell. Other people who manage this site keep receiving them.",
+      "emailsTitle": "Emails you receive",
+      "emailsIntro": "Optional emails sent to your address. Receipts and account security emails are always sent.",
+      "locked": "Always on — it cannot be switched off.",
+      "failed": "Your notification settings could not be saved. Try again.",
+      "alertsIntroOther": "Choose which alerts reach this person, by email and in the console bell. Other people who manage this site keep receiving them.",
+      "emailsIntroOther": "Optional emails sent to this person's address. Receipts and account security emails are always sent."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Scheduled",
         "active": "Running",
         "failed": "Failed"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Plugin problems",
+        "description": "A plugin failed to start or is not working."
+      },
+      "pluginApproval": {
+        "label": "Plugin approvals",
+        "description": "A plugin is waiting for your approval, or was approved for new capabilities."
+      },
+      "certificateExpiry": {
+        "label": "Certificate expiry",
+        "description": "A certificate is about to expire."
+      },
+      "monitoring": {
+        "label": "Site monitoring",
+        "description": "Your site or a service is down or unhealthy, and when it recovers."
       }
     }
   }

@@ -3502,6 +3502,16 @@
         "choice": "Jedno s popisa",
         "choices": "Više s popisa"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Upozorenja poslana administratorima",
+      "alertsIntro": "Odaberite koja upozorenja primate, putem e-pošte i zvonca konzole. Ostali koji upravljaju ovom stranicom i dalje ih primaju.",
+      "emailsTitle": "E-poruke koje primate",
+      "emailsIntro": "Neobavezne e-poruke koje se šalju na vašu adresu. Potvrde o plaćanju i e-poruke o sigurnosti računa šalju se uvijek.",
+      "locked": "Uvijek uključeno — ne može se isključiti.",
+      "failed": "Vaše postavke obavijesti nije bilo moguće spremiti. Pokušajte ponovno.",
+      "alertsIntroOther": "Odaberite koja upozorenja prima ova osoba, putem e-pošte i zvonca konzole. Ostali koji upravljaju ovom stranicom i dalje ih primaju.",
+      "emailsIntroOther": "Neobavezne e-poruke koje se šalju na adresu ove osobe. Potvrde o plaćanju i e-poruke o sigurnosti računa šalju se uvijek."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Zakazano",
         "active": "U tijeku",
         "failed": "Neuspjelo"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemi s dodacima",
+        "description": "Dodatak se nije uspio pokrenuti ili ne radi."
+      },
+      "pluginApproval": {
+        "label": "Odobrenja dodataka",
+        "description": "Dodatak čeka vaše odobrenje ili je odobren za nove mogućnosti."
+      },
+      "certificateExpiry": {
+        "label": "Istek certifikata",
+        "description": "Certifikat uskoro istječe."
+      },
+      "monitoring": {
+        "label": "Praćenje stranice",
+        "description": "Vaša stranica ili usluga ne radi ili je u lošem stanju, kao i kada se oporavi."
       }
     }
   }

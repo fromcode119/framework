@@ -3502,6 +3502,16 @@
         "choice": "Üks loendist",
         "choices": "Mitu loendist"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Administraatoritele saadetavad teavitused",
+      "alertsIntro": "Vali, millised teavitused sulle e-posti ja konsooli kella kaudu jõuavad. Teised selle saidi haldajad saavad neid edasi.",
+      "emailsTitle": "E-kirjad, mida saad",
+      "emailsIntro": "Valikulised e-kirjad sinu aadressile. Kviitungid ja konto turvalisuse e-kirjad saadetakse alati.",
+      "locked": "Alati sees — seda ei saa välja lülitada.",
+      "failed": "Sinu teavitusseadeid ei õnnestunud salvestada. Proovi uuesti.",
+      "alertsIntroOther": "Vali, millised teavitused sellele inimesele e-posti ja konsooli kella kaudu jõuavad. Teised selle saidi haldajad saavad neid edasi.",
+      "emailsIntroOther": "Valikulised e-kirjad selle inimese aadressile. Kviitungid ja konto turvalisuse e-kirjad saadetakse alati."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Ajastatud",
         "active": "Töötab",
         "failed": "Ebaõnnestus"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Pluginate probleemid",
+        "description": "Plugin ei käivitunud või ei tööta."
+      },
+      "pluginApproval": {
+        "label": "Pluginate kinnitamine",
+        "description": "Plugin ootab sinu kinnitust või kinnitati uute võimaluste jaoks."
+      },
+      "certificateExpiry": {
+        "label": "Sertifikaadi aegumine",
+        "description": "Sertifikaat hakkab peagi aeguma."
+      },
+      "monitoring": {
+        "label": "Saidi jälgimine",
+        "description": "Sinu sait või teenus on maas või talitlushäiretega ning millal see taastub."
       }
     }
   }

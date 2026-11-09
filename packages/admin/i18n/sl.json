@@ -3502,6 +3502,16 @@
         "choice": "Ena možnost s seznama",
         "choices": "Več možnosti s seznama"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Opozorila, poslana skrbnikom",
+      "alertsIntro": "Izberite, katera opozorila prejemate po e-pošti in v zvončku konzole. Drugi, ki upravljajo to spletno mesto, jih še naprej prejemajo.",
+      "emailsTitle": "E-pošta, ki jo prejemate",
+      "emailsIntro": "Izbirna e-pošta, poslana na vaš naslov. Potrdila o plačilu in e-pošta o varnosti računa se pošiljajo vedno.",
+      "locked": "Vedno vklopljeno — ni ga mogoče izklopiti.",
+      "failed": "Nastavitev obvestil ni bilo mogoče shraniti. Poskusite znova.",
+      "alertsIntroOther": "Izberite, katera opozorila prejema ta oseba po e-pošti in v zvončku konzole. Drugi, ki upravljajo to spletno mesto, jih še naprej prejemajo.",
+      "emailsIntroOther": "Izbirna e-pošta, poslana na naslov te osebe. Potrdila o plačilu in e-pošta o varnosti računa se pošiljajo vedno."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Načrtovano",
         "active": "Se izvaja",
         "failed": "Neuspešno"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Težave z vtičniki",
+        "description": "Vtičnika ni bilo mogoče zagnati ali ne deluje."
+      },
+      "pluginApproval": {
+        "label": "Odobritve vtičnikov",
+        "description": "Vtičnik čaka na vašo odobritev ali je bil odobren za nove zmožnosti."
+      },
+      "certificateExpiry": {
+        "label": "Potek veljavnosti potrdila",
+        "description": "Veljavnost potrdila bo kmalu potekla."
+      },
+      "monitoring": {
+        "label": "Spremljanje spletnega mesta",
+        "description": "Vaše spletno mesto ali storitev ne deluje ali je v slabem stanju, in ko se obnovi."
       }
     }
   }

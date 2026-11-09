@@ -3502,6 +3502,16 @@
         "choice": "Uno de una lista",
         "choices": "Varios de una lista"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alertas enviadas a los administradores",
+      "alertsIntro": "Elige qué alertas recibes, por correo electrónico y en la campana de la consola. Las demás personas que gestionan este sitio siguen recibiéndolas.",
+      "emailsTitle": "Correos que recibes",
+      "emailsIntro": "Correos opcionales enviados a tu dirección. Los recibos y los correos de seguridad de la cuenta se envían siempre.",
+      "locked": "Siempre activado — no se puede desactivar.",
+      "failed": "No se pudo guardar tu configuración de notificaciones. Inténtalo de nuevo.",
+      "alertsIntroOther": "Elige qué alertas recibe esta persona, por correo electrónico y en la campana de la consola. Las demás personas que gestionan este sitio siguen recibiéndolas.",
+      "emailsIntroOther": "Correos opcionales enviados a la dirección de esta persona. Los recibos y los correos de seguridad de la cuenta se envían siempre."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Programada",
         "active": "En ejecución",
         "failed": "Fallida"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemas de plugins",
+        "description": "Un plugin no pudo iniciarse o no funciona."
+      },
+      "pluginApproval": {
+        "label": "Aprobaciones de plugins",
+        "description": "Un plugin espera tu aprobación o fue aprobado para nuevas funciones."
+      },
+      "certificateExpiry": {
+        "label": "Caducidad de certificados",
+        "description": "Un certificado está a punto de caducar."
+      },
+      "monitoring": {
+        "label": "Supervisión del sitio",
+        "description": "Tu sitio o un servicio está caído o en mal estado, y cuándo se recupera."
       }
     }
   }

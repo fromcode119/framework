@@ -3502,6 +3502,16 @@
         "choice": "Ceann amháin as liosta",
         "choices": "Roinnt as liosta"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Foláirimh a sheoltar chuig riarthóirí",
+      "alertsIntro": "Roghnaigh cé na foláirimh a thagann chugat, trí ríomhphost agus i gclog na consóle. Leanann daoine eile a bhainistíonn an suíomh seo orthu a fháil.",
+      "emailsTitle": "Ríomhphoist a gheobhaidh tú",
+      "emailsIntro": "Ríomhphoist roghnacha a sheoltar chuig do sheoladh. Seoltar admhálacha agus ríomhphoist slándála cuntais i gcónaí.",
+      "locked": "I gcónaí ar siúl — ní féidir é a mhúchadh.",
+      "failed": "Níorbh fhéidir do shocruithe fógra a shábháil. Bain triail eile as.",
+      "alertsIntroOther": "Roghnaigh cé na foláirimh a thagann chuig an duine seo, trí ríomhphost agus i gclog na consóle. Leanann daoine eile a bhainistíonn an suíomh seo orthu a fháil.",
+      "emailsIntroOther": "Ríomhphoist roghnacha a sheoltar chuig seoladh an duine seo. Seoltar admhálacha agus ríomhphoist slándála cuntais i gcónaí."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Sceidealaithe",
         "active": "Ag rith",
         "failed": "Theip air"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Fadhbanna breiseán",
+        "description": "Theip ar bhreiseán tosú nó níl sé ag obair."
+      },
+      "pluginApproval": {
+        "label": "Formheasanna breiseán",
+        "description": "Tá breiseán ag fanacht le do cheadú, nó formheasadh é do chumais nua."
+      },
+      "certificateExpiry": {
+        "label": "Dul in éag teastais",
+        "description": "Tá teastas ar tí dul in éag."
+      },
+      "monitoring": {
+        "label": "Monatóireacht suímh",
+        "description": "Tá do shuíomh nó seirbhís as feidhm nó neamhshláintiúil, agus nuair a thagann sé ar ais."
       }
     }
   }

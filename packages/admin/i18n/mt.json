@@ -3502,6 +3502,16 @@
         "choice": "Waħda minn lista",
         "choices": "Diversi minn lista"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Twissijiet mibgħuta lill-amministraturi",
+      "alertsIntro": "Agħżel liema twissijiet tirċievi, bl-email u fil-qanpiena tal-konsol. Oħrajn li jmexxu dan is-sit ikomplu jirċevuhom.",
+      "emailsTitle": "Emails li tirċievi",
+      "emailsIntro": "Emails fakultattivi mibgħuta fl-indirizz tiegħek. Irċevuti u emails dwar is-sigurtà tal-kont dejjem jintbagħtu.",
+      "locked": "Dejjem mixgħul — ma jistax jintefa.",
+      "failed": "L-issettings tan-notifiki tiegħek ma setgħux jinħażnu. Erġa' pprova.",
+      "alertsIntroOther": "Agħżel liema twissijiet jirċievi din il-persuna, bl-email u fil-qanpiena tal-konsol. Oħrajn li jmexxu dan is-sit ikomplu jirċevuhom.",
+      "emailsIntroOther": "Emails fakultattivi mibgħuta fl-indirizz ta' din il-persuna. Irċevuti u emails dwar is-sigurtà tal-kont dejjem jintbagħtu."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Skedat",
         "active": "Qed jaħdem",
         "failed": "Falla"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Problemi tal-plugins",
+        "description": "Plugin ma setax jibda jew ma jaħdimx."
+      },
+      "pluginApproval": {
+        "label": "Approvazzjonijiet tal-plugins",
+        "description": "Plugin qed jistenna l-approvazzjoni tiegħek, jew ġie approvat għal kapaċitajiet ġodda."
+      },
+      "certificateExpiry": {
+        "label": "Skadenza taċ-ċertifikat",
+        "description": "Ċertifikat huwa dalwaqt se jiskadi."
+      },
+      "monitoring": {
+        "label": "Monitoraġġ tas-sit",
+        "description": "Is-sit tiegħek jew servizz mhuwiex qed jaħdem jew mhuwiex f'saħħtu, u meta jirkupra."
       }
     }
   }

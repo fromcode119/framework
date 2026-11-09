@@ -227,6 +227,8 @@ export class RouteAuthSegments {
   ADMIN_PERMISSIONS: '/admin/permissions',
   ADMIN_USERS: '/admin/users',
   ADMIN_USERS_ID: '/admin/users/:id',
+  /** One person's email and alert switches, set by an administrator on their behalf. */
+  ADMIN_USERS_EMAIL_PREFERENCES: '/admin/users/:id/email-preferences',
   ADMIN_USERS_OWNERSHIP: '/admin/users/:id/ownership',
   /** Records RELATED to one record, rather than owned by one person. Subject-keyed, not people-keyed. */
   ADMIN_RECORD_LINKS: '/admin/record-links',

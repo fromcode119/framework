@@ -3502,6 +3502,16 @@
         "choice": "Satu daripada senarai",
         "choices": "Beberapa daripada senarai"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Makluman yang dihantar kepada pentadbir",
+      "alertsIntro": "Pilih makluman yang anda terima, melalui e-mel dan loceng konsol. Orang lain yang mengurus tapak ini terus menerimanya.",
+      "emailsTitle": "E-mel yang anda terima",
+      "emailsIntro": "E-mel pilihan yang dihantar ke alamat anda. Resit dan e-mel keselamatan akaun sentiasa dihantar.",
+      "locked": "Sentiasa aktif — tidak boleh dimatikan.",
+      "failed": "Tetapan pemberitahuan anda tidak dapat disimpan. Cuba lagi.",
+      "alertsIntroOther": "Pilih makluman yang diterima orang ini, melalui e-mel dan loceng konsol. Orang lain yang mengurus tapak ini terus menerimanya.",
+      "emailsIntroOther": "E-mel pilihan yang dihantar ke alamat orang ini. Resit dan e-mel keselamatan akaun sentiasa dihantar."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "Dijadualkan",
         "active": "Sedang berjalan",
         "failed": "Gagal"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Masalah plugin",
+        "description": "Plugin gagal dimulakan atau tidak berfungsi."
+      },
+      "pluginApproval": {
+        "label": "Kelulusan plugin",
+        "description": "Plugin menunggu kelulusan anda, atau telah diluluskan untuk keupayaan baharu."
+      },
+      "certificateExpiry": {
+        "label": "Tamat tempoh sijil",
+        "description": "Sijil hampir tamat tempoh."
+      },
+      "monitoring": {
+        "label": "Pemantauan tapak",
+        "description": "Tapak atau perkhidmatan anda tidak berfungsi atau bermasalah, dan apabila ia pulih."
       }
     }
   }

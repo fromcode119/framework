@@ -3502,6 +3502,16 @@
         "choice": "Një nga një listë",
         "choices": "Disa nga një listë"
       }
+    },
+    "notifications": {
+      "alertsTitle": "Alarme të dërguara administratorëve",
+      "alertsIntro": "Zgjidhni cilat alarme i merrni, me email dhe në zilen e konsolës. Të tjerët që administrojnë këtë faqe vazhdojnë t'i marrin.",
+      "emailsTitle": "Email-et që merrni",
+      "emailsIntro": "Email-e opsionale që dërgohen në adresën tuaj. Faturat dhe email-et e sigurisë së llogarisë dërgohen gjithmonë.",
+      "locked": "Gjithmonë aktiv — nuk mund të çaktivizohet.",
+      "failed": "Cilësimet e njoftimeve nuk u ruajtën. Provoni përsëri.",
+      "alertsIntroOther": "Zgjidhni cilat alarme i merr ky person, me email dhe në zilen e konsolës. Të tjerët që administrojnë këtë faqe vazhdojnë t'i marrin.",
+      "emailsIntroOther": "Email-e opsionale që dërgohen në adresën e këtij personi. Faturat dhe email-et e sigurisë së llogarisë dërgohen gjithmonë."
     }
   },
   "scope": {
@@ -4681,6 +4691,26 @@
         "delayed": "E planifikuar",
         "active": "Në ekzekutim",
         "failed": "Dështoi"
+      }
+    }
+  },
+  "notifications": {
+    "alerts": {
+      "pluginHealth": {
+        "label": "Probleme me shtojcat",
+        "description": "Një shtojcë nuk u nis ose nuk funksionon."
+      },
+      "pluginApproval": {
+        "label": "Miratimet e shtojcave",
+        "description": "Një shtojcë pret miratimin tuaj ose u miratua për aftësi të reja."
+      },
+      "certificateExpiry": {
+        "label": "Skadimi i certifikatës",
+        "description": "Një certifikatë po skadon së shpejti."
+      },
+      "monitoring": {
+        "label": "Monitorimi i faqes",
+        "description": "Faqja juaj ose një shërbim është jashtë funksionit ose në gjendje të keqe, dhe kur rikuperohet."
       }
     }
   }

@@ -154,6 +154,7 @@ export class SystemApiPaths {
       ADMIN_BACKUP_RESTORE_EXECUTE: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_BACKUPS_ID_RESTORE_EXECUTE),
       ADMIN_USERS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_USERS),
       ADMIN_USER: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_USERS_ID),
+      ADMIN_USER_EMAIL_PREFERENCES: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_USERS_EMAIL_PREFERENCES),
       ADMIN_RECORD_LINKS: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_RECORD_LINKS),
       ADMIN_PAGE_DESIGN: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_PAGE_DESIGN),
       ADMIN_PEOPLE: SystemApiPaths.joinPath(SystemApiPaths.SYSTEM_BASE, SystemApiPaths.ROUTE_SEGMENTS.ADMIN_PEOPLE),
