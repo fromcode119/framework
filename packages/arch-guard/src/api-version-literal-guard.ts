@@ -5,16 +5,15 @@ import { GuardScope } from './cli/guard-scope';
 /**
  * An api path written with its version by hand: `'/api/v1/system/frontend'`, `` `/api/v1/${slug}` ``.
  *
- * The version segment is configuration — `ApiVersionUtils.prefix()` reads it, and `ApiPathUtils`
- * composes every framework path from it — so a literal copy is a second answer that silently stops
- * matching the moment the prefix changes. The api no longer answers `/api/v1/...`, so a stale literal
- * is a request that 404s.
+ * The api has no version segment: every route lives at `/api/...`, `ApiPathUtils` composes each path
+ * from `ApiVersionUtils.prefix()`, and `/api/v<N>/...` is not answered at all. A literal with a version
+ * written in is therefore a request that 404s.
  *
  * Stylesheets and manifests (`theme.json`, `appearance.json`) are scanned too: a font `url()` or an LCP
  * `urlTemplate` with the version written in it is the same second answer.
  *
- * GATES the framework. An extension tree is REPORTED only, until each one has moved to its own
- * route-service / client resolver; then it gates too.
+ * GATES every tree — the framework and each plugin, theme, appearance and app — so a versioned path
+ * cannot come back anywhere.
  */
 export class ApiVersionLiteralGuard {
   private static readonly SKIP = new Set(['node_modules', 'dist', '.next', '.git', 'ui', 'ui-ssr', 'tests', '__tests__', 'coverage', 'arch-guard']);
@@ -36,19 +35,18 @@ export class ApiVersionLiteralGuard {
 
   static run(): number {
     const root = process.cwd();
-    let gated = 0;
-    let reported = 0;
-    for (const { area, dir } of GuardScope.areas()) {
+    let found = 0;
+    for (const { dir } of GuardScope.areas()) {
       for (const file of ApiVersionLiteralGuard.sources(dir, [])) {
         const lines = ApiVersionLiteralGuard.scan(file);
         if (!lines.length) continue;
-        if (area === 'framework') gated += lines.length; else reported += lines.length;
-        console.log(`  ${area === 'framework' ? 'FAIL' : 'note'}  ${path.relative(root, file)}:${lines.join(',')}`);
+        found += lines.length;
+        console.log(`  FAIL  ${path.relative(root, file)}:${lines.join(',')}`);
       }
     }
-    console.log(`Hand-written versioned api paths: framework ${gated} (must be 0), extensions ${reported} (reported).`);
-    if (!gated) return 0;
-    console.log('Compose the path with ApiPathUtils (versioned, systemPath, authPath, pluginPath, ...) instead.');
+    console.log(`Hand-written versioned api paths: ${found} (must be 0).`);
+    if (!found) return 0;
+    console.log('The api answers /api/... only. Compose the path with ApiPathUtils (systemPath, authPath, pluginPath, ...) instead.');
     return 1;
   }
 

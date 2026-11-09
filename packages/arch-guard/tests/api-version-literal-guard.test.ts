@@ -1,8 +1,9 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, afterEach, vi } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { ApiVersionLiteralGuard } from '../src/api-version-literal-guard';
+import { GuardScope } from '../src/cli/guard-scope';
 
 /** Both sides: the shapes a hand-written path takes, and the look-alikes that are someone else's api. */
 describe('ApiVersionLiteralGuard', () => {
@@ -41,5 +42,30 @@ describe('ApiVersionLiteralGuard', () => {
     "const apiv1 = 'apiv1';",
   ])('leaves %s alone', (line) => {
     expect(scan(line)).toEqual([]);
+  });
+
+  describe('run', () => {
+    afterEach(() => {
+      delete process.env[GuardScope.ENV];
+      vi.restoreAllMocks();
+    });
+    const extension = (source: string): string => {
+      const root = fs.mkdtempSync(path.join(dir, 'plugins-'));
+      fs.mkdirSync(path.join(root, 'src'));
+      fs.writeFileSync(path.join(root, 'src', 'client.ts'), source);
+      return root;
+    };
+
+    it('fails an extension that writes a versioned path, not only the framework', () => {
+      vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      process.env[GuardScope.ENV] = extension("fetch('/api/v1/media')\n");
+      expect(ApiVersionLiteralGuard.run()).toBe(1);
+    });
+
+    it('passes an extension that composes its paths', () => {
+      vi.spyOn(console, 'log').mockImplementation(() => undefined);
+      process.env[GuardScope.ENV] = extension("fetch(ApiPathUtils.pluginPath('media'))\n");
+      expect(ApiVersionLiteralGuard.run()).toBe(0);
+    });
   });
 });
