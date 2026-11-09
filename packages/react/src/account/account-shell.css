@@ -11,6 +11,8 @@
      `--theme-primary-color`) leads, and a theme that declares none gets ink, not a brand colour. */
   --fc-acct-accent: var(--theme-primary-color, #18181b);
   --fc-acct-accent-soft: color-mix(in srgb, var(--fc-acct-accent) 10%, transparent);
+  /* Text on an accent fill; a theme with a light primary colour overrides it. */
+  --fc-acct-on-accent: #ffffff;
   --fc-acct-fg: #18181b;
   --fc-acct-muted: #71717a;
   --fc-acct-border: #e4e4e7;
@@ -71,7 +73,7 @@
    The framework's own default design for the account landing page. A theme restyles it by overriding
    these classes; none of it lives in TypeScript. */
 .fc-acct-overview { display: grid; gap: 20px; }
-.fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 16px; padding: 24px; box-shadow: 0 1px 3px rgba(24, 24, 27, .04); }
+.fc-acct-card { background: var(--fc-acct-bg); border: 1px solid var(--fc-acct-border); border-radius: 14px; padding: 24px; box-shadow: 0 1px 3px rgba(24, 24, 27, .04); }
 .fc-acct-card-title { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--fc-acct-muted); margin: 0 0 12px; }
 .fc-acct-intro { color: var(--fc-acct-muted); font-size: 14px; margin: 0; }
 .fc-acct-loading { color: var(--fc-acct-muted); font-size: 14px; }
@@ -115,11 +117,13 @@
 .fc-acct-sronly { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); border: 0; }
 
 .fc-acct-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.fc-acct-btn { padding: 10px 22px; border: none; border-radius: 999px; background: #1a1a2e; color: #fff; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, background .15s; }
-.fc-acct-btn:hover:not(:disabled) { background: #2b2b45; }
+.fc-acct-btn { padding: 10px 22px; border: none; border-radius: 999px; background: var(--fc-acct-accent); color: var(--fc-acct-on-accent); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: opacity .15s, background .15s; }
+.fc-acct-btn:hover:not(:disabled) { background: color-mix(in srgb, var(--fc-acct-accent) 85%, var(--fc-acct-fg)); }
+.fc-acct-btn:active:not(:disabled) { transform: translateY(1px); }
+.fc-acct-btn:focus-visible { outline: 2px solid var(--fc-acct-accent); outline-offset: 2px; }
 .fc-acct-btn:disabled { opacity: .6; cursor: default; }
-.fc-acct-btn--muted { background: #e2e8f0; color: #334155; }
-.fc-acct-btn--muted:hover:not(:disabled) { background: #cbd5e1; }
+.fc-acct-btn--muted { background: var(--fc-acct-bg-soft); color: var(--fc-acct-fg); border: 1px solid var(--fc-acct-border); }
+.fc-acct-btn--muted:hover:not(:disabled) { background: var(--fc-acct-bg-soft); border-color: var(--fc-acct-accent); }
 .fc-acct-btn--danger { background: #fee2e2; color: #b91c1c; }
 .fc-acct-btn--danger:hover:not(:disabled) { background: #fecaca; }
 .fc-acct-btn--link { display: inline-block; text-decoration: none; background: var(--fc-acct-accent); }
@@ -229,6 +233,6 @@
 .fc-acct-signout-error { color: #b91c1c; }
 .fc-acct-signout-actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .fc-acct-signout-yes, .fc-acct-signout-no { padding: 7px 14px; border-radius: 999px; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; border: 1px solid var(--fc-acct-accent, #334155); }
-.fc-acct-signout-yes { background: var(--fc-acct-accent, #334155); color: #fff; }
+.fc-acct-signout-yes { background: var(--fc-acct-accent, #334155); color: var(--fc-acct-on-accent, #fff); }
 .fc-acct-signout-no { background: transparent; color: var(--fc-acct-accent, #334155); }
 .fc-acct-signout-yes:disabled, .fc-acct-signout-no:disabled { opacity: .55; cursor: default; }
