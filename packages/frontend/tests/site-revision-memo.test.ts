@@ -91,4 +91,16 @@ describe('SiteRevisionMemo', () => {
     expect((SiteRevisionMemo as any).partitions.size).toBeLessThanOrEqual(128);
     expect((SiteRevisionMemo as any).size).toBeLessThanOrEqual(128);
   });
+
+  it('counts an evicted origin once, even when its pending answer is later refused', async () => {
+    let refuse!: () => void;
+    const slow = SiteRevisionMemo.memo(() => new Promise<null>((resolve) => { refuse = () => resolve(null); }), () => false);
+    const page = SiteRevisionMemo.memo(async (slug: string) => slug);
+    void RequestScope.run(async () => { await slow(); }, { shareKey: 'https://first' });
+    await new Promise((r) => setTimeout(r, 0));
+    for (let i = 0; i < 200; i++) await RequestScope.run(async () => { await page('x'); }, { shareKey: `https://o-${i}` });
+    refuse();
+    await new Promise((r) => setTimeout(r, 0));
+    expect((SiteRevisionMemo as any).size).toBe((SiteRevisionMemo as any).partitions.size);
+  });
 });
