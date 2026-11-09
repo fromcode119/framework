@@ -12,6 +12,10 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 - **frontend**: bound the site revision memo per function and site ([#1353](https://github.com/fromcode119/framework/pull/1353))
 
+### Fixed
+
+- **frontend**: bound the memo's partitions and drop empty ones ([#1355](https://github.com/fromcode119/framework/pull/1355))
+
 ## [0.2.557] - 2026-11-09
 
 ### Performance
