@@ -90,6 +90,8 @@ export class SiteRevisionMemo {
     while (SiteRevisionMemo.partitions.size > SiteRevisionMemo.MAX_PARTITIONS) {
       const [partitionKey, oldest] = SiteRevisionMemo.partitions.entries().next().value as [string, Map<string, Promise<unknown>>];
       SiteRevisionMemo.size -= oldest.size;
+      // Emptied too, so an entry of it still in flight finds nothing to drop and is not counted twice.
+      oldest.clear();
       SiteRevisionMemo.partitions.delete(partitionKey);
     }
     for (const [partitionKey, oldest] of SiteRevisionMemo.partitions) {
