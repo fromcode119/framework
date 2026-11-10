@@ -48,4 +48,15 @@ describe('StorefrontFallbackPage — a 404 stays a 404', () => {
     expect(markup).toContain('About');
     expect(markup).not.toContain('Untitled');
   });
+
+  it('an empty content document renders no prose block or repeated title', () => {
+    // A brand/category page: empty stored content, body from the content display slot. The prose
+    // fallback used to add a second, unstyled <h1> with the page title below the plugin body.
+    const config = configFor({ pageKind: 'content', content: { title: 'EasyLife', slug: 'easylife', content: '' } });
+    const markup = renderToStaticMarkup(
+      createElement(StorefrontFallbackPage as any, { config, serverHtml: '' }),
+    );
+    expect(markup).not.toContain('<h1');
+    expect(markup).not.toContain('max-w-4xl mx-auto py-12 px-6');
+  });
 });
