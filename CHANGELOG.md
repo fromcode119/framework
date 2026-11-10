@@ -13,6 +13,8 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 - **core**: a plugin invocation's idle deadline counts only its own calls, with a total ceiling ([#1364](https://github.com/fromcode119/framework/pull/1364))
 - **cli**: the updater applies the release's compose files on self-update ([#1363](https://github.com/fromcode119/framework/pull/1363))
 - **frontend**: a path whose percent-encoding does not decode answers 400 instead of 500 ([#1365](https://github.com/fromcode119/framework/pull/1365))
+- **runtime**: write the import map before the host import, so Firefox hydrates ([#1366](https://github.com/fromcode119/framework/pull/1366))
+- **frontend**: render the prose fallback only for non-empty stored content ([#1368](https://github.com/fromcode119/framework/pull/1368))
 
 ## [0.2.561] - 2026-11-10
 
