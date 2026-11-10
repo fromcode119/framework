@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.562] - 2026-11-10
+
+### Fixed
+
+- **updater**: apply the release's compose files on self-update ([#1363](https://github.com/fromcode119/framework/pull/1363))
+- **plugin-host**: idle deadline per invocation, with a total ceiling ([#1364](https://github.com/fromcode119/framework/pull/1364))
+
 ## [0.2.561] - 2026-11-10
 
 ### Changed
