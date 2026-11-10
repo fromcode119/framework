@@ -42,8 +42,11 @@ export class PluginChannel {
    * legitimately run for minutes — rewriting every row of a large catalogue — while
    * calling the host the whole time; a fixed deadline cut it off at 60 s, the update was abandoned, and the
    * process running the old code went on serving. A process that is really stuck goes quiet, and still fails.
+   *
+   * `quietFor` measures silence for THIS request only (the caller's own activity record); without it the
+   * channel-wide last peer request is used. `maxMs` is an absolute ceiling an idle request never outlives.
    */
-  request<T = unknown>(type: string, payload: unknown, timeoutMs = 0, options: { idle?: boolean } = {}): Promise<T> {
+  request<T = unknown>(type: string, payload: unknown, timeoutMs = 0, options: { idle?: boolean; quietFor?: () => number; maxMs?: number } = {}): Promise<T> {
     if (this.closed) return Promise.reject(new Error('channel closed'));
     const id = randomUUID();
     return new Promise<T>((resolve, reject) => {
@@ -51,13 +54,15 @@ export class PluginChannel {
       const expire = (): void => {
         const entry = this.pending.get(id);
         if (!entry) return;
-        const quietFor = Date.now() - Math.max(startedAt, this.lastPeerRequestAt);
-        if (options.idle && quietFor < timeoutMs) {
-          entry.timer = setTimeout(expire, timeoutMs - quietFor);
+        const elapsed = Date.now() - startedAt;
+        const ceiling = options.maxMs && options.maxMs > 0 ? options.maxMs : Infinity;
+        const quietFor = options.quietFor ? Math.min(options.quietFor(), elapsed) : Date.now() - Math.max(startedAt, this.lastPeerRequestAt);
+        if (options.idle && quietFor < timeoutMs && elapsed < ceiling) {
+          entry.timer = setTimeout(expire, Math.max(1, Math.min(timeoutMs - quietFor, ceiling - elapsed)));
           return;
         }
         this.pending.delete(id);
-        reject(new Error(options.idle ? `${type} timed out after ${timeoutMs}ms without any activity` : `${type} timed out after ${timeoutMs}ms`));
+        reject(new Error(elapsed >= ceiling ? `${type} exceeded its ${ceiling}ms ceiling` : options.idle ? `${type} timed out after ${timeoutMs}ms without any activity` : `${type} timed out after ${timeoutMs}ms`));
       };
       const timer = timeoutMs > 0 ? setTimeout(expire, timeoutMs) : null;
       this.pending.set(id, { resolve: resolve as (value: unknown) => void, reject, timer });
