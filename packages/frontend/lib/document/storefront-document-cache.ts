@@ -42,10 +42,22 @@ export class StorefrontDocumentCache {
 
   /** A request whose document may be read from, and written to, the cache. */
   static cacheable(method: string, cookieNames: Iterable<string>, searchParams: URLSearchParams): boolean {
+    if (!StorefrontDocumentCache.impersonal(method, cookieNames)) return false;
+    for (const key of searchParams.keys()) if (!StorefrontDocumentCache.NEUTRAL_PARAMS.has(key)) return false;
+    return true;
+  }
+
+  /**
+   * A request whose server fetches carry nothing personal: no session or preview cookie. Its WHOLE
+   * document may still depend on its query (above), but the site-wide payloads the render reads
+   * (dictionary, menus, head data, a resolve) are keyed by their own arguments and never by the query,
+   * so they may be shared (SiteRevisionMemo). Tying that to the document rule made every `?fbclid=` or
+   * `?utm_` visit fetch all of them again.
+   */
+  static impersonal(method: string, cookieNames: Iterable<string>): boolean {
     if (method !== 'GET' && method !== 'HEAD') return false;
     const personal = new Set<string>([...CookieConstants.AUTH_COOKIES_TO_CLEAR, CookieConstants.SITE_PREVIEW]);
     for (const name of cookieNames) if (personal.has(name)) return false;
-    for (const key of searchParams.keys()) if (!StorefrontDocumentCache.NEUTRAL_PARAMS.has(key)) return false;
     return true;
   }
 

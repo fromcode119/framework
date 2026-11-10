@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { StorefrontDocumentCache } from '@/lib/document/storefront-document-cache';
+import { CookieConstants } from '@fromcode119/core/client';
 
 const params = (query = '') => new URLSearchParams(query);
 const frontend = (revision: string, extra: Record<string, unknown> = {}) => ({ contentRevision: revision, activeTheme: { slug: 't', version: '1' }, ...extra });
@@ -83,5 +84,14 @@ describe('StorefrontDocumentCache: storing and serving', () => {
     for (let i = 0; i < 12; i += 1) await StorefrontDocumentCache.write(`big${i}`, html(big));
     expect(StorefrontDocumentCache.read('big0')).toBeNull();
     expect(StorefrontDocumentCache.read('big11')).not.toBeNull();
+  });
+
+  it('shares site-wide payloads with a request that has a query, but never with a session or preview', () => {
+    expect(StorefrontDocumentCache.impersonal('GET', [])).toBe(true);
+    expect(StorefrontDocumentCache.cacheable('GET', [], new URLSearchParams('fbclid=x'))).toBe(false);
+    for (const name of [...CookieConstants.AUTH_COOKIES_TO_CLEAR, CookieConstants.SITE_PREVIEW]) {
+      expect(StorefrontDocumentCache.impersonal('GET', [name]), name).toBe(false);
+    }
+    expect(StorefrontDocumentCache.impersonal('POST', [])).toBe(false);
   });
 });
