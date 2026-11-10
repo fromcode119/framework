@@ -114,10 +114,10 @@ export class DynamicContentClient extends Reactor {
             <Slot name={StorefrontContentContract.DISPLAY_SLOT} props={{ content: renderableContent, entry: normalizedContent }} />
           )}
 
-          {(!hasDefaultPageDesign && (!renderableContent || typeof renderableContent === 'string')) && (
+          {(!hasDefaultPageDesign && ContentRenderingUtils.hasProseContent(renderableContent)) && (
             <div className="prose prose-slate dark:prose-invert max-w-4xl mx-auto py-12 px-6">
               {ContentRenderingUtils.resolveDisplayTitle(normalizedContent) ? <h1 className="text-4xl font-black mb-8">{ContentRenderingUtils.resolveDisplayTitle(normalizedContent)}</h1> : null}
-              <div dangerouslySetInnerHTML={{ __html: renderableContent || '' }} />
+              <div dangerouslySetInnerHTML={{ __html: renderableContent }} />
             </div>
           )}
 
