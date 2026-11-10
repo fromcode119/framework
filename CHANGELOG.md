@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.563] - 2026-11-10
+
+### Fixed
+
+- **frontend**: drop the prose fallback for empty content in DynamicContentClient ([#1372](https://github.com/fromcode119/framework/pull/1372))
+
 ## [0.2.562] - 2026-11-10
 
 ### Fixed
