@@ -12,6 +12,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 - **updater**: apply the release's compose files on self-update ([#1363](https://github.com/fromcode119/framework/pull/1363))
 - **plugin-host**: idle deadline per invocation, with a total ceiling ([#1364](https://github.com/fromcode119/framework/pull/1364))
+- **frontend**: answer 400 for a path whose percent-encoding does not decode ([#1365](https://github.com/fromcode119/framework/pull/1365))
 
 ## [0.2.561] - 2026-11-10
 
