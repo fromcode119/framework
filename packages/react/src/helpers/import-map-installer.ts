@@ -14,12 +14,18 @@ export class ImportMapInstaller {
     ImportMapInstaller.applyServerModules(imports, args);
     ImportMapInstaller.applyClientModules(imports, args);
     ImportMapInstaller.applySubpathAliases(imports);
-    // Every module in the map reads the runtime host when it evaluates, so the map is published only
-    // once the host holds every registered entry. A host that cannot load is reported, and the map is
-    // still published: extensions then fail loudly at their import instead of the page waiting forever.
+    // The map goes into the document BEFORE the host import below. That import is a module load, and
+    // Firefox ignores an import map inserted after any module load has started ("Import maps are not
+    // allowed after a module load or preload has started"): every theme and plugin bundle then fails
+    // on its first bare import and the storefront never hydrates. Chromium tolerates the late map, so
+    // only Firefox broke. The map's modules read the runtime host when they EVALUATE, not when the map
+    // is parsed, so the map is marked ready only once the host holds every registered entry. A host
+    // that cannot load is reported and the map is still marked ready: extensions then fail loudly at
+    // their import instead of the page waiting forever.
+    const script = ImportMapInstaller.write(imports);
     void RuntimeRegistryAccess.connect()
       .catch((error) => console.error('[fromcode] The runtime host module could not be loaded.', error))
-      .then(() => ImportMapInstaller.publish(imports));
+      .then(() => RuntimeImportMapReadiness.markReady(script));
   }
 
   /**
@@ -32,22 +38,21 @@ export class ImportMapInstaller {
     imports['@fromcode119/sdk/admin/theme-style-variant-select'] = imports['@fromcode119/sdk/admin'];
   }
 
-  private static publish(imports: Record<string, string>): void {
-    let script = document.getElementById(RuntimeImportMapReadiness.SCRIPT_ID) as HTMLScriptElement;
-    if (!script) {
-      script = document.createElement('script');
+  private static write(imports: Record<string, string>): HTMLScriptElement {
+    const existing = document.getElementById(RuntimeImportMapReadiness.SCRIPT_ID) as HTMLScriptElement | null;
+    const script = existing || document.createElement('script');
+    if (!existing) {
       script.id = RuntimeImportMapReadiness.SCRIPT_ID;
       script.type = 'importmap';
       // An inline import map is inline SCRIPT to a Content-Security-Policy, which `'strict-dynamic'`
       // does not cover: it runs only with the page's nonce, taken from a script the page already trusts.
       const trusted = document.querySelector<HTMLScriptElement>('script[nonce]');
       if (trusted?.nonce) script.nonce = trusted.nonce;
-      document.head.appendChild(script);
     }
+    // The text goes in before the element is inserted: a browser reads an import map once, on insertion.
     script.textContent = JSON.stringify({ imports });
-    // Signal plugin-loaders that the import map is ready so they can start
-    // loading theme/plugin bundles without waiting for the 50ms poll interval.
-    window.dispatchEvent(new CustomEvent(RuntimeImportMapReadiness.READY_EVENT));
+    if (!existing) document.head.appendChild(script);
+    return script;
   }
 
   /**
