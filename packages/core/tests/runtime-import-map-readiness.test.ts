@@ -16,7 +16,9 @@ describe('RuntimeImportMapReadiness — bundles wait for the import map', () => 
     script.type = 'importmap';
     script.textContent = JSON.stringify({ imports: { react: 'data:text/javascript,' } });
     document.head.appendChild(script);
-    window.dispatchEvent(new CustomEvent(RuntimeImportMapReadiness.READY_EVENT));
+    // In the document but the runtime host not yet connected: not published.
+    expect(RuntimeImportMapReadiness.isPublished()).toBe(false);
+    RuntimeImportMapReadiness.markReady(script);
     await wait;
     expect(settled).toBe(true);
   });
@@ -26,6 +28,7 @@ describe('RuntimeImportMapReadiness — bundles wait for the import map', () => 
     script.id = RuntimeImportMapReadiness.SCRIPT_ID;
     script.type = 'importmap';
     script.textContent = '{"imports":{}}';
+    script.setAttribute(RuntimeImportMapReadiness.READY_ATTRIBUTE, '');
     document.head.appendChild(script);
     expect(RuntimeImportMapReadiness.isPublished()).toBe(true);
     await expect(RuntimeImportMapReadiness.whenPublished()).resolves.toBeUndefined();

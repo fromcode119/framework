@@ -1,23 +1,15 @@
-import { ApiPathUtils, PluginFrontendRuntimeUtils, PublicAssetUrlUtils, RuntimeRegistryAccess } from '@fromcode119/core/client';
+import { ApiPathUtils, PluginFrontendRuntimeUtils, PublicAssetUrlUtils, RuntimeImportMapReadiness, RuntimeRegistryAccess } from '@fromcode119/core/client';
 import { FrontendAssetVersionUrlService } from '@/lib/frontend-asset-version-url-service';
 import { RuntimeModuleRef } from '@/app/runtime-module-ref';
 
 export class PluginLoaderMountService {
 
   static isImportMapReady(): boolean {
-    // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react).
-    // Wait until BOTH the runtime import map script tag exists AND the react bridge
-    // registry entry is populated. The script tag is created synchronously inside
-    // installRuntimeBridge(), but we double-check the runtime store to guard against any
-    // edge-case where the tag was created before the bridge object was written.
-    const importMapScript = document.getElementById('fc-runtime-import-map') as HTMLScriptElement | null;
-    const importMapText = String(importMapScript?.textContent || '');
+    // Plugin/theme ESM bundles import bare specifiers (e.g. @fromcode119/react). Wait until the
+    // runtime import map is in the document AND marked ready (the runtime host it points at is filled),
+    // and the react bridge registry entries are populated.
     return (
-      !!importMapScript &&
-      importMapText.includes('"react"') &&
-      importMapText.includes('useInsertionEffect') &&
-      importMapText.includes('useSyncExternalStore') &&
-      importMapText.includes('@fromcode119/sdk/react') &&
+      RuntimeImportMapReadiness.isPublished() &&
       !!RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.REACT_BRIDGE) &&
       !!RuntimeRegistryAccess.get(RuntimeRegistryAccess.KEYS.SDK_REACT)
     );
