@@ -61,4 +61,11 @@ describe('StorefrontDocumentProxy', () => {
   it('never rewrites non-navigation methods', async () => {
     expect((await StorefrontDocumentProxy.handle(request('/contact', 'POST'))).headers.get('x-middleware-rewrite')).toBeNull();
   });
+  it('answers 400, not a server error, for a path whose percent-encoding does not decode', async () => {
+    vi.spyOn(SiteVisibilityProxyGuard, 'verdict').mockResolvedValue({ readable: true, contentSecurityPolicy: null });
+
+    expect((await StorefrontDocumentProxy.handle(request('/product/1/%%GDPRPOLICYURL%%'))).status).toBe(400);
+    expect((await StorefrontDocumentProxy.handle(request('/shop/%E0%A4%A'))).status).toBe(400);
+    expect((await StorefrontDocumentProxy.handle(request('/shop/%D0%B0'))).status).not.toBe(400);
+  });
 });

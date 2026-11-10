@@ -35,6 +35,9 @@ export class StorefrontDocumentProxy {
     const pathname = request.nextUrl.pathname;
     const themedPage = StorefrontDocumentProxy.THEMED_NEXT_PAGES.has(StorefrontDocumentProxy.firstSegment(pathname));
     if (!StorefrontDocumentProxy.isDocumentPath(pathname) && !themedPage) return NextResponse.next();
+    // A path whose percent-encoding does not decode (`/%%GDPRPOLICYURL%%`, a template placeholder an old
+    // site left in its links) is not a page: the document route throws decoding it and the visitor got a 500.
+    if (!StorefrontDocumentProxy.decodes(pathname)) return new Response('Bad Request', { status: 400, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
 
     // A site that is not published answers here, before any page runs. This is the only point every
     // document entry passes through — the islands route and both App Router pages each resolve
@@ -59,6 +62,15 @@ export class StorefrontDocumentProxy {
   private static withPolicy(response: NextResponse, policy: string | null): NextResponse {
     if (policy) response.headers.set('Content-Security-Policy', policy);
     return response;
+  }
+
+  private static decodes(pathname: string): boolean {
+    try {
+      decodeURIComponent(pathname);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   private static firstSegment(pathname: string): string {
