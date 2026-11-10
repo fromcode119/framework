@@ -11,11 +11,11 @@ import { PluginInvocationKind } from '@core/plugin/host/enums/plugin-invocation-
  */
 describe('a plugin invocation deadline', () => {
   const run = async (kind: string) => {
-    const seen: Array<{ timeoutMs: number; options: { idle?: boolean } }> = [];
+    const seen: Array<{ timeoutMs: number; options: { idle?: boolean; maxMs?: number; perToken: boolean } }> = [];
     const channel = {
       isClosed: false,
-      request: async (_type: string, _payload: unknown, timeoutMs: number, options: { idle?: boolean }) => {
-        seen.push({ timeoutMs, options });
+      request: async (_type: string, _payload: unknown, timeoutMs: number, options: { idle?: boolean; quietFor?: () => number; maxMs?: number }) => {
+        seen.push({ timeoutMs, options: { idle: options.idle, maxMs: options.maxMs, perToken: typeof options.quietFor === 'function' && Number.isFinite(options.quietFor()) } });
         return undefined;
       },
     };
@@ -39,10 +39,10 @@ describe('a plugin invocation deadline', () => {
     PluginInvocationKind.JOB.value,
     PluginInvocationKind.PUBLIC_API.value,
   ])('holds %s work to the per-call deadline on silence, not on total time', async (kind) => {
-    expect(await run(String(kind))).toEqual({ timeoutMs: 30000, options: { idle: true } });
+    expect(await run(String(kind))).toEqual({ timeoutMs: 30000, options: { idle: true, maxMs: 300000, perToken: true } });
   });
 
   it('keeps the boot window for lifecycle work, also on silence', async () => {
-    expect(await run(String(PluginInvocationKind.LIFECYCLE.value))).toEqual({ timeoutMs: PluginHostState.BOOT_TIMEOUT_MS, options: { idle: true } });
+    expect(await run(String(PluginInvocationKind.LIFECYCLE.value))).toEqual({ timeoutMs: PluginHostState.BOOT_TIMEOUT_MS, options: { idle: true, maxMs: 0, perToken: true } });
   });
 });
