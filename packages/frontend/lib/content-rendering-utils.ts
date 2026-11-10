@@ -41,6 +41,15 @@ export class ContentRenderingUtils {
   }
 
   /**
+   * Whether the stored-HTML prose body has anything to show: only a non-empty string. An empty page's
+   * body comes from whatever fills the content display slot (a plugin listing, a brand page); repeating
+   * the title under it in an empty prose block is a stray duplicate heading, not content.
+   */
+  static hasProseContent(renderable: unknown): renderable is string {
+    return typeof renderable === 'string' && renderable.trim().length > 0;
+  }
+
+  /**
    * Builds renderable content structure from a content object.
    * Handles direct content and delegates plugin-specific adaptation to registered transformers.
    *

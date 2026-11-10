@@ -39,12 +39,11 @@ export class StorefrontPageTree extends PureReactor {
     if (entry?.recipe) return <div className={this.className} style={style} />;
 
     const renderable = ContentRenderingUtils.buildRenderableContent(entry);
-    const isStringContent = !renderable || typeof renderable === 'string';
 
     return (
       <div className={this.className} style={style}>
         <Slot key="display" name={StorefrontContentContract.DISPLAY_SLOT} props={{ content: renderable, entry }} />
-        {isStringContent ? this.renderProse(entry, String(renderable || '')) : null}
+        {ContentRenderingUtils.hasProseContent(renderable) ? this.renderProse(entry, renderable) : null}
         <Slot key="footer" name={StorefrontContentContract.FOOTER_SLOT} props={{ content: entry }} />
       </div>
     );
