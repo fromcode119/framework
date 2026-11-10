@@ -8,10 +8,12 @@ import { TarFixture } from '@cli/services/updater/tests/tar-fixture';
 
 /** A Docker daemon in memory: containers by id, local images, and switches to make a step fail. */
 export class InMemoryDockerEngine implements IDockerEngine {
-  containers = new Map<string, { name: string; image: string; running: boolean; labels: Record<string, string>; env: string[]; cmd: string[] | null; created: number }>();
+  containers = new Map<string, { name: string; image: string; running: boolean; labels: Record<string, string>; env: string[]; cmd: string[] | null; created: number; body?: Record<string, any> }>();
   images = new Set<string>();
   published = new Set<string>();
   failStartFor = '';
+  /** A service whose NEWLY created container will not start (its running one still does). */
+  failNewStartFor = '';
   /** What the database answers for `deploy_mode` ('' = never set, which is restart). */
   deployMode = '';
   appliedMigration = 54;
@@ -45,6 +47,9 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async inspect(id: string): Promise<IContainerInspect> {
     const c = this.containers.get(id)!;
+    // A container made here reports what it was created with, as Docker does (the image env added).
+    if (c.body) return { Id: id, Name: `/${c.name}`, State: { Running: c.running }, Config: { ...c.body, Env: [...(c.body.Env ?? []), 'NODE_VERSION=22'], Cmd: c.body.Cmd ?? ['node'], Hostname: id.slice(0, 12) },
+      HostConfig: c.body.HostConfig ?? {}, NetworkSettings: { Networks: Object.fromEntries(Object.entries(c.body.NetworkingConfig?.EndpointsConfig ?? {})) } };
     const mode = this.networkModes[c.labels['com.docker.compose.service']];
     return { Id: id, Name: `/${c.name}`, State: { Running: c.running },
       Config: { Image: c.image, Env: c.env, Cmd: c.cmd, Labels: c.labels, Hostname: id.slice(0, 12) },
@@ -75,7 +80,7 @@ export class InMemoryDockerEngine implements IDockerEngine {
     }
     const id = `c${this.next++}bbbbbbbbbbbb`;
     this.created.push({ name, body });
-    this.containers.set(id, { name, image: body.Image, running: false, labels: body.Labels ?? {}, env: body.Env, cmd: body.Cmd, created: this.next });
+    this.containers.set(id, { name, image: body.Image, running: false, labels: body.Labels ?? {}, env: body.Env, cmd: body.Cmd, created: this.next, body });
     return id;
   }
 
@@ -83,6 +88,7 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async start(id: string): Promise<void> {
     const c = this.containers.get(id)!;
+    if (c.body && this.failNewStartFor === c.labels['com.docker.compose.service']) throw new Error('exited with code 1');
     if (this.failStartFor && c.labels['com.docker.compose.service'] === this.failStartFor && c.image.endsWith(':v0.2.400')) throw new Error('exited with code 1');
     c.running = true;
   }

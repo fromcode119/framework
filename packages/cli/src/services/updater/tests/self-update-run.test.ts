@@ -23,13 +23,14 @@ class Stack {
   constructor(tag = 'v0.2.392') {
     this.folder = DeployFolderFixture.older(tag === 'latest' ? '' : tag);
     for (const [service, image] of Object.entries(SERVICES)) this.engine.add(service, `${REG}${image}:${tag}`);
-    this.engine.add('db', 'postgres:16');
+    this.engine.add('db', 'postgres:15-alpine');
+    this.engine.add('redis', 'redis:7-alpine');
     for (const image of ['api', 'admin', 'frontend', 'gateway']) this.engine.published.add(`${REG}${image}:v0.2.400`);
   }
   run() {
     const rolling = (stack: any) => new RollingDeploy(stack, async () => undefined, 0, 0);
     return new SelfUpdateRun(this.engine, { reports: async () => { this.createdAtHealth.push(this.engine.created.map((c) => c.name)); return this.healthy; } },
-      new EnvVersionFile(path.join(this.folder, '.env')), new ComposeDirectory(this.folder), 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes)
+      new EnvVersionFile(path.join(this.folder, '.env')), new ComposeDirectory(this.folder), 'site', (s) => this.steps.push(s), rolling, () => this.availableBytes, async () => undefined)
       .run('0.2.392', '0.2.400');
   }
   get version(): string {
@@ -180,7 +181,7 @@ describe('SelfUpdateRun', () => {
     expect(outcome).toEqual({ state: 'succeeded', error: '' });
     for (const service of ['api', 'extension-host', 'admin', 'frontend', 'gateway']) expect(stack.imageOf(service)).toMatch(/:v0\.2\.400$/);
     expect(stack.imageOf('edge')).toMatch(/:v0\.2\.392$/);
-    expect(stack.imageOf('db')).toBe('postgres:16');
+    expect(stack.imageOf('db')).toBe('postgres:15-alpine');
     expect(stack.version).toBe('v0.2.400');
     expect([...stack.engine.containers.values()].some((c) => c.name.endsWith('-previous'))).toBe(false);
     expect(stack.steps[0]).toContain('Downloading');

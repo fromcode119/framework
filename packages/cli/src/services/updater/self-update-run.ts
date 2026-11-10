@@ -5,6 +5,8 @@ import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 import { ContainerReplacement } from '@cli/services/updater/container-replacement';
 import { EngineStack } from '@cli/services/updater/engine-stack';
 import { ReleaseDeployment } from '@cli/services/updater/release-deployment';
+import { ServiceConvergence } from '@cli/services/updater/service-convergence';
+import type { ComposeContainerBody } from '@cli/services/updater/compose/compose-container-body';
 import type { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
 import type { IContainerBodySource } from '@cli/services/updater/interfaces/container-body-source.interface';
 import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
@@ -45,6 +47,7 @@ export class SelfUpdateRun {
   static readonly UNPINNED_TAG = 'latest';
   private static readonly GATEWAY = 'gateway';
   private static readonly EDGE = 'edge';
+  private static readonly UPDATER = 'updater';
 
   private readonly replacement: ContainerReplacement;
   private readonly deployment: ReleaseDeployment;
@@ -58,6 +61,7 @@ export class SelfUpdateRun {
     private readonly onStep: (step: string) => void = () => undefined,
     private readonly rolling: (stack: IDeployStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
     private readonly availableBytes?: () => number,
+    private readonly pause?: (ms: number) => Promise<void>,
   ) {
     this.replacement = new ContainerReplacement(engine);
     this.deployment = new ReleaseDeployment(engine, directory, versionFile, project, (step) => this.onStep(step));
@@ -90,7 +94,7 @@ export class SelfUpdateRun {
   }
 
   /** Each app replaced in place — the gap rolling avoids, taken only where the deploy command takes it too. */
-  private async restart(tag: string, from: string, replacedTag: string, targets: IContainerSummary[], release: IContainerBodySource): Promise<IUpdateOutcome> {
+  private async restart(tag: string, from: string, replacedTag: string, targets: IContainerSummary[], release: ComposeContainerBody): Promise<IUpdateOutcome> {
     // The gateway terminates TLS with certificates it fetches from the api. A new gateway started while
     // the new api still boots has none, and refuses every handshake until it does: so it is replaced
     // only once the api reports the new version, and the old gateway keeps serving until then.
@@ -133,14 +137,14 @@ export class SelfUpdateRun {
     // The image a rollback would start is the one the replaced containers ran — on an unpinned install
     // that is `latest`, not the version tag, and pruning it would leave nothing to go back to.
     await this.prune(tag, replacedTag);
-    return { state: UpdaterState.SUCCEEDED.value, error: '' };
+    return this.converged(release);
   }
 
   /**
    * Each app is swapped with no gap; a failure rolls the apps already swapped back the same way, so the
    * operator who gets no downtime on the way up does not get it on the way back either.
    */
-  private async roll(tag: string, replacedTag: string, sources: { release: IContainerBodySource; previous: IContainerBodySource }): Promise<IUpdateOutcome> {
+  private async roll(tag: string, replacedTag: string, sources: { release: ComposeContainerBody; previous: IContainerBodySource }): Promise<IUpdateOutcome> {
     this.onStep(`Starting each new app beside the running one`);
     const rolled = await this.rolling(this.stackFor(tag, sources.release)).run(tag);
     const healthy = rolled && await this.health.reports(tag);
@@ -153,7 +157,7 @@ export class SelfUpdateRun {
     }
     this.onStep('Removing what the update replaced');
     await this.prune(tag, replacedTag);
-    return { state: UpdaterState.SUCCEEDED.value, error: '' };
+    return this.converged(sources.release);
   }
 
   /**
@@ -177,6 +181,16 @@ export class SelfUpdateRun {
     this.onStep('Putting the previous version back');
     for (const done of [...replaced].reverse()) await this.replacement.restore(done).catch(() => undefined);
     this.deployment.restore();
+  }
+
+  /**
+   * The services the update does not roll (database, redis, edge, any the release adds) brought to the
+   * release's definitions. The new version already serves, so a service that cannot follow is reported
+   * and keeps running as it was rather than undoing the update.
+   */
+  private async converged(release: ComposeContainerBody): Promise<IUpdateOutcome> {
+    const problems = await new ServiceConvergence(this.engine, release, [...SelfUpdateRun.SERVICES, SelfUpdateRun.UPDATER], (step) => this.onStep(step), this.pause).run();
+    return { state: UpdaterState.SUCCEEDED.value, error: problems.length ? `Updated, but not brought to the release's compose files: ${problems.join('; ')}` : '' };
   }
 
   private stackFor(tag: string, source: IContainerBodySource): EngineStack {

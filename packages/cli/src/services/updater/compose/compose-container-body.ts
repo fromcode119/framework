@@ -27,7 +27,7 @@ export class ComposeContainerBody implements IContainerBodySource {
     'security_opt', 'init', 'runtime', 'read_only', 'privileged', 'tmpfs', 'extra_hosts', 'shm_size', 'stop_signal',
   ]);
 
-  constructor(private readonly project: ComposeProject) {}
+  constructor(readonly project: ComposeProject) {}
 
   async build(service: string, containerName: string, number: number, template: IContainerInspect): Promise<IContainerBody> {
     const labels = template.Config?.Labels ?? {};

@@ -37,7 +37,7 @@ export class ReleaseDeployment {
    * Writes the release's files and `VERSION`, and proves every service being replaced can be built
    * from them. Throws — with the folder restored — when they cannot: nothing has been stopped yet.
    */
-  async prepare(tag: string, replacedTag: string, targets: IContainerSummary[], serviceOf: (target: IContainerSummary) => string): Promise<{ release: IContainerBodySource; previous: IContainerBodySource }> {
+  async prepare(tag: string, replacedTag: string, targets: IContainerSummary[], serviceOf: (target: IContainerSummary) => string): Promise<{ release: ComposeContainerBody; previous: IContainerBodySource }> {
     const api = targets.find((target) => serviceOf(target) === 'api');
     if (!api) throw new Error('No api container runs, and the release\'s compose files are read from its image.');
     const files = await new ReleaseComposeFiles(this.engine, this.project).read(`${api.Image.slice(0, api.Image.lastIndexOf(':'))}:${tag}`);

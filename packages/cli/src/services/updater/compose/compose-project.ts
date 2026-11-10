@@ -18,6 +18,8 @@ export class ComposeProject {
     /** The compose project name (`atlantis`): the prefix compose gives networks and volumes. */
     readonly name: string,
     private readonly document: Record<string, any>,
+    /** The `COMPOSE_PROFILES` of `.env`: a service under any other profile is not part of this machine. */
+    private readonly profiles: string[] = [],
   ) {}
 
   /** Reads `directory` (the deployment folder as this process sees it). Throws on anything it cannot read. */
@@ -30,11 +32,20 @@ export class ComposeProject {
       if (text === null) continue;
       document = ComposeFileMerge.merge(document, ComposeFileMerge.parse(text, file));
     }
-    return new ComposeProject(name, new ComposeInterpolation(env).deep(document) as Record<string, any>);
+    const profiles = String(env.COMPOSE_PROFILES ?? '').split(',').map((profile) => profile.trim()).filter(Boolean);
+    return new ComposeProject(name, new ComposeInterpolation(env).deep(document) as Record<string, any>, profiles);
   }
 
   services(): string[] {
     return Object.keys(this.document.services ?? {});
+  }
+
+  /** The services `docker compose up` starts here: those with no profile, or one `COMPOSE_PROFILES` names. */
+  activeServices(): string[] {
+    return this.services().filter((service) => {
+      const profiles: string[] = (this.document.services[service].profiles ?? []).map(String);
+      return !profiles.length || profiles.some((profile) => this.profiles.includes(profile));
+    });
   }
 
   /** One service's merged, substituted definition; throws when the files do not declare it. */
