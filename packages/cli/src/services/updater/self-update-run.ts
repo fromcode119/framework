@@ -4,6 +4,9 @@ import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 import { ContainerReplacement } from '@cli/services/updater/container-replacement';
 import { EngineStack } from '@cli/services/updater/engine-stack';
+import { ReleaseDeployment } from '@cli/services/updater/release-deployment';
+import type { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
+import type { IContainerBodySource } from '@cli/services/updater/interfaces/container-body-source.interface';
 import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
 import type { IContainerSummary } from '@cli/services/updater/interfaces/container-summary.interface';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
@@ -17,8 +20,9 @@ import type { IUpdateOutcome } from '@cli/services/updater/interfaces/update-out
  * deployment itself.
  *
  * The order is the deploy CLI's, for the same reasons: every image is pulled BEFORE anything is
- * stopped (an unpublished or unreachable version must change nothing); the version file is written
- * before the swap so a later `docker compose up` agrees with what is running; the api must report the
+ * stopped (an unpublished or unreachable version must change nothing); the release's compose files and
+ * the version are written to the deployment folder before the swap, and every new container is built
+ * from them, so the machine runs what the release declares and a later `docker compose up` agrees; the api must report the
  * NEW version (a crash-looping image leaves nothing else to tell by); anything short of that puts every
  * replaced container back; old images are removed only after success, keeping the one replaced.
  *
@@ -43,17 +47,20 @@ export class SelfUpdateRun {
   private static readonly EDGE = 'edge';
 
   private readonly replacement: ContainerReplacement;
+  private readonly deployment: ReleaseDeployment;
 
   constructor(
     private readonly engine: IDockerEngine,
     private readonly health: IUpdaterHealth,
-    private readonly versionFile: IVersionFile,
+    versionFile: IVersionFile,
+    directory: ComposeDirectory,
     private readonly project: string,
     private readonly onStep: (step: string) => void = () => undefined,
     private readonly rolling: (stack: IDeployStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
     private readonly availableBytes?: () => number,
   ) {
     this.replacement = new ContainerReplacement(engine);
+    this.deployment = new ReleaseDeployment(engine, directory, versionFile, project, (step) => this.onStep(step));
   }
 
   async run(from: string, to: string): Promise<IUpdateOutcome> {
@@ -69,16 +76,21 @@ export class SelfUpdateRun {
       if (error) return SelfUpdateRun.failed(`Could not download ${repository}:${tag} — ${error}. Nothing was changed.`);
     }
 
-    const previousVersion = this.versionFile.read();
-    this.versionFile.write(tag);
     const unpinned = targets.some((target) => target.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`));
     const replacedTag = unpinned ? SelfUpdateRun.UNPINNED_TAG : SelfUpdateRun.tag(from);
+    const sources = await this.deployment.prepare(tag, replacedTag, targets, SelfUpdateRun.serviceOf)
+      .catch((error: Error) => error);
+    if (sources instanceof Error) return SelfUpdateRun.failed(`The compose files of ${tag} cannot be applied here: ${sources.message.replace(/\.?$/, '.')} Nothing was changed.`);
     const plan = unpinned
       ? { mode: DeployMode.RESTART, reason: 'this install names no version yet, so the first update pins one with a restart' }
-      : await new DeployStrategy(this.stackFor(tag)).choose();
+      : await new DeployStrategy(this.stackFor(tag, sources.release)).choose();
     this.onStep(`Deploy mode: ${plan.mode.value} — ${plan.reason}`);
-    if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, previousVersion);
+    if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, sources);
+    return this.restart(tag, from, replacedTag, targets, sources.release);
+  }
 
+  /** Each app replaced in place — the gap rolling avoids, taken only where the deploy command takes it too. */
+  private async restart(tag: string, from: string, replacedTag: string, targets: IContainerSummary[], release: IContainerBodySource): Promise<IUpdateOutcome> {
     // The gateway terminates TLS with certificates it fetches from the api. A new gateway started while
     // the new api still boots has none, and refuses every handshake until it does: so it is replaced
     // only once the api reports the new version, and the old gateway keeps serving until then.
@@ -95,23 +107,23 @@ export class SelfUpdateRun {
         for (const target of batch) {
           const service = target.Labels[SelfUpdateRun.SERVICE_LABEL];
           this.onStep(`Starting the new ${service}`);
-          replaced.push(await this.replacement.replace(service, target.Id, `${SelfUpdateRun.repository(target.Image)}:${tag}`));
+          replaced.push(await this.replacement.replace(service, target.Id, release));
         }
       } catch (error) {
-        await this.rollBack(replaced, previousVersion);
+        await this.rollBack(replaced);
         return { state: UpdaterState.ROLLED_BACK.value, error: `Could not start the new version: ${(error as Error).message}` };
       }
       if (!waitFor) continue;
       this.onStep(`Waiting for the platform to report ${tag}`);
       if (!(await this.health.reports(tag))) {
-        await this.rollBack(replaced, previousVersion);
+        await this.rollBack(replaced);
         return { state: UpdaterState.ROLLED_BACK.value, error: `${tag} did not report itself healthy; ${SelfUpdateRun.tag(from)} is serving again.` };
       }
     }
     if (behindEdge && gateways.length) {
       this.onStep('Rolling the gateway behind the edge');
-      if (!(await this.rolling(this.stackFor(tag)).gateway(tag))) {
-        await this.rollBack(replaced, previousVersion);
+      if (!(await this.rolling(this.stackFor(tag, release)).gateway(tag))) {
+        await this.rollBack(replaced);
         return { state: UpdaterState.ROLLED_BACK.value, error: `The gateway of ${tag} did not come up; ${SelfUpdateRun.tag(from)} is serving again.` };
       }
     }
@@ -128,14 +140,14 @@ export class SelfUpdateRun {
    * Each app is swapped with no gap; a failure rolls the apps already swapped back the same way, so the
    * operator who gets no downtime on the way up does not get it on the way back either.
    */
-  private async roll(tag: string, replacedTag: string, previousVersion: string): Promise<IUpdateOutcome> {
+  private async roll(tag: string, replacedTag: string, sources: { release: IContainerBodySource; previous: IContainerBodySource }): Promise<IUpdateOutcome> {
     this.onStep(`Starting each new app beside the running one`);
-    const rolled = await this.rolling(this.stackFor(tag)).run(tag);
+    const rolled = await this.rolling(this.stackFor(tag, sources.release)).run(tag);
     const healthy = rolled && await this.health.reports(tag);
     if (!healthy) {
-      this.onStep('Putting the previous version back');
-      const restored = await this.rolling(this.stackFor(replacedTag)).run(replacedTag);
-      if (previousVersion) this.versionFile.write(previousVersion); else this.versionFile.clear();
+      this.onStep(`Putting the previous version back, from ${sources.previous.origin}`);
+      this.deployment.restore();
+      const restored = await this.rolling(this.stackFor(replacedTag, sources.previous)).run(replacedTag);
       const why = rolled ? `${tag} did not report itself healthy` : `${tag} did not come up`;
       return { state: UpdaterState.ROLLED_BACK.value, error: restored ? `${why}; ${replacedTag} is serving again.` : `${why}, and putting ${replacedTag} back did not finish — the stack needs a person.` };
     }
@@ -156,16 +168,23 @@ export class SelfUpdateRun {
       && (container.Image.endsWith(`:${fromTag}`) || container.Image.endsWith(`:${SelfUpdateRun.UNPINNED_TAG}`))));
   }
 
-  private async rollBack(replaced: IReplacedContainer[], previousVersion: string): Promise<void> {
+  /**
+   * The replaced containers come back exactly as they were, and the folder's previous files and version
+   * with them — an install that named no version names none again, so `docker compose up` keeps starting
+   * what is serving rather than the version that was just refused.
+   */
+  private async rollBack(replaced: IReplacedContainer[]): Promise<void> {
     this.onStep('Putting the previous version back');
     for (const done of [...replaced].reverse()) await this.replacement.restore(done).catch(() => undefined);
-    // An install that named no version goes back to naming none, so `docker compose up` keeps starting
-    // what is serving rather than the version that was just refused.
-    if (previousVersion) this.versionFile.write(previousVersion); else this.versionFile.clear();
+    this.deployment.restore();
   }
 
-  private stackFor(tag: string): EngineStack {
-    return new EngineStack(this.engine, this.project, tag, this.availableBytes);
+  private stackFor(tag: string, source: IContainerBodySource): EngineStack {
+    return new EngineStack(this.engine, this.project, tag, source, this.availableBytes);
+  }
+
+  private static serviceOf(target: IContainerSummary): string {
+    return target.Labels[SelfUpdateRun.SERVICE_LABEL] ?? '';
   }
 
   private async prune(deployed: string, replacedTag: string): Promise<void> {

@@ -3,6 +3,8 @@ import type { IContainerSummary } from '@cli/services/updater/interfaces/contain
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IImageDefaults } from '@cli/services/updater/interfaces/image-defaults.interface';
 import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
+import { DeployFolderFixture } from '@cli/services/updater/tests/deploy-folder-fixture';
+import { TarFixture } from '@cli/services/updater/tests/tar-fixture';
 
 /** A Docker daemon in memory: containers by id, local images, and switches to make a step fail. */
 export class InMemoryDockerEngine implements IDockerEngine {
@@ -19,12 +21,14 @@ export class InMemoryDockerEngine implements IDockerEngine {
   created: Array<{ name: string; body: Record<string, any> }> = [];
   /** Services that run with `network_mode` set (`none` for the sandboxed site extension host). */
   networkModes: Record<string, string> = {};
+  /** What each api image ships in /app/deploy: by default the repository's own deploy folder. */
+  releaseFiles = DeployFolderFixture.release();
   private next = 1;
 
   add(service: string, image: string, project = 'site'): string {
     const id = `c${this.next++}aaaaaaaaaaaa`;
     this.containers.set(id, { name: `${project}-${service}-1`, image, running: true, env: ['NODE_VERSION=22', 'API_URL=x'], cmd: ['npm', 'start'], created: this.next,
-      labels: { 'com.docker.compose.project': project, 'com.docker.compose.service': service, 'com.docker.compose.container-number': '1' } });
+      labels: { 'com.docker.compose.project': project, 'com.docker.compose.service': service, 'com.docker.compose.container-number': '1', 'com.docker.compose.project.working_dir': `/opt/apps/${project}/deploy` } });
     this.images.add(image);
     return id;
   }
@@ -112,4 +116,11 @@ export class InMemoryDockerEngine implements IDockerEngine {
   async top(): Promise<{ Titles: string[]; Processes: string[][] }> { return { Titles: ['PID', 'UID'], Processes: [['1', '0']] }; }
   async memoryUsage(): Promise<number> { return 200 * 1024 * 1024; }
   async wait(): Promise<number> { return 0; }
+
+  /** Only the api image is asked for its deploy folder; anything else has none. */
+  async archive(id: string, path: string): Promise<Buffer> {
+    const c = this.containers.get(id)!;
+    if (!c.image.includes('framework-api:') || path !== '/app/deploy') throw new Error(`Could not find the file ${path} in container ${id}`);
+    return TarFixture.build('deploy', this.releaseFiles);
+  }
 }

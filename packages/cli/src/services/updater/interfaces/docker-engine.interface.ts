@@ -33,6 +33,8 @@ export interface IDockerEngine {
   top(id: string, psArgs: string): Promise<{ Titles: string[]; Processes: string[][] }>;
   /** The memory a container holds now, in bytes, as `docker stats` counts it (page cache excluded). */
   memoryUsage(id: string): Promise<number>;
+  /** A tar of `path` inside a container (it need not be running), as `docker cp` reads it. */
+  archive(id: string, path: string): Promise<Buffer>;
   /** Waits for a container to exit; its exit code. */
   wait(id: string): Promise<number>;
 }

@@ -1,41 +1,35 @@
-import type { IContainerInspect } from '@cli/services/updater/interfaces/container-inspect.interface';
+import type { IContainerBodySource } from '@cli/services/updater/interfaces/container-body-source.interface';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
-import type { IImageDefaults } from '@cli/services/updater/interfaces/image-defaults.interface';
 import type { IReplacedContainer } from '@cli/services/updater/interfaces/replaced-container.interface';
 
 /**
- * Replaces one running container with the same container on a newer image, and can undo it.
+ * Replaces one running container in place — same name, same compose number — with a new one whose
+ * configuration comes from `source` (for an update, the release's own compose service definition), and
+ * can undo it.
  *
- * The replacement is the old container's own configuration — environment, mounts, ports, restart policy,
- * networks and their aliases, compose labels — with only the image changed, so `docker compose` still
- * recognises it as its service. The old container is stopped and renamed aside rather than deleted:
- * until the new version has reported itself healthy it is the way back.
- *
- * What came from the OLD IMAGE rather than from the deployment is dropped, so the new image supplies its
- * own: an inspected container carries its image's default environment and command, and copying those
- * forward would pin every future version to the defaults of the first one installed.
+ * The old container is stopped and renamed aside rather than deleted: until the new version has
+ * reported itself healthy it is the way back, exactly as it was, settings and all.
  */
 export class ContainerReplacement {
   static readonly ASIDE_SUFFIX = '-previous';
   private static readonly STOP_TIMEOUT_SECONDS = 30;
-  private static readonly MODES_WITHOUT_ENDPOINTS = ['none', 'host'];
-  private static readonly SHARED_MODE_PREFIX = 'container:';
+  private static readonly NUMBER_LABEL = 'com.docker.compose.container-number';
 
   constructor(private readonly engine: IDockerEngine) {}
 
-  async replace(service: string, containerId: string, image: string): Promise<IReplacedContainer> {
+  async replace(service: string, containerId: string, source: IContainerBodySource): Promise<IReplacedContainer> {
     const current = await this.engine.inspect(containerId);
     const name = current.Name.replace(/^\//, '');
-    const body = ContainerReplacement.bodyFor(current, image, await this.engine.imageDefaults(current.Config.Image));
+    const number = Number(current.Config.Labels?.[ContainerReplacement.NUMBER_LABEL]) || 1;
+    // Built before anything stops: a definition the updater cannot apply leaves this container serving.
+    const { body, extraNetworks } = await source.build(service, name, number, current);
 
     await this.engine.stop(current.Id, ContainerReplacement.STOP_TIMEOUT_SECONDS);
     await this.engine.rename(current.Id, `${name}${ContainerReplacement.ASIDE_SUFFIX}`);
     let replacementId = '';
     try {
       replacementId = await this.engine.createContainer(name, body);
-      for (const [network, endpoint] of ContainerReplacement.extraNetworks(current)) {
-        await this.engine.connectNetwork(network, replacementId, ContainerReplacement.endpoint(endpoint, current.Id));
-      }
+      for (const [network, endpoint] of extraNetworks) await this.engine.connectNetwork(network, replacementId, endpoint);
       await this.engine.start(replacementId);
     } catch (error) {
       await this.restore({ service, name, previousId: current.Id, replacementId });
@@ -54,48 +48,5 @@ export class ContainerReplacement {
   /** The new version held: the previous container is no longer a way back. */
   async discard(replaced: IReplacedContainer): Promise<void> {
     await this.engine.remove(replaced.previousId);
-  }
-
-  static bodyFor(current: IContainerInspect, image: string, oldImage: IImageDefaults): Record<string, any> {
-    const { Hostname, Image, ...config } = current.Config;
-    void Hostname; void Image;
-    const imageEnv = new Set(oldImage.Env);
-    const [first] = ContainerReplacement.networks(current);
-    return {
-      ...config,
-      Image: image,
-      Env: (config.Env ?? []).filter((entry: string) => !imageEnv.has(entry)),
-      Cmd: ContainerReplacement.same(config.Cmd, oldImage.Cmd) ? null : config.Cmd,
-      Entrypoint: ContainerReplacement.same(config.Entrypoint, oldImage.Entrypoint) ? null : config.Entrypoint,
-      WorkingDir: config.WorkingDir === oldImage.WorkingDir ? '' : config.WorkingDir,
-      HostConfig: current.HostConfig,
-      NetworkingConfig: first ? { EndpointsConfig: { [first[0]]: ContainerReplacement.endpoint(first[1], current.Id) } } : undefined,
-    };
-  }
-
-  /** A container create joins ONE network; the rest are connected after it exists. */
-  static extraNetworks(current: IContainerInspect): Array<[string, Record<string, any>]> {
-    return ContainerReplacement.networks(current).slice(1);
-  }
-
-  /**
-   * The networks a copy joins with endpoint settings of its own. A container with `network_mode: none`,
-   * `host` or `container:<id>` shows that mode as its one "network", but Docker refuses any endpoint
-   * settings — aliases included — for it; `HostConfig.NetworkMode` alone gives the copy the same mode.
-   */
-  private static networks(current: IContainerInspect): Array<[string, Record<string, any>]> {
-    const mode = String(current.HostConfig?.NetworkMode ?? '');
-    if (ContainerReplacement.MODES_WITHOUT_ENDPOINTS.includes(mode) || mode.startsWith(ContainerReplacement.SHARED_MODE_PREFIX)) return [];
-    return Object.entries(current.NetworkSettings.Networks ?? {});
-  }
-
-  /** Aliases are how the other services find this one (`api`, `gateway`); the old container's own id alias is not carried. */
-  static endpoint(endpoint: Record<string, any>, containerId: string): Record<string, any> {
-    const aliases = (endpoint?.Aliases ?? []).filter((alias: string) => alias && !containerId.startsWith(alias));
-    return { Aliases: aliases };
-  }
-
-  private static same(a: unknown, b: unknown): boolean {
-    return JSON.stringify(a ?? null) === JSON.stringify(b ?? null);
   }
 }

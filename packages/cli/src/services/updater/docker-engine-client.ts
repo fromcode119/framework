@@ -110,6 +110,12 @@ export class DockerEngineClient implements IDockerEngine {
     return Math.max(0, (Number(memory.usage) || 0) - cache);
   }
 
+  async archive(id: string, path: string): Promise<Buffer> {
+    const { status, body } = await this.request('GET', `/containers/${encodeURIComponent(id)}/archive?path=${encodeURIComponent(path)}`, undefined, DockerEngineClient.TIMEOUT_MS, true);
+    if (status >= 400) throw new Error(`GET /containers/archive ${path}: ${DockerEngineClient.message(body.toString('utf8')) || status}`);
+    return body;
+  }
+
   async wait(id: string): Promise<number> {
     const { body } = await this.request('POST', `/containers/${encodeURIComponent(id)}/wait`, undefined, DockerEngineClient.PULL_TIMEOUT_MS);
     try { return Number(JSON.parse(String(body))?.StatusCode ?? 1); } catch { return 1; }

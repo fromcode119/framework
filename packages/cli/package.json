@@ -24,7 +24,8 @@
     "esbuild": "^0.27.2",
     "fs-extra": "^11.2.0",
     "node-fetch": "^3.3.2",
-    "semver": "^7.6.0"
+    "semver": "^7.6.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@types/archiver": "^7.0.0",
