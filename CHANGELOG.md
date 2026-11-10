@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.563] - 2026-11-10
+
+### Fixed
+
+- **runtime**: write the import map before the host import, so Firefox hydrates ([#1366](https://github.com/fromcode119/framework/pull/1366))
+- **frontend**: render the prose fallback only for non-empty stored content ([#1368](https://github.com/fromcode119/framework/pull/1368))
+
 ## [0.2.562] - 2026-11-10
 
 ### Fixed
