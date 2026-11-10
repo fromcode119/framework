@@ -18,7 +18,7 @@ import { PayloadFingerprint } from '@/lib/payload-fingerprint';
  * request — it is what says whether anything changed.
  *
  * WHO IS SERVED FROM IT: only a request the document route opened as anonymous, keyed by its origin (no session or preview
- * cookie, no query beyond the locale), because the server fetches forward the visitor's cookies and a
+ * cookie; a query string does not matter, every payload here is keyed by its own arguments), because the server fetches forward the visitor's cookies and a
  * signed-in answer may be personal. Every other request runs the fetch as before, memoised per request.
  * A failed fetch is never kept. Bounded: least recently used first out.
  */
