@@ -270,10 +270,26 @@ describe('StorefrontPageTree parity with ThemeSsrContentTree', () => {
     }
   });
 
-  it('empty content — the prose body with the display title', () => {
+  it('empty content — no prose block and no duplicate title under the display slot', () => {
     const html = ParityFixture.server(ParityFixture.emptyContent);
-    expect(html).toContain('<h1 class="text-4xl font-black mb-8">Blank</h1>');
+    expect(html).not.toContain('<h1');
+    expect(html).not.toContain(StorefrontContentContract.PROSE_CLASS);
     expect(ParityFixture.client(ParityFixture.emptyContent)).toBe(html);
+  });
+
+  it('empty content with a filled display slot — the plugin body alone, no stray title below it', () => {
+    const page = { title: 'EasyLife', slug: 'easylife', content: '' };
+    const html = ParityFixture.serverWithSlot(page);
+    expect(html).toContain('data-entry="easylife"');
+    expect(html).not.toContain('<h1');
+    expect(ParityFixture.clientWithSlot(page)).toBe(html);
+  });
+
+  it('whitespace-only content — treated as empty on both sides', () => {
+    const page = { title: 'Blank', slug: 'blank', content: '   ' };
+    const html = ParityFixture.server(page);
+    expect(html).not.toContain('<h1');
+    expect(ParityFixture.client(page)).toBe(html);
   });
 
   it('no content at all — no invented "Untitled" heading on either side', () => {

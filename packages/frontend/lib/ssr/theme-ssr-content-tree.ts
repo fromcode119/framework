@@ -57,13 +57,12 @@ export class ThemeSsrContentTree {
 
     const Slot = runtime.frameworkReact.Slot;
     const renderable = ContentRenderingUtils.buildRenderableContent(entry, transform);
-    const isStringContent = !renderable || typeof renderable === 'string';
 
     return createElement(
       'div',
       wrapper,
       createElement(Slot, { key: 'display', name: StorefrontContentContract.DISPLAY_SLOT, props: { content: renderable, entry } }),
-      isStringContent ? ThemeSsrContentTree.buildProse(runtime, entry, String(renderable || '')) : null,
+      ContentRenderingUtils.hasProseContent(renderable) ? ThemeSsrContentTree.buildProse(runtime, entry, renderable) : null,
       createElement(Slot, { key: 'footer', name: StorefrontContentContract.FOOTER_SLOT, props: { content: entry } }),
     );
   }
