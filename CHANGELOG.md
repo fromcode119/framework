@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.560] - 2026-11-10
+
+### Fixed
+
+- **core**: a plugin request is cut off when it goes quiet, not while it works ([#1360](https://github.com/fromcode119/framework/pull/1360))
+
 ## [0.2.559] - 2026-11-10
 
 ### Performance
