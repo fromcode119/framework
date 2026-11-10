@@ -181,7 +181,22 @@ jobs:
         env:
           CACHE_ROOT: ${{ runner.tool_cache }}/fromcode-framework
           SHA: ${{ steps.built.outputs.sha }}
+          GUARD_AREA: ${{ inputs.area }}
+          GUARD_NAME: ${{ inputs.name }}
         run: |
+          # An extension's run is started by ITS pull request, which also controls the inputs. Before its
+          # framework tree may be shared, prove the extension could not have written into it:
+          #   - the extension was checked out at <area>/<name> OUTSIDE framework/ (no `/`, no `..`);
+          #   - the framework is exactly the commit checked out, with no tracked file changed.
+          if [ -n "$GUARD_AREA" ]; then
+            case "$GUARD_AREA" in plugins|themes|appearance) ;; *) echo "Not cached: area '$GUARD_AREA'"; exit 0 ;; esac
+            if ! printf '%s' "$GUARD_NAME" | grep -qE '^[A-Za-z0-9][A-Za-z0-9._-]*$' || printf '%s' "$GUARD_NAME" | grep -q '\.\.'; then
+              echo "Not cached: name '$GUARD_NAME'"; exit 0
+            fi
+          fi
+          if [ "$(git -C framework rev-parse HEAD)" != "$SHA" ] || [ -n "$(git -C framework status --porcelain --untracked-files=no)" ]; then
+            echo "Not cached: the framework tree is not the clean checkout of $SHA"; exit 0
+          fi
           mkdir -p "$CACHE_ROOT"
           tmp="$CACHE_ROOT/.partial-$GITHUB_RUN_ID-$GITHUB_JOB"
           mkdir -p "$tmp"
