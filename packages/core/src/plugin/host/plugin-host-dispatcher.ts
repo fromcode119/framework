@@ -46,7 +46,8 @@ export class PluginHostDispatcher {
     }
     TenantPluginRuntimePolicy.assertRemoteCall(this.slug, call);
     PluginHostCallPolicy.assert(this.slug, call, context, invocation.kind);
-    const execute = () => this.walk(this.root(context, call.root), call.steps, call.root, jsonRows);
+    const token = String(call.token);
+    const execute = () => this.tokens.track(token, () => this.walk(this.root(context, call.root), call.steps, call.root, jsonRows));
     // The host's own time on this call, kept on the invocation: the plugin process times the same call from
     // its side, and what the two differ by is the way there and back (`plugin-rpc-host`, RequestServerTiming).
     const started = performance.now();
@@ -58,7 +59,7 @@ export class PluginHostDispatcher {
       const store = invocation.store;
       // The invocation's lease, not a scope per call: a guest serving one request calls back statement by
       // statement, and binding a connection to the site for each of them was most of its database time.
-      const lease = this.tokens.leaseFor(String(call.token), (tenantId) => this.db.tenantLease(tenantId));
+      const lease = this.tokens.leaseFor(token, (tenantId) => this.db.tenantLease(tenantId));
       return await RequestContextUtils.storage.run(store, () => (lease ? lease.run(execute) : execute()));
     } finally {
       const took = performance.now() - started;

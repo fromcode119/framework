@@ -86,6 +86,7 @@ export class PluginHostHttpProxy {
     envelope: { token: string; tenantId: string | null; locale: string; siteLocale: string; revision: string; cacheMaxAgeMs: number; targetPath?: string; originalUrl?: string; connectionId?: string | null; siteOwned?: boolean },
     timeoutMs: number,
     onTimeout: () => void,
+    quietForMs: () => number = () => Infinity,
   ): Promise<void> {
     return new Promise<void>((resolve) => {
       const headers: Record<string, string | string[] | undefined> = { ...req.headers };
@@ -176,6 +177,13 @@ export class PluginHostHttpProxy {
       });
 
       upstream.on('timeout', () => {
+        // The deadline is on the request's SILENCE: a guest still calling the host for this request (a
+        // checkout of a hundred lines, each its own stock write) is working and is given more time.
+        const quiet = quietForMs();
+        if (quiet < timeoutMs) {
+          upstream.setTimeout(Math.max(1, timeoutMs - quiet));
+          return;
+        }
         upstream.destroy(new Error('guest timeout'));
         if (!res.headersSent) res.status(504).json({ error: 'plugin_timeout', message: 'The plugin did not answer in time and is being restarted.' });
         onTimeout();
