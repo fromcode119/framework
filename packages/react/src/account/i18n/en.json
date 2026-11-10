@@ -30,8 +30,8 @@
       "signOutFailed": "Could not sign out. Try again."
     },
     "overview": {
-      "greeting": "Welcome, {{name}}",
-      "greetingAnon": "Welcome",
+      "greeting": "Hello, {{name}}",
+      "greetingAnon": "Hello",
       "intro": "Manage your profile and account settings from one place.",
       "loading": "Loading your account…",
       "manage": "Manage your account",
@@ -114,7 +114,7 @@
       "retry": "Try again"
     },
     "description": {
-      "overview": "A snapshot of your account",
+      "overview": "One place for your orders, payments and profile.",
       "profile": "Name, email and contact details",
       "security": "Password and sign-in",
       "sessions": "Devices you are signed in on",

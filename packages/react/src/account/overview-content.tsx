@@ -71,6 +71,13 @@ export class AccountOverviewContent extends PluginComponent {
     this.unsubscribe?.();
   }
 
+  /** A card that opens a section only while that section is in the menu: one the shop switched off
+   *  (a wishlist turned off in its settings) would otherwise be a tile that leads nowhere. */
+  private offeredStats(): IAccountOverviewStat[] {
+    const offered = new Set((this.sections || []).map((section) => section.key));
+    return (this.stats || []).filter((stat) => stat.href || !stat.sectionKey || offered.has(String(stat.sectionKey)));
+  }
+
   private async safe(fn: () => any): Promise<any> {
     try { const value = fn(); return value && typeof value.then === 'function' ? await value : value; } catch { return null; }
   }
@@ -213,16 +220,18 @@ export class AccountOverviewContent extends PluginComponent {
   }
 
   render(): ReactNode {
-    const { loading, person, stats } = this;
+    const { loading, person } = this;
+    const stats = this.offeredStats();
     const name = String(person?.displayName || person?.firstName || '').trim();
     return (
       <div className={AccountClass.of('overview')}>
-        {/* One line, not a card. A boxed "Welcome, <name>. Manage your profile and settings in one place."
-            is the largest thing on the dashboard and tells the visitor nothing they came for; the
-            greeting stays because it confirms WHOSE account this is, and nothing more. */}
-        <p className={AccountClass.of('greeting')}>
-          {name ? this.t('account.overview.greeting', { name }, `Welcome, ${name}`) : this.t('account.overview.greetingAnon', undefined, 'Welcome')}
-        </p>
+        {/* The page's own heading: who this account is, and what the page is for. */}
+        <header className={AccountClass.of('header')}>
+          <h1 className={AccountClass.of('title')}>
+            {name ? this.t('account.overview.greeting', { name }, `Hello, ${name}`) : this.t('account.overview.greetingAnon', undefined, 'Hello')}
+          </h1>
+          <p className={AccountClass.of('lead')}>{this.t('account.description.overview', undefined, '')}</p>
+        </header>
 
         {loading ? (
           <div className={`${AccountClass.of('card')} ${AccountClass.of('loading')}`}>{this.t('account.overview.loading', undefined, 'Loading your account…')}</div>
