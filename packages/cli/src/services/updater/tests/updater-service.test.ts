@@ -1,7 +1,11 @@
+import path from 'path';
 import { describe, expect, it } from 'vitest';
 import { UpdaterService } from '@cli/services/updater/updater-service';
 import { InMemoryDockerEngine } from '@cli/services/updater/tests/in-memory-docker-engine';
 import { UpdaterHandover } from '@cli/services/updater/updater-handover';
+import { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
+import { EnvVersionFile } from '@cli/services/updater/env-version-file';
+import { DeployFolderFixture } from '@cli/services/updater/tests/deploy-folder-fixture';
 
 const REG = 'ghcr.io/fromcode119/framework-';
 
@@ -22,16 +26,17 @@ const setup = (serving: string) => {
     engine.published.add(`${REG}${image}:v0.2.392`);
   }
   const api = new FakeApi({ current: '0.2.391', target: '0.2.392', reason: 'automatic' }, serving);
-  let version = 'v0.2.391';
-  const file = { read: () => version, write: (v: string) => { version = v; } } as any;
-  return { engine, api, file, updater: new UpdaterService(engine, api as any, file, 'site') };
+  const folder = DeployFolderFixture.older('v0.2.391');
+  const file = new EnvVersionFile(path.join(folder, '.env'));
+  const directory = new ComposeDirectory(folder);
+  return { engine, api, file, folder, directory, updater: new UpdaterService(engine, api as any, file, directory, 'site') };
 };
 
 /** The same, with the updater running as a container of the project on `updaterTag`. */
 const withUpdater = (serving: string, updaterTag = 'v0.2.391') => {
   const base = setup(serving);
   const selfId = base.engine.add('updater', `${REG}gateway:${updaterTag}`);
-  const updater = new UpdaterService(base.engine, base.api as any, base.file, 'site', new UpdaterHandover(base.engine, 'site', selfId));
+  const updater = new UpdaterService(base.engine, base.api as any, base.file, base.directory, 'site', new UpdaterHandover(base.engine, 'site', selfId, base.folder));
   return { ...base, selfId, updater };
 };
 const updaters = (engine: InMemoryDockerEngine) =>
@@ -76,13 +81,25 @@ describe('UpdaterService', () => {
     expect(api.reported.length).toBe(reports);
   });
 
-  it('retires the updater it replaced as it starts, before it acts', async () => {
+  it('starts its successor as the release\'s compose files declare the updater service', async () => {
     const { updater, engine } = withUpdater('0.2.392');
+
+    await updater.tick();
+
+    const successor = engine.created.find((c) => c.name === 'site-updater-2')!.body;
+    expect(successor.Image).toBe(`${REG}gateway:v0.2.392`);
+    expect(successor.Cmd).toEqual(['./node_modules/.bin/tsx', 'packages/cli/src/bin.ts', 'system', 'updater']);
+    expect(successor.User).toBe('root');
+    expect(successor.HostConfig.Binds).toEqual(expect.arrayContaining(['/var/run/docker.sock:/var/run/docker.sock', '/opt/apps/site/deploy:/app/deploy-project']));
+  });
+
+  it('retires the updater it replaced as it starts, before it acts', async () => {
+    const { updater, engine, folder } = withUpdater('0.2.392');
     await updater.tick();
     const [successorId] = updaters(engine).find(([, c]) => c.name === 'site-updater-2')!;
 
-    await new UpdaterService(engine, new FakeApi({ current: '0.2.392', target: '', reason: 'current' }, '0.2.392') as any, {} as any, 'site',
-      new UpdaterHandover(engine, 'site', successorId)).retirePredecessors();
+    await new UpdaterService(engine, new FakeApi({ current: '0.2.392', target: '', reason: 'current' }, '0.2.392') as any, {} as any, new ComposeDirectory(folder), 'site',
+      new UpdaterHandover(engine, 'site', successorId, folder)).retirePredecessors();
 
     expect(updaters(engine).map(([, c]) => `${c.name} ${c.image} ${c.running}`)).toEqual([`site-updater-2 ${REG}gateway:v0.2.392 true`]);
   });

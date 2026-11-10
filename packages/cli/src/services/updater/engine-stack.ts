@@ -3,6 +3,7 @@ import { DeployCapacity } from '@fromcode119/core';
 import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
 import { ContainerReplacement } from '@cli/services/updater/container-replacement';
 import type { IDeployStack } from '@cli/services/deploy/interfaces/deploy-stack.interface';
+import type { IContainerBodySource } from '@cli/services/updater/interfaces/container-body-source.interface';
 import type { IContainerSummary } from '@cli/services/updater/interfaces/container-summary.interface';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 
@@ -10,11 +11,11 @@ import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engi
  * The compose project this updater belongs to, driven through the Docker Engine API, as a stack
  * `RollingDeploy` can roll to `tag`.
  *
- * There are no compose files here — the updater's image has no docker CLI — so a service is what its
- * running containers say it is: a new copy is the newest container's own configuration on `tag`, under
- * the next compose container number, which is exactly what `docker compose up --scale` would add. Its
- * network aliases come with it, so the gateway's lookup of `api` reaches the new copy the moment it
- * starts, and the old one is stopped only after the new one answers.
+ * The updater's image has no docker CLI, so this does what `docker compose up --scale` would: a new copy
+ * takes its configuration from `source` — for an update, the release's own compose service definition —
+ * under the next compose container number. Its network aliases (the service name) come with it, so the
+ * gateway's lookup of `api` reaches the new copy the moment it starts, and the old one is stopped only
+ * after the new one answers. Which services run is still what the running containers say.
  */
 export class EngineStack implements IDeployStack {
   static readonly PROJECT_LABEL = 'com.docker.compose.project';
@@ -29,6 +30,8 @@ export class EngineStack implements IDeployStack {
     private readonly project: string,
     /** The image tag new copies run (`v0.2.400`). */
     private readonly tag: string,
+    /** Where each new container's configuration comes from. */
+    private readonly source: IContainerBodySource,
     /** The machine's available memory; this container sees the host's. */
     private readonly availableBytes: () => number = () => os.freemem(),
   ) {}
@@ -52,20 +55,12 @@ export class EngineStack implements IDeployStack {
       const running = await this.running(service);
       if (!running.length) return 1;
       const template = await this.engine.inspect(running[running.length - 1].Id);
-      const image = `${EngineStack.repository(template.Config.Image)}:${this.tag}`;
-      const defaults = await this.engine.imageDefaults(template.Config.Image);
       for (let added = running.length; added < count; added += 1) {
         const number = (await this.highestNumber(service)) + 1;
         const name = `${this.project}-${service}-${number}`;
-        const oldName = template.Name.replace(/^\//, '');
-        const body = ContainerReplacement.bodyFor(template, image, defaults);
-        body.Labels = { ...template.Config.Labels, [EngineStack.NUMBER_LABEL]: String(number) };
-        const renamed = (endpoint: Record<string, any>) => ({ Aliases: [...(endpoint.Aliases ?? []).filter((alias: string) => alias !== oldName), name] });
-        for (const endpoints of Object.values(body.NetworkingConfig?.EndpointsConfig ?? {})) Object.assign(endpoints as object, renamed(endpoints as Record<string, any>));
+        const { body, extraNetworks } = await this.source.build(service, name, number, template);
         const id = await this.engine.createContainer(name, body);
-        for (const [network, endpoint] of ContainerReplacement.extraNetworks(template)) {
-          await this.engine.connectNetwork(network, id, renamed(ContainerReplacement.endpoint(endpoint, template.Id)));
-        }
+        for (const [network, endpoint] of extraNetworks) await this.engine.connectNetwork(network, id, endpoint);
         await this.engine.start(id);
       }
       return 0;
@@ -113,11 +108,12 @@ export class EngineStack implements IDeployStack {
     const replacement = new ContainerReplacement(this.engine);
     try {
       for (const container of await this.running(service)) {
-        const replaced = await replacement.replace(service, container.Id, `${EngineStack.repository(container.Image)}:${this.tag}`);
+        const replaced = await replacement.replace(service, container.Id, this.source);
         await replacement.discard(replaced);
       }
       return 0;
-    } catch {
+    } catch (error) {
+      console.error(`[updater] could not replace ${service} on ${this.tag}: ${(error as Error).message}`);
       return 1;
     }
   }

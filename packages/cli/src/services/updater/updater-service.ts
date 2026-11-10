@@ -1,10 +1,12 @@
 import os from 'os';
+import path from 'path';
 import { ApiVersionUtils, AutomaticUpdatePolicy, BootstrapSecretsService, EnvUtils, UpdaterState } from '@fromcode119/core';
 import { SelfUpdateRun } from '@cli/services/updater/self-update-run';
 import { UpdaterApiClient } from '@cli/services/updater/updater-api-client';
 import { DockerEngineClient } from '@cli/services/updater/docker-engine-client';
 import { EnvVersionFile } from '@cli/services/updater/env-version-file';
 import { UpdaterHandover } from '@cli/services/updater/updater-handover';
+import { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IUpdaterStatus } from '@cli/services/updater/interfaces/updater-status.interface';
 
@@ -36,6 +38,7 @@ export class UpdaterService {
     private readonly engine: IDockerEngine,
     private readonly api: UpdaterApiClient,
     private readonly versionFile: EnvVersionFile,
+    private readonly directory: ComposeDirectory,
     private readonly project: string,
     /** Moves the updater itself onto each version it installs; absent when it does not run in a container. */
     private readonly handover: UpdaterHandover | null = null,
@@ -48,12 +51,15 @@ export class UpdaterService {
     const self = await engine.inspect(os.hostname());
     const project = String(self.Config?.Labels?.[SelfUpdateRun.PROJECT_LABEL] ?? '');
     if (!project) throw new Error('The updater must run as a service of the platform\'s compose project.');
+    // The `.env` sits in the deployment folder, beside the compose files the updater brings to each release.
+    const envFile = process.env[UpdaterService.ENV_FILE] || '/app/deploy-project/.env';
     return new UpdaterService(
       engine,
       new UpdaterApiClient(process.env[UpdaterService.ENV_API] || `http://api:3000${ApiVersionUtils.prefix()}`),
-      new EnvVersionFile(process.env[UpdaterService.ENV_FILE] || '/app/deploy-project/.env'),
+      new EnvVersionFile(envFile),
+      new ComposeDirectory(path.dirname(envFile)),
       project,
-      new UpdaterHandover(engine, project, self.Id),
+      new UpdaterHandover(engine, project, self.Id, path.dirname(envFile)),
     );
   }
 
@@ -114,7 +120,7 @@ export class UpdaterService {
       this.last = { ...UpdaterService.status(UpdaterState.UPDATING.value), from, to, startedAt, step, steps: [...steps] };
       void this.api.report(this.last);
     };
-    const outcome = await new SelfUpdateRun(this.engine, this.api, this.versionFile, this.project, report).run(from, to)
+    const outcome = await new SelfUpdateRun(this.engine, this.api, this.versionFile, this.directory, this.project, report).run(from, to)
       .catch((error: Error) => ({ state: UpdaterState.FAILED.value, error: error.message }));
     this.last = { ...this.last, state: outcome.state, error: outcome.error, finishedAt: new Date().toISOString(), step: '' };
     console.log(`[updater] ${from} -> ${to}: ${outcome.state}${outcome.error ? ` — ${outcome.error}` : ''}`);

@@ -1,4 +1,6 @@
 import { EngineStack } from '@cli/services/updater/engine-stack';
+import { ComposeContainerBody } from '@cli/services/updater/compose/compose-container-body';
+import { ComposeProject } from '@cli/services/updater/compose/compose-project';
 import type { IContainerSummary } from '@cli/services/updater/interfaces/container-summary.interface';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 
@@ -9,7 +11,8 @@ import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engi
  * container ends the process doing the stopping. Left alone it would keep running the code of the image
  * it was first started from, so a fix to the updater would never reach an installation that updates
  * itself. So after a successful update it starts a copy of itself on the new version — beside itself,
- * the way the rolling swap adds an app — and stops acting; the copy, as it starts, retires every older
+ * the way the rolling swap adds an app, configured as the deployment folder's compose files (just
+ * brought to that version) declare the updater service — and stops acting; the copy, as it starts, retires every older
  * updater of the same service. A copy that will not start leaves the running updater in charge.
  */
 export class UpdaterHandover {
@@ -20,6 +23,8 @@ export class UpdaterHandover {
     private readonly project: string,
     /** This container's id (its hostname is a prefix of it). */
     private readonly selfId: string,
+    /** The deployment folder as this process sees it; the successor is built from its compose files. */
+    private readonly composeDirectory: string,
   ) {}
 
   /** Starts this updater on `tag` when it runs another one; true when a successor now runs. */
@@ -29,7 +34,7 @@ export class UpdaterHandover {
     const service = String(self.Config.Labels?.[EngineStack.SERVICE_LABEL] ?? '');
     if (!service) return false;
     const before = new Set((await this.containersOf(service)).map((container) => container.Id));
-    const stack = new EngineStack(this.engine, this.project, tag);
+    const stack = new EngineStack(this.engine, this.project, tag, new ComposeContainerBody(ComposeProject.load(this.composeDirectory, this.project)));
     const running = (await stack.containerIds(service)).length;
     if ((await stack.scale(service, running + 1)) === 0) return true;
     // A successor that was created but would not start must not be left for a later `compose up` to find.

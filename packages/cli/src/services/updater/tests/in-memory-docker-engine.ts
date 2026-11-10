@@ -3,13 +3,17 @@ import type { IContainerSummary } from '@cli/services/updater/interfaces/contain
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IImageDefaults } from '@cli/services/updater/interfaces/image-defaults.interface';
 import { ShippedMigration } from '@cli/services/deploy/shipped-migration';
+import { DeployFolderFixture } from '@cli/services/updater/tests/deploy-folder-fixture';
+import { TarFixture } from '@cli/services/updater/tests/tar-fixture';
 
 /** A Docker daemon in memory: containers by id, local images, and switches to make a step fail. */
 export class InMemoryDockerEngine implements IDockerEngine {
-  containers = new Map<string, { name: string; image: string; running: boolean; labels: Record<string, string>; env: string[]; cmd: string[] | null; created: number }>();
+  containers = new Map<string, { name: string; image: string; running: boolean; labels: Record<string, string>; env: string[]; cmd: string[] | null; created: number; body?: Record<string, any> }>();
   images = new Set<string>();
   published = new Set<string>();
   failStartFor = '';
+  /** A service whose NEWLY created container will not start (its running one still does). */
+  failNewStartFor = '';
   /** What the database answers for `deploy_mode` ('' = never set, which is restart). */
   deployMode = '';
   appliedMigration = 54;
@@ -19,12 +23,14 @@ export class InMemoryDockerEngine implements IDockerEngine {
   created: Array<{ name: string; body: Record<string, any> }> = [];
   /** Services that run with `network_mode` set (`none` for the sandboxed site extension host). */
   networkModes: Record<string, string> = {};
+  /** What each api image ships in /app/deploy: by default the repository's own deploy folder. */
+  releaseFiles = DeployFolderFixture.release();
   private next = 1;
 
   add(service: string, image: string, project = 'site'): string {
     const id = `c${this.next++}aaaaaaaaaaaa`;
     this.containers.set(id, { name: `${project}-${service}-1`, image, running: true, env: ['NODE_VERSION=22', 'API_URL=x'], cmd: ['npm', 'start'], created: this.next,
-      labels: { 'com.docker.compose.project': project, 'com.docker.compose.service': service, 'com.docker.compose.container-number': '1' } });
+      labels: { 'com.docker.compose.project': project, 'com.docker.compose.service': service, 'com.docker.compose.container-number': '1', 'com.docker.compose.project.working_dir': `/opt/apps/${project}/deploy` } });
     this.images.add(image);
     return id;
   }
@@ -41,6 +47,9 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async inspect(id: string): Promise<IContainerInspect> {
     const c = this.containers.get(id)!;
+    // A container made here reports what it was created with, as Docker does (the image env added).
+    if (c.body) return { Id: id, Name: `/${c.name}`, State: { Running: c.running }, Config: { ...c.body, Env: [...(c.body.Env ?? []), 'NODE_VERSION=22'], Cmd: c.body.Cmd ?? ['node'], Hostname: id.slice(0, 12) },
+      HostConfig: c.body.HostConfig ?? {}, NetworkSettings: { Networks: Object.fromEntries(Object.entries(c.body.NetworkingConfig?.EndpointsConfig ?? {})) } };
     const mode = this.networkModes[c.labels['com.docker.compose.service']];
     return { Id: id, Name: `/${c.name}`, State: { Running: c.running },
       Config: { Image: c.image, Env: c.env, Cmd: c.cmd, Labels: c.labels, Hostname: id.slice(0, 12) },
@@ -71,7 +80,7 @@ export class InMemoryDockerEngine implements IDockerEngine {
     }
     const id = `c${this.next++}bbbbbbbbbbbb`;
     this.created.push({ name, body });
-    this.containers.set(id, { name, image: body.Image, running: false, labels: body.Labels ?? {}, env: body.Env, cmd: body.Cmd, created: this.next });
+    this.containers.set(id, { name, image: body.Image, running: false, labels: body.Labels ?? {}, env: body.Env, cmd: body.Cmd, created: this.next, body });
     return id;
   }
 
@@ -79,6 +88,7 @@ export class InMemoryDockerEngine implements IDockerEngine {
 
   async start(id: string): Promise<void> {
     const c = this.containers.get(id)!;
+    if (c.body && this.failNewStartFor === c.labels['com.docker.compose.service']) throw new Error('exited with code 1');
     if (this.failStartFor && c.labels['com.docker.compose.service'] === this.failStartFor && c.image.endsWith(':v0.2.400')) throw new Error('exited with code 1');
     c.running = true;
   }
@@ -112,4 +122,11 @@ export class InMemoryDockerEngine implements IDockerEngine {
   async top(): Promise<{ Titles: string[]; Processes: string[][] }> { return { Titles: ['PID', 'UID'], Processes: [['1', '0']] }; }
   async memoryUsage(): Promise<number> { return 200 * 1024 * 1024; }
   async wait(): Promise<number> { return 0; }
+
+  /** Only the api image is asked for its deploy folder; anything else has none. */
+  async archive(id: string, path: string): Promise<Buffer> {
+    const c = this.containers.get(id)!;
+    if (!c.image.includes('framework-api:') || path !== '/app/deploy') throw new Error(`Could not find the file ${path} in container ${id}`);
+    return TarFixture.build('deploy', this.releaseFiles);
+  }
 }
