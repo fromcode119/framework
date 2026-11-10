@@ -238,7 +238,7 @@ export class PluginHost extends PluginHostSharedProcesses {
       });
       await RequestServerTiming.step('plugin-sync', () => this.syncPeers(store));
       await RequestServerTiming.step('plugin-release', () => TenantConnectionScope.releaseCurrent());
-      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), ...PluginHost.cacheScope(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'));
+      await this.proxy.forward(req, res, next, { token, tenantId: String(store?.tenantId ?? '').trim() || null, locale: String(store?.locale ?? ''), siteLocale: this.defaultLocaleFor(store), ...PluginHost.cacheScope(store), targetPath: target, originalUrl, connectionId: this.generation?.connectionId, siteOwned: Boolean(PluginOwners.ownerOf(this.slug)) }, this.limits.timeoutMs, () => this.restart('a request exceeded the deadline'), () => this.tokens.quietForMs(token));
     } finally {
       this.tokens.revoke(token);
     }

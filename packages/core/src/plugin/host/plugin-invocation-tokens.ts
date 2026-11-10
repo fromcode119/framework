@@ -20,12 +20,15 @@ import type { ITenantScopeLease } from '@fromcode119/database';
 export class PluginInvocationTokens {
   private readonly live = new Map<string, { store: IRequestStore | undefined; tenantId: string | null; kind: string; rpc: { ms: number; count: number; by: Map<string, { ms: number; count: number }> } }>();
   private readonly leases = new Map<string, ITenantScopeLease>();
+  /** Per live token: host calls still running, and when the last one started or ended. */
+  private readonly activity = new Map<string, { running: number; lastAt: number }>();
 
   /** Mints a token for one invocation; `store` is the request context to re-enter for its calls. */
   mint(kind: string, store: IRequestStore | undefined): string {
     const token = `${kind}:${randomBytes(18).toString('base64url')}`;
     const tenantId = String(store?.tenantId ?? '').trim() || null;
     this.live.set(token, { store, tenantId, kind, rpc: { ms: 0, count: 0, by: new Map() } });
+    this.activity.set(token, { running: 0, lastAt: Date.now() });
     return token;
   }
 
@@ -50,14 +53,44 @@ export class PluginInvocationTokens {
     return lease;
   }
 
+  /**
+   * Runs one host call the guest made under `token`, recorded as that invocation's activity: a request
+   * that keeps calling back is working, not stuck (see {@link quietForMs}).
+   */
+  async track<T>(token: string, call: () => Promise<T>): Promise<T> {
+    const entry = this.activity.get(token);
+    if (!entry) return call();
+    entry.running += 1;
+    entry.lastAt = Date.now();
+    try {
+      return await call();
+    } finally {
+      entry.running -= 1;
+      entry.lastAt = Date.now();
+    }
+  }
+
+  /**
+   * How long the invocation has gone without calling the host: 0 while one of its calls is still
+   * running, Infinity for a token that is not live. A deadline on THIS, not on the whole request, lets a
+   * large checkout finish while a guest that is really stuck still goes quiet and is cut off.
+   */
+  quietForMs(token: string, now = Date.now()): number {
+    const entry = this.activity.get(token);
+    if (!entry) return Infinity;
+    return entry.running > 0 ? 0 : Math.max(0, now - entry.lastAt);
+  }
+
   revoke(token: string): void {
     this.live.delete(token);
+    this.activity.delete(token);
     this.closeLease(token);
   }
 
   /** Everything outstanding — dropped when the guest dies, so nothing survives a restart. */
   revokeAll(): void {
     this.live.clear();
+    this.activity.clear();
     for (const token of [...this.leases.keys()]) this.closeLease(token);
   }
 
