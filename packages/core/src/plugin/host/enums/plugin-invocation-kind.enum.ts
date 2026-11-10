@@ -5,8 +5,9 @@ import { Enum } from '@fromcode119/react-class-components/lang';
  *
  * The kind is not decoration: it is what the invocation token is minted for, and it decides the
  * deadline — a `LIFECYCLE` call gets the boot timeout because `onInit` legitimately takes seconds,
- * while everything else gets the plugin's per-request one. Mislabel a call and it is either killed
- * early or allowed to hang the boot.
+ * while everything else gets the plugin's per-request one. Both are deadlines on silence (no call back
+ * to the host for that long), never on total time. Mislabel a call and it is either killed early or
+ * allowed to hang the boot.
  *
  * Carried as a VALUE on the wire (`IPluginInvocation.kind`): the message crosses a process boundary
  * and an Enum instance does not survive serialisation.
