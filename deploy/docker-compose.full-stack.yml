@@ -118,7 +118,7 @@ services:
       context: .
       dockerfile: Dockerfile
       target: gateway-only
-    command: ${EDGE_COMMAND:-./node_modules/.bin/tsx packages/cli/src/bin.ts system edge}
+    command: ${EDGE_COMMAND:-node packages/cli/dist/bin.js system edge}
     profiles:
       - single-domain
     depends_on:
@@ -142,7 +142,7 @@ services:
     deploy:
       resources:
         limits:
-          # It passes bytes; the memory is tsx compiling the CLI at start, as for the gateway.
+          # It passes bytes. Under `tsx` it sat at ~155 MiB; from the compiled CLI it is ~100 MiB.
           memory: 192M
 
   api:

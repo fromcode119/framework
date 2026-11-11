@@ -15,6 +15,7 @@ import type { ISpawnerPrepared } from '@core/process/interfaces/spawner-prepared
 import { MessagePortEvent } from '@core/process/enums/message-port-event.enum';
 import { GuestOutputStream } from '@core/process/enums/guest-output-stream.enum';
 import { SpawnerMessage } from '@core/process/enums/spawner-message.enum';
+import { GuestEnvironment } from '@core/process/guest-environment';
 
 /**
  * The one process that keeps root after the app gives it up — and does exactly three things with it:
@@ -99,9 +100,8 @@ export class PrivilegedSpawner {
     const launch = GuestLaunchCommand.build(process.execPath, [...args.execArgv, args.entryPath, ...args.args, '--fc-host-socket', args.hostSocket], args.resourceLimits);
     const child = spawn(launch.command, launch.args, {
       cwd: args.cwd,
-      // Nothing from this process: no database URL, no secrets. (Typed loosely because the Next apps augment
-      // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
-      env: {} as NodeJS.ProcessEnv,
+      // Nothing from this process: no database URL, no secrets — only the allocator setting.
+      env: GuestEnvironment.build(),
       uid: args.identity.uid,
       gid: args.identity.gid,
       stdio: ['ignore', 'pipe', 'pipe'],

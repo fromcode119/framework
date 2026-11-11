@@ -7,7 +7,8 @@
     "atlantis": "dist/bin.js"
   },
   "scripts": {
-    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build",
+    "build": "node ../typescript-multiple-inheritance/dist/tsmi-cli.cjs build && npm run copy:assets",
+    "copy:assets": "mkdir -p dist/services/gateway/challenge && cp src/services/gateway/challenge/gateway-challenge-page.html dist/services/gateway/challenge/",
     "dev": "tsc -w",
     "test": "vitest run --config ../../vitest.plugins.config.ts --project mcp packages/cli"
   },

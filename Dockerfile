@@ -122,6 +122,11 @@ RUN find packages -name "dist" -type d -exec rm -rf {} + 2>/dev/null || true && 
 # code is a read-only layer, and the next `compose up` would restore it anyway — so the admin says so
 # instead of offering a button that fails on a permissions error.
 ENV FROMCODE_DEPLOYMENT=image
+# glibc gives every thread that calls malloc an arena of its own (up to 8 per core) and keeps what it
+# freed there. Node's background threads (JIT compiler, GC, the libuv pool doing zlib and scrypt, sharp)
+# each grew one: a one-shop api held 15 of them, 424 MB of its 760 MB, none of it live data. Two arenas
+# keep that memory reusable and cost nothing measurable for a process whose JavaScript is one thread.
+ENV MALLOC_ARENA_MAX=2
 
 FROM base AS builder
 ARG NEXT_PUBLIC_ADMIN_APPEARANCE=
@@ -171,6 +176,14 @@ RUN npm run build:libs > /tmp/build-libs.log 2>&1; ec=$?; \
     tail -120 /tmp/build-libs.log; \
     [ $ec -ne 0 ] && echo "" && echo "=== build:libs FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
     echo "=== build:libs OK ==="
+
+# Step 3c: the CLI, compiled. The gateway, edge and updater are CLI commands; they used to start through
+# `tsx`, which keeps a TypeScript compiler and every transpiled module in memory for the life of the
+# process: ~250 MiB each against ~100 MiB for the same command from dist (measured on this image).
+RUN npm run build --workspace=@fromcode119/cli > /tmp/build-cli.log 2>&1; ec=$?; \
+    cat /tmp/build-cli.log; \
+    [ $ec -ne 0 ] && echo "" && echo "=== build:cli FAILED (exit $ec) — ERRORS ABOVE ===" && exit $ec; \
+    echo "=== build:cli OK ==="
 
 # Step 4: Build admin UI
 RUN npm run build:admin > /tmp/build-admin.log 2>&1; ec=$?; \
@@ -255,7 +268,7 @@ FROM builder AS gateway-only
 ENV NODE_ENV=production
 EXPOSE 3000
 ENV DEPLOYMENT_MODE=gateway
-CMD ["./node_modules/.bin/tsx", "packages/cli/src/bin.ts", "system", "gateway"]
+CMD ["node", "packages/cli/dist/bin.js", "system", "gateway"]
 
 # ===================================
 # MODE 4: Frontend Only (Edge deployment)
