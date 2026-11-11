@@ -20,7 +20,10 @@ export class ContainerDrift {
       ['command', !ContainerDrift.same(desired.Cmd ?? image.Cmd ?? null, config.Cmd ?? null)],
       ['entrypoint', !ContainerDrift.same(desired.Entrypoint ?? image.Entrypoint ?? null, config.Entrypoint ?? null)],
       ['memory limit', Number(want.Memory || 0) !== Number(host.Memory || 0)],
-      ['logging', Boolean(want.LogConfig) && !ContainerDrift.same(want.LogConfig, { Type: host.LogConfig?.Type, Config: host.LogConfig?.Config ?? {} })],
+      // Docker hands the log options back with their keys sorted; compose lists them as written.
+      ['logging', Boolean(want.LogConfig) && !ContainerDrift.same(
+        { Type: want.LogConfig?.Type, Config: ContainerDrift.sorted(want.LogConfig?.Config ?? {}) },
+        { Type: host.LogConfig?.Type, Config: ContainerDrift.sorted(host.LogConfig?.Config ?? {}) })],
       ['volumes', !ContainerDrift.sameSet(want.Binds ?? [], host.Binds ?? [])],
       ['ports', !ContainerDrift.same(ContainerDrift.sorted(want.PortBindings ?? {}), ContainerDrift.sorted(host.PortBindings ?? {}))],
       ['restart policy', String(want.RestartPolicy?.Name ?? '') !== String(host.RestartPolicy?.Name ?? '')],
