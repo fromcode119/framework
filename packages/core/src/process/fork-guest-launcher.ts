@@ -7,6 +7,7 @@ import { GuestProcessLauncher } from '@core/process/guest-process-launcher';
 import { GuestResourceWatchdog } from '@core/process/guest-resource-watchdog';
 import type { IGuestProcess } from '@core/process/interfaces/guest-process.interface';
 import type { IGuestProcessSpec } from '@core/process/interfaces/guest-process-spec.interface';
+import { GuestEnvironment } from '@core/process/guest-environment';
 
 /**
  * Starts a guest as a direct child of this process — the launcher for development and for any
@@ -26,9 +27,8 @@ export class ForkGuestLauncher extends GuestProcessLauncher {
     fs.mkdirSync(socketDir, { recursive: true, mode: 0o700 });
     const child = fork(spec.entryPath, spec.args, {
       cwd: spec.cwd,
-      // Nothing from this process: no database URL, no secrets. (Typed loosely because the Next apps augment
-      // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
-      env: {} as NodeJS.ProcessEnv,
+      // Nothing from this process: no database URL, no secrets — only the allocator setting.
+      env: GuestEnvironment.build(),
       serialization: 'advanced',
       execArgv: spec.execArgv,
       stdio: ['ignore', 'pipe', 'pipe', 'ipc'],

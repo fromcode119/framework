@@ -11,7 +11,7 @@
 services:
   relay:
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:?set VERSION in .env}
-    command: ./node_modules/.bin/tsx packages/cli/src/bin.ts system edge
+    command: node packages/cli/dist/bin.js system edge
     environment:
       - EDGE_HTTP_PORT=80
       - EDGE_HTTPS_PORT=443
@@ -25,7 +25,7 @@ services:
     deploy:
       resources:
         limits:
-          # Measured 2026-10-10: ~240 MiB while tsx compiles the CLI at start, ~160 MiB settled.
+          # Measured 2026-10-10 under tsx: ~240 MiB at start, ~160 MiB settled. The compiled CLI needs less.
           memory: 384m
     logging:
       driver: json-file

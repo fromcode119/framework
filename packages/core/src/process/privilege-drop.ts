@@ -4,6 +4,7 @@ import { SystemConstants } from '@core/constants/system.constants';
 import { SpawnerClient } from '@core/process/spawner-client';
 import { ExtensionHostLink } from '@core/process/extension-host/extension-host-link';
 import { ExtensionHostSocket } from '@core/process/extension-host/extension-host-socket';
+import { GuestEnvironment } from '@core/process/guest-environment';
 
 /**
  * An app that was started as root stops being root here, before it does anything else.
@@ -40,9 +41,9 @@ export class PrivilegeDrop {
       client = await new ExtensionHostLink(extensionHost, log).start(PrivilegeDrop.EXTENSION_HOST_WAIT_MS);
     } else if (options.withSpawner) {
       const child = fork(path.join(__dirname, 'privileged-spawner-main.js'), [options.runtimeDir ?? SystemConstants.PROCESS_ISOLATION.RUNTIME_DIR], {
-        // Nothing from this process: no database URL, no secrets. (Typed loosely because the Next apps augment
-        // `ProcessEnv` with required keys; an EMPTY environment is the whole point here.)
-        env: {} as NodeJS.ProcessEnv,
+        // Nothing from this process: no database URL, no secrets — only the allocator setting, which the
+        // spawner hands on to every guest it starts.
+        env: GuestEnvironment.build(),
         serialization: 'advanced',
         stdio: ['ignore', 'inherit', 'inherit', 'ipc'],
       });

@@ -66,7 +66,7 @@ services:
   # means on. (No nested `${A:-${B}}` default — not every compose this file meets resolves one.)
   updater:
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
-    command: ./node_modules/.bin/tsx packages/cli/src/bin.ts system updater
+    command: node packages/cli/dist/bin.js system updater
     user: root
     environment:
       - FROMCODE_UPDATER=${FROMCODE_UPDATER:-}

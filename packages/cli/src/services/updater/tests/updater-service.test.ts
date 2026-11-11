@@ -88,7 +88,7 @@ describe('UpdaterService', () => {
 
     const successor = engine.created.find((c) => c.name === 'site-updater-2')!.body;
     expect(successor.Image).toBe(`${REG}gateway:v0.2.392`);
-    expect(successor.Cmd).toEqual(['./node_modules/.bin/tsx', 'packages/cli/src/bin.ts', 'system', 'updater']);
+    expect(successor.Cmd).toEqual(['node', 'packages/cli/dist/bin.js', 'system', 'updater']);
     expect(successor.User).toBe('root');
     expect(successor.HostConfig.Binds).toEqual(expect.arrayContaining(['/var/run/docker.sock:/var/run/docker.sock', '/opt/apps/site/deploy:/app/deploy-project']));
   });
