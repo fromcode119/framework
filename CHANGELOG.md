@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.565] - 2026-11-11
+
+### Fixed
+
+- **updater**: hold the edge's command back with its image, and fail a crash-looping service ([#1378](https://github.com/fromcode119/framework/pull/1378))
+
 ## [0.2.564] - 2026-11-11
 
 ### Fixed
