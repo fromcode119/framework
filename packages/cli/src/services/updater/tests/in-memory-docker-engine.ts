@@ -14,6 +14,8 @@ export class InMemoryDockerEngine implements IDockerEngine {
   failStartFor = '';
   /** A service whose NEWLY created container will not start (its running one still does). */
   failNewStartFor = '';
+  /** A service whose NEWLY created container starts and then crash-loops under its restart policy. */
+  crashLoopNewFor = '';
   /** What the database answers for `deploy_mode` ('' = never set, which is restart). */
   deployMode = '';
   appliedMigration = 54;
@@ -48,7 +50,8 @@ export class InMemoryDockerEngine implements IDockerEngine {
   async inspect(id: string): Promise<IContainerInspect> {
     const c = this.containers.get(id)!;
     // A container made here reports what it was created with, as Docker does (the image env added).
-    if (c.body) return { Id: id, Name: `/${c.name}`, State: { Running: c.running }, Config: { ...c.body, Env: [...(c.body.Env ?? []), 'NODE_VERSION=22'], Cmd: c.body.Cmd ?? ['node'], Hostname: id.slice(0, 12) },
+    const looping = Boolean(c.body) && this.crashLoopNewFor === c.labels['com.docker.compose.service'];
+    if (c.body) return { Id: id, Name: `/${c.name}`, State: { Running: c.running, ...(looping ? { Restarting: true } : {}) }, ...(looping ? { RestartCount: 3 } : {}), Config: { ...c.body, Env: [...(c.body.Env ?? []), 'NODE_VERSION=22'], Cmd: c.body.Cmd ?? ['node'], Hostname: id.slice(0, 12) },
       HostConfig: c.body.HostConfig ?? {}, NetworkSettings: { Networks: Object.fromEntries(Object.entries(c.body.NetworkingConfig?.EndpointsConfig ?? {})) } };
     const mode = this.networkModes[c.labels['com.docker.compose.service']];
     return { Id: id, Name: `/${c.name}`, State: { Running: c.running },
