@@ -100,4 +100,29 @@ describe('ServiceConvergence — the services an update does not roll', () => {
     expect(edge.image).toBe(`${REG}gateway:v0.2.392`);
     expect(edge.body!.HostConfig.LogConfig.Type).toBe('journald');
   });
+
+  it('holds the edge\'s command back with its image, so a release\'s command never runs on an image without it', async () => {
+    const deployment = new Deployment('COMPOSE_PROFILES=single-domain\n');
+    const old = deployment.engine.add('edge', `${REG}gateway:v0.2.392`);
+    deployment.engine.containers.get(old)!.cmd = ['./node_modules/.bin/tsx', 'packages/cli/src/bin.ts', 'system', 'edge'];
+
+    expect(await deployment.converge()).toEqual([]);
+
+    const [edge] = deployment.running('edge');
+    expect(edge.image).toBe(`${REG}gateway:v0.2.392`);
+    expect(edge.body!.Cmd).toEqual(['./node_modules/.bin/tsx', 'packages/cli/src/bin.ts', 'system', 'edge']);
+    expect(edge.body!.HostConfig.LogConfig.Type).toBe('journald');
+  });
+
+  it('puts back a service whose new container crash-loops, though Docker reports it running between restarts', async () => {
+    const deployment = new Deployment();
+    const old = deployment.engine.add('redis', 'redis:7-alpine');
+    deployment.engine.crashLoopNewFor = 'redis';
+
+    const problems = await deployment.converge();
+
+    expect(problems).toEqual([expect.stringMatching(/^redis: the new container did not stay up/)]);
+    expect(deployment.engine.containers.has(old)).toBe(true);
+    expect(deployment.engine.containers.get(old)!.running).toBe(true);
+  });
 });

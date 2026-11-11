@@ -112,12 +112,17 @@ export class ServiceConvergence {
     if (error) throw new Error(`could not download ${image} — ${error}`);
   }
 
-  /** Up, and still up a while later; with a healthcheck, healthy. */
+  /**
+   * Up, and still up a while later; with a healthcheck, healthy. Docker reports a container in a crash
+   * loop as `Running` (with `Restarting` set) between attempts, so a restart — or any restart counted
+   * since it started — is a failure, not a pass.
+   */
   private async settled(id: string): Promise<boolean> {
     let checks = 0;
     for (let attempt = 0; attempt < ServiceConvergence.HEALTH_CHECKS; attempt++) {
-      const state = (await this.engine.inspect(id)).State as Record<string, any>;
-      if (!state.Running) return false;
+      const inspected = await this.engine.inspect(id);
+      const state = inspected.State as Record<string, any>;
+      if (!state.Running || state.Restarting || (inspected.RestartCount ?? 0) > 0) return false;
       const health = state.Health?.Status;
       if (health === 'unhealthy') return false;
       if ((health === undefined || health === 'healthy') && ++checks >= ServiceConvergence.SETTLE_CHECKS) return true;
