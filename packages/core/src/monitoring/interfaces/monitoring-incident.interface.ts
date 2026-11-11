@@ -13,4 +13,10 @@ export interface IMonitoringIncident {
   values: Record<string, string | number>;
   openedAt: string;
   resolvedAt?: string;
+  /**
+   * How many checks in a row have found it, while it is still waiting to be announced. A disk or memory
+   * share is announced only once it is found on `PlatformHealthChecks.SHARE_CONFIRM_CHECKS` checks in a
+   * row; absent once announced (and on incidents stored before this existed).
+   */
+  pendingChecks?: number;
 }

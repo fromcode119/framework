@@ -2023,7 +2023,7 @@
       "schemaOrphanDropped": "Column dropped",
       "schemaOrphanDropFailed": "The column could not be dropped",
       "monitoring": "Monitoring",
-      "monitoringHelp": "Every five minutes the platform checks every site, every plugin, the server disk and memory, and the api error rate. Each problem is announced once when it starts and once when it is fixed.",
+      "monitoringHelp": "Every five minutes the platform checks every site, every plugin, the server disk and memory, and the api error rate. Each problem is announced once when it starts and once when it is fixed. A full disk or memory is announced only when two checks in a row find it at or above its threshold, and counts as fixed once it falls 5 points below.",
       "monitoringOpenIncidents": "Open problems",
       "monitoringNoIncidents": "Nothing is wrong right now.",
       "monitoringSince": "Since {{time}}",
