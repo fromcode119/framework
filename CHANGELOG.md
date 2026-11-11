@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.564] - 2026-11-11
+
+### Fixed
+
+- **runtime**: cut the platform's resident memory on a small server ([#1376](https://github.com/fromcode119/framework/pull/1376))
+- **monitoring**: announce a full disk or memory only on two checks in a row, and clear it 5 points below ([#1375](https://github.com/fromcode119/framework/pull/1375))
+
 ## [0.2.563] - 2026-11-10
 
 ### Fixed
