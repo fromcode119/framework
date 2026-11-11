@@ -28,6 +28,18 @@ export class PlatformHealthChecks {
   static readonly PROBE_ATTEMPTS = 2;
   /** The pause before a failed probe is asked again. */
   static readonly PROBE_RETRY_DELAY_MS = 5_000;
+  /**
+   * A disk or memory share is announced only once this many checks in a row (five minutes apart) find it
+   * at or above its threshold. One reading over the line — a deploy starting new containers before the
+   * old ones stop, a burst of renders — is gone by the next check and is not something to act on.
+   */
+  static readonly SHARE_CONFIRM_CHECKS = 2;
+  /**
+   * Once open, a disk or memory incident resolves only when the share falls this many points below its
+   * threshold. A server that sits right at the line otherwise opened and resolved the same incident every
+   * few minutes: 24 alerts in one night on a shop whose memory moved between 89% and 92%.
+   */
+  static readonly SHARE_RESOLVE_MARGIN = 5;
 
   constructor(
     private readonly manager: any,
@@ -35,11 +47,17 @@ export class PlatformHealthChecks {
     private readonly probeRetryDelayMs: number = PlatformHealthChecks.PROBE_RETRY_DELAY_MS,
   ) {}
 
-  async run(): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
+  /** Whether this kind is a share of the disk or memory: confirmed before it is announced, cleared below a margin. */
+  static isShare(kind: string): boolean {
+    return kind === MonitoringIncidentKind.DISK_FULL.value || kind === MonitoringIncidentKind.MEMORY_FULL.value;
+  }
+
+  /** @param open the keys of the incidents open now — a disk or memory one stays open until it falls clearly below. */
+  async run(open: ReadonlySet<string> = new Set()): Promise<Array<Omit<IMonitoringIncident, 'openedAt'>>> {
     const found = [...this.plugins(), ...(await this.sitesDown())];
     const resources = await HostResourceService.read() as any;
-    found.push(...this.share(MonitoringIncidentKind.DISK_FULL, resources?.disk?.usedBytes, resources?.disk?.totalBytes, await PlatformHealthChecks.threshold(SystemConstants.META_KEY.MONITORING_DISK_PERCENT)));
-    found.push(...this.share(MonitoringIncidentKind.MEMORY_FULL, resources?.memory?.usedBytes, resources?.memory?.totalBytes, await PlatformHealthChecks.threshold(SystemConstants.META_KEY.MONITORING_MEMORY_PERCENT)));
+    found.push(...this.share(MonitoringIncidentKind.DISK_FULL, resources?.disk?.usedBytes, resources?.disk?.totalBytes, await PlatformHealthChecks.threshold(SystemConstants.META_KEY.MONITORING_DISK_PERCENT), open));
+    found.push(...this.share(MonitoringIncidentKind.MEMORY_FULL, resources?.memory?.usedBytes, resources?.memory?.totalBytes, await PlatformHealthChecks.threshold(SystemConstants.META_KEY.MONITORING_MEMORY_PERCENT), open));
     found.push(...(await this.apiErrors()));
     return found;
   }
@@ -109,12 +127,13 @@ export class PlatformHealthChecks {
     }
   }
 
-  private share(kind: MonitoringIncidentKind, used: unknown, total: unknown, threshold: number): Array<Omit<IMonitoringIncident, 'openedAt'>> {
+  private share(kind: MonitoringIncidentKind, used: unknown, total: unknown, threshold: number, open: ReadonlySet<string>): Array<Omit<IMonitoringIncident, 'openedAt'>> {
     const usedBytes = Number(used);
     const totalBytes = Number(total);
     if (!threshold || !Number.isFinite(usedBytes) || !totalBytes) return [];
     const percent = Math.round((usedBytes / totalBytes) * 100);
-    if (percent < threshold) return [];
+    const holdsAt = open.has(kind.value) ? threshold - PlatformHealthChecks.SHARE_RESOLVE_MARGIN : threshold;
+    if (percent < holdsAt) return [];
     const gib = (bytes: number) => (bytes / 1024 ** 3).toFixed(1);
     return [{ key: kind.value, kind: kind.value, values: { percent, threshold, usedGib: gib(usedBytes), totalGib: gib(totalBytes) } }];
   }

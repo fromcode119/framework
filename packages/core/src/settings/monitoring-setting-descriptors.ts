@@ -10,11 +10,11 @@ export class MonitoringSettingDescriptors {
   static readonly ALL = {
     [SystemConstants.META_KEY.MONITORING_DISK_PERCENT]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '85', description: "Alert when the server's disk is at least this full, in percent. 0 = never.", group: "Infrastructure" },
+      seed: { value: '85', description: "Alert when the server's disk is at least this full on two checks in a row, in percent; cleared once it falls 5 points below. 0 = never.", group: "Infrastructure" },
     },
     [SystemConstants.META_KEY.MONITORING_MEMORY_PERCENT]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,
-      seed: { value: '90', description: "Alert when the server's memory is at least this full, in percent. 0 = never.", group: "Infrastructure" },
+      seed: { value: '90', description: "Alert when the server's memory is at least this full on two checks in a row, in percent; cleared once it falls 5 points below. 0 = never.", group: "Infrastructure" },
     },
     [SystemConstants.META_KEY.MONITORING_API_ERROR_PERCENT]: {
       scope: SettingScope.PLATFORM, writable: true, exposed: true,

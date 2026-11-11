@@ -47,17 +47,34 @@ export class PlatformMonitorTask {
   }
 
   async run(now: Date = new Date()): Promise<{ opened: IMonitoringIncident[]; resolved: IMonitoringIncident[] }> {
-    const found = await new PlatformHealthChecks(this.manager, this.sites).run();
     const previous = await this.store.readOpen();
+    // Only an announced incident holds on below its threshold; one still waiting must be found at it again.
+    const announced = new Set(previous.filter((incident) => !incident.pendingChecks).map((incident) => incident.key));
+    const found = await new PlatformHealthChecks(this.manager, this.sites).run(announced);
     const stamp = now.toISOString();
     const foundKeys = new Set(found.map((incident) => incident.key));
     const previousKeys = new Set(previous.map((incident) => incident.key));
 
-    const opened = found.filter((incident) => !previousKeys.has(incident.key)).map((incident) => ({ ...incident, openedAt: stamp }));
-    const resolved = previous.filter((incident) => !foundKeys.has(incident.key)).map((incident) => ({ ...incident, resolvedAt: stamp }));
+    // A disk or memory share waits for a second check in a row before anyone is told (`pendingChecks`); it
+    // is stored meanwhile, so the Health page shows it and the next check knows it was seen.
+    const confirm = (incident: Omit<IMonitoringIncident, 'openedAt'>, seen: number, openedAt: string): IMonitoringIncident => {
+      const { pendingChecks: _was, ...rest } = incident as IMonitoringIncident;
+      const waiting = PlatformHealthChecks.isShare(incident.kind) && seen < PlatformHealthChecks.SHARE_CONFIRM_CHECKS;
+      return waiting ? { ...rest, openedAt, pendingChecks: seen } : { ...rest, openedAt };
+    };
+    const first = found.filter((incident) => !previousKeys.has(incident.key)).map((incident) => confirm(incident, 1, stamp));
     // Still open: keep when it started, refresh what was measured.
-    const stillOpen = previous.filter((incident) => foundKeys.has(incident.key)).map((incident) => ({ ...incident, ...found.find((f) => f.key === incident.key)!, openedAt: incident.openedAt }));
-    await this.store.writeOpen([...stillOpen, ...opened]);
+    const continued = previous.filter((incident) => foundKeys.has(incident.key)).map((incident) => {
+      const measured = { ...incident, ...found.find((f) => f.key === incident.key)! };
+      return incident.pendingChecks ? confirm(measured, incident.pendingChecks + 1, incident.openedAt) : { ...measured, openedAt: incident.openedAt };
+    });
+    const opened = [
+      ...first.filter((incident) => !incident.pendingChecks),
+      ...continued.filter((incident) => !incident.pendingChecks && previous.find((p) => p.key === incident.key)?.pendingChecks),
+    ];
+    // One never announced is never resolved to anyone either: it simply goes.
+    const resolved = previous.filter((incident) => !foundKeys.has(incident.key) && !incident.pendingChecks).map((incident) => ({ ...incident, resolvedAt: stamp }));
+    await this.store.writeOpen([...continued, ...first]);
 
     const active = await this.providers.active();
     for (const { key, provider } of active) {

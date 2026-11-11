@@ -86,10 +86,53 @@ describe('PlatformMonitorTask', () => {
     expect(second.resolved.map((i) => i.key)).toEqual(['site-down:shop']);
   });
 
-  it('opens a disk incident at the configured threshold, with what was measured', async () => {
+  it('opens a disk incident at the configured threshold on the second check in a row, with what was measured', async () => {
     vi.spyOn(HostResourceService, 'read').mockResolvedValue({ disk: { usedBytes: 90, totalBytes: 100 }, memory: { usedBytes: 10, totalBytes: 100 } } as any);
-    const { opened } = await task().run();
-    expect(opened).toEqual([expect.objectContaining({ key: 'disk-full', values: expect.objectContaining({ percent: 90, threshold: 85 }) })]);
+    expect((await task().run(new Date('2026-10-01T10:00:00Z'))).opened).toEqual([]);
+    const { opened } = await task().run(new Date('2026-10-01T10:05:00Z'));
+    expect(opened).toEqual([expect.objectContaining({ key: 'disk-full', openedAt: '2026-10-01T10:00:00.000Z', values: expect.objectContaining({ percent: 90, threshold: 85 }) })]);
+    expect(opened[0]).not.toHaveProperty('pendingChecks');
+  });
+
+  describe('memory share', () => {
+    const memory = (percent: number) => vi.spyOn(HostResourceService, 'read').mockResolvedValue({ disk: { usedBytes: 10, totalBytes: 100 }, memory: { usedBytes: percent, totalBytes: 100 } } as any);
+    const at = (minute: number) => new Date(Date.UTC(2026, 10, 11, 1, minute));
+    beforeEach(() => {
+      vi.spyOn(PlatformSettingsService, 'getSetting').mockImplementation(async (key: string) => (key === 'monitoring_memory_percent' ? '90' : key.startsWith('monitoring_') ? '85' : null));
+    });
+
+    it('says nothing about one reading over the line that is gone by the next check', async () => {
+      memory(92);
+      await task().run(at(0));
+      // The Health page shows it meanwhile; nobody is told.
+      expect(JSON.parse(db.rows.get('monitoring_open_incidents').value)).toEqual([expect.objectContaining({ key: 'memory-full', pendingChecks: 1 })]);
+      memory(80);
+      await task().run(at(5));
+      expect(notified).toEqual([]);
+      expect(JSON.parse(db.rows.get('monitoring_open_incidents').value)).toEqual([]);
+    });
+
+    it('announces once and stays open while memory moves around the threshold (the TIP night of 2026-11-11)', async () => {
+      for (const [minute, percent] of [[0, 91], [5, 92], [10, 89], [15, 90], [20, 88], [25, 92], [30, 86]] as const) {
+        memory(percent);
+        await task().run(at(minute));
+      }
+      expect(notified).toEqual([{ key: 'memory-full', change: 'opened' }]);
+      memory(84);
+      const { resolved } = await task().run(at(35));
+      expect(resolved).toEqual([expect.objectContaining({ key: 'memory-full', openedAt: at(0).toISOString() })]);
+      expect(notified.map((n) => n.change)).toEqual(['opened', 'resolved']);
+    });
+
+    it('does not count a reading below the threshold towards opening a new incident', async () => {
+      memory(91);
+      await task().run(at(0));
+      memory(89);
+      await task().run(at(5));
+      memory(91);
+      await task().run(at(10));
+      expect(notified).toEqual([]);
+    });
   });
 
   it('names the routes behind an api error incident, most failing first, with ids folded', async () => {
