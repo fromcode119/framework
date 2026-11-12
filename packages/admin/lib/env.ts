@@ -27,32 +27,25 @@ export class AppEnv {
 	 * AdminPathUtils by the consumer), colors are any CSS color the manifest spec accepts.
 	 */
 	/**
-	 * Per-deployment brand imagery for the admin shell (sidebar mark + login logo). The framework ships its
+	 * Per-deployment brand imagery for the admin shell (sidebar mark + sign-in wordmark). The framework ships its
 	 * own brand assets as the DEFAULTS, so an unconfigured deployment renders exactly as before; a platform
 	 * rebrands the console via env instead of patching framework source. Paths are admin-root-relative
 	 * (resolved through AdminPathUtils by the consumer), so a deployment can point at any asset it serves
-	 * from the admin `public/` root. The login logo is split light/dark because the shell swaps the two by
-	 * colour scheme — a deployment with a single logo simply points both at the same file.
+	 * from the admin `public/` root. The sign-in name is split
+	 * light/dark because the shell swaps the two by colour scheme.
 	 */
 	static readonly DEFAULT_BRAND_MARK_PATH = '/brand/fromcode-framework-mark.png';
-	static readonly DEFAULT_BRAND_LOGO_LIGHT_PATH = '/brand/fromcode-framework-logo-dark.png';
-	static readonly DEFAULT_BRAND_LOGO_DARK_PATH = '/brand/fromcode-framework-logo-white.png';
 	static readonly BRAND_MARK_PATH = process.env.NEXT_PUBLIC_ADMIN_BRAND_MARK || AppEnv.DEFAULT_BRAND_MARK_PATH;
-	static readonly BRAND_LOGO_LIGHT_PATH =
-		process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_LIGHT || AppEnv.DEFAULT_BRAND_LOGO_LIGHT_PATH;
-	static readonly BRAND_LOGO_DARK_PATH =
-		process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_DARK || AppEnv.DEFAULT_BRAND_LOGO_DARK_PATH;
 	/**
-	 * The name alone, without the mark — what the sign-in shows on its toolbar row, where the full logo
-	 * would push the language and theme controls off the card. Same light/dark split and env override
-	 * as the logo.
+	 * The name the sign-in shows on its toolbar row. A deployment that already points
+	 * `NEXT_PUBLIC_ADMIN_BRAND_LOGO_LIGHT/_DARK` at its own logo keeps it there.
 	 */
 	static readonly DEFAULT_BRAND_WORDMARK_LIGHT_PATH = '/brand/fromcode-framework-wordmark-dark.png';
 	static readonly DEFAULT_BRAND_WORDMARK_DARK_PATH = '/brand/fromcode-framework-wordmark-white.png';
 	static readonly BRAND_WORDMARK_LIGHT_PATH =
-		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_LIGHT || AppEnv.DEFAULT_BRAND_WORDMARK_LIGHT_PATH;
+		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_LIGHT || process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_LIGHT || AppEnv.DEFAULT_BRAND_WORDMARK_LIGHT_PATH;
 	static readonly BRAND_WORDMARK_DARK_PATH =
-		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_DARK || AppEnv.DEFAULT_BRAND_WORDMARK_DARK_PATH;
+		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_DARK || process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_DARK || AppEnv.DEFAULT_BRAND_WORDMARK_DARK_PATH;
 	/**
 	 * PWA icon default deliberately stays its OWN constant rather than chaining onto BRAND_MARK_PATH: the
 	 * manifest declares fixed 192/512 PNG sizes, so an arbitrary brand mark is not automatically a valid
