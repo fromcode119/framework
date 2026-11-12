@@ -13,7 +13,7 @@ import { FrontendPublicFile } from '@/lib/theme/frontend-public-file';
  * own long-lived headers. The redirect itself is kept short, so a newly picked icon shows within the hour.
  */
 export class SiteIconRouteService {
-  static readonly PLATFORM_MARK = '/brand/atlantis-mark-indigo.png';
+  static readonly PLATFORM_MARK = '/brand/fromcode-framework-mark.png';
   private static readonly REDIRECT_CACHE = 'public, max-age=3600';
   private static readonly FILE_CACHE = 'public, max-age=86400';
 

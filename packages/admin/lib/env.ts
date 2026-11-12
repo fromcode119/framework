@@ -34,7 +34,7 @@ export class AppEnv {
 	 * from the admin `public/` root. The login logo is split light/dark because the shell swaps the two by
 	 * colour scheme — a deployment with a single logo simply points both at the same file.
 	 */
-	static readonly DEFAULT_BRAND_MARK_PATH = '/brand/atlantis-mark-indigo.png';
+	static readonly DEFAULT_BRAND_MARK_PATH = '/brand/fromcode-framework-mark.png';
 	static readonly DEFAULT_BRAND_LOGO_LIGHT_PATH = '/brand/atlantis-logo-slate.png';
 	static readonly DEFAULT_BRAND_LOGO_DARK_PATH = '/brand/atlantis-logo-white.png';
 	static readonly BRAND_MARK_PATH = process.env.NEXT_PUBLIC_ADMIN_BRAND_MARK || AppEnv.DEFAULT_BRAND_MARK_PATH;
