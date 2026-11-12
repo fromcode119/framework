@@ -48,6 +48,10 @@ export class SystemRecordLinksController {
    * The person a record names, when it can say who by id or by email. People are the framework's own
    * records — no plugin holds them — so the framework is the one that answers. An email is matched
    * whole, never as a search: a partial match would put a stranger on the record.
+   *
+   * The keys come from the caller, so this is a person lookup by id or email. It grants nothing new:
+   * the route requires `users:view`, the permission the people routes themselves require, and it reads
+   * through the same site-bound people service — whoever can ask here can already open that person.
    */
   private async personItem(keys: Record<string, string>): Promise<any | null> {
     const personId = Number(keys[SystemRecordLinksController.PERSON_ID_KEY]);
