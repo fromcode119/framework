@@ -11,7 +11,21 @@ import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-poli
  */
 class MetaStub {
   private platformScope = false;
-  constructor(private readonly platformRows: Record<string, string>, private readonly siteRows: Record<string, string>) {}
+  constructor(
+    private readonly platformRows: Record<string, string>,
+    private readonly siteRows: Record<string, string>,
+    private readonly otherSiteRows: Record<string, string> = {},
+  ) {}
+
+  /** Under the platform marker the real table shows every partition: other sites' rows come back too. */
+  async find(_table: string, options: { where: { key: string } }): Promise<Array<{ key: string; value: string; tenant_id: string | null }>> {
+    const key = options.where.key;
+    if (!this.platformScope) return key in this.siteRows ? [{ key, value: this.siteRows[key], tenant_id: 'shop' }] : [];
+    return [
+      ...(key in this.otherSiteRows ? [{ key, value: this.otherSiteRows[key], tenant_id: 'other' }] : []),
+      ...(key in this.platformRows ? [{ key, value: this.platformRows[key], tenant_id: null }] : []),
+    ];
+  }
 
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> {
     this.platformScope = true;
@@ -47,5 +61,10 @@ describe('auth settings on a site', () => {
     const platformOnly = new MetaStub({ [SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED]: 'false' }, {});
     expect(await onSite(() => probe(platformOnly).read(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED))).toBe(false);
     expect(await probe(db).read(SystemConstants.META_KEY.FRONTEND_AUTH_ENABLED)).toBe(false);
+  });
+
+  it("never answers with another site's row off a site — the console host named itself after a site", async () => {
+    const crowded = new MetaStub({ [SystemConstants.META_KEY.PLATFORM_NAME]: 'Platform' }, {}, { [SystemConstants.META_KEY.PLATFORM_NAME]: 'Other site' });
+    expect(await probe(crowded).name()).toBe('Platform');
   });
 });

@@ -95,7 +95,9 @@ export class AuthControllerSharedInfrastructure extends BaseController {
       const site = await this.db.findOne(SystemConstants.TABLE.META, { key });
       if (site) return site;
     }
-    const platform = await this.db.withPlatformAdmin(() => this.db.findOne(SystemConstants.TABLE.META, { key }));
+    // The platform marker sees every site's row too, so take the platform's own (`tenant_id IS NULL`).
+    const rows = await this.db.withPlatformAdmin(() => this.db.find(SystemConstants.TABLE.META, { where: { key } }));
+    const platform = (Array.isArray(rows) ? rows : []).find((row: any) => (row?.tenant_id ?? null) === null);
     if (platform) return platform;
     return this.db.findOne(SystemConstants.TABLE.META, { key });
   }
