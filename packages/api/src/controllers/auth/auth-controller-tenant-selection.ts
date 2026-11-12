@@ -203,7 +203,7 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
       // Whether crawlers may index this console. Read before sign-in because `robots.txt` and the
       // `X-Robots-Tag` are served to requests with no session; it reveals nothing robots.txt would not.
       searchIndexing: await PlatformSettingsService.readFlag(SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING),
-      platformName: String((await PlatformSettingsService.getSetting(SystemConstants.META_KEY.PLATFORM_NAME)) ?? '').trim(),
+      platformName: String((await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_NAME)) ?? '').trim(),
     });
   }
 
