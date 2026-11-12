@@ -60,7 +60,7 @@ export class StructuredReadOnlyGroup extends PureReactor {
     const count = StructuredReadOnlyFieldService.topLevelCount(entry.node);
     return (
       <div className="mb-2.5 flex items-center gap-2.5">
-        <span className={`whitespace-nowrap text-[9px] font-bold uppercase tracking-[0.09em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <span className={`whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.09em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           {StructuredReadOnlyFieldService.keyLabel(entry.key, this.keyLabels)}
         </span>
         <span className={`h-px flex-1 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />

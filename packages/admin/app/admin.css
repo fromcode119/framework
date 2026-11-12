@@ -638,12 +638,35 @@ html.dark {
 @container (min-width: 32rem) {
   .fc-edit-fields__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+/* What plugins put above a record's form. A panel that is only a title and an action shares a row with
+   its neighbours where the form is wide enough; one that holds content keeps the full width. Stacked
+   one per row, four short panels were a screen of scrolling before the first field. */
+.fc-edit-top { container-type: inline-size; }
+@container (min-width: 44rem) {
+  .fc-edit-top__grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 0.75rem; align-items: start; }
+  .fc-edit-top__grid > *:has(.fc-admin-panel--body), .fc-edit-top__grid > .fc-admin-panel--body { grid-column: 1 / -1; }
+}
+
+/* A wide card holds three fields to a row: with two, three short values (a name, a phone, an email) ran
+   to a second row and left half of it empty. */
+@container (min-width: 36rem) {
+  .fc-edit-fields__grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 
 /* ── A collection list: a table where it fits, a card per record where it does not. ──
    Decided by the LIST's width, not the window's. The sidebar and an open sub-menu leave a 1280px
    window with a list under 700px wide, where a table of six columns overflows and the actions pinned
    to its right edge cover whatever columns sit under them. */
 .fc-collection-list { container-type: inline-size; }
+/* A record's card in that list: three lines on a phone, two where the list has the width for it. */
+.fc-list-card__badge--inline { display: none; }
+.fc-list-card__actions { margin-top: 0.5rem; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.375rem 0.5rem; }
+@container (min-width: 40rem) {
+  .fc-list-card__badge--inline { display: block; }
+  .fc-list-card__badge--row, .fc-list-card__label { display: none; }
+  .fc-list-card__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .fc-list-card__actions { margin-top: 0; justify-content: flex-end; flex-wrap: nowrap; }
+}
 .fc-collection-list .fc-list-table,
 .fc-collection-list .fc-list-table-only { display: none; }
 @container (min-width: 960px) {

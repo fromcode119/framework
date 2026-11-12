@@ -36,7 +36,7 @@ export class VisualMenuFieldInput extends PureReactor {
     if (f.type === 'relationship') {
        return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+          {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
           <TagField
             {...fieldProps}
             collectionSlug={collectionSlug}
@@ -53,7 +53,7 @@ export class VisualMenuFieldInput extends PureReactor {
     if (f.type === 'select') {
       return (
         <div className="flex flex-col gap-0.5">
-          {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+          {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
           <Select {...fieldProps} options={f.options || []} />
         </div>
       );
@@ -61,7 +61,7 @@ export class VisualMenuFieldInput extends PureReactor {
 
     return (
       <div className="flex flex-col gap-0.5">
-        {f.label && <label className="text-[9px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
+        {f.label && <label className="text-[10px] font-semibold text-slate-400 tracking-wide">{f.label}</label>}
         <Input {...fieldProps} type="text" inputClassName="font-semibold h-8 text-xs" />
       </div>
     );

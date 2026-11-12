@@ -72,10 +72,6 @@ export class CollectionListUtils {
     return AdminI18n.t('collection.list.searchPlaceholder', { name: label.toLowerCase(), label });
   }
 
-  static resolveCollectionDescription(collection: any, fallbackSlug: string): string {
-    const label = CollectionListUtils.resolveCollectionLabel(collection, fallbackSlug);
-    return AdminI18n.t('collection.list.description', { name: label.toLowerCase(), label });
-  }
 
   static resolveBooleanBadge(fieldName: string, fieldLabel: string, raw: unknown): null | { variant: BadgeVariant; label: string } {
     const value = CollectionListUtils.toBooleanValue(raw);

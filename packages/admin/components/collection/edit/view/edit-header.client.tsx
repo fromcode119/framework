@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Select } from '@/components/ui/view/select.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
+import { EditHeaderRecordFacts } from '@/components/collection/edit/view/edit-header-record-facts.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SitePreviewLauncher } from '@/lib/tenants/site-preview-launcher';
 
@@ -29,6 +30,8 @@ export class EditHeader extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare resolvedTitleValue: string;
   @prop declare changeSummary: string;
+  /** The note for the version history: offered once the form is widened past the everyday fields. */
+  @prop declare showChangeSummary: boolean;
   @prop declare setChangeSummary: (val: string) => void;
   @prop declare formData: any;
   @prop declare setFormData: (value: any) => void;
@@ -113,8 +116,8 @@ export class EditHeader extends PureReactor {
 
   return (
     <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
+      <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
           {/* The same left side as every other admin page header (CompactPageHeader): back to the list, the
               icon, the title and one line under it. The title takes the room the actions leave and ends in
               "…" when longer; below its minimum the actions wrap under it. */}
@@ -126,11 +129,11 @@ export class EditHeader extends PureReactor {
             >
               <FrameworkIcons.Left size={16} strokeWidth={2} />
             </AdminLink>
-            <div className="h-9 w-9 rounded-lg flex items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
+            <div className="hidden sm:flex h-9 w-9 rounded-lg items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
               <FrameworkIcons.Layout size={18} />
             </div>
             <div className="min-w-0">
-              <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+              <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-lg sm:text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {isNew
                   ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
                   : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
@@ -140,13 +143,13 @@ export class EditHeader extends PureReactor {
               <p className="truncate text-xs font-medium tracking-tight text-slate-500">
                 {isNew
                   ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel })
-                  : `${collectionLabel} · #${id.length > 8 ? `${id.substring(0, 8)}…` : id}`}
+                  : [`${collectionLabel} · #${id.length > 8 ? `${id.substring(0, 8)}…` : id}`, ...EditHeaderRecordFacts.of(collection, formData)].join(' · ')}
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            {!isNew && (
+            {!isNew && this.showChangeSummary && (
               <div className="hidden lg:block relative group">
                  <Input 
                     placeholder={AdminI18n.t('collection.edit.summary')}
@@ -189,7 +192,7 @@ export class EditHeader extends PureReactor {
                   options={statusOptions}
                   searchable={false}
                   size={FieldSize.MD}
-                  className="w-32 sm:w-40 lg:w-44"
+                  className="w-28 sm:w-40 lg:w-44"
                   triggerClassName="h-10 px-3 sm:px-4 text-sm font-bold rounded-[var(--radius)]"
                 />
               </div>

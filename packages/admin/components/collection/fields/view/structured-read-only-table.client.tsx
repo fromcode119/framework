@@ -18,7 +18,7 @@ export class StructuredReadOnlyTable extends PureReactor {
     const { node, isDark, keyLabels } = this;
     const columns = node.tableColumns ?? [];
     const rows = node.tableRows ?? [];
-    const headerClass = `border-b px-0 pe-5 pb-2 text-start text-[9px] font-bold uppercase tracking-[0.09em] ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
+    const headerClass = `border-b px-0 pe-5 pb-2 text-start text-[10px] font-bold uppercase tracking-[0.09em] ${isDark ? 'border-slate-800 text-slate-500' : 'border-slate-200 text-slate-400'}`;
     const cellClass = `px-0 pe-5 py-2.5 align-top text-[12px] font-medium last:pe-0 ${isDark ? 'border-slate-800' : 'border-slate-200'} border-b`;
 
     return (

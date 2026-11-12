@@ -129,7 +129,7 @@ export class ThemesLayout extends AdminComponent {
                     {AdminI18n.t('themes.visualArchitectureThemes')}
                   </span>
                 </div>
-                <p className="text-[9px] font-bold text-slate-400">{AdminI18n.t('themes.transformYourPlatformInterfaceWith')}</p>
+                <p className="text-[10px] font-bold text-slate-400">{AdminI18n.t('themes.transformYourPlatformInterfaceWith')}</p>
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">

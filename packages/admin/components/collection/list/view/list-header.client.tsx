@@ -47,11 +47,11 @@ export class CollectionListHeader extends PureReactor {
                       <h1 className="text-xl font-bold tracking-tight leading-tight text-slate-900 dark:text-white">
                         {collection.slug === 'users' ? AdminI18n.t('collection.list.usersTitle') : displayName}
                       </h1>
-                      <p className="text-xs font-medium text-slate-500 tracking-tight truncate">
-                        {collection.slug === 'users'
-                          ? AdminI18n.t('collection.list.usersDescription')
-                          : CollectionListUtils.resolveCollectionDescription(collection, slug)}
-                      </p>
+                      {/* No line under the title for a collection: "Manage and organize orders records." said
+                          the title again in a sentence, on every list in the console. */}
+                      {collection.slug === 'users' ? (
+                        <p className="text-xs font-medium text-slate-500 tracking-tight truncate">{AdminI18n.t('collection.list.usersDescription')}</p>
+                      ) : null}
                     </div>
                   </div>
                 }

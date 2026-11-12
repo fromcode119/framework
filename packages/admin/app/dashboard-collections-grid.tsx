@@ -71,7 +71,7 @@ export class DashboardCollectionsGrid extends PureReactor {
                 <p className="text-[10px] font-bold tracking-tight text-slate-400 uppercase truncate">{s.name || colShortSlug}</p>
                 <div className="flex items-baseline gap-1.5">
                   <h4 className="text-lg font-bold tracking-tight text-slate-900 dark:text-white leading-tight">{s.count}</h4>
-                  <span className="text-[9px] text-slate-400 dark:text-slate-500 truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
+                  <span className="text-[10px] text-slate-400 dark:text-slate-500 truncate">{(s.system || colPluginSlug === AdminConstants.SYSTEM_PLUGIN_SLUG) ? AdminI18n.t('nav.groups.core') : displayPluginSlug}</span>
                 </div>
               </div>
               <FrameworkIcons.ArrowRight size={14} className="shrink-0 text-slate-300 group-hover:text-indigo-500 transition-colors" />

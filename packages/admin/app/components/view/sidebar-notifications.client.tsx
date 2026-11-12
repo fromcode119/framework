@@ -126,7 +126,7 @@ export class SidebarNotifications extends AdminComponent {
   }
 
   private get trigger(): ReactElement {
-    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[10.5px] font-semibold leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
+    const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[11px] font-semibold leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
     if (this.isMini) {
       return (
         <span className="relative flex justify-center py-1" title={AdminI18n.t('shell.notifications.title')}>
@@ -136,7 +136,7 @@ export class SidebarNotifications extends AdminComponent {
       );
     }
     return (
-      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70">
+      <span className="flex w-full items-center gap-2.5 rounded-xl px-2 py-1.5 text-start text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800/70">
         <FrameworkIcons.Bell size={16} className="shrink-0 text-slate-400" />
         <span className="flex-1 truncate">{AdminI18n.t('shell.notifications.title')}</span>
         {badge}

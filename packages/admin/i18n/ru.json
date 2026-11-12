@@ -92,7 +92,6 @@
     "list": {
       "records": "Записи",
       "searchPlaceholder": "Поиск: {{name}}...",
-      "description": "Управление записями {{name}}.",
       "importDone": "Успешно импортировано записей: {{count}}. Ошибок: {{errors}}.",
       "importFailed": "Ошибка импорта: {{message}}",
       "statusUpdateFailed": "Не удалось обновить статус",
@@ -168,6 +167,13 @@
       "sectionShow": "Показать",
       "sectionHide": "Скрыть",
       "sectionFieldCount": "Полей: {{count}}",
+      "fieldLevel": {
+        "label": "Показанные поля",
+        "everyday": "Основные",
+        "occasional": "Редко используемые",
+        "technical": "Технические",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Предпросмотр и постоянная ссылка",
       "permalinkHint": "Нажмите на часть пути, чтобы заменить автоматически созданный слаг.",
       "settings": "Настройки",
@@ -426,6 +432,7 @@
       "from": "из",
       "pluginSettings": "Настройки плагина",
       "overrideUnlocked": "Переопределение разблокировано",
+      "about": "О поле «{{label}}»",
       "unlockTitle": "Разблокировать «{{label}}» для редактирования",
       "unlock": "Разблокировать",
       "readOnly": "Только чтение",

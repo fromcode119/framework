@@ -92,7 +92,6 @@
     "list": {
       "records": "Zapisi",
       "searchPlaceholder": "Iskanje: {{name}} ...",
-      "description": "Upravljajte in urejajte zapise: {{name}}.",
       "importDone": "Uspešno uvoženih zapisov: {{count}}. Napake: {{errors}}.",
       "importFailed": "Uvoz ni uspel: {{message}}",
       "statusUpdateFailed": "Napaka pri posodabljanju stanja",
@@ -168,6 +167,13 @@
       "sectionShow": "Prikaži",
       "sectionHide": "Skrij",
       "sectionFieldCount": "Število polj: {{count}}",
+      "fieldLevel": {
+        "label": "Prikazana polja",
+        "everyday": "Vsakdanja",
+        "occasional": "Občasna",
+        "technical": "Tehnična",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Predogled in stalna povezava",
       "permalinkHint": "Kliknite del poti, da preglasite samodejno ustvarjeni URL-ime (slug).",
       "settings": "Nastavitve",
@@ -426,6 +432,7 @@
       "from": "iz",
       "pluginSettings": "Nastavitve vtičnika",
       "overrideUnlocked": "Preglasitev odklenjena",
+      "about": "O polju {{label}}",
       "unlockTitle": "Odklenite \"{{label}}\" za urejanje",
       "unlock": "Odkleni urejanje",
       "readOnly": "Samo za branje",

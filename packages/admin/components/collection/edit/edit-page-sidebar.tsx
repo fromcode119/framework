@@ -58,7 +58,7 @@ export class EditPageSidebar extends PureReactor {
         {hasSidebarFields &&
           sidebarFieldSections.map((section) => (
             <Card key={`sidebar-section-${section.title}`} title={section.title}>
-              <div className="space-y-6">
+              <div className="flex flex-col gap-6">
                 {section.fields.map((field) => (
                   <FieldRenderer
                     key={field.name}

@@ -115,7 +115,7 @@ export class PersonField extends Reactor {
     const person = this.person;
     if (!person) {
       return (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[12.5px] text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 text-[13px] text-amber-800 dark:border-amber-900/60 dark:bg-amber-950/30 dark:text-amber-300">
           {this.personFailed ? AdminI18n.t('ui.person.readFailed', { id: this.personId }) : AdminI18n.t('common.loading')}
         </div>
       );
@@ -132,7 +132,7 @@ export class PersonField extends Reactor {
           <div className="mt-1 text-[11px] text-slate-400 dark:text-slate-500">{AdminI18n.t('ui.person.source', { id: person.id })}</div>
         </div>
         <div className="flex shrink-0 gap-2">
-          <AdminLink href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[11.5px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</AdminLink>
+          <AdminLink href={AdminConstants.ROUTES.PEOPLE.DETAIL(person.id)} className="inline-flex h-8 items-center rounded-lg border border-slate-200 px-3 text-[12px] font-semibold text-slate-700 hover:bg-white dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-900">{AdminI18n.t('ui.person.open')}</AdminLink>
           {this.readOnly ? null : (
             <Button type="button" size={FieldSize.SM} variant={ButtonVariant.GHOST} onClick={this.unlink}>{AdminI18n.t('ui.person.choose')}</Button>
           )}
@@ -154,9 +154,9 @@ export class PersonField extends Reactor {
             <button type="button" onClick={() => this.pick(person)} className="flex w-full items-center justify-between gap-3 px-3.5 py-2.5 text-start hover:bg-slate-50 dark:hover:bg-slate-800/60">
               <span className="min-w-0">
                 <span className="block truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</span>
-                <span className="block truncate text-[11.5px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>
+                <span className="block truncate text-[12px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>
               </span>
-              <span className="shrink-0 text-[10.5px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>
+              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>
             </button>
           </li>
         ))}
@@ -166,7 +166,7 @@ export class PersonField extends Reactor {
 
   render(): ReactNode {
     if (this.personId) return this.renderLinked();
-    if (this.readOnly) return <p className="text-[12.5px] text-slate-500 dark:text-slate-400">{AdminI18n.t('ui.person.notLinked')}</p>;
+    if (this.readOnly) return <p className="text-[13px] text-slate-500 dark:text-slate-400">{AdminI18n.t('ui.person.notLinked')}</p>;
     return (
       <div>
         <Input value={this.query} onChange={this.onQuery} placeholder={AdminI18n.t('ui.person.search')} />

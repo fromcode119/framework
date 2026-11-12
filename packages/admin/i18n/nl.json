@@ -92,7 +92,6 @@
     "list": {
       "records": "Records",
       "searchPlaceholder": "{{name}} zoeken...",
-      "description": "{{name}}-records beheren en ordenen.",
       "importDone": "{{count}} records geïmporteerd. {{errors}} fouten.",
       "importFailed": "Importeren mislukt: {{message}}",
       "statusUpdateFailed": "Fout bij bijwerken van status",
@@ -168,6 +167,13 @@
       "sectionShow": "Tonen",
       "sectionHide": "Verbergen",
       "sectionFieldCount": "{{count}} velden",
+      "fieldLevel": {
+        "label": "Getoonde velden",
+        "everyday": "Dagelijks",
+        "occasional": "Af en toe",
+        "technical": "Technisch",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Voorbeeld & permalink",
       "permalinkHint": "Klik op het padgedeelte om de automatisch gegenereerde slug te overschrijven.",
       "settings": "Instellingen",
@@ -426,6 +432,7 @@
       "from": "uit",
       "pluginSettings": "Plugin-instellingen",
       "overrideUnlocked": "Overschrijving ontgrendeld",
+      "about": "Over {{label}}",
       "unlockTitle": "Ontgrendel \"{{label}}\" om te bewerken",
       "unlock": "Bewerken ontgrendelen",
       "readOnly": "Alleen-lezen",

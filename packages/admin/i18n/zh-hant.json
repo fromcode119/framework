@@ -92,7 +92,6 @@
     "list": {
       "records": "記錄",
       "searchPlaceholder": "搜尋{{name}}...",
-      "description": "管理與整理{{name}}記錄。",
       "importDone": "已成功匯入 {{count}} 筆記錄,{{errors}} 個錯誤。",
       "importFailed": "匯入失敗:{{message}}",
       "statusUpdateFailed": "更新狀態時發生錯誤",
@@ -168,6 +167,13 @@
       "sectionShow": "顯示",
       "sectionHide": "隱藏",
       "sectionFieldCount": "{{count}} 個欄位",
+      "fieldLevel": {
+        "label": "顯示的欄位",
+        "everyday": "常用",
+        "occasional": "偶爾使用",
+        "technical": "技術",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "預覽與永久連結",
       "permalinkHint": "按一下路徑部分，即可覆寫自動產生的代稱。",
       "settings": "設定",
@@ -426,6 +432,7 @@
       "from": "來自",
       "pluginSettings": "外掛設定",
       "overrideUnlocked": "已解鎖覆寫",
+      "about": "關於 {{label}}",
       "unlockTitle": "解鎖「{{label}}」以進行編輯",
       "unlock": "解鎖編輯",
       "readOnly": "唯讀",

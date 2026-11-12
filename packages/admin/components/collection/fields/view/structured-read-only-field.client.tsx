@@ -85,14 +85,14 @@ export class StructuredReadOnlyField extends Reactor {
     return (
       <div className={`flex items-center gap-2 border-b px-3 py-2 ${barClass}`}>
         <FrameworkIcons.Lock size={12} className={`shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`} />
-        <p className={`flex-1 text-[10.5px] font-semibold leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+        <p className={`flex-1 text-[11px] font-semibold leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           {AdminI18n.t('ui.structured.auto')}
         </p>
         {showCopy ? (
           <button
             type="button"
             onClick={this.handleCopy}
-            className={`shrink-0 inline-flex h-[22px] items-center gap-1 rounded-lg border px-2 text-[9px] font-semibold tracking-wide transition-colors ${buttonClass}`}
+            className={`shrink-0 inline-flex h-[22px] items-center gap-1 rounded-lg border px-2 text-[10px] font-semibold tracking-wide transition-colors ${buttonClass}`}
           >
             <FrameworkIcons.Copy size={11} />
             {AdminI18n.t(this.copied ? 'ui.structured.copied' : 'ui.structured.copy')}

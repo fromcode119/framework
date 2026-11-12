@@ -71,7 +71,7 @@ export class DashboardGettingStarted extends AdminComponent {
             need: tenancy switches on only when `_system_tenants` has rows, and until then this
             deployment serves the hosts in its own environment. */}
         {this.storefront ? (
-          <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[11.5px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
+          <div className="mb-4 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50/60 px-3 py-2 text-[12px] text-slate-600 dark:border-slate-800 dark:bg-slate-900/40 dark:text-slate-300">
             <span className="font-semibold">{AdminI18n.t(this.inSite ? 'dashboard.setup.thisSite' : (this.mode === 'multi-site' ? 'dashboard.setup.multiSite' : 'dashboard.setup.singleSite'))}</span>
             <span className="text-slate-400">·</span>
             <span className="truncate">
@@ -100,7 +100,7 @@ export class DashboardGettingStarted extends AdminComponent {
                 <button
                   type="button"
                   onClick={() => this.go(String(step.actionPath))}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[11.5px] font-semibold transition-colors ${
+                  className={`shrink-0 rounded-lg px-3 py-1.5 text-[12px] font-semibold transition-colors ${
                     String(step.key) === this.firstUndoneKey
                       ? 'bg-indigo-600 text-white hover:bg-indigo-500'
                       : 'border border-slate-200 text-slate-600 hover:border-indigo-300 dark:border-slate-800 dark:text-slate-300'

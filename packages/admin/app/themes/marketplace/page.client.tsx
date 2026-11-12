@@ -131,7 +131,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                         <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
                         </div>
-                        <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[9px] uppercase rounded-lg">
+                        <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[10px] uppercase rounded-lg">
                           {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')) : AdminI18n.t('themes.premium')}
                         </Badge>
                       </div>

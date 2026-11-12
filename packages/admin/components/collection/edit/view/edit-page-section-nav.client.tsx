@@ -141,7 +141,7 @@ export class EditPageSectionNav extends Reactor {
         {/* Up arrow */}
         <button
           onClick={() => hasPrev && scrollToSection(sections[activeIndex - 1].key)}
-          className={`p-0.5 rounded transition-all ${hasPrev ? (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-300 hover:text-slate-600') : 'opacity-0 pointer-events-none'}`}
+          className={`flex h-6 w-6 items-center justify-center rounded transition-all ${hasPrev ? (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-300 hover:text-slate-600') : 'opacity-0 pointer-events-none'}`}
         >
           <FrameworkIcons.ChevronUp size={11} strokeWidth={2.5} />
         </button>
@@ -152,7 +152,7 @@ export class EditPageSectionNav extends Reactor {
           {sections.map((section) => {
             const isActive = section.key === activeKey;
             return (
-              <div key={section.key} className="relative group flex items-center justify-center py-[5px]">
+              <div key={section.key} className="relative group flex items-center justify-center">
                 {/* The button keeps a CONSTANT 10px footprint; only the inner dot scales. If the dot
                     itself changed size, every row's height would change as the active section moves,
                     shifting the whole stack on scroll (the "shaking" this replaced). */}
@@ -164,7 +164,8 @@ export class EditPageSectionNav extends Reactor {
                   onBlur={this.hideName}
                   aria-label={section.title}
                   style={{ position: 'relative', zIndex: 10 }}
-                  className="w-2.5 h-2.5 flex items-center justify-center"
+                  // 24px to press (WCAG 2.5.8); the dot inside stays the size it was.
+                  className="w-6 h-6 flex items-center justify-center"
                 >
                   <span
                     className={`rounded-full transition-all duration-200 ${
@@ -182,7 +183,7 @@ export class EditPageSectionNav extends Reactor {
         {/* Down arrow */}
         <button
           onClick={() => hasNext && scrollToSection(sections[activeIndex + 1].key)}
-          className={`p-0.5 rounded transition-all ${hasNext ? (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-300 hover:text-slate-600') : 'opacity-0 pointer-events-none'}`}
+          className={`flex h-6 w-6 items-center justify-center rounded transition-all ${hasNext ? (isDark ? 'text-slate-500 hover:text-slate-200' : 'text-slate-300 hover:text-slate-600') : 'opacity-0 pointer-events-none'}`}
         >
           <FrameworkIcons.ChevronDown size={11} strokeWidth={2.5} />
         </button>

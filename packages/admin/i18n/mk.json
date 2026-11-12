@@ -92,7 +92,6 @@
     "list": {
       "records": "Записи",
       "searchPlaceholder": "Пребарај {{name}}...",
-      "description": "Управувајте и организирајте ги записите од {{name}}.",
       "importDone": "Успешно увезени {{count}} записи. Грешки: {{errors}}.",
       "importFailed": "Увозот не успеа: {{message}}",
       "statusUpdateFailed": "Грешка при ажурирање на статусот",
@@ -168,6 +167,13 @@
       "sectionShow": "Прикажи",
       "sectionHide": "Скриј",
       "sectionFieldCount": "{{count}} полиња",
+      "fieldLevel": {
+        "label": "Прикажани полиња",
+        "everyday": "Секојдневни",
+        "occasional": "Повремени",
+        "technical": "Технички",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Преглед и трајна врска",
       "permalinkHint": "Кликнете на делот од патеката за да го замените автоматски генерираниот slug.",
       "settings": "Поставки",
@@ -426,6 +432,7 @@
       "from": "од",
       "pluginSettings": "Поставки на приклучокот",
       "overrideUnlocked": "Отклучено за промена",
+      "about": "За „{{label}}“",
       "unlockTitle": "Отклучете „{{label}}“ за уредување",
       "unlock": "Отклучи уредување",
       "readOnly": "Само за читање",

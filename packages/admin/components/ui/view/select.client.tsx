@@ -233,7 +233,7 @@ export class Select extends Reactor {
               onSearchChange?.('');
               setIsOpen(false);
             }}
-            className={`absolute top-1/2 end-9 z-20 -translate-y-1/2 flex h-4 w-4 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
+            className={`absolute top-1/2 end-8 z-20 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
               isDarkTheme
                 ? 'text-slate-400 hover:bg-slate-800 hover:text-white'
                 : 'text-slate-400 hover:bg-slate-100 hover:text-slate-700'

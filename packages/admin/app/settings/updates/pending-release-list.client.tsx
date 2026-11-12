@@ -33,11 +33,11 @@ export class PendingReleaseList extends PureReactor {
                 v{release.version}
               </p>
               {release.notes ? (
-                <p className="mt-1 whitespace-pre-line text-[11.5px] leading-relaxed text-slate-600 dark:text-slate-300">
+                <p className="mt-1 whitespace-pre-line text-[12px] leading-relaxed text-slate-600 dark:text-slate-300">
                   {release.notes}
                 </p>
               ) : (
-                <p className="mt-1 text-[11.5px] italic text-slate-400">{AdminI18n.t('settings.updates.noNotesWereWrittenFor')}</p>
+                <p className="mt-1 text-[12px] italic text-slate-400">{AdminI18n.t('settings.updates.noNotesWereWrittenFor')}</p>
               )}
             </li>
           ))}

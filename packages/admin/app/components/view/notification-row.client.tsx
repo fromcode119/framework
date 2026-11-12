@@ -40,7 +40,7 @@ export class NotificationRow extends PureReactor {
     const source = CoercionUtils.toString(notification.source);
     return (
       <div className="pb-3.5 ps-9 pe-4">
-        <p className="whitespace-pre-wrap break-words text-[12.5px] leading-relaxed text-slate-600 dark:text-slate-300">
+        <p className="whitespace-pre-wrap break-words text-[13px] leading-relaxed text-slate-600 dark:text-slate-300">
           {CoercionUtils.toString(notification.body)}
         </p>
         <div className="mt-2.5 flex items-center justify-between gap-3">

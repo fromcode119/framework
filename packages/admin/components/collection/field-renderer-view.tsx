@@ -6,6 +6,9 @@ import { FieldControlRenderer } from '@/components/collection/field-control-rend
 import { FieldRendererFooter } from '@/components/collection/field-renderer-footer';
 import { FieldRendererViewLocale } from '@/components/collection/field-renderer-view-locale';
 import { FieldBooleanRow } from '@/components/collection/field-boolean-row';
+import { FieldLockedRow } from '@/components/collection/view/field-locked-row.client';
+import { FieldHelpButton } from '@/components/collection/view/field-help-button.client';
+import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
 
 /**
  * One field of a record, rendered by whichever component its type resolves to.
@@ -50,6 +53,27 @@ export class FieldRendererView extends FieldRendererViewLocale {
     return (kind === 'boolean' || kind === 'checkbox') && !this.field.admin?.component && !this.isFieldReadOnly && !this.isLocalizedField;
   }
 
+  /** A locked value with no control of its own, drawn as one row — see `FieldLockedRow`. */
+  private get isLockedValue(): boolean {
+    return this.showsProvenanceInline && !this.field.admin?.component && String(this.field.type) !== 'richText';
+  }
+
+  private lockedText(currentValue: unknown, resolvedCurrentText: string): string {
+    const kind = String(this.field.type || '');
+    if (['select', 'boolean', 'checkbox', 'date', 'datetime'].includes(kind)) return ReadOnlyFieldValue.describe(this.field, currentValue);
+    if (kind === 'number') return typeof currentValue === 'number' || typeof currentValue === 'string' ? String(currentValue) : '';
+    return typeof currentValue === 'string' ? currentValue : resolvedCurrentText;
+  }
+
+  /**
+   * Whether the explanation is printed without being asked for: only when the field has no label row to
+   * carry the help control. It used to print for every EMPTY field as well, which is every field of a
+   * new record — sixteen paragraphs down a new product, before anything had been typed.
+   */
+  private alwaysPrintsDescription(): boolean {
+    return Boolean(this.field.admin?.hideLabel);
+  }
+
   render(): ReactElement {
     const fieldComponents = (this.plugins as any).fieldComponents || {};
     const isLocalizedField = this.isLocalizedField;
@@ -83,9 +107,29 @@ export class FieldRendererView extends FieldRendererViewLocale {
       );
     }
 
+    if (this.isLockedValue) {
+      return (
+        <div className={FieldRendererUtils.wrapperClassName(this.field)}>
+          <FieldLockedRow
+            label={label}
+            value={this.lockedText(currentValue, resolvedCurrentText)}
+            description={resolvedFieldDescription}
+            hideLabel={Boolean(this.field.admin?.hideLabel)}
+            helpOpen={this.helpOpen}
+            onToggleHelp={this.toggleHelp}
+            canUnlock={this.canRequestReadOnlyOverride}
+            onUnlock={this.requestReadOnlyOverride}
+          />
+          <FieldRendererFooter field={this.field} resolvedFieldDescription="" errors={this.errors} provenance={this.provenance} localeFallback={this.localeFallback} activeLocale={this.activeLocale} />
+        </div>
+      );
+    }
+
+    const descriptionOnDemand = Boolean(resolvedFieldDescription) && !this.showsProvenanceInline && !this.alwaysPrintsDescription();
     return (
       <div className={FieldRendererUtils.wrapperClassName(this.field)}>
         <FieldRendererHeader
+          help={descriptionOnDemand ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} /> : undefined}
           field={this.field}
           label={label}
           theme={this.theme}
@@ -129,7 +173,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
 
         <FieldRendererFooter
           field={this.field}
-          resolvedFieldDescription={this.showsProvenanceInline ? '' : resolvedFieldDescription}
+          resolvedFieldDescription={this.showsProvenanceInline || (descriptionOnDemand && !this.helpOpen) ? '' : resolvedFieldDescription}
           errors={this.errors}
           provenance={this.provenance}
           localeFallback={this.localeFallback}

@@ -70,7 +70,7 @@ export class InstalledPluginCard extends PureReactor {
               <span className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</span>
             </AdminLink>
             {hasUpdate && (
-              <AdminLink href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[9px] font-bold uppercase tracking-wide leading-none">
+              <AdminLink href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[10px] font-bold uppercase tracking-wide leading-none">
                 <FrameworkIcons.Loader size={8} className="animate-spin" />{AdminI18n.t('plugins.list.update')}
               </AdminLink>
             )}

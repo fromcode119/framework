@@ -92,7 +92,6 @@
     "list": {
       "records": "Enregistrements",
       "searchPlaceholder": "Rechercher dans {{name}}...",
-      "description": "Gérez et organisez les enregistrements {{name}}.",
       "importDone": "{{count}} enregistrements importés avec succès. {{errors}} erreurs.",
       "importFailed": "Échec de l'importation : {{message}}",
       "statusUpdateFailed": "Erreur lors de la mise à jour du statut",
@@ -168,6 +167,13 @@
       "sectionShow": "Afficher",
       "sectionHide": "Masquer",
       "sectionFieldCount": "{{count}} champs",
+      "fieldLevel": {
+        "label": "Champs affichés",
+        "everyday": "Courants",
+        "occasional": "Occasionnels",
+        "technical": "Techniques",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Aperçu et permalien",
       "permalinkHint": "Cliquez sur l’élément du chemin pour remplacer le slug généré automatiquement.",
       "settings": "Paramètres",
@@ -426,6 +432,7 @@
       "from": "depuis",
       "pluginSettings": "Paramètres du plugin",
       "overrideUnlocked": "Remplacement déverrouillé",
+      "about": "À propos de {{label}}",
       "unlockTitle": "Déverrouiller « {{label}} » pour le modifier",
       "unlock": "Déverrouiller",
       "readOnly": "Lecture seule",

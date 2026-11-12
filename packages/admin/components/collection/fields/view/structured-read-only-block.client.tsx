@@ -35,7 +35,7 @@ export class StructuredReadOnlyBlock extends PureReactor {
     const { label, node, isDark, keyLabels } = this;
     return (
       <div className={`min-w-0 ${this.spanClass}`}>
-        <div className={`mb-1 text-[9px] font-bold uppercase tracking-[0.09em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <div className={`mb-1 text-[10px] font-bold uppercase tracking-[0.09em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           {StructuredReadOnlyFieldService.keyLabel(label, keyLabels)}
         </div>
         <div className="text-[13px] font-medium leading-snug">

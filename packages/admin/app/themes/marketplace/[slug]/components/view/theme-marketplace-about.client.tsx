@@ -37,7 +37,7 @@ export class ThemeMarketplaceAbout extends PureReactor {
               {theme.changelog.map((log, idx) => (
                 <div key={idx} className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[9px] font-semibold rounded-lg uppercase tracking-wide">v{log.version}</Badge>
+                    <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 text-[10px] font-semibold rounded-lg uppercase tracking-wide">v{log.version}</Badge>
                     <span className={`text-[10px] font-semibold uppercase tracking-wide ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.releasedOn', { date: log.date })}</span>
                   </div>
                   <div className={`${AdminClass.SURFACE} overflow-hidden`}>

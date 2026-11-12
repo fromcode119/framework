@@ -92,7 +92,6 @@
     "list": {
       "records": "السجلات",
       "searchPlaceholder": "البحث في {{name}}...",
-      "description": "إدارة سجلات {{name}} وتنظيمها.",
       "importDone": "تم استيراد {{count}} سجل بنجاح. {{errors}} أخطاء.",
       "importFailed": "فشل الاستيراد: {{message}}",
       "statusUpdateFailed": "خطأ في تحديث الحالة",
@@ -168,6 +167,13 @@
       "sectionShow": "إظهار",
       "sectionHide": "إخفاء",
       "sectionFieldCount": "{{count}} حقول",
+      "fieldLevel": {
+        "label": "الحقول المعروضة",
+        "everyday": "اليومية",
+        "occasional": "أحيانًا",
+        "technical": "تقنية",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "المعاينة والرابط الدائم",
       "permalinkHint": "انقر على جزء المسار لتجاوز المعرّف المختصر المُنشأ تلقائيًا.",
       "settings": "الإعدادات",
@@ -426,6 +432,7 @@
       "from": "من",
       "pluginSettings": "إعدادات الإضافة",
       "overrideUnlocked": "التجاوز غير مقفل",
+      "about": "حول {{label}}",
       "unlockTitle": "إلغاء قفل \"{{label}}\" للتعديل",
       "unlock": "إلغاء قفل التعديل",
       "readOnly": "للقراءة فقط",

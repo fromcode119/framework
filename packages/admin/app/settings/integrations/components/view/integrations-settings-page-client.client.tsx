@@ -89,7 +89,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     if (types.length < 2) return null;
     const dark = this.theme === ThemeMode.DARK;
     return (
-      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 text-[12.5px] ${dark ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
+      <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] px-6 lg:px-8 text-[13px] ${dark ? 'bg-slate-950/60' : 'bg-slate-50'}`}>
         {types.map((type) => (
           <button type="button" key={type.key} onClick={() => this.activateType(type.key)} aria-current={type.key === this.activeType ? 'page' : undefined}
             className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${type.key === this.activeType

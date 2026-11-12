@@ -76,7 +76,7 @@ export class ReadOnlyFieldValue extends PureReactor {
     const empty = !text;
     const provenance = (this.provenance || '').trim();
 
-    const valueClass = `text-[12.5px] leading-snug ${
+    const valueClass = `text-[13px] leading-snug ${
       empty ? 'text-slate-400 dark:text-slate-500' : 'font-medium text-slate-600 dark:text-slate-300'
     }`;
 

@@ -92,7 +92,6 @@
     "list": {
       "records": "Rekords",
       "searchPlaceholder": "Fittex {{name}}...",
-      "description": "Immaniġġja u organizza r-rekords ta' {{name}}.",
       "importDone": "{{count}} rekord ġew importati b'suċċess. {{errors}} żbalji.",
       "importFailed": "L-importazzjoni falliet: {{message}}",
       "statusUpdateFailed": "Żball fl-aġġornament tal-istatus",
@@ -168,6 +167,13 @@
       "sectionShow": "Uri",
       "sectionHide": "Aħbi",
       "sectionFieldCount": "{{count}} qasam",
+      "fieldLevel": {
+        "label": "Oqsma murija",
+        "everyday": "Ta’ kuljum",
+        "occasional": "Okkażjonali",
+        "technical": "Tekniċi",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Dehra Minn Qabel u Permalink",
       "permalinkHint": "Ikklikkja fuq il-parti tal-mogħdija biex tissostitwixxi s-slug iġġenerat awtomatikament.",
       "settings": "Settings",
@@ -426,6 +432,7 @@
       "from": "minn",
       "pluginSettings": "Settings tal-plugin",
       "overrideUnlocked": "Override miftuħ",
+      "about": "Dwar {{label}}",
       "unlockTitle": "Iftaħ \"{{label}}\" biex teditja",
       "unlock": "Iftaħ għall-editjar",
       "readOnly": "Qari biss",

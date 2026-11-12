@@ -92,7 +92,6 @@
     "list": {
       "records": "רשומות",
       "searchPlaceholder": "חיפוש ב-{{name}}...",
-      "description": "ניהול וארגון רשומות של {{name}}.",
       "importDone": "{{count}} רשומות יובאו בהצלחה. {{errors}} שגיאות.",
       "importFailed": "הייבוא נכשל: {{message}}",
       "statusUpdateFailed": "שגיאה בעדכון הסטטוס",
@@ -168,6 +167,13 @@
       "sectionShow": "הצג",
       "sectionHide": "הסתר",
       "sectionFieldCount": "{{count}} שדות",
+      "fieldLevel": {
+        "label": "שדות מוצגים",
+        "everyday": "יומיומיים",
+        "occasional": "מדי פעם",
+        "technical": "טכניים",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "תצוגה מקדימה וקישור קבוע",
       "permalinkHint": "לחצו על רכיב הנתיב כדי לעקוף את ה-slug שנוצר אוטומטית.",
       "settings": "הגדרות",
@@ -426,6 +432,7 @@
       "from": "מתוך",
       "pluginSettings": "הגדרות התוסף",
       "overrideUnlocked": "הדריסה שוחררה",
+      "about": "אודות {{label}}",
       "unlockTitle": "שחררו את \"{{label}}\" לעריכה",
       "unlock": "שחרור לעריכה",
       "readOnly": "לקריאה בלבד",

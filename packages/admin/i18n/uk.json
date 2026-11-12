@@ -92,7 +92,6 @@
     "list": {
       "records": "Записи",
       "searchPlaceholder": "Пошук: {{name}}...",
-      "description": "Керування записами {{name}} та їх упорядкування.",
       "importDone": "Успішно імпортовано записів: {{count}}. Помилок: {{errors}}.",
       "importFailed": "Помилка імпорту: {{message}}",
       "statusUpdateFailed": "Помилка оновлення статусу",
@@ -168,6 +167,13 @@
       "sectionShow": "Показати",
       "sectionHide": "Приховати",
       "sectionFieldCount": "Полів: {{count}}",
+      "fieldLevel": {
+        "label": "Показані поля",
+        "everyday": "Основні",
+        "occasional": "Рідко вживані",
+        "technical": "Технічні",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Попередній перегляд і постійне посилання",
       "permalinkHint": "Натисніть на частину шляху, щоб замінити автоматично згенерований slug.",
       "settings": "Налаштування",
@@ -426,6 +432,7 @@
       "from": "з",
       "pluginSettings": "Налаштування плагіна",
       "overrideUnlocked": "Перевизначення розблоковано",
+      "about": "Про поле «{{label}}»",
       "unlockTitle": "Розблокуйте \"{{label}}\" для редагування",
       "unlock": "Розблокувати",
       "readOnly": "Лише читання",

@@ -19,7 +19,7 @@ export class ListFooter extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className={`mt-auto border-t py-12 backdrop-blur-3xl transition-all duration-300 ${
+      <div className={`mt-auto border-t py-6 backdrop-blur-3xl transition-all duration-300 ${
         this.theme === ThemeMode.DARK
           ? 'bg-slate-950/40 border-slate-800'
           : 'bg-slate-50/50 border-slate-100'
@@ -34,16 +34,16 @@ export class ListFooter extends PureReactor {
               {AdminI18n.t(this.total === 1 ? 'collection.list.countOne' : 'collection.list.countMany', { count: this.total })}
             </p>
 
-            <div className="flex items-center gap-10 text-xs font-semibold tracking-wide text-slate-400">
+            <div className="flex items-center gap-3 text-xs font-semibold tracking-wide text-slate-400">
               <button
                 onClick={() => this.handleExport(ExportFormat.JSON)}
-                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
+                className="inline-flex min-h-6 items-center rounded-md px-1.5 hover:text-indigo-500 transition-colors"
               >
                 {AdminI18n.t('collection.list.exportJson')}
               </button>
               {this.canCreate ? <>
                 <span className="h-1 w-1 rounded-full bg-slate-300 dark:bg-slate-700" />
-                <label className="cursor-pointer hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300">
+                <label className="inline-flex min-h-6 cursor-pointer items-center rounded-md px-1.5 hover:text-indigo-500 transition-colors">
                   {AdminI18n.t('collection.list.bulkImport')}
                   <input type="file" className="hidden" accept=".json" onChange={this.handleImport} />
                 </label>
@@ -52,7 +52,7 @@ export class ListFooter extends PureReactor {
               <a
                 href={`${AdminApi.getBaseUrl()}${AdminConstants.ENDPOINTS.COLLECTIONS.BASE}/${this.resolvedSlug}`}
                 target="_blank"
-                className="hover:text-indigo-500 transition-colors hover:translate-x-1 duration-300"
+                className="inline-flex min-h-6 items-center rounded-md px-1.5 hover:text-indigo-500 transition-colors"
               >
                 {AdminI18n.t('collection.list.apiEndpoint')}
               </a>

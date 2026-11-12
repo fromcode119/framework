@@ -67,7 +67,7 @@ export class TagFieldChips extends PureReactor {
             >
               <div className="flex flex-col leading-tight">
                  <span className="text-[11px] font-semibold leading-none mb-0">{label}</span>
-                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[9px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
+                 {!sourceCollection && !unresolved && label !== tag && <span className="text-[10px] font-medium opacity-70 leading-none mt-0.5">{tag}</span>}
               </div>
               <button
                 type="button"

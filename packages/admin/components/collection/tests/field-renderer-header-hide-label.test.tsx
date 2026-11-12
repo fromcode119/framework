@@ -37,7 +37,7 @@ describe('FieldRendererHeader — hideLabel', () => {
     expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
   });
 
-  it('still shows the read-only chip when the label is suppressed', () => {
+  it('still shows the read-only lock when the label is suppressed', () => {
     render(
       <FieldRendererHeader
         {...baseProps}
@@ -47,7 +47,7 @@ describe('FieldRendererHeader — hideLabel', () => {
       />,
     );
     expect(screen.queryByText('Total')).not.toBeInTheDocument();
-    expect(screen.getByText('Read only')).toBeInTheDocument();
+    expect(screen.getByLabelText('Read only')).toBeInTheDocument();
   });
 
   /** A field that does not declare it keeps its label even when its neighbour suppresses one. */

@@ -11,6 +11,8 @@ export class UiPreferenceService extends BaseService {
   private static readonly ADVANCED_MODE_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.ADVANCED_MODE;
   private static readonly COLLAPSED_GROUPS_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.COLLAPSED_GROUPS;
 
+  private static readonly EDIT_FIELD_DEPTH_KEY = 'admin.ui.edit.field-depth';
+
   private readonly browserState = new BrowserStateClient();
 
   readThemePreference(): string {
@@ -67,6 +69,15 @@ export class UiPreferenceService extends BaseService {
 
   writeAdvancedMode(enabled: boolean): void {
     this.browserState.writeLocalString(UiPreferenceService.ADVANCED_MODE_KEY, String(Boolean(enabled)));
+  }
+
+  /** The depth the edit form opens at for this browser; '' until the operator has chosen one. */
+  readEditFieldDepth(): string {
+    return this.browserState.readLocalString(UiPreferenceService.EDIT_FIELD_DEPTH_KEY);
+  }
+
+  writeEditFieldDepth(depth: string): void {
+    this.browserState.writeLocalString(UiPreferenceService.EDIT_FIELD_DEPTH_KEY, String(depth || '').trim());
   }
 
   readCollapsedSidebarGroups(): string[] {

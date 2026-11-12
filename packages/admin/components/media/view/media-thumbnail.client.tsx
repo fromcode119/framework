@@ -42,7 +42,7 @@ export class MediaThumbnail extends PureReactor {
     return (
       <div className="w-full h-full flex flex-col items-center justify-center p-4">
         <FileIcon size={32} className="text-slate-300 mb-2" />
-        <span className="text-[9px] font-semibold text-slate-400 text-center truncate w-full">{item.filename}</span>
+        <span className="text-[10px] font-semibold text-slate-400 text-center truncate w-full">{item.filename}</span>
       </div>
     );
   }

@@ -1,5 +1,6 @@
 import { FieldType } from '@core/enums/field-type.enum';
 import { FieldPosition } from '@core/enums/field-position.enum';
+import { FieldLevel } from '@core/enums/field-level.enum';
 import type { ICollection } from '@core/collections/interfaces/collection.interface';
 import type { IField } from '@core/interfaces/field.interface';
 
@@ -74,6 +75,8 @@ export class CollectionArchive {
         extendedBy: CollectionArchive.SYSTEM_EXTENDER,
         admin: {
           position: FieldPosition.SIDEBAR,
+          // Read on the rare record that was archived; the header's Archive control carries the everyday case.
+          level: FieldLevel.OCCASIONAL,
           readOnly: true,
           description: 'Set by Archive, cleared by Restore. Archived records are left out of every list, report and storefront page.',
         },
@@ -85,6 +88,8 @@ export class CollectionArchive {
         extendedBy: CollectionArchive.SYSTEM_EXTENDER,
         admin: {
           position: FieldPosition.SIDEBAR,
+          // Read on the rare record that was archived; the header's Archive control carries the everyday case.
+          level: FieldLevel.OCCASIONAL,
           readOnly: true,
           description: 'The record whose archiving took this one along. Restoring that record restores this one.',
         },

@@ -72,14 +72,15 @@ export class EditArchiveControl extends Reactor {
           disabled={this.busy}
           title={label}
           aria-label={label}
-          className={`h-10 px-4 inline-flex items-center justify-center gap-2 rounded-[var(--radius)] border text-[10px] font-semibold transition-all shadow-sm disabled:opacity-50 ${
+          className={`h-10 w-10 sm:w-auto sm:px-4 inline-flex items-center justify-center gap-2 rounded-[var(--radius)] border text-[10px] font-semibold transition-all shadow-sm disabled:opacity-50 ${
             dark
               ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-amber-500/50 hover:text-white'
               : 'bg-white border-slate-200 text-slate-700 hover:border-amber-500'
           }`}
         >
           {archived ? <ArchiveRestore size={14} /> : <Archive size={14} />}
-          {label}
+          {/* Icon only on a phone, so the record's actions stay on one line; the name is the title. */}
+          <span className="hidden sm:inline">{label}</span>
         </button>
       </div>
     );

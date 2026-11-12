@@ -33,6 +33,12 @@ export interface ICollectionField {
      */
     renderedBy?: string;
     /**
+     * How often an operator needs this field: `everyday` (the default), `occasional` or `technical`.
+     * The edit form opens on the everyday fields and says how many more there are; see `FieldLevel`.
+     * Declared as a literal by collections; compare with `FieldLevel.resolve()`, never `===`.
+     */
+    level?: string;
+    /**
      * The section this field sits in starts COLLAPSED on the edit form: its card shows the title, how
      * many fields it holds and a Show button, and one click opens it. For values an operator rarely
      * reads but must be able to see — what the runtime computed from the record. Not `hidden`: the

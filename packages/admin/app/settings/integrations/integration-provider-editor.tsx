@@ -103,7 +103,7 @@ export class IntegrationProviderEditor extends PureReactor {
       <div className="md:col-span-2">
         <div className="mb-1.5 flex items-center justify-between gap-2">
           <span className="text-[12px] font-semibold text-slate-700 dark:text-slate-300">{AdminI18n.t('settings.integrations.status')}</span>
-          <span className="inline-flex h-6 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[9px] font-semibold tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
+          <span className="inline-flex h-6 items-center gap-1 rounded-lg border border-slate-200 bg-white px-2 text-[10px] font-semibold tracking-wide text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-300">
             <FrameworkIcons.Lock size={10} />
             {AdminI18n.t('ui.field.readOnly')}
           </span>

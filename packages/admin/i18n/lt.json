@@ -92,7 +92,6 @@
     "list": {
       "records": "Įrašai",
       "searchPlaceholder": "Ieškoti: {{name}}...",
-      "description": "Tvarkykite ir organizuokite įrašus: {{name}}.",
       "importDone": "Sėkmingai importuota įrašų: {{count}}. Klaidų: {{errors}}.",
       "importFailed": "Importuoti nepavyko: {{message}}",
       "statusUpdateFailed": "Klaida atnaujinant būseną",
@@ -168,6 +167,13 @@
       "sectionShow": "Rodyti",
       "sectionHide": "Slėpti",
       "sectionFieldCount": "Laukų: {{count}}",
+      "fieldLevel": {
+        "label": "Rodomi laukai",
+        "everyday": "Kasdieniai",
+        "occasional": "Retkarčiais",
+        "technical": "Techniniai",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Peržiūra ir nuolatinė nuoroda",
       "permalinkHint": "Spustelėkite kelio dalį, kad pakeistumėte automatiškai sugeneruotą slug.",
       "settings": "Nustatymai",
@@ -426,6 +432,7 @@
       "from": "iš",
       "pluginSettings": "Įskiepio nustatymai",
       "overrideUnlocked": "Perrašymas atrakintas",
+      "about": "Apie {{label}}",
       "unlockTitle": "Atrakinkite „{{label}}“, kad galėtumėte redaguoti",
       "unlock": "Atrakinti redagavimą",
       "readOnly": "Tik skaitymui",
