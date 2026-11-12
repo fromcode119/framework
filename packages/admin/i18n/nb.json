@@ -947,7 +947,7 @@
       "failed": "Kunne ikke be om tilbakestilling av passord.",
       "title": "Tilbakestill tilgang",
       "send": "Send lenke for tilbakestilling",
-      "subtitle": "Gjenopprett administratorkontoen din for {{app}}"
+      "subtitle": "Skriv inn e-posten din, så sender vi en lenke for nytt passord."
     },
     "backToLogin": "Tilbake til innlogging",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Angi nytt passord",
       "submit": "Oppdater passord",
       "needLink": "Trenger du en ny lenke?",
-      "subtitle": "Oppdater påloggingsopplysningene dine for {{app}}"
+      "subtitle": "Lim inn koden fra e-posten og velg et nytt passord."
     },
     "forgotShort": "Glemt?",
-    "logoAlt": "{{app}} fra {{company}}-logo"
+    "logoAlt": "{{app}} fra {{company}}-logo",
+    "welcomeBack": "Velkommen tilbake",
+    "consoleIntro": "Logg inn i {{platform}}-konsollen.",
+    "consoleIntroUnnamed": "Logg inn i konsollen.",
+    "noAccess": "Ingen konto ennå? Be administratoren for {{platform}} om en invitasjon.",
+    "noAccessUnnamed": "Ingen konto ennå? Be administratoren din om en invitasjon.",
+    "checking": "Sjekker økten",
+    "language": "Språk",
+    "themeLight": "Lyst tema",
+    "themeDark": "Mørkt tema",
+    "showPassword": "Vis passord",
+    "hidePassword": "Skjul passord",
+    "help": {
+      "show": "Vis hjelp",
+      "hide": "Skjul hjelp",
+      "signIn": {
+        "title": "Nettsteder, butikker og forretningsapper på ett sted.",
+        "text": "Administrer innhold, bestillinger og brukere."
+      },
+      "failed": {
+        "title": "Får du ikke logget inn?",
+        "item1": "Sjekk at Caps Lock er av — passord skiller mellom store og små bokstaver.",
+        "item2": "Glemt passordet? Lenken ved feltet sender deg en lenke på e-post."
+      },
+      "twoFactor": {
+        "title": "Innlogging i to trinn",
+        "item1": "Åpne autentiseringsappen og skriv inn den gjeldende 6-sifrede koden.",
+        "item2": "Kodene byttes hvert 30. sekund — vent på en ny hvis den snart utløper.",
+        "item3": "Har du ikke telefonen for hånden? Bruk en reservekode."
+      },
+      "forgot": {
+        "title": "Slik fungerer det",
+        "item1": "Skriv inn e-postadressen du logger inn med.",
+        "item2": "Hvis kontoen finnes, sender vi en lenke for nytt passord.",
+        "item3": "Lenken virker én gang og utløper snart."
+      },
+      "reset": {
+        "title": "Et sterkt passord",
+        "item1": "Minst 8 tegn.",
+        "item2": "En kort setning på noen få ord er lett å huske og vanskelig å gjette.",
+        "item3": "Velg et passord du ikke bruker andre steder."
+      }
+    },
+    "twoFactor": {
+      "title": "Bekreft innloggingen",
+      "subtitle": "Skriv inn den 6-sifrede koden fra autentiseringsappen.",
+      "recoverySubtitle": "Skriv inn en av reservekodene dine.",
+      "useRecovery": "Bruk en reservekode",
+      "useAuthenticator": "Bruk autentiseringsappen"
+    }
   },
   "plugins": {
     "detail": {

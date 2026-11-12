@@ -947,7 +947,7 @@
       "failed": "Neizdevās pieprasīt paroles atiestatīšanu.",
       "title": "Atjaunot piekļuvi",
       "send": "Nosūtīt atiestatīšanas saiti",
-      "subtitle": "Atkopiet savu {{app}} administratora kontu"
+      "subtitle": "Ievadiet e-pastu, un mēs nosūtīsim saiti jaunas paroles iestatīšanai."
     },
     "backToLogin": "Atpakaļ uz pieteikšanos",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Iestatīt jaunu paroli",
       "submit": "Atjaunināt paroli",
       "needLink": "Nepieciešama jauna saite?",
-      "subtitle": "Atjauniniet savus {{app}} pieteikšanās datus"
+      "subtitle": "Ielīmējiet kodu no e-pasta un izvēlieties jaunu paroli."
     },
     "forgotShort": "Aizmirsāt?",
-    "logoAlt": "{{app}} no {{company}} logotips"
+    "logoAlt": "{{app}} no {{company}} logotips",
+    "welcomeBack": "Laipni lūdzam atpakaļ",
+    "consoleIntro": "Piesakieties {{platform}} konsolē.",
+    "consoleIntroUnnamed": "Piesakieties konsolē.",
+    "noAccess": "Vēl nav konta? Lūdziet ielūgumu {{platform}} administratoram.",
+    "noAccessUnnamed": "Vēl nav konta? Lūdziet ielūgumu savam administratoram.",
+    "checking": "Pārbaudām sesiju",
+    "language": "Valoda",
+    "themeLight": "Gaišais motīvs",
+    "themeDark": "Tumšais motīvs",
+    "showPassword": "Rādīt paroli",
+    "hidePassword": "Slēpt paroli",
+    "help": {
+      "show": "Rādīt palīdzību",
+      "hide": "Slēpt palīdzību",
+      "signIn": {
+        "title": "Vietnes, veikali un biznesa lietotnes vienuviet.",
+        "text": "Pārvaldiet saturu, pasūtījumus un lietotājus."
+      },
+      "failed": {
+        "title": "Neizdodas pieteikties?",
+        "item1": "Pārbaudiet, vai Caps Lock ir izslēgts — parole atšķir lielos un mazos burtus.",
+        "item2": "Aizmirsāt paroli? Saite blakus laukam nosūtīs jums saiti e-pastā."
+      },
+      "twoFactor": {
+        "title": "Divpakāpju pieteikšanās",
+        "item1": "Atveriet autentifikācijas lietotni un ievadiet pašreizējo 6 ciparu kodu.",
+        "item2": "Kods mainās ik pēc 30 sekundēm — ja tas drīz beigsies, gaidiet jaunu.",
+        "item3": "Tālrunis nav pie rokas? Izmantojiet rezerves kodu."
+      },
+      "forgot": {
+        "title": "Kā tas darbojas",
+        "item1": "Ievadiet e-pasta adresi, ar kuru piesakāties.",
+        "item2": "Ja konts pastāv, nosūtīsim saiti jaunas paroles iestatīšanai.",
+        "item3": "Saite darbojas vienu reizi un drīz beidzas."
+      },
+      "reset": {
+        "title": "Droša parole",
+        "item1": "Vismaz 8 rakstzīmes.",
+        "item2": "Īsa dažu vārdu frāze ir viegli iegaumējama un grūti uzminama.",
+        "item3": "Izvēlieties paroli, ko neizmantojat citur."
+      }
+    },
+    "twoFactor": {
+      "title": "Apstipriniet pieteikšanos",
+      "subtitle": "Ievadiet 6 ciparu kodu no autentifikācijas lietotnes.",
+      "recoverySubtitle": "Ievadiet vienu no rezerves kodiem.",
+      "useRecovery": "Izmantot rezerves kodu",
+      "useAuthenticator": "Izmantot autentifikācijas lietotni"
+    }
   },
   "plugins": {
     "detail": {

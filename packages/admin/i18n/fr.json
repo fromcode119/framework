@@ -947,7 +947,7 @@
       "failed": "Impossible de demander la réinitialisation du mot de passe.",
       "title": "Réinitialiser l'accès",
       "send": "Envoyer le lien de réinitialisation",
-      "subtitle": "Récupérez votre compte administrateur {{app}}"
+      "subtitle": "Saisissez votre e-mail et nous vous enverrons un lien pour choisir un nouveau mot de passe."
     },
     "backToLogin": "Retour à la connexion",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Définir un nouveau mot de passe",
       "submit": "Mettre à jour le mot de passe",
       "needLink": "Besoin d'un nouveau lien ?",
-      "subtitle": "Mettez à jour vos identifiants {{app}}"
+      "subtitle": "Collez le code reçu par e-mail et choisissez un nouveau mot de passe."
     },
     "forgotShort": "Oublié ?",
-    "logoAlt": "Logo {{app}} par {{company}}"
+    "logoAlt": "Logo {{app}} par {{company}}",
+    "welcomeBack": "Bon retour",
+    "consoleIntro": "Connectez-vous à la console {{platform}}.",
+    "consoleIntroUnnamed": "Connectez-vous à la console.",
+    "noAccess": "Pas encore de compte ? Demandez une invitation à l’administrateur de {{platform}}.",
+    "noAccessUnnamed": "Pas encore de compte ? Demandez une invitation à votre administrateur.",
+    "checking": "Vérification de la session",
+    "language": "Langue",
+    "themeLight": "Thème clair",
+    "themeDark": "Thème sombre",
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "help": {
+      "show": "Afficher l’aide",
+      "hide": "Masquer l’aide",
+      "signIn": {
+        "title": "Sites, boutiques et applications métier au même endroit.",
+        "text": "Gérez vos contenus, commandes et utilisateurs."
+      },
+      "failed": {
+        "title": "Impossible de vous connecter ?",
+        "item1": "Vérifiez que le verrouillage des majuscules est désactivé : le mot de passe tient compte de la casse.",
+        "item2": "Mot de passe oublié ? Le lien à côté du champ vous envoie un lien de réinitialisation par e-mail."
+      },
+      "twoFactor": {
+        "title": "Connexion en deux étapes",
+        "item1": "Ouvrez votre application d’authentification et saisissez le code à 6 chiffres actuel.",
+        "item2": "Les codes changent toutes les 30 secondes : attendez le suivant s’il est sur le point d’expirer.",
+        "item3": "Pas de téléphone sous la main ? Utilisez un de vos codes de secours."
+      },
+      "forgot": {
+        "title": "Comment ça marche",
+        "item1": "Saisissez l’adresse e-mail avec laquelle vous vous connectez.",
+        "item2": "Si un compte existe, nous vous envoyons un lien pour définir un nouveau mot de passe.",
+        "item3": "Le lien ne fonctionne qu’une fois et expire rapidement."
+      },
+      "reset": {
+        "title": "Un mot de passe solide",
+        "item1": "Au moins 8 caractères.",
+        "item2": "Une courte phrase de quelques mots se retient facilement et se devine difficilement.",
+        "item3": "Choisissez un mot de passe que vous n’utilisez nulle part ailleurs."
+      }
+    },
+    "twoFactor": {
+      "title": "Confirmez votre connexion",
+      "subtitle": "Saisissez le code à 6 chiffres de votre application d’authentification.",
+      "recoverySubtitle": "Saisissez un de vos codes de secours.",
+      "useRecovery": "Utiliser un code de secours",
+      "useAuthenticator": "Utiliser l’application d’authentification"
+    }
   },
   "plugins": {
     "detail": {

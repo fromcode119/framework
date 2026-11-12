@@ -1,15 +1,18 @@
 import type { FormEvent, ReactElement } from 'react';
-import { AdminLink } from '@/components/view/admin-link.client';
-import { Input } from '@/components/ui/view/input.client';
-import { Button } from '@/components/ui/view/button.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AppEnv } from '@/lib/env';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminLink } from '@/components/view/admin-link.client';
+import { LoginShell } from '@/app/login/login-shell';
+import { LoginPageHeader } from '@/app/login/login-page-header';
+import { LoginField } from '@/app/login/login-field';
+import { LoginSubmit } from '@/app/login/login-submit';
+import { LoginNotice } from '@/app/login/login-notice';
+import { LoginFieldType } from '@/app/login/enums/login-field-type.enum';
+import { LoginNoticeTone } from '@/app/login/enums/login-notice-tone.enum';
+import type { ILoginHelp } from '@/app/login/interfaces/login-help.interface';
 
 export class ResetPasswordPage extends AdminComponent {
   @state token = '';
@@ -63,80 +66,28 @@ export class ResetPasswordPage extends AdminComponent {
     }
   }
 
+  private get help(): ILoginHelp {
+    const items = ['item1', 'item2', 'item3'].map((key) => AdminI18n.optional(`login.help.reset.${key}`)).filter(Boolean) as string[];
+    return { title: AdminI18n.t('login.help.reset.title'), items };
+  }
+
   render(): ReactElement {
-    const token = this.token;
-    const newPassword = this.newPassword;
-    const confirmPassword = this.confirmPassword;
-    const isLoading = this.isLoading;
-    const error = this.error;
-    const message = this.message;
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-xl shadow-xl shadow-indigo-600/30 mb-6">
-              <FrameworkIcons.ShieldCheck size={30} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-              {AdminI18n.t('login.reset.title')}
-            </h1>
-            <p className="text-slate-500 font-medium">{AdminI18n.t('login.reset.subtitle', { app: AppEnv.APP_NAME })}</p>
+      <LoginShell help={this.help}>
+        <LoginPageHeader title={AdminI18n.t('login.reset.title')} subtitle={AdminI18n.t('login.reset.subtitle')} />
+        <form onSubmit={(event) => this.handleSubmit(event)} className="fc-login__form" noValidate>
+          <LoginNotice message={this.error} tone={LoginNoticeTone.ERROR} />
+          <LoginNotice message={this.message} tone={LoginNoticeTone.OK} />
+          <LoginField id="fc-reset-token" label={AdminI18n.t('login.reset.token')} type={LoginFieldType.TEXT} autoComplete="one-time-code" value={this.token} onChange={(value) => { this.token = value.trim(); }} />
+          <LoginField id="fc-reset-new" label={AdminI18n.t('login.reset.newPassword')} type={LoginFieldType.PASSWORD} autoComplete="new-password" value={this.newPassword} onChange={(value) => { this.newPassword = value; }} />
+          <LoginField id="fc-reset-confirm" label={AdminI18n.t('login.reset.confirmPassword')} type={LoginFieldType.PASSWORD} autoComplete="new-password" value={this.confirmPassword} onChange={(value) => { this.confirmPassword = value; }} />
+          <LoginSubmit label={AdminI18n.t('login.reset.submit')} isLoading={this.isLoading} />
+          <div className="fc-login__links">
+            <button type="button" className="fc-login__link" onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)}>{AdminI18n.t('login.backToLogin')}</button>
+            <AdminLink href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="fc-login__link">{AdminI18n.t('login.reset.needLink')}</AdminLink>
           </div>
-
-          <div className={`p-8 ${AdminClass.SURFACE}`}>
-            {error ? (
-              <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600">
-                {error}
-              </div>
-            ) : null}
-            {message ? (
-              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                {message}
-              </div>
-            ) : null}
-
-            <form onSubmit={(event) => this.handleSubmit(event)} className="space-y-6" noValidate>
-              <Input
-                label={AdminI18n.t('login.reset.token')}
-                placeholder={AdminI18n.t('login.reset.tokenPlaceholder')}
-                type="text"
-                required
-                value={token}
-                onChange={(event) => { this.token = event.target.value; }}
-              />
-              <Input
-                label={AdminI18n.t('login.reset.newPassword')}
-                placeholder="••••••••"
-                type="password"
-                required
-                value={newPassword}
-                onChange={(event) => { this.newPassword = event.target.value; }}
-              />
-              <Input
-                label={AdminI18n.t('login.reset.confirmPassword')}
-                placeholder="••••••••"
-                type="password"
-                required
-                value={confirmPassword}
-                onChange={(event) => { this.confirmPassword = event.target.value; }}
-              />
-
-              <Button type="submit" className="w-full py-4 text-base" isLoading={isLoading}>
-                {AdminI18n.t('login.reset.submit')}
-              </Button>
-            </form>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between text-xs font-semibold">
-            <button onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
-              {AdminI18n.t('login.backToLogin')}
-            </button>
-            <AdminLink href={AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD} className="text-slate-400 hover:text-slate-300">
-              {AdminI18n.t('login.reset.needLink')}
-            </AdminLink>
-          </div>
-        </div>
-      </div>
+        </form>
+      </LoginShell>
     );
   }
 }

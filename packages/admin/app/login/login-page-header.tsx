@@ -1,74 +1,18 @@
 import type { ReactNode } from 'react';
-import { Reactor, state } from '@fromcode119/react-class-components';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 
-import { AppEnv } from '@/lib/env';
-import { AdminPathUtils } from '@/lib/admin-path';
-import { ConsoleMountContext } from '@/components/view/console-mount-context.client';
-import { HostInfoClient } from '@/lib/tenants/host-info-client';
-import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
-import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
-import { AdminI18n } from '@/lib/i18n/admin-i18n';
+/** The heading and one line under it, for every signed-out screen. The page decides the words. */
+export class LoginPageHeader extends PureReactor {
+  declare props: Pick<LoginPageHeader, 'title' | 'subtitle'>;
 
-/**
- * On a WORKSPACE domain the login says whose console it is (the tenant, its appearance) instead of
- * the platform's welcome — the domain already belongs to that customer (T6).
- */
-export class LoginPageHeader extends Reactor {
-  /** The console mount, so the deployment's brand logo resolves on a console served from a site's console path. */
-  static contextType = ConsoleMountContext.context;
-  declare context: string;
-  @state workspace: { slug: string; appearance: string } | null = null;
-
-  componentDidMount(): void {
-    void HostInfoClient.workspace().then((workspace) => { this.workspace = workspace; });
-  }
-
-  private get title(): string {
-    return this.workspace ? AdminI18n.t('login.signInTo', { name: this.workspace.slug }) : AdminI18n.t('login.welcome', { app: AppEnv.APP_NAME });
-  }
-
-  /**
-   * The PLATFORM wordmark, shown unless the active appearance brought its own sign-in frame.
-   *
-   * On a workspace domain that frame carries the customer's logo, and printing the platform name above it made
-   * the page read as two products stacked — which is what "the real login still hasn't changed" meant:
-   * the words said the workspace, the mark still said the platform. When no appearance claims the
-   * sign-in, this is the only brand on the page and stays exactly as it was.
-   */
-  private get showsPlatformBrand(): boolean {
-    const appearance = this.workspace?.appearance || '';
-    if (!appearance) return true;
-    return !AdminPageRegistry.shared.resolve(appearance, AdminPageKeys.LOGIN_FRAME);
-  }
-
-  private get subtitle(): string {
-    if (this.workspace) return AdminI18n.t('login.workspaceIntro', { name: this.workspace.slug, console: this.workspace.appearance || AdminI18n.t('login.defaultConsole') });
-    return AdminI18n.t('login.intro', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME });
-  }
+  @prop declare title: string;
+  @prop declare subtitle?: string;
 
   render(): ReactNode {
     return (
-      <div className="fc-login__header text-center mb-10">
-        {this.showsPlatformBrand ? (
-          <div className="mb-6 inline-flex items-center justify-center px-5 py-4 ">
-            <img
-              src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_LIGHT_PATH, this.context)}
-              alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
-              className="h-auto w-[280px] dark:hidden"
-            />
-            <img
-              src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_DARK_PATH, this.context)}
-              alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
-              className="hidden h-auto w-[280px] dark:block"
-            />
-          </div>
-        ) : null}
-        <h1 className="fc-login__title text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-          {this.title}
-        </h1>
-        <p className="fc-login__subtitle font-medium text-slate-500 dark:text-slate-300">
-          {this.subtitle}
-        </p>
+      <div className="fc-login__header">
+        <h1 className="fc-login__title">{this.title}</h1>
+        {this.subtitle ? <p className="fc-login__subtitle">{this.subtitle}</p> : null}
       </div>
     );
   }

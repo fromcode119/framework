@@ -191,7 +191,7 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
   /**
    * PUBLIC: whose console is this host? The admin app asks before anyone is signed in, so a
    * workspace domain shows its own login (locked appearance, tenant name) rather than the platform's.
-   * Nothing here that the domain itself does not already tell.
+   * Nothing here that the domain itself does not already tell; `platformName` is '' when cleared.
    */
   async hostInfo(req: Request, res: Response) {
     const workspace = WorkspaceHostService.of(req);
@@ -200,11 +200,10 @@ export class AuthControllerTenantSelection extends AuthControllerBoundScopeLook 
     return res.json({
       multiTenant: TenantMode.isEnabled(),
       workspace: workspace ? { id: workspace.id, slug: workspace.slug, appearance, brand: this.boundBrand(appearance) } : null,
-      // Whether crawlers may index this console. Carried on the one response the admin already asks
-      // for before anyone signs in, because the answer is needed to serve `robots.txt` and the
-      // `X-Robots-Tag` on requests that have no session — a setting behind auth could not be read
-      // by the very requests that need it. It reveals nothing the robots.txt would not.
+      // Whether crawlers may index this console. Read before sign-in because `robots.txt` and the
+      // `X-Robots-Tag` are served to requests with no session; it reveals nothing robots.txt would not.
       searchIndexing: await PlatformSettingsService.readFlag(SystemConstants.META_KEY.ADMIN_SEARCH_INDEXING),
+      platformName: String((await this.getMetaValue(SystemConstants.META_KEY.PLATFORM_NAME)) ?? '').trim(),
     });
   }
 

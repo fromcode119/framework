@@ -947,7 +947,7 @@
       "failed": "Tidak dapat meminta reset kata sandi.",
       "title": "Pulihkan Akses",
       "send": "Kirim Tautan Reset",
-      "subtitle": "Pulihkan akun admin {{app}} Anda"
+      "subtitle": "Masukkan email Anda dan kami kirimkan tautan untuk mengatur kata sandi baru."
     },
     "backToLogin": "Kembali ke Halaman Masuk",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Atur Kata Sandi Baru",
       "submit": "Perbarui Kata Sandi",
       "needLink": "Perlu tautan baru?",
-      "subtitle": "Perbarui kredensial {{app}} Anda"
+      "subtitle": "Tempel kode dari email lalu pilih kata sandi baru."
     },
     "forgotShort": "Lupa?",
-    "logoAlt": "Logo {{app}} oleh {{company}}"
+    "logoAlt": "Logo {{app}} oleh {{company}}",
+    "welcomeBack": "Selamat datang kembali",
+    "consoleIntro": "Masuk ke konsol {{platform}}.",
+    "consoleIntroUnnamed": "Masuk ke konsol.",
+    "noAccess": "Belum punya akun? Minta undangan dari administrator {{platform}}.",
+    "noAccessUnnamed": "Belum punya akun? Minta undangan dari administrator Anda.",
+    "checking": "Memeriksa sesi",
+    "language": "Bahasa",
+    "themeLight": "Tema terang",
+    "themeDark": "Tema gelap",
+    "showPassword": "Tampilkan kata sandi",
+    "hidePassword": "Sembunyikan kata sandi",
+    "help": {
+      "show": "Tampilkan bantuan",
+      "hide": "Sembunyikan bantuan",
+      "signIn": {
+        "title": "Situs, toko, dan aplikasi bisnis di satu tempat.",
+        "text": "Kelola konten, pesanan, dan pengguna Anda."
+      },
+      "failed": {
+        "title": "Tidak bisa masuk?",
+        "item1": "Pastikan Caps Lock mati — kata sandi membedakan huruf besar dan kecil.",
+        "item2": "Lupa kata sandi? Tautan di samping kolom akan mengirimkan tautan lewat email."
+      },
+      "twoFactor": {
+        "title": "Masuk dua langkah",
+        "item1": "Buka aplikasi autentikator dan masukkan kode 6 digit saat ini.",
+        "item2": "Kode berganti setiap 30 detik — tunggu kode baru jika akan kedaluwarsa.",
+        "item3": "Ponsel tidak di dekat Anda? Gunakan salah satu kode cadangan."
+      },
+      "forgot": {
+        "title": "Cara kerjanya",
+        "item1": "Masukkan email yang Anda gunakan untuk masuk.",
+        "item2": "Jika akun ada, kami kirimkan tautan untuk mengatur kata sandi baru.",
+        "item3": "Tautan hanya berlaku sekali dan segera kedaluwarsa."
+      },
+      "reset": {
+        "title": "Kata sandi yang kuat",
+        "item1": "Minimal 8 karakter.",
+        "item2": "Frasa pendek beberapa kata mudah diingat dan sulit ditebak.",
+        "item3": "Pilih kata sandi yang tidak Anda gunakan di tempat lain."
+      }
+    },
+    "twoFactor": {
+      "title": "Konfirmasi masuk",
+      "subtitle": "Masukkan kode 6 digit dari aplikasi autentikator.",
+      "recoverySubtitle": "Masukkan salah satu kode cadangan.",
+      "useRecovery": "Gunakan kode cadangan",
+      "useAuthenticator": "Gunakan aplikasi autentikator"
+    }
   },
   "plugins": {
     "detail": {

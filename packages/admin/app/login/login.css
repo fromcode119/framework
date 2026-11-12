@@ -1,0 +1,265 @@
+/*
+ * The signed-out screens (sign-in, two-step code, forgot and reset password).
+ *
+ * Every colour is a token on `.fc-login`, so an appearance restyles the whole page — the ribbons too,
+ * through `--fc-login-wave-1…5` — from its own stylesheet without touching the markup.
+ */
+.fc-login {
+  --fc-login-bg: #eef0f6;
+  --fc-login-card: #ffffff;
+  --fc-login-side: #f3f1fb;
+  --fc-login-fg: #0f172a;
+  --fc-login-muted: #64748b;
+  --fc-login-line: #e2e8f0;
+  --fc-login-input: #f8fafc;
+  --fc-login-input-line: #dbe1ea;
+  --fc-login-accent: #4338ca;
+  --fc-login-on-accent: #ffffff;
+  --fc-login-danger: #b91c1c;
+  --fc-login-danger-bg: #fdecec;
+  --fc-login-danger-line: #f3c2c2;
+  --fc-login-ok: #047857;
+  --fc-login-ok-bg: #e8f7f1;
+  --fc-login-ok-line: #b8e6d4;
+  --fc-login-wave-1: #ff7a2f;
+  --fc-login-wave-2: #ff3d7f;
+  --fc-login-wave-3: #a855f7;
+  --fc-login-wave-4: #3b6bff;
+  --fc-login-wave-5: #12c2e9;
+
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  background: var(--fc-login-bg);
+  color: var(--fc-login-fg);
+  -webkit-font-smoothing: antialiased;
+}
+
+.fc-login.is-dark {
+  --fc-login-bg: #05070f;
+  --fc-login-card: #0d1324;
+  --fc-login-side: #151033;
+  --fc-login-fg: #eef2ff;
+  --fc-login-muted: #94a3b8;
+  --fc-login-line: #1e293b;
+  --fc-login-input: #0a0f1d;
+  --fc-login-input-line: #2a3550;
+  --fc-login-accent: #6366f1;
+  --fc-login-danger: #fca5a5;
+  --fc-login-danger-bg: rgba(239, 68, 68, 0.12);
+  --fc-login-danger-line: rgba(239, 68, 68, 0.35);
+  --fc-login-ok: #6ee7b7;
+  --fc-login-ok-bg: rgba(16, 185, 129, 0.12);
+  --fc-login-ok-line: rgba(16, 185, 129, 0.35);
+}
+
+.fc-login *,
+.fc-login *::before,
+.fc-login *::after { box-sizing: border-box; }
+
+.fc-login__panel {
+  width: 100%;
+  max-width: 980px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--fc-login-card);
+  border: 1px solid var(--fc-login-line);
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 30px 70px -30px rgba(30, 27, 75, 0.35);
+}
+
+.fc-login.is-solo .fc-login__panel { max-width: 520px; grid-template-columns: 1fr; }
+
+.fc-login__main { padding: 36px 48px 40px; display: flex; flex-direction: column; min-width: 0; }
+
+/* Toolbar: name on the left, controls on the right, both on one centre line. */
+.fc-login__toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 44px; }
+.fc-login__brand { display: flex; align-items: center; height: 34px; min-width: 0; }
+.fc-login__wordmark { display: block; height: 17px; width: auto; max-width: 100%; }
+.fc-login__wordmark--dark,
+.fc-login.is-dark .fc-login__wordmark--light { display: none; }
+.fc-login.is-dark .fc-login__wordmark--dark { display: block; }
+.fc-login__tools { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+.fc-login__tool {
+  position: relative;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border: 1px solid var(--fc-login-line);
+  border-radius: 10px;
+  background: var(--fc-login-card);
+  color: var(--fc-login-muted);
+  font-family: inherit; font-weight: 500; font-size: 13px; line-height: 1;
+  cursor: pointer;
+}
+.fc-login__tool:hover { color: var(--fc-login-fg); }
+.fc-login__tool:focus-visible,
+.fc-login__language:focus-within { outline: 2px solid var(--fc-login-accent); outline-offset: 2px; }
+.fc-login__tool--icon { width: 34px; padding: 0; justify-content: center; }
+.fc-login__language select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
+
+/* Headings and text */
+.fc-login__title { margin: 0 0 8px; font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; text-wrap: balance; }
+.fc-login__subtitle { margin: 0 0 28px; color: var(--fc-login-muted); font-size: 15px; line-height: 1.5; }
+
+/* Form */
+.fc-login__form { display: flex; flex-direction: column; }
+.fc-login__field { display: grid; gap: 7px; margin-bottom: 16px; }
+.fc-login__label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.fc-login__label { font-size: 13.5px; font-weight: 600; }
+.fc-login__control { position: relative; }
+.fc-login__input {
+  width: 100%;
+  height: 48px;
+  border-radius: 12px;
+  border: 1px solid var(--fc-login-input-line);
+  background: var(--fc-login-input);
+  color: var(--fc-login-fg);
+  padding: 0 14px;
+  font-family: inherit; font-weight: 400; font-size: 15px; line-height: 1;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+}
+.fc-login__input--with-action { padding-right: 46px; }
+.fc-login__input:focus {
+  border-color: var(--fc-login-accent);
+  background: var(--fc-login-card);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-login-accent) 20%, transparent);
+}
+.fc-login__input[aria-invalid='true'] { border-color: var(--fc-login-danger); }
+.fc-login__reveal {
+  position: absolute;
+  right: 6px;
+  top: 6px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--fc-login-muted);
+  cursor: pointer;
+}
+.fc-login__reveal:hover { color: var(--fc-login-fg); }
+.fc-login__field-error { color: var(--fc-login-danger); font-size: 13px; font-weight: 500; }
+
+.fc-login__link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fc-login-accent);
+  font-family: inherit; font-weight: 600; font-size: 13.5px; line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+}
+.fc-login__link:hover { text-decoration: underline; text-underline-offset: 3px; }
+
+.fc-login__submit {
+  margin-top: 8px;
+  width: 100%;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--fc-login-accent);
+  color: var(--fc-login-on-accent);
+  font-family: inherit; font-weight: 600; font-size: 15px; line-height: 1;
+  cursor: pointer;
+  transition: filter 0.15s, transform 0.1s;
+}
+.fc-login__submit:hover { filter: brightness(1.08); }
+.fc-login__submit:active { transform: translateY(1px); }
+.fc-login__submit:disabled { opacity: 0.7; cursor: progress; }
+.fc-login__spinner { animation: fc-login-spin 0.8s linear infinite; }
+@keyframes fc-login-spin { to { transform: rotate(360deg); } }
+
+.fc-login__notice {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--fc-login-danger-line);
+  background: var(--fc-login-danger-bg);
+  color: var(--fc-login-danger);
+  font-size: 14px;
+  line-height: 1.45;
+}
+.fc-login__notice svg { flex-shrink: 0; margin-top: 2px; }
+.fc-login__notice--ok { border-color: var(--fc-login-ok-line); background: var(--fc-login-ok-bg); color: var(--fc-login-ok); }
+
+.fc-login__foot { margin: 24px 0 0; color: var(--fc-login-muted); font-size: 13.5px; line-height: 1.5; }
+.fc-login__links { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 20px; }
+
+/* Six-digit code */
+.fc-login__otp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px; }
+.fc-login__otp-box {
+  width: 100%;
+  height: 54px;
+  min-width: 0;
+  border-radius: 12px;
+  border: 1px solid var(--fc-login-input-line);
+  background: var(--fc-login-input);
+  color: var(--fc-login-fg);
+  text-align: center;
+  font-family: inherit; font-weight: 600; font-size: 22px; line-height: 1;
+  outline: none;
+}
+.fc-login__otp-box:focus {
+  border-color: var(--fc-login-accent);
+  background: var(--fc-login-card);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-login-accent) 20%, transparent);
+}
+.fc-login__otp.is-invalid .fc-login__otp-box { border-color: var(--fc-login-danger); }
+
+/* Help column */
+.fc-login__side { position: relative; overflow: hidden; background: var(--fc-login-side); min-height: 100%; }
+.fc-login__waves {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  /* Fade in from the form side, and keep the top clear so the help text never sits on a ribbon. */
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 42%), linear-gradient(180deg, transparent 38%, #000 68%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(90deg, transparent, #000 42%), linear-gradient(180deg, transparent 38%, #000 68%);
+  mask-composite: intersect;
+}
+.fc-login__wave--blur { filter: blur(22px); opacity: 0.7; }
+.fc-login__wave--thin { opacity: 0.55; }
+.fc-login__help { position: relative; padding: 48px 44px; max-width: 380px; }
+.fc-login__help-title { margin: 0 0 12px; font-size: 20px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.3; text-wrap: balance; }
+.fc-login__help-text { margin: 0; color: var(--fc-login-muted); font-size: 14.5px; line-height: 1.55; }
+.fc-login__help-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 10px; }
+.fc-login__help-list li { position: relative; padding-left: 18px; color: var(--fc-login-muted); font-size: 14px; line-height: 1.5; }
+.fc-login__help-list li::before { content: ''; position: absolute; left: 0; top: 0.6em; width: 6px; height: 6px; border-radius: 50%; background: var(--fc-login-accent); }
+.fc-login__help-close { position: absolute; top: 16px; right: 16px; z-index: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  .fc-login__spinner { animation: none; }
+}
+
+/* Phone and small tablet: one column, the form centred on the screen, no help column. */
+@media (max-width: 820px) {
+  .fc-login { padding: 24px 16px; }
+  .fc-login__panel,
+  .fc-login.is-solo .fc-login__panel { max-width: 480px; grid-template-columns: 1fr; }
+  .fc-login__main { padding: 22px 22px 28px; }
+  .fc-login__toolbar { margin-bottom: 22px; }
+  .fc-login__side,
+  .fc-login__help-open,
+  .fc-login__language-name { display: none; }
+  .fc-login__title { font-size: 26px; }
+}

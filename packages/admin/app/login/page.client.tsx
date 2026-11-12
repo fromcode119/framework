@@ -8,13 +8,14 @@ import { AuthUtils } from '@/lib/auth-utils';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { LoginForm } from '@/app/login/login-form';
 import { LoginPageHeader } from '@/app/login/login-page-header';
+import { LoginShell } from '@/app/login/login-shell';
+import type { ILoginHelp } from '@/app/login/interfaces/login-help.interface';
 import { prop, state } from '@fromcode119/react-class-components';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
 import type { ILoginController } from '@/lib/appearance/interfaces/login-controller.interface';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { HostInfoClient } from '@/lib/tenants/host-info-client';
-import { AppEnv } from '@/lib/env';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class LoginPage extends AdminComponent {
@@ -32,12 +33,15 @@ export class LoginPage extends AdminComponent {
   @state fieldErrors: ILoginFieldErrors = {};
   /** Whose console this domain is, asked publicly so a custom sign-in can name it before anyone signs in. */
   @state workspace: { slug: string; appearance: string } | null = null;
+  /** Settings → General → Platform name; '' until the host answers, or when the operator cleared it. */
+  @state platformName = '';
 
   private mounted = false;
 
   async componentDidMount(): Promise<void> {
     this.mounted = true;
     void HostInfoClient.workspace().then((workspace) => { if (this.mounted) this.workspace = workspace; });
+    void HostInfoClient.platformName().then((name) => { if (this.mounted) this.platformName = name; });
     const searchParams = this.searchParams ? await this.searchParams : undefined;
     if (!this.mounted) return;
 
@@ -63,14 +67,46 @@ export class LoginPage extends AdminComponent {
     this.mounted = false;
   }
 
-  private handleForgotPassword(e: FormEvent): void {
-    e.preventDefault();
+  private handleForgotPassword(): void {
     this.router.push(AdminConstants.ROUTES.AUTH.FORGOT_PASSWORD);
   }
 
-  private handleContactSupport(e: FormEvent): void {
-    e.preventDefault();
-    this.runtime.notify.notify(NotificationType.INFO, AdminI18n.t('login.supportOfflineTitle'), AdminI18n.t('login.supportOffline'));
+  /** Leaves the code step for the email and password again, keeping what was typed there. */
+  private backToPassword(): void {
+    this.error = '';
+    this.fieldErrors = {};
+    this.resetTwoFactor();
+  }
+
+  /** The words above the form. A workspace domain names the workspace; otherwise the platform's own name. */
+  private get heading(): { title: string; subtitle: string } {
+    if (this.requiresTwoFactor) {
+      return { title: AdminI18n.t('login.twoFactor.title'), subtitle: AdminI18n.t(this.twoFactorMethod === TwoFactorMethod.TOTP ? 'login.twoFactor.subtitle' : 'login.twoFactor.recoverySubtitle') };
+    }
+    return this.greeting;
+  }
+
+  /** The greeting on the first step — also handed to an appearance that draws its own sign-in. */
+  private get greeting(): { title: string; subtitle: string } {
+    const workspace = this.workspace;
+    if (workspace) {
+      return {
+        title: AdminI18n.t('login.signInTo', { name: workspace.slug }),
+        subtitle: AdminI18n.t('login.workspaceIntro', { name: workspace.slug, console: workspace.appearance || AdminI18n.t('login.defaultConsole') }),
+      };
+    }
+    return {
+      title: AdminI18n.t('login.welcomeBack'),
+      subtitle: this.platformName ? AdminI18n.t('login.consoleIntro', { platform: this.platformName }) : AdminI18n.t('login.consoleIntroUnnamed'),
+    };
+  }
+
+  /** What the help column says at this step. */
+  private get help(): ILoginHelp {
+    const items = (prefix: string) => [1, 2, 3].map((n) => AdminI18n.optional(`${prefix}.item${n}`)).filter(Boolean);
+    if (this.requiresTwoFactor) return { title: AdminI18n.t('login.help.twoFactor.title'), items: items('login.help.twoFactor') };
+    if (this.error) return { title: AdminI18n.t('login.help.failed.title'), items: items('login.help.failed') };
+    return { title: AdminI18n.t('login.help.signIn.title'), text: AdminI18n.t('login.help.signIn.text') };
   }
 
   private resetTwoFactor(): void {
@@ -156,36 +192,16 @@ export class LoginPage extends AdminComponent {
       setTotpToken: (value: string) => { this.totpToken = value; },
       setRecoveryCode: (value: string) => { this.recoveryCode = value; },
       workspace: workspace?.slug || '',
-      title: workspace ? AdminI18n.t('login.signInTo', { name: workspace.slug }) : AdminI18n.t('login.welcome', { app: AppEnv.APP_NAME }),
-      subtitle: workspace
-        ? AdminI18n.t('login.workspaceIntro', { name: workspace.slug, console: workspace.appearance || AdminI18n.t('login.defaultConsole') })
-        : AdminI18n.t('login.intro', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME }),
+      title: this.greeting.title,
+      subtitle: this.greeting.subtitle,
     };
   }
 
   render(): ReactElement {
-    const {
-      isLoading,
-      isCheckingStatus,
-      email,
-      password,
-      totpToken,
-      recoveryCode,
-      twoFactorMethod,
-      requiresTwoFactor,
-      error,
-      fieldErrors,
-    } = this;
-
-    if (isCheckingStatus) {
+    if (this.isCheckingStatus) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-[#020617]">
-          <div className="flex flex-col items-center gap-4">
-            <div className="animate-spin text-indigo-600">
-               <FrameworkIcons.Loader size={40} />
-            </div>
-            <span className="text-xs font-semibold text-slate-500 tracking-wide">Verifying...</span>
-          </div>
+        <div className="fc-login" role="status" aria-label={AdminI18n.t('login.checking')}>
+          <FrameworkIcons.Loader size={32} className="fc-login__spinner" aria-hidden="true" />
         </div>
       );
     }
@@ -198,35 +214,35 @@ export class LoginPage extends AdminComponent {
     const CustomLogin = AdminPageRegistry.shared.resolve(this.workspace?.appearance || '', AdminPageKeys.LOGIN_FRAME);
     if (CustomLogin) return <CustomLogin login={this.controller} />;
 
+    const heading = this.heading;
     return (
-      <div className="fc-login min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
-        <div className="fc-login__panel w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <LoginPageHeader />
-
-          <LoginForm
-            email={email}
-            password={password}
-            totpToken={totpToken}
-            recoveryCode={recoveryCode}
-            twoFactorMethod={twoFactorMethod}
-            requiresTwoFactor={requiresTwoFactor}
-            isLoading={isLoading}
-            error={error}
-            fieldErrors={fieldErrors}
-            onSubmit={(e) => this.handleSubmit(e)}
-            onEmailChange={(value) => { this.email = value; this.resetTwoFactor(); }}
-            onPasswordChange={(value) => { this.password = value; this.resetTwoFactor(); }}
-            onForgotPassword={(e) => this.handleForgotPassword(e)}
-            onSelectTwoFactorMethod={(method) => { this.twoFactorMethod = method; }}
-            onTotpTokenChange={(value) => { this.totpToken = value; }}
-            onRecoveryCodeChange={(value) => { this.recoveryCode = value; }}
-          />
-
-          <p className="fc-login__foot text-center mt-8 text-sm text-slate-500">
-            {AdminI18n.t('login.notMember')} <button onClick={(e) => this.handleContactSupport(e)} className="font-semibold text-indigo-500 hover:text-indigo-400 underline decoration-indigo-500/30 underline-offset-4">{AdminI18n.t('login.contactSupport')}</button>
+      <LoginShell help={this.help}>
+        <LoginPageHeader title={heading.title} subtitle={heading.subtitle} />
+        <LoginForm
+          email={this.email}
+          password={this.password}
+          totpToken={this.totpToken}
+          recoveryCode={this.recoveryCode}
+          twoFactorMethod={this.twoFactorMethod}
+          requiresTwoFactor={this.requiresTwoFactor}
+          isLoading={this.isLoading}
+          error={this.error}
+          fieldErrors={this.fieldErrors}
+          onSubmit={(e) => this.handleSubmit(e)}
+          onEmailChange={(value) => { this.email = value; }}
+          onPasswordChange={(value) => { this.password = value; }}
+          onForgotPassword={() => this.handleForgotPassword()}
+          onSelectTwoFactorMethod={(method) => { this.twoFactorMethod = method; this.fieldErrors = {}; }}
+          onTotpTokenChange={(value) => { this.totpToken = value; }}
+          onRecoveryCodeChange={(value) => { this.recoveryCode = value; }}
+          onBackToPassword={() => this.backToPassword()}
+        />
+        {this.requiresTwoFactor ? null : (
+          <p className="fc-login__foot">
+            {this.platformName ? AdminI18n.t('login.noAccess', { platform: this.platformName }) : AdminI18n.t('login.noAccessUnnamed')}
           </p>
-        </div>
-      </div>
+        )}
+      </LoginShell>
     );
   }
 }

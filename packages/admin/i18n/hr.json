@@ -947,7 +947,7 @@
       "failed": "Nije moguće zatražiti ponovno postavljanje lozinke.",
       "title": "Vraćanje pristupa",
       "send": "Pošalji poveznicu",
-      "subtitle": "Oporavite svoj administratorski račun za {{app}}"
+      "subtitle": "Unesite e-adresu i poslat ćemo vam poveznicu za novu lozinku."
     },
     "backToLogin": "Natrag na prijavu",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Postavite novu lozinku",
       "submit": "Ažuriraj lozinku",
       "needLink": "Trebate novu poveznicu?",
-      "subtitle": "Ažurirajte svoje vjerodajnice za {{app}}"
+      "subtitle": "Zalijepite kod iz e-pošte i odaberite novu lozinku."
     },
     "forgotShort": "Zaboravili ste?",
-    "logoAlt": "Logotip {{app}} tvrtke {{company}}"
+    "logoAlt": "Logotip {{app}} tvrtke {{company}}",
+    "welcomeBack": "Dobro došli natrag",
+    "consoleIntro": "Prijavite se u konzolu {{platform}}.",
+    "consoleIntroUnnamed": "Prijavite se u konzolu.",
+    "noAccess": "Još nemate račun? Zatražite pozivnicu od administratora {{platform}}.",
+    "noAccessUnnamed": "Još nemate račun? Zatražite pozivnicu od administratora.",
+    "checking": "Provjeravamo sesiju",
+    "language": "Jezik",
+    "themeLight": "Svijetla tema",
+    "themeDark": "Tamna tema",
+    "showPassword": "Prikaži lozinku",
+    "hidePassword": "Sakrij lozinku",
+    "help": {
+      "show": "Prikaži pomoć",
+      "hide": "Sakrij pomoć",
+      "signIn": {
+        "title": "Web-stranice, trgovine i poslovne aplikacije na jednom mjestu.",
+        "text": "Upravljajte sadržajem, narudžbama i korisnicima."
+      },
+      "failed": {
+        "title": "Ne možete se prijaviti?",
+        "item1": "Provjerite je li Caps Lock isključen — lozinka razlikuje velika i mala slova.",
+        "item2": "Zaboravili ste lozinku? Poveznica pokraj polja poslat će vam poveznicu e-poštom."
+      },
+      "twoFactor": {
+        "title": "Prijava u dva koraka",
+        "item1": "Otvorite aplikaciju za autentifikaciju i unesite trenutačni 6-znamenkasti kod.",
+        "item2": "Kod se mijenja svakih 30 sekundi — pričekajte novi ako trenutačni istječe.",
+        "item3": "Nemate telefon pri ruci? Upotrijebite rezervni kod."
+      },
+      "forgot": {
+        "title": "Kako funkcionira",
+        "item1": "Unesite e-adresu kojom se prijavljujete.",
+        "item2": "Ako račun postoji, poslat ćemo vam poveznicu za novu lozinku.",
+        "item3": "Poveznica radi jednom i kratko vrijedi."
+      },
+      "reset": {
+        "title": "Sigurna lozinka",
+        "item1": "Najmanje 8 znakova.",
+        "item2": "Kratka fraza od nekoliko riječi lako se pamti, a teško pogađa.",
+        "item3": "Odaberite lozinku koju ne koristite nigdje drugdje."
+      }
+    },
+    "twoFactor": {
+      "title": "Potvrdite prijavu",
+      "subtitle": "Unesite 6-znamenkasti kod iz aplikacije za autentifikaciju.",
+      "recoverySubtitle": "Unesite jedan od rezervnih kodova.",
+      "useRecovery": "Upotrijebi rezervni kod",
+      "useAuthenticator": "Upotrijebi aplikaciju"
+    }
   },
   "plugins": {
     "detail": {

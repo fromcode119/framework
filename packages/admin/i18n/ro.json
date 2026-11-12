@@ -947,7 +947,7 @@
       "failed": "Nu s-a putut solicita resetarea parolei.",
       "title": "Resetare acces",
       "send": "Trimiteți linkul de resetare",
-      "subtitle": "Recuperați contul de administrator {{app}}"
+      "subtitle": "Introdu e-mailul și îți trimitem un link pentru o parolă nouă."
     },
     "backToLogin": "Înapoi la conectare",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Setați o parolă nouă",
       "submit": "Actualizați parola",
       "needLink": "Aveți nevoie de un link nou?",
-      "subtitle": "Actualizați datele de conectare {{app}}"
+      "subtitle": "Lipește codul din e-mail și alege o parolă nouă."
     },
     "forgotShort": "Ați uitat?",
-    "logoAlt": "Logo {{app}} de la {{company}}"
+    "logoAlt": "Logo {{app}} de la {{company}}",
+    "welcomeBack": "Bine ai revenit",
+    "consoleIntro": "Conectează-te la consola {{platform}}.",
+    "consoleIntroUnnamed": "Conectează-te la consolă.",
+    "noAccess": "Nu ai încă un cont? Cere o invitație administratorului {{platform}}.",
+    "noAccessUnnamed": "Nu ai încă un cont? Cere o invitație administratorului.",
+    "checking": "Verificăm sesiunea",
+    "language": "Limbă",
+    "themeLight": "Temă luminoasă",
+    "themeDark": "Temă întunecată",
+    "showPassword": "Arată parola",
+    "hidePassword": "Ascunde parola",
+    "help": {
+      "show": "Arată ajutorul",
+      "hide": "Ascunde ajutorul",
+      "signIn": {
+        "title": "Site-uri, magazine și aplicații de business într-un singur loc.",
+        "text": "Gestionează conținutul, comenzile și utilizatorii."
+      },
+      "failed": {
+        "title": "Nu te poți conecta?",
+        "item1": "Verifică dacă Caps Lock este oprit — parola face diferența între majuscule și minuscule.",
+        "item2": "Ai uitat parola? Linkul de lângă câmp îți trimite un link prin e-mail."
+      },
+      "twoFactor": {
+        "title": "Conectare în doi pași",
+        "item1": "Deschide aplicația de autentificare și introdu codul actual de 6 cifre.",
+        "item2": "Codurile se schimbă la fiecare 30 de secunde — așteaptă unul nou dacă cel actual expiră.",
+        "item3": "Nu ai telefonul la îndemână? Folosește un cod de rezervă."
+      },
+      "forgot": {
+        "title": "Cum funcționează",
+        "item1": "Introdu adresa de e-mail cu care te conectezi.",
+        "item2": "Dacă există un cont, îți trimitem un link pentru o parolă nouă.",
+        "item3": "Linkul funcționează o singură dată și expiră repede."
+      },
+      "reset": {
+        "title": "O parolă sigură",
+        "item1": "Cel puțin 8 caractere.",
+        "item2": "O frază scurtă din câteva cuvinte se reține ușor și se ghicește greu.",
+        "item3": "Folosește o parolă pe care nu o folosești în altă parte."
+      }
+    },
+    "twoFactor": {
+      "title": "Confirmă conectarea",
+      "subtitle": "Introdu codul de 6 cifre din aplicația de autentificare.",
+      "recoverySubtitle": "Introdu unul dintre codurile de rezervă.",
+      "useRecovery": "Folosește un cod de rezervă",
+      "useAuthenticator": "Folosește aplicația de autentificare"
+    }
   },
   "plugins": {
     "detail": {

@@ -947,7 +947,7 @@
       "failed": "Zahteve za ponastavitev gesla ni bilo mogoče poslati.",
       "title": "Ponastavitev dostopa",
       "send": "Pošlji povezavo za ponastavitev",
-      "subtitle": "Obnovite svoj skrbniški račun {{app}}"
+      "subtitle": "Vnesite e-naslov in poslali vam bomo povezavo za novo geslo."
     },
     "backToLogin": "Nazaj na prijavo",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Nastavitev novega gesla",
       "submit": "Posodobi geslo",
       "needLink": "Potrebujete novo povezavo?",
-      "subtitle": "Posodobite svoje poverilnice za {{app}}"
+      "subtitle": "Prilepite kodo iz e-pošte in izberite novo geslo."
     },
     "forgotShort": "Ste pozabili?",
-    "logoAlt": "Logotip {{app}} podjetja {{company}}"
+    "logoAlt": "Logotip {{app}} podjetja {{company}}",
+    "welcomeBack": "Dobrodošli nazaj",
+    "consoleIntro": "Prijavite se v konzolo {{platform}}.",
+    "consoleIntroUnnamed": "Prijavite se v konzolo.",
+    "noAccess": "Še nimate računa? Za povabilo prosite skrbnika {{platform}}.",
+    "noAccessUnnamed": "Še nimate računa? Za povabilo prosite skrbnika.",
+    "checking": "Preverjamo sejo",
+    "language": "Jezik",
+    "themeLight": "Svetla tema",
+    "themeDark": "Temna tema",
+    "showPassword": "Pokaži geslo",
+    "hidePassword": "Skrij geslo",
+    "help": {
+      "show": "Pokaži pomoč",
+      "hide": "Skrij pomoč",
+      "signIn": {
+        "title": "Spletna mesta, trgovine in poslovne aplikacije na enem mestu.",
+        "text": "Upravljajte vsebino, naročila in uporabnike."
+      },
+      "failed": {
+        "title": "Ne morete se prijaviti?",
+        "item1": "Preverite, ali je Caps Lock izklopljen — geslo razlikuje velike in male črke.",
+        "item2": "Ste pozabili geslo? Povezava ob polju vam po e-pošti pošlje povezavo."
+      },
+      "twoFactor": {
+        "title": "Prijava v dveh korakih",
+        "item1": "Odprite aplikacijo za preverjanje pristnosti in vnesite trenutno 6-mestno kodo.",
+        "item2": "Koda se menja vsakih 30 sekund — počakajte na novo, če trenutna poteka.",
+        "item3": "Nimate telefona pri roki? Uporabite rezervno kodo."
+      },
+      "forgot": {
+        "title": "Kako deluje",
+        "item1": "Vnesite e-naslov, s katerim se prijavljate.",
+        "item2": "Če račun obstaja, vam pošljemo povezavo za novo geslo.",
+        "item3": "Povezava deluje enkrat in kmalu poteče."
+      },
+      "reset": {
+        "title": "Močno geslo",
+        "item1": "Vsaj 8 znakov.",
+        "item2": "Kratka fraza iz nekaj besed se zlahka zapomni in težko ugane.",
+        "item3": "Izberite geslo, ki ga ne uporabljate drugje."
+      }
+    },
+    "twoFactor": {
+      "title": "Potrdite prijavo",
+      "subtitle": "Vnesite 6-mestno kodo iz aplikacije za preverjanje pristnosti.",
+      "recoverySubtitle": "Vnesite eno od rezervnih kod.",
+      "useRecovery": "Uporabi rezervno kodo",
+      "useAuthenticator": "Uporabi aplikacijo"
+    }
   },
   "plugins": {
     "detail": {

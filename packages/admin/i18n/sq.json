@@ -947,7 +947,7 @@
       "failed": "Kërkesa për rivendosjen e fjalëkalimit nuk u krye.",
       "title": "Rivendos qasjen",
       "send": "Dërgo lidhjen e rivendosjes",
-      "subtitle": "Rikuperoni llogarinë tuaj të administratorit {{app}}"
+      "subtitle": "Fut email-in dhe të dërgojmë një lidhje për fjalëkalim të ri."
     },
     "backToLogin": "Kthehu te hyrja",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Vendos fjalëkalim të ri",
       "submit": "Përditëso fjalëkalimin",
       "needLink": "Ju duhet lidhje e re?",
-      "subtitle": "Përditësoni kredencialet tuaja të {{app}}"
+      "subtitle": "Ngjit kodin nga email-i dhe zgjidh një fjalëkalim të ri."
     },
     "forgotShort": "E harruat?",
-    "logoAlt": "Logoja e {{app}} nga {{company}}"
+    "logoAlt": "Logoja e {{app}} nga {{company}}",
+    "welcomeBack": "Mirë se u ktheve",
+    "consoleIntro": "Hyr në konsolën e {{platform}}.",
+    "consoleIntroUnnamed": "Hyr në konsolë.",
+    "noAccess": "Nuk ke ende llogari? Kërko një ftesë nga administratori i {{platform}}.",
+    "noAccessUnnamed": "Nuk ke ende llogari? Kërko një ftesë nga administratori.",
+    "checking": "Po kontrollojmë seancën",
+    "language": "Gjuha",
+    "themeLight": "Temë e çelët",
+    "themeDark": "Temë e errët",
+    "showPassword": "Shfaq fjalëkalimin",
+    "hidePassword": "Fshih fjalëkalimin",
+    "help": {
+      "show": "Shfaq ndihmën",
+      "hide": "Fshih ndihmën",
+      "signIn": {
+        "title": "Faqe, dyqane dhe aplikacione biznesi në një vend.",
+        "text": "Menaxho përmbajtjen, porositë dhe përdoruesit."
+      },
+      "failed": {
+        "title": "Nuk mund të hysh?",
+        "item1": "Kontrollo që Caps Lock të jetë i fikur — fjalëkalimi dallon shkronjat e mëdha nga të voglat.",
+        "item2": "E harrove fjalëkalimin? Lidhja pranë fushës të dërgon një lidhje me email."
+      },
+      "twoFactor": {
+        "title": "Hyrje me dy hapa",
+        "item1": "Hap aplikacionin e vërtetimit dhe fut kodin aktual me 6 shifra.",
+        "item2": "Kodet ndryshojnë çdo 30 sekonda — prit një të ri nëse i tanishmi po skadon.",
+        "item3": "Nuk e ke telefonin pranë? Përdor një kod rezervë."
+      },
+      "forgot": {
+        "title": "Si funksionon",
+        "item1": "Fut adresën e email-it me të cilën hyn.",
+        "item2": "Nëse llogaria ekziston, të dërgojmë një lidhje për fjalëkalim të ri.",
+        "item3": "Lidhja funksionon një herë dhe skadon shpejt."
+      },
+      "reset": {
+        "title": "Një fjalëkalim i fortë",
+        "item1": "Të paktën 8 karaktere.",
+        "item2": "Një frazë e shkurtër me disa fjalë mbahet mend lehtë dhe merret me mend vështirë.",
+        "item3": "Zgjidh një fjalëkalim që nuk e përdor gjetkë."
+      }
+    },
+    "twoFactor": {
+      "title": "Konfirmo hyrjen",
+      "subtitle": "Fut kodin me 6 shifra nga aplikacioni i vërtetimit.",
+      "recoverySubtitle": "Fut një nga kodet rezervë.",
+      "useRecovery": "Përdor një kod rezervë",
+      "useAuthenticator": "Përdor aplikacionin"
+    }
   },
   "plugins": {
     "detail": {

@@ -947,7 +947,7 @@
       "failed": "Nie udało się wysłać prośby o zresetowanie hasła.",
       "title": "Odzyskiwanie dostępu",
       "send": "Wyślij link resetujący",
-      "subtitle": "Odzyskaj konto administratora {{app}}"
+      "subtitle": "Wpisz e-mail, a wyślemy link do ustawienia nowego hasła."
     },
     "backToLogin": "Powrót do logowania",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Ustaw nowe hasło",
       "submit": "Zmień hasło",
       "needLink": "Potrzebujesz nowego linku?",
-      "subtitle": "Zaktualizuj dane logowania do {{app}}"
+      "subtitle": "Wklej kod z e-maila i wybierz nowe hasło."
     },
     "forgotShort": "Nie pamiętasz?",
-    "logoAlt": "Logo {{app}} firmy {{company}}"
+    "logoAlt": "Logo {{app}} firmy {{company}}",
+    "welcomeBack": "Witaj ponownie",
+    "consoleIntro": "Zaloguj się do konsoli {{platform}}.",
+    "consoleIntroUnnamed": "Zaloguj się do konsoli.",
+    "noAccess": "Nie masz jeszcze konta? Poproś administratora {{platform}} o zaproszenie.",
+    "noAccessUnnamed": "Nie masz jeszcze konta? Poproś administratora o zaproszenie.",
+    "checking": "Sprawdzamy sesję",
+    "language": "Język",
+    "themeLight": "Jasny motyw",
+    "themeDark": "Ciemny motyw",
+    "showPassword": "Pokaż hasło",
+    "hidePassword": "Ukryj hasło",
+    "help": {
+      "show": "Pokaż pomoc",
+      "hide": "Ukryj pomoc",
+      "signIn": {
+        "title": "Strony, sklepy i aplikacje biznesowe w jednym miejscu.",
+        "text": "Zarządzaj treściami, zamówieniami i użytkownikami."
+      },
+      "failed": {
+        "title": "Nie możesz się zalogować?",
+        "item1": "Sprawdź, czy Caps Lock jest wyłączony — hasło rozróżnia wielkość liter.",
+        "item2": "Nie pamiętasz hasła? Link obok pola wyśle Ci e-mail z linkiem do resetu."
+      },
+      "twoFactor": {
+        "title": "Logowanie dwuetapowe",
+        "item1": "Otwórz aplikację uwierzytelniającą i wpisz bieżący 6-cyfrowy kod.",
+        "item2": "Kody zmieniają się co 30 sekund — poczekaj na nowy, jeśli obecny zaraz wygaśnie.",
+        "item3": "Nie masz telefonu pod ręką? Użyj kodu zapasowego."
+      },
+      "forgot": {
+        "title": "Jak to działa",
+        "item1": "Wpisz adres e-mail, którym się logujesz.",
+        "item2": "Jeśli konto istnieje, wyślemy link do ustawienia nowego hasła.",
+        "item3": "Link działa raz i wygasa po krótkim czasie."
+      },
+      "reset": {
+        "title": "Silne hasło",
+        "item1": "Co najmniej 8 znaków.",
+        "item2": "Krótkie zdanie z kilku słów łatwo zapamiętać i trudno odgadnąć.",
+        "item3": "Użyj hasła, którego nie używasz nigdzie indziej."
+      }
+    },
+    "twoFactor": {
+      "title": "Potwierdź logowanie",
+      "subtitle": "Wpisz 6-cyfrowy kod z aplikacji uwierzytelniającej.",
+      "recoverySubtitle": "Wpisz jeden z kodów zapasowych.",
+      "useRecovery": "Użyj kodu zapasowego",
+      "useAuthenticator": "Użyj aplikacji uwierzytelniającej"
+    }
   },
   "plugins": {
     "detail": {

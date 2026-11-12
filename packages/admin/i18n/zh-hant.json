@@ -947,7 +947,7 @@
       "failed": "無法申請重設密碼。",
       "title": "重設存取權",
       "send": "傳送重設連結",
-      "subtitle": "復原您的 {{app}} 管理員帳號"
+      "subtitle": "輸入電子郵件,我們會寄送設定新密碼的連結。"
     },
     "backToLogin": "返回登入",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "設定新密碼",
       "submit": "更新密碼",
       "needLink": "需要新的連結？",
-      "subtitle": "更新您的 {{app}} 登入憑證"
+      "subtitle": "貼上電子郵件中的代碼並設定新密碼。"
     },
     "forgotShort": "忘記密碼？",
-    "logoAlt": "{{company}} 的 {{app}} 標誌"
+    "logoAlt": "{{company}} 的 {{app}} 標誌",
+    "welcomeBack": "歡迎回來",
+    "consoleIntro": "登入 {{platform}} 主控台。",
+    "consoleIntroUnnamed": "登入主控台。",
+    "noAccess": "還沒有帳戶?請向 {{platform}} 管理員申請邀請。",
+    "noAccessUnnamed": "還沒有帳戶?請向管理員申請邀請。",
+    "checking": "正在檢查工作階段",
+    "language": "語言",
+    "themeLight": "淺色主題",
+    "themeDark": "深色主題",
+    "showPassword": "顯示密碼",
+    "hidePassword": "隱藏密碼",
+    "help": {
+      "show": "顯示說明",
+      "hide": "隱藏說明",
+      "signIn": {
+        "title": "網站、商店與商業應用程式,集中在一處。",
+        "text": "管理您的內容、訂單與使用者。"
+      },
+      "failed": {
+        "title": "無法登入?",
+        "item1": "請確認 Caps Lock 已關閉——密碼區分大小寫。",
+        "item2": "忘記密碼?點選欄位旁的連結,我們會以電子郵件寄送重設連結。"
+      },
+      "twoFactor": {
+        "title": "兩步驟登入",
+        "item1": "開啟驗證應用程式,輸入目前的 6 位數驗證碼。",
+        "item2": "驗證碼每 30 秒更換一次——即將過期時請等待新的驗證碼。",
+        "item3": "手機不在身邊?請使用備用碼。"
+      },
+      "forgot": {
+        "title": "運作方式",
+        "item1": "輸入您用來登入的電子郵件。",
+        "item2": "若帳戶存在,我們會寄送設定新密碼的連結。",
+        "item3": "連結僅能使用一次,且很快失效。"
+      },
+      "reset": {
+        "title": "安全的密碼",
+        "item1": "至少 8 個字元。",
+        "item2": "由幾個詞組成的短句好記又難猜。",
+        "item3": "請選擇未在其他網站使用的密碼。"
+      }
+    },
+    "twoFactor": {
+      "title": "確認登入",
+      "subtitle": "輸入驗證應用程式中的 6 位數驗證碼。",
+      "recoverySubtitle": "輸入一組備用碼。",
+      "useRecovery": "使用備用碼",
+      "useAuthenticator": "使用驗證應用程式"
+    }
   },
   "plugins": {
     "detail": {

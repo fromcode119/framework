@@ -947,7 +947,7 @@
       "failed": "No se pudo solicitar el restablecimiento de la contraseña.",
       "title": "Restablecer acceso",
       "send": "Enviar enlace",
-      "subtitle": "Recupere su cuenta de administrador de {{app}}"
+      "subtitle": "Introduce tu correo y te enviaremos un enlace para crear una contraseña nueva."
     },
     "backToLogin": "Volver al inicio de sesión",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Establecer nueva contraseña",
       "submit": "Actualizar contraseña",
       "needLink": "¿Necesita un nuevo enlace?",
-      "subtitle": "Actualice sus credenciales de {{app}}"
+      "subtitle": "Pega el código del correo y elige una contraseña nueva."
     },
     "forgotShort": "¿La olvidó?",
-    "logoAlt": "Logotipo de {{app}} de {{company}}"
+    "logoAlt": "Logotipo de {{app}} de {{company}}",
+    "welcomeBack": "Hola de nuevo",
+    "consoleIntro": "Inicia sesión en la consola de {{platform}}.",
+    "consoleIntroUnnamed": "Inicia sesión en la consola.",
+    "noAccess": "¿Aún no tienes cuenta? Pide una invitación al administrador de {{platform}}.",
+    "noAccessUnnamed": "¿Aún no tienes cuenta? Pide una invitación a tu administrador.",
+    "checking": "Comprobando tu sesión",
+    "language": "Idioma",
+    "themeLight": "Tema claro",
+    "themeDark": "Tema oscuro",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
+    "help": {
+      "show": "Mostrar ayuda",
+      "hide": "Ocultar ayuda",
+      "signIn": {
+        "title": "Sitios, tiendas y aplicaciones de negocio en un solo lugar.",
+        "text": "Gestiona tu contenido, pedidos y usuarios."
+      },
+      "failed": {
+        "title": "¿No puedes entrar?",
+        "item1": "Comprueba que Bloq Mayús esté desactivado: la contraseña distingue mayúsculas y minúsculas.",
+        "item2": "¿Olvidaste la contraseña? El enlace junto al campo te envía un enlace por correo."
+      },
+      "twoFactor": {
+        "title": "Inicio de sesión en dos pasos",
+        "item1": "Abre tu aplicación de autenticación e introduce el código de 6 dígitos actual.",
+        "item2": "Los códigos cambian cada 30 segundos: espera al siguiente si está a punto de caducar.",
+        "item3": "¿No tienes el teléfono a mano? Usa uno de tus códigos de respaldo."
+      },
+      "forgot": {
+        "title": "Cómo funciona",
+        "item1": "Introduce el correo con el que inicias sesión.",
+        "item2": "Si existe una cuenta, te enviaremos un enlace para crear una contraseña nueva.",
+        "item3": "El enlace funciona una sola vez y caduca en poco tiempo."
+      },
+      "reset": {
+        "title": "Una contraseña segura",
+        "item1": "Al menos 8 caracteres.",
+        "item2": "Una frase corta de varias palabras es fácil de recordar y difícil de adivinar.",
+        "item3": "Usa una contraseña que no utilices en ningún otro sitio."
+      }
+    },
+    "twoFactor": {
+      "title": "Confirma que eres tú",
+      "subtitle": "Introduce el código de 6 dígitos de tu aplicación de autenticación.",
+      "recoverySubtitle": "Introduce uno de tus códigos de respaldo.",
+      "useRecovery": "Usar un código de respaldo",
+      "useAuthenticator": "Usar la aplicación de autenticación"
+    }
   },
   "plugins": {
     "detail": {

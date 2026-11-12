@@ -947,7 +947,7 @@
       "failed": "Obnovení hesla nelze vyžádat.",
       "title": "Obnovení přístupu",
       "send": "Odeslat odkaz pro obnovení",
-      "subtitle": "Obnovte svůj administrátorský účet {{app}}"
+      "subtitle": "Zadejte e-mail a pošleme vám odkaz pro nastavení nového hesla."
     },
     "backToLogin": "Zpět na přihlášení",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Nastavení nového hesla",
       "submit": "Změnit heslo",
       "needLink": "Potřebujete nový odkaz?",
-      "subtitle": "Změňte své přihlašovací údaje k {{app}}"
+      "subtitle": "Vložte kód z e-mailu a zvolte nové heslo."
     },
     "forgotShort": "Zapomněli jste?",
-    "logoAlt": "Logo {{app}} od {{company}}"
+    "logoAlt": "Logo {{app}} od {{company}}",
+    "welcomeBack": "Vítejte zpět",
+    "consoleIntro": "Přihlaste se do konzole {{platform}}.",
+    "consoleIntroUnnamed": "Přihlaste se do konzole.",
+    "noAccess": "Ještě nemáte účet? Požádejte správce {{platform}} o pozvánku.",
+    "noAccessUnnamed": "Ještě nemáte účet? Požádejte správce o pozvánku.",
+    "checking": "Ověřujeme relaci",
+    "language": "Jazyk",
+    "themeLight": "Světlý motiv",
+    "themeDark": "Tmavý motiv",
+    "showPassword": "Zobrazit heslo",
+    "hidePassword": "Skrýt heslo",
+    "help": {
+      "show": "Zobrazit nápovědu",
+      "hide": "Skrýt nápovědu",
+      "signIn": {
+        "title": "Weby, obchody a firemní aplikace na jednom místě.",
+        "text": "Spravujte obsah, objednávky a uživatele."
+      },
+      "failed": {
+        "title": "Nedaří se přihlásit?",
+        "item1": "Zkontrolujte, zda je vypnutý Caps Lock — heslo rozlišuje velká a malá písmena.",
+        "item2": "Zapomněli jste heslo? Odkaz vedle pole vám pošle e-mail s odkazem pro obnovu."
+      },
+      "twoFactor": {
+        "title": "Dvoufázové přihlášení",
+        "item1": "Otevřete ověřovací aplikaci a zadejte aktuální 6místný kód.",
+        "item2": "Kódy se mění každých 30 sekund — pokud kód brzy vyprší, počkejte na nový.",
+        "item3": "Nemáte telefon po ruce? Použijte záložní kód."
+      },
+      "forgot": {
+        "title": "Jak to funguje",
+        "item1": "Zadejte e-mail, kterým se přihlašujete.",
+        "item2": "Pokud účet existuje, pošleme vám odkaz pro nastavení nového hesla.",
+        "item3": "Odkaz funguje jednou a brzy vyprší."
+      },
+      "reset": {
+        "title": "Silné heslo",
+        "item1": "Alespoň 8 znaků.",
+        "item2": "Krátká fráze z několika slov se snadno pamatuje a těžko hádá.",
+        "item3": "Použijte heslo, které nepoužíváte jinde."
+      }
+    },
+    "twoFactor": {
+      "title": "Potvrďte přihlášení",
+      "subtitle": "Zadejte 6místný kód z ověřovací aplikace.",
+      "recoverySubtitle": "Zadejte jeden ze záložních kódů.",
+      "useRecovery": "Použít záložní kód",
+      "useAuthenticator": "Použít ověřovací aplikaci"
+    }
   },
   "plugins": {
     "detail": {

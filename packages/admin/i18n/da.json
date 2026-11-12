@@ -947,7 +947,7 @@
       "failed": "Kunne ikke anmode om nulstilling af adgangskode.",
       "title": "Nulstil adgang",
       "send": "Send nulstillingslink",
-      "subtitle": "Gendan din {{app}}-administratorkonto"
+      "subtitle": "Indtast din e-mail, så sender vi et link til en ny adgangskode."
     },
     "backToLogin": "Tilbage til login",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Angiv ny adgangskode",
       "submit": "Opdater adgangskode",
       "needLink": "Brug for et nyt link?",
-      "subtitle": "Opdater dine {{app}}-loginoplysninger"
+      "subtitle": "Indsæt koden fra e-mailen, og vælg en ny adgangskode."
     },
     "forgotShort": "Glemt?",
-    "logoAlt": "{{app}} fra {{company}}-logo"
+    "logoAlt": "{{app}} fra {{company}}-logo",
+    "welcomeBack": "Velkommen tilbage",
+    "consoleIntro": "Log ind i {{platform}}-konsollen.",
+    "consoleIntroUnnamed": "Log ind i konsollen.",
+    "noAccess": "Ingen konto endnu? Bed administratoren for {{platform}} om en invitation.",
+    "noAccessUnnamed": "Ingen konto endnu? Bed din administrator om en invitation.",
+    "checking": "Tjekker sessionen",
+    "language": "Sprog",
+    "themeLight": "Lyst tema",
+    "themeDark": "Mørkt tema",
+    "showPassword": "Vis adgangskode",
+    "hidePassword": "Skjul adgangskode",
+    "help": {
+      "show": "Vis hjælp",
+      "hide": "Skjul hjælp",
+      "signIn": {
+        "title": "Websites, butikker og forretningsapps ét sted.",
+        "text": "Administrer indhold, ordrer og brugere."
+      },
+      "failed": {
+        "title": "Kan du ikke logge ind?",
+        "item1": "Tjek at Caps Lock er slået fra — adgangskoder skelner mellem store og små bogstaver.",
+        "item2": "Glemt adgangskoden? Linket ved feltet sender dig et link på e-mail."
+      },
+      "twoFactor": {
+        "title": "Login i to trin",
+        "item1": "Åbn din godkendelsesapp, og indtast den aktuelle 6-cifrede kode.",
+        "item2": "Koderne skifter hvert 30. sekund — vent på en ny, hvis den er ved at udløbe.",
+        "item3": "Har du ikke telefonen ved hånden? Brug en backupkode."
+      },
+      "forgot": {
+        "title": "Sådan virker det",
+        "item1": "Indtast den e-mailadresse, du logger ind med.",
+        "item2": "Hvis der findes en konto, sender vi et link til en ny adgangskode.",
+        "item3": "Linket virker én gang og udløber hurtigt."
+      },
+      "reset": {
+        "title": "En stærk adgangskode",
+        "item1": "Mindst 8 tegn.",
+        "item2": "En kort sætning på få ord er let at huske og svær at gætte.",
+        "item3": "Vælg en adgangskode, du ikke bruger andre steder."
+      }
+    },
+    "twoFactor": {
+      "title": "Bekræft dit login",
+      "subtitle": "Indtast den 6-cifrede kode fra din godkendelsesapp.",
+      "recoverySubtitle": "Indtast en af dine backupkoder.",
+      "useRecovery": "Brug en backupkode",
+      "useAuthenticator": "Brug godkendelsesappen"
+    }
   },
   "plugins": {
     "detail": {

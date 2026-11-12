@@ -947,7 +947,7 @@
       "failed": "Nepavyko pateikti slaptažodžio atkūrimo užklausos.",
       "title": "Prieigos atkūrimas",
       "send": "Siųsti atkūrimo nuorodą",
-      "subtitle": "Atkurkite savo {{app}} administratoriaus paskyrą"
+      "subtitle": "Įveskite el. paštą ir atsiųsime nuorodą naujam slaptažodžiui nustatyti."
     },
     "backToLogin": "Grįžti į prisijungimą",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Naujo slaptažodžio nustatymas",
       "submit": "Atnaujinti slaptažodį",
       "needLink": "Reikia naujos nuorodos?",
-      "subtitle": "Atnaujinkite savo {{app}} prisijungimo duomenis"
+      "subtitle": "Įklijuokite kodą iš el. laiško ir pasirinkite naują slaptažodį."
     },
     "forgotShort": "Pamiršote?",
-    "logoAlt": "{{app}} ({{company}}) logotipas"
+    "logoAlt": "{{app}} ({{company}}) logotipas",
+    "welcomeBack": "Sveiki sugrįžę",
+    "consoleIntro": "Prisijunkite prie {{platform}} konsolės.",
+    "consoleIntroUnnamed": "Prisijunkite prie konsolės.",
+    "noAccess": "Dar neturite paskyros? Paprašykite {{platform}} administratoriaus pakvietimo.",
+    "noAccessUnnamed": "Dar neturite paskyros? Paprašykite administratoriaus pakvietimo.",
+    "checking": "Tikriname sesiją",
+    "language": "Kalba",
+    "themeLight": "Šviesi tema",
+    "themeDark": "Tamsi tema",
+    "showPassword": "Rodyti slaptažodį",
+    "hidePassword": "Slėpti slaptažodį",
+    "help": {
+      "show": "Rodyti pagalbą",
+      "hide": "Slėpti pagalbą",
+      "signIn": {
+        "title": "Svetainės, parduotuvės ir verslo programos vienoje vietoje.",
+        "text": "Tvarkykite turinį, užsakymus ir naudotojus."
+      },
+      "failed": {
+        "title": "Nepavyksta prisijungti?",
+        "item1": "Patikrinkite, ar išjungtas Caps Lock — slaptažodis skiria didžiąsias ir mažąsias raides.",
+        "item2": "Pamiršote slaptažodį? Nuoroda šalia lauko atsiųs jums nuorodą el. paštu."
+      },
+      "twoFactor": {
+        "title": "Dviejų veiksmų prisijungimas",
+        "item1": "Atidarykite autentifikavimo programėlę ir įveskite dabartinį 6 skaitmenų kodą.",
+        "item2": "Kodai keičiasi kas 30 sekundžių — jei kodas tuoj baigs galioti, palaukite naujo.",
+        "item3": "Telefono neturite po ranka? Naudokite atsarginį kodą."
+      },
+      "forgot": {
+        "title": "Kaip tai veikia",
+        "item1": "Įveskite el. pašto adresą, kuriuo jungiatės.",
+        "item2": "Jei paskyra yra, atsiųsime nuorodą naujam slaptažodžiui nustatyti.",
+        "item3": "Nuoroda veikia vieną kartą ir greitai nustoja galioti."
+      },
+      "reset": {
+        "title": "Stiprus slaptažodis",
+        "item1": "Ne mažiau kaip 8 simboliai.",
+        "item2": "Trumpa kelių žodžių frazė lengvai įsimenama ir sunkiai atspėjama.",
+        "item3": "Pasirinkite slaptažodį, kurio nenaudojate kitur."
+      }
+    },
+    "twoFactor": {
+      "title": "Patvirtinkite prisijungimą",
+      "subtitle": "Įveskite 6 skaitmenų kodą iš autentifikavimo programėlės.",
+      "recoverySubtitle": "Įveskite vieną iš atsarginių kodų.",
+      "useRecovery": "Naudoti atsarginį kodą",
+      "useAuthenticator": "Naudoti autentifikavimo programėlę"
+    }
   },
   "plugins": {
     "detail": {

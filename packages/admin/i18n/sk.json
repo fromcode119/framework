@@ -947,7 +947,7 @@
       "failed": "Obnovenie hesla sa nepodarilo vyžiadať.",
       "title": "Obnovenie prístupu",
       "send": "Odoslať odkaz na obnovenie",
-      "subtitle": "Obnovte svoj správcovský účet {{app}}"
+      "subtitle": "Zadajte e-mail a pošleme vám odkaz na nastavenie nového hesla."
     },
     "backToLogin": "Späť na prihlásenie",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Nastavenie nového hesla",
       "submit": "Aktualizovať heslo",
       "needLink": "Potrebujete nový odkaz?",
-      "subtitle": "Aktualizujte svoje prihlasovacie údaje {{app}}"
+      "subtitle": "Vložte kód z e-mailu a zvoľte nové heslo."
     },
     "forgotShort": "Zabudli ste?",
-    "logoAlt": "Logo {{app}} od {{company}}"
+    "logoAlt": "Logo {{app}} od {{company}}",
+    "welcomeBack": "Vitajte späť",
+    "consoleIntro": "Prihláste sa do konzoly {{platform}}.",
+    "consoleIntroUnnamed": "Prihláste sa do konzoly.",
+    "noAccess": "Ešte nemáte účet? Požiadajte správcu {{platform}} o pozvánku.",
+    "noAccessUnnamed": "Ešte nemáte účet? Požiadajte správcu o pozvánku.",
+    "checking": "Overujeme reláciu",
+    "language": "Jazyk",
+    "themeLight": "Svetlý motív",
+    "themeDark": "Tmavý motív",
+    "showPassword": "Zobraziť heslo",
+    "hidePassword": "Skryť heslo",
+    "help": {
+      "show": "Zobraziť pomoc",
+      "hide": "Skryť pomoc",
+      "signIn": {
+        "title": "Weby, obchody a firemné aplikácie na jednom mieste.",
+        "text": "Spravujte obsah, objednávky a používateľov."
+      },
+      "failed": {
+        "title": "Nedarí sa prihlásiť?",
+        "item1": "Skontrolujte, či je vypnutý Caps Lock — heslo rozlišuje veľké a malé písmená.",
+        "item2": "Zabudli ste heslo? Odkaz vedľa poľa vám pošle e-mail s odkazom na obnovenie."
+      },
+      "twoFactor": {
+        "title": "Dvojkrokové prihlásenie",
+        "item1": "Otvorte overovaciu aplikáciu a zadajte aktuálny 6-miestny kód.",
+        "item2": "Kódy sa menia každých 30 sekúnd — ak kód čoskoro vyprší, počkajte na nový.",
+        "item3": "Nemáte telefón po ruke? Použite záložný kód."
+      },
+      "forgot": {
+        "title": "Ako to funguje",
+        "item1": "Zadajte e-mail, ktorým sa prihlasujete.",
+        "item2": "Ak účet existuje, pošleme vám odkaz na nastavenie nového hesla.",
+        "item3": "Odkaz funguje raz a čoskoro vyprší."
+      },
+      "reset": {
+        "title": "Silné heslo",
+        "item1": "Aspoň 8 znakov.",
+        "item2": "Krátka fráza z niekoľkých slov sa ľahko pamätá a ťažko háda.",
+        "item3": "Použite heslo, ktoré nepoužívate inde."
+      }
+    },
+    "twoFactor": {
+      "title": "Potvrďte prihlásenie",
+      "subtitle": "Zadajte 6-miestny kód z overovacej aplikácie.",
+      "recoverySubtitle": "Zadajte jeden zo záložných kódov.",
+      "useRecovery": "Použiť záložný kód",
+      "useAuthenticator": "Použiť overovaciu aplikáciu"
+    }
   },
   "plugins": {
     "detail": {

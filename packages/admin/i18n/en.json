@@ -947,7 +947,7 @@
       "failed": "Unable to request password reset.",
       "title": "Reset Access",
       "send": "Send Reset Link",
-      "subtitle": "Recover your {{app}} admin account"
+      "subtitle": "Enter your email and we’ll send you a link to set a new password."
     },
     "backToLogin": "Back to Login",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Set New Password",
       "submit": "Update Password",
       "needLink": "Need new link?",
-      "subtitle": "Update your {{app}} credentials"
+      "subtitle": "Paste the code from the email and choose a new password."
     },
     "forgotShort": "Forgot?",
-    "logoAlt": "{{app}} by {{company}} logo"
+    "logoAlt": "{{app}} by {{company}} logo",
+    "welcomeBack": "Welcome back",
+    "consoleIntro": "Sign in to the {{platform}} console.",
+    "consoleIntroUnnamed": "Sign in to the console.",
+    "noAccess": "No account yet? Ask the {{platform}} administrator for an invitation.",
+    "noAccessUnnamed": "No account yet? Ask your administrator for an invitation.",
+    "checking": "Checking your session",
+    "language": "Language",
+    "themeLight": "Switch to light theme",
+    "themeDark": "Switch to dark theme",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "help": {
+      "show": "Show help",
+      "hide": "Hide help",
+      "signIn": {
+        "title": "Sites, shops and business apps in one place.",
+        "text": "Manage your content, orders and users."
+      },
+      "failed": {
+        "title": "Can’t sign in?",
+        "item1": "Check that Caps Lock is off — passwords are case-sensitive.",
+        "item2": "Forgot your password? Use “Forgot?” beside the field to get a reset link by email."
+      },
+      "twoFactor": {
+        "title": "Two-step sign-in",
+        "item1": "Open your authenticator app and enter the current 6-digit code.",
+        "item2": "Codes change every 30 seconds — wait for a new one if it is about to expire.",
+        "item3": "No phone at hand? Use one of your backup codes instead."
+      },
+      "forgot": {
+        "title": "How it works",
+        "item1": "Enter the email address you sign in with.",
+        "item2": "If an account exists, we email you a link to set a new password.",
+        "item3": "The link works once and expires after a short time."
+      },
+      "reset": {
+        "title": "A strong password",
+        "item1": "Use at least 8 characters.",
+        "item2": "A short phrase of a few words is easy to remember and hard to guess.",
+        "item3": "Use a password you do not use on any other site."
+      }
+    },
+    "twoFactor": {
+      "title": "Confirm it’s you",
+      "subtitle": "Enter the 6-digit code from your authenticator app.",
+      "recoverySubtitle": "Enter one of your backup codes.",
+      "useRecovery": "Use a backup code",
+      "useAuthenticator": "Use the authenticator app"
+    }
   },
   "plugins": {
     "detail": {

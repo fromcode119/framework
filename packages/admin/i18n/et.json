@@ -947,7 +947,7 @@
       "failed": "Parooli lähtestamist ei õnnestunud taotleda.",
       "title": "Juurdepääsu taastamine",
       "send": "Saada lähtestuslink",
-      "subtitle": "Taastage oma {{app}} administraatorikonto"
+      "subtitle": "Sisesta oma e-post ja saadame lingi uue parooli määramiseks."
     },
     "backToLogin": "Tagasi sisselogimisse",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Määrake uus parool",
       "submit": "Uuenda parooli",
       "needLink": "Vajate uut linki?",
-      "subtitle": "Uuendage oma {{app}} sisselogimisandmeid"
+      "subtitle": "Kleebi e-kirjast kood ja vali uus parool."
     },
     "forgotShort": "Unustasite?",
-    "logoAlt": "{{app}} ({{company}}) logo"
+    "logoAlt": "{{app}} ({{company}}) logo",
+    "welcomeBack": "Tere tulemast tagasi",
+    "consoleIntro": "Logi sisse {{platform}} konsooli.",
+    "consoleIntroUnnamed": "Logi sisse konsooli.",
+    "noAccess": "Kontot veel pole? Küsi kutset {{platform}} administraatorilt.",
+    "noAccessUnnamed": "Kontot veel pole? Küsi kutset oma administraatorilt.",
+    "checking": "Kontrollime seanssi",
+    "language": "Keel",
+    "themeLight": "Hele teema",
+    "themeDark": "Tume teema",
+    "showPassword": "Näita parooli",
+    "hidePassword": "Peida parool",
+    "help": {
+      "show": "Näita abi",
+      "hide": "Peida abi",
+      "signIn": {
+        "title": "Veebilehed, poed ja ärirakendused ühes kohas.",
+        "text": "Halda sisu, tellimusi ja kasutajaid."
+      },
+      "failed": {
+        "title": "Ei saa sisse logida?",
+        "item1": "Kontrolli, et Caps Lock oleks väljas — parool eristab suur- ja väiketähti.",
+        "item2": "Unustasid parooli? Välja kõrval olev link saadab sulle e-kirjaga lingi."
+      },
+      "twoFactor": {
+        "title": "Kaheastmeline sisselogimine",
+        "item1": "Ava autentimisrakendus ja sisesta praegune 6-kohaline kood.",
+        "item2": "Kood vahetub iga 30 sekundi järel — kui see kohe aegub, oota uut.",
+        "item3": "Telefoni pole käepärast? Kasuta varukoodi."
+      },
+      "forgot": {
+        "title": "Kuidas see toimib",
+        "item1": "Sisesta e-posti aadress, millega sisse logid.",
+        "item2": "Kui konto on olemas, saadame lingi uue parooli määramiseks.",
+        "item3": "Link töötab ühe korra ja aegub peagi."
+      },
+      "reset": {
+        "title": "Tugev parool",
+        "item1": "Vähemalt 8 märki.",
+        "item2": "Lühike mõnest sõnast fraas on kerge meelde jätta ja raske ära arvata.",
+        "item3": "Vali parool, mida mujal ei kasuta."
+      }
+    },
+    "twoFactor": {
+      "title": "Kinnita sisselogimine",
+      "subtitle": "Sisesta autentimisrakenduse 6-kohaline kood.",
+      "recoverySubtitle": "Sisesta üks oma varukoodidest.",
+      "useRecovery": "Kasuta varukoodi",
+      "useAuthenticator": "Kasuta autentimisrakendust"
+    }
   },
   "plugins": {
     "detail": {

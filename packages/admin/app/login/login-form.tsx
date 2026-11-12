@@ -1,26 +1,27 @@
 import { TwoFactorMethod } from '@fromcode119/core/client';
 import type { FormEvent, ReactNode } from 'react';
-
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
-import { Input } from '@/components/ui/view/input.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { LoginTwoFactorFields } from '@/app/login/login-two-factor-fields';
-import { LoginPageConstants } from '@/app/login/constants/login-page.constants';
+
+import { LoginField } from '@/app/login/login-field';
+import { LoginNotice } from '@/app/login/login-notice';
+import { LoginFieldType } from '@/app/login/enums/login-field-type.enum';
+import { LoginNoticeTone } from '@/app/login/enums/login-notice-tone.enum';
+import { LoginOtpInput } from '@/app/login/login-otp-input';
+import { LoginSubmit } from '@/app/login/login-submit';
 import type { ILoginFieldErrors } from '@/app/login/interfaces/login-field-errors.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The sign-in form. Every element carries a stable `fc-login__*` hook ALONGSIDE its utility classes:
- * an appearance's stylesheet is loaded on this page but had nothing to select, so a workspace console
- * could brand the words around the form and not the form itself. The hooks are the styling contract —
- * the markup, the fields and the submit stay the framework's, so restyling a login can never become
- * owning one.
+ * The sign-in form, in its two steps. First the email and password; when the account has two-step
+ * sign-in, the SAME form then asks only for the code — six boxes for the authenticator, or one field for
+ * a backup code — with a way back to the first step. The email and password stay with the page and are
+ * sent again with the code, which is what `/auth/login` expects.
+ *
+ * Every element keeps a stable `fc-login__*` class: an appearance's stylesheet restyles the form
+ * through those, while the fields and the submit stay the framework's.
  */
 export class LoginForm extends PureReactor {
-  /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<LoginForm, 'email' | 'password' | 'totpToken' | 'recoveryCode' | 'twoFactorMethod' | 'requiresTwoFactor' | 'isLoading' | 'error' | 'fieldErrors' | 'onSubmit' | 'onEmailChange' | 'onPasswordChange' | 'onForgotPassword' | 'onSelectTwoFactorMethod' | 'onTotpTokenChange' | 'onRecoveryCodeChange'>;
+  declare props: Pick<LoginForm, 'email' | 'password' | 'totpToken' | 'recoveryCode' | 'twoFactorMethod' | 'requiresTwoFactor' | 'isLoading' | 'error' | 'fieldErrors' | 'onSubmit' | 'onEmailChange' | 'onPasswordChange' | 'onForgotPassword' | 'onSelectTwoFactorMethod' | 'onTotpTokenChange' | 'onRecoveryCodeChange' | 'onBackToPassword'>;
 
   @prop declare email: string;
   @prop declare password: string;
@@ -34,83 +35,78 @@ export class LoginForm extends PureReactor {
   @prop declare onSubmit: (e: FormEvent) => void;
   @prop declare onEmailChange: (value: string) => void;
   @prop declare onPasswordChange: (value: string) => void;
-  @prop declare onForgotPassword: (e: FormEvent) => void;
+  @prop declare onForgotPassword: () => void;
   @prop declare onSelectTwoFactorMethod: (method: TwoFactorMethod) => void;
   @prop declare onTotpTokenChange: (value: string) => void;
   @prop declare onRecoveryCodeChange: (value: string) => void;
+  @prop declare onBackToPassword: () => void;
+
+  private renderCredentials(): ReactNode {
+    return (
+      <>
+        <LoginField
+          id="fc-login-email"
+          label={AdminI18n.t('login.email')}
+          type={LoginFieldType.EMAIL}
+          autoComplete="username"
+          autoFocus
+          value={this.email}
+          onChange={this.onEmailChange}
+          error={this.fieldErrors.email}
+        />
+        <LoginField
+          id="fc-login-password"
+          label={AdminI18n.t('login.password')}
+          type={LoginFieldType.PASSWORD}
+          autoComplete="current-password"
+          value={this.password}
+          onChange={this.onPasswordChange}
+          error={this.fieldErrors.password}
+          aside={<button type="button" className="fc-login__link fc-login__forgot" onClick={this.onForgotPassword}>{AdminI18n.t('login.forgotShort')}</button>}
+        />
+        <LoginSubmit label={AdminI18n.t('login.signIn')} isLoading={this.isLoading} />
+      </>
+    );
+  }
+
+  private renderTwoFactor(): ReactNode {
+    const totp = this.twoFactorMethod === TwoFactorMethod.TOTP;
+    return (
+      <>
+        {totp ? (
+          <>
+            <LoginOtpInput label={AdminI18n.t('login.twoFactorCode')} value={this.totpToken} onChange={this.onTotpTokenChange} invalid={Boolean(this.fieldErrors.totpToken)} />
+            {this.fieldErrors.totpToken ? <span className="fc-login__field-error">{this.fieldErrors.totpToken}</span> : null}
+          </>
+        ) : (
+          <LoginField
+            id="fc-login-recovery"
+            label={AdminI18n.t('login.recoveryCode')}
+            type={LoginFieldType.TEXT}
+            autoComplete="off"
+            autoFocus
+            value={this.recoveryCode}
+            onChange={(value) => this.onRecoveryCodeChange(value.toUpperCase())}
+            error={this.fieldErrors.recoveryCode}
+          />
+        )}
+        <LoginSubmit label={AdminI18n.t(totp ? 'login.verifyTotp' : 'login.useRecovery')} isLoading={this.isLoading} />
+        <div className="fc-login__links">
+          <button type="button" className="fc-login__link" onClick={() => this.onSelectTwoFactorMethod(totp ? TwoFactorMethod.RECOVERY : TwoFactorMethod.TOTP)}>
+            {AdminI18n.t(totp ? 'login.twoFactor.useRecovery' : 'login.twoFactor.useAuthenticator')}
+          </button>
+          <button type="button" className="fc-login__link" onClick={this.onBackToPassword}>{AdminI18n.t('login.backToLogin')}</button>
+        </div>
+      </>
+    );
+  }
 
   render(): ReactNode {
     return (
-      <div className={`fc-login__card p-8 ${AdminClass.SURFACE}`}>
-        {this.error && (
-          <div className="fc-login__error mb-6 p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-500 text-sm font-semibold animate-in fade-in zoom-in duration-300">
-            {this.error}
-          </div>
-        )}
-        <form onSubmit={this.onSubmit} className="fc-login__form space-y-6" noValidate>
-          <Input
-            label={AdminI18n.t('login.email')}
-            placeholder="name@company.com"
-            type="email"
-            required
-            autoComplete="email"
-            value={this.email}
-            onChange={(e) => this.onEmailChange(e.target.value)}
-            error={this.fieldErrors.email}
-            className="group"
-            inputClassName={LoginPageConstants.loginInputClassName}
-          />
-
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label className="fc-login__label text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-300">{AdminI18n.t('login.password')}</label>
-              <button type="button" onClick={this.onForgotPassword} className="fc-login__forgot text-xs font-semibold text-indigo-500 hover:text-indigo-400">{AdminI18n.t('login.forgotShort')}</button>
-            </div>
-            <Input
-              placeholder="••••••••"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={this.password}
-              onChange={(e) => this.onPasswordChange(e.target.value)}
-              error={this.fieldErrors.password}
-              inputClassName={LoginPageConstants.loginInputClassName}
-            />
-          </div>
-
-          {this.requiresTwoFactor ? (
-            <LoginTwoFactorFields
-              twoFactorMethod={this.twoFactorMethod}
-              totpToken={this.totpToken}
-              recoveryCode={this.recoveryCode}
-              fieldErrors={this.fieldErrors}
-              onSelectMethod={this.onSelectTwoFactorMethod}
-              onTotpTokenChange={this.onTotpTokenChange}
-              onRecoveryCodeChange={this.onRecoveryCodeChange}
-            />
-          ) : null}
-
-          <div className="fc-login__assurance flex items-center justify-between py-2">
-            <div className="flex items-center gap-2">
-              <div className="p-1 rounded bg-indigo-500/10 text-indigo-500">
-                <FrameworkIcons.Shield size={14} />
-              </div>
-              <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">{AdminI18n.t('login.secureSession')}</span>
-            </div>
-          </div>
-
-          <Button
-            type="submit"
-            className="fc-login__submit w-full py-4 text-base transform hover:scale-[1.02] active:scale-[0.98]"
-            isLoading={this.isLoading}
-          >
-            {this.requiresTwoFactor
-              ? AdminI18n.t(this.twoFactorMethod === TwoFactorMethod.TOTP ? 'login.verifyTotp' : 'login.useRecovery')
-              : AdminI18n.t('login.signIn')}
-            {!this.isLoading && <FrameworkIcons.ArrowRight size={18} className="ms-2" />}
-          </Button>
-        </form>
-      </div>
+      <form onSubmit={this.onSubmit} className="fc-login__form" noValidate>
+        <LoginNotice message={this.error} tone={LoginNoticeTone.ERROR} />
+        {this.requiresTwoFactor ? this.renderTwoFactor() : this.renderCredentials()}
+      </form>
     );
   }
 }

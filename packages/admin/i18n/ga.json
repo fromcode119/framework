@@ -947,7 +947,7 @@
       "failed": "Níorbh fhéidir athshocrú pasfhocail a iarraidh.",
       "title": "Athshocraigh rochtain",
       "send": "Seol nasc athshocraithe",
-      "subtitle": "Aisghabh do chuntas riaracháin {{app}}"
+      "subtitle": "Cuir isteach do ríomhphost agus seolfaimid nasc chun pasfhocal nua a shocrú."
     },
     "backToLogin": "Ar ais chuig logáil isteach",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Socraigh pasfhocal nua",
       "submit": "Nuashonraigh an pasfhocal",
       "needLink": "Nasc nua ag teastáil?",
-      "subtitle": "Nuashonraigh do dhintiúir {{app}}"
+      "subtitle": "Greamaigh an cód ón ríomhphost agus roghnaigh pasfhocal nua."
     },
     "forgotShort": "Dearmadta?",
-    "logoAlt": "Lógó {{app}} le {{company}}"
+    "logoAlt": "Lógó {{app}} le {{company}}",
+    "welcomeBack": "Fáilte ar ais",
+    "consoleIntro": "Sínigh isteach i gconsól {{platform}}.",
+    "consoleIntroUnnamed": "Sínigh isteach sa chonsól.",
+    "noAccess": "Níl cuntas agat fós? Iarr cuireadh ar riarthóir {{platform}}.",
+    "noAccessUnnamed": "Níl cuntas agat fós? Iarr cuireadh ar do riarthóir.",
+    "checking": "Ag seiceáil an tseisiúin",
+    "language": "Teanga",
+    "themeLight": "Téama geal",
+    "themeDark": "Téama dorcha",
+    "showPassword": "Taispeáin an pasfhocal",
+    "hidePassword": "Folaigh an pasfhocal",
+    "help": {
+      "show": "Taispeáin cabhair",
+      "hide": "Folaigh cabhair",
+      "signIn": {
+        "title": "Suíomhanna, siopaí agus aipeanna gnó in aon áit amháin.",
+        "text": "Bainistigh d’ábhar, d’orduithe agus d’úsáideoirí."
+      },
+      "failed": {
+        "title": "Ní féidir síniú isteach?",
+        "item1": "Seiceáil go bhfuil Caps Lock múchta — idirdhealaíonn an pasfhocal idir cás uachtair agus íochtair.",
+        "item2": "Pasfhocal dearmadta? Seolfaidh an nasc in aice leis an réimse nasc chugat ar ríomhphost."
+      },
+      "twoFactor": {
+        "title": "Síniú isteach dhá chéim",
+        "item1": "Oscail d’aip fíordheimhnithe agus cuir isteach an cód 6 dhigit reatha.",
+        "item2": "Athraíonn na cóid gach 30 soicind — fan le ceann nua má tá sé ar tí dul in éag.",
+        "item3": "Níl do ghuthán in aice leat? Úsáid cód cúltaca."
+      },
+      "forgot": {
+        "title": "Conas a oibríonn sé",
+        "item1": "Cuir isteach an ríomhphost a úsáideann tú chun síniú isteach.",
+        "item2": "Má tá cuntas ann, seolfaimid nasc chun pasfhocal nua a shocrú.",
+        "item3": "Oibríonn an nasc uair amháin agus téann sé in éag go luath."
+      },
+      "reset": {
+        "title": "Pasfhocal láidir",
+        "item1": "8 gcarachtar ar a laghad.",
+        "item2": "Is furasta frása gearr de chúpla focal a mheabhrú agus is deacair é a thomhas.",
+        "item3": "Roghnaigh pasfhocal nach n-úsáideann tú áit ar bith eile."
+      }
+    },
+    "twoFactor": {
+      "title": "Deimhnigh an síniú isteach",
+      "subtitle": "Cuir isteach an cód 6 dhigit ó d’aip fíordheimhnithe.",
+      "recoverySubtitle": "Cuir isteach ceann de do chóid chúltaca.",
+      "useRecovery": "Úsáid cód cúltaca",
+      "useAuthenticator": "Úsáid an aip fíordheimhnithe"
+    }
   },
   "plugins": {
     "detail": {

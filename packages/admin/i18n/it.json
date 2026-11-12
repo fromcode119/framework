@@ -947,7 +947,7 @@
       "failed": "Impossibile richiedere la reimpostazione della password.",
       "title": "Ripristina accesso",
       "send": "Invia link di reimpostazione",
-      "subtitle": "Recuperi il suo account amministratore {{app}}"
+      "subtitle": "Inserisci la tua e-mail e ti invieremo un link per impostare una nuova password."
     },
     "backToLogin": "Torna all'accesso",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Imposta nuova password",
       "submit": "Aggiorna password",
       "needLink": "Serve un nuovo link?",
-      "subtitle": "Aggiorni le sue credenziali {{app}}"
+      "subtitle": "Incolla il codice dall’e-mail e scegli una nuova password."
     },
     "forgotShort": "Dimenticata?",
-    "logoAlt": "Logo di {{app}} di {{company}}"
+    "logoAlt": "Logo di {{app}} di {{company}}",
+    "welcomeBack": "Bentornato",
+    "consoleIntro": "Accedi alla console di {{platform}}.",
+    "consoleIntroUnnamed": "Accedi alla console.",
+    "noAccess": "Non hai ancora un account? Chiedi un invito all’amministratore di {{platform}}.",
+    "noAccessUnnamed": "Non hai ancora un account? Chiedi un invito al tuo amministratore.",
+    "checking": "Verifica della sessione",
+    "language": "Lingua",
+    "themeLight": "Tema chiaro",
+    "themeDark": "Tema scuro",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
+    "help": {
+      "show": "Mostra aiuto",
+      "hide": "Nascondi aiuto",
+      "signIn": {
+        "title": "Siti, negozi e app aziendali in un unico posto.",
+        "text": "Gestisci contenuti, ordini e utenti."
+      },
+      "failed": {
+        "title": "Non riesci ad accedere?",
+        "item1": "Controlla che il Blocco maiuscole sia disattivato: la password distingue maiuscole e minuscole.",
+        "item2": "Password dimenticata? Il link accanto al campo ti invia un link via e-mail."
+      },
+      "twoFactor": {
+        "title": "Accesso in due passaggi",
+        "item1": "Apri l’app di autenticazione e inserisci il codice a 6 cifre attuale.",
+        "item2": "I codici cambiano ogni 30 secondi: attendi il successivo se sta per scadere.",
+        "item3": "Non hai il telefono a portata di mano? Usa uno dei codici di backup."
+      },
+      "forgot": {
+        "title": "Come funziona",
+        "item1": "Inserisci l’e-mail con cui accedi.",
+        "item2": "Se esiste un account, ti inviamo un link per impostare una nuova password.",
+        "item3": "Il link funziona una sola volta e scade dopo poco."
+      },
+      "reset": {
+        "title": "Una password sicura",
+        "item1": "Almeno 8 caratteri.",
+        "item2": "Una breve frase di poche parole si ricorda facilmente ed è difficile da indovinare.",
+        "item3": "Usa una password che non usi altrove."
+      }
+    },
+    "twoFactor": {
+      "title": "Conferma l’accesso",
+      "subtitle": "Inserisci il codice a 6 cifre dell’app di autenticazione.",
+      "recoverySubtitle": "Inserisci uno dei tuoi codici di backup.",
+      "useRecovery": "Usa un codice di backup",
+      "useAuthenticator": "Usa l’app di autenticazione"
+    }
   },
   "plugins": {
     "detail": {
