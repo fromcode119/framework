@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, prop, state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 
+import { Input } from '@/components/ui/view/input.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { LoginFieldType } from '@/app/login/enums/login-field-type.enum';
 
@@ -37,9 +38,9 @@ export class LoginField extends Reactor {
           {this.aside}
         </div>
         <div className="fc-login__control">
-          <input
+          <Input
             id={this.id}
-            className={`fc-login__input${isPassword ? ' fc-login__input--with-action' : ''}`}
+            inputClassName={`${isPassword ? 'pe-12' : ''}${this.error ? ' !border-rose-500' : ''}`}
             type={isPassword && this.revealed ? LoginFieldType.TEXT.value : this.type.value}
             value={this.value}
             onChange={(event) => this.onChange(event.target.value)}

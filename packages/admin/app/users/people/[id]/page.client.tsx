@@ -18,6 +18,7 @@ import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { PersonEditPageActions } from '@/app/users/people/[id]/page-actions.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Select } from '@/components/ui/view/select.client';
 
 /**
  * One person — the record behind a customer or a colleague.
@@ -118,11 +119,15 @@ export class PersonEditPage extends PersonEditPageActions {
             <div className="flex flex-wrap items-center gap-3">
               {reassignOpen ? (
                 <>
-                  <select value={reassignTo} onChange={(e) => { this.reassignTo = e.target.value; }}
-                    className="h-10 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent text-[12px] font-bold">
-                    <option value="__none__">{AdminI18n.t('users.noLoginAccountUnlink')}</option>
-                    {users.map((u) => <option key={u.id} value={String(u.id)}>{u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #{u.id}</option>)}
-                  </select>
+                  <Select
+                    className="w-72"
+                    value={reassignTo}
+                    onChange={(value) => { this.reassignTo = value; }}
+                    options={[
+                      { label: AdminI18n.t('users.noLoginAccountUnlink'), value: '__none__' },
+                      ...users.map((u) => ({ label: `${u.email || u.username || AdminI18n.t('users.userNumber', { id: u.id })} · #${u.id}`, value: String(u.id) })),
+                    ]}
+                  />
                   <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={reassigning} disabled={!reassignTo} onClick={() => this.reassign()} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.apply')}</Button>
                   <Button variant={ButtonVariant.SECONDARY} type="button" onClick={() => { this.reassignOpen = false; }} className="h-10 px-5 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.cancel')}</Button>
                 </>

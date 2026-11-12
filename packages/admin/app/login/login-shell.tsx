@@ -3,6 +3,7 @@ import { prop, state } from '@fromcode119/react-class-components';
 import { ThemeMode } from '@fromcode119/core/client';
 import { FrameworkIcons } from '@fromcode119/react';
 
+import { Select } from '@/components/ui/view/select.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
@@ -63,16 +64,14 @@ export class LoginShell extends AdminComponent {
               <LoginShell.PanelIcon size={16} />
             </button>
           ) : null}
-          <label className="fc-login__tool fc-login__language">
-            <FrameworkIcons.Globe size={15} />
-            <span className="fc-login__language-name">{AdminDictionary.label(AdminI18n.locale)}</span>
-            <FrameworkIcons.ChevronDown size={13} />
-            <select aria-label={AdminI18n.t('login.language')} value={AdminI18n.locale} onChange={(event) => AdminI18n.setLocale(event.target.value)}>
-              {AdminDictionary.locales.map((locale) => (
-                <option key={locale} value={locale}>{AdminDictionary.label(locale)}</option>
-              ))}
-            </select>
-          </label>
+          <Select
+            className="w-44"
+            value={AdminI18n.locale}
+            onChange={(locale) => AdminI18n.setLocale(locale)}
+            options={AdminDictionary.locales.map((locale) => ({ label: AdminDictionary.label(locale), value: locale }))}
+            searchable={false}
+            theme={dark ? ThemeMode.DARK : ThemeMode.LIGHT}
+          />
           <button type="button" className="fc-login__tool fc-login__tool--icon" title={AdminI18n.t(dark ? 'login.themeLight' : 'login.themeDark')} aria-label={AdminI18n.t(dark ? 'login.themeLight' : 'login.themeDark')} onClick={() => this.runtime.toggleTheme()}>
             {dark ? <FrameworkIcons.Sun size={16} /> : <FrameworkIcons.Moon size={16} />}
           </button>

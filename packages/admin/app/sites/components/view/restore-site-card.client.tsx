@@ -8,6 +8,7 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
 import { SitesClient } from '@/lib/tenants/sites-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { Input } from '@/components/ui/view/input.client';
 
 /**
  * Shown on an installation whose database keeps a SINGLE site: put a site's DATA here.
@@ -75,7 +76,7 @@ export class RestoreSiteCard extends AdminComponent {
           <label className="fc-import-card__passphrase-label" htmlFor="fc-restore-passphrase">
             {AdminI18n.t('sites.transitPassphraseOnlyIfThe')}
           </label>
-          <input
+          <Input
             id="fc-restore-passphrase"
             type="password"
             autoComplete="off"

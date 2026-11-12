@@ -1,4 +1,4 @@
-import { ThemeMode, ThemeSettingType } from '@fromcode119/core/client';
+import { ThemeSettingType } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Select } from '@/components/ui/view/select.client';
@@ -9,6 +9,8 @@ import { UiFieldUtils } from '@/lib/ui';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
 
 export class ThemeSettingsVariablesPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -51,13 +53,12 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                       ) : type === ThemeSettingType.FONT ? (
                         <div className="flex items-center gap-4">
                           <div className="flex-1 relative group/font">
-                            <input
+                            <Input
                               type="text"
                               value={value}
                               onChange={e => page.handleVariableChange(key, e.target.value)}
                               placeholder={ThemeSettingsConstants.GOOGLE_FONTS[0].value}
                               list={`fonts-${key}`}
-                              className={UiFieldUtils.getFieldClasses()}
                             />
                             <datalist id={`fonts-${key}`}>
                               {ThemeSettingsConstants.GOOGLE_FONTS.map(f => (
@@ -73,23 +74,27 @@ export class ThemeSettingsVariablesPanel extends PureReactor {
                         <ColorPicker value={value} onChange={(nextValue) => page.handleVariableChange(key, nextValue)} className="w-full" />
                       ) : type === ThemeSettingType.IMAGE ? (
                         <div className="flex items-center gap-4">
-                          <input
+                          <Input
                             type="text"
                             value={value}
                             onChange={e => page.handleVariableChange(key, e.target.value)}
                             placeholder="https://..."
-                            className={UiFieldUtils.getFieldClasses(undefined, 'flex-1')}
+                            className="flex-1"
                           />
                           {value && (
                             <img src={value} className="h-8 w-8 rounded-lg object-cover ring-2 ring-indigo-500/20" alt={AdminI18n.t('themes.preview')} />
                           )}
                         </div>
+                      ) : type === ThemeSettingType.NUMBER ? (
+                        <NumberStepper
+                          value={value}
+                          onChange={(nextValue) => page.handleVariableChange(key, String(nextValue))}
+                        />
                       ) : (
-                        <input
-                          type={type === ThemeSettingType.NUMBER ? 'number' : 'text'}
+                        <Input
+                          type="text"
                           value={value}
                           onChange={e => page.handleVariableChange(key, e.target.value)}
-                          className={UiFieldUtils.getFieldClasses()}
                         />
                       )}
                       {schema?.description ? <p className="mt-1 text-xs text-slate-500">{schema.description}</p> : null}

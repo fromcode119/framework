@@ -1,5 +1,4 @@
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import type { FormEvent, ReactElement } from 'react';
 import { Card } from '@/components/ui/view/card.client';
@@ -16,6 +15,7 @@ import { NewRoleSummarySidebar } from '@/app/users/roles/new/components/view/new
 import type { INewRoleFormData } from '@/app/users/roles/new/interfaces/new-role-form-data.interface';
 import { state } from '@fromcode119/react-class-components';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { TextArea } from '@/components/ui/view/text-area.client';
 
 export class NewRolePage extends AdminComponent {
   private mounted = false;
@@ -116,10 +116,7 @@ export class NewRolePage extends AdminComponent {
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
-                    <textarea
-                      className={`w-full h-24 rounded-lg p-3 border outline-none transition-colors text-sm font-medium ${
-                        theme === ThemeMode.DARK ? 'bg-slate-950/50 border-slate-800 text-white focus:border-indigo-500' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
-                      }`}
+                    <TextArea
                       placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}
                       onChange={(e) => this.patchForm({ description: e.target.value })}

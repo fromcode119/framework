@@ -6,6 +6,7 @@ import { ImportPlanOutcome } from '@/app/sites/import/enums/import-plan-outcome.
 import { ImportPlanGrouping } from '@/app/sites/import/import-plan-groups';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { Input } from '@/components/ui/view/input.client';
 
 /**
  * Everything the archive holds, grouped by the ANSWER rather than by the mechanism.
@@ -112,7 +113,7 @@ export class ImportPlanRecords extends Reactor {
           {AdminI18n.t('sites.importPlan.everythingTheArchiveHoldsAnd')}
         </p>
         <div className="fc-import-rec__bar">
-          <input
+          <Input
             className="fc-import-rec__search"
             type="search"
             value={this.query}

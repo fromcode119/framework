@@ -4,8 +4,9 @@ import { Reactor, prop, bound, ref } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
 import { Search, Upload, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/view/button.client';
-import { AdminTypography } from '@/lib/typography';
+import { Input } from '@/components/ui/view/input.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminTypography } from '@/lib/typography';
 
 /** Search box plus the upload control, including the hidden file input it drives. */
 export class MediaPickerToolbar extends Reactor {
@@ -42,12 +43,12 @@ export class MediaPickerToolbar extends Reactor {
       <div className="px-4 py-3 md:px-8 md:py-4 bg-slate-50/50 dark:bg-slate-950/20 border-b border-slate-100 dark:border-slate-800 flex flex-wrap items-center gap-3 md:gap-4">
         <div className="relative flex-1 min-w-[12rem] group">
           <Search className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" size={16} />
-          <input
+          <Input
             type="text"
             placeholder={AdminI18n.t('mediaPicker.searchMedia')}
             value={search}
             onChange={this.handleSearchChange}
-            className={`w-full h-10 ps-10 pe-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all ${AdminTypography.TYPOGRAPHY.LABEL}`}
+            inputClassName="ps-10"
           />
         </div>
         <input

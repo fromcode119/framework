@@ -13,6 +13,7 @@ import { SiteScopePanel } from '@/components/view/site-scope-panel.client';
 import { RoutingPageActions } from '@/app/settings/routing/page-actions.client';
 import { RoutingPageState } from '@/app/settings/routing/page-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
 
 /**
  * Routing — the permalink structure and what the home page serves.
@@ -165,13 +166,11 @@ export class RoutingPage extends RoutingPageActions {
                   {AdminI18n.t('settings.routing.customStructure')}
                 </label>
                 <div className="flex gap-3">
-                  <div className={`flex-1 flex items-center px-4 ${AdminClass.SURFACE} transition-all focus-within:ring-4 focus-within:ring-indigo-600/10 focus-within:border-indigo-600 ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-sm'
-                    }`}>
-                    <span className="text-slate-400 font-mono text-sm border-e pe-3 me-3 py-2.5">https://yourdomain.com</span>
-                    <input
+                  <div className="flex-1 flex items-center gap-3">
+                    <span className="text-slate-400 font-mono text-sm whitespace-nowrap">https://yourdomain.com</span>
+                    <Input
                       value={structure}
                       onChange={(e) => this.setStructure(e.target.value)}
-                      className="flex-1 bg-transparent border-none outline-none text-sm font-medium py-2.5"
                       placeholder="/:year/:slug"
                     />
                   </div>
