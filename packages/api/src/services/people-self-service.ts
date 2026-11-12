@@ -6,7 +6,8 @@ import { SystemConstants } from '@fromcode119/core';
  * `account` plugin `/me`. Uses the denormalizing db context (camelCase), so no snake_case mapping.
  */
 export class PeopleSelfService {
-  private static readonly WRITABLE = [
+  /** The profile fields a person's record may be given — by themselves, by an administrator, or by a tool. */
+  static readonly WRITABLE: ReadonlyArray<string> = [
     'firstName', 'lastName', 'displayName', 'middleName', 'preferredName',
     'phone', 'birthDate', 'gender', 'pronouns', 'preferredLocale', 'timezone', 'country', 'bio', 'avatarUrl',
   ];

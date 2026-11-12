@@ -48,6 +48,8 @@ import { PlatformRobotsRouter } from '@api/routes/platform-robots-router';
 import { CertificatesInternalRouter } from '@api/routes/certificates-internal-router';
 import { MediaIngestService } from '@api/services/media-ingest-service';
 import { McpFrameworkToolsRegistrar } from '@api/controllers/mcp/mcp-framework-tools-registrar';
+import { PeopleManagementService } from '@api/services/people-management-service';
+import { UserManagementService } from '@api/services/user-management-service';
 import { McpAuditRecorder } from '@api/controllers/mcp/mcp-audit-recorder';
 import { FilesRouter } from '@api/routes/files-router';
 import { VersioningRouter } from '@api/routes/versioning';
@@ -201,7 +203,7 @@ export class ServerRoutesSetup {
     // the ONE shared registry so the stdio transport, the hosted transport and the in-process Admin
     // Assistant can never disagree about which tools exist.
     vApi.use(McpRouter.create({
-      registry: McpFrameworkToolsRegistrar.ensure({ db: (this.manager as any).db, mediaManager: this.mediaManager, settingsCache: this.settingsCache, hooks: this.manager.hooks, logger: this.logger }),
+      registry: McpFrameworkToolsRegistrar.ensure({ db: (this.manager as any).db, people: new PeopleManagementService((this.manager as any).db, new UserManagementService((this.manager as any).db, this.auth, this.manager)), mediaManager: this.mediaManager, settingsCache: this.settingsCache, hooks: this.manager.hooks, logger: this.logger }),
       // The platform's OWN checker, not a hand-rolled match. An earlier version compared
       // `getUserPermissions().includes(permission)`, which cannot understand the wildcard grants the
       // roles table actually stores — the admin role holds `*`, so a full admin was refused every
