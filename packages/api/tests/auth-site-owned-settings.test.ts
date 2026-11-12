@@ -41,6 +41,7 @@ class MetaStub {
 class SettingsProbe extends AuthControllerPolicy {
   read(key: string) { return this.getSettingBoolean(key, true); }
   name() { return this.resolveFrameworkAppName(); }
+  owner(key: string, tenantId: string | null) { return this.readOwnerMetaValue(key, tenantId); }
 }
 
 const probe = (db: MetaStub) => new SettingsProbe({ db, hooks: { call: vi.fn() } } as any, {} as any);
@@ -66,5 +67,13 @@ describe('auth settings on a site', () => {
   it("never answers with another site's row off a site — the console host named itself after a site", async () => {
     const crowded = new MetaStub({ [SystemConstants.META_KEY.PLATFORM_NAME]: 'Platform' }, {}, { [SystemConstants.META_KEY.PLATFORM_NAME]: 'Other site' });
     expect(await probe(crowded).name()).toBe('Platform');
+  });
+
+  it("names the host's owner, not the site the browser last worked in", async () => {
+    const crowded = new MetaStub({ [SystemConstants.META_KEY.PLATFORM_NAME]: 'Platform' }, {}, { [SystemConstants.META_KEY.PLATFORM_NAME]: 'Other site' });
+    const key = SystemConstants.META_KEY.PLATFORM_NAME;
+    expect(await onSite(() => probe(crowded).owner(key, null))).toBe('Platform');
+    expect(await probe(crowded).owner(key, 'other')).toBe('Other site');
+    expect(await probe(crowded).owner(key, 'bare')).toBe('Platform');
   });
 });

@@ -102,6 +102,18 @@ export class AuthControllerSharedInfrastructure extends BaseController {
     return this.db.findOne(SystemConstants.TABLE.META, { key });
   }
 
+  /**
+   * A setting as the OWNER of a host sees it — that site's row, else the platform's — whatever site
+   * the browser last worked in. The sign-in of a console names whose console it is.
+   */
+  protected async readOwnerMetaValue(key: string, ownerTenantId: string | null): Promise<string> {
+    const rows = await this.db.withPlatformAdmin(() => this.db.find(SystemConstants.TABLE.META, { where: { key } }));
+    const list: any[] = Array.isArray(rows) ? rows : [];
+    const own = ownerTenantId ? list.find((row) => row?.tenant_id === ownerTenantId) : undefined;
+    const row = own ?? list.find((candidate) => (candidate?.tenant_id ?? null) === null);
+    return String(row?.value ?? '').trim();
+  }
+
   /** Declared SITE-scoped, or a platform setting a site may override. */
   private static isSiteOwned(key: string): boolean {
     return SystemSettingRegistry.isDeclaredSiteScoped(key) || SystemSettingRegistry.inheritedKeys().includes(key);
