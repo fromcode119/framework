@@ -43,9 +43,14 @@ export class AuthControllerLifecycle extends AuthControllerSetup {
       }
 
       if (this.isLoginLocked(throttleState) || this.isLoginLocked(addressState)) {
+        const lockedUntil = (this.isLoginLocked(throttleState) ? throttleState : addressState).lockedUntil || null;
+        // Written down like every other refusal: without it the Activity log shows the failures that
+        // caused the lock and then nothing, and nobody can tell why the person still could not sign in.
+        await this.manager.writeLog('WARN', `Blocked login for ${email} (Locked After Failed Attempts)`, 'system', {
+          email, ip: NetworkAddressUtils.resolveClientIp(req), lockedUntil
+        }).catch(() => {});
         return res.status(429).json({
-          error: 'Too many failed login attempts. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value,
-          lockedUntil: (this.isLoginLocked(throttleState) ? throttleState : addressState).lockedUntil || null
+          error: 'Too many failed login attempts. Please try again later.', code: AuthErrorCode.TOO_MANY_ATTEMPTS.value, lockedUntil
         });
       }
 
