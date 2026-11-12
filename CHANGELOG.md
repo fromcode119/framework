@@ -6,6 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.567] - 2026-11-12
+
+### Added
+
+- **admin**: redesigned console sign-in, two-step, forgot and reset screens ([#1384](https://github.com/fromcode119/framework/pull/1384))
+- **brand**: Fromcode Framework wordmark on the login page and starter hero ([#1383](https://github.com/fromcode119/framework/pull/1383))
+- **brand**: Fromcode Framework mark as the platform icon and README logo ([#1382](https://github.com/fromcode119/framework/pull/1382))
+
 ## [0.2.566] - 2026-11-11
 
 ### Fixed
