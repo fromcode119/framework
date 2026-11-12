@@ -1,8 +1,11 @@
 import type { MediaManager } from '@fromcode119/media';
+import type { PeopleManagementService } from '@api/services/people-management-service';
 
 /** What framework MCP tools need from the running server. */
 export interface IMcpToolDependencies {
   db: any;
+  /** The people directory as the admin's Users → People screen runs it. */
+  people: Pick<PeopleManagementService, 'getPeople' | 'getPerson' | 'savePerson'>;
   mediaManager: MediaManager;
   /** Live operator settings; MCP media limits change without restarting the API. */
   settingsCache: Map<string, string>;

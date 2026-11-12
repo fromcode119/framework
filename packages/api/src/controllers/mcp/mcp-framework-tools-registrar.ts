@@ -4,6 +4,7 @@ import { McpFrameworkTools } from '@api/controllers/mcp/mcp-framework-tools';
 import { McpMediaTools } from '@api/controllers/mcp/tools/mcp-media-tools';
 import { McpCacheTools } from '@api/controllers/mcp/tools/mcp-cache-tools';
 import { McpDeployTools } from '@api/controllers/mcp/tools/mcp-deploy-tools';
+import { McpPeopleTools } from '@api/controllers/mcp/tools/mcp-people-tools';
 import { McpRedirectTools } from '@api/controllers/mcp/tools/mcp-redirect-tools';
 import { IMcpToolDependencies } from '@api/controllers/mcp/interfaces/mcp-tool-dependencies.interface';
 
@@ -27,6 +28,7 @@ export class McpFrameworkToolsRegistrar {
       registry.register(McpToolRegistry.FRAMEWORK_OWNER, McpCacheTools.all(deps));
       registry.register(McpToolRegistry.FRAMEWORK_OWNER, McpDeployTools.all(deps));
       registry.register(McpToolRegistry.FRAMEWORK_OWNER, McpRedirectTools.all(deps));
+      registry.register(McpToolRegistry.FRAMEWORK_OWNER, McpPeopleTools.all(deps));
       McpFrameworkToolsRegistrar.registered = true;
     }
     return registry;
