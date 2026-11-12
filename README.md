@@ -1,8 +1,8 @@
 <div align="center">
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="packages/frontend/public/brand/atlantis-logo-white.png">
-  <img alt="Fromcode Framework — codename Atlantis" src="packages/frontend/public/brand/atlantis-logo-slate.png" width="340">
+  <source media="(prefers-color-scheme: dark)" srcset="packages/frontend/public/brand/fromcode-framework-logo-white.png">
+  <img alt="Fromcode Framework" src="packages/frontend/public/brand/fromcode-framework-logo-dark.png" width="420">
 </picture>
 
 **Fromcode Framework** — the open-source application framework by Fromcode · codename **Atlantis**
