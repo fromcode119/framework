@@ -947,7 +947,7 @@
       "failed": "Nem sikerült jelszó-visszaállítást kérni.",
       "title": "Hozzáférés visszaállítása",
       "send": "Visszaállítási hivatkozás küldése",
-      "subtitle": "{{app}} rendszergazdai fiók helyreállítása"
+      "subtitle": "Adja meg az e-mail-címét, és küldünk egy linket az új jelszóhoz."
     },
     "backToLogin": "Vissza a bejelentkezéshez",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Új jelszó beállítása",
       "submit": "Jelszó módosítása",
       "needLink": "Új hivatkozásra van szüksége?",
-      "subtitle": "{{app}} belépési adatainak frissítése"
+      "subtitle": "Illessze be az e-mailben kapott kódot, és válasszon új jelszót."
     },
     "forgotShort": "Elfelejtette?",
-    "logoAlt": "{{app}} ({{company}}) logó"
+    "logoAlt": "{{app}} ({{company}}) logó",
+    "welcomeBack": "Üdv újra",
+    "consoleIntro": "Jelentkezzen be a(z) {{platform}} konzolba.",
+    "consoleIntroUnnamed": "Jelentkezzen be a konzolba.",
+    "noAccess": "Még nincs fiókja? Kérjen meghívót a(z) {{platform}} rendszergazdájától.",
+    "noAccessUnnamed": "Még nincs fiókja? Kérjen meghívót a rendszergazdától.",
+    "checking": "Munkamenet ellenőrzése",
+    "language": "Nyelv",
+    "themeLight": "Világos téma",
+    "themeDark": "Sötét téma",
+    "showPassword": "Jelszó megjelenítése",
+    "hidePassword": "Jelszó elrejtése",
+    "help": {
+      "show": "Súgó megjelenítése",
+      "hide": "Súgó elrejtése",
+      "signIn": {
+        "title": "Weboldalak, webáruházak és üzleti alkalmazások egy helyen.",
+        "text": "Kezelje a tartalmat, a rendeléseket és a felhasználókat."
+      },
+      "failed": {
+        "title": "Nem sikerül belépni?",
+        "item1": "Ellenőrizze, hogy a Caps Lock ki van-e kapcsolva — a jelszó megkülönbözteti a kis- és nagybetűket.",
+        "item2": "Elfelejtette a jelszavát? A mező melletti hivatkozással e-mailben kap egy linket."
+      },
+      "twoFactor": {
+        "title": "Kétlépéses bejelentkezés",
+        "item1": "Nyissa meg a hitelesítő alkalmazást, és írja be az aktuális 6 jegyű kódot.",
+        "item2": "A kód 30 másodpercenként változik — ha hamarosan lejár, várja meg az újat.",
+        "item3": "Nincs kéznél a telefonja? Használja az egyik tartalékkódot."
+      },
+      "forgot": {
+        "title": "Így működik",
+        "item1": "Adja meg az e-mail-címet, amellyel belép.",
+        "item2": "Ha létezik fiók, küldünk egy linket az új jelszó beállításához.",
+        "item3": "A link egyszer működik, és hamar lejár."
+      },
+      "reset": {
+        "title": "Erős jelszó",
+        "item1": "Legalább 8 karakter.",
+        "item2": "Egy néhány szavas rövid kifejezés könnyen megjegyezhető és nehezen kitalálható.",
+        "item3": "Olyan jelszót válasszon, amelyet máshol nem használ."
+      }
+    },
+    "twoFactor": {
+      "title": "Erősítse meg a belépést",
+      "subtitle": "Írja be a hitelesítő alkalmazásban látható 6 jegyű kódot.",
+      "recoverySubtitle": "Írja be az egyik tartalékkódját.",
+      "useRecovery": "Tartalékkód használata",
+      "useAuthenticator": "Hitelesítő alkalmazás használata"
+    }
   },
   "plugins": {
     "detail": {

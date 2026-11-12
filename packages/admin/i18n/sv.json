@@ -947,7 +947,7 @@
       "failed": "Det gick inte att begära lösenordsåterställning.",
       "title": "Återställ åtkomst",
       "send": "Skicka återställningslänk",
-      "subtitle": "Återställ ditt administratörskonto för {{app}}"
+      "subtitle": "Ange din e-post så skickar vi en länk för att välja nytt lösenord."
     },
     "backToLogin": "Tillbaka till inloggning",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Ange nytt lösenord",
       "submit": "Uppdatera lösenord",
       "needLink": "Behöver du en ny länk?",
-      "subtitle": "Uppdatera dina inloggningsuppgifter för {{app}}"
+      "subtitle": "Klistra in koden från e-posten och välj ett nytt lösenord."
     },
     "forgotShort": "Glömt?",
-    "logoAlt": "Logotyp för {{app}} från {{company}}"
+    "logoAlt": "Logotyp för {{app}} från {{company}}",
+    "welcomeBack": "Välkommen tillbaka",
+    "consoleIntro": "Logga in i {{platform}}-konsolen.",
+    "consoleIntroUnnamed": "Logga in i konsolen.",
+    "noAccess": "Inget konto än? Be administratören för {{platform}} om en inbjudan.",
+    "noAccessUnnamed": "Inget konto än? Be din administratör om en inbjudan.",
+    "checking": "Kontrollerar sessionen",
+    "language": "Språk",
+    "themeLight": "Ljust tema",
+    "themeDark": "Mörkt tema",
+    "showPassword": "Visa lösenord",
+    "hidePassword": "Dölj lösenord",
+    "help": {
+      "show": "Visa hjälp",
+      "hide": "Dölj hjälp",
+      "signIn": {
+        "title": "Webbplatser, butiker och affärsappar på ett ställe.",
+        "text": "Hantera innehåll, beställningar och användare."
+      },
+      "failed": {
+        "title": "Kan du inte logga in?",
+        "item1": "Kontrollera att Caps Lock är av — lösenord skiljer på stora och små bokstäver.",
+        "item2": "Glömt lösenordet? Länken bredvid fältet skickar en länk via e-post."
+      },
+      "twoFactor": {
+        "title": "Inloggning i två steg",
+        "item1": "Öppna din autentiseringsapp och ange den aktuella 6-siffriga koden.",
+        "item2": "Koderna byts var 30:e sekund — vänta på en ny om den håller på att gå ut.",
+        "item3": "Har du inte telefonen till hands? Använd en reservkod."
+      },
+      "forgot": {
+        "title": "Så fungerar det",
+        "item1": "Ange e-postadressen du loggar in med.",
+        "item2": "Om ett konto finns skickar vi en länk för att välja nytt lösenord.",
+        "item3": "Länken fungerar en gång och går snart ut."
+      },
+      "reset": {
+        "title": "Ett starkt lösenord",
+        "item1": "Minst 8 tecken.",
+        "item2": "En kort fras på några ord är lätt att minnas och svår att gissa.",
+        "item3": "Välj ett lösenord du inte använder någon annanstans."
+      }
+    },
+    "twoFactor": {
+      "title": "Bekräfta inloggningen",
+      "subtitle": "Ange den 6-siffriga koden från din autentiseringsapp.",
+      "recoverySubtitle": "Ange en av dina reservkoder.",
+      "useRecovery": "Använd en reservkod",
+      "useAuthenticator": "Använd autentiseringsappen"
+    }
   },
   "plugins": {
     "detail": {

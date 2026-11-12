@@ -947,7 +947,7 @@
       "failed": "Kan geen wachtwoordreset aanvragen.",
       "title": "Toegang herstellen",
       "send": "Resetlink verzenden",
-      "subtitle": "Herstel uw {{app}}-beheerdersaccount"
+      "subtitle": "Voer je e-mailadres in en we sturen je een link om een nieuw wachtwoord in te stellen."
     },
     "backToLogin": "Terug naar inloggen",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Nieuw wachtwoord instellen",
       "submit": "Wachtwoord bijwerken",
       "needLink": "Nieuwe link nodig?",
-      "subtitle": "Werk uw {{app}}-inloggegevens bij"
+      "subtitle": "Plak de code uit de e-mail en kies een nieuw wachtwoord."
     },
     "forgotShort": "Vergeten?",
-    "logoAlt": "Logo van {{app}} door {{company}}"
+    "logoAlt": "Logo van {{app}} door {{company}}",
+    "welcomeBack": "Welkom terug",
+    "consoleIntro": "Meld je aan bij de {{platform}}-console.",
+    "consoleIntroUnnamed": "Meld je aan bij de console.",
+    "noAccess": "Nog geen account? Vraag de beheerder van {{platform}} om een uitnodiging.",
+    "noAccessUnnamed": "Nog geen account? Vraag je beheerder om een uitnodiging.",
+    "checking": "Sessie controleren",
+    "language": "Taal",
+    "themeLight": "Licht thema",
+    "themeDark": "Donker thema",
+    "showPassword": "Wachtwoord tonen",
+    "hidePassword": "Wachtwoord verbergen",
+    "help": {
+      "show": "Hulp tonen",
+      "hide": "Hulp verbergen",
+      "signIn": {
+        "title": "Websites, webshops en bedrijfsapps op één plek.",
+        "text": "Beheer je content, bestellingen en gebruikers."
+      },
+      "failed": {
+        "title": "Lukt aanmelden niet?",
+        "item1": "Controleer of Caps Lock uit staat – wachtwoorden zijn hoofdlettergevoelig.",
+        "item2": "Wachtwoord vergeten? Via de link naast het veld ontvang je een link per e-mail."
+      },
+      "twoFactor": {
+        "title": "Aanmelden in twee stappen",
+        "item1": "Open je authenticator-app en voer de huidige 6-cijferige code in.",
+        "item2": "Codes wisselen elke 30 seconden – wacht op een nieuwe als hij bijna verloopt.",
+        "item3": "Geen telefoon bij de hand? Gebruik een van je back-upcodes."
+      },
+      "forgot": {
+        "title": "Zo werkt het",
+        "item1": "Voer het e-mailadres in waarmee je je aanmeldt.",
+        "item2": "Als er een account bestaat, sturen we je een link om een nieuw wachtwoord in te stellen.",
+        "item3": "De link werkt één keer en verloopt na korte tijd."
+      },
+      "reset": {
+        "title": "Een sterk wachtwoord",
+        "item1": "Minstens 8 tekens.",
+        "item2": "Een korte zin van een paar woorden is makkelijk te onthouden en moeilijk te raden.",
+        "item3": "Gebruik een wachtwoord dat je nergens anders gebruikt."
+      }
+    },
+    "twoFactor": {
+      "title": "Bevestig dat jij het bent",
+      "subtitle": "Voer de 6-cijferige code uit je authenticator-app in.",
+      "recoverySubtitle": "Voer een van je back-upcodes in.",
+      "useRecovery": "Back-upcode gebruiken",
+      "useAuthenticator": "Authenticator-app gebruiken"
+    }
   },
   "plugins": {
     "detail": {

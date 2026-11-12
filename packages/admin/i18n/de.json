@@ -947,7 +947,7 @@
       "failed": "Zurücksetzen des Passworts konnte nicht angefordert werden.",
       "title": "Zugang wiederherstellen",
       "send": "Link senden",
-      "subtitle": "Ihr {{app}}-Administratorkonto wiederherstellen"
+      "subtitle": "Geben Sie Ihre E-Mail ein, wir senden Ihnen einen Link für ein neues Passwort."
     },
     "backToLogin": "Zurück zur Anmeldung",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Neues Passwort festlegen",
       "submit": "Passwort aktualisieren",
       "needLink": "Neuen Link benötigt?",
-      "subtitle": "Ihre {{app}}-Zugangsdaten aktualisieren"
+      "subtitle": "Fügen Sie den Code aus der E-Mail ein und wählen Sie ein neues Passwort."
     },
     "forgotShort": "Vergessen?",
-    "logoAlt": "Logo von {{app}} by {{company}}"
+    "logoAlt": "Logo von {{app}} by {{company}}",
+    "welcomeBack": "Willkommen zurück",
+    "consoleIntro": "Melden Sie sich bei der {{platform}}-Konsole an.",
+    "consoleIntroUnnamed": "Melden Sie sich bei der Konsole an.",
+    "noAccess": "Noch kein Konto? Bitten Sie den Administrator von {{platform}} um eine Einladung.",
+    "noAccessUnnamed": "Noch kein Konto? Bitten Sie Ihren Administrator um eine Einladung.",
+    "checking": "Sitzung wird geprüft",
+    "language": "Sprache",
+    "themeLight": "Helles Design",
+    "themeDark": "Dunkles Design",
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort verbergen",
+    "help": {
+      "show": "Hilfe anzeigen",
+      "hide": "Hilfe ausblenden",
+      "signIn": {
+        "title": "Websites, Shops und Business-Apps an einem Ort.",
+        "text": "Verwalten Sie Inhalte, Bestellungen und Benutzer."
+      },
+      "failed": {
+        "title": "Anmeldung klappt nicht?",
+        "item1": "Prüfen Sie, ob die Feststelltaste aus ist – Passwörter unterscheiden Groß- und Kleinschreibung.",
+        "item2": "Passwort vergessen? Über den Link neben dem Passwortfeld erhalten Sie einen Link per E-Mail."
+      },
+      "twoFactor": {
+        "title": "Anmeldung in zwei Schritten",
+        "item1": "Öffnen Sie Ihre Authenticator-App und geben Sie den aktuellen 6-stelligen Code ein.",
+        "item2": "Codes wechseln alle 30 Sekunden – warten Sie auf einen neuen, wenn er gleich abläuft.",
+        "item3": "Kein Telefon zur Hand? Verwenden Sie einen Ihrer Backup-Codes."
+      },
+      "forgot": {
+        "title": "So funktioniert es",
+        "item1": "Geben Sie die E-Mail-Adresse ein, mit der Sie sich anmelden.",
+        "item2": "Wenn ein Konto existiert, senden wir Ihnen einen Link für ein neues Passwort.",
+        "item3": "Der Link funktioniert einmal und ist nur kurz gültig."
+      },
+      "reset": {
+        "title": "Ein sicheres Passwort",
+        "item1": "Mindestens 8 Zeichen.",
+        "item2": "Eine kurze Wortgruppe ist leicht zu merken und schwer zu erraten.",
+        "item3": "Verwenden Sie ein Passwort, das Sie sonst nirgends nutzen."
+      }
+    },
+    "twoFactor": {
+      "title": "Bestätigen Sie die Anmeldung",
+      "subtitle": "Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.",
+      "recoverySubtitle": "Geben Sie einen Ihrer Backup-Codes ein.",
+      "useRecovery": "Backup-Code verwenden",
+      "useAuthenticator": "Authenticator-App verwenden"
+    }
   },
   "plugins": {
     "detail": {

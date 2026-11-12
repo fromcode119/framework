@@ -947,7 +947,7 @@
       "failed": "Salasanan palautusta ei voitu pyytää.",
       "title": "Palauta käyttöoikeus",
       "send": "Lähetä palautuslinkki",
-      "subtitle": "Palauta {{app}}-ylläpitotilisi"
+      "subtitle": "Syötä sähköpostisi, niin lähetämme linkin uuden salasanan asettamiseen."
     },
     "backToLogin": "Takaisin kirjautumiseen",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Aseta uusi salasana",
       "submit": "Päivitä salasana",
       "needLink": "Tarvitsetko uuden linkin?",
-      "subtitle": "Päivitä {{app}}-tunnistetietosi"
+      "subtitle": "Liitä sähköpostin koodi ja valitse uusi salasana."
     },
     "forgotShort": "Unohtuiko?",
-    "logoAlt": "{{app}} – {{company}} -logo"
+    "logoAlt": "{{app}} – {{company}} -logo",
+    "welcomeBack": "Tervetuloa takaisin",
+    "consoleIntro": "Kirjaudu {{platform}}-konsoliin.",
+    "consoleIntroUnnamed": "Kirjaudu konsoliin.",
+    "noAccess": "Eikö sinulla ole vielä tiliä? Pyydä kutsu {{platform}}-ylläpitäjältä.",
+    "noAccessUnnamed": "Eikö sinulla ole vielä tiliä? Pyydä kutsu ylläpitäjältä.",
+    "checking": "Tarkistetaan istuntoa",
+    "language": "Kieli",
+    "themeLight": "Vaalea teema",
+    "themeDark": "Tumma teema",
+    "showPassword": "Näytä salasana",
+    "hidePassword": "Piilota salasana",
+    "help": {
+      "show": "Näytä ohje",
+      "hide": "Piilota ohje",
+      "signIn": {
+        "title": "Sivustot, kaupat ja liiketoimintasovellukset yhdessä paikassa.",
+        "text": "Hallitse sisältöä, tilauksia ja käyttäjiä."
+      },
+      "failed": {
+        "title": "Etkö pääse kirjautumaan?",
+        "item1": "Tarkista, että Caps Lock on pois päältä — salasanassa isot ja pienet kirjaimet erotellaan.",
+        "item2": "Unohditko salasanan? Kentän vieressä olevasta linkistä saat sähköpostiin palautuslinkin."
+      },
+      "twoFactor": {
+        "title": "Kaksivaiheinen kirjautuminen",
+        "item1": "Avaa todennussovellus ja syötä nykyinen 6-numeroinen koodi.",
+        "item2": "Koodi vaihtuu 30 sekunnin välein — odota uutta, jos nykyinen on vanhenemassa.",
+        "item3": "Eikö puhelin ole käsillä? Käytä varakoodia."
+      },
+      "forgot": {
+        "title": "Näin se toimii",
+        "item1": "Syötä sähköpostiosoite, jolla kirjaudut.",
+        "item2": "Jos tili on olemassa, lähetämme linkin uuden salasanan asettamiseen.",
+        "item3": "Linkki toimii kerran ja vanhenee pian."
+      },
+      "reset": {
+        "title": "Vahva salasana",
+        "item1": "Vähintään 8 merkkiä.",
+        "item2": "Muutaman sanan lyhyt lause on helppo muistaa ja vaikea arvata.",
+        "item3": "Valitse salasana, jota et käytä muualla."
+      }
+    },
+    "twoFactor": {
+      "title": "Vahvista kirjautuminen",
+      "subtitle": "Syötä todennussovelluksen 6-numeroinen koodi.",
+      "recoverySubtitle": "Syötä yksi varakoodeistasi.",
+      "useRecovery": "Käytä varakoodia",
+      "useAuthenticator": "Käytä todennussovellusta"
+    }
   },
   "plugins": {
     "detail": {

@@ -947,7 +947,7 @@
       "failed": "Hindi ma-request ang pag-reset ng password.",
       "title": "I-reset ang Access",
       "send": "Ipadala ang Reset Link",
-      "subtitle": "I-recover ang iyong {{app}} admin account"
+      "subtitle": "Ilagay ang iyong email at magpapadala kami ng link para sa bagong password."
     },
     "backToLogin": "Bumalik sa Login",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Magtakda ng Bagong Password",
       "submit": "I-update ang Password",
       "needLink": "Kailangan ng bagong link?",
-      "subtitle": "I-update ang iyong mga credential sa {{app}}"
+      "subtitle": "I-paste ang code mula sa email at pumili ng bagong password."
     },
     "forgotShort": "Nakalimutan?",
-    "logoAlt": "Logo ng {{app}} ng {{company}}"
+    "logoAlt": "Logo ng {{app}} ng {{company}}",
+    "welcomeBack": "Maligayang pagbabalik",
+    "consoleIntro": "Mag-sign in sa console ng {{platform}}.",
+    "consoleIntroUnnamed": "Mag-sign in sa console.",
+    "noAccess": "Wala pang account? Humingi ng imbitasyon sa administrator ng {{platform}}.",
+    "noAccessUnnamed": "Wala pang account? Humingi ng imbitasyon sa iyong administrator.",
+    "checking": "Sinusuri ang session",
+    "language": "Wika",
+    "themeLight": "Maliwanag na tema",
+    "themeDark": "Madilim na tema",
+    "showPassword": "Ipakita ang password",
+    "hidePassword": "Itago ang password",
+    "help": {
+      "show": "Ipakita ang tulong",
+      "hide": "Itago ang tulong",
+      "signIn": {
+        "title": "Mga site, tindahan at business app sa iisang lugar.",
+        "text": "Pamahalaan ang iyong content, mga order at mga user."
+      },
+      "failed": {
+        "title": "Hindi makapag-sign in?",
+        "item1": "Tiyaking naka-off ang Caps Lock — case-sensitive ang password.",
+        "item2": "Nakalimutan ang password? Ang link sa tabi ng field ay magpapadala ng link sa email."
+      },
+      "twoFactor": {
+        "title": "Two-step na pag-sign in",
+        "item1": "Buksan ang iyong authenticator app at ilagay ang kasalukuyang 6-digit na code.",
+        "item2": "Nagbabago ang code bawat 30 segundo — maghintay ng bago kung malapit na itong mag-expire.",
+        "item3": "Wala ang telepono mo? Gumamit ng isa sa iyong mga backup code."
+      },
+      "forgot": {
+        "title": "Paano ito gumagana",
+        "item1": "Ilagay ang email na ginagamit mo sa pag-sign in.",
+        "item2": "Kung may account, magpapadala kami ng link para magtakda ng bagong password.",
+        "item3": "Isang beses lang gumagana ang link at mabilis itong mag-expire."
+      },
+      "reset": {
+        "title": "Isang matibay na password",
+        "item1": "Hindi bababa sa 8 character.",
+        "item2": "Ang maikling parirala ng ilang salita ay madaling tandaan at mahirap hulaan.",
+        "item3": "Pumili ng password na hindi mo ginagamit sa ibang lugar."
+      }
+    },
+    "twoFactor": {
+      "title": "Kumpirmahin ang pag-sign in",
+      "subtitle": "Ilagay ang 6-digit na code mula sa iyong authenticator app.",
+      "recoverySubtitle": "Ilagay ang isa sa iyong mga backup code.",
+      "useRecovery": "Gumamit ng backup code",
+      "useAuthenticator": "Gamitin ang authenticator app"
+    }
   },
   "plugins": {
     "detail": {

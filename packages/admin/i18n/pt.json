@@ -947,7 +947,7 @@
       "failed": "Não foi possível pedir a reposição da palavra-passe.",
       "title": "Repor acesso",
       "send": "Enviar ligação de reposição",
-      "subtitle": "Recupere a sua conta de administrador do {{app}}"
+      "subtitle": "Introduza o seu e-mail e enviamos-lhe uma ligação para definir uma nova palavra-passe."
     },
     "backToLogin": "Voltar ao início de sessão",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Definir nova palavra-passe",
       "submit": "Atualizar palavra-passe",
       "needLink": "Precisa de uma nova ligação?",
-      "subtitle": "Atualize as suas credenciais do {{app}}"
+      "subtitle": "Cole o código do e-mail e escolha uma nova palavra-passe."
     },
     "forgotShort": "Esqueceu-se?",
-    "logoAlt": "Logótipo do {{app}} por {{company}}"
+    "logoAlt": "Logótipo do {{app}} por {{company}}",
+    "welcomeBack": "Bem-vindo de volta",
+    "consoleIntro": "Entre na consola de {{platform}}.",
+    "consoleIntroUnnamed": "Entre na consola.",
+    "noAccess": "Ainda não tem conta? Peça um convite ao administrador de {{platform}}.",
+    "noAccessUnnamed": "Ainda não tem conta? Peça um convite ao seu administrador.",
+    "checking": "A verificar a sessão",
+    "language": "Idioma",
+    "themeLight": "Tema claro",
+    "themeDark": "Tema escuro",
+    "showPassword": "Mostrar palavra-passe",
+    "hidePassword": "Ocultar palavra-passe",
+    "help": {
+      "show": "Mostrar ajuda",
+      "hide": "Ocultar ajuda",
+      "signIn": {
+        "title": "Sites, lojas e aplicações de negócio num só lugar.",
+        "text": "Gira o conteúdo, as encomendas e os utilizadores."
+      },
+      "failed": {
+        "title": "Não consegue entrar?",
+        "item1": "Confirme que o Caps Lock está desligado: a palavra-passe distingue maiúsculas de minúsculas.",
+        "item2": "Esqueceu a palavra-passe? A ligação junto ao campo envia-lhe uma ligação por e-mail."
+      },
+      "twoFactor": {
+        "title": "Início de sessão em dois passos",
+        "item1": "Abra a aplicação de autenticação e introduza o código atual de 6 dígitos.",
+        "item2": "Os códigos mudam a cada 30 segundos: aguarde pelo próximo se estiver a expirar.",
+        "item3": "Não tem o telemóvel à mão? Use um dos seus códigos de recuperação."
+      },
+      "forgot": {
+        "title": "Como funciona",
+        "item1": "Introduza o e-mail com que inicia sessão.",
+        "item2": "Se existir uma conta, enviamos-lhe uma ligação para definir uma nova palavra-passe.",
+        "item3": "A ligação funciona uma vez e expira pouco depois."
+      },
+      "reset": {
+        "title": "Uma palavra-passe segura",
+        "item1": "Pelo menos 8 caracteres.",
+        "item2": "Uma frase curta de algumas palavras é fácil de lembrar e difícil de adivinhar.",
+        "item3": "Use uma palavra-passe que não utilize noutro site."
+      }
+    },
+    "twoFactor": {
+      "title": "Confirme que é você",
+      "subtitle": "Introduza o código de 6 dígitos da aplicação de autenticação.",
+      "recoverySubtitle": "Introduza um dos seus códigos de recuperação.",
+      "useRecovery": "Usar um código de recuperação",
+      "useAuthenticator": "Usar a aplicação de autenticação"
+    }
   },
   "plugins": {
     "detail": {

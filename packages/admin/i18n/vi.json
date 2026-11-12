@@ -947,7 +947,7 @@
       "failed": "Không thể yêu cầu đặt lại mật khẩu.",
       "title": "Khôi phục quyền truy cập",
       "send": "Gửi liên kết đặt lại",
-      "subtitle": "Khôi phục tài khoản quản trị {{app}} của bạn"
+      "subtitle": "Nhập email và chúng tôi sẽ gửi liên kết đặt mật khẩu mới."
     },
     "backToLogin": "Quay lại đăng nhập",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Đặt mật khẩu mới",
       "submit": "Cập nhật mật khẩu",
       "needLink": "Cần liên kết mới?",
-      "subtitle": "Cập nhật thông tin đăng nhập {{app}} của bạn"
+      "subtitle": "Dán mã từ email và chọn mật khẩu mới."
     },
     "forgotShort": "Quên?",
-    "logoAlt": "Logo {{app}} của {{company}}"
+    "logoAlt": "Logo {{app}} của {{company}}",
+    "welcomeBack": "Chào mừng trở lại",
+    "consoleIntro": "Đăng nhập vào bảng điều khiển {{platform}}.",
+    "consoleIntroUnnamed": "Đăng nhập vào bảng điều khiển.",
+    "noAccess": "Chưa có tài khoản? Hãy xin lời mời từ quản trị viên {{platform}}.",
+    "noAccessUnnamed": "Chưa có tài khoản? Hãy xin lời mời từ quản trị viên.",
+    "checking": "Đang kiểm tra phiên",
+    "language": "Ngôn ngữ",
+    "themeLight": "Giao diện sáng",
+    "themeDark": "Giao diện tối",
+    "showPassword": "Hiện mật khẩu",
+    "hidePassword": "Ẩn mật khẩu",
+    "help": {
+      "show": "Hiện trợ giúp",
+      "hide": "Ẩn trợ giúp",
+      "signIn": {
+        "title": "Website, cửa hàng và ứng dụng doanh nghiệp ở một nơi.",
+        "text": "Quản lý nội dung, đơn hàng và người dùng."
+      },
+      "failed": {
+        "title": "Không đăng nhập được?",
+        "item1": "Kiểm tra Caps Lock đã tắt — mật khẩu phân biệt chữ hoa và chữ thường.",
+        "item2": "Quên mật khẩu? Liên kết bên cạnh ô sẽ gửi cho bạn một liên kết qua email."
+      },
+      "twoFactor": {
+        "title": "Đăng nhập hai bước",
+        "item1": "Mở ứng dụng xác thực và nhập mã 6 chữ số hiện tại.",
+        "item2": "Mã thay đổi mỗi 30 giây — nếu sắp hết hạn, hãy chờ mã mới.",
+        "item3": "Không có điện thoại bên cạnh? Dùng một mã dự phòng."
+      },
+      "forgot": {
+        "title": "Cách hoạt động",
+        "item1": "Nhập email bạn dùng để đăng nhập.",
+        "item2": "Nếu tài khoản tồn tại, chúng tôi sẽ gửi liên kết đặt mật khẩu mới.",
+        "item3": "Liên kết chỉ dùng được một lần và sớm hết hạn."
+      },
+      "reset": {
+        "title": "Mật khẩu mạnh",
+        "item1": "Ít nhất 8 ký tự.",
+        "item2": "Một cụm từ ngắn vài chữ dễ nhớ và khó đoán.",
+        "item3": "Chọn mật khẩu bạn không dùng ở nơi khác."
+      }
+    },
+    "twoFactor": {
+      "title": "Xác nhận đăng nhập",
+      "subtitle": "Nhập mã 6 chữ số từ ứng dụng xác thực.",
+      "recoverySubtitle": "Nhập một trong các mã dự phòng.",
+      "useRecovery": "Dùng mã dự phòng",
+      "useAuthenticator": "Dùng ứng dụng xác thực"
+    }
   },
   "plugins": {
     "detail": {

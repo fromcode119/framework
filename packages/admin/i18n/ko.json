@@ -947,7 +947,7 @@
       "failed": "비밀번호 재설정을 요청할 수 없습니다.",
       "title": "액세스 재설정",
       "send": "재설정 링크 보내기",
-      "subtitle": "{{app}} 관리자 계정 복구"
+      "subtitle": "이메일을 입력하면 새 비밀번호를 설정할 링크를 보내 드립니다."
     },
     "backToLogin": "로그인으로 돌아가기",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "새 비밀번호 설정",
       "submit": "비밀번호 변경",
       "needLink": "새 링크가 필요하신가요?",
-      "subtitle": "{{app}} 로그인 정보 변경"
+      "subtitle": "이메일의 코드를 붙여 넣고 새 비밀번호를 선택하세요."
     },
     "forgotShort": "잊으셨나요?",
-    "logoAlt": "{{company}}의 {{app}} 로고"
+    "logoAlt": "{{company}}의 {{app}} 로고",
+    "welcomeBack": "다시 오신 것을 환영합니다",
+    "consoleIntro": "{{platform}} 콘솔에 로그인하세요.",
+    "consoleIntroUnnamed": "콘솔에 로그인하세요.",
+    "noAccess": "아직 계정이 없나요? {{platform}} 관리자에게 초대를 요청하세요.",
+    "noAccessUnnamed": "아직 계정이 없나요? 관리자에게 초대를 요청하세요.",
+    "checking": "세션을 확인하는 중",
+    "language": "언어",
+    "themeLight": "라이트 테마",
+    "themeDark": "다크 테마",
+    "showPassword": "비밀번호 표시",
+    "hidePassword": "비밀번호 숨기기",
+    "help": {
+      "show": "도움말 표시",
+      "hide": "도움말 숨기기",
+      "signIn": {
+        "title": "웹사이트, 쇼핑몰, 비즈니스 앱을 한곳에서.",
+        "text": "콘텐츠, 주문, 사용자를 관리하세요."
+      },
+      "failed": {
+        "title": "로그인할 수 없나요?",
+        "item1": "Caps Lock이 꺼져 있는지 확인하세요. 비밀번호는 대소문자를 구분합니다.",
+        "item2": "비밀번호를 잊으셨나요? 입력란 옆 링크로 이메일 링크를 받을 수 있습니다."
+      },
+      "twoFactor": {
+        "title": "2단계 로그인",
+        "item1": "인증 앱을 열고 현재 6자리 코드를 입력하세요.",
+        "item2": "코드는 30초마다 바뀝니다. 곧 만료되면 새 코드를 기다리세요.",
+        "item3": "휴대폰이 없나요? 백업 코드 중 하나를 사용하세요."
+      },
+      "forgot": {
+        "title": "이용 방법",
+        "item1": "로그인에 사용하는 이메일을 입력하세요.",
+        "item2": "계정이 있으면 새 비밀번호를 설정할 링크를 보내 드립니다.",
+        "item3": "링크는 한 번만 사용할 수 있으며 곧 만료됩니다."
+      },
+      "reset": {
+        "title": "안전한 비밀번호",
+        "item1": "8자 이상.",
+        "item2": "몇 단어로 된 짧은 문구는 기억하기 쉽고 추측하기 어렵습니다.",
+        "item3": "다른 곳에서 사용하지 않는 비밀번호를 선택하세요."
+      }
+    },
+    "twoFactor": {
+      "title": "로그인 확인",
+      "subtitle": "인증 앱의 6자리 코드를 입력하세요.",
+      "recoverySubtitle": "백업 코드 중 하나를 입력하세요.",
+      "useRecovery": "백업 코드 사용",
+      "useAuthenticator": "인증 앱 사용"
+    }
   },
   "plugins": {
     "detail": {

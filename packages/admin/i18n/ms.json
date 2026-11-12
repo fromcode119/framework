@@ -947,7 +947,7 @@
       "failed": "Tidak dapat meminta set semula kata laluan.",
       "title": "Set Semula Akses",
       "send": "Hantar Pautan Set Semula",
-      "subtitle": "Pulihkan akaun pentadbir {{app}} anda"
+      "subtitle": "Masukkan e-mel anda dan kami hantar pautan untuk menetapkan kata laluan baharu."
     },
     "backToLogin": "Kembali ke Log Masuk",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Tetapkan Kata Laluan Baharu",
       "submit": "Kemas Kini Kata Laluan",
       "needLink": "Perlukan pautan baharu?",
-      "subtitle": "Kemas kini bukti kelayakan {{app}} anda"
+      "subtitle": "Tampal kod daripada e-mel dan pilih kata laluan baharu."
     },
     "forgotShort": "Terlupa?",
-    "logoAlt": "Logo {{app}} oleh {{company}}"
+    "logoAlt": "Logo {{app}} oleh {{company}}",
+    "welcomeBack": "Selamat kembali",
+    "consoleIntro": "Log masuk ke konsol {{platform}}.",
+    "consoleIntroUnnamed": "Log masuk ke konsol.",
+    "noAccess": "Belum ada akaun? Minta jemputan daripada pentadbir {{platform}}.",
+    "noAccessUnnamed": "Belum ada akaun? Minta jemputan daripada pentadbir anda.",
+    "checking": "Menyemak sesi",
+    "language": "Bahasa",
+    "themeLight": "Tema cerah",
+    "themeDark": "Tema gelap",
+    "showPassword": "Tunjukkan kata laluan",
+    "hidePassword": "Sembunyikan kata laluan",
+    "help": {
+      "show": "Tunjukkan bantuan",
+      "hide": "Sembunyikan bantuan",
+      "signIn": {
+        "title": "Laman web, kedai dan aplikasi perniagaan di satu tempat.",
+        "text": "Urus kandungan, pesanan dan pengguna anda."
+      },
+      "failed": {
+        "title": "Tidak dapat log masuk?",
+        "item1": "Pastikan Caps Lock dimatikan — kata laluan membezakan huruf besar dan kecil.",
+        "item2": "Lupa kata laluan? Pautan di sebelah medan akan menghantar pautan melalui e-mel."
+      },
+      "twoFactor": {
+        "title": "Log masuk dua langkah",
+        "item1": "Buka aplikasi pengesah dan masukkan kod 6 digit semasa.",
+        "item2": "Kod bertukar setiap 30 saat — tunggu kod baharu jika hampir tamat.",
+        "item3": "Telefon tiada berdekatan? Gunakan salah satu kod sandaran."
+      },
+      "forgot": {
+        "title": "Cara ia berfungsi",
+        "item1": "Masukkan e-mel yang anda gunakan untuk log masuk.",
+        "item2": "Jika akaun wujud, kami hantar pautan untuk menetapkan kata laluan baharu.",
+        "item3": "Pautan berfungsi sekali sahaja dan cepat tamat tempoh."
+      },
+      "reset": {
+        "title": "Kata laluan yang kukuh",
+        "item1": "Sekurang-kurangnya 8 aksara.",
+        "item2": "Frasa pendek beberapa perkataan mudah diingat dan sukar diteka.",
+        "item3": "Pilih kata laluan yang tidak anda gunakan di tempat lain."
+      }
+    },
+    "twoFactor": {
+      "title": "Sahkan log masuk",
+      "subtitle": "Masukkan kod 6 digit daripada aplikasi pengesah.",
+      "recoverySubtitle": "Masukkan salah satu kod sandaran anda.",
+      "useRecovery": "Gunakan kod sandaran",
+      "useAuthenticator": "Gunakan aplikasi pengesah"
+    }
   },
   "plugins": {
     "detail": {

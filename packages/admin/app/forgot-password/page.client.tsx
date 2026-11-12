@@ -1,14 +1,18 @@
 import type { FormEvent, ReactElement } from 'react';
-import { Input } from '@/components/ui/view/input.client';
-import { Button } from '@/components/ui/view/button.client';
+import { state } from '@fromcode119/react-class-components';
+
+import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { FrameworkIcons } from '@fromcode119/react';
-import { AppEnv } from '@/lib/env';
-import { AdminComponent } from '@/components/view/admin-component.client';
-import { state } from '@fromcode119/react-class-components';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { LoginShell } from '@/app/login/login-shell';
+import { LoginPageHeader } from '@/app/login/login-page-header';
+import { LoginField } from '@/app/login/login-field';
+import { LoginSubmit } from '@/app/login/login-submit';
+import { LoginNotice } from '@/app/login/login-notice';
+import { LoginFieldType } from '@/app/login/enums/login-field-type.enum';
+import { LoginNoticeTone } from '@/app/login/enums/login-notice-tone.enum';
+import type { ILoginHelp } from '@/app/login/interfaces/login-help.interface';
 
 export class ForgotPasswordPage extends AdminComponent {
   @state email = '';
@@ -21,7 +25,6 @@ export class ForgotPasswordPage extends AdminComponent {
     this.isLoading = true;
     this.error = '';
     this.message = '';
-
     try {
       const data = await AdminApi.post(
         `${AdminConstants.ENDPOINTS.AUTH.FORGOT_PASSWORD}?context=admin`,
@@ -36,56 +39,25 @@ export class ForgotPasswordPage extends AdminComponent {
     }
   }
 
+  private get help(): ILoginHelp {
+    const items = ['item1', 'item2', 'item3'].map((key) => AdminI18n.optional(`login.help.forgot.${key}`)).filter(Boolean) as string[];
+    return { title: AdminI18n.t('login.help.forgot.title'), items };
+  }
+
   render(): ReactElement {
-    const { email, isLoading, error, message } = this;
     return (
-      <div className="min-h-screen flex items-center justify-center p-6 bg-slate-50 dark:bg-[#020617]">
-        <div className="w-full max-w-md animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-600 rounded-xl shadow-xl shadow-indigo-600/30 mb-6">
-              <FrameworkIcons.Lock size={30} className="text-white" />
-            </div>
-            <h1 className="text-3xl font-semibold tracking-tight mb-2 text-slate-900 dark:text-white">
-              {AdminI18n.t('login.forgot.title')}
-            </h1>
-            <p className="text-slate-500 font-medium">{AdminI18n.t('login.forgot.subtitle', { app: AppEnv.APP_NAME })}</p>
+      <LoginShell help={this.help}>
+        <LoginPageHeader title={AdminI18n.t('login.forgot.title')} subtitle={AdminI18n.t('login.forgot.subtitle')} />
+        <form onSubmit={(event) => this.handleSubmit(event)} className="fc-login__form" noValidate>
+          <LoginNotice message={this.error} tone={LoginNoticeTone.ERROR} />
+          <LoginNotice message={this.message} tone={LoginNoticeTone.OK} />
+          <LoginField id="fc-forgot-email" label={AdminI18n.t('login.email')} type={LoginFieldType.EMAIL} autoComplete="username" autoFocus value={this.email} onChange={(value) => { this.email = value; }} />
+          <LoginSubmit label={AdminI18n.t('login.forgot.send')} isLoading={this.isLoading} />
+          <div className="fc-login__links">
+            <button type="button" className="fc-login__link" onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)}>{AdminI18n.t('login.backToLogin')}</button>
           </div>
-
-          <div className={`p-8 ${AdminClass.SURFACE}`}>
-            {error ? (
-              <div className="mb-5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm font-semibold text-rose-600">
-                {error}
-              </div>
-            ) : null}
-            {message ? (
-              <div className="mb-5 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-semibold text-emerald-700">
-                <p>{message}</p>
-              </div>
-            ) : null}
-
-            <form onSubmit={(event) => this.handleSubmit(event)} className="space-y-6" noValidate>
-              <Input
-                label={AdminI18n.t('login.email')}
-                placeholder="name@company.com"
-                type="email"
-                required
-                value={email}
-                onChange={(event) => { this.email = event.target.value; }}
-              />
-
-              <Button type="submit" className="w-full py-4 text-base" isLoading={isLoading}>
-                {AdminI18n.t('login.forgot.send')}
-              </Button>
-            </form>
-          </div>
-
-          <div className="mt-5 flex items-center justify-between text-xs font-semibold">
-            <button onClick={() => this.router.push(AdminConstants.ROUTES.AUTH.LOGIN)} className="text-indigo-500 hover:text-indigo-400">
-              {AdminI18n.t('login.backToLogin')}
-            </button>
-          </div>
-        </div>
-      </div>
+        </form>
+      </LoginShell>
     );
   }
 }

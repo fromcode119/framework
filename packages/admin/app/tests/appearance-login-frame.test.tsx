@@ -18,7 +18,7 @@ vi.mock('@/lib/api', () => ({
 
 const workspace = { id: 'chi-app', slug: 'chi-app', appearance: 'chi' };
 vi.mock('@/lib/tenants/host-info-client', () => ({
-  HostInfoClient: { workspace: () => Promise.resolve(workspace) },
+  HostInfoClient: { workspace: () => Promise.resolve(workspace), platformName: () => Promise.resolve('') },
 }));
 
 import { LoginPage } from '@/app/login/page.client';
@@ -47,7 +47,7 @@ describe('appearance-owned sign-in', () => {
     renderLogin();
     await waitFor(() => expect(screen.queryByTestId('custom-login')).not.toBeNull());
     // The framework's own form is NOT also on the page — the appearance replaced it, not decorated it.
-    expect(document.querySelector('.fc-login__card')).toBeNull();
+    expect(document.querySelector('.fc-login__panel')).toBeNull();
   });
 
   it('hands it the controller and nothing else', async () => {

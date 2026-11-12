@@ -43,6 +43,17 @@ export class AppEnv {
 	static readonly BRAND_LOGO_DARK_PATH =
 		process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_DARK || AppEnv.DEFAULT_BRAND_LOGO_DARK_PATH;
 	/**
+	 * The name alone, without the mark — what the sign-in shows on its toolbar row, where the full logo
+	 * would push the language and theme controls off the card. Same light/dark split and env override
+	 * as the logo.
+	 */
+	static readonly DEFAULT_BRAND_WORDMARK_LIGHT_PATH = '/brand/fromcode-framework-wordmark-dark.png';
+	static readonly DEFAULT_BRAND_WORDMARK_DARK_PATH = '/brand/fromcode-framework-wordmark-white.png';
+	static readonly BRAND_WORDMARK_LIGHT_PATH =
+		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_LIGHT || AppEnv.DEFAULT_BRAND_WORDMARK_LIGHT_PATH;
+	static readonly BRAND_WORDMARK_DARK_PATH =
+		process.env.NEXT_PUBLIC_ADMIN_BRAND_WORDMARK_DARK || AppEnv.DEFAULT_BRAND_WORDMARK_DARK_PATH;
+	/**
 	 * PWA icon default deliberately stays its OWN constant rather than chaining onto BRAND_MARK_PATH: the
 	 * manifest declares fixed 192/512 PNG sizes, so an arbitrary brand mark is not automatically a valid
 	 * install icon. It carries the same default asset and remains independently env-overridable.

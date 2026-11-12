@@ -947,7 +947,7 @@
       "failed": "Ma setax jintalab ir-reset tal-password.",
       "title": "Irrisettja l-Aċċess",
       "send": "Ibgħat Link tar-Reset",
-      "subtitle": "Irkupra l-kont tal-amministratur {{app}} tiegħek"
+      "subtitle": "Daħħal l-email tiegħek u nibagħtulek link għal password ġdida."
     },
     "backToLogin": "Lura għad-Dħul",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Issettja Password Ġdida",
       "submit": "Aġġorna l-Password",
       "needLink": "Għandek bżonn link ġdid?",
-      "subtitle": "Aġġorna l-kredenzjali {{app}} tiegħek"
+      "subtitle": "Waħħal il-kodiċi mill-email u agħżel password ġdida."
     },
     "forgotShort": "Insejt?",
-    "logoAlt": "Logo ta' {{app}} minn {{company}}"
+    "logoAlt": "Logo ta' {{app}} minn {{company}}",
+    "welcomeBack": "Merħba lura",
+    "consoleIntro": "Idħol fil-konsol ta’ {{platform}}.",
+    "consoleIntroUnnamed": "Idħol fil-konsol.",
+    "noAccess": "Għad m’għandekx kont? Itlob stedina mingħand l-amministratur ta’ {{platform}}.",
+    "noAccessUnnamed": "Għad m’għandekx kont? Itlob stedina mingħand l-amministratur tiegħek.",
+    "checking": "Qed niċċekkjaw is-sessjoni",
+    "language": "Lingwa",
+    "themeLight": "Tema ċara",
+    "themeDark": "Tema skura",
+    "showPassword": "Uri l-password",
+    "hidePassword": "Aħbi l-password",
+    "help": {
+      "show": "Uri l-għajnuna",
+      "hide": "Aħbi l-għajnuna",
+      "signIn": {
+        "title": "Siti, ħwienet u apps tan-negozju f’post wieħed.",
+        "text": "Immaniġġja l-kontenut, l-ordnijiet u l-utenti tiegħek."
+      },
+      "failed": {
+        "title": "Ma tistax tidħol?",
+        "item1": "Iċċekkja li l-Caps Lock huwa mitfi — il-password tagħmel distinzjoni bejn ittri kbar u żgħar.",
+        "item2": "Insejt il-password? Il-link ħdejn il-qasam jibgħatlek link bl-email."
+      },
+      "twoFactor": {
+        "title": "Dħul f’żewġ passi",
+        "item1": "Iftaħ l-app tal-awtentikazzjoni u daħħal il-kodiċi attwali ta’ 6 ċifri.",
+        "item2": "Il-kodiċi jinbidel kull 30 sekonda — stenna wieħed ġdid jekk dalwaqt jiskadi.",
+        "item3": "M’għandekx it-telefon fil-qrib? Uża kodiċi ta’ riżerva."
+      },
+      "forgot": {
+        "title": "Kif jaħdem",
+        "item1": "Daħħal l-email li tidħol biha.",
+        "item2": "Jekk il-kont jeżisti, nibagħtulek link biex tissettja password ġdida.",
+        "item3": "Il-link jaħdem darba biss u jiskadi malajr."
+      },
+      "reset": {
+        "title": "Password b’saħħitha",
+        "item1": "Mill-inqas 8 karattri.",
+        "item2": "Frażi qasira ta’ ftit kliem hija faċli tiftakarha u diffiċli taqtagħha.",
+        "item3": "Agħżel password li ma tużax x’imkien ieħor."
+      }
+    },
+    "twoFactor": {
+      "title": "Ikkonferma d-dħul",
+      "subtitle": "Daħħal il-kodiċi ta’ 6 ċifri mill-app tal-awtentikazzjoni.",
+      "recoverySubtitle": "Daħħal wieħed mill-kodiċijiet ta’ riżerva.",
+      "useRecovery": "Uża kodiċi ta’ riżerva",
+      "useAuthenticator": "Uża l-app tal-awtentikazzjoni"
+    }
   },
   "plugins": {
     "detail": {

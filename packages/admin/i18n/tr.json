@@ -947,7 +947,7 @@
       "failed": "Parola sıfırlama isteği gönderilemedi.",
       "title": "Erişimi Sıfırla",
       "send": "Sıfırlama Bağlantısı Gönder",
-      "subtitle": "{{app}} yönetici hesabınızı kurtarın"
+      "subtitle": "E-postanızı girin, yeni şifre için size bir bağlantı gönderelim."
     },
     "backToLogin": "Girişe Dön",
     "reset": {
@@ -963,10 +963,59 @@
       "title": "Yeni Parola Belirle",
       "submit": "Parolayı Güncelle",
       "needLink": "Yeni bağlantı mı gerekiyor?",
-      "subtitle": "{{app}} kimlik bilgilerinizi güncelleyin"
+      "subtitle": "E-postadaki kodu yapıştırın ve yeni bir şifre seçin."
     },
     "forgotShort": "Unuttunuz mu?",
-    "logoAlt": "{{company}} tarafından {{app}} logosu"
+    "logoAlt": "{{company}} tarafından {{app}} logosu",
+    "welcomeBack": "Tekrar hoş geldiniz",
+    "consoleIntro": "{{platform}} konsoluna giriş yapın.",
+    "consoleIntroUnnamed": "Konsola giriş yapın.",
+    "noAccess": "Henüz hesabınız yok mu? {{platform}} yöneticisinden davet isteyin.",
+    "noAccessUnnamed": "Henüz hesabınız yok mu? Yöneticinizden davet isteyin.",
+    "checking": "Oturum kontrol ediliyor",
+    "language": "Dil",
+    "themeLight": "Açık tema",
+    "themeDark": "Koyu tema",
+    "showPassword": "Şifreyi göster",
+    "hidePassword": "Şifreyi gizle",
+    "help": {
+      "show": "Yardımı göster",
+      "hide": "Yardımı gizle",
+      "signIn": {
+        "title": "Siteler, mağazalar ve iş uygulamaları tek yerde.",
+        "text": "İçeriklerinizi, siparişlerinizi ve kullanıcılarınızı yönetin."
+      },
+      "failed": {
+        "title": "Giriş yapamıyor musunuz?",
+        "item1": "Caps Lock'un kapalı olduğundan emin olun — şifre büyük/küçük harf duyarlıdır.",
+        "item2": "Şifrenizi mi unuttunuz? Alanın yanındaki bağlantı size e-postayla bir bağlantı gönderir."
+      },
+      "twoFactor": {
+        "title": "İki adımlı giriş",
+        "item1": "Kimlik doğrulama uygulamanızı açın ve geçerli 6 haneli kodu girin.",
+        "item2": "Kodlar her 30 saniyede değişir — süresi dolmak üzereyse yenisini bekleyin.",
+        "item3": "Telefonunuz yanınızda değil mi? Yedek kodlarınızdan birini kullanın."
+      },
+      "forgot": {
+        "title": "Nasıl çalışır",
+        "item1": "Giriş yaptığınız e-posta adresini girin.",
+        "item2": "Hesap varsa yeni şifre belirlemeniz için bir bağlantı göndeririz.",
+        "item3": "Bağlantı bir kez çalışır ve kısa sürede geçerliliğini yitirir."
+      },
+      "reset": {
+        "title": "Güçlü bir şifre",
+        "item1": "En az 8 karakter.",
+        "item2": "Birkaç kelimelik kısa bir ifade kolay hatırlanır ve zor tahmin edilir.",
+        "item3": "Başka hiçbir yerde kullanmadığınız bir şifre seçin."
+      }
+    },
+    "twoFactor": {
+      "title": "Girişinizi onaylayın",
+      "subtitle": "Kimlik doğrulama uygulamanızdaki 6 haneli kodu girin.",
+      "recoverySubtitle": "Yedek kodlarınızdan birini girin.",
+      "useRecovery": "Yedek kod kullan",
+      "useAuthenticator": "Kimlik doğrulama uygulamasını kullan"
+    }
   },
   "plugins": {
     "detail": {
