@@ -35,8 +35,8 @@ export class AppEnv {
 	 * colour scheme — a deployment with a single logo simply points both at the same file.
 	 */
 	static readonly DEFAULT_BRAND_MARK_PATH = '/brand/fromcode-framework-mark.png';
-	static readonly DEFAULT_BRAND_LOGO_LIGHT_PATH = '/brand/atlantis-logo-slate.png';
-	static readonly DEFAULT_BRAND_LOGO_DARK_PATH = '/brand/atlantis-logo-white.png';
+	static readonly DEFAULT_BRAND_LOGO_LIGHT_PATH = '/brand/fromcode-framework-logo-dark.png';
+	static readonly DEFAULT_BRAND_LOGO_DARK_PATH = '/brand/fromcode-framework-logo-white.png';
 	static readonly BRAND_MARK_PATH = process.env.NEXT_PUBLIC_ADMIN_BRAND_MARK || AppEnv.DEFAULT_BRAND_MARK_PATH;
 	static readonly BRAND_LOGO_LIGHT_PATH =
 		process.env.NEXT_PUBLIC_ADMIN_BRAND_LOGO_LIGHT || AppEnv.DEFAULT_BRAND_LOGO_LIGHT_PATH;

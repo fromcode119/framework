@@ -43,7 +43,7 @@
       "weAreCurrentlyPerformingScheduled": "We are currently performing scheduled maintenance to improve our services. The portal will be back online shortly."
     },
     "starterHero": {
-      "atlantisByFromcode": "Fromcode Framework · Atlantis",
+      "logoAlt": "Fromcode Framework",
       "doesnTGetInYour": "doesn’t get in your way",
       "atlantisIsTheOpenSource": "Fromcode Framework is the open-source full-stack platform for teams who want to build production-grade applications — fast, composable, and on their own terms.",
       "openAdmin": "Open Admin →",

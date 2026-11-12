@@ -31,9 +31,9 @@ export class StarterHero extends PureReactor {
           {/* Logo */}
           <div className="mb-14">
             <img
-              src="/brand/atlantis-logo-white.png"
-              alt={FrontendCopy.t(this.locale, 'frontend.starterHero.atlantisByFromcode')}
-              className="mx-auto h-auto w-full max-w-[180px] opacity-95 sm:max-w-[220px]"
+              src="/brand/fromcode-framework-logo-white.png"
+              alt={FrontendCopy.t(this.locale, 'frontend.starterHero.logoAlt')}
+              className="mx-auto h-auto w-full max-w-[260px] opacity-95 sm:max-w-[340px]"
             />
           </div>
 

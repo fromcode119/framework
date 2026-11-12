@@ -54,12 +54,12 @@ export class LoginPageHeader extends Reactor {
             <img
               src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_LIGHT_PATH, this.context)}
               alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
-              className="h-auto w-[220px] dark:hidden"
+              className="h-auto w-[280px] dark:hidden"
             />
             <img
               src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_LOGO_DARK_PATH, this.context)}
               alt={AdminI18n.t('login.logoAlt', { app: AppEnv.APP_NAME, company: AppEnv.COMPANY_NAME })}
-              className="hidden h-auto w-[220px] dark:block"
+              className="hidden h-auto w-[280px] dark:block"
             />
           </div>
         ) : null}
