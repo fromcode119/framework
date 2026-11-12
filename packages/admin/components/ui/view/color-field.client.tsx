@@ -1,3 +1,5 @@
+import { UiFieldUtils } from '@/lib/ui';
+import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode } from '@fromcode119/core/client';
 import type React from 'react';
 import { prop, state, bound, watch, ref } from '@fromcode119/react-class-components';
@@ -162,7 +164,7 @@ export class ColorField extends AdminComponent {
                 value={this.val()}
                 placeholder="#6366f1"
                 onChange={(e) => this.onChange(e.target.value)}
-                className={`w-full h-9 rounded-lg border px-3 text-center text-[13px] font-mono outline-none transition-colors ${this.theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500' : 'bg-slate-50 border-slate-100 text-slate-900 focus:bg-white focus:border-indigo-500'}`}
+                className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'text-center font-mono')}
               />
             </div>
           </RootFramework>

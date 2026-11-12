@@ -145,7 +145,7 @@ export class PermalinkInput extends AdminComponent {
                   if (e.key === 'Enter') this.isEditing = false;
                   if (e.key === 'Escape') this.isEditing = false;
                 }}
-                className="w-full bg-transparent text-[13px] font-bold text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 leading-none"
+                className="w-full bg-transparent text-[12px] font-semibold text-slate-900 dark:text-white outline-none placeholder:text-slate-300 dark:placeholder:text-slate-700 leading-none"
                 placeholder="my-secret-path"
              />
           </div>
