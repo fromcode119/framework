@@ -20,6 +20,11 @@ class MetaStub {
 
   async withPlatformAdmin<T>(fn: () => Promise<T>): Promise<T> { return fn(); }
 
+  async find(_table: string, options: { where: { key: string } }): Promise<Array<{ key: string; value: string; tenant_id: string | null }>> {
+    const row = await this.findOne(_table, options.where);
+    return row ? [{ ...row, tenant_id: this.boundTo }] : [];
+  }
+
   async findOne(_table: string, where: { key: string }): Promise<{ key: string; value: string } | null> {
     const rows = this.boundTo ? this.rowsBySite[this.boundTo] ?? {} : this.rowsBySite.platform ?? {};
     return where.key in rows ? { key: where.key, value: rows[where.key] } : null;

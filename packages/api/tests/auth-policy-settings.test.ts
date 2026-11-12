@@ -17,8 +17,9 @@ import { AuthControllerPolicy } from '@api/controllers/auth/auth-controller-poli
 class MetaTableStub {
   readonly rows = new Map<string, string>();
 
-  async find(): Promise<Array<{ key: string; value: string }>> {
-    return [...this.rows].map(([key, value]) => ({ key, value }));
+  async find(_table?: string, options?: { where?: { key?: string } }): Promise<Array<{ key: string; value: string }>> {
+    const key = options?.where?.key;
+    return [...this.rows].filter(([rowKey]) => key === undefined || rowKey === key).map(([rowKey, value]) => ({ key: rowKey, value }));
   }
 
   async findOne(_table: string, where: { key: string }): Promise<{ key: string; value: string } | null> {
