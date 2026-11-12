@@ -188,6 +188,7 @@
       "deletePermanently": "Ištrinti visam laikui",
       "relatedRecords": "Susiję įrašai",
       "relatedEmpty": "Joks kitas įskiepis dar neturi su šiuo susieto įrašo.",
+      "recordPart": { "download": "Atsisiųsti {{title}}" },
       "viewMode": "Įrašo rodinio režimas",
       "formView": "Formos rodinys",
       "jsonView": "JSON rodinys",

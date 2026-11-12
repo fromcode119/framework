@@ -50,7 +50,7 @@ export class EntityRecordsResolutionService {
       if (!result.length) continue;
       usedProviders.push(provider.canonicalKey);
       for (const raw of result) {
-        const item = this.normalizeItem(raw, provider.label);
+        const item = this.normalizeItem(raw, provider.label, provider.part);
         if (item) items.push(item);
       }
     }
@@ -108,7 +108,7 @@ export class EntityRecordsResolutionService {
       .filter((provider) => (provider.matchKeys ?? []).some((key) => offered.includes(key)));
   }
 
-  private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string): IEntityRecordItem | null {
+  private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string, providerPart?: string): IEntityRecordItem | null {
     const id = String(raw?.id ?? '').trim();
     const title = String(raw?.title ?? '').trim();
     if (!id || !title) return null;
@@ -118,6 +118,7 @@ export class EntityRecordsResolutionService {
       title,
       group: String(raw?.group || fallbackGroup || 'Other').trim(),
       kind: String(raw?.kind || '').trim(),
+      part: String(raw?.part || providerPart || '').trim() || undefined,
     };
   }
 

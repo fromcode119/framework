@@ -188,6 +188,7 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Nijedan drugi dodatak još nema zapis povezan s ovim.",
+      "recordPart": { "download": "Preuzmi {{title}}" },
       "viewMode": "Način prikaza zapisa",
       "formView": "Prikaz obrasca",
       "jsonView": "JSON prikaz",

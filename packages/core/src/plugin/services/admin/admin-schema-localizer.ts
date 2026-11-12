@@ -22,6 +22,7 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *   admin.collections.<collection>.fields.<field>.fields.<sub-field>…   group / array sub-fields
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
+ *   admin.collections.<collection>.recordLinks.parts.<term>.empty       what a section says while it holds no such record
  *   admin.settings.tabs.<id>, admin.settings.groups.<id>, admin.settings.fields.<field>.…   the settings form, same shape
  *   admin.widgets.<id>.label | description                              a dashboard widget
  *   admin.integrations.<type>…                                          Settings → Integrations (AdminIntegrationLocalizer)
@@ -42,6 +43,7 @@ export class AdminSchemaLocalizer {
           ...collection.admin.recordLinks,
           title: this.text(pluginSlug, `${base}.recordLinks.title`, collection.admin.recordLinks.title),
           emptyHint: this.text(pluginSlug, `${base}.recordLinks.emptyHint`, collection.admin.recordLinks.emptyHint),
+          parts: this.recordParts(pluginSlug, base, collection.admin.recordLinks.parts),
         },
       } : {}),
     } : collection.admin;
@@ -213,6 +215,23 @@ export class AdminSchemaLocalizer {
   private labelled(pluginSlug: string, base: string, entries: any[] | undefined): any[] | undefined {
     if (!Array.isArray(entries)) return entries;
     return entries.map((entry) => ({ ...entry, label: this.text(pluginSlug, `${base}.${entry?.name}`, entry?.label) }));
+  }
+
+  /**
+   * A part's section goes through the SAME key a field's `admin.section` does, so the two stay equal in
+   * every language — the admin matches them by that heading.
+   */
+  private recordParts(pluginSlug: string, base: string, parts: Record<string, any> | undefined): Record<string, any> | undefined {
+    if (!parts) return parts;
+    const out: Record<string, any> = {};
+    for (const [term, part] of Object.entries(parts)) {
+      out[term] = {
+        ...part,
+        section: this.text(pluginSlug, `${base}.sections.${StringUtils.slugify(part?.section, '')}.label`, part?.section),
+        empty: this.text(pluginSlug, `${base}.recordLinks.parts.${term}.empty`, part?.empty),
+      };
+    }
+    return out;
   }
 
   private sections(pluginSlug: string, base: string, entries: any[] | undefined): any[] | undefined {

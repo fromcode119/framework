@@ -16,6 +16,13 @@ export interface IEntityRecordProviderRegistration {
    * written before subjects existed is, so omitting this keeps that behaviour exactly.
    */
   matchKeys?: string[];
+  /**
+   * Which PART of a record these belong to — `payment`, `delivery`, `schedule` — in shared vocabulary,
+   * the same way `matchKeys` names shared correlation keys. Opaque to the framework. A subject whose
+   * collection maps that term to one of its own sections (`admin.recordLinks.parts`) gets these records
+   * drawn inside that section; any other subject lists them with the rest of what is linked to it.
+   */
+  part?: string;
   /** Resolve the records this provider owns for the given person or subject. */
   resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
 }

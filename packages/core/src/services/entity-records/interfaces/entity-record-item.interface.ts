@@ -25,4 +25,6 @@ export interface IEntityRecordItem {
   /** lucide-react icon name. */
   icon?: string;
   badges?: string[];
+  /** The part of the subject this record belongs to; stamped from its provider unless the item names one. */
+  part?: string;
 }

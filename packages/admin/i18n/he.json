@@ -188,6 +188,7 @@
       "deletePermanently": "מחיקה לצמיתות",
       "relatedRecords": "רשומות קשורות",
       "relatedEmpty": "עדיין אין תוסף אחר שמחזיק רשומה המקושרת לרשומה זו.",
+      "recordPart": { "download": "הורדה {{title}}" },
       "viewMode": "מצב תצוגת רשומה",
       "formView": "תצוגת טופס",
       "jsonView": "תצוגת JSON",

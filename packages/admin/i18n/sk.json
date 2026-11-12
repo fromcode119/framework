@@ -188,6 +188,7 @@
       "deletePermanently": "Odstrániť natrvalo",
       "relatedRecords": "Súvisiace záznamy",
       "relatedEmpty": "Žiadny iný plugin zatiaľ nemá záznam prepojený s týmto.",
+      "recordPart": { "download": "Stiahnuť {{title}}" },
       "viewMode": "Režim zobrazenia záznamu",
       "formView": "Formulár",
       "jsonView": "JSON",

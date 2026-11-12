@@ -188,6 +188,7 @@
       "deletePermanently": "Slett permanent",
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
+      "recordPart": { "download": "Last ned {{title}}" },
       "viewMode": "Visningsmodus for oppføring",
       "formView": "Skjemavisning",
       "jsonView": "JSON-visning",

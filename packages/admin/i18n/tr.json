@@ -188,6 +188,7 @@
       "deletePermanently": "Kalıcı Olarak Sil",
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
+      "recordPart": { "download": "İndir {{title}}" },
       "viewMode": "Kayıt görünüm modu",
       "formView": "Form görünümü",
       "jsonView": "JSON görünümü",

@@ -23,4 +23,6 @@ export interface IRecordsHubItem {
   downloadUrl?: string;
   icon?: string;
   badges?: string[];
+  /** The part of the subject this record belongs to (opaque shared-vocabulary term). */
+  part?: string;
 }

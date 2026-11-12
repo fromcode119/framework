@@ -188,6 +188,7 @@
       "deletePermanently": "Dzēst neatgriezeniski",
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
+      "recordPart": { "download": "Lejupielādēt {{title}}" },
       "viewMode": "Ieraksta skata režīms",
       "formView": "Veidlapas skats",
       "jsonView": "JSON skats",

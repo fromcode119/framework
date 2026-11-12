@@ -23,6 +23,8 @@ export interface IPluginContextEntityRecords {
      * which is what every provider written before subjects existed is.
      */
     matchKeys?: string[];
+    /** The part of a record these belong to (`payment`, `delivery`, …) — see the registration contract. */
+    part?: string;
     resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
   }): any;
   /**

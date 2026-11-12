@@ -188,6 +188,7 @@
       "deletePermanently": "永久删除",
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
+      "recordPart": { "download": "下载 {{title}}" },
       "viewMode": "记录查看模式",
       "formView": "表单视图",
       "jsonView": "JSON 视图",

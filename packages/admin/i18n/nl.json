@@ -188,6 +188,7 @@
       "deletePermanently": "Definitief verwijderen",
       "relatedRecords": "Gerelateerde records",
       "relatedEmpty": "Nog geen andere plugin heeft een record dat aan dit record is gekoppeld.",
+      "recordPart": { "download": "Downloaden {{title}}" },
       "viewMode": "Weergavemodus van record",
       "formView": "Formulierweergave",
       "jsonView": "JSON-weergave",

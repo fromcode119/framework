@@ -188,6 +188,7 @@
       "deletePermanently": "Kustuta jäädavalt",
       "relatedRecords": "Seotud kirjed",
       "relatedEmpty": "Ühelgi teisel pluginal pole veel selle kirjega seotud kirjet.",
+      "recordPart": { "download": "Laadi alla {{title}}" },
       "viewMode": "Kirje vaaterežiim",
       "formView": "Vormivaade",
       "jsonView": "JSON-vaade",

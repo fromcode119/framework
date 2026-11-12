@@ -188,6 +188,7 @@
       "deletePermanently": "Удалить навсегда",
       "relatedRecords": "Связанные записи",
       "relatedEmpty": "Ни один другой плагин пока не содержит записей, связанных с этой.",
+      "recordPart": { "download": "Скачать {{title}}" },
       "viewMode": "Режим просмотра записи",
       "formView": "Форма",
       "jsonView": "JSON",

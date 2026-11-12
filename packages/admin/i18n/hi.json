@@ -188,6 +188,7 @@
       "deletePermanently": "स्थायी रूप से हटाएँ",
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
+      "recordPart": { "download": "डाउनलोड करें {{title}}" },
       "viewMode": "रिकॉर्ड व्यू मोड",
       "formView": "फ़ॉर्म व्यू",
       "jsonView": "JSON व्यू",

@@ -188,6 +188,7 @@
       "deletePermanently": "Hapus Permanen",
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
+      "recordPart": { "download": "Unduh {{title}}" },
       "viewMode": "Mode tampilan rekaman",
       "formView": "Tampilan formulir",
       "jsonView": "Tampilan JSON",

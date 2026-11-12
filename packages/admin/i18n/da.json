@@ -188,6 +188,7 @@
       "deletePermanently": "Slet permanent",
       "relatedRecords": "Relaterede poster",
       "relatedEmpty": "Intet andet plugin har endnu en post knyttet til denne.",
+      "recordPart": { "download": "Download {{title}}" },
       "viewMode": "Visningstilstand for post",
       "formView": "Formularvisning",
       "jsonView": "JSON-visning",

@@ -7,6 +7,7 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
+import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
@@ -36,6 +37,11 @@ export class EditPageBody extends PureReactor {
       revisions, revisionsLoading, activeVersionId, setSelectedRevision, setActiveVersionId,
       loadMoreRevisions, hasMoreRevisions
     } = edit;
+
+    // A new record can offer none of the correlation keys, so there is no question to ask yet.
+    const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
+    const navigate = (href: string) => edit.router?.push(href);
+    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key));
 
     return (
     <div className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -129,17 +135,12 @@ export class EditPageBody extends PureReactor {
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+              recordLinks={recordLinks}
+              navigate={navigate}
             />
-            {/* Only renders when the collection declared `admin.recordLinks` and this record can offer
-                at least one of those correlation keys. A new record can offer none. */}
-            {!isNew && (
-              <CollectionRecordLinksPanel
-                collection={collection}
-                formData={formData}
-                recordId={String(id)}
-                theme={theme}
-                navigate={(href: string) => edit.router?.push(href)}
-              />
+            {/* What is linked to this record and has no section of its own on this page. */}
+            {recordLinks && (
+              <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
             {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
           </div>

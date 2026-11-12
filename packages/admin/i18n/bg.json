@@ -225,6 +225,7 @@
       "deletePermanently": "Изтрий окончателно",
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
+      "recordPart": { "download": "Изтегли {{title}}" },
       "viewMode": "Изглед на записа",
       "formView": "Форма",
       "jsonView": "JSON",

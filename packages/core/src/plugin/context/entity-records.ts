@@ -24,7 +24,7 @@ export class EntityRecordsContextProxy {
     return {
       registerProvider(
         input: Pick<IEntityRecordProviderRegistration, 'key' | 'label' | 'resolve'> &
-          Partial<Pick<IEntityRecordProviderRegistration, 'matchKeys'>>,
+          Partial<Pick<IEntityRecordProviderRegistration, 'matchKeys' | 'part'>>,
       ) {
         return CoreServices.getInstance().entityRecords.register({
           namespace,
@@ -32,6 +32,7 @@ export class EntityRecordsContextProxy {
           key: String(input?.key || '').trim(),
           label: String(input?.label || '').trim(),
           matchKeys: input?.matchKeys,
+          part: input?.part,
           resolve: input?.resolve,
         });
       },

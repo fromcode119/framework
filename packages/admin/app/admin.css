@@ -647,6 +647,30 @@ html.dark {
   .fc-edit-top__grid > *:has(.fc-admin-panel--body), .fc-edit-top__grid > .fc-admin-panel--body { grid-column: 1 / -1; }
 }
 
+/* What other plugins hold about a record, drawn as lines of the section they belong to: a payment under
+   the totals, a shipment under the address. One line each on a wide card; on a narrow one the amount
+   and date drop under the title instead of squeezing it. */
+.fc-record-part { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: grid; container-type: inline-size; gap: 0.75rem; }
+.fc-record-part__heading { font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.125rem; }
+.fc-record-part__empty { font-size: 13px; color: var(--muted-foreground); }
+.fc-record-part__row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.75rem; row-gap: 0.125rem; min-height: 2.5rem; padding-block: 0.25rem; }
+.fc-record-part__row + .fc-record-part__row { border-top: 1px solid var(--border); }
+.fc-record-part__icon { flex: none; color: var(--muted-foreground); }
+.fc-record-part__main { flex: 1 1 12rem; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.5rem; }
+.fc-record-part__title { font-size: 13px; font-weight: 600; color: var(--card-foreground); overflow-wrap: anywhere; text-align: start; }
+.fc-record-part__title--link { min-height: 1.5rem; }
+.fc-record-part__title--link:hover { text-decoration: underline; }
+.fc-record-part__status { flex: none; border-radius: 9999px; padding: 0.0625rem 0.5rem; font-size: 11px; font-weight: 600; background: var(--muted); color: var(--muted-foreground); }
+.fc-record-part__meta { font-size: 12px; color: var(--muted-foreground); }
+.fc-record-part__trailing { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--card-foreground); }
+.fc-record-part__action { flex: none; width: 1.75rem; height: 1.75rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 0.5rem; color: var(--muted-foreground); }
+.fc-record-part__action:hover { background: var(--muted); color: var(--card-foreground); }
+@container (max-width: 30rem) {
+  .fc-record-part__main { flex-basis: calc(100% - 2rem); }
+  .fc-record-part__row > .fc-record-part__meta { margin-inline-start: 1.6875rem; }
+  .fc-record-part__trailing { margin-inline-start: auto; }
+}
+
 /* A wide card holds three fields to a row: with two, three short values (a name, a phone, an email) ran
    to a second row and left half of it empty. */
 @container (min-width: 36rem) {

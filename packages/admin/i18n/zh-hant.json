@@ -188,6 +188,7 @@
       "deletePermanently": "永久刪除",
       "relatedRecords": "相關紀錄",
       "relatedEmpty": "目前尚無其他外掛有連結至此紀錄的資料。",
+      "recordPart": { "download": "下載 {{title}}" },
       "viewMode": "紀錄檢視模式",
       "formView": "表單檢視",
       "jsonView": "JSON 檢視",

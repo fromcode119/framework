@@ -188,6 +188,7 @@
       "deletePermanently": "Scrios go Buan",
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
+      "recordPart": { "download": "Íoslódáil {{title}}" },
       "viewMode": "Mód amhairc an taifid",
       "formView": "Amharc foirme",
       "jsonView": "Amharc JSON",

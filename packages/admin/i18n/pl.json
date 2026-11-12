@@ -188,6 +188,7 @@
       "deletePermanently": "Usuń trwale",
       "relatedRecords": "Powiązane rekordy",
       "relatedEmpty": "Żadna inna wtyczka nie ma jeszcze rekordu powiązanego z tym.",
+      "recordPart": { "download": "Pobierz {{title}}" },
       "viewMode": "Tryb widoku rekordu",
       "formView": "Widok formularza",
       "jsonView": "Widok JSON",

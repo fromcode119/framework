@@ -188,6 +188,7 @@
       "deletePermanently": "Padam Secara Kekal",
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
+      "recordPart": { "download": "Muat turun {{title}}" },
       "viewMode": "Mod paparan rekod",
       "formView": "Paparan borang",
       "jsonView": "Paparan JSON",
