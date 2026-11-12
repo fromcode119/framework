@@ -41,7 +41,8 @@ export class TagFieldChips extends PureReactor {
       onShowSuggestions,
       onAdd,
     } = this;
-    const inputTextSizeClass = size === FieldSize.SM ? 'text-[12px]' : size === FieldSize.LG ? 'text-sm' : 'text-[13px]';
+    // The text typed here is the same size as in every other field (UiFieldUtils: one size).
+    const inputTextSizeClass = 'text-[12px]';
     const wrapperClasses = hasMany
       ? UiFieldUtils.getFieldClasses(size, 'flex flex-wrap gap-2', true)
       : UiFieldUtils.getFieldClasses(size, 'flex items-center gap-2', false);
