@@ -179,6 +179,7 @@ export class AuthControllerSso extends AuthControllerRegistration {
     await this.upsertMeta(this.getPasswordChangedAtKey(tokenResult.userId), new Date().toISOString());
     await this.setForcePasswordReset(tokenResult.userId, false);
     await this.revokeAllSessionsForUser(tokenResult.userId);
+    await this.liftLoginLock(tokenResult.email, NetworkAddressUtils.resolveClientIp(req) || '');
 
     await this.manager.writeLog(
       'INFO',

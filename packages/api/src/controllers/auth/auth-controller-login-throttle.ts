@@ -119,4 +119,13 @@ export class AuthControllerLoginThrottle extends AuthControllerSettings {
   protected async clearLoginThrottleState(key: string) {
     await this.deleteMeta(key);
   }
+
+  /**
+   * Forgets the failed attempts counted against this account from this address. Called once a password
+   * reset completes: whoever opened the emailed link owns the mailbox, so those guesses are settled, and
+   * without this the new password is refused until the lock runs out.
+   */
+  protected async liftLoginLock(email: string, ip: string) {
+    await this.clearLoginThrottleState(this.getLoginThrottleKey(email, ip));
+  }
 }
