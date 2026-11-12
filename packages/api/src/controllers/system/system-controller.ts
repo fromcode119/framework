@@ -47,7 +47,7 @@ export class SystemController extends SystemAccountRoutes {
     this.userController = new SystemUserController(runtime);
     this.peopleController = new SystemPeopleController(runtime);
     this.personFieldsController = new SystemPersonFieldsController(runtime);
-    this.recordLinksController = new SystemRecordLinksController();
+    this.recordLinksController = new SystemRecordLinksController(runtime);
     this.deployController = new SystemDeployController(runtime);
     this.settingsController = new SystemSettingsController(runtime);
     this.metadataController = new SystemMetadataController(runtime);

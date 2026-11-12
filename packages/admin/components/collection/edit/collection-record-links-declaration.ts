@@ -26,7 +26,9 @@ export class CollectionRecordLinksDeclaration {
     // value would answer for every record there is.
     const keys: Record<string, string> = {};
     for (const [keyName, fieldName] of Object.entries(declared.keys)) {
-      const value = String(formData?.[String(fieldName)] ?? '').trim();
+      const raw = formData?.[String(fieldName)];
+      // Only a plain value identifies anything: a relationship loaded as an object would be sent as "[object Object]".
+      const value = typeof raw === 'string' || typeof raw === 'number' ? String(raw).trim() : '';
       if (value) keys[String(keyName)] = value;
     }
     if (!Object.keys(keys).length) return null;

@@ -6,6 +6,7 @@ import type { IRecordsHubItem } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { RecordPartActions } from '@/components/collection/edit/view/record-part-actions.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 
 /**
@@ -27,7 +28,7 @@ export class CollectionRecordLinksPanel extends Reactor {
   @prop declare theme: ThemeMode;
   @prop declare navigate?: (href: string) => void;
 
-  @state private result: { items: IRecordsHubItem[]; errors: any[] } | null = null;
+  @state private result: { items: IRecordsHubItem[]; errors: any[]; actions: any[] } | null = null;
   @state private failed = false;
 
   private alive = false;
@@ -48,7 +49,7 @@ export class CollectionRecordLinksPanel extends Reactor {
       const result = await AdminApi.get(this.links.url);
       if (!this.alive) return;
       this.failed = false;
-      this.result = { items: Array.isArray(result?.items) ? result.items : [], errors: result?.errors || [] };
+      this.result = { items: Array.isArray(result?.items) ? result.items : [], errors: result?.errors || [], actions: Array.isArray(result?.actions) ? result.actions : [] };
     } catch {
       if (this.alive) this.failed = true;
     }
@@ -62,8 +63,9 @@ export class CollectionRecordLinksPanel extends Reactor {
     if (!this.result && !this.failed) return null;
     const remaining = this.remaining;
     const errors = this.result?.errors || [];
+    const actions = (this.result?.actions || []).filter((action: any) => !action.part || !this.placedTerms.includes(action.part));
     // Everything linked has a section of its own on this page, and nothing went wrong finding it.
-    if (!this.failed && this.placedTerms.length > 0 && !remaining.length && !errors.length) return null;
+    if (!this.failed && this.placedTerms.length > 0 && !remaining.length && !errors.length && !actions.length) return null;
     return (
       <div className="mt-6">
         <RecordsHub
@@ -75,6 +77,7 @@ export class CollectionRecordLinksPanel extends Reactor {
           onOpenItem={(item: IRecordsHubItem) => RecordsHubOpenItem.open(item, this.navigate)}
           onDownloadItem={(item: IRecordsHubItem) => void RecordsHubOpenItem.download(item, this.navigate)}
         />
+        <RecordPartActions actions={actions} onOpen={(href: string) => RecordsHubOpenItem.open({ href } as IRecordsHubItem, this.navigate)} />
       </div>
     );
   }

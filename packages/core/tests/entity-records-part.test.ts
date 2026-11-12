@@ -29,4 +29,21 @@ describe('EntityRecordsResolutionService — part', () => {
     const items = await resolveWith(undefined, [{ id: 'a', group: 'G', kind: 'k', title: 'A' }]);
     expect(items[0].part).toBeUndefined();
   });
+
+  it('collects what each provider offers to start, namespaced and stamped with its part', async () => {
+    const registry = new PluginEntityRecordsRegistryService();
+    registry.register({
+      namespace: 'org.test', pluginSlug: 'b', key: 'linked', label: 'Linked', matchKeys: ['orderNumber'], part: 'delivery',
+      resolve: async () => [],
+      actions: async () => [{ id: 'create', label: 'Create shipment', href: '/x/new' }, { id: 'broken', label: '', href: '/y' }],
+    });
+    const result = await new EntityRecordsResolutionService(registry).resolve({ subject });
+    expect(result.actions).toEqual([{ id: 'org.test:b:linked:create', label: 'Create shipment', href: '/x/new', icon: undefined, part: 'delivery' }]);
+  });
+
+  it('offers no actions for a person timeline', async () => {
+    const registry = new PluginEntityRecordsRegistryService();
+    registry.register({ namespace: 'org.test', pluginSlug: 'a', key: 'person', label: 'Person', resolve: async () => [], actions: async () => [{ id: 'x', label: 'X', href: '/x' }] });
+    expect((await new EntityRecordsResolutionService(registry).resolve({ personId: 1 })).actions).toEqual([]);
+  });
 });

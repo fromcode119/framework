@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
-import { CoreServices, CoercionUtils } from '@fromcode119/core';
+import { AppPathConstants, CoreServices, CoercionUtils } from '@fromcode119/core';
+import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
 
 /**
  * "What records relate to THIS record?" — the subject-keyed half of entity records.
@@ -14,6 +15,12 @@ import { CoreServices, CoercionUtils } from '@fromcode119/core';
 export class SystemRecordLinksController {
   /** Ceiling on how many correlation keys one request may offer, so a URL cannot fan out unbounded. */
   private static readonly MAX_KEYS = 12;
+  /** The framework's own correlation keys: people are its records, so it answers for them itself. */
+  private static readonly PERSON_ID_KEY = 'personId';
+  private static readonly EMAIL_KEY = 'email';
+  private static readonly PERSON_PART = 'person';
+
+  constructor(private readonly runtime: SystemControllerRuntime) {}
 
   async getRecordLinks(req: Request, res: Response) {
     try {
@@ -26,10 +33,43 @@ export class SystemRecordLinksController {
       if (!Object.keys(keys).length) return res.status(400).json({ error: 'at least one correlation key is required' });
 
       const result = await CoreServices.getInstance().entityRecordsResolution.resolve({ subject: { kind, id, keys } });
+      const person = await this.personItem(keys);
+      if (person) {
+        result.items.push(person);
+        result.groups.push({ group: person.group, items: [person] });
+      }
       res.json(result);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
+  }
+
+  /**
+   * The person a record names, when it can say who by id or by email. People are the framework's own
+   * records — no plugin holds them — so the framework is the one that answers. An email is matched
+   * whole, never as a search: a partial match would put a stranger on the record.
+   */
+  private async personItem(keys: Record<string, string>): Promise<any | null> {
+    const personId = Number(keys[SystemRecordLinksController.PERSON_ID_KEY]);
+    const email = CoercionUtils.toString(keys[SystemRecordLinksController.EMAIL_KEY]).trim().toLowerCase();
+    let person = personId ? await this.runtime.people.getPerson(personId) : null;
+    if (!person && email) {
+      const matches = await this.runtime.people.getPeople({ q: email, limit: 20 });
+      person = matches.find((candidate: any) => CoercionUtils.toString(candidate?.email).trim().toLowerCase() === email) || null;
+    }
+    if (!person?.id) return null;
+    const name = CoercionUtils.toString(person.displayName).trim() || [person.firstName, person.lastName].map((part: unknown) => CoercionUtils.toString(part).trim()).filter(Boolean).join(' ');
+    const mail = CoercionUtils.toString(person.email).trim();
+    return {
+      id: `person-${person.id}`,
+      group: 'Person',
+      kind: 'system:person',
+      part: SystemRecordLinksController.PERSON_PART,
+      title: name || mail || `#${person.id}`,
+      subtitle: name ? mail || undefined : undefined,
+      href: AppPathConstants.ADMIN.PEOPLE.DETAIL(person.id),
+      icon: 'User',
+    };
   }
 
   /** `null` means malformed — distinct from "parsed fine and was empty", which is a different answer. */

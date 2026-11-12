@@ -1,4 +1,5 @@
 import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
+import type { IEntityRecordAction } from '@core/services/entity-records/interfaces/entity-record-action.interface';
 import type { IEntityRecordItem } from '@core/services/entity-records/interfaces/entity-record-item.interface';
 
 /** What a plugin passes to context.entityRecords.registerProvider(). */
@@ -25,4 +26,9 @@ export interface IEntityRecordProviderRegistration {
   part?: string;
   /** Resolve the records this provider owns for the given person or subject. */
   resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
+  /**
+   * What the operator can start from a subject this provider answers for — offered whether or not any
+   * record exists yet, which is exactly when "create the first one" is needed.
+   */
+  actions?: (ref: IEntityRecordRef) => Promise<IEntityRecordAction[]>;
 }

@@ -4,6 +4,7 @@ import type { IRecordsHubItem } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
+import { RecordPartActions } from '@/components/collection/edit/view/record-part-actions.client';
 import { RecordPartRow } from '@/components/collection/edit/view/record-part-row.client';
 
 /**
@@ -20,6 +21,7 @@ export class CollectionRecordPart extends Reactor {
   @prop declare navigate?: (href: string) => void;
 
   @state private items: IRecordsHubItem[] | null = null;
+  @state private actions: Array<{ id: string; label: string; href: string; icon?: string; part?: string }> = [];
 
   private alive = false;
 
@@ -37,7 +39,9 @@ export class CollectionRecordPart extends Reactor {
   private async fetchItems(): Promise<void> {
     try {
       const result = await AdminApi.get(this.links.url);
-      if (this.alive) this.items = Array.isArray(result?.items) ? result.items : [];
+      if (!this.alive) return;
+      this.actions = Array.isArray(result?.actions) ? result.actions : [];
+      this.items = Array.isArray(result?.items) ? result.items : [];
     } catch {
       // The linked-records list reports a failed load; a section stays as its own fields.
       if (this.alive) this.items = [];
@@ -45,6 +49,7 @@ export class CollectionRecordPart extends Reactor {
   }
 
   @bound private open(item: IRecordsHubItem): void { RecordsHubOpenItem.open(item, this.navigate); }
+  @bound private follow(href: string): void { RecordsHubOpenItem.open({ href } as IRecordsHubItem, this.navigate); }
   @bound private download(item: IRecordsHubItem): void { void RecordsHubOpenItem.download(item, this.navigate); }
 
   private groupsOf(term: string): Array<{ group: string; items: IRecordsHubItem[] }> {
@@ -59,13 +64,20 @@ export class CollectionRecordPart extends Reactor {
 
   private renderPart(part: { term: string; empty: string }): ReactNode {
     const groups = this.groupsOf(part.term);
-    if (!groups.length) return part.empty ? <p key={part.term} className="fc-record-part__empty">{part.empty}</p> : null;
-    return groups.map((entry) => (
-      <div key={`${part.term}:${entry.group}`} className="fc-record-part__group">
-        <h3 className="fc-record-part__heading">{entry.group}</h3>
-        {entry.items.map((item) => <RecordPartRow key={`${item.kind}:${item.id}`} item={item} onOpen={this.open} onDownload={this.download} />)}
+    const actions = this.actions.filter((action) => action.part === part.term);
+    if (!groups.length && !actions.length && !part.empty) return null;
+    return (
+      <div key={part.term} className="fc-record-part__term">
+        {!groups.length && part.empty ? <p className="fc-record-part__empty">{part.empty}</p> : null}
+        {groups.map((entry) => (
+          <div key={entry.group} className="fc-record-part__group">
+            <h3 className="fc-record-part__heading">{entry.group}</h3>
+            {entry.items.map((item) => <RecordPartRow key={`${item.kind}:${item.id}`} item={item} onOpen={this.open} onDownload={this.download} />)}
+          </div>
+        ))}
+        <RecordPartActions actions={actions} onOpen={this.follow} />
       </div>
-    ));
+    );
   }
 
   render(): ReactNode {
