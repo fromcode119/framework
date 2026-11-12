@@ -10,6 +10,7 @@ export * from '@/components/ui/view/localized-field.client';
 export * from '@/components/ui/tag-field/view/index.client';
 export * from '@/components/ui/view/loader.client';
 export * from '@/components/ui/view/switch.client';
+export * from '@/components/ui/view/checkbox.client';
 export * from '@/components/ui/view/page-heading.client';
 export * from '@/components/ui/view/compact-page-header.client';
 export * from '@/components/ui/view/card.client';
