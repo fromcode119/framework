@@ -17,23 +17,23 @@ export class UiFieldUtils {
     shadowFocus: 'ring-4 ring-indigo-500/10',
   };
 
+  private static readonly ONE_SIZE_LAYOUT = 'py-2 px-3.5 h-10 text-[12px] leading-none';
+  private static readonly ONE_SIZE_CONTAINER = 'min-h-[40px] py-2 px-3.5 leading-none';
+
   static readonly FIELD = {
     base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} font-semibold ${UiFieldUtils.COMMON.shadow}`,
     light: 'bg-white border-slate-200 text-slate-900 caret-slate-900 placeholder:text-slate-400 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 autofill:[-webkit-text-fill-color:#0f172a] autofill:shadow-[inset_0_0_0px_1000px_#ffffff]',
     dark: 'dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:caret-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-500/50 dark:focus:border-indigo-500 dark:focus:ring-0 dark:[color-scheme:dark] dark:autofill:[-webkit-text-fill-color:#f8fafc] dark:autofill:caret-white dark:autofill:shadow-[inset_0_0_0px_1000px_rgb(2,6,23)]',
+    /**
+     * ONE size. Every text field, select, number field and date field in the console is the same
+     * height with the same text, whatever `size` a caller asks for: three sizes meant a row could hold
+     * a 34px field beside a 40px one, and each screen picked its own. The keys stay so `FieldSize`
+     * (which buttons also use, and do vary by) still resolves here.
+     */
     sizes: {
-      sm: {
-        layout: 'py-1.5 px-3 h-9 text-[11px] leading-none',
-        container: 'min-h-[36px] py-1.5 px-3 leading-none'
-      },
-      md: {
-        layout: 'py-2 px-3.5 h-10 text-[12px] leading-none',
-        container: 'min-h-[40px] py-2 px-3.5 leading-none'
-      },
-      lg: {
-        layout: 'py-2.5 px-4 h-11 text-[13px] leading-none',
-        container: 'min-h-[44px] py-2.5 px-4 leading-none'
-      }
+      sm: { layout: UiFieldUtils.ONE_SIZE_LAYOUT, container: UiFieldUtils.ONE_SIZE_CONTAINER },
+      md: { layout: UiFieldUtils.ONE_SIZE_LAYOUT, container: UiFieldUtils.ONE_SIZE_CONTAINER },
+      lg: { layout: UiFieldUtils.ONE_SIZE_LAYOUT, container: UiFieldUtils.ONE_SIZE_CONTAINER },
     }
   };
 
@@ -54,6 +54,16 @@ export class UiFieldUtils {
     PROVENANCE_NONE: 'text-[11px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed'
   };
 
+  /** True for a class that would give a single-line field its own height or text size. */
+  private static resizesALine(token: string): boolean {
+    const name = token.replace(/^([a-z-]+:)+/, '').replace(/^!/, '');
+    if (/^text-(xs|sm|base|lg|xl|\d+xl|\[\d[^\]]*\])$/.test(name)) return true;
+    const step = name.match(/^h-(\d+(?:\.\d+)?)$/);
+    if (step) return Number(step[1]) <= 14;
+    const px = name.match(/^h-\[(\d+(?:\.\d+)?)(px|rem)\]$/);
+    return px ? (px[2] === 'px' ? Number(px[1]) <= 56 : Number(px[1]) <= 3.5) : false;
+  }
+
   static getFieldClasses(size: FieldSize = FieldSize.MD, extra: string = '', isContainer: boolean = false): string {
     const sizes = UiFieldUtils.FIELD.sizes as Record<string, { layout: string; container: string }>;
     const sizeConfig = sizes[size.value] ?? sizes.md;
@@ -63,14 +73,16 @@ export class UiFieldUtils {
       return `${UiFieldUtils.FIELD.base} ${UiFieldUtils.FIELD.light} ${UiFieldUtils.FIELD.dark} ${sizeClasses}`;
     }
 
-    const hasHeight = extra.includes('h-');
+    // A caller may add to a field, never resize it: a height or text size of its own is dropped, so the
+    // one size above holds on every screen. A tall box (a text area's `min-h`, an editor's `h-64`) is
+    // not a line of text and keeps its height.
+    extra = extra.split(/\s+/).filter((token) => !UiFieldUtils.resizesALine(token)).join(' ');
+    const hasHeight = extra.split(/\s+/).some((token) => /^h-/.test(token));
     const hasPaddingY = extra.includes('py-') || extra.includes('pt-') || extra.includes('pb-');
     const hasPaddingX = extra.includes('px-');
     const hasPaddingLeft = extra.includes('pl-');
     const hasPaddingRight = extra.includes('pr-');
-    const hasTextSize = extra
-      .split(/\s+/)
-      .some((token) => /^text-(xs|sm|base|lg|xl|\d+xl|\[[^\]]+\])$/.test(token));
+    const hasTextSize = false;
     const hasRounded = extra.includes('rounded-');
 
     const finalSizeClasses = sizeClasses.split(' ').filter((cls) => {

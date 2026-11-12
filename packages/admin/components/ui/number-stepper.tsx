@@ -28,7 +28,7 @@ export class NumberStepper extends PureReactor {
   @prop declare step?: number;
   @prop declare min?: number;
   @prop declare max?: number;
-  /** 'sm' = compact variant for dense grids (e.g. the per-tier rate matrix). Default 'md'. */
+  /** Accepted for callers that still pass it; every field is one size (UiFieldUtils). */
   @prop declare size?: FieldSize;
 
   private stepSize(): number {
@@ -98,13 +98,11 @@ export class NumberStepper extends PureReactor {
 
   private renderInput(withButtons: boolean): ReactNode {
     const { value, disabled, error, placeholder, min, max } = this;
-    const sm = this.size === FieldSize.SM;
-    const pad = withButtons ? (sm ? 'px-8 text-center' : 'px-10 text-center') : '';
+    const pad = withButtons ? 'px-10 text-center' : '';
     return (
       <Input
         type="number"
         inputMode={withButtons ? 'numeric' : 'decimal'}
-        size={sm ? FieldSize.SM : FieldSize.MD}
         value={(typeof value === 'number' || typeof value === 'string') ? value : ''}
         onChange={this.onType}
         onBlur={this.onLeave}
@@ -121,19 +119,19 @@ export class NumberStepper extends PureReactor {
 
   render(): ReactNode {
     if (!this.stepsByWholeNumbers) return this.renderInput(false);
-    const sm = this.size === FieldSize.SM;
+    // One size for every field (UiFieldUtils), so the buttons are always the 40px box's.
     // Each button is a square the input's own height (minus its border), inside the box at either end.
-    const btn = `absolute top-px flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-colors ${sm ? 'h-[calc(2.25rem_-_2px)] w-8' : 'h-[calc(2.5rem_-_2px)] w-10'}`;
+    const btn = `absolute top-px flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-colors h-[calc(2.5rem_-_2px)] w-10`;
     return (
       <div className="relative">
         {this.renderInput(true)}
         <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.decrement')} onClick={this.decrement}
           className={`${btn} start-px rounded-l-[calc(var(--radius)_-_1px)]`}>
-          <FrameworkIcons.Minus size={sm ? 13 : 15} strokeWidth={2.25} />
+          <FrameworkIcons.Minus size={15} strokeWidth={2.25} />
         </button>
         <button type="button" disabled={this.disabled} aria-label={AdminI18n.t('ui.stepper.increment')} onClick={this.increment}
           className={`${btn} end-px rounded-r-[calc(var(--radius)_-_1px)]`}>
-          <FrameworkIcons.Plus size={sm ? 13 : 15} strokeWidth={2.25} />
+          <FrameworkIcons.Plus size={15} strokeWidth={2.25} />
         </button>
       </div>
     );
