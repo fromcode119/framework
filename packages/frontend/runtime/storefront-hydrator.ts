@@ -98,13 +98,15 @@ export class StorefrontHydrator {
    * from the markup as served. Deferred a tick: React reports this during its commit, and a root must
    * not be unmounted from inside another root's commit.
    */
-  @bound private onRecoverableError(error: unknown): void {
+  @bound private onRecoverableError(error: unknown, errorInfo?: { componentStack?: string | null }): void {
     if (this.fellBack) {
       console.warn(`${StorefrontHydrator.LOG_PREFIX} recoverable error after fallback (ignored):`, error);
       return;
     }
     this.fellBack = true;
-    console.warn(`${StorefrontHydrator.LOG_PREFIX} fallback: ${StorefrontHydrationReason.RECOVERABLE_ERROR.value}`, error);
+    // The production build's message is a bare "#418" with no arguments; the component stack is the only
+    // thing that names WHICH component rendered differently on the server, so it travels with the line.
+    console.warn(`${StorefrontHydrator.LOG_PREFIX} fallback: ${StorefrontHydrationReason.RECOVERABLE_ERROR.value}`, error, errorInfo?.componentStack || '');
     window.setTimeout(this.fallbackAfterHydration, 0);
   }
 
