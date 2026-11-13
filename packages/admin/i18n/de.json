@@ -181,7 +181,10 @@
       "deletePermanently": "Endgültig löschen",
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
-      "recordPart": { "download": "Herunterladen {{title}}", "person": "Person" },
+      "recordPart": {
+        "download": "Herunterladen {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Ungespeicherte Änderungen an",
       "noUnsaved": "Keine ungespeicherten Änderungen",
       "notSaved": "Nicht gespeichert: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Als JSON anzeigen",
       "showForm": "Als Formular anzeigen",
       "recordActions": "Aktionen für den Datensatz",
+      "sectionActions": "Aktionen für den Abschnitt",
       "breadcrumb": "Brotkrümelnavigation",
       "copyTitle": "Kopieren",
       "copied": "Kopiert",
@@ -663,7 +667,11 @@
       "general": "Allgemein",
       "moreIn": "Mehr in {{section}}",
       "thisSection": "Dieser Bereich",
-      "collapse": "Seitenleiste einklappen"
+      "collapse": "Seitenleiste einklappen",
+      "expand": "Seitenleiste ausklappen",
+      "search": "Suchen",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nichts im Menü passt zu „{{query}}“"
     },
     "workspace": {
       "unavailable": "Arbeitsbereich nicht verfügbar",

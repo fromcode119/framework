@@ -7,6 +7,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Card } from '@/components/ui/view/card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
+import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import { RecordSectionCard } from '@/components/collection/edit/view/record-section-card.client';
 
@@ -37,6 +38,9 @@ export class EditPageMain extends PureReactor {
   @prop declare saveError?: string;
   @prop declare clearSaveError?: () => void;
   @prop declare recordTitle?: string;
+  /** Names each section's slots (`<base>.<section>.head|body|menu`); see RecordSectionCard. */
+  @prop declare sectionSlotBase?: string;
+  @prop declare slotProps?: Record<string, any>;
 
   /** Collapsed sections (`admin.sectionCollapsed`) the operator has opened on this page. */
   @state openSections: Record<string, boolean> = {};
@@ -92,7 +96,9 @@ export class EditPageMain extends PureReactor {
           saveError={this.saveError}
           clearSaveError={this.clearSaveError}
           recordTitle={this.recordTitle}
-          recordPart={this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} /> : null}
+          slotBase={this.sectionSlotBase}
+          slotProps={this.slotProps}
+          recordPart={this.recordLinks ? (place: RecordPartPlace) => <CollectionRecordPart links={this.recordLinks!} sectionKey={section.key} navigate={this.navigate} place={place} /> : undefined}
         />
       );
     }
@@ -113,7 +119,7 @@ export class EditPageMain extends PureReactor {
             </div>
           </div>
         ) : null}
-        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} /> : null}
+        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
       </Card>
     );
   }

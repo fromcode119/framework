@@ -2,6 +2,7 @@ import type { ICollection } from '@core/collections/interfaces/collection.interf
 import type { IIndexWhere } from '@core/collections/interfaces/index-where.interface';
 import type { IFieldInput } from '@core/interfaces/field-input.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
+import type { ICollectionRecordView } from '@core/collections/interfaces/collection-record-view.interface';
 
 /**
  * A collection as a PLUGIN declares it, before the framework normalizes it.
@@ -64,6 +65,8 @@ export interface ICollectionInput extends Omit<
     readonly useAsTitle?: string;
     readonly defaultColumns?: readonly string[];
     readonly list?: ICollectionListView;
+    /** What a record page's header says besides the title. */
+    readonly record?: ICollectionRecordView;
     readonly group?: string;
     readonly icon?: string;
     readonly hidden?: boolean | ((args: { user: any }) => boolean);

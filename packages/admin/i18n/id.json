@@ -181,7 +181,10 @@
       "deletePermanently": "Hapus Permanen",
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
-      "recordPart": { "download": "Unduh {{title}}", "person": "Orang" },
+      "recordPart": {
+        "download": "Unduh {{title}}",
+        "person": "Orang"
+      },
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tidak ada perubahan yang belum disimpan",
       "notSaved": "Tidak tersimpan: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Tampilkan sebagai JSON",
       "showForm": "Tampilkan sebagai formulir",
       "recordActions": "Tindakan catatan",
+      "sectionActions": "Tindakan bagian",
       "breadcrumb": "Jejak navigasi",
       "copyTitle": "Salin",
       "copied": "Disalin",
@@ -663,7 +667,11 @@
       "general": "Umum",
       "moreIn": "Lainnya di {{section}}",
       "thisSection": "Bagian Ini",
-      "collapse": "Ciutkan Sidebar"
+      "collapse": "Ciutkan Sidebar",
+      "expand": "Bentangkan bilah sisi",
+      "search": "Cari",
+      "searchShortcut": "⌘K",
+      "noMatches": "Tidak ada di menu yang cocok dengan “{{query}}”"
     },
     "workspace": {
       "unavailable": "Workspace tidak tersedia",

@@ -181,7 +181,10 @@
       "deletePermanently": "حذف نهائي",
       "relatedRecords": "السجلات المرتبطة",
       "relatedEmpty": "لا توجد إضافة أخرى تحتفظ بسجل مرتبط بهذا السجل بعد.",
-      "recordPart": { "download": "تنزيل {{title}}", "person": "الشخص" },
+      "recordPart": {
+        "download": "تنزيل {{title}}",
+        "person": "الشخص"
+      },
       "unsavedIn": "تغييرات غير محفوظة في",
       "noUnsaved": "لا توجد تغييرات غير محفوظة",
       "notSaved": "لم يُحفظ: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "عرض كـ JSON",
       "showForm": "عرض كنموذج",
       "recordActions": "إجراءات السجل",
+      "sectionActions": "إجراءات القسم",
       "breadcrumb": "مسار التنقل",
       "copyTitle": "نسخ",
       "copied": "تم النسخ",
@@ -663,7 +667,11 @@
       "general": "عام",
       "moreIn": "المزيد في {{section}}",
       "thisSection": "هذا القسم",
-      "collapse": "طي الشريط الجانبي"
+      "collapse": "طي الشريط الجانبي",
+      "expand": "توسيع الشريط الجانبي",
+      "search": "بحث",
+      "searchShortcut": "⌘K",
+      "noMatches": "لا شيء في القائمة يطابق «{{query}}»"
     },
     "workspace": {
       "unavailable": "مساحة العمل غير متاحة",

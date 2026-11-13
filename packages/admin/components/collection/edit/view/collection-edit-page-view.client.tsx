@@ -6,6 +6,8 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
 import { EditHeader } from '@/components/collection/edit/view/edit-header.client';
+import { EditRecordCrumbs } from '@/components/collection/edit/view/edit-record-crumbs.client';
+import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RevisionModal } from '@/components/collection/edit/view/revision-modal.client';
 import { EditFooter } from '@/components/collection/edit/view/edit-footer.client';
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
@@ -167,21 +169,29 @@ export class CollectionEditPageView extends Reactor {
             <span className="fc-scope-notice__text">{AdminI18n.t('collection.edit.viewOnly')}</span>
           </div>
         )}
-        <EditHeader
-          collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
-          resolvedTitleValue={edit.resolvedTitleValue}
-          formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
-          statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
-          handleInputChange={edit.handleInputChange}
-          advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} focusedSection={edit.focusedSection}
-          handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
-          canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
-          isDirty={edit.isDirty}
-        />
-
         <EditPageBody
           edit={edit} slug={slug} id={id}
-          advancedView={this.advancedView} recordHref={`/${pluginSlug}/${slug}/${id}`}
+          advancedView={this.advancedView}
+          crumbs={edit.isNew ? null : (
+            <EditRecordCrumbs
+              pluginSlug={pluginSlug} slug={slug} id={id} focusedSection={edit.focusedSection}
+              listLabel={CollectionListUtils.resolveCollectionLabel(collection, slug)} title={edit.resolvedTitleValue || String(id)}
+            />
+          )}
+          head={(
+            <EditHeader
+              collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
+              resolvedTitleValue={edit.resolvedTitleValue}
+              formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
+              statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
+              handleInputChange={edit.handleInputChange}
+              advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+              handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
+              canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
+              isDirty={edit.isDirty}
+              moreSections={edit.moreSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.push(href)}
+            />
+          )}
         />
 
         <RevisionModal

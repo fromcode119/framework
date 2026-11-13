@@ -181,7 +181,10 @@
       "deletePermanently": "Scrios go Buan",
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
-      "recordPart": { "download": "Íoslódáil {{title}}", "person": "Duine" },
+      "recordPart": {
+        "download": "Íoslódáil {{title}}",
+        "person": "Duine"
+      },
       "unsavedIn": "Athruithe gan sábháil ar",
       "noUnsaved": "Gan athruithe gan sábháil",
       "notSaved": "Níor sábháladh: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Taispeáin mar JSON",
       "showForm": "Taispeáin mar fhoirm",
       "recordActions": "Gníomhartha an taifid",
+      "sectionActions": "Gníomhartha an rannáin",
       "breadcrumb": "Conair nascleanúna",
       "copyTitle": "Cóipeáil",
       "copied": "Cóipeáilte",
@@ -663,7 +667,11 @@
       "general": "Ginearálta",
       "moreIn": "Tuilleadh in {{section}}",
       "thisSection": "An Chuid Seo",
-      "collapse": "Laghdaigh an Barra Taoibh"
+      "collapse": "Laghdaigh an Barra Taoibh",
+      "expand": "Leathnaigh an barra taoibh",
+      "search": "Cuardaigh",
+      "searchShortcut": "⌘K",
+      "noMatches": "Níl aon rud sa roghchlár ag teacht le “{{query}}”"
     },
     "workspace": {
       "unavailable": "Níl an spás oibre ar fáil",

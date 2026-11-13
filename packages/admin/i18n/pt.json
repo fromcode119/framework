@@ -181,7 +181,10 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
-      "recordPart": { "download": "Transferir {{title}}", "person": "Pessoa" },
+      "recordPart": {
+        "download": "Transferir {{title}}",
+        "person": "Pessoa"
+      },
       "unsavedIn": "Alterações não guardadas em",
       "noUnsaved": "Sem alterações por guardar",
       "notSaved": "Não guardado: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Mostrar como JSON",
       "showForm": "Mostrar como formulário",
       "recordActions": "Ações do registo",
+      "sectionActions": "Ações da secção",
       "breadcrumb": "Trilho de navegação",
       "copyTitle": "Copiar",
       "copied": "Copiado",
@@ -663,7 +667,11 @@
       "general": "Geral",
       "moreIn": "Mais em {{section}}",
       "thisSection": "Esta secção",
-      "collapse": "Recolher barra lateral"
+      "collapse": "Recolher barra lateral",
+      "expand": "Expandir barra lateral",
+      "search": "Pesquisar",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nada no menu corresponde a “{{query}}”"
     },
     "workspace": {
       "unavailable": "Espaço de trabalho indisponível",

@@ -181,7 +181,10 @@
       "deletePermanently": "Kalıcı Olarak Sil",
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
-      "recordPart": { "download": "İndir {{title}}", "person": "Kişi" },
+      "recordPart": {
+        "download": "İndir {{title}}",
+        "person": "Kişi"
+      },
       "unsavedIn": "Kaydedilmemiş değişiklikler:",
       "noUnsaved": "Kaydedilmemiş değişiklik yok",
       "notSaved": "Kaydedilmedi: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "JSON olarak göster",
       "showForm": "Form olarak göster",
       "recordActions": "Kayıt işlemleri",
+      "sectionActions": "Bölüm işlemleri",
       "breadcrumb": "İçerik haritası",
       "copyTitle": "Kopyala",
       "copied": "Kopyalandı",
@@ -663,7 +667,11 @@
       "general": "Genel",
       "moreIn": "{{section}} Bölümünde Daha Fazlası",
       "thisSection": "Bu Bölüm",
-      "collapse": "Kenar Çubuğunu Daralt"
+      "collapse": "Kenar Çubuğunu Daralt",
+      "expand": "Kenar çubuğunu genişlet",
+      "search": "Ara",
+      "searchShortcut": "⌘K",
+      "noMatches": "Menüde “{{query}}” ile eşleşen bir şey yok"
     },
     "workspace": {
       "unavailable": "Çalışma alanı kullanılamıyor",

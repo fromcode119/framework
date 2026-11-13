@@ -181,7 +181,10 @@
       "deletePermanently": "Slett permanent",
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
-      "recordPart": { "download": "Last ned {{title}}", "person": "Person" },
+      "recordPart": {
+        "download": "Last ned {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Ulagrede endringer i",
       "noUnsaved": "Ingen ulagrede endringer",
       "notSaved": "Ikke lagret: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Vis som JSON",
       "showForm": "Vis som skjema",
       "recordActions": "Handlinger for posten",
+      "sectionActions": "Handlinger for delen",
       "breadcrumb": "Brødsmulesti",
       "copyTitle": "Kopier",
       "copied": "Kopiert",
@@ -663,7 +667,11 @@
       "general": "Generelt",
       "moreIn": "Mer i {{section}}",
       "thisSection": "Denne delen",
-      "collapse": "Skjul sidepanel"
+      "collapse": "Skjul sidepanel",
+      "expand": "Utvid sidepanelet",
+      "search": "Søk",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ingenting i menyen samsvarer med «{{query}}»"
     },
     "workspace": {
       "unavailable": "Arbeidsområdet er utilgjengelig",

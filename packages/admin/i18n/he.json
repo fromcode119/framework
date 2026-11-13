@@ -181,7 +181,10 @@
       "deletePermanently": "מחיקה לצמיתות",
       "relatedRecords": "רשומות קשורות",
       "relatedEmpty": "עדיין אין תוסף אחר שמחזיק רשומה המקושרת לרשומה זו.",
-      "recordPart": { "download": "הורדה {{title}}", "person": "אדם" },
+      "recordPart": {
+        "download": "הורדה {{title}}",
+        "person": "אדם"
+      },
       "unsavedIn": "שינויים שלא נשמרו ב-",
       "noUnsaved": "אין שינויים שלא נשמרו",
       "notSaved": "לא נשמר: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "הצג כ־JSON",
       "showForm": "הצג כטופס",
       "recordActions": "פעולות על הרשומה",
+      "sectionActions": "פעולות על המקטע",
       "breadcrumb": "נתיב ניווט",
       "copyTitle": "העתק",
       "copied": "הועתק",
@@ -663,7 +667,11 @@
       "general": "כללי",
       "moreIn": "עוד ב{{section}}",
       "thisSection": "מקטע זה",
-      "collapse": "כיווץ סרגל הצד"
+      "collapse": "כיווץ סרגל הצד",
+      "expand": "הרחבת סרגל הצד",
+      "search": "חיפוש",
+      "searchShortcut": "⌘K",
+      "noMatches": "אין בתפריט התאמה ל„{{query}}”"
     },
     "workspace": {
       "unavailable": "סביבת העבודה אינה זמינה",

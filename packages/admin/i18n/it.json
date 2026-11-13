@@ -181,7 +181,10 @@
       "deletePermanently": "Elimina definitivamente",
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
-      "recordPart": { "download": "Scarica {{title}}", "person": "Persona" },
+      "recordPart": {
+        "download": "Scarica {{title}}",
+        "person": "Persona"
+      },
       "unsavedIn": "Modifiche non salvate in",
       "noUnsaved": "Nessuna modifica non salvata",
       "notSaved": "Non salvato: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Mostra come JSON",
       "showForm": "Mostra come modulo",
       "recordActions": "Azioni sul record",
+      "sectionActions": "Azioni sulla sezione",
       "breadcrumb": "Percorso",
       "copyTitle": "Copia",
       "copied": "Copiato",
@@ -663,7 +667,11 @@
       "general": "Generale",
       "moreIn": "Altro in {{section}}",
       "thisSection": "Questa sezione",
-      "collapse": "Comprimi barra laterale"
+      "collapse": "Comprimi barra laterale",
+      "expand": "Espandi barra laterale",
+      "search": "Cerca",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nessuna voce del menu corrisponde a «{{query}}»"
     },
     "workspace": {
       "unavailable": "Workspace non disponibile",

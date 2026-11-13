@@ -181,7 +181,10 @@
       "deletePermanently": "Definitief verwijderen",
       "relatedRecords": "Gerelateerde records",
       "relatedEmpty": "Nog geen andere plugin heeft een record dat aan dit record is gekoppeld.",
-      "recordPart": { "download": "Downloaden {{title}}", "person": "Persoon" },
+      "recordPart": {
+        "download": "Downloaden {{title}}",
+        "person": "Persoon"
+      },
       "unsavedIn": "Niet-opgeslagen wijzigingen in",
       "noUnsaved": "Geen niet-opgeslagen wijzigingen",
       "notSaved": "Niet opgeslagen: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Toon als JSON",
       "showForm": "Toon als formulier",
       "recordActions": "Acties voor dit record",
+      "sectionActions": "Acties voor deze sectie",
       "breadcrumb": "Kruimelpad",
       "copyTitle": "Kopiëren",
       "copied": "Gekopieerd",
@@ -663,7 +667,11 @@
       "general": "Algemeen",
       "moreIn": "Meer in {{section}}",
       "thisSection": "Deze sectie",
-      "collapse": "Zijbalk inklappen"
+      "collapse": "Zijbalk inklappen",
+      "expand": "Zijbalk uitklappen",
+      "search": "Zoeken",
+      "searchShortcut": "⌘K",
+      "noMatches": "Niets in het menu komt overeen met ‘{{query}}’"
     },
     "workspace": {
       "unavailable": "Werkruimte niet beschikbaar",

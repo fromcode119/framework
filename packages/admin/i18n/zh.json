@@ -181,7 +181,10 @@
       "deletePermanently": "永久删除",
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
-      "recordPart": { "download": "下载 {{title}}", "person": "人员" },
+      "recordPart": {
+        "download": "下载 {{title}}",
+        "person": "人员"
+      },
       "unsavedIn": "未保存的更改：",
       "noUnsaved": "没有未保存的更改",
       "notSaved": "未保存：{{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "以 JSON 显示",
       "showForm": "以表单显示",
       "recordActions": "记录操作",
+      "sectionActions": "区块操作",
       "breadcrumb": "面包屑导航",
       "copyTitle": "复制",
       "copied": "已复制",
@@ -663,7 +667,11 @@
       "general": "常规",
       "moreIn": "{{section}}中的更多内容",
       "thisSection": "本节",
-      "collapse": "收起侧边栏"
+      "collapse": "收起侧边栏",
+      "expand": "展开侧边栏",
+      "search": "搜索",
+      "searchShortcut": "⌘K",
+      "noMatches": "菜单中没有与“{{query}}”匹配的项"
     },
     "workspace": {
       "unavailable": "工作区不可用",

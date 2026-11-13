@@ -181,7 +181,10 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Nijedan drugi dodatak još nema zapis povezan s ovim.",
-      "recordPart": { "download": "Preuzmi {{title}}", "person": "Osoba" },
+      "recordPart": {
+        "download": "Preuzmi {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Nespremljene promjene u",
       "noUnsaved": "Nema nespremljenih promjena",
       "notSaved": "Nije spremljeno: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Prikaži kao JSON",
       "showForm": "Prikaži kao obrazac",
       "recordActions": "Radnje zapisa",
+      "sectionActions": "Radnje odjeljka",
       "breadcrumb": "Navigacijski put",
       "copyTitle": "Kopiraj",
       "copied": "Kopirano",
@@ -663,7 +667,11 @@
       "general": "Općenito",
       "moreIn": "Više u odjeljku {{section}}",
       "thisSection": "Ovaj odjeljak",
-      "collapse": "Sažmi bočnu traku"
+      "collapse": "Sažmi bočnu traku",
+      "expand": "Proširi bočnu traku",
+      "search": "Traži",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ništa u izborniku ne odgovara „{{query}}”"
     },
     "workspace": {
       "unavailable": "Radni prostor nije dostupan",

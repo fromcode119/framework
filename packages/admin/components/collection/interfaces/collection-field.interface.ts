@@ -32,6 +32,8 @@ export interface ICollectionField {
      * value has no control at all, which is the Rule Zero failure `hidden` causes.
      */
     renderedBy?: string;
+    /** Read on the card by the named sibling's `readComponent`; still edited by its own control. */
+    readBy?: string;
     /**
      * How often an operator needs this field: `everyday` (the default), `occasional` or `technical`.
      * The edit form opens on the everyday fields and says how many more there are; see `FieldLevel`.

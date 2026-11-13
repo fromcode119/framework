@@ -69,7 +69,15 @@ describe('CollectionEditDerivations — what a record draws and lists under More
     const wide = { name: 'address', type: 'json', label: 'Address', admin: { section: 'Payment', sectionLayout: 'full', level: 'occasional' } };
     const method = { name: 'method', type: 'text', label: 'Method', admin: { section: 'Payment' } };
     const d = CollectionEditDerivations.build(selfFor([name, wide, method]));
-    expect(d.fullWidthMainFieldSections.map((s: any) => s.title)).toEqual(['Payment']);
-    expect(d.fullWidthMainFieldSections[0].fields.map((f: any) => f.name)).toEqual(['method']);
+    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual([undefined, 'Payment']);
+    expect(d.standardMainFieldSections[1].fields.map((f: any) => f.name)).toEqual(['method']);
+  });
+
+  it('keeps the main sections in the order the collection declares them, wide ones included', () => {
+    const items = { name: 'items', type: 'json', label: 'Items', admin: { section: 'Summary', sectionLayout: 'full' } };
+    const method = { name: 'method', type: 'text', label: 'Method', admin: { section: 'Payment' } };
+    const d = CollectionEditDerivations.build(selfFor([items, method]));
+    expect(d.standardMainFieldSections.map((s: any) => s.title)).toEqual(['Summary', 'Payment']);
+    expect(d.fullWidthMainFieldSections).toEqual([]);
   });
 });

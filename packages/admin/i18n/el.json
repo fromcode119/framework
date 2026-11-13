@@ -181,7 +181,10 @@
       "deletePermanently": "Οριστική διαγραφή",
       "relatedRecords": "Σχετικές εγγραφές",
       "relatedEmpty": "Κανένα άλλο πρόσθετο δεν έχει ακόμη εγγραφή συνδεδεμένη με αυτήν.",
-      "recordPart": { "download": "Λήψη {{title}}", "person": "Πρόσωπο" },
+      "recordPart": {
+        "download": "Λήψη {{title}}",
+        "person": "Πρόσωπο"
+      },
       "unsavedIn": "Μη αποθηκευμένες αλλαγές σε",
       "noUnsaved": "Δεν υπάρχουν μη αποθηκευμένες αλλαγές",
       "notSaved": "Δεν αποθηκεύτηκε: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Εμφάνιση ως JSON",
       "showForm": "Εμφάνιση ως φόρμα",
       "recordActions": "Ενέργειες εγγραφής",
+      "sectionActions": "Ενέργειες ενότητας",
       "breadcrumb": "Διαδρομή",
       "copyTitle": "Αντιγραφή",
       "copied": "Αντιγράφηκε",
@@ -663,7 +667,11 @@
       "general": "Γενικά",
       "moreIn": "Περισσότερα σε {{section}}",
       "thisSection": "Αυτή η ενότητα",
-      "collapse": "Σύμπτυξη πλευρικής στήλης"
+      "collapse": "Σύμπτυξη πλευρικής στήλης",
+      "expand": "Ανάπτυξη πλευρικής στήλης",
+      "search": "Αναζήτηση",
+      "searchShortcut": "⌘K",
+      "noMatches": "Τίποτα στο μενού δεν ταιριάζει με «{{query}}»"
     },
     "workspace": {
       "unavailable": "Ο χώρος εργασίας δεν είναι διαθέσιμος",

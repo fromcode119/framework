@@ -54,7 +54,7 @@ export class Dropdown extends DropdownPositioning {
   }
 
   render(): ReactNode {
-    const { trigger, items, header, panel } = this;
+    const { trigger, items, header, panel, footer } = this;
     const { isOpen, coords } = this;
 
     return (
@@ -185,6 +185,7 @@ export class Dropdown extends DropdownPositioning {
                 </Fragment>
               ))}
             </div>}
+            {footer ? <div className="fc-dropdown-footer">{footer}</div> : null}
           </div>
         </RootFramework>
       )}

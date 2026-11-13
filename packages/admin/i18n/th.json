@@ -181,7 +181,10 @@
       "deletePermanently": "ลบถาวร",
       "relatedRecords": "รายการที่เกี่ยวข้อง",
       "relatedEmpty": "ยังไม่มีปลั๊กอินอื่นที่มีรายการเชื่อมโยงกับรายการนี้",
-      "recordPart": { "download": "ดาวน์โหลด {{title}}", "person": "บุคคล" },
+      "recordPart": {
+        "download": "ดาวน์โหลด {{title}}",
+        "person": "บุคคล"
+      },
       "unsavedIn": "การเปลี่ยนแปลงที่ยังไม่บันทึกใน",
       "noUnsaved": "ไม่มีการเปลี่ยนแปลงที่ยังไม่บันทึก",
       "notSaved": "ยังไม่ได้บันทึก: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "แสดงเป็น JSON",
       "showForm": "แสดงเป็นฟอร์ม",
       "recordActions": "การดำเนินการกับระเบียน",
+      "sectionActions": "การดำเนินการกับส่วน",
       "breadcrumb": "เส้นทางนำทาง",
       "copyTitle": "คัดลอก",
       "copied": "คัดลอกแล้ว",
@@ -663,7 +667,11 @@
       "general": "ทั่วไป",
       "moreIn": "เพิ่มเติมใน {{section}}",
       "thisSection": "ส่วนนี้",
-      "collapse": "ยุบแถบด้านข้าง"
+      "collapse": "ยุบแถบด้านข้าง",
+      "expand": "ขยายแถบด้านข้าง",
+      "search": "ค้นหา",
+      "searchShortcut": "⌘K",
+      "noMatches": "ไม่มีรายการในเมนูที่ตรงกับ “{{query}}”"
     },
     "workspace": {
       "unavailable": "พื้นที่ทำงานไม่พร้อมใช้งาน",

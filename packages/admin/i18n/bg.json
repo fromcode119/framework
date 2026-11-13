@@ -218,7 +218,7 @@
       "deletePermanently": "Изтрий окончателно",
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
-      "recordPart": { "download": "Изтегли {{title}}", "person": "Лице" },
+      "recordPart": { "download": "Изтегли {{title}}", "person": "Име" },
       "unsavedIn": "Незапазени промени в",
       "noUnsaved": "Няма незапазени промени",
       "notSaved": "Не е запазено: {{reason}}",
@@ -266,12 +266,13 @@
       "showJson": "Покажи като JSON",
       "showForm": "Покажи като форма",
       "recordActions": "Действия със записа",
+      "sectionActions": "Действия с раздела",
       "breadcrumb": "Път",
       "copyTitle": "Копирай",
       "copied": "Копирано",
       "more": "Още",
-      "moreFields": "{{count}} полета",
-      "moreOneField": "{{count}} поле"
+      "moreFields": "още {{count}} полета",
+      "moreOneField": "още {{count}} поле"
     },
     "notFound": {
       "title": "Колекцията не е намерена",
@@ -700,7 +701,11 @@
       "general": "Общи",
       "moreIn": "Още в {{section}}",
       "thisSection": "този раздел",
-      "collapse": "Свий менюто"
+      "collapse": "Свий менюто",
+      "expand": "Разгъни менюто",
+      "search": "Търсене",
+      "searchShortcut": "⌘K",
+      "noMatches": "Нищо в менюто не съвпада с „{{query}}“"
     },
     "workspace": {
       "unavailable": "Работното пространство е недостъпно",

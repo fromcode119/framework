@@ -181,7 +181,10 @@
       "deletePermanently": "Удалить навсегда",
       "relatedRecords": "Связанные записи",
       "relatedEmpty": "Ни один другой плагин пока не содержит записей, связанных с этой.",
-      "recordPart": { "download": "Скачать {{title}}", "person": "Человек" },
+      "recordPart": {
+        "download": "Скачать {{title}}",
+        "person": "Человек"
+      },
       "unsavedIn": "Несохранённые изменения в",
       "noUnsaved": "Нет несохранённых изменений",
       "notSaved": "Не сохранено: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Показать как JSON",
       "showForm": "Показать как форму",
       "recordActions": "Действия с записью",
+      "sectionActions": "Действия с разделом",
       "breadcrumb": "Навигационная цепочка",
       "copyTitle": "Копировать",
       "copied": "Скопировано",
@@ -663,7 +667,11 @@
       "general": "Общее",
       "moreIn": "Ещё в разделе «{{section}}»",
       "thisSection": "Этот раздел",
-      "collapse": "Свернуть боковую панель"
+      "collapse": "Свернуть боковую панель",
+      "expand": "Развернуть боковую панель",
+      "search": "Поиск",
+      "searchShortcut": "⌘K",
+      "noMatches": "В меню нет ничего по запросу «{{query}}»"
     },
     "workspace": {
       "unavailable": "Рабочее пространство недоступно",

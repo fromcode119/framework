@@ -181,7 +181,10 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Noben drug vtičnik še nima zapisa, povezanega s tem.",
-      "recordPart": { "download": "Prenesi {{title}}", "person": "Oseba" },
+      "recordPart": {
+        "download": "Prenesi {{title}}",
+        "person": "Oseba"
+      },
       "unsavedIn": "Neshranjene spremembe v",
       "noUnsaved": "Ni neshranjenih sprememb",
       "notSaved": "Ni shranjeno: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Prikaži kot JSON",
       "showForm": "Prikaži kot obrazec",
       "recordActions": "Dejanja zapisa",
+      "sectionActions": "Dejanja razdelka",
       "breadcrumb": "Drobtinice",
       "copyTitle": "Kopiraj",
       "copied": "Kopirano",
@@ -663,7 +667,11 @@
       "general": "Splošno",
       "moreIn": "Več v razdelku {{section}}",
       "thisSection": "Ta razdelek",
-      "collapse": "Strni stransko vrstico"
+      "collapse": "Strni stransko vrstico",
+      "expand": "Razširi stransko vrstico",
+      "search": "Iskanje",
+      "searchShortcut": "⌘K",
+      "noMatches": "V meniju se nič ne ujema z »{{query}}«"
     },
     "workspace": {
       "unavailable": "Delovni prostor ni na voljo",

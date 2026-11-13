@@ -10,7 +10,7 @@ const collection = {
     recordLinks: {
       kind: 'demo:thing',
       keys: { reference: 'reference', thingId: 'id' },
-      parts: { payment: { section: 'Totals', empty: 'Nothing paid yet.' }, delivery: { section: 'Delivery' }, schedule: { section: 'Delivery' } },
+      parts: { payment: { section: 'Totals', empty: 'Nothing paid yet.' }, delivery: { section: 'Delivery', menu: true }, schedule: { section: 'Delivery' } },
     },
   },
 };
@@ -28,9 +28,14 @@ describe('CollectionRecordLinksDeclaration', () => {
 
   it('hands a section the parts mapped to it, with the words for an empty part', () => {
     const links = CollectionRecordLinksDeclaration.of(collection, { reference: 'A1' }, '3')!;
-    expect(links.partsOf('Totals')).toEqual([{ term: 'payment', empty: 'Nothing paid yet.' }]);
+    expect(links.partsOf('Totals')).toEqual([{ term: 'payment', empty: 'Nothing paid yet.', menu: false }]);
     expect(links.partsOf('Delivery').map((part) => part.term)).toEqual(['delivery', 'schedule']);
     expect(links.partsOf('Notes')).toEqual([]);
+  });
+
+  it('keeps a part the collection lists in the section menu out of the section body', () => {
+    const links = CollectionRecordLinksDeclaration.of(collection, { reference: 'A1' }, '3')!;
+    expect(links.partsOf('Delivery').map((part) => [part.term, part.menu])).toEqual([['delivery', true], ['schedule', false]]);
   });
 
   it('counts a part as placed only while its section is on screen', () => {

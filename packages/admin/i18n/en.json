@@ -181,7 +181,7 @@
       "deletePermanently": "Delete Permanently",
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
-      "recordPart": { "download": "Download {{title}}", "person": "Person" },
+      "recordPart": { "download": "Download {{title}}", "person": "Name" },
       "unsavedIn": "Unsaved changes to",
       "noUnsaved": "No unsaved changes",
       "notSaved": "Not saved: {{reason}}",
@@ -229,12 +229,13 @@
       "showJson": "Show as JSON",
       "showForm": "Show as form",
       "recordActions": "Record actions",
+      "sectionActions": "Section actions",
       "breadcrumb": "Breadcrumb",
       "copyTitle": "Copy",
       "copied": "Copied",
       "more": "More",
-      "moreFields": "{{count}} fields",
-      "moreOneField": "{{count}} field"
+      "moreFields": "{{count}} more fields",
+      "moreOneField": "{{count}} more field"
     },
     "notFound": {
       "title": "Collection Not Found",
@@ -663,7 +664,11 @@
       "general": "General",
       "moreIn": "More In {{section}}",
       "thisSection": "This Section",
-      "collapse": "Collapse Sidebar"
+      "collapse": "Collapse Sidebar",
+      "expand": "Expand Sidebar",
+      "search": "Search",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nothing in the menu matches “{{query}}”"
     },
     "workspace": {
       "unavailable": "Workspace unavailable",

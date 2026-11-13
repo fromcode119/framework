@@ -181,7 +181,10 @@
       "deletePermanently": "Padam Secara Kekal",
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
-      "recordPart": { "download": "Muat turun {{title}}", "person": "Orang" },
+      "recordPart": {
+        "download": "Muat turun {{title}}",
+        "person": "Orang"
+      },
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tiada perubahan belum disimpan",
       "notSaved": "Tidak disimpan: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Papar sebagai JSON",
       "showForm": "Papar sebagai borang",
       "recordActions": "Tindakan rekod",
+      "sectionActions": "Tindakan bahagian",
       "breadcrumb": "Jejak navigasi",
       "copyTitle": "Salin",
       "copied": "Disalin",
@@ -663,7 +667,11 @@
       "general": "Umum",
       "moreIn": "Lagi dalam {{section}}",
       "thisSection": "Bahagian Ini",
-      "collapse": "Runtuhkan Bar Sisi"
+      "collapse": "Runtuhkan Bar Sisi",
+      "expand": "Kembangkan bar sisi",
+      "search": "Cari",
+      "searchShortcut": "⌘K",
+      "noMatches": "Tiada apa-apa dalam menu sepadan dengan “{{query}}”"
     },
     "workspace": {
       "unavailable": "Ruang kerja tidak tersedia",

@@ -1,6 +1,8 @@
 import type { ReactElement } from 'react';
-import { Platform, prop } from '@fromcode119/react-class-components';
-import { Slot } from '@fromcode119/react';
+import { SidebarNavPart } from '@/app/enums/sidebar-nav-part.enum';
+import { Platform, bound, prop, state } from '@fromcode119/react-class-components';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminComponent } from '@/components/view/admin-component.client';
@@ -11,6 +13,7 @@ import { SidebarNavGroups } from '@/app/sidebar-nav-groups';
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarNotifications } from '@/app/components/view/sidebar-notifications.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
+import { SidebarSearch } from '@/app/sidebar-search.client';
 
 export class Sidebar extends AdminComponent {
   @prop declare isOpen: boolean;
@@ -22,6 +25,13 @@ export class Sidebar extends AdminComponent {
   @prop declare sectionPages: any[];
   @prop declare activePrimaryPathOverride: string;
   @prop declare activeChildPathOverride: string;
+
+  /** What the menu's search holds. */
+  @state query = '';
+
+  @bound private setQuery(query: string): void {
+    this.query = query;
+  }
 
   /** Previous `document.body.style.overflow` while the mobile scroll lock is engaged. */
   private lockedBodyOverflow: string | null = null;
@@ -117,35 +127,48 @@ export class Sidebar extends AdminComponent {
   }
 
   render(): ReactElement {
-    const isMini = this.isMini;
+    // Open is the phone's drawer, opened from the menu button: it is always the full menu, whatever the
+    // desktop's collapsed setting is.
+    const isMini = this.isMini && !this.isOpen;
     const { groupedMenu } = SidebarMenuService.buildGroupedMenu(this.groupedMenuItems);
     const user = this.auth?.user;
+    const navProps = {
+      isAdmin: !!user?.roles?.includes('admin'),
+      isMini,
+      pathname: this.pathnameValue,
+      groupedMenu,
+      sectionPages: this.sectionPages,
+      normalizedActivePrimaryPathOverride: this.normalizedActivePrimaryPathOverride,
+      normalizedActiveChildPathOverride: this.normalizedActiveChildPathOverride,
+      footerSettingsItem: this.footerSettingsItem,
+      onClose: this.onClose,
+      query: isMini ? '' : this.query,
+    };
 
     return (
       <aside className={`fc-nav fixed inset-y-0 start-0 z-[200] ${isMini ? 'w-14' : 'w-60'} transform ${this.isOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 flex flex-col overflow-hidden`}>
-        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose} />
+        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose}
+          notifications={<SidebarNotifications isMini compact />} />
+        {!isMini && <SidebarSearch query={this.query} onQuery={this.setQuery} />}
 
         <nav className={`fc-nav__scroll flex-1 min-h-0 ${isMini ? 'px-2' : 'px-3'} overflow-y-auto overscroll-contain scrollbar-hide`}>
-          {!isMini && <Slot name="admin.layout.sidebar.top" />}
-          <SidebarNavGroups
-            isAdmin={!!user?.roles?.includes('admin')}
-            isMini={isMini}
-            pathname={this.pathnameValue}
-            groupedMenu={groupedMenu}
-            sectionPages={this.sectionPages}
-            normalizedActivePrimaryPathOverride={this.normalizedActivePrimaryPathOverride}
-            normalizedActiveChildPathOverride={this.normalizedActiveChildPathOverride}
-            footerSettingsItem={this.footerSettingsItem}
-            onClose={this.onClose}
-            beforeSettings={!isMini ? <Slot name="admin.layout.sidebar.bottom" /> : null}
-          />
+          {!isMini && !this.query && <Slot name="admin.layout.sidebar.top" />}
+          <SidebarNavGroups {...navProps} part={SidebarNavPart.MAIN} beforeSettings={!isMini ? <Slot name="admin.layout.sidebar.bottom" /> : null} />
         </nav>
 
-        {/* The pinned foot of the sidebar: notifications, the account and the collapse toggle. */}
-        <div className="mt-auto shrink-0">
-          <SidebarNotifications isMini={isMini} />
+        {/* The pinned foot of the sidebar: Settings, the account, and (collapsed) the way back out. */}
+        <div className={`fc-nav__pinned mt-auto shrink-0 ${isMini ? 'px-2' : 'px-3'}`}>
+          <SidebarNavGroups {...navProps} part={SidebarNavPart.FOOT} />
+          {isMini ? null : (
+            <button type="button" onClick={this.onMiniToggle} aria-label={AdminI18n.t('shell.nav.collapse')} title={AdminI18n.t('shell.nav.collapse')} className="fc-nav__collapse">
+              <FrameworkIcons.Left size={16} />
+            </button>
+          )}
+        </div>
+        <div className="shrink-0">
+          {isMini ? <SidebarNotifications isMini /> : null}
           <SidebarAccountCard isMini={isMini} />
-          <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} />
+          {isMini ? <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} /> : null}
         </div>
       </aside>
     );

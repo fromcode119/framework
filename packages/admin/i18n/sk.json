@@ -181,7 +181,10 @@
       "deletePermanently": "Odstrániť natrvalo",
       "relatedRecords": "Súvisiace záznamy",
       "relatedEmpty": "Žiadny iný plugin zatiaľ nemá záznam prepojený s týmto.",
-      "recordPart": { "download": "Stiahnuť {{title}}", "person": "Osoba" },
+      "recordPart": {
+        "download": "Stiahnuť {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Neuložené zmeny v",
       "noUnsaved": "Žiadne neuložené zmeny",
       "notSaved": "Neuložené: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Zobraziť ako JSON",
       "showForm": "Zobraziť ako formulár",
       "recordActions": "Akcie záznamu",
+      "sectionActions": "Akcie sekcie",
       "breadcrumb": "Navigačná cesta",
       "copyTitle": "Kopírovať",
       "copied": "Skopírované",
@@ -663,7 +667,11 @@
       "general": "Všeobecné",
       "moreIn": "Ďalšie v sekcii {{section}}",
       "thisSection": "Táto sekcia",
-      "collapse": "Zbaliť bočný panel"
+      "collapse": "Zbaliť bočný panel",
+      "expand": "Rozbaliť bočný panel",
+      "search": "Hľadať",
+      "searchShortcut": "⌘K",
+      "noMatches": "V ponuke nič nezodpovedá „{{query}}“"
     },
     "workspace": {
       "unavailable": "Pracovný priestor nie je dostupný",

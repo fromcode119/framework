@@ -181,7 +181,10 @@
       "deletePermanently": "Kustuta jäädavalt",
       "relatedRecords": "Seotud kirjed",
       "relatedEmpty": "Ühelgi teisel pluginal pole veel selle kirjega seotud kirjet.",
-      "recordPart": { "download": "Laadi alla {{title}}", "person": "Isik" },
+      "recordPart": {
+        "download": "Laadi alla {{title}}",
+        "person": "Isik"
+      },
       "unsavedIn": "Salvestamata muudatused:",
       "noUnsaved": "Salvestamata muudatusi pole",
       "notSaved": "Ei salvestatud: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Näita JSON-ina",
       "showForm": "Näita vormina",
       "recordActions": "Kirje toimingud",
+      "sectionActions": "Jaotise toimingud",
       "breadcrumb": "Navigatsioonirada",
       "copyTitle": "Kopeeri",
       "copied": "Kopeeritud",
@@ -663,7 +667,11 @@
       "general": "Üldine",
       "moreIn": "Veel jaotises {{section}}",
       "thisSection": "See jaotis",
-      "collapse": "Ahenda külgriba"
+      "collapse": "Ahenda külgriba",
+      "expand": "Laienda külgriba",
+      "search": "Otsi",
+      "searchShortcut": "⌘K",
+      "noMatches": "Menüüs ei vasta miski päringule „{{query}}“"
     },
     "workspace": {
       "unavailable": "Tööruum pole saadaval",

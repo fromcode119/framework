@@ -181,7 +181,10 @@
       "deletePermanently": "Xóa vĩnh viễn",
       "relatedRecords": "Bản ghi liên quan",
       "relatedEmpty": "Chưa có plugin nào khác chứa bản ghi liên kết với bản ghi này.",
-      "recordPart": { "download": "Tải xuống {{title}}", "person": "Người" },
+      "recordPart": {
+        "download": "Tải xuống {{title}}",
+        "person": "Người"
+      },
       "unsavedIn": "Thay đổi chưa lưu ở",
       "noUnsaved": "Không có thay đổi chưa lưu",
       "notSaved": "Chưa lưu: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Hiển thị dạng JSON",
       "showForm": "Hiển thị dạng biểu mẫu",
       "recordActions": "Thao tác với bản ghi",
+      "sectionActions": "Thao tác với mục",
       "breadcrumb": "Đường dẫn",
       "copyTitle": "Sao chép",
       "copied": "Đã sao chép",
@@ -663,7 +667,11 @@
       "general": "Chung",
       "moreIn": "Thêm trong {{section}}",
       "thisSection": "Mục này",
-      "collapse": "Thu gọn thanh bên"
+      "collapse": "Thu gọn thanh bên",
+      "expand": "Mở rộng thanh bên",
+      "search": "Tìm kiếm",
+      "searchShortcut": "⌘K",
+      "noMatches": "Không có mục nào trong menu khớp với “{{query}}”"
     },
     "workspace": {
       "unavailable": "Không gian làm việc không khả dụng",

@@ -96,6 +96,20 @@ export interface IField {
     position?: FieldPosition | string;
     component?: string;
     /**
+     * How a saved record's card READS a field whose `component` edits it: this component draws the value
+     * on the card (an order's lines as rows), and `component` appears only when the section is edited.
+     * Without it a component field is its own interface and is drawn, working, on the card itself.
+     */
+    readComponent?: string;
+    /** Read a `component` field on the card as a plain value row; the component edits it with the section. */
+    readAsValue?: boolean;
+    /**
+     * On a saved record's card, this field is read by the named sibling's `readComponent` (an order's
+     * contact lines read inside its address) instead of as a row of its own. Its own control still edits
+     * it in the section's sheet; unlike `renderedBy`, nothing about editing changes.
+     */
+    readBy?: string;
+    /**
      * For a media field: the file types its picker lists and its upload control offers, in the
      * browser's `accept` syntax (`image/*`, `video/*`, `application/pdf`, comma separated). The picker
      * states the filter it applies; no declaration lists every file in the library.
@@ -172,5 +186,7 @@ export interface IField {
     };
     tab?: string;
     section?: string;
+    /** `section` as declared, before translation; set by the schema localizer. Names the section's slots. */
+    sectionKey?: string;
   };
 }

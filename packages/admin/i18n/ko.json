@@ -181,7 +181,10 @@
       "deletePermanently": "영구 삭제",
       "relatedRecords": "관련 레코드",
       "relatedEmpty": "아직 이 레코드에 연결된 레코드를 가진 다른 플러그인이 없습니다.",
-      "recordPart": { "download": "다운로드 {{title}}", "person": "사람" },
+      "recordPart": {
+        "download": "다운로드 {{title}}",
+        "person": "사람"
+      },
       "unsavedIn": "저장되지 않은 변경 사항:",
       "noUnsaved": "저장되지 않은 변경 사항 없음",
       "notSaved": "저장되지 않음: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "JSON으로 보기",
       "showForm": "양식으로 보기",
       "recordActions": "레코드 작업",
+      "sectionActions": "섹션 작업",
       "breadcrumb": "탐색 경로",
       "copyTitle": "복사",
       "copied": "복사됨",
@@ -663,7 +667,11 @@
       "general": "일반",
       "moreIn": "{{section}} 더 보기",
       "thisSection": "이 섹션",
-      "collapse": "사이드바 접기"
+      "collapse": "사이드바 접기",
+      "expand": "사이드바 펼치기",
+      "search": "검색",
+      "searchShortcut": "⌘K",
+      "noMatches": "메뉴에 “{{query}}”와 일치하는 항목이 없습니다"
     },
     "workspace": {
       "unavailable": "워크스페이스를 사용할 수 없음",

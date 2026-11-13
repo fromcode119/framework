@@ -181,7 +181,10 @@
       "deletePermanently": "Fshije përgjithmonë",
       "relatedRecords": "Regjistrime të lidhura",
       "relatedEmpty": "Ende asnjë shtojcë tjetër nuk ka regjistrim të lidhur me këtë.",
-      "recordPart": { "download": "Shkarko {{title}}", "person": "Personi" },
+      "recordPart": {
+        "download": "Shkarko {{title}}",
+        "person": "Personi"
+      },
       "unsavedIn": "Ndryshime të paruajtura te",
       "noUnsaved": "Nuk ka ndryshime të paruajtura",
       "notSaved": "Nuk u ruajt: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Shfaq si JSON",
       "showForm": "Shfaq si formular",
       "recordActions": "Veprimet e regjistrimit",
+      "sectionActions": "Veprimet e seksionit",
       "breadcrumb": "Shtegu i navigimit",
       "copyTitle": "Kopjo",
       "copied": "U kopjua",
@@ -663,7 +667,11 @@
       "general": "Të përgjithshme",
       "moreIn": "Më shumë te {{section}}",
       "thisSection": "Ky seksion",
-      "collapse": "Palos shiritin anësor"
+      "collapse": "Palos shiritin anësor",
+      "expand": "Zgjero shiritin anësor",
+      "search": "Kërko",
+      "searchShortcut": "⌘K",
+      "noMatches": "Asgjë në menu nuk përputhet me “{{query}}”"
     },
     "workspace": {
       "unavailable": "Hapësira e punës nuk është e disponueshme",

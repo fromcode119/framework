@@ -63,7 +63,7 @@ export class RuntimeConstants {
 
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
     'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
-    'Card', 'Badge', 'ConfirmDialog', 'EditSheet', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
+    'Card', 'Badge', 'MenuAction', 'StateBadge', 'CopyValue', 'ConfirmDialog', 'EditSheet', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
     // These are DOMAIN-AGNOSTIC controls only. Money/currency editors were removed rather than listed
     // here: the framework has no business domain, so it cannot know what a valid currency is, and the
     // pair that used to live here proved it by shipping a hardcoded currency list nothing configured.

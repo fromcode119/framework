@@ -17,6 +17,12 @@ describe('RecordSectionCard', () => {
   ];
   const section = { key: 'customer', title: 'Customer', fields };
   const renderField = (field: any) => <input key={field.name} aria-label={`field ${field.name}`} readOnly />;
+  /** "Edit" is the first item of the card's ⋯ menu. */
+  const openEdit = () => {
+    fireEvent.click(screen.getByRole('button', { name: 'Section actions' }));
+    // The menu is drawn invisible until it has measured where it fits, so it is found by its title.
+    fireEvent.click(screen.getByTitle('Edit'));
+  };
 
   const mount = (overrides: Record<string, any> = {}) => {
     const props: any = {
@@ -46,7 +52,7 @@ describe('RecordSectionCard', () => {
 
   it('opens the section fields in a sheet named after the record', () => {
     mount();
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    openEdit();
     const dialog = screen.getByRole('dialog', { name: 'Customer' });
     expect(dialog).toHaveTextContent('ORD-000002');
     for (const name of ['fullName', 'phone', 'note', 'email']) expect(screen.getByLabelText(`field ${name}`)).toBeInTheDocument();
@@ -58,7 +64,7 @@ describe('RecordSectionCard', () => {
 
   it('puts the values back on Cancel', () => {
     const props = mount();
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    openEdit();
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(props.handlePatch).toHaveBeenCalledWith({ fullName: 'Милена Моллова', phone: '0878663848', note: '', email: '' });
     expect(screen.queryByRole('dialog')).toBeNull();
@@ -66,7 +72,7 @@ describe('RecordSectionCard', () => {
 
   it('saves and closes', async () => {
     const props = mount();
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    openEdit();
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     expect(props.handleSubmit).toHaveBeenCalledTimes(1);
@@ -74,7 +80,7 @@ describe('RecordSectionCard', () => {
 
   it('stays open with the reason when the save fails', async () => {
     mount({ handleSubmit: vi.fn().mockRejectedValue(new Error('no')), saveError: 'Phone is not valid' });
-    fireEvent.click(screen.getByRole('button', { name: /edit/i }));
+    openEdit();
     fireEvent.click(screen.getByRole('button', { name: /save/i }));
     expect(await screen.findByRole('alert')).toHaveTextContent('Phone is not valid');
     expect(screen.getByRole('dialog')).toBeInTheDocument();
@@ -84,7 +90,7 @@ describe('RecordSectionCard', () => {
     const locked = [{ name: 'number', type: 'text', label: 'Number', admin: { readOnly: true, readOnlyOverride: 'never' } }];
     render(<RecordSectionCard section={{ key: 'x', title: 'Order', fields: locked }} formData={{ number: '7' }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
     expect(screen.getByText('7')).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /edit/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Section actions' })).toBeNull();
   });
 });
 

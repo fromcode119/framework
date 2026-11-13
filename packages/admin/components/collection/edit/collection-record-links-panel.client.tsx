@@ -61,14 +61,14 @@ export class CollectionRecordLinksPanel extends Reactor {
   }
 
   private get remaining(): IRecordsHubItem[] {
-    return (this.result?.items || []).filter((item) => !item.part || !this.placedTerms.includes(item.part));
+    return (this.result?.items || []).filter((item) => !item.part || !this.placedTerms.includes(this.links.termOf(item.part)));
   }
 
   render(): ReactNode {
     if (!this.result && !this.failed) return null;
     const remaining = this.remaining;
     const errors = this.result?.errors || [];
-    const actions = (this.result?.actions || []).filter((action: any) => !action.part || !this.placedTerms.includes(action.part));
+    const actions = (this.result?.actions || []).filter((action: any) => !action.part || !this.placedTerms.includes(this.links.termOf(action.part)));
     // Everything linked has a section of its own on this page, and nothing went wrong finding it.
     if (!this.failed && this.placedTerms.length > 0 && !remaining.length && !errors.length && !actions.length) return null;
     return (

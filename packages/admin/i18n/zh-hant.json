@@ -181,7 +181,10 @@
       "deletePermanently": "永久刪除",
       "relatedRecords": "相關紀錄",
       "relatedEmpty": "目前尚無其他外掛有連結至此紀錄的資料。",
-      "recordPart": { "download": "下載 {{title}}", "person": "人員" },
+      "recordPart": {
+        "download": "下載 {{title}}",
+        "person": "人員"
+      },
       "unsavedIn": "未儲存的變更：",
       "noUnsaved": "沒有未儲存的變更",
       "notSaved": "未儲存：{{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "以 JSON 顯示",
       "showForm": "以表單顯示",
       "recordActions": "記錄操作",
+      "sectionActions": "區段操作",
       "breadcrumb": "麵包屑導覽",
       "copyTitle": "複製",
       "copied": "已複製",
@@ -663,7 +667,11 @@
       "general": "一般",
       "moreIn": "{{section}} 的更多項目",
       "thisSection": "本區段",
-      "collapse": "收合側邊欄"
+      "collapse": "收合側邊欄",
+      "expand": "展開側邊欄",
+      "search": "搜尋",
+      "searchShortcut": "⌘K",
+      "noMatches": "選單中沒有符合「{{query}}」的項目"
     },
     "workspace": {
       "unavailable": "無法使用工作區",

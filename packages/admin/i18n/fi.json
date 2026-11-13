@@ -181,7 +181,10 @@
       "deletePermanently": "Poista pysyvästi",
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
-      "recordPart": { "download": "Lataa {{title}}", "person": "Henkilö" },
+      "recordPart": {
+        "download": "Lataa {{title}}",
+        "person": "Henkilö"
+      },
       "unsavedIn": "Tallentamattomia muutoksia kohteessa",
       "noUnsaved": "Ei tallentamattomia muutoksia",
       "notSaved": "Ei tallennettu: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Näytä JSON-muodossa",
       "showForm": "Näytä lomakkeena",
       "recordActions": "Tietueen toiminnot",
+      "sectionActions": "Osion toiminnot",
       "breadcrumb": "Murupolku",
       "copyTitle": "Kopioi",
       "copied": "Kopioitu",
@@ -663,7 +667,11 @@
       "general": "Yleiset",
       "moreIn": "Lisää osiossa {{section}}",
       "thisSection": "Tämä osio",
-      "collapse": "Kutista sivupalkki"
+      "collapse": "Kutista sivupalkki",
+      "expand": "Laajenna sivupalkki",
+      "search": "Hae",
+      "searchShortcut": "⌘K",
+      "noMatches": "Mikään valikossa ei vastaa hakua ”{{query}}”"
     },
     "workspace": {
       "unavailable": "Työtila ei ole käytettävissä",

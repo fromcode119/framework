@@ -181,7 +181,10 @@
       "deletePermanently": "Трајно обриши",
       "relatedRecords": "Повезани записи",
       "relatedEmpty": "Ниједан други додатак још нема запис повезан са овим.",
-      "recordPart": { "download": "Преузми {{title}}", "person": "Особа" },
+      "recordPart": {
+        "download": "Преузми {{title}}",
+        "person": "Особа"
+      },
       "unsavedIn": "Несачуване измене у",
       "noUnsaved": "Нема несачуваних измена",
       "notSaved": "Није сачувано: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Прикажи као JSON",
       "showForm": "Прикажи као образац",
       "recordActions": "Радње са записом",
+      "sectionActions": "Радње са одељком",
       "breadcrumb": "Путања",
       "copyTitle": "Копирај",
       "copied": "Копирано",
@@ -663,7 +667,11 @@
       "general": "Опште",
       "moreIn": "Још у одељку {{section}}",
       "thisSection": "Овај одељак",
-      "collapse": "Скупи бочну траку"
+      "collapse": "Скупи бочну траку",
+      "expand": "Прошири бочну траку",
+      "search": "Претрага",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ништа у менију не одговара „{{query}}“"
     },
     "workspace": {
       "unavailable": "Радни простор није доступан",

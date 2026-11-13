@@ -15,6 +15,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  */
 export class CollectionEditRecordMore {
   static readonly PARAM = 'section';
+  /** The record's own history (when it was made and changed, and its versions), opened like a section. */
+  static readonly HISTORY = 'record-history';
 
   /** The section a `?section=` link asks for; '' on the record itself. */
   static focusKey(searchParams: URLSearchParams | null | undefined): string {
@@ -53,6 +55,7 @@ export class CollectionEditRecordMore {
 
   /** The focused section's title for the breadcrumb, or '' when the key names no section (a stale link). */
   static focusedTitle(sections: Array<{ key: string; title?: string }>, focus: string): string {
+    if (focus === CollectionEditRecordMore.HISTORY) return AdminI18n.t('collection.edit.versions');
     const found = focus ? sections.find((section) => String(section.key) === focus) : undefined;
     return found ? CollectionEditRecordMore.title(found) : '';
   }

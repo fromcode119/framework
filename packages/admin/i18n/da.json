@@ -181,7 +181,10 @@
       "deletePermanently": "Slet permanent",
       "relatedRecords": "Relaterede poster",
       "relatedEmpty": "Intet andet plugin har endnu en post knyttet til denne.",
-      "recordPart": { "download": "Download {{title}}", "person": "Person" },
+      "recordPart": {
+        "download": "Download {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Ikke-gemte ændringer i",
       "noUnsaved": "Ingen ikke-gemte ændringer",
       "notSaved": "Ikke gemt: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Vis som JSON",
       "showForm": "Vis som formular",
       "recordActions": "Handlinger for posten",
+      "sectionActions": "Handlinger for afsnittet",
       "breadcrumb": "Brødkrumme",
       "copyTitle": "Kopiér",
       "copied": "Kopieret",
@@ -663,7 +667,11 @@
       "general": "Generelt",
       "moreIn": "Mere i {{section}}",
       "thisSection": "Denne sektion",
-      "collapse": "Skjul sidepanel"
+      "collapse": "Skjul sidepanel",
+      "expand": "Udvid sidepanel",
+      "search": "Søg",
+      "searchShortcut": "⌘K",
+      "noMatches": "Intet i menuen matcher “{{query}}”"
     },
     "workspace": {
       "unavailable": "Arbejdsområdet er ikke tilgængeligt",

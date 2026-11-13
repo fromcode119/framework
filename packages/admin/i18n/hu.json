@@ -181,7 +181,10 @@
       "deletePermanently": "Végleges törlés",
       "relatedRecords": "Kapcsolódó rekordok",
       "relatedEmpty": "Még egyetlen más bővítmény sem tárol ehhez kapcsolódó rekordot.",
-      "recordPart": { "download": "Letöltés {{title}}", "person": "Személy" },
+      "recordPart": {
+        "download": "Letöltés {{title}}",
+        "person": "Személy"
+      },
       "unsavedIn": "Nem mentett módosítások:",
       "noUnsaved": "Nincsenek nem mentett módosítások",
       "notSaved": "Nincs mentve: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Megjelenítés JSON-ként",
       "showForm": "Megjelenítés űrlapként",
       "recordActions": "Rekordműveletek",
+      "sectionActions": "Szakaszműveletek",
       "breadcrumb": "Morzsamenü",
       "copyTitle": "Másolás",
       "copied": "Másolva",
@@ -663,7 +667,11 @@
       "general": "Általános",
       "moreIn": "További elemek: {{section}}",
       "thisSection": "Ez a szakasz",
-      "collapse": "Oldalsáv összecsukása"
+      "collapse": "Oldalsáv összecsukása",
+      "expand": "Oldalsáv kibontása",
+      "search": "Keresés",
+      "searchShortcut": "⌘K",
+      "noMatches": "A menüben semmi sem felel meg ennek: „{{query}}”"
     },
     "workspace": {
       "unavailable": "A munkaterület nem érhető el",

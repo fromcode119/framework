@@ -109,8 +109,13 @@ export class CollectionEditDerivations {
     const focus = focusedSectionTitle ? CollectionEditRecordMore.focusKey(self.props.searchParams) : '';
     const draw = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => CollectionEditRecordMore.draw(sections, focus, formData, self.state.fieldErrors);
     const sidebarFieldSections = draw(sidebarGrouped);
-    const standardMainFieldSections = draw(mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
-    const fullWidthMainFieldSections = draw(mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
+    /**
+     * The main column is one column of cards, so its sections come in the order the collection declares
+     * them. Sections holding a `sectionLayout: 'full'` field used to be moved after all the others, from
+     * when the column held two cards side by side; that put an order's items below its payment and shipment.
+     */
+    const standardMainFieldSections = draw(mainFieldSections);
+    const fullWidthMainFieldSections: typeof standardMainFieldSections = [];
     const moreSections = focus ? [] : CollectionEditRecordMore.rows(everySection, formData, self.state.fieldErrors);
 
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;

@@ -11,7 +11,9 @@ import { CollectionRecordLinksPanel } from '@/components/collection/edit/collect
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
-import { EditRecordMoreCard } from '@/components/collection/edit/view/edit-record-more-card.client';
+import { RecordInfo } from '@/components/collection/record-info';
+import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
+import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,8 +24,10 @@ export class EditPageBody extends PureReactor {
   @prop declare id: string;
   /** Owned by the page view; switched from the header's record menu. */
   @prop declare advancedView: boolean;
-  /** The record's own address, which the "More" rows extend with the section they open. */
-  @prop declare recordHref: string;
+  /** Where the record sits — the way back to its list; above both columns. Null on a new record. */
+  @prop declare crumbs: ReactNode;
+  /** The card naming the record; it heads the main column, so the side column starts level with it. */
+  @prop declare head: ReactNode;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
@@ -40,10 +44,57 @@ export class EditPageBody extends PureReactor {
     // A new record can offer none of the correlation keys, so there is no question to ask yet.
     const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
     const navigate = (href: string) => edit.router?.push(href);
-    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key));
+    const history = !isNew && edit.focusedSection?.key === CollectionEditRecordMore.HISTORY;
+    const slotProps = { formData, setFormData, isNew, handleSubmit, saving };
+    const sectionSlotBase = `admin.collection.${slug}.edit.section`;
+    // Side sections are matched by title: that is the name a collection's `recordLinks.parts` gives them.
+    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key))
+      .concat(renderSidebar ? sidebarFieldSections.map((section: any) => String(section.title)) : []);
+    // A part mapped to a section no field names is drawn as a side card of its own, so it is placed too.
+    if (recordLinks && renderSidebar) mainSectionKeys.push(...recordLinks.sectionsWithoutFields(mainSectionKeys).map((section) => section.title));
+
+    // A focused section or the history is a page of one thing: one column, and the side card it may be
+    // stands in it, instead of beside an empty column.
+    const focused = Boolean(edit.focusedSection);
+    const sideBySide = renderSidebar && !focused;
+    const sidebar = renderSidebar ? (
+      <EditPageSidebar
+        slug={slug}
+        id={id}
+        isNew={isNew}
+        theme={theme}
+        collection={collection}
+        resolvedSlug={resolvedSlug}
+        formData={formData}
+        setFormData={setFormData}
+        handleSubmit={handleSubmit}
+        saving={saving}
+        pluginSettings={pluginSettings}
+        pluginSettingsSchema={pluginSettingsSchema}
+        fieldErrors={fieldErrors}
+        handleInputChange={handleInputChange}
+        handlePatch={handlePatch}
+        handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+        readOnlyOverrideGranted={readOnlyOverrideGranted}
+        showPermalink={showPermalink}
+        hasDisablePermalink={hasDisablePermalink}
+        hasSidebarFields={hasSidebarFields}
+        sidebarFieldSections={sidebarFieldSections}
+        hasBuiltInSidebarContent={hasBuiltInSidebarContent}
+        saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+        recordTitle={edit.resolvedTitleValue}
+        clearSaveError={() => setStatus(null)}
+        recordLinks={recordLinks}
+        navigate={navigate}
+        sectionSlotBase={sectionSlotBase}
+        slotProps={slotProps}
+        focused={focused}
+        fieldSectionKeys={[...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key)).concat(sidebarFieldSections.map((section: any) => String(section.title)))}
+      />
+    ) : null;
 
     return (
-    <div className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="flex-1 w-full px-3 sm:px-6 py-4">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password
@@ -87,9 +138,11 @@ export class EditPageBody extends PureReactor {
           </div>
         )}
 
+        {this.crumbs}
         <div className="min-w-0">
         {this.advancedView ? (
-          <div className="pb-32">
+          <div className="pb-32 space-y-6">
+            {this.head}
             <RecordJsonView
               formData={formData}
               setFormData={setFormData}
@@ -108,8 +161,9 @@ export class EditPageBody extends PureReactor {
               third of that squeezed every field into a sliver. Below the width a sidebar fits beside the
               form, it moves under it. */}
           <div className="fc-edit-columns">
-          <div className={`fc-edit-columns__grid ${renderSidebar ? 'fc-edit-columns__grid--sidebar' : ''}`}>
-          <div className="min-w-0 space-y-6">
+          <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}${focused ? ' fc-edit-columns__grid--focus' : ''}`}>
+          <div className="fc-edit-column">
+            {this.head}
             <EditPageMain
               standardMainFieldSections={standardMainFieldSections}
               fullWidthMainFieldSections={fullWidthMainFieldSections}
@@ -133,54 +187,42 @@ export class EditPageBody extends PureReactor {
               saveError={status?.type === NotificationType.ERROR ? status.message : ''}
               recordTitle={edit.resolvedTitleValue}
               clearSaveError={() => setStatus(null)}
+              sectionSlotBase={sectionSlotBase}
+              slotProps={slotProps}
             />
-            <EditRecordMoreCard sections={edit.moreSections} recordHref={this.recordHref} />
             {/* What is linked to this record and has no section of its own on this page. */}
-            {recordLinks && (
+            {recordLinks && !history && (
               <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
+            {/* When the record was made and changed, and its versions: a page of their own, opened from the
+                record's ⋯ menu like the held-back sections, so the record itself is all the record shows. */}
+            {history && (
+              <>
+                <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />
+                <SidebarVersions
+                  revisions={revisions}
+                  revisionsLoading={revisionsLoading}
+                  activeVersionId={activeVersionId}
+                  setSelectedRevision={setSelectedRevision}
+                  setFormData={setFormData}
+                  setActiveVersionId={setActiveVersionId}
+                  loadMoreRevisions={loadMoreRevisions}
+                  hasMoreRevisions={hasMoreRevisions}
+                  formData={formData}
+                  fields={collection?.fields ?? []}
+                />
+              </>
+            )}
+            {focused ? sidebar : null}
             {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
           </div>
 
-          {renderSidebar && (
+          {sideBySide && (
             <EditStickyColumn>
-            {/* What plugins add to the record sits BESIDE its own fields, and after them on a phone: above
-                the form it stood between the header and the record the operator opened the page to read. */}
+            {sidebar}
+            {/* What plugins add to the record comes after the record's own side cards: above them it pushed
+                the customer and the state off the first screen. */}
             <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
-            <EditPageSidebar
-              slug={slug}
-              id={id}
-              isNew={isNew}
-              theme={theme}
-              collection={collection}
-              resolvedSlug={resolvedSlug}
-              formData={formData}
-              setFormData={setFormData}
-              handleSubmit={handleSubmit}
-              saving={saving}
-              pluginSettings={pluginSettings}
-              pluginSettingsSchema={pluginSettingsSchema}
-              fieldErrors={fieldErrors}
-              handleInputChange={handleInputChange}
-              handlePatch={handlePatch}
-              handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-              readOnlyOverrideGranted={readOnlyOverrideGranted}
-              showPermalink={showPermalink}
-              hasDisablePermalink={hasDisablePermalink}
-              hasSidebarFields={hasSidebarFields}
-              sidebarFieldSections={sidebarFieldSections}
-              hasBuiltInSidebarContent={hasBuiltInSidebarContent}
-              revisions={revisions}
-              revisionsLoading={revisionsLoading}
-              activeVersionId={activeVersionId}
-              setSelectedRevision={setSelectedRevision}
-              setActiveVersionId={setActiveVersionId}
-              loadMoreRevisions={loadMoreRevisions}
-              hasMoreRevisions={hasMoreRevisions}
-              saveError={status?.type === NotificationType.ERROR ? status.message : ''}
-              recordTitle={edit.resolvedTitleValue}
-              clearSaveError={() => setStatus(null)}
-            />
             </EditStickyColumn>
           )}
           </div>

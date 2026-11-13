@@ -23,6 +23,7 @@
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
+  --fc-info: #2563eb;
 
   /* Fields and the edit sheet: how every field reads and how a piece of a record is edited, decided
    * HERE once. A component never spells these out, so a change of style is one edit in this block (or
@@ -63,6 +64,7 @@
   --fc-nav-row: 32px;
   --fc-nav-radius: 8px;
   --fc-nav-sub-indent: 38px;
+  --fc-record-gap: 14px;
 
   /* Status TINTS: a soft surface, a border, and text that reads on it.
    *
@@ -665,25 +667,69 @@ html.dark {
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
 .fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-bottom: 2rem; }
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
+/* A focused section or the history reads as one column, at the width a record's main column has. */
+.fc-edit-columns__grid--focus { max-width: 48rem; }
+/* One column of a record's cards: one gap between every card, the same as between the columns. */
+.fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
   .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
+}
+/* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
+   column's first card — who the record is for — follows the record's first card instead of waiting under
+   everything else. The rest keep their own column's order: the main column's, then the side column's. */
+@container (max-width: 55.99rem) {
+  .fc-edit-columns__grid--sidebar > .fc-edit-column,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column { display: contents; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-column > * { order: 3; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-column > :nth-child(-n + 2) { order: 1; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > *,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > * { order: 4; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > :first-child { order: 2; }
+  .fc-edit-columns__grid--sidebar .fc-edit-top:not(:has(.fc-edit-top__grid > *)) { display: none; }
 }
 
 /* ── A record page's top: the breadcrumb, then one card naming the record ─────────────────────────────
  * EditHeader / EditHeaderMenu. */
-.fc-record-head-top { display: grid; gap: 10px; padding: 16px 12px 0; }
-@media (min-width: 640px) { .fc-record-head-top { padding: 20px 24px 0; } }
-@media (min-width: 1024px) { .fc-record-head-top { padding: 24px 32px 0; } }
-.fc-record-head-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
-.fc-record-head-crumbs__link { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; color: var(--fc-text-muted); }
-.fc-record-head-crumbs__link:hover { color: var(--fc-text); text-decoration: underline; }
-.fc-record-head-crumbs__sep { color: var(--fc-text-muted); }
-.fc-record-head-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
-.fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 12px 16px; }
+.fc-record-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 12px; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-record-crumbs__back { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 4px; border: 1px solid var(--fc-border); border-radius: var(--radius); background: var(--fc-surface); color: var(--fc-text); }
+.fc-record-crumbs__back:hover { background: var(--fc-surface-muted); }
+.fc-record-crumbs__link { flex: none; color: var(--fc-text-muted); }
+.fc-record-crumbs__link:hover { color: var(--fc-text); text-decoration: underline; }
+.fc-record-crumbs__sep { flex: none; color: var(--fc-text-muted); }
+.fc-record-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
+.fc-dropdown-footer { padding: 6px; border-top: 1px solid var(--fc-border); }
+.fc-dropdown-footer:not(:has(button)) { display: none; }
+.fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
+.fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
+.fc-menu-action:disabled { cursor: progress; }
+.fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
+.fc-menu-action__icon { flex: none; display: inline-flex; color: var(--fc-text-muted); }
+.fc-menu-action[aria-busy="true"] .fc-menu-action__icon svg { animation: fc-menu-action-spin 1s linear infinite; }
+@keyframes fc-menu-action-spin { to { transform: rotate(360deg); } }
+.fc-menu-action__text { min-width: 0; flex: 1; display: grid; }
+.fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
+/* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
+.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 7px; border: 1px solid var(--fc-border); border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
+.fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-state-badge[data-tone="danger"] { --fc-tone: var(--fc-danger); }
+.fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
+/* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
+.fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.fc-copy-value__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius); color: var(--fc-text-muted); }
+.fc-copy-value__button::before { content: ''; position: absolute; inset: -6px; }
+.fc-copy-value__button:hover { color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
 .fc-record-head__main { flex: 1 1 16rem; min-width: 0; display: grid; gap: 2px; }
 /* On a phone the actions stay beside the title, at its top, instead of taking a row of their own. */
-@media (max-width: 639px) { .fc-record-head { align-items: flex-start; } .fc-record-head__main { flex-basis: 0; } }
+/* On a phone the number and date take the whole line; the states and ⋯ follow on a row of their own. */
+@media (max-width: 639px) { .fc-record-head { align-items: flex-start; gap: 10px; } .fc-record-head__main { flex-basis: 100%; } }
+@media (min-width: 640px) { .fc-record-head { flex-wrap: nowrap; } .fc-record-head__main { flex-basis: 0; } .fc-record-head__actions { flex: none; flex-wrap: nowrap; } }
 .fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
 .fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 700; line-height: 1.25; color: var(--fc-text); }
 .fc-record-head__copy,
@@ -691,25 +737,18 @@ html.dark {
 .fc-record-head__copy { width: 24px; height: 24px; }
 /* A 24px icon gets a 36px hit area, so a thumb finds it beside the title. */
 .fc-record-head__copy::before { content: ''; position: absolute; inset: -6px; }
-.fc-record-head__menu { width: 40px; height: 40px; border: 1px solid var(--fc-border); background: var(--fc-surface); }
+.fc-record-head__menu { width: 28px; height: 28px; }
+.fc-record-head__menu::before { content: ''; position: absolute; inset: -6px; }
 .fc-record-head__copy:hover,
 .fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px; border: 1px solid var(--fc-border); border-radius: 9999px; font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface-muted); }
 .fc-record-head__badge--muted { color: var(--fc-text-muted); }
 .fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: 1.4; color: var(--fc-text-muted); overflow-wrap: anywhere; }
-.fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: var(--fc-record-text); font-weight: 600; color: var(--fc-text); background: var(--fc-surface); }
 .fc-record-head__button:hover { background: var(--fc-surface-muted); }
 @media (max-width: 639px) { .fc-record-head__button-label { display: none; } }
 
-/* ── "More": the sections a record does not draw, one row each, opening the section on its own page ── */
-.fc-record-more__title { padding: 12px 16px; border-bottom: var(--fc-record-rule); font-size: 14px; font-weight: 600; color: var(--card-foreground); }
-.fc-record-more__rows { padding: 4px 16px; }
-.fc-record-more__rows > li + li { border-top: var(--fc-record-rule); }
-.fc-record-more__row { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: var(--fc-record-text); color: var(--fc-text); }
-.fc-record-more__row:hover .fc-record-more__name { text-decoration: underline; }
-.fc-record-more__name { flex: 1 1 auto; min-width: 0; font-weight: 500; }
-.fc-record-more__count { flex: none; color: var(--fc-text-muted); }
 
 /* A section's fields: a `width: 'half'` field sits beside the next only when the card has room for
    two readable controls; narrower, every field takes the row. */
@@ -727,33 +766,37 @@ html.dark {
   .fc-edit-top__grid > *:has(.fc-admin-panel--body), .fc-edit-top__grid > .fc-admin-panel--body { grid-column: 1 / -1; }
 }
 
-/* What other plugins hold about a record, drawn as lines of the section they belong to: a payment under
-   the totals, a shipment under the address. One line each on a wide card; on a narrow one the amount
-   and date drop under the title instead of squeezing it. */
-.fc-record-part { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: grid; container-type: inline-size; gap: 0.75rem; }
-.fc-record-part__heading { font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.125rem; }
-.fc-record-part__empty { font-size: 13px; color: var(--muted-foreground); }
-.fc-record-part__row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.75rem; row-gap: 0.125rem; min-height: 2.5rem; padding-block: 0.25rem; }
-.fc-record-part__row + .fc-record-part__row { border-top: 1px solid var(--border); }
-.fc-record-part__icon { flex: none; color: var(--muted-foreground); }
-.fc-record-part__main { flex: 1 1 12rem; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.5rem; }
-.fc-record-part__title { font-size: 13px; font-weight: 600; color: var(--card-foreground); overflow-wrap: anywhere; text-align: start; }
-.fc-record-part__title--link { min-height: 1.5rem; }
+/* What other plugins hold about a record, drawn as label / value rows of the section they belong to — a
+   payment under the totals, the person at the head of the customer — ruled like the card's own rows and
+   across its full width. On a narrow card the amount and date drop under the title instead of squeezing it. */
+.fc-record-part { display: grid; container-type: inline-size; }
+.fc-record-part__group { display: grid; grid-template-columns: min(var(--fc-record-label-width, 8rem), 32%) minmax(0, 1fr); gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); }
+.fc-record-card__body > .fc-record-part:first-child > .fc-record-part__group:first-child { border-top: 0; }
+.fc-record-part__heading { color: var(--fc-text-muted); line-height: 1.45; }
+.fc-record-part__items { display: grid; min-width: 0; }
+.fc-record-part__empty { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-record-card__body > .fc-record-part:first-child > .fc-record-part__empty:first-child { border-top: 0; }
+.fc-record-part__empty-text { min-width: 0; }
+.fc-record-part__row { display: flex; align-items: center; gap: 10px; min-height: 24px; }
+.fc-record-part__row + .fc-record-part__row { margin-top: 6px; padding-top: 6px; border-top: var(--fc-record-rule); }
+.fc-record-part__icon { flex: none; color: var(--fc-text-muted); }
+.fc-record-part__initials { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--fc-surface-muted); color: var(--fc-text-muted); font-size: 10px; font-weight: 600; }
+.fc-record-part__main { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.fc-record-part__line { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; min-width: 0; }
+.fc-record-part__title { font-size: var(--fc-record-text); font-weight: 500; color: var(--fc-text); overflow-wrap: anywhere; text-align: start; }
+.fc-record-part__title--link { color: var(--fc-accent); }
 .fc-record-part__title--link:hover { text-decoration: underline; }
-.fc-record-part__status { flex: none; border-radius: 9999px; padding: 0.0625rem 0.5rem; font-size: 11px; font-weight: 600; background: var(--muted); color: var(--muted-foreground); }
-.fc-record-part__meta { font-size: 12px; color: var(--muted-foreground); }
-.fc-record-part__trailing { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--card-foreground); }
-.fc-record-part__action { flex: none; width: 1.75rem; height: 1.75rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 0.5rem; color: var(--muted-foreground); }
-.fc-record-part__action:hover { background: var(--muted); color: var(--card-foreground); }
-.fc-record-part__term { display: grid; gap: 0.5rem; }
-.fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
-.fc-record-part__button { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 12px; font-weight: 600; color: var(--card-foreground); background: var(--card); }
-.fc-record-part__button:hover { background: var(--muted); }
-@container (max-width: 30rem) {
-  .fc-record-part__main { flex-basis: calc(100% - 2rem); }
-  .fc-record-part__row > .fc-record-part__meta { margin-inline-start: 1.6875rem; }
-  .fc-record-part__trailing { margin-inline-start: auto; }
-}
+.fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: 11px; font-weight: 600; background: var(--fc-surface-muted); color: var(--fc-text-muted); }
+.fc-record-part__meta { font-size: 12px; color: var(--fc-text-muted); }
+.fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fc-text); }
+.fc-record-part__action { position: relative; flex: none; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--fc-text-muted); }
+.fc-record-part__action::before { content: ''; position: absolute; inset: -6px; }
+.fc-record-part__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.fc-record-part__button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-record-part__button:hover { background: var(--fc-surface-muted); }
+/* A card that is the part itself (an order's invoices) needs no label repeating its title. */
+.fc-record-part__group--bare { grid-template-columns: minmax(0, 1fr); }
 
 /* A wide card holds three fields to a row: with two, three short values (a name, a phone, an email) ran
    to a second row and left half of it empty. */
@@ -808,6 +851,29 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav { background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); }
 .fc-nav__scroll { display: flex; flex-direction: column; padding-block: 8px 12px; }
 .fc-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.fc-nav-brand { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px 0 16px; flex: none; }
+.fc-nav-brand--mini { justify-content: center; padding: 0; }
+.fc-nav-brand__mark { width: 28px; height: 28px; flex: none; border-radius: 6px; }
+.fc-nav-brand__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; color: var(--fc-nav-text); }
+.fc-nav-brand__tools { display: flex; align-items: center; gap: 2px; flex: none; }
+.fc-nav-brand__tool { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); cursor: pointer; }
+.fc-nav-brand__tool::before { content: ''; position: absolute; inset: -4px; }
+.fc-nav-brand__tool:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+.fc-nav-brand__dot { position: absolute; top: 5px; inset-inline-end: 5px; width: 7px; height: 7px; border-radius: 9999px; background: var(--fc-info, #4f46e5); }
+@media (min-width: 1024px) { .fc-nav-brand__tool--narrow { display: none; } }
+.fc-nav__pinned { position: relative; }
+.fc-nav__collapse { display: none; position: absolute; top: 8px; inset-inline-end: 14px; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); }
+.fc-nav__collapse::before { content: ''; position: absolute; inset: -4px; }
+.fc-nav__collapse:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+@media (min-width: 1024px) { .fc-nav__collapse { display: inline-flex; } }
+.fc-nav-search { position: relative; flex: none; margin: 0 12px 4px; }
+.fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
+.fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
+.fc-nav-search__field::-webkit-search-cancel-button { display: none; }
+.fc-nav-search__kbd { position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); pointer-events: none; }
+.fc-nav-empty { padding: 8px 10px; font-size: 12px; color: var(--fc-nav-muted); }
+.fc-nav__pinned { padding-block: 6px; border-top: 1px solid var(--fc-nav-border); }
+.fc-nav__pinned .fc-nav-foot { margin-top: 0; padding-top: 0; }
 /* Settings sits at the foot of the column, above the account, wherever the list above it ends. */
 .fc-nav-foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 2px; }
 .fc-nav-section { display: flex; flex-direction: column; }
@@ -993,9 +1059,12 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
     border-top: var(--fc-record-rule);
   }
   .fc-sheet__foot > * { flex: 0 0 auto; }
-  /* The fields replace the values they edit, in the same place. */
+  /* The fields replace the values they edit, in the same place — the rows, what a component reads from
+     them (an address) and the records drawn from them (the person an email names). */
   .fc-record-card--editing .fc-record-card__rows,
-  .fc-record-card--editing .fc-record-card__edit { display: none; }
+  .fc-record-card--editing .fc-record-card__read,
+  .fc-record-card--editing .fc-record-part,
+  .fc-record-card--editing .fc-record-card__menu { display: none; }
 }
 
 /* ── A saved record's section card ───────────────────────────────────────────────────────────────────
@@ -1014,20 +1083,35 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   font-weight: 600;
   color: var(--card-foreground);
 }
-.fc-record-card__edit {
+.fc-record-card__title { flex: none; }
+/* What a plugin says beside the title — a count, a state — then the card's ⋯. */
+.fc-record-card__aside {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 13px;
+  color: var(--fc-text-muted);
+}
+.fc-record-card__aside:has(.fc-state-badge) { justify-content: flex-end; }
+.fc-record-card__aside:empty { display: none; }
+.fc-record-card__head:has(.fc-record-card__aside:empty) { justify-content: space-between; }
+.fc-record-card__menu {
+  position: relative;
   flex: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 0 10px;
-  margin-right: -10px;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
   border-radius: var(--radius);
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--primary);
+  color: var(--fc-text-muted);
+  cursor: pointer;
 }
-.fc-record-card__edit:hover { background: var(--fc-surface-muted); }
+.fc-record-card__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
 .fc-record-card__body:not(:empty) { padding: 4px 16px; }
 .fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
 .fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }

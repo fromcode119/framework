@@ -181,7 +181,10 @@
       "deletePermanently": "Supprimer définitivement",
       "relatedRecords": "Enregistrements liés",
       "relatedEmpty": "Aucun autre plugin ne possède encore d’enregistrement lié à celui-ci.",
-      "recordPart": { "download": "Télécharger {{title}}", "person": "Personne" },
+      "recordPart": {
+        "download": "Télécharger {{title}}",
+        "person": "Personne"
+      },
       "unsavedIn": "Modifications non enregistrées dans",
       "noUnsaved": "Aucune modification non enregistrée",
       "notSaved": "Non enregistré : {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Afficher en JSON",
       "showForm": "Afficher en formulaire",
       "recordActions": "Actions sur la fiche",
+      "sectionActions": "Actions sur la section",
       "breadcrumb": "Fil d’Ariane",
       "copyTitle": "Copier",
       "copied": "Copié",
@@ -663,7 +667,11 @@
       "general": "Général",
       "moreIn": "Plus dans {{section}}",
       "thisSection": "Cette section",
-      "collapse": "Réduire la barre latérale"
+      "collapse": "Réduire la barre latérale",
+      "expand": "Déplier la barre latérale",
+      "search": "Rechercher",
+      "searchShortcut": "⌘K",
+      "noMatches": "Rien dans le menu ne correspond à « {{query}} »"
     },
     "workspace": {
       "unavailable": "Espace de travail indisponible",

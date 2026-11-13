@@ -181,7 +181,10 @@
       "deletePermanently": "स्थायी रूप से हटाएँ",
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
-      "recordPart": { "download": "डाउनलोड करें {{title}}", "person": "व्यक्ति" },
+      "recordPart": {
+        "download": "डाउनलोड करें {{title}}",
+        "person": "व्यक्ति"
+      },
       "unsavedIn": "इनमें असहेजे बदलाव:",
       "noUnsaved": "कोई असहेजा बदलाव नहीं",
       "notSaved": "सहेजा नहीं गया: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "JSON के रूप में दिखाएँ",
       "showForm": "फ़ॉर्म के रूप में दिखाएँ",
       "recordActions": "रिकॉर्ड की कार्रवाइयाँ",
+      "sectionActions": "अनुभाग की कार्रवाइयाँ",
       "breadcrumb": "ब्रेडक्रंब",
       "copyTitle": "कॉपी करें",
       "copied": "कॉपी हो गया",
@@ -663,7 +667,11 @@
       "general": "सामान्य",
       "moreIn": "{{section}} में और",
       "thisSection": "यह अनुभाग",
-      "collapse": "साइडबार छोटा करें"
+      "collapse": "साइडबार छोटा करें",
+      "expand": "साइडबार फैलाएँ",
+      "search": "खोजें",
+      "searchShortcut": "⌘K",
+      "noMatches": "मेनू में “{{query}}” से कुछ मेल नहीं खाता"
     },
     "workspace": {
       "unavailable": "वर्कस्पेस उपलब्ध नहीं है",

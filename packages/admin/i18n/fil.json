@@ -181,7 +181,10 @@
       "deletePermanently": "Burahin nang Permanente",
       "relatedRecords": "Mga kaugnay na record",
       "relatedEmpty": "Wala pang ibang plugin na may record na naka-link dito.",
-      "recordPart": { "download": "I-download {{title}}", "person": "Tao" },
+      "recordPart": {
+        "download": "I-download {{title}}",
+        "person": "Tao"
+      },
       "unsavedIn": "Mga hindi na-save na pagbabago sa",
       "noUnsaved": "Walang hindi na-save na pagbabago",
       "notSaved": "Hindi na-save: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Ipakita bilang JSON",
       "showForm": "Ipakita bilang form",
       "recordActions": "Mga aksyon sa rekord",
+      "sectionActions": "Mga aksyon sa seksyon",
       "breadcrumb": "Breadcrumb",
       "copyTitle": "Kopyahin",
       "copied": "Nakopya",
@@ -663,7 +667,11 @@
       "general": "Pangkalahatan",
       "moreIn": "Higit Pa sa {{section}}",
       "thisSection": "Seksyong Ito",
-      "collapse": "I-collapse ang Sidebar"
+      "collapse": "I-collapse ang Sidebar",
+      "expand": "Palawakin ang sidebar",
+      "search": "Maghanap",
+      "searchShortcut": "⌘K",
+      "noMatches": "Walang tumutugma sa “{{query}}” sa menu"
     },
     "workspace": {
       "unavailable": "Hindi available ang workspace",

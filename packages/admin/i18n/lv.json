@@ -181,7 +181,10 @@
       "deletePermanently": "Dzēst neatgriezeniski",
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
-      "recordPart": { "download": "Lejupielādēt {{title}}", "person": "Persona" },
+      "recordPart": {
+        "download": "Lejupielādēt {{title}}",
+        "person": "Persona"
+      },
       "unsavedIn": "Nesaglabātas izmaiņas:",
       "noUnsaved": "Nav nesaglabātu izmaiņu",
       "notSaved": "Nav saglabāts: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Rādīt kā JSON",
       "showForm": "Rādīt kā veidlapu",
       "recordActions": "Ieraksta darbības",
+      "sectionActions": "Sadaļas darbības",
       "breadcrumb": "Navigācijas ceļš",
       "copyTitle": "Kopēt",
       "copied": "Nokopēts",
@@ -663,7 +667,11 @@
       "general": "Vispārīgi",
       "moreIn": "Vairāk sadaļā {{section}}",
       "thisSection": "Šī sadaļa",
-      "collapse": "Sakļaut sānjoslu"
+      "collapse": "Sakļaut sānjoslu",
+      "expand": "Izvērst sānjoslu",
+      "search": "Meklēt",
+      "searchShortcut": "⌘K",
+      "noMatches": "Izvēlnē nekas neatbilst “{{query}}”"
     },
     "workspace": {
       "unavailable": "Darbvieta nav pieejama",

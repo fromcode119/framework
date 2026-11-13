@@ -181,7 +181,10 @@
       "deletePermanently": "Usuń trwale",
       "relatedRecords": "Powiązane rekordy",
       "relatedEmpty": "Żadna inna wtyczka nie ma jeszcze rekordu powiązanego z tym.",
-      "recordPart": { "download": "Pobierz {{title}}", "person": "Osoba" },
+      "recordPart": {
+        "download": "Pobierz {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Niezapisane zmiany w:",
       "noUnsaved": "Brak niezapisanych zmian",
       "notSaved": "Nie zapisano: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Pokaż jako JSON",
       "showForm": "Pokaż jako formularz",
       "recordActions": "Działania na rekordzie",
+      "sectionActions": "Działania w sekcji",
       "breadcrumb": "Ścieżka nawigacji",
       "copyTitle": "Kopiuj",
       "copied": "Skopiowano",
@@ -663,7 +667,11 @@
       "general": "Ogólne",
       "moreIn": "Więcej w sekcji {{section}}",
       "thisSection": "Ta sekcja",
-      "collapse": "Zwiń pasek boczny"
+      "collapse": "Zwiń pasek boczny",
+      "expand": "Rozwiń pasek boczny",
+      "search": "Szukaj",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nic w menu nie pasuje do „{{query}}”"
     },
     "workspace": {
       "unavailable": "Przestrzeń robocza niedostępna",

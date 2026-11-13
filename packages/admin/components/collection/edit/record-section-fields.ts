@@ -3,12 +3,19 @@
  *
  * A saved record is read first and changed a piece at a time: the card lists the values that are set,
  * and "Edit" opens the section's own fields in a sheet. A field that brings its own component (an items
- * table, a media gallery) is its own interface and stays in the card, working as it always did.
+ * table, a media gallery) is its own interface and stays in the card, working as it always did — unless
+ * it declares how it reads (`admin.readComponent`, `admin.readAsValue`): then the card shows that and the
+ * component edits it in the sheet with the rest of the section.
  */
 export class RecordSectionFields {
   /** A field drawn by its own component — it is shown and used in place, never moved into the sheet. */
   static ownsItsControl(field: any): boolean {
-    return Boolean(field?.admin?.component);
+    return Boolean(field?.admin?.component) && !field?.admin?.readComponent && !field?.admin?.readAsValue && !field?.admin?.readBy;
+  }
+
+  /** A field the card draws through its read component, not as a row. */
+  static readsByComponent(field: any): boolean {
+    return Boolean(field?.admin?.component && field?.admin?.readComponent);
   }
 
   /** The fields the section's sheet holds: every field that is not its own interface. */
@@ -46,9 +53,13 @@ export class RecordSectionFields {
     return Boolean(field?.required) && RecordSectionFields.isEmpty(field, value);
   }
 
-  /** The fields listed on the card, in the section's order: those with a value, and required ones without. */
+  /**
+   * The fields listed on the card, in the section's order: those with a value, and required ones without.
+   * A field another field's read component reads (`admin.readBy`) is shown there, not as a row.
+   */
   static shownFields(fields: any[], record: Record<string, any>): any[] {
     return RecordSectionFields.sheetFields(fields).filter((field) => {
+      if (RecordSectionFields.readsByComponent(field) || field?.admin?.readBy) return false;
       const value = record?.[field.name];
       return !RecordSectionFields.isEmpty(field, value) || RecordSectionFields.isMissing(field, value);
     });

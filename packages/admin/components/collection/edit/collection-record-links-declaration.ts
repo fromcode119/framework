@@ -14,7 +14,7 @@ export class CollectionRecordLinksDeclaration {
     readonly keys: Record<string, string>,
     readonly title: string,
     readonly emptyHint: string,
-    private readonly parts: Record<string, { section: string; empty?: string }>,
+    private readonly parts: Record<string, { section: string; sectionKey?: string; after?: string; empty?: string; menu?: boolean }>,
   ) {}
 
   /** Null when the collection declares nothing, or this record can offer none of the keys yet. */
@@ -44,11 +44,37 @@ export class CollectionRecordLinksDeclaration {
     return `${this.kind}:${this.recordId}:${Object.values(this.keys).join('|')}`;
   }
 
+  /**
+   * The declared part an item or action is drawn as. A provider may name a narrower part than any
+   * collection knows — `payment.invoice` — so a collection that gives invoices a place of their own
+   * maps that, and every other collection keeps them under `payment`, as before, without a change.
+   */
+  termOf(part: unknown): string {
+    let term = String(part || '');
+    while (term && !this.parts[term] && term.includes('.')) term = term.slice(0, term.lastIndexOf('.'));
+    return term;
+  }
+
+  /**
+   * Sections that only parts fill: no field of the collection names them (an order's invoices). The
+   * page draws each as a card of its own, so mapping a part to a new section is all it takes.
+   */
+  sectionsWithoutFields(fieldSectionKeys: string[]): Array<{ title: string; key: string; after: string }> {
+    const sections = new Map<string, { title: string; key: string; after: string }>();
+    for (const part of Object.values(this.parts)) {
+      const title = String(part?.section || '');
+      if (!title || fieldSectionKeys.includes(title) || sections.has(title)) continue;
+      // `after` names the section (as declared) the card follows; without one it comes last.
+      sections.set(title, { title, key: String(part?.sectionKey || ''), after: String(part?.after || '') });
+    }
+    return [...sections.values()];
+  }
+
   /** The parts this section draws, in the order the collection declared them. */
-  partsOf(sectionKey: string): Array<{ term: string; empty: string }> {
+  partsOf(sectionKey: string): Array<{ term: string; empty: string; menu: boolean }> {
     return Object.entries(this.parts)
       .filter(([, part]) => String(part?.section || '') === sectionKey)
-      .map(([term, part]) => ({ term, empty: String(part?.empty || '') }));
+      .map(([term, part]) => ({ term, empty: String(part?.empty || ''), menu: part?.menu === true }));
   }
 
   /** The part terms that have a section on screen — their records are drawn there, not in the list. */

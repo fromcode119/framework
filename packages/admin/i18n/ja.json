@@ -181,7 +181,10 @@
       "deletePermanently": "完全に削除",
       "relatedRecords": "関連レコード",
       "relatedEmpty": "このレコードにリンクされたレコードを持つプラグインはまだありません。",
-      "recordPart": { "download": "ダウンロード {{title}}", "person": "人物" },
+      "recordPart": {
+        "download": "ダウンロード {{title}}",
+        "person": "人物"
+      },
       "unsavedIn": "未保存の変更:",
       "noUnsaved": "未保存の変更はありません",
       "notSaved": "保存されていません: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "JSON で表示",
       "showForm": "フォームで表示",
       "recordActions": "レコードの操作",
+      "sectionActions": "セクションの操作",
       "breadcrumb": "パンくずリスト",
       "copyTitle": "コピー",
       "copied": "コピーしました",
@@ -663,7 +667,11 @@
       "general": "一般",
       "moreIn": "{{section}} のその他の項目",
       "thisSection": "このセクション",
-      "collapse": "サイドバーを折りたたむ"
+      "collapse": "サイドバーを折りたたむ",
+      "expand": "サイドバーを展開",
+      "search": "検索",
+      "searchShortcut": "⌘K",
+      "noMatches": "メニューに「{{query}}」に一致する項目はありません"
     },
     "workspace": {
       "unavailable": "ワークスペースを利用できません",

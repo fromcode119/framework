@@ -181,7 +181,10 @@
       "deletePermanently": "Ta bort permanent",
       "relatedRecords": "Relaterade poster",
       "relatedEmpty": "Inget annat tillägg har ännu någon post kopplad till den här.",
-      "recordPart": { "download": "Ladda ned {{title}}", "person": "Person" },
+      "recordPart": {
+        "download": "Ladda ned {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Osparade ändringar i",
       "noUnsaved": "Inga osparade ändringar",
       "notSaved": "Inte sparad: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Visa som JSON",
       "showForm": "Visa som formulär",
       "recordActions": "Åtgärder för posten",
+      "sectionActions": "Åtgärder för avsnittet",
       "breadcrumb": "Länkstig",
       "copyTitle": "Kopiera",
       "copied": "Kopierat",
@@ -663,7 +667,11 @@
       "general": "Allmänt",
       "moreIn": "Mer i {{section}}",
       "thisSection": "Det här avsnittet",
-      "collapse": "Fäll ihop sidofältet"
+      "collapse": "Fäll ihop sidofältet",
+      "expand": "Expandera sidofältet",
+      "search": "Sök",
+      "searchShortcut": "⌘K",
+      "noMatches": "Inget i menyn matchar ”{{query}}”"
     },
     "workspace": {
       "unavailable": "Arbetsytan är inte tillgänglig",

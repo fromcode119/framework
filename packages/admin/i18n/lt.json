@@ -181,7 +181,10 @@
       "deletePermanently": "Ištrinti visam laikui",
       "relatedRecords": "Susiję įrašai",
       "relatedEmpty": "Joks kitas įskiepis dar neturi su šiuo susieto įrašo.",
-      "recordPart": { "download": "Atsisiųsti {{title}}", "person": "Asmuo" },
+      "recordPart": {
+        "download": "Atsisiųsti {{title}}",
+        "person": "Asmuo"
+      },
       "unsavedIn": "Neišsaugoti pakeitimai:",
       "noUnsaved": "Neišsaugotų pakeitimų nėra",
       "notSaved": "Neišsaugota: {{reason}}",
@@ -229,6 +232,7 @@
       "showJson": "Rodyti kaip JSON",
       "showForm": "Rodyti kaip formą",
       "recordActions": "Įrašo veiksmai",
+      "sectionActions": "Skilties veiksmai",
       "breadcrumb": "Naršymo kelias",
       "copyTitle": "Kopijuoti",
       "copied": "Nukopijuota",
@@ -663,7 +667,11 @@
       "general": "Bendra",
       "moreIn": "Daugiau skiltyje {{section}}",
       "thisSection": "Ši skiltis",
-      "collapse": "Suskleisti šoninę juostą"
+      "collapse": "Suskleisti šoninę juostą",
+      "expand": "Išskleisti šoninę juostą",
+      "search": "Ieškoti",
+      "searchShortcut": "⌘K",
+      "noMatches": "Meniu nėra nieko, kas atitiktų „{{query}}“"
     },
     "workspace": {
       "unavailable": "Darbo sritis nepasiekiama",

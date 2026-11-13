@@ -186,6 +186,9 @@ export class AdminSchemaLocalizer {
           ...(field.admin.placeholder ? { placeholder: this.text(pluginSlug, `${key}.placeholder`, field.admin.placeholder) } : {}),
           // The editor groups fields under this heading; one translation per heading, shared by its fields.
           section: this.text(pluginSlug, `${sectionsBase}.${StringUtils.slugify(field.admin.section, '')}.label`, field.admin.section),
+          // The heading as declared, kept beside its translation (like a menu group's `groupKey`): what a
+          // section's slots are named by, so a plugin fills "payment" whatever language the console speaks.
+          ...(field.admin.section ? { sectionKey: field.admin.sectionKey || StringUtils.slugify(field.admin.section, '') } : {}),
           ...(field.admin.fallback ? { fallback: this.fallback(pluginSlug, `${key}.emptyMeans`, field.admin.fallback) } : {}),
           ...(field.admin.keyLabels ? { keyLabels: this.keyLabels(pluginSlug, `${key}.keyLabels`, field.admin.keyLabels) } : {}),
         };
@@ -235,6 +238,8 @@ export class AdminSchemaLocalizer {
       out[term] = {
         ...part,
         section: this.text(pluginSlug, `${base}.sections.${StringUtils.slugify(part?.section, '')}.label`, part?.section),
+        // As a field's: a section only parts fill still names its slots by the heading as declared.
+        sectionKey: part?.sectionKey || StringUtils.slugify(part?.section, ''),
         empty: this.text(pluginSlug, `${base}.recordLinks.parts.${term}.empty`, part?.empty),
       };
     }
