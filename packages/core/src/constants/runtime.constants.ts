@@ -73,5 +73,16 @@ export class RuntimeConstants {
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
     'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',
+    // Everything else `@fromcode119/admin/components` exports. On a public page this module is a stand-in
+    // that declares ONLY the names listed here, so a storefront bundle importing a name missing from this
+    // list fails to load as a whole ("does not provide an export named 'ColorField'"). A test in the admin
+    // compares this list with that barrel.
+    'Checkbox', 'ColorField', 'FileDropzone', 'LocalizedField', 'FieldRenderer', 'Column',
+    'FieldSize', 'ButtonVariant', 'BadgeVariant', 'DateTimePickerGranularity', 'TimeOfDayUtils', 'ThemeMode',
+    'AdminPanel', 'AdminFactGrid', 'CompactPageHeader', 'PluginTrendChart',
+    'AuthHooks', 'AuthProvider', 'AuthStore', 'ThemeHooks',
+    'NotificationContextStore', 'NotificationHooks', 'NotificationProvider',
+    'AdminComponent', 'AdminComponentKeys', 'AdminComponentRegistry', 'AdminPageKeys', 'AdminPageRegistry',
+    'AdminAppearanceRegistry', 'AdminShellRegistry', 'AppearanceSurfacePolicy',
   ] as const;
 }
