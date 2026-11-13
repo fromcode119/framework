@@ -1,0 +1,109 @@
+# Releases an extension (plugin, theme, appearance) when its default branch moves. Each extension's own
+# `release.yml` calls this job; the framework holds no list of their names.
+#
+# THE VERSION IS SET HERE, NOT IN THE PULL REQUEST. Every change used to bump its own `manifest.json`, and
+# parallel sessions kept taking the same number: the push gate refused the second one ("already on main"),
+# which meant a rebase, a re-bump and a second full gate run for a one-line fix. A change that forgot to bump
+# shipped nothing at all, silently (the tag already existed). Now a merge that changes what ships gets the
+# next patch number above the newest tag, committed to the branch and tagged in one step. A version a change
+# did raise itself (a minor or major step) is kept as it is.
+#
+# What does NOT ship — docs, CI files, tests — releases nothing, exactly as before.
+name: Extension release
+
+on:
+  workflow_call:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: self-hosted
+    # One release at a time per repository: two merges a minute apart must not both pick the same number.
+    concurrency:
+      group: extension-release-${{ github.repository }}
+      cancel-in-progress: false
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Decide the version
+        id: version
+        run: |
+          set -euo pipefail
+          git fetch -q origin "$GITHUB_REF_NAME"
+          git checkout -q "origin/$GITHUB_REF_NAME"   # the branch as it is NOW, not as it was when this run was queued
+
+          file=''
+          for f in manifest.json theme.json appearance.json; do [ -f "$f" ] && { file=$f; break; }; done
+          [ -n "$file" ] || { echo "no manifest.json / theme.json / appearance.json" >&2; exit 1; }
+
+          current=$(jq -r '.version' "$file")
+          case "$current" in [0-9]*.[0-9]*.[0-9]*) ;; *) echo "$file version is not a plain x.y.z version: $current" >&2; exit 1 ;; esac
+
+          last_tag=$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | head -1)
+          if [ -z "$last_tag" ]; then
+            echo "file=$file" >> "$GITHUB_OUTPUT"; echo "version=$current" >> "$GITHUB_OUTPUT"; echo "bump=false" >> "$GITHUB_OUTPUT"; echo "release=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Nothing that ships changed since the last release → nothing to release.
+          shipped=$(git diff --name-only "$last_tag" HEAD | grep -vE '(^|/)(tests?|__tests__)/|\.test\.[a-z]+$|\.md$|^\.github/|^\.gitignore$' || true)
+          if [ -z "$shipped" ]; then
+            echo "Only tests / docs / CI changed since $last_tag — no release."
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          last=${last_tag#v}
+          newest=$(printf '%s\n%s\n' "$current" "$last" | sort -V | tail -1)
+          if [ "$current" = "$newest" ] && [ "$current" != "$last" ]; then
+            next=$current; bump=false               # the change raised the version itself; keep it
+          else
+            IFS=. read -r ma mi pa <<< "$last"
+            next="$ma.$mi.$((pa + 1))"; bump=true
+          fi
+          echo "file=$file" >> "$GITHUB_OUTPUT"
+          echo "previous=$current" >> "$GITHUB_OUTPUT"
+          echo "version=$next" >> "$GITHUB_OUTPUT"
+          echo "bump=$bump" >> "$GITHUB_OUTPUT"
+          echo "release=true" >> "$GITHUB_OUTPUT"
+
+      - name: Write the version
+        if: steps.version.outputs.release == 'true' && steps.version.outputs.bump == 'true'
+        env:
+          FILE: ${{ steps.version.outputs.file }}
+          OLD: ${{ steps.version.outputs.previous }}
+          NEW: ${{ steps.version.outputs.version }}
+          BRANCH: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          # `pageRelease` names the release that prepared a stored page; it moves with the version.
+          tmp=$(mktemp)
+          jq --indent 2 --arg old "$OLD" --arg new "$NEW" \
+            '.version = $new | walk(if type == "object" and .pageRelease == $old then .pageRelease = $new else . end)' \
+            "$FILE" > "$tmp" && mv "$tmp" "$FILE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$FILE"
+          git commit -q -m "chore(release): $NEW"
+          # The workflow token's push starts no other workflow, so this cannot loop.
+          git push -q origin "HEAD:refs/heads/$BRANCH"
+
+      - name: Create tag and release
+        if: steps.version.outputs.release == 'true'
+        env:
+          TAG_NAME: v${{ steps.version.outputs.version }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if git ls-remote --tags origin "refs/tags/$TAG_NAME" | grep -q .; then
+            echo "$TAG_NAME already exists"; exit 0
+          fi
+          git tag "$TAG_NAME"
+          git push origin "$TAG_NAME"
+          gh release create "$TAG_NAME" --title "$TAG_NAME" --generate-notes
