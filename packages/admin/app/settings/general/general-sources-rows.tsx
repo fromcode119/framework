@@ -3,6 +3,7 @@ import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/view/switch.client';
 import { SettingRow } from '@/app/settings/general/setting-row';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
@@ -30,13 +31,13 @@ export class GeneralSourcesRows extends PureReactor {
   }
 
   @bound
-  protected onCheckIntervalChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.patchSetting('sources_check_interval_minutes', e.target.value);
+  protected onCheckIntervalChange(value: number | string): void {
+    this.patchSetting('sources_check_interval_minutes', String(value));
   }
 
   @bound
-  protected onKeepBuildsChange(e: ChangeEvent<HTMLInputElement>): void {
-    this.patchSetting('sources_keep_builds', e.target.value);
+  protected onKeepBuildsChange(value: number | string): void {
+    this.patchSetting('sources_keep_builds', String(value));
   }
 
   @bound
@@ -66,7 +67,7 @@ export class GeneralSourcesRows extends PureReactor {
             title={AdminI18n.t('settings.general.sourcesCheckInterval')}
             description={AdminI18n.t('settings.general.sourcesCheckIntervalDescription')}
           >
-            <Input type="number" min={0} step={1} value={settings.sources_check_interval_minutes} onChange={this.onCheckIntervalChange} className="w-full md:w-24 font-bold" />
+            <div className="w-full md:w-40"><NumberStepper min={0} step={1} value={settings.sources_check_interval_minutes} onChange={this.onCheckIntervalChange} /></div>
           </SettingRow>
         )}
 
@@ -77,7 +78,7 @@ export class GeneralSourcesRows extends PureReactor {
             title={AdminI18n.t('settings.general.sourcesKeepBuilds')}
             description={AdminI18n.t('settings.general.sourcesKeepBuildsDescription')}
           >
-            <Input type="number" min={0} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} className="w-full md:w-24 font-bold" />
+            <div className="w-full md:w-40"><NumberStepper min={0} step={1} value={settings.sources_keep_builds} onChange={this.onKeepBuildsChange} /></div>
           </SettingRow>
         )}
 
