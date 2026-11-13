@@ -51,6 +51,7 @@ export class ReactExportSourceBuilder {
     'BrowserLocalization',
     'AdminComponentRegistry',
     'AsyncDataController',
+    'DebouncedSearchController',
     'LazyComponentLoaderService',
     'LazyLoadClass',
     'PageStyleContext',

@@ -72,6 +72,8 @@ export { SystemShortcodes } from '@react/system-shortcodes';
 export { CollectionQueryUtils } from '@react/collection-queries';
 export { BrowserLocalization } from '@react/browser-localization';
 export { AsyncDataController } from '@react/async-data-controller';
+export { DebouncedSearchController } from '@react/debounced-search-controller';
+export type { IDebouncedSearchCallbacks } from '@react/interfaces/debounced-search-callbacks.interface';
 // Fail-closed lookup of admin components from the runtime registry, so a plugin/theme never
 // has to name the admin package (which the SDK boundary forbids).
 export { AdminComponentRegistry } from '@react/admin-component-registry';
