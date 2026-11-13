@@ -6,6 +6,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.574] - 2026-11-13
+
+### Fixed
+
+- **admin**: no lone lock above a locked field that has no label and cannot be unlocked ([#1397](https://github.com/fromcode119/framework/pull/1397))
+
 ## [0.2.573] - 2026-11-13
 
 ### Fixed
