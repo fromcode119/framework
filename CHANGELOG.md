@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.579] - 2026-11-13
+
+### Fixed
+
+- **ssr**: render with the request locale so prices match the browser ([#1418](https://github.com/fromcode119/framework/pull/1418))
+- **ci**: sign the extension release commit so Sources builds it ([#1417](https://github.com/fromcode119/framework/pull/1417))
+
 ## [0.2.578] - 2026-11-13
 
 ### Fixed
