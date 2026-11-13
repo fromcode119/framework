@@ -53,10 +53,28 @@ export class IntegrityService {
   }
 
   /**
+   * Whether a directory is a version-controlled SOURCE checkout rather than an installed artifact.
+   *
+   * The checksum certifies an ARTIFACT: the cleaned, packed directory an installer writes. A source
+   * checkout is not one. Its hash covers build output (`index.js`, the UI bundles) that the
+   * repository ignores, so the value differs on every machine and after every build, and the copy
+   * committed in `manifest.json` can never match. Stamping it anyway rewrote a tracked file on every
+   * build and every boot: each checkout carried a permanent local change to `manifest.json`, and
+   * because every release also moves that file's `version`, the checkout could no longer be
+   * fast-forwarded to main. So a checkout is neither stamped nor verified. `.git` is a directory in
+   * a clone and a file in a worktree; both count. A packed directory never has one — `PackCleaner`
+   * removes it before the artifact is stamped.
+   */
+  public static isSourceCheckout(dirPath: string): boolean {
+    return fs.existsSync(path.join(dirPath, '.git'));
+  }
+
+  /**
    * Verifies that a plugin's contents match its manifest checksum
    */
   public static async verifyPluginIntegrity(dirPath: string, expectedChecksum: string): Promise<boolean> {
     if (!expectedChecksum) return true; // Skip if no checksum provided
+    if (this.isSourceCheckout(dirPath)) return true; // A checkout is not an artifact — see isSourceCheckout
 
     try {
       const actualChecksum = await this.calculateDirectoryHash(dirPath);
@@ -100,9 +118,13 @@ export class IntegrityService {
    * future boots are stable. The manifest.json is excluded from the hash, so writing
    * the checksum back does not invalidate it. Best-effort: if the manifest cannot be
    * written (read-only mount), the computed hash is still returned for in-memory use.
+   *
+   * A source checkout is never written to: the hash is returned and `manifest.json` is left as the
+   * repository has it (see isSourceCheckout).
    */
   public static async restampPlugin(dirPath: string): Promise<string> {
     const checksum = await this.calculateDirectoryHash(dirPath);
+    if (this.isSourceCheckout(dirPath)) return checksum;
     const manifestPath = path.join(dirPath, 'manifest.json');
     try {
       const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
