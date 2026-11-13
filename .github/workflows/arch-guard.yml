@@ -138,6 +138,14 @@ jobs:
         run: |
           sha=$(git -C framework rev-parse HEAD)
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
+          # The runner box warms this cache for every new framework main. When that build is already in
+          # progress, wait for it instead of building the same commit a second time beside it on the
+          # same CPUs. Stop waiting when it finishes, gives up (its directory disappears), or 12 min pass.
+          for i in $(seq 1 144); do
+            [ -d "$CACHE_ROOT/$sha" ] || [ ! -d "$CACHE_ROOT/.warm-$sha" ] && break
+            [ "$i" = 1 ] && echo "Waiting for the cache build of $sha already in progress"
+            sleep 5
+          done
           if [ -d "$CACHE_ROOT/$sha" ]; then
             tar -C "$CACHE_ROOT/$sha" -cf - . | tar -C framework -xf -
             # Only the BUILD OUTPUT may come from the cache. Every tracked file goes back to this commit, so
