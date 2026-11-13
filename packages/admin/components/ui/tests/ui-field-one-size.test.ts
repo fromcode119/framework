@@ -31,6 +31,12 @@ describe('UiFieldUtils — one field size', () => {
     expect(UiFieldUtils.getFieldClasses(FieldSize.MD, 'min-h-[100px]')).toContain('min-h-[100px]');
   });
 
+  it('lets a text area grow with its rows: the one-line height is not left on it', () => {
+    const classes = UiFieldUtils.getFieldClasses(FieldSize.MD, 'resize-none h-auto min-h-[100px]');
+    expect(heightOf(classes)).toEqual(['h-auto']);
+    expect(classes).toContain('min-h-[100px]');
+  });
+
   it('keeps a text colour, which is not a size', () => {
     expect(UiFieldUtils.getFieldClasses(FieldSize.MD, 'text-rose-600')).toContain('text-rose-600');
   });

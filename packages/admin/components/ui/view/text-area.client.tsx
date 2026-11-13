@@ -32,13 +32,15 @@ export class TextArea extends PureReactor {
     const value = this.value;
     const size = this.size ?? FieldSize.MD;
 
+    // `h-auto`: a text area is as tall as its `rows`, never less than the minimum. Without it the
+    // single-line height every field carries stayed on, and `rows` changed nothing on any screen.
     return (
       <div className={`flex flex-col gap-1 w-full ${className}`}>
         {label && <label className={UiFieldUtils.TEXT.LABEL}>{label}</label>}
         <textarea
           {...props}
           value={value}
-          className={`${UiFieldUtils.getFieldClasses(size, `resize-none min-h-[100px] ${inputClassName}`)}
+          className={`${UiFieldUtils.getFieldClasses(size, `resize-none h-auto min-h-[100px] ${inputClassName}`)}
             ${error ? 'border-rose-500 focus:border-rose-500/20 bg-rose-50/30 dark:bg-rose-500/5 shadow-[0_0_20px_rgba(244,63,94,0.1)]' : ''}`}
         />
         {error && (

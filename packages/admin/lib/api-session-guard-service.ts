@@ -23,7 +23,7 @@ export class AdminApiSessionGuardService {
     if (!Platform.isBrowser) {
       return;
     }
-    if (AdminPathUtils.fromBrowserPath(window.location.pathname) === AdminConstants.ROUTES.AUTH.LOGIN) {
+    if (AdminApiSessionGuardService.needsNoSession(AdminPathUtils.fromBrowserPath(window.location.pathname))) {
       return;
     }
     if (url.includes(AdminConstants.ENDPOINTS.AUTH.SECURITY) || String(method || 'GET').toUpperCase() !== 'GET') {
@@ -32,6 +32,16 @@ export class AdminApiSessionGuardService {
     }
 
     void AdminApiSessionGuardService.verifySessionExpiry(url, status);
+  }
+
+  /**
+   * A screen a signed-out person is meant to be on: signing in, asking for a reset link, setting a new
+   * password, the first-run setup. Only the sign-in screen used to count, so the link in a password
+   * reset email opened the reset screen and was sent to sign-in a moment later — by the very state the
+   * screen exists for.
+   */
+  static needsNoSession(path: string): boolean {
+    return AdminConstants.ROUTES.AUTH.PUBLIC.some((route: string) => path === route || path.startsWith(`${route}/`));
   }
 
   private static async verifySessionExpiry(url: string, status: number): Promise<void> {
