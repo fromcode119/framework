@@ -1,6 +1,7 @@
 import type { IRuntimeBridgeInstallArgs } from '@react/interfaces/runtime-bridge-install-args.interface';
 import { AdminComponentRegistry } from '@react/admin-component-registry';
 import { AsyncDataController } from '@react/async-data-controller';
+import { DebouncedSearchController } from '@react/debounced-search-controller';
 import { AccountRouteUtils, AdminGlobalClient, AdminResourceClient, AdminSdkClient, AdminUserClient, ApiPathUtils, ApiQueryUtils, ApiRequestError, ApiRequestService, ApiScopeClient, ApiVersionUtils, ApplicationUrlUtils, BaseController, BaseRepository, BaseService, BrowserStateClient, CapabilityRegistry, ClientRuntimeConstants, CoercionUtils, CollectionScopeClient, CollectionUtils, CookieConstants, CookieSameSite, CoreServices, DataSourceConstants, EditorSessionParams, FormatUtils, HookEventUtils, InteractiveCanvas, LayoutTargetKind, LiveBlocks, LocalizationUtils, LocalizedField, LogLevel, Logger, MeasurementSystemUtils, MediaRelationService, MiddlewareStage, NamespacedPluginsFacade, NumberUtils, PaginationUtils, PlatformCountrySource, PlatformCountryUtils, PluginCapability, PluginFrontendLayoutRegistrar, Plugins, PluginsFacade, PluginsRegistry, PublicAssetUrlUtils, PublicRouteConstants, PublicSettings, RealtimeRoomClient, RecordVersions, StorefrontNoticeClient, StorefrontNoticeDisplay, StorefrontNoticeParam, StorefrontNoticeTone, RelationUtils, RouteConstants, RouteUtils, PagePrefetch, PublicListing, PublicListingSurface, RenderLocationUtils, RuntimeBootHintConstants, RuntimeBridge, RuntimeConstants, RuntimeLocationUtils, SdkClient, SettingsScopeClient, ShortcodeUtils, StringUtils, SystemAuthClient, SystemAuthSession, SystemApiPaths, SystemConstants, ThemeFrontendLayoutRegistrar, ThemeMode, UrlUtils, WidgetViewport } from '@fromcode119/core/client';
 import { ContextBridge } from '@react/context-bridge';
 import { PluginUiRegistrar } from '@react/plugin-ui-registrar';
@@ -103,6 +104,7 @@ export class BridgeObjectBuilder {
       SystemShortcodes,
       AdminComponentRegistry,
       AsyncDataController,
+      DebouncedSearchController,
       LazyComponentLoaderService,
       LazyLoadClass,
       PluginsProvider: args.PluginsProvider,

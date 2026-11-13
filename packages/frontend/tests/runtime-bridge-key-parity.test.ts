@@ -120,4 +120,20 @@ describe('the sdk/react import-map module exports every public component the bri
       .filter((key) => !exported.has(key));
     expect(missing).toEqual([]);
   });
+
+  /**
+   * The other direction, and the one that bites quietly. The generated module reads every listed key
+   * OFF the bridge object, so a name on `SDK_REACT_EXPORT_KEYS` that the bridge does not carry is
+   * exported as `undefined`: the plugin's bundle loads, typechecks and runs until the first use, which
+   * throws `X is not a constructor` from inside minified bundle output with nothing naming the cause.
+   *
+   * `DebouncedSearchController` shipped that way — added to the key list and not to the bridge.
+   * `SdkRuntimeExportsGuard.unbackedNames` already checks exactly this for `@fromcode119/sdk`; this is
+   * the same check for `@fromcode119/sdk/react`.
+   */
+  it('carries every name it lists, so none of them is exported as undefined', () => {
+    const bridge = BridgeObjectBuilder.build(KeyParityFixture.preBootArgs());
+    const unbacked = ReactExportSourceBuilder.SDK_REACT_EXPORT_KEYS.filter((key) => !(key in bridge));
+    expect(unbacked).toEqual([]);
+  });
 });
