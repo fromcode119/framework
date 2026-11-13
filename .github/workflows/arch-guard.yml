@@ -44,29 +44,30 @@ on:
         type: string
 
 jobs:
-  # A release is a separate commit that only moves the version: the `version` in `manifest.json` / `theme.json` / `appearance.json`, the same
-  # field in `package.json` / `package-lock.json`, and the changelog. No guard can read a different
-  # result from that, so running all of them again only holds the queue. This job decides, from the
-  # actual diff, whether anything else changed. Any other file — or any other key in those files, since
-  # the guards DO read manifest slots and package scripts — runs the full guard. When in doubt (no base
-  # to compare, a new branch, the framework's own runs) it runs.
+  # A release is a separate commit that only moves the version: the `version` in `manifest.json` /
+  # `theme.json` / `appearance.json`, the same field in `package.json` / `package-lock.json`, and the
+  # changelog. No guard can read a different result from that, so running all of them again only holds
+  # the queue. This job decides, from the actual diff, whether anything else changed. It covers the
+  # FRAMEWORK's own release pull requests too — its version lives in `package.json` /
+  # `package-lock.json`, read here exactly the same way — which is what a release pull request of its
+  # own spent five minutes on before. Any other file, or any other key in those files (the guards DO
+  # read manifest slots and package scripts), runs the full guard. When in doubt — no base to compare,
+  # a new branch, a file that will not parse — it runs.
   scope:
     runs-on: ${{ inputs.runner || 'ubuntu-latest' }}
     outputs:
       guard: ${{ steps.diff.outputs.guard }}
     steps:
       - uses: actions/checkout@v7
-        if: ${{ inputs.area != '' }}
         with:
           fetch-depth: 0
       - name: Is anything more than the version changing?
         id: diff
         env:
-          CALLED: ${{ inputs.area != '' }}
           BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
           guard=true
-          if [ "$CALLED" = true ] && [ -n "$BASE" ] && ! echo "$BASE" | grep -qE '^0+$' \
+          if [ -n "$BASE" ] && ! echo "$BASE" | grep -qE '^0+$' \
              && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
             files=$(git diff --name-only "$BASE" HEAD)
             only_version=true
