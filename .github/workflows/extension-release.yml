@@ -133,7 +133,10 @@ jobs:
           # The author and message can be set by anyone; the CONTENT cannot hide. Outside `version` and
           # `pageRelease` the file must be byte-for-byte its signed parent's, so signing adds nothing new.
           strip='del(.version) | walk(if type == "object" then del(.pageRelease) else . end)'
-          [ "$(git show "$head^:$files" | jq -S "$strip")" = "$(git show "$head:$files" | jq -S "$strip")" ] \
+          # Fail closed: a file that is missing or does not parse stops here instead of comparing equal-empty.
+          parent_json=$(git show "$head^:$files" | jq -eS "$strip")
+          head_json=$(git show "$head:$files" | jq -eS "$strip")
+          [ -n "$parent_json" ] && [ "$parent_json" = "$head_json" ] \
             || { echo "Unsigned head changes more than the version in $files — not signing." >&2; exit 1; }
           repo="repos/$GITHUB_REPOSITORY/git"
           commit=$(jq -n --arg msg "$message" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg parent "$head" \
