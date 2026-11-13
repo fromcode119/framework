@@ -9,6 +9,7 @@ import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
+import { NumberStepper } from '@/components/ui/number-stepper';
 import { Select } from '@/components/ui/view/select.client';
 import { BooleanToggleField } from '@/components/ui/view/boolean-toggle-field.client';
 import type { IPersonFieldDefinition } from '@/app/users/people/fields/interfaces/person-field.interface';
@@ -110,8 +111,9 @@ export class PersonFieldEditor extends Reactor {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           <label className="block"><span className="block text-[11px] font-bold tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.selfEditable')}</span>
             <BooleanToggleField checked={draft.selfEditable} theme={theme} disabled={saving} onChange={(selfEditable) => this.change({ selfEditable })} /></label>
-          <Input label={AdminI18n.t('users.fields.sortOrder')} type="number" value={String(draft.sortOrder)} disabled={saving}
-            onChange={(event) => this.change({ sortOrder: Number(event.target.value) || 0 })} />
+          <label className="block"><span className="block text-[11px] font-bold tracking-tight text-slate-500 mb-1.5">{AdminI18n.t('users.fields.sortOrder')}</span>
+            <NumberStepper step={1} value={draft.sortOrder} disabled={saving}
+              onChange={(value) => this.change({ sortOrder: Number(value) || 0 })} /></label>
         </div>
         <div className="flex flex-wrap items-center gap-3 pt-2">
           <Button variant={ButtonVariant.PRIMARY} type="button" isLoading={saving} onClick={() => void this.save()}

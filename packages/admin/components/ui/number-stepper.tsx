@@ -9,11 +9,11 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * The platform number field, used by every number field the FieldRenderer draws.
  *
- * A whole-number field (a declared whole `step`: stock, quantities) gets − and + buttons at either end of
- * the box, each a full control's height, so a finger can hit them on a phone. Any other number — a price,
- * a weight, a field with no step — is a plain box with the number keypad: stepping 6.90 by one is never
- * what anyone wants, and the old pair of 10px arrows stacked in the corner was too small to tap.
- * Typed values are clamped to min/max when the field is left.
+ * Every number field gets − and + buttons at either end of the box, each a full control's height, so a
+ * finger can hit them on a phone; they step by the declared `step`, or by one when none is declared, and
+ * stop at min/max. Only a field that declares a FRACTIONAL step (0.01 for a rate typed to the cent) is a
+ * plain box: its buttons would move it by a sliver nobody means. Without a declared step any number can
+ * still be typed, decimals included. Typed values are clamped to min/max when the field is left.
  */
 export class NumberStepper extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -90,8 +90,14 @@ export class NumberStepper extends PureReactor {
     if (clamped !== current) this.onChange(clamped);
   }
 
-  /** − and + only where stepping by one is meaningful: a declared whole-number step. */
-  private get stepsByWholeNumbers(): boolean {
+  /** − and + on every field except one that declares a fractional step. */
+  private get hasButtons(): boolean {
+    const step = Number(this.step);
+    return !(Number.isFinite(step) && step > 0 && !Number.isInteger(step));
+  }
+
+  /** The phone keypad: whole numbers only where a whole step is declared, otherwise with a decimal key. */
+  private get wholeNumbersOnly(): boolean {
     const step = Number(this.step);
     return Number.isInteger(step) && step >= 1;
   }
@@ -102,7 +108,7 @@ export class NumberStepper extends PureReactor {
     return (
       <Input
         type="number"
-        inputMode={withButtons ? 'numeric' : 'decimal'}
+        inputMode={this.wholeNumbersOnly ? 'numeric' : 'decimal'}
         value={(typeof value === 'number' || typeof value === 'string') ? value : ''}
         onChange={this.onType}
         onBlur={this.onLeave}
@@ -118,7 +124,7 @@ export class NumberStepper extends PureReactor {
   }
 
   render(): ReactNode {
-    if (!this.stepsByWholeNumbers) return this.renderInput(false);
+    if (!this.hasButtons) return this.renderInput(false);
     // One size for every field (UiFieldUtils), so the buttons are always the 40px box's.
     // Each button is a square the input's own height (minus its border), inside the box at either end.
     const btn = `absolute top-px flex items-center justify-center text-slate-500 dark:text-slate-400 hover:text-indigo-600 hover:bg-slate-100 dark:hover:bg-slate-800 active:bg-slate-200 dark:active:bg-slate-700 disabled:opacity-40 disabled:hover:bg-transparent transition-colors h-[calc(2.5rem_-_2px)] w-10`;
