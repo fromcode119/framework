@@ -32,4 +32,24 @@ describe('ReleaseFetchCache', () => {
     await ReleaseFetchCache.remember('tags', load, () => now);
     expect(load).toHaveBeenCalledTimes(2);
   });
+
+  it('a refresh forgets short-lived answers and failures, never what cannot change', async () => {
+    let now = 0;
+    const lasting = vi.fn(async () => 'changelog');
+    const shortLived = vi.fn(async () => ['v0.2.575']);
+    const failing = vi.fn(async () => null);
+    await ReleaseFetchCache.remember('text', lasting, () => now);
+    await ReleaseFetchCache.remember('tags', shortLived, () => now, { hitMs: 120_000 });
+    await ReleaseFetchCache.remember('probe', failing, () => now);
+
+    now = ReleaseFetchCache.REFRESH_MIN_AGE_MS;
+    ReleaseFetchCache.refresh(() => now);
+    await ReleaseFetchCache.remember('text', lasting, () => now);
+    await ReleaseFetchCache.remember('tags', shortLived, () => now, { hitMs: 120_000 });
+    await ReleaseFetchCache.remember('probe', failing, () => now);
+
+    expect(lasting).toHaveBeenCalledTimes(1);
+    expect(shortLived).toHaveBeenCalledTimes(2);
+    expect(failing).toHaveBeenCalledTimes(2);
+  });
 });

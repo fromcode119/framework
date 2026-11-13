@@ -52,6 +52,19 @@ export class FrameworkReleaseSource {
   /** Each pending release costs one more request for its notes; a long-neglected install is capped. */
   private static readonly MAX_PENDING = 10;
 
+  /**
+   * How long the list of tags is trusted. It is what tells an installation that a release exists, so
+   * it decides how soon an update starts; at two minutes the updater asks GitHub 30 times an hour,
+   * half the unauthenticated allowance, leaving the rest for release notes.
+   */
+  static readonly TAGS_MS = 2 * 60 * 1000;
+
+  /**
+   * How long "this tag's images are not published yet" is trusted. The registry is not GitHub's API
+   * and has no hourly allowance, and a tag is only unpublished during the minutes its images build.
+   */
+  static readonly UNPUBLISHED_MS = 60 * 1000;
+
   static async repository(): Promise<string> {
     return PlatformSettingsService.resolve(
       process.env.FRAMEWORK_REPOSITORY,
@@ -148,7 +161,10 @@ export class FrameworkReleaseSource {
   /** The repository's tags, or `null` when GitHub did not answer — never an empty list standing in for one. */
   private static async fetchTags(repository: string): Promise<Array<Record<string, unknown>> | null> {
     const url = `${FrameworkReleaseSource.TAGS_API}/${repository}/tags?per_page=${FrameworkReleaseSource.PAGE_SIZE}`;
-    const tags = await FrameworkReleaseSource.readJson(url);
+    const tags = await ReleaseFetchCache.remember(`json:${url}`, () => FrameworkReleaseSource.fetchJson(url), Date.now, {
+      hitMs: FrameworkReleaseSource.TAGS_MS,
+      missMs: FrameworkReleaseSource.TAGS_MS,
+    });
     return Array.isArray(tags) ? tags : null;
   }
 
@@ -199,8 +215,16 @@ export class FrameworkReleaseSource {
       } finally {
         clearTimeout(timer);
       }
-    });
+    }, Date.now, { missMs: FrameworkReleaseSource.UNPUBLISHED_MS });
     return found === true;
+  }
+
+  /**
+   * Asks again on the next read: the list of tags and every "not yet" — what an operator pressing
+   * "Check for updates" expects to be looked up now, not answered from memory.
+   */
+  static refresh(): void {
+    ReleaseFetchCache.refresh();
   }
 
   /** Whether the release source answered the last time it was asked (remembered, not re-asked). */
