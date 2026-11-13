@@ -12,31 +12,13 @@ import { GuardScope } from './cli/guard-scope';
  * a plugin screen is how a browser-default control, or a field of its own height, gets back in — and
  * the same rule holds for the console itself (`no-raw-form-controls` in the admin package).
  *
- * Not admin, so not covered: a file whose name carries `.storefront.` or ends in `-renderer.tsx`, and
- * the few public, customer-facing files in {@link PUBLIC_FILES}. A file input is allowed everywhere:
- * it is hidden and opened by a button, so it is not a visible control.
+ * Not admin, so not covered — worked out from the plugin's own code, never from a list of names:
+ * a file whose name carries `.storefront.` or ends in `-renderer.tsx`; a file that registers itself only
+ * in slots outside `admin.`; and everything those import, since a customer-facing screen may not pull
+ * in the console's components. A file input is allowed everywhere: it is hidden and opened by a button,
+ * so it is not a visible control.
  */
 export class PluginAdminControlsGuard {
-  /**
-   * Public / customer-facing files that carry no `.storefront.` in their name, as
-   * `<plugin>/<path under src/ui>`, each with the reason it is not an admin screen.
-   */
-  static readonly PUBLIC_FILES: Readonly<Record<string, string>> = {
-    'ecommerce/account-address-form.tsx': 'customer account page, mounted by account-addresses-panel.storefront.tsx',
-    'ecommerce/delivery-address-picker.tsx': 'checkout and product page, used by checkout-flow-form.storefront.tsx',
-    'ecommerce/ecommerce-product-addon-options.tsx': 'product page, part of ecommerce-product-detail-view',
-    'ecommerce/ecommerce-product-choice-picker.tsx': 'product page, part of ecommerce-product-detail-view',
-    'ecommerce/ecommerce-product-detail-view.tsx': 'product page, mounted by ecommerce-product-detail-renderer.storefront.tsx',
-    'ecommerce/ecommerce-product-quantity-row.tsx': 'product page, part of ecommerce-product-detail-view',
-    'ecommerce/ecommerce-product-variant-picker.tsx': 'product page, part of ecommerce-product-detail-view',
-    'mlm/mlm-partner-invoices-card.tsx': 'customer account page, mounted by account-partner-panel.storefront.tsx',
-    'mlm/mlm-partners-apply-b2b-section.tsx': 'public partner application, part of mlm-partners-apply-form',
-    'mlm/mlm-partners-apply-form.tsx': 'public partner application, mounted by mlm-partners-apply-renderer.storefront.tsx',
-    'reminders/reminders-signup-fields.tsx': 'public signup form, used by reminders-signup-form.storefront.tsx',
-    'logistics-econt/econt-office-picker.tsx': 'checkout shipping option, slot ecommerce.checkout.shipping_method_options',
-    'finance/finance-company-form.tsx': 'customer account page, mounted by finance-account-companies-panel.storefront.tsx',
-  };
-
   private static readonly CONTROL = /<(input|select|textarea)(?=[\s/>])/g;
 
   static run(): number {
@@ -46,9 +28,10 @@ export class PluginAdminControlsGuard {
 
     for (const plugin of PluginAdminControlsGuard.plugins()) {
       const slug = path.basename(plugin);
-      for (const file of PluginAdminControlsGuard.walk(path.join(plugin, 'src', 'ui'))) {
-        const inUi = path.relative(path.join(plugin, 'src', 'ui'), file).split(path.sep).join('/');
-        if (PluginAdminControlsGuard.isPublic(slug, inUi)) continue;
+      const files = PluginAdminControlsGuard.walk(path.join(plugin, 'src', 'ui'));
+      const publicFiles = PluginAdminControlsGuard.publicFiles(plugin, files);
+      for (const file of files) {
+        if (publicFiles.has(file)) continue;
         scanned += 1;
         for (const hit of PluginAdminControlsGuard.controls(fs.readFileSync(file, 'utf8'))) {
           hits.push(`${ExtensionTrees.show(file)}:${hit.line}  <${hit.tag}>`);
@@ -81,9 +64,44 @@ export class PluginAdminControlsGuard {
       .map((child) => path.join(entry.dir, child.name)));
   }
 
-  private static isPublic(slug: string, inUi: string): boolean {
-    const name = path.posix.basename(inUi);
-    return name.includes('.storefront.') || name.endsWith('-renderer.tsx') || `${slug}/${inUi}` in PluginAdminControlsGuard.PUBLIC_FILES;
+  /**
+   * The customer-facing files of one plugin: the ones that say so themselves, and whatever they import.
+   */
+  private static publicFiles(plugin: string, files: string[]): Set<string> {
+    const sources = new Map(files.map((file) => [file, fs.readFileSync(file, 'utf8')] as const));
+    const found = new Set(files.filter((file) => PluginAdminControlsGuard.declaresPublic(file, sources.get(file) ?? '')));
+    const queue = [...found];
+    while (queue.length) {
+      const file = queue.pop() as string;
+      for (const imported of PluginAdminControlsGuard.imports(plugin, file, sources.get(file) ?? '')) {
+        if (!sources.has(imported) || found.has(imported)) continue;
+        found.add(imported);
+        queue.push(imported);
+      }
+    }
+    return found;
+  }
+
+  /** By its name, or by registering in slots none of which is an `admin.` one. */
+  private static declaresPublic(file: string, source: string): boolean {
+    const name = path.basename(file);
+    if (name.includes('.storefront.') || name.endsWith('-renderer.tsx')) return true;
+    const slots = source.match(/static\s+slots\s*=\s*\[([^\]]*)\]/);
+    if (!slots) return false;
+    const names = [...(slots[1] ?? '').matchAll(/['"`]([^'"`]+)['"`]/g)].map((match) => match[1] ?? '');
+    return names.length > 0 && names.every((slot) => !slot.startsWith('admin.'));
+  }
+
+  /** The plugin's own `.tsx` files a source imports statically (`./`, `../` or `@plugin/`). */
+  private static imports(plugin: string, file: string, source: string): string[] {
+    const out: string[] = [];
+    for (const match of source.matchAll(/^import\s+(?!type\b)[^'"]*['"]([^'"]+)['"]/gm)) {
+      const specifier = match[1] ?? '';
+      const base = specifier.startsWith('@plugin/') ? path.join(plugin, specifier.slice('@plugin/'.length))
+        : specifier.startsWith('.') ? path.resolve(path.dirname(file), specifier) : '';
+      if (base) out.push(`${base}.tsx`, path.join(base, 'index.tsx'));
+    }
+    return out;
   }
 
   private static walk(dir: string): string[] {

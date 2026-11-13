@@ -90,4 +90,25 @@ describe('PluginAdminControlsGuard', () => {
     vi.stubEnv(GuardScope.ENV, path.join(root, 'plugins', 'dirty'));
     expect(PluginAdminControlsGuard.run()).toBe(1);
   });
+
+  it('leaves out what a customer-facing file imports, without being told its name', () => {
+    quiet();
+    tree({
+      'shop/panel.storefront.tsx': "import { AddressForm } from './address-form';\nexport class P { render() { return <AddressForm />; } }",
+      'shop/address-form.tsx': 'export class AddressForm { render() { return <input value="x" />; } }',
+    });
+    expect(PluginAdminControlsGuard.run()).toBe(0);
+  });
+
+  it('leaves out a file registered only in slots outside the console', () => {
+    quiet();
+    tree({ 'shop/office-picker.tsx': "export class O { static slots = ['checkout.shipping_options']; render() { return <input value=\"x\" />; } }" });
+    expect(PluginAdminControlsGuard.run()).toBe(0);
+  });
+
+  it('still reports a file registered in a console slot', () => {
+    quiet();
+    tree({ 'shop/panel.tsx': "export class O { static slots = ['admin.collection.orders.edit.top']; render() { return <select />; } }" });
+    expect(PluginAdminControlsGuard.run()).toBe(1);
+  });
 });

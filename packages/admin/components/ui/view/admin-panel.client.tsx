@@ -1,4 +1,3 @@
-import { Children } from 'react';
 import type { ReactNode } from 'react';
 import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
 import { FieldHelpButton } from '@/components/collection/view/field-help-button.client';
@@ -36,13 +35,19 @@ export class AdminPanel extends Reactor {
     this.helpOpen = !this.helpOpen;
   }
 
+  /** True when a children value would draw something: `false`, `null` and empty lists draw nothing. */
+  private static hasContent(children: ReactNode): boolean {
+    if (Array.isArray(children)) return children.some((child) => AdminPanel.hasContent(child));
+    return children !== null && children !== undefined && children !== false && children !== true && children !== '';
+  }
+
   /**
    * Whether the panel holds content of its own. A panel that only ever renders a dialog passes
    * `[null, null]` while the dialog is closed, which is an array and so truthy — count what would
    * actually be drawn.
    */
   private get hasBody(): boolean {
-    return Children.toArray(this.children).length > 0;
+    return AdminPanel.hasContent(this.children);
   }
 
   /**
