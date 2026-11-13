@@ -188,7 +188,7 @@
       "deletePermanently": "Xóa vĩnh viễn",
       "relatedRecords": "Bản ghi liên quan",
       "relatedEmpty": "Chưa có plugin nào khác chứa bản ghi liên kết với bản ghi này.",
-      "recordPart": { "download": "Tải xuống {{title}}" },
+      "recordPart": { "download": "Tải xuống {{title}}", "person": "Người" },
       "viewMode": "Chế độ xem bản ghi",
       "formView": "Dạng biểu mẫu",
       "jsonView": "Dạng JSON",

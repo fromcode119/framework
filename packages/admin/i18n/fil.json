@@ -188,7 +188,7 @@
       "deletePermanently": "Burahin nang Permanente",
       "relatedRecords": "Mga kaugnay na record",
       "relatedEmpty": "Wala pang ibang plugin na may record na naka-link dito.",
-      "recordPart": { "download": "I-download {{title}}" },
+      "recordPart": { "download": "I-download {{title}}", "person": "Tao" },
       "viewMode": "Mode ng pagtingin sa record",
       "formView": "Form view",
       "jsonView": "JSON view",

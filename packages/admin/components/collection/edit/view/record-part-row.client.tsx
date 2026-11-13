@@ -18,8 +18,10 @@ export class RecordPartRow extends PureReactor {
   /** Left out when the provider's own trailing label already states it — a planned job's label IS its day. */
   private get date(): string {
     const ms = Date.parse(String(this.item.date || ''));
-    const date = Number.isFinite(ms) ? new Date(ms).toISOString().slice(0, 10) : '';
-    return date && String(this.item.trailing || '').includes(date) ? '' : date;
+    if (!Number.isFinite(ms)) return '';
+    const day = new Date(ms).toISOString().slice(0, 10);
+    // Read as the console writes a day ("13.11.2026 г." in Bulgarian), not as the stored ISO string.
+    return String(this.item.trailing || '').includes(day) ? '' : new Date(ms).toLocaleDateString(AdminI18n.locale);
   }
 
   @bound private open(): void { this.onOpen(this.item); }

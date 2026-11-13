@@ -188,7 +188,7 @@
       "deletePermanently": "Elimina definitivamente",
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
-      "recordPart": { "download": "Scarica {{title}}" },
+      "recordPart": { "download": "Scarica {{title}}", "person": "Persona" },
       "viewMode": "Modalità di visualizzazione del record",
       "formView": "Vista modulo",
       "jsonView": "Vista JSON",

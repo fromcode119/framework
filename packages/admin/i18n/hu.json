@@ -188,7 +188,7 @@
       "deletePermanently": "Végleges törlés",
       "relatedRecords": "Kapcsolódó rekordok",
       "relatedEmpty": "Még egyetlen más bővítmény sem tárol ehhez kapcsolódó rekordot.",
-      "recordPart": { "download": "Letöltés {{title}}" },
+      "recordPart": { "download": "Letöltés {{title}}", "person": "Személy" },
       "viewMode": "Rekord nézetmódja",
       "formView": "Űrlapnézet",
       "jsonView": "JSON-nézet",

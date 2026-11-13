@@ -188,7 +188,7 @@
       "deletePermanently": "Οριστική διαγραφή",
       "relatedRecords": "Σχετικές εγγραφές",
       "relatedEmpty": "Κανένα άλλο πρόσθετο δεν έχει ακόμη εγγραφή συνδεδεμένη με αυτήν.",
-      "recordPart": { "download": "Λήψη {{title}}" },
+      "recordPart": { "download": "Λήψη {{title}}", "person": "Πρόσωπο" },
       "viewMode": "Τρόπος προβολής εγγραφής",
       "formView": "Προβολή φόρμας",
       "jsonView": "Προβολή JSON",

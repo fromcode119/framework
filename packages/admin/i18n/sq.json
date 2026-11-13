@@ -188,7 +188,7 @@
       "deletePermanently": "Fshije përgjithmonë",
       "relatedRecords": "Regjistrime të lidhura",
       "relatedEmpty": "Ende asnjë shtojcë tjetër nuk ka regjistrim të lidhur me këtë.",
-      "recordPart": { "download": "Shkarko {{title}}" },
+      "recordPart": { "download": "Shkarko {{title}}", "person": "Personi" },
       "viewMode": "Mënyra e shfaqjes së regjistrimit",
       "formView": "Pamje formulari",
       "jsonView": "Pamje JSON",

@@ -188,7 +188,7 @@
       "deletePermanently": "Poista pysyvästi",
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
-      "recordPart": { "download": "Lataa {{title}}" },
+      "recordPart": { "download": "Lataa {{title}}", "person": "Henkilö" },
       "viewMode": "Tietueen näkymätila",
       "formView": "Lomakenäkymä",
       "jsonView": "JSON-näkymä",

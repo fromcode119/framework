@@ -188,7 +188,7 @@
       "deletePermanently": "Endgültig löschen",
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
-      "recordPart": { "download": "Herunterladen {{title}}" },
+      "recordPart": { "download": "Herunterladen {{title}}", "person": "Person" },
       "viewMode": "Ansichtsmodus des Datensatzes",
       "formView": "Formularansicht",
       "jsonView": "JSON-Ansicht",

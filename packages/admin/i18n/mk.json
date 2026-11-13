@@ -188,7 +188,7 @@
       "deletePermanently": "Избриши трајно",
       "relatedRecords": "Поврзани записи",
       "relatedEmpty": "Ниеден друг приклучок сè уште нема запис поврзан со овој.",
-      "recordPart": { "download": "Преземи {{title}}" },
+      "recordPart": { "download": "Преземи {{title}}", "person": "Лице" },
       "viewMode": "Режим на приказ на записот",
       "formView": "Приказ како формулар",
       "jsonView": "Приказ како JSON",

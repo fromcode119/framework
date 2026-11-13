@@ -188,7 +188,7 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
-      "recordPart": { "download": "Transferir {{title}}" },
+      "recordPart": { "download": "Transferir {{title}}", "person": "Pessoa" },
       "viewMode": "Modo de visualização do registo",
       "formView": "Vista de formulário",
       "jsonView": "Vista JSON",
