@@ -26,7 +26,12 @@ export class DeployFolderFixture {
   /** The release's full-stack file as it was before journald logging and the 512M gateway. */
   static olderFullStack(): string {
     const current = fs.readFileSync(path.join(DeployFolderFixture.REPO_DEPLOY, 'docker-compose.full-stack.yml'), 'utf8');
-    return current.replace('driver: journald', 'driver: json-file').replace(/(\n  gateway:[\s\S]*?memory: )512M/, '$1256M');
+    // Matches the driver LINE, not the word `journald`: the current file reads
+    // `driver: ${PLATFORM_LOG_DRIVER:-journald}`, and a replace of the bare word silently matched
+    // nothing, so the "older" file came back identical and the rollback it asserts proved nothing.
+    const older = current.replace(/^(\s*)driver: .*$/m, '$1driver: json-file');
+    if (older === current) throw new Error('deploy fixture: the full-stack logging driver line was not found.');
+    return older.replace(/(\n  gateway:[\s\S]*?memory: )512M/, '$1256M');
   }
 
   /** A deployment folder with the older compose files and an `.env` naming `version` (none when empty). */
