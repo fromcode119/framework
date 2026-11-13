@@ -94,6 +94,10 @@ jobs:
             "$FILE" > "$tmp" && mv "$tmp" "$FILE"
           repo="repos/$GITHUB_REPOSITORY/git"
           base=$(git rev-parse HEAD)
+          # Sign only on top of a SIGNED head (a pull-request merge always is). Otherwise this job would
+          # hand Sources a signed tip over a commit pushed straight to the branch — the one it must refuse.
+          [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$base" -q .commit.verification.verified)" = true ] \
+            || { echo "Head $base is not signed — not releasing on top of it." >&2; exit 1; }
           blob=$(base64 < "$FILE" | tr -d '\n' | jq -Rn '{content: input, encoding: "base64"}' | gh api "$repo/blobs" --input - -q .sha)
           tree=$(jq -n --arg base "$(git rev-parse 'HEAD^{tree}')" --arg path "$FILE" --arg sha "$blob" \
             '{base_tree: $base, tree: [{path: $path, mode: "100644", type: "blob", sha: $sha}]}' | gh api "$repo/trees" --input - -q .sha)
@@ -114,11 +118,18 @@ jobs:
         run: |
           set -euo pipefail
           head=$(git rev-parse HEAD)
-          read -r verified message < <(gh api "repos/$GITHUB_REPOSITORY/commits/$head" -q '"\(.commit.verification.verified) \(.commit.message|split("\n")[0])"')
-          case "$verified $message" in
-            "false chore(release): "*) ;;
+          read -r verified login message < <(gh api "repos/$GITHUB_REPOSITORY/commits/$head" \
+            -q '"\(.commit.verification.verified) \(.author.login // "-") \(.commit.message|split("\n")[0])"')
+          case "$verified $login $message" in
+            "false github-actions[bot] chore(release): "*) ;;
             *) exit 0 ;;
           esac
+          # Re-sign ONLY this job's own version commit: it changes the version file alone and sits on a
+          # signed parent. Anything else unsigned at the head stays unsigned, and Sources keeps refusing it.
+          files=$(git diff --name-only "$head^" "$head")
+          case "$files" in manifest.json|theme.json|appearance.json) ;; *) echo "Unsigned head changes $files — not signing." >&2; exit 1 ;; esac
+          [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$head^" -q .commit.verification.verified)" = true ] \
+            || { echo "Parent of $head is not signed — not signing." >&2; exit 1; }
           repo="repos/$GITHUB_REPOSITORY/git"
           commit=$(jq -n --arg msg "$message" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg parent "$head" \
             '{message: $msg, tree: $tree, parents: [$parent]}' | gh api "$repo/commits" --input - -q .sha)
