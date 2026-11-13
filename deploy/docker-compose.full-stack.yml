@@ -30,8 +30,14 @@
 #   journalctl COM_DOCKER_COMPOSE_SERVICE=api --since "-7d"
 # Every service carries it, so every log is capped the same way. A rolling release never recreates db
 # or redis (`--no-deps`); a change to their logging reaches them only when they are recreated on purpose.
+#
+# The driver is a VARIABLE because this topology is also what a development checkout includes, and
+# journald exists only on a systemd host: on macOS every container of the stack died at creation with
+# "failed to initialize logging driver: journald is not enabled on this host", so the whole local
+# platform could not be started at all. The deployed default is unchanged; a development `.env` sets
+# PLATFORM_LOG_DRIVER=local, which is what the Docker daemon uses there anyway.
 x-platform-logging: &platform-logging
-  driver: journald
+  driver: ${PLATFORM_LOG_DRIVER:-journald}
   options:
     tag: "{{.Name}}"
     labels: com.docker.compose.service

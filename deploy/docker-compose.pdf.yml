@@ -37,7 +37,7 @@ services:
           memory: 1G
     # Same as x-platform-logging in the full-stack file (an anchor cannot cross files).
     logging:
-      driver: journald
+      driver: ${PLATFORM_LOG_DRIVER:-journald}
       options:
         tag: "{{.Name}}"
         labels: com.docker.compose.service
