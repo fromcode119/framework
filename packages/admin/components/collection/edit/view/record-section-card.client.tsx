@@ -14,7 +14,8 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * One section of a SAVED record: a card that reads, and a sheet that edits.
  *
  * The card lists the section's values that are set (and any required one that is not); "Edit" opens the
- * same fields, with the same controls, in an {@link EditSheet}. The fields write into the page's form
+ * same fields, with the same controls, in an {@link EditSheet}: in place of the rows on a wider screen, a
+ * sheet from the bottom edge on a phone. The fields write into the page's form
  * while the sheet is open, so conditions, unlocks and errors behave exactly as on the full form; Cancel
  * puts back what was there when the sheet opened, and Save saves the record and closes the sheet.
  */
@@ -108,7 +109,7 @@ export class RecordSectionCard extends Reactor {
     const title = this.section.title || '';
     const editable = RecordSectionFields.canEdit(this.section.fields);
     return (
-      <Card id={`section-${this.section.key}`} noPadding className={card}>
+      <Card id={`section-${this.section.key}`} noPadding className={this.open ? `${card} ${card}--editing` : card}>
         {title || editable ? (
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>{title}</h2>
@@ -121,25 +122,32 @@ export class RecordSectionCard extends Reactor {
           </div>
         ) : null}
         <div className={`${card}__body`}>
+          {this.renderSheet(title)}
           {this.renderRows()}
           {this.recordPart}
         </div>
-        <EditSheet
-          isOpen={this.open}
-          title={title || AdminI18n.t('collection.edit.editSection')}
-          subtitle={this.recordTitle}
-          onClose={this.cancel}
-          onSave={this.save}
-          saving={this.saving}
-          error={this.failed ? this.saveError : ''}
-        >
-          <div className={AdminClass.of('sheet__group')}>
-            <div className="fc-edit-fields"><div className="fc-edit-fields__grid">
-              {RecordSectionFields.sheetFields(this.section.fields).map(this.renderField)}
-            </div></div>
-          </div>
-        </EditSheet>
       </Card>
+    );
+  }
+
+  /** On a phone a sheet over the page; on a wider screen the fields in place of the rows they edit. */
+  private renderSheet(title: string): ReactNode {
+    return (
+      <EditSheet
+        isOpen={this.open}
+        title={title || AdminI18n.t('collection.edit.editSection')}
+        subtitle={this.recordTitle}
+        onClose={this.cancel}
+        onSave={this.save}
+        saving={this.saving}
+        error={this.failed ? this.saveError : ''}
+      >
+        <div className={AdminClass.of('sheet__group')}>
+          <div className="fc-edit-fields"><div className="fc-edit-fields__grid">
+            {RecordSectionFields.sheetFields(this.section.fields).map(this.renderField)}
+          </div></div>
+        </div>
+      </EditSheet>
     );
   }
 }

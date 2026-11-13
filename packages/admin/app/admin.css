@@ -35,7 +35,6 @@
   --fc-sheet-surface: var(--fc-surface);
   --fc-sheet-border: var(--fc-border);
   --fc-sheet-radius: var(--radius);
-  --fc-sheet-width: 560px;
   --fc-sheet-gap: 12px;
   --fc-sheet-pad: 16px;
   --fc-sheet-title: 15px;
@@ -775,8 +774,8 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 
 /* ── Edit sheet ──────────────────────────────────────────────────────────────────────────────────────
- * EditSheet: rises from the bottom edge on a phone, a centred dialog from 640px. Every value is a
- * `--fc-sheet-*` token in :root. */
+ * EditSheet: rises from the bottom edge on a phone; from 640px it is drawn in place, inside the card it
+ * edits — never a dialog over the page. Every value is a `--fc-sheet-*` token in :root. */
 .fc-sheet {
   position: fixed;
   inset: 0;
@@ -876,21 +875,44 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 }
 .fc-sheet__foot > * { flex: 1 1 0; }
 
+/* Only a phone floats the sheet over the page, so only a phone stops the page scrolling under it. */
+@media (max-width: 639.98px) {
+  html:has(.fc-sheet) { overflow: hidden; }
+}
+
+/* From 640px nothing floats: the sheet is drawn in place, inside the card it edits, and the card's own
+ * title stands above it — no backdrop, no second heading, no box inside the box. */
 @media (min-width: 640px) {
   .fc-sheet {
-    align-items: center;
-    padding: 24px;
+    position: static;
+    display: block;
+    z-index: auto;
     --fc-field-text: 12px;
     --fc-field-weight: 500;
   }
+  .fc-sheet__backdrop,
+  .fc-sheet__head { display: none; }
   .fc-sheet__panel {
-    max-width: var(--fc-sheet-width);
-    max-height: min(85vh, 760px);
-    border: 1px solid var(--fc-sheet-border);
-    border-radius: var(--fc-sheet-radius);
+    max-height: none;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
   }
-  .fc-sheet__foot { justify-content: flex-end; }
+  .fc-sheet__body { padding: 12px 0; overflow: visible; }
+  .fc-sheet__group { padding: 0; background: transparent; border: 0; border-radius: 0; }
+  .fc-sheet__error { border: 0; border-radius: var(--fc-sheet-radius); }
+  .fc-sheet__foot {
+    justify-content: flex-end;
+    padding: 12px 0;
+    background: transparent;
+    border-top: var(--fc-record-rule);
+  }
   .fc-sheet__foot > * { flex: 0 0 auto; }
+  /* The fields replace the values they edit, in the same place. */
+  .fc-record-card--editing .fc-record-card__rows,
+  .fc-record-card--editing .fc-record-card__edit { display: none; }
 }
 
 /* ── A saved record's section card ───────────────────────────────────────────────────────────────────

@@ -50,6 +50,10 @@ describe('RecordSectionCard', () => {
     const dialog = screen.getByRole('dialog', { name: 'Customer' });
     expect(dialog).toHaveTextContent('ORD-000002');
     for (const name of ['fullName', 'phone', 'note', 'email']) expect(screen.getByLabelText(`field ${name}`)).toBeInTheDocument();
+    // The fields sit inside the card (in place of its rows from 640px), not in a layer over the page.
+    const card = dialog.closest('.fc-record-card');
+    expect(card).not.toBeNull();
+    expect(card).toHaveClass('fc-record-card--editing');
   });
 
   it('puts the values back on Cancel', () => {
