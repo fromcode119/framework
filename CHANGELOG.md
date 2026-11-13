@@ -6,11 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.578] - 2026-11-13
+
+### Fixed
+
+- **i18n**: a translation fallback is interpolated, so a plugin's own copy is not read raw ([#1416](https://github.com/fromcode119/framework/pull/1416))
+- **react**: the bridge carries DebouncedSearchController, so it is not exported as undefined ([#1414](https://github.com/fromcode119/framework/pull/1414))
+
 ## [0.2.577] - 2026-11-13
 
 ### Fixed
 
-- **deploy**: one setting decides the log driver, not two
 - **admin**: number fields take typed decimals; record parts read in the console's language ([#1412](https://github.com/fromcode119/framework/pull/1412))
 - **admin**: a searchable select must not re-filter what its owner searched for ([#1411](https://github.com/fromcode119/framework/pull/1411))
 - **deploy**: the log driver is a setting, so a dev machine can start the stack ([#1410](https://github.com/fromcode119/framework/pull/1410))
