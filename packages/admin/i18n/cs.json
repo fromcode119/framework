@@ -230,7 +230,10 @@
       "duplicateFailed": "Zdroj kopie se nepodařilo načíst",
       "loadFailed": "Záznam se nepodařilo načíst",
       "slugTaken": "Tento slug již používá „{{name}}“.",
-      "unsavedChanges": "Neuložené změny"
+      "unsavedChanges": "Neuložené změny",
+      "editSection": "Upravit",
+      "notFilledIn": "Nevyplněno",
+      "nothingFilledIn": "Zatím nic nevyplněno"
     },
     "notFound": {
       "title": "Kolekce nenalezena",

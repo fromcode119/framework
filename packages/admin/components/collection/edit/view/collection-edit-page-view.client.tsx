@@ -177,6 +177,7 @@ export class CollectionEditPageView extends Reactor {
           statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
           canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
+          isDirty={edit.isDirty}
         />
 
         <EditPageBody

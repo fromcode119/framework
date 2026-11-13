@@ -45,6 +45,11 @@ export class EditHeader extends PureReactor {
   @prop declare setShowDeleteConfirm: (val: boolean) => void;
   /** Whether the signed-in user may save this record (create when new, update otherwise). */
   @prop declare canSave: boolean;
+  /**
+   * Unsaved changes on the page. A saved record is changed a section at a time, each sheet saving itself,
+   * so the page-wide Save appears only when something outside a sheet (a status, an inline table) changed.
+   */
+  @prop declare isDirty?: boolean;
   /** Whether the signed-in user may delete it. */
   @prop declare canDelete: boolean;
   /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
@@ -212,7 +217,7 @@ export class EditHeader extends PureReactor {
               props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
             />
              
-            {!hideHeaderPrimaryAction && this.canSave && (
+            {!hideHeaderPrimaryAction && this.canSave && (isNew || this.isDirty) && (
               <Button 
                 className="h-10 px-4 sm:px-6 font-semibold text-[12px] shadow-lg shadow-indigo-600/20" 
                 onClick={this.onSave}

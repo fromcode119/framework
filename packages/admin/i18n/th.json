@@ -230,7 +230,10 @@
       "duplicateFailed": "โหลดต้นฉบับสำหรับทำสำเนาไม่สำเร็จ",
       "loadFailed": "โหลดรายการไม่สำเร็จ",
       "slugTaken": "slug นี้ถูกใช้แล้วโดย \"{{name}}\"",
-      "unsavedChanges": "การเปลี่ยนแปลงที่ยังไม่บันทึก"
+      "unsavedChanges": "การเปลี่ยนแปลงที่ยังไม่บันทึก",
+      "editSection": "แก้ไข",
+      "notFilledIn": "ยังไม่ได้กรอก",
+      "nothingFilledIn": "ยังไม่มีการกรอกข้อมูล"
     },
     "notFound": {
       "title": "ไม่พบคอลเลกชัน",

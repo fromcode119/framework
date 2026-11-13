@@ -32,6 +32,7 @@ export * from '@/components/ui/view/data-table.client';
 export { Column } from '@/components/ui/column';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
+export * from '@/components/ui/view/edit-sheet.client';
 export * from '@/components/ui/date-time-picker/view/index.client';
 export { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 // `HH:mm` arithmetic, exposed so a plugin comparing or ordering two picked times uses the SAME

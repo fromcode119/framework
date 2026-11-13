@@ -230,7 +230,10 @@
       "duplicateFailed": "Kaksoiskappaleen lähteen lataaminen epäonnistui",
       "loadFailed": "Merkinnän lataaminen epäonnistui",
       "slugTaken": "Tämä polkutunniste on jo käytössä kohteella ”{{name}}”.",
-      "unsavedChanges": "Tallentamattomia muutoksia"
+      "unsavedChanges": "Tallentamattomia muutoksia",
+      "editSection": "Muokkaa",
+      "notFilledIn": "Ei täytetty",
+      "nothingFilledIn": "Mitään ei ole vielä täytetty"
     },
     "notFound": {
       "title": "Kokoelmaa ei löytynyt",

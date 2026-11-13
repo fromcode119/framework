@@ -230,7 +230,10 @@
       "duplicateFailed": "प्रतिलिपि का स्रोत लोड नहीं हो सका",
       "loadFailed": "प्रविष्टि लोड नहीं हो सकी",
       "slugTaken": "यह slug पहले से \"{{name}}\" द्वारा उपयोग में है।",
-      "unsavedChanges": "असहेजे बदलाव"
+      "unsavedChanges": "असहेजे बदलाव",
+      "editSection": "संपादित करें",
+      "notFilledIn": "नहीं भरा गया",
+      "nothingFilledIn": "अभी तक कुछ नहीं भरा गया"
     },
     "notFound": {
       "title": "संग्रह नहीं मिला",

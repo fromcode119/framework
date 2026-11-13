@@ -230,7 +230,10 @@
       "duplicateFailed": "Încărcarea sursei duplicatului a eșuat",
       "loadFailed": "Încărcarea intrării a eșuat",
       "slugTaken": "Acest slug este deja folosit de „{{name}}”.",
-      "unsavedChanges": "Modificări nesalvate"
+      "unsavedChanges": "Modificări nesalvate",
+      "editSection": "Editează",
+      "notFilledIn": "Necompletat",
+      "nothingFilledIn": "Nimic completat încă"
     },
     "notFound": {
       "title": "Colecția nu a fost găsită",

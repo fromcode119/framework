@@ -230,7 +230,10 @@
       "duplicateFailed": "Kunne ikke laste inn kilden for kopien",
       "loadFailed": "Kunne ikke laste inn oppføringen",
       "slugTaken": "Denne slugen brukes allerede av «{{name}}».",
-      "unsavedChanges": "Ulagrede endringer"
+      "unsavedChanges": "Ulagrede endringer",
+      "editSection": "Rediger",
+      "notFilledIn": "Ikke utfylt",
+      "nothingFilledIn": "Ingenting er fylt ut ennå"
     },
     "notFound": {
       "title": "Fant ikke samlingen",

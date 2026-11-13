@@ -230,7 +230,10 @@
       "duplicateFailed": "Nabigong i-load ang pinagmulan ng duplicate",
       "loadFailed": "Nabigong i-load ang entry",
       "slugTaken": "Ginagamit na ng \"{{name}}\" ang slug na ito.",
-      "unsavedChanges": "Mga hindi na-save na pagbabago"
+      "unsavedChanges": "Mga hindi na-save na pagbabago",
+      "editSection": "I-edit",
+      "notFilledIn": "Hindi pa napupunan",
+      "nothingFilledIn": "Wala pang napupunan"
     },
     "notFound": {
       "title": "Hindi Nahanap ang Collection",

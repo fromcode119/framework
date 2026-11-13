@@ -230,7 +230,10 @@
       "duplicateFailed": "Учитавање извора дупликата није успело",
       "loadFailed": "Учитавање уноса није успело",
       "slugTaken": "Овај слаг већ користи „{{name}}“.",
-      "unsavedChanges": "Несачуване измене"
+      "unsavedChanges": "Несачуване измене",
+      "editSection": "Уреди",
+      "notFilledIn": "Није попуњено",
+      "nothingFilledIn": "Још ништа није попуњено"
     },
     "notFound": {
       "title": "Колекција није пронађена",

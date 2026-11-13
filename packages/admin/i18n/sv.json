@@ -230,7 +230,10 @@
       "duplicateFailed": "Det gick inte att läsa in källan för kopian",
       "loadFailed": "Det gick inte att läsa in posten",
       "slugTaken": "Den här sluggen används redan av ”{{name}}”.",
-      "unsavedChanges": "Osparade ändringar"
+      "unsavedChanges": "Osparade ändringar",
+      "editSection": "Redigera",
+      "notFilledIn": "Inte ifyllt",
+      "nothingFilledIn": "Inget ifyllt än"
     },
     "notFound": {
       "title": "Samlingen hittades inte",

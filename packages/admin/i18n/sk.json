@@ -230,7 +230,10 @@
       "duplicateFailed": "Zdroj kópie sa nepodarilo načítať",
       "loadFailed": "Záznam sa nepodarilo načítať",
       "slugTaken": "Tento slug už používa „{{name}}“.",
-      "unsavedChanges": "Neuložené zmeny"
+      "unsavedChanges": "Neuložené zmeny",
+      "editSection": "Upraviť",
+      "notFilledIn": "Nevyplnené",
+      "nothingFilledIn": "Zatiaľ nič nevyplnené"
     },
     "notFound": {
       "title": "Kolekcia sa nenašla",

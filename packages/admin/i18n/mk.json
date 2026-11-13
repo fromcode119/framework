@@ -230,7 +230,10 @@
       "duplicateFailed": "Изворот за копирање не може да се вчита",
       "loadFailed": "Записот не може да се вчита",
       "slugTaken": "Овој slug веќе го користи „{{name}}“.",
-      "unsavedChanges": "Незачувани промени"
+      "unsavedChanges": "Незачувани промени",
+      "editSection": "Уреди",
+      "notFilledIn": "Не е пополнето",
+      "nothingFilledIn": "Сè уште ништо не е пополнето"
     },
     "notFound": {
       "title": "Колекцијата не е пронајдена",

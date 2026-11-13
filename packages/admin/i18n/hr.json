@@ -230,7 +230,10 @@
       "duplicateFailed": "Učitavanje izvora duplikata nije uspjelo",
       "loadFailed": "Učitavanje unosa nije uspjelo",
       "slugTaken": "Ovaj slug već koristi \"{{name}}\".",
-      "unsavedChanges": "Nespremljene promjene"
+      "unsavedChanges": "Nespremljene promjene",
+      "editSection": "Uredi",
+      "notFilledIn": "Nije ispunjeno",
+      "nothingFilledIn": "Još ništa nije ispunjeno"
     },
     "notFound": {
       "title": "Zbirka nije pronađena",

@@ -230,7 +230,10 @@
       "duplicateFailed": "Nepavyko įkelti kopijos šaltinio",
       "loadFailed": "Nepavyko įkelti įrašo",
       "slugTaken": "Šį slug jau naudoja „{{name}}“.",
-      "unsavedChanges": "Neišsaugoti pakeitimai"
+      "unsavedChanges": "Neišsaugoti pakeitimai",
+      "editSection": "Redaguoti",
+      "notFilledIn": "Neužpildyta",
+      "nothingFilledIn": "Dar niekas neužpildyta"
     },
     "notFound": {
       "title": "Kolekcija nerasta",

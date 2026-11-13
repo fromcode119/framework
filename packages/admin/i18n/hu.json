@@ -230,7 +230,10 @@
       "duplicateFailed": "Nem sikerült betölteni a másolás forrását",
       "loadFailed": "Nem sikerült betölteni a bejegyzést",
       "slugTaken": "Ezt a slugot már használja: „{{name}}”.",
-      "unsavedChanges": "Nem mentett módosítások"
+      "unsavedChanges": "Nem mentett módosítások",
+      "editSection": "Szerkesztés",
+      "notFilledIn": "Nincs kitöltve",
+      "nothingFilledIn": "Még nincs semmi kitöltve"
     },
     "notFound": {
       "title": "A gyűjtemény nem található",

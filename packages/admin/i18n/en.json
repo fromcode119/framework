@@ -230,7 +230,10 @@
       "duplicateFailed": "Failed to load duplicate source",
       "loadFailed": "Failed to load entry",
       "slugTaken": "This slug is already taken by \"{{name}}\".",
-      "unsavedChanges": "Unsaved changes"
+      "unsavedChanges": "Unsaved changes",
+      "editSection": "Edit",
+      "notFilledIn": "Not filled in",
+      "nothingFilledIn": "Nothing filled in yet"
     },
     "notFound": {
       "title": "Collection Not Found",

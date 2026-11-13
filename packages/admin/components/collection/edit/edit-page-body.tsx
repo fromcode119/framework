@@ -137,6 +137,10 @@ export class EditPageBody extends PureReactor {
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
               recordLinks={recordLinks}
               navigate={navigate}
+              handleSubmit={() => handleSubmit()}
+              saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+              recordTitle={edit.resolvedTitleValue}
+              clearSaveError={() => setStatus(null)}
             />
             {/* What is linked to this record and has no section of its own on this page. */}
             {recordLinks && (
@@ -180,6 +184,9 @@ export class EditPageBody extends PureReactor {
               setActiveVersionId={setActiveVersionId}
               loadMoreRevisions={loadMoreRevisions}
               hasMoreRevisions={hasMoreRevisions}
+              saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+              recordTitle={edit.resolvedTitleValue}
+              clearSaveError={() => setStatus(null)}
             />
             </EditStickyColumn>
           )}

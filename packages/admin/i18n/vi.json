@@ -230,7 +230,10 @@
       "duplicateFailed": "Không thể tải nguồn bản sao",
       "loadFailed": "Không thể tải mục",
       "slugTaken": "Slug này đã được dùng bởi \"{{name}}\".",
-      "unsavedChanges": "Thay đổi chưa lưu"
+      "unsavedChanges": "Thay đổi chưa lưu",
+      "editSection": "Chỉnh sửa",
+      "notFilledIn": "Chưa điền",
+      "nothingFilledIn": "Chưa điền gì"
     },
     "notFound": {
       "title": "Không tìm thấy bộ sưu tập",

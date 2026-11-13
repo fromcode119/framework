@@ -230,7 +230,10 @@
       "duplicateFailed": "Theip ar lódáil fhoinse an dúblaigh",
       "loadFailed": "Theip ar lódáil na hiontrála",
       "slugTaken": "Tá an slug seo in úsáid cheana ag \"{{name}}\".",
-      "unsavedChanges": "Athruithe gan sábháil"
+      "unsavedChanges": "Athruithe gan sábháil",
+      "editSection": "Cuir in eagar",
+      "notFilledIn": "Gan líonadh",
+      "nothingFilledIn": "Níl aon rud líonta fós"
     },
     "notFound": {
       "title": "Bailiúchán Gan Aimsiú",

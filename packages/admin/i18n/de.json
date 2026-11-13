@@ -230,7 +230,10 @@
       "duplicateFailed": "Quelle für das Duplikat konnte nicht geladen werden",
       "loadFailed": "Eintrag konnte nicht geladen werden",
       "slugTaken": "Dieser Slug wird bereits von „{{name}}“ verwendet.",
-      "unsavedChanges": "Ungespeicherte Änderungen"
+      "unsavedChanges": "Ungespeicherte Änderungen",
+      "editSection": "Bearbeiten",
+      "notFilledIn": "Nicht ausgefüllt",
+      "nothingFilledIn": "Noch nichts ausgefüllt"
     },
     "notFound": {
       "title": "Sammlung nicht gefunden",

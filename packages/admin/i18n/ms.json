@@ -230,7 +230,10 @@
       "duplicateFailed": "Gagal memuatkan sumber salinan",
       "loadFailed": "Gagal memuatkan entri",
       "slugTaken": "Slug ini sudah digunakan oleh \"{{name}}\".",
-      "unsavedChanges": "Perubahan belum disimpan"
+      "unsavedChanges": "Perubahan belum disimpan",
+      "editSection": "Edit",
+      "notFilledIn": "Belum diisi",
+      "nothingFilledIn": "Belum ada yang diisi"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemui",

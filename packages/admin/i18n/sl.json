@@ -230,7 +230,10 @@
       "duplicateFailed": "Vira za podvajanje ni bilo mogoče naložiti",
       "loadFailed": "Vnosa ni bilo mogoče naložiti",
       "slugTaken": "To URL-ime že uporablja »{{name}}«.",
-      "unsavedChanges": "Neshranjene spremembe"
+      "unsavedChanges": "Neshranjene spremembe",
+      "editSection": "Uredi",
+      "notFilledIn": "Ni izpolnjeno",
+      "nothingFilledIn": "Še nič ni izpolnjeno"
     },
     "notFound": {
       "title": "Zbirke ni mogoče najti",

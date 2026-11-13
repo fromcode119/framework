@@ -230,7 +230,10 @@
       "duplicateFailed": "無法載入複製來源",
       "loadFailed": "無法載入項目",
       "slugTaken": "此代稱已被「{{name}}」使用。",
-      "unsavedChanges": "未儲存的變更"
+      "unsavedChanges": "未儲存的變更",
+      "editSection": "編輯",
+      "notFilledIn": "未填寫",
+      "nothingFilledIn": "尚未填寫任何內容"
     },
     "notFound": {
       "title": "找不到集合",

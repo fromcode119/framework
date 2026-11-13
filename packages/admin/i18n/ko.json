@@ -230,7 +230,10 @@
       "duplicateFailed": "복제할 원본을 불러오지 못했습니다",
       "loadFailed": "항목을 불러오지 못했습니다",
       "slugTaken": "이 슬러그는 이미 \"{{name}}\"에서 사용 중입니다.",
-      "unsavedChanges": "저장되지 않은 변경 사항"
+      "unsavedChanges": "저장되지 않은 변경 사항",
+      "editSection": "편집",
+      "notFilledIn": "입력되지 않음",
+      "nothingFilledIn": "아직 입력된 내용이 없습니다"
     },
     "notFound": {
       "title": "컬렉션을 찾을 수 없음",

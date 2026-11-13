@@ -230,7 +230,10 @@
       "duplicateFailed": "无法载入要复制的源记录",
       "loadFailed": "无法载入条目",
       "slugTaken": "此别名已被“{{name}}”使用。",
-      "unsavedChanges": "未保存的更改"
+      "unsavedChanges": "未保存的更改",
+      "editSection": "编辑",
+      "notFilledIn": "未填写",
+      "nothingFilledIn": "尚未填写任何内容"
     },
     "notFound": {
       "title": "未找到集合",

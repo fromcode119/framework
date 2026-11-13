@@ -230,7 +230,10 @@
       "duplicateFailed": "Impossible de charger la source de la copie",
       "loadFailed": "Impossible de charger l’entrée",
       "slugTaken": "Ce slug est déjà utilisé par « {{name}} ».",
-      "unsavedChanges": "Modifications non enregistrées"
+      "unsavedChanges": "Modifications non enregistrées",
+      "editSection": "Modifier",
+      "notFilledIn": "Non renseigné",
+      "nothingFilledIn": "Rien n’est encore renseigné"
     },
     "notFound": {
       "title": "Collection introuvable",

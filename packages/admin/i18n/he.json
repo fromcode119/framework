@@ -230,7 +230,10 @@
       "duplicateFailed": "טעינת מקור השכפול נכשלה",
       "loadFailed": "טעינת הרשומה נכשלה",
       "slugTaken": "ה-slug הזה כבר בשימוש על ידי \"{{name}}\".",
-      "unsavedChanges": "שינויים שלא נשמרו"
+      "unsavedChanges": "שינויים שלא נשמרו",
+      "editSection": "עריכה",
+      "notFilledIn": "לא מולא",
+      "nothingFilledIn": "עדיין לא מולא דבר"
     },
     "notFound": {
       "title": "האוסף לא נמצא",

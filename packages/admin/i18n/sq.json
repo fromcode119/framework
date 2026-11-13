@@ -230,7 +230,10 @@
       "duplicateFailed": "Ngarkimi i burimit të kopjes dështoi",
       "loadFailed": "Ngarkimi i zërit dështoi",
       "slugTaken": "Ky slug përdoret tashmë nga \"{{name}}\".",
-      "unsavedChanges": "Ndryshime të paruajtura"
+      "unsavedChanges": "Ndryshime të paruajtura",
+      "editSection": "Redakto",
+      "notFilledIn": "I paplotësuar",
+      "nothingFilledIn": "Ende asgjë e plotësuar"
     },
     "notFound": {
       "title": "Koleksioni nuk u gjet",

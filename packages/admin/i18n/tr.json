@@ -230,7 +230,10 @@
       "duplicateFailed": "Kopyalanacak kaynak yüklenemedi",
       "loadFailed": "Kayıt yüklenemedi",
       "slugTaken": "Bu kısa ad zaten \"{{name}}\" tarafından kullanılıyor.",
-      "unsavedChanges": "Kaydedilmemiş değişiklikler"
+      "unsavedChanges": "Kaydedilmemiş değişiklikler",
+      "editSection": "Düzenle",
+      "notFilledIn": "Doldurulmadı",
+      "nothingFilledIn": "Henüz hiçbir şey doldurulmadı"
     },
     "notFound": {
       "title": "Koleksiyon Bulunamadı",

@@ -230,7 +230,10 @@
       "duplicateFailed": "Kilden til kopien kunne ikke indlæses",
       "loadFailed": "Posten kunne ikke indlæses",
       "slugTaken": "Denne slug bruges allerede af \"{{name}}\".",
-      "unsavedChanges": "Ikke-gemte ændringer"
+      "unsavedChanges": "Ikke-gemte ændringer",
+      "editSection": "Rediger",
+      "notFilledIn": "Ikke udfyldt",
+      "nothingFilledIn": "Intet udfyldt endnu"
     },
     "notFound": {
       "title": "Samlingen blev ikke fundet",

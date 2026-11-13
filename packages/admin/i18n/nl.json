@@ -230,7 +230,10 @@
       "duplicateFailed": "Laden van duplicaatbron mislukt",
       "loadFailed": "Laden van item mislukt",
       "slugTaken": "Deze slug is al in gebruik door \"{{name}}\".",
-      "unsavedChanges": "Niet-opgeslagen wijzigingen"
+      "unsavedChanges": "Niet-opgeslagen wijzigingen",
+      "editSection": "Bewerken",
+      "notFilledIn": "Niet ingevuld",
+      "nothingFilledIn": "Nog niets ingevuld"
     },
     "notFound": {
       "title": "Collectie niet gevonden",

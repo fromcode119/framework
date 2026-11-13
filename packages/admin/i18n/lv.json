@@ -230,7 +230,10 @@
       "duplicateFailed": "Neizdevās ielādēt dublēšanas avotu",
       "loadFailed": "Neizdevās ielādēt ierakstu",
       "slugTaken": "Šo URL identifikatoru jau izmanto “{{name}}”.",
-      "unsavedChanges": "Nesaglabātas izmaiņas"
+      "unsavedChanges": "Nesaglabātas izmaiņas",
+      "editSection": "Rediģēt",
+      "notFilledIn": "Nav aizpildīts",
+      "nothingFilledIn": "Vēl nekas nav aizpildīts"
     },
     "notFound": {
       "title": "Kolekcija nav atrasta",

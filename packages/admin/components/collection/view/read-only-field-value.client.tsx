@@ -76,8 +76,9 @@ export class ReadOnlyFieldValue extends PureReactor {
     const empty = !text;
     const provenance = (this.provenance || '').trim();
 
-    const valueClass = `text-[13px] leading-snug ${
-      empty ? 'text-slate-400 dark:text-slate-500' : 'font-medium text-slate-600 dark:text-slate-300'
+    // The same text as an editable field (the `fc-field` token): a locked value is not a smaller kind of field.
+    const valueClass = `fc-field leading-snug ${
+      empty ? 'text-slate-400 dark:text-slate-500' : 'text-slate-600 dark:text-slate-300'
     }`;
 
     if (!provenance) {

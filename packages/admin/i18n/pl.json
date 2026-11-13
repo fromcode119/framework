@@ -230,7 +230,10 @@
       "duplicateFailed": "Nie udało się wczytać źródła kopii",
       "loadFailed": "Nie udało się wczytać wpisu",
       "slugTaken": "Ten slug jest już używany przez „{{name}}”.",
-      "unsavedChanges": "Niezapisane zmiany"
+      "unsavedChanges": "Niezapisane zmiany",
+      "editSection": "Edytuj",
+      "notFilledIn": "Nie wypełniono",
+      "nothingFilledIn": "Jeszcze nic nie wypełniono"
     },
     "notFound": {
       "title": "Nie znaleziono kolekcji",

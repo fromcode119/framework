@@ -230,7 +230,10 @@
       "duplicateFailed": "Falha ao carregar a origem do duplicado",
       "loadFailed": "Falha ao carregar a entrada",
       "slugTaken": "Este slug já está a ser usado por \"{{name}}\".",
-      "unsavedChanges": "Alterações não guardadas"
+      "unsavedChanges": "Alterações não guardadas",
+      "editSection": "Editar",
+      "notFilledIn": "Não preenchido",
+      "nothingFilledIn": "Ainda nada preenchido"
     },
     "notFound": {
       "title": "Coleção não encontrada",

@@ -230,7 +230,10 @@
       "duplicateFailed": "複製元を読み込めませんでした",
       "loadFailed": "エントリーを読み込めませんでした",
       "slugTaken": "このスラッグは「{{name}}」で既に使用されています。",
-      "unsavedChanges": "未保存の変更"
+      "unsavedChanges": "未保存の変更",
+      "editSection": "編集",
+      "notFilledIn": "未入力",
+      "nothingFilledIn": "まだ何も入力されていません"
     },
     "notFound": {
       "title": "コレクションが見つかりません",

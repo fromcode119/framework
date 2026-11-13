@@ -230,7 +230,10 @@
       "duplicateFailed": "Impossibile caricare l'origine del duplicato",
       "loadFailed": "Impossibile caricare la voce",
       "slugTaken": "Questo slug è già usato da \"{{name}}\".",
-      "unsavedChanges": "Modifiche non salvate"
+      "unsavedChanges": "Modifiche non salvate",
+      "editSection": "Modifica",
+      "notFilledIn": "Non compilato",
+      "nothingFilledIn": "Ancora nulla di compilato"
     },
     "notFound": {
       "title": "Collezione non trovata",

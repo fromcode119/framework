@@ -230,7 +230,10 @@
       "duplicateFailed": "No se pudo cargar el origen del duplicado",
       "loadFailed": "No se pudo cargar la entrada",
       "slugTaken": "Este slug ya lo utiliza «{{name}}».",
-      "unsavedChanges": "Cambios sin guardar"
+      "unsavedChanges": "Cambios sin guardar",
+      "editSection": "Editar",
+      "notFilledIn": "Sin completar",
+      "nothingFilledIn": "Aún no hay nada completado"
     },
     "notFound": {
       "title": "Colección no encontrada",

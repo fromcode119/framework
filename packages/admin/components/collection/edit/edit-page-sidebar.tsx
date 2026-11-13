@@ -1,11 +1,12 @@
 import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { Card } from '@/components/ui/view/card.client';
 import { PermalinkInput } from '@/components/ui/view/permalink-input.client';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
+import { RecordSectionCard } from '@/components/collection/edit/view/record-section-card.client';
 import { RecordInfo } from '@/components/collection/record-info';
 import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
 import { PageDesignCard } from '@/components/collection/edit/view/page-design-card.client';
@@ -42,6 +43,32 @@ export class EditPageSidebar extends PureReactor {
   @prop declare setActiveVersionId: (id: number | null) => void;
   @prop declare loadMoreRevisions: () => void;
   @prop declare hasMoreRevisions: boolean;
+  @prop declare saveError?: string;
+  @prop declare clearSaveError?: () => void;
+  @prop declare recordTitle?: string;
+
+  @bound private renderField(field: any): ReactNode {
+    const { theme, resolvedSlug, formData, saving, pluginSettings, pluginSettingsSchema, fieldErrors, handleInputChange, handlePatch, handleReadOnlyOverrideRequest, readOnlyOverrideGranted, isNew } = this;
+    return (
+      <FieldRenderer
+        key={field.name}
+        field={field}
+        value={formData[field.name]}
+        onChange={(val) => handleInputChange(field.name, val)}
+        record={formData}
+        onPatch={handlePatch}
+        theme={theme}
+        collectionSlug={resolvedSlug}
+        pluginSettings={pluginSettings}
+        pluginSettingsSchema={pluginSettingsSchema}
+        disabled={saving}
+        isNew={isNew}
+        errors={fieldErrors[field.name]}
+        readOnlyOverrideGranted={readOnlyOverrideGranted}
+        onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+      />
+    );
+  }
 
   render(): ReactNode {
     const {
@@ -56,30 +83,25 @@ export class EditPageSidebar extends PureReactor {
         {/* The record's own settings first — status and publishing lead, as in shop and content admins —
             then what plugins add beside it, then the address, history and versions. */}
         {hasSidebarFields &&
-          sidebarFieldSections.map((section) => (
+          sidebarFieldSections.map((section) => isNew ? (
             <Card key={`sidebar-section-${section.title}`} title={section.title}>
               <div className="flex flex-col gap-6">
-                {section.fields.map((field) => (
-                  <FieldRenderer
-                    key={field.name}
-                    field={field}
-                    value={formData[field.name]}
-                    onChange={(val) => handleInputChange(field.name, val)}
-                    record={formData}
-                    onPatch={handlePatch}
-                    theme={theme}
-                    collectionSlug={resolvedSlug}
-                    pluginSettings={pluginSettings}
-                    pluginSettingsSchema={pluginSettingsSchema}
-                    disabled={saving}
-                    isNew={isNew}
-                    errors={fieldErrors[field.name]}
-                    readOnlyOverrideGranted={readOnlyOverrideGranted}
-                    onReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-                  />
-                ))}
+                {section.fields.map(this.renderField)}
               </div>
             </Card>
+          ) : (
+            <RecordSectionCard
+              key={`sidebar-section-${section.title}`}
+              section={{ key: `sidebar-${section.title}`, title: section.title, fields: section.fields }}
+              formData={formData}
+              renderField={this.renderField}
+              handlePatch={handlePatch}
+              handleSubmit={() => handleSubmit()}
+              saving={saving}
+              saveError={this.saveError}
+              clearSaveError={this.clearSaveError}
+              recordTitle={this.recordTitle}
+            />
           ))}
 
         <Slot name={`admin.collection.${slug}.edit.sidebar`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />

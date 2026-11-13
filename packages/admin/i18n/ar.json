@@ -230,7 +230,10 @@
       "duplicateFailed": "فشل تحميل مصدر النسخة",
       "loadFailed": "فشل تحميل الإدخال",
       "slugTaken": "هذا المعرّف المختصر مستخدم بالفعل في \"{{name}}\".",
-      "unsavedChanges": "تغييرات غير محفوظة"
+      "unsavedChanges": "تغييرات غير محفوظة",
+      "editSection": "تعديل",
+      "notFilledIn": "غير مُعبّأ",
+      "nothingFilledIn": "لم يُملأ شيء بعد"
     },
     "notFound": {
       "title": "المجموعة غير موجودة",

@@ -230,7 +230,10 @@
       "duplicateFailed": "Не вдалося завантажити джерело для копії",
       "loadFailed": "Не вдалося завантажити запис",
       "slugTaken": "Цей slug уже використовується записом «{{name}}».",
-      "unsavedChanges": "Незбережені зміни"
+      "unsavedChanges": "Незбережені зміни",
+      "editSection": "Редагувати",
+      "notFilledIn": "Не заповнено",
+      "nothingFilledIn": "Поки нічого не заповнено"
     },
     "notFound": {
       "title": "Колекцію не знайдено",

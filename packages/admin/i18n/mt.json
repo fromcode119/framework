@@ -230,7 +230,10 @@
       "duplicateFailed": "Is-sors tal-kopja ma setax jittella'",
       "loadFailed": "Ir-rekord ma setax jittella'",
       "slugTaken": "Dan is-slug diġà qed jintuża minn \"{{name}}\".",
-      "unsavedChanges": "Bidliet mhux issejvjati"
+      "unsavedChanges": "Bidliet mhux issejvjati",
+      "editSection": "Editja",
+      "notFilledIn": "Mhux mimli",
+      "nothingFilledIn": "Għadu ma mtela xejn"
     },
     "notFound": {
       "title": "Il-Kollezzjoni Ma Nstabitx",

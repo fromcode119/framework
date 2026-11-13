@@ -24,6 +24,32 @@
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
 
+  /* Fields and the edit sheet: how every field reads and how a piece of a record is edited, decided
+   * HERE once. A component never spells these out, so a change of style is one edit in this block (or
+   * one override in an appearance's stylesheet), not a sweep through every screen. They are written in
+   * terms of the palette above, so the dark scheme follows by itself. */
+  --fc-field-text: 12px;
+  --fc-field-weight: 500;
+  --fc-sheet-backdrop: rgb(15 23 42 / 0.4);
+  --fc-sheet-canvas: var(--fc-canvas);
+  --fc-sheet-surface: var(--fc-surface);
+  --fc-sheet-border: var(--fc-border);
+  --fc-sheet-radius: var(--radius);
+  --fc-sheet-width: 560px;
+  --fc-sheet-gap: 12px;
+  --fc-sheet-pad: 16px;
+  --fc-sheet-title: 15px;
+  --fc-sheet-shadow: 0 -8px 32px rgb(15 23 42 / 0.16);
+  /* What a phone keeps visible above a sheet, so the page it belongs to is still in sight. */
+  --fc-sheet-phone-top: 44px;
+  /* 16px on a phone: below that, iOS Safari zooms the page into a field the moment it is tapped. */
+  --fc-sheet-phone-field-text: 16px;
+  --fc-sheet-phone-field-weight: 400;
+  /* A saved record's card: label column, the rule between rows, the value's size. */
+  --fc-record-label-width: 140px;
+  --fc-record-rule: 1px dashed var(--fc-border);
+  --fc-record-text: 13px;
+
   /* Status TINTS: a soft surface, a border, and text that reads on it.
    *
    * Declared for BOTH schemes, because a literal hex tint is the one thing that cannot adapt — an
@@ -735,4 +761,192 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
  */
 [dir='rtl'] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right, .lucide-chevrons-left, .lucide-chevrons-right, .lucide-arrow-left-to-line, .lucide-arrow-right-to-line) {
   scale: -1 1;
+}
+
+
+/* ── Fields ──────────────────────────────────────────────────────────────────────────────────────────
+ * The text of every single-line field (UiFieldUtils puts `fc-field` on each). In the components layer, so
+ * a caller's own utility still wins where one is allowed. */
+@layer components {
+  .fc-field {
+    font-size: var(--fc-field-text);
+    font-weight: var(--fc-field-weight);
+  }
+}
+
+/* ── Edit sheet ──────────────────────────────────────────────────────────────────────────────────────
+ * EditSheet: rises from the bottom edge on a phone, a centred dialog from 640px. Every value is a
+ * `--fc-sheet-*` token in :root. */
+.fc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  --fc-field-text: var(--fc-sheet-phone-field-text);
+  --fc-field-weight: var(--fc-sheet-phone-field-weight);
+}
+.fc-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--fc-sheet-backdrop);
+}
+.fc-sheet__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100dvh - var(--fc-sheet-phone-top));
+  background: var(--fc-sheet-canvas);
+  border-top: 1px solid var(--fc-sheet-border);
+  border-radius: var(--fc-sheet-radius) var(--fc-sheet-radius) 0 0;
+  box-shadow: var(--fc-sheet-shadow);
+  overflow: hidden;
+  color: var(--fc-text);
+}
+.fc-sheet__head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--fc-sheet-gap);
+  padding: 14px var(--fc-sheet-pad);
+  background: var(--fc-sheet-surface);
+  border-bottom: 1px solid var(--fc-sheet-border);
+}
+.fc-sheet__heading { min-width: 0; }
+.fc-sheet__title {
+  font-size: var(--fc-sheet-title);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--fc-text);
+}
+.fc-sheet__subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--fc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-sheet__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -8px -6px 0;
+  border-radius: var(--fc-sheet-radius);
+  color: var(--fc-text-muted);
+}
+.fc-sheet__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--fc-sheet-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fc-sheet-gap);
+}
+.fc-sheet__group {
+  padding: var(--fc-sheet-pad);
+  background: var(--fc-sheet-surface);
+  border: 1px solid var(--fc-sheet-border);
+  border-radius: var(--fc-sheet-radius);
+}
+.fc-sheet__error {
+  flex: none;
+  padding: 10px var(--fc-sheet-pad);
+  font-size: 12px;
+  color: var(--fc-danger-strong, var(--fc-danger));
+  background: var(--fc-danger-soft, #fff1f2);
+  border-top: 1px solid var(--fc-danger-soft-border, #fecdd3);
+}
+.fc-sheet__foot {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px var(--fc-sheet-pad) calc(12px + env(safe-area-inset-bottom));
+  background: var(--fc-sheet-surface);
+  border-top: 1px solid var(--fc-sheet-border);
+}
+.fc-sheet__foot > * { flex: 1 1 0; }
+
+@media (min-width: 640px) {
+  .fc-sheet {
+    align-items: center;
+    padding: 24px;
+    --fc-field-text: 12px;
+    --fc-field-weight: 500;
+  }
+  .fc-sheet__panel {
+    max-width: var(--fc-sheet-width);
+    max-height: min(85vh, 760px);
+    border: 1px solid var(--fc-sheet-border);
+    border-radius: var(--fc-sheet-radius);
+  }
+  .fc-sheet__foot { justify-content: flex-end; }
+  .fc-sheet__foot > * { flex: 0 0 auto; }
+}
+
+/* ── A saved record's section card ───────────────────────────────────────────────────────────────────
+ * RecordSectionCard: the values that are set, as label / value rows; Edit opens the sheet. */
+.fc-record-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: var(--fc-record-rule);
+}
+.fc-record-card__title {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--card-foreground);
+}
+.fc-record-card__edit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 32px;
+  padding: 0 10px;
+  margin-right: -10px;
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+}
+.fc-record-card__edit:hover { background: var(--fc-surface-muted); }
+.fc-record-card__body:not(:empty) { padding: 4px 16px; }
+.fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
+.fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }
+.fc-record-card__row {
+  display: grid;
+  grid-template-columns: min(var(--fc-record-label-width), 32%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  font-size: var(--fc-record-text);
+  line-height: 1.45;
+}
+.fc-record-card__label { color: var(--fc-text-muted); }
+.fc-record-card__value {
+  min-width: 0;
+  color: var(--fc-text);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-record-card__missing { color: var(--fc-warning); }
+.fc-record-card__empty {
+  padding: 8px 0;
+  font-size: var(--fc-record-text);
+  color: var(--fc-text-muted);
 }

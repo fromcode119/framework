@@ -230,7 +230,10 @@
       "duplicateFailed": "Koopia allika laadimine ebaõnnestus",
       "loadFailed": "Kirje laadimine ebaõnnestus",
       "slugTaken": "See slug on juba kasutusel kirjel „{{name}}”.",
-      "unsavedChanges": "Salvestamata muudatused"
+      "unsavedChanges": "Salvestamata muudatused",
+      "editSection": "Muuda",
+      "notFilledIn": "Täitmata",
+      "nothingFilledIn": "Midagi pole veel täidetud"
     },
     "notFound": {
       "title": "Kogumit ei leitud",
