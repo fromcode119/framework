@@ -32,7 +32,10 @@ export class FieldRendererHeader extends PureReactor {
     } = this;
     // A field with its label hidden and nothing else to show here takes no row: an empty 22px header
     // left a gap above the control, which is the card's own title when the label is hidden for that.
-    if (field.admin?.hideLabel && !isFieldReadOnly && !isLocalizedField) return null;
+    // The same holds for a locked field nobody can unlock: with no label beside it the lock is a lone
+    // icon above the control, saying nothing and opening nothing.
+    const lockIsUseful = isFieldReadOnly && canRequestReadOnlyOverride;
+    if (field.admin?.hideLabel && !lockIsUseful && !isLocalizedField) return null;
     return (
       <div className="flex items-center justify-between gap-3 mb-1 min-h-[22px]">
         {!field.admin?.hideLabel && (

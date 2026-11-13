@@ -37,17 +37,31 @@ describe('FieldRendererHeader — hideLabel', () => {
     expect(screen.queryByText('Subtotal')).not.toBeInTheDocument();
   });
 
-  it('still shows the read-only lock when the label is suppressed', () => {
+  it('keeps the lock beside a hidden label when the lock can be opened', () => {
     render(
       <FieldRendererHeader
         {...baseProps}
         isFieldReadOnly
+        canRequestReadOnlyOverride
         field={{ name: 'total', type: 'number', admin: { hideLabel: true } } as any}
         label="Total"
       />,
     );
     expect(screen.queryByText('Total')).not.toBeInTheDocument();
-    expect(screen.getByLabelText('Read only')).toBeInTheDocument();
+    expect(screen.getByRole('button')).toBeInTheDocument();
+  });
+
+  /** A lock with no label beside it that opens nothing was a lone icon hanging above the control. */
+  it('draws no row for a locked field with a hidden label that cannot be unlocked', () => {
+    const { container } = render(
+      <FieldRendererHeader
+        {...baseProps}
+        isFieldReadOnly
+        field={{ name: 'stock', type: 'number', admin: { hideLabel: true } } as any}
+        label="Stock"
+      />,
+    );
+    expect(container).toBeEmptyDOMElement();
   });
 
   /** A field that does not declare it keeps its label even when its neighbour suppresses one. */
