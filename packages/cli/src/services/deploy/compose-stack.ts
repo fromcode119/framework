@@ -153,6 +153,28 @@ export class ComposeStack implements IDeployStack {
       .filter((uid) => Number.isInteger(uid) && uid >= uidBase).length;
   }
 
+  /**
+   * Running containers of `services` in this compose project whose image is not `version`. Asked of
+   * docker by label rather than of compose, so a container made by something other than this command
+   * is seen too.
+   */
+  async strays(services: readonly string[], version: string): Promise<Array<{ id: string; name: string; image: string }>> {
+    const [anchor] = await this.containerIds('api');
+    if (!anchor) return [];
+    const project = (await this.shell.run(`docker inspect -f '{{index .Config.Labels "com.docker.compose.project"}}' ${anchor}`)).stdout.trim();
+    if (!project) return [];
+    const listed = await this.shell.run(`docker ps --filter label=com.docker.compose.project=${project} --format '{{.ID}}|{{.Names}}|{{.Image}}|{{.Label "com.docker.compose.service"}}'`);
+    if (listed.code !== 0) return [];
+    return ComposeStack.straysFrom(listed.stdout, services, version);
+  }
+
+  /** `id|name|image|service` lines → the ones of `services` not on `version`. */
+  static straysFrom(listing: string, services: readonly string[], version: string): Array<{ id: string; name: string; image: string }> {
+    return listing.split('\n').map((line) => line.trim().split('|')).filter((parts) => parts.length === 4)
+      .filter(([, , image, service]) => services.includes(service) && !image.endsWith(`:${version}`))
+      .map(([id, name, image]) => ({ id, name, image }));
+  }
+
   /** SIGTERM, then up to `graceSeconds` for the requests in flight to finish, then gone. */
   async stopAndRemove(id: string, graceSeconds: number): Promise<number> {
     return this.shell.stream(`docker stop -t ${graceSeconds} ${id} && docker rm ${id}`);

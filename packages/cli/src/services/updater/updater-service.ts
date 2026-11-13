@@ -7,6 +7,7 @@ import { DockerEngineClient } from '@cli/services/updater/docker-engine-client';
 import { EnvVersionFile } from '@cli/services/updater/env-version-file';
 import { UpdaterHandover } from '@cli/services/updater/updater-handover';
 import { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
+import { LocalDeploymentLock } from '@cli/services/updater/local-deployment-lock';
 import type { IDockerEngine } from '@cli/services/updater/interfaces/docker-engine.interface';
 import type { IUpdaterStatus } from '@cli/services/updater/interfaces/updater-status.interface';
 
@@ -42,6 +43,8 @@ export class UpdaterService {
     private readonly project: string,
     /** Moves the updater itself onto each version it installs; absent when it does not run in a container. */
     private readonly handover: UpdaterHandover | null = null,
+    /** The deployment folder's lock, shared with the deploy command; absent, nothing else deploys here. */
+    private readonly lock: Pick<LocalDeploymentLock, 'acquire' | 'release'> | null = null,
   ) {}
 
   static async fromEnvironment(): Promise<UpdaterService> {
@@ -60,6 +63,7 @@ export class UpdaterService {
       new ComposeDirectory(path.dirname(envFile)),
       project,
       new UpdaterHandover(engine, project, self.Id, path.dirname(envFile)),
+      new LocalDeploymentLock(path.dirname(envFile)),
     );
   }
 
@@ -103,11 +107,19 @@ export class UpdaterService {
       await this.api.report({ ...this.last, step: this.last.state === UpdaterState.IDLE.value ? '' : this.last.step });
       return;
     }
+    // Somebody deploys to this folder from outside (the deploy command): two at once undo each other.
+    const heldBy = this.lock?.acquire() ?? '';
+    if (heldBy) {
+      console.log(`[updater] ${heldBy} is deploying to this folder; ${plan.target} waits until it has finished`);
+      await this.api.report({ ...this.last, step: this.last.state === UpdaterState.IDLE.value ? '' : this.last.step });
+      return;
+    }
     this.busy = true;
     try {
       await this.update(plan.current, plan.target);
     } finally {
       this.busy = false;
+      this.lock?.release();
     }
   }
 
