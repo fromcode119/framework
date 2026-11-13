@@ -15,8 +15,6 @@ const SCANNED = ['components', 'app'];
 const ALLOWED: Record<string, string> = {
   // The JSON editor: a transparent text area laid over a syntax-highlighted block.
   'components/collection/edit/view/record-json-view.client.tsx': 'textarea',
-  // There is no radio component yet.
-  'app/settings/appearance/appearance-active-card.tsx': 'input',
 };
 
 const filesUnder = (dir: string): string[] => readdirSync(dir).flatMap((name) => {

@@ -9,7 +9,7 @@ import { AppearanceItem } from '@/app/settings/appearance/appearance-item';
 import { AppearanceCatalogItem } from '@/app/settings/appearance/appearance-catalog-item';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
-/** The installed appearances (default + installed) with the active radio, update badge, and remove. */
+/** The installed appearances (default + installed) with the selected card, update badge, and remove. */
 export class AppearanceActiveCard extends PureReactor {
   @prop declare items: AppearanceItem[];
   @prop declare catalogBySlug: Record<string, AppearanceCatalogItem>;
@@ -23,7 +23,7 @@ export class AppearanceActiveCard extends PureReactor {
   @prop declare canManagePackages: boolean;
   /**
    * May this scope CHOOSE the appearance? `admin_appearance` is per-site, so with no site selected
-   * there is no row to write and the API refuses — the radio must not be offered.
+   * there is no row to write and the API refuses — the cards must not be selectable.
    */
   @prop declare canChoose: boolean;
 
@@ -42,24 +42,37 @@ export class AppearanceActiveCard extends PureReactor {
           const catalog = catalogBySlug[it.slug];
           const canUpdate = !it.builtIn && (!!catalog?.updateAvailable || !!it.sourceUrl);
           return (
-            <div key={it.slug} className={`py-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 ${dark ? 'border-slate-800' : 'border-slate-100'}`}>
-              <label className="flex items-center gap-4 cursor-pointer">
-                <input type="radio" name="appearance" className="accent-indigo-600 w-4 h-4" checked={active === it.slug} onChange={() => onSwitch(it.slug)} disabled={busy || !canChoose} />
-                <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
-                  <FrameworkIcons.Palette size={18} />
-                </span>
-                <span>
-                  <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}</span>
-                  <span className="flex items-center gap-2">
-                    <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
-                    {catalog?.updateAvailable && (
-                      <span className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
-                        {AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}
-                      </span>
-                    )}
+            <div key={it.slug} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b last:border-0 border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                aria-pressed={active === it.slug}
+                onClick={() => onSwitch(it.slug)}
+                disabled={busy || !canChoose}
+                className={`flex flex-1 items-center justify-between gap-4 p-4 rounded-xl border text-start transition-all disabled:opacity-60 disabled:cursor-not-allowed ${active === it.slug
+                    ? 'border-indigo-600 bg-indigo-600/5 ring-1 ring-indigo-600'
+                    : dark
+                      ? 'border-slate-800 bg-slate-900/50 hover:border-slate-700'
+                      : 'border-slate-200 bg-white hover:border-indigo-300'
+                  }`}
+              >
+                <span className="flex items-center gap-4">
+                  <span className={`p-2.5 rounded-xl h-fit ${dark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                    <FrameworkIcons.Palette size={18} />
+                  </span>
+                  <span>
+                    <span className={`block text-sm font-semibold tracking-tight ${dark ? 'text-slate-200' : 'text-slate-900'}`}>{it.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
+                      {catalog?.updateAvailable && (
+                        <span className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+                          {AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}
+                        </span>
+                      )}
+                    </span>
                   </span>
                 </span>
-              </label>
+                {active === it.slug && <FrameworkIcons.Check size={20} className="text-indigo-600" />}
+              </button>
               {!it.builtIn && canManagePackages && (
                 <div className="flex items-center gap-2 flex-shrink-0">
                   {canUpdate && (
