@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { I18nResponseBody } from '@api/services/system/i18n-response-body';
 import { PlatformAccessResolver } from '@api/services/request/platform-access-resolver';
 import { TenantConnectionScope } from '@fromcode119/database';
-import { ContentPreviewAccessUtils, DeploymentKind, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
+import { ContentPreviewAccessUtils, DeploymentKind, FrameworkReleaseSource, PluginState, PluginTenantAccess, SystemUpdateService } from '@fromcode119/core';
 import { SelfUpdateScreenService } from '@api/services/system/self-update-screen-service';
 import { ResolvedDocResponseService } from '@api/services/resolved-doc-response-service';
 import { SystemControllerRuntime } from '@api/controllers/system/system-controller-runtime';
@@ -90,6 +90,8 @@ export class SystemRuntimeController {
 
   async checkUpdate(req: Request, res: Response) {
     try {
+      // "Check for updates" pressed by hand looks the releases up now, not from the last answer.
+      if (CoercionUtils.toBoolean(req.query.refresh)) FrameworkReleaseSource.refresh();
       res.json(await new SelfUpdateScreenService(this.runtime.db).describe(await SystemUpdateService.checkUpdate()));
     } catch (error: any) {
       res.status(500).json({ error: error.message });

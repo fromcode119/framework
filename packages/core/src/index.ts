@@ -511,6 +511,7 @@ export { MigrationCoordinator } from '@core/management/migration-coordinator';
 export { HotReloadService } from '@core/management/hot-reload-service';
 export { SystemUpdateService } from '@core/management/system-update-service';
 export { SelfUpdatePlanner } from '@core/management/self-update-planner';
+export { FrameworkReleaseSource } from '@core/management/framework-release-source';
 export { DeploymentKind } from '@core/management/deployment-kind';
 export { AutomaticUpdatePolicy } from '@core/management/automatic-update-policy';
 
