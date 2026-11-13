@@ -167,13 +167,6 @@
       "sectionShow": "Показать",
       "sectionHide": "Скрыть",
       "sectionFieldCount": "Полей: {{count}}",
-      "fieldLevel": {
-        "label": "Показанные поля",
-        "everyday": "Основные",
-        "occasional": "Редко используемые",
-        "technical": "Технические",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Предпросмотр и постоянная ссылка",
       "permalinkHint": "Нажмите на часть пути, чтобы заменить автоматически созданный слаг.",
       "settings": "Настройки",
@@ -189,9 +182,6 @@
       "relatedRecords": "Связанные записи",
       "relatedEmpty": "Ни один другой плагин пока не содержит записей, связанных с этой.",
       "recordPart": { "download": "Скачать {{title}}", "person": "Человек" },
-      "viewMode": "Режим просмотра записи",
-      "formView": "Форма",
-      "jsonView": "JSON",
       "unsavedIn": "Несохранённые изменения в",
       "noUnsaved": "Нет несохранённых изменений",
       "notSaved": "Не сохранено: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Несохранённые изменения",
       "editSection": "Редактировать",
       "notFilledIn": "Не заполнено",
-      "nothingFilledIn": "Пока ничего не заполнено"
+      "nothingFilledIn": "Пока ничего не заполнено",
+      "statusSection": "Статус",
+      "recordSection": "Запись",
+      "showJson": "Показать как JSON",
+      "showForm": "Показать как форму",
+      "recordActions": "Действия с записью",
+      "breadcrumb": "Навигационная цепочка",
+      "copyTitle": "Копировать",
+      "copied": "Скопировано",
+      "more": "Ещё",
+      "moreFields": "Полей: {{count}}",
+      "moreOneField": "Поле: {{count}}"
     },
     "notFound": {
       "title": "Коллекция не найдена",

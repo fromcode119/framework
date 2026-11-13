@@ -167,13 +167,6 @@
       "sectionShow": "Taispeáin",
       "sectionHide": "Folaigh",
       "sectionFieldCount": "{{count}} réimse",
-      "fieldLevel": {
-        "label": "Réimsí á dtaispeáint",
-        "everyday": "Laethúil",
-        "occasional": "Ó am go chéile",
-        "technical": "Teicniúil",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Réamhamharc agus Buan-nasc",
       "permalinkHint": "Cliceáil ar chuid den chosán chun an slug a gineadh go huathoibríoch a athrú.",
       "settings": "Socruithe",
@@ -189,9 +182,6 @@
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
       "recordPart": { "download": "Íoslódáil {{title}}", "person": "Duine" },
-      "viewMode": "Mód amhairc an taifid",
-      "formView": "Amharc foirme",
-      "jsonView": "Amharc JSON",
       "unsavedIn": "Athruithe gan sábháil ar",
       "noUnsaved": "Gan athruithe gan sábháil",
       "notSaved": "Níor sábháladh: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Athruithe gan sábháil",
       "editSection": "Cuir in eagar",
       "notFilledIn": "Gan líonadh",
-      "nothingFilledIn": "Níl aon rud líonta fós"
+      "nothingFilledIn": "Níl aon rud líonta fós",
+      "statusSection": "Stádas",
+      "recordSection": "Taifead",
+      "showJson": "Taispeáin mar JSON",
+      "showForm": "Taispeáin mar fhoirm",
+      "recordActions": "Gníomhartha an taifid",
+      "breadcrumb": "Conair nascleanúna",
+      "copyTitle": "Cóipeáil",
+      "copied": "Cóipeáilte",
+      "more": "Tuilleadh",
+      "moreFields": "{{count}} réimse",
+      "moreOneField": "{{count}} réimse"
     },
     "notFound": {
       "title": "Bailiúchán Gan Aimsiú",

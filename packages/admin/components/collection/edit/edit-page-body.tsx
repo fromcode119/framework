@@ -5,15 +5,13 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
 import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
-import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
-import { EditFieldDepthSwitch } from '@/components/collection/edit/view/edit-field-depth-switch.client';
+import { EditRecordMoreCard } from '@/components/collection/edit/view/edit-record-more-card.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,15 +20,16 @@ export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
   @prop declare slug: string;
   @prop declare id: string;
-  /** Owned by the page view; switched from the view-mode rail this body renders. */
+  /** Owned by the page view; switched from the header's record menu. */
   @prop declare advancedView: boolean;
-  @prop declare setAdvancedView: (next: boolean) => void;
+  /** The record's own address, which the "More" rows extend with the section they open. */
+  @prop declare recordHref: string;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
     const {
       status, setStatus, formData, setFormData, isNew, handleSubmit, saving, collection, theme,
-      activeTab, setActiveTab, navSections, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
+      activeTab, setActiveTab, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
       slugWarning, slugManuallyEdited, readOnlyOverrideGranted, handleInputChange, handlePatch,
       handleReadOnlyOverrideRequest, standardMainFieldSections, fullWidthMainFieldSections,
       showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections, hasBuiltInSidebarContent,
@@ -88,11 +87,7 @@ export class EditPageBody extends PureReactor {
           </div>
         )}
 
-        {/* The view-mode rail sits OUTSIDE the branch so it is in the same place in both modes — the
-            way back from JSON has to be where the way in was. */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
-        <EditViewModeRail advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} />
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0">
         {this.advancedView ? (
           <div className="pb-32">
             <RecordJsonView
@@ -108,9 +103,6 @@ export class EditPageBody extends PureReactor {
           </div>
         ) : (
         <>
-        <EditFieldDepthSwitch depth={edit.fieldDepth} counts={edit.fieldLevelCounts} onChange={edit.setFieldDepth} />
-        <div className="flex items-start gap-3">
-          <EditPageSectionNav sections={navSections} theme={theme} />
           {/* The columns follow the width the form actually has, not the window's: with the menu and a
               plugin's sub-menu open, a 1280px window leaves the form about 700px, and a sidebar taking a
               third of that squeezed every field into a sliver. Below the width a sidebar fits beside the
@@ -142,6 +134,7 @@ export class EditPageBody extends PureReactor {
               recordTitle={edit.resolvedTitleValue}
               clearSaveError={() => setStatus(null)}
             />
+            <EditRecordMoreCard sections={edit.moreSections} recordHref={this.recordHref} />
             {/* What is linked to this record and has no section of its own on this page. */}
             {recordLinks && (
               <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
@@ -192,10 +185,8 @@ export class EditPageBody extends PureReactor {
           )}
           </div>
           </div>
-        </div>
         </>
         )}
-        </div>
         </div>
 
         <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />

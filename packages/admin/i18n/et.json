@@ -167,13 +167,6 @@
       "sectionShow": "Näita",
       "sectionHide": "Peida",
       "sectionFieldCount": "{{count}} välja",
-      "fieldLevel": {
-        "label": "Kuvatavad väljad",
-        "everyday": "Igapäevased",
-        "occasional": "Aeg-ajalt vajalikud",
-        "technical": "Tehnilised",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Eelvaade ja püsilink",
       "permalinkHint": "Automaatselt loodud slugi muutmiseks klõpsake tee osal.",
       "settings": "Seaded",
@@ -189,9 +182,6 @@
       "relatedRecords": "Seotud kirjed",
       "relatedEmpty": "Ühelgi teisel pluginal pole veel selle kirjega seotud kirjet.",
       "recordPart": { "download": "Laadi alla {{title}}", "person": "Isik" },
-      "viewMode": "Kirje vaaterežiim",
-      "formView": "Vormivaade",
-      "jsonView": "JSON-vaade",
       "unsavedIn": "Salvestamata muudatused:",
       "noUnsaved": "Salvestamata muudatusi pole",
       "notSaved": "Ei salvestatud: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Salvestamata muudatused",
       "editSection": "Muuda",
       "notFilledIn": "Täitmata",
-      "nothingFilledIn": "Midagi pole veel täidetud"
+      "nothingFilledIn": "Midagi pole veel täidetud",
+      "statusSection": "Olek",
+      "recordSection": "Kirje",
+      "showJson": "Näita JSON-ina",
+      "showForm": "Näita vormina",
+      "recordActions": "Kirje toimingud",
+      "breadcrumb": "Navigatsioonirada",
+      "copyTitle": "Kopeeri",
+      "copied": "Kopeeritud",
+      "more": "Veel",
+      "moreFields": "{{count}} välja",
+      "moreOneField": "{{count}} väli"
     },
     "notFound": {
       "title": "Kogumit ei leitud",

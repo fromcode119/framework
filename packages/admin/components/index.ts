@@ -52,7 +52,6 @@ export * from '@/components/view/notification-context.client';
 export * from '@/components/view/notification-context-store.client';
 export * from '@/components/view/use-notification.client';
 export * from '@/components/plugin-dashboard';
-export * from '@/components/collection/edit/view/edit-page-section-nav.client';
 // The full, schema-driven field renderer (relationship, array, date, media, custom admin.component, …).
 // Exposed so appearance shells edit records through the SAME renderer as the default admin instead of a
 // limited hand-rolled control set (which silently drops most fields).

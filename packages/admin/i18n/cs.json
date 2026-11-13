@@ -167,13 +167,6 @@
       "sectionShow": "Zobrazit",
       "sectionHide": "Skrýt",
       "sectionFieldCount": "Počet polí: {{count}}",
-      "fieldLevel": {
-        "label": "Zobrazená pole",
-        "everyday": "Každodenní",
-        "occasional": "Občasná",
-        "technical": "Technická",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Náhled a trvalý odkaz",
       "permalinkHint": "Kliknutím na část cesty přepíšete automaticky vygenerovaný slug.",
       "settings": "Nastavení",
@@ -189,9 +182,6 @@
       "relatedRecords": "Související záznamy",
       "relatedEmpty": "Žádný jiný plugin zatím nemá záznam propojený s tímto.",
       "recordPart": { "download": "Stáhnout {{title}}", "person": "Osoba" },
-      "viewMode": "Režim zobrazení záznamu",
-      "formView": "Formulář",
-      "jsonView": "JSON",
       "unsavedIn": "Neuložené změny v",
       "noUnsaved": "Žádné neuložené změny",
       "notSaved": "Neuloženo: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Neuložené změny",
       "editSection": "Upravit",
       "notFilledIn": "Nevyplněno",
-      "nothingFilledIn": "Zatím nic nevyplněno"
+      "nothingFilledIn": "Zatím nic nevyplněno",
+      "statusSection": "Stav",
+      "recordSection": "Záznam",
+      "showJson": "Zobrazit jako JSON",
+      "showForm": "Zobrazit jako formulář",
+      "recordActions": "Akce záznamu",
+      "breadcrumb": "Drobečková navigace",
+      "copyTitle": "Kopírovat",
+      "copied": "Zkopírováno",
+      "more": "Další",
+      "moreFields": "{{count}} polí",
+      "moreOneField": "{{count}} pole"
     },
     "notFound": {
       "title": "Kolekce nenalezena",

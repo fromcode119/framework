@@ -167,13 +167,6 @@
       "sectionShow": "Show",
       "sectionHide": "Hide",
       "sectionFieldCount": "{{count}} fields",
-      "fieldLevel": {
-        "label": "Fields shown",
-        "everyday": "Everyday",
-        "occasional": "Occasional",
-        "technical": "Technical",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Preview & Permalink",
       "permalinkHint": "Click the path component to override the automatically generated slug.",
       "settings": "Settings",
@@ -189,9 +182,6 @@
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
       "recordPart": { "download": "Download {{title}}", "person": "Person" },
-      "viewMode": "Record view mode",
-      "formView": "Form view",
-      "jsonView": "JSON view",
       "unsavedIn": "Unsaved changes to",
       "noUnsaved": "No unsaved changes",
       "notSaved": "Not saved: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Unsaved changes",
       "editSection": "Edit",
       "notFilledIn": "Not filled in",
-      "nothingFilledIn": "Nothing filled in yet"
+      "nothingFilledIn": "Nothing filled in yet",
+      "statusSection": "Status",
+      "recordSection": "Record",
+      "showJson": "Show as JSON",
+      "showForm": "Show as form",
+      "recordActions": "Record actions",
+      "breadcrumb": "Breadcrumb",
+      "copyTitle": "Copy",
+      "copied": "Copied",
+      "more": "More",
+      "moreFields": "{{count}} fields",
+      "moreOneField": "{{count}} field"
     },
     "notFound": {
       "title": "Collection Not Found",

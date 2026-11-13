@@ -105,7 +105,12 @@ export class AdminSchemaLocalizer {
       const slug = String(item?.pluginSlug || '');
       if (!slug || slug === 'system') return item;
       const next: Record<string, any> = { ...item };
-      if (item.group) next.group = this.text(slug, `admin.groups.${StringUtils.slugify(item.group, '')}`, item.group);
+      if (item.group) {
+        // The group as declared, kept beside its translation: the console sorts and files sections by
+        // this key, so "Platform" and "Платформа" are one group and the order does not change with language.
+        next.groupKey = item.groupKey || StringUtils.slugify(item.group, '');
+        next.group = this.text(slug, `admin.groups.${StringUtils.slugify(item.group, '')}`, item.group);
+      }
       next.label = this.menuLabel(slug, item, adminLabelOf(slug));
       if (Array.isArray(item.children)) next.children = this.menu(item.children, adminLabelOf);
       return next;
@@ -146,6 +151,8 @@ export class AdminSchemaLocalizer {
   private menuLabel(pluginSlug: string, item: any, adminLabel: string): string {
     const label = String(item?.label ?? '');
     if (item?.isGroup || (adminLabel && label === adminLabel)) return this.text(pluginSlug, 'admin.label', label);
+    const byCollection = item?.collectionKey ? this.lookup(pluginSlug, `admin.collections.${item.collectionKey}.label`) : '';
+    if (byCollection) return byCollection;
     const last = String(item?.path || '').split('/').filter(Boolean).pop() || '';
     if (!last) return label;
     // The plugin's own root (`/<slug>`) is its overview page.

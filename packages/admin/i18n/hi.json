@@ -167,13 +167,6 @@
       "sectionShow": "दिखाएँ",
       "sectionHide": "छिपाएँ",
       "sectionFieldCount": "{{count}} फ़ील्ड",
-      "fieldLevel": {
-        "label": "दिखाए गए फ़ील्ड",
-        "everyday": "रोज़मर्रा",
-        "occasional": "कभी-कभार",
-        "technical": "तकनीकी",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "पूर्वावलोकन और परमालिंक",
       "permalinkHint": "स्वचालित रूप से बने slug को बदलने के लिए पाथ वाले हिस्से पर क्लिक करें।",
       "settings": "सेटिंग्स",
@@ -189,9 +182,6 @@
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
       "recordPart": { "download": "डाउनलोड करें {{title}}", "person": "व्यक्ति" },
-      "viewMode": "रिकॉर्ड व्यू मोड",
-      "formView": "फ़ॉर्म व्यू",
-      "jsonView": "JSON व्यू",
       "unsavedIn": "इनमें असहेजे बदलाव:",
       "noUnsaved": "कोई असहेजा बदलाव नहीं",
       "notSaved": "सहेजा नहीं गया: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "असहेजे बदलाव",
       "editSection": "संपादित करें",
       "notFilledIn": "नहीं भरा गया",
-      "nothingFilledIn": "अभी तक कुछ नहीं भरा गया"
+      "nothingFilledIn": "अभी तक कुछ नहीं भरा गया",
+      "statusSection": "स्थिति",
+      "recordSection": "रिकॉर्ड",
+      "showJson": "JSON के रूप में दिखाएँ",
+      "showForm": "फ़ॉर्म के रूप में दिखाएँ",
+      "recordActions": "रिकॉर्ड की कार्रवाइयाँ",
+      "breadcrumb": "ब्रेडक्रंब",
+      "copyTitle": "कॉपी करें",
+      "copied": "कॉपी हो गया",
+      "more": "और",
+      "moreFields": "{{count}} फ़ील्ड",
+      "moreOneField": "{{count}} फ़ील्ड"
     },
     "notFound": {
       "title": "संग्रह नहीं मिला",

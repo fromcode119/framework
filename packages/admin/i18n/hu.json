@@ -167,13 +167,6 @@
       "sectionShow": "Megjelenítés",
       "sectionHide": "Elrejtés",
       "sectionFieldCount": "{{count}} mező",
-      "fieldLevel": {
-        "label": "Megjelenített mezők",
-        "everyday": "Mindennapi",
-        "occasional": "Alkalmi",
-        "technical": "Technikai",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Előnézet és állandó hivatkozás",
       "permalinkHint": "Kattintson az útvonalrészre az automatikusan létrehozott slug felülírásához.",
       "settings": "Beállítások",
@@ -189,9 +182,6 @@
       "relatedRecords": "Kapcsolódó rekordok",
       "relatedEmpty": "Még egyetlen más bővítmény sem tárol ehhez kapcsolódó rekordot.",
       "recordPart": { "download": "Letöltés {{title}}", "person": "Személy" },
-      "viewMode": "Rekord nézetmódja",
-      "formView": "Űrlapnézet",
-      "jsonView": "JSON-nézet",
       "unsavedIn": "Nem mentett módosítások:",
       "noUnsaved": "Nincsenek nem mentett módosítások",
       "notSaved": "Nincs mentve: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Nem mentett módosítások",
       "editSection": "Szerkesztés",
       "notFilledIn": "Nincs kitöltve",
-      "nothingFilledIn": "Még nincs semmi kitöltve"
+      "nothingFilledIn": "Még nincs semmi kitöltve",
+      "statusSection": "Állapot",
+      "recordSection": "Rekord",
+      "showJson": "Megjelenítés JSON-ként",
+      "showForm": "Megjelenítés űrlapként",
+      "recordActions": "Rekordműveletek",
+      "breadcrumb": "Morzsamenü",
+      "copyTitle": "Másolás",
+      "copied": "Másolva",
+      "more": "Továbbiak",
+      "moreFields": "{{count}} mező",
+      "moreOneField": "{{count}} mező"
     },
     "notFound": {
       "title": "A gyűjtemény nem található",

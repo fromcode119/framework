@@ -167,13 +167,6 @@
       "sectionShow": "Mostrar",
       "sectionHide": "Ocultar",
       "sectionFieldCount": "{{count}} campos",
-      "fieldLevel": {
-        "label": "Campos mostrados",
-        "everyday": "Do dia a dia",
-        "occasional": "Ocasionais",
-        "technical": "Técnicos",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pré-visualização e ligação permanente",
       "permalinkHint": "Clique no componente do caminho para substituir o slug gerado automaticamente.",
       "settings": "Definições",
@@ -189,9 +182,6 @@
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
       "recordPart": { "download": "Transferir {{title}}", "person": "Pessoa" },
-      "viewMode": "Modo de visualização do registo",
-      "formView": "Vista de formulário",
-      "jsonView": "Vista JSON",
       "unsavedIn": "Alterações não guardadas em",
       "noUnsaved": "Sem alterações por guardar",
       "notSaved": "Não guardado: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Alterações não guardadas",
       "editSection": "Editar",
       "notFilledIn": "Não preenchido",
-      "nothingFilledIn": "Ainda nada preenchido"
+      "nothingFilledIn": "Ainda nada preenchido",
+      "statusSection": "Estado",
+      "recordSection": "Registo",
+      "showJson": "Mostrar como JSON",
+      "showForm": "Mostrar como formulário",
+      "recordActions": "Ações do registo",
+      "breadcrumb": "Trilho de navegação",
+      "copyTitle": "Copiar",
+      "copied": "Copiado",
+      "more": "Mais",
+      "moreFields": "{{count}} campos",
+      "moreOneField": "{{count}} campo"
     },
     "notFound": {
       "title": "Coleção não encontrada",

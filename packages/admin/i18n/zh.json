@@ -167,13 +167,6 @@
       "sectionShow": "显示",
       "sectionHide": "隐藏",
       "sectionFieldCount": "{{count}} 个字段",
-      "fieldLevel": {
-        "label": "显示的字段",
-        "everyday": "常用",
-        "occasional": "偶尔使用",
-        "technical": "技术",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "预览与固定链接",
       "permalinkHint": "点击路径部分可覆盖自动生成的别名。",
       "settings": "设置",
@@ -189,9 +182,6 @@
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
       "recordPart": { "download": "下载 {{title}}", "person": "人员" },
-      "viewMode": "记录查看模式",
-      "formView": "表单视图",
-      "jsonView": "JSON 视图",
       "unsavedIn": "未保存的更改：",
       "noUnsaved": "没有未保存的更改",
       "notSaved": "未保存：{{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "未保存的更改",
       "editSection": "编辑",
       "notFilledIn": "未填写",
-      "nothingFilledIn": "尚未填写任何内容"
+      "nothingFilledIn": "尚未填写任何内容",
+      "statusSection": "状态",
+      "recordSection": "记录",
+      "showJson": "以 JSON 显示",
+      "showForm": "以表单显示",
+      "recordActions": "记录操作",
+      "breadcrumb": "面包屑导航",
+      "copyTitle": "复制",
+      "copied": "已复制",
+      "more": "更多",
+      "moreFields": "{{count}} 个字段",
+      "moreOneField": "{{count}} 个字段"
     },
     "notFound": {
       "title": "未找到集合",

@@ -167,13 +167,6 @@
       "sectionShow": "إظهار",
       "sectionHide": "إخفاء",
       "sectionFieldCount": "{{count}} حقول",
-      "fieldLevel": {
-        "label": "الحقول المعروضة",
-        "everyday": "اليومية",
-        "occasional": "أحيانًا",
-        "technical": "تقنية",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "المعاينة والرابط الدائم",
       "permalinkHint": "انقر على جزء المسار لتجاوز المعرّف المختصر المُنشأ تلقائيًا.",
       "settings": "الإعدادات",
@@ -189,9 +182,6 @@
       "relatedRecords": "السجلات المرتبطة",
       "relatedEmpty": "لا توجد إضافة أخرى تحتفظ بسجل مرتبط بهذا السجل بعد.",
       "recordPart": { "download": "تنزيل {{title}}", "person": "الشخص" },
-      "viewMode": "وضع عرض السجل",
-      "formView": "عرض النموذج",
-      "jsonView": "عرض JSON",
       "unsavedIn": "تغييرات غير محفوظة في",
       "noUnsaved": "لا توجد تغييرات غير محفوظة",
       "notSaved": "لم يُحفظ: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "تغييرات غير محفوظة",
       "editSection": "تعديل",
       "notFilledIn": "غير مُعبّأ",
-      "nothingFilledIn": "لم يُملأ شيء بعد"
+      "nothingFilledIn": "لم يُملأ شيء بعد",
+      "statusSection": "الحالة",
+      "recordSection": "السجل",
+      "showJson": "عرض كـ JSON",
+      "showForm": "عرض كنموذج",
+      "recordActions": "إجراءات السجل",
+      "breadcrumb": "مسار التنقل",
+      "copyTitle": "نسخ",
+      "copied": "تم النسخ",
+      "more": "المزيد",
+      "moreFields": "{{count}} حقول",
+      "moreOneField": "{{count}} حقل"
     },
     "notFound": {
       "title": "المجموعة غير موجودة",

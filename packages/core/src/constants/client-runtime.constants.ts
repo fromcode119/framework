@@ -39,13 +39,10 @@ export class ClientRuntimeConstants {
     },
     STORAGE_KEYS: {
       ADVANCED_MODE: `${ClientRuntimeConstants.STORAGE_PREFIX}admin_advanced_mode`,
-      SIDEBAR_OPEN: `${ClientRuntimeConstants.STORAGE_PREFIX}sidebar_open`,
       SIDEBAR_MINI: `${ClientRuntimeConstants.STORAGE_PREFIX}sidebar_mini`,
-      COLLAPSED_GROUPS: `${ClientRuntimeConstants.STORAGE_PREFIX}sidebar_collapsed_groups`,
       ADMIN_APPEARANCE: `${ClientRuntimeConstants.STORAGE_PREFIX}admin_appearance`,
     },
     STORAGE_PREFIXES: {
-      NAV_EXPANDED: `${ClientRuntimeConstants.STORAGE_PREFIX}nav_expanded_`,
       COLLECTION_COLUMNS: `${ClientRuntimeConstants.STORAGE_PREFIX}columns_`,
     },
   } as const;

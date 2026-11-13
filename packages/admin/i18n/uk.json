@@ -167,13 +167,6 @@
       "sectionShow": "Показати",
       "sectionHide": "Приховати",
       "sectionFieldCount": "Полів: {{count}}",
-      "fieldLevel": {
-        "label": "Показані поля",
-        "everyday": "Основні",
-        "occasional": "Рідко вживані",
-        "technical": "Технічні",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Попередній перегляд і постійне посилання",
       "permalinkHint": "Натисніть на частину шляху, щоб замінити автоматично згенерований slug.",
       "settings": "Налаштування",
@@ -189,9 +182,6 @@
       "relatedRecords": "Пов’язані записи",
       "relatedEmpty": "Жоден інший плагін ще не має запису, пов’язаного з цим.",
       "recordPart": { "download": "Завантажити {{title}}", "person": "Особа" },
-      "viewMode": "Режим перегляду запису",
-      "formView": "Форма",
-      "jsonView": "JSON",
       "unsavedIn": "Незбережені зміни в",
       "noUnsaved": "Немає незбережених змін",
       "notSaved": "Не збережено: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Незбережені зміни",
       "editSection": "Редагувати",
       "notFilledIn": "Не заповнено",
-      "nothingFilledIn": "Поки нічого не заповнено"
+      "nothingFilledIn": "Поки нічого не заповнено",
+      "statusSection": "Статус",
+      "recordSection": "Запис",
+      "showJson": "Показати як JSON",
+      "showForm": "Показати як форму",
+      "recordActions": "Дії із записом",
+      "breadcrumb": "Навігаційний ланцюжок",
+      "copyTitle": "Копіювати",
+      "copied": "Скопійовано",
+      "more": "Ще",
+      "moreFields": "Полів: {{count}}",
+      "moreOneField": "Поле: {{count}}"
     },
     "notFound": {
       "title": "Колекцію не знайдено",

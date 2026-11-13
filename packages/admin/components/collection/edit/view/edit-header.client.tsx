@@ -1,44 +1,42 @@
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { ThemeMode, CollectionArchive } from '@fromcode119/core/client';
-import { EditArchiveControl } from '@/components/collection/edit/view/edit-archive-control.client';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
-import { PureReactor, prop, bound, state } from '@fromcode119/react-class-components';
+import { PureReactor, prop, bound, state, Platform } from '@fromcode119/react-class-components';
 import { AdminServices } from '@/lib/admin-services';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
-import { Input } from '@/components/ui/view/input.client';
-import { Select } from '@/components/ui/view/select.client';
+import { Card } from '@/components/ui/view/card.client';
 import { CollectionListUtils } from '@/components/collection/list/utils';
 import { EditHeaderRecordFacts } from '@/components/collection/edit/view/edit-header-record-facts.client';
+import { EditHeaderMenu } from '@/components/collection/edit/view/edit-header-menu.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SitePreviewLauncher } from '@/lib/tenants/site-preview-launcher';
 
+/**
+ * The top of a record page: where it sits (a breadcrumb back to its list), then one card naming it —
+ * its title with a copy button, the facts its list shows beside it, its status, and the record's actions.
+ *
+ * Opened on one of its sections (`?section=`), the breadcrumb runs list › record › section, so the way
+ * back to the whole record is the record's own name. The look is `admin.css` (`fc-record-head*`).
+ */
 export class EditHeader extends PureReactor {
   @prop declare collection: any;
   @prop declare pluginSlug: string;
   @prop declare slug: string;
-  /** Where this tab last showed the list (its page); read after mount, so server and client render alike. */
-  @state listHref = '';
-
-  componentDidMount(): void {
-    this.listHref = AdminServices.getInstance().uiPreference.readCollectionListHref(this.pluginSlug, this.slug);
-  }
   @prop declare id: string;
   @prop declare isNew: boolean;
   @prop declare theme: ThemeMode;
   @prop declare resolvedTitleValue: string;
-  @prop declare changeSummary: string;
-  /** The note for the version history: offered once the form is widened past the everyday fields. */
-  @prop declare showChangeSummary: boolean;
-  @prop declare setChangeSummary: (val: string) => void;
   @prop declare formData: any;
   @prop declare setFormData: (value: any) => void;
   @prop declare getPreviewUrl: () => string;
   @prop declare showPreview: boolean;
   @prop declare statusOptions: { label: string; value: string }[];
   @prop declare currentStatusValue: string;
+  /** The status option's label, shown as a badge whether or not it may be changed here. */
+  @prop declare currentStatusLabel: string;
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handleSubmit: (e: any, summary: string) => void;
   @prop declare saving: boolean;
@@ -54,30 +52,46 @@ export class EditHeader extends PureReactor {
   @prop declare canDelete: boolean;
   /** Which plugin-contributed header actions to offer — see `CollectionAccess.allowsPluginAction`. */
   @prop declare includeAction: (contribution: { pluginSlug: string }) => boolean;
+  @prop declare advancedView: boolean;
+  @prop declare setAdvancedView: (next: boolean) => void;
+  /** The section opened on its own page, for the breadcrumb; null on the record itself. */
+  @prop declare focusedSection: { key: string; title: string } | null;
 
-  get collectionLabel(): string {
+  /** Where this tab last showed the list (its page); read after mount, so server and client render alike. */
+  @state listHref = '';
+  @state private copied = false;
+
+  componentDidMount(): void {
+    this.listHref = AdminServices.getInstance().uiPreference.readCollectionListHref(this.pluginSlug, this.slug);
+  }
+
+  private get collectionLabel(): string {
     return CollectionListUtils.resolveCollectionLabel(this.collection, this.slug);
   }
 
-  get singularCollectionLabel(): string {
-    return CollectionListUtils.resolveCollectionSingularLabel(this.collection, this.slug);
+  private get title(): string {
+    const name = CollectionListUtils.resolveCollectionSingularLabel(this.collection, this.slug);
+    if (this.isNew) return AdminI18n.t('collection.edit.createTitle', { name, label: this.collectionLabel });
+    return this.resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name });
   }
 
-  get hideHeaderPrimaryAction(): boolean {
-    return this.collection?.admin?.hideHeaderPrimaryAction === true;
-  }
-
-  @bound onSummaryChange(e: any): void {
-    this.setChangeSummary(e.target.value);
-  }
-
-  @bound onStatusChange(value: any): void {
+  @bound private onStatusChange(value: string): void {
     this.handleInputChange('status', value);
   }
 
-  @bound onSave(e: any): void {
-    this.handleSubmit(e, this.changeSummary);
-    this.setChangeSummary('');
+  @bound private onSave(e: any): void {
+    this.handleSubmit(e, '');
+  }
+
+  @bound private onDelete(): void {
+    this.setShowDeleteConfirm(true);
+  }
+
+  @bound private async onCopy(): Promise<void> {
+    if (!Platform.isBrowser) return;
+    await navigator.clipboard.writeText(this.title);
+    this.copied = true;
+    window.setTimeout(() => { this.copied = false; }, 1500);
   }
 
   /**
@@ -85,166 +99,98 @@ export class EditHeader extends PureReactor {
    * console session is never sent, so a draft opened directly answers "Page not found". The href stays
    * so the address is visible and copyable; the click is what opens it with access.
    */
-  @bound onPreviewClick(e: any): void {
+  @bound private onPreviewClick(e: any): void {
     e.preventDefault();
     void SitePreviewLauncher.openRecord(this.getPreviewUrl()).catch((error) => {
       console.error('Opening the preview failed:', error);
     });
   }
 
-  @bound onDelete(): void {
-    this.setShowDeleteConfirm(true);
+  private renderCrumbs(head: string): ReactNode {
+    const recordHref = `/${this.pluginSlug}/${this.slug}/${this.id}`;
+    const section = this.focusedSection;
+    return (
+      <nav className={`${head}-crumbs`} aria-label={AdminI18n.t('collection.edit.breadcrumb')}>
+        <AdminLink href={this.listHref || `/${this.pluginSlug}/${this.slug}`} className={`${head}-crumbs__link`}>
+          <FrameworkIcons.Left size={14} />
+          {this.collectionLabel}
+        </AdminLink>
+        <span className={`${head}-crumbs__sep`} aria-hidden="true">›</span>
+        {section ? (
+          <>
+            <AdminLink href={recordHref} className={`${head}-crumbs__link`}>{this.title}</AdminLink>
+            <span className={`${head}-crumbs__sep`} aria-hidden="true">›</span>
+            <span className={`${head}-crumbs__current`} aria-current="page">{section.title}</span>
+          </>
+        ) : (
+          <span className={`${head}-crumbs__current`} aria-current="page">{this.title}</span>
+        )}
+      </nav>
+    );
   }
 
   render(): ReactNode {
-  const {
-  collection,
-  pluginSlug,
-  slug,
-  id,
-  isNew,
-  theme,
-  resolvedTitleValue,
-  changeSummary,
-  formData,
-  setFormData,
-  getPreviewUrl,
-  showPreview,
-  statusOptions,
-  currentStatusValue,
-  handleSubmit,
-  saving,
-} = this;
-  const collectionLabel = this.collectionLabel;
-  const singularCollectionLabel = this.singularCollectionLabel;
-  const hideHeaderPrimaryAction = this.hideHeaderPrimaryAction;
+    const { collection, slug, isNew, formData, setFormData, handleSubmit, saving } = this;
+    const head = AdminClass.of('record-head');
+    const facts = isNew ? [] : EditHeaderRecordFacts.of(collection, formData);
+    const archived = !isNew && CollectionArchive.isArchived(formData);
+    const slotProps = { collection, formData, setFormData, isNew, handleSubmit, saving };
 
-  return (
-    <div data-edit-header className="sticky top-0 z-40 border-b backdrop-blur bg-white/90 border-slate-100 dark:bg-slate-950/80 dark:border-slate-800/60">
-      <div className="w-full px-4 sm:px-6 lg:px-8 py-2 sm:py-3">
-        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-          {/* The same left side as every other admin page header (CompactPageHeader): back to the list, the
-              icon, the title and one line under it. The title takes the room the actions leave and ends in
-              "…" when longer; below its minimum the actions wrap under it. */}
-          <div className="flex min-w-0 flex-[1_1_16rem] items-center gap-3">
-            <AdminLink
-              href={this.listHref || `/${pluginSlug}/${slug}`}
-              aria-label={collectionLabel}
-              className="h-9 w-9 flex items-center justify-center rounded-lg border shrink-0 transition-colors border-slate-200 text-slate-500 hover:bg-slate-50 dark:border-slate-800 dark:text-slate-400 dark:hover:bg-slate-800"
-            >
-              <FrameworkIcons.Left size={16} strokeWidth={2} />
-            </AdminLink>
-            <div className="hidden sm:flex h-9 w-9 rounded-lg items-center justify-center shrink-0 bg-indigo-600 text-white dark:bg-indigo-500/10 dark:text-indigo-400 dark:border dark:border-indigo-500/20">
-              <FrameworkIcons.Layout size={18} />
+    return (
+      <div className={`${head}-top`}>
+        {this.renderCrumbs(head)}
+        <Card noPadding className={head}>
+          <div className={`${head}__main`}>
+            <div className={`${head}__title-row`}>
+              <h1 className={`${head}__title`} title={this.title}>{this.title}</h1>
+              {!isNew && this.resolvedTitleValue ? (
+                <button type="button" onClick={this.onCopy} className={`${head}__copy`}
+                  aria-label={AdminI18n.t(this.copied ? 'collection.edit.copied' : 'collection.edit.copyTitle')}
+                  title={AdminI18n.t(this.copied ? 'collection.edit.copied' : 'collection.edit.copyTitle')}>
+                  {this.copied ? <FrameworkIcons.Check size={14} /> : <FrameworkIcons.Copy size={14} />}
+                </button>
+              ) : null}
+              {!isNew && this.currentStatusLabel ? <span className={`${head}__badge`}>{this.currentStatusLabel}</span> : null}
+              {archived ? <span className={`${head}__badge ${head}__badge--muted`}>{AdminI18n.t('collection.list.viewArchived')}</span> : null}
             </div>
-            <div className="min-w-0">
-              <h1 title={isNew ? undefined : resolvedTitleValue || undefined} className={`truncate text-lg sm:text-xl font-bold tracking-tight leading-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                {isNew
-                  ? AdminI18n.t('collection.edit.createTitle', { name: singularCollectionLabel, label: collectionLabel })
-                  : (resolvedTitleValue || AdminI18n.t('collection.edit.untitled', { name: singularCollectionLabel }))
-                }
-              </h1>
-              {/* Which list it belongs to and which record — never the title a second time. */}
-              <p className="truncate text-xs font-medium tracking-tight text-slate-500">
-                {isNew
-                  ? AdminI18n.t('collection.edit.newSubtitle', { name: collectionLabel.toLowerCase(), label: collectionLabel })
-                  : [`${collectionLabel} · #${id.length > 8 ? `${id.substring(0, 8)}…` : id}`, ...EditHeaderRecordFacts.of(collection, formData)].join(' · ')}
-              </p>
-            </div>
+            {isNew
+              ? <p className={`${head}__meta`}>{AdminI18n.t('collection.edit.newSubtitle', { name: this.collectionLabel.toLowerCase(), label: this.collectionLabel })}</p>
+              : facts.length > 0 ? <p className={`${head}__meta`}>{facts.join(' · ')}</p> : null}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
-            {!isNew && this.showChangeSummary && (
-              <div className="hidden lg:block relative group">
-                 <Input 
-                    placeholder={AdminI18n.t('collection.edit.summary')}
-                    value={changeSummary}
-                    onChange={this.onSummaryChange}
-                    className="w-48 xl:w-64"
-                    inputClassName="text-[10px] font-semibold h-10 bg-transparent border-slate-200 dark:border-slate-800 transition-all placeholder:opacity-50"
-                 />
-              </div>
-            )}
-            {formData?.scheduledPublishAt && (formData.status === 'draft' || !formData.status) && (
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-amber-500 font-semibold text-[10px] animate-pulse">
+          <div className={`${head}__actions`}>
+            {formData?.scheduledPublishAt && (formData.status === 'draft' || !formData.status) ? (
+              <span className={`${head}__badge`}>
                 <FrameworkIcons.Clock size={12} />
                 {new Date(formData.scheduledPublishAt).toLocaleDateString()}
-              </div>
-            )}
-            {showPreview && (
-              <a 
-                href={getPreviewUrl()}
-                onClick={this.onPreviewClick}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={AdminI18n.t('collection.edit.preview')}
-                className={`box-border appearance-none h-10 px-4 rounded-[var(--radius)] outline-none border transition-all duration-200 shadow-sm inline-flex items-center justify-center gap-2 leading-none text-[10px] font-semibold ${
-                  theme === ThemeMode.DARK 
-                    ? 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white focus:border-indigo-500 focus:ring-0'
-                    : 'bg-white border-slate-200 text-slate-700 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10'
-                }`}
-              >
+              </span>
+            ) : null}
+            {this.showPreview ? (
+              <a href={this.getPreviewUrl()} onClick={this.onPreviewClick} target="_blank" rel="noopener noreferrer"
+                aria-label={AdminI18n.t('collection.edit.preview')} className={`${head}__button`}>
                 <FrameworkIcons.Eye size={14} />
-                {/* Icon only on a phone, so the whole action row fits on one line. */}
-                <span className="hidden sm:inline">{AdminI18n.t('collection.edit.preview')}</span>
+                <span className={`${head}__button-label`}>{AdminI18n.t('collection.edit.preview')}</span>
               </a>
-            )}
-            {statusOptions.length > 0 && (
-              <div className="flex items-center gap-2">
-                <Select
-                  value={currentStatusValue}
-                  onChange={this.onStatusChange}
-                  options={statusOptions}
-                  searchable={false}
-                  size={FieldSize.MD}
-                  className="w-28 sm:w-40 lg:w-44"
-                  triggerClassName="h-10 px-3 sm:px-4 text-sm font-bold rounded-[var(--radius)]"
-                />
-              </div>
-            )}
-
-            {/* Form vs JSON used to sit here. It moved to EditViewModeRail: this row is a plugin
-                extension point (the Slots below), so its contents vary per collection and per installed
-                plugin — a core view-mode switch must not compete with actions it does not control. */}
-            <Slot
-              name={`admin.collection.${slug}.edit.header.actions`}
-              include={this.includeAction}
-              props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
-            />
-            <Slot
-              name="admin.collection.edit.header.actions"
-              include={this.includeAction}
-              props={{ collection, formData, setFormData, isNew, handleSubmit, saving }}
-            />
-             
-            {!hideHeaderPrimaryAction && this.canSave && (isNew || this.isDirty) && (
-              <Button 
-                className="h-10 px-4 sm:px-6 font-semibold text-[12px] shadow-lg shadow-indigo-600/20" 
-                onClick={this.onSave}
-                isLoading={saving}
-                icon={<FrameworkIcons.Save size={14} />}
-              >
+            ) : null}
+            <Slot name={`admin.collection.${slug}.edit.header.actions`} include={this.includeAction} props={slotProps} />
+            <Slot name="admin.collection.edit.header.actions" include={this.includeAction} props={slotProps} />
+            {collection?.admin?.hideHeaderPrimaryAction !== true && this.canSave && (isNew || this.isDirty) ? (
+              <Button onClick={this.onSave} isLoading={saving} icon={<FrameworkIcons.Save size={14} />}>
                 {AdminI18n.t(isNew ? 'common.create' : 'common.save')}
               </Button>
-            )}
-
-            {!isNew && this.canSave && CollectionArchive.isArchivable(collection) && (
-              <EditArchiveControl collection={collection} id={this.id} theme={theme} formData={formData} setFormData={this.setFormData} />
-            )}
-
-            {!isNew && this.canDelete && (
-              <button 
-                onClick={this.onDelete}
-                aria-label={AdminI18n.t('common.delete')}
-                className={`h-10 w-10 inline-flex items-center justify-center rounded-[var(--radius)] border border-rose-100 bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm ${theme === ThemeMode.DARK ? 'bg-rose-500/10 border-rose-500/20' : ''}`}
-              >
-                <FrameworkIcons.Trash size={16} />
-              </button>
+            ) : null}
+            {isNew ? null : (
+              <EditHeaderMenu
+                collection={collection} id={this.id} formData={formData} setFormData={setFormData}
+                statusOptions={this.statusOptions} currentStatusValue={this.currentStatusValue} onStatusChange={this.onStatusChange}
+                advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+                canArchive={this.canSave && CollectionArchive.isArchivable(collection)}
+                canDelete={this.canDelete} onDelete={this.onDelete}
+              />
             )}
           </div>
-        </div>
+        </Card>
       </div>
-    </div>
-  );
+    );
   }
 }

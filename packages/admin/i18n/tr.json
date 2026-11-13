@@ -167,13 +167,6 @@
       "sectionShow": "Göster",
       "sectionHide": "Gizle",
       "sectionFieldCount": "{{count}} alan",
-      "fieldLevel": {
-        "label": "Gösterilen alanlar",
-        "everyday": "Günlük",
-        "occasional": "Ara sıra",
-        "technical": "Teknik",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Önizleme ve Kalıcı Bağlantı",
       "permalinkHint": "Otomatik oluşturulan kısa adı değiştirmek için yol bileşenine tıklayın.",
       "settings": "Ayarlar",
@@ -189,9 +182,6 @@
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
       "recordPart": { "download": "İndir {{title}}", "person": "Kişi" },
-      "viewMode": "Kayıt görünüm modu",
-      "formView": "Form görünümü",
-      "jsonView": "JSON görünümü",
       "unsavedIn": "Kaydedilmemiş değişiklikler:",
       "noUnsaved": "Kaydedilmemiş değişiklik yok",
       "notSaved": "Kaydedilmedi: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Kaydedilmemiş değişiklikler",
       "editSection": "Düzenle",
       "notFilledIn": "Doldurulmadı",
-      "nothingFilledIn": "Henüz hiçbir şey doldurulmadı"
+      "nothingFilledIn": "Henüz hiçbir şey doldurulmadı",
+      "statusSection": "Durum",
+      "recordSection": "Kayıt",
+      "showJson": "JSON olarak göster",
+      "showForm": "Form olarak göster",
+      "recordActions": "Kayıt işlemleri",
+      "breadcrumb": "İçerik haritası",
+      "copyTitle": "Kopyala",
+      "copied": "Kopyalandı",
+      "more": "Daha fazla",
+      "moreFields": "{{count}} alan",
+      "moreOneField": "{{count}} alan"
     },
     "notFound": {
       "title": "Koleksiyon Bulunamadı",

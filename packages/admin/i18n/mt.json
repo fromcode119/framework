@@ -167,13 +167,6 @@
       "sectionShow": "Uri",
       "sectionHide": "Aħbi",
       "sectionFieldCount": "{{count}} qasam",
-      "fieldLevel": {
-        "label": "Oqsma murija",
-        "everyday": "Ta’ kuljum",
-        "occasional": "Okkażjonali",
-        "technical": "Tekniċi",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Dehra Minn Qabel u Permalink",
       "permalinkHint": "Ikklikkja fuq il-parti tal-mogħdija biex tissostitwixxi s-slug iġġenerat awtomatikament.",
       "settings": "Settings",
@@ -189,9 +182,6 @@
       "relatedRecords": "Rekords relatati",
       "relatedEmpty": "L-ebda plugin ieħor għadu ma għandu rekord marbut ma' dan.",
       "recordPart": { "download": "Niżżel {{title}}", "person": "Persuna" },
-      "viewMode": "Mod ta' wiri tar-rekord",
-      "formView": "Dehra tal-formola",
-      "jsonView": "Dehra JSON",
       "unsavedIn": "Bidliet mhux issejvjati f'",
       "noUnsaved": "L-ebda bidla mhux issejvjata",
       "notSaved": "Mhux issejvjat: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Bidliet mhux issejvjati",
       "editSection": "Editja",
       "notFilledIn": "Mhux mimli",
-      "nothingFilledIn": "Għadu ma mtela xejn"
+      "nothingFilledIn": "Għadu ma mtela xejn",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Uri bħala JSON",
+      "showForm": "Uri bħala formola",
+      "recordActions": "Azzjonijiet tar-rekord",
+      "breadcrumb": "Mogħdija",
+      "copyTitle": "Ikkopja",
+      "copied": "Ikkopjat",
+      "more": "Aktar",
+      "moreFields": "{{count}} oqsma",
+      "moreOneField": "{{count}} qasam"
     },
     "notFound": {
       "title": "Il-Kollezzjoni Ma Nstabitx",

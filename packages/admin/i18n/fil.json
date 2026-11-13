@@ -167,13 +167,6 @@
       "sectionShow": "Ipakita",
       "sectionHide": "Itago",
       "sectionFieldCount": "{{count}} field",
-      "fieldLevel": {
-        "label": "Mga field na ipinapakita",
-        "everyday": "Pang-araw-araw",
-        "occasional": "Paminsan-minsan",
-        "technical": "Teknikal",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Preview at Permalink",
       "permalinkHint": "I-click ang bahagi ng path para palitan ang awtomatikong nabuong slug.",
       "settings": "Mga Setting",
@@ -189,9 +182,6 @@
       "relatedRecords": "Mga kaugnay na record",
       "relatedEmpty": "Wala pang ibang plugin na may record na naka-link dito.",
       "recordPart": { "download": "I-download {{title}}", "person": "Tao" },
-      "viewMode": "Mode ng pagtingin sa record",
-      "formView": "Form view",
-      "jsonView": "JSON view",
       "unsavedIn": "Mga hindi na-save na pagbabago sa",
       "noUnsaved": "Walang hindi na-save na pagbabago",
       "notSaved": "Hindi na-save: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Mga hindi na-save na pagbabago",
       "editSection": "I-edit",
       "notFilledIn": "Hindi pa napupunan",
-      "nothingFilledIn": "Wala pang napupunan"
+      "nothingFilledIn": "Wala pang napupunan",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Ipakita bilang JSON",
+      "showForm": "Ipakita bilang form",
+      "recordActions": "Mga aksyon sa rekord",
+      "breadcrumb": "Breadcrumb",
+      "copyTitle": "Kopyahin",
+      "copied": "Nakopya",
+      "more": "Higit pa",
+      "moreFields": "{{count}} field",
+      "moreOneField": "{{count}} field"
     },
     "notFound": {
       "title": "Hindi Nahanap ang Collection",

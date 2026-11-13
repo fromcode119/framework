@@ -167,13 +167,6 @@
       "sectionShow": "Afficher",
       "sectionHide": "Masquer",
       "sectionFieldCount": "{{count}} champs",
-      "fieldLevel": {
-        "label": "Champs affichés",
-        "everyday": "Courants",
-        "occasional": "Occasionnels",
-        "technical": "Techniques",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Aperçu et permalien",
       "permalinkHint": "Cliquez sur l’élément du chemin pour remplacer le slug généré automatiquement.",
       "settings": "Paramètres",
@@ -189,9 +182,6 @@
       "relatedRecords": "Enregistrements liés",
       "relatedEmpty": "Aucun autre plugin ne possède encore d’enregistrement lié à celui-ci.",
       "recordPart": { "download": "Télécharger {{title}}", "person": "Personne" },
-      "viewMode": "Mode d’affichage de l’enregistrement",
-      "formView": "Vue formulaire",
-      "jsonView": "Vue JSON",
       "unsavedIn": "Modifications non enregistrées dans",
       "noUnsaved": "Aucune modification non enregistrée",
       "notSaved": "Non enregistré : {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Modifications non enregistrées",
       "editSection": "Modifier",
       "notFilledIn": "Non renseigné",
-      "nothingFilledIn": "Rien n’est encore renseigné"
+      "nothingFilledIn": "Rien n’est encore renseigné",
+      "statusSection": "Statut",
+      "recordSection": "Fiche",
+      "showJson": "Afficher en JSON",
+      "showForm": "Afficher en formulaire",
+      "recordActions": "Actions sur la fiche",
+      "breadcrumb": "Fil d’Ariane",
+      "copyTitle": "Copier",
+      "copied": "Copié",
+      "more": "Plus",
+      "moreFields": "{{count}} champs",
+      "moreOneField": "{{count}} champ"
     },
     "notFound": {
       "title": "Collection introuvable",

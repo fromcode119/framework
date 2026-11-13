@@ -48,6 +48,21 @@
   --fc-record-label-width: 140px;
   --fc-record-rule: 1px dashed var(--fc-border);
   --fc-record-text: 13px;
+  /* A record page: the side column beside its main one, and the header card's title. */
+  --fc-record-side: 352px;
+  --fc-record-title: 20px;
+  /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
+   * washes are written over the text colour, so they hold in both schemes without a dark rule. */
+  --fc-nav-bg: var(--fc-surface);
+  --fc-nav-border: var(--fc-border);
+  --fc-nav-text: var(--fc-text);
+  --fc-nav-muted: var(--fc-text-muted);
+  --fc-nav-hover: color-mix(in srgb, var(--fc-text) 5%, transparent);
+  --fc-nav-active: color-mix(in srgb, var(--fc-text) 8%, transparent);
+  --fc-nav-size: 13px;
+  --fc-nav-row: 32px;
+  --fc-nav-radius: 8px;
+  --fc-nav-sub-indent: 38px;
 
   /* Status TINTS: a soft surface, a border, and text that reads on it.
    *
@@ -652,8 +667,49 @@ html.dark {
 .fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
 .fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-bottom: 2rem; }
 @container (min-width: 56rem) {
-  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
 }
+
+/* ── A record page's top: the breadcrumb, then one card naming the record ─────────────────────────────
+ * EditHeader / EditHeaderMenu. */
+.fc-record-head-top { display: grid; gap: 10px; padding: 16px 12px 0; }
+@media (min-width: 640px) { .fc-record-head-top { padding: 20px 24px 0; } }
+@media (min-width: 1024px) { .fc-record-head-top { padding: 24px 32px 0; } }
+.fc-record-head-crumbs { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-record-head-crumbs__link { display: inline-flex; align-items: center; gap: 4px; min-height: 24px; color: var(--fc-text-muted); }
+.fc-record-head-crumbs__link:hover { color: var(--fc-text); text-decoration: underline; }
+.fc-record-head-crumbs__sep { color: var(--fc-text-muted); }
+.fc-record-head-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
+.fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; padding: 12px 16px; }
+.fc-record-head__main { flex: 1 1 16rem; min-width: 0; display: grid; gap: 2px; }
+/* On a phone the actions stay beside the title, at its top, instead of taking a row of their own. */
+@media (max-width: 639px) { .fc-record-head { align-items: flex-start; } .fc-record-head__main { flex-basis: 0; } }
+.fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 700; line-height: 1.25; color: var(--fc-text); }
+.fc-record-head__copy,
+.fc-record-head__menu { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); color: var(--fc-text-muted); }
+.fc-record-head__copy { width: 24px; height: 24px; }
+/* A 24px icon gets a 36px hit area, so a thumb finds it beside the title. */
+.fc-record-head__copy::before { content: ''; position: absolute; inset: -6px; }
+.fc-record-head__menu { width: 40px; height: 40px; border: 1px solid var(--fc-border); background: var(--fc-surface); }
+.fc-record-head__copy:hover,
+.fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px; border: 1px solid var(--fc-border); border-radius: 9999px; font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head__badge--muted { color: var(--fc-text-muted); }
+.fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: 1.4; color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: var(--fc-record-text); font-weight: 600; color: var(--fc-text); background: var(--fc-surface); }
+.fc-record-head__button:hover { background: var(--fc-surface-muted); }
+@media (max-width: 639px) { .fc-record-head__button-label { display: none; } }
+
+/* ── "More": the sections a record does not draw, one row each, opening the section on its own page ── */
+.fc-record-more__title { padding: 12px 16px; border-bottom: var(--fc-record-rule); font-size: 14px; font-weight: 600; color: var(--card-foreground); }
+.fc-record-more__rows { padding: 4px 16px; }
+.fc-record-more__rows > li + li { border-top: var(--fc-record-rule); }
+.fc-record-more__row { display: flex; align-items: center; gap: 12px; min-height: 44px; font-size: var(--fc-record-text); color: var(--fc-text); }
+.fc-record-more__row:hover .fc-record-more__name { text-decoration: underline; }
+.fc-record-more__name { flex: 1 1 auto; min-width: 0; font-weight: 500; }
+.fc-record-more__count { flex: none; color: var(--fc-text-muted); }
 
 /* A section's fields: a `width: 'half'` field sits beside the next only when the card has room for
    two readable controls; narrower, every field takes the row. */
@@ -748,6 +804,33 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-edit-sticky { position: sticky; align-self: start; }
 
 /* A menu item's trailing slot (sidebar-nav-item-view): after the label, or on the icon's corner collapsed. */
+/* ── The menu ── one column, no group headings; see `sidebar-nav-groups.tsx`. */
+.fc-nav { background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); }
+.fc-nav__scroll { display: flex; flex-direction: column; padding-block: 8px 12px; }
+.fc-nav-list { display: flex; flex-direction: column; gap: 2px; }
+/* Settings sits at the foot of the column, above the account, wherever the list above it ends. */
+.fc-nav-foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+.fc-nav-section { display: flex; flex-direction: column; }
+.fc-nav-item {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  min-height: var(--fc-nav-row); padding-inline: 10px; border-radius: var(--fc-nav-radius);
+  color: var(--fc-nav-text); font-size: var(--fc-nav-size); font-weight: 500; line-height: 1.2;
+  transition: background-color 120ms ease;
+}
+.fc-nav-item:hover { background: var(--fc-nav-hover); }
+.fc-nav-item--active, .fc-nav-item--active:hover { background: var(--fc-nav-active); font-weight: 600; }
+.fc-nav-item--mini { justify-content: center; width: 40px; height: 40px; padding: 0; }
+.fc-nav-item__icon { display: inline-flex; flex: none; color: var(--fc-nav-muted); }
+.fc-nav-item--active .fc-nav-item__icon { color: var(--fc-nav-text); }
+.fc-nav-item__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-nav-sub { display: flex; flex-direction: column; gap: 1px; padding-block: 2px 6px; }
+.fc-nav-sub__item {
+  display: flex; align-items: center; min-height: 28px; padding-inline: var(--fc-nav-sub-indent) 10px;
+  border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); font-size: var(--fc-nav-size); font-weight: 500;
+}
+.fc-nav-sub__item:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+.fc-nav-sub__item--active { color: var(--fc-nav-text); font-weight: 600; }
+.fc-nav-sub__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
 .fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }

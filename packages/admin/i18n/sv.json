@@ -167,13 +167,6 @@
       "sectionShow": "Visa",
       "sectionHide": "Dölj",
       "sectionFieldCount": "{{count}} fält",
-      "fieldLevel": {
-        "label": "Visade fält",
-        "everyday": "Vardagliga",
-        "occasional": "Tillfälliga",
-        "technical": "Tekniska",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Förhandsvisning och permalänk",
       "permalinkHint": "Klicka på sökvägsdelen för att ersätta den automatiskt genererade sluggen.",
       "settings": "Inställningar",
@@ -189,9 +182,6 @@
       "relatedRecords": "Relaterade poster",
       "relatedEmpty": "Inget annat tillägg har ännu någon post kopplad till den här.",
       "recordPart": { "download": "Ladda ned {{title}}", "person": "Person" },
-      "viewMode": "Visningsläge för post",
-      "formView": "Formulärvy",
-      "jsonView": "JSON-vy",
       "unsavedIn": "Osparade ändringar i",
       "noUnsaved": "Inga osparade ändringar",
       "notSaved": "Inte sparad: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Osparade ändringar",
       "editSection": "Redigera",
       "notFilledIn": "Inte ifyllt",
-      "nothingFilledIn": "Inget ifyllt än"
+      "nothingFilledIn": "Inget ifyllt än",
+      "statusSection": "Status",
+      "recordSection": "Post",
+      "showJson": "Visa som JSON",
+      "showForm": "Visa som formulär",
+      "recordActions": "Åtgärder för posten",
+      "breadcrumb": "Länkstig",
+      "copyTitle": "Kopiera",
+      "copied": "Kopierat",
+      "more": "Mer",
+      "moreFields": "{{count}} fält",
+      "moreOneField": "{{count}} fält"
     },
     "notFound": {
       "title": "Samlingen hittades inte",

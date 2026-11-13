@@ -167,13 +167,6 @@
       "sectionShow": "Prikaži",
       "sectionHide": "Skrij",
       "sectionFieldCount": "Število polj: {{count}}",
-      "fieldLevel": {
-        "label": "Prikazana polja",
-        "everyday": "Vsakdanja",
-        "occasional": "Občasna",
-        "technical": "Tehnična",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Predogled in stalna povezava",
       "permalinkHint": "Kliknite del poti, da preglasite samodejno ustvarjeni URL-ime (slug).",
       "settings": "Nastavitve",
@@ -189,9 +182,6 @@
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Noben drug vtičnik še nima zapisa, povezanega s tem.",
       "recordPart": { "download": "Prenesi {{title}}", "person": "Oseba" },
-      "viewMode": "Način prikaza zapisa",
-      "formView": "Prikaz obrazca",
-      "jsonView": "Prikaz JSON",
       "unsavedIn": "Neshranjene spremembe v",
       "noUnsaved": "Ni neshranjenih sprememb",
       "notSaved": "Ni shranjeno: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Neshranjene spremembe",
       "editSection": "Uredi",
       "notFilledIn": "Ni izpolnjeno",
-      "nothingFilledIn": "Še nič ni izpolnjeno"
+      "nothingFilledIn": "Še nič ni izpolnjeno",
+      "statusSection": "Stanje",
+      "recordSection": "Zapis",
+      "showJson": "Prikaži kot JSON",
+      "showForm": "Prikaži kot obrazec",
+      "recordActions": "Dejanja zapisa",
+      "breadcrumb": "Drobtinice",
+      "copyTitle": "Kopiraj",
+      "copied": "Kopirano",
+      "more": "Več",
+      "moreFields": "{{count}} polj",
+      "moreOneField": "{{count}} polje"
     },
     "notFound": {
       "title": "Zbirke ni mogoče najti",

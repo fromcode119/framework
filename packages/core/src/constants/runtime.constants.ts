@@ -72,7 +72,7 @@ export class RuntimeConstants {
     'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
-    'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',
+    'AdminServices', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',
     // Everything else `@fromcode119/admin/components` exports. On a public page this module is a stand-in
     // that declares ONLY the names listed here, so a storefront bundle importing a name missing from this
     // list fails to load as a whole ("does not provide an export named 'ColorField'"). A test in the admin

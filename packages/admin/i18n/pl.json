@@ -167,13 +167,6 @@
       "sectionShow": "Pokaż",
       "sectionHide": "Ukryj",
       "sectionFieldCount": "Pola: {{count}}",
-      "fieldLevel": {
-        "label": "Wyświetlane pola",
-        "everyday": "Codzienne",
-        "occasional": "Okazjonalne",
-        "technical": "Techniczne",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Podgląd i bezpośredni odnośnik",
       "permalinkHint": "Kliknij fragment ścieżki, aby zastąpić automatycznie wygenerowany slug.",
       "settings": "Ustawienia",
@@ -189,9 +182,6 @@
       "relatedRecords": "Powiązane rekordy",
       "relatedEmpty": "Żadna inna wtyczka nie ma jeszcze rekordu powiązanego z tym.",
       "recordPart": { "download": "Pobierz {{title}}", "person": "Osoba" },
-      "viewMode": "Tryb widoku rekordu",
-      "formView": "Widok formularza",
-      "jsonView": "Widok JSON",
       "unsavedIn": "Niezapisane zmiany w:",
       "noUnsaved": "Brak niezapisanych zmian",
       "notSaved": "Nie zapisano: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Niezapisane zmiany",
       "editSection": "Edytuj",
       "notFilledIn": "Nie wypełniono",
-      "nothingFilledIn": "Jeszcze nic nie wypełniono"
+      "nothingFilledIn": "Jeszcze nic nie wypełniono",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Pokaż jako JSON",
+      "showForm": "Pokaż jako formularz",
+      "recordActions": "Działania na rekordzie",
+      "breadcrumb": "Ścieżka nawigacji",
+      "copyTitle": "Kopiuj",
+      "copied": "Skopiowano",
+      "more": "Więcej",
+      "moreFields": "{{count}} pól",
+      "moreOneField": "{{count}} pole"
     },
     "notFound": {
       "title": "Nie znaleziono kolekcji",

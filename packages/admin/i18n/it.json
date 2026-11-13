@@ -167,13 +167,6 @@
       "sectionShow": "Mostra",
       "sectionHide": "Nascondi",
       "sectionFieldCount": "{{count}} campi",
-      "fieldLevel": {
-        "label": "Campi mostrati",
-        "everyday": "Quotidiani",
-        "occasional": "Occasionali",
-        "technical": "Tecnici",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Anteprima e permalink",
       "permalinkHint": "Fai clic sul componente del percorso per sostituire lo slug generato automaticamente.",
       "settings": "Impostazioni",
@@ -189,9 +182,6 @@
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
       "recordPart": { "download": "Scarica {{title}}", "person": "Persona" },
-      "viewMode": "Modalità di visualizzazione del record",
-      "formView": "Vista modulo",
-      "jsonView": "Vista JSON",
       "unsavedIn": "Modifiche non salvate in",
       "noUnsaved": "Nessuna modifica non salvata",
       "notSaved": "Non salvato: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Modifiche non salvate",
       "editSection": "Modifica",
       "notFilledIn": "Non compilato",
-      "nothingFilledIn": "Ancora nulla di compilato"
+      "nothingFilledIn": "Ancora nulla di compilato",
+      "statusSection": "Stato",
+      "recordSection": "Record",
+      "showJson": "Mostra come JSON",
+      "showForm": "Mostra come modulo",
+      "recordActions": "Azioni sul record",
+      "breadcrumb": "Percorso",
+      "copyTitle": "Copia",
+      "copied": "Copiato",
+      "more": "Altro",
+      "moreFields": "{{count}} campi",
+      "moreOneField": "{{count}} campo"
     },
     "notFound": {
       "title": "Collezione non trovata",

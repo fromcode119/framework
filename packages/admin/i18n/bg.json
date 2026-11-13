@@ -204,13 +204,6 @@
       "sectionShow": "Покажи",
       "sectionHide": "Скрий",
       "sectionFieldCount": "Полета: {{count}}",
-      "fieldLevel": {
-        "label": "Показани полета",
-        "everyday": "Основни",
-        "occasional": "Рядко ползвани",
-        "technical": "Технически",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Преглед и адрес",
       "permalinkHint": "Щракнете върху пътя, за да промените автоматично създадения адрес.",
       "settings": "Настройки",
@@ -226,9 +219,6 @@
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
       "recordPart": { "download": "Изтегли {{title}}", "person": "Лице" },
-      "viewMode": "Изглед на записа",
-      "formView": "Форма",
-      "jsonView": "JSON",
       "unsavedIn": "Незапазени промени в",
       "noUnsaved": "Няма незапазени промени",
       "notSaved": "Не е запазено: {{reason}}",
@@ -270,7 +260,18 @@
       "unsavedChanges": "Незапазени промени",
       "editSection": "Редактирай",
       "notFilledIn": "Не е попълнено",
-      "nothingFilledIn": "Още няма попълнено"
+      "nothingFilledIn": "Още няма попълнено",
+      "statusSection": "Статус",
+      "recordSection": "Запис",
+      "showJson": "Покажи като JSON",
+      "showForm": "Покажи като форма",
+      "recordActions": "Действия със записа",
+      "breadcrumb": "Път",
+      "copyTitle": "Копирай",
+      "copied": "Копирано",
+      "more": "Още",
+      "moreFields": "{{count}} полета",
+      "moreOneField": "{{count}} поле"
     },
     "notFound": {
       "title": "Колекцията не е намерена",

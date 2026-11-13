@@ -167,13 +167,6 @@
       "sectionShow": "Tonen",
       "sectionHide": "Verbergen",
       "sectionFieldCount": "{{count}} velden",
-      "fieldLevel": {
-        "label": "Getoonde velden",
-        "everyday": "Dagelijks",
-        "occasional": "Af en toe",
-        "technical": "Technisch",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Voorbeeld & permalink",
       "permalinkHint": "Klik op het padgedeelte om de automatisch gegenereerde slug te overschrijven.",
       "settings": "Instellingen",
@@ -189,9 +182,6 @@
       "relatedRecords": "Gerelateerde records",
       "relatedEmpty": "Nog geen andere plugin heeft een record dat aan dit record is gekoppeld.",
       "recordPart": { "download": "Downloaden {{title}}", "person": "Persoon" },
-      "viewMode": "Weergavemodus van record",
-      "formView": "Formulierweergave",
-      "jsonView": "JSON-weergave",
       "unsavedIn": "Niet-opgeslagen wijzigingen in",
       "noUnsaved": "Geen niet-opgeslagen wijzigingen",
       "notSaved": "Niet opgeslagen: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Niet-opgeslagen wijzigingen",
       "editSection": "Bewerken",
       "notFilledIn": "Niet ingevuld",
-      "nothingFilledIn": "Nog niets ingevuld"
+      "nothingFilledIn": "Nog niets ingevuld",
+      "statusSection": "Status",
+      "recordSection": "Record",
+      "showJson": "Toon als JSON",
+      "showForm": "Toon als formulier",
+      "recordActions": "Acties voor dit record",
+      "breadcrumb": "Kruimelpad",
+      "copyTitle": "Kopiëren",
+      "copied": "Gekopieerd",
+      "more": "Meer",
+      "moreFields": "{{count}} velden",
+      "moreOneField": "{{count}} veld"
     },
     "notFound": {
       "title": "Collectie niet gevonden",

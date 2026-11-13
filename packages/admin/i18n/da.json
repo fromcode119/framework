@@ -167,13 +167,6 @@
       "sectionShow": "Vis",
       "sectionHide": "Skjul",
       "sectionFieldCount": "{{count}} felter",
-      "fieldLevel": {
-        "label": "Viste felter",
-        "everyday": "Daglige",
-        "occasional": "Lejlighedsvise",
-        "technical": "Tekniske",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Forhåndsvisning og permalink",
       "permalinkHint": "Klik på stidelen for at tilsidesætte den automatisk genererede slug.",
       "settings": "Indstillinger",
@@ -189,9 +182,6 @@
       "relatedRecords": "Relaterede poster",
       "relatedEmpty": "Intet andet plugin har endnu en post knyttet til denne.",
       "recordPart": { "download": "Download {{title}}", "person": "Person" },
-      "viewMode": "Visningstilstand for post",
-      "formView": "Formularvisning",
-      "jsonView": "JSON-visning",
       "unsavedIn": "Ikke-gemte ændringer i",
       "noUnsaved": "Ingen ikke-gemte ændringer",
       "notSaved": "Ikke gemt: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Ikke-gemte ændringer",
       "editSection": "Rediger",
       "notFilledIn": "Ikke udfyldt",
-      "nothingFilledIn": "Intet udfyldt endnu"
+      "nothingFilledIn": "Intet udfyldt endnu",
+      "statusSection": "Status",
+      "recordSection": "Post",
+      "showJson": "Vis som JSON",
+      "showForm": "Vis som formular",
+      "recordActions": "Handlinger for posten",
+      "breadcrumb": "Brødkrumme",
+      "copyTitle": "Kopiér",
+      "copied": "Kopieret",
+      "more": "Mere",
+      "moreFields": "{{count}} felter",
+      "moreOneField": "{{count}} felt"
     },
     "notFound": {
       "title": "Samlingen blev ikke fundet",

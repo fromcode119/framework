@@ -167,13 +167,6 @@
       "sectionShow": "Vis",
       "sectionHide": "Skjul",
       "sectionFieldCount": "{{count}} felt",
-      "fieldLevel": {
-        "label": "Viste felt",
-        "everyday": "Daglige",
-        "occasional": "Sporadiske",
-        "technical": "Tekniske",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Forhåndsvisning og permalenke",
       "permalinkHint": "Klikk på stidelen for å overstyre den automatisk genererte slugen.",
       "settings": "Innstillinger",
@@ -189,9 +182,6 @@
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
       "recordPart": { "download": "Last ned {{title}}", "person": "Person" },
-      "viewMode": "Visningsmodus for oppføring",
-      "formView": "Skjemavisning",
-      "jsonView": "JSON-visning",
       "unsavedIn": "Ulagrede endringer i",
       "noUnsaved": "Ingen ulagrede endringer",
       "notSaved": "Ikke lagret: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Ulagrede endringer",
       "editSection": "Rediger",
       "notFilledIn": "Ikke utfylt",
-      "nothingFilledIn": "Ingenting er fylt ut ennå"
+      "nothingFilledIn": "Ingenting er fylt ut ennå",
+      "statusSection": "Status",
+      "recordSection": "Post",
+      "showJson": "Vis som JSON",
+      "showForm": "Vis som skjema",
+      "recordActions": "Handlinger for posten",
+      "breadcrumb": "Brødsmulesti",
+      "copyTitle": "Kopier",
+      "copied": "Kopiert",
+      "more": "Mer",
+      "moreFields": "{{count}} felt",
+      "moreOneField": "{{count}} felt"
     },
     "notFound": {
       "title": "Fant ikke samlingen",

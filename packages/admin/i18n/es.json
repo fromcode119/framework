@@ -167,13 +167,6 @@
       "sectionShow": "Mostrar",
       "sectionHide": "Ocultar",
       "sectionFieldCount": "{{count}} campos",
-      "fieldLevel": {
-        "label": "Campos mostrados",
-        "everyday": "Habituales",
-        "occasional": "Ocasionales",
-        "technical": "Técnicos",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Vista previa y enlace permanente",
       "permalinkHint": "Haga clic en el componente de la ruta para sustituir el slug generado automáticamente.",
       "settings": "Ajustes",
@@ -189,9 +182,6 @@
       "relatedRecords": "Registros relacionados",
       "relatedEmpty": "Ningún otro plugin tiene todavía un registro vinculado a este.",
       "recordPart": { "download": "Descargar {{title}}", "person": "Persona" },
-      "viewMode": "Modo de vista del registro",
-      "formView": "Vista de formulario",
-      "jsonView": "Vista JSON",
       "unsavedIn": "Cambios sin guardar en",
       "noUnsaved": "No hay cambios sin guardar",
       "notSaved": "No guardado: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Cambios sin guardar",
       "editSection": "Editar",
       "notFilledIn": "Sin completar",
-      "nothingFilledIn": "Aún no hay nada completado"
+      "nothingFilledIn": "Aún no hay nada completado",
+      "statusSection": "Estado",
+      "recordSection": "Registro",
+      "showJson": "Ver como JSON",
+      "showForm": "Ver como formulario",
+      "recordActions": "Acciones del registro",
+      "breadcrumb": "Ruta de navegación",
+      "copyTitle": "Copiar",
+      "copied": "Copiado",
+      "more": "Más",
+      "moreFields": "{{count}} campos",
+      "moreOneField": "{{count}} campo"
     },
     "notFound": {
       "title": "Colección no encontrada",

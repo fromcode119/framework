@@ -1,5 +1,4 @@
 import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
-import { AdminServices } from '@/lib/admin-services';
 import { CollectionEditPageHandlers } from '@/components/collection/edit/view/collection-edit-page-handlers.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 
@@ -57,10 +56,8 @@ export class CollectionEditPageViewModelBuilder {
       handleHardRestore: (version) => CollectionEditPageHandlers.handleHardRestore(self, version),
       getPreviewUrl: () => CollectionEditPageHandlers.getPreviewUrl(self),
       sidebarFieldSections: d.sidebarFieldSections, standardMainFieldSections: d.standardMainFieldSections,
-      fullWidthMainFieldSections: d.fullWidthMainFieldSections, navSections: d.navSections,
-      fieldDepth: d.fieldDepth, fieldLevelCounts: d.fieldLevelCounts, showChangeSummary: d.showChangeSummary,
-      // Remembered per browser, so the form opens the way this operator last left it.
-      setFieldDepth: (level) => { AdminServices.getInstance().uiPreference.writeEditFieldDepth(level.value); self.updateState('fieldDepth', level.value); },
+      fullWidthMainFieldSections: d.fullWidthMainFieldSections,
+      moreSections: d.moreSections, focusedSection: d.focusedSection,
       handleInputChange: (name, value) => CollectionEditPageHandlers.handleInputChange(self, name, value),
       handlePatch: (partial) => CollectionEditPageHandlers.handlePatch(self, partial),
       handleDelete: () => CollectionEditPageHandlers.handleDelete(self),
@@ -70,7 +67,7 @@ export class CollectionEditPageViewModelBuilder {
       hasDisablePermalink: d.hasDisablePermalink, showPreview: d.showPreview, showPermalink: d.showPermalink,
       isFullWidth: d.isFullWidth, hideFooter: d.hideFooter, isDirty: d.isDirty, hasSidebarFields: d.hasSidebarFields,
       renderSidebar: d.renderSidebar, hasBuiltInSidebarContent: d.hasBuiltInSidebarContent,
-      statusOptions: d.statusOptions, currentStatusValue: d.currentStatusValue
+      statusOptions: d.statusOptions, currentStatusValue: d.currentStatusValue, currentStatusLabel: d.currentStatusLabel
     };
   }
 }

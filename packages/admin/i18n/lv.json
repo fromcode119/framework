@@ -167,13 +167,6 @@
       "sectionShow": "Rādīt",
       "sectionHide": "Slēpt",
       "sectionFieldCount": "Lauki: {{count}}",
-      "fieldLevel": {
-        "label": "Rādītie lauki",
-        "everyday": "Ikdienas",
-        "occasional": "Reizēm",
-        "technical": "Tehniskie",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Priekšskatījums un pastāvīgā saite",
       "permalinkHint": "Noklikšķiniet uz ceļa daļas, lai aizstātu automātiski ģenerēto URL identifikatoru.",
       "settings": "Iestatījumi",
@@ -189,9 +182,6 @@
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
       "recordPart": { "download": "Lejupielādēt {{title}}", "person": "Persona" },
-      "viewMode": "Ieraksta skata režīms",
-      "formView": "Veidlapas skats",
-      "jsonView": "JSON skats",
       "unsavedIn": "Nesaglabātas izmaiņas:",
       "noUnsaved": "Nav nesaglabātu izmaiņu",
       "notSaved": "Nav saglabāts: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Nesaglabātas izmaiņas",
       "editSection": "Rediģēt",
       "notFilledIn": "Nav aizpildīts",
-      "nothingFilledIn": "Vēl nekas nav aizpildīts"
+      "nothingFilledIn": "Vēl nekas nav aizpildīts",
+      "statusSection": "Statuss",
+      "recordSection": "Ieraksts",
+      "showJson": "Rādīt kā JSON",
+      "showForm": "Rādīt kā veidlapu",
+      "recordActions": "Ieraksta darbības",
+      "breadcrumb": "Navigācijas ceļš",
+      "copyTitle": "Kopēt",
+      "copied": "Nokopēts",
+      "more": "Vairāk",
+      "moreFields": "{{count}} lauki",
+      "moreOneField": "{{count}} lauks"
     },
     "notFound": {
       "title": "Kolekcija nav atrasta",

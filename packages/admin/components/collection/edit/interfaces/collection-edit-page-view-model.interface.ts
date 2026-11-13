@@ -1,4 +1,3 @@
-import type { FieldLevel } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 
 export interface ICollectionEditPageViewModel {
@@ -54,12 +53,10 @@ export interface ICollectionEditPageViewModel {
   sidebarFieldSections: Array<{ title: string; fields: any[] }>;
   standardMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
   fullWidthMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
-  navSections: Array<{ key: string; title: string }>;
-  /** How much of the record the form shows, and how many fields sit at each level. */
-  fieldDepth: FieldLevel;
-  fieldLevelCounts: Record<string, number>;
-  showChangeSummary: boolean;
-  setFieldDepth: (level: FieldLevel) => void;
+  /** The sections holding fields the record does not draw, one "More" row each (CollectionEditRecordMore). */
+  moreSections: Array<{ key: string; title: string; count: number }>;
+  /** The section a `?section=` link opened on its own page; null on the record itself. */
+  focusedSection: { key: string; title: string } | null;
   handleInputChange: (name: string, value: any) => void;
   handlePatch: (partial: Record<string, any>) => void;
   handleDelete: () => Promise<void>;
@@ -78,4 +75,6 @@ export interface ICollectionEditPageViewModel {
   hasBuiltInSidebarContent: boolean;
   statusOptions: any[];
   currentStatusValue: string;
+  /** The status option's label, for the header badge; '' when the record has no status. */
+  currentStatusLabel: string;
 }

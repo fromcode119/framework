@@ -167,13 +167,6 @@
       "sectionShow": "顯示",
       "sectionHide": "隱藏",
       "sectionFieldCount": "{{count}} 個欄位",
-      "fieldLevel": {
-        "label": "顯示的欄位",
-        "everyday": "常用",
-        "occasional": "偶爾使用",
-        "technical": "技術",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "預覽與永久連結",
       "permalinkHint": "按一下路徑部分，即可覆寫自動產生的代稱。",
       "settings": "設定",
@@ -189,9 +182,6 @@
       "relatedRecords": "相關紀錄",
       "relatedEmpty": "目前尚無其他外掛有連結至此紀錄的資料。",
       "recordPart": { "download": "下載 {{title}}", "person": "人員" },
-      "viewMode": "紀錄檢視模式",
-      "formView": "表單檢視",
-      "jsonView": "JSON 檢視",
       "unsavedIn": "未儲存的變更：",
       "noUnsaved": "沒有未儲存的變更",
       "notSaved": "未儲存：{{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "未儲存的變更",
       "editSection": "編輯",
       "notFilledIn": "未填寫",
-      "nothingFilledIn": "尚未填寫任何內容"
+      "nothingFilledIn": "尚未填寫任何內容",
+      "statusSection": "狀態",
+      "recordSection": "記錄",
+      "showJson": "以 JSON 顯示",
+      "showForm": "以表單顯示",
+      "recordActions": "記錄操作",
+      "breadcrumb": "麵包屑導覽",
+      "copyTitle": "複製",
+      "copied": "已複製",
+      "more": "更多",
+      "moreFields": "{{count}} 個欄位",
+      "moreOneField": "{{count}} 個欄位"
     },
     "notFound": {
       "title": "找不到集合",

@@ -167,13 +167,6 @@
       "sectionShow": "Прикажи",
       "sectionHide": "Скриј",
       "sectionFieldCount": "{{count}} полиња",
-      "fieldLevel": {
-        "label": "Прикажани полиња",
-        "everyday": "Секојдневни",
-        "occasional": "Повремени",
-        "technical": "Технички",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Преглед и трајна врска",
       "permalinkHint": "Кликнете на делот од патеката за да го замените автоматски генерираниот slug.",
       "settings": "Поставки",
@@ -189,9 +182,6 @@
       "relatedRecords": "Поврзани записи",
       "relatedEmpty": "Ниеден друг приклучок сè уште нема запис поврзан со овој.",
       "recordPart": { "download": "Преземи {{title}}", "person": "Лице" },
-      "viewMode": "Режим на приказ на записот",
-      "formView": "Приказ како формулар",
-      "jsonView": "Приказ како JSON",
       "unsavedIn": "Незачувани промени во",
       "noUnsaved": "Нема незачувани промени",
       "notSaved": "Не е зачувано: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Незачувани промени",
       "editSection": "Уреди",
       "notFilledIn": "Не е пополнето",
-      "nothingFilledIn": "Сè уште ништо не е пополнето"
+      "nothingFilledIn": "Сè уште ништо не е пополнето",
+      "statusSection": "Статус",
+      "recordSection": "Запис",
+      "showJson": "Прикажи како JSON",
+      "showForm": "Прикажи како формулар",
+      "recordActions": "Дејства со записот",
+      "breadcrumb": "Патека",
+      "copyTitle": "Копирај",
+      "copied": "Копирано",
+      "more": "Повеќе",
+      "moreFields": "{{count}} полиња",
+      "moreOneField": "{{count}} поле"
     },
     "notFound": {
       "title": "Колекцијата не е пронајдена",

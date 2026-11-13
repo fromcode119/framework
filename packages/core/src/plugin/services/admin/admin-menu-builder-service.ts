@@ -153,6 +153,9 @@ export class AdminMenuBuilderService {
                 group: col.admin?.group || p.admin.group || p.name,
                 priority: col.admin?.priority || col.priority || 100,
                 pluginSlug: slug,
+                // The collection's own key, as its dictionary spells it: the path is lower-cased, so
+                // `admin.collections.deliverySlots.label` could not be found from `/shop/deliveryslots`.
+                collectionKey: String(col.shortSlug || col.slug),
                 // The permission that opens this screen is reading its collection — the same name the
                 // collections API checks, so the menu never offers a list the API then refuses.
                 permission: PermissionNames.collection(slug, PermissionNames.collectionKey(col), CollectionPermissionAction.READ),

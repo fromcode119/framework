@@ -15,7 +15,6 @@ import { CollectionCreateDisabled } from '@/components/collection/edit/collectio
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
-import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
@@ -42,9 +41,7 @@ export class CollectionEditPageView extends Reactor {
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
   @state showDeleteConfirm = false;
-  /** How much of the record the form shows (a `FieldLevel` value); remembered per browser. */
-  @state fieldDepth = AdminServices.getInstance().uiPreference.readEditFieldDepth();
-  /** Form vs JSON view. Owned here; switched from the body's EditViewModeRail. */
+  /** Form vs JSON view. Owned here; switched from the header's record menu. */
   @state advancedView = false;
 
   @bound private setAdvancedView(next: boolean): void {
@@ -172,9 +169,11 @@ export class CollectionEditPageView extends Reactor {
         )}
         <EditHeader
           collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
-          resolvedTitleValue={edit.resolvedTitleValue} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} showChangeSummary={edit.showChangeSummary}
+          resolvedTitleValue={edit.resolvedTitleValue}
           formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
-          statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
+          statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
+          handleInputChange={edit.handleInputChange}
+          advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} focusedSection={edit.focusedSection}
           handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
           canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
           isDirty={edit.isDirty}
@@ -182,7 +181,7 @@ export class CollectionEditPageView extends Reactor {
 
         <EditPageBody
           edit={edit} slug={slug} id={id}
-          advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+          advancedView={this.advancedView} recordHref={`/${pluginSlug}/${slug}/${id}`}
         />
 
         <RevisionModal

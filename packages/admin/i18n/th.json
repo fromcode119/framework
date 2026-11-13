@@ -167,13 +167,6 @@
       "sectionShow": "แสดง",
       "sectionHide": "ซ่อน",
       "sectionFieldCount": "{{count}} ฟิลด์",
-      "fieldLevel": {
-        "label": "ฟิลด์ที่แสดง",
-        "everyday": "ใช้ประจำ",
-        "occasional": "ใช้เป็นครั้งคราว",
-        "technical": "ทางเทคนิค",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "ตัวอย่างและลิงก์ถาวร",
       "permalinkHint": "คลิกส่วนของพาธเพื่อแทนที่ slug ที่สร้างขึ้นโดยอัตโนมัติ",
       "settings": "การตั้งค่า",
@@ -189,9 +182,6 @@
       "relatedRecords": "รายการที่เกี่ยวข้อง",
       "relatedEmpty": "ยังไม่มีปลั๊กอินอื่นที่มีรายการเชื่อมโยงกับรายการนี้",
       "recordPart": { "download": "ดาวน์โหลด {{title}}", "person": "บุคคล" },
-      "viewMode": "โหมดมุมมองรายการ",
-      "formView": "มุมมองฟอร์ม",
-      "jsonView": "มุมมอง JSON",
       "unsavedIn": "การเปลี่ยนแปลงที่ยังไม่บันทึกใน",
       "noUnsaved": "ไม่มีการเปลี่ยนแปลงที่ยังไม่บันทึก",
       "notSaved": "ยังไม่ได้บันทึก: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "การเปลี่ยนแปลงที่ยังไม่บันทึก",
       "editSection": "แก้ไข",
       "notFilledIn": "ยังไม่ได้กรอก",
-      "nothingFilledIn": "ยังไม่มีการกรอกข้อมูล"
+      "nothingFilledIn": "ยังไม่มีการกรอกข้อมูล",
+      "statusSection": "สถานะ",
+      "recordSection": "ระเบียน",
+      "showJson": "แสดงเป็น JSON",
+      "showForm": "แสดงเป็นฟอร์ม",
+      "recordActions": "การดำเนินการกับระเบียน",
+      "breadcrumb": "เส้นทางนำทาง",
+      "copyTitle": "คัดลอก",
+      "copied": "คัดลอกแล้ว",
+      "more": "เพิ่มเติม",
+      "moreFields": "{{count}} ช่อง",
+      "moreOneField": "{{count}} ช่อง"
     },
     "notFound": {
       "title": "ไม่พบคอลเลกชัน",

@@ -167,13 +167,6 @@
       "sectionShow": "Εμφάνιση",
       "sectionHide": "Απόκρυψη",
       "sectionFieldCount": "{{count}} πεδία",
-      "fieldLevel": {
-        "label": "Πεδία που εμφανίζονται",
-        "everyday": "Καθημερινά",
-        "occasional": "Περιστασιακά",
-        "technical": "Τεχνικά",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Προεπισκόπηση & μόνιμος σύνδεσμος",
       "permalinkHint": "Κάντε κλικ στο τμήμα της διαδρομής για να αντικαταστήσετε το slug που δημιουργήθηκε αυτόματα.",
       "settings": "Ρυθμίσεις",
@@ -189,9 +182,6 @@
       "relatedRecords": "Σχετικές εγγραφές",
       "relatedEmpty": "Κανένα άλλο πρόσθετο δεν έχει ακόμη εγγραφή συνδεδεμένη με αυτήν.",
       "recordPart": { "download": "Λήψη {{title}}", "person": "Πρόσωπο" },
-      "viewMode": "Τρόπος προβολής εγγραφής",
-      "formView": "Προβολή φόρμας",
-      "jsonView": "Προβολή JSON",
       "unsavedIn": "Μη αποθηκευμένες αλλαγές σε",
       "noUnsaved": "Δεν υπάρχουν μη αποθηκευμένες αλλαγές",
       "notSaved": "Δεν αποθηκεύτηκε: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Μη αποθηκευμένες αλλαγές",
       "editSection": "Επεξεργασία",
       "notFilledIn": "Δεν έχει συμπληρωθεί",
-      "nothingFilledIn": "Δεν έχει συμπληρωθεί τίποτα ακόμη"
+      "nothingFilledIn": "Δεν έχει συμπληρωθεί τίποτα ακόμη",
+      "statusSection": "Κατάσταση",
+      "recordSection": "Εγγραφή",
+      "showJson": "Εμφάνιση ως JSON",
+      "showForm": "Εμφάνιση ως φόρμα",
+      "recordActions": "Ενέργειες εγγραφής",
+      "breadcrumb": "Διαδρομή",
+      "copyTitle": "Αντιγραφή",
+      "copied": "Αντιγράφηκε",
+      "more": "Περισσότερα",
+      "moreFields": "{{count}} πεδία",
+      "moreOneField": "{{count}} πεδίο"
     },
     "notFound": {
       "title": "Η συλλογή δεν βρέθηκε",

@@ -1,4 +1,4 @@
-import { FieldLevel, FieldPosition } from '@fromcode119/core/client';
+import { FieldPosition } from '@fromcode119/core/client';
 import { BrowserLocalization } from '@fromcode119/react';
 import { IField } from '@fromcode119/core/client';
 
@@ -6,7 +6,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
-import { CollectionEditFieldDepth } from '@/components/collection/edit/view/collection-edit-field-depth.client';
+import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 
 /**
  * Pure, render-time derivations for the collection edit page (field sections, resolved title, status
@@ -23,6 +23,13 @@ export class CollectionEditDerivations {
       if (held === undefined || held === null || held === '') shown[field.name] = field.defaultValue;
     }
     return shown;
+  }
+
+  static optionLabel(field: any, value: unknown): string {
+    const wanted = String(value ?? '').trim();
+    if (!wanted || !Array.isArray(field?.options)) return '';
+    const option = field.options.find((candidate: any) => String(candidate?.value ?? '').trim() === wanted);
+    return option ? String(option.label || option.value).trim() : wanted;
   }
 
   static build(self: any): any {
@@ -80,16 +87,7 @@ export class CollectionEditDerivations {
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
       FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && !isRenderedBySibling(f) && f.name !== 'customPermalink' &&
       services.validation.evaluateCondition(f.admin?.condition, shownData, f.name));
-    /**
-     * The depth the operator chose decides which fields are drawn. Sections are grouped from EVERY
-     * eligible field first and narrowed after: a section's place and width come from its fields, so
-     * narrowing first moved a section whenever the field that set its layout was the one held back.
-     */
-    const fieldDepth = FieldLevel.resolve(self.state.fieldDepth);
-    const atDepth = <T extends { fields: any[] }>(sections: T[]): T[] => sections
-      .map((section) => ({ ...section, fields: section.fields.filter((field: any) => CollectionEditFieldDepth.shows(field, fieldDepth, formData, self.state.fieldErrors)) }))
-      .filter((section) => section.fields.length > 0);
-    const sidebarFieldSections = atDepth(CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField)));
+    const sidebarGrouped = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
       if (field.admin?.hidden || isRenderedBySibling(field) || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
@@ -101,11 +99,20 @@ export class CollectionEditDerivations {
       return true;
     });
     const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(lockField));
-    const standardMainFieldSections = atDepth(mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
-    const fullWidthMainFieldSections = atDepth(mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
-    const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || AdminI18n.t('collection.edit.content') }));
+    /**
+     * Sections are grouped from EVERY eligible field first and narrowed after: a section's place and width
+     * come from its fields, so narrowing first moved a section whenever the field that set its layout was
+     * the one held back. What is held back is listed under "More" (see CollectionEditRecordMore).
+     */
+    const everySection = [...sidebarGrouped, ...mainFieldSections];
+    const focusedSectionTitle = CollectionEditRecordMore.focusedTitle(everySection, CollectionEditRecordMore.focusKey(self.props.searchParams));
+    const focus = focusedSectionTitle ? CollectionEditRecordMore.focusKey(self.props.searchParams) : '';
+    const draw = <T extends { key: string; fields: any[] }>(sections: T[]): T[] => CollectionEditRecordMore.draw(sections, focus, formData, self.state.fieldErrors);
+    const sidebarFieldSections = draw(sidebarGrouped);
+    const standardMainFieldSections = draw(mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
+    const fullWidthMainFieldSections = draw(mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
+    const moreSections = focus ? [] : CollectionEditRecordMore.rows(everySection, formData, self.state.fieldErrors);
 
-    const fieldLevelCounts = CollectionEditFieldDepth.counts([...sidebarFields, ...mainFields]);
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
     // A read-only status is changed by the collection's own actions (a refund moves through the service
     // that refunds it). The header select ignored that and offered every option, which the server then
@@ -123,15 +130,15 @@ export class CollectionEditDerivations {
 
     return {
       collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
-      sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections, navSections,
-      fieldDepth, fieldLevelCounts,
-      // Offered at the wider depths; and always on a collection with no levels, which has no switch
-      // to widen with, so gating it there would put the note out of reach.
-      showChangeSummary: fieldDepth !== FieldLevel.EVERYDAY || fieldLevelCounts[FieldLevel.EVERYDAY.value] === sidebarFields.length + mainFields.length,
+      sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections,
+      moreSections, focusedSection: focus ? { key: focus, title: focusedSectionTitle } : null,
       // The status field shows its schema default until the operator picks one, and the default is what is
       // saved; the header showed the FIRST option instead (a new subscription read "Trial" above a field
       // reading "Pending"). Both now name the same value.
       statusOptions, currentStatusValue: String(formData?.status || statusField?.defaultValue || '').trim(),
+      // Named in the header whether or not it may be changed there: a read-only status is still the
+      // record's state. The option's label, never the raw value; nothing when the record has none.
+      currentStatusLabel: CollectionEditDerivations.optionLabel(statusField, formData?.status || statusField?.defaultValue),
       currentRevIndex: self.state.selectedRevision ? self.state.revisions.findIndex((r: any) => r.id === self.state.selectedRevision.id) : -1,
       hasDisablePermalink: collection?.fields.some((f: any) => f.name === 'disablePermalink'),
       showPreview: canPreviewCollection && !isNew, showPermalink, isFullWidth,
@@ -151,13 +158,14 @@ export class CollectionEditDerivations {
     };
   }
 
-  private static groupSidebar(sidebarFields: any[]): Array<{ title: string; fields: any[] }> {
-    const ordered: Array<{ title: string; fields: any[] }> = [];
+  /** Keyed `side:<title>`, so a "More" link to a side section never names a main one of the same title. */
+  private static groupSidebar(sidebarFields: any[]): Array<{ key: string; title: string; fields: any[] }> {
+    const ordered: Array<{ key: string; title: string; fields: any[] }> = [];
     const indexByTitle = new Map<string, number>();
     sidebarFields.forEach((field: any) => {
       const title = String(field?.admin?.section || AdminI18n.t('collection.edit.settings')).trim() || AdminI18n.t('collection.edit.settings');
       const existing = indexByTitle.get(title);
-      if (existing === undefined) { indexByTitle.set(title, ordered.length); ordered.push({ title, fields: [field] }); return; }
+      if (existing === undefined) { indexByTitle.set(title, ordered.length); ordered.push({ key: `side:${title}`, title, fields: [field] }); return; }
       ordered[existing].fields.push(field);
     });
     return ordered;

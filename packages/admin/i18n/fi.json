@@ -167,13 +167,6 @@
       "sectionShow": "Näytä",
       "sectionHide": "Piilota",
       "sectionFieldCount": "{{count}} kenttää",
-      "fieldLevel": {
-        "label": "Näytettävät kentät",
-        "everyday": "Päivittäiset",
-        "occasional": "Satunnaiset",
-        "technical": "Tekniset",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Esikatselu ja pysyvä linkki",
       "permalinkHint": "Napsauta polun osaa, jos haluat ohittaa automaattisesti luodun polkutunnisteen.",
       "settings": "Asetukset",
@@ -189,9 +182,6 @@
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
       "recordPart": { "download": "Lataa {{title}}", "person": "Henkilö" },
-      "viewMode": "Tietueen näkymätila",
-      "formView": "Lomakenäkymä",
-      "jsonView": "JSON-näkymä",
       "unsavedIn": "Tallentamattomia muutoksia kohteessa",
       "noUnsaved": "Ei tallentamattomia muutoksia",
       "notSaved": "Ei tallennettu: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Tallentamattomia muutoksia",
       "editSection": "Muokkaa",
       "notFilledIn": "Ei täytetty",
-      "nothingFilledIn": "Mitään ei ole vielä täytetty"
+      "nothingFilledIn": "Mitään ei ole vielä täytetty",
+      "statusSection": "Tila",
+      "recordSection": "Tietue",
+      "showJson": "Näytä JSON-muodossa",
+      "showForm": "Näytä lomakkeena",
+      "recordActions": "Tietueen toiminnot",
+      "breadcrumb": "Murupolku",
+      "copyTitle": "Kopioi",
+      "copied": "Kopioitu",
+      "more": "Lisää",
+      "moreFields": "{{count}} kenttää",
+      "moreOneField": "{{count}} kenttä"
     },
     "notFound": {
       "title": "Kokoelmaa ei löytynyt",

@@ -167,13 +167,6 @@
       "sectionShow": "Tunjukkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} medan",
-      "fieldLevel": {
-        "label": "Medan dipaparkan",
-        "everyday": "Harian",
-        "occasional": "Sekali-sekala",
-        "technical": "Teknikal",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pratonton & Pautan Kekal",
       "permalinkHint": "Klik komponen laluan untuk menggantikan slug yang dijana secara automatik.",
       "settings": "Tetapan",
@@ -189,9 +182,6 @@
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
       "recordPart": { "download": "Muat turun {{title}}", "person": "Orang" },
-      "viewMode": "Mod paparan rekod",
-      "formView": "Paparan borang",
-      "jsonView": "Paparan JSON",
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tiada perubahan belum disimpan",
       "notSaved": "Tidak disimpan: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Perubahan belum disimpan",
       "editSection": "Edit",
       "notFilledIn": "Belum diisi",
-      "nothingFilledIn": "Belum ada yang diisi"
+      "nothingFilledIn": "Belum ada yang diisi",
+      "statusSection": "Status",
+      "recordSection": "Rekod",
+      "showJson": "Papar sebagai JSON",
+      "showForm": "Papar sebagai borang",
+      "recordActions": "Tindakan rekod",
+      "breadcrumb": "Jejak navigasi",
+      "copyTitle": "Salin",
+      "copied": "Disalin",
+      "more": "Lagi",
+      "moreFields": "{{count}} medan",
+      "moreOneField": "{{count}} medan"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemui",

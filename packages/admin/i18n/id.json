@@ -167,13 +167,6 @@
       "sectionShow": "Tampilkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} kolom",
-      "fieldLevel": {
-        "label": "Kolom yang ditampilkan",
-        "everyday": "Sehari-hari",
-        "occasional": "Sesekali",
-        "technical": "Teknis",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pratinjau & Permalink",
       "permalinkHint": "Klik komponen jalur untuk mengganti slug yang dibuat otomatis.",
       "settings": "Pengaturan",
@@ -189,9 +182,6 @@
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
       "recordPart": { "download": "Unduh {{title}}", "person": "Orang" },
-      "viewMode": "Mode tampilan rekaman",
-      "formView": "Tampilan formulir",
-      "jsonView": "Tampilan JSON",
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tidak ada perubahan yang belum disimpan",
       "notSaved": "Tidak tersimpan: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Perubahan belum disimpan",
       "editSection": "Edit",
       "notFilledIn": "Belum diisi",
-      "nothingFilledIn": "Belum ada yang diisi"
+      "nothingFilledIn": "Belum ada yang diisi",
+      "statusSection": "Status",
+      "recordSection": "Catatan",
+      "showJson": "Tampilkan sebagai JSON",
+      "showForm": "Tampilkan sebagai formulir",
+      "recordActions": "Tindakan catatan",
+      "breadcrumb": "Jejak navigasi",
+      "copyTitle": "Salin",
+      "copied": "Disalin",
+      "more": "Lainnya",
+      "moreFields": "{{count}} kolom",
+      "moreOneField": "{{count}} kolom"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemukan",

@@ -167,13 +167,6 @@
       "sectionShow": "Rodyti",
       "sectionHide": "Slėpti",
       "sectionFieldCount": "Laukų: {{count}}",
-      "fieldLevel": {
-        "label": "Rodomi laukai",
-        "everyday": "Kasdieniai",
-        "occasional": "Retkarčiais",
-        "technical": "Techniniai",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Peržiūra ir nuolatinė nuoroda",
       "permalinkHint": "Spustelėkite kelio dalį, kad pakeistumėte automatiškai sugeneruotą slug.",
       "settings": "Nustatymai",
@@ -189,9 +182,6 @@
       "relatedRecords": "Susiję įrašai",
       "relatedEmpty": "Joks kitas įskiepis dar neturi su šiuo susieto įrašo.",
       "recordPart": { "download": "Atsisiųsti {{title}}", "person": "Asmuo" },
-      "viewMode": "Įrašo rodinio režimas",
-      "formView": "Formos rodinys",
-      "jsonView": "JSON rodinys",
       "unsavedIn": "Neišsaugoti pakeitimai:",
       "noUnsaved": "Neišsaugotų pakeitimų nėra",
       "notSaved": "Neišsaugota: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Neišsaugoti pakeitimai",
       "editSection": "Redaguoti",
       "notFilledIn": "Neužpildyta",
-      "nothingFilledIn": "Dar niekas neužpildyta"
+      "nothingFilledIn": "Dar niekas neužpildyta",
+      "statusSection": "Būsena",
+      "recordSection": "Įrašas",
+      "showJson": "Rodyti kaip JSON",
+      "showForm": "Rodyti kaip formą",
+      "recordActions": "Įrašo veiksmai",
+      "breadcrumb": "Naršymo kelias",
+      "copyTitle": "Kopijuoti",
+      "copied": "Nukopijuota",
+      "more": "Daugiau",
+      "moreFields": "{{count}} laukai",
+      "moreOneField": "{{count}} laukas"
     },
     "notFound": {
       "title": "Kolekcija nerasta",

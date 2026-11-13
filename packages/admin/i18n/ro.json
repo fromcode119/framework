@@ -167,13 +167,6 @@
       "sectionShow": "Afișează",
       "sectionHide": "Ascunde",
       "sectionFieldCount": "{{count}} câmpuri",
-      "fieldLevel": {
-        "label": "Câmpuri afișate",
-        "everyday": "De zi cu zi",
-        "occasional": "Ocazionale",
-        "technical": "Tehnice",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Previzualizare și permalink",
       "permalinkHint": "Faceți clic pe componenta căii pentru a înlocui slug-ul generat automat.",
       "settings": "Setări",
@@ -189,9 +182,6 @@
       "relatedRecords": "Înregistrări asociate",
       "relatedEmpty": "Niciun alt plugin nu deține încă o înregistrare legată de aceasta.",
       "recordPart": { "download": "Descarcă {{title}}", "person": "Persoană" },
-      "viewMode": "Mod de vizualizare a înregistrării",
-      "formView": "Vizualizare formular",
-      "jsonView": "Vizualizare JSON",
       "unsavedIn": "Modificări nesalvate în",
       "noUnsaved": "Nicio modificare nesalvată",
       "notSaved": "Nesalvat: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Modificări nesalvate",
       "editSection": "Editează",
       "notFilledIn": "Necompletat",
-      "nothingFilledIn": "Nimic completat încă"
+      "nothingFilledIn": "Nimic completat încă",
+      "statusSection": "Stare",
+      "recordSection": "Înregistrare",
+      "showJson": "Afișează ca JSON",
+      "showForm": "Afișează ca formular",
+      "recordActions": "Acțiuni pentru înregistrare",
+      "breadcrumb": "Traseu de navigare",
+      "copyTitle": "Copiază",
+      "copied": "Copiat",
+      "more": "Mai mult",
+      "moreFields": "{{count}} câmpuri",
+      "moreOneField": "{{count}} câmp"
     },
     "notFound": {
       "title": "Colecția nu a fost găsită",

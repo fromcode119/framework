@@ -167,13 +167,6 @@
       "sectionShow": "Einblenden",
       "sectionHide": "Ausblenden",
       "sectionFieldCount": "{{count}} Felder",
-      "fieldLevel": {
-        "label": "Angezeigte Felder",
-        "everyday": "Alltägliche",
-        "occasional": "Gelegentliche",
-        "technical": "Technische",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Vorschau & Permalink",
       "permalinkHint": "Klicken Sie auf den Pfadbestandteil, um den automatisch erzeugten Slug zu überschreiben.",
       "settings": "Einstellungen",
@@ -189,9 +182,6 @@
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
       "recordPart": { "download": "Herunterladen {{title}}", "person": "Person" },
-      "viewMode": "Ansichtsmodus des Datensatzes",
-      "formView": "Formularansicht",
-      "jsonView": "JSON-Ansicht",
       "unsavedIn": "Ungespeicherte Änderungen an",
       "noUnsaved": "Keine ungespeicherten Änderungen",
       "notSaved": "Nicht gespeichert: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "Ungespeicherte Änderungen",
       "editSection": "Bearbeiten",
       "notFilledIn": "Nicht ausgefüllt",
-      "nothingFilledIn": "Noch nichts ausgefüllt"
+      "nothingFilledIn": "Noch nichts ausgefüllt",
+      "statusSection": "Status",
+      "recordSection": "Datensatz",
+      "showJson": "Als JSON anzeigen",
+      "showForm": "Als Formular anzeigen",
+      "recordActions": "Aktionen für den Datensatz",
+      "breadcrumb": "Brotkrümelnavigation",
+      "copyTitle": "Kopieren",
+      "copied": "Kopiert",
+      "more": "Mehr",
+      "moreFields": "{{count}} Felder",
+      "moreOneField": "{{count}} Feld"
     },
     "notFound": {
       "title": "Sammlung nicht gefunden",

@@ -167,13 +167,6 @@
       "sectionShow": "表示",
       "sectionHide": "非表示",
       "sectionFieldCount": "{{count}} 個のフィールド",
-      "fieldLevel": {
-        "label": "表示する項目",
-        "everyday": "日常",
-        "occasional": "ときどき",
-        "technical": "技術",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "プレビューとパーマリンク",
       "permalinkHint": "パス部分をクリックすると、自動生成されたスラッグを上書きできます。",
       "settings": "設定",
@@ -189,9 +182,6 @@
       "relatedRecords": "関連レコード",
       "relatedEmpty": "このレコードにリンクされたレコードを持つプラグインはまだありません。",
       "recordPart": { "download": "ダウンロード {{title}}", "person": "人物" },
-      "viewMode": "レコードの表示モード",
-      "formView": "フォーム表示",
-      "jsonView": "JSON 表示",
       "unsavedIn": "未保存の変更:",
       "noUnsaved": "未保存の変更はありません",
       "notSaved": "保存されていません: {{reason}}",
@@ -233,7 +223,18 @@
       "unsavedChanges": "未保存の変更",
       "editSection": "編集",
       "notFilledIn": "未入力",
-      "nothingFilledIn": "まだ何も入力されていません"
+      "nothingFilledIn": "まだ何も入力されていません",
+      "statusSection": "ステータス",
+      "recordSection": "レコード",
+      "showJson": "JSON で表示",
+      "showForm": "フォームで表示",
+      "recordActions": "レコードの操作",
+      "breadcrumb": "パンくずリスト",
+      "copyTitle": "コピー",
+      "copied": "コピーしました",
+      "more": "その他",
+      "moreFields": "{{count}} 件の項目",
+      "moreOneField": "{{count}} 件の項目"
     },
     "notFound": {
       "title": "コレクションが見つかりません",
