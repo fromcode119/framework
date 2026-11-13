@@ -193,6 +193,7 @@ describe('StorefrontHydrator.mount', () => {
     expect(fallbackTree).toHaveBeenCalledWith('<div class="a">served</div>');
     expect(host.innerHTML).toBe('<div class="fallback">&lt;div class="a"&gt;served&lt;/div&gt;</div>');
     expect(warn.mock.calls.some(([message]) => String(message).startsWith('[frontend] hydration fallback: recoverable-error'))).toBe(true);
+    expect(warn.mock.calls.find(([message]) => String(message).includes('recoverable-error'))?.[2]).toMatch(/at div/);
 
     // A later recoverable error must not start another fallback.
     onRecoverableError!(new Error('again'));
