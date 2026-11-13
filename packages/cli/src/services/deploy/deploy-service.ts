@@ -9,6 +9,7 @@ import { DeployStrategy } from '@cli/services/deploy/deploy-strategy';
 import { RollingDeploy } from '@cli/services/deploy/rolling-deploy';
 import { DeployMode } from '@fromcode119/core';
 import { ComposeFilesSync } from '@cli/services/deploy/compose-files-sync';
+import { RemoteDeploymentLock } from '@cli/services/deploy/remote-deployment-lock';
 
 /**
  * Deploy a published release to a target, prove it is serving, and clean up after it.
@@ -27,6 +28,7 @@ export class DeployService {
     private readonly probe: ReleaseHealthProbe,
     private readonly rolling: (stack: ComposeStack) => RollingDeploy = (stack) => new RollingDeploy(stack),
     private readonly composeFiles: Pick<ComposeFilesSync, 'sync'> = new ComposeFilesSync(shell),
+    private readonly lock: Pick<RemoteDeploymentLock, 'acquire' | 'release'> = new RemoteDeploymentLock(shell),
   ) {}
 
   static async forTarget(name: string, healthTimeoutMs: number): Promise<DeployService> {
@@ -45,7 +47,24 @@ export class DeployService {
     );
   }
 
+  /**
+   * One deployer at a time. A box whose own updater is switched on would otherwise start the same
+   * release in the same minute, and the two undo each other's containers (see `DeploymentLock`).
+   */
   async deploy(version: string): Promise<boolean> {
+    const heldBy = await this.lock.acquire();
+    if (heldBy) {
+      console.error(chalk.red(`\n${this.target.name}: ${heldBy} is deploying here right now — nothing was changed. Run this again when it has finished.`));
+      return false;
+    }
+    try {
+      return await this.deployLocked(version);
+    } finally {
+      await this.lock.release();
+    }
+  }
+
+  private async deployLocked(version: string): Promise<boolean> {
     const replaced = await this.versions.current();
     console.log(chalk.blue(`\n${this.target.name}: ${replaced || 'none'} -> ${version}`));
 
@@ -72,10 +91,12 @@ export class DeployService {
       await this.stack.up();
     }
 
+    // The mode goes with it: a release that rolled in and then did not answer rolls out the same way.
     if (!await this.probe.waitFor(version)) {
-      await this.rollback(version, replaced);
+      await this.rollback(version, replaced, plan.mode);
       return false;
     }
+    if (plan.mode === DeployMode.ROLLING) await this.removeStrays(version);
 
     console.log(chalk.green(`${version} is serving.`));
     await this.versions.rememberReplaced(replaced !== version ? replaced : '');
@@ -113,6 +134,18 @@ export class DeployService {
     console.error(restored
       ? chalk.yellow(`Rolled back; ${replaced} is serving.`)
       : chalk.red(`Rollback to ${replaced} did not come up either — the stack needs a person.`));
+  }
+
+  /**
+   * A container of a rolled service still on another version after the release serves is nobody's: it
+   * shares the service's name on the network, so it answers a share of the requests with the old code
+   * and runs every scheduled task a second time. One was left for an hour by a deployer that raced this one.
+   */
+  private async removeStrays(version: string): Promise<void> {
+    for (const stray of await this.stack.strays([...DeployStrategy.ROLLED, 'gateway', ...ComposeStack.EXTENSION_HOSTS], version)) {
+      console.error(chalk.yellow(`${stray.name} still runs ${stray.image} beside ${version}; removing it.`));
+      await this.stack.stopAndRemove(stray.id, RollingDeploy.STOP_GRACE_SECONDS);
+    }
   }
 
   private async prune(version: string): Promise<void> {

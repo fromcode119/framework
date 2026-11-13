@@ -6,6 +6,8 @@ import { UpdaterHandover } from '@cli/services/updater/updater-handover';
 import { ComposeDirectory } from '@cli/services/updater/compose/compose-directory';
 import { EnvVersionFile } from '@cli/services/updater/env-version-file';
 import { DeployFolderFixture } from '@cli/services/updater/tests/deploy-folder-fixture';
+import { DeploymentLock } from '@cli/services/deploy/deployment-lock';
+import { LocalDeploymentLock } from '@cli/services/updater/local-deployment-lock';
 
 const REG = 'ghcr.io/fromcode119/framework-';
 
@@ -136,5 +138,20 @@ describe('UpdaterService', () => {
     const reports = api.reported.length;
     await updater.tick();
     expect(api.reported.length).toBeGreaterThan(reports);
+  });
+
+  it('waits while the deploy command holds the deployment folder, and installs once it is free', async () => {
+    const base = setup('0.2.392');
+    const lock = new LocalDeploymentLock(base.folder);
+    const updater = new UpdaterService(base.engine, base.api as any, base.file, base.directory, 'site', null, lock);
+    expect(new LocalDeploymentLock(base.folder, DeploymentLock.CLI).acquire()).toBe('');
+
+    await updater.tick();
+    expect(base.engine.created.length).toBe(0);
+
+    lock.release();
+    await updater.tick();
+    expect(base.engine.created.length).toBeGreaterThan(0);
+    expect(lock.acquire()).toBe('');
   });
 });

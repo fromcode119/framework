@@ -74,7 +74,7 @@ describe('DeployService rollback to a release without the edge', () => {
     let probes = 0;
     const probe: any = { waitFor: async () => ++probes > 1 };
     const sync = async (version: string) => { declaresEdge = version !== 'v0.2.209'; return []; };
-    const service = new DeployService({ name: 'probe' } as any, {} as any, stack, versions, probe, undefined, { sync });
+    const service = new DeployService({ name: 'probe' } as any, {} as any, stack, versions, probe, undefined, { sync }, { acquire: async () => '', release: async () => undefined });
 
     expect(await service.deploy('v0.2.210')).toBe(false);
     expect(stopped).toEqual(['edge-1']);

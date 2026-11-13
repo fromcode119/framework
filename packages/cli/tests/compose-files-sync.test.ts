@@ -51,7 +51,7 @@ describe('DeployService and the deploy files', () => {
     let versionWritten = false;
     const stack: any = { pull: async () => 1 };
     const versions: any = { current: async () => '0.2.205', set: async () => { versionWritten = true; } };
-    const service = new DeployService({ name: 'probe' } as any, {} as any, stack, versions, {} as any, undefined, { sync: async (v: string) => { synced.push(v); return []; } });
+    const service = new DeployService({ name: 'probe' } as any, {} as any, stack, versions, {} as any, undefined, { sync: async (v: string) => { synced.push(v); return []; } }, { acquire: async () => '', release: async () => undefined });
 
     expect(await service.deploy('0.2.206')).toBe(false);
     expect(synced).toEqual(['0.2.206', '0.2.205']);
