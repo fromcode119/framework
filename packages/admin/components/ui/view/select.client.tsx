@@ -22,7 +22,7 @@ export class Select extends Reactor {
   static contextType = ThemeContext.context;
   declare context: IThemeContextType | undefined;
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'isLoading' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption'>;
+  declare props: Pick<Select, 'value' | 'onChange' | 'options' | 'placeholder' | 'disabled' | 'theme' | 'className' | 'triggerClassName' | 'label' | 'searchable' | 'size' | 'onSearchChange' | 'clearable' | 'isLoading' | 'onCreateOption' | 'createOptionLabel' | 'onDeleteOption' | 'menuNote' | 'searching'>;
 
   @prop declare value: string;
   @prop declare onChange: (value: string) => void;
@@ -35,7 +35,19 @@ export class Select extends Reactor {
   @prop declare label?: string;
   @prop declare searchable?: boolean;
   @prop declare size?: FieldSize;
+  /**
+   * The owner wants the typed text — and by supplying this it also OWNS the result set: it searched for
+   * that text itself (usually on the server), so `options` IS the answer and is listed as it came.
+   * Filtering it again by label was silent and lossy: a product the server found by its SKU, barcode or
+   * variant carries none of that in its label, so the menu read "no results" over a correct answer.
+   */
   @prop declare onSearchChange?: (value: string) => void;
+  /** One line under the list — above all an honest cap: a menu that just stops at its limit tells
+   *  the operator nothing, and a short list then reads as the whole catalogue. */
+  @prop declare menuNote?: string;
+  /** A search is in flight: the menu says so instead of "no results", so a list that is merely not
+   *  loaded yet is never mistaken for a collection with nothing in it. */
+  @prop declare searching?: boolean;
   @prop declare clearable?: boolean;
   /**
    * The options are still being fetched.
@@ -71,8 +83,9 @@ export class Select extends Reactor {
   @state searchValue = '';
   @state coords: { top?: number; bottom?: number; left: number; width: number } = { left: 0, width: 0 };
 
+  /** The options as the menu lists them: the owner's own answer, or this select's label filter. */
   private getFilteredOptions() {
-    return SelectUtils.filter(this.options, this.searchValue);
+    return this.onSearchChange ? this.options : SelectUtils.filter(this.options, this.searchValue);
   }
 
   @bound updatePosition(): void {
@@ -117,6 +130,19 @@ export class Select extends Reactor {
     }
   }
 
+  /**
+   * Empties the search box and tells the owner it is empty — every path that leaves the menu behind.
+   *
+   * Selecting an option must do this HERE rather than leave it to the `isOpen` watch: choosing can
+   * change the owner's React key for this select (a row keyed by the id it just gained) and the
+   * instance is unmounted before the watch runs, so an owner that searches on the server was never
+   * told the box went empty, and reopening showed the LAST search's result under an empty box.
+   */
+  @bound clearSearch(): void {
+    this.searchValue = '';
+    this.onSearchChange?.('');
+  }
+
   private removePositionListeners(): void {
     window.removeEventListener('scroll', this.updatePosition, true);
     window.removeEventListener('resize', this.updatePosition);
@@ -132,8 +158,7 @@ export class Select extends Reactor {
       this.addPositionListeners();
     } else {
       this.removePositionListeners();
-      this.searchValue = '';
-      this.onSearchChange?.('');
+      this.clearSearch();
     }
   }
 
@@ -163,16 +188,12 @@ export class Select extends Reactor {
     const setIsOpen = (next: boolean) => { this.isOpen = next; };
     const setSearchValue = (next: string) => { this.searchValue = next; };
     const isDarkTheme = theme === ThemeMode.DARK;
-    const triggerThemeClasses = isDarkTheme
-      ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark] autofill:[-webkit-text-fill-color:#ffffff] autofill:caret-white autofill:shadow-[inset_0_0_0px_1000px_rgba(15,23,42,0.96)]'
-      : '';
-    const emptyLabelThemeClasses = isDarkTheme ? 'text-slate-500 font-medium' : 'text-slate-400 font-medium';
-    const chevronThemeClasses = isDarkTheme ? 'text-slate-500' : 'text-slate-400';
+    const { trigger: triggerThemeClasses, emptyLabel: emptyLabelThemeClasses, chevron: chevronThemeClasses } = SelectUtils.triggerClasses(isDarkTheme);
 
     const selectedOption = SelectUtils.findSelected(options, value);
     const canClear = clearable && Boolean(selectedOption) && !disabled;
 
-    const filteredOptions = SelectUtils.filter(options, searchValue);
+    const filteredOptions = this.getFilteredOptions();
     const groupedFilteredOptions = SelectUtils.group(filteredOptions);
     const showGroupHeaders = SelectUtils.showGroupHeaders(groupedFilteredOptions);
 
@@ -229,8 +250,7 @@ export class Select extends Reactor {
               event.preventDefault();
               event.stopPropagation();
               onChange('');
-              setSearchValue('');
-              onSearchChange?.('');
+              this.clearSearch();
               setIsOpen(false);
             }}
             className={`absolute top-1/2 end-8 z-20 -translate-y-1/2 flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold leading-none transition-colors ${
@@ -250,6 +270,8 @@ export class Select extends Reactor {
             searchValue={searchValue}
             coords={coords}
             filteredOptions={filteredOptions}
+            menuNote={this.menuNote}
+            searching={this.searching ?? false}
             groupedFilteredOptions={groupedFilteredOptions}
             showGroupHeaders={showGroupHeaders}
             selectedOption={selectedOption}
@@ -260,6 +282,7 @@ export class Select extends Reactor {
               onSearchChange?.(next);
             }}
             onSelect={(finalVal) => {
+              this.clearSearch();
               onChange(finalVal);
               setIsOpen(false);
             }}

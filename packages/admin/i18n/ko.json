@@ -401,6 +401,8 @@
       "search": "옵션 검색...",
       "create": "\"{{value}}\" 만들기",
       "noResults": "결과가 없습니다",
+      "searching": "검색 중…",
+      "showingFirst": "처음 {{count}}개만 표시 중 — 입력하여 검색",
       "removeOption": "옵션 제거",
       "placeholder": "옵션 선택...",
       "clear": "선택 해제",

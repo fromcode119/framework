@@ -401,6 +401,8 @@
       "search": "Sök alternativ...",
       "create": "Skapa \"{{value}}\"",
       "noResults": "Inga resultat hittades",
+      "searching": "Söker…",
+      "showingFirst": "Visar de första {{count}} — skriv för att söka",
       "removeOption": "Ta bort alternativ",
       "placeholder": "Välj ett alternativ...",
       "clear": "Rensa val",

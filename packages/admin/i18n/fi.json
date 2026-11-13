@@ -401,6 +401,8 @@
       "search": "Hae vaihtoehtoja...",
       "create": "Luo \"{{value}}\"",
       "noResults": "Tuloksia ei löytynyt",
+      "searching": "Haetaan…",
+      "showingFirst": "Näytetään ensimmäiset {{count}} — kirjoita hakeaksesi",
       "removeOption": "Poista vaihtoehto",
       "placeholder": "Valitse vaihtoehto...",
       "clear": "Tyhjennä valinta",

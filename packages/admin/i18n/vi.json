@@ -401,6 +401,8 @@
       "search": "Tìm tùy chọn...",
       "create": "Tạo \"{{value}}\"",
       "noResults": "Không tìm thấy kết quả",
+      "searching": "Đang tìm…",
+      "showingFirst": "Đang hiển thị {{count}} mục đầu — nhập để tìm",
       "removeOption": "Xóa tùy chọn",
       "placeholder": "Chọn một tùy chọn...",
       "clear": "Xóa lựa chọn",

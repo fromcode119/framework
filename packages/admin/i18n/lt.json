@@ -401,6 +401,8 @@
       "search": "Ieškoti parinkčių...",
       "create": "Sukurti „{{value}}“",
       "noResults": "Rezultatų nerasta",
+      "searching": "Ieškoma…",
+      "showingFirst": "Rodomi pirmieji {{count}} — rašykite, kad ieškotumėte",
       "removeOption": "Pašalinti parinktį",
       "placeholder": "Pasirinkite parinktį...",
       "clear": "Išvalyti pasirinkimą",

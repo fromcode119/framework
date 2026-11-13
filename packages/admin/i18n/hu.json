@@ -401,6 +401,8 @@
       "search": "Keresés a lehetőségek között...",
       "create": "„{{value}}” létrehozása",
       "noResults": "Nincs találat",
+      "searching": "Keresés folyamatban…",
+      "showingFirst": "Az első {{count}} látható — gépeljen a kereséshez",
       "removeOption": "Lehetőség eltávolítása",
       "placeholder": "Válasszon...",
       "clear": "Kijelölés törlése",

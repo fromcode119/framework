@@ -401,6 +401,8 @@
       "search": "Căutați opțiuni...",
       "create": "Creează „{{value}}”",
       "noResults": "Nu s-au găsit rezultate",
+      "searching": "Se caută…",
+      "showingFirst": "Se afișează primele {{count}} — tastați pentru a căuta",
       "removeOption": "Elimină opțiunea",
       "placeholder": "Selectați o opțiune...",
       "clear": "Golește selecția",

@@ -401,6 +401,8 @@
       "search": "Opties zoeken...",
       "create": "\"{{value}}\" aanmaken",
       "noResults": "Geen resultaten gevonden",
+      "searching": "Bezig met zoeken…",
+      "showingFirst": "De eerste {{count}} worden getoond — typ om te zoeken",
       "removeOption": "Optie verwijderen",
       "placeholder": "Selecteer een optie...",
       "clear": "Selectie wissen",

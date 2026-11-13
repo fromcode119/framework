@@ -401,6 +401,8 @@
       "search": "オプションを検索...",
       "create": "「{{value}}」を作成",
       "noResults": "結果が見つかりません",
+      "searching": "検索中…",
+      "showingFirst": "最初の {{count}} 件を表示しています — 入力して検索",
       "removeOption": "オプションを削除",
       "placeholder": "オプションを選択...",
       "clear": "選択をクリア",
