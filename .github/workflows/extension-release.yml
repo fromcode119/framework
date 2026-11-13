@@ -130,6 +130,11 @@ jobs:
           case "$files" in manifest.json|theme.json|appearance.json) ;; *) echo "Unsigned head changes $files — not signing." >&2; exit 1 ;; esac
           [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$head^" -q .commit.verification.verified)" = true ] \
             || { echo "Parent of $head is not signed — not signing." >&2; exit 1; }
+          # The author and message can be set by anyone; the CONTENT cannot hide. Outside `version` and
+          # `pageRelease` the file must be byte-for-byte its signed parent's, so signing adds nothing new.
+          strip='del(.version) | walk(if type == "object" then del(.pageRelease) else . end)'
+          [ "$(git show "$head^:$files" | jq -S "$strip")" = "$(git show "$head:$files" | jq -S "$strip")" ] \
+            || { echo "Unsigned head changes more than the version in $files — not signing." >&2; exit 1; }
           repo="repos/$GITHUB_REPOSITORY/git"
           commit=$(jq -n --arg msg "$message" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg parent "$head" \
             '{message: $msg, tree: $tree, parents: [$parent]}' | gh api "$repo/commits" --input - -q .sha)
