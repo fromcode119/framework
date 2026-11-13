@@ -401,6 +401,8 @@
       "search": "Cari pilihan...",
       "create": "Cipta \"{{value}}\"",
       "noResults": "Tiada hasil ditemui",
+      "searching": "Mencari…",
+      "showingFirst": "Menunjukkan {{count}} yang pertama — taip untuk mencari",
       "removeOption": "Buang pilihan",
       "placeholder": "Pilih satu pilihan...",
       "clear": "Kosongkan pilihan",

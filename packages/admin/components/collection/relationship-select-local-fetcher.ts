@@ -6,6 +6,14 @@ import type { SelectOption } from '@/components/collection/select-option';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class RelationshipSelectLocalFetcher {
+  /**
+   * How many related records one read brings back. A relationship field never lists a whole collection,
+   * so the menu must SAY where it stopped (`ui.select.showingFirst`) — a list that simply ends at its
+   * limit reads as the whole collection, and the record the operator wants is then invisible with no
+   * sign that anything was left out.
+   */
+  static readonly PAGE_LIMIT = 30;
+
   private ctx: IRelationshipFetchContext;
 
   constructor(ctx: IRelationshipFetchContext) {
@@ -117,7 +125,7 @@ export class RelationshipSelectLocalFetcher {
       const responses = await Promise.all(
         sourceCollectionSlugs.map(async (sourceCollectionSlug) => {
           const docs = await CollectionQueryUtils.queryCollectionDocs(api, sourceCollectionSlug, {
-            limit: 30,
+            limit: RelationshipSelectLocalFetcher.PAGE_LIMIT,
             search: search.trim() || undefined
           });
           return this.mapDocsToOptions(docs, sourceCollectionSlug);

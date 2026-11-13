@@ -401,6 +401,8 @@
       "search": "Kërko opsione...",
       "create": "Krijo \"{{value}}\"",
       "noResults": "Nuk u gjetën rezultate",
+      "searching": "Duke kërkuar…",
+      "showingFirst": "Po shfaqen {{count}} të parët — shkruani për të kërkuar",
       "removeOption": "Hiq opsionin",
       "placeholder": "Zgjidhni një opsion...",
       "clear": "Pastro përzgjedhjen",

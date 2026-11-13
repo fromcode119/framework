@@ -401,6 +401,8 @@
       "search": "Meklēt opcijas...",
       "create": "Izveidot \"{{value}}\"",
       "noResults": "Nekas nav atrasts",
+      "searching": "Meklē…",
+      "showingFirst": "Rāda pirmos {{count}} — rakstiet, lai meklētu",
       "removeOption": "Noņemt opciju",
       "placeholder": "Izvēlieties opciju...",
       "clear": "Notīrīt atlasi",

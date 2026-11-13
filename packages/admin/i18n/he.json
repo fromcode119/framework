@@ -401,6 +401,8 @@
       "search": "חיפוש אפשרויות...",
       "create": "יצירת \"{{value}}\"",
       "noResults": "לא נמצאו תוצאות",
+      "searching": "מחפש…",
+      "showingFirst": "מוצגים {{count}} הראשונים — הקלידו כדי לחפש",
       "removeOption": "הסרת אפשרות",
       "placeholder": "בחרו אפשרות...",
       "clear": "ניקוי הבחירה",

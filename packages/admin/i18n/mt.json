@@ -401,6 +401,8 @@
       "search": "Fittex l-għażliet...",
       "create": "Oħloq \"{{value}}\"",
       "noResults": "Ma nstab ebda riżultat",
+      "searching": "Qed ifittex…",
+      "showingFirst": "Qed jintwerew l-ewwel {{count}} — ittajpja biex tfittex",
       "removeOption": "Neħħi l-għażla",
       "placeholder": "Agħżel għażla...",
       "clear": "Neħħi l-għażla",

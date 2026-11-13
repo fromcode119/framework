@@ -401,6 +401,8 @@
       "search": "Iskanje možnosti ...",
       "create": "Ustvari \"{{value}}\"",
       "noResults": "Ni rezultatov",
+      "searching": "Iskanje…",
+      "showingFirst": "Prikazanih je prvih {{count}} — vnesite za iskanje",
       "removeOption": "Odstrani možnost",
       "placeholder": "Izberite možnost ...",
       "clear": "Počisti izbiro",

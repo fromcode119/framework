@@ -401,6 +401,8 @@
       "search": "Cuardaigh roghanna...",
       "create": "Cruthaigh \"{{value}}\"",
       "noResults": "Níor aimsíodh aon toradh",
+      "searching": "Á chuardach…",
+      "showingFirst": "An chéad {{count}} á dtaispeáint — clóscríobh chun cuardach",
       "removeOption": "Bain an rogha",
       "placeholder": "Roghnaigh rogha...",
       "clear": "Glan an roghnú",

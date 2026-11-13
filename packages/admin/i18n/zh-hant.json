@@ -401,6 +401,8 @@
       "search": "搜尋選項...",
       "create": "建立「{{value}}」",
       "noResults": "找不到結果",
+      "searching": "搜尋中…",
+      "showingFirst": "僅顯示前 {{count}} 項 — 輸入以搜尋",
       "removeOption": "移除選項",
       "placeholder": "選擇選項...",
       "clear": "清除選取",

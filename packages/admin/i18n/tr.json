@@ -401,6 +401,8 @@
       "search": "Seçeneklerde ara...",
       "create": "\"{{value}}\" oluştur",
       "noResults": "Sonuç bulunamadı",
+      "searching": "Aranıyor…",
+      "showingFirst": "İlk {{count}} gösteriliyor — aramak için yazın",
       "removeOption": "Seçeneği kaldır",
       "placeholder": "Bir seçenek seçin...",
       "clear": "Seçimi temizle",

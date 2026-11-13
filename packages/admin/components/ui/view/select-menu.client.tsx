@@ -13,7 +13,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class SelectMenu extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect' | 'onCreate' | 'createLabel' | 'onDelete'>;
+  declare props: Pick<SelectMenu, 'theme' | 'searchable' | 'searchValue' | 'coords' | 'filteredOptions' | 'groupedFilteredOptions' | 'showGroupHeaders' | 'selectedOption' | 'menuRef' | 'searchInputRef' | 'onSearchChange' | 'onSelect' | 'onCreate' | 'createLabel' | 'onDelete' | 'menuNote' | 'searching'>;
 
   @prop declare theme: ThemeMode;
   @prop declare searchable: boolean;
@@ -21,6 +21,10 @@ export class SelectMenu extends PureReactor {
   /** Either `top` (opens downward) or `bottom` (opens upward, anchored to the trigger) is set — never both. */
   @prop declare coords: { top?: number; bottom?: number; left: number; width: number };
   @prop declare filteredOptions: IOption[];
+  /** One line under the list, supplied by the owner — an honest cap, or where the list came from. */
+  @prop declare menuNote?: string;
+  /** The owner is fetching the answer to what was typed; the list is not the catalogue yet. */
+  @prop declare searching?: boolean;
   @prop declare groupedFilteredOptions: ISelectOptionGroup[];
   @prop declare showGroupHeaders: boolean;
   @prop declare selectedOption?: IOption;
@@ -52,6 +56,7 @@ export class SelectMenu extends PureReactor {
     const {
       theme, searchable, searchValue, coords, filteredOptions, groupedFilteredOptions,
       showGroupHeaders, selectedOption, menuRef, searchInputRef, onSearchChange, onSelect, onCreate,
+      menuNote, searching,
     } = this;
     const canCreate = this.canCreate;
     const isDarkTheme = theme === ThemeMode.DARK;
@@ -112,9 +117,13 @@ export class SelectMenu extends PureReactor {
                   </button>
                 )}
                 {filteredOptions.length === 0 ? (
-                  canCreate ? null : (
+                  canCreate && !searching ? null : (
                   <div className="px-4 py-8 text-center">
-                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">{AdminI18n.t('ui.select.noResults')}</p>
+                    {/* An empty list while the owner is still searching is not an empty catalogue: saying
+                        "no results" there is a wrong answer the operator cannot tell from a right one. */}
+                    <p className="text-[11px] font-semibold text-slate-500 tracking-wide opacity-50">
+                      {AdminI18n.t(searching ? 'ui.select.searching' : 'ui.select.noResults')}
+                    </p>
                   </div>
                   )
                 ) : (
@@ -182,6 +191,14 @@ export class SelectMenu extends PureReactor {
                   )})
                 )}
               </div>
+
+              {menuNote ? (
+                <div className={`border-t px-3.5 py-2 text-[10px] font-semibold tracking-wide ${
+                  isDarkTheme ? 'border-slate-800 text-slate-500' : 'border-slate-100 text-slate-400'
+                }`}>
+                  {menuNote}
+                </div>
+              ) : null}
             </div>
           </RootFramework>
     );

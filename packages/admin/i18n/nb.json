@@ -401,6 +401,8 @@
       "search": "Søk i alternativer …",
       "create": "Opprett «{{value}}»",
       "noResults": "Fant ingen resultater",
+      "searching": "Søker…",
+      "showingFirst": "Viser de første {{count}} — skriv for å søke",
       "removeOption": "Fjern alternativ",
       "placeholder": "Velg et alternativ …",
       "clear": "Fjern valg",

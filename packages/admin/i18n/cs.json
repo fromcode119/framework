@@ -401,6 +401,8 @@
       "search": "Hledat možnosti...",
       "create": "Vytvořit „{{value}}“",
       "noResults": "Nebyly nalezeny žádné výsledky",
+      "searching": "Hledá se…",
+      "showingFirst": "Zobrazeno prvních {{count}} — pište pro hledání",
       "removeOption": "Odebrat možnost",
       "placeholder": "Vyberte možnost...",
       "clear": "Zrušit výběr",

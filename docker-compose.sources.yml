@@ -32,6 +32,15 @@
 # runs comes from the mounted source.
 #
 # Back to the built images:  docker compose -f docker-compose.yml up -d admin api
+# The included production file sends every container's logs to the HOST JOURNAL, which is right for the
+# Linux host a release runs on and does not exist on a developer's Mac: `docker compose up` there dies with
+# "failed to initialize logging driver: journald is not enabled on this host" and the local stack cannot be
+# recreated at all — the loop this very file documents. A development container's logs do not need to
+# outlive it, so these four take Docker's own driver, which works on every host.
+x-dev-logging: &dev-logging
+  driver: local
+
+
 services:
   # Plugin processes are plain `node`: they load core, the sdk and every framework package those import
   # from BUILT output, resolved through each package's `package.json` exports. Mounting only core and the
@@ -39,6 +48,7 @@ services:
   # (`@fromcode119/scheduler/enums/schedule-type.enum`) failed every plugin with MODULE_NOT_FOUND. This is
   # the whole set core and the sdk load, transitively; run `npm run build:packages` after pulling.
   extension-host:
+    logging: *dev-logging
     volumes:
       - ./packages/core/dist:/app/packages/core/dist
       - ./packages/core/package.json:/app/packages/core/package.json
@@ -68,6 +78,7 @@ services:
       - ./packages/react/package.json:/app/packages/react/package.json
 
   admin:
+    logging: *dev-logging
     command: ["npm", "run", "dev", "--workspace=@fromcode119/admin"]
     environment:
       - NODE_ENV=development
@@ -128,6 +139,7 @@ services:
   # once before bringing this up. The upside is the point: after that, rebuilding the bundle on the
   # host is visible immediately, with no copy into the container.
   frontend:
+    logging: *dev-logging
     command: ["npm", "run", "dev", "--workspace=@fromcode119/frontend"]
     environment:
       - NODE_ENV=development
@@ -166,6 +178,7 @@ services:
           memory: 4G
 
   api:
+    logging: *dev-logging
     command: ["npm", "run", "dev", "--workspace=@fromcode119/api"]
     environment:
       - NODE_ENV=development

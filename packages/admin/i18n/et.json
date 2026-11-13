@@ -401,6 +401,8 @@
       "search": "Otsi valikuid...",
       "create": "Loo \"{{value}}\"",
       "noResults": "Tulemusi ei leitud",
+      "searching": "Otsin…",
+      "showingFirst": "Kuvatakse esimesed {{count}} — otsimiseks tippige",
       "removeOption": "Eemalda valik",
       "placeholder": "Valige...",
       "clear": "Tühjenda valik",

@@ -401,6 +401,8 @@
       "search": "Cari opsi...",
       "create": "Buat \"{{value}}\"",
       "noResults": "Tidak ada hasil",
+      "searching": "Mencari…",
+      "showingFirst": "Menampilkan {{count}} pertama — ketik untuk mencari",
       "removeOption": "Hapus opsi",
       "placeholder": "Pilih opsi...",
       "clear": "Hapus pilihan",

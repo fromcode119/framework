@@ -401,6 +401,8 @@
       "search": "Maghanap ng opsyon...",
       "create": "Gumawa ng \"{{value}}\"",
       "noResults": "Walang nakitang resulta",
+      "searching": "Naghahanap…",
+      "showingFirst": "Ipinapakita ang unang {{count}} — mag-type para maghanap",
       "removeOption": "Alisin ang opsyon",
       "placeholder": "Pumili ng opsyon...",
       "clear": "I-clear ang pinili",

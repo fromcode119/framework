@@ -401,6 +401,8 @@
       "search": "Buscar opciones...",
       "create": "Crear \"{{value}}\"",
       "noResults": "No se encontraron resultados",
+      "searching": "Buscando…",
+      "showingFirst": "Se muestran los primeros {{count}}: escriba para buscar",
       "removeOption": "Quitar opción",
       "placeholder": "Seleccione una opción...",
       "clear": "Borrar selección",

@@ -401,6 +401,8 @@
       "search": "البحث في الخيارات...",
       "create": "إنشاء \"{{value}}\"",
       "noResults": "لا توجد نتائج",
+      "searching": "جارٍ البحث…",
+      "showingFirst": "يتم عرض أول {{count}} — اكتب للبحث",
       "removeOption": "إزالة الخيار",
       "placeholder": "اختر خيارًا...",
       "clear": "مسح التحديد",

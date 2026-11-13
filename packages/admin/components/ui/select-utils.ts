@@ -58,4 +58,16 @@ export class SelectUtils {
   static showSectionHeaders(sections: ISelectOptionGroup[]): boolean {
     return sections.length > 1 || (sections.length === 1 && sections[0].name !== '');
   }
+
+  /** The trigger's dark/light classes: the part of the trigger that depends only on the theme. */
+  static triggerClasses(isDarkTheme: boolean): { trigger: string; emptyLabel: string; chevron: string } {
+    return {
+      trigger: isDarkTheme
+        ? '!bg-slate-900/60 !border-slate-800 !text-white caret-white placeholder:text-slate-600 hover:!border-indigo-500/50 focus:!border-indigo-500 focus:!ring-0 [color-scheme:dark] autofill:[-webkit-text-fill-color:#ffffff] autofill:caret-white autofill:shadow-[inset_0_0_0px_1000px_rgba(15,23,42,0.96)]'
+        : '',
+      emptyLabel: isDarkTheme ? 'text-slate-500 font-medium' : 'text-slate-400 font-medium',
+      chevron: isDarkTheme ? 'text-slate-500' : 'text-slate-400',
+    };
+  }
+
 }

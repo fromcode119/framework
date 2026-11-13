@@ -401,6 +401,8 @@
       "search": "Søg i muligheder...",
       "create": "Opret \"{{value}}\"",
       "noResults": "Ingen resultater fundet",
+      "searching": "Søger…",
+      "showingFirst": "Viser de første {{count}} — skriv for at søge",
       "removeOption": "Fjern mulighed",
       "placeholder": "Vælg en mulighed...",
       "clear": "Ryd valg",
