@@ -296,12 +296,31 @@ jobs:
         env:
           TEST_AREA: ${{ inputs.area }}
           TEST_NAME: ${{ inputs.name }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           cd "$GITHUB_WORKSPACE/$TEST_AREA/$TEST_NAME"
           if [ ! -f vitest.config.ts ]; then
             echo "$TEST_NAME has no vitest.config.ts: no tests to run."
             exit 0
+          fi
+          # The pre-push gate runs these same tests on the same merge and records `gate/tests` on the pushed
+          # commit, naming the framework commit and the extension main it tested against. When both still
+          # match this run exactly, the result is already known. Anything else — no status, main moved,
+          # framework moved, a push event — runs the tests here as before.
+          if [ -n "$HEAD_SHA" ]; then
+            fw=$(git -C "$GITHUB_WORKSPACE/framework" rev-parse HEAD)
+            main=$(git cat-file -p HEAD | sed -n "s/^parent //p" | head -1)  # readable in a shallow checkout
+            want="fw=$fw main=$main"
+            got=$(gh api "repos/$REPO/commits/$HEAD_SHA/statuses" \
+              --jq '[.[] | select(.context == "gate/tests" and .state == "success") | .description] | .[]' 2>/dev/null || true)
+            if [ -n "$main" ] && printf '%s\n' "$got" | grep -qxF "$want"; then
+              echo "Tests already passed in the pre-push gate for this exact merge ($want). Not running them again."
+              exit 0
+            fi
+            echo "No matching gate/tests status (want: $want) — running the tests."
           fi
           ln -sfn "$GITHUB_WORKSPACE/framework/node_modules" "$GITHUB_WORKSPACE/$TEST_AREA/node_modules"
           "$GITHUB_WORKSPACE/framework/node_modules/.bin/vitest" run --config vitest.config.ts --passWithNoTests
