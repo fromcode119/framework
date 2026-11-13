@@ -129,15 +129,28 @@ export class FrontendI18nService {
       if (value && typeof value === 'object' && part in value) {
         value = value[part];
       } else {
-        return defaultValue || key;
+        return FrontendI18nService.interpolate(defaultValue || key, params);
       }
     }
 
     if (typeof value !== 'string') {
-      return defaultValue || key;
+      return FrontendI18nService.interpolate(defaultValue || key, params);
     }
 
-    return value.replace(/\{\{(.+?)\}\}/g, (_, match) => {
+    return FrontendI18nService.interpolate(value, params);
+  }
+
+  /**
+   * `{{token}}` → the matching param, leaving an unmatched token as it stands.
+   *
+   * The DEFAULT goes through this too. `t(key, params, 'Showing the first {{count}} …')` passes the
+   * English source as the default, and a key the dictionary does not carry yet used to return that
+   * string untouched — so the operator read a literal "{{count}}" on screen. Every plugin that
+   * supplies its own fallback copy, which is how a plugin ships a string before it is translated, hit
+   * this the moment the copy had a value in it.
+   */
+  private static interpolate(text: string, params: Record<string, any>): string {
+    return String(text).replace(/\{\{(.+?)\}\}/g, (_, match) => {
       const paramKey = match.trim();
       return params[paramKey] !== undefined ? String(params[paramKey]) : `{{${paramKey}}}`;
     });
