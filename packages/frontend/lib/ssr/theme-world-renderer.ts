@@ -90,7 +90,8 @@ export class ThemeWorldRenderer {
     // synchronous, so the set belongs to this render alone.
     const tracker = runtime.frameworkReact.PluginUsageTracker;
     tracker?.reset?.();
-    const html = ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched, { path: requestPath, origin: requestOrigin, search: requestSearch || '' });
+    const html = ThemeServerRegistry.renderInLocale(locale, () =>
+      ThemeWorldRenderer.renderWithPrefetch(runtime, tree, prefetched, { path: requestPath, origin: requestOrigin, search: requestSearch || '' }));
     const usedPlugins: string[] = tracker?.drain?.() ?? [];
     // A `recipe` page's body is an empty box (`ThemeSsrContentTree`): the display slot was never
     // rendered, however many components are registered to it. Claiming otherwise made the browser hold
