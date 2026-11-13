@@ -39,6 +39,7 @@ import { PluginAliasCommand } from './plugin-alias-command';
 import { PluginArchitectureCommand } from './plugin-architecture-command';
 import { PluginRawSqlCommand } from './plugin-raw-sql-command';
 import { PluginMigrationOptInCommand } from './plugin-migration-opt-in-command';
+import { PluginAdminControlsCommand } from './plugin-admin-controls-command';
 import { PluginUiHookfreeCommand } from './plugin-ui-hookfree-command';
 import { PluginUiTypesCommand } from './plugin-ui-types-command';
 import { PluginBackendTypesCommand } from './plugin-backend-types-command';
@@ -109,6 +110,7 @@ export class GuardRegistry {
     ['plugin-architecture', PluginArchitectureCommand],
     ['plugin-raw-sql', PluginRawSqlCommand],
     ['plugin-migrations', PluginMigrationOptInCommand],
+    ['plugin-admin-controls', PluginAdminControlsCommand],
     ['plugin-ui-hookfree', PluginUiHookfreeCommand],
     ['plugin-ui-types', PluginUiTypesCommand],
     ['plugin-backend-types', PluginBackendTypesCommand],
