@@ -138,6 +138,13 @@ export interface ICollection {
       keys: Record<string, string>;
       title?: string;
       emptyHint?: string;
+      /**
+       * Where the records other plugins hold are drawn ON this record. Maps a part term a provider
+       * declared (`payment`, `delivery`) to the `admin.section` of this collection it belongs in, with
+       * the words to show there while no such record exists. A part with no entry here, or whose
+       * section is not on screen, stays in the linked-records list.
+       */
+      parts?: Record<string, { section: string; empty?: string }>;
     };
     /** The operator cannot change rows here. See `disableCreate`. */
     disableEdit?: boolean;

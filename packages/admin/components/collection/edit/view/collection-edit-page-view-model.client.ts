@@ -1,4 +1,5 @@
 import { CollectionEditDerivations } from '@/components/collection/edit/view/collection-edit-derivations.client';
+import { AdminServices } from '@/lib/admin-services';
 import { CollectionEditPageHandlers } from '@/components/collection/edit/view/collection-edit-page-handlers.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 
@@ -57,6 +58,9 @@ export class CollectionEditPageViewModelBuilder {
       getPreviewUrl: () => CollectionEditPageHandlers.getPreviewUrl(self),
       sidebarFieldSections: d.sidebarFieldSections, standardMainFieldSections: d.standardMainFieldSections,
       fullWidthMainFieldSections: d.fullWidthMainFieldSections, navSections: d.navSections,
+      fieldDepth: d.fieldDepth, fieldLevelCounts: d.fieldLevelCounts, showChangeSummary: d.showChangeSummary,
+      // Remembered per browser, so the form opens the way this operator last left it.
+      setFieldDepth: (level) => { AdminServices.getInstance().uiPreference.writeEditFieldDepth(level.value); self.updateState('fieldDepth', level.value); },
       handleInputChange: (name, value) => CollectionEditPageHandlers.handleInputChange(self, name, value),
       handlePatch: (partial) => CollectionEditPageHandlers.handlePatch(self, partial),
       handleDelete: () => CollectionEditPageHandlers.handleDelete(self),

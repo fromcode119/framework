@@ -92,7 +92,6 @@
     "list": {
       "records": "Data",
       "searchPlaceholder": "Cari {{name}}...",
-      "description": "Kelola dan atur data {{name}}.",
       "importDone": "Berhasil mengimpor {{count}} data. {{errors}} galat.",
       "importFailed": "Impor gagal: {{message}}",
       "statusUpdateFailed": "Gagal memperbarui status",
@@ -168,6 +167,13 @@
       "sectionShow": "Tampilkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} kolom",
+      "fieldLevel": {
+        "label": "Kolom yang ditampilkan",
+        "everyday": "Sehari-hari",
+        "occasional": "Sesekali",
+        "technical": "Teknis",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Pratinjau & Permalink",
       "permalinkHint": "Klik komponen jalur untuk mengganti slug yang dibuat otomatis.",
       "settings": "Pengaturan",
@@ -182,6 +188,7 @@
       "deletePermanently": "Hapus Permanen",
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
+      "recordPart": { "download": "Unduh {{title}}" },
       "viewMode": "Mode tampilan rekaman",
       "formView": "Tampilan formulir",
       "jsonView": "Tampilan JSON",
@@ -426,6 +433,7 @@
       "from": "dari",
       "pluginSettings": "Pengaturan plugin",
       "overrideUnlocked": "Penggantian dibuka",
+      "about": "Tentang {{label}}",
       "unlockTitle": "Buka kunci \"{{label}}\" untuk mengedit",
       "unlock": "Buka kunci edit",
       "readOnly": "Hanya baca",

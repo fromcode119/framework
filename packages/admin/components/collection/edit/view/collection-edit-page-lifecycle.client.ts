@@ -1,3 +1,4 @@
+import { CollectionEditStartingValues } from '@/components/collection/edit/view/collection-edit-starting-values.client';
 import { SiteStorefrontClient } from '@/lib/tenants/site-storefront-client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 
@@ -81,7 +82,12 @@ export class CollectionEditPageLifecycle {
       const fresh = () => token === self.dataLoadToken;
 
       if (!collection) { if (isNew && !duplicateFromId) self.updateState('loading', false); return; }
-      if (isNew && !duplicateFromId) { self.updateState('loading', false); return; }
+      if (isNew && !duplicateFromId) {
+        const given = CollectionEditStartingValues.read(collection, self.props.searchParams);
+        if (Object.keys(given).length) self.setState({ formData: { ...self.state.formData, ...given } });
+        self.updateState('loading', false);
+        return;
+      }
 
       self.updateState('loading', true);
       if (isNew) {

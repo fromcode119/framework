@@ -11,6 +11,7 @@ import { UiFieldUtils } from '@/lib/ui';
 import type { IThemeSettingsPageView } from '@/app/themes/[slug]/interfaces/theme-settings-page-view.interface';
 import { ThemeSettingsRenderModel } from '@/app/themes/[slug]/components/view/theme-settings-render-model.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
 
 export class ThemeSettingsExtensionsPanel extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -92,12 +93,11 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         onChange={(v) => page.handleSettingChange(key, v === '' ? '' : Number(v))}
                       />
                     ) : (
-                      <input
+                      <Input
                         type="text"
                         value={String(rawValue ?? '')}
                         onChange={(e) => page.handleSettingChange(key, e.target.value)}
                         placeholder={schema?.placeholder || (type === ThemeConfigFieldType.INTEGRATION ? AdminI18n.t('themes.integrationValue') : '')}
-                        className={UiFieldUtils.getFieldClasses()}
                       />
                     )}
                   </div>

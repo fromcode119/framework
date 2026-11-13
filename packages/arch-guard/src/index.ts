@@ -17,6 +17,7 @@ export { AppTypecheck } from './app-typecheck';
 export { DialectSqlConfinementGuard } from './dialect-sql-confinement-guard';
 export { PluginRawSqlGuard } from './plugin-raw-sql-guard';
 export { SrcArtifactGuard } from './src-artifact-guard';
+export { PluginAdminControlsGuard } from './plugin-admin-controls-guard';
 export { PluginUiHookGuard } from './plugin-ui-hook-guard';
 export { ClientViewMove } from './client-view-move';
 export { ComponentDecoratorMigration } from './component-migration/component-decorator-migration';

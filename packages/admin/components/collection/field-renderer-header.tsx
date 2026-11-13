@@ -6,6 +6,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { UiFieldUtils } from '@/lib/ui';
 import type { ICollectionField } from '@/components/collection/interfaces/collection-field.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { FieldLockControl } from '@/components/collection/view/field-lock-control.client';
 
 export class FieldRendererHeader extends PureReactor {
   @prop declare field: ICollectionField;
@@ -20,6 +21,8 @@ export class FieldRendererHeader extends PureReactor {
   @prop declare shouldInlineLocaleSwitcher: boolean;
   @prop declare onRequestReadOnlyOverride: () => void;
   @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
+  /** The control that opens this field's explanation, when it is not already printed below. */
+  @prop declare help?: ReactNode;
 
   render(): ReactNode {
     const {
@@ -33,16 +36,19 @@ export class FieldRendererHeader extends PureReactor {
     return (
       <div className="flex items-center justify-between gap-3 mb-1 min-h-[22px]">
         {!field.admin?.hideLabel && (
+        <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
           {field.required && <span className="text-rose-500 ms-1 font-semibold font-sans">*</span>}
         </label>
+        {this.help}
+        </span>
         )}
 
         <div className="flex items-center gap-2">
           {!isFieldReadOnly && supportsReadOnlyOverride && readOnlyOverrideGranted && (
             <span
-              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border ${
+              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[10px] font-semibold tracking-wide border ${
                 theme === ThemeMode.DARK
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-300'
                   : 'bg-emerald-50 border-emerald-200 text-emerald-600'
@@ -52,32 +58,7 @@ export class FieldRendererHeader extends PureReactor {
               {AdminI18n.t('ui.field.overrideUnlocked')}
             </span>
           )}
-          {isFieldReadOnly && (canRequestReadOnlyOverride ? (
-            <button
-              type="button"
-              onClick={onRequestReadOnlyOverride}
-              title={AdminI18n.t('ui.field.unlockTitle', { label })}
-              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border transition-colors ${
-                theme === ThemeMode.DARK
-                  ? 'bg-indigo-500/10 border-indigo-500/30 text-indigo-200 hover:bg-indigo-500/15'
-                  : 'bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100'
-              }`}
-            >
-              <FrameworkIcons.Lock size={10} />
-              {AdminI18n.t('ui.field.unlock')}
-            </button>
-          ) : (
-            <span
-              className={`inline-flex items-center gap-1 h-6 px-2 rounded-lg text-[9px] font-semibold tracking-wide border ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-900 border-slate-700 text-slate-300'
-                  : 'bg-white border-slate-200 text-slate-500'
-              }`}
-            >
-              <FrameworkIcons.Lock size={10} />
-              {AdminI18n.t('ui.field.readOnly')}
-            </span>
-          ))}
+          {isFieldReadOnly && <FieldLockControl label={label} canUnlock={canRequestReadOnlyOverride} onUnlock={onRequestReadOnlyOverride} />}
           {isLocalizedField && !componentHandlesLocalization && !shouldInlineLocaleSwitcher && localeSwitcher(false)}
         </div>
       </div>

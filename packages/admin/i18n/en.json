@@ -92,7 +92,6 @@
     "list": {
       "records": "Records",
       "searchPlaceholder": "Search {{name}}...",
-      "description": "Manage and organize {{name}} records.",
       "importDone": "Imported {{count}} records successfully. {{errors}} errors.",
       "importFailed": "Import failed: {{message}}",
       "statusUpdateFailed": "Error updating status",
@@ -124,11 +123,11 @@
       "unpin": "Unpin column",
       "pin": "Pin column to the left",
       "hidden": "Hidden",
-      "countOne": "{{count}} record",
-      "countMany": "{{count}} records",
-      "exportJson": "Export JSON",
-      "bulkImport": "Bulk Import",
-      "apiEndpoint": "API Endpoint",
+      "countOne": "{{count}} in total",
+      "countMany": "{{count}} in total",
+      "exportJson": "Export",
+      "bulkImport": "Import",
+      "apiEndpoint": "API",
       "loadFailed": "The records could not be loaded.",
       "exportFailed": "Export failed: {{message}}",
       "columnId": "ID",
@@ -168,6 +167,13 @@
       "sectionShow": "Show",
       "sectionHide": "Hide",
       "sectionFieldCount": "{{count}} fields",
+      "fieldLevel": {
+        "label": "Fields shown",
+        "everyday": "Everyday",
+        "occasional": "Occasional",
+        "technical": "Technical",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Preview & Permalink",
       "permalinkHint": "Click the path component to override the automatically generated slug.",
       "settings": "Settings",
@@ -180,8 +186,9 @@
       "passwordPlaceholder": "Current password",
       "unlockConfirm": "Unlock record",
       "deletePermanently": "Delete Permanently",
-      "relatedRecords": "Related records",
+      "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
+      "recordPart": { "download": "Download {{title}}" },
       "viewMode": "Record view mode",
       "formView": "Form view",
       "jsonView": "JSON view",
@@ -214,7 +221,7 @@
       "newEntry": "New Entry",
       "createTitle": "Create {{name}}",
       "untitled": "Untitled {{name}}",
-      "newSubtitle": "Define a new record for {{name}}",
+      "newSubtitle": "Fill in the details, then save.",
       "editSubtitle": "Modify existing {{name}}",
       "summary": "Commit summary (optional)",
       "preview": "Preview",
@@ -278,7 +285,7 @@
       "validState": "Valid JSON — the form is in sync."
     },
     "info": {
-      "title": "Record Info",
+      "title": "Details",
       "id": "Identifier",
       "created": "Created",
       "updated": "Last Update"
@@ -290,7 +297,7 @@
       "hint": "Enter saves · Esc closes · images and everything else are in the full editor",
       "noFields": "Nothing in this collection can be changed from the list."
     },
-    "recordsInThisCollectionAre": "Records in this collection are written by the runtime. Open the list to see the ones that exist.",
+    "recordsInThisCollectionAre": "These are added automatically, not by hand. Open the list to see them.",
     "componentNotRegistered": "Component \"{{name}}\" not registered by any plugin.",
     "notCreatedByHand": "{{title}} are not created by hand",
     "backTo": "Back to {{title}}",
@@ -347,7 +354,7 @@
     "table": {
       "showing": "Showing {{from}}-{{to}} of {{total}} records",
       "actions": "Actions",
-      "empty": "No records found"
+      "empty": "Nothing here yet"
     },
     "color": {
       "choose": "Choose colour",
@@ -426,6 +433,7 @@
       "from": "from",
       "pluginSettings": "Plugin settings",
       "overrideUnlocked": "Override unlocked",
+      "about": "About {{label}}",
       "unlockTitle": "Unlock \"{{label}}\" to edit",
       "unlock": "Unlock edit",
       "readOnly": "Read only",

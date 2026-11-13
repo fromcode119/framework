@@ -1,4 +1,5 @@
 import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
+import type { IEntityRecordAction } from '@core/services/entity-records/interfaces/entity-record-action.interface';
 import type { IEntityRecordItem } from '@core/services/entity-records/interfaces/entity-record-item.interface';
 
 /**
@@ -23,7 +24,11 @@ export interface IPluginContextEntityRecords {
      * which is what every provider written before subjects existed is.
      */
     matchKeys?: string[];
+    /** The part of a record these belong to (`payment`, `delivery`, …) — see the registration contract. */
+    part?: string;
     resolve: (ref: IEntityRecordRef) => Promise<IEntityRecordItem[]>;
+    /** What the operator can start from the subject (a refund, a shipment) — links to this plugin's own screens. */
+    actions?: (ref: IEntityRecordRef) => Promise<IEntityRecordAction[]>;
   }): any;
   /**
    * Ask what relates to a subject — the same question the admin's related-records panel asks. Lets a

@@ -92,7 +92,6 @@
     "list": {
       "records": "Regjistrime",
       "searchPlaceholder": "Kërko {{name}}...",
-      "description": "Menaxhoni dhe organizoni regjistrimet e {{name}}.",
       "importDone": "U importuan me sukses {{count}} regjistrime. {{errors}} gabime.",
       "importFailed": "Importi dështoi: {{message}}",
       "statusUpdateFailed": "Gabim gjatë përditësimit të statusit",
@@ -168,6 +167,13 @@
       "sectionShow": "Shfaq",
       "sectionHide": "Fshih",
       "sectionFieldCount": "{{count}} fusha",
+      "fieldLevel": {
+        "label": "Fushat e shfaqura",
+        "everyday": "Të përditshme",
+        "occasional": "Të rastit",
+        "technical": "Teknike",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Paraparje & Permalidhje",
       "permalinkHint": "Klikoni pjesën e shtegut për të anashkaluar slug-un e krijuar automatikisht.",
       "settings": "Cilësime",
@@ -182,6 +188,7 @@
       "deletePermanently": "Fshije përgjithmonë",
       "relatedRecords": "Regjistrime të lidhura",
       "relatedEmpty": "Ende asnjë shtojcë tjetër nuk ka regjistrim të lidhur me këtë.",
+      "recordPart": { "download": "Shkarko {{title}}" },
       "viewMode": "Mënyra e shfaqjes së regjistrimit",
       "formView": "Pamje formulari",
       "jsonView": "Pamje JSON",
@@ -426,6 +433,7 @@
       "from": "nga",
       "pluginSettings": "Cilësimet e shtojcës",
       "overrideUnlocked": "Mbishkrimi u shkyç",
+      "about": "Rreth {{label}}",
       "unlockTitle": "Shkyçni \"{{label}}\" për ta redaktuar",
       "unlock": "Shkyç redaktimin",
       "readOnly": "Vetëm për lexim",

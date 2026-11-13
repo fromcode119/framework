@@ -92,7 +92,6 @@
     "list": {
       "records": "记录",
       "searchPlaceholder": "搜索{{name}}...",
-      "description": "管理和整理{{name}}记录。",
       "importDone": "已成功导入 {{count}} 条记录。{{errors}} 个错误。",
       "importFailed": "导入失败：{{message}}",
       "statusUpdateFailed": "更新状态时出错",
@@ -168,6 +167,13 @@
       "sectionShow": "显示",
       "sectionHide": "隐藏",
       "sectionFieldCount": "{{count}} 个字段",
+      "fieldLevel": {
+        "label": "显示的字段",
+        "everyday": "常用",
+        "occasional": "偶尔使用",
+        "technical": "技术",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "预览与固定链接",
       "permalinkHint": "点击路径部分可覆盖自动生成的别名。",
       "settings": "设置",
@@ -182,6 +188,7 @@
       "deletePermanently": "永久删除",
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
+      "recordPart": { "download": "下载 {{title}}" },
       "viewMode": "记录查看模式",
       "formView": "表单视图",
       "jsonView": "JSON 视图",
@@ -426,6 +433,7 @@
       "from": "来自",
       "pluginSettings": "插件设置",
       "overrideUnlocked": "覆盖已解锁",
+      "about": "关于 {{label}}",
       "unlockTitle": "解锁“{{label}}”以编辑",
       "unlock": "解锁编辑",
       "readOnly": "只读",

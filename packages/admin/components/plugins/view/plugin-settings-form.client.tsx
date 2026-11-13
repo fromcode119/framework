@@ -78,7 +78,7 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
 
         {/* The group's own tabs: a second band under the page's tabs, like the type row on Integrations. */}
         {tabs.length > 1 ? (
-          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[13px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
             {tabs.map((tab: any) => (
               <button type="button" key={tab.id} onClick={() => this.selectTab(tab.id)} aria-current={tab.id === current ? 'page' : undefined}
                 className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${tab.id === current

@@ -17,6 +17,7 @@ import { UsersPageHeader } from '@/app/users/components/view/users-page-header.c
 import type { IUser } from '@/app/users/interfaces/user.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NotificationType } from '@/components/enums/notification-type.enum';
+import { Input } from '@/components/ui/view/input.client';
 
 export class UsersPage extends AdminComponent {
   private mounted = false;
@@ -165,16 +166,12 @@ export class UsersPage extends AdminComponent {
               <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors">
                 <FrameworkIcons.Search size={18} />
               </div>
-              <input
+              <Input
                 type="text"
                 placeholder={AdminI18n.t('users.searchUserBaseByName')}
                 value={searchQuery}
                 onChange={(e) => { this.searchQuery = e.target.value; }}
-                className={`w-full h-9 rounded-lg ps-11 pe-4 outline-none border transition-colors text-[13px] font-medium tracking-tight ${
-                  theme === ThemeMode.DARK
-                    ? 'bg-slate-900/50 border-slate-800 text-white focus:border-indigo-500/50 focus:bg-slate-900'
-                    : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500'
-                }`}
+                inputClassName="ps-11"
               />
             </div>
           </div>

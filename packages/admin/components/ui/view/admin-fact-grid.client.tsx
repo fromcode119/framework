@@ -28,7 +28,7 @@ export class AdminFactGrid extends PureReactor {
   private renderFact(fact: IAdminFact): ReactNode {
     return (
       <div key={fact.key} className={`min-w-0 ${fact.wide ? 'col-span-full' : ''}`}>
-        <div className="mb-1 text-[9px] font-bold uppercase tracking-[0.09em] text-slate-400 dark:text-slate-500">
+        <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.09em] text-slate-400 dark:text-slate-500">
           {fact.label}
         </div>
         <div className={`text-[13px] font-medium leading-snug ${fact.note ? 'text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
@@ -43,14 +43,14 @@ export class AdminFactGrid extends PureReactor {
 
   render(): ReactNode {
     return (
-      <div className={`overflow-hidden rounded-xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-950/40 ${this.className ?? ''}`}>
-        <div className="flex items-center gap-2 border-b border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-slate-900">
-          <FrameworkIcons.Lock size={12} className="shrink-0 text-slate-400 dark:text-slate-500" />
-          <p className="text-[10.5px] font-semibold leading-relaxed text-slate-500 dark:text-slate-400">
-            {this.lockLabel}
-          </p>
-        </div>
-        <div className="px-3.5 py-3.5">
+      <div className={this.className ?? ''}>
+        {/* No box of its own: inside a panel it was a frame within a frame, and its lock bar a second
+            heading. Who wrote the values is one quiet line above them. */}
+        <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500">
+          <FrameworkIcons.Lock size={11} className="shrink-0" />
+          {this.lockLabel}
+        </p>
+        <div>
           {/* `minmax(0,1fr)`, never a bare `1fr`: a bare track is `min-width:auto`, so one long
               unbroken value — an address, a URL — widens its column and pushes the grid past the
               panel. And `min(170px,100%)`, not a bare 170px: in a container narrower than one

@@ -39,10 +39,16 @@ export abstract class FieldRendererViewState extends Reactor {
 
   @state activeLocale = this.defaultLocale;
   @state isLocaleMenuOpen = false;
+  /** The field's explanation is open — see `FieldHelpButton`. */
+  @state helpOpen = false;
   /** Set once the operator picks a language; until then the field follows the site's default. */
   protected localeChosen = false;
 
   protected outsideClickAttached = false;
+
+  @bound protected toggleHelp(): void {
+    this.helpOpen = !this.helpOpen;
+  }
 
   protected get localization() {
     return AdminServices.getInstance().localization;

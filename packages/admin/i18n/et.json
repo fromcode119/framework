@@ -92,7 +92,6 @@
     "list": {
       "records": "Kirjed",
       "searchPlaceholder": "Otsi: {{name}}...",
-      "description": "Hallake ja korraldage kirjeid: {{name}}.",
       "importDone": "Imporditi edukalt {{count}} kirjet. Vigu: {{errors}}.",
       "importFailed": "Import ebaõnnestus: {{message}}",
       "statusUpdateFailed": "Oleku uuendamine ebaõnnestus",
@@ -168,6 +167,13 @@
       "sectionShow": "Näita",
       "sectionHide": "Peida",
       "sectionFieldCount": "{{count}} välja",
+      "fieldLevel": {
+        "label": "Kuvatavad väljad",
+        "everyday": "Igapäevased",
+        "occasional": "Aeg-ajalt vajalikud",
+        "technical": "Tehnilised",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Eelvaade ja püsilink",
       "permalinkHint": "Automaatselt loodud slugi muutmiseks klõpsake tee osal.",
       "settings": "Seaded",
@@ -182,6 +188,7 @@
       "deletePermanently": "Kustuta jäädavalt",
       "relatedRecords": "Seotud kirjed",
       "relatedEmpty": "Ühelgi teisel pluginal pole veel selle kirjega seotud kirjet.",
+      "recordPart": { "download": "Laadi alla {{title}}" },
       "viewMode": "Kirje vaaterežiim",
       "formView": "Vormivaade",
       "jsonView": "JSON-vaade",
@@ -426,6 +433,7 @@
       "from": "allikas",
       "pluginSettings": "Plugina seaded",
       "overrideUnlocked": "Alistus avatud",
+      "about": "Välja {{label}} kohta",
       "unlockTitle": "Ava \"{{label}}\" muutmiseks",
       "unlock": "Ava muutmiseks",
       "readOnly": "Kirjutuskaitstud",

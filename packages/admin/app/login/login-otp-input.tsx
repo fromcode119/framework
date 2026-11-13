@@ -1,5 +1,6 @@
 import type { ClipboardEvent, KeyboardEvent, ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
+import { Input } from '@/components/ui/view/input.client';
 
 /**
  * A six-digit authenticator code as six boxes. Typing moves forward, Backspace on an empty box moves
@@ -16,7 +17,7 @@ export class LoginOtpInput extends PureReactor {
   @prop declare invalid?: boolean;
 
   private static readonly LENGTH = 6;
-  private readonly boxes: Array<HTMLInputElement | null> = [];
+  private readonly boxes: Array<Input | null> = [];
 
   /**
    * What the visitor put into one box: a whole code when the phone autofilled it, otherwise the last
@@ -64,10 +65,10 @@ export class LoginOtpInput extends PureReactor {
     return (
       <div className={`fc-login__otp${this.invalid ? ' is-invalid' : ''}`} role="group" aria-label={this.label}>
         {slots.map((digit, index) => (
-          <input
+          <Input
             key={index}
-            ref={(el) => { this.boxes[index] = el; }}
-            className="fc-login__otp-box"
+            ref={(el: Input | null) => { this.boxes[index] = el; }}
+            inputClassName={`text-center font-semibold${this.invalid ? ' !border-rose-500' : ''}`}
             inputMode="numeric"
             pattern="[0-9]*"
             maxLength={LoginOtpInput.LENGTH}

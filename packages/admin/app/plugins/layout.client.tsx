@@ -159,7 +159,7 @@ export class PluginsLayout extends AdminComponent {
                     {AdminI18n.t('plugins.detail.pluginEcosystem')}
                   </span>
                 </div>
-                <p className="text-[9px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.expandYourSystemCapabilitiesWith')}</p>
+                <p className="text-[10px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.expandYourSystemCapabilitiesWith')}</p>
               </div>
 
               <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-wide text-slate-400">

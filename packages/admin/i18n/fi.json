@@ -92,7 +92,6 @@
     "list": {
       "records": "Tietueet",
       "searchPlaceholder": "Hae: {{name}}...",
-      "description": "Hallitse ja järjestä kokoelman {{name}} tietueita.",
       "importDone": "{{count}} tietuetta tuotiin onnistuneesti. Virheitä: {{errors}}.",
       "importFailed": "Tuonti epäonnistui: {{message}}",
       "statusUpdateFailed": "Virhe tilan päivityksessä",
@@ -168,6 +167,13 @@
       "sectionShow": "Näytä",
       "sectionHide": "Piilota",
       "sectionFieldCount": "{{count}} kenttää",
+      "fieldLevel": {
+        "label": "Näytettävät kentät",
+        "everyday": "Päivittäiset",
+        "occasional": "Satunnaiset",
+        "technical": "Tekniset",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Esikatselu ja pysyvä linkki",
       "permalinkHint": "Napsauta polun osaa, jos haluat ohittaa automaattisesti luodun polkutunnisteen.",
       "settings": "Asetukset",
@@ -182,6 +188,7 @@
       "deletePermanently": "Poista pysyvästi",
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
+      "recordPart": { "download": "Lataa {{title}}" },
       "viewMode": "Tietueen näkymätila",
       "formView": "Lomakenäkymä",
       "jsonView": "JSON-näkymä",
@@ -426,6 +433,7 @@
       "from": "lähteestä",
       "pluginSettings": "Lisäosan asetukset",
       "overrideUnlocked": "Ohitus avattu",
+      "about": "Tietoja: {{label}}",
       "unlockTitle": "Avaa \"{{label}}\" muokattavaksi",
       "unlock": "Avaa muokkaus",
       "readOnly": "Vain luku",

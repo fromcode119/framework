@@ -62,7 +62,9 @@ export class PluginEntityRecordsRegistryService {
       key,
       label: label || key,
       matchKeys: PluginEntityRecordsRegistryService.normalizeMatchKeys(registration.matchKeys),
+      part: String(registration?.part || '').trim() || undefined,
       resolve: registration.resolve,
+      actions: typeof registration.actions === 'function' ? registration.actions : undefined,
       canonicalKey: `${namespace}:${pluginSlug}:${key}`,
     };
   }

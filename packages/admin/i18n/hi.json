@@ -92,7 +92,6 @@
     "list": {
       "records": "रिकॉर्ड",
       "searchPlaceholder": "{{name}} खोजें...",
-      "description": "{{name}} रिकॉर्ड प्रबंधित और व्यवस्थित करें।",
       "importDone": "{{count}} रिकॉर्ड सफलतापूर्वक इम्पोर्ट किए गए। {{errors}} त्रुटियाँ।",
       "importFailed": "इम्पोर्ट विफल: {{message}}",
       "statusUpdateFailed": "स्थिति अपडेट करने में त्रुटि",
@@ -168,6 +167,13 @@
       "sectionShow": "दिखाएँ",
       "sectionHide": "छिपाएँ",
       "sectionFieldCount": "{{count}} फ़ील्ड",
+      "fieldLevel": {
+        "label": "दिखाए गए फ़ील्ड",
+        "everyday": "रोज़मर्रा",
+        "occasional": "कभी-कभार",
+        "technical": "तकनीकी",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "पूर्वावलोकन और परमालिंक",
       "permalinkHint": "स्वचालित रूप से बने slug को बदलने के लिए पाथ वाले हिस्से पर क्लिक करें।",
       "settings": "सेटिंग्स",
@@ -182,6 +188,7 @@
       "deletePermanently": "स्थायी रूप से हटाएँ",
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
+      "recordPart": { "download": "डाउनलोड करें {{title}}" },
       "viewMode": "रिकॉर्ड व्यू मोड",
       "formView": "फ़ॉर्म व्यू",
       "jsonView": "JSON व्यू",
@@ -426,6 +433,7 @@
       "from": "स्रोत:",
       "pluginSettings": "प्लगइन सेटिंग्स",
       "overrideUnlocked": "ओवरराइड अनलॉक है",
+      "about": "{{label}} के बारे में",
       "unlockTitle": "संपादित करने के लिए \"{{label}}\" अनलॉक करें",
       "unlock": "संपादन अनलॉक करें",
       "readOnly": "केवल पढ़ने के लिए",

@@ -92,7 +92,6 @@
     "list": {
       "records": "Registros",
       "searchPlaceholder": "Buscar {{name}}...",
-      "description": "Gestione y organice los registros de {{name}}.",
       "importDone": "Se importaron {{count}} registros correctamente. {{errors}} errores.",
       "importFailed": "Error en la importación: {{message}}",
       "statusUpdateFailed": "Error al actualizar el estado",
@@ -168,6 +167,13 @@
       "sectionShow": "Mostrar",
       "sectionHide": "Ocultar",
       "sectionFieldCount": "{{count}} campos",
+      "fieldLevel": {
+        "label": "Campos mostrados",
+        "everyday": "Habituales",
+        "occasional": "Ocasionales",
+        "technical": "Técnicos",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Vista previa y enlace permanente",
       "permalinkHint": "Haga clic en el componente de la ruta para sustituir el slug generado automáticamente.",
       "settings": "Ajustes",
@@ -182,6 +188,7 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registros relacionados",
       "relatedEmpty": "Ningún otro plugin tiene todavía un registro vinculado a este.",
+      "recordPart": { "download": "Descargar {{title}}" },
       "viewMode": "Modo de vista del registro",
       "formView": "Vista de formulario",
       "jsonView": "Vista JSON",
@@ -426,6 +433,7 @@
       "from": "de",
       "pluginSettings": "Ajustes del plugin",
       "overrideUnlocked": "Edición desbloqueada",
+      "about": "Acerca de {{label}}",
       "unlockTitle": "Desbloquee \"{{label}}\" para editarlo",
       "unlock": "Desbloquear edición",
       "readOnly": "Solo lectura",

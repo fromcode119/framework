@@ -92,7 +92,6 @@
     "list": {
       "records": "Înregistrări",
       "searchPlaceholder": "Căutați în {{name}}...",
-      "description": "Gestionați și organizați înregistrările {{name}}.",
       "importDone": "Au fost importate cu succes {{count}} înregistrări. {{errors}} erori.",
       "importFailed": "Importul a eșuat: {{message}}",
       "statusUpdateFailed": "Eroare la actualizarea stării",
@@ -168,6 +167,13 @@
       "sectionShow": "Afișează",
       "sectionHide": "Ascunde",
       "sectionFieldCount": "{{count}} câmpuri",
+      "fieldLevel": {
+        "label": "Câmpuri afișate",
+        "everyday": "De zi cu zi",
+        "occasional": "Ocazionale",
+        "technical": "Tehnice",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Previzualizare și permalink",
       "permalinkHint": "Faceți clic pe componenta căii pentru a înlocui slug-ul generat automat.",
       "settings": "Setări",
@@ -182,6 +188,7 @@
       "deletePermanently": "Șterge definitiv",
       "relatedRecords": "Înregistrări asociate",
       "relatedEmpty": "Niciun alt plugin nu deține încă o înregistrare legată de aceasta.",
+      "recordPart": { "download": "Descarcă {{title}}" },
       "viewMode": "Mod de vizualizare a înregistrării",
       "formView": "Vizualizare formular",
       "jsonView": "Vizualizare JSON",
@@ -426,6 +433,7 @@
       "from": "din",
       "pluginSettings": "Setări plugin",
       "overrideUnlocked": "Suprascriere deblocată",
+      "about": "Despre {{label}}",
       "unlockTitle": "Deblocați „{{label}}” pentru editare",
       "unlock": "Deblochează editarea",
       "readOnly": "Doar citire",

@@ -17,6 +17,7 @@ import { ImportStepDone } from '@/app/sites/import/import-step-done.client';
 import { FileDropzone } from '@/components/ui/view/file-dropzone.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
+import { Input } from '@/components/ui/view/input.client';
 
 /**
  * Import a site archive: upload → identity → PREVIEW → execute.
@@ -226,7 +227,7 @@ export class ImportSitePageClient extends AdminComponent {
         <label className="fc-import-card__passphrase-label" htmlFor="fc-transit-passphrase">
           {AdminI18n.t('sites.importPlan.archivePassphrase')}
         </label>
-        <input
+        <Input
           id="fc-transit-passphrase"
           type="password"
           autoComplete="off"

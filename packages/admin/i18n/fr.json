@@ -92,7 +92,6 @@
     "list": {
       "records": "Enregistrements",
       "searchPlaceholder": "Rechercher dans {{name}}...",
-      "description": "Gérez et organisez les enregistrements {{name}}.",
       "importDone": "{{count}} enregistrements importés avec succès. {{errors}} erreurs.",
       "importFailed": "Échec de l'importation : {{message}}",
       "statusUpdateFailed": "Erreur lors de la mise à jour du statut",
@@ -168,6 +167,13 @@
       "sectionShow": "Afficher",
       "sectionHide": "Masquer",
       "sectionFieldCount": "{{count}} champs",
+      "fieldLevel": {
+        "label": "Champs affichés",
+        "everyday": "Courants",
+        "occasional": "Occasionnels",
+        "technical": "Techniques",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Aperçu et permalien",
       "permalinkHint": "Cliquez sur l’élément du chemin pour remplacer le slug généré automatiquement.",
       "settings": "Paramètres",
@@ -182,6 +188,7 @@
       "deletePermanently": "Supprimer définitivement",
       "relatedRecords": "Enregistrements liés",
       "relatedEmpty": "Aucun autre plugin ne possède encore d’enregistrement lié à celui-ci.",
+      "recordPart": { "download": "Télécharger {{title}}" },
       "viewMode": "Mode d’affichage de l’enregistrement",
       "formView": "Vue formulaire",
       "jsonView": "Vue JSON",
@@ -426,6 +433,7 @@
       "from": "depuis",
       "pluginSettings": "Paramètres du plugin",
       "overrideUnlocked": "Remplacement déverrouillé",
+      "about": "À propos de {{label}}",
       "unlockTitle": "Déverrouiller « {{label}} » pour le modifier",
       "unlock": "Déverrouiller",
       "readOnly": "Lecture seule",

@@ -92,7 +92,6 @@
     "list": {
       "records": "Datensätze",
       "searchPlaceholder": "{{name}} durchsuchen...",
-      "description": "{{name}}-Datensätze verwalten und organisieren.",
       "importDone": "{{count}} Datensätze erfolgreich importiert. {{errors}} Fehler.",
       "importFailed": "Import fehlgeschlagen: {{message}}",
       "statusUpdateFailed": "Fehler beim Aktualisieren des Status",
@@ -168,6 +167,13 @@
       "sectionShow": "Einblenden",
       "sectionHide": "Ausblenden",
       "sectionFieldCount": "{{count}} Felder",
+      "fieldLevel": {
+        "label": "Angezeigte Felder",
+        "everyday": "Alltägliche",
+        "occasional": "Gelegentliche",
+        "technical": "Technische",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Vorschau & Permalink",
       "permalinkHint": "Klicken Sie auf den Pfadbestandteil, um den automatisch erzeugten Slug zu überschreiben.",
       "settings": "Einstellungen",
@@ -182,6 +188,7 @@
       "deletePermanently": "Endgültig löschen",
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
+      "recordPart": { "download": "Herunterladen {{title}}" },
       "viewMode": "Ansichtsmodus des Datensatzes",
       "formView": "Formularansicht",
       "jsonView": "JSON-Ansicht",
@@ -426,6 +433,7 @@
       "from": "aus",
       "pluginSettings": "Plugin-Einstellungen",
       "overrideUnlocked": "Überschreibung entsperrt",
+      "about": "Über {{label}}",
       "unlockTitle": "\"{{label}}\" zum Bearbeiten entsperren",
       "unlock": "Bearbeitung entsperren",
       "readOnly": "Schreibgeschützt",

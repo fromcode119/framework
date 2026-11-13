@@ -26,6 +26,7 @@
     "changelog:write": "node packages/arch-guard/dist/arch-guard-cli.cjs changelog --write",
     "check:file-size:list": "node packages/arch-guard/dist/arch-guard-cli.cjs file-size --list",
     "check:sdk-boundary": "node packages/arch-guard/dist/arch-guard-cli.cjs sdk-boundary",
+    "check:plugin-admin-controls": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-admin-controls",
     "check:plugin-ui-hookfree": "node packages/arch-guard/dist/arch-guard-cli.cjs plugin-ui-hookfree",
     "check:framework-domain": "node packages/arch-guard/dist/arch-guard-cli.cjs framework-domain",
     "check:db-find-where": "node packages/arch-guard/dist/arch-guard-cli.cjs db-find-where",

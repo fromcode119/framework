@@ -7,11 +7,13 @@ import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
 import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
+import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
 import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
+import { EditFieldDepthSwitch } from '@/components/collection/edit/view/edit-field-depth-switch.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -35,6 +37,11 @@ export class EditPageBody extends PureReactor {
       revisions, revisionsLoading, activeVersionId, setSelectedRevision, setActiveVersionId,
       loadMoreRevisions, hasMoreRevisions
     } = edit;
+
+    // A new record can offer none of the correlation keys, so there is no question to ask yet.
+    const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
+    const navigate = (href: string) => edit.router?.push(href);
+    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key));
 
     return (
     <div className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
@@ -62,7 +69,6 @@ export class EditPageBody extends PureReactor {
         )}
 
 
-        <Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />
 
         {collection.admin?.tabs && collection.admin.tabs.length > 0 && (
           <div className={`flex items-center gap-2 mb-8 p-1.5 ${AdminClass.SURFACE} w-fit ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800' : 'bg-slate-50 border border-slate-100'}`}>
@@ -101,6 +107,8 @@ export class EditPageBody extends PureReactor {
             />
           </div>
         ) : (
+        <>
+        <EditFieldDepthSwitch depth={edit.fieldDepth} counts={edit.fieldLevelCounts} onChange={edit.setFieldDepth} />
         <div className="flex items-start gap-3">
           <EditPageSectionNav sections={navSections} theme={theme} />
           {/* The columns follow the width the form actually has, not the window's: with the menu and a
@@ -127,22 +135,21 @@ export class EditPageBody extends PureReactor {
               handleInputChange={handleInputChange}
               handlePatch={handlePatch}
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+              recordLinks={recordLinks}
+              navigate={navigate}
             />
-            {/* Only renders when the collection declared `admin.recordLinks` and this record can offer
-                at least one of those correlation keys. A new record can offer none. */}
-            {!isNew && (
-              <CollectionRecordLinksPanel
-                collection={collection}
-                formData={formData}
-                recordId={String(id)}
-                theme={theme}
-                navigate={(href: string) => edit.router?.push(href)}
-              />
+            {/* What is linked to this record and has no section of its own on this page. */}
+            {recordLinks && (
+              <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
+            {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
           </div>
 
           {renderSidebar && (
             <EditStickyColumn>
+            {/* What plugins add to the record sits BESIDE its own fields, and after them on a phone: above
+                the form it stood between the header and the record the operator opened the page to read. */}
+            <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
             <EditPageSidebar
               slug={slug}
               id={id}
@@ -179,6 +186,7 @@ export class EditPageBody extends PureReactor {
           </div>
           </div>
         </div>
+        </>
         )}
         </div>
         </div>

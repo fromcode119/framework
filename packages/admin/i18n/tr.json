@@ -92,7 +92,6 @@
     "list": {
       "records": "Kayıtlar",
       "searchPlaceholder": "{{name}} içinde ara...",
-      "description": "{{name}} kayıtlarını yönetin ve düzenleyin.",
       "importDone": "{{count}} kayıt başarıyla içe aktarıldı. {{errors}} hata.",
       "importFailed": "İçe aktarma başarısız oldu: {{message}}",
       "statusUpdateFailed": "Durum güncellenirken hata oluştu",
@@ -168,6 +167,13 @@
       "sectionShow": "Göster",
       "sectionHide": "Gizle",
       "sectionFieldCount": "{{count}} alan",
+      "fieldLevel": {
+        "label": "Gösterilen alanlar",
+        "everyday": "Günlük",
+        "occasional": "Ara sıra",
+        "technical": "Teknik",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Önizleme ve Kalıcı Bağlantı",
       "permalinkHint": "Otomatik oluşturulan kısa adı değiştirmek için yol bileşenine tıklayın.",
       "settings": "Ayarlar",
@@ -182,6 +188,7 @@
       "deletePermanently": "Kalıcı Olarak Sil",
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
+      "recordPart": { "download": "İndir {{title}}" },
       "viewMode": "Kayıt görünüm modu",
       "formView": "Form görünümü",
       "jsonView": "JSON görünümü",
@@ -426,6 +433,7 @@
       "from": "kaynak:",
       "pluginSettings": "Eklenti ayarları",
       "overrideUnlocked": "Geçersiz kılma kilidi açık",
+      "about": "{{label}} hakkında",
       "unlockTitle": "Düzenlemek için \"{{label}}\" kilidini açın",
       "unlock": "Düzenleme kilidini aç",
       "readOnly": "Salt okunur",

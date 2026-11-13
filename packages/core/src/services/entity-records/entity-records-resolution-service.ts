@@ -1,5 +1,8 @@
 import type { PluginEntityRecordsRegistryService } from '@core/services/entity-records/plugin-entity-records-registry-service';
+import { PluginTenantAccess } from '@core/plugin/tenant/plugin-tenant-access';
+import { RequestContextUtils } from '@core/context/request-context';
 import type { IEntityRecordGroup } from '@core/services/entity-records/interfaces/entity-record-group.interface';
+import type { IEntityRecordAction } from '@core/services/entity-records/interfaces/entity-record-action.interface';
 import type { IEntityRecordItem } from '@core/services/entity-records/interfaces/entity-record-item.interface';
 import type { IEntityRecordRef } from '@core/services/entity-records/interfaces/entity-record-ref.interface';
 import type { IEntityRecordsResult } from '@core/services/entity-records/interfaces/entity-records-result.interface';
@@ -34,23 +37,29 @@ export class EntityRecordsResolutionService {
     const settled = await Promise.all(
       providers.map(async (provider) => {
         try {
-          const result = await provider.resolve(safeRef);
-          return { provider, result: Array.isArray(result) ? result : [] };
+          // Only a subject has actions: "what can be started from this record" has no meaning for a person's timeline.
+          const [result, offered] = await Promise.all([provider.resolve(safeRef), safeRef.subject && provider.actions ? provider.actions(safeRef) : []]);
+          return { provider, result: Array.isArray(result) ? result : [], offered: Array.isArray(offered) ? offered : [] };
         } catch (error: any) {
           errors.push({
             provider: provider.canonicalKey,
             message: String(error?.message || error || 'provider failed'),
           });
-          return { provider, result: [] as IEntityRecordItem[] };
+          return { provider, result: [] as IEntityRecordItem[], offered: [] as IEntityRecordAction[] };
         }
       }),
     );
 
-    for (const { provider, result } of settled) {
+    const actions: IEntityRecordAction[] = [];
+    for (const { provider, result, offered } of settled) {
+      for (const raw of offered) {
+        const action = this.normalizeAction(raw, provider.canonicalKey, provider.part);
+        if (action) actions.push(action);
+      }
       if (!result.length) continue;
       usedProviders.push(provider.canonicalKey);
       for (const raw of result) {
-        const item = this.normalizeItem(raw, provider.label);
+        const item = this.normalizeItem(raw, provider.label, provider.part);
         if (item) items.push(item);
       }
     }
@@ -61,6 +70,7 @@ export class EntityRecordsResolutionService {
       ref: safeRef,
       items,
       groups: this.groupItems(items),
+      actions,
       providers: usedProviders,
       errors,
     };
@@ -100,15 +110,25 @@ export class EntityRecordsResolutionService {
    */
   private selectProviders(ref: IEntityRecordRef) {
     const subject = ref.subject;
-    if (!subject) return this.registry.list().filter((provider) => !provider.matchKeys?.length);
+    const running = this.registry.list().filter((provider) => this.runsHere(provider.pluginSlug));
+    if (!subject) return running.filter((provider) => !provider.matchKeys?.length);
     const offered = Object.keys(subject.keys);
     if (!offered.length) return [];
-    return this.registry
-      .list()
-      .filter((provider) => (provider.matchKeys ?? []).some((key) => offered.includes(key)));
+    return running.filter((provider) => (provider.matchKeys ?? []).some((key) => offered.includes(key)));
   }
 
-  private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string): IEntityRecordItem | null {
+  /**
+   * A provider registers once for the whole installation, but a site sees only the plugins it runs.
+   * Without this a site that never enabled a plugin still got that plugin's answer on its records —
+   * including an offer to start something on a screen the site does not have. Asked outside any site
+   * (a background job, a platform operator) nothing is narrowed: there is no site to narrow to.
+   */
+  private runsHere(pluginSlug: string): boolean {
+    if (!RequestContextUtils.getTenantId()) return true;
+    return PluginTenantAccess.isEnabledForCurrentTenant(pluginSlug);
+  }
+
+  private normalizeItem(raw: IEntityRecordItem, fallbackGroup: string, providerPart?: string): IEntityRecordItem | null {
     const id = String(raw?.id ?? '').trim();
     const title = String(raw?.title ?? '').trim();
     if (!id || !title) return null;
@@ -118,7 +138,17 @@ export class EntityRecordsResolutionService {
       title,
       group: String(raw?.group || fallbackGroup || 'Other').trim(),
       kind: String(raw?.kind || '').trim(),
+      part: String(raw?.part || providerPart || '').trim() || undefined,
     };
+  }
+
+  /** An action with nowhere to go is not one. Ids are namespaced by provider so two plugins cannot collide. */
+  private normalizeAction(raw: IEntityRecordAction, providerKey: string, providerPart?: string): IEntityRecordAction | null {
+    const id = String(raw?.id ?? '').trim();
+    const label = String(raw?.label ?? '').trim();
+    const href = String(raw?.href ?? '').trim();
+    if (!id || !label || !href) return null;
+    return { id: `${providerKey}:${id}`, label, href, icon: raw?.icon, part: String(raw?.part || providerPart || '').trim() || undefined };
   }
 
   private groupItems(items: IEntityRecordItem[]): IEntityRecordGroup[] {

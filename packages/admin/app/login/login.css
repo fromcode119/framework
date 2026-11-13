@@ -99,10 +99,8 @@
   cursor: pointer;
 }
 .fc-login__tool:hover { color: var(--fc-login-fg); }
-.fc-login__tool:focus-visible,
-.fc-login__language:focus-within { outline: 2px solid var(--fc-login-accent); outline-offset: 2px; }
+.fc-login__tool:focus-visible { outline: 2px solid var(--fc-login-accent); outline-offset: 2px; }
 .fc-login__tool--icon { width: 34px; padding: 0; justify-content: center; }
-.fc-login__language select { position: absolute; inset: 0; width: 100%; opacity: 0; cursor: pointer; }
 
 /* Headings and text */
 .fc-login__title { margin: 0 0 8px; font-size: 30px; font-weight: 700; letter-spacing: -0.025em; line-height: 1.15; text-wrap: balance; }
@@ -114,29 +112,11 @@
 .fc-login__label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
 .fc-login__label { font-size: 13.5px; font-weight: 600; }
 .fc-login__control { position: relative; }
-.fc-login__input {
-  width: 100%;
-  height: 48px;
-  border-radius: 12px;
-  border: 1px solid var(--fc-login-input-line);
-  background: var(--fc-login-input);
-  color: var(--fc-login-fg);
-  padding: 0 14px;
-  font-family: inherit; font-weight: 400; font-size: 15px; line-height: 1;
-  outline: none;
-  transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-}
-.fc-login__input--with-action { padding-right: 46px; }
-.fc-login__input:focus {
-  border-color: var(--fc-login-accent);
-  background: var(--fc-login-card);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-login-accent) 20%, transparent);
-}
-.fc-login__input[aria-invalid='true'] { border-color: var(--fc-login-danger); }
 .fc-login__reveal {
   position: absolute;
   right: 6px;
-  top: 6px;
+  top: 50%;
+  transform: translateY(-50%);
   width: 36px;
   height: 36px;
   display: grid;
@@ -204,24 +184,6 @@
 
 /* Six-digit code */
 .fc-login__otp { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; margin-bottom: 16px; }
-.fc-login__otp-box {
-  width: 100%;
-  height: 54px;
-  min-width: 0;
-  border-radius: 12px;
-  border: 1px solid var(--fc-login-input-line);
-  background: var(--fc-login-input);
-  color: var(--fc-login-fg);
-  text-align: center;
-  font-family: inherit; font-weight: 600; font-size: 22px; line-height: 1;
-  outline: none;
-}
-.fc-login__otp-box:focus {
-  border-color: var(--fc-login-accent);
-  background: var(--fc-login-card);
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--fc-login-accent) 20%, transparent);
-}
-.fc-login__otp.is-invalid .fc-login__otp-box { border-color: var(--fc-login-danger); }
 
 /* Help column */
 .fc-login__side { position: relative; overflow: hidden; background: var(--fc-login-side); min-height: 100%; }
@@ -259,7 +221,6 @@
   .fc-login__main { padding: 22px 22px 28px; }
   .fc-login__toolbar { margin-bottom: 22px; }
   .fc-login__side,
-  .fc-login__help-open,
-  .fc-login__language-name { display: none; }
+  .fc-login__help-open { display: none; }
   .fc-login__title { font-size: 26px; }
 }

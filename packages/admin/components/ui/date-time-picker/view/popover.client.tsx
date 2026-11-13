@@ -85,7 +85,7 @@ export class DateTimePickerPopover extends PureReactor {
             <div className={`mb-2.5 flex flex-col gap-2.5 rounded-xl p-3 ${theme === ThemeMode.DARK ? 'bg-slate-800/40 ring-1 ring-white/5' : 'bg-slate-50/80 ring-1 ring-black/5'}`}>
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[9px] font-bold uppercase tracking-[0.12em] text-slate-400">
+                  <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">
                     {AdminI18n.t('ui.date.selected')}
                   </p>
                   <p className={`truncate text-[13px] font-semibold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>

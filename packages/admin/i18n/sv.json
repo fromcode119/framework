@@ -92,7 +92,6 @@
     "list": {
       "records": "Poster",
       "searchPlaceholder": "Sök i {{name}}...",
-      "description": "Hantera och organisera poster i {{name}}.",
       "importDone": "{{count}} poster importerades. {{errors}} fel.",
       "importFailed": "Importen misslyckades: {{message}}",
       "statusUpdateFailed": "Det gick inte att uppdatera status",
@@ -168,6 +167,13 @@
       "sectionShow": "Visa",
       "sectionHide": "Dölj",
       "sectionFieldCount": "{{count}} fält",
+      "fieldLevel": {
+        "label": "Visade fält",
+        "everyday": "Vardagliga",
+        "occasional": "Tillfälliga",
+        "technical": "Tekniska",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Förhandsvisning och permalänk",
       "permalinkHint": "Klicka på sökvägsdelen för att ersätta den automatiskt genererade sluggen.",
       "settings": "Inställningar",
@@ -182,6 +188,7 @@
       "deletePermanently": "Ta bort permanent",
       "relatedRecords": "Relaterade poster",
       "relatedEmpty": "Inget annat tillägg har ännu någon post kopplad till den här.",
+      "recordPart": { "download": "Ladda ned {{title}}" },
       "viewMode": "Visningsläge för post",
       "formView": "Formulärvy",
       "jsonView": "JSON-vy",
@@ -426,6 +433,7 @@
       "from": "från",
       "pluginSettings": "Tilläggsinställningar",
       "overrideUnlocked": "Åsidosättning upplåst",
+      "about": "Om {{label}}",
       "unlockTitle": "Lås upp \"{{label}}\" för att redigera",
       "unlock": "Lås upp",
       "readOnly": "Skrivskyddad",

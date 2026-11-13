@@ -31,7 +31,7 @@ export class AdminPageFooter extends PureReactor {
                 {label}
               </span>
             </div>
-            <p className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{description}</p>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{description}</p>
           </div>
 
           <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">

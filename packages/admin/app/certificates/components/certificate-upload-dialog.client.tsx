@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { TextArea } from '@/components/ui/view/text-area.client';
 
 /**
  * Paste a certificate and its key for one host.
@@ -53,12 +54,6 @@ export class CertificateUploadDialog extends AdminComponent {
     }
   }
 
-  private box(dark: boolean): string {
-    return `w-full h-28 rounded-lg border px-3 py-2 font-mono text-[11px] leading-snug resize-y ${
-      dark ? 'bg-slate-950 border-slate-700 text-slate-200 placeholder:text-slate-600'
-           : 'bg-white border-slate-200 text-slate-800 placeholder:text-slate-400'}`;
-  }
-
   render(): ReactNode {
     if (!this.isOpen) return null;
     const dark = this.theme === ThemeMode.DARK;
@@ -85,23 +80,23 @@ export class CertificateUploadDialog extends AdminComponent {
             <label className={`block text-[11px] font-semibold mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
               {AdminI18n.t('certificates.certificateChainPem')}
             </label>
-            <textarea
+            <TextArea
               value={this.certificatePem}
               onChange={this.onCertificate}
               spellCheck={false}
               placeholder={'-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----'}
-              className={this.box(dark)}
+              inputClassName="h-28 font-mono text-[11px] leading-snug"
             />
 
             <label className={`block text-[11px] font-semibold mt-3 mb-1 ${dark ? 'text-slate-300' : 'text-slate-600'}`}>
               {AdminI18n.t('certificates.privateKeyPem')}
             </label>
-            <textarea
+            <TextArea
               value={this.privateKeyPem}
               onChange={this.onKey}
               spellCheck={false}
               placeholder={'-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----'}
-              className={this.box(dark)}
+              inputClassName="h-28 font-mono text-[11px] leading-snug"
             />
             <p className={`mt-1.5 text-[11px] leading-snug ${dark ? 'text-slate-500' : 'text-slate-400'}`}>
               {AdminI18n.t('certificates.storedEncryptedItIsNever')}

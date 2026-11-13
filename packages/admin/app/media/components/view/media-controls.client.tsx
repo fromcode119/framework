@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/view/button.client';
 import { Select } from '@/components/ui/view/select.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import type { IMediaFolder } from '@/app/media/interfaces/media-folder.interface';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
 
 export class MediaControls extends PureReactor {
   @prop declare theme: ThemeMode;
@@ -123,12 +123,12 @@ export class MediaControls extends PureReactor {
 
           <div className="relative flex-1 min-w-0 group">
             <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={18} />
-            <input
+            <Input
               type="text"
               placeholder={AdminI18n.t('media.searchMedia')}
               value={searchQuery}
               onChange={this.onSearchChange}
-              className={`w-full ${AdminClass.SURFACE} py-2 ps-12 pe-4 text-[13px] outline-none border transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500/50' : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 shadow-sm'}`}
+              inputClassName="ps-12"
             />
           </div>
           {this.activeView === 'files' ? (

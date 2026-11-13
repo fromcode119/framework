@@ -92,7 +92,6 @@
     "list": {
       "records": "Registos",
       "searchPlaceholder": "Pesquisar {{name}}...",
-      "description": "Gerir e organizar registos de {{name}}.",
       "importDone": "{{count}} registos importados com sucesso. {{errors}} erros.",
       "importFailed": "A importação falhou: {{message}}",
       "statusUpdateFailed": "Erro ao atualizar o estado",
@@ -168,6 +167,13 @@
       "sectionShow": "Mostrar",
       "sectionHide": "Ocultar",
       "sectionFieldCount": "{{count}} campos",
+      "fieldLevel": {
+        "label": "Campos mostrados",
+        "everyday": "Do dia a dia",
+        "occasional": "Ocasionais",
+        "technical": "Técnicos",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Pré-visualização e ligação permanente",
       "permalinkHint": "Clique no componente do caminho para substituir o slug gerado automaticamente.",
       "settings": "Definições",
@@ -182,6 +188,7 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
+      "recordPart": { "download": "Transferir {{title}}" },
       "viewMode": "Modo de visualização do registo",
       "formView": "Vista de formulário",
       "jsonView": "Vista JSON",
@@ -426,6 +433,7 @@
       "from": "de",
       "pluginSettings": "Definições do plugin",
       "overrideUnlocked": "Substituição desbloqueada",
+      "about": "Sobre {{label}}",
       "unlockTitle": "Desbloquear \"{{label}}\" para editar",
       "unlock": "Desbloquear edição",
       "readOnly": "Só de leitura",

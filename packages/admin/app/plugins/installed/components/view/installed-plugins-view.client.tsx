@@ -17,6 +17,7 @@ import { PlatformScopeGate } from '@/components/view/platform-scope-gate.client'
 import { SitePluginOffers } from '@/app/plugins/installed/components/view/site-plugin-offers.client';
 import { SiteOwnPlugins } from '@/app/plugins/installed/components/view/site-own-plugins.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
 
 export class InstalledPluginsView extends Reactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -130,7 +131,7 @@ export class InstalledPluginsView extends Reactor {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1 group">
               <FrameworkIcons.Search className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" size={16} />
-              <input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} className={`w-full h-9 ${AdminClass.SURFACE} ps-11 pe-4 outline-none border-0 font-bold transition-all ${theme === ThemeMode.DARK ? 'bg-slate-900/60 text-white placeholder:text-slate-600 focus:ring-2 ring-indigo-500/50 shadow-sm' : 'bg-white text-slate-900 placeholder:text-slate-400 focus:ring-2 ring-indigo-500/20 shadow-sm'}`} />
+              <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-11" />
             </div>
             {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
             {this.canManage ? <button onClick={this.handleUploadClick} disabled={this.isUploading || this.isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.isUploading || this.isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}</span></button> : null}

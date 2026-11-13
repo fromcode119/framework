@@ -8,6 +8,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { Input } from '@/components/ui/view/input.client';
 
 export class ActivityPageHeader extends PureReactor {
   @prop declare mode: ActivityMode;
@@ -66,16 +67,12 @@ export class ActivityPageHeader extends PureReactor {
               </button>
             </div>
             <form onSubmit={this.onSearch} className="flex items-center gap-2">
-              <input
+              <Input
                 type="text"
                 placeholder={AdminI18n.t('activity.searchLogs', { mode: mode })}
                 value={this.searchQuery}
                 onChange={this.changeSearchQuery}
-                className={`px-3 h-9 rounded-lg border text-xs font-medium outline-none transition-all w-48 ${
-                  theme === ThemeMode.DARK
-                    ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500'
-                    : 'bg-white border-slate-200 text-slate-900 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 shadow-sm'
-                }`}
+                className="w-48"
               />
               <Button
                 type="submit"

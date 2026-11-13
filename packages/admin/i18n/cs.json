@@ -92,7 +92,6 @@
     "list": {
       "records": "Záznamy",
       "searchPlaceholder": "Hledat {{name}}...",
-      "description": "Správa a organizace záznamů {{name}}.",
       "importDone": "Úspěšně importováno záznamů: {{count}}. Chyby: {{errors}}.",
       "importFailed": "Import se nezdařil: {{message}}",
       "statusUpdateFailed": "Chyba při změně stavu",
@@ -168,6 +167,13 @@
       "sectionShow": "Zobrazit",
       "sectionHide": "Skrýt",
       "sectionFieldCount": "Počet polí: {{count}}",
+      "fieldLevel": {
+        "label": "Zobrazená pole",
+        "everyday": "Každodenní",
+        "occasional": "Občasná",
+        "technical": "Technická",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Náhled a trvalý odkaz",
       "permalinkHint": "Kliknutím na část cesty přepíšete automaticky vygenerovaný slug.",
       "settings": "Nastavení",
@@ -182,6 +188,7 @@
       "deletePermanently": "Trvale smazat",
       "relatedRecords": "Související záznamy",
       "relatedEmpty": "Žádný jiný plugin zatím nemá záznam propojený s tímto.",
+      "recordPart": { "download": "Stáhnout {{title}}" },
       "viewMode": "Režim zobrazení záznamu",
       "formView": "Formulář",
       "jsonView": "JSON",
@@ -426,6 +433,7 @@
       "from": "z",
       "pluginSettings": "Nastavení pluginu",
       "overrideUnlocked": "Přepsání odemčeno",
+      "about": "O poli {{label}}",
       "unlockTitle": "Odemkněte „{{label}}“ pro úpravy",
       "unlock": "Odemknout úpravy",
       "readOnly": "Pouze pro čtení",

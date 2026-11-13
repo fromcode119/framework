@@ -5,6 +5,8 @@ import { PureReactor, prop, state, bound } from '@fromcode119/react-class-compon
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Card } from '@/components/ui/view/card.client';
+import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
+import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 
 export class EditPageMain extends PureReactor {
@@ -25,6 +27,10 @@ export class EditPageMain extends PureReactor {
   @prop declare handleInputChange: (name: string, value: any) => void;
   @prop declare handlePatch: (partial: Record<string, any>) => void;
   @prop declare handleReadOnlyOverrideRequest: (target: { name: string; label: string }) => void;
+
+  /** What the collection declared other plugins may add to this record; null when nothing can be asked. */
+  @prop declare recordLinks?: CollectionRecordLinksDeclaration | null;
+  @prop declare navigate?: (href: string) => void;
 
   /** Collapsed sections (`admin.sectionCollapsed`) the operator has opened on this page. */
   @state openSections: Record<string, boolean> = {};
@@ -83,6 +89,7 @@ export class EditPageMain extends PureReactor {
             </div>
           </div>
         ) : null}
+        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} /> : null}
       </Card>
     );
   }

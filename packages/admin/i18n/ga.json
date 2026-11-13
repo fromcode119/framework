@@ -92,7 +92,6 @@
     "list": {
       "records": "Taifid",
       "searchPlaceholder": "Cuardaigh {{name}}...",
-      "description": "Bainistigh agus eagraigh taifid {{name}}.",
       "importDone": "Iompórtáladh {{count}} taifead go rathúil. {{errors}} earráid.",
       "importFailed": "Theip ar an iompórtáil: {{message}}",
       "statusUpdateFailed": "Earráid agus an stádas á nuashonrú",
@@ -168,6 +167,13 @@
       "sectionShow": "Taispeáin",
       "sectionHide": "Folaigh",
       "sectionFieldCount": "{{count}} réimse",
+      "fieldLevel": {
+        "label": "Réimsí á dtaispeáint",
+        "everyday": "Laethúil",
+        "occasional": "Ó am go chéile",
+        "technical": "Teicniúil",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Réamhamharc agus Buan-nasc",
       "permalinkHint": "Cliceáil ar chuid den chosán chun an slug a gineadh go huathoibríoch a athrú.",
       "settings": "Socruithe",
@@ -182,6 +188,7 @@
       "deletePermanently": "Scrios go Buan",
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
+      "recordPart": { "download": "Íoslódáil {{title}}" },
       "viewMode": "Mód amhairc an taifid",
       "formView": "Amharc foirme",
       "jsonView": "Amharc JSON",
@@ -426,6 +433,7 @@
       "from": "ó",
       "pluginSettings": "Socruithe an bhreiseáin",
       "overrideUnlocked": "Sárú díghlasáilte",
+      "about": "Maidir le {{label}}",
       "unlockTitle": "Díghlasáil \"{{label}}\" chun é a chur in eagar",
       "unlock": "Díghlasáil an t-eagarthóireacht",
       "readOnly": "Inléite amháin",

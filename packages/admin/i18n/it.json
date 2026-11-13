@@ -92,7 +92,6 @@
     "list": {
       "records": "Record",
       "searchPlaceholder": "Cerca {{name}}...",
-      "description": "Gestisci e organizza i record di {{name}}.",
       "importDone": "{{count}} record importati correttamente. {{errors}} errori.",
       "importFailed": "Importazione non riuscita: {{message}}",
       "statusUpdateFailed": "Errore durante l'aggiornamento dello stato",
@@ -168,6 +167,13 @@
       "sectionShow": "Mostra",
       "sectionHide": "Nascondi",
       "sectionFieldCount": "{{count}} campi",
+      "fieldLevel": {
+        "label": "Campi mostrati",
+        "everyday": "Quotidiani",
+        "occasional": "Occasionali",
+        "technical": "Tecnici",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Anteprima e permalink",
       "permalinkHint": "Fai clic sul componente del percorso per sostituire lo slug generato automaticamente.",
       "settings": "Impostazioni",
@@ -182,6 +188,7 @@
       "deletePermanently": "Elimina definitivamente",
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
+      "recordPart": { "download": "Scarica {{title}}" },
       "viewMode": "Modalità di visualizzazione del record",
       "formView": "Vista modulo",
       "jsonView": "Vista JSON",
@@ -426,6 +433,7 @@
       "from": "da",
       "pluginSettings": "Impostazioni plugin",
       "overrideUnlocked": "Modifica sbloccata",
+      "about": "Informazioni su {{label}}",
       "unlockTitle": "Sblocca \"{{label}}\" per modificarlo",
       "unlock": "Sblocca modifica",
       "readOnly": "Sola lettura",

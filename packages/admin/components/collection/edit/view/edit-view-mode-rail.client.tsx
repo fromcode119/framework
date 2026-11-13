@@ -44,10 +44,11 @@ export class EditViewModeRail extends Reactor {
 
     // Shown at every breakpoint — "always there" includes mobile, where hiding it would leave no way back
     // out of JSON view. On a wide screen it is a 40px column beside the form; on a narrow one a small
-    // two-button switch above it, because a column there took a sixth of a phone's width down the whole page.
+    // two-button switch, because a column there took a sixth of a phone's width down the whole page. There it
+    // comes AFTER the form: above it, a rarely used switch was the first thing on a record, before its fields.
     return (
       <div
-        className="z-10 flex shrink-0 flex-row gap-1 self-start rounded-[var(--radius)] border border-slate-200 bg-slate-50 p-1 lg:sticky lg:top-32 lg:flex-col dark:border-slate-800 dark:bg-slate-950"
+        className="order-last z-10 flex shrink-0 flex-row gap-1 self-start rounded-[var(--radius)] border lg:order-none border-slate-200 bg-slate-50 p-1 lg:sticky lg:top-32 lg:flex-col dark:border-slate-800 dark:bg-slate-950"
         role="group"
         aria-label={AdminI18n.t('collection.edit.viewMode')}
       >

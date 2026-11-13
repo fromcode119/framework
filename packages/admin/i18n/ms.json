@@ -92,7 +92,6 @@
     "list": {
       "records": "Rekod",
       "searchPlaceholder": "Cari {{name}}...",
-      "description": "Urus dan susun rekod {{name}}.",
       "importDone": "Berjaya mengimport {{count}} rekod. {{errors}} ralat.",
       "importFailed": "Import gagal: {{message}}",
       "statusUpdateFailed": "Ralat semasa mengemas kini status",
@@ -168,6 +167,13 @@
       "sectionShow": "Tunjukkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} medan",
+      "fieldLevel": {
+        "label": "Medan dipaparkan",
+        "everyday": "Harian",
+        "occasional": "Sekali-sekala",
+        "technical": "Teknikal",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Pratonton & Pautan Kekal",
       "permalinkHint": "Klik komponen laluan untuk menggantikan slug yang dijana secara automatik.",
       "settings": "Tetapan",
@@ -182,6 +188,7 @@
       "deletePermanently": "Padam Secara Kekal",
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
+      "recordPart": { "download": "Muat turun {{title}}" },
       "viewMode": "Mod paparan rekod",
       "formView": "Paparan borang",
       "jsonView": "Paparan JSON",
@@ -426,6 +433,7 @@
       "from": "daripada",
       "pluginSettings": "Tetapan pemalam",
       "overrideUnlocked": "Ganti dibuka kunci",
+      "about": "Perihal {{label}}",
       "unlockTitle": "Buka kunci \"{{label}}\" untuk mengedit",
       "unlock": "Buka kunci edit",
       "readOnly": "Baca sahaja",

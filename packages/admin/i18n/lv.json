@@ -92,7 +92,6 @@
     "list": {
       "records": "Ieraksti",
       "searchPlaceholder": "Meklēt: {{name}}...",
-      "description": "Pārvaldiet un kārtojiet ierakstus: {{name}}.",
       "importDone": "Veiksmīgi importēti ieraksti: {{count}}. Kļūdas: {{errors}}.",
       "importFailed": "Importēšana neizdevās: {{message}}",
       "statusUpdateFailed": "Kļūda, atjauninot statusu",
@@ -168,6 +167,13 @@
       "sectionShow": "Rādīt",
       "sectionHide": "Slēpt",
       "sectionFieldCount": "Lauki: {{count}}",
+      "fieldLevel": {
+        "label": "Rādītie lauki",
+        "everyday": "Ikdienas",
+        "occasional": "Reizēm",
+        "technical": "Tehniskie",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Priekšskatījums un pastāvīgā saite",
       "permalinkHint": "Noklikšķiniet uz ceļa daļas, lai aizstātu automātiski ģenerēto URL identifikatoru.",
       "settings": "Iestatījumi",
@@ -182,6 +188,7 @@
       "deletePermanently": "Dzēst neatgriezeniski",
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
+      "recordPart": { "download": "Lejupielādēt {{title}}" },
       "viewMode": "Ieraksta skata režīms",
       "formView": "Veidlapas skats",
       "jsonView": "JSON skats",
@@ -426,6 +433,7 @@
       "from": "no",
       "pluginSettings": "Spraudņa iestatījumi",
       "overrideUnlocked": "Aizstāšana atbloķēta",
+      "about": "Par {{label}}",
       "unlockTitle": "Atbloķēt \"{{label}}\" rediģēšanai",
       "unlock": "Atbloķēt rediģēšanu",
       "readOnly": "Tikai lasāms",

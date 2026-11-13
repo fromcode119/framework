@@ -17,6 +17,7 @@ import type { IPerson } from '@/app/users/people/interfaces/person.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { SiteRequiredNotice } from '@/components/view/site-required-notice.client';
+import { Input } from '@/components/ui/view/input.client';
 
 export class PeoplePage extends AdminComponent {
   private mounted = false;
@@ -173,10 +174,10 @@ export class PeoplePage extends AdminComponent {
 
           <div className="relative flex-1 group">
             <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400"><FrameworkIcons.Search size={18} /></div>
-            <input
+            <Input
               type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
               onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-              className={`w-full h-9 rounded-lg ps-11 pe-4 outline-none border text-[13px] font-medium tracking-tight ${theme === ThemeMode.DARK ? 'bg-slate-900/50 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}
+              inputClassName="ps-11"
             />
           </div>
 

@@ -92,7 +92,6 @@
     "list": {
       "records": "Záznamy",
       "searchPlaceholder": "Hľadať {{name}}...",
-      "description": "Správa a usporiadanie záznamov {{name}}.",
       "importDone": "Úspešne importované záznamy: {{count}}. Chyby: {{errors}}.",
       "importFailed": "Import zlyhal: {{message}}",
       "statusUpdateFailed": "Chyba pri aktualizácii stavu",
@@ -168,6 +167,13 @@
       "sectionShow": "Zobraziť",
       "sectionHide": "Skryť",
       "sectionFieldCount": "Polia: {{count}}",
+      "fieldLevel": {
+        "label": "Zobrazené polia",
+        "everyday": "Každodenné",
+        "occasional": "Občasné",
+        "technical": "Technické",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Náhľad a trvalý odkaz",
       "permalinkHint": "Kliknutím na časť cesty prepíšete automaticky vygenerovaný slug.",
       "settings": "Nastavenia",
@@ -182,6 +188,7 @@
       "deletePermanently": "Odstrániť natrvalo",
       "relatedRecords": "Súvisiace záznamy",
       "relatedEmpty": "Žiadny iný plugin zatiaľ nemá záznam prepojený s týmto.",
+      "recordPart": { "download": "Stiahnuť {{title}}" },
       "viewMode": "Režim zobrazenia záznamu",
       "formView": "Formulár",
       "jsonView": "JSON",
@@ -426,6 +433,7 @@
       "from": "z",
       "pluginSettings": "Nastavenia pluginu",
       "overrideUnlocked": "Prepísanie odomknuté",
+      "about": "O poli {{label}}",
       "unlockTitle": "Odomknúť „{{label}}“ na úpravu",
       "unlock": "Odomknúť úpravu",
       "readOnly": "Iba na čítanie",

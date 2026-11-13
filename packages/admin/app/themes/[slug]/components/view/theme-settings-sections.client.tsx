@@ -32,7 +32,7 @@ export class ThemeSettingsSections extends PureReactor {
     const dark = adminTheme === ThemeMode.DARK;
     return (
       <>
-        <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[12.5px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+        <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[13px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
           {sections.map((section) => (
             <button type="button" key={section.id} onClick={() => this.page.handleTabChange(ThemeSettingsTab.SETTINGS, section.id)}
               aria-current={section === currentSection ? 'page' : undefined}

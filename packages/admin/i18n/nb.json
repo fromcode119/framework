@@ -92,7 +92,6 @@
     "list": {
       "records": "Oppføringer",
       "searchPlaceholder": "Søk i {{name}} ...",
-      "description": "Administrer og organiser {{name}}-oppføringer.",
       "importDone": "Importerte {{count}} oppføringer. {{errors}} feil.",
       "importFailed": "Importen mislyktes: {{message}}",
       "statusUpdateFailed": "Feil ved oppdatering av status",
@@ -168,6 +167,13 @@
       "sectionShow": "Vis",
       "sectionHide": "Skjul",
       "sectionFieldCount": "{{count}} felt",
+      "fieldLevel": {
+        "label": "Viste felt",
+        "everyday": "Daglige",
+        "occasional": "Sporadiske",
+        "technical": "Tekniske",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Forhåndsvisning og permalenke",
       "permalinkHint": "Klikk på stidelen for å overstyre den automatisk genererte slugen.",
       "settings": "Innstillinger",
@@ -182,6 +188,7 @@
       "deletePermanently": "Slett permanent",
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
+      "recordPart": { "download": "Last ned {{title}}" },
       "viewMode": "Visningsmodus for oppføring",
       "formView": "Skjemavisning",
       "jsonView": "JSON-visning",
@@ -426,6 +433,7 @@
       "from": "fra",
       "pluginSettings": "Innstillinger for utvidelse",
       "overrideUnlocked": "Overstyring låst opp",
+      "about": "Om {{label}}",
       "unlockTitle": "Lås opp «{{label}}» for å redigere",
       "unlock": "Lås opp redigering",
       "readOnly": "Skrivebeskyttet",

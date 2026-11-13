@@ -92,7 +92,6 @@
     "list": {
       "records": "レコード",
       "searchPlaceholder": "{{name}}を検索...",
-      "description": "{{name}}のレコードを管理・整理します。",
       "importDone": "{{count}} 件のレコードをインポートしました。エラー: {{errors}} 件。",
       "importFailed": "インポートに失敗しました: {{message}}",
       "statusUpdateFailed": "ステータスの更新中にエラーが発生しました",
@@ -168,6 +167,13 @@
       "sectionShow": "表示",
       "sectionHide": "非表示",
       "sectionFieldCount": "{{count}} 個のフィールド",
+      "fieldLevel": {
+        "label": "表示する項目",
+        "everyday": "日常",
+        "occasional": "ときどき",
+        "technical": "技術",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "プレビューとパーマリンク",
       "permalinkHint": "パス部分をクリックすると、自動生成されたスラッグを上書きできます。",
       "settings": "設定",
@@ -182,6 +188,7 @@
       "deletePermanently": "完全に削除",
       "relatedRecords": "関連レコード",
       "relatedEmpty": "このレコードにリンクされたレコードを持つプラグインはまだありません。",
+      "recordPart": { "download": "ダウンロード {{title}}" },
       "viewMode": "レコードの表示モード",
       "formView": "フォーム表示",
       "jsonView": "JSON 表示",
@@ -426,6 +433,7 @@
       "from": "取得元",
       "pluginSettings": "プラグイン設定",
       "overrideUnlocked": "上書きのロック解除済み",
+      "about": "{{label}} について",
       "unlockTitle": "「{{label}}」のロックを解除して編集",
       "unlock": "ロックを解除して編集",
       "readOnly": "読み取り専用",

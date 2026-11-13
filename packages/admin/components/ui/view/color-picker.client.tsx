@@ -129,11 +129,7 @@ export class ColorPicker extends AdminComponent {
                  type="text"
                  value={rawValue}
                  onChange={(e) => onChange(e.target.value)}
-                 className={`w-full h-10 rounded-lg border text-center font-mono font-semibold transition-all outline-none ${
-                   theme === ThemeMode.DARK
-                     ? 'bg-slate-900 border-slate-800 text-white focus:border-indigo-500'
-                     : 'bg-slate-50 border-slate-100 text-slate-900 focus:bg-white focus:border-indigo-500 shadow-inner'
-                 }`}
+                 className={UiFieldUtils.getFieldClasses(FieldSize.MD, 'text-center font-mono')}
                />
             </div>
 

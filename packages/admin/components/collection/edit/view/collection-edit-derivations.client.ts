@@ -1,4 +1,4 @@
-import { FieldPosition } from '@fromcode119/core/client';
+import { FieldLevel, FieldPosition } from '@fromcode119/core/client';
 import { BrowserLocalization } from '@fromcode119/react';
 import { IField } from '@fromcode119/core/client';
 
@@ -6,6 +6,7 @@ import { AdminServices } from '@/lib/admin-services';
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { CollectionEditDirtyState } from '@/components/collection/edit/view/collection-edit-dirty-state.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { CollectionEditFieldDepth } from '@/components/collection/edit/view/collection-edit-field-depth.client';
 
 /**
  * Pure, render-time derivations for the collection edit page (field sections, resolved title, status
@@ -79,7 +80,16 @@ export class CollectionEditDerivations {
     const sidebarFields = (collection?.fields || []).filter((f: IField) =>
       FieldPosition.resolve(f.admin?.position) === FieldPosition.SIDEBAR && !f.admin?.hidden && !isRenderedBySibling(f) && f.name !== 'customPermalink' &&
       services.validation.evaluateCondition(f.admin?.condition, shownData, f.name));
-    const sidebarFieldSections = CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField));
+    /**
+     * The depth the operator chose decides which fields are drawn. Sections are grouped from EVERY
+     * eligible field first and narrowed after: a section's place and width come from its fields, so
+     * narrowing first moved a section whenever the field that set its layout was the one held back.
+     */
+    const fieldDepth = FieldLevel.resolve(self.state.fieldDepth);
+    const atDepth = <T extends { fields: any[] }>(sections: T[]): T[] => sections
+      .map((section) => ({ ...section, fields: section.fields.filter((field: any) => CollectionEditFieldDepth.shows(field, fieldDepth, formData, self.state.fieldErrors)) }))
+      .filter((section) => section.fields.length > 0);
+    const sidebarFieldSections = atDepth(CollectionEditDerivations.groupSidebar(sidebarFields.map(lockField)));
 
     const mainFields = (collection?.fields || []).filter((field: IField) => {
       if (field.admin?.hidden || isRenderedBySibling(field) || FieldPosition.resolve(field.admin?.position) === FieldPosition.SIDEBAR) return false;
@@ -91,10 +101,11 @@ export class CollectionEditDerivations {
       return true;
     });
     const mainFieldSections = CollectionEditDerivations.groupMain(mainFields.map(lockField));
-    const standardMainFieldSections = mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
-    const fullWidthMainFieldSections = mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full'));
+    const standardMainFieldSections = atDepth(mainFieldSections.filter((s: any) => !s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
+    const fullWidthMainFieldSections = atDepth(mainFieldSections.filter((s: any) => s.fields.some((f: any) => f?.admin?.sectionLayout === 'full')));
     const navSections = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((s: any) => ({ key: s.key, title: s.title || AdminI18n.t('collection.edit.content') }));
 
+    const fieldLevelCounts = CollectionEditFieldDepth.counts([...sidebarFields, ...mainFields]);
     const statusField = collection?.fields.find((field: any) => field?.name === 'status' && field?.type === 'select') as any;
     // A read-only status is changed by the collection's own actions (a refund moves through the service
     // that refunds it). The header select ignored that and offered every option, which the server then
@@ -108,11 +119,15 @@ export class CollectionEditDerivations {
     const canPreviewCollection = AdminCollectionUtils.supportsPreview(collection);
     const isFullWidth = (collection?.admin as any)?.fullWidth === true;
     const showPermalink = canPreviewCollection && hasSlug;
-    const hasSidebarFields = sidebarFields.length > 0;
+    const hasSidebarFields = sidebarFieldSections.length > 0;
 
     return {
       collection, resolvedSlug, isNew, locked, preferredLocale, sourceField, sourceValue, resolvedTitleValue,
       sidebarFieldSections, standardMainFieldSections, fullWidthMainFieldSections, navSections,
+      fieldDepth, fieldLevelCounts,
+      // Offered at the wider depths; and always on a collection with no levels, which has no switch
+      // to widen with, so gating it there would put the note out of reach.
+      showChangeSummary: fieldDepth !== FieldLevel.EVERYDAY || fieldLevelCounts[FieldLevel.EVERYDAY.value] === sidebarFields.length + mainFields.length,
       // The status field shows its schema default until the operator picks one, and the default is what is
       // saved; the header showed the FIRST option instead (a new subscription read "Trial" above a field
       // reading "Pending"). Both now name the same value.

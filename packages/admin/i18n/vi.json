@@ -92,7 +92,6 @@
     "list": {
       "records": "Bản ghi",
       "searchPlaceholder": "Tìm kiếm {{name}}...",
-      "description": "Quản lý và sắp xếp các bản ghi {{name}}.",
       "importDone": "Đã nhập thành công {{count}} bản ghi. {{errors}} lỗi.",
       "importFailed": "Nhập thất bại: {{message}}",
       "statusUpdateFailed": "Lỗi khi cập nhật trạng thái",
@@ -168,6 +167,13 @@
       "sectionShow": "Hiện",
       "sectionHide": "Ẩn",
       "sectionFieldCount": "{{count}} trường",
+      "fieldLevel": {
+        "label": "Trường đang hiển thị",
+        "everyday": "Thường dùng",
+        "occasional": "Thỉnh thoảng",
+        "technical": "Kỹ thuật",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Xem trước & Liên kết cố định",
       "permalinkHint": "Nhấp vào phần đường dẫn để ghi đè slug được tạo tự động.",
       "settings": "Cài đặt",
@@ -182,6 +188,7 @@
       "deletePermanently": "Xóa vĩnh viễn",
       "relatedRecords": "Bản ghi liên quan",
       "relatedEmpty": "Chưa có plugin nào khác chứa bản ghi liên kết với bản ghi này.",
+      "recordPart": { "download": "Tải xuống {{title}}" },
       "viewMode": "Chế độ xem bản ghi",
       "formView": "Dạng biểu mẫu",
       "jsonView": "Dạng JSON",
@@ -426,6 +433,7 @@
       "from": "từ",
       "pluginSettings": "Cài đặt plugin",
       "overrideUnlocked": "Đã mở khóa ghi đè",
+      "about": "Về {{label}}",
       "unlockTitle": "Mở khóa \"{{label}}\" để chỉnh sửa",
       "unlock": "Mở khóa chỉnh sửa",
       "readOnly": "Chỉ đọc",

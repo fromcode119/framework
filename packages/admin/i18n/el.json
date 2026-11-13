@@ -92,7 +92,6 @@
     "list": {
       "records": "Εγγραφές",
       "searchPlaceholder": "Αναζήτηση σε {{name}}...",
-      "description": "Διαχείριση και οργάνωση εγγραφών {{name}}.",
       "importDone": "Εισήχθησαν επιτυχώς {{count}} εγγραφές. Σφάλματα: {{errors}}.",
       "importFailed": "Η εισαγωγή απέτυχε: {{message}}",
       "statusUpdateFailed": "Σφάλμα κατά την ενημέρωση της κατάστασης",
@@ -168,6 +167,13 @@
       "sectionShow": "Εμφάνιση",
       "sectionHide": "Απόκρυψη",
       "sectionFieldCount": "{{count}} πεδία",
+      "fieldLevel": {
+        "label": "Πεδία που εμφανίζονται",
+        "everyday": "Καθημερινά",
+        "occasional": "Περιστασιακά",
+        "technical": "Τεχνικά",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Προεπισκόπηση & μόνιμος σύνδεσμος",
       "permalinkHint": "Κάντε κλικ στο τμήμα της διαδρομής για να αντικαταστήσετε το slug που δημιουργήθηκε αυτόματα.",
       "settings": "Ρυθμίσεις",
@@ -182,6 +188,7 @@
       "deletePermanently": "Οριστική διαγραφή",
       "relatedRecords": "Σχετικές εγγραφές",
       "relatedEmpty": "Κανένα άλλο πρόσθετο δεν έχει ακόμη εγγραφή συνδεδεμένη με αυτήν.",
+      "recordPart": { "download": "Λήψη {{title}}" },
       "viewMode": "Τρόπος προβολής εγγραφής",
       "formView": "Προβολή φόρμας",
       "jsonView": "Προβολή JSON",
@@ -426,6 +433,7 @@
       "from": "από",
       "pluginSettings": "Ρυθμίσεις πρόσθετου",
       "overrideUnlocked": "Η παράκαμψη ξεκλειδώθηκε",
+      "about": "Σχετικά με: {{label}}",
       "unlockTitle": "Ξεκλείδωμα του \"{{label}}\" για επεξεργασία",
       "unlock": "Ξεκλείδωμα επεξεργασίας",
       "readOnly": "Μόνο για ανάγνωση",

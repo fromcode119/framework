@@ -31,6 +31,7 @@ vi.mock('@fromcode119/react', async () => {
       Alert: MockIcon,
       Refresh: MockIcon,
       Lock: MockIcon,
+      Info: MockIcon,
       Check: MockIcon,
       Globe: MockIcon,
       Down: MockIcon,
@@ -233,7 +234,7 @@ describe('./field-renderer', () => {
    * The provenance belongs in the lock bar, not in a line below the field AS WELL. Printed in both
    * places it is the same sentence twice on one field, a few pixels apart.
    */
-  it('shows who writes a read-only value once, in the lock bar', () => {
+  it('says who writes a read-only value only when asked, and then once', () => {
     render(
       <FieldRenderer
         field={{
@@ -250,10 +251,44 @@ describe('./field-renderer', () => {
       />
     );
 
+    // The sentence waits behind the help control: printed on every visit it outweighed the value.
+    expect(screen.queryByText('Set by the shipping plugin.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('About Tracking Number'));
     expect(screen.getAllByText('Set by the shipping plugin.')).toHaveLength(1);
   });
 
-  it('keeps the description below an EDITABLE field, where there is no bar to carry it', () => {
+  it('draws a locked value as one row: its name, the value and the lock that unlocks the record', () => {
+    const onRequest = vi.fn();
+    render(
+      <FieldRenderer
+        field={{ name: 'receiverName', type: 'text', label: 'Receiver Name', admin: { readOnly: true } } as any}
+        value="Ana Buyer"
+        onChange={vi.fn()}
+        theme={ThemeMode.LIGHT}
+        collectionSlug="orders"
+        onReadOnlyOverrideRequest={onRequest}
+      />
+    );
+
+    expect(screen.getByText('Receiver Name')).toBeInTheDocument();
+    expect(screen.getByText('Ana Buyer')).toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('Unlock "Receiver Name" to edit'));
+    expect(onRequest).toHaveBeenCalledWith({ name: 'receiverName', label: 'Receiver Name' });
+  });
+
+  it('keeps an editable field\'s description behind the help control, empty or filled', () => {
+    const field = { name: 'discountCode', type: 'text', label: 'Discount Code', admin: { description: 'Applied at checkout.' } } as any;
+    const { rerender } = render(<FieldRenderer field={field} value="" onChange={vi.fn()} theme={ThemeMode.LIGHT} collectionSlug="orders" />);
+    // Every field of a new record is empty: printing each one's sentence made a new form a wall of text.
+    expect(screen.queryByText('Applied at checkout.')).not.toBeInTheDocument();
+
+    rerender(<FieldRenderer field={field} value="SPRING" onChange={vi.fn()} theme={ThemeMode.LIGHT} collectionSlug="orders" />);
+    expect(screen.queryByText('Applied at checkout.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('About Discount Code'));
+    expect(screen.getByText('Applied at checkout.')).toBeInTheDocument();
+  });
+
+  it('shows an EDITABLE field\'s description under it once the help control is pressed', () => {
     render(
       <FieldRenderer
         field={{
@@ -269,6 +304,8 @@ describe('./field-renderer', () => {
       />
     );
 
+    expect(screen.queryByText('Only staff can see this.')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByLabelText('About Internal Note'));
     expect(screen.getByText('Only staff can see this.')).toBeInTheDocument();
   });
 
@@ -378,6 +415,6 @@ describe('./field-renderer', () => {
     );
 
     expect(screen.queryByTitle('Unlock "Invoice Number" to edit')).not.toBeInTheDocument();
-    expect(screen.getByText('Read only')).toBeInTheDocument();
+    expect(screen.getByLabelText('Read only')).toBeInTheDocument();
   });
 });

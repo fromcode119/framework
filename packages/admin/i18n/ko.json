@@ -92,7 +92,6 @@
     "list": {
       "records": "레코드",
       "searchPlaceholder": "{{name}} 검색...",
-      "description": "{{name}} 레코드를 관리하고 정리합니다.",
       "importDone": "레코드 {{count}}개를 가져왔습니다. 오류 {{errors}}개.",
       "importFailed": "가져오기 실패: {{message}}",
       "statusUpdateFailed": "상태 업데이트 중 오류가 발생했습니다",
@@ -168,6 +167,13 @@
       "sectionShow": "표시",
       "sectionHide": "숨기기",
       "sectionFieldCount": "필드 {{count}}개",
+      "fieldLevel": {
+        "label": "표시할 필드",
+        "everyday": "일상",
+        "occasional": "가끔",
+        "technical": "기술",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "미리보기 및 고유 링크",
       "permalinkHint": "경로 부분을 클릭하면 자동 생성된 슬러그를 직접 지정할 수 있습니다.",
       "settings": "설정",
@@ -182,6 +188,7 @@
       "deletePermanently": "영구 삭제",
       "relatedRecords": "관련 레코드",
       "relatedEmpty": "아직 이 레코드에 연결된 레코드를 가진 다른 플러그인이 없습니다.",
+      "recordPart": { "download": "다운로드 {{title}}" },
       "viewMode": "레코드 보기 모드",
       "formView": "양식 보기",
       "jsonView": "JSON 보기",
@@ -426,6 +433,7 @@
       "from": "출처:",
       "pluginSettings": "플러그인 설정",
       "overrideUnlocked": "재정의 잠금 해제됨",
+      "about": "{{label}} 정보",
       "unlockTitle": "\"{{label}}\" 잠금 해제 후 편집",
       "unlock": "편집 잠금 해제",
       "readOnly": "읽기 전용",

@@ -25,7 +25,7 @@ export class ThemeMarketplaceDependencyCard extends PureReactor {
             <div key={slug} className={`flex items-center justify-between p-3 rounded-lg border ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-white/5' : 'bg-white border-slate-100'}`}>
               <div className="flex flex-col">
                 <span className={`text-xs font-bold tracking-tight ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{slug}</span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">{AdminI18n.t('themes.requiresVersion', { version })}</span>
+                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{AdminI18n.t('themes.requiresVersion', { version })}</span>
               </div>
               <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-50'}`}>
                 <FrameworkIcons.Check size={14} className="text-emerald-500" />

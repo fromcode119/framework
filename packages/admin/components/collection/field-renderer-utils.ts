@@ -78,7 +78,9 @@ export class FieldRendererUtils {
       field.type === 'richText' ||
       field.type === 'array' ||
       (field.type === 'relationship' && field.hasMany) ||
-      field.type === 'json' ||
+      // A json value with no control of its own is a block of text; one a plugin draws a compact control
+      // for (a currency picker) takes the width it declares, like any other field.
+      (field.type === 'json' && !(field.admin?.component && FieldWidth.resolve(field.admin?.width) === FieldWidth.HALF)) ||
       FieldWidth.resolve(field.admin?.width) === FieldWidth.FULL ||
       field.admin?.component === 'TagField' ||
       field.admin?.component === 'Tags' ||

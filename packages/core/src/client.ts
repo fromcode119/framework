@@ -272,6 +272,7 @@ export { ThemeConfigFieldType } from '@core/enums/theme-config-field-type.enum';
 export { CodeLanguage } from '@core/enums/code-language.enum';
 export { ConditionOperator } from '@core/enums/condition-operator.enum';
 export { FieldWidth } from '@core/enums/field-width.enum';
+export { FieldLevel } from '@core/enums/field-level.enum';
 export { CollectionKind } from '@core/enums/collection-kind.enum';
 
 // Enum classes plugins need to name (they were unreachable, forcing raw-string arguments).

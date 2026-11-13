@@ -2,6 +2,7 @@ import type { IJsonFieldReference } from '@core/interfaces/json-field-reference.
 import { ConditionOperator } from '@core/enums/condition-operator.enum';
 import { CodeLanguage } from '@core/enums/code-language.enum';
 import { FieldWidth } from '@core/enums/field-width.enum';
+import { FieldLevel } from '@core/enums/field-level.enum';
 import { FieldPosition } from '@core/enums/field-position.enum';
 import { FieldType } from '@core/enums/field-type.enum';
 
@@ -135,6 +136,12 @@ export interface IField {
      * `admin.component`.
      */
     renderedBy?: string;
+    /**
+     * How often an operator needs this field: `everyday` (the default), `occasional` or `technical`.
+     * The edit form opens on the everyday fields and says how many more there are; see `FieldLevel`.
+     * Declared as a literal by collections; compare with `FieldLevel.resolve()`, never `===`.
+     */
+    level?: FieldLevel | string;
     /**
      * The section this field sits in starts COLLAPSED on the edit form: its card shows the title, how
      * many fields it holds and a Show button, and one click opens it. For values an operator rarely

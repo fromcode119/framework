@@ -92,7 +92,6 @@
     "list": {
       "records": "Rekordok",
       "searchPlaceholder": "Keresés: {{name}}...",
-      "description": "{{name}} rekordok kezelése és rendszerezése.",
       "importDone": "{{count}} rekord sikeresen importálva. Hibák: {{errors}}.",
       "importFailed": "Az importálás sikertelen: {{message}}",
       "statusUpdateFailed": "Hiba az állapot frissítésekor",
@@ -168,6 +167,13 @@
       "sectionShow": "Megjelenítés",
       "sectionHide": "Elrejtés",
       "sectionFieldCount": "{{count}} mező",
+      "fieldLevel": {
+        "label": "Megjelenített mezők",
+        "everyday": "Mindennapi",
+        "occasional": "Alkalmi",
+        "technical": "Technikai",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "Előnézet és állandó hivatkozás",
       "permalinkHint": "Kattintson az útvonalrészre az automatikusan létrehozott slug felülírásához.",
       "settings": "Beállítások",
@@ -182,6 +188,7 @@
       "deletePermanently": "Végleges törlés",
       "relatedRecords": "Kapcsolódó rekordok",
       "relatedEmpty": "Még egyetlen más bővítmény sem tárol ehhez kapcsolódó rekordot.",
+      "recordPart": { "download": "Letöltés {{title}}" },
       "viewMode": "Rekord nézetmódja",
       "formView": "Űrlapnézet",
       "jsonView": "JSON-nézet",
@@ -426,6 +433,7 @@
       "from": "forrás:",
       "pluginSettings": "Bővítménybeállítások",
       "overrideUnlocked": "Felülírás feloldva",
+      "about": "A(z) {{label}} mezőről",
       "unlockTitle": "„{{label}}” feloldása szerkesztéshez",
       "unlock": "Szerkesztés feloldása",
       "readOnly": "Csak olvasható",

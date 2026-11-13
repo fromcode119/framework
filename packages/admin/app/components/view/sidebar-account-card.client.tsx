@@ -224,7 +224,7 @@ export class SidebarAccountCard extends AdminComponent {
           <span className="truncate text-[13px] font-semibold leading-tight text-slate-900 dark:text-white">
             {this.displayName}
           </span>
-          <span className="truncate text-[11.5px] leading-tight text-slate-500 dark:text-slate-400">
+          <span className="truncate text-[12px] leading-tight text-slate-500 dark:text-slate-400">
             {this.auth.user?.email}
           </span>
         </div>
@@ -245,11 +245,11 @@ export class SidebarAccountCard extends AdminComponent {
       <span className="group/account flex w-full items-center gap-2.5 rounded-xl px-2 py-2 text-start transition-colors hover:bg-slate-100 dark:hover:bg-slate-800/70">
         {this.avatar(AvatarSize.SMALL)}
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="truncate text-[12.5px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
+          <span className="truncate text-[13px] font-semibold leading-tight text-slate-800 dark:text-slate-100">
             {this.displayName}
           </span>
           {this.subtitle ? (
-            <span className={`truncate text-[10.5px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
+            <span className={`truncate text-[11px] leading-tight text-slate-400 ${this.multiTenant ? '' : 'capitalize'}`}>{this.subtitle}</span>
           ) : null}
         </span>
         {/*

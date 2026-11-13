@@ -92,7 +92,6 @@
     "list": {
       "records": "รายการ",
       "searchPlaceholder": "ค้นหา {{name}}...",
-      "description": "จัดการและจัดระเบียบรายการ {{name}}",
       "importDone": "นำเข้า {{count}} รายการสำเร็จ ข้อผิดพลาด {{errors}} รายการ",
       "importFailed": "นำเข้าล้มเหลว: {{message}}",
       "statusUpdateFailed": "เกิดข้อผิดพลาดในการอัปเดตสถานะ",
@@ -168,6 +167,13 @@
       "sectionShow": "แสดง",
       "sectionHide": "ซ่อน",
       "sectionFieldCount": "{{count}} ฟิลด์",
+      "fieldLevel": {
+        "label": "ฟิลด์ที่แสดง",
+        "everyday": "ใช้ประจำ",
+        "occasional": "ใช้เป็นครั้งคราว",
+        "technical": "ทางเทคนิค",
+        "adds": "{{name}} · +{{count}}"
+      },
       "permalinkCard": "ตัวอย่างและลิงก์ถาวร",
       "permalinkHint": "คลิกส่วนของพาธเพื่อแทนที่ slug ที่สร้างขึ้นโดยอัตโนมัติ",
       "settings": "การตั้งค่า",
@@ -182,6 +188,7 @@
       "deletePermanently": "ลบถาวร",
       "relatedRecords": "รายการที่เกี่ยวข้อง",
       "relatedEmpty": "ยังไม่มีปลั๊กอินอื่นที่มีรายการเชื่อมโยงกับรายการนี้",
+      "recordPart": { "download": "ดาวน์โหลด {{title}}" },
       "viewMode": "โหมดมุมมองรายการ",
       "formView": "มุมมองฟอร์ม",
       "jsonView": "มุมมอง JSON",
@@ -426,6 +433,7 @@
       "from": "จาก",
       "pluginSettings": "การตั้งค่าปลั๊กอิน",
       "overrideUnlocked": "ปลดล็อกการกำหนดทับแล้ว",
+      "about": "เกี่ยวกับ {{label}}",
       "unlockTitle": "ปลดล็อก \"{{label}}\" เพื่อแก้ไข",
       "unlock": "ปลดล็อกการแก้ไข",
       "readOnly": "อ่านอย่างเดียว",
