@@ -2,6 +2,7 @@
 import { ArchorCommand } from './arch-guard-command';
 import { CiCommand } from './ci-command';
 import { GuardRegistry } from './guard-registry';
+import { GuardScope } from './guard-scope';
 
 /**
  * The single `arch-guard` entry point: `arch-guard <command> [args…]`.
@@ -32,6 +33,10 @@ export class ArchorCli {
       console.error(`[arch-guard] unknown command "${name}".`);
       return ArchorCli.usage(2);
     }
+    // `--scope` means the same on every command. Read only by `ci`, it was silently dropped by a guard
+    // run on its own, which then swept the default tree, found no plugin there and reported a pass.
+    const scope = CiCommand.requestedScope(rest);
+    if (scope) process.env[GuardScope.ENV] = scope;
     return new command().run(rest);
   }
 

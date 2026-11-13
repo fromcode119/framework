@@ -50,7 +50,9 @@ describe('ApiVersionLiteralGuard', () => {
       vi.restoreAllMocks();
     });
     const extension = (source: string): string => {
-      const root = fs.mkdtempSync(path.join(dir, 'plugins-'));
+      // Under `plugins/`, the way an extension is checked out: a scope outside every area is refused.
+      fs.mkdirSync(path.join(dir, 'plugins'), { recursive: true });
+      const root = fs.mkdtempSync(path.join(dir, 'plugins', 'sample-'));
       fs.mkdirSync(path.join(root, 'src'));
       fs.writeFileSync(path.join(root, 'src', 'client.ts'), source);
       return root;

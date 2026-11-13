@@ -50,7 +50,7 @@ export class CiCommand extends ArchorCommand {
    * repository with the same binary pointed at its own directory. Passing it as a flag simply sets
    * what {@link GuardScope} reads, so a guard invoked directly behaves identically.
    */
-  private static requestedScope(argv: string[]): string {
+  static requestedScope(argv: string[]): string {
     for (const [index, arg] of argv.entries()) {
       if (arg === '--scope') return String(argv[index + 1] ?? '').trim();
       if (arg.startsWith('--scope=')) return arg.slice('--scope='.length).trim();

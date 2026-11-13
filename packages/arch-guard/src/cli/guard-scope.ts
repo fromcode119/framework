@@ -119,11 +119,17 @@ export class GuardScope {
    * Which area a directory belongs to, from the tree that holds it.
    *
    * Derived from the parent directory rather than matched against a list of known slugs — the point
-   * of this class is that the framework does not hold such a list.
+   * of this class is that the framework does not hold such a list. A folder under none of them is
+   * refused: guards pick their files by area, and an unknown one matched nothing and passed.
    */
   private static areaOf(dir: string): string {
     const parent = path.basename(path.dirname(path.resolve(dir)));
     if ((ExtensionTrees.AREAS as readonly string[]).includes(parent)) return parent;
-    return path.resolve(dir).startsWith(FrameworkRoot.find() + path.sep) ? 'framework' : parent;
+    if (path.resolve(dir).startsWith(FrameworkRoot.find() + path.sep)) return 'framework';
+    // Any other folder belongs to no area, so every guard would sweep nothing and report a pass.
+    throw new Error(
+      `[arch-guard] ${GuardScope.ENV}="${dir}" is not inside one of ${ExtensionTrees.AREAS.join('/, ')}/ — `
+      + 'check an extension from a folder named after its area (plugins/<slug>), the way CI checks it out.',
+    );
   }
 }
