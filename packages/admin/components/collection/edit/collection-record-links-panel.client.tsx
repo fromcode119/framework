@@ -37,6 +37,11 @@ export class CollectionRecordLinksPanel extends Reactor {
     this.alive = true;
     this.onUnmount(() => { this.alive = false; });
     void this.fetchResult();
+    // Back from a page that added a record here (an invoice made from this order) restores this page
+    // from the browser's memory as it was; read the links again so what was just made is on it.
+    const onShow = (event: PageTransitionEvent) => { if (event.persisted) void this.fetchResult(); };
+    window.addEventListener('pageshow', onShow);
+    this.onUnmount(() => window.removeEventListener('pageshow', onShow));
   }
 
   @watch('links')

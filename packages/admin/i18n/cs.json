@@ -188,7 +188,7 @@
       "deletePermanently": "Trvale smazat",
       "relatedRecords": "Související záznamy",
       "relatedEmpty": "Žádný jiný plugin zatím nemá záznam propojený s tímto.",
-      "recordPart": { "download": "Stáhnout {{title}}" },
+      "recordPart": { "download": "Stáhnout {{title}}", "person": "Osoba" },
       "viewMode": "Režim zobrazení záznamu",
       "formView": "Formulář",
       "jsonView": "JSON",

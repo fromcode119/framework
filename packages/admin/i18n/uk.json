@@ -188,7 +188,7 @@
       "deletePermanently": "Видалити назавжди",
       "relatedRecords": "Пов’язані записи",
       "relatedEmpty": "Жоден інший плагін ще не має запису, пов’язаного з цим.",
-      "recordPart": { "download": "Завантажити {{title}}" },
+      "recordPart": { "download": "Завантажити {{title}}", "person": "Особа" },
       "viewMode": "Режим перегляду запису",
       "formView": "Форма",
       "jsonView": "JSON",

@@ -188,7 +188,7 @@
       "deletePermanently": "Șterge definitiv",
       "relatedRecords": "Înregistrări asociate",
       "relatedEmpty": "Niciun alt plugin nu deține încă o înregistrare legată de aceasta.",
-      "recordPart": { "download": "Descarcă {{title}}" },
+      "recordPart": { "download": "Descarcă {{title}}", "person": "Persoană" },
       "viewMode": "Mod de vizualizare a înregistrării",
       "formView": "Vizualizare formular",
       "jsonView": "Vizualizare JSON",

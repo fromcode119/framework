@@ -188,7 +188,7 @@
       "deletePermanently": "영구 삭제",
       "relatedRecords": "관련 레코드",
       "relatedEmpty": "아직 이 레코드에 연결된 레코드를 가진 다른 플러그인이 없습니다.",
-      "recordPart": { "download": "다운로드 {{title}}" },
+      "recordPart": { "download": "다운로드 {{title}}", "person": "사람" },
       "viewMode": "레코드 보기 모드",
       "formView": "양식 보기",
       "jsonView": "JSON 보기",

@@ -65,13 +65,14 @@ describe('Settings -> Security controls', () => {
     expect(row.querySelector('input[type="text"]')).toBeNull();
   });
 
-  it.each(BOUNDED_NUMBERS)('renders %s as a number input bounded %i-%i', (title, min, max) => {
+  it.each(BOUNDED_NUMBERS)('renders %s as a number field bounded %i-%i', (title, min, max) => {
     renderCards();
-    const input = rowFor(title).querySelector('input[type="number"]');
+    // The platform number field is a typed box with − and +; its bounds are its spinbutton range.
+    const input = rowFor(title).querySelector('input[role="spinbutton"]');
 
-    expect(input, `no number input rendered for "${title}"`).not.toBeNull();
-    expect(input?.getAttribute('min')).toBe(String(min));
-    expect(input?.getAttribute('max')).toBe(String(max));
+    expect(input, `no number field rendered for "${title}"`).not.toBeNull();
+    expect(input?.getAttribute('aria-valuemin')).toBe(String(min));
+    expect(input?.getAttribute('aria-valuemax')).toBe(String(max));
   });
 
   it('reflects the stored value in the toggle rather than inventing one', () => {
@@ -92,7 +93,7 @@ describe('Settings -> Security controls', () => {
     const input = rowFor('Internal Service Clients').querySelector('input');
 
     expect(input).not.toBeNull();
-    expect(input?.getAttribute('type')).not.toBe('number');
+    expect(input?.getAttribute('role')).not.toBe('spinbutton');
   });
 
   it('renders the trusted relays as one chip per relay, and says when there is none', () => {
@@ -113,7 +114,7 @@ describe('Settings -> Security controls', () => {
     const input = rowFor('Tables Excluded From Write Auditing').querySelector('input');
 
     expect(input).not.toBeNull();
-    expect(input?.getAttribute('type')).not.toBe('number');
+    expect(input?.getAttribute('role')).not.toBe('spinbutton');
   });
 
   it('renders a control for EVERY key the page loads and saves', () => {

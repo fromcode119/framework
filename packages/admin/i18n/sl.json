@@ -188,7 +188,7 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Noben drug vtičnik še nima zapisa, povezanega s tem.",
-      "recordPart": { "download": "Prenesi {{title}}" },
+      "recordPart": { "download": "Prenesi {{title}}", "person": "Oseba" },
       "viewMode": "Način prikaza zapisa",
       "formView": "Prikaz obrazca",
       "jsonView": "Prikaz JSON",

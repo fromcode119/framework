@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Reactor, bound, prop, state, watch } from '@fromcode119/react-class-components';
 import type { IRecordsHubItem } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { RecordsHubOpenItem } from '@/lib/records-hub-open-item';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { RecordPartActions } from '@/components/collection/edit/view/record-part-actions.client';
@@ -29,6 +30,11 @@ export class CollectionRecordPart extends Reactor {
     this.alive = true;
     this.onUnmount(() => { this.alive = false; });
     void this.fetchItems();
+    // Back from a page that added a record here (an invoice made from this order) restores this page
+    // from the browser's memory as it was; read the links again so what was just made is on it.
+    const onShow = (event: PageTransitionEvent) => { if (event.persisted) void this.fetchItems(); };
+    window.addEventListener('pageshow', onShow);
+    this.onUnmount(() => window.removeEventListener('pageshow', onShow));
   }
 
   @watch('links')
@@ -52,12 +58,20 @@ export class CollectionRecordPart extends Reactor {
   @bound private follow(href: string): void { RecordsHubOpenItem.open({ href } as IRecordsHubItem, this.navigate); }
   @bound private download(item: IRecordsHubItem): void { void RecordsHubOpenItem.download(item, this.navigate); }
 
+  /** The person is the console's own row, so its heading is the console's word, in the reader's language. */
+  private static readonly PERSON_KIND = 'system:person';
+
+  private static headingOf(item: IRecordsHubItem): string {
+    return item.kind === CollectionRecordPart.PERSON_KIND ? AdminI18n.t('collection.edit.recordPart.person') : item.group;
+  }
+
   private groupsOf(term: string): Array<{ group: string; items: IRecordsHubItem[] }> {
     const groups: Array<{ group: string; items: IRecordsHubItem[] }> = [];
     for (const item of this.items || []) {
       if (item.part !== term) continue;
-      const existing = groups.find((entry) => entry.group === item.group);
-      if (existing) existing.items.push(item); else groups.push({ group: item.group, items: [item] });
+      const group = CollectionRecordPart.headingOf(item);
+      const existing = groups.find((entry) => entry.group === group);
+      if (existing) existing.items.push(item); else groups.push({ group, items: [item] });
     }
     return groups;
   }

@@ -188,7 +188,7 @@
       "deletePermanently": "حذف نهائي",
       "relatedRecords": "السجلات المرتبطة",
       "relatedEmpty": "لا توجد إضافة أخرى تحتفظ بسجل مرتبط بهذا السجل بعد.",
-      "recordPart": { "download": "تنزيل {{title}}" },
+      "recordPart": { "download": "تنزيل {{title}}", "person": "الشخص" },
       "viewMode": "وضع عرض السجل",
       "formView": "عرض النموذج",
       "jsonView": "عرض JSON",

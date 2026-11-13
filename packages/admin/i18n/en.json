@@ -188,7 +188,7 @@
       "deletePermanently": "Delete Permanently",
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
-      "recordPart": { "download": "Download {{title}}" },
+      "recordPart": { "download": "Download {{title}}", "person": "Person" },
       "viewMode": "Record view mode",
       "formView": "Form view",
       "jsonView": "JSON view",

@@ -188,7 +188,7 @@
       "deletePermanently": "Трајно обриши",
       "relatedRecords": "Повезани записи",
       "relatedEmpty": "Ниједан други додатак још нема запис повезан са овим.",
-      "recordPart": { "download": "Преузми {{title}}" },
+      "recordPart": { "download": "Преузми {{title}}", "person": "Особа" },
       "viewMode": "Режим приказа записа",
       "formView": "Приказ обрасца",
       "jsonView": "JSON приказ",

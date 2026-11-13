@@ -188,7 +188,7 @@
       "deletePermanently": "Ta bort permanent",
       "relatedRecords": "Relaterade poster",
       "relatedEmpty": "Inget annat tillägg har ännu någon post kopplad till den här.",
-      "recordPart": { "download": "Ladda ned {{title}}" },
+      "recordPart": { "download": "Ladda ned {{title}}", "person": "Person" },
       "viewMode": "Visningsläge för post",
       "formView": "Formulärvy",
       "jsonView": "JSON-vy",

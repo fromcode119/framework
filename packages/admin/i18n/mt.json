@@ -188,7 +188,7 @@
       "deletePermanently": "Ħassar b'Mod Permanenti",
       "relatedRecords": "Rekords relatati",
       "relatedEmpty": "L-ebda plugin ieħor għadu ma għandu rekord marbut ma' dan.",
-      "recordPart": { "download": "Niżżel {{title}}" },
+      "recordPart": { "download": "Niżżel {{title}}", "person": "Persuna" },
       "viewMode": "Mod ta' wiri tar-rekord",
       "formView": "Dehra tal-formola",
       "jsonView": "Dehra JSON",
