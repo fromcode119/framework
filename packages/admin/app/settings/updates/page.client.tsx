@@ -79,19 +79,12 @@ export class UpdatesPage extends AdminComponent {
     return Boolean(this.checkError) || !this.latestVersion;
   }
 
-  /** The button: the api looks the releases up again instead of answering from what it remembers. */
-  @bound
-  async checkNow(): Promise<void> {
-    await this.fetchStatus(true);
-  }
-
   @bound
   async fetchStatus(refresh = false): Promise<void> {
     this.loading = true;
     this.checkError = null;
     try {
-      const path = AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK;
-      const data = await AdminApi.get(refresh === true ? `${path}?refresh=1` : path, { noDedupe: refresh === true });
+      const data = await AdminApi.get(`${AdminConstants.ENDPOINTS.SYSTEM.UPDATE_CHECK}${refresh === true ? '?refresh=1' : ''}`, { noDedupe: refresh === true });
       this.status = data;
     } catch (err: any) {
       const message = err?.message || AdminI18n.t('settings.updates.theFrameworkRegistryCouldNot');
@@ -189,7 +182,7 @@ export class UpdatesPage extends AdminComponent {
           subtitle={AdminI18n.t('settings.updates.frameworkCoreRegistrySynchronization')}
           actions={
             <button
-              onClick={this.checkNow}
+              onClick={() => this.fetchStatus(true) /* look again, not from the api's memory */}
               disabled={loading}
               className={`flex items-center gap-2 h-9 px-4 rounded-lg text-xs font-semibold tracking-tight transition-all active:scale-95 ${
                 theme === ThemeMode.DARK
