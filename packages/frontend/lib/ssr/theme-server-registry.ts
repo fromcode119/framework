@@ -42,6 +42,25 @@ export class ThemeServerRegistry {
 
   private static installed = false;
 
+  /**
+   * What `ContextBridge.locale()` / `getState()` read on the server. In the browser the provider's
+   * stability snapshot answers them; here nothing did, so every server render formatted numbers and
+   * dates in Node's default locale ("63.00€") and the browser re-rendered them in the page's ("63,00€")
+   * a moment after load. Set only for the duration of one synchronous render — see {@link renderInLocale}.
+   */
+  private static readonly stabilityRef: { current: { locale: string } | undefined } = { current: undefined };
+
+  /** Run one (synchronous) render with the request's locale visible through the bridge, then restore. */
+  static renderInLocale<T>(locale: string, render: () => T): T {
+    const previous = ThemeServerRegistry.stabilityRef.current;
+    ThemeServerRegistry.stabilityRef.current = { locale };
+    try {
+      return render();
+    } finally {
+      ThemeServerRegistry.stabilityRef.current = previous;
+    }
+  }
+
   /** Idempotent: the bridge is a process-wide singleton, so installing twice would drop registrations. */
   static install(contextBridge: { install: (args: unknown) => void }, apiBridge: unknown): void {
     if (ThemeServerRegistry.installed) return;
@@ -81,6 +100,7 @@ export class ThemeServerRegistry {
       // `ContextBridge.api` proxies onto this; plugin clients read `getBaseUrl()` from it to build
       // absolute URLs. Supplied by `ThemeServerRenderer` before any bundle is imported.
       stableApiBridge: apiBridge,
+      stabilityRef: ThemeServerRegistry.stabilityRef,
       emit: noop,
       on: () => noop,
     });
