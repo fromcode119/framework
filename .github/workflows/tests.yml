@@ -20,12 +20,62 @@ on:
   pull_request:
 
 jobs:
+  # A release pull request moves the version and nothing else: `package.json`, `package-lock.json` and
+  # the changelog. The tree it tests is the tree main already passed, so the suite can only reach the
+  # same verdict — and reaching it costs five minutes and three sets of service containers before every
+  # release. This job reads the actual diff and says whether anything a test could see changed.
+  #
+  # STRICTER THAN `Arch guard`'s copy of this, deliberately: there a workflow file is ignorable, because
+  # no guard reads one. Here `.github/**` counts as a change, so that a pull request editing THIS file
+  # still runs the suite it is editing. A version-only release touches no workflow, so it still skips.
+  #
+  # When in doubt — no base commit to compare against, a new branch, a file that will not parse — it
+  # runs the tests.
+  scope:
+    runs-on: ubuntu-latest
+    outputs:
+      tests: ${{ steps.diff.outputs.tests }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+      - name: Is anything more than the version changing?
+        id: diff
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          tests=true
+          if [ -n "$BASE" ] && git cat-file -e "$BASE^{commit}" 2>/dev/null; then
+            files=$(git diff --name-only "$BASE" HEAD)
+            only_version=true
+            [ -z "$files" ] && only_version=false
+            for f in $files; do
+              case "$f" in
+                CHANGELOG.md) ;;
+                package.json|package-lock.json)
+                  # Everything except the version itself, so a dependency or a script added in the same
+                  # commit is still a change: the lock file carries its own copy under `.packages[""]`.
+                  strip='del(.version) | if .packages then .packages[""] |= del(.version) else . end'
+                  a=$(git show "$BASE:$f" 2>/dev/null | jq -S "$strip") || a=missing-a
+                  b=$(git show "HEAD:$f" 2>/dev/null | jq -S "$strip") || b=missing-b
+                  [ "$a" = "$b" ] || only_version=false ;;
+                *) only_version=false ;;
+              esac
+            done
+            [ "$only_version" = true ] && tests=false
+            echo "Changed: $(echo $files)"
+          fi
+          echo "tests=$tests" >> "$GITHUB_OUTPUT"
+          echo "Run the suite: $tests"
+
   # THREE SHARDS, EACH WITH ITS OWN SERVICES. One runner ran every test in a single process (~5 of a
   # ~7 minute job). `vitest --shard=N/3` splits the test FILES three ways; each shard provisions its
   # own Postgres, Redis and MySQL containers, so no suite can see another shard's tables or rows.
   # Every file lands in exactly one shard. `test` below is the required check: it stays named `test`.
   shard:
     name: Test shard ${{ matrix.shard }}/3
+    needs: scope
+    if: ${{ needs.scope.outputs.tests == 'true' }}
     runs-on: ubuntu-latest
     strategy:
       # A red shard must not cancel the others: the failing shard's log is the one to read, and the
@@ -145,11 +195,22 @@ jobs:
   # failed or cancelled shard turns it red instead of leaving it skipped, which reads as neutral.
   test:
     name: test
-    needs: shard
+    needs: [scope, shard]
     if: always()
     runs-on: ubuntu-latest
     steps:
       - name: All shards passed
+        env:
+          RAN: ${{ needs.scope.outputs.tests }}
+          RESULT: ${{ needs.shard.result }}
         run: |
-          echo "shards: ${{ needs.shard.result }}"
-          test "${{ needs.shard.result }}" = "success"
+          echo "scope says run the suite: $RAN"
+          echo "shards: $RESULT"
+          # Skipped ON PURPOSE (a version-only release) is a pass: the tree is the one main tested.
+          # Skipped for any other reason, or `scope` itself failing, is not — then $RAN is not 'false'
+          # and the shards' own result has to be `success`.
+          if [ "$RAN" = false ] && [ "$RESULT" = skipped ]; then
+            echo "Only the version changed: the suite already passed on this tree."
+            exit 0
+          fi
+          test "$RESULT" = success
