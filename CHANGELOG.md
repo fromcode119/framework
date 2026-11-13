@@ -10,6 +10,7 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
+- **admin**: every number field is the stepper, not only the few that declare a whole step ([#1399](https://github.com/fromcode119/framework/pull/1399))
 - **admin**: no lone lock above a locked field that has no label and cannot be unlocked ([#1397](https://github.com/fromcode119/framework/pull/1397))
 
 ## [0.2.573] - 2026-11-13
