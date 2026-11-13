@@ -73,6 +73,10 @@ jobs:
           echo "bump=$bump" >> "$GITHUB_OUTPUT"
           echo "release=true" >> "$GITHUB_OUTPUT"
 
+      # The version commit is created through the GitHub API with the workflow token, NOT with `git push`.
+      # Sources builds only SIGNED commits (proof a change came through GitHub), and GitHub signs a commit
+      # only when a bot creates it through the API — a pushed commit is unsigned, so the first releases
+      # made by this job installed nothing ("commit … is not signed").
       - name: Write the version
         if: steps.version.outputs.release == 'true' && steps.version.outputs.bump == 'true'
         env:
@@ -80,6 +84,7 @@ jobs:
           OLD: ${{ steps.version.outputs.previous }}
           NEW: ${{ steps.version.outputs.version }}
           BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # `pageRelease` names the release that prepared a stored page; it moves with the version.
@@ -87,12 +92,57 @@ jobs:
           jq --indent 2 --arg old "$OLD" --arg new "$NEW" \
             '.version = $new | walk(if type == "object" and .pageRelease == $old then .pageRelease = $new else . end)' \
             "$FILE" > "$tmp" && mv "$tmp" "$FILE"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$FILE"
-          git commit -q -m "chore(release): $NEW"
-          # The workflow token's push starts no other workflow, so this cannot loop.
-          git push -q origin "HEAD:refs/heads/$BRANCH"
+          repo="repos/$GITHUB_REPOSITORY/git"
+          base=$(git rev-parse HEAD)
+          # Sign only on top of a SIGNED head (a pull-request merge always is). Otherwise this job would
+          # hand Sources a signed tip over a commit pushed straight to the branch — the one it must refuse.
+          [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$base" -q .commit.verification.verified)" = true ] \
+            || { echo "Head $base is not signed — not releasing on top of it." >&2; exit 1; }
+          blob=$(base64 < "$FILE" | tr -d '\n' | jq -Rn '{content: input, encoding: "base64"}' | gh api "$repo/blobs" --input - -q .sha)
+          tree=$(jq -n --arg base "$(git rev-parse 'HEAD^{tree}')" --arg path "$FILE" --arg sha "$blob" \
+            '{base_tree: $base, tree: [{path: $path, mode: "100644", type: "blob", sha: $sha}]}' | gh api "$repo/trees" --input - -q .sha)
+          commit=$(jq -n --arg msg "chore(release): $NEW" --arg tree "$tree" --arg parent "$base" \
+            '{message: $msg, tree: $tree, parents: [$parent]}' | gh api "$repo/commits" --input - -q .sha)
+          # Fast-forward only: a merge that landed meanwhile makes this fail rather than be overwritten.
+          # The workflow token's update starts no other workflow, so this cannot loop.
+          gh api -X PATCH "$repo/refs/heads/$BRANCH" -f sha="$commit" -F force=false >/dev/null
+          git fetch -q origin "$BRANCH" && git checkout -q "$commit"
+
+      # A branch whose head is still an UNSIGNED release commit (made by this job before it signed its
+      # commits) is one Sources refuses to build. Put a signed commit with the same content on top.
+      - name: Sign an unsigned release head
+        if: steps.version.outputs.release == 'false'
+        env:
+          BRANCH: ${{ github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          head=$(git rev-parse HEAD)
+          read -r verified login message < <(gh api "repos/$GITHUB_REPOSITORY/commits/$head" \
+            -q '"\(.commit.verification.verified) \(.author.login // "-") \(.commit.message|split("\n")[0])"')
+          case "$verified $login $message" in
+            "false github-actions[bot] chore(release): "*) ;;
+            *) exit 0 ;;
+          esac
+          # Re-sign ONLY this job's own version commit: it changes the version file alone and sits on a
+          # signed parent. Anything else unsigned at the head stays unsigned, and Sources keeps refusing it.
+          files=$(git diff --name-only "$head^" "$head")
+          case "$files" in manifest.json|theme.json|appearance.json) ;; *) echo "Unsigned head changes $files — not signing." >&2; exit 1 ;; esac
+          [ "$(gh api "repos/$GITHUB_REPOSITORY/commits/$head^" -q .commit.verification.verified)" = true ] \
+            || { echo "Parent of $head is not signed — not signing." >&2; exit 1; }
+          # The author and message can be set by anyone; the CONTENT cannot hide. Outside `version` and
+          # `pageRelease` the file must be byte-for-byte its signed parent's, so signing adds nothing new.
+          strip='del(.version) | walk(if type == "object" then del(.pageRelease) else . end)'
+          # Fail closed: a file that is missing or does not parse stops here instead of comparing equal-empty.
+          parent_json=$(git show "$head^:$files" | jq -eS "$strip")
+          head_json=$(git show "$head:$files" | jq -eS "$strip")
+          [ -n "$parent_json" ] && [ "$parent_json" = "$head_json" ] \
+            || { echo "Unsigned head changes more than the version in $files — not signing." >&2; exit 1; }
+          repo="repos/$GITHUB_REPOSITORY/git"
+          commit=$(jq -n --arg msg "$message" --arg tree "$(git rev-parse 'HEAD^{tree}')" --arg parent "$head" \
+            '{message: $msg, tree: $tree, parents: [$parent]}' | gh api "$repo/commits" --input - -q .sha)
+          gh api -X PATCH "$repo/refs/heads/$BRANCH" -f sha="$commit" -F force=false >/dev/null
+          echo "Signed $message as $commit"
 
       - name: Create tag and release
         if: steps.version.outputs.release == 'true'
