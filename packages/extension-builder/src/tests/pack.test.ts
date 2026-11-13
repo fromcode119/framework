@@ -62,4 +62,25 @@ describe('IntegrityStamper', () => {
     expect(packedStamp).not.toBe(sourceStamp);   // cleaning changed the contents
     expect(JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')).checksum).toBe(packedStamp);
   });
+
+  it('leaves a source checkout untouched: the hash is returned, manifest.json is not rewritten', async () => {
+    const dir = stagedExtension();
+    writeFileSync(join(dir, '.git'), 'gitdir: /somewhere/else');   // a worktree; a clone has a directory
+    const before = readFileSync(join(dir, 'manifest.json'), 'utf8');
+
+    const stamp = await IntegrityStamper.stampSourceDir(dir);
+
+    expect(stamp).toMatch(/^[0-9a-f]{64}$/);
+    expect(readFileSync(join(dir, 'manifest.json'), 'utf8')).toBe(before);
+  });
+
+  it('stamps the packed copy of a checkout, because cleaning removed its .git', async () => {
+    const dir = stagedExtension();
+    mkdirSync(join(dir, '.git'));
+    PackCleaner.clean(dir);
+
+    const packedStamp = await IntegrityStamper.stampPackedDir(dir);
+
+    expect(JSON.parse(readFileSync(join(dir, 'manifest.json'), 'utf8')).checksum).toBe(packedStamp);
+  });
 });

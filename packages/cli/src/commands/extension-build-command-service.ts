@@ -79,7 +79,7 @@ export class ExtensionBuildCommandService {
   private static registerChecksum(program: Command): void {
     program
       .command('checksum <kind> <slug>')
-      .description('Re-stamp an extension integrity checksum after an in-place rebuild')
+      .description('Print an extension integrity checksum, and stamp it unless the directory is a git checkout')
       .action(async (kindValue: string, slug: string) => {
         const { ExtensionKind, IntegrityStamper } = await import('@fromcode119/extension-builder');
 
