@@ -6,6 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.573] - 2026-11-13
+
+### Fixed
+
+- one deployer at a time, plugin admin controls guarded in CI, text areas follow their rows ([#1395](https://github.com/fromcode119/framework/pull/1395))
+- **integrity**: a git checkout is neither stamped nor verified ([#1394](https://github.com/fromcode119/framework/pull/1394))
+
 ## [0.2.572] - 2026-11-13
 
 ### Added
@@ -28,13 +35,13 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **auth**: the console sign-in names the host's owner, not the site the browser last worked in ([#1387](https://github.com/fromcode119/framework/pull/1387))
+- **auth**: the console sign-in names the host's owner ([#1387](https://github.com/fromcode119/framework/pull/1387))
 
 ## [0.2.568] - 2026-11-12
 
 ### Fixed
 
-- **auth**: off a site, read only the platform's own setting row, never another site's ([#1386](https://github.com/fromcode119/framework/pull/1386))
+- **auth**: off a site, read only the platform's own setting row ([#1386](https://github.com/fromcode119/framework/pull/1386))
 
 ## [0.2.567] - 2026-11-12
 
@@ -73,17 +80,17 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ### Fixed
 
-- **core**: a plugin invocation's idle deadline counts only its own calls, with a total ceiling ([#1364](https://github.com/fromcode119/framework/pull/1364))
-- **cli**: the updater applies the release's compose files on self-update ([#1363](https://github.com/fromcode119/framework/pull/1363))
-- **frontend**: a path whose percent-encoding does not decode answers 400 instead of 500 ([#1365](https://github.com/fromcode119/framework/pull/1365))
-- **runtime**: write the import map before the host import, so Firefox hydrates ([#1366](https://github.com/fromcode119/framework/pull/1366))
 - **frontend**: render the prose fallback only for non-empty stored content ([#1368](https://github.com/fromcode119/framework/pull/1368))
+- **runtime**: write the import map before the host import, so Firefox hydrates ([#1366](https://github.com/fromcode119/framework/pull/1366))
+- **frontend**: answer 400 for a path whose percent-encoding does not decode ([#1365](https://github.com/fromcode119/framework/pull/1365))
+- **updater**: apply the release's compose files on self-update ([#1363](https://github.com/fromcode119/framework/pull/1363))
+- **plugin-host**: idle deadline per invocation, with a total ceiling ([#1364](https://github.com/fromcode119/framework/pull/1364))
 
 ## [0.2.561] - 2026-11-10
 
-### Changed
+### Added
 
-- **react**: account overview opens on a greeting with stat tiles only for sections the shop offers; account buttons follow the theme accent ([#1343](https://github.com/fromcode119/framework/pull/1343))
+- **account**: overview header and stat tiles to the account design ([#1343](https://github.com/fromcode119/framework/pull/1343))
 
 ## [0.2.560] - 2026-11-10
 
@@ -99,14 +106,14 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 
 ## [0.2.558] - 2026-11-09
 
+### Fixed
+
+- **frontend**: count an evicted memo partition once ([#1356](https://github.com/fromcode119/framework/pull/1356))
+- **frontend**: bound the memo's partitions and drop empty ones ([#1355](https://github.com/fromcode119/framework/pull/1355))
+
 ### Performance
 
 - **frontend**: bound the site revision memo per function and site ([#1353](https://github.com/fromcode119/framework/pull/1353))
-
-### Fixed
-
-- **frontend**: bound the memo's partitions and drop empty ones ([#1355](https://github.com/fromcode119/framework/pull/1355))
-- **frontend**: count an evicted memo partition once ([#1356](https://github.com/fromcode119/framework/pull/1356))
 
 ## [0.2.557] - 2026-11-09
 
@@ -130,10 +137,6 @@ version has no section (`npm run check:changelog`). To say more about a change, 
 ### Performance
 
 - **scheduler**: spread cron tasks across the minute instead of firing them all at once ([#1344](https://github.com/fromcode119/framework/pull/1344))
-
-### Changed
-
-- **ci**: shard the test suite across three parallel jobs ([#1346](https://github.com/fromcode119/framework/pull/1346))
 
 ## [0.2.554] - 2026-11-09
 
