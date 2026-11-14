@@ -9,6 +9,7 @@ import { NewUserRolesCard } from '@/app/users/new/components/view/new-user-roles
 import { NewUserAccountFields } from '@/app/users/new/components/view/new-user-account-fields.client';
 import { NewUserAccessControls } from '@/app/users/new/components/view/new-user-access-controls.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AccountStatus } from '@/app/users/enums/account-status.enum';
 
@@ -105,7 +106,7 @@ export class NewUserPage extends AdminComponent {
     const theme = this.theme;
     const { saving, loadingRoles, roles, formData, errors } = this;
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <NewUserHeader
           theme={theme}
           saving={saving}
@@ -113,7 +114,7 @@ export class NewUserPage extends AdminComponent {
           onSubmit={this.handleSubmit}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-12">
+        <div className="w-full p-6">
            <form onSubmit={this.handleSubmit} className="space-y-8">
               <NewUserAccountFields
                 formData={formData}

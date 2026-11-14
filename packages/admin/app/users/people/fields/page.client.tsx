@@ -4,6 +4,7 @@ import { state } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
@@ -91,7 +92,7 @@ export class PersonFieldsPage extends AdminComponent {
     const theme = this.theme;
     return (
       <SiteRequiredNotice subject="people">
-        <div className="w-full min-h-screen flex flex-col">
+        <div className={`w-full flex flex-col ${AdminClass.of('settings-page')}`}>
           <CompactPageHeader theme={theme.value} backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
             icon={<FrameworkIcons.ListChecks size={18} strokeWidth={2} />}
             title={AdminI18n.t('users.fields.title')} subtitle={AdminI18n.t('users.fields.subtitle')}
@@ -99,7 +100,7 @@ export class PersonFieldsPage extends AdminComponent {
               <Button variant={ButtonVariant.PRIMARY} type="button" icon={<FrameworkIcons.Plus size={14} />} onClick={() => this.open(null)}
                 className="h-9 px-4 rounded-xl font-bold text-[12px]">{AdminI18n.t('users.fields.add')}</Button>
             )} />
-          <div className="flex-1 w-full px-6 lg:px-12 py-10 space-y-6">
+          <div className="w-full p-6 space-y-6">
             {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{this.error}</div> : null}
             {this.editing ? (
               <PersonFieldEditor key={this.current?.key ?? 'new'} field={this.current} locales={this.locales} theme={theme}

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Loader } from '@/components/ui/view/loader.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserRolesPage extends AdminComponent {
@@ -87,7 +88,7 @@ export class UserRolesPage extends AdminComponent {
     if (!user) return <div className="p-8 text-center font-semibold text-red-500">{AdminI18n.t('users.userNotFound2')}</div>;
 
     return (
-      <div className="w-full flex flex-col animate-in fade-in duration-300">
+      <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
           backHref="/users"
@@ -105,7 +106,7 @@ export class UserRolesPage extends AdminComponent {
           }
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+        <div className="w-full p-6">
           <div className="max-w-2xl space-y-2">
             {roles.map(role => {
               const isSelected = selectedRoles.includes(role.slug);

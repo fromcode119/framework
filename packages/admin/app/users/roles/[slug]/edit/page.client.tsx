@@ -15,6 +15,7 @@ import type { IPermissionCatalogGroup } from '@/app/users/roles/interfaces/permi
 import { EditRoleSummarySidebar } from '@/app/users/roles/[slug]/edit/components/view/edit-role-summary-sidebar.client';
 import type { IEditRoleFormData } from '@/app/users/roles/[slug]/edit/interfaces/edit-role-form-data.interface';
 import { prop, state } from '@fromcode119/react-class-components';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { TextArea } from '@/components/ui/view/text-area.client';
 
@@ -106,14 +107,14 @@ export class EditRolePage extends AdminComponent {
 
     if (fetching) {
       return (
-        <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="flex-1 flex items-center justify-center py-20">
           <Loader label={AdminI18n.t('users.loadingRole')} />
         </div>
       );
     }
 
     return (
-      <div className="w-full flex flex-col animate-in fade-in duration-300">
+      <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
           onBack={() => this.router.back()}
@@ -121,7 +122,7 @@ export class EditRolePage extends AdminComponent {
           subtitle={AdminI18n.t('users.modifyPermissionSetsAndMetadata')}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+        <div className="w-full p-6">
           <form onSubmit={(e) => this.handleSubmit(e)} className="grid grid-cols-1 lg:grid-cols-12 gap-6">
             <div className="lg:col-span-8 space-y-6">
               {editable ? null : (

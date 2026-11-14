@@ -44,7 +44,7 @@ export class PersonEditPage extends PersonEditPageActions {
     const { person, loading, saving, granting, sendingReset, notice, error, notFound, loadError, users, confirmDelete, deleting, reassignOpen, reassignTo, reassigning } = this;
 
     if (loading) {
-      return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('users.loadingPerson')} /></div>;
+      return <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('users.loadingPerson')} /></div>;
     }
 
     if (loadError) {
@@ -63,7 +63,7 @@ export class PersonEditPage extends PersonEditPageActions {
       // as the plugin pages do, instead of implying the person does not exist.
       return (
         <SiteScopeGate what={AdminI18n.t('users.people2', { routeId: this.routeId })}>
-          <div className="w-full min-h-screen flex flex-col items-center justify-center gap-4">
+          <div className="w-full flex flex-col items-center justify-center gap-4 py-20">
             <p className="font-bold text-slate-400">{AdminI18n.t('users.thisPersonCouldNotBe2')}</p>
             <AdminLink href={AdminConstants.ROUTES.PEOPLE.ROOT} className="text-indigo-600 font-bold text-sm">{AdminI18n.t('users.backToPeople')}</AdminLink>
           </div>
@@ -74,7 +74,7 @@ export class PersonEditPage extends PersonEditPageActions {
     const linked = person.userId != null && person.userId !== '';
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme.value}
           backHref={AdminConstants.ROUTES.PEOPLE.ROOT}
@@ -83,7 +83,7 @@ export class PersonEditPage extends PersonEditPageActions {
           subtitle={`${person.email || AdminI18n.t('users.person', { id: person.id })} · ${person.source || AdminI18n.t('users.sourceContact')} · ${linked ? AdminI18n.t('users.linked2', { userId: person.userId }) : AdminI18n.t('users.noLoginAccount')}`}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-12 py-10">
+        <div className="w-full p-6">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
             <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
               <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
