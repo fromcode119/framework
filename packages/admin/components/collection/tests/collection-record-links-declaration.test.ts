@@ -28,7 +28,7 @@ describe('CollectionRecordLinksDeclaration', () => {
 
   it('hands a section the parts mapped to it, with the words for an empty part', () => {
     const links = CollectionRecordLinksDeclaration.of(collection, { reference: 'A1' }, '3')!;
-    expect(links.partsOf('Totals')).toEqual([{ term: 'payment', empty: 'Nothing paid yet.', menu: false }]);
+    expect(links.partsOf('Totals')).toEqual([{ term: 'payment', empty: 'Nothing paid yet.', menu: false, settled: false }]);
     expect(links.partsOf('Delivery').map((part) => part.term)).toEqual(['delivery', 'schedule']);
     expect(links.partsOf('Notes')).toEqual([]);
   });
@@ -36,6 +36,12 @@ describe('CollectionRecordLinksDeclaration', () => {
   it('keeps a part the collection lists in the section menu out of the section body', () => {
     const links = CollectionRecordLinksDeclaration.of(collection, { reference: 'A1' }, '3')!;
     expect(links.partsOf('Delivery').map((part) => [part.term, part.menu])).toEqual([['delivery', true], ['schedule', false]]);
+  });
+
+  it('settles a part whose "nothing yet" the record already contradicts', () => {
+    const declared = { admin: { recordLinks: { ...collection.admin.recordLinks, parts: { delivery: { section: 'Delivery', empty: 'No shipment yet.', emptyUnless: ['trackingNumber'] } } } } };
+    expect(CollectionRecordLinksDeclaration.of(declared, { reference: 'A1', trackingNumber: '5300807111837' }, '3')!.partsOf('Delivery')[0].settled).toBe(true);
+    expect(CollectionRecordLinksDeclaration.of(declared, { reference: 'A1', trackingNumber: ' ' }, '3')!.partsOf('Delivery')[0].settled).toBe(false);
   });
 
   it('counts a part as placed only while its section is on screen', () => {

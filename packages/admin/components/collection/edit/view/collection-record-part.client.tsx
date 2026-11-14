@@ -116,7 +116,8 @@ export class CollectionRecordPart extends Reactor {
   }
 
   /** Nothing yet: the collection's words for that, and the first thing that can be started beside them. */
-  private renderEmpty(part: { term: string; empty: string; menu: boolean }): ReactNode {
+  private renderEmpty(part: { term: string; empty: string; menu: boolean; settled: boolean }): ReactNode {
+    if (part.settled) return null;
     const first = this.standalone ? undefined : this.actionsOf(part.term)[0];
     if (!part.empty && !first) return null;
     return (
@@ -132,7 +133,7 @@ export class CollectionRecordPart extends Reactor {
     );
   }
 
-  private renderBody(parts: Array<{ term: string; empty: string; menu: boolean }>): ReactNode {
+  private renderBody(parts: Array<{ term: string; empty: string; menu: boolean; settled: boolean }>): ReactNode {
     return parts.map((part) => {
       const groups = this.groupsOf(part.term);
       if (groups.length && part.menu) return null;
@@ -141,10 +142,11 @@ export class CollectionRecordPart extends Reactor {
   }
 
   /** Actions the body does not already offer: in the title row of a card only parts fill, else in its ⋯. */
-  private offered(parts: Array<{ term: string; empty: string; menu: boolean }>): Array<{ id: string; label: string; href: string; icon?: string }> {
+  private offered(parts: Array<{ term: string; empty: string; menu: boolean; settled: boolean }>): Array<{ id: string; label: string; href: string; icon?: string }> {
     return parts.flatMap((part) => {
       const actions = this.actionsOf(part.term);
-      const inBody = !this.standalone && this.groupsOf(part.term).length === 0 ? 1 : 0;
+      // While the part says nothing (settled by the record's own fields) its first action is offered from the ⋯ too.
+      const inBody = !this.standalone && !part.settled && this.groupsOf(part.term).length === 0 ? 1 : 0;
       return actions.slice(inBody);
     });
   }

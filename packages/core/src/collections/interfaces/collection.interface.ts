@@ -145,9 +145,11 @@ export interface ICollection {
        * the words to show there while no such record exists. A part with no entry here, or whose
        * section is not on screen, stays in the linked-records list. `menu` opens the part's records from
        * the card's ⋯ instead of drawing them as rows, for a section whose own row already says what they
-       * are (an order's payment row, and the payment record behind it).
+       * are (an order's payment row, and the payment record behind it). `emptyUnless` names fields of
+       * this record that, once filled, already say what the part's records would (a tracking number on
+       * a shipped order): the `empty` words are then not shown, since they would contradict the record.
        */
-      parts?: Record<string, { section: string; empty?: string; menu?: boolean }>;
+      parts?: Record<string, { section: string; empty?: string; emptyUnless?: string[]; menu?: boolean }>;
     };
     /** The operator cannot change rows here. See `disableCreate`. */
     disableEdit?: boolean;
