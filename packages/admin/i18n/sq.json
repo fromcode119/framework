@@ -637,7 +637,8 @@
       "choose": "Zgjidhni një sajt",
       "platformHint": "Pa sajt — shtojca, tema, burime, sajte, cilësime të platformës",
       "viaRole": "përmes rolit në platformë",
-      "switch": "Ndërro sajtin"
+      "switch": "Ndërro sajtin",
+      "lockedShort": "Kjo konsolë është për një sajt."
     },
     "account": {
       "singleSite": "Sajti që shërben ky instalim",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Të disponueshme për këtë sajt",
       "pluginsThePlatformOffersTo": "Shtojcat që platforma u ofron sajteve. Aktivizimi i njërës e shton vetëm në këtë sajt.",
       "loading": "Po ngarkohet…",
-      "thePlatformOffersNoPlugins": "Platforma ende nuk ofron shtojca për t'u shtuar nga sajtet.",
       "synchronizingGlobalMarketplaceCatalog": "Po sinkronizohet katalogu global i tregut",
       "pluginFailuresDetected": "U zbuluan gabime në shtojca",
       "searchInstalledPlugins": "Kërkoni shtojcat e instaluara...",
       "inspecting": "Po inspektohet...",
       "uploadZipTarGz": "Ngarko (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instalimi i shtojcave për çdo sajt, përditësimi dhe heqja e tyre, si dhe aktivizimi i atyre që platforma nuk ua ofron sajteve,",
       "approvingHeldPlugins": "Miratimi i asaj që kërkon një shtojcë e pezulluar",
       "dragAndDropPluginZip": "Tërhiqni dhe lëshoni këtu shtojcën `.zip` ose `.tar.gz`, ose klikoni për ta ngarkuar.",
       "tryADifferentSearchTerm2": "Provoni një term tjetër kërkimi ose ngarkoni një shtojcë të re.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Me përditësim",
       "tabErrors": "Me gabime",
       "details": "Detaje",
-      "installedOnThePlatform": "Të instaluara në platformë"
+      "platformNote": "Instalimi për të gjitha sajtet bëhet në platformë."
     },
     "upload": {
       "name": "Emri: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Zgjidhni stilin vizual të panelit tuaj të administrimit.",
       "openPlatformScope": "Hap fushëveprimin e platformës",
       "loadingGeneralSettings": "Po ngarkohen cilësimet e përgjithshme...",
-      "generalConfiguration": "Konfigurimi i përgjithshëm",
       "brandIdentitySystemPreferences": "Identiteti i markës dhe preferencat e sistemit",
       "saveChanges": "Ruaj ndryshimet",
       "generalSettingsCouldNotBe": "Cilësimet e përgjithshme nuk mund të ngarkoheshin",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresa e API-së (API URL)",
       "apiUrlDescription": "Adresa publike e API-së së platformës. Porta e kalimit dërgon çdo kërkesë për këtë host te API-ja, jo te sajti.",
-      "apiUrlExplanation": "Përdorni një nga adresat e vetë sajtit (kërkesat shkojnë te shtegu i tij /api) ose një host të dedikuar si api.example.com. Kur e zhvendosni sajtin në një domain të ri, ndryshoni edhe këtë: një host i lënë këtu ndalon së shërbyeri sajtin. Bosh përdor adresën nga erdhi kërkesa."
+      "apiUrlExplanation": "Përdorni një nga adresat e vetë sajtit (kërkesat shkojnë te shtegu i tij /api) ose një host të dedikuar si api.example.com. Kur e zhvendosni sajtin në një domain të ri, ndryshoni edhe këtë: një host i lënë këtu ndalon së shërbyeri sajtin. Bosh përdor adresën nga erdhi kërkesa.",
+      "brandIdentityCardDescription": "Si quhet faqja dhe si duket në shfletues dhe në email.",
+      "siteCardDescription": "Nëse faqja është aktive dhe nëse motorët e kërkimit mund ta indeksojnë.",
+      "regionalDefaultsCardDescription": "Zona kohore dhe formati i orës në konsolë.",
+      "notificationsCardDescription": "Ku dërgohen formularët e brendshëm dhe sinjalizimet e sistemit.",
+      "searchEnginesCardDescription": "Nëse adresat e vetë platformës shfaqen në motorët e kërkimit.",
+      "frontendAuthCardDescription": "Si hyjnë dhe regjistrohen vizitorët në faqe dhe në aplikacion.",
+      "signUpEmailCardDescription": "Emaili me të cilin një llogari e re konfirmon adresën.",
+      "usageReportCardDescription": "Raporti i përdorimit me email dhe ku shkon."
     },
     "appearance": {
       "appearance": "Pamja",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Kontrolloni lidhjen me tregun ose provoni përsëri më vonë.",
     "inThisSite": "Në këtë sajt",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Një temë e pastër dhe moderne për frontend-in tuaj Fromcode.",
     "officialTheme": "Temë zyrtare",
     "addToThisSite": "Shto në këtë sajt",
     "installNow": "Instalo tani",

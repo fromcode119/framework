@@ -141,7 +141,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {t.name}
                         </h3>
                         <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                          {t.description || AdminI18n.t('themes.aCleanAndModernTheme')}
+                          {t.description}
                         </p>
                         <div className={`flex flex-wrap items-center gap-3 text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                              {installed && installedVersion && (<>

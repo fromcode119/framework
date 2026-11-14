@@ -85,7 +85,7 @@ export class GeneralUsageReportCard extends AdminComponent {
     const { settings, theme, platformLocks } = this;
     if (!platformLocks.shown('usage_report_enabled')) return null;
     return (
-      <Card title={AdminI18n.t('settings.general.usageReport')}>
+      <Card title={AdminI18n.t('settings.general.usageReport')} description={AdminI18n.t('settings.general.usageReportCardDescription')}>
         <SettingRow
           theme={theme}
           title={AdminI18n.t('settings.general.usageReportSend')}

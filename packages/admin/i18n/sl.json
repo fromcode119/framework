@@ -637,7 +637,8 @@
       "choose": "Izberite spletno mesto",
       "platformHint": "Brez spletnega mesta – vtičniki, teme, viri, spletna mesta, nastavitve platforme",
       "viaRole": "prek vloge na platformi",
-      "switch": "Preklopi spletno mesto"
+      "switch": "Preklopi spletno mesto",
+      "lockedShort": "Ta konzola je za eno spletno mesto."
     },
     "account": {
       "singleSite": "Spletno mesto, ki ga streže ta namestitev",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Na voljo temu spletnemu mestu",
       "pluginsThePlatformOffersTo": "Vtičniki, ki jih platforma ponuja spletnim mestom. Vklop vtičnika ga doda le temu spletnemu mestu.",
       "loading": "Nalaganje …",
-      "thePlatformOffersNoPlugins": "Platforma spletnim mestom še ne ponuja nobenih vtičnikov.",
       "synchronizingGlobalMarketplaceCatalog": "Sinhronizacija globalnega kataloga tržnice",
       "pluginFailuresDetected": "Zaznane napake vtičnikov",
       "searchInstalledPlugins": "Iskanje nameščenih vtičnikov …",
       "inspecting": "Pregledovanje …",
       "uploadZipTarGz": "Naloži (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Nameščanje vtičnikov za vsa spletna mesta, njihovo posodabljanje in odstranjevanje ter vklop tistih, ki jih platforma ne ponuja spletnim mestom,",
       "approvingHeldPlugins": "Odobritev zahtev zadržanega vtičnika",
       "dragAndDropPluginZip": "Sem povlecite datoteko vtičnika `.zip` ali `.tar.gz` ali kliknite za nalaganje.",
       "tryADifferentSearchTerm2": "Poskusite z drugim iskalnim izrazom ali naložite nov vtičnik.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "S posodobitvijo",
       "tabErrors": "Z napako",
       "details": "Podrobnosti",
-      "installedOnThePlatform": "Nameščeno na platformi"
+      "platformNote": "Namestitev za vsa spletna mesta je na platformi."
     },
     "upload": {
       "name": "Ime: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Izberite vizualni slog skrbniške plošče.",
       "openPlatformScope": "Odpri obseg platforme",
       "loadingGeneralSettings": "Nalaganje splošnih nastavitev ...",
-      "generalConfiguration": "Splošna konfiguracija",
       "brandIdentitySystemPreferences": "Identiteta blagovne znamke in sistemske nastavitve",
       "saveChanges": "Shrani spremembe",
       "generalSettingsCouldNotBe": "Splošnih nastavitev ni bilo mogoče naložiti",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Naslov API (API URL)",
       "apiUrlDescription": "Javni naslov API-ja platforme. Prehod vsako zahtevo za ta gostitelj pošlje API-ju, ne spletnemu mestu.",
-      "apiUrlExplanation": "Uporabite enega od naslovov spletnega mesta (zahteve gredo na njegovo pot /api) ali namenski gostitelj, kot je api.example.com. Ko spletno mesto preselite na novo domeno, spremenite tudi to: gostitelj, ki ostane tukaj, preneha streči spletnemu mestu. Prazno uporabi naslov, s katerega je prišla zahteva."
+      "apiUrlExplanation": "Uporabite enega od naslovov spletnega mesta (zahteve gredo na njegovo pot /api) ali namenski gostitelj, kot je api.example.com. Ko spletno mesto preselite na novo domeno, spremenite tudi to: gostitelj, ki ostane tukaj, preneha streči spletnemu mestu. Prazno uporabi naslov, s katerega je prišla zahteva.",
+      "brandIdentityCardDescription": "Kako se spletno mesto imenuje in kako je videti v brskalniku in e-poštnih sporočilih.",
+      "siteCardDescription": "Ali je spletno mesto objavljeno in ali ga iskalniki smejo indeksirati.",
+      "regionalDefaultsCardDescription": "Časovni pas in oblika časa v konzoli.",
+      "notificationsCardDescription": "Kam gredo interni obrazci in sistemska opozorila.",
+      "searchEnginesCardDescription": "Ali se lastni naslovi platforme pojavijo v iskalnikih.",
+      "frontendAuthCardDescription": "Kako se obiskovalci prijavijo in registrirajo na spletnem mestu in v aplikaciji.",
+      "signUpEmailCardDescription": "E-poštno sporočilo, s katerim nov račun potrdi naslov.",
+      "usageReportCardDescription": "Poročilo o uporabi po e-pošti in kam gre."
     },
     "appearance": {
       "appearance": "Videz",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Preverite povezavo s tržnico ali poskusite znova pozneje.",
     "inThisSite": "Na tem spletnem mestu",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Čista in sodobna tema za vaš Fromcode frontend.",
     "officialTheme": "Uradna tema",
     "addToThisSite": "Dodaj temu spletnemu mestu",
     "installNow": "Namesti zdaj",

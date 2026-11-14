@@ -637,7 +637,8 @@
       "choose": "Vælg et websted",
       "platformHint": "Intet websted — plugins, temaer, kilder, websteder, platformindstillinger",
       "viaRole": "via platformrolle",
-      "switch": "Skift websted"
+      "switch": "Skift websted",
+      "lockedShort": "Denne konsol er til ét websted."
     },
     "account": {
       "singleSite": "Det websted, denne installation betjener",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Tilgængelige for dette websted",
       "pluginsThePlatformOffersTo": "Plugins, som platformen tilbyder websteder. Når du slår et til, tilføjes det kun til dette websted.",
       "loading": "Indlæser…",
-      "thePlatformOffersNoPlugins": "Platformen tilbyder endnu ingen plugins, som websteder kan tilføje.",
       "synchronizingGlobalMarketplaceCatalog": "Synkroniserer det globale markedspladskatalog",
       "pluginFailuresDetected": "Pluginfejl fundet",
       "searchInstalledPlugins": "Søg i installerede plugins...",
       "inspecting": "Undersøger...",
       "uploadZipTarGz": "Upload (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Installation af plugins for alle websteder, opdatering og fjernelse af dem samt aktivering af plugins, som platformen ikke tilbyder websteder,",
       "approvingHeldPlugins": "Godkendelse af det, et tilbageholdt plugin beder om",
       "dragAndDropPluginZip": "Træk og slip en plugin-`.zip` eller `.tar.gz` her, eller klik for at uploade.",
       "tryADifferentSearchTerm2": "Prøv et andet søgeord, eller upload et nyt plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Med opdatering",
       "tabErrors": "Med fejl",
       "details": "Detaljer",
-      "installedOnThePlatform": "Installeret på platformen"
+      "platformNote": "Installation for alle websteder sker i platformen."
     },
     "upload": {
       "name": "Navn: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Vælg den visuelle stil for dit administrationspanel.",
       "openPlatformScope": "Åbn platformsomfang",
       "loadingGeneralSettings": "Indlæser generelle indstillinger...",
-      "generalConfiguration": "Generel konfiguration",
       "brandIdentitySystemPreferences": "Brandidentitet og systempræferencer",
       "saveChanges": "Gem ændringer",
       "generalSettingsCouldNotBe": "De generelle indstillinger kunne ikke indlæses",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-adresse (API URL)",
       "apiUrlDescription": "Den offentlige adresse for platformens API. Gatewayen sender alle forespørgsler til denne vært til API'et, ikke til webstedet.",
-      "apiUrlExplanation": "Brug en af webstedets egne adresser (forespørgsler går til stien /api) eller en dedikeret vært som api.example.com. Når du flytter webstedet til et nyt domæne, skal du også ændre dette: en vært, der efterlades her, holder op med at betjene webstedet. Tom bruger den adresse, forespørgslen kom fra."
+      "apiUrlExplanation": "Brug en af webstedets egne adresser (forespørgsler går til stien /api) eller en dedikeret vært som api.example.com. Når du flytter webstedet til et nyt domæne, skal du også ændre dette: en vært, der efterlades her, holder op med at betjene webstedet. Tom bruger den adresse, forespørgslen kom fra.",
+      "brandIdentityCardDescription": "Hvad sitet hedder, og hvordan det ser ud i browseren og i e-mails.",
+      "siteCardDescription": "Om sitet er live, og om søgemaskiner må indeksere det.",
+      "regionalDefaultsCardDescription": "Tidszone og tidsformat i konsollen.",
+      "notificationsCardDescription": "Hvor interne formularer og systemadvarsler sendes hen.",
+      "searchEnginesCardDescription": "Om platformens egne adresser vises i søgemaskiner.",
+      "frontendAuthCardDescription": "Hvordan besøgende logger ind og tilmelder sig på sitet og i appen.",
+      "signUpEmailCardDescription": "Den e-mail, en ny konto får for at bekræfte sin adresse.",
+      "usageReportCardDescription": "Brugsrapporten sendt på e-mail, og hvor den går hen."
     },
     "appearance": {
       "appearance": "Udseende",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Tjek forbindelsen til markedspladsen, eller prøv igen senere.",
     "inThisSite": "På dette site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Et rent og moderne tema til din Fromcode-frontend.",
     "officialTheme": "Officielt tema",
     "addToThisSite": "Føj til dette site",
     "installNow": "Installer nu",

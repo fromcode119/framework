@@ -8,6 +8,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminClass } from '@/lib/admin-class';
 import { Card } from '@/components/ui/view/card.client';
 import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
+import { PluginSettingsSections } from '@/components/plugins/plugin-settings-sections';
 
 /**
  * A plugin's settings, rendered from the schema the plugin itself declares — as the same rows every
@@ -46,8 +47,36 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     return AdminI18n.t('plugins.list.notSavedCorrect', { join: labels.join(', ') });
   }
 
+  private renderField(field: any) {
+    const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
+    // Keep the plugin's own description (it can carry what to paste elsewhere) and add that a value is
+    // held. A read-only secret is written by the plugin, not typed here, so "leave blank to keep" would
+    // describe an input it lacks.
+    const savedNote = [
+      field.admin?.description,
+      AdminI18n.t(field.admin?.readOnly ? 'plugins.list.savedSecurelyReadOnly' : 'plugins.list.savedSecurelyLeaveBlankTo'),
+    ].filter(Boolean).join(' ');
+    const resolvedField = hasSavedSecret
+      ? { ...field, admin: { ...(field.admin || {}), description: savedNote } }
+      : field;
+    const errors = this.errors[field.name];
+    return (
+      <FieldRenderer
+        key={field.name}
+        field={resolvedField}
+        value={this.settings[field.name]}
+        onChange={(value) => this.handleFieldChange(field.name, value)}
+        record={this.settings}
+        onPatch={(partial) => Object.entries(partial).forEach(([name, next]) => this.handleFieldChange(name, next))}
+        theme={this.theme}
+        collectionSlug={`settings-${this.pluginSlug}`}
+        inlineDescription
+        errors={errors ? (Array.isArray(errors) ? (errors as string[]) : [errors as string]) : undefined}
+      />
+    );
+  }
+
   render() {
-    const theme = this.theme;
     const schema = this.schema;
     const status = this.status;
 
@@ -95,36 +124,16 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
         )}
         {this.saveRefusal ? <p role="alert" className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')} mb-3`}>{this.saveRefusal}</p> : null}
 
-        <Card noPadding title={heading}>
-          <div className={AdminClass.of('settings-fields')}>
-              {visibleFields.map((field: any) => {
-                const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
-                // Keep the plugin's own description (it can carry what to paste elsewhere) and add that a value is
-                // held. A read-only secret is written by the plugin, not typed here, so "leave blank to keep" would
-                // describe an input it lacks.
-                const savedNote = [
-                  field.admin?.description,
-                  AdminI18n.t(field.admin?.readOnly ? 'plugins.list.savedSecurelyReadOnly' : 'plugins.list.savedSecurelyLeaveBlankTo'),
-                ].filter(Boolean).join(' ');
-                const resolvedField = hasSavedSecret
-                  ? { ...field, admin: { ...(field.admin || {}), description: savedNote } }
-                  : field;
-                return (
-                  <FieldRenderer
-                    key={field.name}
-                    field={resolvedField}
-                    value={this.settings[field.name]}
-                    onChange={(value) => this.handleFieldChange(field.name, value)}
-                    record={this.settings}
-                    onPatch={(partial) => Object.entries(partial).forEach(([name, next]) => this.handleFieldChange(name, next))}
-                    theme={theme}
-                    collectionSlug={`settings-${this.pluginSlug}`}
-                    errors={this.errors[field.name] ? (Array.isArray(this.errors[field.name]) ? (this.errors[field.name] as string[]) : [this.errors[field.name] as string]) : undefined}
-                  />
-                );
-              })}
-          </div>
-        </Card>
+        <div className="space-y-3">
+          {PluginSettingsSections.cardsOf(visibleFields, schema.sections).map((card, index) => (
+            // A tab whose fields name no section is one card, headed by the tab's name when no tab bar does.
+            <Card key={card.key} noPadding title={card.title ?? (index === 0 ? heading : undefined)} description={card.description}>
+              <div className={AdminClass.of('settings-fields')}>
+                {card.fields.map((field: any) => this.renderField(field))}
+              </div>
+            </Card>
+          ))}
+        </div>
 
         <SettingsSaveBar dirty={this.isDirty} saving={this.saving} onSave={this.handleSave} onDiscard={this.discardChanges} />
       </form>

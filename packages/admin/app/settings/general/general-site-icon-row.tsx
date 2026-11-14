@@ -65,11 +65,8 @@ export class GeneralSiteIconRow extends AdminComponent {
         title={AdminI18n.t('settings.general.siteIcon')}
         description={AdminI18n.t('settings.general.siteIconDescription')}
         explanation={line ? <Explanation>{line}</Explanation> : undefined}
-        stacked
       >
-        <div className="max-w-xs space-y-2">
-          <MediaRelationField value={this.value} onChange={this.change} theme={this.theme} wholeImage />
-        </div>
+        <MediaRelationField value={this.value} onChange={this.change} theme={this.theme} wholeImage compact />
       </SettingRow>
     );
   }

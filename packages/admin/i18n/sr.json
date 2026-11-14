@@ -637,7 +637,8 @@
       "choose": "Изаберите сајт",
       "platformHint": "Без сајта — додаци, теме, извори, сајтови, подешавања платформе",
       "viaRole": "преко улоге на платформи",
-      "switch": "Промени сајт"
+      "switch": "Промени сајт",
+      "lockedShort": "Ова конзола је за један сајт."
     },
     "account": {
       "singleSite": "Сајт који ова инсталација опслужује",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Доступно овом сајту",
       "pluginsThePlatformOffersTo": "Додаци које платформа нуди сајтовима. Укључивањем се додатак додаје само овом сајту.",
       "loading": "Учитавање…",
-      "thePlatformOffersNoPlugins": "Платформа још не нуди додатке које сајтови могу да додају.",
       "synchronizingGlobalMarketplaceCatalog": "Синхронизација глобалног каталога продавнице",
       "pluginFailuresDetected": "Откривене су грешке додатака",
       "searchInstalledPlugins": "Претражи инсталиране додатке...",
       "inspecting": "Провера...",
       "uploadZipTarGz": "Отпреми (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Инсталирање додатака за све сајтове, њихово ажурирање и уклањање, као и укључивање оних које платформа не нуди сајтовима,",
       "approvingHeldPlugins": "Одобравање онога што задржани додатак тражи",
       "dragAndDropPluginZip": "Превуците и отпустите `.zip` или `.tar.gz` додатка овде или кликните да отпремите.",
       "tryADifferentSearchTerm2": "Покушајте са другим појмом за претрагу или отпремите нови додатак.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Са ажурирањем",
       "tabErrors": "Са грешком",
       "details": "Детаљи",
-      "installedOnThePlatform": "Инсталирано на платформи"
+      "platformNote": "Инсталирање за све сајтове је у платформи."
     },
     "upload": {
       "name": "Назив: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Изаберите визуелни стил административног панела.",
       "openPlatformScope": "Отвори опсег платформе",
       "loadingGeneralSettings": "Учитавање општих подешавања...",
-      "generalConfiguration": "Општа конфигурација",
       "brandIdentitySystemPreferences": "Идентитет бренда и системске поставке",
       "saveChanges": "Сачувај измене",
       "generalSettingsCouldNotBe": "Општа подешавања није могуће учитати",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Адреса API-ја (API URL)",
       "apiUrlDescription": "Јавна адреса API-ја платформе. Gateway сваки захтев за овај хост шаље API-ју, а не сајту.",
-      "apiUrlExplanation": "Користите једну од адреса самог сајта (захтеви иду на његову путању /api) или посебан хост, нпр. api.example.com. Када преместите сајт на нови домен, промените и ово: хост остављен овде престаје да служи сајт. Празно користи адресу са које је захтев стигао."
+      "apiUrlExplanation": "Користите једну од адреса самог сајта (захтеви иду на његову путању /api) или посебан хост, нпр. api.example.com. Када преместите сајт на нови домен, промените и ово: хост остављен овде престаје да служи сајт. Празно користи адресу са које је захтев стигао.",
+      "brandIdentityCardDescription": "Како се сајт зове и како изгледа у прегледачу и у имејловима.",
+      "siteCardDescription": "Да ли је сајт активан и да ли претраживачи смеју да га индексирају.",
+      "regionalDefaultsCardDescription": "Временска зона и формат времена у конзоли.",
+      "notificationsCardDescription": "Где стижу интерни обрасци и системска упозорења.",
+      "searchEnginesCardDescription": "Да ли се адресе саме платформе појављују у претраживачима.",
+      "frontendAuthCardDescription": "Како се посетиоци пријављују и региструју на сајту и у апликацији.",
+      "signUpEmailCardDescription": "Имејл којим нови налог потврђује адресу.",
+      "usageReportCardDescription": "Извештај о коришћењу имејлом и где иде."
     },
     "appearance": {
       "appearance": "Изглед",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Проверите везу са продавницом или покушајте поново касније.",
     "inThisSite": "На овом сајту",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Чиста и модерна тема за ваш Fromcode frontend.",
     "officialTheme": "Званична тема",
     "addToThisSite": "Додај на овај сајт",
     "installNow": "Инсталирај",

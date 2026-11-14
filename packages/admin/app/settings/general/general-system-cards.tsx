@@ -89,7 +89,7 @@ export class GeneralSystemCards extends PureReactor {
     if (!this.platformLocks.isSingleSite()) return null;
     const { settings, theme } = this;
     return (
-      <Card title={AdminI18n.t('settings.general.site')}>
+      <Card title={AdminI18n.t('settings.general.site')} description={AdminI18n.t('settings.general.siteCardDescription')}>
         <SettingRow
           theme={theme}
           title={AdminI18n.t('sites.environment')}
@@ -148,7 +148,7 @@ export class GeneralSystemCards extends PureReactor {
     return (
       <>
         {this.shown('timezone') && (
-          <Card title={AdminI18n.t('settings.general.regionalDefaults')}>
+          <Card title={AdminI18n.t('settings.general.regionalDefaults')} description={AdminI18n.t('settings.general.regionalDefaultsCardDescription')}>
             <SettingRow
               theme={theme}
               title={AdminI18n.t('settings.general.systemTimezone')}
@@ -185,7 +185,7 @@ export class GeneralSystemCards extends PureReactor {
         )}
 
         {this.anyShown('notification_email', 'notification_email_cc', 'email_notifications') && (
-          <Card title={AdminI18n.t('settings.general.notifications')}>
+          <Card title={AdminI18n.t('settings.general.notifications')} description={AdminI18n.t('settings.general.notificationsCardDescription')}>
             {this.shown('notification_email') && (
               <SettingRow
                 theme={theme}
@@ -244,7 +244,7 @@ export class GeneralSystemCards extends PureReactor {
         {this.renderSiteCard()}
 
         {this.shown('admin_search_indexing') && (
-          <Card title={AdminI18n.t('settings.general.searchEngines')}>
+          <Card title={AdminI18n.t('settings.general.searchEngines')} description={AdminI18n.t('settings.general.searchEnginesCardDescription')}>
             <SettingRow
               theme={theme}
               title={AdminI18n.t('settings.general.indexPlatformHosts')}

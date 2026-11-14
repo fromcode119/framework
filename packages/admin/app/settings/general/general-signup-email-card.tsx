@@ -67,7 +67,7 @@ export class GeneralSignupEmailCard extends PureReactor {
     if (!locks.shown(GeneralSignupEmailCard.BRANDED_KEY)) return null;
     const branded = Boolean(this.settings[GeneralSignupEmailCard.BRANDED_KEY]);
     return (
-      <Card title={AdminI18n.t('settings.general.signUpEmail')}>
+      <Card title={AdminI18n.t('settings.general.signUpEmail')} description={AdminI18n.t('settings.general.signUpEmailCardDescription')}>
         <SettingRow
           theme={this.theme}
           title={AdminI18n.t('settings.general.brandedSignUpEmail')}

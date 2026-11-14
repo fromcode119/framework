@@ -637,7 +637,8 @@
       "choose": "साइट चुनें",
       "platformHint": "कोई साइट नहीं — प्लगइन, थीम, स्रोत, साइटें, प्लेटफ़ॉर्म सेटिंग्स",
       "viaRole": "प्लेटफ़ॉर्म भूमिका के माध्यम से",
-      "switch": "साइट बदलें"
+      "switch": "साइट बदलें",
+      "lockedShort": "यह कंसोल एक साइट के लिए है।"
     },
     "account": {
       "singleSite": "वह साइट जिसे यह डिप्लॉयमेंट चलाता है",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "इस साइट के लिए उपलब्ध",
       "pluginsThePlatformOffersTo": "प्लेटफ़ॉर्म द्वारा साइटों को उपलब्ध कराए गए प्लगइन। किसी को चालू करने पर वह केवल इसी साइट में जुड़ता है।",
       "loading": "लोड हो रहा है…",
-      "thePlatformOffersNoPlugins": "प्लेटफ़ॉर्म अभी साइटों के जोड़ने के लिए कोई प्लगइन उपलब्ध नहीं कराता।",
       "synchronizingGlobalMarketplaceCatalog": "ग्लोबल मार्केटप्लेस कैटलॉग सिंक हो रहा है",
       "pluginFailuresDetected": "प्लगइन विफलताएँ पाई गईं",
       "searchInstalledPlugins": "इंस्टॉल किए गए प्लगइन खोजें...",
       "inspecting": "जाँच हो रही है...",
       "uploadZipTarGz": "अपलोड करें (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "हर साइट के लिए प्लगइन इंस्टॉल करना, उन्हें अपडेट करना और हटाना, और ऐसे प्लगइन चालू करना जो प्लेटफ़ॉर्म साइटों को उपलब्ध नहीं कराता,",
       "approvingHeldPlugins": "रोके गए प्लगइन की माँगों को स्वीकृत करना",
       "dragAndDropPluginZip": "प्लगइन `.zip` या `.tar.gz` यहाँ खींचकर छोड़ें, या अपलोड करने के लिए क्लिक करें।",
       "tryADifferentSearchTerm2": "कोई दूसरा खोज शब्द आज़माएँ या नया प्लगइन अपलोड करें।",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "अपडेट के साथ",
       "tabErrors": "त्रुटि के साथ",
       "details": "विवरण",
-      "installedOnThePlatform": "प्लेटफ़ॉर्म पर इंस्टॉल"
+      "platformNote": "सभी साइटों के लिए इंस्टॉल करना प्लेटफ़ॉर्म में होता है।"
     },
     "upload": {
       "name": "नाम: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "अपने एडमिनिस्ट्रेशन पैनल की विज़ुअल शैली चुनें।",
       "openPlatformScope": "प्लेटफ़ॉर्म स्कोप खोलें",
       "loadingGeneralSettings": "सामान्य सेटिंग्स लोड हो रही हैं...",
-      "generalConfiguration": "सामान्य कॉन्फ़िगरेशन",
       "brandIdentitySystemPreferences": "ब्रांड पहचान और सिस्टम प्राथमिकताएँ",
       "saveChanges": "बदलाव सहेजें",
       "generalSettingsCouldNotBe": "सामान्य सेटिंग्स लोड नहीं की जा सकीं",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API पता (API URL)",
       "apiUrlDescription": "प्लेटफ़ॉर्म API का सार्वजनिक पता। गेटवे इस होस्ट के हर अनुरोध को साइट के बजाय API पर भेजता है।",
-      "apiUrlExplanation": "साइट के अपने पतों में से एक (अनुरोध उसके /api पथ पर जाते हैं) या api.example.com जैसा समर्पित होस्ट उपयोग करें। साइट को नए डोमेन पर ले जाते समय इसे भी बदलें: यहाँ छोड़ा गया होस्ट साइट को सर्व करना बंद कर देता है। खाली छोड़ने पर वह पता उपयोग होता है जहाँ से अनुरोध आया।"
+      "apiUrlExplanation": "साइट के अपने पतों में से एक (अनुरोध उसके /api पथ पर जाते हैं) या api.example.com जैसा समर्पित होस्ट उपयोग करें। साइट को नए डोमेन पर ले जाते समय इसे भी बदलें: यहाँ छोड़ा गया होस्ट साइट को सर्व करना बंद कर देता है। खाली छोड़ने पर वह पता उपयोग होता है जहाँ से अनुरोध आया।",
+      "brandIdentityCardDescription": "साइट का नाम क्या है और वह ब्राउज़र और ईमेल में कैसी दिखती है।",
+      "siteCardDescription": "साइट लाइव है या नहीं और सर्च इंजन उसे इंडेक्स कर सकते हैं या नहीं।",
+      "regionalDefaultsCardDescription": "कंसोल में समय क्षेत्र और समय का प्रारूप।",
+      "notificationsCardDescription": "आंतरिक फ़ॉर्म और सिस्टम अलर्ट कहाँ भेजे जाते हैं।",
+      "searchEnginesCardDescription": "क्या प्लेटफ़ॉर्म के अपने पते सर्च इंजन में दिखते हैं।",
+      "frontendAuthCardDescription": "विज़िटर साइट और ऐप में कैसे साइन इन और साइन अप करते हैं।",
+      "signUpEmailCardDescription": "वह ईमेल जिससे नया खाता अपना पता पुष्टि करता है।",
+      "usageReportCardDescription": "ईमेल से भेजी जाने वाली उपयोग रिपोर्ट, और वह कहाँ जाती है।"
     },
     "appearance": {
       "appearance": "रूप-रंग",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "अपना मार्केटप्लेस कनेक्शन जाँचें या बाद में फिर से प्रयास करें।",
     "inThisSite": "इस साइट में",
     "premium": "प्रीमियम",
-    "aCleanAndModernTheme": "आपके Fromcode फ़्रंटएंड के लिए एक साफ़ और आधुनिक थीम।",
     "officialTheme": "आधिकारिक थीम",
     "addToThisSite": "इस साइट में जोड़ें",
     "installNow": "अभी इंस्टॉल करें",

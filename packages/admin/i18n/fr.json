@@ -637,7 +637,8 @@
       "choose": "Choisir un site",
       "platformHint": "Aucun site — plugins, thèmes, sources, sites, paramètres de la plateforme",
       "viaRole": "via un rôle de plateforme",
-      "switch": "Changer de site"
+      "switch": "Changer de site",
+      "lockedShort": "Cette console concerne un seul site."
     },
     "account": {
       "singleSite": "Le site servi par ce déploiement",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Disponibles pour ce site",
       "pluginsThePlatformOffersTo": "Plugins proposés aux sites par la plateforme. En activer un l'ajoute uniquement à ce site.",
       "loading": "Chargement…",
-      "thePlatformOffersNoPlugins": "La plateforme ne propose encore aucun plugin à ajouter aux sites.",
       "synchronizingGlobalMarketplaceCatalog": "Synchronisation du catalogue global de la marketplace",
       "pluginFailuresDetected": "Échecs de plugins détectés",
       "searchInstalledPlugins": "Rechercher dans les plugins installés...",
       "inspecting": "Inspection...",
       "uploadZipTarGz": "Téléverser (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "L'installation de plugins pour tous les sites, leur mise à jour et leur suppression, ainsi que l'activation de ceux que la plateforme ne propose pas aux sites,",
       "approvingHeldPlugins": "Approbation des demandes d'un plugin en attente",
       "dragAndDropPluginZip": "Glissez-déposez ici un plugin `.zip` ou `.tar.gz`, ou cliquez pour téléverser.",
       "tryADifferentSearchTerm2": "Essayez un autre terme de recherche ou téléversez un nouveau plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Avec mise à jour",
       "tabErrors": "En erreur",
       "details": "Détails",
-      "installedOnThePlatform": "Installés sur la plateforme"
+      "platformNote": "L’installation pour tous les sites se fait dans la plateforme."
     },
     "upload": {
       "name": "Nom : {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Choisissez le style visuel de votre panneau d’administration.",
       "openPlatformScope": "Ouvrir la portée plateforme",
       "loadingGeneralSettings": "Chargement des paramètres généraux...",
-      "generalConfiguration": "Configuration générale",
       "brandIdentitySystemPreferences": "Identité de marque et préférences système",
       "saveChanges": "Enregistrer les modifications",
       "generalSettingsCouldNotBe": "Impossible de charger les paramètres généraux",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresse de l’API (URL de l’API)",
       "apiUrlDescription": "L’adresse publique de l’API de la plateforme. La passerelle envoie toutes les requêtes adressées à cet hôte vers l’API, et non vers le site.",
-      "apiUrlExplanation": "Utilisez l’une des adresses du site (les requêtes vont vers son chemin /api) ou un hôte dédié comme api.example.com. Si vous déplacez le site vers un nouveau domaine, modifiez aussi ce champ : un hôte laissé ici cesse de servir le site. Vide, l’adresse d’origine de la requête est utilisée."
+      "apiUrlExplanation": "Utilisez l’une des adresses du site (les requêtes vont vers son chemin /api) ou un hôte dédié comme api.example.com. Si vous déplacez le site vers un nouveau domaine, modifiez aussi ce champ : un hôte laissé ici cesse de servir le site. Vide, l’adresse d’origine de la requête est utilisée.",
+      "brandIdentityCardDescription": "Le nom du site et son apparence dans le navigateur et les e-mails.",
+      "siteCardDescription": "Si le site est en ligne et si les moteurs de recherche peuvent l'indexer.",
+      "regionalDefaultsCardDescription": "Fuseau horaire et format de l'heure dans la console.",
+      "notificationsCardDescription": "Où sont envoyés les formulaires internes et les alertes système.",
+      "searchEnginesCardDescription": "Si les adresses propres à la plateforme apparaissent dans les moteurs de recherche.",
+      "frontendAuthCardDescription": "Comment les visiteurs se connectent et s'inscrivent sur le site et dans l'application.",
+      "signUpEmailCardDescription": "L'e-mail qu'un nouveau compte reçoit pour confirmer son adresse.",
+      "usageReportCardDescription": "Le rapport d'utilisation envoyé par e-mail, et son destinataire."
     },
     "appearance": {
       "appearance": "Apparence",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Vérifiez votre connexion à la marketplace ou réessayez plus tard.",
     "inThisSite": "Dans ce site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Un thème épuré et moderne pour votre frontend Fromcode.",
     "officialTheme": "Thème officiel",
     "addToThisSite": "Ajouter à ce site",
     "installNow": "Installer",

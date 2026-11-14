@@ -637,7 +637,8 @@
       "choose": "选择站点",
       "platformHint": "不选站点 — 插件、主题、来源、站点、平台设置",
       "viaRole": "通过平台角色",
-      "switch": "切换站点"
+      "switch": "切换站点",
+      "lockedShort": "此控制台仅用于一个站点。"
     },
     "account": {
       "singleSite": "此部署所服务的站点",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "此站点可用",
       "pluginsThePlatformOffersTo": "平台提供给站点的插件。启用后仅添加到此站点。",
       "loading": "加载中…",
-      "thePlatformOffersNoPlugins": "平台暂未提供可供站点添加的插件。",
       "synchronizingGlobalMarketplaceCatalog": "正在同步全局市场目录",
       "pluginFailuresDetected": "检测到插件故障",
       "searchInstalledPlugins": "搜索已安装插件...",
       "inspecting": "检查中...",
       "uploadZipTarGz": "上传 (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "为所有站点安装、更新和移除插件，以及启用平台未提供给站点的插件，",
       "approvingHeldPlugins": "批准暂缓插件请求的权限",
       "dragAndDropPluginZip": "将插件 `.zip` 或 `.tar.gz` 文件拖放到此处，或点击上传。",
       "tryADifferentSearchTerm2": "请尝试其他搜索词或上传新插件。",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "有更新",
       "tabErrors": "有错误",
       "details": "详情",
-      "installedOnThePlatform": "已安装在平台上"
+      "platformNote": "为所有站点安装需在平台中进行。"
     },
     "upload": {
       "name": "名称：{{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "选择管理面板的视觉风格。",
       "openPlatformScope": "打开平台范围",
       "loadingGeneralSettings": "正在加载常规设置...",
-      "generalConfiguration": "常规配置",
       "brandIdentitySystemPreferences": "品牌标识与系统偏好",
       "saveChanges": "保存更改",
       "generalSettingsCouldNotBe": "无法加载常规设置",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API 地址（API URL）",
       "apiUrlDescription": "平台 API 的公开地址。网关会将该主机的所有请求转发到 API，而不是站点。",
-      "apiUrlExplanation": "可使用站点自身的某个地址（请求将发往其 /api 路径），或使用专用主机，例如 api.example.com。将站点迁移到新域名时，请同时修改此项：此处保留的主机将不再提供站点服务。留空则使用请求来源的地址。"
+      "apiUrlExplanation": "可使用站点自身的某个地址（请求将发往其 /api 路径），或使用专用主机，例如 api.example.com。将站点迁移到新域名时，请同时修改此项：此处保留的主机将不再提供站点服务。留空则使用请求来源的地址。",
+      "brandIdentityCardDescription": "网站名称及其在浏览器和邮件中的外观。",
+      "siteCardDescription": "网站是否上线，以及搜索引擎是否可以收录。",
+      "regionalDefaultsCardDescription": "控制台中的时区和时间格式。",
+      "notificationsCardDescription": "内部表单和系统警报的发送位置。",
+      "searchEnginesCardDescription": "平台自身的地址是否出现在搜索引擎中。",
+      "frontendAuthCardDescription": "访客如何在网站和应用中登录和注册。",
+      "signUpEmailCardDescription": "新账户用于确认邮箱地址的邮件。",
+      "usageReportCardDescription": "通过邮件发送的使用报告及其收件方。"
     },
     "appearance": {
       "appearance": "外观",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "请检查市场连接，或稍后重试。",
     "inThisSite": "已在此站点中",
     "premium": "高级版",
-    "aCleanAndModernTheme": "适用于 Fromcode 前端的简洁现代主题。",
     "officialTheme": "官方主题",
     "addToThisSite": "添加到此站点",
     "installNow": "立即安装",

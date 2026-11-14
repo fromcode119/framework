@@ -39,14 +39,13 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
     if (!notice) return null;
     const offerSwitch = this.platformLocks.isSiteScope() && this.canManagePlatform;
     return (
-      <div className="fc-scope-notice">
+      <p className="fc-scope-notice">
+        {offerSwitch && this.hostLocksSite ? <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.lockedShort')} </span> : null}
         <span className="fc-scope-notice__text">{notice}</span>
-        {offerSwitch && this.hostLocksSite ? (
-          <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
-        ) : offerSwitch ? (
+        {offerSwitch && !this.hostLocksSite ? (
           <button type="button" className="fc-scope-notice__go" onClick={this.openPlatformScope}>{AdminI18n.t('ui.scopeGate.open')}</button>
         ) : null}
-      </div>
+      </p>
     );
   }
 
@@ -60,7 +59,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader
           theme={theme}
-          title={AdminI18n.t('settings.general.generalConfiguration')}
+          title={AdminI18n.t('shell.nav.general')}
           subtitle={AdminI18n.t('settings.general.brandIdentitySystemPreferences')}
         />
 

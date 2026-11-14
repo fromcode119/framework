@@ -637,7 +637,8 @@
       "choose": "Pilih situs",
       "platformHint": "Tanpa situs — plugin, tema, sumber, situs, pengaturan platform",
       "viaRole": "melalui peran platform",
-      "switch": "Ganti situs"
+      "switch": "Ganti situs",
+      "lockedShort": "Konsol ini untuk satu situs."
     },
     "account": {
       "singleSite": "Situs yang dilayani deployment ini",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Tersedia untuk situs ini",
       "pluginsThePlatformOffersTo": "Plugin yang ditawarkan platform ke situs. Mengaktifkannya hanya menambahkannya ke situs ini.",
       "loading": "Memuat…",
-      "thePlatformOffersNoPlugins": "Platform belum menawarkan plugin yang dapat ditambahkan situs.",
       "synchronizingGlobalMarketplaceCatalog": "Menyinkronkan Katalog Marketplace Global",
       "pluginFailuresDetected": "Kegagalan Plugin Terdeteksi",
       "searchInstalledPlugins": "Cari plugin terpasang...",
       "inspecting": "Memeriksa...",
       "uploadZipTarGz": "Unggah (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Memasang plugin untuk setiap situs, memperbarui dan menghapusnya, serta mengaktifkan plugin yang tidak ditawarkan platform ke situs,",
       "approvingHeldPlugins": "Menyetujui permintaan plugin yang ditahan",
       "dragAndDropPluginZip": "Seret dan lepas file plugin `.zip` atau `.tar.gz` di sini, atau klik untuk mengunggah.",
       "tryADifferentSearchTerm2": "Coba kata kunci lain atau unggah plugin baru.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Ada pembaruan",
       "tabErrors": "Ada kesalahan",
       "details": "Detail",
-      "installedOnThePlatform": "Terpasang di platform"
+      "platformNote": "Pemasangan untuk semua situs dilakukan di platform."
     },
     "upload": {
       "name": "Nama: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Pilih gaya visual panel administrasi Anda.",
       "openPlatformScope": "Buka Cakupan Platform",
       "loadingGeneralSettings": "Memuat pengaturan umum...",
-      "generalConfiguration": "Konfigurasi Umum",
       "brandIdentitySystemPreferences": "Identitas merek & preferensi sistem",
       "saveChanges": "Simpan Perubahan",
       "generalSettingsCouldNotBe": "Pengaturan umum tidak dapat dimuat",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Alamat API (API URL)",
       "apiUrlDescription": "Alamat publik API platform. Gateway mengirim setiap permintaan untuk host ini ke API, bukan ke situs.",
-      "apiUrlExplanation": "Gunakan salah satu alamat situs itu sendiri (permintaan diarahkan ke path /api-nya) atau host khusus seperti api.example.com. Saat Anda memindahkan situs ke domain baru, ubah juga ini: host yang tertinggal di sini tidak lagi melayani situs. Kosong berarti memakai alamat asal permintaan."
+      "apiUrlExplanation": "Gunakan salah satu alamat situs itu sendiri (permintaan diarahkan ke path /api-nya) atau host khusus seperti api.example.com. Saat Anda memindahkan situs ke domain baru, ubah juga ini: host yang tertinggal di sini tidak lagi melayani situs. Kosong berarti memakai alamat asal permintaan.",
+      "brandIdentityCardDescription": "Nama situs dan tampilannya di browser serta di email.",
+      "siteCardDescription": "Apakah situs sudah tayang dan apakah mesin pencari boleh mengindeksnya.",
+      "regionalDefaultsCardDescription": "Zona waktu dan format jam di konsol.",
+      "notificationsCardDescription": "Ke mana formulir internal dan peringatan sistem dikirim.",
+      "searchEnginesCardDescription": "Apakah alamat milik platform sendiri muncul di mesin pencari.",
+      "frontendAuthCardDescription": "Cara pengunjung masuk dan mendaftar di situs dan di aplikasi.",
+      "signUpEmailCardDescription": "Email yang diterima akun baru untuk mengonfirmasi alamatnya.",
+      "usageReportCardDescription": "Laporan penggunaan yang dikirim lewat email, dan tujuannya."
     },
     "appearance": {
       "appearance": "Tampilan",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Periksa koneksi marketplace Anda atau coba lagi nanti.",
     "inThisSite": "Di situs ini",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Tema yang bersih dan modern untuk frontend Fromcode Anda.",
     "officialTheme": "Tema Resmi",
     "addToThisSite": "Tambahkan ke situs ini",
     "installNow": "Pasang Sekarang",

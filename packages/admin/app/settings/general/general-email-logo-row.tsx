@@ -28,13 +28,8 @@ export class GeneralEmailLogoRow extends PureReactor {
         theme={this.theme}
         title={AdminI18n.t('settings.general.emailLogo')}
         description={AdminI18n.t('settings.general.emailLogoDescription')}
-        stacked
       >
-        {/* A logo, not a banner: the picker's preview fills its container, so the row sets the size. The
-            field's own remove control clears it (the setting stores blank for none). */}
-        <div className="max-w-xs space-y-2">
-          <MediaRelationField value={value} onChange={this.change} theme={this.theme} wholeImage />
-        </div>
+        <MediaRelationField value={value} onChange={this.change} theme={this.theme} wholeImage compact />
       </SettingRow>
     );
   }

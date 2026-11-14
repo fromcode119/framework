@@ -22,10 +22,12 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  * Renders its children unchanged on a single-tenant deployment: there is no second scope to be in.
  */
 export class PlatformScopeGate extends AdminComponent {
-  declare props: Pick<PlatformScopeGate, 'what' | 'children'>;
+  declare props: Pick<PlatformScopeGate, 'what' | 'text' | 'children'>;
 
   /** What this screen is, named in the sentence: "Sources lives in Platform scope." */
   @prop declare what: string;
+  /** The whole sentence, when the screen says it in its own words instead of naming `what`. */
+  @prop declare text?: string;
   @prop declare children: ReactNode;
 
   @state private locks = PlatformSettingLocks.none();
@@ -55,17 +57,16 @@ export class PlatformScopeGate extends AdminComponent {
     // load in the scope where the screen is perfectly valid, which is the common case.
     if (!this.resolved || !this.locks.isSiteScope()) return this.children;
 
+    // One line: where this console stands when its host fixes it to the site, the sentence, and the
+    // switch when there is a platform to switch to from here.
     return (
-      <div className="fc-scope-notice">
-        <span className="fc-scope-notice__text">
-          {AdminI18n.t('ui.scopeGate.text', { what: this.what })}
-        </span>
-        {this.hostLocked ? (
-          <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
-        ) : this.canManagePlatform ? (
+      <p className="fc-scope-notice">
+        {this.hostLocked ? <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.lockedShort')} </span> : null}
+        <span className="fc-scope-notice__text">{this.text || AdminI18n.t('ui.scopeGate.text', { what: this.what })}</span>
+        {!this.hostLocked && this.canManagePlatform ? (
           <button type="button" className="fc-scope-notice__go" onClick={this.openPlatformScope}>{AdminI18n.t('ui.scopeGate.open')}</button>
         ) : null}
-      </div>
+      </p>
     );
   }
 }

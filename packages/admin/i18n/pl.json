@@ -637,7 +637,8 @@
       "choose": "Wybierz witrynę",
       "platformHint": "Bez witryny — wtyczki, motywy, źródła, witryny, ustawienia platformy",
       "viaRole": "przez rolę platformy",
-      "switch": "Przełącz witrynę"
+      "switch": "Przełącz witrynę",
+      "lockedShort": "Ta konsola dotyczy jednej witryny."
     },
     "account": {
       "singleSite": "Witryna obsługiwana przez to wdrożenie",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Dostępne dla tej witryny",
       "pluginsThePlatformOffersTo": "Wtyczki oferowane witrynom przez platformę. Włączenie wtyczki dodaje ją tylko do tej witryny.",
       "loading": "Wczytywanie…",
-      "thePlatformOffersNoPlugins": "Platforma nie oferuje jeszcze żadnych wtyczek dla witryn.",
       "synchronizingGlobalMarketplaceCatalog": "Synchronizowanie globalnego katalogu Marketplace",
       "pluginFailuresDetected": "Wykryto błędy wtyczek",
       "searchInstalledPlugins": "Szukaj zainstalowanych wtyczek...",
       "inspecting": "Sprawdzanie...",
       "uploadZipTarGz": "Prześlij (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instalowanie wtyczek dla wszystkich witryn, ich aktualizowanie i usuwanie oraz włączanie tych, których platforma nie oferuje witrynom,",
       "approvingHeldPlugins": "Zatwierdzanie uprawnień wymaganych przez wstrzymaną wtyczkę",
       "dragAndDropPluginZip": "Przeciągnij i upuść tutaj plik wtyczki `.zip` lub `.tar.gz` albo kliknij, aby przesłać.",
       "tryADifferentSearchTerm2": "Spróbuj innego wyszukiwania lub prześlij nową wtyczkę.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Z aktualizacją",
       "tabErrors": "Z błędami",
       "details": "Szczegóły",
-      "installedOnThePlatform": "Zainstalowane na platformie"
+      "platformNote": "Instalacja dla wszystkich witryn odbywa się na platformie."
     },
     "upload": {
       "name": "Nazwa: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Wybierz styl wizualny panelu administracyjnego.",
       "openPlatformScope": "Otwórz zakres platformy",
       "loadingGeneralSettings": "Ładowanie ustawień ogólnych...",
-      "generalConfiguration": "Konfiguracja ogólna",
       "brandIdentitySystemPreferences": "Tożsamość marki i preferencje systemu",
       "saveChanges": "Zapisz zmiany",
       "generalSettingsCouldNotBe": "Nie można załadować ustawień ogólnych",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adres API (API URL)",
       "apiUrlDescription": "Publiczny adres API platformy. Brama przekazuje każde żądanie dla tego hosta do API, a nie do witryny.",
-      "apiUrlExplanation": "Użyj jednego z adresów witryny (żądania trafiają do jej ścieżki /api) lub osobnego hosta, np. api.example.com. Przenosząc witrynę do nowej domeny, zmień również to ustawienie: pozostawiony tu host przestanie obsługiwać witrynę. Puste pole używa adresu, z którego przyszło żądanie."
+      "apiUrlExplanation": "Użyj jednego z adresów witryny (żądania trafiają do jej ścieżki /api) lub osobnego hosta, np. api.example.com. Przenosząc witrynę do nowej domeny, zmień również to ustawienie: pozostawiony tu host przestanie obsługiwać witrynę. Puste pole używa adresu, z którego przyszło żądanie.",
+      "brandIdentityCardDescription": "Jak nazywa się strona i jak wygląda w przeglądarce i w e-mailach.",
+      "siteCardDescription": "Czy strona działa i czy wyszukiwarki mogą ją indeksować.",
+      "regionalDefaultsCardDescription": "Strefa czasowa i format godziny w konsoli.",
+      "notificationsCardDescription": "Dokąd trafiają formularze wewnętrzne i alerty systemowe.",
+      "searchEnginesCardDescription": "Czy własne adresy platformy pojawiają się w wyszukiwarkach.",
+      "frontendAuthCardDescription": "Jak odwiedzający logują się i rejestrują na stronie i w aplikacji.",
+      "signUpEmailCardDescription": "E-mail, którym nowe konto potwierdza swój adres.",
+      "usageReportCardDescription": "Raport użycia wysyłany e-mailem i dokąd trafia."
     },
     "appearance": {
       "appearance": "Wygląd",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Sprawdź połączenie z Marketplace lub spróbuj ponownie później.",
     "inThisSite": "W tej witrynie",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Przejrzysty i nowoczesny motyw dla frontendu Fromcode.",
     "officialTheme": "Oficjalny motyw",
     "addToThisSite": "Dodaj do tej witryny",
     "installNow": "Zainstaluj teraz",
