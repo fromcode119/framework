@@ -3,7 +3,6 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -23,7 +22,6 @@ export class AccountDefenseCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_SESSION_DURATION}
-          icon={FrameworkIcons.Clock}
           title={AdminI18n.t('settings.security.loginSessionDurationMinutes')}
           description={AdminI18n.t('settings.security.howLongAUserStays')}
           min={15}
@@ -35,7 +33,6 @@ export class AccountDefenseCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.TWO_FACTOR_ENABLED}
-          icon={FrameworkIcons.ShieldCheck}
           title={AdminI18n.t('settings.security.twoFactorSecurity')}
           description={AdminI18n.t('settings.security.addAnExtraLayerOf')}
         />
@@ -45,7 +42,6 @@ export class AccountDefenseCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_SECURITY_NOTIFICATIONS}
-          icon={FrameworkIcons.Mail}
           title={AdminI18n.t('settings.security.securityNotificationEmails')}
           description={AdminI18n.t('settings.security.emailTheAccountOwnerWhen')}
         />

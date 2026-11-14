@@ -5,7 +5,7 @@ import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
 import { AdminClass } from '@/lib/admin-class';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
@@ -101,14 +101,13 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('platform_name') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Zap}
             title={AdminI18n.t('settings.general.platformName')}
             description={AdminI18n.t('settings.general.thePublicIdentifierForYour')}
           >
             <Input
               value={settings.platform_name}
               onChange={this.onPlatformNameChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder={AdminI18n.t('settings.general.eGMyWebsite')}
             />
           </SettingRow>
@@ -125,7 +124,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('frontend_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.frontendUrl')}
             description={AdminI18n.t('settings.general.thisDeploymentSOwnFrontend')}
             explanation={(
@@ -140,7 +138,7 @@ export class GeneralBrandCard extends PureReactor {
             <Input
               value={settings.frontend_url}
               onChange={this.onFrontendUrlChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder="https://example.com"
             />
           </SettingRow>
@@ -149,7 +147,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('admin_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.adminUrl')}
             description={AdminI18n.t('settings.general.thisDeploymentSAdminConsole')}
             explanation={(
@@ -164,7 +161,7 @@ export class GeneralBrandCard extends PureReactor {
             <Input
               value={settings.admin_url}
               onChange={this.onAdminUrlChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder="https://admin.example.com"
             />
           </SettingRow>
@@ -173,7 +170,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('api_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.apiUrl')}
             description={AdminI18n.t('settings.general.apiUrlDescription')}
             explanation={(
@@ -185,7 +181,7 @@ export class GeneralBrandCard extends PureReactor {
             <Input
               value={settings.api_url}
               onChange={this.onApiUrlChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder="https://example.com"
             />
           </SettingRow>
@@ -194,7 +190,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('site_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.siteUrl')}
             description={AdminI18n.t('settings.general.aFallbackForFrontendUrl')}
             explanation={(
@@ -209,7 +204,7 @@ export class GeneralBrandCard extends PureReactor {
             <Input
               value={settings.site_url}
               onChange={this.onSiteUrlChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder="https://example.com"
             />
           </SettingRow>
@@ -218,7 +213,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('marketplace_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.marketplaceUrl')}
             description={this.platformLocks.isSiteScope()
               ? <AdminRichText k="settings.general.marketplaceUrlSite" />
@@ -227,7 +221,7 @@ export class GeneralBrandCard extends PureReactor {
             <Input
               value={settings.marketplace_url}
               onChange={this.onMarketplaceUrlChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder={this.platformLocks.isSiteScope() ? 'https://marketplace.example.com' : MarketplaceDefaults.ADDRESS}
             />
           </SettingRow>
@@ -236,14 +230,13 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('framework_repository') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Package}
             title={AdminI18n.t('settings.general.frameworkRepository')}
             description={<AdminRichText k="settings.general.frameworkRepositoryDescription" vars={{ repository: FrameworkReleaseDefaults.REPOSITORY }} />}
           >
             <Input
               value={settings.framework_repository}
               onChange={this.onFrameworkRepositoryChange}
-              className="w-full md:w-64 font-bold"
+              className="w-full"
               placeholder={FrameworkReleaseDefaults.REPOSITORY}
             />
           </SettingRow>
@@ -254,7 +247,6 @@ export class GeneralBrandCard extends PureReactor {
         {this.shown('domain_aliases') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.domainAliases')}
             description={AdminI18n.t('settings.general.additionalHostnamesThatServeYour')}
           >
@@ -268,7 +260,6 @@ export class GeneralBrandCard extends PureReactor {
 
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Palette}
           title={AdminI18n.t('settings.general.visualCore')}
           description={AdminI18n.t('settings.general.chooseTheVisualStyleOf')}
         >

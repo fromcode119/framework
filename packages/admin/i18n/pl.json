@@ -613,7 +613,13 @@
       "none": "Nie zapisywane w polu osoby",
       "missing": "{{key}} (już nie jest polem osoby)",
       "manage": "Zarządzaj polami osób"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Niezapisane zmiany",
+      "discard": "Odrzuć",
+      "save": "Zapisz"
+    },
+    "dropToInstall": "Upuść plik, aby go zainstalować"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import nie powiódł się: {{reason}}",
       "awaitingApproval": "Czeka na zatwierdzenie",
       "reviewAndApprove": "Przejrzyj i zatwierdź",
-      "waitsForYourApproval": "Umieszczona; czeka na zatwierdzenie wymaganych uprawnień."
+      "waitsForYourApproval": "Umieszczona; czeka na zatwierdzenie wymaganych uprawnień.",
+      "tabAll": "Wszystkie",
+      "tabOff": "Wyłączone",
+      "tabUpdates": "Z aktualizacją",
+      "tabErrors": "Z błędami",
+      "details": "Szczegóły",
+      "installedOnThePlatform": "Zainstalowane na platformie"
     },
     "upload": {
       "name": "Nazwa: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Skopiowano",
       "pageSubtitle": "Usługi zewnętrzne używane przez ten obszar roboczy. Sekrety są szyfrowane i nigdy nie są ponownie wyświetlane.",
       "ownerPlatform": "Platforma",
-      "save": "Zapisz",
       "saving": "Zapisywanie…",
       "more": "Więcej",
       "oneProviderAtATime": "Jednocześnie może działać tylko jeden dostawca. Wybranie innego zastępuje obecnego.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Określ nazwę języka i kod ISO, a następnie włącz lub wyłącz każdy język.",
       "noLocalesConfiguredAddOne": "Nie skonfigurowano żadnych języków. Dodaj język poniżej; nic nie zostanie zapisane, dopóki nie klikniesz Zapisz.",
       "languageNameEGEnglish": "Nazwa języka (np. Polski)",
+      "pickLanguage": "Wybierz język",
       "enabled": "Włączony",
       "remove": "Usuń",
       "addLocale": "Dodaj język",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefiks ścieżki (/bg/...)",
       "noLocaleInUrl": "Bez języka w URL",
       "selectLocaleUrlStrategy": "Wybierz sposób oznaczania języka w URL",
-      "isoCodeExample": "Kod ISO (np. en, en-gb)",
       "consoleLanguage": "Język konsoli",
       "platformConsoleLanguageHint": "Język, w którym działa konsola, gdy nie wybrano żadnej witryny. Witryna bez własnego języka konsoli używa tego języka.",
       "consoleLanguageSaved": "Język konsoli został zapisany."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Zostanie odrzucony: zainstalowany motyw pochodzi od {{installed}}, a ten pakiet od {{incoming}}.",
     "notAvailableHere": "Brak motywu „{{slug}}”",
     "notAvailableHereHelp": "Ta witryna nie ma dostępu do motywu o tej nazwie. Jej motywy są wymienione w sekcji Motywy; administrator platformy przypisuje motywy do witryn w sekcji Witryny.",
-    "manageThemes": "Zarządzaj motywami"
+    "manageThemes": "Zarządzaj motywami",
+    "activeTheme": "Aktywny motyw",
+    "otherThemes": "Inne motywy",
+    "noActiveTheme": "Żaden motyw nie jest aktywny"
   },
   "media": {
     "failedToCreateFolder": "Nie udało się utworzyć folderu",

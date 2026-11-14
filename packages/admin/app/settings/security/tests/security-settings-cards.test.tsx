@@ -45,7 +45,7 @@ const settings = (): Record<string, string> =>
 /** The row container for a setting, found by its visible title. */
 const rowFor = (title: string): HTMLElement => {
   const heading = screen.getByText(title);
-  const row = heading.closest('div.py-4');
+  const row = heading.closest('.fc-settings-row');
   expect(row, `no row rendered for "${title}"`).not.toBeNull();
   return row as HTMLElement;
 };

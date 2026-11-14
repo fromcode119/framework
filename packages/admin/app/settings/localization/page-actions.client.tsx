@@ -10,6 +10,48 @@ import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-
  * Reading the localization settings and writing them back.
  */
 export abstract class LocalizationSettingsPageActions extends LocalizationSettingsPageState {
+  /** The form as it was last read or written — what Discard puts back and the save bar compares with. */
+  private loadedForm: ReturnType<LocalizationSettingsPageActions['currentForm']> | null = null;
+
+  private currentForm() {
+    return {
+      locales: this.locales,
+      defaultLocale: this.defaultLocale,
+      adminDefaultLocale: this.adminDefaultLocale,
+      frontendDefaultLocale: this.frontendDefaultLocale,
+      localeUrlStrategy: this.localeUrlStrategy,
+      measurementSystem: this.measurementSystem,
+      country: this.country,
+    };
+  }
+
+  private static serialize(form: Record<string, unknown>): string {
+    return JSON.stringify(form, (_key, value) => (value && typeof value === 'object' && 'value' in value && !Array.isArray(value) ? value.value : value));
+  }
+
+  private rememberLoaded(): void {
+    this.loadedForm = this.currentForm();
+  }
+
+  /** Whether anything differs from what was read: the save bar's question. */
+  protected get isDirty(): boolean {
+    if (!this.loadedForm || !this.locales) return false;
+    return LocalizationSettingsPageActions.serialize(this.currentForm()) !== LocalizationSettingsPageActions.serialize(this.loadedForm);
+  }
+
+  @bound
+  discardChanges(): void {
+    const form = this.loadedForm;
+    if (!form) return;
+    this.locales = form.locales;
+    this.defaultLocale = form.defaultLocale;
+    this.adminDefaultLocale = form.adminDefaultLocale;
+    this.frontendDefaultLocale = form.frontendDefaultLocale;
+    this.localeUrlStrategy = form.localeUrlStrategy;
+    this.measurementSystem = form.measurementSystem;
+    this.country = form.country;
+  }
+
   protected async loadLocalization(): Promise<void> {
     this.loadError = null;
     try {
@@ -21,6 +63,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
       this.localeUrlStrategy = loaded.localeUrlStrategy;
       this.measurementSystem = loaded.measurementSystem;
       this.country = loaded.country;
+      this.rememberLoaded();
     } catch (err: any) {
       this.locales = null;
       this.loadError = err?.message || AdminI18n.t('settings.localization.theLocalizationSettingsRequestFailed');
@@ -48,6 +91,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
     this.isSaving = true;
     try {
       await AdminSystemSettingsClient.update({ admin_default_locale: this.adminDefaultLocale });
+      this.loadedForm = this.loadedForm ? { ...this.loadedForm, adminDefaultLocale: this.adminDefaultLocale } : this.currentForm();
       LocalizationSettingsPageActions.followConsoleLanguage(this.adminDefaultLocale);
       addNotification({
         title: AdminI18n.t('settings.localization.localizationUpdated'),
@@ -111,6 +155,7 @@ export abstract class LocalizationSettingsPageActions extends LocalizationSettin
       this.defaultLocale = saved.defaultLocale;
       this.adminDefaultLocale = saved.adminDefaultLocale;
       this.frontendDefaultLocale = saved.frontendDefaultLocale;
+      this.rememberLoaded();
 
       this.registerSettings({
         localization_locales: JSON.stringify(saved.cleaned.map(({ id, ...rest }) => rest)),

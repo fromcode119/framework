@@ -613,7 +613,13 @@
       "none": "Niet opgeslagen in een persoonsveld",
       "missing": "{{key}} (geen persoonsveld meer)",
       "manage": "Persoonsvelden beheren"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Niet-opgeslagen wijzigingen",
+      "discard": "Verwerpen",
+      "save": "Opslaan"
+    },
+    "dropToInstall": "Laat het bestand los om het te installeren"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importeren mislukt: {{reason}}",
       "awaitingApproval": "Wacht op goedkeuring",
       "reviewAndApprove": "Controleren en goedkeuren",
-      "waitsForYourApproval": "Geplaatst en wacht op uw goedkeuring van wat de plugin vraagt."
+      "waitsForYourApproval": "Geplaatst en wacht op uw goedkeuring van wat de plugin vraagt.",
+      "tabAll": "Alle",
+      "tabOff": "Uit",
+      "tabUpdates": "Met update",
+      "tabErrors": "Met fouten",
+      "details": "Details",
+      "installedOnThePlatform": "Geïnstalleerd op het platform"
     },
     "upload": {
       "name": "Naam: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Gekopieerd",
       "pageSubtitle": "Externe services die deze werkruimte gebruikt. Geheimen worden versleuteld en nooit meer getoond.",
       "ownerPlatform": "Platform",
-      "save": "Opslaan",
       "saving": "Opslaan…",
       "more": "Meer",
       "oneProviderAtATime": "Eén provider tegelijk. Als u een andere kiest, wordt deze vervangen.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Geef een taalnaam en ISO-code op en schakel daarna elke taal in of uit.",
       "noLocalesConfiguredAddOne": "Geen talen geconfigureerd. Voeg hieronder een taal toe; er wordt niets opgeslagen totdat u op Opslaan klikt.",
       "languageNameEGEnglish": "Taalnaam (bijv. Nederlands)",
+      "pickLanguage": "Kies een taal",
       "enabled": "Ingeschakeld",
       "remove": "Verwijderen",
       "addLocale": "Taal toevoegen",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Padvoorvoegsel (/bg/...)",
       "noLocaleInUrl": "Geen landinstelling in URL",
       "selectLocaleUrlStrategy": "Selecteer URL-strategie",
-      "isoCodeExample": "ISO-code (bijv. en, en-gb)",
       "consoleLanguage": "Consoletaal",
       "platformConsoleLanguageHint": "De taal van deze console wanneer er geen site is geselecteerd. Een site die geen eigen consoletaal heeft gekozen, gebruikt deze.",
       "consoleLanguageSaved": "De consoletaal is opgeslagen."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Wordt geweigerd: het geïnstalleerde thema is van {{installed}}, dit pakket is van {{incoming}}.",
     "notAvailableHere": "Geen thema \"{{slug}}\" hier",
     "notAvailableHereHelp": "Deze site kan geen thema met die naam zien. De thema's van deze site staan onder Thema's; een platformbeheerder wijst thema's toe aan sites via Sites.",
-    "manageThemes": "Thema's beheren"
+    "manageThemes": "Thema's beheren",
+    "activeTheme": "Actief thema",
+    "otherThemes": "Andere thema’s",
+    "noActiveTheme": "Geen thema actief"
   },
   "media": {
     "failedToCreateFolder": "Map maken mislukt",

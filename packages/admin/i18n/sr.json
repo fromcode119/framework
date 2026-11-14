@@ -613,7 +613,13 @@
       "none": "Не чува се у поље особе",
       "missing": "{{key}} (више није поље особе)",
       "manage": "Управљај пољима особа"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Несачуване промене",
+      "discard": "Одбаци",
+      "save": "Сачувај"
+    },
+    "dropToInstall": "Пустите датотеку да бисте је инсталирали"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Увоз није успео: {{reason}}",
       "awaitingApproval": "Чека одобрење",
       "reviewAndApprove": "Прегледај и одобри",
-      "waitsForYourApproval": "Постављен и чека да одобрите оно што тражи."
+      "waitsForYourApproval": "Постављен и чека да одобрите оно што тражи.",
+      "tabAll": "Све",
+      "tabOff": "Искључени",
+      "tabUpdates": "Са ажурирањем",
+      "tabErrors": "Са грешком",
+      "details": "Детаљи",
+      "installedOnThePlatform": "Инсталирано на платформи"
     },
     "upload": {
       "name": "Назив: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Копирано",
       "pageSubtitle": "Спољни сервиси које овај радни простор користи. Тајни подаци су шифровани и више се не приказују.",
       "ownerPlatform": "Платформа",
-      "save": "Сачувај",
       "saving": "Чување…",
       "more": "Више",
       "oneProviderAtATime": "Само један добављач истовремено. Избор другог замењује постојећи.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Унесите назив језика и ISO код, затим омогућите или онемогућите сваки локалитет.",
       "noLocalesConfiguredAddOne": "Нема подешених локалитета. Додајте један испод; ништа се не чува док не сачувате.",
       "languageNameEGEnglish": "Назив језика (нпр. English)",
+      "pickLanguage": "Изаберите језик",
       "enabled": "Омогућено",
       "remove": "Уклони",
       "addLocale": "Додај локалитет",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Префикс путање (/bg/...)",
       "noLocaleInUrl": "Без локала у URL-у",
       "selectLocaleUrlStrategy": "Изаберите стратегију локала у URL-у",
-      "isoCodeExample": "ISO код (нпр. en, en-gb)",
       "consoleLanguage": "Језик конзоле",
       "platformConsoleLanguageHint": "Језик конзоле када ниједан сајт није изабран. Сајт који није изабрао сопствени језик конзоле користи овај.",
       "consoleLanguageSaved": "Језик конзоле је сачуван."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Биће одбијено: инсталирана тема је од {{installed}}, а овај пакет од {{incoming}}.",
     "notAvailableHere": "Тема „{{slug}}“ није доступна овде",
     "notAvailableHereHelp": "Овај сајт не види тему са тим називом. Његове теме су наведене у одељку Теме; администратор платформе додељује теме сајтовима у одељку Сајтови.",
-    "manageThemes": "Управљај темама"
+    "manageThemes": "Управљај темама",
+    "activeTheme": "Активна тема",
+    "otherThemes": "Остале теме",
+    "noActiveTheme": "Ниједна тема није активна"
   },
   "media": {
     "failedToCreateFolder": "Креирање фасцикле није успело",

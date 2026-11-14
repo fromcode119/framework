@@ -613,7 +613,13 @@
       "none": "Neišsaugoma asmens lauke",
       "missing": "{{key}} (nebėra asmens laukas)",
       "manage": "Tvarkyti asmens laukus"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Neišsaugoti pakeitimai",
+      "discard": "Atmesti",
+      "save": "Išsaugoti"
+    },
+    "dropToInstall": "Nutempkite failą, kad jį įdiegtumėte"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importuoti nepavyko: {{reason}}",
       "awaitingApproval": "Laukia patvirtinimo",
       "reviewAndApprove": "Peržiūrėti ir patvirtinti",
-      "waitsForYourApproval": "Įkeltas ir laukia, kol patvirtinsite jo prašomas galimybes."
+      "waitsForYourApproval": "Įkeltas ir laukia, kol patvirtinsite jo prašomas galimybes.",
+      "tabAll": "Visi",
+      "tabOff": "Išjungti",
+      "tabUpdates": "Su atnaujinimu",
+      "tabErrors": "Su klaidomis",
+      "details": "Išsami informacija",
+      "installedOnThePlatform": "Įdiegta platformoje"
     },
     "upload": {
       "name": "Pavadinimas: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Nukopijuota",
       "pageSubtitle": "Išorinės paslaugos, kurias naudoja ši darbo sritis. Slaptieji duomenys šifruojami ir daugiau nerodomi.",
       "ownerPlatform": "Platforma",
-      "save": "Išsaugoti",
       "saving": "Išsaugoma…",
       "more": "Daugiau",
       "oneProviderAtATime": "Vienu metu – vienas teikėjas. Pasirinkus kitą, ankstesnis pakeičiamas.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Nurodykite kalbos pavadinimą ir ISO kodą, tada įjunkite arba išjunkite kiekvieną lokalę.",
       "noLocalesConfiguredAddOne": "Lokalių nesukonfigūruota. Pridėkite toliau; niekas neišsaugoma, kol nespustelėsite „Išsaugoti“.",
       "languageNameEGEnglish": "Kalbos pavadinimas (pvz., Lietuvių)",
+      "pickLanguage": "Pasirinkite kalbą",
       "enabled": "Įjungta",
       "remove": "Šalinti",
       "addLocale": "Pridėti lokalę",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Kelio priešdėlis (/bg/...)",
       "noLocaleInUrl": "Be lokalės URL",
       "selectLocaleUrlStrategy": "Pasirinkite lokalės URL strategiją",
-      "isoCodeExample": "ISO kodas (pvz., en, en-gb)",
       "consoleLanguage": "Konsolės kalba",
       "platformConsoleLanguageHint": "Kalba, kuria ši konsolė rodoma, kai nepasirinkta jokia svetainė. Svetainė, nepasirinkusi savos konsolės kalbos, naudoja šią.",
       "consoleLanguageSaved": "Konsolės kalba išsaugota."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Bus atmesta: įdiegta tema yra iš {{installed}}, o šis paketas – iš {{incoming}}.",
     "notAvailableHere": "Temos „{{slug}}“ čia nėra",
     "notAvailableHereHelp": "Ši svetainė nemato tokio pavadinimo temos. Jos temos pateiktos skiltyje „Temos“; platformos administratorius priskiria temas svetainėms skiltyje „Svetainės“.",
-    "manageThemes": "Tvarkyti temas"
+    "manageThemes": "Tvarkyti temas",
+    "activeTheme": "Aktyvi tema",
+    "otherThemes": "Kitos temos",
+    "noActiveTheme": "Nėra aktyvios temos"
   },
   "media": {
     "failedToCreateFolder": "Nepavyko sukurti aplanko",

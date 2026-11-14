@@ -613,7 +613,13 @@
       "none": "Non enregistré dans un champ de personne",
       "missing": "{{key}} (n’est plus un champ de personne)",
       "manage": "Gérer les champs de personne"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Modifications non enregistrées",
+      "discard": "Annuler",
+      "save": "Enregistrer"
+    },
+    "dropToInstall": "Déposez le fichier pour l’installer"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Échec de l'importation : {{reason}}",
       "awaitingApproval": "En attente d'approbation",
       "reviewAndApprove": "Examiner et approuver",
-      "waitsForYourApproval": "Déployé, en attente de votre approbation de ce qu'il demande."
+      "waitsForYourApproval": "Déployé, en attente de votre approbation de ce qu'il demande.",
+      "tabAll": "Tous",
+      "tabOff": "Désactivés",
+      "tabUpdates": "Avec mise à jour",
+      "tabErrors": "En erreur",
+      "details": "Détails",
+      "installedOnThePlatform": "Installés sur la plateforme"
     },
     "upload": {
       "name": "Nom : {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Copié",
       "pageSubtitle": "Services externes utilisés par cet espace de travail. Les secrets sont chiffrés et ne sont plus jamais affichés.",
       "ownerPlatform": "Plateforme",
-      "save": "Enregistrer",
       "saving": "Enregistrement…",
       "more": "Plus",
       "oneProviderAtATime": "Un seul fournisseur à la fois. En choisir un autre le remplace.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Définissez le nom de la langue et son code ISO, puis activez ou désactivez chaque langue.",
       "noLocalesConfiguredAddOne": "Aucune langue configurée. Ajoutez-en une ci-dessous ; rien n’est enregistré tant que vous n’avez pas sauvegardé.",
       "languageNameEGEnglish": "Nom de la langue (ex. Français)",
+      "pickLanguage": "Choisir une langue",
       "enabled": "Activée",
       "remove": "Supprimer",
       "addLocale": "Ajouter une langue",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Préfixe de chemin (/bg/...)",
       "noLocaleInUrl": "Aucune langue dans l'URL",
       "selectLocaleUrlStrategy": "Sélectionner le mode d'affichage de la langue dans les URL",
-      "isoCodeExample": "Code ISO (ex. : en, en-gb)",
       "consoleLanguage": "Langue de la console",
       "platformConsoleLanguageHint": "Langue de cette console lorsqu'aucun site n'est sélectionné. Un site qui n'a pas choisi sa propre langue de console utilise celle-ci.",
       "consoleLanguageSaved": "La langue de la console a été enregistrée."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Sera refusé : le thème installé provient de {{installed}}, ce paquet provient de {{incoming}}.",
     "notAvailableHere": "Aucun thème « {{slug}} » ici",
     "notAvailableHereHelp": "Ce site ne voit aucun thème portant ce nom. Ses thèmes sont listés dans Thèmes ; un administrateur de la plateforme attribue les thèmes aux sites depuis Sites.",
-    "manageThemes": "Gérer les thèmes"
+    "manageThemes": "Gérer les thèmes",
+    "activeTheme": "Thème actif",
+    "otherThemes": "Autres thèmes",
+    "noActiveTheme": "Aucun thème n’est actif"
   },
   "media": {
     "failedToCreateFolder": "Impossible de créer le dossier",

@@ -613,7 +613,13 @@
       "none": "Gan sábháil i réimse duine",
       "missing": "{{key}} (ní réimse duine é a thuilleadh)",
       "manage": "Bainistigh réimsí duine"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Athruithe nár sábháladh",
+      "discard": "Cuileáil",
+      "save": "Sábháil"
+    },
+    "dropToInstall": "Scaoil an comhad chun é a shuiteáil"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Theip ar iompórtáil: {{reason}}",
       "awaitingApproval": "Ag fanacht le ceadú",
       "reviewAndApprove": "Athbhreithnigh agus ceadaigh",
-      "waitsForYourApproval": "Curtha in áit, agus ag fanacht go gceadóidh tú an méid a iarrann sé."
+      "waitsForYourApproval": "Curtha in áit, agus ag fanacht go gceadóidh tú an méid a iarrann sé.",
+      "tabAll": "Uile",
+      "tabOff": "Múchta",
+      "tabUpdates": "Le nuashonrú",
+      "tabErrors": "Le hearráidí",
+      "details": "Sonraí",
+      "installedOnThePlatform": "Suiteáilte ar an ardán"
     },
     "upload": {
       "name": "Ainm: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Cóipeáilte",
       "pageSubtitle": "Seirbhísí seachtracha a úsáideann an spás oibre seo. Criptítear rúin agus ní thaispeántar arís iad.",
       "ownerPlatform": "Ardán",
-      "save": "Sábháil",
       "saving": "Á shábháil…",
       "more": "Tuilleadh",
       "oneProviderAtATime": "Soláthraí amháin ag an am. Má roghnaíonn tú ceann eile, cuirfear é ina áit.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Sainmhínigh ainm na teanga + cód ISO, ansin cumasaigh nó díchumasaigh gach logchaighdeán.",
       "noLocalesConfiguredAddOne": "Níl aon logchaighdeán cumraithe. Cuir ceann leis thíos; ní stóráiltear aon rud go dtí go sábhálann tú.",
       "languageNameEGEnglish": "Ainm na teanga (m.sh. Béarla)",
+      "pickLanguage": "Roghnaigh teanga",
       "enabled": "Cumasaithe",
       "remove": "Bain",
       "addLocale": "Cuir Logchaighdeán Leis",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Réimír Chosáin (/bg/...)",
       "noLocaleInUrl": "Gan Logchaighdeán sa URL",
       "selectLocaleUrlStrategy": "Roghnaigh straitéis URL an logchaighdeáin",
-      "isoCodeExample": "Cód ISO (m.sh. en, en-gb)",
       "consoleLanguage": "Teanga an chonsóil",
       "platformConsoleLanguageHint": "An teanga a labhraíonn an consól seo nuair nach bhfuil aon suíomh roghnaithe. Úsáideann suíomh nár roghnaigh a theanga chonsóil féin an ceann seo.",
       "consoleLanguageSaved": "Sábháladh teanga an chonsóil."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Diúltófar dó: is ó {{installed}} an téama suiteáilte, is ó {{incoming}} an pacáiste seo.",
     "notAvailableHere": "Níl téama \"{{slug}}\" anseo",
     "notAvailableHereHelp": "Ní fheiceann an suíomh seo téama leis an ainm sin. Tá a théamaí liostaithe faoi Téamaí; sannann riarthóir ardáin téamaí do shuíomhanna ó Suíomhanna.",
-    "manageThemes": "Bainistigh Téamaí"
+    "manageThemes": "Bainistigh Téamaí",
+    "activeTheme": "Téama gníomhach",
+    "otherThemes": "Téamaí eile",
+    "noActiveTheme": "Níl aon téama gníomhach"
   },
   "media": {
     "failedToCreateFolder": "Theip ar an bhfillteán a chruthú",

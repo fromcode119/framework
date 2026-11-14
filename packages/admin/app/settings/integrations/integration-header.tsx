@@ -2,7 +2,6 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
@@ -10,17 +9,15 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * The page's header — the same compact header every settings page has. Its one everyday action is Save,
- * while a provider form is open; resetting cached admin JavaScript is not everyday, so it sits in ⋯.
+ * The page's header — the same compact header every settings page has. Saving is the Save bar at the
+ * foot of the page, as on every settings screen; resetting cached admin JavaScript is not everyday, so
+ * it sits in ⋯.
  */
 export class IntegrationHeader extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
-  declare props: Pick<IntegrationHeader, 'theme' | 'formId' | 'saving' | 'resettingStaleJs' | 'onResetStaleJs'>;
+  declare props: Pick<IntegrationHeader, 'theme' | 'resettingStaleJs' | 'onResetStaleJs'>;
 
   @prop declare theme: ThemeMode;
-  /** The open provider form's id, or empty when nothing is open: Save submits that form. */
-  @prop declare formId: string;
-  @prop declare saving: boolean;
   @prop declare resettingStaleJs: boolean;
   @prop declare onResetStaleJs: () => void;
 
@@ -28,13 +25,6 @@ export class IntegrationHeader extends PureReactor {
     const dark = this.theme === ThemeMode.DARK;
     return (
       <div className="flex items-center gap-2">
-        {this.formId ? (
-          <Button type="submit" form={this.formId} isLoading={this.saving}
-            icon={<FrameworkIcons.Save size={15} strokeWidth={2} />}
-            className="h-9 px-4 rounded-lg font-semibold text-xs text-white">
-            {AdminI18n.t('settings.integrations.save')}
-          </Button>
-        ) : null}
         <Dropdown align={HorizontalAlign.RIGHT} items={[{
           label: AdminI18n.t('settings.integrations.resetStaleJs'),
           icon: this.resettingStaleJs ? <FrameworkIcons.Loader size={14} className="animate-spin" /> : <FrameworkIcons.Refresh size={14} />,

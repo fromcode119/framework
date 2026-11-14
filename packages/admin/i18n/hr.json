@@ -613,7 +613,13 @@
       "none": "Ne sprema se u polje osobe",
       "missing": "{{key}} (više nije polje osobe)",
       "manage": "Upravljaj poljima osobe"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Nespremljene promjene",
+      "discard": "Odbaci",
+      "save": "Spremi"
+    },
+    "dropToInstall": "Ispustite datoteku da biste je instalirali"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Uvoz nije uspio: {{reason}}",
       "awaitingApproval": "Čeka odobrenje",
       "reviewAndApprove": "Pregledaj i odobri",
-      "waitsForYourApproval": "Postavljeno i čeka vaše odobrenje onoga što traži."
+      "waitsForYourApproval": "Postavljeno i čeka vaše odobrenje onoga što traži.",
+      "tabAll": "Sve",
+      "tabOff": "Isključeni",
+      "tabUpdates": "S ažuriranjem",
+      "tabErrors": "S greškom",
+      "details": "Detalji",
+      "installedOnThePlatform": "Instalirano na platformi"
     },
     "upload": {
       "name": "Naziv: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopirano",
       "pageSubtitle": "Vanjske usluge koje ovaj radni prostor koristi. Tajni podaci su šifrirani i više se ne prikazuju.",
       "ownerPlatform": "Platforma",
-      "save": "Spremi",
       "saving": "Spremanje…",
       "more": "Više",
       "oneProviderAtATime": "Samo jedan pružatelj odjednom. Odabirom drugog zamjenjuje se postojeći.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Unesite naziv jezika i ISO kod, a zatim omogućite ili onemogućite svaki jezik.",
       "noLocalesConfiguredAddOne": "Nema konfiguriranih jezika. Dodajte jedan u nastavku; ništa se ne sprema dok ne kliknete Spremi.",
       "languageNameEGEnglish": "Naziv jezika (npr. Hrvatski)",
+      "pickLanguage": "Odaberite jezik",
       "enabled": "Omogućeno",
       "remove": "Ukloni",
       "addLocale": "Dodaj jezik",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefiks putanje (/bg/...)",
       "noLocaleInUrl": "Bez lokalizacije u URL-u",
       "selectLocaleUrlStrategy": "Odaberite način prikaza lokalizacije u URL-u",
-      "isoCodeExample": "ISO kôd (npr. en, en-gb)",
       "consoleLanguage": "Jezik konzole",
       "platformConsoleLanguageHint": "Jezik konzole kada nije odabrano nijedno web-mjesto. Web-mjesto koje nije odabralo vlastiti jezik konzole koristi ovaj.",
       "consoleLanguageSaved": "Jezik konzole je spremljen."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Bit će odbijeno: instalirana tema je od {{installed}}, a ovaj paket od {{incoming}}.",
     "notAvailableHere": "Ovdje nema teme \"{{slug}}\"",
     "notAvailableHereHelp": "Ova stranica ne vidi temu s tim nazivom. Njezine teme navedene su pod Teme; administrator platforme dodjeljuje teme stranicama u odjeljku Stranice.",
-    "manageThemes": "Upravljaj temama"
+    "manageThemes": "Upravljaj temama",
+    "activeTheme": "Aktivna tema",
+    "otherThemes": "Ostale teme",
+    "noActiveTheme": "Nijedna tema nije aktivna"
   },
   "media": {
     "failedToCreateFolder": "Izrada mape nije uspjela",

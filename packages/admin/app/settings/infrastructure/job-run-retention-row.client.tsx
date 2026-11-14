@@ -4,7 +4,7 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Button } from '@/components/ui/view/button.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -52,7 +52,6 @@ export class JobRunRetentionRow extends AdminComponent {
     return (
       <SettingRow
         theme={this.theme}
-        icon={FrameworkIcons.Clock}
         title={AdminI18n.t('settings.infrastructure.jobRunRetention')}
         stacked
         description={AdminI18n.t('settings.infrastructure.daysOfJobRunHistory')}

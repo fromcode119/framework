@@ -3,7 +3,6 @@ import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { SettingNumberRow } from '@/app/settings/security/setting-number-row';
 import { SettingSwitchRow } from '@/app/settings/security/setting-switch-row';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -29,7 +28,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_MIN_LENGTH}
-          icon={FrameworkIcons.Lock}
           title={AdminI18n.t('settings.security.minimumPasswordLength')}
           description={AdminI18n.t('settings.security.shorterPasswordsAreRejectedWhen')}
           min={8}
@@ -41,7 +39,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_UPPERCASE}
-          icon={FrameworkIcons.Text}
           title={AdminI18n.t('settings.security.requireAnUppercaseLetter')}
           description={AdminI18n.t('settings.security.aNewPasswordMustContain')}
         />
@@ -51,7 +48,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_LOWERCASE}
-          icon={FrameworkIcons.Text}
           title={AdminI18n.t('settings.security.requireALowercaseLetter')}
           description={AdminI18n.t('settings.security.aNewPasswordMustContain2')}
         />
@@ -61,7 +57,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_NUMBER}
-          icon={FrameworkIcons.Activity}
           title={AdminI18n.t('settings.security.requireANumber')}
           description={AdminI18n.t('settings.security.aNewPasswordMustContain3')}
         />
@@ -71,7 +66,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_REQUIRE_SYMBOL}
-          icon={FrameworkIcons.Key}
           title={AdminI18n.t('settings.security.requireASymbol')}
           description={AdminI18n.t('settings.security.aNewPasswordMustContain4')}
         />
@@ -81,7 +75,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_HISTORY}
-          icon={FrameworkIcons.Layers}
           title={AdminI18n.t('settings.security.passwordHistoryReuseBlocked')}
           description={AdminI18n.t('settings.security.howManyOfAUser')}
           min={0}
@@ -93,7 +86,6 @@ export class PasswordPolicyCard extends PureReactor {
           settings={this.settings}
           setSettings={this.setSettings}
           settingKey={SystemConstants.META_KEY.AUTH_PASSWORD_BREACH_CHECK}
-          icon={FrameworkIcons.ShieldAlert}
           title={AdminI18n.t('settings.security.checkAgainstKnownBreaches')}
           description={AdminI18n.t('settings.security.askABreachCheckProvider')}
         />

@@ -613,7 +613,13 @@
       "none": "Nuk ruhet në një fushë personi",
       "missing": "{{key}} (nuk është më fushë personi)",
       "manage": "Menaxho fushat e personit"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Ndryshime të paruajtura",
+      "discard": "Hidh poshtë",
+      "save": "Ruaj"
+    },
+    "dropToInstall": "Lëshoni skedarin për ta instaluar"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importimi dështoi: {{reason}}",
       "awaitingApproval": "Në pritje të miratimit",
       "reviewAndApprove": "Shqyrto dhe mirato",
-      "waitsForYourApproval": "U vendos dhe pret miratimin tuaj për atë që kërkon."
+      "waitsForYourApproval": "U vendos dhe pret miratimin tuaj për atë që kërkon.",
+      "tabAll": "Të gjitha",
+      "tabOff": "Të fikura",
+      "tabUpdates": "Me përditësim",
+      "tabErrors": "Me gabime",
+      "details": "Detaje",
+      "installedOnThePlatform": "Të instaluara në platformë"
     },
     "upload": {
       "name": "Emri: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "U kopjua",
       "pageSubtitle": "Shërbimet e jashtme që përdor kjo hapësirë pune. Të dhënat sekrete enkriptohen dhe nuk shfaqen më.",
       "ownerPlatform": "Platforma",
-      "save": "Ruaj",
       "saving": "Po ruhet…",
       "more": "Më shumë",
       "oneProviderAtATime": "Një ofrues njëherësh. Zgjedhja e një tjetri e zëvendëson.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Përcaktoni emrin e gjuhës + kodin ISO, pastaj aktivizoni ose çaktivizoni secilën gjuhë.",
       "noLocalesConfiguredAddOne": "Nuk ka gjuhë të konfiguruara. Shtoni një më poshtë; asgjë nuk ruhet derisa të klikoni Ruaj.",
       "languageNameEGEnglish": "Emri i gjuhës (p.sh. English)",
+      "pickLanguage": "Zgjidhni një gjuhë",
       "enabled": "Aktive",
       "remove": "Hiq",
       "addLocale": "Shto gjuhë",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Parashtesë shtegu (/bg/...)",
       "noLocaleInUrl": "Pa gjuhë në URL",
       "selectLocaleUrlStrategy": "Zgjidhni strategjinë e gjuhës në URL",
-      "isoCodeExample": "Kodi ISO (p.sh. en, en-gb)",
       "consoleLanguage": "Gjuha e konsolës",
       "platformConsoleLanguageHint": "Gjuha që përdor kjo konsolë kur nuk është zgjedhur asnjë sajt. Një sajt që nuk ka zgjedhur gjuhën e vet të konsolës përdor këtë.",
       "consoleLanguageSaved": "Gjuha e konsolës u ruajt."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Do të refuzohet: tema e instaluar është nga {{installed}}, kjo paketë është nga {{incoming}}.",
     "notAvailableHere": "Nuk ka temë \"{{slug}}\" këtu",
     "notAvailableHereHelp": "Ky sajt nuk sheh asnjë temë me këtë emër. Temat e tij renditen te Temat; një administrator i platformës u cakton tema sajteve nga Sajtet.",
-    "manageThemes": "Menaxho temat"
+    "manageThemes": "Menaxho temat",
+    "activeTheme": "Tema aktive",
+    "otherThemes": "Tema të tjera",
+    "noActiveTheme": "Asnjë temë aktive"
   },
   "media": {
     "failedToCreateFolder": "Krijimi i dosjes dështoi",

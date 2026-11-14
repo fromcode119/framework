@@ -17,6 +17,23 @@ export abstract class RoutingPageActions extends RoutingPageResolution {
     return ContextBridge.registerSettings.bind(ContextBridge);
   }
 
+  /** The two values as last read or written — what Discard puts back and the save bar compares with. */
+  private loaded: { structure: string; homeTarget: string } | null = null;
+
+  /** Whether either value differs from what was read: the save bar's question. */
+  protected get isDirty(): boolean {
+    const loaded = this.loaded;
+    if (!loaded || this.structure === null || this.homeTarget === null) return false;
+    return this.structure !== loaded.structure || this.homeTarget !== loaded.homeTarget;
+  }
+
+  @bound
+  discardChanges(): void {
+    if (!this.loaded) return;
+    this.structure = this.loaded.structure;
+    this.homeTarget = this.loaded.homeTarget;
+  }
+
   protected async loadRouting(): Promise<void> {
     this.loadError = null;
     try {
@@ -29,6 +46,7 @@ export abstract class RoutingPageActions extends RoutingPageResolution {
       // Read from the response ALONE — an absent key renders empty, it does not fall back to a literal.
       this.structure = String(settingsResponse?.permalink_structure ?? '');
       this.homeTarget = String(settingsResponse?.routing_home_target ?? '');
+      this.loaded = { structure: this.structure, homeTarget: this.homeTarget };
       this.frontendMeta = frontendMeta;
       this.availableCollections = Array.isArray(collectionStats) ? collectionStats : [];
     } catch (err: any) {
@@ -61,6 +79,7 @@ export abstract class RoutingPageActions extends RoutingPageResolution {
         routing_home_target: homeTarget,
       });
 
+      this.loaded = { structure, homeTarget };
       this.registerSettings({
         permalink_structure: structure,
         routing_home_target: homeTarget

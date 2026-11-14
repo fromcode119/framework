@@ -613,7 +613,13 @@
       "none": "Ei tallenneta henkilökenttään",
       "missing": "{{key}} (ei enää henkilökenttä)",
       "manage": "Hallitse henkilökenttiä"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Tallentamattomia muutoksia",
+      "discard": "Hylkää",
+      "save": "Tallenna"
+    },
+    "dropToInstall": "Pudota tiedosto asentaaksesi sen"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Tuonti epäonnistui: {{reason}}",
       "awaitingApproval": "Odottaa hyväksyntää",
       "reviewAndApprove": "Tarkista ja hyväksy",
-      "waitsForYourApproval": "Asennettu, odottaa pyytämiensä oikeuksien hyväksyntää."
+      "waitsForYourApproval": "Asennettu, odottaa pyytämiensä oikeuksien hyväksyntää.",
+      "tabAll": "Kaikki",
+      "tabOff": "Pois päältä",
+      "tabUpdates": "Päivitys saatavilla",
+      "tabErrors": "Virheellisiä",
+      "details": "Tiedot",
+      "installedOnThePlatform": "Asennettu alustalle"
     },
     "upload": {
       "name": "Nimi: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopioitu",
       "pageSubtitle": "Tämän työtilan käyttämät ulkoiset palvelut. Salaisuudet salataan eikä niitä näytetä uudelleen.",
       "ownerPlatform": "Alusta",
-      "save": "Tallenna",
       "saving": "Tallennetaan…",
       "more": "Lisää",
       "oneProviderAtATime": "Vain yksi palveluntarjoaja kerrallaan. Toisen valitseminen korvaa nykyisen.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Määritä kielen nimi ja ISO-koodi ja ota kukin kieli käyttöön tai poista se käytöstä.",
       "noLocalesConfiguredAddOne": "Kieliä ei ole määritetty. Lisää kieli alla; mitään ei tallenneta ennen kuin tallennat.",
       "languageNameEGEnglish": "Kielen nimi (esim. suomi)",
+      "pickLanguage": "Valitse kieli",
       "enabled": "Käytössä",
       "remove": "Poista",
       "addLocale": "Lisää kieli",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Polun etuliite (/bg/...)",
       "noLocaleInUrl": "Ei kieltä URL-osoitteessa",
       "selectLocaleUrlStrategy": "Valitse kielen URL-strategia",
-      "isoCodeExample": "ISO-koodi (esim. en, en-gb)",
       "consoleLanguage": "Konsolin kieli",
       "platformConsoleLanguageHint": "Kieli, jota konsoli käyttää, kun sivustoa ei ole valittu. Sivusto, jolle ei ole valittu omaa konsolin kieltä, käyttää tätä.",
       "consoleLanguageSaved": "Konsolin kieli on tallennettu."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Hylätään: asennettu teema on toimittajalta {{installed}}, tämä paketti toimittajalta {{incoming}}.",
     "notAvailableHere": "Teemaa \"{{slug}}\" ei ole täällä",
     "notAvailableHereHelp": "Tämä sivusto ei näe tämännimistä teemaa. Sivuston teemat on lueteltu kohdassa Teemat; alustan ylläpitäjä määrittää teemat sivustoille kohdassa Sivustot.",
-    "manageThemes": "Hallitse teemoja"
+    "manageThemes": "Hallitse teemoja",
+    "activeTheme": "Aktiivinen teema",
+    "otherThemes": "Muut teemat",
+    "noActiveTheme": "Mikään teema ei ole aktiivinen"
   },
   "media": {
     "failedToCreateFolder": "Kansion luominen epäonnistui",

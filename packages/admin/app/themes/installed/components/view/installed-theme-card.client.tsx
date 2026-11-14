@@ -1,20 +1,30 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Badge } from '@/components/ui/view/badge.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
+import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminClass } from '@/lib/admin-class';
 import type { IInstalledThemeManifest } from '@/app/themes/installed/interfaces/installed-theme-manifest.interface';
 import { ThemeState } from '@fromcode119/core/client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
+/**
+ * One installed theme: its name and description, version and author, and what can be done with it.
+ * The active theme offers its settings; any other offers "Activate". Everything else (disable, update,
+ * details, delete) is in the "⋯" menu. Its look is the `fc-ext-row` rules of `settings.css`.
+ */
 export class InstalledThemeCard extends PureReactor {
-  @prop declare isDark: boolean;
   @prop declare onActivate: (slug: string) => Promise<void>;
   @prop declare onDisable: (slug: string) => Promise<void>;
   @prop declare onDelete: (slug: string, isActive: boolean) => Promise<void>;
   @prop declare onUpdate: (slug: string) => Promise<void>;
+  @prop declare onNavigate: (href: string) => void;
   @prop declare theme: IInstalledThemeManifest;
   @prop declare updateVersion: string | null;
   /**
@@ -27,45 +37,60 @@ export class InstalledThemeCard extends PureReactor {
   @prop declare ownedBySite: boolean;
   @prop declare onDeleteMine: (slug: string, isActive: boolean) => Promise<void>;
 
-  render(): ReactNode {
-    const { canManage, isDark, onActivate, onDelete, onDeleteMine, onDisable, onUpdate, ownedBySite, theme, updateVersion } = this;
+  private get isActive(): boolean {
     // API JSON: `state` is a raw string, so resolve rather than compare a string to a member.
-    const isActive = ThemeState.resolve(theme.state) === ThemeState.ACTIVE;
+    return ThemeState.resolve(this.theme.state) === ThemeState.ACTIVE;
+  }
+
+  private get menuItems(): IDropdownItem[] {
+    const { theme, isActive } = this;
+    const items: IDropdownItem[] = [
+      { label: AdminI18n.t('themes.manage'), icon: <FrameworkIcons.Info size={14} />, onClick: () => this.onNavigate(AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)) },
+    ];
+    if (isActive) items.push({ label: AdminI18n.t('themes.disable'), icon: <FrameworkIcons.Close size={14} />, onClick: () => void this.onDisable(theme.slug) });
+    if (this.updateVersion && this.canManage) {
+      items.push({ label: AdminI18n.t('themes.upgradeToV', { updateVersion: this.updateVersion }), icon: <FrameworkIcons.Refresh size={14} />, onClick: () => void this.onUpdate(theme.slug) });
+    }
+    if (this.ownedBySite) {
+      items.push({ label: AdminI18n.t('themes.deleteThisSiteSTheme'), icon: <FrameworkIcons.Trash size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => void this.onDeleteMine(theme.slug, isActive) });
+    }
+    if (this.canManage) {
+      items.push({ label: AdminI18n.t('themes.delete'), icon: <FrameworkIcons.Trash size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => void this.onDelete(theme.slug, isActive) });
+    }
+    return items;
+  }
+
+  render(): ReactNode {
+    const { theme, isActive } = this;
+    const pill = AdminClass.of('ext-pill');
+    const meta = [`v${theme.version}`, theme.author].filter(Boolean).join(' · ');
 
     return (
-      <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'} ${isActive ? (isDark ? 'bg-indigo-500/5' : 'bg-indigo-50/40') : ''}`}>
-        <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isActive ? 'bg-indigo-600 text-white' : (isDark ? 'bg-slate-800 text-indigo-400' : 'bg-indigo-50 text-indigo-600')}`}>
-          {theme.iconUrl ? <img src={theme.iconUrl} className="w-5 h-5 rounded" alt="" /> : <FrameworkIcons.Palette size={18} />}
+      <div className={AdminClass.of('ext-row')}>
+        <div className={AdminClass.of('ext-row__icon')}>
+          {theme.iconUrl ? <img src={theme.iconUrl} alt="" /> : <FrameworkIcons.Palette size={16} />}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors no-underline ${isDark ? 'text-white' : 'text-slate-900'}`}>{theme.name}</AdminLink>
-            {updateVersion ? <Badge variant={BadgeVariant.WARNING} className="shrink-0">{AdminI18n.t('themes.update')}</Badge> : null}
-            {ownedBySite ? <Badge variant="gray" className="shrink-0">{AdminI18n.t('themes.thisSiteS')}</Badge> : null}
+        <div className={AdminClass.of('ext-row__text')}>
+          <div className={AdminClass.of('ext-row__name')}>
+            <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)}>{theme.name}</AdminLink>
+            {this.updateVersion ? <span className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('themes.update')}</span> : null}
+            {this.ownedBySite ? <span className={pill}>{AdminI18n.t('themes.thisSiteS')}</span> : null}
           </div>
-          <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{theme.description || AdminI18n.t('themes.aCleanAndModernTheme')}</p>
+          <p className={AdminClass.of('ext-row__desc')} title={theme.description || undefined}>{theme.description || AdminI18n.t('themes.aCleanAndModernTheme')}</p>
         </div>
 
-        <span className={`hidden lg:inline text-[11px] tabular-nums shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>v{theme.version}</span>
-        {theme.author ? <span className={`hidden xl:inline text-[11px] truncate max-w-[120px] shrink-0 ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{theme.author}</span> : null}
-        <Badge variant={isActive ? 'blue' : 'gray'} className="shrink-0 w-[64px] justify-center">{isActive ? AdminI18n.t('themes.active') : AdminI18n.t('themes.installed')}</Badge>
+        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
 
-        <div className="flex items-center gap-1 shrink-0">
-          {updateVersion && canManage ? (
-            <button onClick={() => onUpdate(theme.slug)} title={AdminI18n.t('themes.upgradeToV', { updateVersion: updateVersion })} className="h-8 px-2.5 rounded-lg flex items-center gap-1.5 text-[11px] font-semibold bg-amber-500 hover:bg-amber-600 text-white transition-colors"><FrameworkIcons.Clock size={14} />{AdminI18n.t('themes.upgrade')}</button>
-          ) : null}
-          {isActive ? (
-            <>
-              <AdminLink href={AdminConstants.ROUTES.THEMES.DETAIL(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors no-underline">{AdminI18n.t('themes.manage')}</AdminLink>
-              <AdminLink href={AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug)} title={AdminI18n.t('themes.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></AdminLink>
-              <button onClick={() => onDisable(theme.slug)} title={AdminI18n.t('themes.disable')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-amber-400 hover:bg-amber-500/20' : 'text-amber-600 hover:bg-amber-50'}`}><FrameworkIcons.Close size={15} /></button>
-            </>
-          ) : (
-            <button onClick={() => onActivate(theme.slug)} className="h-8 px-3 rounded-lg flex items-center text-[11px] font-semibold bg-slate-900 dark:bg-white dark:text-slate-900 text-white hover:bg-slate-800 transition-colors">{AdminI18n.t('themes.activate')}</button>
-          )}
-          {ownedBySite ? <button onClick={() => onDeleteMine(theme.slug, isActive)} title={AdminI18n.t('themes.deleteThisSiteSTheme')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
-          {canManage ? <button onClick={() => onDelete(theme.slug, isActive)} title={AdminI18n.t('themes.delete')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-rose-400 hover:bg-slate-700' : 'text-slate-400 hover:text-rose-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
+        <div className={AdminClass.of('ext-row__actions')}>
+          {isActive
+            ? <Button variant={ButtonVariant.OUTLINE} onClick={() => this.onNavigate(AdminConstants.ROUTES.THEMES.SETTINGS_TAB(theme.slug))}>{AdminI18n.t('themes.settings')}</Button>
+            : <Button variant={ButtonVariant.OUTLINE} onClick={() => void this.onActivate(theme.slug)}>{AdminI18n.t('themes.activate')}</Button>}
+          <Dropdown align={HorizontalAlign.RIGHT} items={this.menuItems} trigger={
+            <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}>
+              <FrameworkIcons.More size={16} />
+            </span>
+          } />
         </div>
       </div>
     );

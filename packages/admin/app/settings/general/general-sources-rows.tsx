@@ -1,11 +1,10 @@
 import type { ThemeMode } from '@fromcode119/core/client';
 import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
 import { Input } from '@/components/ui/view/input.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Switch } from '@/components/ui/view/switch.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import type { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
@@ -52,18 +51,16 @@ export class GeneralSourcesRows extends PureReactor {
         {platformLocks.shown('sources_workspace_root') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Folder}
             title={AdminI18n.t('settings.general.sourcesWorkspace')}
             description={<AdminRichText k="settings.general.sourcesWorkspaceDescription" />}
           >
-            <Input value={settings.sources_workspace_root} onChange={this.onWorkspaceRootChange} className="w-full md:w-64 font-bold" placeholder="data/sources" />
+            <Input value={settings.sources_workspace_root} onChange={this.onWorkspaceRootChange} className="w-full" placeholder="data/sources" />
           </SettingRow>
         )}
 
         {platformLocks.shown('sources_check_interval_minutes') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Clock}
             title={AdminI18n.t('settings.general.sourcesCheckInterval')}
             description={AdminI18n.t('settings.general.sourcesCheckIntervalDescription')}
           >
@@ -74,7 +71,6 @@ export class GeneralSourcesRows extends PureReactor {
         {platformLocks.shown('sources_keep_builds') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Folder}
             title={AdminI18n.t('settings.general.sourcesKeepBuilds')}
             description={AdminI18n.t('settings.general.sourcesKeepBuildsDescription')}
           >
@@ -85,7 +81,6 @@ export class GeneralSourcesRows extends PureReactor {
         {platformLocks.shown('sources_build_unverified_commits') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.ShieldAlert}
             title={AdminI18n.t('settings.general.sourcesBuildUnverified')}
             description={AdminI18n.t('settings.general.sourcesBuildUnverifiedDescription')}
           >

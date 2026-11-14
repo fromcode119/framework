@@ -613,7 +613,13 @@
       "none": "Nicht in einem Personenfeld gespeichert",
       "missing": "{{key}} (kein Personenfeld mehr)",
       "manage": "Personenfelder verwalten"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Ungespeicherte Änderungen",
+      "discard": "Verwerfen",
+      "save": "Speichern"
+    },
+    "dropToInstall": "Datei ablegen, um sie zu installieren"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import fehlgeschlagen: {{reason}}",
       "awaitingApproval": "Wartet auf Freigabe",
       "reviewAndApprove": "Prüfen und freigeben",
-      "waitsForYourApproval": "Abgelegt und wartet auf Ihre Freigabe der angeforderten Berechtigungen."
+      "waitsForYourApproval": "Abgelegt und wartet auf Ihre Freigabe der angeforderten Berechtigungen.",
+      "tabAll": "Alle",
+      "tabOff": "Aus",
+      "tabUpdates": "Mit Update",
+      "tabErrors": "Mit Fehlern",
+      "details": "Details",
+      "installedOnThePlatform": "Auf der Plattform installiert"
     },
     "upload": {
       "name": "Name: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopiert",
       "pageSubtitle": "Externe Dienste, die dieser Arbeitsbereich nutzt. Geheimnisse werden verschlüsselt und nie wieder angezeigt.",
       "ownerPlatform": "Plattform",
-      "save": "Speichern",
       "saving": "Wird gespeichert…",
       "more": "Mehr",
       "oneProviderAtATime": "Jeweils nur ein Anbieter. Die Auswahl eines anderen ersetzt ihn.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Legen Sie Sprachname und ISO-Code fest und aktivieren oder deaktivieren Sie dann jede Sprache.",
       "noLocalesConfiguredAddOne": "Keine Sprachen konfiguriert. Fügen Sie unten eine hinzu; erst beim Speichern wird etwas übernommen.",
       "languageNameEGEnglish": "Sprachname (z. B. Deutsch)",
+      "pickLanguage": "Sprache wählen",
       "enabled": "Aktiviert",
       "remove": "Entfernen",
       "addLocale": "Sprache hinzufügen",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Pfadpräfix (/bg/...)",
       "noLocaleInUrl": "Kein Gebietsschema in der URL",
       "selectLocaleUrlStrategy": "URL-Strategie auswählen",
-      "isoCodeExample": "ISO-Code (z. B. en, en-gb)",
       "consoleLanguage": "Konsolensprache",
       "platformConsoleLanguageHint": "Die Sprache dieser Konsole, wenn keine Website ausgewählt ist. Websites ohne eigene Konsolensprache verwenden diese.",
       "consoleLanguageSaved": "Die Konsolensprache wurde gespeichert."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Wird abgelehnt: Das installierte Theme stammt von {{installed}}, dieses Paket von {{incoming}}.",
     "notAvailableHere": "Kein Theme „{{slug}}“ vorhanden",
     "notAvailableHereHelp": "Diese Website kann kein Theme mit diesem Namen sehen. Ihre Themes sind unter „Themes“ aufgeführt; ein Plattform-Administrator weist Websites unter „Websites“ Themes zu.",
-    "manageThemes": "Themes verwalten"
+    "manageThemes": "Themes verwalten",
+    "activeTheme": "Aktives Theme",
+    "otherThemes": "Andere Themes",
+    "noActiveTheme": "Kein Theme ist aktiv"
   },
   "media": {
     "failedToCreateFolder": "Ordner konnte nicht erstellt werden",

@@ -613,7 +613,13 @@
       "none": "Mhux issejvjat f'qasam ta' persuna",
       "missing": "{{key}} (m'għadux qasam ta' persuna)",
       "manage": "Immaniġġja l-oqsma tal-persuni"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Bidliet mhux salvati",
+      "discard": "Warrab",
+      "save": "Salva"
+    },
+    "dropToInstall": "Itlaq il-fajl biex tinstallah"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "L-importazzjoni falliet: {{reason}}",
       "awaitingApproval": "Qed jistenna l-approvazzjoni",
       "reviewAndApprove": "Irrevedi u approva",
-      "waitsForYourApproval": "Imqiegħed, u qed jistenna l-approvazzjoni tiegħek għal dak li jitlob."
+      "waitsForYourApproval": "Imqiegħed, u qed jistenna l-approvazzjoni tiegħek għal dak li jitlob.",
+      "tabAll": "Kollha",
+      "tabOff": "Mitfija",
+      "tabUpdates": "B’aġġornament",
+      "tabErrors": "Bi żbalji",
+      "details": "Dettalji",
+      "installedOnThePlatform": "Installati fuq il-pjattaforma"
     },
     "upload": {
       "name": "Isem: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Ikkupjat",
       "pageSubtitle": "Servizzi esterni li juża dan il-workspace. Is-sigrieti huma kriptati u qatt ma jerġgħu jintwerew.",
       "ownerPlatform": "Pjattaforma",
-      "save": "Issejvja",
       "saving": "Qed jiġi ssejvjat…",
       "more": "Aktar",
       "oneProviderAtATime": "Fornitur wieħed kull darba. Jekk tagħżel ieħor, jissostitwih.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Iddefinixxi l-isem tal-lingwa + il-kodiċi ISO, imbagħad attiva jew iddiżattiva kull locale.",
       "noLocalesConfiguredAddOne": "L-ebda locale ma huwa kkonfigurat. Żid wieħed hawn taħt; xejn ma jiġi maħżun qabel ma tissalva.",
       "languageNameEGEnglish": "Isem il-lingwa (eż. English)",
+      "pickLanguage": "Agħżel lingwa",
       "enabled": "Attivat",
       "remove": "Neħħi",
       "addLocale": "Żid Locale",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefiss fil-Path (/bg/...)",
       "noLocaleInUrl": "L-ebda Locale fl-URL",
       "selectLocaleUrlStrategy": "Agħżel l-istrateġija tal-locale fl-URL",
-      "isoCodeExample": "Kodiċi ISO (eż. en, en-gb)",
       "consoleLanguage": "Lingwa tal-console",
       "platformConsoleLanguageHint": "Il-lingwa li tuża din il-console meta ma jkun magħżul l-ebda sit. Sit li ma għażilx il-lingwa tal-console tiegħu juża din.",
       "consoleLanguageSaved": "Il-lingwa tal-console ġiet issejvjata."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Se tiġi rifjutata: it-tema installata hija minn {{installed}}, dan il-pakkett huwa minn {{incoming}}.",
     "notAvailableHere": "M'hemmx tema \"{{slug}}\" hawn",
     "notAvailableHereHelp": "Dan is-sit ma jistax jara tema b'dak l-isem. It-temi tiegħu huma elenkati taħt Temi; amministratur tal-pjattaforma jassenja t-temi lis-siti minn Siti.",
-    "manageThemes": "Immaniġġja t-Temi"
+    "manageThemes": "Immaniġġja t-Temi",
+    "activeTheme": "Tema attiva",
+    "otherThemes": "Temi oħra",
+    "noActiveTheme": "L-ebda tema mhi attiva"
   },
   "media": {
     "failedToCreateFolder": "Ma rnexxiex jinħoloq il-folder",

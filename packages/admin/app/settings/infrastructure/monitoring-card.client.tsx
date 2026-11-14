@@ -6,7 +6,7 @@ import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -118,7 +118,7 @@ export class MonitoringCard extends AdminComponent {
     const watched = (this.status?.targets ?? []).map((target) => target.url).join(', ');
     return (
       <Card title={AdminI18n.t('settings.infrastructure.monitoring')}>
-        <SettingRow theme={this.theme} icon={FrameworkIcons.Activity} title={AdminI18n.t('settings.infrastructure.monitoringOpenIncidents')} stacked description={AdminI18n.t('settings.infrastructure.monitoringHelp')}>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringOpenIncidents')} stacked description={AdminI18n.t('settings.infrastructure.monitoringHelp')}>
           <div className="space-y-3">
             {this.renderIncidents()}
             <Button onClick={this.checkNow} isLoading={this.checking} disabled={!this.loaded} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
@@ -126,7 +126,7 @@ export class MonitoringCard extends AdminComponent {
             </Button>
           </div>
         </SettingRow>
-        <SettingRow theme={this.theme} icon={FrameworkIcons.Bell} title={AdminI18n.t('settings.infrastructure.monitoringProviders')} stacked description={AdminI18n.t('settings.infrastructure.monitoringProvidersHelp')}>
+        <SettingRow theme={this.theme} title={AdminI18n.t('settings.infrastructure.monitoringProviders')} stacked description={AdminI18n.t('settings.infrastructure.monitoringProvidersHelp')}>
           <p className="text-sm">{providers || AdminI18n.t('settings.infrastructure.monitoringNoProviders')}</p>
           {this.renderEmailRecipients()}
           {this.status?.providers?.includes('email') && this.status?.platformMail === false ? <p className="text-xs text-amber-600">{AdminI18n.t('settings.infrastructure.monitoringNoPlatformMail')}</p> : null}
@@ -134,7 +134,7 @@ export class MonitoringCard extends AdminComponent {
           <p className="mt-1 text-xs text-slate-500">{watched ? AdminI18n.t('settings.infrastructure.monitoringWatched', { addresses: watched }) : AdminI18n.t('settings.infrastructure.monitoringNothingWatched')}</p>
         </SettingRow>
         {MonitoringCard.THRESHOLDS.map(({ key, label }) => (
-          <SettingRow key={key} theme={this.theme} icon={FrameworkIcons.Server} title={AdminI18n.t(label)} stacked description={AdminI18n.t('settings.infrastructure.monitoringThresholdHelp')}>
+          <SettingRow key={key} theme={this.theme} title={AdminI18n.t(label)} stacked description={AdminI18n.t('settings.infrastructure.monitoringThresholdHelp')}>
             <div className="w-full md:w-40">
               <NumberStepper min={0} max={100} step={1} value={this.thresholds[key] ?? ''} onChange={(value: number | string) => this.onThreshold(key, value)} disabled={!this.loaded} />
             </div>

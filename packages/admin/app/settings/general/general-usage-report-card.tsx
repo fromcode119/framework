@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/view/button.client';
 import { Input } from '@/components/ui/view/input.client';
 import { Switch } from '@/components/ui/view/switch.client';
 import { Explanation } from '@/components/ui/view/explanation.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { AdminRichText } from '@/components/ui/view/admin-rich-text.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminApi } from '@/lib/api';
@@ -88,7 +88,6 @@ export class GeneralUsageReportCard extends AdminComponent {
       <Card title={AdminI18n.t('settings.general.usageReport')}>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Activity}
           title={AdminI18n.t('settings.general.usageReportSend')}
           description={<AdminRichText k="settings.general.usageReportSendDescription" />}
           explanation={(
@@ -114,7 +113,6 @@ export class GeneralUsageReportCard extends AdminComponent {
         {platformLocks.shown('usage_report_url') && (
           <SettingRow
             theme={theme}
-            icon={FrameworkIcons.Globe}
             title={AdminI18n.t('settings.general.usageReportAddress')}
             description={<AdminRichText k="settings.general.usageReportAddressDescription" vars={{ address: UsageReportDefaults.ADDRESS }} />}
           >
@@ -124,7 +122,6 @@ export class GeneralUsageReportCard extends AdminComponent {
 
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Eye}
           title={AdminI18n.t('settings.general.usageReportContents')}
           description={this.preview
             ? <AdminRichText k="settings.general.usageReportContentsDescription" vars={{ target: this.preview.target }} />

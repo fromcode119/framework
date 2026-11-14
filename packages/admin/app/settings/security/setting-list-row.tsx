@@ -1,12 +1,12 @@
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ComponentType, ReactNode, SetStateAction } from 'react';
+import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, bound, prop, state } from '@fromcode119/react-class-components';
 import { FieldSize } from '@/components/ui/enums/field-size.enum';
 import { Select } from '@/components/ui/view/select.client';
 import { TagFieldChips } from '@/components/ui/tag-field/view/chips.client';
 import type { IOption } from '@/components/ui/interfaces/option.interface';
-import { SettingRow } from '@/app/settings/security/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { SettingListValue } from '@/app/settings/security/setting-list-value';
 import type { SettingListSeparator } from '@/app/settings/security/enums/setting-list-separator.enum';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -18,13 +18,12 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  * under it. Stored exactly as before, in the separator the setting's readers expect.
  */
 export class SettingListRow extends PureReactor {
-  declare props: Pick<SettingListRow, 'settings' | 'setSettings' | 'settingKey' | 'separator' | 'icon' | 'title' | 'description' | 'theme' | 'placeholder' | 'options' | 'uppercase'>;
+  declare props: Pick<SettingListRow, 'settings' | 'setSettings' | 'settingKey' | 'separator' | 'title' | 'description' | 'theme' | 'placeholder' | 'options' | 'uppercase'>;
 
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare settingKey: string;
   @prop declare separator: SettingListSeparator;
-  @prop declare icon: ComponentType<{ size?: number }>;
   @prop declare title: ReactNode;
   @prop declare description: ReactNode;
   @prop declare theme: ThemeMode;
@@ -73,7 +72,7 @@ export class SettingListRow extends PureReactor {
     const labels = Object.fromEntries(options.map((option) => [option.value, option.label]));
     const remaining = options.filter((option) => !entries.includes(option.value));
     return (
-      <SettingRow theme={this.theme} icon={this.icon} title={this.title} description={this.description} wide>
+      <SettingRow theme={this.theme} title={this.title} description={this.description} wide>
         <div className="space-y-2 max-w-3xl">
           {options.length ? (
             <Select

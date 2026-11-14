@@ -613,7 +613,13 @@
       "none": "不保存到联系人字段",
       "missing": "{{key}}（已不是联系人字段）",
       "manage": "管理联系人字段"
-    }
+    },
+    "saveBar": {
+      "unsaved": "未保存的更改",
+      "discard": "放弃",
+      "save": "保存"
+    },
+    "dropToInstall": "松开文件即可安装"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "导入失败：{{reason}}",
       "awaitingApproval": "等待批准",
       "reviewAndApprove": "审核并批准",
-      "waitsForYourApproval": "已放置，正在等待您批准其请求的权限。"
+      "waitsForYourApproval": "已放置，正在等待您批准其请求的权限。",
+      "tabAll": "全部",
+      "tabOff": "已关闭",
+      "tabUpdates": "有更新",
+      "tabErrors": "有错误",
+      "details": "详情",
+      "installedOnThePlatform": "已安装在平台上"
     },
     "upload": {
       "name": "名称：{{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "已复制",
       "pageSubtitle": "此工作区使用的外部服务。密钥经过加密，保存后不会再次显示。",
       "ownerPlatform": "平台",
-      "save": "保存",
       "saving": "正在保存…",
       "more": "更多",
       "oneProviderAtATime": "一次只能使用一个服务提供商。选择其他提供商将替换当前提供商。",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "设置语言名称和 ISO 代码，然后启用或停用各语言区域。",
       "noLocalesConfiguredAddOne": "尚未配置语言区域。请在下方添加；保存前不会存储任何内容。",
       "languageNameEGEnglish": "语言名称（例如 English）",
+      "pickLanguage": "选择语言",
       "enabled": "已启用",
       "remove": "移除",
       "addLocale": "添加语言区域",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "路径前缀（/bg/...）",
       "noLocaleInUrl": "URL 中不含区域设置",
       "selectLocaleUrlStrategy": "选择区域设置 URL 策略",
-      "isoCodeExample": "ISO 代码（例如 en、en-gb）",
       "consoleLanguage": "控制台语言",
       "platformConsoleLanguageHint": "未选择站点时控制台使用的语言。未自行设置控制台语言的站点将使用此语言。",
       "consoleLanguageSaved": "控制台语言已保存。"
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "将被拒绝：已安装的主题来自 {{installed}}，而此包来自 {{incoming}}。",
     "notAvailableHere": "此处没有主题“{{slug}}”",
     "notAvailableHereHelp": "此站点找不到该名称的主题。站点的主题列在“主题”下；平台管理员可在“站点”中为站点分配主题。",
-    "manageThemes": "管理主题"
+    "manageThemes": "管理主题",
+    "activeTheme": "当前主题",
+    "otherThemes": "其他主题",
+    "noActiveTheme": "没有启用的主题"
   },
   "media": {
     "failedToCreateFolder": "创建文件夹失败",

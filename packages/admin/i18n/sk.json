@@ -613,7 +613,13 @@
       "none": "Neukladá sa do poľa osoby",
       "missing": "{{key}} (už nie je poľom osoby)",
       "manage": "Spravovať polia osoby"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Neuložené zmeny",
+      "discard": "Zahodiť",
+      "save": "Uložiť"
+    },
+    "dropToInstall": "Pustite súbor a nainštalujte ho"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import zlyhal: {{reason}}",
       "awaitingApproval": "Čaká na schválenie",
       "reviewAndApprove": "Skontrolovať a schváliť",
-      "waitsForYourApproval": "Umiestnený, čaká na vaše schválenie požiadaviek."
+      "waitsForYourApproval": "Umiestnený, čaká na vaše schválenie požiadaviek.",
+      "tabAll": "Všetky",
+      "tabOff": "Vypnuté",
+      "tabUpdates": "S aktualizáciou",
+      "tabErrors": "S chybou",
+      "details": "Podrobnosti",
+      "installedOnThePlatform": "Nainštalované na platforme"
     },
     "upload": {
       "name": "Názov: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Skopírované",
       "pageSubtitle": "Externé služby, ktoré tento pracovný priestor používa. Tajné údaje sú šifrované a už sa znova nezobrazia.",
       "ownerPlatform": "Platforma",
-      "save": "Uložiť",
       "saving": "Ukladá sa…",
       "more": "Viac",
       "oneProviderAtATime": "Naraz môže byť aktívny iba jeden poskytovateľ. Výberom iného sa nahradí.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Zadajte názov jazyka a kód ISO, potom každý jazyk zapnite alebo vypnite.",
       "noLocalesConfiguredAddOne": "Nie sú nastavené žiadne jazyky. Pridajte jeden nižšie; nič sa neuloží, kým neuložíte zmeny.",
       "languageNameEGEnglish": "Názov jazyka (napr. Slovenčina)",
+      "pickLanguage": "Vyberte jazyk",
       "enabled": "Zapnuté",
       "remove": "Odstrániť",
       "addLocale": "Pridať jazyk",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Predpona cesty (/bg/...)",
       "noLocaleInUrl": "Bez lokality v URL",
       "selectLocaleUrlStrategy": "Vyberte spôsob zobrazenia lokality v URL",
-      "isoCodeExample": "Kód ISO (napr. en, en-gb)",
       "consoleLanguage": "Jazyk konzoly",
       "platformConsoleLanguageHint": "Jazyk, ktorým konzola hovorí, keď nie je vybraná žiadna stránka. Stránka, ktorá si nevybrala vlastný jazyk konzoly, používa tento.",
       "consoleLanguageSaved": "Jazyk konzoly bol uložený."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Bude odmietnutá: nainštalovaná téma je od {{installed}}, tento balík je od {{incoming}}.",
     "notAvailableHere": "Téma „{{slug}}“ tu nie je",
     "notAvailableHereHelp": "Tento web nevidí tému s týmto názvom. Jeho témy sú uvedené v časti Témy; témy webom prideľuje administrátor platformy v časti Weby.",
-    "manageThemes": "Spravovať témy"
+    "manageThemes": "Spravovať témy",
+    "activeTheme": "Aktívna téma",
+    "otherThemes": "Ďalšie témy",
+    "noActiveTheme": "Žiadna téma nie je aktívna"
   },
   "media": {
     "failedToCreateFolder": "Priečinok sa nepodarilo vytvoriť",

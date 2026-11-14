@@ -22,6 +22,27 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
    * copy) from that site. Security settings had the same bug.
    */
   private loadedPayload: Record<string, unknown> = {};
+  /** The form as it was read back, which Discard puts back. */
+  private loadedSettings: Record<string, any> | null = null;
+
+  /** The keys this scope edits AND may write — the same filter a save applies. */
+  private sendable(payload: Record<string, unknown>): Record<string, unknown> {
+    return Object.fromEntries(
+      Object.entries(payload).filter(([key]) => this.platformLocks.shown(key) && this.platformLocks.writable(key)),
+    );
+  }
+
+  /** Whether anything a save would send differs from what was read: the save bar's question. */
+  protected get isDirty(): boolean {
+    if (!this.settings) return false;
+    const sendable = this.sendable(GeneralSettingsPageActions.buildPayload(this.settings));
+    return Object.entries(sendable).some(([key, value]) => JSON.stringify(value) !== JSON.stringify(this.loadedPayload[key]));
+  }
+
+  @bound
+  discardChanges(): void {
+    if (this.loadedSettings) this.settings = { ...this.loadedSettings };
+  }
 
   protected async loadSettings(): Promise<void> {
     this.loadError = null;
@@ -29,6 +50,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
       const response = await AdminSystemSettingsClient.getAll();
       this.settings = GeneralSettingsPageActions.mapResponse(response);
       this.loadedPayload = GeneralSettingsPageActions.buildPayload(this.settings);
+      this.loadedSettings = this.settings;
     } catch (err: any) {
       this.settings = null;
       this.loadError = err?.message || AdminI18n.t('settings.general.theSystemSettingsRequestFailed');
@@ -128,9 +150,7 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
     // the API would accept. A platform admin inside a site may WRITE a platform key, but that control
     // lives in the platform scope — sending its form value from here would push a value nobody on this
     // screen could see, overwriting whatever another admin changed since the page loaded.
-    const sendable = Object.fromEntries(
-      Object.entries(payload).filter(([key]) => this.platformLocks.shown(key) && this.platformLocks.writable(key)),
-    );
+    const sendable = this.sendable(payload);
 
     if (Object.keys(sendable).length === 0) {
       addNotification({
@@ -142,13 +162,14 @@ export abstract class GeneralSettingsPageActions extends GeneralSettingsPageStat
     }
 
     const changed = Object.fromEntries(
-      Object.entries(sendable).filter(([key, value]) => value !== this.loadedPayload[key]),
+      Object.entries(sendable).filter(([key, value]) => JSON.stringify(value) !== JSON.stringify(this.loadedPayload[key])),
     );
 
     this.isSaving = true;
     try {
       if (Object.keys(changed).length > 0) await AdminSystemSettingsClient.update(changed);
       this.loadedPayload = payload;
+      this.loadedSettings = settings;
 
       // The WHOLE form state, not just what was sent. `AdminUrlUtils.resolveFrontendBaseUrl` reads
       // `frontend_url`/`site_url` from this context for every "view on site" link; registering only

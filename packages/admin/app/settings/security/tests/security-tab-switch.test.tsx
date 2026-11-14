@@ -47,7 +47,7 @@ function routeRequests(statsResponse: () => Promise<unknown>): void {
 }
 
 const headerTab = (label: string): HTMLElement => screen.getByRole('button', { name: label });
-const settingsViewShown = (): boolean => screen.queryByText('Update Security') !== null && screen.queryByText('Password Policy') !== null;
+const settingsViewShown = (): boolean => screen.queryByText('Password Policy') !== null;
 const dashboardViewShown = (): boolean => screen.queryByText('Threat Alerts') !== null;
 
 describe('Security page: the header tabs switch the view on ONE click', () => {

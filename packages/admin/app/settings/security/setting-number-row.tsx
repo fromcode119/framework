@@ -1,9 +1,9 @@
 import { ThemeMode } from '@fromcode119/core/client';
-import type { ComponentType, ReactNode, SetStateAction } from 'react';
+import type { ReactNode, SetStateAction } from 'react';
 
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { NumberStepper } from '@/components/ui/number-stepper';
-import { SettingRow } from '@/app/settings/security/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 
 /**
  * One numeric security setting, bound to its `_system_meta` key.
@@ -17,7 +17,6 @@ export class SettingNumberRow extends PureReactor {
   @prop declare settings: Record<string, string>;
   @prop declare setSettings: (update: SetStateAction<Record<string, string>>) => void;
   @prop declare settingKey: string;
-  @prop declare icon: ComponentType<{ size?: number }> | undefined;
   @prop declare title: ReactNode;
   @prop declare description: ReactNode;
   @prop declare min: number;
@@ -32,7 +31,7 @@ export class SettingNumberRow extends PureReactor {
 
   render(): ReactNode {
     return (
-      <SettingRow theme={this.theme} icon={this.icon} title={this.title} description={this.description}>
+      <SettingRow theme={this.theme} title={this.title} description={this.description}>
         <NumberStepper min={this.min} max={this.max} value={this.settings[this.settingKey] ?? ''} onChange={this.onChange} />
       </SettingRow>
     );

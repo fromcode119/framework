@@ -37,7 +37,7 @@ export class FieldRendererHeader extends PureReactor {
     const lockIsUseful = isFieldReadOnly && canRequestReadOnlyOverride;
     if (field.admin?.hideLabel && !lockIsUseful && !isLocalizedField) return null;
     return (
-      <div className="flex items-center justify-between gap-3 mb-1 min-h-[22px]">
+      <div className="fc-field-head flex items-center justify-between gap-3 mb-1 min-h-[22px]">
         {!field.admin?.hideLabel && (
         <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL}>

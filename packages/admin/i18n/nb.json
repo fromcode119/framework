@@ -613,7 +613,13 @@
       "none": "Lagres ikke i et personfelt",
       "missing": "{{key}} (ikke lenger et personfelt)",
       "manage": "Administrer personfelt"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Ulagrede endringer",
+      "discard": "Forkast",
+      "save": "Lagre"
+    },
+    "dropToInstall": "Slipp filen for å installere den"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import mislyktes: {{reason}}",
       "awaitingApproval": "Venter på godkjenning",
       "reviewAndApprove": "Gå gjennom og godkjenn",
-      "waitsForYourApproval": "Plassert, og venter på at du godkjenner det det ber om."
+      "waitsForYourApproval": "Plassert, og venter på at du godkjenner det det ber om.",
+      "tabAll": "Alle",
+      "tabOff": "Av",
+      "tabUpdates": "Med oppdatering",
+      "tabErrors": "Med feil",
+      "details": "Detaljer",
+      "installedOnThePlatform": "Installert på plattformen"
     },
     "upload": {
       "name": "Navn: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopiert",
       "pageSubtitle": "Eksterne tjenester dette arbeidsområdet bruker. Hemmeligheter krypteres og vises aldri igjen.",
       "ownerPlatform": "Plattform",
-      "save": "Lagre",
       "saving": "Lagrer …",
       "more": "Mer",
       "oneProviderAtATime": "Én leverandør om gangen. Velger du en annen, erstattes den.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Angi språknavn og ISO-kode, og aktiver eller deaktiver deretter hvert språk.",
       "noLocalesConfiguredAddOne": "Ingen språk er konfigurert. Legg til ett nedenfor; ingenting lagres før du lagrer.",
       "languageNameEGEnglish": "Språknavn (f.eks. English)",
+      "pickLanguage": "Velg et språk",
       "enabled": "Aktivert",
       "remove": "Fjern",
       "addLocale": "Legg til språk",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Baneprefiks (/bg/...)",
       "noLocaleInUrl": "Ikke språk i URL",
       "selectLocaleUrlStrategy": "Velg URL-strategi for språk",
-      "isoCodeExample": "ISO-kode (f.eks. en, en-gb)",
       "consoleLanguage": "Konsollspråk",
       "platformConsoleLanguageHint": "Språket konsollen bruker når ingen nettsted er valgt. Et nettsted som ikke har valgt sitt eget konsollspråk, bruker dette.",
       "consoleLanguageSaved": "Konsollspråket er lagret."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Vil bli avvist: det installerte temaet er fra {{installed}}, denne pakken er fra {{incoming}}.",
     "notAvailableHere": "Ingen tema «{{slug}}» her",
     "notAvailableHereHelp": "Dette nettstedet har ikke tilgang til et tema med det navnet. Nettstedets temaer vises under Temaer; en plattformadministrator tildeler temaer til nettsteder fra Nettsteder.",
-    "manageThemes": "Administrer temaer"
+    "manageThemes": "Administrer temaer",
+    "activeTheme": "Aktivt tema",
+    "otherThemes": "Andre temaer",
+    "noActiveTheme": "Ingen temaer er aktive"
   },
   "media": {
     "failedToCreateFolder": "Kunne ikke opprette mappe",

@@ -613,7 +613,13 @@
       "none": "Ei salvestata isiku välja",
       "missing": "{{key}} (pole enam isiku väli)",
       "manage": "Halda isiku välju"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Salvestamata muudatused",
+      "discard": "Loobu",
+      "save": "Salvesta"
+    },
+    "dropToInstall": "Paigaldamiseks lohista fail siia"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importimine ebaõnnestus: {{reason}}",
       "awaitingApproval": "Ootab kinnitamist",
       "reviewAndApprove": "Vaata üle ja kinnita",
-      "waitsForYourApproval": "Paigutatud; ootab, et kinnitaksite selle taotletud õigused."
+      "waitsForYourApproval": "Paigutatud; ootab, et kinnitaksite selle taotletud õigused.",
+      "tabAll": "Kõik",
+      "tabOff": "Väljas",
+      "tabUpdates": "Uuendusega",
+      "tabErrors": "Vigadega",
+      "details": "Üksikasjad",
+      "installedOnThePlatform": "Platvormile paigaldatud"
     },
     "upload": {
       "name": "Nimi: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopeeritud",
       "pageSubtitle": "Välisteenused, mida see tööruum kasutab. Saladused krüpteeritakse ja neid ei kuvata enam kunagi.",
       "ownerPlatform": "Platvorm",
-      "save": "Salvesta",
       "saving": "Salvestamine…",
       "more": "Rohkem",
       "oneProviderAtATime": "Korraga üks teenusepakkuja. Uue valimine asendab eelmise.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Määrake keele nimi ja ISO-kood ning lubage või keelake iga lokaat.",
       "noLocalesConfiguredAddOne": "Lokaate pole seadistatud. Lisage allpool; midagi ei salvestata enne, kui salvestate.",
       "languageNameEGEnglish": "Keele nimi (nt eesti)",
+      "pickLanguage": "Vali keel",
       "enabled": "Lubatud",
       "remove": "Eemalda",
       "addLocale": "Lisa lokaat",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Tee eesliide (/bg/...)",
       "noLocaleInUrl": "Lokaat puudub URL-is",
       "selectLocaleUrlStrategy": "Valige lokaadi URL-i strateegia",
-      "isoCodeExample": "ISO-kood (nt en, en-gb)",
       "consoleLanguage": "Konsooli keel",
       "platformConsoleLanguageHint": "Keel, mida konsool kasutab, kui saiti pole valitud. Sait, millele pole oma konsooli keelt valitud, kasutab seda keelt.",
       "consoleLanguageSaved": "Konsooli keel on salvestatud."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Keeldutakse: paigaldatud teema tarnija on {{installed}}, selle paketi tarnija on {{incoming}}.",
     "notAvailableHere": "Teemat „{{slug}}” siin pole",
     "notAvailableHereHelp": "See sait ei näe sellenimelist teemat. Saidi teemad on loetletud jaotises Teemad; platvormi administraator määrab teemad saitidele jaotises Saidid.",
-    "manageThemes": "Halda teemasid"
+    "manageThemes": "Halda teemasid",
+    "activeTheme": "Aktiivne teema",
+    "otherThemes": "Muud teemad",
+    "noActiveTheme": "Ükski teema pole aktiivne"
   },
   "media": {
     "failedToCreateFolder": "Kausta loomine ebaõnnestus",

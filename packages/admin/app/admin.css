@@ -635,20 +635,7 @@ html.dark {
   .fc-sites__member, .fc-sites__grant { grid-template-columns: 1fr; }
 }
 
-/* Settings → General: where the settings this scope does NOT show actually live. Hiding a control
-   must not make the setting undiscoverable, so the screen names the other scope. */
-.fc-scope-notice {
-  display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
-  /* 1.5rem matches the `p-6` of the content wrapper below, so the notice's edges line up with the
-     cards rather than sitting 2px inside them; 16px matches a Card's `p-4`, so its text shares the
-     cards' text column. `--radius` is the same corner every surface uses — a literal 10px here was a
-     second answer to a question the token already answers. */
-  margin: 1.5rem 1.5rem 0; padding: 10px 16px; border-radius: var(--radius);
-  font-size: 12px; line-height: 1.5;
-  background: var(--fc-surface-2, rgba(127, 127, 127, 0.08));
-  color: var(--muted-foreground);
-}
-.fc-scope-notice__text { flex: 1 1 auto; min-width: 200px; }
+/* `.fc-scope-notice` — the quiet line naming the other scope — lives in settings.css. */
 
 /* The third tier under a label and its description: what the control DOES, per state, and where the
    related control lives. Row-level counterpart of the field renderer's provenance line. */

@@ -1,14 +1,13 @@
 import type { ChangeEvent, ReactNode } from 'react';
 import { bound, state } from '@fromcode119/react-class-components';
-import { ThemeMode } from '@fromcode119/core/client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { Card } from '@/components/ui/view/card.client';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 import { Switch } from '@/components/ui/view/switch.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminClass } from '@/lib/admin-class';
 import type { ISitePluginQuota } from '@/app/plugins/installed/interfaces/site-plugin-quota.interface';
 import type { ISiteOwnPlugin } from '@/app/plugins/installed/interfaces/site-own-plugin.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -130,22 +129,16 @@ export class SiteOwnPlugins extends AdminComponent {
   }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
     const quota = this.quota;
     const canUpload = Boolean(quota?.enabled && quota?.isolated);
     return (
-      <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${dark ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-        <h3 className={`text-[12px] font-medium mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')}</h3>
-        {this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p> : null}
-        {quota ? <p className="text-xs text-slate-500 mb-4">{this.uploadNote(quota)}</p> : null}
+      <Card className="mb-3" title={AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')} description={quota ? this.uploadNote(quota) : undefined}>
+        {this.loadError ? <p className="mb-3 text-xs text-rose-500">{this.loadError}</p> : null}
         {canUpload ? (
-          <div onClick={this.pickFile} className={`mb-4 cursor-pointer rounded-xl border-2 border-dashed px-4 py-4 transition-all ${dark ? 'border-slate-700 bg-slate-900/30 hover:border-slate-500' : 'border-slate-200 bg-white hover:border-slate-300'}`}>
+          <div className="mb-4 flex flex-wrap items-center gap-3">
             <input type="file" ref={(element) => { this.fileInput = element; }} onChange={this.onFile} className="hidden" accept=".zip,application/zip" />
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className="text-slate-400" /><p className={`text-sm font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{AdminI18n.t('plugins.list.uploadAPluginForThis')}</p></div>
-              <button type="button" disabled={this.busy !== null} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.busy === 'upload' ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{AdminI18n.t('plugins.list.uploadForThisSite')}</span></button>
-            </div>
-            {this.uploadPercent !== null ? <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('plugins.list.uploadingPercent', { percent: this.uploadPercent })}</p> : null}
+            <Button variant={ButtonVariant.OUTLINE} onClick={this.pickFile} isLoading={this.busy === 'upload'} disabled={this.busy !== null}>{AdminI18n.t('plugins.list.uploadForThisSite')}</Button>
+            {this.uploadPercent !== null ? <span className="text-xs text-slate-500">{AdminI18n.t('plugins.list.uploadingPercent', { percent: this.uploadPercent })}</span> : null}
           </div>
         ) : null}
         {this.own.length === 0 ? (quota ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.thisSiteHasNoPlugins')}</p> : null) : (

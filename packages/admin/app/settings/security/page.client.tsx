@@ -4,8 +4,6 @@ import type { ReactNode, SetStateAction } from 'react';
 import { state, bound, watch } from '@fromcode119/react-class-components';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { Loader } from '@/components/ui/view/loader.client';
@@ -14,6 +12,7 @@ import { SecurityDashboard } from '@/app/settings/security/security-dashboard';
 import { SecuritySettingsCards } from '@/app/settings/security/security-settings-cards';
 import { SecuritySettingsIo } from '@/app/settings/security/security-settings-io';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { SettingsPageScope } from '@/lib/settings/settings-page-scope';
 import { SecuritySettingsKeys } from '@/app/settings/security/security-settings-keys';
@@ -118,6 +117,18 @@ export class SecuritySettingsPage extends AdminComponent {
     this.settings = update instanceof Function ? update(current) : update;
   }
 
+  /** Whether anything differs from what the server last returned: the save bar's question. */
+  private get isDirty(): boolean {
+    const settings = this.settings;
+    if (!settings) return false;
+    return Object.keys({ ...settings, ...this.loaded }).some((key) => (settings[key] ?? '') !== (this.loaded[key] ?? ''));
+  }
+
+  @bound
+  discardChanges(): void {
+    this.settings = { ...this.loaded };
+  }
+
   @bound
   showDashboardTab(): void {
     this.activeTab = SecurityTab.DASHBOARD;
@@ -162,7 +173,6 @@ export class SecuritySettingsPage extends AdminComponent {
       <div className="flex flex-col h-full animate-in fade-in duration-500">
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
           title={AdminI18n.t('settings.security.securityDefense')}
           subtitle={AdminI18n.t('settings.security.runtimeIsolationAndProtection')}
           actions={
@@ -181,16 +191,6 @@ export class SecuritySettingsPage extends AdminComponent {
                   {AdminI18n.t('settings.security.settings')}
                 </button>
               </div>
-              {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
-                <Button
-                  icon={<FrameworkIcons.Shield size={15} strokeWidth={2} />}
-                  onClick={this.handleSave}
-                  isLoading={this.isSaving}
-                  className="h-9 px-4 rounded-lg font-semibold text-xs text-white"
-                >
-                  {AdminI18n.t('settings.security.updateSecurity')}
-                </Button>
-              )}
             </>
           }
         />
@@ -204,7 +204,7 @@ export class SecuritySettingsPage extends AdminComponent {
           />
         )}
 
-        <div className="p-6 w-full space-y-8 pb-24">
+        <div className="p-6 w-full space-y-3 pb-24">
           {activeTab === SecurityTab.DASHBOARD && this.statsError && !this.loadError && (
             <LoadErrorPanel
               title={AdminI18n.t('settings.security.securityStatisticsCouldNotBe')}
@@ -224,6 +224,9 @@ export class SecuritySettingsPage extends AdminComponent {
 
           {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
             <SecuritySettingsCards settings={settings} setSettings={this.setSettings} theme={theme} />
+          )}
+          {activeTab === SecurityTab.SETTINGS && settings && !this.settingsOutOfScope && (
+            <SettingsSaveBar dirty={this.isDirty} saving={this.isSaving} onSave={this.handleSave} onDiscard={this.discardChanges} />
           )}
         </div>
       </div>

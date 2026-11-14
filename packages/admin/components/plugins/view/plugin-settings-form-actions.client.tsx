@@ -47,6 +47,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
       this.schema = nextSchema;
       this.settings = nextSettings;
       this.savedSecretFields = nextSavedSecrets;
+      this.markClean();
 
       if (nextSchema.tabs && nextSchema.tabs.length > 0) {
         this.activeTab = nextSchema.tabs[0].id;
@@ -72,7 +73,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
 
     try {
       await AdminApi.put(this.settingsEndpoint, this.settings);
-      this.isDirty = false;
+      this.markClean();
       this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsSavedSuccessfully') };
       this.triggerRefresh();
     } catch (err: any) {
@@ -98,7 +99,7 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
       const res = await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_RESET(this.pluginSlug));
       const nextSettings = res.settings || {};
       this.settings = nextSettings;
-      this.isDirty = false;
+      this.markClean();
       this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsResetToDefaults') };
       this.triggerRefresh();
     } catch (err: any) {
@@ -129,7 +130,6 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
 
         await AdminApi.post(AdminConstants.ENDPOINTS.PLUGINS.SETTINGS_IMPORT(this.pluginSlug), importedSettings);
         await this.loadSettings();
-        this.isDirty = false;
         this.triggerRefresh();
         this.status = { type: NotificationType.SUCCESS, message: AdminI18n.t('plugins.list.settingsImportedSuccessfully') };
       } catch (error: any) {
@@ -140,12 +140,21 @@ export abstract class PluginSettingsFormActions extends PluginSettingsFormState 
     e.target.value = '';
   }
 
+  /** Puts back what was read, and nothing is left to save. */
+  @bound
+  discardChanges(): void {
+    this.settings = { ...this.baseline.settings };
+    this.savedSecretFields = new Set(this.baseline.secrets);
+    this.errors = {};
+    this.isDirty = false;
+  }
+
   handleFieldChange(fieldName: string, value: any): void {
-    this.settings = {
-      ...this.settings,
-      [fieldName]: value,
-    };
-    this.isDirty = true;
+    const next = { ...this.settings, [fieldName]: value };
+    this.settings = next;
+    // Typing a value back to what was read leaves nothing to save.
+    this.isDirty = Object.keys({ ...next, ...this.baseline.settings })
+      .some((key) => JSON.stringify(next[key] ?? null) !== JSON.stringify(this.baseline.settings[key] ?? null));
 
     if (this.savedSecretFields.has(fieldName) && value !== '') {
       const next = new Set(this.savedSecretFields);

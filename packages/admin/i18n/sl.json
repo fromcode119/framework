@@ -613,7 +613,13 @@
       "none": "Ni shranjeno v polje osebe",
       "missing": "{{key}} (ni več polje osebe)",
       "manage": "Upravljanje polj oseb"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Neshranjene spremembe",
+      "discard": "Zavrzi",
+      "save": "Shrani"
+    },
+    "dropToInstall": "Spustite datoteko, da jo namestite"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Uvoz ni uspel: {{reason}}",
       "awaitingApproval": "Čaka na odobritev",
       "reviewAndApprove": "Preglej in odobri",
-      "waitsForYourApproval": "Nameščen in čaka na vašo odobritev zahtev."
+      "waitsForYourApproval": "Nameščen in čaka na vašo odobritev zahtev.",
+      "tabAll": "Vse",
+      "tabOff": "Izklopljeni",
+      "tabUpdates": "S posodobitvijo",
+      "tabErrors": "Z napako",
+      "details": "Podrobnosti",
+      "installedOnThePlatform": "Nameščeno na platformi"
     },
     "upload": {
       "name": "Ime: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Kopirano",
       "pageSubtitle": "Zunanje storitve, ki jih uporablja ta delovni prostor. Skrivnosti so šifrirane in se ne prikažejo nikoli več.",
       "ownerPlatform": "Platforma",
-      "save": "Shrani",
       "saving": "Shranjevanje …",
       "more": "Več",
       "oneProviderAtATime": "Hkrati je lahko aktiven en ponudnik. Izbira drugega ga zamenja.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Določite ime jezika in kodo ISO, nato vsak jezik omogočite ali onemogočite.",
       "noLocalesConfiguredAddOne": "Ni nastavljenih jezikov. Dodajte jezik spodaj; nič se ne shrani, dokler ne kliknete Shrani.",
       "languageNameEGEnglish": "Ime jezika (npr. slovenščina)",
+      "pickLanguage": "Izberite jezik",
       "enabled": "Omogočeno",
       "remove": "Odstrani",
       "addLocale": "Dodaj jezik",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Predpona poti (/bg/...)",
       "noLocaleInUrl": "Brez jezikovne različice v URL-ju",
       "selectLocaleUrlStrategy": "Izberite način prikaza jezikovne različice v URL-ju",
-      "isoCodeExample": "Koda ISO (npr. en, en-gb)",
       "consoleLanguage": "Jezik konzole",
       "platformConsoleLanguageHint": "Jezik konzole, kadar ni izbrano nobeno spletno mesto. Spletno mesto, ki si ni izbralo lastnega jezika konzole, uporablja tega.",
       "consoleLanguageSaved": "Jezik konzole je shranjen."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Bo zavrnjeno: nameščena tema je od ponudnika {{installed}}, ta paket pa od {{incoming}}.",
     "notAvailableHere": "Teme »{{slug}}« tukaj ni",
     "notAvailableHereHelp": "To spletno mesto ne vidi teme s tem imenom. Njegove teme so navedene pod Teme; skrbnik platforme dodeljuje teme spletnim mestom v razdelku Spletna mesta.",
-    "manageThemes": "Upravljaj teme"
+    "manageThemes": "Upravljaj teme",
+    "activeTheme": "Aktivna tema",
+    "otherThemes": "Druge teme",
+    "noActiveTheme": "Nobena tema ni aktivna"
   },
   "media": {
     "failedToCreateFolder": "Mape ni bilo mogoče ustvariti",

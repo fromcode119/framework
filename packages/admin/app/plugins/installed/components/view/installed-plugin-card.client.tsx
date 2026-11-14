@@ -1,136 +1,143 @@
-import { BadgeVariant } from '@/components/ui/enums/badge-variant.enum';
 import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Badge } from '@/components/ui/view/badge.client';
 import { Switch } from '@/components/ui/view/switch.client';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
+import type { IDropdownItem } from '@/components/ui/interfaces/dropdown-item.interface';
 import { FrameworkIcons } from '@fromcode119/react';
 import { Icon } from '@/components/view/icon.client';
-import { PluginRegistryHealth, PluginState } from '@fromcode119/core/client';
+import { PluginRegistryHealth } from '@fromcode119/core/client';
 import { PluginHeldLabel } from '@/components/plugins/plugin-held-label';
 import type { ILoadedPlugin } from '@fromcode119/core/client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { PluginSwitchState } from '@/app/plugins/installed/plugin-switch-state';
+import { PluginListFilter } from '@/app/plugins/installed/enums/plugin-list-filter.enum';
 
+/**
+ * One installed plugin: its name and what it does, the version and author, its switch and a "⋯" menu
+ * (settings, details, remove). Its look is the `fc-ext-row` rules of `settings.css`.
+ *
+ * Only what needs attention is marked beside the name — an update, a failure, a hold, being off on
+ * this site. On or off is the switch's job, and where the code runs (isolated or shared) is on the
+ * plugin's details page, not repeated on every row.
+ */
 export class InstalledPluginCard extends PureReactor {
   @prop declare hasImageError: boolean;
   @prop declare hasUpdate: boolean;
   @prop declare isDark: boolean;
   @prop declare onDelete: (slug: string) => void;
   @prop declare onImageError: (slug: string) => void;
+  @prop declare onNavigate: (href: string) => void;
   @prop declare onToggle: (slug: string, currentEnabled: boolean, options?: { force?: boolean; recursive?: boolean }) => Promise<void>;
   @prop declare plugin: ILoadedPlugin;
   /** False for a tenant admin on a multi-tenant deployment: the switch and delete are not rendered. */
   @prop declare canManage: boolean;
 
-  render(): ReactNode {
-    const { canManage, hasImageError, hasUpdate, isDark, onDelete, onImageError, onToggle, plugin } = this;
-    const hasRuntimeError = Boolean(plugin.error) || plugin.state === PluginState.ERROR;
-    const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
-    const heldLabel = PluginHeldLabel.of(plugin.heldReason);
-    const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
-    const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
-    const driftSummary = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
-    // TWO AXES on a deployment that can host sites — see PluginSwitchState. The switch shows the site's
-    // answer when a site is bound and the platform's otherwise, which is the only case it is rendered in.
-    // A platform problem (Error/Held) still wins the badge: it explains why the switch cannot help.
-    const { perSite, availableOnPlatform, switchedOn, notOnThisSite, locked } = new PluginSwitchState(plugin as any);
+  private get slug(): string {
+    return this.plugin.manifest.slug;
+  }
 
-    const statusLabel = hasRuntimeError ? AdminI18n.t('plugins.list.error') : isHeld ? heldLabel
-      : notOnThisSite ? AdminI18n.t('plugins.list.offHere')
-      : perSite ? AdminI18n.t(switchedOn ? 'plugins.list.statusActive' : 'plugins.list.statusUnavailable')
-      : AdminI18n.t(availableOnPlatform ? 'plugins.list.statusActive' : 'plugins.list.statusInactive');
-    const statusVariant = hasRuntimeError ? 'danger' : isHeld ? 'amber'
-      : notOnThisSite ? 'gray'
-      : (switchedOn ? 'success' : 'gray');
-    const isolated = (plugin as any).isolation === 'isolated';
-    const isolationTitle = isolated
-      ? AdminI18n.t('plugins.list.runsInItsOwnProcess', { value: (plugin as any).isolationPid ? ` (pid ${(plugin as any).isolationPid})` : '' })
-      : String((plugin as any).isolationReason || AdminI18n.t('plugins.process.inApi'));
+  private get author(): string {
     // What the manifest declares, and nothing when it declares nothing: a missing author is not an
     // endorsement, and "Official" printed beside a third-party package would read as one.
-    const author = typeof plugin.manifest.author === 'object'
-      ? (plugin.manifest.author as { name?: string }).name
-      : plugin.manifest.author;
+    const author = this.plugin.manifest.author as unknown;
+    if (author && typeof author === 'object') return String((author as { name?: string }).name || '');
+    return String(author || '');
+  }
+
+  private get menuItems(): IDropdownItem[] {
+    const items: IDropdownItem[] = [
+      { label: AdminI18n.t('plugins.list.settings'), icon: <FrameworkIcons.Settings size={14} />, onClick: () => this.onNavigate(AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(this.slug)) },
+      { label: AdminI18n.t('plugins.list.details'), icon: <FrameworkIcons.Info size={14} />, onClick: () => this.onNavigate(AdminConstants.ROUTES.PLUGINS.DETAIL(this.slug)) },
+    ];
+    if (this.canManage) {
+      items.push({ label: AdminI18n.t('plugins.list.remove'), icon: <FrameworkIcons.Trash size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => this.onDelete(this.slug) });
+    }
+    return items;
+  }
+
+  private pills(): ReactNode[] {
+    const { plugin } = this;
+    const pill = AdminClass.of('ext-pill');
+    const out: ReactNode[] = [];
+    const isHeld = plugin.healthStatus === PluginRegistryHealth.WARNING || Boolean(plugin.heldReason);
+    if (this.hasUpdate) {
+      out.push(<AdminLink key="u" href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(this.slug)} className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('plugins.list.update')}</AdminLink>);
+    }
+    if (PluginListFilter.failed(plugin)) {
+      out.push(<span key="e" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('plugins.list.error')}</span>);
+    } else if (plugin.healthStatus === PluginRegistryHealth.ERROR) {
+      out.push(<span key="s" className={`${pill} ${AdminClass.of('ext-pill--danger')}`}>{AdminI18n.t('plugins.detail.security')}</span>);
+    } else if (isHeld) {
+      const added = (plugin.manifest.capabilities || []).filter((c) => !(plugin.approvedCapabilities || []).includes(c));
+      const removed = (plugin.approvedCapabilities || []).filter((c) => !(plugin.manifest.capabilities || []).includes(c));
+      const drift = [...added.map((c) => `+${c}`), ...removed.map((c) => `-${c}`)].join(' ');
+      out.push(
+        <span key="h" className={`${pill} ${AdminClass.of('ext-pill--warn')}`}
+          title={drift ? AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: drift }) : undefined}>
+          {PluginHeldLabel.of(plugin.heldReason)}{drift ? ` ${drift}` : ''}
+        </span>,
+      );
+    } else if (new PluginSwitchState(plugin as any).notOnThisSite) {
+      out.push(<span key="o" className={pill}>{AdminI18n.t('plugins.list.offHere')}</span>);
+    }
+    return out;
+  }
+
+  render(): ReactNode {
+    const { canManage, hasImageError, onImageError, onToggle, plugin } = this;
+    // TWO AXES on a deployment that can host sites — see PluginSwitchState. The switch shows the site's
+    // answer when a site is bound and the platform's otherwise.
+    const { perSite, switchedOn, locked } = new PluginSwitchState(plugin as any);
+    const iconUrl = (plugin as any).iconUrl as string | undefined;
+    const meta = [`v${plugin.manifest.version}`, this.author].filter(Boolean).join(' · ');
 
     return (
-      <div className={`group flex items-center gap-3 px-3 py-2.5 transition-colors ${isDark ? 'hover:bg-white/5' : 'hover:bg-slate-50'}`}>
-        <div className={`h-9 w-9 shrink-0 rounded-lg flex items-center justify-center ${isDark ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
+      <div className={AdminClass.of('ext-row')}>
+        <div className={AdminClass.of('ext-row__icon')}>
           {/* A custom image only when one is genuinely declared; otherwise the manifest's own icon
               NAME rendered from the locally-bundled set — never fetched from a remote host. */}
-          {(plugin as any).iconUrl && !hasImageError
-            ? <img src={(plugin as any).iconUrl} alt={plugin.manifest.name} className="w-5 h-5 object-contain" onError={() => onImageError(plugin.manifest.slug)} />
-            : <Icon name={String((plugin.manifest as any)?.admin?.icon || 'Box')} size={18} strokeWidth={1.5} />}
+          {iconUrl && !hasImageError
+            ? <img src={iconUrl} alt="" onError={() => onImageError(this.slug)} />
+            : <Icon name={String((plugin.manifest as any)?.admin?.icon || 'Box')} size={16} strokeWidth={1.5} />}
         </div>
 
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
-            <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} className="no-underline">
-              <span className={`text-sm font-semibold tracking-tight group-hover:text-indigo-500 transition-colors ${isDark ? 'text-white' : 'text-slate-900'}`}>{plugin.manifest.name}</span>
-            </AdminLink>
-            {hasUpdate && (
-              <AdminLink href={AdminConstants.ROUTES.PLUGINS.MARKETPLACE_DETAIL(plugin.manifest.slug)} className="shrink-0 inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-500 text-white rounded no-underline text-[12px] font-medium leading-none">
-                <FrameworkIcons.Loader size={8} className="animate-spin" />{AdminI18n.t('plugins.list.update')}
-              </AdminLink>
-            )}
-            {plugin.healthStatus === PluginRegistryHealth.ERROR && (
-              <Badge variant={BadgeVariant.DANGER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{AdminI18n.t('plugins.detail.security')}</Badge>
-            )}
-            {isHeld && plugin.healthStatus !== PluginRegistryHealth.ERROR && (
-              <Badge variant={BadgeVariant.AMBER} className="shrink-0 flex items-center gap-1"><FrameworkIcons.Zap size={9} />{heldLabel}</Badge>
-            )}
-            {isHeld && driftSummary && (
-              <span title={AdminI18n.t('plugins.list.capabilityChangeSinceApproval2', { driftSummary: driftSummary })} className="shrink-0 text-[10px] font-semibold tabular-nums text-amber-600 dark:text-amber-400">{driftSummary}</span>
-            )}
+        <div className={AdminClass.of('ext-row__text')}>
+          <div className={AdminClass.of('ext-row__name')}>
+            <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(this.slug)}>{plugin.manifest.name}</AdminLink>
+            {this.pills()}
           </div>
-          <p className={`text-xs leading-snug truncate ${plugin.error ? 'text-rose-500 font-medium' : (isDark ? 'text-slate-400' : 'text-slate-500')}`}>
+          <p className={`${AdminClass.of('ext-row__desc')}${plugin.error ? ` ${AdminClass.of('ext-row__desc--error')}` : ''}`} title={plugin.error || plugin.manifest.description || undefined}>
             {plugin.error ? plugin.error : (plugin.manifest.description || AdminI18n.t('plugins.list.defaultDescription', { name: plugin.manifest.name }))}
           </p>
         </div>
 
-        {/* Three groups, not one flat run: metadata · state · actions. The gap BETWEEN groups is what
-            separates them; inside a group the spacing is tight so each reads as a single unit. */}
-        <div className="flex items-center gap-5 shrink-0">
-          <div className={`hidden lg:flex items-center gap-3 text-[11px] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-            <span className="tabular-nums">v{plugin.manifest.version}</span>
-            {author && <span className="hidden xl:inline truncate max-w-[120px]">{author}</span>}
-          </div>
+        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
 
-          <div className="flex items-center gap-2.5">
-            <Badge variant={statusVariant} className={`shrink-0 justify-center ${isHeld ? 'min-w-[68px] px-2' : 'w-[68px]'}`}>{statusLabel}</Badge>
-            {/* T5: WHERE the code runs is a fact the operator must see, not infer. */}
-            {(plugin as any).isolation ? (
-              <span title={isolationTitle}>
-                <Badge variant={isolated ? BadgeVariant.INFO : BadgeVariant.GRAY} className="shrink-0 flex items-center gap-1">
-                  <FrameworkIcons.Shield size={9} />{isolated ? AdminI18n.t('plugins.list.isolated') : AdminI18n.t('plugins.list.shared')}
-                </Badge>
-              </span>
-            ) : null}
-            {/* Disabled when the platform axis says the plugin is not usable at all: a tenant switch
-                cannot override a platform hold, so offering one would be a control that does
-                nothing. The title says which axis is blocking. */}
-            {/* Not rendered at all for a tenant admin: enablement is an operator action (T2 §8), and a
-                control that would only ever 403 is a bug, not a hint. */}
-            {canManage ? (
-              <span title={locked
-                ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
-                : perSite ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
-                <Switch
-                  checked={switchedOn}
-                  disabled={locked}
-                  onChange={(_: boolean) => onToggle(plugin.manifest.slug, switchedOn)}
-                  className="scale-75 origin-right shrink-0"
-                />
-              </span>
-            ) : null}
-          </div>
-
-          <div className={`flex items-center gap-0.5 ps-3 border-s ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
-          <AdminLink href={AdminConstants.ROUTES.PLUGINS.DETAIL(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.open')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-white hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Right size={15} /></AdminLink>
-          <AdminLink href={AdminConstants.ROUTES.PLUGINS.SETTINGS_TAB(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.settings')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-400 hover:text-indigo-400 hover:bg-slate-700' : 'text-slate-500 hover:text-indigo-600 hover:bg-slate-100'}`}><FrameworkIcons.Settings size={15} /></AdminLink>
-          {canManage ? <button onClick={() => onDelete(plugin.manifest.slug)} title={AdminI18n.t('plugins.list.remove')} className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${isDark ? 'text-slate-500 hover:text-red-400 hover:bg-slate-700' : 'text-slate-400 hover:text-red-500 hover:bg-slate-100'}`}><FrameworkIcons.Trash size={15} /></button> : null}
-          </div>
+        <div className={AdminClass.of('ext-row__actions')}>
+          {/* Not rendered for a tenant admin: enablement is an operator action, and a control that
+              would only ever 403 is a bug, not a hint. Disabled when the platform axis blocks a
+              per-site switch; the title says which axis is blocking. */}
+          {canManage ? (
+            <span title={locked
+              ? AdminI18n.t('plugins.list.notAvailableOnThisPlatform')
+              : perSite ? AdminI18n.t('plugins.list.runThisPluginOnThe') : undefined}>
+              <Switch
+                checked={switchedOn}
+                disabled={locked}
+                onChange={(_: boolean) => onToggle(this.slug, switchedOn)}
+              />
+            </span>
+          ) : null}
+          <Dropdown align={HorizontalAlign.RIGHT} items={this.menuItems} trigger={
+            <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}>
+              <FrameworkIcons.More size={16} />
+            </span>
+          } />
         </div>
       </div>
     );

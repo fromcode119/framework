@@ -650,7 +650,13 @@
       "none": "Не се записва в поле на човека",
       "missing": "{{key}} (вече не е поле за хора)",
       "manage": "Управление на полетата за хора"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Незапазени промени",
+      "discard": "Отказ",
+      "save": "Запази"
+    },
+    "dropToInstall": "Пуснете файла, за да го инсталирате"
   },
   "shell": {
     "site": {
@@ -1514,7 +1520,13 @@
       "importFailed": "Импортът не успя: {{reason}}",
       "awaitingApproval": "Чака одобрение",
       "reviewAndApprove": "Прегледай и одобри",
-      "waitsForYourApproval": "Поставена е и чака одобрението ви за това, което иска."
+      "waitsForYourApproval": "Поставена е и чака одобрението ви за това, което иска.",
+      "tabAll": "Всички",
+      "tabOff": "Изключени",
+      "tabUpdates": "С обновление",
+      "tabErrors": "С грешка",
+      "details": "Подробности",
+      "installedOnThePlatform": "Инсталирани на платформата"
     },
     "upload": {
       "name": "Име: {{value}}",
@@ -2376,7 +2388,6 @@
       "setupAddressCopied": "Копирано",
       "pageSubtitle": "Външни услуги, които това работно пространство ползва. Тайните са криптирани и не се показват повторно.",
       "ownerPlatform": "Платформа",
-      "save": "Запази",
       "saving": "Запазване…",
       "more": "Още",
       "oneProviderAtATime": "Един доставчик в даден момент. Изборът на друг го заменя.",
@@ -2792,9 +2803,10 @@
       "saveFailed": "Неуспешно запазване",
       "failedToSaveLocalizationSettings": "Настройките за локализация не можаха да бъдат запазени.",
       "localeRegistry": "Езици",
-      "defineLanguageNameIsoCode": "Задайте име на езика + ISO код, след което включете или изключете всеки език.",
+      "defineLanguageNameIsoCode": "Изберете всеки език от списъка; името му се попълва само и може да се промени. После включете или изключете всеки език.",
       "noLocalesConfiguredAddOne": "Няма настроени езици. Добавете по-долу; нищо не се записва, докато не запазите.",
       "languageNameEGEnglish": "Име на езика (напр. Български)",
+      "pickLanguage": "Изберете език",
       "enabled": "Включен",
       "remove": "Премахни",
       "addLocale": "Добави език",
@@ -2830,7 +2842,6 @@
       "pathPrefixBg": "Префикс в пътя (/bg/...)",
       "noLocaleInUrl": "Без език в адреса",
       "selectLocaleUrlStrategy": "Изберете начин",
-      "isoCodeExample": "ISO код (напр. bg, en-gb)",
       "consoleLanguage": "Език на конзолата",
       "platformConsoleLanguageHint": "Езикът на конзолата, когато не е избран сайт. Сайт, който не е избрал собствен език на конзолата, използва този.",
       "consoleLanguageSaved": "Езикът на конзолата е запазен."
@@ -4703,7 +4714,10 @@
     "otherVendorRefused": "Ще бъде отказано: инсталираната тема е от {{installed}}, този пакет е от {{incoming}}.",
     "notAvailableHere": "Няма тема „{{slug}}“ тук",
     "notAvailableHereHelp": "Този сайт не вижда тема с това име. Темите му са в Теми; администратор на платформата задава темите на сайтовете от Сайтове.",
-    "manageThemes": "Управление на темите"
+    "manageThemes": "Управление на темите",
+    "activeTheme": "Активна тема",
+    "otherThemes": "Други теми",
+    "noActiveTheme": "Няма активна тема"
   },
   "mediaPicker": {
     "showingOnly": "Показани са само: {{types}}",

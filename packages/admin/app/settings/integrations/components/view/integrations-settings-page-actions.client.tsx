@@ -122,9 +122,11 @@ export abstract class IntegrationsSettingsPageActions extends IntegrationsSettin
   protected chooseProvider(providerKey: string): void {
     // Adding to a several-at-once type is always a NEW provider, even of a kind already saved.
     const saved = this.singleProvider ? this.activeProviders.find((entry) => entry.providerKey === providerKey) : undefined;
-    this.editor = saved
+    const next = saved
       ? IntegrationProviderFormHelper.buildEditorForProvider(saved, this.definitionOf(providerKey))
       : this.newEditorFor(providerKey);
+    // An edit like any other, so switching provider brings up the Save bar and Discard returns to the first.
+    this.patchEditor(() => next);
   }
 
   protected async handleSaveProvider(): Promise<void> {

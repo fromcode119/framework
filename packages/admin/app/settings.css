@@ -1,0 +1,226 @@
+/*
+ * The platform's own pages — settings, the plugin and theme lists, a plugin's settings — and their
+ * page headers. Their whole look is here: the components (`SettingRow`, `Card`, `CompactPageHeader`,
+ * `SettingsSaveBar`, `ScopeNote`, `ExtensionRow`, `ExtensionTabs`) only name these classes. To restyle
+ * those pages, change the tokens first and the rules second; no component needs to be opened.
+ */
+:root {
+  --fc-settings-pad-x: 16px;
+  --fc-settings-pad-y: 10px;
+  --fc-settings-row-min: 56px;
+  --fc-settings-row-gap: 16px;
+  --fc-settings-card-gap: 12px;
+  --fc-settings-card-radius: 12px;
+  --fc-settings-title: 14px;
+  --fc-settings-label: 13px;
+  --fc-settings-text: 12px;
+  --fc-settings-page-title: 18px;
+  --fc-settings-control-field: 300px;
+  --fc-settings-control-narrow: 160px;
+  --fc-settings-bar-bg: var(--fc-text);
+  --fc-settings-bar-text: var(--fc-surface);
+  --fc-settings-bar-shadow: 0 8px 24px rgb(15 23 42 / 0.18);
+  --fc-settings-icon-tile: 32px;
+  --fc-settings-meta-width: 150px;
+}
+
+/* ── Page header ─────────────────────────────────────────────────────────────────────────────── */
+.fc-page-header {
+  position: sticky; top: 0; z-index: 40;
+  border-bottom: 1px solid var(--fc-border);
+  background: color-mix(in srgb, var(--fc-surface) 90%, transparent);
+  backdrop-filter: blur(8px);
+}
+.fc-page-header__inner {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: 12px 16px; padding: 12px 24px;
+}
+@media (min-width: 1024px) { .fc-page-header__inner { padding: 12px 32px; } }
+/* The title's 16rem basis decides when the actions drop to a second line: beside the title while
+   both fit, under it on a phone — never squeezing the title to nothing. */
+.fc-page-header__main { display: flex; align-items: center; gap: 12px; min-width: 0; flex: 1 1 16rem; }
+.fc-page-header__text { min-width: 0; }
+.fc-page-header__title { margin: 0; font-size: var(--fc-settings-page-title); font-weight: 600; line-height: 1.3; color: var(--fc-text); }
+.fc-page-header__subtitle { margin: 2px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-page-header__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-width: 0; }
+.fc-page-header__back {
+  display: grid; place-items: center; flex: none; width: 32px; height: 32px;
+  border: 1px solid var(--fc-border); border-radius: 8px; color: var(--fc-text-muted);
+}
+.fc-page-header__back:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+
+/* ── Section card: title, one line under it, then its rows edge to edge ───────────────────────── */
+.fc-card__head { margin-bottom: 12px; }
+.fc-card__title { margin: 0; font-size: var(--fc-settings-title); font-weight: 600; letter-spacing: -0.01em; color: var(--card-foreground); }
+.fc-card__desc { margin: 2px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-surface:has(> .fc-settings-row) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
+.fc-surface:has(> .fc-settings-row) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); }
+
+/* ── Setting row ─────────────────────────────────────────────────────────────────────────────── */
+.fc-settings-row {
+  display: flex; align-items: center; gap: var(--fc-settings-row-gap);
+  min-height: var(--fc-settings-row-min); padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x);
+  border-top: 1px solid var(--fc-border);
+}
+.fc-surface > .fc-settings-row:first-child { border-top: 0; }
+.fc-settings-row__text { flex: 1 1 auto; min-width: 0; }
+.fc-settings-row__title { display: flex; align-items: center; gap: 6px; }
+.fc-settings-row__title h3 { margin: 0; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); }
+.fc-settings-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); line-height: 1.45; color: var(--fc-text-muted); }
+.fc-settings-row__help { margin-top: 6px; max-width: 34rem; font-size: 11px; line-height: 1.55; color: var(--fc-text-muted); }
+.fc-settings-row__help p { margin: 0 0 4px; }
+.fc-settings-row__help .fc-explanation { margin-top: 0; max-width: none; }
+.fc-settings-row__control { flex: none; display: flex; align-items: center; justify-content: flex-end; gap: 8px; min-width: 0; }
+.fc-settings-row__control--field { width: var(--fc-settings-control-field); }
+.fc-settings-row__control--narrow { width: var(--fc-settings-control-narrow); }
+.fc-settings-row__control--auto { width: auto; }
+/* The control fills the room the row gives it; a width or weight a caller set on its input is not
+   a second answer to that. */
+.fc-settings-row__control--field > *, .fc-settings-row__control--narrow > * { flex: 1 1 auto; min-width: 0; width: 100%; }
+.fc-settings-row__control input, .fc-settings-row__control select { font-weight: var(--fc-field-weight); }
+.fc-settings-row--wide { flex-direction: column; align-items: stretch; gap: 8px; }
+.fc-settings-row--wide > .fc-settings-row__control { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+.fc-settings-row--wide > .fc-settings-row__control > * { width: auto; flex: 0 1 auto; }
+@media (max-width: 639.98px) {
+  .fc-settings-row { flex-wrap: wrap; gap: 8px; }
+  .fc-settings-row__control--field, .fc-settings-row__control--narrow { width: 100%; justify-content: flex-start; }
+}
+
+/* ── Schema-drawn settings (a plugin's, a theme's): the same rows, from the field renderer's own markup.
+   Each field is one row: its label row on the left, the control (and its footer) on the right. Text
+   that runs (a text area, a list, a block of JSON) and a yes/no row keep the whole row. */
+.fc-surface:has(> .fc-settings-fields) { padding: 0; overflow: hidden; border-radius: var(--fc-settings-card-radius); }
+.fc-surface:has(> .fc-settings-fields) > .fc-card__head { margin: 0; padding: 12px var(--fc-settings-pad-x); border-bottom: 1px solid var(--fc-border); }
+.fc-settings-fields { display: flex; flex-direction: column; }
+.fc-settings-fields > .fc-field-row {
+  display: grid; grid-template-columns: minmax(0, 1fr) var(--fc-settings-control-field); column-gap: var(--fc-settings-row-gap);
+  align-items: start; min-height: var(--fc-settings-row-min); padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x);
+  border-top: 1px solid var(--fc-border);
+}
+.fc-settings-fields > .fc-field-row:first-child { border-top: 0; }
+.fc-settings-fields > .fc-field-row > * { grid-column: 2; min-width: 0; }
+.fc-settings-fields > .fc-field-row .fc-field-locked { display: contents; }
+.fc-settings-fields > .fc-field-row .fc-field-head { grid-column: 1; grid-row: 1 / span 4; margin: 0; padding-top: 9px; }
+.fc-settings-fields > .fc-field-row--narrow > :not(.fc-field-head):not(.fc-field-locked) { justify-self: end; width: var(--fc-settings-control-narrow); }
+.fc-settings-fields > .fc-field-row--full { display: block; }
+.fc-settings-fields > .fc-field-row--full .fc-field-head { padding-top: 0; }
+/* One label style for every row, a field's and a switch's alike — the same as a framework setting row. */
+.fc-settings-fields .fc-field-head label, .fc-settings-fields .fc-field-locked > .fc-field-head > span:first-child,
+.fc-settings-fields .fc-bool-row__label {
+  margin: 0; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text);
+}
+.fc-settings-fields .fc-bool-row__desc { margin-top: 1px; font-size: var(--fc-settings-text); line-height: 1.45; color: var(--fc-text-muted); }
+@media (max-width: 639.98px) {
+  .fc-settings-fields > .fc-field-row { display: block; }
+  .fc-settings-fields > .fc-field-row .fc-field-head { padding-top: 0; }
+  .fc-settings-fields > .fc-field-row--narrow > :not(.fc-field-head):not(.fc-field-locked) { width: 100%; }
+}
+
+/* ── Save bar: shown only while something is changed ──────────────────────────────────────────── */
+.fc-settings-savebar {
+  position: sticky; bottom: 12px; z-index: 30;
+  display: flex; align-items: center; gap: 8px;
+  max-width: 620px; margin: 16px auto 0; padding: 8px 8px 8px 16px;
+  border-radius: 12px; background: var(--fc-settings-bar-bg); color: var(--fc-settings-bar-text);
+  box-shadow: var(--fc-settings-bar-shadow);
+}
+.fc-settings-savebar__text { flex: 1; font-size: var(--fc-settings-text); font-weight: 600; }
+.fc-settings-savebar__reset {
+  height: 32px; padding: 0 12px; border-radius: 8px; border: 0; background: transparent;
+  color: inherit; font-size: var(--fc-settings-text); font-weight: 600; opacity: 0.8;
+}
+.fc-settings-savebar__reset:hover { opacity: 1; }
+
+/* ── The quiet line saying where the settings this scope does not show live ───────────────────── */
+.fc-scope-notice {
+  display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap;
+  /* Where the old notice block stood: 1.5rem lines it up with the content wrapper's `p-6`. */
+  margin: 1.5rem 1.5rem 0; padding: 0; background: none; border-radius: 0;
+  font-size: var(--fc-settings-text); line-height: 1.5; color: var(--fc-text-muted);
+}
+/* Inside a page's content it takes the content's edges and keeps a row's gap below it. */
+.fc-ext-page .fc-scope-notice { margin: 0 0 12px; }
+.fc-scope-notice__text { flex: 0 1 auto; min-width: 0; }
+.fc-scope-notice button, .fc-scope-notice a { color: var(--fc-brand); font-weight: 600; text-decoration: none; }
+.fc-scope-notice__go::after { content: ' →'; }
+
+/* ── A section's own pages, as links in the header (Installed · Health · Marketplace) ─────────── */
+.fc-page-tabs { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--fc-surface-muted); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.fc-page-tabs__tab {
+  padding: 5px 12px; border-radius: 6px; white-space: nowrap; text-decoration: none;
+  font-size: var(--fc-settings-text); font-weight: 600; color: var(--fc-text-muted);
+}
+.fc-page-tabs__tab:hover { color: var(--fc-text); }
+.fc-page-tabs__tab[aria-current='page'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-elevation-control); }
+
+/* ── Extension lists: tabs with counts, one line per plugin or theme ─────────────────────────── */
+.fc-ext-tabs { display: flex; gap: 2px; margin-bottom: 12px; overflow-x: auto; border-bottom: 1px solid var(--fc-border); scrollbar-width: none; }
+.fc-ext-tabs__tab {
+  padding: 8px 10px; border: 0; border-bottom: 2px solid transparent; background: none; white-space: nowrap;
+  font-size: var(--fc-settings-text); font-weight: 600; color: var(--fc-text-muted);
+}
+.fc-ext-tabs__tab:hover { color: var(--fc-text); }
+.fc-ext-tabs__tab[aria-current='page'] { color: var(--fc-text); border-bottom-color: var(--fc-brand); }
+.fc-ext-tabs__count { margin-inline-start: 6px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.fc-ext-list { overflow: hidden; border: 1px solid var(--fc-border); border-radius: var(--fc-settings-card-radius); background: var(--fc-surface); }
+.fc-ext-row {
+  display: flex; align-items: center; gap: var(--fc-settings-row-gap);
+  min-height: var(--fc-settings-row-min); padding: var(--fc-settings-pad-y) var(--fc-settings-pad-x);
+  border-top: 1px solid var(--fc-border);
+}
+.fc-ext-row:first-child { border-top: 0; }
+.fc-ext-row__icon {
+  display: grid; place-items: center; flex: none; width: var(--fc-settings-icon-tile); height: var(--fc-settings-icon-tile);
+  border-radius: 8px; background: var(--fc-surface-muted); color: var(--fc-brand);
+}
+.fc-ext-row__icon img { width: 18px; height: 18px; object-fit: contain; }
+.fc-ext-row__text { flex: 1 1 auto; min-width: 0; }
+.fc-ext-row__name { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); }
+.fc-ext-row__name a { color: inherit; text-decoration: none; }
+.fc-ext-row__name a:hover { color: var(--fc-brand); }
+.fc-ext-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-ext-row__desc--error { color: var(--fc-danger); font-weight: 500; }
+.fc-ext-row__meta { flex: none; width: var(--fc-settings-meta-width); text-align: end; font-size: 11px; color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-ext-row__actions { flex: none; display: flex; align-items: center; gap: 8px; }
+.fc-ext-row__more {
+  display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px;
+  border-radius: 8px; color: var(--fc-text-muted); cursor: pointer;
+}
+.fc-ext-row__more:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-ext-pill {font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; white-space: nowrap; background: var(--fc-surface-muted); color: var(--fc-text-muted); text-decoration: none; }
+.fc-ext-pill--warn { background: color-mix(in srgb, var(--fc-warning) 16%, transparent); color: var(--fc-warning); }
+.fc-ext-pill--danger { background: color-mix(in srgb, var(--fc-danger) 14%, transparent); color: var(--fc-danger); }
+.fc-ext-pill--ok { background: color-mix(in srgb, var(--fc-success) 14%, transparent); color: var(--fc-success); }
+.fc-ext-empty { padding: 32px 16px; text-align: center; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-ext-alert {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 16px;
+  border: 1px solid var(--fc-border); border-radius: var(--fc-settings-card-radius); font-size: var(--fc-settings-text);
+}
+.fc-ext-alert--danger { border-color: var(--fc-danger-soft-border); background: var(--fc-danger-soft); color: var(--fc-danger-strong); }
+.fc-ext-alert--ok { border-color: var(--fc-success-soft-border); background: var(--fc-success-soft); color: var(--fc-success-strong); }
+.fc-ext-alert--warn { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
+.fc-ext-alert__text { flex: 1 1 16rem; min-width: 0; }
+.fc-ext-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+.fc-ext-toolbar__search { position: relative; flex: 1 1 16rem; min-width: 0; }
+.fc-ext-toolbar__search > svg { position: absolute; z-index: 1; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
+/* The upload target exists while a file is dragged over the page, and only then. */
+.fc-ext-drop {
+  position: fixed; inset: 0; z-index: 60; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--fc-canvas) 82%, transparent);
+}
+.fc-ext-drop__box {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 48px;
+  border: 2px dashed var(--fc-brand); border-radius: 16px; background: var(--fc-surface);
+  font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text);
+  pointer-events: none;
+}
+.fc-ext-progress { margin-bottom: 12px; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-ext-progress__track { height: 6px; margin-bottom: 6px; border-radius: 999px; overflow: hidden; background: var(--fc-surface-muted); }
+.fc-ext-progress__bar { height: 100%; border-radius: 999px; background: var(--fc-brand); transition: width 0.2s; }
+.fc-ext-section { margin: 20px 0 8px; font-size: var(--fc-settings-text); font-weight: 600; color: var(--fc-text-muted); }
+.fc-ext-section--first { margin-top: 4px; }
+.fc-ext-toolbar__note { flex: 1 1 16rem; min-width: 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+@media (max-width: 639.98px) {
+  .fc-ext-row__meta { display: none; }
+  .fc-ext-row { gap: 10px; }
+}

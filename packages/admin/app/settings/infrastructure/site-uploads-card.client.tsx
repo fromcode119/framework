@@ -7,7 +7,7 @@ import { Card } from '@/components/ui/view/card.client';
 import { NumberStepper } from '@/components/ui/number-stepper';
 import { Button } from '@/components/ui/view/button.client';
 import { Switch } from '@/components/ui/view/switch.client';
-import { SettingRow } from '@/app/settings/general/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { AdminSystemSettingsClient } from '@/lib/settings/admin-system-settings-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -88,7 +88,6 @@ export class SiteUploadsCard extends AdminComponent {
       <Card title={AdminI18n.t('settings.infrastructure.siteUploads')}>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Database}
           title={AdminI18n.t('settings.infrastructure.spaceForASiteS')}
           stacked
           description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay')}
@@ -99,7 +98,6 @@ export class SiteUploadsCard extends AdminComponent {
         </SettingRow>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Layers}
           title={AdminI18n.t('settings.infrastructure.themesPerSite')}
           stacked
           description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn')}
@@ -110,7 +108,6 @@ export class SiteUploadsCard extends AdminComponent {
         </SettingRow>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Shield}
           title={AdminI18n.t('settings.infrastructure.sitesMayUploadTheirOwn')}
           stacked
           description={AdminI18n.t('settings.infrastructure.offByDefaultWhenOn')}
@@ -119,7 +116,6 @@ export class SiteUploadsCard extends AdminComponent {
         </SettingRow>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Database}
           title={AdminI18n.t('settings.infrastructure.spaceForASiteS2')}
           stacked
           description={AdminI18n.t('settings.infrastructure.theMostOneSiteMay2')}
@@ -130,7 +126,6 @@ export class SiteUploadsCard extends AdminComponent {
         </SettingRow>
         <SettingRow
           theme={theme}
-          icon={FrameworkIcons.Layers}
           title={AdminI18n.t('settings.infrastructure.pluginsPerSite')}
           stacked
           description={AdminI18n.t('settings.infrastructure.howManyOfItsOwn2')}

@@ -1,10 +1,8 @@
-import { ThemeMode } from '@fromcode119/core/client';
-import React from 'react';
-
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { prop, state } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
+import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
@@ -26,16 +24,16 @@ export class PluginsLayout extends AdminComponent {
    * administrator, so the tabs are not offered to one. Installed stays: a site's own plugin list and
    * each plugin's per-site settings are its business.
    */
-  private get allTabs(): { label: string; href: string; icon: ReactNode }[] {
+  private get allTabs(): { label: string; href: string }[] {
     return [
-      { label: AdminI18n.t('plugins.detail.installed'), href: AdminConstants.ROUTES.PLUGINS.INSTALLED, icon: <FrameworkIcons.Layers size={16} /> },
-      { label: AdminI18n.t('plugins.detail.health'), href: AdminConstants.ROUTES.PLUGINS.HEALTH, icon: <FrameworkIcons.Activity size={16} /> },
-      { label: AdminI18n.t('plugins.detail.marketplace'), href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE, icon: <FrameworkIcons.ShoppingBag size={16} /> },
+      { label: AdminI18n.t('plugins.detail.installed'), href: AdminConstants.ROUTES.PLUGINS.INSTALLED },
+      { label: AdminI18n.t('plugins.detail.health'), href: AdminConstants.ROUTES.PLUGINS.HEALTH },
+      { label: AdminI18n.t('plugins.detail.marketplace'), href: AdminConstants.ROUTES.PLUGINS.MARKETPLACE },
     ];
   }
 
   /** The tabs offered here: all three to a platform admin in Platform scope, Installed only otherwise. */
-  private get tabs(): { label: string; href: string; icon: ReactNode }[] {
+  private get tabs(): { label: string; href: string }[] {
     if (!PlatformAccess.canManagePlatform(this.auth.user) || this.siteScope) return this.allTabs.slice(0, 1);
     return this.allTabs;
   }
@@ -46,14 +44,6 @@ export class PluginsLayout extends AdminComponent {
 
   private get isHealth(): boolean {
     return this.pathname.startsWith(AdminConstants.ROUTES.PLUGINS.HEALTH);
-  }
-
-  private get isInstalled(): boolean {
-    return (
-      this.pathname === AdminConstants.ROUTES.PLUGINS.ROOT ||
-      this.pathname.startsWith(AdminConstants.ROUTES.PLUGINS.INSTALLED) ||
-      (this.pathname.startsWith(`${AdminConstants.ROUTES.PLUGINS.ROOT}/`) && !this.isMarketplace && !this.isHealth)
-    );
   }
 
   private get isPluginDetail(): boolean {
@@ -68,7 +58,7 @@ export class PluginsLayout extends AdminComponent {
   }
 
   /** The page being shown — named by where it is, whether or not its tab is offered here (a bookmark, say). */
-  private get activeTab(): { label: string; href: string; icon: ReactNode } {
+  private get activeTab(): { label: string; href: string } {
     const tabs = this.allTabs;
     return this.isMarketplace ? tabs[2] : this.isHealth ? tabs[1] : tabs[0];
   }
@@ -79,96 +69,30 @@ export class PluginsLayout extends AdminComponent {
     if (this.isPluginDetail) {
       return <div className="flex w-full flex-col animate-in fade-in duration-500">{this.children}</div>;
     }
-    const theme = this.theme;
-    const tabs = this.tabs;
     const isMarketplace = this.isMarketplace;
     const isHealth = this.isHealth;
-    const isInstalled = this.isInstalled;
+    const tabs = this.tabs;
+    const subtitle = isMarketplace
+      ? AdminI18n.t('plugins.detail.discoverAndInstallPowerUps')
+      : isHealth
+        ? AdminI18n.t('plugins.detail.monitorPluginHealthHeldCapability')
+        : AdminI18n.t('plugins.detail.manageYourExistingInstallationUpdates');
+    // One tab is no choice: a site administrator sees the Installed list under its title alone.
+    const nav = tabs.length > 1 ? (
+      <nav className={AdminClass.of('page-tabs')}>
+        {tabs.map((tab) => (
+          <AdminLink key={tab.href} href={tab.href} className={AdminClass.of('page-tabs__tab')}
+            aria-current={tab.href === this.activeTab.href ? 'page' : undefined}>
+            {tab.label}
+          </AdminLink>
+        ))}
+      </nav>
+    ) : null;
 
     return (
       <div className="w-full animate-in fade-in duration-700">
-        {/* Plugins Header */}
-        <div className={`sticky top-0 z-30 border-b backdrop-blur transition-all duration-300 ${
-          theme === ThemeMode.DARK
-            ? 'bg-slate-950/80 border-slate-800/50'
-            : 'bg-white/90 border-slate-100'
-        }`}>
-          <div className="w-full px-6 lg:px-8 py-4">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-              <div className="space-y-0.5">
-                <h1 className={`text-xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
-                  {this.isPluginDetail ? AdminI18n.t('plugins.detail.pluginDetail') : this.activeTab.label}
-                </h1>
-                <p className={`text-xs font-medium max-w-2xl ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
-                  {isMarketplace
-                    ? AdminI18n.t('plugins.detail.discoverAndInstallPowerUps')
-                    : isHealth
-                      ? AdminI18n.t('plugins.detail.monitorPluginHealthHeldCapability')
-                      : AdminI18n.t('plugins.detail.manageYourExistingInstallationUpdates')}
-                </p>
-              </div>
-
-              <div className={`flex p-1 rounded-xl border transition-all duration-300 ${
-                theme === ThemeMode.DARK
-                  ? 'bg-slate-900/50 border-slate-800 backdrop-blur'
-                  : 'bg-slate-100/80 border-slate-200/60 shadow-sm'
-              }`}>
-                {tabs.map(tab => {
-                  const isActive = tab.href === AdminConstants.ROUTES.PLUGINS.INSTALLED ? isInstalled : (tab.href === AdminConstants.ROUTES.PLUGINS.HEALTH ? isHealth : (tab.href === AdminConstants.ROUTES.PLUGINS.MARKETPLACE ? isMarketplace : false));
-
-                  return (
-                    <AdminLink
-                      key={tab.href}
-                      href={tab.href}
-                      className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-semibold transition-all duration-300 ${
-                        isActive
-                          ? (theme === ThemeMode.DARK
-                              ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/20'
-                              : 'bg-white text-indigo-600 shadow-sm ring-1 ring-slate-200/50')
-                          : (theme === ThemeMode.DARK
-                              ? 'text-slate-500 hover:text-slate-300'
-                              : 'text-slate-500 hover:text-slate-900 hover:bg-white/50')
-                      }`}
-                    >
-                      {React.cloneElement(tab.icon as ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
-                      <span className=" text-[12px] font-medium">{tab.label}</span>
-                    </AdminLink>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="w-full px-6 lg:px-8 pt-6 space-y-6 pb-6">
-          <div className="relative">
-            {this.children}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className={`p-6 border-t mt-auto ${
-          theme === ThemeMode.DARK ? 'bg-slate-950/20 border-slate-800' : 'bg-slate-50/50 border-slate-100'
-        }`}>
-          <div className="w-full px-6 lg:px-8">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
-                    {AdminI18n.t('plugins.detail.pluginEcosystem')}
-                  </span>
-                </div>
-                <p className="text-[10px] font-semibold text-slate-400">{AdminI18n.t('plugins.detail.expandYourSystemCapabilitiesWith')}</p>
-              </div>
-
-              <div className="flex items-center gap-4 text-[12px] font-medium text-slate-400">
-                 {/* The "Documentation" link pointed at docs.fromcode.com, which does not resolve. */}
-                 <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">{AdminI18n.t('plugins.detail.github')}</a>
-              </div>
-            </div>
-          </div>
-        </div>
+        <CompactPageHeader title={this.activeTab.label} subtitle={subtitle} actions={nav} />
+        <div className="w-full p-6">{this.children}</div>
       </div>
     );
   }

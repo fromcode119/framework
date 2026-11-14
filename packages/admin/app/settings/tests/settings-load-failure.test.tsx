@@ -90,7 +90,7 @@ describe('settings pages: a failed load is visible and blocks Save', () => {
       expect(body).not.toContain('10080');
     });
 
-    it('does not render the Update Security control on the Settings tab after a failed load', async () => {
+    it('does not offer Save on the Settings tab after a failed load', async () => {
       apiGet.mockRejectedValue(new Error('Network request failed'));
 
       withRuntime(<SecuritySettingsPage />);
@@ -104,11 +104,11 @@ describe('settings pages: a failed load is visible and blocks Save', () => {
         expect(screen.getByText('Security settings could not be loaded')).not.toBeNull();
       });
 
-      expect(screen.queryByText('Update Security')).toBeNull();
+      expect(screen.queryByText('Save')).toBeNull();
       expect(apiPut).not.toHaveBeenCalled();
     });
 
-    it('renders the Save control once a load has actually succeeded', async () => {
+    it('offers Save once a load has succeeded and something was changed', async () => {
       apiGet.mockResolvedValue({
         two_factor_enabled: 'false',
         rate_limit_max: '250',
@@ -123,8 +123,12 @@ describe('settings pages: a failed load is visible and blocks Save', () => {
       });
 
       fireEvent.click(screen.getByText('Settings'));
+      await waitFor(() => expect(screen.getByDisplayValue('250')).not.toBeNull());
+      // Nothing differs from what was read, so there is nothing to save yet.
+      expect(screen.queryByText('Save')).toBeNull();
+      fireEvent.change(screen.getByDisplayValue('250'), { target: { value: '300' } });
       await waitFor(() => {
-        expect(screen.getByText('Update Security')).not.toBeNull();
+        expect(screen.getByText('Save')).not.toBeNull();
       });
     });
   });
@@ -140,7 +144,7 @@ describe('settings pages: a failed load is visible and blocks Save', () => {
       });
       expect(screen.getByText('502: Bad gateway')).not.toBeNull();
       // The whole form — including the auth/registration toggles and the UTC timezone seed — stays out.
-      expect(screen.queryByText('Save Changes')).toBeNull();
+      expect(screen.queryByText('Save')).toBeNull();
       expect(container.textContent || '').not.toContain('UTC');
       expect(settingsUpdate).not.toHaveBeenCalled();
     });

@@ -30,9 +30,9 @@ export class FieldLockedRow extends PureReactor {
     const text = String(this.value ?? '').trim();
     const description = String(this.description || '').trim();
     return (
-      <div>
+      <div className="fc-field-locked">
         {!this.hideLabel || description ? (
-          <div className="mb-1 flex min-h-[22px] items-center gap-1">
+          <div className="fc-field-head mb-1 flex min-h-[22px] items-center gap-1">
             {!this.hideLabel && <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>}
             {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} />}
           </div>

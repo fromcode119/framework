@@ -5,8 +5,7 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Select } from '@/components/ui/view/select.client';
-import { FrameworkIcons } from '@fromcode119/react';
-import { SettingRow } from '@/app/settings/localization/setting-row';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { CountryCatalog } from '@/components/collection/fields/country-catalog';
 import { PlatformCountryDescription } from '@/lib/settings/platform-country-description';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -47,7 +46,6 @@ export class MeasurementSystemCard extends PureReactor {
       <Card title={AdminI18n.t('settings.localization.regionUnits')}>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.localization.country')}
           description={AdminI18n.t('settings.localization.theCountryThisSiteOperates', { countryInEffect: this.countryInEffect })}
         >
@@ -63,7 +61,6 @@ export class MeasurementSystemCard extends PureReactor {
         </SettingRow>
         <SettingRow
           theme={this.theme}
-          icon={FrameworkIcons.Globe}
           title={AdminI18n.t('settings.localization.measurementSystem')}
           description={AdminI18n.t('settings.localization.unitsUsedAcrossThePlatform')}
         >

@@ -40,11 +40,7 @@ export interface IPluginDetailPageModel {
   plugin: ILoadedPlugin | null;
   sandboxSettings: IPluginSandboxSettings;
   setSandboxSettings: (value: IPluginSandboxSettings) => void;
-  setSettingsDirty: (value: boolean) => void;
-  setSettingsSaving: (value: boolean) => void;
-  settingsDirty: boolean;
   settingsFormRef: RefObject<IPluginSettingsFormHandle | null>;
-  settingsSaving: boolean;
   /** The plugin offers settings to change, so Save, Export and Reset mean something. */
   settingsHasFields: boolean;
   setSettingsHasFields: (value: boolean) => void;

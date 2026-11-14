@@ -613,7 +613,13 @@
       "none": "Hindi naka-save sa person field",
       "missing": "{{key}} (hindi na person field)",
       "manage": "Pamahalaan ang mga person field"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Mga hindi na-save na pagbabago",
+      "discard": "Itapon",
+      "save": "I-save"
+    },
+    "dropToInstall": "I-drop ang file para i-install ito"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Hindi na-import: {{reason}}",
       "awaitingApproval": "Naghihintay ng pag-apruba",
       "reviewAndApprove": "Suriin at aprubahan",
-      "waitsForYourApproval": "Nailagay na, at naghihintay ng iyong pag-apruba sa hinihingi nito."
+      "waitsForYourApproval": "Nailagay na, at naghihintay ng iyong pag-apruba sa hinihingi nito.",
+      "tabAll": "Lahat",
+      "tabOff": "Naka-off",
+      "tabUpdates": "May update",
+      "tabErrors": "May error",
+      "details": "Mga detalye",
+      "installedOnThePlatform": "Naka-install sa platform"
     },
     "upload": {
       "name": "Pangalan: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Nakopya",
       "pageSubtitle": "Mga panlabas na serbisyong ginagamit ng workspace na ito. Naka-encrypt ang mga secret at hindi na ipapakita ulit.",
       "ownerPlatform": "Platform",
-      "save": "I-save",
       "saving": "Sine-save…",
       "more": "Higit pa",
       "oneProviderAtATime": "Isang provider lang sa bawat pagkakataon. Papalitan ito kapag pumili ng iba.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Itakda ang pangalan ng wika + ISO code, pagkatapos ay i-enable o i-disable ang bawat locale.",
       "noLocalesConfiguredAddOne": "Walang naka-configure na locale. Magdagdag sa ibaba; walang maiimbak hangga't hindi ka nagse-save.",
       "languageNameEGEnglish": "Pangalan ng wika (hal. English)",
+      "pickLanguage": "Pumili ng wika",
       "enabled": "Naka-enable",
       "remove": "Alisin",
       "addLocale": "Magdagdag ng Locale",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefix ng Path (/bg/...)",
       "noLocaleInUrl": "Walang Locale sa URL",
       "selectLocaleUrlStrategy": "Pumili ng estratehiya ng locale sa URL",
-      "isoCodeExample": "ISO code (hal. en, en-gb)",
       "consoleLanguage": "Wika ng console",
       "platformConsoleLanguageHint": "Ang wikang ginagamit ng console kapag walang napiling site. Gagamitin ito ng site na hindi pa pumipili ng sarili nitong wika ng console.",
       "consoleLanguageSaved": "Na-save na ang wika ng console."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Tatanggihan: ang naka-install na theme ay mula sa {{installed}}, ang package na ito ay mula sa {{incoming}}.",
     "notAvailableHere": "Walang theme na \"{{slug}}\" dito",
     "notAvailableHereHelp": "Hindi makita ng site na ito ang theme na may ganoong pangalan. Nakalista ang mga theme nito sa Themes; ang platform admin ang nag-a-assign ng mga theme sa mga site mula sa Sites.",
-    "manageThemes": "Pamahalaan ang mga Theme"
+    "manageThemes": "Pamahalaan ang mga Theme",
+    "activeTheme": "Aktibong tema",
+    "otherThemes": "Iba pang tema",
+    "noActiveTheme": "Walang aktibong tema"
   },
   "media": {
     "failedToCreateFolder": "Hindi nagawa ang folder",

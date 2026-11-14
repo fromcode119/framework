@@ -613,7 +613,13 @@
       "none": "لا يُحفظ في حقل شخص",
       "missing": "{{key}} (لم يعد حقل شخص)",
       "manage": "إدارة حقول الأشخاص"
-    }
+    },
+    "saveBar": {
+      "unsaved": "تغييرات غير محفوظة",
+      "discard": "تجاهل",
+      "save": "حفظ"
+    },
+    "dropToInstall": "أفلت الملف لتثبيته"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "فشل الاستيراد: {{reason}}",
       "awaitingApproval": "بانتظار الموافقة",
       "reviewAndApprove": "المراجعة والموافقة",
-      "waitsForYourApproval": "تم وضعها، وهي بانتظار موافقتك على ما تطلبه."
+      "waitsForYourApproval": "تم وضعها، وهي بانتظار موافقتك على ما تطلبه.",
+      "tabAll": "الكل",
+      "tabOff": "متوقفة",
+      "tabUpdates": "بها تحديث",
+      "tabErrors": "بها أخطاء",
+      "details": "التفاصيل",
+      "installedOnThePlatform": "مثبتة على المنصة"
     },
     "upload": {
       "name": "الاسم: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "تم النسخ",
       "pageSubtitle": "الخدمات الخارجية التي تستخدمها مساحة العمل هذه. تُشفَّر البيانات السرية ولا تُعرض مرة أخرى.",
       "ownerPlatform": "المنصة",
-      "save": "حفظ",
       "saving": "جارٍ الحفظ…",
       "more": "المزيد",
       "oneProviderAtATime": "مزوّد واحد فقط في كل مرة. اختيار مزوّد آخر يحلّ محله.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "حدّد اسم اللغة ورمز ISO، ثم فعّل كل لغة أو عطّلها.",
       "noLocalesConfiguredAddOne": "لا توجد لغات مُعدّة. أضف لغة أدناه؛ لن يُحفظ شيء حتى تنقر على حفظ.",
       "languageNameEGEnglish": "اسم اللغة (مثل English)",
+      "pickLanguage": "اختر لغة",
       "enabled": "مفعّلة",
       "remove": "إزالة",
       "addLocale": "إضافة لغة",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "بادئة المسار (/bg/...)",
       "noLocaleInUrl": "بدون لغة في الرابط",
       "selectLocaleUrlStrategy": "اختر طريقة تضمين اللغة في الرابط",
-      "isoCodeExample": "رمز ISO (مثل en أو en-gb)",
       "consoleLanguage": "لغة لوحة التحكم",
       "platformConsoleLanguageHint": "اللغة التي تستخدمها لوحة التحكم عند عدم تحديد أي موقع. ويستخدمها أي موقع لم يختر لغة لوحة تحكم خاصة به.",
       "consoleLanguageSaved": "تم حفظ لغة لوحة التحكم."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "سيُرفض: القالب المثبّت من {{installed}}، وهذه الحزمة من {{incoming}}.",
     "notAvailableHere": "لا يوجد قالب \"{{slug}}\" هنا",
     "notAvailableHereHelp": "لا يمكن لهذا الموقع رؤية قالب بهذا الاسم. قوالبه مدرجة ضمن القوالب، ويعيّن مسؤول المنصة القوالب للمواقع من صفحة المواقع.",
-    "manageThemes": "إدارة القوالب"
+    "manageThemes": "إدارة القوالب",
+    "activeTheme": "السمة النشطة",
+    "otherThemes": "سمات أخرى",
+    "noActiveTheme": "لا توجد سمة نشطة"
   },
   "media": {
     "failedToCreateFolder": "تعذّر إنشاء المجلد",

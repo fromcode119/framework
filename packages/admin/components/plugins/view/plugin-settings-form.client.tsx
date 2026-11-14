@@ -1,23 +1,23 @@
-import { ThemeMode } from '@fromcode119/core/client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
-import { ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
 import type { IPluginSettingsFormHandle } from '@/components/plugins/interfaces/plugin-settings-form-handle.interface';
 import { PluginSettingsFormActions } from '@/components/plugins/view/plugin-settings-form-actions.client';
 import { PluginSettingsEmpty } from '@/components/plugins/view/plugin-settings-empty.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
+import { Card } from '@/components/ui/view/card.client';
+import { SettingsSaveBar } from '@/components/ui/view/settings-save-bar.client';
 
 /**
- * A plugin's settings, rendered from the schema the plugin itself declares.
+ * A plugin's settings, rendered from the schema the plugin itself declares — as the same rows every
+ * settings page has (label on the left, the control on the right; `fc-settings-fields` in settings.css)
+ * and saved through the same bar at the foot of the page, which shows only while something differs.
  *
  * The top of the chain: the lifecycle and the markup. What the form knows and what it can do live in
  * the links below — see `PluginSettingsFormState`.
  */
 export class PluginSettingsForm extends PluginSettingsFormActions implements IPluginSettingsFormHandle {
-  /** The card the fields sit in, below the page's tab bands — the same card as every other plugin tab. */
-  static readonly CARD = 'rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-900/40';
-
   componentDidMount(): void {
     this.loadSettings();
     this.onStateChange?.(this.isDirty, this.saving, this.hasFields);
@@ -62,45 +62,41 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
     }
 
     if (!schema || !schema.fields || schema.fields.length === 0) {
-      return <div className="w-full p-6"><section className={PluginSettingsForm.CARD}><PluginSettingsEmpty waiting={Boolean(this.waiting)} /></section></div>;
+      return <div className="w-full p-6"><Card noPadding><PluginSettingsEmpty waiting={Boolean(this.waiting)} /></Card></div>;
     }
 
     const visibleFields = this.visibleFields;
     const tabs = this.groupTabs;
     const current = this.currentTabId;
-    const dark = theme === ThemeMode.DARK;
-    const currentTab = tabs.find((tab: any) => tab.id === current);
+    // The tab bar already names the open tab; a lone tab has no bar, so its name heads the card.
+    const heading = tabs.length === 1 ? tabs[0].label : undefined;
 
     return (
-      <form id={this.formId} onSubmit={this.handleSubmit}>
+      <form id={this.formId} onSubmit={this.handleSubmit} className="w-full p-6">
         {/* hidden file input for import */}
         <input ref={this.importInputRef} type="file" accept=".json" onChange={this.handleImport} className="hidden" />
 
-        {/* The group's own tabs: a second band under the page's tabs, like the type row on Integrations. */}
         {tabs.length > 1 ? (
-          <div className={`flex gap-6 overflow-x-auto [scrollbar-width:none] border-b px-6 lg:px-8 text-[13px] ${dark ? 'border-slate-800 bg-slate-950/60' : 'border-slate-200 bg-slate-50'}`}>
+          <nav className={AdminClass.of('ext-tabs')}>
             {tabs.map((tab: any) => (
               <button type="button" key={tab.id} onClick={() => this.selectTab(tab.id)} aria-current={tab.id === current ? 'page' : undefined}
-                className={`-mb-px whitespace-nowrap border-b-2 py-2.5 transition-colors ${tab.id === current
-                  ? (dark ? 'border-indigo-300 text-white' : 'border-indigo-500 text-slate-900')
-                  : (dark ? 'border-transparent text-slate-400 hover:text-slate-200' : 'border-transparent text-slate-500 hover:text-slate-800')}`}>
+                className={AdminClass.of('ext-tabs__tab')}>
                 {tab.label}
               </button>
             ))}
-          </div>
+          </nav>
         ) : null}
 
-        <div className="w-full p-6">
-          <section className={`space-y-4 p-6 ${PluginSettingsForm.CARD}`}>
-            {currentTab ? <h2 className={`text-base font-semibold ${dark ? 'text-white' : 'text-slate-900'}`}>{currentTab.label}</h2> : null}
-            {status && (
-              <div className={`flex items-center gap-3 rounded-xl border p-3 ${status.type === NotificationType.SUCCESS ? 'border-emerald-200 bg-emerald-50 text-emerald-700' : 'border-rose-200 bg-rose-50 text-rose-700'}`}>
-                {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
-                <p className="text-sm font-semibold">{status.message}</p>
-              </div>
-            )}
-            {this.saveRefusal ? <p role="alert" className="text-xs font-semibold text-rose-600 dark:text-rose-400">{this.saveRefusal}</p> : null}
-            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+        {status && (
+          <div role="status" className={`${AdminClass.of('ext-alert')} mb-3 ${status.type === NotificationType.SUCCESS ? AdminClass.of('ext-alert--ok') : AdminClass.of('ext-alert--danger')}`}>
+            {status.type === NotificationType.SUCCESS ? <FrameworkIcons.Check size={16} /> : <FrameworkIcons.Alert size={16} />}
+            <span>{status.message}</span>
+          </div>
+        )}
+        {this.saveRefusal ? <p role="alert" className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')} mb-3`}>{this.saveRefusal}</p> : null}
+
+        <Card noPadding title={heading}>
+          <div className={AdminClass.of('settings-fields')}>
               {visibleFields.map((field: any) => {
                 const hasSavedSecret = field.type === 'password' && this.savedSecretFields.has(field.name);
                 // Keep the plugin's own description (it can carry what to paste elsewhere) and add that a value is
@@ -127,9 +123,10 @@ export class PluginSettingsForm extends PluginSettingsFormActions implements IPl
                   />
                 );
               })}
-            </div>
-          </section>
-        </div>
+          </div>
+        </Card>
+
+        <SettingsSaveBar dirty={this.isDirty} saving={this.saving} onSave={this.handleSave} onDiscard={this.discardChanges} />
       </form>
     );
   }

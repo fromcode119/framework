@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { bound, prop, state } from '@fromcode119/react-class-components';
-import { Button } from '@/components/ui/view/button.client';
-import { FrameworkIcons } from '@fromcode119/react';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
@@ -65,13 +63,7 @@ export class PlatformScopeGate extends AdminComponent {
         {this.hostLocked ? (
           <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.locked')}</span>
         ) : this.canManagePlatform ? (
-          <Button
-            onClick={this.openPlatformScope}
-            icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
-            className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
-          >
-            {AdminI18n.t('ui.scopeGate.open')}
-          </Button>
+          <button type="button" className="fc-scope-notice__go" onClick={this.openPlatformScope}>{AdminI18n.t('ui.scopeGate.open')}</button>
         ) : null}
       </div>
     );

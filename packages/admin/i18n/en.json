@@ -613,7 +613,13 @@
       "none": "Not saved to a person field",
       "missing": "{{key}} (no longer a person field)",
       "manage": "Manage person fields"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Unsaved changes",
+      "discard": "Discard",
+      "save": "Save"
+    },
+    "dropToInstall": "Drop the file to install it"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Import failed: {{reason}}",
       "awaitingApproval": "Waiting for approval",
       "reviewAndApprove": "Review and approve",
-      "waitsForYourApproval": "Placed, and waiting for your approval of what it asks for."
+      "waitsForYourApproval": "Placed, and waiting for your approval of what it asks for.",
+      "tabAll": "All",
+      "tabOff": "Off",
+      "tabUpdates": "With update",
+      "tabErrors": "With errors",
+      "details": "Details",
+      "installedOnThePlatform": "Installed on the platform"
     },
     "upload": {
       "name": "Name: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Copied",
       "pageSubtitle": "Outside services this workspace uses. Secrets are encrypted and never shown again.",
       "ownerPlatform": "Platform",
-      "save": "Save",
       "saving": "Saving…",
       "more": "More",
       "oneProviderAtATime": "One provider at a time. Choosing another one replaces it.",
@@ -2650,9 +2661,10 @@
       "saveFailed": "Save Failed",
       "failedToSaveLocalizationSettings": "Failed to save localization settings.",
       "localeRegistry": "Locale Registry",
-      "defineLanguageNameIsoCode": "Define language name + ISO code, then enable or disable each locale.",
+      "defineLanguageNameIsoCode": "Pick each language from the list; its name is filled in and can be changed. Then enable or disable each one.",
       "noLocalesConfiguredAddOne": "No locales configured. Add one below; nothing is stored until you save.",
       "languageNameEGEnglish": "Language name (e.g. English)",
+      "pickLanguage": "Choose a language",
       "enabled": "Enabled",
       "remove": "Remove",
       "addLocale": "Add Locale",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Path Prefix (/bg/...)",
       "noLocaleInUrl": "No Locale in URL",
       "selectLocaleUrlStrategy": "Select locale URL strategy",
-      "isoCodeExample": "ISO code (e.g. en, en-gb)",
       "consoleLanguage": "Console language",
       "platformConsoleLanguageHint": "The language this console speaks with no site selected. A site that has not chosen its own console language uses this one.",
       "consoleLanguageSaved": "The console language has been saved."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Will be refused: the installed theme is from {{installed}}, this package is from {{incoming}}.",
     "notAvailableHere": "No theme \"{{slug}}\" here",
     "notAvailableHereHelp": "This site cannot see a theme with that name. Its themes are listed under Themes; a platform admin assigns themes to sites from Sites.",
-    "manageThemes": "Manage Themes"
+    "manageThemes": "Manage Themes",
+    "activeTheme": "Active theme",
+    "otherThemes": "Other themes",
+    "noActiveTheme": "No theme is active"
   },
   "media": {
     "failedToCreateFolder": "Failed to create folder",

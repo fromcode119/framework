@@ -8,10 +8,12 @@ export class Card extends PureReactor {
   @prop declare className?: string;
   @prop declare noPadding?: boolean;
   @prop declare title?: string;
+  /** One line under the title saying what the card holds. */
+  @prop declare description?: ReactNode;
   @prop declare icon?: ReactNode;
 
   private get rest(): HTMLAttributes<HTMLDivElement> {
-    const { children, className, noPadding, title, icon, ...props } = this.props as Record<string, unknown>;
+    const { children, className, noPadding, title, description, icon, ...props } = this.props as Record<string, unknown>;
     return props as HTMLAttributes<HTMLDivElement>;
   }
 
@@ -28,7 +30,14 @@ export class Card extends PureReactor {
         // thumbnail inset in a padded box. The caller's padding now replaces the default.
         className={twMerge(`${AdminClass.SURFACE} text-[var(--card-foreground)]`, noPadding ? '' : 'p-4', className)}
       >
-        {this.title && <h3 className="mb-4 text-[14px] font-semibold tracking-tight text-[var(--card-foreground)]">{this.title}</h3>}
+        {/* The head's look is `settings.css` (`fc-card__*`), so a card holding setting rows and any other
+            card share one title style. */}
+        {this.title ? (
+          <div className={AdminClass.of('card__head')}>
+            <h3 className={AdminClass.of('card__title')}>{this.title}</h3>
+            {this.description ? <p className={AdminClass.of('card__desc')}>{this.description}</p> : null}
+          </div>
+        ) : null}
         {this.children}
       </div>
     );

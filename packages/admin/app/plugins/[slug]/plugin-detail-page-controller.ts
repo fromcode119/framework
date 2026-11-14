@@ -50,8 +50,6 @@ export class PluginDetailPageController {
     const [installOperation, setInstallOperation] = useState<IPluginInstallOperation | null>(null);
     const [isDeleting, setIsDeleting] = useState(false);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-    const [settingsDirty, setSettingsDirty] = useState(false);
-    const [settingsSaving, setSettingsSaving] = useState(false);
     const [settingsHasFields, setSettingsHasFields] = useState(false);
     const settingsFormRef = useRef<PluginSettingsForm>(null);
     const [showDefinition, setShowDefinition] = useState(false);
@@ -285,11 +283,8 @@ export class PluginDetailPageController {
       plugin,
       sandboxSettings,
       setSandboxSettings,
-      setSettingsDirty,
-      setSettingsSaving,
-      settingsDirty,
       settingsFormRef,
-      settingsSaving, settingsHasFields, setSettingsHasFields,
+      settingsHasFields, setSettingsHasFields,
       setShowDefinition,
       setShowDeleteConfirm,
       showDefinition,

@@ -613,7 +613,13 @@
       "none": "Nu se salvează într-un câmp de persoană",
       "missing": "{{key}} (nu mai este câmp de persoană)",
       "manage": "Gestionați câmpurile de persoană"
-    }
+    },
+    "saveBar": {
+      "unsaved": "Modificări nesalvate",
+      "discard": "Renunță",
+      "save": "Salvează"
+    },
+    "dropToInstall": "Plasați fișierul pentru a-l instala"
   },
   "shell": {
     "site": {
@@ -1477,7 +1483,13 @@
       "importFailed": "Importul a eșuat: {{reason}}",
       "awaitingApproval": "În așteptarea aprobării",
       "reviewAndApprove": "Examinează și aprobă",
-      "waitsForYourApproval": "Plasat și în așteptarea aprobării dvs. pentru ceea ce solicită."
+      "waitsForYourApproval": "Plasat și în așteptarea aprobării dvs. pentru ceea ce solicită.",
+      "tabAll": "Toate",
+      "tabOff": "Oprite",
+      "tabUpdates": "Cu actualizare",
+      "tabErrors": "Cu erori",
+      "details": "Detalii",
+      "installedOnThePlatform": "Instalate pe platformă"
     },
     "upload": {
       "name": "Nume: {{value}}",
@@ -2234,7 +2246,6 @@
       "setupAddressCopied": "Copiat",
       "pageSubtitle": "Serviciile externe folosite de acest spațiu de lucru. Secretele sunt criptate și nu mai sunt afișate niciodată.",
       "ownerPlatform": "Platformă",
-      "save": "Salvează",
       "saving": "Se salvează…",
       "more": "Mai multe",
       "oneProviderAtATime": "Un singur furnizor odată. Alegerea altuia îl înlocuiește.",
@@ -2653,6 +2664,7 @@
       "defineLanguageNameIsoCode": "Definiți numele limbii și codul ISO, apoi activați sau dezactivați fiecare limbă.",
       "noLocalesConfiguredAddOne": "Nicio limbă configurată. Adăugați una mai jos; nimic nu este stocat până nu salvați.",
       "languageNameEGEnglish": "Numele limbii (ex. English)",
+      "pickLanguage": "Alegeți o limbă",
       "enabled": "Activat",
       "remove": "Elimină",
       "addLocale": "Adaugă limbă",
@@ -2688,7 +2700,6 @@
       "pathPrefixBg": "Prefix de cale (/bg/...)",
       "noLocaleInUrl": "Fără localizare în URL",
       "selectLocaleUrlStrategy": "Selectați strategia URL pentru localizare",
-      "isoCodeExample": "Cod ISO (de ex. en, en-gb)",
       "consoleLanguage": "Limba consolei",
       "platformConsoleLanguageHint": "Limba folosită de consolă când nu este selectat niciun site. Un site care nu și-a ales propria limbă a consolei o folosește pe aceasta.",
       "consoleLanguageSaved": "Limba consolei a fost salvată."
@@ -4247,7 +4258,10 @@
     "otherVendorRefused": "Va fi refuzată: tema instalată este de la {{installed}}, acest pachet este de la {{incoming}}.",
     "notAvailableHere": "Tema „{{slug}}” nu există aici",
     "notAvailableHereHelp": "Acest site nu are acces la o temă cu acest nume. Temele sale sunt listate la Teme; un administrator al platformei atribuie teme site-urilor din Site-uri.",
-    "manageThemes": "Gestionează temele"
+    "manageThemes": "Gestionează temele",
+    "activeTheme": "Temă activă",
+    "otherThemes": "Alte teme",
+    "noActiveTheme": "Nicio temă activă"
   },
   "media": {
     "failedToCreateFolder": "Dosarul nu a putut fi creat",
