@@ -362,7 +362,15 @@ html.dark {
 .fc-sites__delete { color: #dc2626; }
 .fc-sites__stack { display: flex; flex-direction: column; gap: 16px; }
 .fc-sites__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 12px; }
-.fc-sites__row-actions { display: flex; flex-wrap: nowrap; gap: 2px; justify-content: flex-end; }
+.fc-sites__row-actions {
+  display: flex;
+  /* Wrap. In the table these four fit on one line and nothing changes; in the stacked card on a phone
+     they do not, and `nowrap` pushed the row past the card's own left edge — "Manage" was drawn as
+     "anage" at 390px, measured at left:-19 inside a 305px column. */
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: flex-end;
+}
 .fc-sites__name { display: flex; flex-direction: column; gap: 2px; }
 .fc-sites__slug { font-weight: 600; font-size: 13px; }
 .fc-sites__id { font-size: 11px; opacity: 0.6; }
