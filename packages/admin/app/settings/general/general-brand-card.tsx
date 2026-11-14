@@ -4,7 +4,7 @@ import type { ChangeEvent, Dispatch, ReactNode, SetStateAction } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Card } from '@/components/ui/view/card.client';
 import { Input } from '@/components/ui/view/input.client';
-import { FrameworkIcons } from '@fromcode119/react';
+import { SettingRowWidth } from '@/components/ui/enums/setting-row-width.enum';
 import { SettingRow } from '@/components/ui/view/setting-row.client';
 import { DomainAliasesInput } from '@/app/settings/general/components/view/domain-aliases-input.client';
 import { AdminClass } from '@/lib/admin-class';
@@ -97,7 +97,7 @@ export class GeneralBrandCard extends PureReactor {
     const theme = this.theme;
     const settings = this.settings;
     return (
-      <Card title={AdminI18n.t('settings.general.brandIdentity')}>
+      <Card title={AdminI18n.t('settings.general.brandIdentity')} description={AdminI18n.t('settings.general.brandIdentityCardDescription')}>
         {this.shown('platform_name') && (
           <SettingRow
             theme={theme}
@@ -262,13 +262,15 @@ export class GeneralBrandCard extends PureReactor {
           theme={theme}
           title={AdminI18n.t('settings.general.visualCore')}
           description={AdminI18n.t('settings.general.chooseTheVisualStyleOf')}
+          width={SettingRowWidth.AUTO}
         >
-          <div className={`flex p-1 ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800 shadow-inner' : 'bg-slate-100/80 border border-slate-100 shadow-inner'}`}>
-            <button onClick={this.selectLight} className={`flex items-center gap-2 px-6 py-2 text-[12px] font-medium tracking-tight ${AdminClass.SURFACE} transition-all ${theme === ThemeMode.LIGHT ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-300'}`}>
-              <FrameworkIcons.Sun size={14} /> {AdminI18n.t('settings.general.light')}
+          {/* The same two-way switch as a section's page tabs. */}
+          <div className={AdminClass.of('page-tabs')} role="group">
+            <button type="button" onClick={this.selectLight} aria-pressed={theme === ThemeMode.LIGHT} className={AdminClass.of('page-tabs__tab')}>
+              {AdminI18n.t('settings.general.light')}
             </button>
-            <button onClick={this.selectDark} className={`flex items-center gap-2 px-6 py-2 text-[12px] font-medium tracking-tight rounded-xl transition-all ${theme === ThemeMode.DARK ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-indigo-600'}`}>
-              <FrameworkIcons.Moon size={14} /> {AdminI18n.t('settings.general.dark')}
+            <button type="button" onClick={this.selectDark} aria-pressed={theme === ThemeMode.DARK} className={AdminClass.of('page-tabs__tab')}>
+              {AdminI18n.t('settings.general.dark')}
             </button>
           </div>
         </SettingRow>

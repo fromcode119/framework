@@ -23,7 +23,8 @@ import { AdminIntegrationLocalizer } from '@core/plugin/services/admin/admin-int
  *   admin.collections.<collection>.sections.<heading-slug>.label         a field's `admin.section` heading
  *   admin.collections.<collection>.recordLinks.title | emptyHint        the related-records panel's words
  *   admin.collections.<collection>.recordLinks.parts.<term>.empty       what a section says while it holds no such record
- *   admin.settings.tabs.<id>, admin.settings.groups.<id>, admin.settings.fields.<field>.…   the settings form, same shape
+ *   admin.settings.tabs.<id>, admin.settings.groups.<id>, admin.settings.sections.<name>.label | description,
+ *   admin.settings.fields.<field>.…                    the settings form, same shape
  *   admin.widgets.<id>.label | description                              a dashboard widget
  *   admin.integrations.<type>…                                          Settings → Integrations (AdminIntegrationLocalizer)
  *
@@ -80,6 +81,7 @@ export class AdminSchemaLocalizer {
       groups: Array.isArray(schema.groups)
         ? schema.groups.map((group: any) => ({ ...group, label: this.text(pluginSlug, `admin.settings.groups.${group?.id}`, group?.label) }))
         : schema.groups,
+      sections: this.sections(pluginSlug, 'admin.settings.sections', schema.sections),
       fields: this.fields(pluginSlug, 'admin.settings.fields', schema.fields, 'admin.settings.sections'),
     };
   }

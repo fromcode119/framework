@@ -67,7 +67,7 @@ export class PluginsLayout extends AdminComponent {
     // A plugin's own page carries its own header (where you are, the plugin, its actions) and nothing
     // below it: the section header and the ecosystem footer belong to the lists.
     if (this.isPluginDetail) {
-      return <div className="flex w-full flex-col animate-in fade-in duration-500">{this.children}</div>;
+      return <div className={`flex w-full flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>{this.children}</div>;
     }
     const isMarketplace = this.isMarketplace;
     const isHealth = this.isHealth;
@@ -90,8 +90,9 @@ export class PluginsLayout extends AdminComponent {
     ) : null;
 
     return (
-      <div className="w-full animate-in fade-in duration-700">
-        <CompactPageHeader title={this.activeTab.label} subtitle={subtitle} actions={nav} />
+      // The marketplace is a gallery and keeps the full width; the lists read as the settings column.
+      <div className={`w-full animate-in fade-in duration-700 ${isMarketplace ? '' : AdminClass.of('settings-page')}`}>
+        <CompactPageHeader title={AdminI18n.t('nav.items.plugins')} subtitle={subtitle} actions={nav} />
         <div className="w-full p-6">{this.children}</div>
       </div>
     );

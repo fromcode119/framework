@@ -637,7 +637,8 @@
       "choose": "Valige sait",
       "platformHint": "Saiti pole — pistikprogrammid, teemad, allikad, saidid, platvormi seaded",
       "viaRole": "platvormi rolli kaudu",
-      "switch": "Vaheta saiti"
+      "switch": "Vaheta saiti",
+      "lockedShort": "See konsool on ühe saidi jaoks."
     },
     "account": {
       "singleSite": "Sait, mida see juurutus teenindab",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Sellele saidile saadaval",
       "pluginsThePlatformOffersTo": "Pistikprogrammid, mida platvorm saitidele pakub. Sisselülitamine lisab selle ainult sellele saidile.",
       "loading": "Laadimine…",
-      "thePlatformOffersNoPlugins": "Platvorm ei paku veel saitidele lisamiseks ühtegi pistikprogrammi.",
       "synchronizingGlobalMarketplaceCatalog": "Üldise turu kataloogi sünkroonimine",
       "pluginFailuresDetected": "Tuvastati pistikprogrammide tõrked",
       "searchInstalledPlugins": "Otsi paigaldatud pistikprogramme...",
       "inspecting": "Kontrollimine...",
       "uploadZipTarGz": "Laadi üles (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Pistikprogrammide paigaldamine kõigile saitidele, nende uuendamine ja eemaldamine ning nende sisselülitamine, mida platvorm saitidele ei paku,",
       "approvingHeldPlugins": "Ootel pistikprogrammi taotletud õiguste kinnitamine",
       "dragAndDropPluginZip": "Lohistage pistikprogrammi `.zip` või `.tar.gz` siia või klõpsake üleslaadimiseks.",
       "tryADifferentSearchTerm2": "Proovige muud otsingusõna või laadige üles uus pistikprogramm.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Uuendusega",
       "tabErrors": "Vigadega",
       "details": "Üksikasjad",
-      "installedOnThePlatform": "Platvormile paigaldatud"
+      "platformNote": "Kõigi saitide jaoks paigaldatakse platvormil."
     },
     "upload": {
       "name": "Nimi: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Valige oma halduspaneeli visuaalne stiil.",
       "openPlatformScope": "Ava platvormi ulatus",
       "loadingGeneralSettings": "Üldseadete laadimine...",
-      "generalConfiguration": "Üldine konfiguratsioon",
       "brandIdentitySystemPreferences": "Brändi identiteet ja süsteemi eelistused",
       "saveChanges": "Salvesta muudatused",
       "generalSettingsCouldNotBe": "Üldseadeid ei õnnestunud laadida",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API aadress (API URL)",
       "apiUrlDescription": "Platvormi API avalik aadress. Lüüs suunab kõik selle hosti päringud API-le, mitte saidile.",
-      "apiUrlExplanation": "Kasutage mõnda saidi enda aadressi (päringud lähevad selle /api teele) või eraldi hosti, näiteks api.example.com. Saidi uude domeeni kolimisel muutke ka seda: siia jäetud host lakkab saiti teenindamast. Tühjaks jätmisel kasutatakse aadressi, kust päring tuli."
+      "apiUrlExplanation": "Kasutage mõnda saidi enda aadressi (päringud lähevad selle /api teele) või eraldi hosti, näiteks api.example.com. Saidi uude domeeni kolimisel muutke ka seda: siia jäetud host lakkab saiti teenindamast. Tühjaks jätmisel kasutatakse aadressi, kust päring tuli.",
+      "brandIdentityCardDescription": "Mis on saidi nimi ja kuidas see brauseris ja e-kirjades välja näeb.",
+      "siteCardDescription": "Kas sait on avalik ja kas otsingumootorid võivad seda indekseerida.",
+      "regionalDefaultsCardDescription": "Ajavöönd ja kellaaja vorming konsoolis.",
+      "notificationsCardDescription": "Kuhu saadetakse sisevormid ja süsteemi hoiatused.",
+      "searchEnginesCardDescription": "Kas platvormi enda aadressid ilmuvad otsingumootorites.",
+      "frontendAuthCardDescription": "Kuidas külastajad saidil ja rakenduses sisse logivad ja registreeruvad.",
+      "signUpEmailCardDescription": "E-kiri, millega uus konto oma aadressi kinnitab.",
+      "usageReportCardDescription": "E-postiga saadetav kasutusaruanne ja kuhu see läheb."
     },
     "appearance": {
       "appearance": "Välimus",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Kontrollige ühendust turuga või proovige hiljem uuesti.",
     "inThisSite": "Selles saidis",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Puhas ja kaasaegne teema teie Fromcode'i esiliidesele.",
     "officialTheme": "Ametlik teema",
     "addToThisSite": "Lisa sellele saidile",
     "installNow": "Paigalda kohe",

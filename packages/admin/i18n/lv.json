@@ -637,7 +637,8 @@
       "choose": "Izvēlieties vietni",
       "platformHint": "Bez vietnes — spraudņi, motīvi, avoti, vietnes, platformas iestatījumi",
       "viaRole": "ar platformas lomu",
-      "switch": "Pārslēgt vietni"
+      "switch": "Pārslēgt vietni",
+      "lockedShort": "Šī konsole ir vienai vietnei."
     },
     "account": {
       "singleSite": "Vietne, ko apkalpo šī izvietošana",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Pieejams šai vietnei",
       "pluginsThePlatformOffersTo": "Spraudņi, ko platforma piedāvā vietnēm. Ieslēdzot spraudni, tas tiek pievienots tikai šai vietnei.",
       "loading": "Ielādē…",
-      "thePlatformOffersNoPlugins": "Platforma vēl nepiedāvā vietnēm nevienu spraudni.",
       "synchronizingGlobalMarketplaceCatalog": "Sinhronizē globālo tirgus katalogu",
       "pluginFailuresDetected": "Konstatētas spraudņu kļūmes",
       "searchInstalledPlugins": "Meklēt instalētos spraudņus...",
       "inspecting": "Pārbauda...",
       "uploadZipTarGz": "Augšupielādēt (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Spraudņu instalēšana visām vietnēm, to atjaunināšana un noņemšana, kā arī to spraudņu ieslēgšana, ko platforma nepiedāvā vietnēm,",
       "approvingHeldPlugins": "Aizturēta spraudņa pieprasījumu apstiprināšana",
       "dragAndDropPluginZip": "Velciet un nometiet šeit spraudņa `.zip` vai `.tar.gz` failu vai noklikšķiniet, lai augšupielādētu.",
       "tryADifferentSearchTerm2": "Izmēģiniet citu meklēšanas vaicājumu vai augšupielādējiet jaunu spraudni.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Ar atjauninājumu",
       "tabErrors": "Ar kļūdām",
       "details": "Detaļas",
-      "installedOnThePlatform": "Instalēti platformā"
+      "platformNote": "Instalēšana visām vietnēm notiek platformā."
     },
     "upload": {
       "name": "Nosaukums: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Izvēlieties administrācijas paneļa vizuālo stilu.",
       "openPlatformScope": "Atvērt platformas tvērumu",
       "loadingGeneralSettings": "Ielādē vispārīgos iestatījumus...",
-      "generalConfiguration": "Vispārīgā konfigurācija",
       "brandIdentitySystemPreferences": "Zīmola identitāte un sistēmas preferences",
       "saveChanges": "Saglabāt izmaiņas",
       "generalSettingsCouldNotBe": "Neizdevās ielādēt vispārīgos iestatījumus",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API adrese (API URL)",
       "apiUrlDescription": "Platformas API publiskā adrese. Vārteja visus pieprasījumus šim resursdatoram sūta uz API, nevis uz vietni.",
-      "apiUrlExplanation": "Izmantojiet kādu no vietnes adresēm (pieprasījumi nonāk tās /api ceļā) vai atsevišķu resursdatoru, piemēram, api.example.com. Pārceļot vietni uz jaunu domēnu, mainiet arī šo: šeit atstāts resursdators pārstāj apkalpot vietni. Tukšs izmanto adresi, no kuras nāca pieprasījums."
+      "apiUrlExplanation": "Izmantojiet kādu no vietnes adresēm (pieprasījumi nonāk tās /api ceļā) vai atsevišķu resursdatoru, piemēram, api.example.com. Pārceļot vietni uz jaunu domēnu, mainiet arī šo: šeit atstāts resursdators pārstāj apkalpot vietni. Tukšs izmanto adresi, no kuras nāca pieprasījums.",
+      "brandIdentityCardDescription": "Kā sauc vietni un kā tā izskatās pārlūkā un e-pastos.",
+      "siteCardDescription": "Vai vietne ir publiska un vai meklētāji drīkst to indeksēt.",
+      "regionalDefaultsCardDescription": "Laika josla un laika formāts konsolē.",
+      "notificationsCardDescription": "Kur nonāk iekšējās veidlapas un sistēmas brīdinājumi.",
+      "searchEnginesCardDescription": "Vai platformas pašas adreses parādās meklētājos.",
+      "frontendAuthCardDescription": "Kā apmeklētāji piesakās un reģistrējas vietnē un lietotnē.",
+      "signUpEmailCardDescription": "E-pasts, ar kuru jauns konts apstiprina adresi.",
+      "usageReportCardDescription": "Lietojuma pārskats pa e-pastu un kur tas nonāk."
     },
     "appearance": {
       "appearance": "Izskats",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Pārbaudiet savienojumu ar tirgu vai mēģiniet vēlāk vēlreiz.",
     "inThisSite": "Šajā vietnē",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Tīrs un moderns motīvs jūsu Fromcode priekšgalam.",
     "officialTheme": "Oficiālais motīvs",
     "addToThisSite": "Pievienot šai vietnei",
     "installNow": "Instalēt tagad",

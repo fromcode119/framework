@@ -23,6 +23,8 @@ export class FieldRendererHeader extends PureReactor {
   @prop declare localeSwitcher: (compact?: boolean) => ReactNode;
   /** The control that opens this field's explanation, when it is not already printed below. */
   @prop declare help?: ReactNode;
+  /** The description as a line under the name, on a settings row — see `FieldSummary`. */
+  @prop declare summary?: ReactNode;
 
   render(): ReactNode {
     const {
@@ -39,6 +41,7 @@ export class FieldRendererHeader extends PureReactor {
     return (
       <div className="fc-field-head flex items-center justify-between gap-3 mb-1 min-h-[22px]">
         {!field.admin?.hideLabel && (
+        <div className="min-w-0">
         <span className="flex min-w-0 items-center gap-1">
         <label className={UiFieldUtils.TEXT.LABEL}>
           {label}
@@ -46,6 +49,8 @@ export class FieldRendererHeader extends PureReactor {
         </label>
         {this.help}
         </span>
+        {this.summary}
+        </div>
         )}
 
         <div className="flex items-center gap-2">

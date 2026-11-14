@@ -637,7 +637,8 @@
       "choose": "Alegeți un site",
       "platformHint": "Fără site — pluginuri, teme, surse, site-uri, setări ale platformei",
       "viaRole": "prin rolul pe platformă",
-      "switch": "Comutare site"
+      "switch": "Comutare site",
+      "lockedShort": "Această consolă este pentru un singur site."
     },
     "account": {
       "singleSite": "Site-ul deservit de această instalare",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Disponibile pentru acest site",
       "pluginsThePlatformOffersTo": "Pluginuri oferite de platformă site-urilor. Activarea unuia îl adaugă doar pe acest site.",
       "loading": "Se încarcă…",
-      "thePlatformOffersNoPlugins": "Platforma nu oferă încă pluginuri pe care site-urile să le adauge.",
       "synchronizingGlobalMarketplaceCatalog": "Se sincronizează catalogul global al Marketplace-ului",
       "pluginFailuresDetected": "Au fost detectate erori ale pluginurilor",
       "searchInstalledPlugins": "Căutați pluginuri instalate...",
       "inspecting": "Se inspectează...",
       "uploadZipTarGz": "Încarcă (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instalarea pluginurilor pentru toate site-urile, actualizarea și eliminarea lor, precum și activarea celor pe care platforma nu le oferă site-urilor,",
       "approvingHeldPlugins": "Aprobarea solicitărilor unui plugin reținut",
       "dragAndDropPluginZip": "Trageți și plasați aici un plugin `.zip` sau `.tar.gz` ori faceți clic pentru a încărca.",
       "tryADifferentSearchTerm2": "Încercați alt termen de căutare sau încărcați un plugin nou.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Cu actualizare",
       "tabErrors": "Cu erori",
       "details": "Detalii",
-      "installedOnThePlatform": "Instalate pe platformă"
+      "platformNote": "Instalarea pentru toate site-urile se face în platformă."
     },
     "upload": {
       "name": "Nume: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Alegeți stilul vizual al panoului de administrare.",
       "openPlatformScope": "Deschide domeniul platformei",
       "loadingGeneralSettings": "Se încarcă setările generale...",
-      "generalConfiguration": "Configurație generală",
       "brandIdentitySystemPreferences": "Identitate de brand și preferințe de sistem",
       "saveChanges": "Salvează modificările",
       "generalSettingsCouldNotBe": "Setările generale nu au putut fi încărcate",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresa API (API URL)",
       "apiUrlDescription": "Adresa publică a API-ului platformei. Gateway-ul trimite fiecare cerere pentru această gazdă către API, nu către site.",
-      "apiUrlExplanation": "Folosiți una dintre adresele proprii ale site-ului (cererile merg pe calea /api) sau o gazdă dedicată, cum ar fi api.example.com. Când mutați site-ul pe un domeniu nou, modificați și aceasta: o gazdă lăsată aici nu mai servește site-ul. Gol folosește adresa de la care a venit cererea."
+      "apiUrlExplanation": "Folosiți una dintre adresele proprii ale site-ului (cererile merg pe calea /api) sau o gazdă dedicată, cum ar fi api.example.com. Când mutați site-ul pe un domeniu nou, modificați și aceasta: o gazdă lăsată aici nu mai servește site-ul. Gol folosește adresa de la care a venit cererea.",
+      "brandIdentityCardDescription": "Cum se numește site-ul și cum arată în browser și în e-mailuri.",
+      "siteCardDescription": "Dacă site-ul este live și dacă motoarele de căutare îl pot indexa.",
+      "regionalDefaultsCardDescription": "Fusul orar și formatul orei în consolă.",
+      "notificationsCardDescription": "Unde ajung formularele interne și alertele de sistem.",
+      "searchEnginesCardDescription": "Dacă adresele proprii ale platformei apar în motoarele de căutare.",
+      "frontendAuthCardDescription": "Cum se autentifică și se înregistrează vizitatorii pe site și în aplicație.",
+      "signUpEmailCardDescription": "E-mailul prin care un cont nou își confirmă adresa.",
+      "usageReportCardDescription": "Raportul de utilizare trimis prin e-mail și unde ajunge."
     },
     "appearance": {
       "appearance": "Aspect",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Verificați conexiunea la Marketplace sau încercați din nou mai târziu.",
     "inThisSite": "În acest site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "O temă curată și modernă pentru frontend-ul Fromcode.",
     "officialTheme": "Temă oficială",
     "addToThisSite": "Adaugă la acest site",
     "installNow": "Instalează acum",

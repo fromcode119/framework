@@ -637,7 +637,8 @@
       "choose": "Pasirinkite svetainę",
       "platformHint": "Be svetainės – įskiepiai, temos, šaltiniai, svetainės, platformos nustatymai",
       "viaRole": "per platformos vaidmenį",
-      "switch": "Perjungti svetainę"
+      "switch": "Perjungti svetainę",
+      "lockedShort": "Ši konsolė skirta vienai svetainei."
     },
     "account": {
       "singleSite": "Šio diegimo aptarnaujama svetainė",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Prieinami šiai svetainei",
       "pluginsThePlatformOffersTo": "Įskiepiai, kuriuos platforma siūlo svetainėms. Įjungtas įskiepis pridedamas tik prie šios svetainės.",
       "loading": "Įkeliama…",
-      "thePlatformOffersNoPlugins": "Platforma kol kas nesiūlo įskiepių svetainėms.",
       "synchronizingGlobalMarketplaceCatalog": "Sinchronizuojamas bendras parduotuvės katalogas",
       "pluginFailuresDetected": "Aptikta įskiepių klaidų",
       "searchInstalledPlugins": "Ieškoti įdiegtų įskiepių...",
       "inspecting": "Tikrinama...",
       "uploadZipTarGz": "Įkelti (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Įskiepių diegimas visoms svetainėms, jų atnaujinimas ir šalinimas bei svetainėms nesiūlomų įskiepių įjungimas,",
       "approvingHeldPlugins": "Sulaikyto įskiepio prašomų galimybių patvirtinimas",
       "dragAndDropPluginZip": "Nuvilkite įskiepio `.zip` arba `.tar.gz` failą čia arba spustelėkite, kad įkeltumėte.",
       "tryADifferentSearchTerm2": "Pabandykite kitą paieškos žodį arba įkelkite naują įskiepį.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Su atnaujinimu",
       "tabErrors": "Su klaidomis",
       "details": "Išsami informacija",
-      "installedOnThePlatform": "Įdiegta platformoje"
+      "platformNote": "Diegimas visoms svetainėms atliekamas platformoje."
     },
     "upload": {
       "name": "Pavadinimas: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Pasirinkite administravimo skydelio vaizdinį stilių.",
       "openPlatformScope": "Atidaryti platformos sritį",
       "loadingGeneralSettings": "Įkeliami bendrieji nustatymai...",
-      "generalConfiguration": "Bendroji konfigūracija",
       "brandIdentitySystemPreferences": "Prekės ženklo tapatybė ir sistemos nuostatos",
       "saveChanges": "Išsaugoti pakeitimus",
       "generalSettingsCouldNotBe": "Nepavyko įkelti bendrųjų nustatymų",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API adresas (API URL)",
       "apiUrlDescription": "Viešas platformos API adresas. Šliuzas visas šio pagrindinio kompiuterio užklausas siunčia į API, o ne į svetainę.",
-      "apiUrlExplanation": "Naudokite vieną iš svetainės adresų (užklausos keliauja į jos /api kelią) arba atskirą pagrindinį kompiuterį, pvz., api.example.com. Perkeldami svetainę į naują domeną, pakeiskite ir šį adresą: čia palikta sena reikšmė nustos aptarnauti svetainę. Palikus tuščią, naudojamas adresas, iš kurio atėjo užklausa."
+      "apiUrlExplanation": "Naudokite vieną iš svetainės adresų (užklausos keliauja į jos /api kelią) arba atskirą pagrindinį kompiuterį, pvz., api.example.com. Perkeldami svetainę į naują domeną, pakeiskite ir šį adresą: čia palikta sena reikšmė nustos aptarnauti svetainę. Palikus tuščią, naudojamas adresas, iš kurio atėjo užklausa.",
+      "brandIdentityCardDescription": "Kaip vadinasi svetainė ir kaip ji atrodo naršyklėje ir el. laiškuose.",
+      "siteCardDescription": "Ar svetainė veikia ir ar paieškos sistemos gali ją indeksuoti.",
+      "regionalDefaultsCardDescription": "Laiko juosta ir laiko formatas konsolėje.",
+      "notificationsCardDescription": "Kur siunčiamos vidinės formos ir sistemos įspėjimai.",
+      "searchEnginesCardDescription": "Ar pačios platformos adresai rodomi paieškos sistemose.",
+      "frontendAuthCardDescription": "Kaip lankytojai prisijungia ir registruojasi svetainėje ir programėlėje.",
+      "signUpEmailCardDescription": "El. laiškas, kuriuo nauja paskyra patvirtina adresą.",
+      "usageReportCardDescription": "Naudojimo ataskaita el. paštu ir kur ji siunčiama."
     },
     "appearance": {
       "appearance": "Išvaizda",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Patikrinkite ryšį su katalogu arba bandykite vėliau.",
     "inThisSite": "Šioje svetainėje",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Švari ir moderni tema jūsų Fromcode sąsajai.",
     "officialTheme": "Oficiali tema",
     "addToThisSite": "Pridėti prie šios svetainės",
     "installNow": "Įdiegti dabar",

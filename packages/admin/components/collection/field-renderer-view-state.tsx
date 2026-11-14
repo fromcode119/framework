@@ -30,6 +30,8 @@ export abstract class FieldRendererViewState extends Reactor {
   @prop declare onReadOnlyOverrideRequest?: (field: { name: string; label: string }) => void;
   @prop declare record?: Record<string, any>;
   @prop declare onPatch?: (partial: Record<string, any>) => void;
+  /** See `IFieldRendererProps.inlineDescription`. */
+  @prop declare inlineDescription?: boolean;
   /** Plugin registry from `ContextHooks.usePlugins()`, supplied by the thin functional shim. */
   @prop declare plugins: any;
   /** Owner of the collection being edited — resolved by the shim, used to link provenance to settings. */

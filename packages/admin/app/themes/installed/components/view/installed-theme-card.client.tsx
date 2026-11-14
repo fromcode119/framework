@@ -77,7 +77,7 @@ export class InstalledThemeCard extends PureReactor {
             {this.updateVersion ? <span className={`${pill} ${AdminClass.of('ext-pill--warn')}`}>{AdminI18n.t('themes.update')}</span> : null}
             {this.ownedBySite ? <span className={pill}>{AdminI18n.t('themes.thisSiteS')}</span> : null}
           </div>
-          <p className={AdminClass.of('ext-row__desc')} title={theme.description || undefined}>{theme.description || AdminI18n.t('themes.aCleanAndModernTheme')}</p>
+          {theme.description ? <p className={AdminClass.of('ext-row__desc')} title={theme.description}>{theme.description}</p> : null}
         </div>
 
         <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>

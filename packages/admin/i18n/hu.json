@@ -637,7 +637,8 @@
       "choose": "Válasszon webhelyet",
       "platformHint": "Nincs webhely — bővítmények, témák, források, webhelyek, platformbeállítások",
       "viaRole": "platformszerepkörön keresztül",
-      "switch": "Webhelyváltás"
+      "switch": "Webhelyváltás",
+      "lockedShort": "Ez a konzol egy webhelyhez tartozik."
     },
     "account": {
       "singleSite": "A telepítés által kiszolgált webhely",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Elérhető ehhez a webhelyhez",
       "pluginsThePlatformOffersTo": "A platform által a webhelyeknek kínált bővítmények. Bekapcsoláskor csak ehhez a webhelyhez adódik hozzá.",
       "loading": "Betöltés…",
-      "thePlatformOffersNoPlugins": "A platform még nem kínál hozzáadható bővítményeket a webhelyeknek.",
       "synchronizingGlobalMarketplaceCatalog": "A globális piactérkatalógus szinkronizálása",
       "pluginFailuresDetected": "Bővítményhibák észlelve",
       "searchInstalledPlugins": "Keresés a telepített bővítmények között...",
       "inspecting": "Vizsgálat...",
       "uploadZipTarGz": "Feltöltés (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "A bővítmények telepítése minden webhelyhez, frissítésük és eltávolításuk, valamint a webhelyeknek nem kínált bővítmények bekapcsolása,",
       "approvingHeldPlugins": "A visszatartott bővítmény kéréseinek jóváhagyása",
       "dragAndDropPluginZip": "Húzza ide a bővítmény `.zip` vagy `.tar.gz` fájlját, vagy kattintson a feltöltéshez.",
       "tryADifferentSearchTerm2": "Próbáljon más keresőkifejezést, vagy töltsön fel új bővítményt.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Frissíthető",
       "tabErrors": "Hibás",
       "details": "Részletek",
-      "installedOnThePlatform": "A platformra telepítve"
+      "platformNote": "A minden webhelyre szóló telepítés a platformon történik."
     },
     "upload": {
       "name": "Név: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Válassza ki az adminisztrációs felület vizuális stílusát.",
       "openPlatformScope": "Platformhatókör megnyitása",
       "loadingGeneralSettings": "Általános beállítások betöltése...",
-      "generalConfiguration": "Általános konfiguráció",
       "brandIdentitySystemPreferences": "Arculat és rendszerbeállítások",
       "saveChanges": "Módosítások mentése",
       "generalSettingsCouldNotBe": "Az általános beállításokat nem sikerült betölteni",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-cím (API URL)",
       "apiUrlDescription": "A platform API nyilvános címe. Az átjáró minden erre a hosztra érkező kérést az API-nak küld, nem a webhelynek.",
-      "apiUrlExplanation": "Használja a webhely egyik saját címét (a kérések a /api útvonalra mennek), vagy egy külön hosztot, például api.example.com. Ha a webhelyet új domainre költözteti, ezt is módosítsa: az itt hagyott hoszt már nem szolgálja ki a webhelyet. Üresen hagyva a kérés forráscíme lesz használva."
+      "apiUrlExplanation": "Használja a webhely egyik saját címét (a kérések a /api útvonalra mennek), vagy egy külön hosztot, például api.example.com. Ha a webhelyet új domainre költözteti, ezt is módosítsa: az itt hagyott hoszt már nem szolgálja ki a webhelyet. Üresen hagyva a kérés forráscíme lesz használva.",
+      "brandIdentityCardDescription": "Mi a webhely neve, és hogyan néz ki a böngészőben és az e-mailekben.",
+      "siteCardDescription": "Él-e a webhely, és indexelhetik-e a keresők.",
+      "regionalDefaultsCardDescription": "Időzóna és időformátum a konzolban.",
+      "notificationsCardDescription": "Hová érkeznek a belső űrlapok és a rendszerriasztások.",
+      "searchEnginesCardDescription": "Megjelennek-e a platform saját címei a keresőkben.",
+      "frontendAuthCardDescription": "Hogyan lépnek be és regisztrálnak a látogatók a webhelyen és az alkalmazásban.",
+      "signUpEmailCardDescription": "Az e-mail, amellyel egy új fiók megerősíti a címét.",
+      "usageReportCardDescription": "Az e-mailben küldött használati jelentés, és hová megy."
     },
     "appearance": {
       "appearance": "Megjelenés",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Ellenőrizze a piactér kapcsolatát, vagy próbálja újra később.",
     "inThisSite": "Ezen a webhelyen",
     "premium": "Prémium",
-    "aCleanAndModernTheme": "Letisztult, modern téma a Fromcode frontendhez.",
     "officialTheme": "Hivatalos téma",
     "addToThisSite": "Hozzáadás a webhelyhez",
     "installNow": "Telepítés most",

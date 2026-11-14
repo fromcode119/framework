@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import type { Ref } from '@fromcode119/react-class-components';
-import { Badge } from '@/components/ui/view/badge.client';
+import { Icon } from '@/components/view/icon.client';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
 import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
@@ -71,14 +71,13 @@ export class PluginDetailHeader extends PureReactor {
   render(): ReactNode {
     const { activeTab, plugin } = this;
     const items = this.menuItems;
-    const subtitle = (
-      <span className="inline-flex flex-wrap items-center gap-x-2">
-        <Badge variant={PluginState.resolve(plugin.state) === PluginState.ACTIVE ? 'success' : 'gray'}>{this.stateLabel}</Badge>
-        <span>v{plugin.manifest.version}</span>
-        {this.author ? <><span>·</span><span>{this.author}</span></> : null}
-        {/* The vendor: an install refuses a same-slug plugin from another one, so it is shown. */}
-        <span>·</span>
-        <span title={AdminI18n.t('plugins.detail.vendorHelp')}>{String(plugin.manifest.namespace || '').trim() || AdminI18n.t('plugins.detail.noVendorDeclared')}</span>
+    // One quiet line: state, version, author. The vendor id (an install refuses a same-slug plugin from
+    // another vendor) is the author's tooltip rather than a fourth word on the line.
+    const vendor = String(plugin.manifest.namespace || '').trim() || AdminI18n.t('plugins.detail.noVendorDeclared');
+    const subtitle = [this.stateLabel, `v${plugin.manifest.version}`].join(' · ');
+    const byline = (
+      <span title={`${vendor} — ${AdminI18n.t('plugins.detail.vendorHelp')}`}>
+        {this.author ? `${subtitle} · ${this.author}` : `${subtitle} · ${vendor}`}
       </span>
     );
     const actions = (
@@ -94,6 +93,7 @@ export class PluginDetailHeader extends PureReactor {
       </>
     );
     // The same header every settings page has; the back arrow returns to the installed list.
-    return <CompactPageHeader backHref={AdminConstants.ROUTES.PLUGINS.INSTALLED} icon={<FrameworkIcons.Plugins />} title={plugin.manifest.name} subtitle={subtitle} actions={actions} />;
+    const icon = <Icon name={String((plugin.manifest as { admin?: { icon?: string } }).admin?.icon || 'Box')} size={18} strokeWidth={1.75} />;
+    return <CompactPageHeader backHref={AdminConstants.ROUTES.PLUGINS.INSTALLED} mark={icon} title={plugin.manifest.name} subtitle={byline} actions={actions} />;
   }
 }

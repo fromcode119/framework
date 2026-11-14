@@ -637,7 +637,8 @@
       "choose": "Scegli un sito",
       "platformHint": "Nessun sito — plugin, temi, sorgenti, siti, impostazioni della piattaforma",
       "viaRole": "tramite ruolo di piattaforma",
-      "switch": "Cambia sito"
+      "switch": "Cambia sito",
+      "lockedShort": "Questa console è per un solo sito."
     },
     "account": {
       "singleSite": "Il sito servito da questa installazione",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Disponibili per questo sito",
       "pluginsThePlatformOffersTo": "Plugin che la piattaforma offre ai siti. Attivandone uno, viene aggiunto solo a questo sito.",
       "loading": "Caricamento…",
-      "thePlatformOffersNoPlugins": "La piattaforma non offre ancora plugin da aggiungere ai siti.",
       "synchronizingGlobalMarketplaceCatalog": "Sincronizzazione del catalogo globale del marketplace",
       "pluginFailuresDetected": "Rilevati errori nei plugin",
       "searchInstalledPlugins": "Cerca tra i plugin installati...",
       "inspecting": "Analisi in corso...",
       "uploadZipTarGz": "Carica (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Installare plugin per tutti i siti, aggiornarli e rimuoverli, e attivare quelli che la piattaforma non offre ai siti,",
       "approvingHeldPlugins": "Approvare le richieste di un plugin in attesa",
       "dragAndDropPluginZip": "Trascina qui il file `.zip` o `.tar.gz` del plugin, oppure fai clic per caricarlo.",
       "tryADifferentSearchTerm2": "Prova un altro termine di ricerca o carica un nuovo plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Con aggiornamento",
       "tabErrors": "Con errori",
       "details": "Dettagli",
-      "installedOnThePlatform": "Installati sulla piattaforma"
+      "platformNote": "L’installazione per tutti i siti si fa nella piattaforma."
     },
     "upload": {
       "name": "Nome: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Scegli lo stile visivo del pannello di amministrazione.",
       "openPlatformScope": "Apri ambito piattaforma",
       "loadingGeneralSettings": "Caricamento delle impostazioni generali...",
-      "generalConfiguration": "Configurazione generale",
       "brandIdentitySystemPreferences": "Identità del brand e preferenze di sistema",
       "saveChanges": "Salva modifiche",
       "generalSettingsCouldNotBe": "Impossibile caricare le impostazioni generali",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Indirizzo API (API URL)",
       "apiUrlDescription": "L'indirizzo pubblico dell'API della piattaforma. Il gateway invia ogni richiesta per questo host all'API, non al sito.",
-      "apiUrlExplanation": "Usa uno degli indirizzi del sito (le richieste vanno al suo percorso /api) o un host dedicato come api.example.com. Quando sposti il sito su un nuovo dominio, modifica anche questo: un host lasciato qui smette di servire il sito. Se vuoto, si usa l'indirizzo da cui proviene la richiesta."
+      "apiUrlExplanation": "Usa uno degli indirizzi del sito (le richieste vanno al suo percorso /api) o un host dedicato come api.example.com. Quando sposti il sito su un nuovo dominio, modifica anche questo: un host lasciato qui smette di servire il sito. Se vuoto, si usa l'indirizzo da cui proviene la richiesta.",
+      "brandIdentityCardDescription": "Come si chiama il sito e come appare nel browser e nelle email.",
+      "siteCardDescription": "Se il sito è online e se i motori di ricerca possono indicizzarlo.",
+      "regionalDefaultsCardDescription": "Fuso orario e formato dell'ora nella console.",
+      "notificationsCardDescription": "Dove vengono inviati i moduli interni e gli avvisi di sistema.",
+      "searchEnginesCardDescription": "Se gli indirizzi propri della piattaforma compaiono nei motori di ricerca.",
+      "frontendAuthCardDescription": "Come i visitatori accedono e si registrano sul sito e nell'app.",
+      "signUpEmailCardDescription": "L'email che un nuovo account riceve per confermare l'indirizzo.",
+      "usageReportCardDescription": "Il rapporto d'uso inviato via email e a chi arriva."
     },
     "appearance": {
       "appearance": "Aspetto",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Controlla la connessione al marketplace o riprova più tardi.",
     "inThisSite": "In questo sito",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Un tema pulito e moderno per il tuo frontend Fromcode.",
     "officialTheme": "Tema ufficiale",
     "addToThisSite": "Aggiungi a questo sito",
     "installNow": "Installa ora",

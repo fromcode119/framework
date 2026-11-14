@@ -637,7 +637,8 @@
       "choose": "Roghnaigh suíomh",
       "platformHint": "Gan suíomh — breiseáin, téamaí, foinsí, suíomhanna, socruithe ardáin",
       "viaRole": "trí ról ardáin",
-      "switch": "Athraigh suíomh"
+      "switch": "Athraigh suíomh",
+      "lockedShort": "Is do shuíomh amháin an consól seo."
     },
     "account": {
       "singleSite": "An suíomh a bhfreastalaíonn an t-imscaradh seo air",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Ar fáil don suíomh seo",
       "pluginsThePlatformOffersTo": "Breiseáin a thairgeann an t-ardán do shuímh. Má chuirtear ceann ar siúl, ní chuirtear leis ach an suíomh seo é.",
       "loading": "Á lódáil…",
-      "thePlatformOffersNoPlugins": "Níl aon bhreiseáin á dtairiscint ag an ardán do shuímh go fóill.",
       "synchronizingGlobalMarketplaceCatalog": "Catalóg an Mhargaidh Dhomhanda á Sioncronú",
       "pluginFailuresDetected": "Braitheadh Teipeanna Breiseán",
       "searchInstalledPlugins": "Cuardaigh breiseáin shuiteáilte...",
       "inspecting": "Á iniúchadh...",
       "uploadZipTarGz": "Uaslódáil (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Breiseáin a shuiteáil do gach suíomh, iad a nuashonrú agus a bhaint, agus aon cheann nach dtairgeann an t-ardán do shuímh a chur ar siúl,",
       "approvingHeldPlugins": "An méid a iarrann breiseán coinnithe a cheadú",
       "dragAndDropPluginZip": "Tarraing agus scaoil `.zip` nó `.tar.gz` breiseáin anseo, nó cliceáil chun uaslódáil.",
       "tryADifferentSearchTerm2": "Bain triail as téarma cuardaigh eile nó uaslódáil breiseán nua.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Le nuashonrú",
       "tabErrors": "Le hearráidí",
       "details": "Sonraí",
-      "installedOnThePlatform": "Suiteáilte ar an ardán"
+      "platformNote": "Is san ardán a dhéantar suiteáil do gach suíomh."
     },
     "upload": {
       "name": "Ainm: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Roghnaigh stíl amhairc do phainéil riaracháin.",
       "openPlatformScope": "Oscail Raon an Ardáin",
       "loadingGeneralSettings": "Socruithe ginearálta á lódáil...",
-      "generalConfiguration": "Cumraíocht Ghinearálta",
       "brandIdentitySystemPreferences": "Féiniúlacht bhranda & roghanna córais",
       "saveChanges": "Sábháil Athruithe",
       "generalSettingsCouldNotBe": "Níorbh fhéidir na socruithe ginearálta a lódáil",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Seoladh an API (API URL)",
       "apiUrlDescription": "Seoladh poiblí API an ardáin. Seolann an geata gach iarratas don óstach seo chuig an API, ní chuig an suíomh.",
-      "apiUrlExplanation": "Úsáid ceann de sheoltaí an tsuímh féin (téann iarratais chuig a chosán /api) nó óstach tiomnaithe ar nós api.example.com. Nuair a bhogann tú an suíomh chuig fearann nua, athraigh é seo freisin: stopann óstach a fágadh anseo ag freastal ar an suíomh. Má fhágtar folamh é, úsáidtear an seoladh ónar tháinig an t-iarratas."
+      "apiUrlExplanation": "Úsáid ceann de sheoltaí an tsuímh féin (téann iarratais chuig a chosán /api) nó óstach tiomnaithe ar nós api.example.com. Nuair a bhogann tú an suíomh chuig fearann nua, athraigh é seo freisin: stopann óstach a fágadh anseo ag freastal ar an suíomh. Má fhágtar folamh é, úsáidtear an seoladh ónar tháinig an t-iarratas.",
+      "brandIdentityCardDescription": "Cad is ainm don suíomh agus conas a fhéachann sé sa bhrabhsálaí agus i ríomhphoist.",
+      "siteCardDescription": "An bhfuil an suíomh beo agus an féidir le hinnill chuardaigh é a innéacsú.",
+      "regionalDefaultsCardDescription": "Crios ama agus formáid an ama sa chonsól.",
+      "notificationsCardDescription": "Cá seoltar foirmeacha inmheánacha agus foláirimh chórais.",
+      "searchEnginesCardDescription": "An bhfeictear seoltaí an ardáin féin in innill chuardaigh.",
+      "frontendAuthCardDescription": "Conas a shíníonn cuairteoirí isteach agus a chláraíonn siad ar an suíomh agus san aip.",
+      "signUpEmailCardDescription": "An ríomhphost a fhaigheann cuntas nua chun a sheoladh a dhearbhú.",
+      "usageReportCardDescription": "An tuarascáil úsáide trí ríomhphost, agus cá dtéann sí."
     },
     "appearance": {
       "appearance": "Cuma",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Seiceáil do cheangal leis an margadh nó bain triail eile as ar ball.",
     "inThisSite": "Sa suíomh seo",
     "premium": "Préimhe",
-    "aCleanAndModernTheme": "Téama glan nua-aimseartha do do thosach Fromcode.",
     "officialTheme": "Téama oifigiúil",
     "addToThisSite": "Cuir leis an suíomh seo",
     "installNow": "Suiteáil anois",

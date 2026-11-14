@@ -637,7 +637,8 @@
       "choose": "Vyberte lokalitu",
       "platformHint": "Bez lokality – pluginy, témy, zdroje, lokality, nastavenia platformy",
       "viaRole": "cez rolu platformy",
-      "switch": "Prepnúť lokalitu"
+      "switch": "Prepnúť lokalitu",
+      "lockedShort": "Táto konzola je pre jednu stránku."
     },
     "account": {
       "singleSite": "Lokalita, ktorú obsluhuje toto nasadenie",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Dostupné pre túto stránku",
       "pluginsThePlatformOffersTo": "Pluginy, ktoré platforma ponúka stránkam. Zapnutím ho pridáte iba na túto stránku.",
       "loading": "Načítava sa…",
-      "thePlatformOffersNoPlugins": "Platforma zatiaľ neponúka stránkam žiadne pluginy.",
       "synchronizingGlobalMarketplaceCatalog": "Synchronizuje sa globálny katalóg obchodu",
       "pluginFailuresDetected": "Zistené zlyhania pluginov",
       "searchInstalledPlugins": "Hľadať nainštalované pluginy...",
       "inspecting": "Kontroluje sa...",
       "uploadZipTarGz": "Nahrať (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Inštalácia pluginov pre všetky stránky, ich aktualizácia a odstraňovanie a zapínanie tých, ktoré platforma stránkam neponúka,",
       "approvingHeldPlugins": "Schvaľovanie požiadaviek pozastaveného pluginu",
       "dragAndDropPluginZip": "Presuňte sem súbor pluginu `.zip` alebo `.tar.gz`, prípadne kliknutím nahrajte.",
       "tryADifferentSearchTerm2": "Skúste iný hľadaný výraz alebo nahrajte nový plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "S aktualizáciou",
       "tabErrors": "S chybou",
       "details": "Podrobnosti",
-      "installedOnThePlatform": "Nainštalované na platforme"
+      "platformNote": "Inštalácia pre všetky stránky je v platforme."
     },
     "upload": {
       "name": "Názov: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Vyberte vizuálny štýl administrácie.",
       "openPlatformScope": "Otvoriť rozsah platformy",
       "loadingGeneralSettings": "Načítavajú sa všeobecné nastavenia...",
-      "generalConfiguration": "Všeobecná konfigurácia",
       "brandIdentitySystemPreferences": "Identita značky a systémové predvoľby",
       "saveChanges": "Uložiť zmeny",
       "generalSettingsCouldNotBe": "Všeobecné nastavenia sa nepodarilo načítať",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresa API (API URL)",
       "apiUrlDescription": "Verejná adresa API platformy. Brána posiela každú požiadavku pre tento hostiteľ do API, nie na stránku.",
-      "apiUrlExplanation": "Použite jednu z vlastných adries stránky (požiadavky idú na jej cestu /api) alebo samostatný hostiteľ, napríklad api.example.com. Keď stránku presuniete na novú doménu, zmeňte aj toto: hostiteľ ponechaný tu prestane obsluhovať stránku. Prázdne použije adresu, z ktorej požiadavka prišla."
+      "apiUrlExplanation": "Použite jednu z vlastných adries stránky (požiadavky idú na jej cestu /api) alebo samostatný hostiteľ, napríklad api.example.com. Keď stránku presuniete na novú doménu, zmeňte aj toto: hostiteľ ponechaný tu prestane obsluhovať stránku. Prázdne použije adresu, z ktorej požiadavka prišla.",
+      "brandIdentityCardDescription": "Ako sa web volá a ako vyzerá v prehliadači a v e-mailoch.",
+      "siteCardDescription": "Či je web spustený a či ho smú vyhľadávače indexovať.",
+      "regionalDefaultsCardDescription": "Časové pásmo a formát času v konzole.",
+      "notificationsCardDescription": "Kam chodia interné formuláre a systémové upozornenia.",
+      "searchEnginesCardDescription": "Či sa vlastné adresy platformy objavujú vo vyhľadávačoch.",
+      "frontendAuthCardDescription": "Ako sa návštevníci prihlasujú a registrujú na webe a v aplikácii.",
+      "signUpEmailCardDescription": "E-mail, ktorým nový účet potvrdzuje svoju adresu.",
+      "usageReportCardDescription": "Prehľad využitia zasielaný e-mailom a kam ide."
     },
     "appearance": {
       "appearance": "Vzhľad",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Skontrolujte pripojenie k obchodu alebo to skúste neskôr.",
     "inThisSite": "V tejto stránke",
     "premium": "Prémiové",
-    "aCleanAndModernTheme": "Čistá a moderná téma pre váš frontend Fromcode.",
     "officialTheme": "Oficiálna téma",
     "addToThisSite": "Pridať do tejto stránky",
     "installNow": "Nainštalovať",

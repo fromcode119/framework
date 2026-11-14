@@ -637,7 +637,8 @@
       "choose": "Pumili ng site",
       "platformHint": "Walang site — mga plugin, tema, source, site, setting ng platform",
       "viaRole": "sa pamamagitan ng role sa platform",
-      "switch": "Lumipat ng site"
+      "switch": "Lumipat ng site",
+      "lockedShort": "Ang console na ito ay para sa isang site."
     },
     "account": {
       "singleSite": "Ang site na pinagsisilbihan ng deployment na ito",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Available sa site na ito",
       "pluginsThePlatformOffersTo": "Mga plugin na iniaalok ng platform sa mga site. Kapag in-on ang isa, sa site na ito lang ito madadagdag.",
       "loading": "Naglo-load…",
-      "thePlatformOffersNoPlugins": "Wala pang plugin na iniaalok ang platform na maidaragdag ng mga site.",
       "synchronizingGlobalMarketplaceCatalog": "Sini-sync ang Global Marketplace Catalog",
       "pluginFailuresDetected": "May Natukoy na Pagpalya ng Plugin",
       "searchInstalledPlugins": "Maghanap sa mga naka-install na plugin...",
       "inspecting": "Sinusuri...",
       "uploadZipTarGz": "I-upload (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Pag-install ng mga plugin para sa bawat site, pag-update at pag-alis sa mga ito, at pag-on sa alinmang hindi iniaalok ng platform sa mga site,",
       "approvingHeldPlugins": "Pag-apruba sa hinihingi ng naka-hold na plugin",
       "dragAndDropPluginZip": "I-drag at i-drop dito ang plugin na `.zip` o `.tar.gz`, o i-click para mag-upload.",
       "tryADifferentSearchTerm2": "Subukan ang ibang termino sa paghahanap o mag-upload ng bagong plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "May update",
       "tabErrors": "May error",
       "details": "Mga detalye",
-      "installedOnThePlatform": "Naka-install sa platform"
+      "platformNote": "Ang pag-install para sa lahat ng site ay nasa platform."
     },
     "upload": {
       "name": "Pangalan: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Piliin ang visual na istilo ng iyong administration panel.",
       "openPlatformScope": "Buksan ang Saklaw ng Platform",
       "loadingGeneralSettings": "Nilo-load ang mga pangkalahatang setting...",
-      "generalConfiguration": "Pangkalahatang Configuration",
       "brandIdentitySystemPreferences": "Pagkakakilanlan ng brand at mga kagustuhan sa system",
       "saveChanges": "I-save ang Mga Pagbabago",
       "generalSettingsCouldNotBe": "Hindi ma-load ang mga pangkalahatang setting",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Address ng API (API URL)",
       "apiUrlDescription": "Ang pampublikong address ng API ng platform. Ipinapadala ng gateway sa API ang bawat request para sa host na ito, hindi sa site.",
-      "apiUrlExplanation": "Gumamit ng isa sa sariling address ng site (pupunta ang mga request sa /api path nito) o isang nakalaang host gaya ng api.example.com. Kapag inilipat mo ang site sa bagong domain, palitan din ito: ang host na naiwan dito ay hihinto sa paghahatid ng site. Kapag blangko, gagamitin ang address na pinanggalingan ng request."
+      "apiUrlExplanation": "Gumamit ng isa sa sariling address ng site (pupunta ang mga request sa /api path nito) o isang nakalaang host gaya ng api.example.com. Kapag inilipat mo ang site sa bagong domain, palitan din ito: ang host na naiwan dito ay hihinto sa paghahatid ng site. Kapag blangko, gagamitin ang address na pinanggalingan ng request.",
+      "brandIdentityCardDescription": "Ano ang pangalan ng site at ano ang hitsura nito sa browser at sa email.",
+      "siteCardDescription": "Kung live ang site at kung puwede itong i-index ng mga search engine.",
+      "regionalDefaultsCardDescription": "Time zone at format ng oras sa console.",
+      "notificationsCardDescription": "Saan ipinapadala ang mga internal na form at alerto ng system.",
+      "searchEnginesCardDescription": "Kung lumalabas sa mga search engine ang sariling address ng platform.",
+      "frontendAuthCardDescription": "Paano nagsa-sign in at nagsa-sign up ang mga bisita sa site at sa app.",
+      "signUpEmailCardDescription": "Ang email na natatanggap ng bagong account para kumpirmahin ang address.",
+      "usageReportCardDescription": "Ang ulat ng paggamit na ipinapadala sa email, at kung saan ito napupunta."
     },
     "appearance": {
       "appearance": "Hitsura",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Suriin ang koneksyon sa marketplace o subukan muli mamaya.",
     "inThisSite": "Nasa site na ito",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Isang malinis at modernong theme para sa iyong Fromcode frontend.",
     "officialTheme": "Opisyal na Theme",
     "addToThisSite": "Idagdag sa site na ito",
     "installNow": "I-install Ngayon",

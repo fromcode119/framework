@@ -637,7 +637,8 @@
       "choose": "اختر موقعاً",
       "platformHint": "بلا موقع — الإضافات والقوالب والمصادر والمواقع وإعدادات المنصة",
       "viaRole": "عبر دور على مستوى المنصة",
-      "switch": "تبديل الموقع"
+      "switch": "تبديل الموقع",
+      "lockedShort": "هذه الوحدة مخصصة لموقع واحد."
     },
     "account": {
       "singleSite": "الموقع الذي يخدمه هذا النشر",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "متاحة لهذا الموقع",
       "pluginsThePlatformOffersTo": "الإضافات التي توفّرها المنصة للمواقع. تفعيل أي منها يضيفها إلى هذا الموقع فقط.",
       "loading": "جارٍ التحميل…",
-      "thePlatformOffersNoPlugins": "لا توفّر المنصة بعدُ أي إضافات يمكن للمواقع إضافتها.",
       "synchronizingGlobalMarketplaceCatalog": "جارٍ مزامنة كتالوج المتجر العام",
       "pluginFailuresDetected": "تم اكتشاف أعطال في الإضافات",
       "searchInstalledPlugins": "البحث في الإضافات المثبّتة...",
       "inspecting": "جارٍ الفحص...",
       "uploadZipTarGz": "رفع (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "تثبيت الإضافات لجميع المواقع، وتحديثها وإزالتها، وتفعيل أي إضافة لا توفّرها المنصة للمواقع،",
       "approvingHeldPlugins": "الموافقة على ما تطلبه إضافة معلّقة",
       "dragAndDropPluginZip": "اسحب ملف الإضافة `.zip` أو `.tar.gz` وأفلته هنا، أو انقر للرفع.",
       "tryADifferentSearchTerm2": "جرّب عبارة بحث مختلفة أو ارفع إضافة جديدة.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "بها تحديث",
       "tabErrors": "بها أخطاء",
       "details": "التفاصيل",
-      "installedOnThePlatform": "مثبتة على المنصة"
+      "platformNote": "يتم التثبيت لكل المواقع من المنصة."
     },
     "upload": {
       "name": "الاسم: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "اختر النمط المرئي للوحة الإدارة.",
       "openPlatformScope": "فتح نطاق المنصة",
       "loadingGeneralSettings": "جارٍ تحميل الإعدادات العامة...",
-      "generalConfiguration": "الإعدادات العامة",
       "brandIdentitySystemPreferences": "هوية العلامة وتفضيلات النظام",
       "saveChanges": "حفظ التغييرات",
       "generalSettingsCouldNotBe": "تعذّر تحميل الإعدادات العامة",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "عنوان API (API URL)",
       "apiUrlDescription": "العنوان العام لواجهة API الخاصة بالمنصة. تُرسل البوابة كل طلب لهذا المضيف إلى API لا إلى الموقع.",
-      "apiUrlExplanation": "استخدم أحد عناوين الموقع نفسه (تذهب الطلبات إلى مساره /api) أو مضيفًا مخصصًا مثل api.example.com. عند نقل الموقع إلى نطاق جديد، غيّر هذا أيضًا: فالمضيف المتروك هنا يتوقف عن خدمة الموقع. تركه فارغًا يستخدم العنوان الذي ورد منه الطلب."
+      "apiUrlExplanation": "استخدم أحد عناوين الموقع نفسه (تذهب الطلبات إلى مساره /api) أو مضيفًا مخصصًا مثل api.example.com. عند نقل الموقع إلى نطاق جديد، غيّر هذا أيضًا: فالمضيف المتروك هنا يتوقف عن خدمة الموقع. تركه فارغًا يستخدم العنوان الذي ورد منه الطلب.",
+      "brandIdentityCardDescription": "اسم الموقع وشكله في المتصفح وفي الرسائل.",
+      "siteCardDescription": "هل الموقع منشور وهل يمكن لمحركات البحث فهرسته.",
+      "regionalDefaultsCardDescription": "المنطقة الزمنية وتنسيق الوقت في لوحة التحكم.",
+      "notificationsCardDescription": "إلى أين تُرسل النماذج الداخلية وتنبيهات النظام.",
+      "searchEnginesCardDescription": "هل تظهر عناوين المنصة نفسها في محركات البحث.",
+      "frontendAuthCardDescription": "كيف يسجّل الزوار الدخول وينشئون حسابًا في الموقع والتطبيق.",
+      "signUpEmailCardDescription": "الرسالة التي يتلقاها الحساب الجديد لتأكيد عنوانه.",
+      "usageReportCardDescription": "تقرير الاستخدام المرسل بالبريد، وإلى أين يذهب."
     },
     "appearance": {
       "appearance": "المظهر",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "تحقق من الاتصال بالمتجر أو أعد المحاولة لاحقًا.",
     "inThisSite": "في هذا الموقع",
     "premium": "مميز",
-    "aCleanAndModernTheme": "قالب أنيق وعصري لواجهة Fromcode الأمامية.",
     "officialTheme": "قالب رسمي",
     "addToThisSite": "إضافة إلى هذا الموقع",
     "installNow": "تثبيت الآن",
