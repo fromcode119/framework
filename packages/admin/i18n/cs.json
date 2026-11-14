@@ -637,7 +637,8 @@
       "choose": "Vyberte web",
       "platformHint": "Bez webu — pluginy, motivy, zdroje, weby, nastavení platformy",
       "viaRole": "prostřednictvím role platformy",
-      "switch": "Přepnout web"
+      "switch": "Přepnout web",
+      "lockedShort": "Tato konzole je pro jeden web."
     },
     "account": {
       "singleSite": "Web, který toto nasazení obsluhuje",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Dostupné pro tento web",
       "pluginsThePlatformOffersTo": "Pluginy, které platforma nabízí webům. Zapnutím jej přidáte pouze na tento web.",
       "loading": "Načítání…",
-      "thePlatformOffersNoPlugins": "Platforma zatím webům nenabízí žádné pluginy.",
       "synchronizingGlobalMarketplaceCatalog": "Synchronizace globálního katalogu Marketplace",
       "pluginFailuresDetected": "Zjištěny chyby pluginů",
       "searchInstalledPlugins": "Hledat nainstalované pluginy...",
       "inspecting": "Kontrola...",
       "uploadZipTarGz": "Nahrát (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instalace pluginů pro všechny weby, jejich aktualizace a odebírání a zapínání pluginů, které platforma webům nenabízí,",
       "approvingHeldPlugins": "Schvalování oprávnění, o která žádá pozastavený plugin",
       "dragAndDropPluginZip": "Přetáhněte sem soubor pluginu `.zip` nebo `.tar.gz`, nebo klikněte pro nahrání.",
       "tryADifferentSearchTerm2": "Zkuste jiný hledaný výraz nebo nahrajte nový plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "S aktualizací",
       "tabErrors": "S chybou",
       "details": "Podrobnosti",
-      "installedOnThePlatform": "Nainstalováno na platformě"
+      "platformNote": "Instalace pro všechny weby je v platformě."
     },
     "upload": {
       "name": "Název: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Zvolte vizuální styl administračního panelu.",
       "openPlatformScope": "Otevřít rozsah platformy",
       "loadingGeneralSettings": "Načítání obecných nastavení...",
-      "generalConfiguration": "Obecná konfigurace",
       "brandIdentitySystemPreferences": "Identita značky a systémové předvolby",
       "saveChanges": "Uložit změny",
       "generalSettingsCouldNotBe": "Obecná nastavení se nepodařilo načíst",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresa API (API URL)",
       "apiUrlDescription": "Veřejná adresa API platformy. Brána posílá každý požadavek pro tohoto hostitele do API, nikoli na web.",
-      "apiUrlExplanation": "Použijte jednu z vlastních adres webu (požadavky jdou na její cestu /api) nebo vyhrazeného hostitele, např. api.example.com. Při přesunu webu na novou doménu změňte i toto: hostitel ponechaný zde přestane web obsluhovat. Prázdné použije adresu, ze které požadavek přišel."
+      "apiUrlExplanation": "Použijte jednu z vlastních adres webu (požadavky jdou na její cestu /api) nebo vyhrazeného hostitele, např. api.example.com. Při přesunu webu na novou doménu změňte i toto: hostitel ponechaný zde přestane web obsluhovat. Prázdné použije adresu, ze které požadavek přišel.",
+      "brandIdentityCardDescription": "Jak se web jmenuje a jak vypadá v prohlížeči a v e-mailech.",
+      "siteCardDescription": "Zda je web spuštěný a zda jej smí vyhledávače indexovat.",
+      "regionalDefaultsCardDescription": "Časové pásmo a formát času v konzoli.",
+      "notificationsCardDescription": "Kam chodí interní formuláře a systémová upozornění.",
+      "searchEnginesCardDescription": "Zda se vlastní adresy platformy objevují ve vyhledávačích.",
+      "frontendAuthCardDescription": "Jak se návštěvníci přihlašují a registrují na webu a v aplikaci.",
+      "signUpEmailCardDescription": "E-mail, kterým nový účet potvrzuje svou adresu.",
+      "usageReportCardDescription": "Přehled využití zasílaný e-mailem a kam jde."
     },
     "appearance": {
       "appearance": "Vzhled",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Zkontrolujte připojení k Marketplace nebo to zkuste později.",
     "inThisSite": "Na tomto webu",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Čistá a moderní šablona pro váš frontend Fromcode.",
     "officialTheme": "Oficiální šablona",
     "addToThisSite": "Přidat na tento web",
     "installNow": "Nainstalovat",

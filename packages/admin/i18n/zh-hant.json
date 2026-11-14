@@ -637,7 +637,8 @@
       "choose": "選擇網站",
       "platformHint": "不指定網站：外掛、佈景主題、來源、網站、平台設定",
       "viaRole": "透過平台角色",
-      "switch": "切換網站"
+      "switch": "切換網站",
+      "lockedShort": "此主控台僅適用於一個網站。"
     },
     "account": {
       "singleSite": "此部署所服務的網站",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "此網站可用的外掛",
       "pluginsThePlatformOffersTo": "平台提供給網站的外掛。啟用後只會新增至此網站。",
       "loading": "載入中…",
-      "thePlatformOffersNoPlugins": "平台目前尚未提供可供網站新增的外掛。",
       "synchronizingGlobalMarketplaceCatalog": "正在同步全域市集目錄",
       "pluginFailuresDetected": "偵測到外掛錯誤",
       "searchInstalledPlugins": "搜尋已安裝的外掛...",
       "inspecting": "檢查中...",
       "uploadZipTarGz": "上傳 (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "為所有網站安裝、更新及移除外掛，以及啟用平台未提供給網站的外掛，",
       "approvingHeldPlugins": "核准暫停中外掛所要求的權限",
       "dragAndDropPluginZip": "將外掛 `.zip` 或 `.tar.gz` 檔案拖放至此，或按一下以上傳。",
       "tryADifferentSearchTerm2": "請嘗試其他搜尋字詞，或上傳新的外掛。",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "有更新",
       "tabErrors": "有錯誤",
       "details": "詳細資料",
-      "installedOnThePlatform": "已安裝在平台上"
+      "platformNote": "為所有網站安裝需在平台中進行。"
     },
     "upload": {
       "name": "名稱：{{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "選擇管理面板的視覺風格。",
       "openPlatformScope": "開啟平台範圍",
       "loadingGeneralSettings": "正在載入一般設定...",
-      "generalConfiguration": "一般設定",
       "brandIdentitySystemPreferences": "品牌識別與系統偏好設定",
       "saveChanges": "儲存變更",
       "generalSettingsCouldNotBe": "無法載入一般設定",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API 位址（API URL）",
       "apiUrlDescription": "平台 API 的公開位址。閘道會將此主機的所有請求轉送至 API，而非網站。",
-      "apiUrlExplanation": "請使用網站本身的位址之一（請求會送往其 /api 路徑），或專用主機，例如 api.example.com。將網站移至新網域時，也請一併變更此設定：留在這裡的主機將不再提供網站服務。留空則使用請求來源的位址。"
+      "apiUrlExplanation": "請使用網站本身的位址之一（請求會送往其 /api 路徑），或專用主機，例如 api.example.com。將網站移至新網域時，也請一併變更此設定：留在這裡的主機將不再提供網站服務。留空則使用請求來源的位址。",
+      "brandIdentityCardDescription": "網站名稱及其在瀏覽器和郵件中的外觀。",
+      "siteCardDescription": "網站是否上線，以及搜尋引擎是否可以索引。",
+      "regionalDefaultsCardDescription": "主控台中的時區和時間格式。",
+      "notificationsCardDescription": "內部表單和系統警示的寄送位置。",
+      "searchEnginesCardDescription": "平台本身的位址是否出現在搜尋引擎中。",
+      "frontendAuthCardDescription": "訪客如何在網站和應用程式中登入和註冊。",
+      "signUpEmailCardDescription": "新帳戶用來確認電子郵件地址的郵件。",
+      "usageReportCardDescription": "以郵件寄送的使用報告及其收件方。"
     },
     "appearance": {
       "appearance": "外觀",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "請檢查市集連線，或稍後再試。",
     "inThisSite": "已在此網站",
     "premium": "進階版",
-    "aCleanAndModernTheme": "適用於 Fromcode 前端的簡潔現代佈景主題。",
     "officialTheme": "官方佈景主題",
     "addToThisSite": "新增至此網站",
     "installNow": "立即安裝",

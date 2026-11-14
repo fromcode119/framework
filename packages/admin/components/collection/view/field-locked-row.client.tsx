@@ -25,6 +25,8 @@ export class FieldLockedRow extends PureReactor {
   /** True when this operator may unlock the record's read-only fields. */
   @prop declare canUnlock: boolean;
   @prop declare onUnlock: () => void;
+  /** The description as a line under the name, on a settings row — see `FieldSummary`. */
+  @prop declare summary?: ReactNode;
 
   render(): ReactNode {
     const text = String(this.value ?? '').trim();
@@ -32,9 +34,12 @@ export class FieldLockedRow extends PureReactor {
     return (
       <div className="fc-field-locked">
         {!this.hideLabel || description ? (
-          <div className="fc-field-head mb-1 flex min-h-[22px] items-center gap-1">
-            {!this.hideLabel && <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>}
-            {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} />}
+          <div className="fc-field-head mb-1 min-h-[22px]">
+            <div className="flex min-w-0 items-center gap-1">
+              {!this.hideLabel && <span className={`${UiFieldUtils.TEXT.LABEL} !mb-0`}>{this.label}</span>}
+              {description && <FieldHelpButton label={this.label} open={this.helpOpen} onToggle={this.onToggleHelp} />}
+            </div>
+            {this.summary}
           </div>
         ) : null}
         <div className="flex min-h-10 items-center justify-between gap-2 rounded-[var(--radius)] border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
@@ -43,7 +48,7 @@ export class FieldLockedRow extends PureReactor {
           </span>
           <FieldLockControl label={this.label} canUnlock={this.canUnlock} onUnlock={this.onUnlock} />
         </div>
-        {this.helpOpen && description && <p className={UiFieldUtils.TEXT.SUBTEXT}>{description}</p>}
+        {this.helpOpen && description && !this.summary && <p className={UiFieldUtils.TEXT.SUBTEXT}>{description}</p>}
       </div>
     );
   }

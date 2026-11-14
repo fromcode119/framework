@@ -46,11 +46,13 @@ export class SitePluginOffers extends AdminComponent {
   }
 
   render(): ReactNode {
+    // Nothing offered is nothing to choose: the list below is the whole answer, and the line above it
+    // already says where plugins are installed.
+    if (!this.loading && !this.loadError && this.offers.length === 0) return null;
     return (
       <Card className="mb-3" title={AdminI18n.t('plugins.list.availableToThisSite')} description={AdminI18n.t('plugins.list.pluginsThePlatformOffersTo')}>
         {this.loading ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.loading')}</p>
           : this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p>
-          : this.offers.length === 0 ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.thePlatformOffersNoPlugins')}</p>
           : (
             <div className="space-y-4">
               {this.offers.map((offer) => (

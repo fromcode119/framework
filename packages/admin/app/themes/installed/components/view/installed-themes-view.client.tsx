@@ -81,7 +81,7 @@ export class InstalledThemesView extends PureReactor {
         <Button onClick={this.handleUploadClick} isLoading={this.isUploading || this.isInspectingUpload}>
           {this.isInspectingUpload ? AdminI18n.t('themes.inspecting') : siteScope ? AdminI18n.t('themes.uploadForThisSite') : AdminI18n.t('themes.uploadThemeZipTarGz')}
         </Button>
-        {note ? <span className={AdminClass.of('ext-toolbar__note')}>{note}</span> : null}
+        {note ? <span className={AdminClass.of('ext-toolbar__note')} title={note}>{note}</span> : null}
       </div>
     );
   }

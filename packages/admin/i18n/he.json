@@ -637,7 +637,8 @@
       "choose": "בחירת אתר",
       "platformHint": "ללא אתר — תוספים, ערכות עיצוב, מקורות, אתרים, הגדרות פלטפורמה",
       "viaRole": "דרך תפקיד פלטפורמה",
-      "switch": "החלפת אתר"
+      "switch": "החלפת אתר",
+      "lockedShort": "קונסולה זו מיועדת לאתר אחד."
     },
     "account": {
       "singleSite": "האתר שפריסה זו משרתת",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "זמינים לאתר הזה",
       "pluginsThePlatformOffersTo": "תוספים שהפלטפורמה מציעה לאתרים. הפעלת תוסף מוסיפה אותו לאתר הזה בלבד.",
       "loading": "טוען…",
-      "thePlatformOffersNoPlugins": "הפלטפורמה עדיין אינה מציעה תוספים להוספה לאתרים.",
       "synchronizingGlobalMarketplaceCatalog": "מסנכרן את קטלוג החנות הכללי",
       "pluginFailuresDetected": "זוהו כשלים בתוספים",
       "searchInstalledPlugins": "חיפוש בתוספים המותקנים...",
       "inspecting": "בודק...",
       "uploadZipTarGz": "העלאה (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "התקנת תוספים לכל האתרים, עדכונם והסרתם, והפעלת תוספים שהפלטפורמה אינה מציעה לאתרים,",
       "approvingHeldPlugins": "אישור הבקשות של תוסף מושהה",
       "dragAndDropPluginZip": "יש לגרור לכאן קובץ תוסף `.zip` או `.tar.gz`, או ללחוץ להעלאה.",
       "tryADifferentSearchTerm2": "נסו מונח חיפוש אחר או העלו תוסף חדש.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "עם עדכון",
       "tabErrors": "עם שגיאות",
       "details": "פרטים",
-      "installedOnThePlatform": "מותקנים בפלטפורמה"
+      "platformNote": "ההתקנה לכל האתרים מתבצעת בפלטפורמה."
     },
     "upload": {
       "name": "שם: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "בחירת הסגנון החזותי של לוח הניהול.",
       "openPlatformScope": "פתיחת היקף הפלטפורמה",
       "loadingGeneralSettings": "טוען הגדרות כלליות...",
-      "generalConfiguration": "תצורה כללית",
       "brandIdentitySystemPreferences": "זהות המותג והעדפות המערכת",
       "saveChanges": "שמירת שינויים",
       "generalSettingsCouldNotBe": "לא ניתן היה לטעון את ההגדרות הכלליות",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "כתובת API (API URL)",
       "apiUrlDescription": "הכתובת הציבורית של ה-API של הפלטפורמה. השער שולח כל בקשה למארח זה אל ה-API, ולא אל האתר.",
-      "apiUrlExplanation": "השתמשו באחת מכתובות האתר עצמו (הבקשות מגיעות לנתיב /api שלו) או במארח ייעודי כמו api.example.com. כשמעבירים את האתר לדומיין חדש, שנו גם זאת: מארח שנשאר כאן מפסיק לשרת את האתר. ריק משתמש בכתובת שממנה הגיעה הבקשה."
+      "apiUrlExplanation": "השתמשו באחת מכתובות האתר עצמו (הבקשות מגיעות לנתיב /api שלו) או במארח ייעודי כמו api.example.com. כשמעבירים את האתר לדומיין חדש, שנו גם זאת: מארח שנשאר כאן מפסיק לשרת את האתר. ריק משתמש בכתובת שממנה הגיעה הבקשה.",
+      "brandIdentityCardDescription": "איך נקרא האתר ואיך הוא נראה בדפדפן ובמיילים.",
+      "siteCardDescription": "האם האתר פעיל והאם מנועי חיפוש רשאים לאנדקס אותו.",
+      "regionalDefaultsCardDescription": "אזור זמן ותבנית שעה בקונסולה.",
+      "notificationsCardDescription": "לאן נשלחים טפסים פנימיים והתראות מערכת.",
+      "searchEnginesCardDescription": "האם הכתובות של הפלטפורמה עצמה מופיעות במנועי חיפוש.",
+      "frontendAuthCardDescription": "איך מבקרים נכנסים ונרשמים באתר ובאפליקציה.",
+      "signUpEmailCardDescription": "המייל שחשבון חדש מקבל כדי לאשר את כתובתו.",
+      "usageReportCardDescription": "דוח השימוש שנשלח במייל, ולאן הוא הולך."
     },
     "appearance": {
       "appearance": "מראה",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "יש לבדוק את החיבור לחנות או לנסות שוב מאוחר יותר.",
     "inThisSite": "באתר זה",
     "premium": "פרימיום",
-    "aCleanAndModernTheme": "ערכת עיצוב נקייה ומודרנית לחזית Fromcode שלך.",
     "officialTheme": "ערכת עיצוב רשמית",
     "addToThisSite": "הוספה לאתר זה",
     "installNow": "התקנה עכשיו",

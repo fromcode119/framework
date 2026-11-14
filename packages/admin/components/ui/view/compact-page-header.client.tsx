@@ -19,6 +19,11 @@ export class CompactPageHeader extends PureReactor {
   @prop declare theme?: ThemeMode;
   /** Accepted for backward-compat and ignored — the header draws no icon. */
   @prop declare icon?: ReactNode;
+  /**
+   * The mark of the THING the page is about (a plugin's own icon), drawn as a small tile before the
+   * title. Only a page about one object passes it; section pages keep the plain title.
+   */
+  @prop declare mark?: ReactNode;
   @prop declare title: ReactNode;
   @prop declare subtitle?: ReactNode;
   /** Render a back button linking here (takes precedence over onBack). */
@@ -44,6 +49,7 @@ export class CompactPageHeader extends PureReactor {
         <div className={AdminClass.of('page-header__inner')}>
           <div className={AdminClass.of('page-header__main')}>
             {this.backButton()}
+            {this.mark ? <span className={AdminClass.of('page-header__mark')} aria-hidden="true">{this.mark}</span> : null}
             <div className={AdminClass.of('page-header__text')}>
               <h1 className={AdminClass.of('page-header__title')}>{title}</h1>
               {subtitle && <p className={AdminClass.of('page-header__subtitle')}>{subtitle}</p>}

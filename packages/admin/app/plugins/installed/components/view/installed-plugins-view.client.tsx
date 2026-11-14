@@ -87,14 +87,13 @@ export class InstalledPluginsView extends Reactor {
     this.handleDragOver(event);
   }
 
+  /** Every tab with its count, a zero included: the row says at a glance that nothing failed or waits for an update. */
   private renderTabs(): ReactNode {
     return (
+      <div className={AdminClass.of('ext-tabbar')}>
       <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('plugins.list.searchInstalledPlugins')}>
         {PluginListFilter.ORDER.map((filter) => {
           const count = this.count(filter);
-          // A tab for something that is not there (no updates, nothing failed) is left out, except
-          // the one standing open, so the list never sits under a heading it cannot leave.
-          if (!count && filter !== PluginListFilter.ALL && filter !== this.filter) return null;
           return (
             <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
               aria-current={filter === this.filter ? 'page' : undefined} onClick={() => { this.filter = filter; }}>
@@ -103,6 +102,8 @@ export class InstalledPluginsView extends Reactor {
           );
         })}
       </nav>
+      {this.renderToolbar()}
+      </div>
     );
   }
 
@@ -197,11 +198,9 @@ export class InstalledPluginsView extends Reactor {
       {this.loading ? <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('plugins.list.synchronizingGlobalMarketplaceCatalog')} /></div> : (
         <>
           {this.renderAlerts()}
-          {this.siteScope ? <PlatformScopeGate what={AdminI18n.t('plugins.list.installingPluginsForEverySite')}>{null}</PlatformScopeGate> : null}
+          {this.siteScope ? <PlatformScopeGate what="" text={AdminI18n.t('plugins.list.platformNote')}>{null}</PlatformScopeGate> : null}
           {this.siteScope ? <SitePluginOffers /> : null}
           {this.siteScope ? <SiteOwnPlugins /> : null}
-          {this.siteScope ? <h2 className={AdminClass.of('ext-section')}>{AdminI18n.t('plugins.list.installedOnThePlatform')}</h2> : null}
-          {this.renderToolbar()}
           {this.renderProgress()}
           {this.renderTabs()}
           {this.renderList()}

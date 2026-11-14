@@ -637,7 +637,8 @@
       "choose": "Välj en webbplats",
       "platformHint": "Ingen webbplats – tillägg, teman, källor, webbplatser, plattformsinställningar",
       "viaRole": "via plattformsroll",
-      "switch": "Byt webbplats"
+      "switch": "Byt webbplats",
+      "lockedShort": "Den här konsolen gäller en webbplats."
     },
     "account": {
       "singleSite": "Webbplatsen som den här driftsättningen betjänar",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Tillgängliga för webbplatsen",
       "pluginsThePlatformOffersTo": "Plugins som plattformen erbjuder webbplatser. Aktiveras ett läggs det bara till på den här webbplatsen.",
       "loading": "Läser in…",
-      "thePlatformOffersNoPlugins": "Plattformen erbjuder ännu inga plugins som webbplatser kan lägga till.",
       "synchronizingGlobalMarketplaceCatalog": "Synkroniserar den globala marknadsplatskatalogen",
       "pluginFailuresDetected": "Pluginfel upptäckta",
       "searchInstalledPlugins": "Sök bland installerade plugins...",
       "inspecting": "Granskar...",
       "uploadZipTarGz": "Ladda upp (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Installera plugins för alla webbplatser, uppdatera och ta bort dem samt aktivera sådana som plattformen inte erbjuder webbplatser,",
       "approvingHeldPlugins": "Godkänna det ett väntande plugin begär",
       "dragAndDropPluginZip": "Dra och släpp en plugin-fil (`.zip` eller `.tar.gz`) här, eller klicka för att ladda upp.",
       "tryADifferentSearchTerm2": "Prova ett annat sökord eller ladda upp ett nytt plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Med uppdatering",
       "tabErrors": "Med fel",
       "details": "Detaljer",
-      "installedOnThePlatform": "Installerade på plattformen"
+      "platformNote": "Installation för alla webbplatser görs i plattformen."
     },
     "upload": {
       "name": "Namn: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Välj det visuella utseendet för administrationspanelen.",
       "openPlatformScope": "Öppna plattformsomfånget",
       "loadingGeneralSettings": "Läser in allmänna inställningar...",
-      "generalConfiguration": "Allmän konfiguration",
       "brandIdentitySystemPreferences": "Varumärkesidentitet och systeminställningar",
       "saveChanges": "Spara ändringar",
       "generalSettingsCouldNotBe": "Det gick inte att läsa in de allmänna inställningarna",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-adress (API URL)",
       "apiUrlDescription": "Plattforms-API:ts publika adress. Gatewayen skickar alla förfrågningar för denna värd till API:t, inte till webbplatsen.",
-      "apiUrlExplanation": "Använd en av webbplatsens egna adresser (förfrågningar går till dess /api-sökväg) eller en dedikerad värd som api.example.com. När du flyttar webbplatsen till en ny domän ska du ändra även detta: en värd som lämnas kvar här slutar betjäna webbplatsen. Tomt använder adressen som förfrågan kom från."
+      "apiUrlExplanation": "Använd en av webbplatsens egna adresser (förfrågningar går till dess /api-sökväg) eller en dedikerad värd som api.example.com. När du flyttar webbplatsen till en ny domän ska du ändra även detta: en värd som lämnas kvar här slutar betjäna webbplatsen. Tomt använder adressen som förfrågan kom från.",
+      "brandIdentityCardDescription": "Vad webbplatsen heter och hur den ser ut i webbläsaren och i e-post.",
+      "siteCardDescription": "Om webbplatsen är live och om sökmotorer får indexera den.",
+      "regionalDefaultsCardDescription": "Tidszon och tidsformat i konsolen.",
+      "notificationsCardDescription": "Vart interna formulär och systemvarningar skickas.",
+      "searchEnginesCardDescription": "Om plattformens egna adresser syns i sökmotorer.",
+      "frontendAuthCardDescription": "Hur besökare loggar in och registrerar sig på webbplatsen och i appen.",
+      "signUpEmailCardDescription": "E-postmeddelandet ett nytt konto får för att bekräfta sin adress.",
+      "usageReportCardDescription": "Användningsrapporten som skickas via e-post, och vart den går."
     },
     "appearance": {
       "appearance": "Utseende",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Kontrollera anslutningen till marknadsplatsen eller försök igen senare.",
     "inThisSite": "På den här webbplatsen",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Ett rent och modernt tema för din Fromcode-frontend.",
     "officialTheme": "Officiellt tema",
     "addToThisSite": "Lägg till på webbplatsen",
     "installNow": "Installera nu",

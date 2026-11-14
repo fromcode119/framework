@@ -68,7 +68,7 @@ export class GeneralSignInCard extends PureReactor {
     return (
       <>
         {this.anyShown('frontend_auth_enabled', 'frontend_registration_enabled', 'app_auth_enabled', 'app_registration_enabled', 'app_anonymous_enabled', 'account_section_order') && (
-          <Card title={AdminI18n.t('settings.general.frontendAuth')}>
+          <Card title={AdminI18n.t('settings.general.frontendAuth')} description={AdminI18n.t('settings.general.frontendAuthCardDescription')}>
             {this.shown('frontend_auth_enabled') && (
               <SettingRow
                 theme={theme}

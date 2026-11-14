@@ -1,5 +1,6 @@
 import type { ISettingsTab } from '@core/interfaces/settings-tab.interface';
 import type { ISettingsTabGroup } from '@core/interfaces/settings-tab-group.interface';
+import type { ISettingsSection } from '@core/interfaces/settings-section.interface';
 import type { IPluginSettingsField } from '@core/plugin/interfaces/plugin-settings-field.interface';
 
 export interface IPluginSettingsSchema {
@@ -7,6 +8,8 @@ export interface IPluginSettingsSchema {
   tabs?: ISettingsTab[];
   /** Headings over the tabs (see `ISettingsTab.group`); optional. */
   groups?: ISettingsTabGroup[];
+  /** The line under each section heading the fields name in `admin.section`; optional. */
+  sections?: ISettingsSection[];
   
   // Optional validation function
   validate?: (

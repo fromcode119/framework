@@ -637,7 +637,8 @@
       "choose": "เลือกไซต์",
       "platformHint": "ไม่มีไซต์ — ปลั๊กอิน ธีม แหล่งที่มา ไซต์ การตั้งค่าแพลตฟอร์ม",
       "viaRole": "ผ่านบทบาทระดับแพลตฟอร์ม",
-      "switch": "สลับไซต์"
+      "switch": "สลับไซต์",
+      "lockedShort": "คอนโซลนี้ใช้สำหรับเว็บไซต์เดียว"
     },
     "account": {
       "singleSite": "ไซต์ที่การติดตั้งนี้ให้บริการ",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "พร้อมใช้สำหรับไซต์นี้",
       "pluginsThePlatformOffersTo": "ปลั๊กอินที่แพลตฟอร์มเสนอให้ไซต์ การเปิดใช้งานจะเพิ่มเฉพาะในไซต์นี้เท่านั้น",
       "loading": "กำลังโหลด…",
-      "thePlatformOffersNoPlugins": "แพลตฟอร์มยังไม่มีปลั๊กอินให้ไซต์เพิ่ม",
       "synchronizingGlobalMarketplaceCatalog": "กำลังซิงค์แคตตาล็อก Marketplace",
       "pluginFailuresDetected": "ตรวจพบปลั๊กอินที่ล้มเหลว",
       "searchInstalledPlugins": "ค้นหาปลั๊กอินที่ติดตั้ง...",
       "inspecting": "กำลังตรวจสอบ...",
       "uploadZipTarGz": "อัปโหลด (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "การติดตั้งปลั๊กอินสำหรับทุกไซต์ การอัปเดตและการลบ และการเปิดใช้ปลั๊กอินที่แพลตฟอร์มไม่ได้เสนอให้ไซต์",
       "approvingHeldPlugins": "การอนุมัติสิ่งที่ปลั๊กอินที่ถูกระงับร้องขอ",
       "dragAndDropPluginZip": "ลากและวางไฟล์ปลั๊กอิน `.zip` หรือ `.tar.gz` ที่นี่ หรือคลิกเพื่ออัปโหลด",
       "tryADifferentSearchTerm2": "ลองใช้คำค้นหาอื่นหรืออัปโหลดปลั๊กอินใหม่",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "มีอัปเดต",
       "tabErrors": "มีข้อผิดพลาด",
       "details": "รายละเอียด",
-      "installedOnThePlatform": "ติดตั้งบนแพลตฟอร์ม"
+      "platformNote": "การติดตั้งสำหรับทุกเว็บไซต์ทำในแพลตฟอร์ม"
     },
     "upload": {
       "name": "ชื่อ: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "เลือกรูปแบบการแสดงผลของแผงผู้ดูแลระบบ",
       "openPlatformScope": "เปิดขอบเขตแพลตฟอร์ม",
       "loadingGeneralSettings": "กำลังโหลดการตั้งค่าทั่วไป...",
-      "generalConfiguration": "การกำหนดค่าทั่วไป",
       "brandIdentitySystemPreferences": "อัตลักษณ์แบรนด์และค่ากำหนดของระบบ",
       "saveChanges": "บันทึกการเปลี่ยนแปลง",
       "generalSettingsCouldNotBe": "ไม่สามารถโหลดการตั้งค่าทั่วไปได้",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "ที่อยู่ API (API URL)",
       "apiUrlDescription": "ที่อยู่สาธารณะของ API แพลตฟอร์ม เกตเวย์จะส่งทุกคำขอสำหรับโฮสต์นี้ไปยัง API ไม่ใช่ไปยังไซต์",
-      "apiUrlExplanation": "ใช้ที่อยู่หนึ่งของไซต์เอง (คำขอจะไปยังพาธ /api) หรือโฮสต์เฉพาะ เช่น api.example.com เมื่อย้ายไซต์ไปยังโดเมนใหม่ ให้เปลี่ยนค่านี้ด้วย เพราะโฮสต์ที่ระบุไว้ที่นี่จะไม่แสดงไซต์อีก เว้นว่างเพื่อใช้ที่อยู่ที่คำขอส่งมา"
+      "apiUrlExplanation": "ใช้ที่อยู่หนึ่งของไซต์เอง (คำขอจะไปยังพาธ /api) หรือโฮสต์เฉพาะ เช่น api.example.com เมื่อย้ายไซต์ไปยังโดเมนใหม่ ให้เปลี่ยนค่านี้ด้วย เพราะโฮสต์ที่ระบุไว้ที่นี่จะไม่แสดงไซต์อีก เว้นว่างเพื่อใช้ที่อยู่ที่คำขอส่งมา",
+      "brandIdentityCardDescription": "ชื่อของเว็บไซต์และลักษณะที่แสดงในเบราว์เซอร์และอีเมล",
+      "siteCardDescription": "เว็บไซต์เปิดใช้งานอยู่หรือไม่ และเครื่องมือค้นหาจัดทำดัชนีได้หรือไม่",
+      "regionalDefaultsCardDescription": "เขตเวลาและรูปแบบเวลาในคอนโซล",
+      "notificationsCardDescription": "แบบฟอร์มภายในและการแจ้งเตือนระบบถูกส่งไปที่ใด",
+      "searchEnginesCardDescription": "ที่อยู่ของแพลตฟอร์มเองแสดงในเครื่องมือค้นหาหรือไม่",
+      "frontendAuthCardDescription": "ผู้เยี่ยมชมเข้าสู่ระบบและสมัครสมาชิกบนเว็บไซต์และในแอปอย่างไร",
+      "signUpEmailCardDescription": "อีเมลที่บัญชีใหม่ได้รับเพื่อยืนยันที่อยู่",
+      "usageReportCardDescription": "รายงานการใช้งานที่ส่งทางอีเมล และส่งไปที่ใด"
     },
     "appearance": {
       "appearance": "รูปลักษณ์",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "ตรวจสอบการเชื่อมต่อมาร์เก็ตเพลส หรือลองอีกครั้งภายหลัง",
     "inThisSite": "อยู่ในไซต์นี้",
     "premium": "พรีเมียม",
-    "aCleanAndModernTheme": "ธีมที่เรียบง่ายและทันสมัยสำหรับฟรอนต์เอนด์ Fromcode ของคุณ",
     "officialTheme": "ธีมทางการ",
     "addToThisSite": "เพิ่มลงในไซต์นี้",
     "installNow": "ติดตั้งเลย",

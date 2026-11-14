@@ -40,7 +40,7 @@ export class ThemesLayout extends AdminComponent {
     // A theme's own page carries its own header (where you are, the theme, its actions) and nothing below
     // it: the section header and the footer belong to the lists.
     if (this.isDetailPage) {
-      return <div className="flex w-full flex-col animate-in fade-in duration-500">{this.children}</div>;
+      return <div className={`flex w-full flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>{this.children}</div>;
     }
     const { isMarketplace, activeTab } = this;
     const subtitle = isMarketplace
@@ -58,8 +58,9 @@ export class ThemesLayout extends AdminComponent {
     );
 
     return (
-      <div className="w-full animate-in fade-in duration-700">
-        <CompactPageHeader title={activeTab.label} subtitle={subtitle} actions={nav} />
+      // The marketplace is a gallery and keeps the full width; the list reads as the settings column.
+      <div className={`w-full animate-in fade-in duration-700 ${isMarketplace ? '' : AdminClass.of('settings-page')}`}>
+        <CompactPageHeader title={AdminI18n.t('nav.items.themes')} subtitle={subtitle} actions={nav} />
         <div className="w-full p-6">{this.children}</div>
       </div>
     );
