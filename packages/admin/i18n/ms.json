@@ -2967,6 +2967,7 @@
         "updating": "Mengemas kini ke v{{to}}: {{step}}…",
         "failed": "Kemas kini ke v{{to}} tidak bermula: {{error}}",
         "rolledBack": "Kemas kini ke v{{to}} telah dibatalkan, versi sebelumnya sedang berjalan: {{error}}",
+        "deployMode": "Aplikasi diganti melalui {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} ditanda sebagai breaking, jadi ia tidak dipasang secara automatik. Baca notanya, kemudian tekan butang Pasang.",
         "succeeded": "Dikemas kini ke v{{to}}.",
         "ready": "Pengemas kini sedang berjalan dan menyemak versi baharu setiap minit.",

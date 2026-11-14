@@ -52,6 +52,9 @@ export class SelfUpdateRun {
   private readonly replacement: ContainerReplacement;
   private readonly deployment: ReleaseDeployment;
 
+  /** Rolling or restart, and why — kept so the outcome can say it after the steps are gone. */
+  plan: { mode: string; reason: string } | null = null;
+
   constructor(
     private readonly engine: IDockerEngine,
     private readonly health: IUpdaterHealth,
@@ -88,6 +91,7 @@ export class SelfUpdateRun {
     const plan = unpinned
       ? { mode: DeployMode.RESTART, reason: 'this install names no version yet, so the first update pins one with a restart' }
       : await new DeployStrategy(this.stackFor(tag, sources.release)).choose();
+    this.plan = { mode: plan.mode.value, reason: plan.reason };
     this.onStep(`Deploy mode: ${plan.mode.value} — ${plan.reason}`);
     if (plan.mode === DeployMode.ROLLING) return this.roll(tag, replacedTag, sources);
     return this.restart(tag, from, replacedTag, targets, sources.release);

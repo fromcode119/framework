@@ -2967,6 +2967,7 @@
         "updating": "正在更新至 v{{to}}：{{step}}…",
         "failed": "更新至 v{{to}} 未能開始：{{error}}",
         "rolledBack": "更新至 v{{to}} 已復原，目前執行先前的版本：{{error}}",
+        "deployMode": "應用程式透過 {{mode}} 替換：{{reason}}",
         "heldBreaking": "v{{version}} 標示為重大變更，因此不會自動安裝。請先閱讀其版本說明，再按下「安裝」按鈕。",
         "succeeded": "已更新至 v{{to}}。",
         "ready": "更新程式正在執行，每分鐘檢查一次新版本。",

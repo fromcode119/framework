@@ -2967,6 +2967,7 @@
         "updating": "Ina-update sa v{{to}}: {{step}}…",
         "failed": "Hindi nagsimula ang pag-update sa v{{to}}: {{error}}",
         "rolledBack": "Ibinalik ang pag-update sa v{{to}}, tumatakbo ang dating bersyon: {{error}}",
+        "deployMode": "Pinalitan ang mga app sa pamamagitan ng {{mode}}: {{reason}}",
         "heldBreaking": "May markang breaking ang v{{version}}, kaya hindi ito awtomatikong ini-install. Basahin ang notes nito, pagkatapos ay pindutin ang button na I-install.",
         "succeeded": "Na-update sa v{{to}}.",
         "ready": "Tumatakbo ang updater at nagche-check ng mga bagong bersyon bawat minuto.",

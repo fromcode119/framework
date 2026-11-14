@@ -2967,6 +2967,7 @@
         "updating": "Qed jiġi aġġornat għal v{{to}}: {{step}}…",
         "failed": "L-aġġornament għal v{{to}} ma bediex: {{error}}",
         "rolledBack": "L-aġġornament għal v{{to}} tħassar u l-verżjoni ta' qabel qed taħdem: {{error}}",
+        "deployMode": "L-applikazzjonijiet inbidlu b'{{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} hija mmarkata bħala breaking, għalhekk ma tiġix installata awtomatikament. Aqra n-noti tagħha, imbagħad agħfas il-buttuna Installa.",
         "succeeded": "Ġie aġġornat għal v{{to}}.",
         "ready": "Is-servizz tal-aġġornament qed jaħdem u jfittex verżjonijiet ġodda kull minuta.",

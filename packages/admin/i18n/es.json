@@ -2967,6 +2967,7 @@
         "updating": "Actualizando a la v{{to}}: {{step}}…",
         "failed": "La actualización a la v{{to}} no se inició: {{error}}",
         "rolledBack": "Se ha revertido la actualización a la v{{to}} y se está ejecutando la versión anterior: {{error}}",
+        "deployMode": "Aplicaciones sustituidas mediante {{mode}}: {{reason}}",
         "heldBreaking": "La v{{version}} está marcada como incompatible, por lo que no se instala automáticamente. Lea sus notas y pulse el botón Instalar.",
         "succeeded": "Actualizado a la v{{to}}.",
         "ready": "El servicio de actualización está en ejecución y busca nuevas versiones cada minuto.",

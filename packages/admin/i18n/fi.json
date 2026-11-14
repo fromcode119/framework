@@ -2967,6 +2967,7 @@
         "updating": "Päivitetään versioon v{{to}}: {{step}}…",
         "failed": "Päivitys versioon v{{to}} ei käynnistynyt: {{error}}",
         "rolledBack": "Päivitys versioon v{{to}} peruttiin, ja edellinen versio on käytössä: {{error}}",
+        "deployMode": "Sovellukset vaihdettiin tavalla {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} on merkitty yhteensopimattomaksi, joten sitä ei asenneta automaattisesti. Lue sen julkaisutiedot ja paina sitten Asenna-painiketta.",
         "succeeded": "Päivitetty versioon v{{to}}.",
         "ready": "Päivityspalvelu on käynnissä ja tarkistaa uudet versiot minuutin välein.",

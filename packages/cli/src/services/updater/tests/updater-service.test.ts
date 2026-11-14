@@ -83,6 +83,18 @@ describe('UpdaterService', () => {
     expect(api.reported.length).toBe(reports);
   });
 
+  it('keeps how the apps were replaced, and why, in the finished report', async () => {
+    const { updater, api } = withUpdater('0.2.392');
+
+    await updater.tick();
+
+    const done = api.reported.at(-1);
+    expect(done.state).toBe('succeeded');
+    expect(['rolling', 'restart']).toContain(done.deployMode);
+    expect(done.deployReason).not.toBe('');
+    expect(done.steps.some((step: string) => step.startsWith('Deploy mode:'))).toBe(true);
+  });
+
   it('starts its successor as the release\'s compose files declare the updater service', async () => {
     const { updater, engine } = withUpdater('0.2.392');
 

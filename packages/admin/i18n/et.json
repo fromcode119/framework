@@ -2967,6 +2967,7 @@
         "updating": "Uuendamine versioonile v{{to}}: {{step}}…",
         "failed": "Uuendamine versioonile v{{to}} ei käivitunud: {{error}}",
         "rolledBack": "Uuendus versioonile v{{to}} võeti tagasi, töötab eelmine versioon: {{error}}",
+        "deployMode": "Rakendused vahetati viisil {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} on märgitud ühilduvust rikkuvaks, seega seda automaatselt ei paigaldata. Lugege selle märkmeid ja vajutage siis nuppu Paigalda.",
         "succeeded": "Uuendatud versioonile v{{to}}.",
         "ready": "Uuendaja töötab ja kontrollib uusi versioone iga minut.",

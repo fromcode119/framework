@@ -2967,6 +2967,7 @@
         "updating": "Aktualizace na v{{to}}: {{step}}…",
         "failed": "Aktualizace na v{{to}} se nespustila: {{error}}",
         "rolledBack": "Aktualizace na v{{to}} byla vrácena, běží předchozí verze: {{error}}",
+        "deployMode": "Aplikace nahrazeny pomocí {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} je označena jako nekompatibilní, proto se neinstaluje automaticky. Přečtěte si její poznámky a poté stiskněte tlačítko Nainstalovat.",
         "succeeded": "Aktualizováno na v{{to}}.",
         "ready": "Služba aktualizací běží a každou minutu kontroluje nové verze.",

@@ -66,6 +66,14 @@ services:
   # means on. (No nested `${A:-${B}}` default — not every compose this file meets resolves one.)
   updater:
     image: ghcr.io/fromcode119/framework-gateway:${VERSION:-latest}
+    # The journal, like every other service (`x-platform-logging` in the full-stack file, which an anchor
+    # cannot reach from here). On json-file each handover deleted the retiring updater's log, and with it
+    # the only record of why an update restarted instead of rolling.
+    logging:
+      driver: ${PLATFORM_LOG_DRIVER:-journald}
+      options:
+        tag: "{{.Name}}"
+        labels: com.docker.compose.service
     command: node packages/cli/dist/bin.js system updater
     user: root
     environment:

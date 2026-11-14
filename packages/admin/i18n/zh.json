@@ -2967,6 +2967,7 @@
         "updating": "正在更新至 v{{to}}：{{step}}…",
         "failed": "更新至 v{{to}} 未能启动：{{error}}",
         "rolledBack": "更新至 v{{to}} 已撤销，当前运行的是之前的版本：{{error}}",
+        "deployMode": "应用通过 {{mode}} 替换：{{reason}}",
         "heldBreaking": "v{{version}} 被标记为破坏性更新，因此不会自动安装。请阅读其发布说明，然后点击“安装”按钮。",
         "succeeded": "已更新至 v{{to}}。",
         "ready": "更新服务正在运行，每分钟检查一次新版本。",

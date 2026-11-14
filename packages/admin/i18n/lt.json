@@ -2967,6 +2967,7 @@
         "updating": "Atnaujinama į v{{to}}: {{step}}…",
         "failed": "Atnaujinimas į v{{to}} neprasidėjo: {{error}}",
         "rolledBack": "Atnaujinimas į v{{to}} atšauktas, veikia ankstesnė versija: {{error}}",
+        "deployMode": "Programos pakeistos būdu {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} pažymėta kaip nesuderinama, todėl neįdiegiama automatiškai. Perskaitykite jos pastabas, tada spustelėkite mygtuką „Įdiegti“.",
         "succeeded": "Atnaujinta į v{{to}}.",
         "ready": "Atnaujinimo tarnyba veikia ir naujų versijų tikrina kas minutę.",

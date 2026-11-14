@@ -2967,6 +2967,7 @@
         "updating": "Frissítés a v{{to}} verzióra: {{step}}…",
         "failed": "A v{{to}} verzióra való frissítés nem indult el: {{error}}",
         "rolledBack": "A v{{to}} verzióra való frissítés visszavonva, az előző verzió fut: {{error}}",
+        "deployMode": "Alkalmazások cseréje {{mode}} módon: {{reason}}",
         "heldBreaking": "A v{{version}} nem kompatibilisként van jelölve, ezért nem települ automatikusan. Olvassa el a kiadási megjegyzéseket, majd nyomja meg a Telepítés gombot.",
         "succeeded": "Frissítve a v{{to}} verzióra.",
         "ready": "A frissítő fut, és percenként keres új verziókat.",

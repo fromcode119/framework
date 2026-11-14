@@ -2967,6 +2967,7 @@
         "updating": "Updating to v{{to}}: {{step}}…",
         "failed": "The update to v{{to}} did not start: {{error}}",
         "rolledBack": "The update to v{{to}} was undone, the previous version is running: {{error}}",
+        "deployMode": "Apps replaced by {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} is marked breaking, so it is not installed automatically. Read its notes, then press the Install button.",
         "succeeded": "Updated to v{{to}}.",
         "ready": "The updater is running and checks for new versions every minute.",

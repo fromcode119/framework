@@ -2967,6 +2967,7 @@
         "updating": "Nuashonrú go v{{to}}: {{step}}…",
         "failed": "Níor thosaigh an nuashonrú go v{{to}}: {{error}}",
         "rolledBack": "Cealaíodh an nuashonrú go v{{to}}, tá an leagan roimhe seo ag rith: {{error}}",
+        "deployMode": "Athchuireadh na feidhmchláir le {{mode}}: {{reason}}",
         "heldBreaking": "Tá v{{version}} marcáilte mar leagan briste, mar sin ní shuiteáiltear go huathoibríoch é. Léigh a nótaí, ansin brúigh an cnaipe Suiteáil.",
         "succeeded": "Nuashonraithe go v{{to}}.",
         "ready": "Tá an nuashonraitheoir ag rith agus seiceálann sé le haghaidh leaganacha nua gach nóiméad.",

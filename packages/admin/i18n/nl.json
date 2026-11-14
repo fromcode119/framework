@@ -2967,6 +2967,7 @@
         "updating": "Bijwerken naar v{{to}}: {{step}}…",
         "failed": "De update naar v{{to}} is niet gestart: {{error}}",
         "rolledBack": "De update naar v{{to}} is teruggedraaid, de vorige versie draait: {{error}}",
+        "deployMode": "Apps vervangen via {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} is gemarkeerd als breaking en wordt daarom niet automatisch geïnstalleerd. Lees de notities en druk dan op de knop Installeren.",
         "succeeded": "Bijgewerkt naar v{{to}}.",
         "ready": "De updater draait en controleert elke minuut op nieuwe versies.",

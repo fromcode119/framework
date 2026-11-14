@@ -9,4 +9,8 @@ export interface IUpdaterStatus {
   step: string;
   steps: string[];
   error: string;
+  /** `rolling` or `restart` — how the apps were replaced; empty until the run has chosen. */
+  deployMode: string;
+  /** Why that mode: the operator's setting, a migration, or the memory the box has. */
+  deployReason: string;
 }

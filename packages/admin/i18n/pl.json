@@ -2967,6 +2967,7 @@
         "updating": "Aktualizowanie do v{{to}}: {{step}}…",
         "failed": "Aktualizacja do v{{to}} nie została uruchomiona: {{error}}",
         "rolledBack": "Aktualizacja do v{{to}} została cofnięta, działa poprzednia wersja: {{error}}",
+        "deployMode": "Aplikacje zastąpione przez {{mode}}: {{reason}}",
         "heldBreaking": "Wersja v{{version}} jest oznaczona jako niezgodna wstecz, więc nie zostanie zainstalowana automatycznie. Przeczytaj informacje o zmianach, a następnie kliknij przycisk Zainstaluj.",
         "succeeded": "Zaktualizowano do v{{to}}.",
         "ready": "Usługa aktualizacji działa i co minutę sprawdza dostępność nowych wersji.",
