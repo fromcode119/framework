@@ -637,7 +637,8 @@
       "choose": "Pilih laman",
       "platformHint": "Tiada laman — pemalam, tema, sumber, laman, tetapan platform",
       "viaRole": "melalui peranan platform",
-      "switch": "Tukar laman"
+      "switch": "Tukar laman",
+      "lockedShort": "Konsol ini untuk satu laman."
     },
     "account": {
       "singleSite": "Laman yang dilayani oleh penggunaan ini",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Tersedia untuk laman ini",
       "pluginsThePlatformOffersTo": "Pemalam yang ditawarkan platform kepada laman. Menghidupkan satu pemalam hanya menambahkannya pada laman ini.",
       "loading": "Memuatkan…",
-      "thePlatformOffersNoPlugins": "Platform belum menawarkan sebarang pemalam untuk ditambah oleh laman.",
       "synchronizingGlobalMarketplaceCatalog": "Menyegerakkan Katalog Pasaran Global",
       "pluginFailuresDetected": "Kegagalan Pemalam Dikesan",
       "searchInstalledPlugins": "Cari pemalam yang dipasang...",
       "inspecting": "Memeriksa...",
       "uploadZipTarGz": "Muat naik (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Memasang pemalam untuk setiap laman, mengemas kini dan mengalih keluarnya, serta menghidupkan mana-mana pemalam yang tidak ditawarkan platform kepada laman,",
       "approvingHeldPlugins": "Meluluskan permintaan pemalam yang ditahan",
       "dragAndDropPluginZip": "Seret dan lepaskan fail pemalam `.zip` atau `.tar.gz` di sini, atau klik untuk memuat naik.",
       "tryADifferentSearchTerm2": "Cuba istilah carian lain atau muat naik pemalam baharu.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Ada kemas kini",
       "tabErrors": "Ada ralat",
       "details": "Butiran",
-      "installedOnThePlatform": "Dipasang pada platform"
+      "platformNote": "Pemasangan untuk semua laman dibuat dalam platform."
     },
     "upload": {
       "name": "Nama: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Pilih gaya visual panel pentadbiran anda.",
       "openPlatformScope": "Buka Skop Platform",
       "loadingGeneralSettings": "Memuatkan tetapan umum...",
-      "generalConfiguration": "Konfigurasi Umum",
       "brandIdentitySystemPreferences": "Identiti jenama & keutamaan sistem",
       "saveChanges": "Simpan Perubahan",
       "generalSettingsCouldNotBe": "Tetapan umum tidak dapat dimuatkan",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Alamat API (API URL)",
       "apiUrlDescription": "Alamat awam API platform. Get laluan menghantar setiap permintaan untuk hos ini ke API, bukan ke tapak.",
-      "apiUrlExplanation": "Gunakan salah satu alamat tapak itu sendiri (permintaan pergi ke laluan /api) atau hos khusus seperti api.example.com. Apabila anda memindahkan tapak ke domain baharu, tukar ini juga: hos yang ditinggalkan di sini akan berhenti melayani tapak. Kosong menggunakan alamat asal permintaan."
+      "apiUrlExplanation": "Gunakan salah satu alamat tapak itu sendiri (permintaan pergi ke laluan /api) atau hos khusus seperti api.example.com. Apabila anda memindahkan tapak ke domain baharu, tukar ini juga: hos yang ditinggalkan di sini akan berhenti melayani tapak. Kosong menggunakan alamat asal permintaan.",
+      "brandIdentityCardDescription": "Nama tapak dan rupanya dalam pelayar serta e-mel.",
+      "siteCardDescription": "Sama ada tapak sudah aktif dan sama ada enjin carian boleh mengindeksnya.",
+      "regionalDefaultsCardDescription": "Zon waktu dan format masa dalam konsol.",
+      "notificationsCardDescription": "Ke mana borang dalaman dan amaran sistem dihantar.",
+      "searchEnginesCardDescription": "Sama ada alamat platform sendiri muncul dalam enjin carian.",
+      "frontendAuthCardDescription": "Cara pelawat log masuk dan mendaftar di tapak dan dalam aplikasi.",
+      "signUpEmailCardDescription": "E-mel yang diterima akaun baharu untuk mengesahkan alamatnya.",
+      "usageReportCardDescription": "Laporan penggunaan yang dihantar melalui e-mel, dan destinasinya."
     },
     "appearance": {
       "appearance": "Penampilan",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Semak sambungan pasaran anda atau cuba lagi kemudian.",
     "inThisSite": "Dalam tapak ini",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Tema yang kemas dan moden untuk bahagian hadapan Fromcode anda.",
     "officialTheme": "Tema Rasmi",
     "addToThisSite": "Tambah pada tapak ini",
     "installNow": "Pasang Sekarang",

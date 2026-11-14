@@ -637,7 +637,8 @@
       "choose": "サイトを選択",
       "platformHint": "サイトなし — プラグイン、テーマ、ソース、サイト、プラットフォーム設定",
       "viaRole": "プラットフォームロール経由",
-      "switch": "サイトを切り替え"
+      "switch": "サイトを切り替え",
+      "lockedShort": "このコンソールは1つのサイト専用です。"
     },
     "account": {
       "singleSite": "このデプロイが提供するサイト",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "このサイトで利用可能",
       "pluginsThePlatformOffersTo": "プラットフォームがサイト向けに提供するプラグインです。有効にすると、このサイトにのみ追加されます。",
       "loading": "読み込み中…",
-      "thePlatformOffersNoPlugins": "サイトで追加できるプラグインはまだ提供されていません。",
       "synchronizingGlobalMarketplaceCatalog": "マーケットプレイスのカタログを同期中",
       "pluginFailuresDetected": "プラグインのエラーを検出しました",
       "searchInstalledPlugins": "インストール済みプラグインを検索...",
       "inspecting": "検査中...",
       "uploadZipTarGz": "アップロード (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "全サイト向けのプラグインのインストール、更新、削除、およびサイト向けに提供されていないプラグインの有効化、",
       "approvingHeldPlugins": "保留中のプラグインが要求する権限の承認",
       "dragAndDropPluginZip": "プラグインの `.zip` または `.tar.gz` をここにドラッグ＆ドロップするか、クリックしてアップロードしてください。",
       "tryADifferentSearchTerm2": "別の検索語を試すか、新しいプラグインをアップロードしてください。",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "更新あり",
       "tabErrors": "エラーあり",
       "details": "詳細",
-      "installedOnThePlatform": "プラットフォームにインストール済み"
+      "platformNote": "すべてのサイトへのインストールはプラットフォームで行います。"
     },
     "upload": {
       "name": "名前: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "管理画面のビジュアルスタイルを選択します。",
       "openPlatformScope": "プラットフォームスコープを開く",
       "loadingGeneralSettings": "一般設定を読み込んでいます...",
-      "generalConfiguration": "一般設定",
       "brandIdentitySystemPreferences": "ブランドアイデンティティとシステム設定",
       "saveChanges": "変更を保存",
       "generalSettingsCouldNotBe": "一般設定を読み込めませんでした",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API アドレス（API URL）",
       "apiUrlDescription": "プラットフォーム API の公開アドレスです。ゲートウェイはこのホスト宛てのすべてのリクエストを、サイトではなく API に送ります。",
-      "apiUrlExplanation": "サイト自身のアドレスのいずれか（リクエストは /api パスへ送られます）、または api.example.com のような専用ホストを指定します。サイトを新しいドメインへ移行する際はここも変更してください。ここに残したホストではサイトが表示されなくなります。空欄の場合はリクエスト元のアドレスが使われます。"
+      "apiUrlExplanation": "サイト自身のアドレスのいずれか（リクエストは /api パスへ送られます）、または api.example.com のような専用ホストを指定します。サイトを新しいドメインへ移行する際はここも変更してください。ここに残したホストではサイトが表示されなくなります。空欄の場合はリクエスト元のアドレスが使われます。",
+      "brandIdentityCardDescription": "サイトの名前と、ブラウザやメールでの見え方。",
+      "siteCardDescription": "サイトが公開中かどうか、検索エンジンにインデックスさせるかどうか。",
+      "regionalDefaultsCardDescription": "コンソールのタイムゾーンと時刻の形式。",
+      "notificationsCardDescription": "社内フォームとシステム通知の送信先。",
+      "searchEnginesCardDescription": "プラットフォーム自体のアドレスを検索エンジンに表示するかどうか。",
+      "frontendAuthCardDescription": "訪問者がサイトとアプリでログイン・登録する方法。",
+      "signUpEmailCardDescription": "新しいアカウントがアドレスを確認するためのメール。",
+      "usageReportCardDescription": "メールで送る利用状況レポートとその送信先。"
     },
     "appearance": {
       "appearance": "外観",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "マーケットプレイスへの接続を確認するか、しばらくしてから再度お試しください。",
     "inThisSite": "このサイトに追加済み",
     "premium": "プレミアム",
-    "aCleanAndModernTheme": "Fromcode フロントエンド向けのクリーンでモダンなテーマ。",
     "officialTheme": "公式テーマ",
     "addToThisSite": "このサイトに追加",
     "installNow": "今すぐインストール",

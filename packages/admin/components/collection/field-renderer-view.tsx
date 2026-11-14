@@ -9,6 +9,8 @@ import { FieldBooleanRow } from '@/components/collection/field-boolean-row';
 import { FieldLockedRow } from '@/components/collection/view/field-locked-row.client';
 import { FieldHelpButton } from '@/components/collection/view/field-help-button.client';
 import { ReadOnlyFieldValue } from '@/components/collection/view/read-only-field-value.client';
+import { FieldSummary } from '@/components/collection/view/field-summary.client';
+import { SettingRow } from '@/components/ui/view/setting-row.client';
 
 /**
  * One field of a record, rendered by whichever component its type resolves to.
@@ -74,6 +76,17 @@ export class FieldRendererView extends FieldRendererViewLocale {
     return Boolean(this.field.admin?.hideLabel);
   }
 
+  /** A description too long for its one line on a settings row: cut there, whole behind the ⓘ. */
+  private isLongDescription(description: string): boolean {
+    return description.length > SettingRow.LONG_DESCRIPTION;
+  }
+
+  /** On a settings row, the description under the name — see `FieldSummary`. Nothing elsewhere. */
+  private summaryOf(description: string): ReactElement | undefined {
+    if (!this.inlineDescription || !description) return undefined;
+    return <FieldSummary text={description} clamp={this.isLongDescription(description) && !this.helpOpen} />;
+  }
+
   render(): ReactElement {
     const fieldComponents = (this.plugins as any).fieldComponents || {};
     const isLocalizedField = this.isLocalizedField;
@@ -91,6 +104,10 @@ export class FieldRendererView extends FieldRendererViewLocale {
           <FieldBooleanRow
             label={label}
             description={resolvedFieldDescription}
+            clamp={Boolean(this.inlineDescription) && this.isLongDescription(resolvedFieldDescription) && !this.helpOpen}
+            help={this.inlineDescription && this.isLongDescription(resolvedFieldDescription)
+              ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} />
+              : undefined}
             checked={FieldRendererUtils.toBooleanValue(currentValue, this.field.defaultValue)}
             onChange={this.updateValue}
             required={Boolean(this.field.required)}
@@ -113,7 +130,8 @@ export class FieldRendererView extends FieldRendererViewLocale {
           <FieldLockedRow
             label={label}
             value={this.lockedText(currentValue, resolvedCurrentText)}
-            description={resolvedFieldDescription}
+            description={this.inlineDescription && !this.isLongDescription(resolvedFieldDescription) ? '' : resolvedFieldDescription}
+            summary={this.summaryOf(resolvedFieldDescription)}
             hideLabel={Boolean(this.field.admin?.hideLabel)}
             helpOpen={this.helpOpen}
             onToggleHelp={this.toggleHelp}
@@ -126,10 +144,15 @@ export class FieldRendererView extends FieldRendererViewLocale {
     }
 
     const descriptionOnDemand = Boolean(resolvedFieldDescription) && !this.showsProvenanceInline && !this.alwaysPrintsDescription();
+    // On a settings row the description is printed under the name (`summary`); the ⓘ is only for one
+    // too long for its line.
+    const summary = descriptionOnDemand ? this.summaryOf(resolvedFieldDescription) : undefined;
+    const offersHelp = descriptionOnDemand && (!summary || this.isLongDescription(resolvedFieldDescription));
     return (
       <div className={FieldRendererUtils.wrapperClassName(this.field)}>
         <FieldRendererHeader
-          help={descriptionOnDemand ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} /> : undefined}
+          help={offersHelp ? <FieldHelpButton label={label} open={this.helpOpen} onToggle={this.toggleHelp} /> : undefined}
+          summary={summary}
           field={this.field}
           label={label}
           theme={this.theme}
@@ -173,7 +196,7 @@ export class FieldRendererView extends FieldRendererViewLocale {
 
         <FieldRendererFooter
           field={this.field}
-          resolvedFieldDescription={this.showsProvenanceInline || (descriptionOnDemand && !this.helpOpen) ? '' : resolvedFieldDescription}
+          resolvedFieldDescription={this.showsProvenanceInline || summary || (descriptionOnDemand && !this.helpOpen) ? '' : resolvedFieldDescription}
           errors={this.errors}
           provenance={this.provenance}
           localeFallback={this.localeFallback}

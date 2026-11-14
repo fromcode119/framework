@@ -637,7 +637,8 @@
       "choose": "Odaberite mjesto",
       "platformHint": "Bez mjesta — dodaci, teme, izvori, mjesta, postavke platforme",
       "viaRole": "putem uloge na platformi",
-      "switch": "Promijeni mjesto"
+      "switch": "Promijeni mjesto",
+      "lockedShort": "Ova konzola je za jednu web-stranicu."
     },
     "account": {
       "singleSite": "Mjesto koje ova instalacija poslužuje",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Dostupno ovoj stranici",
       "pluginsThePlatformOffersTo": "Dodaci koje platforma nudi stranicama. Uključivanje dodaje dodatak samo ovoj stranici.",
       "loading": "Učitavanje…",
-      "thePlatformOffersNoPlugins": "Platforma još ne nudi dodatke koje stranice mogu dodati.",
       "synchronizingGlobalMarketplaceCatalog": "Sinkronizacija globalnog kataloga trgovine",
       "pluginFailuresDetected": "Otkrivene pogreške dodataka",
       "searchInstalledPlugins": "Pretraži instalirane dodatke...",
       "inspecting": "Provjera...",
       "uploadZipTarGz": "Prenesi (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instaliranje dodataka za sve stranice, njihovo ažuriranje i uklanjanje te uključivanje onih koje platforma ne nudi stranicama,",
       "approvingHeldPlugins": "Odobravanje onoga što zadržani dodatak traži",
       "dragAndDropPluginZip": "Povucite i ispustite datoteku dodatka `.zip` ili `.tar.gz` ovdje ili kliknite za prijenos.",
       "tryADifferentSearchTerm2": "Pokušajte s drugim pojmom za pretraživanje ili prenesite novi dodatak.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "S ažuriranjem",
       "tabErrors": "S greškom",
       "details": "Detalji",
-      "installedOnThePlatform": "Instalirano na platformi"
+      "platformNote": "Instalacija za sve stranice radi se na platformi."
     },
     "upload": {
       "name": "Naziv: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Odaberite vizualni stil administracijske ploče.",
       "openPlatformScope": "Otvori opseg platforme",
       "loadingGeneralSettings": "Učitavanje općih postavki...",
-      "generalConfiguration": "Opća konfiguracija",
       "brandIdentitySystemPreferences": "Identitet brenda i postavke sustava",
       "saveChanges": "Spremi promjene",
       "generalSettingsCouldNotBe": "Opće postavke nije moguće učitati",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Adresa API-ja (API URL)",
       "apiUrlDescription": "Javna adresa API-ja platforme. Pristupnik svaki zahtjev za ovaj host šalje API-ju, a ne web-mjestu.",
-      "apiUrlExplanation": "Koristite jednu od adresa web-mjesta (zahtjevi idu na putanju /api) ili zaseban host poput api.example.com. Kada web-mjesto premjestite na novu domenu, promijenite i ovo: host ostavljen ovdje prestaje posluživati web-mjesto. Prazno koristi adresu s koje je zahtjev došao."
+      "apiUrlExplanation": "Koristite jednu od adresa web-mjesta (zahtjevi idu na putanju /api) ili zaseban host poput api.example.com. Kada web-mjesto premjestite na novu domenu, promijenite i ovo: host ostavljen ovdje prestaje posluživati web-mjesto. Prazno koristi adresu s koje je zahtjev došao.",
+      "brandIdentityCardDescription": "Kako se stranica zove i kako izgleda u pregledniku i e-porukama.",
+      "siteCardDescription": "Je li stranica objavljena i smiju li je tražilice indeksirati.",
+      "regionalDefaultsCardDescription": "Vremenska zona i format vremena u konzoli.",
+      "notificationsCardDescription": "Kamo stižu interni obrasci i upozorenja sustava.",
+      "searchEnginesCardDescription": "Pojavljuju li se vlastite adrese platforme u tražilicama.",
+      "frontendAuthCardDescription": "Kako se posjetitelji prijavljuju i registriraju na stranici i u aplikaciji.",
+      "signUpEmailCardDescription": "E-poruka kojom novi račun potvrđuje adresu.",
+      "usageReportCardDescription": "Izvješće o korištenju e-poštom i kamo ide."
     },
     "appearance": {
       "appearance": "Izgled",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Provjerite vezu s trgovinom ili pokušajte ponovno kasnije.",
     "inThisSite": "Na ovom web-mjestu",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Čista i moderna tema za vaš Fromcode frontend.",
     "officialTheme": "Službena tema",
     "addToThisSite": "Dodaj na ovo web-mjesto",
     "installNow": "Instaliraj sada",

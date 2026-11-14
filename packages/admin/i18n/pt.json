@@ -637,7 +637,8 @@
       "choose": "Escolher um site",
       "platformHint": "Sem site — plugins, temas, fontes, sites, definições da plataforma",
       "viaRole": "através de função da plataforma",
-      "switch": "Mudar de site"
+      "switch": "Mudar de site",
+      "lockedShort": "Esta consola é para um só site."
     },
     "account": {
       "singleSite": "O site servido por esta implementação",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Disponíveis para este site",
       "pluginsThePlatformOffersTo": "Plugins que a plataforma oferece aos sites. Ativar um deles o adiciona somente a este site.",
       "loading": "Carregando…",
-      "thePlatformOffersNoPlugins": "A plataforma ainda não oferece plugins para os sites adicionarem.",
       "synchronizingGlobalMarketplaceCatalog": "Sincronizando o catálogo global do Marketplace",
       "pluginFailuresDetected": "Falhas de plugins detectadas",
       "searchInstalledPlugins": "Pesquisar plugins instalados...",
       "inspecting": "Inspecionando...",
       "uploadZipTarGz": "Enviar (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Instalar plugins para todos os sites, atualizá-los e removê-los, e ativar os que a plataforma não oferece aos sites,",
       "approvingHeldPlugins": "Aprovar o que um plugin retido solicita",
       "dragAndDropPluginZip": "Arraste e solte aqui o `.zip` ou `.tar.gz` do plugin, ou clique para enviar.",
       "tryADifferentSearchTerm2": "Tente outro termo de pesquisa ou envie um novo plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Com atualização",
       "tabErrors": "Com erros",
       "details": "Detalhes",
-      "installedOnThePlatform": "Instalados na plataforma"
+      "platformNote": "A instalação para todos os sites faz-se na plataforma."
     },
     "upload": {
       "name": "Nome: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Escolha o estilo visual do seu painel de administração.",
       "openPlatformScope": "Abrir âmbito da plataforma",
       "loadingGeneralSettings": "A carregar as definições gerais...",
-      "generalConfiguration": "Configuração geral",
       "brandIdentitySystemPreferences": "Identidade da marca e preferências do sistema",
       "saveChanges": "Guardar alterações",
       "generalSettingsCouldNotBe": "Não foi possível carregar as definições gerais",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Endereço da API (API URL)",
       "apiUrlDescription": "O endereço público da API da plataforma. O gateway envia todos os pedidos para este host para a API, e não para o site.",
-      "apiUrlExplanation": "Use um dos endereços do próprio site (os pedidos vão para o caminho /api) ou um host dedicado, como api.example.com. Ao mudar o site para um novo domínio, altere também este valor: um host deixado aqui deixa de servir o site. Em branco usa o endereço de onde veio o pedido."
+      "apiUrlExplanation": "Use um dos endereços do próprio site (os pedidos vão para o caminho /api) ou um host dedicado, como api.example.com. Ao mudar o site para um novo domínio, altere também este valor: um host deixado aqui deixa de servir o site. Em branco usa o endereço de onde veio o pedido.",
+      "brandIdentityCardDescription": "Como o site se chama e como aparece no navegador e nos e-mails.",
+      "siteCardDescription": "Se o site está publicado e se os motores de busca podem indexá-lo.",
+      "regionalDefaultsCardDescription": "Fuso horário e formato de hora na consola.",
+      "notificationsCardDescription": "Para onde são enviados os formulários internos e os alertas do sistema.",
+      "searchEnginesCardDescription": "Se os endereços próprios da plataforma aparecem nos motores de busca.",
+      "frontendAuthCardDescription": "Como os visitantes entram e se registam no site e na app.",
+      "signUpEmailCardDescription": "O e-mail que uma conta nova recebe para confirmar o endereço.",
+      "usageReportCardDescription": "O relatório de utilização enviado por e-mail e para onde vai."
     },
     "appearance": {
       "appearance": "Aparência",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Verifique a conexão com o Marketplace ou tente novamente mais tarde.",
     "inThisSite": "Neste site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Um tema limpo e moderno para o seu frontend Fromcode.",
     "officialTheme": "Tema oficial",
     "addToThisSite": "Adicionar a este site",
     "installNow": "Instalar agora",

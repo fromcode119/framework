@@ -637,7 +637,8 @@
       "choose": "Choose a site",
       "platformHint": "No site — plugins, themes, sources, sites, platform settings",
       "viaRole": "via platform role",
-      "switch": "Switch site"
+      "switch": "Switch site",
+      "lockedShort": "This console is for one site."
     },
     "account": {
       "singleSite": "The site this deployment serves",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Available to this site",
       "pluginsThePlatformOffersTo": "Plugins the platform offers to sites. Switching one on adds it to this site only.",
       "loading": "Loading…",
-      "thePlatformOffersNoPlugins": "The platform offers no plugins for sites to add yet.",
       "synchronizingGlobalMarketplaceCatalog": "Synchronizing Global Marketplace Catalog",
       "pluginFailuresDetected": "Plugin Failures Detected",
       "searchInstalledPlugins": "Search installed plugins...",
       "inspecting": "Inspecting...",
       "uploadZipTarGz": "Upload (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Installing plugins for every site, updating and removing them, and switching on any the platform does not offer to sites,",
       "approvingHeldPlugins": "Approving what a held plugin asks for",
       "dragAndDropPluginZip": "Drag and drop plugin `.zip` or `.tar.gz` here, or click to upload.",
       "tryADifferentSearchTerm2": "Try a different search term or upload a new plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "With update",
       "tabErrors": "With errors",
       "details": "Details",
-      "installedOnThePlatform": "Installed on the platform"
+      "platformNote": "Installing for every site is done in the platform."
     },
     "upload": {
       "name": "Name: {{value}}",
@@ -1780,8 +1779,7 @@
       "chooseTheVisualStyleOf": "Choose the visual style of your administration panel.",
       "openPlatformScope": "Open Platform Scope",
       "loadingGeneralSettings": "Loading general settings...",
-      "generalConfiguration": "General Configuration",
-      "brandIdentitySystemPreferences": "Brand identity & system preferences",
+      "brandIdentitySystemPreferences": "The site's name, addresses, icons and notifications.",
       "saveChanges": "Save Changes",
       "generalSettingsCouldNotBe": "General settings could not be loaded",
       "subject": "Subject",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API address (API URL)",
       "apiUrlDescription": "The public address of the platform API. The gateway sends every request for this host to the API, not to the site.",
-      "apiUrlExplanation": "Use one of the site's own addresses (requests go to its /api path) or a dedicated host such as api.example.com. When you move the site to a new domain, change this too: a host left here stops serving the site. Blank uses the address the request came from."
+      "apiUrlExplanation": "Use one of the site's own addresses (requests go to its /api path) or a dedicated host such as api.example.com. When you move the site to a new domain, change this too: a host left here stops serving the site. Blank uses the address the request came from.",
+      "brandIdentityCardDescription": "What the site is called and how it looks in the browser and in emails.",
+      "siteCardDescription": "Whether the site is live and whether search engines may index it.",
+      "regionalDefaultsCardDescription": "Time zone and clock format in the console.",
+      "notificationsCardDescription": "Where internal forms and system alerts are sent.",
+      "searchEnginesCardDescription": "Whether the platform's own addresses appear in search engines.",
+      "frontendAuthCardDescription": "How visitors sign in and sign up on the site and in the app.",
+      "signUpEmailCardDescription": "The email a new account receives to confirm its address.",
+      "usageReportCardDescription": "The usage summary sent by email, and where it goes."
     },
     "appearance": {
       "appearance": "Appearance",
@@ -3605,7 +3611,7 @@
     "platformSettingsLiveNamed": "Platform settings ({{what}}) live in Platform scope.",
     "platformSettingsLiveManagedNamed": "Platform settings ({{what}}) live in Platform scope and are managed by a platform administrator.",
     "generalSiteSettingsInsideEachSite": "Site settings (name, domains, timezone, notifications, sign-in) are set inside each site — choose one from the site menu.",
-    "generalPlatformSettingsLive": "Platform settings (URLs, marketplace, repository, indexing) live in Platform scope.",
+    "generalPlatformSettingsLive": "Addresses, the marketplace, storage and indexing are in Platform scope.",
     "generalPlatformSettingsLiveManaged": "Platform settings (URLs, marketplace, repository, indexing) live in Platform scope and are managed by a platform administrator."
   },
   "lib": {
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Check your marketplace connection or try again later.",
     "inThisSite": "In this site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "A clean and modern theme for your Fromcode frontend.",
     "officialTheme": "Official Theme",
     "addToThisSite": "Add to this site",
     "installNow": "Install Now",

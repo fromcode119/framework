@@ -637,7 +637,8 @@
       "choose": "Velg et nettsted",
       "platformHint": "Ingen nettsted – utvidelser, temaer, kilder, nettsteder, plattforminnstillinger",
       "viaRole": "via plattformrolle",
-      "switch": "Bytt nettsted"
+      "switch": "Bytt nettsted",
+      "lockedShort": "Denne konsollen er for ett nettsted."
     },
     "account": {
       "singleSite": "Nettstedet denne installasjonen betjener",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Tilgjengelig for dette nettstedet",
       "pluginsThePlatformOffersTo": "Programtillegg plattformen tilbyr nettsteder. Når du slår ett på, legges det bare til på dette nettstedet.",
       "loading": "Laster …",
-      "thePlatformOffersNoPlugins": "Plattformen tilbyr ennå ingen programtillegg som nettsteder kan legge til.",
       "synchronizingGlobalMarketplaceCatalog": "Synkroniserer den globale markedsplasskatalogen",
       "pluginFailuresDetected": "Feil i programtillegg oppdaget",
       "searchInstalledPlugins": "Søk i installerte programtillegg …",
       "inspecting": "Undersøker …",
       "uploadZipTarGz": "Last opp (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Installere programtillegg for alle nettsteder, oppdatere og fjerne dem, og slå på programtillegg som plattformen ikke tilbyr nettsteder,",
       "approvingHeldPlugins": "Godkjenne det et tilbakeholdt programtillegg ber om",
       "dragAndDropPluginZip": "Dra og slipp en `.zip`- eller `.tar.gz`-fil med programtillegget her, eller klikk for å laste opp.",
       "tryADifferentSearchTerm2": "Prøv et annet søkeord, eller last opp et nytt programtillegg.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Med oppdatering",
       "tabErrors": "Med feil",
       "details": "Detaljer",
-      "installedOnThePlatform": "Installert på plattformen"
+      "platformNote": "Installering for alle nettsteder gjøres i plattformen."
     },
     "upload": {
       "name": "Navn: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Velg den visuelle stilen for administrasjonspanelet.",
       "openPlatformScope": "Åpne plattformomfang",
       "loadingGeneralSettings": "Laster inn generelle innstillinger...",
-      "generalConfiguration": "Generell konfigurasjon",
       "brandIdentitySystemPreferences": "Merkevareidentitet og systeminnstillinger",
       "saveChanges": "Lagre endringer",
       "generalSettingsCouldNotBe": "Kunne ikke laste inn generelle innstillinger",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-adresse (API URL)",
       "apiUrlDescription": "Den offentlige adressen til plattformens API. Gatewayen sender alle forespørsler for denne verten til API-et, ikke til nettstedet.",
-      "apiUrlExplanation": "Bruk en av nettstedets egne adresser (forespørsler går til /api-stien) eller en egen vert som api.example.com. Når du flytter nettstedet til et nytt domene, må du endre dette også: en vert som står igjen her, slutter å betjene nettstedet. Tomt bruker adressen forespørselen kom fra."
+      "apiUrlExplanation": "Bruk en av nettstedets egne adresser (forespørsler går til /api-stien) eller en egen vert som api.example.com. Når du flytter nettstedet til et nytt domene, må du endre dette også: en vert som står igjen her, slutter å betjene nettstedet. Tomt bruker adressen forespørselen kom fra.",
+      "brandIdentityCardDescription": "Hva nettstedet heter og hvordan det ser ut i nettleseren og i e-post.",
+      "siteCardDescription": "Om nettstedet er live og om søkemotorer kan indeksere det.",
+      "regionalDefaultsCardDescription": "Tidssone og tidsformat i konsollen.",
+      "notificationsCardDescription": "Hvor interne skjemaer og systemvarsler sendes.",
+      "searchEnginesCardDescription": "Om plattformens egne adresser vises i søkemotorer.",
+      "frontendAuthCardDescription": "Hvordan besøkende logger inn og registrerer seg på nettstedet og i appen.",
+      "signUpEmailCardDescription": "E-posten en ny konto får for å bekrefte adressen sin.",
+      "usageReportCardDescription": "Bruksrapporten sendt på e-post, og hvor den går."
     },
     "appearance": {
       "appearance": "Utseende",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Sjekk tilkoblingen til markedsplassen, eller prøv igjen senere.",
     "inThisSite": "På dette nettstedet",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Et rent og moderne tema for Fromcode-frontenden din.",
     "officialTheme": "Offisielt tema",
     "addToThisSite": "Legg til på dette nettstedet",
     "installNow": "Installer nå",

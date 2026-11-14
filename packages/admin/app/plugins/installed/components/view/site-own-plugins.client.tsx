@@ -131,6 +131,8 @@ export class SiteOwnPlugins extends AdminComponent {
   render(): ReactNode {
     const quota = this.quota;
     const canUpload = Boolean(quota?.enabled && quota?.isolated);
+    // A site that may not upload and holds none of its own has nothing here to see or do.
+    if (!canUpload && this.own.length === 0 && !this.loadError && !this.consentSlugs.length) return null;
     return (
       <Card className="mb-3" title={AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')} description={quota ? this.uploadNote(quota) : undefined}>
         {this.loadError ? <p className="mb-3 text-xs text-rose-500">{this.loadError}</p> : null}

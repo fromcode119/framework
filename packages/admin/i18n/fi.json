@@ -637,7 +637,8 @@
       "choose": "Valitse sivusto",
       "platformHint": "Ei sivustoa — lisäosat, teemat, lähteet, sivustot, alustan asetukset",
       "viaRole": "alustaroolin kautta",
-      "switch": "Vaihda sivustoa"
+      "switch": "Vaihda sivustoa",
+      "lockedShort": "Tämä konsoli on yhdelle sivustolle."
     },
     "account": {
       "singleSite": "Sivusto, jota tämä käyttöönotto palvelee",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Saatavilla tälle sivustolle",
       "pluginsThePlatformOffersTo": "Laajennukset, joita alusta tarjoaa sivustoille. Käyttöönotto lisää laajennuksen vain tälle sivustolle.",
       "loading": "Ladataan…",
-      "thePlatformOffersNoPlugins": "Alusta ei vielä tarjoa sivustoille lisättäviä laajennuksia.",
       "synchronizingGlobalMarketplaceCatalog": "Synkronoidaan kauppapaikan luetteloa",
       "pluginFailuresDetected": "Laajennusvirheitä havaittu",
       "searchInstalledPlugins": "Hae asennettuja laajennuksia...",
       "inspecting": "Tarkistetaan...",
       "uploadZipTarGz": "Lataa (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Laajennusten asentaminen kaikille sivustoille, niiden päivittäminen ja poistaminen sekä sellaisten käyttöönotto, joita alusta ei tarjoa sivustoille,",
       "approvingHeldPlugins": "Pidätetyn laajennuksen pyytämien oikeuksien hyväksyminen",
       "dragAndDropPluginZip": "Vedä ja pudota laajennuksen `.zip`- tai `.tar.gz`-tiedosto tähän tai lataa napsauttamalla.",
       "tryADifferentSearchTerm2": "Kokeile toista hakusanaa tai lataa uusi laajennus.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Päivitys saatavilla",
       "tabErrors": "Virheellisiä",
       "details": "Tiedot",
-      "installedOnThePlatform": "Asennettu alustalle"
+      "platformNote": "Asennus kaikille sivustoille tehdään alustalla."
     },
     "upload": {
       "name": "Nimi: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Valitse hallintapaneelin visuaalinen tyyli.",
       "openPlatformScope": "Avaa alustan laajuus",
       "loadingGeneralSettings": "Ladataan yleisiä asetuksia...",
-      "generalConfiguration": "Yleiset määritykset",
       "brandIdentitySystemPreferences": "Brändi-identiteetti ja järjestelmäasetukset",
       "saveChanges": "Tallenna muutokset",
       "generalSettingsCouldNotBe": "Yleisiä asetuksia ei voitu ladata",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-osoite (API URL)",
       "apiUrlDescription": "Alustan API:n julkinen osoite. Yhdyskäytävä ohjaa kaikki tämän isännän pyynnöt API:lle, ei sivustolle.",
-      "apiUrlExplanation": "Käytä jotakin sivuston omista osoitteista (pyynnöt menevät sen /api-polkuun) tai erillistä isäntää, kuten api.example.com. Kun siirrät sivuston uuteen verkkotunnukseen, muuta myös tämä: tähän jätetty isäntä lakkaa palvelemasta sivustoa. Tyhjä käyttää osoitetta, josta pyyntö tuli."
+      "apiUrlExplanation": "Käytä jotakin sivuston omista osoitteista (pyynnöt menevät sen /api-polkuun) tai erillistä isäntää, kuten api.example.com. Kun siirrät sivuston uuteen verkkotunnukseen, muuta myös tämä: tähän jätetty isäntä lakkaa palvelemasta sivustoa. Tyhjä käyttää osoitetta, josta pyyntö tuli.",
+      "brandIdentityCardDescription": "Mikä sivuston nimi on ja miltä se näyttää selaimessa ja sähköposteissa.",
+      "siteCardDescription": "Onko sivusto julkaistu ja saavatko hakukoneet indeksoida sen.",
+      "regionalDefaultsCardDescription": "Aikavyöhyke ja ajan muoto konsolissa.",
+      "notificationsCardDescription": "Minne sisäiset lomakkeet ja järjestelmähälytykset lähetetään.",
+      "searchEnginesCardDescription": "Näkyvätkö alustan omat osoitteet hakukoneissa.",
+      "frontendAuthCardDescription": "Miten kävijät kirjautuvat ja rekisteröityvät sivustolla ja sovelluksessa.",
+      "signUpEmailCardDescription": "Sähköposti, jolla uusi tili vahvistaa osoitteensa.",
+      "usageReportCardDescription": "Sähköpostilla lähetettävä käyttöraportti ja sen vastaanottaja."
     },
     "appearance": {
       "appearance": "Ulkoasu",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Tarkista yhteys kauppaan tai yritä myöhemmin uudelleen.",
     "inThisSite": "Tällä sivustolla",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Selkeä ja moderni teema Fromcode-käyttöliittymällesi.",
     "officialTheme": "Virallinen teema",
     "addToThisSite": "Lisää tälle sivustolle",
     "installNow": "Asenna nyt",

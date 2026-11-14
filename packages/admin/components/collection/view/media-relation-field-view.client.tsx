@@ -7,6 +7,9 @@ import { MediaRelationFieldUtils } from '@/components/collection/media-relation-
 import { MediaRelationFileRow } from '@/components/collection/view/media-relation-file-row.client';
 import type { IMediaRelationPreview } from '@/components/collection/interfaces/media-relation-preview.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
+import { Button } from '@/components/ui/view/button.client';
+import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
 
 /**
  * A media field. One file: an image shows as a picture, anything else as a named file — a PDF handed to
@@ -17,6 +20,7 @@ export class MediaRelationFieldView extends PureReactor {
   @prop declare theme: ThemeMode;
   @prop declare hasMany: boolean;
   @prop declare wholeImage: boolean;
+  @prop declare compact?: boolean;
   @prop declare accept: string;
   @prop declare open: boolean;
   @prop declare previews: IMediaRelationPreview[];
@@ -86,7 +90,35 @@ export class MediaRelationFieldView extends PureReactor {
     );
   }
 
+  /**
+   * The setting-row form of a single file: what is chosen (a small picture and its name, or "no file")
+   * and a secondary Choose button, on one line, as wide as a row's control.
+   */
+  private renderCompact(): ReactNode {
+    const preview = this.previews[0];
+    const image = this.singleImage;
+    const chosen = preview || this.selectedIds.length;
+    const name = preview?.filename || (this.selectedIds.length ? AdminI18n.t('ui.media.selectedId', { ids: this.selectedIds.join(', ') }) : '');
+    const removeLabel = AdminI18n.t('ui.media.remove', { name: preview?.filename || '' });
+    return (
+      <div className={AdminClass.of('media-inline')}>
+        {image ? <img className={AdminClass.of('media-inline__thumb')} src={image.url} alt="" /> : null}
+        <span className={`${AdminClass.of('media-inline__name')}${chosen ? '' : ` ${AdminClass.of('media-inline__name--none')}`}`} title={name || undefined}>
+          {chosen ? name : AdminI18n.t('ui.media.none')}
+        </span>
+        {chosen ? (
+          <button type="button" className={AdminClass.of('media-inline__remove')} onClick={this.handleRemoveSingle} aria-label={removeLabel} title={removeLabel}>
+            <FrameworkIcons.X size={14} />
+          </button>
+        ) : null}
+        <Button variant={ButtonVariant.SECONDARY} onClick={this.handleOpen}>{AdminI18n.t('ui.media.select')}</Button>
+        {this.open ? <MediaPicker accept={this.accept} onSelect={this.handlePick} onClose={this.handleClose} /> : null}
+      </div>
+    );
+  }
+
   render(): ReactNode {
+    if (this.compact && !this.hasMany) return this.renderCompact();
     return (
       <div className="space-y-3">
         {this.renderSelection()}

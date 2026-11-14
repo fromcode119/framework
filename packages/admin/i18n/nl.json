@@ -637,7 +637,8 @@
       "choose": "Kies een site",
       "platformHint": "Geen site — plugins, thema's, bronnen, sites, platforminstellingen",
       "viaRole": "via platformrol",
-      "switch": "Andere site"
+      "switch": "Andere site",
+      "lockedShort": "Deze console is voor één site."
     },
     "account": {
       "singleSite": "De site die deze installatie bedient",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Beschikbaar voor deze site",
       "pluginsThePlatformOffersTo": "Plugins die het platform aan sites aanbiedt. Als u er een inschakelt, wordt deze alleen aan deze site toegevoegd.",
       "loading": "Laden…",
-      "thePlatformOffersNoPlugins": "Het platform biedt nog geen plugins aan die sites kunnen toevoegen.",
       "synchronizingGlobalMarketplaceCatalog": "Globale marketplacecatalogus synchroniseren",
       "pluginFailuresDetected": "Pluginfouten gedetecteerd",
       "searchInstalledPlugins": "Geïnstalleerde plugins zoeken...",
       "inspecting": "Controleren...",
       "uploadZipTarGz": "Uploaden (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Plugins installeren voor elke site, ze bijwerken en verwijderen, en plugins inschakelen die het platform niet aan sites aanbiedt,",
       "approvingHeldPlugins": "Goedkeuren waar een wachtende plugin om vraagt",
       "dragAndDropPluginZip": "Sleep een plugin-`.zip` of -`.tar.gz` hierheen, of klik om te uploaden.",
       "tryADifferentSearchTerm2": "Probeer een andere zoekterm of upload een nieuwe plugin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Met update",
       "tabErrors": "Met fouten",
       "details": "Details",
-      "installedOnThePlatform": "Geïnstalleerd op het platform"
+      "platformNote": "Installeren voor alle sites gebeurt in het platform."
     },
     "upload": {
       "name": "Naam: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Kies de visuele stijl van uw beheeromgeving.",
       "openPlatformScope": "Platformbereik openen",
       "loadingGeneralSettings": "Algemene instellingen laden...",
-      "generalConfiguration": "Algemene configuratie",
       "brandIdentitySystemPreferences": "Merkidentiteit & systeemvoorkeuren",
       "saveChanges": "Wijzigingen opslaan",
       "generalSettingsCouldNotBe": "Algemene instellingen konden niet worden geladen",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-adres (API URL)",
       "apiUrlDescription": "Het openbare adres van de platform-API. De gateway stuurt elk verzoek voor deze host naar de API, niet naar de site.",
-      "apiUrlExplanation": "Gebruik een van de eigen adressen van de site (verzoeken gaan naar het pad /api) of een aparte host zoals api.example.com. Wijzig dit ook wanneer u de site naar een nieuw domein verplaatst: een host die hier blijft staan, bedient de site niet meer. Leeg gebruikt het adres waarvan het verzoek kwam."
+      "apiUrlExplanation": "Gebruik een van de eigen adressen van de site (verzoeken gaan naar het pad /api) of een aparte host zoals api.example.com. Wijzig dit ook wanneer u de site naar een nieuw domein verplaatst: een host die hier blijft staan, bedient de site niet meer. Leeg gebruikt het adres waarvan het verzoek kwam.",
+      "brandIdentityCardDescription": "Hoe de site heet en hoe hij eruitziet in de browser en in e-mails.",
+      "siteCardDescription": "Of de site live is en of zoekmachines hem mogen indexeren.",
+      "regionalDefaultsCardDescription": "Tijdzone en tijdnotatie in de console.",
+      "notificationsCardDescription": "Waar interne formulieren en systeemmeldingen naartoe gaan.",
+      "searchEnginesCardDescription": "Of de eigen adressen van het platform in zoekmachines verschijnen.",
+      "frontendAuthCardDescription": "Hoe bezoekers inloggen en zich registreren op de site en in de app.",
+      "signUpEmailCardDescription": "De e-mail waarmee een nieuw account zijn adres bevestigt.",
+      "usageReportCardDescription": "Het gebruiksrapport per e-mail en waar het naartoe gaat."
     },
     "appearance": {
       "appearance": "Weergave",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Controleer uw verbinding met de marketplace of probeer het later opnieuw.",
     "inThisSite": "In deze site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Een strak en modern thema voor uw Fromcode-frontend.",
     "officialTheme": "Officieel thema",
     "addToThisSite": "Aan deze site toevoegen",
     "installNow": "Nu installeren",

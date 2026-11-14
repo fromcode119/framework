@@ -22,4 +22,9 @@ export interface IFieldRendererProps {
   record?: Record<string, any>;
   /** Update one or more sibling fields at once — the Livewire-style reactive write. */
   onPatch?: (partial: Record<string, any>) => void;
+  /**
+   * The field is one settings row: its description stands under its name as one line (the whole of it
+   * behind the ⓘ when it runs longer) instead of opening only from the ⓘ, as on a record's form.
+   */
+  inlineDescription?: boolean;
 }

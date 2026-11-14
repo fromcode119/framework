@@ -637,7 +637,8 @@
       "choose": "Выберите сайт",
       "platformHint": "Без сайта — плагины, темы, источники, сайты, настройки платформы",
       "viaRole": "через роль платформы",
-      "switch": "Сменить сайт"
+      "switch": "Сменить сайт",
+      "lockedShort": "Эта консоль для одного сайта."
     },
     "account": {
       "singleSite": "Сайт, который обслуживает это развёртывание",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Доступно этому сайту",
       "pluginsThePlatformOffersTo": "Плагины, которые платформа предлагает сайтам. Включённый плагин добавляется только на этот сайт.",
       "loading": "Загрузка…",
-      "thePlatformOffersNoPlugins": "Платформа пока не предлагает сайтам плагинов.",
       "synchronizingGlobalMarketplaceCatalog": "Синхронизация глобального каталога магазина",
       "pluginFailuresDetected": "Обнаружены сбои плагинов",
       "searchInstalledPlugins": "Поиск установленных плагинов...",
       "inspecting": "Проверка...",
       "uploadZipTarGz": "Загрузить (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Установка плагинов для всех сайтов, их обновление и удаление, а также включение тех, что платформа не предлагает сайтам,",
       "approvingHeldPlugins": "Одобрение запросов задержанного плагина",
       "dragAndDropPluginZip": "Перетащите сюда плагин в формате `.zip` или `.tar.gz` или нажмите, чтобы загрузить.",
       "tryADifferentSearchTerm2": "Попробуйте другой запрос или загрузите новый плагин.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "С обновлением",
       "tabErrors": "С ошибкой",
       "details": "Подробнее",
-      "installedOnThePlatform": "Установлены на платформе"
+      "platformNote": "Установка для всех сайтов выполняется в платформе."
     },
     "upload": {
       "name": "Название: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Выберите визуальный стиль панели управления.",
       "openPlatformScope": "Открыть область платформы",
       "loadingGeneralSettings": "Загрузка общих настроек...",
-      "generalConfiguration": "Общие настройки",
       "brandIdentitySystemPreferences": "Бренд и системные параметры",
       "saveChanges": "Сохранить изменения",
       "generalSettingsCouldNotBe": "Не удалось загрузить общие настройки",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Адрес API (API URL)",
       "apiUrlDescription": "Публичный адрес API платформы. Шлюз направляет все запросы к этому хосту в API, а не на сайт.",
-      "apiUrlExplanation": "Используйте один из адресов самого сайта (запросы идут на его путь /api) или отдельный хост, например api.example.com. При переносе сайта на новый домен измените и это поле: указанный здесь хост перестаёт обслуживать сайт. Если пусто, используется адрес, с которого пришёл запрос."
+      "apiUrlExplanation": "Используйте один из адресов самого сайта (запросы идут на его путь /api) или отдельный хост, например api.example.com. При переносе сайта на новый домен измените и это поле: указанный здесь хост перестаёт обслуживать сайт. Если пусто, используется адрес, с которого пришёл запрос.",
+      "brandIdentityCardDescription": "Как называется сайт и как он выглядит в браузере и в письмах.",
+      "siteCardDescription": "Работает ли сайт и могут ли поисковики его индексировать.",
+      "regionalDefaultsCardDescription": "Часовой пояс и формат времени в консоли.",
+      "notificationsCardDescription": "Куда приходят внутренние формы и системные оповещения.",
+      "searchEnginesCardDescription": "Видны ли собственные адреса платформы в поисковиках.",
+      "frontendAuthCardDescription": "Как посетители входят и регистрируются на сайте и в приложении.",
+      "signUpEmailCardDescription": "Письмо, которым новый аккаунт подтверждает свой адрес.",
+      "usageReportCardDescription": "Отчёт об использовании по почте и куда он уходит."
     },
     "appearance": {
       "appearance": "Оформление",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Проверьте подключение к маркетплейсу или повторите попытку позже.",
     "inThisSite": "На этом сайте",
     "premium": "Премиум",
-    "aCleanAndModernTheme": "Аккуратная современная тема для фронтенда Fromcode.",
     "officialTheme": "Официальная тема",
     "addToThisSite": "Добавить на сайт",
     "installNow": "Установить",

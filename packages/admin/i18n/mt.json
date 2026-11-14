@@ -637,7 +637,8 @@
       "choose": "Agħżel sit",
       "platformHint": "L-ebda sit — plugins, temi, sorsi, siti, issettjar tal-pjattaforma",
       "viaRole": "permezz ta' rwol tal-pjattaforma",
-      "switch": "Aqleb is-sit"
+      "switch": "Aqleb is-sit",
+      "lockedShort": "Din il-konsola hija għal sit wieħed."
     },
     "account": {
       "singleSite": "Is-sit li sservi din l-installazzjoni",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Disponibbli għal dan is-sit",
       "pluginsThePlatformOffersTo": "Plugins li l-pjattaforma toffri lis-siti. Meta tixgħel wieħed, jiżdied ma' dan is-sit biss.",
       "loading": "Qed jitgħabba…",
-      "thePlatformOffersNoPlugins": "Il-pjattaforma għadha ma toffri l-ebda plugin biex is-siti jżiduh.",
       "synchronizingGlobalMarketplaceCatalog": "Qed jiġi sinkronizzat il-katalgu globali tal-Marketplace",
       "pluginFailuresDetected": "Instabu Falliment f'Plugins",
       "searchInstalledPlugins": "Fittex fil-plugins installati...",
       "inspecting": "Qed jiġi eżaminat...",
       "uploadZipTarGz": "Tella' (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "L-installazzjoni ta' plugins għal kull sit, l-aġġornament u t-tneħħija tagħhom, u t-tixgħil ta' kwalunkwe plugin li l-pjattaforma ma toffrix lis-siti,",
       "approvingHeldPlugins": "L-approvazzjoni ta' dak li jitlob plugin miżmum",
       "dragAndDropPluginZip": "Kaxkar u itlaq il-plugin `.zip` jew `.tar.gz` hawn, jew ikklikkja biex ittella'.",
       "tryADifferentSearchTerm2": "Ipprova terminu ta' tfittxija differenti jew tella' plugin ġdid.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "B’aġġornament",
       "tabErrors": "Bi żbalji",
       "details": "Dettalji",
-      "installedOnThePlatform": "Installati fuq il-pjattaforma"
+      "platformNote": "L-installazzjoni għas-siti kollha ssir fil-pjattaforma."
     },
     "upload": {
       "name": "Isem: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Agħżel l-istil viżwali tal-pannell tal-amministrazzjoni tiegħek.",
       "openPlatformScope": "Iftaħ l-Ambitu tal-Pjattaforma",
       "loadingGeneralSettings": "Qed jitgħabba l-issettjar ġenerali...",
-      "generalConfiguration": "Konfigurazzjoni Ġenerali",
       "brandIdentitySystemPreferences": "Identità tal-marka u preferenzi tas-sistema",
       "saveChanges": "Issejvja l-Bidliet",
       "generalSettingsCouldNotBe": "L-issettjar ġenerali ma setax jitgħabba",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Indirizz tal-API (API URL)",
       "apiUrlDescription": "L-indirizz pubbliku tal-API tal-pjattaforma. Il-gateway jibgħat kull talba għal dan il-host lill-API, mhux lis-sit.",
-      "apiUrlExplanation": "Uża wieħed mill-indirizzi tas-sit innifsu (it-talbiet imorru fil-path /api tiegħu) jew host apposta bħal api.example.com. Meta ċċaqlaq is-sit għal dominju ġdid, ibdel dan ukoll: host li jitħalla hawn ma jibqax iservi s-sit. Vojt juża l-indirizz minn fejn ġiet it-talba."
+      "apiUrlExplanation": "Uża wieħed mill-indirizzi tas-sit innifsu (it-talbiet imorru fil-path /api tiegħu) jew host apposta bħal api.example.com. Meta ċċaqlaq is-sit għal dominju ġdid, ibdel dan ukoll: host li jitħalla hawn ma jibqax iservi s-sit. Vojt juża l-indirizz minn fejn ġiet it-talba.",
+      "brandIdentityCardDescription": "X'jismu s-sit u kif jidher fil-browser u fl-emails.",
+      "siteCardDescription": "Jekk is-sit huwiex live u jekk il-magni tat-tiftix jistgħux jindiċizzawh.",
+      "regionalDefaultsCardDescription": "Żona tal-ħin u format tal-ħin fil-konsla.",
+      "notificationsCardDescription": "Fejn jintbagħtu l-formoli interni u t-twissijiet tas-sistema.",
+      "searchEnginesCardDescription": "Jekk l-indirizzi tal-pjattaforma nnifisha jidhrux fil-magni tat-tiftix.",
+      "frontendAuthCardDescription": "Kif il-viżitaturi jidħlu u jirreġistraw fis-sit u fl-app.",
+      "signUpEmailCardDescription": "L-email li kont ġdid jirċievi biex jikkonferma l-indirizz tiegħu.",
+      "usageReportCardDescription": "Ir-rapport tal-użu bl-email, u fejn imur."
     },
     "appearance": {
       "appearance": "Dehra",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Iċċekkja l-konnessjoni mal-marketplace jew erġa' pprova aktar tard.",
     "inThisSite": "F'dan is-sit",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Tema nadifa u moderna għall-frontend Fromcode tiegħek.",
     "officialTheme": "Tema uffiċjali",
     "addToThisSite": "Żid ma' dan is-sit",
     "installNow": "Installa issa",

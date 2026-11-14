@@ -637,7 +637,8 @@
       "choose": "Website auswählen",
       "platformHint": "Keine Website – Plugins, Themes, Quellen, Websites, Plattformeinstellungen",
       "viaRole": "über Plattformrolle",
-      "switch": "Website wechseln"
+      "switch": "Website wechseln",
+      "lockedShort": "Diese Konsole gilt für eine Website."
     },
     "account": {
       "singleSite": "Die Website, die diese Installation bedient",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Für diese Website verfügbar",
       "pluginsThePlatformOffersTo": "Plugins, die die Plattform für Websites anbietet. Beim Aktivieren wird das Plugin nur dieser Website hinzugefügt.",
       "loading": "Wird geladen…",
-      "thePlatformOffersNoPlugins": "Die Plattform bietet noch keine Plugins für Websites an.",
       "synchronizingGlobalMarketplaceCatalog": "Globaler Marketplace-Katalog wird synchronisiert",
       "pluginFailuresDetected": "Plugin-Fehler erkannt",
       "searchInstalledPlugins": "Installierte Plugins durchsuchen...",
       "inspecting": "Wird geprüft...",
       "uploadZipTarGz": "Hochladen (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Plugins für alle Websites installieren, aktualisieren und entfernen sowie Plugins aktivieren, die die Plattform Websites nicht anbietet,",
       "approvingHeldPlugins": "Anforderungen zurückgehaltener Plugins freigeben",
       "dragAndDropPluginZip": "Plugin als `.zip` oder `.tar.gz` hierher ziehen oder zum Hochladen klicken.",
       "tryADifferentSearchTerm2": "Versuchen Sie einen anderen Suchbegriff oder laden Sie ein neues Plugin hoch.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Mit Update",
       "tabErrors": "Mit Fehlern",
       "details": "Details",
-      "installedOnThePlatform": "Auf der Plattform installiert"
+      "platformNote": "Die Installation für alle Websites erfolgt in der Plattform."
     },
     "upload": {
       "name": "Name: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Wählen Sie den visuellen Stil Ihrer Verwaltungsoberfläche.",
       "openPlatformScope": "Plattformbereich öffnen",
       "loadingGeneralSettings": "Allgemeine Einstellungen werden geladen...",
-      "generalConfiguration": "Allgemeine Konfiguration",
       "brandIdentitySystemPreferences": "Markenidentität & Systemeinstellungen",
       "saveChanges": "Änderungen speichern",
       "generalSettingsCouldNotBe": "Allgemeine Einstellungen konnten nicht geladen werden",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API-Adresse (API URL)",
       "apiUrlDescription": "Die öffentliche Adresse der Plattform-API. Das Gateway leitet jede Anfrage für diesen Host an die API statt an die Website weiter.",
-      "apiUrlExplanation": "Verwenden Sie eine der eigenen Adressen der Website (Anfragen gehen an deren Pfad /api) oder einen eigenen Host wie api.example.com. Wenn Sie die Website auf eine neue Domain umziehen, ändern Sie auch diesen Wert: Ein hier verbliebener Host liefert die Website nicht mehr aus. Leer verwendet die Adresse, von der die Anfrage kam."
+      "apiUrlExplanation": "Verwenden Sie eine der eigenen Adressen der Website (Anfragen gehen an deren Pfad /api) oder einen eigenen Host wie api.example.com. Wenn Sie die Website auf eine neue Domain umziehen, ändern Sie auch diesen Wert: Ein hier verbliebener Host liefert die Website nicht mehr aus. Leer verwendet die Adresse, von der die Anfrage kam.",
+      "brandIdentityCardDescription": "Wie die Website heißt und wie sie im Browser und in E-Mails aussieht.",
+      "siteCardDescription": "Ob die Website live ist und ob Suchmaschinen sie indexieren dürfen.",
+      "regionalDefaultsCardDescription": "Zeitzone und Uhrzeitformat in der Konsole.",
+      "notificationsCardDescription": "Wohin interne Formulare und Systemwarnungen gesendet werden.",
+      "searchEnginesCardDescription": "Ob die eigenen Adressen der Plattform in Suchmaschinen erscheinen.",
+      "frontendAuthCardDescription": "Wie Besucher sich auf der Website und in der App anmelden und registrieren.",
+      "signUpEmailCardDescription": "Die E-Mail, mit der ein neues Konto seine Adresse bestätigt.",
+      "usageReportCardDescription": "Der Nutzungsbericht per E-Mail und wohin er geht."
     },
     "appearance": {
       "appearance": "Erscheinungsbild",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Prüfen Sie die Verbindung zum Marketplace oder versuchen Sie es später erneut.",
     "inThisSite": "In dieser Site",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Ein klares, modernes Theme für Ihr Fromcode-Frontend.",
     "officialTheme": "Offizielles Theme",
     "addToThisSite": "Zu dieser Site hinzufügen",
     "installNow": "Jetzt installieren",

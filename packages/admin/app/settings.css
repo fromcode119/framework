@@ -22,7 +22,15 @@
   --fc-settings-bar-shadow: 0 8px 24px rgb(15 23 42 / 0.18);
   --fc-settings-icon-tile: 32px;
   --fc-settings-meta-width: 150px;
+  /* The settings column: centred, no wider than a row can be read across. */
+  --fc-settings-page-max: 980px;
 }
+
+/* ── The page column: header and content share one centred width ─────────────────────────────── */
+.fc-settings-page { width: 100%; max-width: var(--fc-settings-page-max); margin-inline: auto; }
+.fc-settings-page .fc-page-header { position: static; border-bottom: 0; background: none; backdrop-filter: none; }
+.fc-settings-page .fc-page-header__inner { padding: 20px 24px 4px; }
+.fc-settings-page .fc-scope-notice { margin-top: 8px; }
 
 /* ── Page header ─────────────────────────────────────────────────────────────────────────────── */
 .fc-page-header {
@@ -48,6 +56,11 @@
   border: 1px solid var(--fc-border); border-radius: 8px; color: var(--fc-text-muted);
 }
 .fc-page-header__back:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+/* The mark of the one thing a page is about (a plugin's own icon), as a quiet tile before the title. */
+.fc-page-header__mark {
+  display: grid; place-items: center; flex: none; width: 40px; height: 40px;
+  border: 1px solid var(--fc-border); border-radius: 10px; background: var(--fc-surface-muted); color: var(--fc-text);
+}
 
 /* ── Section card: title, one line under it, then its rows edge to edge ───────────────────────── */
 .fc-card__head { margin-bottom: 12px; }
@@ -67,6 +80,9 @@
 .fc-settings-row__title { display: flex; align-items: center; gap: 6px; }
 .fc-settings-row__title h3 { margin: 0; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); }
 .fc-settings-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); line-height: 1.45; color: var(--fc-text-muted); }
+/* A long explanation reads as one line; ⓘ opens the whole of it. */
+.fc-settings-row__desc--clamp, .fc-field-summary--clamp { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-field-summary { margin: 1px 0 0; font-size: var(--fc-settings-text); font-weight: 400; line-height: 1.45; color: var(--fc-text-muted); }
 .fc-settings-row__help { margin-top: 6px; max-width: 34rem; font-size: 11px; line-height: 1.55; color: var(--fc-text-muted); }
 .fc-settings-row__help p { margin: 0 0 4px; }
 .fc-settings-row__help .fc-explanation { margin-top: 0; max-width: none; }
@@ -86,6 +102,15 @@
   .fc-settings-row__control--field, .fc-settings-row__control--narrow { width: 100%; justify-content: flex-start; }
 }
 
+/* ── A file in a setting row: what is chosen and a Choose button, on one line ─────────────────── */
+.fc-media-inline { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.fc-media-inline__thumb { flex: none; width: 32px; height: 32px; border-radius: 6px; border: 1px solid var(--fc-border); object-fit: contain; background: var(--fc-surface-muted); }
+.fc-media-inline__name { flex: 1 1 auto; text-align: end; min-width: 0; font-size: var(--fc-settings-text); color: var(--fc-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fc-media-inline__name--none { color: var(--fc-text-muted); }
+.fc-media-inline__remove { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 0; border-radius: 6px; background: none; color: var(--fc-text-muted); cursor: pointer; }
+.fc-media-inline__remove:hover { background: var(--fc-surface-muted); color: var(--fc-danger); }
+.fc-media-inline > button:last-of-type, .fc-media-inline > :last-child { flex: none; }
+
 /* ── Schema-drawn settings (a plugin's, a theme's): the same rows, from the field renderer's own markup.
    Each field is one row: its label row on the left, the control (and its footer) on the right. Text
    that runs (a text area, a list, a block of JSON) and a yes/no row keep the whole row. */
@@ -102,10 +127,12 @@
 .fc-settings-fields > .fc-field-row .fc-field-locked { display: contents; }
 .fc-settings-fields > .fc-field-row .fc-field-head { grid-column: 1; grid-row: 1 / span 4; margin: 0; padding-top: 9px; }
 .fc-settings-fields > .fc-field-row--narrow > :not(.fc-field-head):not(.fc-field-locked) { justify-self: end; width: var(--fc-settings-control-narrow); }
+/* A value set elsewhere is read, not typed: a short locked box on the right, whatever the field's kind. */
+.fc-settings-fields > .fc-field-row .fc-field-locked > :not(.fc-field-head) { justify-self: end; width: var(--fc-settings-control-narrow); }
 .fc-settings-fields > .fc-field-row--full { display: block; }
 .fc-settings-fields > .fc-field-row--full .fc-field-head { padding-top: 0; }
 /* One label style for every row, a field's and a switch's alike — the same as a framework setting row. */
-.fc-settings-fields .fc-field-head label, .fc-settings-fields .fc-field-locked > .fc-field-head > span:first-child,
+.fc-settings-fields .fc-field-head label, .fc-settings-fields .fc-field-locked > .fc-field-head > div > span:first-child,
 .fc-settings-fields .fc-bool-row__label {
   margin: 0; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text);
 }
@@ -113,7 +140,9 @@
 @media (max-width: 639.98px) {
   .fc-settings-fields > .fc-field-row { display: block; }
   .fc-settings-fields > .fc-field-row .fc-field-head { padding-top: 0; }
-  .fc-settings-fields > .fc-field-row--narrow > :not(.fc-field-head):not(.fc-field-locked) { width: 100%; }
+  .fc-settings-fields > .fc-field-row--narrow > :not(.fc-field-head):not(.fc-field-locked),
+  .fc-settings-fields > .fc-field-row .fc-field-locked > :not(.fc-field-head) { width: 100%; }
+  .fc-settings-fields > .fc-field-row .fc-field-head { margin-bottom: 6px; }
 }
 
 /* ── Save bar: shown only while something is changed ──────────────────────────────────────────── */
@@ -133,25 +162,26 @@
 
 /* ── The quiet line saying where the settings this scope does not show live ───────────────────── */
 .fc-scope-notice {
-  display: flex; align-items: center; gap: 4px 10px; flex-wrap: wrap;
+  display: block;
   /* Where the old notice block stood: 1.5rem lines it up with the content wrapper's `p-6`. */
   margin: 1.5rem 1.5rem 0; padding: 0; background: none; border-radius: 0;
   font-size: var(--fc-settings-text); line-height: 1.5; color: var(--fc-text-muted);
 }
 /* Inside a page's content it takes the content's edges and keeps a row's gap below it. */
 .fc-ext-page .fc-scope-notice { margin: 0 0 12px; }
-.fc-scope-notice__text { flex: 0 1 auto; min-width: 0; }
+.fc-scope-notice__go { padding: 0; border: 0; background: none; cursor: pointer; font-size: inherit; }
+.fc-scope-notice__go::before { content: ' · '; color: var(--fc-text-muted); font-weight: 400; }
 .fc-scope-notice button, .fc-scope-notice a { color: var(--fc-brand); font-weight: 600; text-decoration: none; }
 .fc-scope-notice__go::after { content: ' →'; }
 
 /* ── A section's own pages, as links in the header (Installed · Health · Marketplace) ─────────── */
 .fc-page-tabs { display: inline-flex; gap: 2px; padding: 2px; border-radius: 8px; background: var(--fc-surface-muted); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 .fc-page-tabs__tab {
-  padding: 5px 12px; border-radius: 6px; white-space: nowrap; text-decoration: none;
+  padding: 5px 12px; border: 0; background: none; cursor: pointer; border-radius: 6px; white-space: nowrap; text-decoration: none;
   font-size: var(--fc-settings-text); font-weight: 600; color: var(--fc-text-muted);
 }
 .fc-page-tabs__tab:hover { color: var(--fc-text); }
-.fc-page-tabs__tab[aria-current='page'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-elevation-control); }
+.fc-page-tabs__tab[aria-current='page'], .fc-page-tabs__tab[aria-pressed='true'] { background: var(--fc-surface); color: var(--fc-text); box-shadow: var(--fc-elevation-control); }
 
 /* ── Extension lists: tabs with counts, one line per plugin or theme ─────────────────────────── */
 .fc-ext-tabs { display: flex; gap: 2px; margin-bottom: 12px; overflow-x: auto; border-bottom: 1px solid var(--fc-border); scrollbar-width: none; }
@@ -200,6 +230,14 @@
 .fc-ext-alert--ok { border-color: var(--fc-success-soft-border); background: var(--fc-success-soft); color: var(--fc-success-strong); }
 .fc-ext-alert--warn { border-color: var(--fc-warning-soft-border); background: var(--fc-warning-soft); color: var(--fc-warning-strong); }
 .fc-ext-alert__text { flex: 1 1 16rem; min-width: 0; }
+.fc-ext-tabbar { display: flex; align-items: flex-end; gap: 8px 16px; margin-bottom: 12px; border-bottom: 1px solid var(--fc-border); }
+.fc-ext-tabbar > .fc-ext-tabs { flex: 1 1 auto; min-width: 0; margin-bottom: -1px; border-bottom: 0; }
+.fc-ext-tabbar > .fc-ext-toolbar { flex: 0 1 20rem; margin-bottom: 6px; flex-wrap: nowrap; }
+@media (max-width: 767.98px) {
+  .fc-ext-tabbar { flex-wrap: wrap; border-bottom: 0; }
+  .fc-ext-tabbar > .fc-ext-tabs { flex-basis: 100%; border-bottom: 1px solid var(--fc-border); margin-bottom: 0; }
+  .fc-ext-tabbar > .fc-ext-toolbar { flex: 1 1 100%; }
+}
 .fc-ext-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
 .fc-ext-toolbar__search { position: relative; flex: 1 1 16rem; min-width: 0; }
 .fc-ext-toolbar__search > svg { position: absolute; z-index: 1; inset-inline-start: 12px; top: 50%; transform: translateY(-50%); color: var(--fc-text-muted); pointer-events: none; }
@@ -219,7 +257,7 @@
 .fc-ext-progress__bar { height: 100%; border-radius: 999px; background: var(--fc-brand); transition: width 0.2s; }
 .fc-ext-section { margin: 20px 0 8px; font-size: var(--fc-settings-text); font-weight: 600; color: var(--fc-text-muted); }
 .fc-ext-section--first { margin-top: 4px; }
-.fc-ext-toolbar__note { flex: 1 1 16rem; min-width: 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
+.fc-ext-toolbar__note { flex: 1 1 16rem; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-settings-text); color: var(--fc-text-muted); }
 @media (max-width: 639.98px) {
   .fc-ext-row__meta { display: none; }
   .fc-ext-row { gap: 10px; }

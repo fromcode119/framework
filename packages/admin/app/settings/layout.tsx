@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { Reactor, prop } from '@fromcode119/react-class-components';
+import { AdminClass } from '@/lib/admin-class';
 
 /**
  * Settings section layout. The page scrolls with the document, like every other console screen: an
@@ -12,7 +13,7 @@ export class SettingsLayout extends Reactor {
   render(): ReactNode {
     return (
       <div className="flex-1 flex flex-col h-full">
-        <main className="flex-1 min-w-0">
+        <main className={`flex-1 min-w-0 ${AdminClass.of('settings-page')}`}>
           {this.children}
         </main>
       </div>

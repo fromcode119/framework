@@ -637,7 +637,8 @@
       "choose": "Chọn một trang",
       "platformHint": "Không có trang — plugin, giao diện, nguồn, trang, cài đặt nền tảng",
       "viaRole": "thông qua vai trò nền tảng",
-      "switch": "Chuyển trang"
+      "switch": "Chuyển trang",
+      "lockedShort": "Bảng điều khiển này dành cho một trang."
     },
     "account": {
       "singleSite": "Trang mà hệ thống này phục vụ",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Khả dụng cho trang web này",
       "pluginsThePlatformOffersTo": "Các plugin mà nền tảng cung cấp cho trang web. Bật một plugin chỉ thêm nó vào trang web này.",
       "loading": "Đang tải…",
-      "thePlatformOffersNoPlugins": "Nền tảng chưa cung cấp plugin nào để trang web thêm vào.",
       "synchronizingGlobalMarketplaceCatalog": "Đang đồng bộ danh mục Marketplace toàn cầu",
       "pluginFailuresDetected": "Phát hiện plugin bị lỗi",
       "searchInstalledPlugins": "Tìm plugin đã cài đặt...",
       "inspecting": "Đang kiểm tra...",
       "uploadZipTarGz": "Tải lên (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Cài đặt plugin cho mọi trang web, cập nhật và gỡ bỏ chúng, cũng như bật các plugin mà nền tảng không cung cấp cho trang web,",
       "approvingHeldPlugins": "Phê duyệt các quyền mà plugin đang bị giữ yêu cầu",
       "dragAndDropPluginZip": "Kéo và thả tệp plugin `.zip` hoặc `.tar.gz` vào đây, hoặc nhấp để tải lên.",
       "tryADifferentSearchTerm2": "Hãy thử từ khóa khác hoặc tải lên plugin mới.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Có cập nhật",
       "tabErrors": "Có lỗi",
       "details": "Chi tiết",
-      "installedOnThePlatform": "Đã cài trên nền tảng"
+      "platformNote": "Việc cài đặt cho mọi trang được thực hiện trong nền tảng."
     },
     "upload": {
       "name": "Tên: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Chọn phong cách giao diện cho bảng quản trị của bạn.",
       "openPlatformScope": "Mở phạm vi nền tảng",
       "loadingGeneralSettings": "Đang tải cài đặt chung...",
-      "generalConfiguration": "Cấu hình chung",
       "brandIdentitySystemPreferences": "Nhận diện thương hiệu & tùy chọn hệ thống",
       "saveChanges": "Lưu thay đổi",
       "generalSettingsCouldNotBe": "Không thể tải cài đặt chung",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "Địa chỉ API (API URL)",
       "apiUrlDescription": "Địa chỉ công khai của API nền tảng. Gateway chuyển mọi yêu cầu tới host này đến API, không đến trang.",
-      "apiUrlExplanation": "Dùng một trong các địa chỉ của chính trang (yêu cầu đi tới đường dẫn /api) hoặc một host riêng như api.example.com. Khi chuyển trang sang tên miền mới, hãy đổi cả mục này: host còn để ở đây sẽ ngừng phục vụ trang. Để trống sẽ dùng địa chỉ mà yêu cầu gửi đến."
+      "apiUrlExplanation": "Dùng một trong các địa chỉ của chính trang (yêu cầu đi tới đường dẫn /api) hoặc một host riêng như api.example.com. Khi chuyển trang sang tên miền mới, hãy đổi cả mục này: host còn để ở đây sẽ ngừng phục vụ trang. Để trống sẽ dùng địa chỉ mà yêu cầu gửi đến.",
+      "brandIdentityCardDescription": "Tên trang web và cách nó hiển thị trong trình duyệt và email.",
+      "siteCardDescription": "Trang web có đang hoạt động không và công cụ tìm kiếm có được lập chỉ mục không.",
+      "regionalDefaultsCardDescription": "Múi giờ và định dạng giờ trong bảng điều khiển.",
+      "notificationsCardDescription": "Biểu mẫu nội bộ và cảnh báo hệ thống được gửi đến đâu.",
+      "searchEnginesCardDescription": "Địa chỉ riêng của nền tảng có xuất hiện trên công cụ tìm kiếm không.",
+      "frontendAuthCardDescription": "Cách khách truy cập đăng nhập và đăng ký trên trang web và trong ứng dụng.",
+      "signUpEmailCardDescription": "Email mà tài khoản mới nhận để xác nhận địa chỉ.",
+      "usageReportCardDescription": "Báo cáo sử dụng gửi qua email và nơi nhận."
     },
     "appearance": {
       "appearance": "Giao diện quản trị",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Hãy kiểm tra kết nối tới chợ ứng dụng hoặc thử lại sau.",
     "inThisSite": "Trong trang này",
     "premium": "Cao cấp",
-    "aCleanAndModernTheme": "Giao diện gọn gàng và hiện đại cho frontend Fromcode của bạn.",
     "officialTheme": "Giao diện chính thức",
     "addToThisSite": "Thêm vào trang này",
     "installNow": "Cài đặt ngay",

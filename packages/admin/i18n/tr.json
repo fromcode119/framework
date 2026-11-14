@@ -637,7 +637,8 @@
       "choose": "Site seçin",
       "platformHint": "Site yok — eklentiler, temalar, kaynaklar, siteler, platform ayarları",
       "viaRole": "platform rolü aracılığıyla",
-      "switch": "Site değiştir"
+      "switch": "Site değiştir",
+      "lockedShort": "Bu konsol tek bir site içindir."
     },
     "account": {
       "singleSite": "Bu kurulumun hizmet verdiği site",
@@ -1409,13 +1410,11 @@
       "availableToThisSite": "Bu site için kullanılabilir",
       "pluginsThePlatformOffersTo": "Platformun sitelere sunduğu eklentiler. Birini etkinleştirmek onu yalnızca bu siteye ekler.",
       "loading": "Yükleniyor…",
-      "thePlatformOffersNoPlugins": "Platform henüz sitelerin ekleyebileceği bir eklenti sunmuyor.",
       "synchronizingGlobalMarketplaceCatalog": "Genel Mağaza Kataloğu Eşitleniyor",
       "pluginFailuresDetected": "Eklenti Hataları Algılandı",
       "searchInstalledPlugins": "Yüklü eklentilerde ara...",
       "inspecting": "İnceleniyor...",
       "uploadZipTarGz": "Yükle (.zip/.tar.gz)",
-      "installingPluginsForEverySite": "Tüm siteler için eklenti yüklemek, güncellemek ve kaldırmak ile platformun sitelere sunmadığı eklentileri etkinleştirmek,",
       "approvingHeldPlugins": "Bekletilen bir eklentinin istediklerini onaylamak",
       "dragAndDropPluginZip": "Eklenti `.zip` veya `.tar.gz` dosyasını buraya sürükleyip bırakın ya da yüklemek için tıklayın.",
       "tryADifferentSearchTerm2": "Farklı bir arama terimi deneyin veya yeni bir eklenti yükleyin.",
@@ -1489,7 +1488,7 @@
       "tabUpdates": "Güncellemesi olan",
       "tabErrors": "Hatalı",
       "details": "Ayrıntılar",
-      "installedOnThePlatform": "Platformda yüklü"
+      "platformNote": "Tüm siteler için kurulum platformda yapılır."
     },
     "upload": {
       "name": "Ad: {{value}}",
@@ -1780,7 +1779,6 @@
       "chooseTheVisualStyleOf": "Yönetim panelinizin görsel stilini seçin.",
       "openPlatformScope": "Platform Kapsamını Aç",
       "loadingGeneralSettings": "Genel ayarlar yükleniyor...",
-      "generalConfiguration": "Genel Yapılandırma",
       "brandIdentitySystemPreferences": "Marka kimliği ve sistem tercihleri",
       "saveChanges": "Değişiklikleri Kaydet",
       "generalSettingsCouldNotBe": "Genel ayarlar yüklenemedi",
@@ -1859,7 +1857,15 @@
       "accountSectionOrderPlaceholder": "orders, wishlist, addresses",
       "apiUrl": "API adresi (API URL)",
       "apiUrlDescription": "Platform API'sinin herkese açık adresi. Ağ geçidi bu ana makineye gelen her isteği siteye değil API'ye gönderir.",
-      "apiUrlExplanation": "Sitenin kendi adreslerinden birini (istekler /api yoluna gider) ya da api.example.com gibi ayrı bir ana makine kullanın. Siteyi yeni bir alan adına taşıdığınızda bunu da değiştirin: burada bırakılan bir ana makine siteye hizmet vermeyi durdurur. Boş bırakılırsa isteğin geldiği adres kullanılır."
+      "apiUrlExplanation": "Sitenin kendi adreslerinden birini (istekler /api yoluna gider) ya da api.example.com gibi ayrı bir ana makine kullanın. Siteyi yeni bir alan adına taşıdığınızda bunu da değiştirin: burada bırakılan bir ana makine siteye hizmet vermeyi durdurur. Boş bırakılırsa isteğin geldiği adres kullanılır.",
+      "brandIdentityCardDescription": "Sitenin adı ve tarayıcıda ve e-postalarda nasıl göründüğü.",
+      "siteCardDescription": "Sitenin yayında olup olmadığı ve arama motorlarının onu dizine ekleyip ekleyemeyeceği.",
+      "regionalDefaultsCardDescription": "Konsoldaki saat dilimi ve saat biçimi.",
+      "notificationsCardDescription": "Dahili formların ve sistem uyarılarının nereye gönderildiği.",
+      "searchEnginesCardDescription": "Platformun kendi adreslerinin arama motorlarında görünüp görünmediği.",
+      "frontendAuthCardDescription": "Ziyaretçilerin sitede ve uygulamada nasıl giriş yapıp kaydolduğu.",
+      "signUpEmailCardDescription": "Yeni bir hesabın adresini doğrulamak için aldığı e-posta.",
+      "usageReportCardDescription": "E-postayla gönderilen kullanım raporu ve nereye gittiği."
     },
     "appearance": {
       "appearance": "Görünüm",
@@ -4036,7 +4042,6 @@
     "checkYourMarketplaceConnectionOr": "Mağaza bağlantınızı kontrol edin veya daha sonra tekrar deneyin.",
     "inThisSite": "Bu sitede",
     "premium": "Premium",
-    "aCleanAndModernTheme": "Fromcode ön yüzünüz için sade ve modern bir tema.",
     "officialTheme": "Resmi Tema",
     "addToThisSite": "Bu siteye ekle",
     "installNow": "Şimdi Yükle",
