@@ -156,7 +156,7 @@ export class PersonField extends Reactor {
                 <span className="block truncate text-[13px] font-semibold text-slate-800 dark:text-slate-100">{person.name}</span>
                 <span className="block truncate text-[12px] text-slate-500 dark:text-slate-400">{person.email || person.phone || AdminI18n.t('ui.person.ref', { id: person.id })}</span>
               </span>
-              <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wide text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>
+              <span className="shrink-0 text-[12px] font-medium text-slate-400">{AdminI18n.t(person.hasLogin ? 'ui.person.hasLogin' : 'ui.person.noLogin')}</span>
             </button>
           </li>
         ))}

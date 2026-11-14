@@ -86,7 +86,7 @@ export class RolePermissionGroup extends PureReactor {
       <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
         <table className="w-full text-xs">
           <thead>
-            <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
+            <tr className="bg-slate-50 text-[12px] font-medium tracking-tight text-slate-400 dark:bg-slate-900/60">
               <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
               {RolePermissionSelection.ACTIONS.map((action) => (
                 <th key={action} className="w-16 px-2 py-2 text-center">{action}</th>
@@ -137,7 +137,7 @@ export class RolePermissionGroup extends PureReactor {
             {this.expanded ? <FrameworkIcons.ChevronDown size={14} className="text-slate-400" /> : <FrameworkIcons.ChevronRight size={14} className="text-slate-400" />}
             <span className="text-sm font-semibold text-slate-800 dark:text-slate-100">{group.label}</span>
           </span>
-          <span className={`text-[10px] font-bold uppercase tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
+          <span className={`text-[12px] font-medium tracking-tight ${count > 0 ? 'text-indigo-500' : 'text-slate-400'}`}>
             {AdminI18n.t('users.countOfTotal', { count, total })}
           </span>
         </button>

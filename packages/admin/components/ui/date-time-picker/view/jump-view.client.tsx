@@ -60,7 +60,7 @@ export class DateTimePickerJumpView extends PureReactor {
             <FrameworkIcons.Left size={16} />
           </button>
           <div className="text-center">
-            <p className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400">{AdminI18n.t(isYearGridOpen ? 'ui.date.chooseYear' : 'ui.date.jumpToMonth')}</p>
+            <p className="text-[12px] font-medium text-slate-400">{AdminI18n.t(isYearGridOpen ? 'ui.date.chooseYear' : 'ui.date.jumpToMonth')}</p>
             <button
               type="button"
               onClick={this.toggleYearGrid}

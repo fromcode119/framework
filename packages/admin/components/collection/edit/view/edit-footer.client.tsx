@@ -3,6 +3,7 @@ import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { Button } from '@/components/ui/view/button.client';
+import { Input } from '@/components/ui/view/input.client';
 import { FrameworkIcons } from '@fromcode119/react';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
@@ -35,6 +36,11 @@ export class EditFooter extends PureReactor {
       return;
     }
     this.router.back();
+  }
+
+  @bound
+  private onSummaryChange(e: any): void {
+    this.setChangeSummary(e.target.value);
   }
 
   @bound
@@ -80,6 +86,16 @@ export class EditFooter extends PureReactor {
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            {/* The note for the version history goes with the save it describes; a new record has no history yet. */}
+            {this.isNew ? null : (
+              <Input
+                placeholder={AdminI18n.t('collection.edit.summary')}
+                aria-label={AdminI18n.t('collection.edit.summary')}
+                value={this.changeSummary}
+                onChange={this.onSummaryChange}
+                className="hidden w-64 lg:block"
+              />
+            )}
             <Button variant={ButtonVariant.GHOST} className="h-9 px-3 text-[13px] font-medium" onClick={this.onDiscard}>
               {AdminI18n.t('collection.edit.discard')}
             </Button>

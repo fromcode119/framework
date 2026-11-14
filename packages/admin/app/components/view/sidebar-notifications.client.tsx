@@ -26,6 +26,8 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  */
 export class SidebarNotifications extends AdminComponent {
   @prop declare isMini?: boolean;
+  /** Just the bell, beside the console's name, instead of a row of its own. */
+  @prop declare compact?: boolean;
   @state private notifications: Array<Record<string, any>> = [];
   @state private unread = 0;
   @state private deviceOn = false;
@@ -126,6 +128,14 @@ export class SidebarNotifications extends AdminComponent {
   }
 
   private get trigger(): ReactElement {
+    if (this.compact) {
+      return (
+        <span role="button" tabIndex={0} className="fc-nav-brand__tool" title={AdminI18n.t('shell.notifications.title')} aria-label={AdminI18n.t('shell.notifications.title')}>
+          <FrameworkIcons.Bell size={16} />
+          {this.unread ? <span className="fc-nav-brand__dot" /> : null}
+        </span>
+      );
+    }
     const badge = this.unread ? <span className="min-w-[18px] rounded-full bg-indigo-600 px-1.5 text-center text-[11px] font-semibold leading-[18px] text-white">{this.unread > 99 ? '99+' : this.unread}</span> : null;
     if (this.isMini) {
       return (
@@ -145,6 +155,9 @@ export class SidebarNotifications extends AdminComponent {
   }
 
   render(): ReactElement {
+    if (this.compact) {
+      return <Dropdown ref={this.dropdown} placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />;
+    }
     return (
       <div className="border-t border-slate-200/80 p-2 dark:border-slate-800/80">
         <Dropdown ref={this.dropdown} block placement={DropdownPlacement.BESIDE} align={HorizontalAlign.LEFT} items={[]} header={this.header} panel={this.panel} trigger={this.trigger} />

@@ -167,13 +167,6 @@
       "sectionShow": "顯示",
       "sectionHide": "隱藏",
       "sectionFieldCount": "{{count}} 個欄位",
-      "fieldLevel": {
-        "label": "顯示的欄位",
-        "everyday": "常用",
-        "occasional": "偶爾使用",
-        "technical": "技術",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "預覽與永久連結",
       "permalinkHint": "按一下路徑部分，即可覆寫自動產生的代稱。",
       "settings": "設定",
@@ -188,10 +181,10 @@
       "deletePermanently": "永久刪除",
       "relatedRecords": "相關紀錄",
       "relatedEmpty": "目前尚無其他外掛有連結至此紀錄的資料。",
-      "recordPart": { "download": "下載 {{title}}", "person": "人員" },
-      "viewMode": "紀錄檢視模式",
-      "formView": "表單檢視",
-      "jsonView": "JSON 檢視",
+      "recordPart": {
+        "download": "下載 {{title}}",
+        "person": "人員"
+      },
       "unsavedIn": "未儲存的變更：",
       "noUnsaved": "沒有未儲存的變更",
       "notSaved": "未儲存：{{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "無法載入複製來源",
       "loadFailed": "無法載入項目",
       "slugTaken": "此代稱已被「{{name}}」使用。",
-      "unsavedChanges": "未儲存的變更"
+      "unsavedChanges": "未儲存的變更",
+      "editSection": "編輯",
+      "notFilledIn": "未填寫",
+      "nothingFilledIn": "尚未填寫任何內容",
+      "statusSection": "狀態",
+      "recordSection": "記錄",
+      "showJson": "以 JSON 顯示",
+      "showForm": "以表單顯示",
+      "recordActions": "記錄操作",
+      "sectionActions": "區段操作",
+      "breadcrumb": "麵包屑導覽",
+      "copyTitle": "複製",
+      "copied": "已複製",
+      "more": "更多",
+      "moreFields": "{{count}} 個欄位",
+      "moreOneField": "{{count}} 個欄位"
     },
     "notFound": {
       "title": "找不到集合",
@@ -426,7 +434,6 @@
       "add": "新增選單項目"
     },
     "field": {
-      "enter": "輸入{{label}}...",
       "notSet": "未設定",
       "auto": "自動",
       "localeFallback": "{{locale}} 中為空白 — 網站會顯示 {{fallback}} 的值",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "未記錄",
-      "auto": "自動記錄,無法在此編輯。",
-      "copied": "已複製",
-      "copy": "複製 JSON",
       "filter": "依鍵篩選…",
       "empty": "尚無任何記錄。",
       "noMatch": "沒有符合篩選條件的項目。"
@@ -659,7 +663,11 @@
       "general": "一般",
       "moreIn": "{{section}} 的更多項目",
       "thisSection": "本區段",
-      "collapse": "收合側邊欄"
+      "collapse": "收合側邊欄",
+      "expand": "展開側邊欄",
+      "search": "搜尋",
+      "searchShortcut": "⌘K",
+      "noMatches": "選單中沒有符合「{{query}}」的項目"
     },
     "workspace": {
       "unavailable": "無法使用工作區",
@@ -925,7 +933,8 @@
         }
       },
       "open": "開啟",
-      "loadFailed": "無法載入此小工具的數據。請重新載入頁面再試一次。"
+      "loadFailed": "無法載入此小工具的數據。請重新載入頁面再試一次。",
+      "quiet": "沒有待處理項目：{{list}}"
     }
   },
   "notFound": {

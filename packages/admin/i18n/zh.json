@@ -167,13 +167,6 @@
       "sectionShow": "显示",
       "sectionHide": "隐藏",
       "sectionFieldCount": "{{count}} 个字段",
-      "fieldLevel": {
-        "label": "显示的字段",
-        "everyday": "常用",
-        "occasional": "偶尔使用",
-        "technical": "技术",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "预览与固定链接",
       "permalinkHint": "点击路径部分可覆盖自动生成的别名。",
       "settings": "设置",
@@ -188,10 +181,10 @@
       "deletePermanently": "永久删除",
       "relatedRecords": "关联记录",
       "relatedEmpty": "目前还没有其他插件持有与此记录关联的记录。",
-      "recordPart": { "download": "下载 {{title}}", "person": "人员" },
-      "viewMode": "记录查看模式",
-      "formView": "表单视图",
-      "jsonView": "JSON 视图",
+      "recordPart": {
+        "download": "下载 {{title}}",
+        "person": "人员"
+      },
       "unsavedIn": "未保存的更改：",
       "noUnsaved": "没有未保存的更改",
       "notSaved": "未保存：{{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "无法载入要复制的源记录",
       "loadFailed": "无法载入条目",
       "slugTaken": "此别名已被“{{name}}”使用。",
-      "unsavedChanges": "未保存的更改"
+      "unsavedChanges": "未保存的更改",
+      "editSection": "编辑",
+      "notFilledIn": "未填写",
+      "nothingFilledIn": "尚未填写任何内容",
+      "statusSection": "状态",
+      "recordSection": "记录",
+      "showJson": "以 JSON 显示",
+      "showForm": "以表单显示",
+      "recordActions": "记录操作",
+      "sectionActions": "区块操作",
+      "breadcrumb": "面包屑导航",
+      "copyTitle": "复制",
+      "copied": "已复制",
+      "more": "更多",
+      "moreFields": "{{count}} 个字段",
+      "moreOneField": "{{count}} 个字段"
     },
     "notFound": {
       "title": "未找到集合",
@@ -426,7 +434,6 @@
       "add": "添加菜单项"
     },
     "field": {
-      "enter": "输入{{label}}...",
       "notSet": "未设置",
       "auto": "自动",
       "localeFallback": "{{locale}} 中为空 — 网站将显示 {{fallback}} 的值",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "未记录",
-      "auto": "自动记录，无法在此编辑。",
-      "copied": "已复制",
-      "copy": "复制 JSON",
       "filter": "按键筛选…",
       "empty": "暂无记录。",
       "noMatch": "没有符合筛选条件的内容。"
@@ -659,7 +663,11 @@
       "general": "常规",
       "moreIn": "{{section}}中的更多内容",
       "thisSection": "本节",
-      "collapse": "收起侧边栏"
+      "collapse": "收起侧边栏",
+      "expand": "展开侧边栏",
+      "search": "搜索",
+      "searchShortcut": "⌘K",
+      "noMatches": "菜单中没有与“{{query}}”匹配的项"
     },
     "workspace": {
       "unavailable": "工作区不可用",
@@ -925,7 +933,8 @@
         }
       },
       "open": "打开",
-      "loadFailed": "无法加载此小组件的数据。请刷新页面重试。"
+      "loadFailed": "无法加载此小组件的数据。请刷新页面重试。",
+      "quiet": "没有待处理事项：{{list}}"
     }
   },
   "notFound": {

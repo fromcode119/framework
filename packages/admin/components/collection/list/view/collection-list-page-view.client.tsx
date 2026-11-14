@@ -47,8 +47,13 @@ export class CollectionListPageView extends Reactor {
   @state loading = true;
   /** Set when the list could not be loaded, so an empty table is never passed off as "no records". */
   @state loadError = '';
-  @state search = '';
-  @state debouncedSearch = '';
+  /** `?search=` opens the list already searched — "this customer's other orders" is a link, not a hint. */
+  @state search = CollectionListPageView.searchFromUrl();
+  @state debouncedSearch = CollectionListPageView.searchFromUrl();
+  private static searchFromUrl(): string {
+    return Platform.hasWindow ? String(new URLSearchParams(window.location.search).get('search') || '').trim() : '';
+  }
+
   @state page = !Platform.hasWindow
     ? 1
     : CollectionListUtils.parsePageQueryValue(new URLSearchParams(window.location.search).get('page'));

@@ -54,7 +54,7 @@ export class FieldTextualControl extends PureReactor {
             value={typeof currentValue === 'string' ? currentValue : resolvedCurrentText}
             onChange={(e) => updateValue(e.target.value)}
             disabled={isFieldReadOnly}
-            placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : (this.field.placeholder || AdminI18n.t('ui.field.enter', { label }))}
+            placeholder={isFieldReadOnly ? AdminI18n.t('ui.field.notSet') : this.field.placeholder}
             error={errors?.[0]}
             inputClassName={switcher ? 'pr-16' : ''}
           />

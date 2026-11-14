@@ -14,13 +14,16 @@ export class SidebarMiniToggle extends PureReactor {
     return (
       <div className={`border-t border-slate-100 dark:border-slate-800 hidden lg:block bg-white dark:bg-[#020617] ${isMini ? 'p-2' : 'px-3 py-3'}`}>
         <button
+          type="button"
           onClick={onMiniToggle}
+          aria-label={AdminI18n.t(isMini ? 'shell.nav.expand' : 'shell.nav.collapse')}
+          title={AdminI18n.t(isMini ? 'shell.nav.expand' : 'shell.nav.collapse')}
           className={`flex items-center justify-center ${AdminClass.SURFACE} transition-all duration-300 hover:bg-slate-100 text-slate-500 dark:hover:bg-slate-800 dark:text-slate-400 font-bold ${isMini ? 'w-10 h-10 shadow-sm shadow-indigo-500/5' : 'w-full p-2.5 hover:shadow-lg hover:shadow-slate-200/40 dark:hover:shadow-none bg-slate-50/50 dark:bg-slate-900/40'}`}
         >
           <div className={`transition-transform duration-500 ${isMini ? 'rotate-180' : ''}`}>
              <FrameworkIcons.Left size={18} strokeWidth={2.5} />
           </div>
-          {!isMini && <span className="ms-3 text-[11px] font-bold tracking-tight text-slate-500 transition-colors uppercase">{AdminI18n.t('shell.nav.collapse')}</span>}
+          {!isMini && <span className="ms-3 text-[12px] font-medium tracking-tight text-slate-500 transition-colors">{AdminI18n.t('shell.nav.collapse')}</span>}
         </button>
       </div>
     );

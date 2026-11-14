@@ -11,6 +11,10 @@ import type { IDashboardWidgetDefinition } from '@/lib/dashboard/interfaces/dash
  * change its width and remove it, and its content stops taking clicks so arranging never follows a link.
  * The whole widget is the drag handle (DashboardPointerDrag); the widget it is dragged over is marked
  * as the place it will land.
+ *
+ * A widget that has nothing to show draws its empty state (`data-empty-state`). Outside Customize such a
+ * widget steps aside — the board names it on one "nothing waiting" line instead of a whole card saying
+ * so — and comes back by itself the moment it has something. In Customize every widget is shown.
  */
 export class DashboardWidgetFrame extends PureReactor {
   @prop declare definition: IDashboardWidgetDefinition;
@@ -25,6 +29,69 @@ export class DashboardWidgetFrame extends PureReactor {
   @prop declare onResize: (size: DashboardWidgetSize) => void;
   @prop declare onShift: (step: number) => void;
   @prop declare onPointerDown: (event: PointerEvent) => void;
+  /** This widget is showing only its empty state; the board lists it on the "nothing waiting" line. */
+  @prop declare quiet: boolean;
+  @prop declare onQuietChange: (quiet: boolean) => void;
+
+  private observer: MutationObserver | null = null;
+  private sizer: ResizeObserver | null = null;
+  private reported: boolean | null = null;
+
+  /**
+   * The grid packs widgets by their real height (`.fc-dashboard__grid--packed` lays out 1px rows), so a
+   * short list beside a tall chart does not leave a hole the height of the chart under it.
+   */
+  private packed: Element | null = null;
+
+  private readonly pack = (node: HTMLDivElement): void => {
+    const content = node.firstElementChild as HTMLElement | null;
+    if (content === this.packed || typeof ResizeObserver === 'undefined') return;
+    this.sizer?.disconnect();
+    this.packed = content;
+    if (!content) { node.style.gridRowEnd = ''; return; }
+    this.sizer = new ResizeObserver(() => {
+      const gap = parseFloat(getComputedStyle(node.parentElement as Element).getPropertyValue('--fc-dashboard-gap')) || 0;
+      node.style.gridRowEnd = `span ${Math.ceil(content.getBoundingClientRect().height + gap)}`;
+    });
+    this.sizer.observe(content);
+  };
+
+  private readonly watch = (node: HTMLDivElement | null): void => {
+    this.observer?.disconnect();
+    this.observer = null;
+    this.sizer?.disconnect();
+    this.sizer = null;
+    this.packed = null;
+    if (!node || typeof MutationObserver === 'undefined') return;
+    const check = () => {
+      const quiet = DashboardWidgetFrame.onlyEmpty(node);
+      if (quiet !== this.reported) { this.reported = quiet; this.onQuietChange(quiet); }
+      this.pack(node);
+    };
+    this.observer = new MutationObserver(check);
+    this.observer.observe(node, { childList: true, subtree: true });
+    check();
+  };
+
+  /**
+   * Quiet means the widget says nothing BUT its empty state: an empty state somewhere inside, and no other
+   * text outside the card's heading (its `header` or title). A widget with figures and one empty list keeps its card.
+   */
+  static onlyEmpty(node: HTMLElement): boolean {
+    if (!node.querySelector('[data-empty-state]')) return false;
+    const walker = node.ownerDocument.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+    for (let text = walker.nextNode(); text; text = walker.nextNode()) {
+      if (!text.textContent?.trim()) continue;
+      const parent = text.parentElement;
+      if (parent && !parent.closest('[data-empty-state], header, h1, h2, h3, h4, h5, h6')) return false;
+    }
+    return true;
+  }
+
+  componentWillUnmount(): void {
+    this.observer?.disconnect();
+    this.sizer?.disconnect();
+  }
 
   private get span(): string {
     if (this.size === DashboardWidgetSize.LARGE) return 'md:col-span-2 lg:col-span-3';
@@ -33,7 +100,9 @@ export class DashboardWidgetFrame extends PureReactor {
   }
 
   render(): ReactNode {
-    if (!this.editing) return <div className={`min-w-0 empty:hidden ${this.span}`}>{this.definition.render()}</div>;
+    if (!this.editing) {
+      return <div ref={this.watch} className={`min-w-0 empty:hidden ${this.span} ${this.quiet ? 'fc-dashboard__widget--quiet' : ''}`}>{this.definition.render()}</div>;
+    }
     const outline = this.dragging
       ? 'opacity-40 outline-indigo-400'
       : this.dropTarget ? 'outline-indigo-500 bg-indigo-50/60 dark:bg-indigo-500/10' : 'outline-slate-300 dark:outline-slate-700';

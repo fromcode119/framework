@@ -160,7 +160,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
     return (
       <tr key={`heading:${key}`} data-row-id={id} className={`bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 ${className}`}>
         <td colSpan={totalColumns} className="px-3 py-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</span>
+          <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
           <span className="ms-2 text-[11px] font-semibold text-slate-400">{count}</span>
         </td>
       </tr>
@@ -253,7 +253,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
           </div>
         ) : null}
         <div className="overflow-x-auto fc-data-table-rows" ref={this.scroller}>
-          <table className="w-full text-start border-collapse min-w-[600px]">
+          <table className="fc-dt">
             <DataTableHead
               columns={columns}
               rowRef={this.headRow}
@@ -268,7 +268,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
               stickyOffsets={this.stickyOffsets}
               stickyActions={this.isActionsPinned}
             />
-            <tbody className="divide-y divide-slate-100/80 dark:divide-slate-800/50">
+            <tbody>
               {this.renderBody(data, columns, totalColumns, selectedIds)}
             </tbody>
           </table>

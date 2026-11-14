@@ -24,7 +24,7 @@ export class DashboardActivityBreakdown extends PureReactor {
     return (
       <Card title={AdminI18n.t('dashboard.activityBySource')}>
         {rows.length === 0 ? (
-          <p className="text-xs text-slate-400 py-2">{AdminI18n.t('dashboard.noActivityWindow')}</p>
+          <p data-empty-state className="text-xs text-slate-400 py-2">{AdminI18n.t('dashboard.noActivityWindow')}</p>
         ) : (
           <div className="space-y-2">
             {rows.map((r) => (

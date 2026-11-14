@@ -167,13 +167,6 @@
       "sectionShow": "Göster",
       "sectionHide": "Gizle",
       "sectionFieldCount": "{{count}} alan",
-      "fieldLevel": {
-        "label": "Gösterilen alanlar",
-        "everyday": "Günlük",
-        "occasional": "Ara sıra",
-        "technical": "Teknik",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Önizleme ve Kalıcı Bağlantı",
       "permalinkHint": "Otomatik oluşturulan kısa adı değiştirmek için yol bileşenine tıklayın.",
       "settings": "Ayarlar",
@@ -188,10 +181,10 @@
       "deletePermanently": "Kalıcı Olarak Sil",
       "relatedRecords": "İlgili kayıtlar",
       "relatedEmpty": "Henüz hiçbir eklenti bu kayda bağlı bir kayıt tutmuyor.",
-      "recordPart": { "download": "İndir {{title}}", "person": "Kişi" },
-      "viewMode": "Kayıt görünüm modu",
-      "formView": "Form görünümü",
-      "jsonView": "JSON görünümü",
+      "recordPart": {
+        "download": "İndir {{title}}",
+        "person": "Kişi"
+      },
       "unsavedIn": "Kaydedilmemiş değişiklikler:",
       "noUnsaved": "Kaydedilmemiş değişiklik yok",
       "notSaved": "Kaydedilmedi: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Kopyalanacak kaynak yüklenemedi",
       "loadFailed": "Kayıt yüklenemedi",
       "slugTaken": "Bu kısa ad zaten \"{{name}}\" tarafından kullanılıyor.",
-      "unsavedChanges": "Kaydedilmemiş değişiklikler"
+      "unsavedChanges": "Kaydedilmemiş değişiklikler",
+      "editSection": "Düzenle",
+      "notFilledIn": "Doldurulmadı",
+      "nothingFilledIn": "Henüz hiçbir şey doldurulmadı",
+      "statusSection": "Durum",
+      "recordSection": "Kayıt",
+      "showJson": "JSON olarak göster",
+      "showForm": "Form olarak göster",
+      "recordActions": "Kayıt işlemleri",
+      "sectionActions": "Bölüm işlemleri",
+      "breadcrumb": "İçerik haritası",
+      "copyTitle": "Kopyala",
+      "copied": "Kopyalandı",
+      "more": "Daha fazla",
+      "moreFields": "{{count}} alan",
+      "moreOneField": "{{count}} alan"
     },
     "notFound": {
       "title": "Koleksiyon Bulunamadı",
@@ -426,7 +434,6 @@
       "add": "Menü Öğesi Ekle"
     },
     "field": {
-      "enter": "{{label}} girin...",
       "notSet": "Ayarlanmadı",
       "auto": "Otomatik",
       "localeFallback": "{{locale}} dilinde boş — site {{fallback}} değerini gösteriyor",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Kaydedilmedi",
-      "auto": "Otomatik olarak kaydedilir — burada düzenlenemez.",
-      "copied": "Kopyalandı",
-      "copy": "JSON'u kopyala",
       "filter": "Anahtara göre filtrele…",
       "empty": "Henüz kayıt yok.",
       "noMatch": "Bu filtreyle eşleşen bir şey yok."
@@ -659,7 +663,11 @@
       "general": "Genel",
       "moreIn": "{{section}} Bölümünde Daha Fazlası",
       "thisSection": "Bu Bölüm",
-      "collapse": "Kenar Çubuğunu Daralt"
+      "collapse": "Kenar Çubuğunu Daralt",
+      "expand": "Kenar çubuğunu genişlet",
+      "search": "Ara",
+      "searchShortcut": "⌘K",
+      "noMatches": "Menüde “{{query}}” ile eşleşen bir şey yok"
     },
     "workspace": {
       "unavailable": "Çalışma alanı kullanılamıyor",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Aç",
-      "loadFailed": "Bu bileşenin verileri yüklenemedi. Tekrar denemek için sayfayı yenileyin."
+      "loadFailed": "Bu bileşenin verileri yüklenemedi. Tekrar denemek için sayfayı yenileyin.",
+      "quiet": "Bekleyen bir şey yok: {{list}}"
     }
   },
   "notFound": {

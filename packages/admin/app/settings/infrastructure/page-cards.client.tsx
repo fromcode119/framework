@@ -114,7 +114,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveSsrCap}
                 isLoading={this.isSavingSsrCap}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>
@@ -157,7 +157,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveRetention}
                 isLoading={this.isSavingRetention}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>
@@ -196,7 +196,7 @@ export abstract class InfrastructureSettingsPageCards extends InfrastructureSett
                 onClick={this.saveAuditRetention}
                 isLoading={this.isSavingAuditRetention}
                 icon={<FrameworkIcons.Save size={13} />}
-                className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
               >
                 {AdminI18n.t('settings.infrastructure.save')}
               </Button>

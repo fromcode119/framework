@@ -167,13 +167,6 @@
       "sectionShow": "Hiện",
       "sectionHide": "Ẩn",
       "sectionFieldCount": "{{count}} trường",
-      "fieldLevel": {
-        "label": "Trường đang hiển thị",
-        "everyday": "Thường dùng",
-        "occasional": "Thỉnh thoảng",
-        "technical": "Kỹ thuật",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Xem trước & Liên kết cố định",
       "permalinkHint": "Nhấp vào phần đường dẫn để ghi đè slug được tạo tự động.",
       "settings": "Cài đặt",
@@ -188,10 +181,10 @@
       "deletePermanently": "Xóa vĩnh viễn",
       "relatedRecords": "Bản ghi liên quan",
       "relatedEmpty": "Chưa có plugin nào khác chứa bản ghi liên kết với bản ghi này.",
-      "recordPart": { "download": "Tải xuống {{title}}", "person": "Người" },
-      "viewMode": "Chế độ xem bản ghi",
-      "formView": "Dạng biểu mẫu",
-      "jsonView": "Dạng JSON",
+      "recordPart": {
+        "download": "Tải xuống {{title}}",
+        "person": "Người"
+      },
       "unsavedIn": "Thay đổi chưa lưu ở",
       "noUnsaved": "Không có thay đổi chưa lưu",
       "notSaved": "Chưa lưu: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Không thể tải nguồn bản sao",
       "loadFailed": "Không thể tải mục",
       "slugTaken": "Slug này đã được dùng bởi \"{{name}}\".",
-      "unsavedChanges": "Thay đổi chưa lưu"
+      "unsavedChanges": "Thay đổi chưa lưu",
+      "editSection": "Chỉnh sửa",
+      "notFilledIn": "Chưa điền",
+      "nothingFilledIn": "Chưa điền gì",
+      "statusSection": "Trạng thái",
+      "recordSection": "Bản ghi",
+      "showJson": "Hiển thị dạng JSON",
+      "showForm": "Hiển thị dạng biểu mẫu",
+      "recordActions": "Thao tác với bản ghi",
+      "sectionActions": "Thao tác với mục",
+      "breadcrumb": "Đường dẫn",
+      "copyTitle": "Sao chép",
+      "copied": "Đã sao chép",
+      "more": "Thêm",
+      "moreFields": "{{count}} trường",
+      "moreOneField": "{{count}} trường"
     },
     "notFound": {
       "title": "Không tìm thấy bộ sưu tập",
@@ -426,7 +434,6 @@
       "add": "Thêm mục menu"
     },
     "field": {
-      "enter": "Nhập {{label}}...",
       "notSet": "Chưa đặt",
       "auto": "Tự động",
       "localeFallback": "Trống ở {{locale}} — trang web hiển thị giá trị {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Chưa ghi nhận",
-      "auto": "Được ghi nhận tự động — không thể chỉnh sửa tại đây.",
-      "copied": "Đã sao chép",
-      "copy": "Sao chép JSON",
       "filter": "Lọc theo khóa…",
       "empty": "Chưa có dữ liệu nào được ghi nhận.",
       "noMatch": "Không có kết quả khớp với bộ lọc."
@@ -659,7 +663,11 @@
       "general": "Chung",
       "moreIn": "Thêm trong {{section}}",
       "thisSection": "Mục này",
-      "collapse": "Thu gọn thanh bên"
+      "collapse": "Thu gọn thanh bên",
+      "expand": "Mở rộng thanh bên",
+      "search": "Tìm kiếm",
+      "searchShortcut": "⌘K",
+      "noMatches": "Không có mục nào trong menu khớp với “{{query}}”"
     },
     "workspace": {
       "unavailable": "Không gian làm việc không khả dụng",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Mở",
-      "loadFailed": "Không thể tải số liệu của tiện ích này. Hãy tải lại trang để thử lại."
+      "loadFailed": "Không thể tải số liệu của tiện ích này. Hãy tải lại trang để thử lại.",
+      "quiet": "Không có gì đang chờ: {{list}}"
     }
   },
   "notFound": {

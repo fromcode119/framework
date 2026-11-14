@@ -167,13 +167,6 @@
       "sectionShow": "Vis",
       "sectionHide": "Skjul",
       "sectionFieldCount": "{{count}} felt",
-      "fieldLevel": {
-        "label": "Viste felt",
-        "everyday": "Daglige",
-        "occasional": "Sporadiske",
-        "technical": "Tekniske",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Forhåndsvisning og permalenke",
       "permalinkHint": "Klikk på stidelen for å overstyre den automatisk genererte slugen.",
       "settings": "Innstillinger",
@@ -188,10 +181,10 @@
       "deletePermanently": "Slett permanent",
       "relatedRecords": "Relaterte oppføringer",
       "relatedEmpty": "Ingen andre programtillegg har ennå en oppføring koblet til denne.",
-      "recordPart": { "download": "Last ned {{title}}", "person": "Person" },
-      "viewMode": "Visningsmodus for oppføring",
-      "formView": "Skjemavisning",
-      "jsonView": "JSON-visning",
+      "recordPart": {
+        "download": "Last ned {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Ulagrede endringer i",
       "noUnsaved": "Ingen ulagrede endringer",
       "notSaved": "Ikke lagret: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Kunne ikke laste inn kilden for kopien",
       "loadFailed": "Kunne ikke laste inn oppføringen",
       "slugTaken": "Denne slugen brukes allerede av «{{name}}».",
-      "unsavedChanges": "Ulagrede endringer"
+      "unsavedChanges": "Ulagrede endringer",
+      "editSection": "Rediger",
+      "notFilledIn": "Ikke utfylt",
+      "nothingFilledIn": "Ingenting er fylt ut ennå",
+      "statusSection": "Status",
+      "recordSection": "Post",
+      "showJson": "Vis som JSON",
+      "showForm": "Vis som skjema",
+      "recordActions": "Handlinger for posten",
+      "sectionActions": "Handlinger for delen",
+      "breadcrumb": "Brødsmulesti",
+      "copyTitle": "Kopier",
+      "copied": "Kopiert",
+      "more": "Mer",
+      "moreFields": "{{count}} felt",
+      "moreOneField": "{{count}} felt"
     },
     "notFound": {
       "title": "Fant ikke samlingen",
@@ -426,7 +434,6 @@
       "add": "Legg til menyelement"
     },
     "field": {
-      "enter": "Skriv inn {{label}} …",
       "notSet": "Ikke angitt",
       "auto": "Auto",
       "localeFallback": "Tom for {{locale}} – nettstedet viser verdien for {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Ikke registrert",
-      "auto": "Registreres automatisk – kan ikke redigeres her.",
-      "copied": "Kopiert",
-      "copy": "Kopier JSON",
       "filter": "Filtrer etter nøkkel …",
       "empty": "Ingenting registrert ennå.",
       "noMatch": "Ingenting samsvarer med filteret."
@@ -659,7 +663,11 @@
       "general": "Generelt",
       "moreIn": "Mer i {{section}}",
       "thisSection": "Denne delen",
-      "collapse": "Skjul sidepanel"
+      "collapse": "Skjul sidepanel",
+      "expand": "Utvid sidepanelet",
+      "search": "Søk",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ingenting i menyen samsvarer med «{{query}}»"
     },
     "workspace": {
       "unavailable": "Arbeidsområdet er utilgjengelig",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Åpne",
-      "loadFailed": "Tallene for denne widgeten kunne ikke lastes inn. Last inn siden på nytt for å prøve igjen."
+      "loadFailed": "Tallene for denne widgeten kunne ikke lastes inn. Last inn siden på nytt for å prøve igjen.",
+      "quiet": "Ingenting venter: {{list}}"
     }
   },
   "notFound": {

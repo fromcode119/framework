@@ -167,13 +167,6 @@
       "sectionShow": "Näytä",
       "sectionHide": "Piilota",
       "sectionFieldCount": "{{count}} kenttää",
-      "fieldLevel": {
-        "label": "Näytettävät kentät",
-        "everyday": "Päivittäiset",
-        "occasional": "Satunnaiset",
-        "technical": "Tekniset",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Esikatselu ja pysyvä linkki",
       "permalinkHint": "Napsauta polun osaa, jos haluat ohittaa automaattisesti luodun polkutunnisteen.",
       "settings": "Asetukset",
@@ -188,10 +181,10 @@
       "deletePermanently": "Poista pysyvästi",
       "relatedRecords": "Liittyvät tietueet",
       "relatedEmpty": "Millään muulla lisäosalla ei vielä ole tähän linkitettyä tietuetta.",
-      "recordPart": { "download": "Lataa {{title}}", "person": "Henkilö" },
-      "viewMode": "Tietueen näkymätila",
-      "formView": "Lomakenäkymä",
-      "jsonView": "JSON-näkymä",
+      "recordPart": {
+        "download": "Lataa {{title}}",
+        "person": "Henkilö"
+      },
       "unsavedIn": "Tallentamattomia muutoksia kohteessa",
       "noUnsaved": "Ei tallentamattomia muutoksia",
       "notSaved": "Ei tallennettu: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Kaksoiskappaleen lähteen lataaminen epäonnistui",
       "loadFailed": "Merkinnän lataaminen epäonnistui",
       "slugTaken": "Tämä polkutunniste on jo käytössä kohteella ”{{name}}”.",
-      "unsavedChanges": "Tallentamattomia muutoksia"
+      "unsavedChanges": "Tallentamattomia muutoksia",
+      "editSection": "Muokkaa",
+      "notFilledIn": "Ei täytetty",
+      "nothingFilledIn": "Mitään ei ole vielä täytetty",
+      "statusSection": "Tila",
+      "recordSection": "Tietue",
+      "showJson": "Näytä JSON-muodossa",
+      "showForm": "Näytä lomakkeena",
+      "recordActions": "Tietueen toiminnot",
+      "sectionActions": "Osion toiminnot",
+      "breadcrumb": "Murupolku",
+      "copyTitle": "Kopioi",
+      "copied": "Kopioitu",
+      "more": "Lisää",
+      "moreFields": "{{count}} kenttää",
+      "moreOneField": "{{count}} kenttä"
     },
     "notFound": {
       "title": "Kokoelmaa ei löytynyt",
@@ -426,7 +434,6 @@
       "add": "Lisää valikkokohde"
     },
     "field": {
-      "enter": "Anna {{label}}...",
       "notSet": "Ei asetettu",
       "auto": "Automaattinen",
       "localeFallback": "Tyhjä kielellä {{locale}} — sivusto näyttää arvon kielellä {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Ei tallennettu",
-      "auto": "Tallennetaan automaattisesti – ei muokattavissa tässä.",
-      "copied": "Kopioitu",
-      "copy": "Kopioi JSON",
       "filter": "Suodata avaimen mukaan…",
       "empty": "Mitään ei ole vielä tallennettu.",
       "noMatch": "Suodattimella ei löytynyt mitään."
@@ -659,7 +663,11 @@
       "general": "Yleiset",
       "moreIn": "Lisää osiossa {{section}}",
       "thisSection": "Tämä osio",
-      "collapse": "Kutista sivupalkki"
+      "collapse": "Kutista sivupalkki",
+      "expand": "Laajenna sivupalkki",
+      "search": "Hae",
+      "searchShortcut": "⌘K",
+      "noMatches": "Mikään valikossa ei vastaa hakua ”{{query}}”"
     },
     "workspace": {
       "unavailable": "Työtila ei ole käytettävissä",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Avaa",
-      "loadFailed": "Tämän pienoisohjelman lukuja ei voitu ladata. Yritä uudelleen lataamalla sivu uudelleen."
+      "loadFailed": "Tämän pienoisohjelman lukuja ei voitu ladata. Yritä uudelleen lataamalla sivu uudelleen.",
+      "quiet": "Ei odottavia: {{list}}"
     }
   },
   "notFound": {

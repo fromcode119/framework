@@ -167,13 +167,6 @@
       "sectionShow": "표시",
       "sectionHide": "숨기기",
       "sectionFieldCount": "필드 {{count}}개",
-      "fieldLevel": {
-        "label": "표시할 필드",
-        "everyday": "일상",
-        "occasional": "가끔",
-        "technical": "기술",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "미리보기 및 고유 링크",
       "permalinkHint": "경로 부분을 클릭하면 자동 생성된 슬러그를 직접 지정할 수 있습니다.",
       "settings": "설정",
@@ -188,10 +181,10 @@
       "deletePermanently": "영구 삭제",
       "relatedRecords": "관련 레코드",
       "relatedEmpty": "아직 이 레코드에 연결된 레코드를 가진 다른 플러그인이 없습니다.",
-      "recordPart": { "download": "다운로드 {{title}}", "person": "사람" },
-      "viewMode": "레코드 보기 모드",
-      "formView": "양식 보기",
-      "jsonView": "JSON 보기",
+      "recordPart": {
+        "download": "다운로드 {{title}}",
+        "person": "사람"
+      },
       "unsavedIn": "저장되지 않은 변경 사항:",
       "noUnsaved": "저장되지 않은 변경 사항 없음",
       "notSaved": "저장되지 않음: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "복제할 원본을 불러오지 못했습니다",
       "loadFailed": "항목을 불러오지 못했습니다",
       "slugTaken": "이 슬러그는 이미 \"{{name}}\"에서 사용 중입니다.",
-      "unsavedChanges": "저장되지 않은 변경 사항"
+      "unsavedChanges": "저장되지 않은 변경 사항",
+      "editSection": "편집",
+      "notFilledIn": "입력되지 않음",
+      "nothingFilledIn": "아직 입력된 내용이 없습니다",
+      "statusSection": "상태",
+      "recordSection": "레코드",
+      "showJson": "JSON으로 보기",
+      "showForm": "양식으로 보기",
+      "recordActions": "레코드 작업",
+      "sectionActions": "섹션 작업",
+      "breadcrumb": "탐색 경로",
+      "copyTitle": "복사",
+      "copied": "복사됨",
+      "more": "더 보기",
+      "moreFields": "필드 {{count}}개",
+      "moreOneField": "필드 {{count}}개"
     },
     "notFound": {
       "title": "컬렉션을 찾을 수 없음",
@@ -426,7 +434,6 @@
       "add": "메뉴 항목 추가"
     },
     "field": {
-      "enter": "{{label}} 입력...",
       "notSet": "설정되지 않음",
       "auto": "자동",
       "localeFallback": "{{locale}}에서 비어 있음 — 사이트에 {{fallback}} 값이 표시됩니다",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "기록 없음",
-      "auto": "자동으로 기록됩니다. 여기에서는 편집할 수 없습니다.",
-      "copied": "복사됨",
-      "copy": "JSON 복사",
       "filter": "키로 필터…",
       "empty": "아직 기록된 내용이 없습니다.",
       "noMatch": "필터와 일치하는 항목이 없습니다."
@@ -659,7 +663,11 @@
       "general": "일반",
       "moreIn": "{{section}} 더 보기",
       "thisSection": "이 섹션",
-      "collapse": "사이드바 접기"
+      "collapse": "사이드바 접기",
+      "expand": "사이드바 펼치기",
+      "search": "검색",
+      "searchShortcut": "⌘K",
+      "noMatches": "메뉴에 “{{query}}”와 일치하는 항목이 없습니다"
     },
     "workspace": {
       "unavailable": "워크스페이스를 사용할 수 없음",
@@ -925,7 +933,8 @@
         }
       },
       "open": "열기",
-      "loadFailed": "이 위젯의 수치를 불러올 수 없습니다. 페이지를 새로고침하여 다시 시도하세요."
+      "loadFailed": "이 위젯의 수치를 불러올 수 없습니다. 페이지를 새로고침하여 다시 시도하세요.",
+      "quiet": "대기 중인 항목 없음: {{list}}"
     }
   },
   "notFound": {

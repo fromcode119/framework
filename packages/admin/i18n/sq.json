@@ -167,13 +167,6 @@
       "sectionShow": "Shfaq",
       "sectionHide": "Fshih",
       "sectionFieldCount": "{{count}} fusha",
-      "fieldLevel": {
-        "label": "Fushat e shfaqura",
-        "everyday": "Të përditshme",
-        "occasional": "Të rastit",
-        "technical": "Teknike",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Paraparje & Permalidhje",
       "permalinkHint": "Klikoni pjesën e shtegut për të anashkaluar slug-un e krijuar automatikisht.",
       "settings": "Cilësime",
@@ -188,10 +181,10 @@
       "deletePermanently": "Fshije përgjithmonë",
       "relatedRecords": "Regjistrime të lidhura",
       "relatedEmpty": "Ende asnjë shtojcë tjetër nuk ka regjistrim të lidhur me këtë.",
-      "recordPart": { "download": "Shkarko {{title}}", "person": "Personi" },
-      "viewMode": "Mënyra e shfaqjes së regjistrimit",
-      "formView": "Pamje formulari",
-      "jsonView": "Pamje JSON",
+      "recordPart": {
+        "download": "Shkarko {{title}}",
+        "person": "Personi"
+      },
       "unsavedIn": "Ndryshime të paruajtura te",
       "noUnsaved": "Nuk ka ndryshime të paruajtura",
       "notSaved": "Nuk u ruajt: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Ngarkimi i burimit të kopjes dështoi",
       "loadFailed": "Ngarkimi i zërit dështoi",
       "slugTaken": "Ky slug përdoret tashmë nga \"{{name}}\".",
-      "unsavedChanges": "Ndryshime të paruajtura"
+      "unsavedChanges": "Ndryshime të paruajtura",
+      "editSection": "Redakto",
+      "notFilledIn": "I paplotësuar",
+      "nothingFilledIn": "Ende asgjë e plotësuar",
+      "statusSection": "Statusi",
+      "recordSection": "Regjistrimi",
+      "showJson": "Shfaq si JSON",
+      "showForm": "Shfaq si formular",
+      "recordActions": "Veprimet e regjistrimit",
+      "sectionActions": "Veprimet e seksionit",
+      "breadcrumb": "Shtegu i navigimit",
+      "copyTitle": "Kopjo",
+      "copied": "U kopjua",
+      "more": "Më shumë",
+      "moreFields": "{{count}} fusha",
+      "moreOneField": "{{count}} fushë"
     },
     "notFound": {
       "title": "Koleksioni nuk u gjet",
@@ -426,7 +434,6 @@
       "add": "Shto element menuje"
     },
     "field": {
-      "enter": "Shkruani {{label}}...",
       "notSet": "E pacaktuar",
       "auto": "Automatik",
       "localeFallback": "Bosh në {{locale}} — sajti shfaq vlerën në {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nuk është regjistruar",
-      "auto": "Regjistrohet automatikisht — nuk mund të ndryshohet këtu.",
-      "copied": "U kopjua",
-      "copy": "Kopjo JSON",
       "filter": "Filtro sipas çelësit…",
       "empty": "Ende nuk është regjistruar asgjë.",
       "noMatch": "Asgjë nuk përputhet me këtë filtër."
@@ -659,7 +663,11 @@
       "general": "Të përgjithshme",
       "moreIn": "Më shumë te {{section}}",
       "thisSection": "Ky seksion",
-      "collapse": "Palos shiritin anësor"
+      "collapse": "Palos shiritin anësor",
+      "expand": "Zgjero shiritin anësor",
+      "search": "Kërko",
+      "searchShortcut": "⌘K",
+      "noMatches": "Asgjë në menu nuk përputhet me “{{query}}”"
     },
     "workspace": {
       "unavailable": "Hapësira e punës nuk është e disponueshme",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Hap",
-      "loadFailed": "Shifrat e këtij widget-i nuk mund të ngarkoheshin. Ringarkoni faqen për të provuar përsëri."
+      "loadFailed": "Shifrat e këtij widget-i nuk mund të ngarkoheshin. Ringarkoni faqen për të provuar përsëri.",
+      "quiet": "Asgjë në pritje: {{list}}"
     }
   },
   "notFound": {

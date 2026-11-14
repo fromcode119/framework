@@ -103,7 +103,7 @@ export class RoutingPage extends RoutingPageActions {
           <Card title={AdminI18n.t('settings.routing.homepageTarget')}>
             <div className="space-y-5 py-2">
               <div>
-                <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+                <label className={`block text-[12px] font-medium mb-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {AdminI18n.t('settings.routing.rootRoute')}
                 </label>
                 <Select
@@ -120,7 +120,7 @@ export class RoutingPage extends RoutingPageActions {
                 </p>
                 <div className={`mt-3 ${AdminClass.SURFACE} px-3 py-2 text-[11px] ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-900/50 text-slate-300' : 'border-slate-200 bg-slate-50 text-slate-700'
                   }`}>
-                  <span className="font-semibold uppercase tracking-wide text-[10px] opacity-70">{AdminI18n.t('settings.routing.resolvedHomepageSource')}</span>
+                  <span className="font-medium text-[12px] opacity-70">{AdminI18n.t('settings.routing.resolvedHomepageSource')}</span>
                   <div className="mt-1 font-semibold">{resolvedSourceLabel}</div>
                 </div>
               </div>
@@ -130,7 +130,7 @@ export class RoutingPage extends RoutingPageActions {
           <Card title={AdminI18n.t('settings.routing.permalinkStructure')}>
             <div className="space-y-8 py-4">
               <div>
-                <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+                <label className={`block text-[12px] font-medium mb-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {AdminI18n.t('settings.routing.commonStructures')}
                 </label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -146,7 +146,7 @@ export class RoutingPage extends RoutingPageActions {
                         }`}
                     >
                       <div className="flex flex-col gap-1">
-                        <span className={`text-xs font-semibold uppercase tracking-wide ${structure === preset.value ? 'text-indigo-400' : 'text-slate-500'
+                        <span className={`text-xs font-medium ${structure === preset.value ? 'text-indigo-400' : 'text-slate-500'
                           }`}>
                           {preset.label}
                         </span>
@@ -162,7 +162,7 @@ export class RoutingPage extends RoutingPageActions {
 
               <div className={`p-6 rounded-xl border-2 border-dashed ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/50'
                 }`}>
-                <label className={`block text-[11px] font-semibold uppercase tracking-wide mb-4 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+                <label className={`block text-[12px] font-medium mb-4 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                   {AdminI18n.t('settings.routing.customStructure')}
                 </label>
                 <div className="flex gap-3">

@@ -57,7 +57,7 @@ export class DashboardWidgetCard extends Reactor {
       </AdminLink>
     ) : undefined;
     return (
-      <SectionCard title={this.title} subtitle={this.subtitle} icon={this.icon} actions={link} noPadding={this.noPadding}>
+      <SectionCard className="fc-widget-card" title={this.title} subtitle={this.subtitle} subtitleAsHint icon={this.icon} actions={link} noPadding={this.noPadding}>
         {this.renderBody()}
       </SectionCard>
     );

@@ -6,6 +6,8 @@ import { Reactor, prop, state, bound } from '@fromcode119/react-class-components
 import { AdminCollectionUtils } from '@/lib/collection-utils';
 
 import { EditHeader } from '@/components/collection/edit/view/edit-header.client';
+import { EditRecordCrumbs } from '@/components/collection/edit/view/edit-record-crumbs.client';
+import { CollectionListUtils } from '@/components/collection/list/utils';
 import { RevisionModal } from '@/components/collection/edit/view/revision-modal.client';
 import { EditFooter } from '@/components/collection/edit/view/edit-footer.client';
 import { EditPageBody } from '@/components/collection/edit/edit-page-body';
@@ -15,7 +17,6 @@ import { CollectionCreateDisabled } from '@/components/collection/edit/collectio
 import { CollectionEditPageLifecycle } from '@/components/collection/edit/view/collection-edit-page-lifecycle.client';
 import { CollectionEditPageViewModelBuilder } from '@/components/collection/edit/view/collection-edit-page-view-model.client';
 import { SiteScopeGate } from '@/components/view/site-scope-gate.client';
-import { AdminServices } from '@/lib/admin-services';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminPageRegistry } from '@/lib/appearance/admin-page-registry';
 import { AdminPageKeys } from '@/lib/appearance/admin-page-keys';
@@ -42,9 +43,7 @@ export class CollectionEditPageView extends Reactor {
   @state loading = !this.isNewEntry || Boolean(this.duplicateFromId);
   @state deleting = false;
   @state showDeleteConfirm = false;
-  /** How much of the record the form shows (a `FieldLevel` value); remembered per browser. */
-  @state fieldDepth = AdminServices.getInstance().uiPreference.readEditFieldDepth();
-  /** Form vs JSON view. Owned here; switched from the body's EditViewModeRail. */
+  /** Form vs JSON view. Owned here; switched from the header's record menu. */
   @state advancedView = false;
 
   @bound private setAdvancedView(next: boolean): void {
@@ -170,18 +169,29 @@ export class CollectionEditPageView extends Reactor {
             <span className="fc-scope-notice__text">{AdminI18n.t('collection.edit.viewOnly')}</span>
           </div>
         )}
-        <EditHeader
-          collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
-          resolvedTitleValue={edit.resolvedTitleValue} changeSummary={edit.changeSummary} setChangeSummary={edit.setChangeSummary} showChangeSummary={edit.showChangeSummary}
-          formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
-          statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} handleInputChange={edit.handleInputChange}
-          handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
-          canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
-        />
-
         <EditPageBody
           edit={edit} slug={slug} id={id}
-          advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+          advancedView={this.advancedView}
+          crumbs={edit.isNew ? null : (
+            <EditRecordCrumbs
+              pluginSlug={pluginSlug} slug={slug}
+              listLabel={CollectionListUtils.resolveCollectionLabel(collection, slug)} title={edit.resolvedTitleValue || String(id)}
+            />
+          )}
+          head={(
+            <EditHeader
+              collection={collection} pluginSlug={pluginSlug} slug={slug} id={id} isNew={edit.isNew} theme={edit.theme}
+              resolvedTitleValue={edit.resolvedTitleValue}
+              formData={edit.formData} setFormData={edit.setFormData} getPreviewUrl={edit.getPreviewUrl} showPreview={edit.showPreview}
+              statusOptions={edit.statusOptions} currentStatusValue={edit.currentStatusValue} currentStatusLabel={edit.currentStatusLabel}
+              handleInputChange={edit.handleInputChange}
+              advancedView={this.advancedView} setAdvancedView={this.setAdvancedView}
+              handleSubmit={edit.handleSubmit} saving={edit.saving} setShowDeleteConfirm={edit.setShowDeleteConfirm}
+              canSave={canSave} canDelete={access.canDelete} includeAction={access.allowsPluginAction}
+              isDirty={edit.isDirty} saveBar={!edit.hideFooter && canSave}
+              moreSections={edit.moreSections} openedSections={edit.openedSections} recordHref={`/${pluginSlug}/${slug}/${id}`} navigate={(href: string) => edit.router?.replace(href, { scroll: false })}
+            />
+          )}
         />
 
         <RevisionModal

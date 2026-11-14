@@ -167,13 +167,6 @@
       "sectionShow": "Prikaži",
       "sectionHide": "Sakrij",
       "sectionFieldCount": "Broj polja: {{count}}",
-      "fieldLevel": {
-        "label": "Prikazana polja",
-        "everyday": "Svakodnevna",
-        "occasional": "Povremena",
-        "technical": "Tehnička",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pregled i trajna poveznica",
       "permalinkHint": "Kliknite dio putanje kako biste zamijenili automatski generirani slug.",
       "settings": "Postavke",
@@ -188,10 +181,10 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Nijedan drugi dodatak još nema zapis povezan s ovim.",
-      "recordPart": { "download": "Preuzmi {{title}}", "person": "Osoba" },
-      "viewMode": "Način prikaza zapisa",
-      "formView": "Prikaz obrasca",
-      "jsonView": "JSON prikaz",
+      "recordPart": {
+        "download": "Preuzmi {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Nespremljene promjene u",
       "noUnsaved": "Nema nespremljenih promjena",
       "notSaved": "Nije spremljeno: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Učitavanje izvora duplikata nije uspjelo",
       "loadFailed": "Učitavanje unosa nije uspjelo",
       "slugTaken": "Ovaj slug već koristi \"{{name}}\".",
-      "unsavedChanges": "Nespremljene promjene"
+      "unsavedChanges": "Nespremljene promjene",
+      "editSection": "Uredi",
+      "notFilledIn": "Nije ispunjeno",
+      "nothingFilledIn": "Još ništa nije ispunjeno",
+      "statusSection": "Status",
+      "recordSection": "Zapis",
+      "showJson": "Prikaži kao JSON",
+      "showForm": "Prikaži kao obrazac",
+      "recordActions": "Radnje zapisa",
+      "sectionActions": "Radnje odjeljka",
+      "breadcrumb": "Navigacijski put",
+      "copyTitle": "Kopiraj",
+      "copied": "Kopirano",
+      "more": "Više",
+      "moreFields": "{{count}} polja",
+      "moreOneField": "{{count}} polje"
     },
     "notFound": {
       "title": "Zbirka nije pronađena",
@@ -426,7 +434,6 @@
       "add": "Dodaj stavku izbornika"
     },
     "field": {
-      "enter": "Unesite {{label}}...",
       "notSet": "Nije postavljeno",
       "auto": "Automatski",
       "localeFallback": "Prazno za {{locale}} — stranica prikazuje vrijednost za {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nije zabilježeno",
-      "auto": "Bilježi se automatski — ovdje se ne može uređivati.",
-      "copied": "Kopirano",
-      "copy": "Kopiraj JSON",
       "filter": "Filtriraj po ključu…",
       "empty": "Još ništa nije zabilježeno.",
       "noMatch": "Ništa ne odgovara tom filtru."
@@ -659,7 +663,11 @@
       "general": "Općenito",
       "moreIn": "Više u odjeljku {{section}}",
       "thisSection": "Ovaj odjeljak",
-      "collapse": "Sažmi bočnu traku"
+      "collapse": "Sažmi bočnu traku",
+      "expand": "Proširi bočnu traku",
+      "search": "Traži",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ništa u izborniku ne odgovara „{{query}}”"
     },
     "workspace": {
       "unavailable": "Radni prostor nije dostupan",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Otvori",
-      "loadFailed": "Podaci ovog widgeta nisu se mogli učitati. Ponovno učitajte stranicu kako biste pokušali ponovno."
+      "loadFailed": "Podaci ovog widgeta nisu se mogli učitati. Ponovno učitajte stranicu kako biste pokušali ponovno.",
+      "quiet": "Ništa ne čeka: {{list}}"
     }
   },
   "notFound": {

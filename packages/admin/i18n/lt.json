@@ -167,13 +167,6 @@
       "sectionShow": "Rodyti",
       "sectionHide": "Slėpti",
       "sectionFieldCount": "Laukų: {{count}}",
-      "fieldLevel": {
-        "label": "Rodomi laukai",
-        "everyday": "Kasdieniai",
-        "occasional": "Retkarčiais",
-        "technical": "Techniniai",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Peržiūra ir nuolatinė nuoroda",
       "permalinkHint": "Spustelėkite kelio dalį, kad pakeistumėte automatiškai sugeneruotą slug.",
       "settings": "Nustatymai",
@@ -188,10 +181,10 @@
       "deletePermanently": "Ištrinti visam laikui",
       "relatedRecords": "Susiję įrašai",
       "relatedEmpty": "Joks kitas įskiepis dar neturi su šiuo susieto įrašo.",
-      "recordPart": { "download": "Atsisiųsti {{title}}", "person": "Asmuo" },
-      "viewMode": "Įrašo rodinio režimas",
-      "formView": "Formos rodinys",
-      "jsonView": "JSON rodinys",
+      "recordPart": {
+        "download": "Atsisiųsti {{title}}",
+        "person": "Asmuo"
+      },
       "unsavedIn": "Neišsaugoti pakeitimai:",
       "noUnsaved": "Neišsaugotų pakeitimų nėra",
       "notSaved": "Neišsaugota: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Nepavyko įkelti kopijos šaltinio",
       "loadFailed": "Nepavyko įkelti įrašo",
       "slugTaken": "Šį slug jau naudoja „{{name}}“.",
-      "unsavedChanges": "Neišsaugoti pakeitimai"
+      "unsavedChanges": "Neišsaugoti pakeitimai",
+      "editSection": "Redaguoti",
+      "notFilledIn": "Neužpildyta",
+      "nothingFilledIn": "Dar niekas neužpildyta",
+      "statusSection": "Būsena",
+      "recordSection": "Įrašas",
+      "showJson": "Rodyti kaip JSON",
+      "showForm": "Rodyti kaip formą",
+      "recordActions": "Įrašo veiksmai",
+      "sectionActions": "Skilties veiksmai",
+      "breadcrumb": "Naršymo kelias",
+      "copyTitle": "Kopijuoti",
+      "copied": "Nukopijuota",
+      "more": "Daugiau",
+      "moreFields": "{{count}} laukai",
+      "moreOneField": "{{count}} laukas"
     },
     "notFound": {
       "title": "Kolekcija nerasta",
@@ -426,7 +434,6 @@
       "add": "Pridėti meniu punktą"
     },
     "field": {
-      "enter": "Įveskite {{label}}...",
       "notSet": "Nenustatyta",
       "auto": "Automatiškai",
       "localeFallback": "Tuščia kalba {{locale}} — svetainėje rodoma {{fallback}} reikšmė",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Neužfiksuota",
-      "auto": "Užfiksuota automatiškai – čia redaguoti negalima.",
-      "copied": "Nukopijuota",
-      "copy": "Kopijuoti JSON",
       "filter": "Filtruoti pagal raktą…",
       "empty": "Kol kas nieko neužfiksuota.",
       "noMatch": "Pagal šį filtrą nieko nerasta."
@@ -659,7 +663,11 @@
       "general": "Bendra",
       "moreIn": "Daugiau skiltyje {{section}}",
       "thisSection": "Ši skiltis",
-      "collapse": "Suskleisti šoninę juostą"
+      "collapse": "Suskleisti šoninę juostą",
+      "expand": "Išskleisti šoninę juostą",
+      "search": "Ieškoti",
+      "searchShortcut": "⌘K",
+      "noMatches": "Meniu nėra nieko, kas atitiktų „{{query}}“"
     },
     "workspace": {
       "unavailable": "Darbo sritis nepasiekiama",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Atidaryti",
-      "loadFailed": "Nepavyko įkelti šio valdiklio duomenų. Norėdami bandyti dar kartą, perkraukite puslapį."
+      "loadFailed": "Nepavyko įkelti šio valdiklio duomenų. Norėdami bandyti dar kartą, perkraukite puslapį.",
+      "quiet": "Nieko nelaukia: {{list}}"
     }
   },
   "notFound": {

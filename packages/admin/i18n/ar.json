@@ -167,13 +167,6 @@
       "sectionShow": "إظهار",
       "sectionHide": "إخفاء",
       "sectionFieldCount": "{{count}} حقول",
-      "fieldLevel": {
-        "label": "الحقول المعروضة",
-        "everyday": "اليومية",
-        "occasional": "أحيانًا",
-        "technical": "تقنية",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "المعاينة والرابط الدائم",
       "permalinkHint": "انقر على جزء المسار لتجاوز المعرّف المختصر المُنشأ تلقائيًا.",
       "settings": "الإعدادات",
@@ -188,10 +181,10 @@
       "deletePermanently": "حذف نهائي",
       "relatedRecords": "السجلات المرتبطة",
       "relatedEmpty": "لا توجد إضافة أخرى تحتفظ بسجل مرتبط بهذا السجل بعد.",
-      "recordPart": { "download": "تنزيل {{title}}", "person": "الشخص" },
-      "viewMode": "وضع عرض السجل",
-      "formView": "عرض النموذج",
-      "jsonView": "عرض JSON",
+      "recordPart": {
+        "download": "تنزيل {{title}}",
+        "person": "الشخص"
+      },
       "unsavedIn": "تغييرات غير محفوظة في",
       "noUnsaved": "لا توجد تغييرات غير محفوظة",
       "notSaved": "لم يُحفظ: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "فشل تحميل مصدر النسخة",
       "loadFailed": "فشل تحميل الإدخال",
       "slugTaken": "هذا المعرّف المختصر مستخدم بالفعل في \"{{name}}\".",
-      "unsavedChanges": "تغييرات غير محفوظة"
+      "unsavedChanges": "تغييرات غير محفوظة",
+      "editSection": "تعديل",
+      "notFilledIn": "غير مُعبّأ",
+      "nothingFilledIn": "لم يُملأ شيء بعد",
+      "statusSection": "الحالة",
+      "recordSection": "السجل",
+      "showJson": "عرض كـ JSON",
+      "showForm": "عرض كنموذج",
+      "recordActions": "إجراءات السجل",
+      "sectionActions": "إجراءات القسم",
+      "breadcrumb": "مسار التنقل",
+      "copyTitle": "نسخ",
+      "copied": "تم النسخ",
+      "more": "المزيد",
+      "moreFields": "{{count}} حقول",
+      "moreOneField": "{{count}} حقل"
     },
     "notFound": {
       "title": "المجموعة غير موجودة",
@@ -426,7 +434,6 @@
       "add": "إضافة عنصر قائمة"
     },
     "field": {
-      "enter": "أدخل {{label}}...",
       "notSet": "غير محدد",
       "auto": "تلقائي",
       "localeFallback": "فارغ في {{locale}} — يعرض الموقع قيمة {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "غير مسجَّل",
-      "auto": "يُسجَّل تلقائيًا — لا يمكن تعديله هنا.",
-      "copied": "تم النسخ",
-      "copy": "نسخ JSON",
       "filter": "التصفية حسب المفتاح…",
       "empty": "لم يُسجَّل شيء بعد.",
       "noMatch": "لا توجد نتائج تطابق عامل التصفية هذا."
@@ -659,7 +663,11 @@
       "general": "عام",
       "moreIn": "المزيد في {{section}}",
       "thisSection": "هذا القسم",
-      "collapse": "طي الشريط الجانبي"
+      "collapse": "طي الشريط الجانبي",
+      "expand": "توسيع الشريط الجانبي",
+      "search": "بحث",
+      "searchShortcut": "⌘K",
+      "noMatches": "لا شيء في القائمة يطابق «{{query}}»"
     },
     "workspace": {
       "unavailable": "مساحة العمل غير متاحة",
@@ -925,7 +933,8 @@
         }
       },
       "open": "فتح",
-      "loadFailed": "تعذّر تحميل بيانات هذه الأداة. أعد تحميل الصفحة للمحاولة مرة أخرى."
+      "loadFailed": "تعذّر تحميل بيانات هذه الأداة. أعد تحميل الصفحة للمحاولة مرة أخرى.",
+      "quiet": "لا شيء بانتظارك: {{list}}"
     }
   },
   "notFound": {

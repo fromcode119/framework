@@ -167,13 +167,6 @@
       "sectionShow": "Ipakita",
       "sectionHide": "Itago",
       "sectionFieldCount": "{{count}} field",
-      "fieldLevel": {
-        "label": "Mga field na ipinapakita",
-        "everyday": "Pang-araw-araw",
-        "occasional": "Paminsan-minsan",
-        "technical": "Teknikal",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Preview at Permalink",
       "permalinkHint": "I-click ang bahagi ng path para palitan ang awtomatikong nabuong slug.",
       "settings": "Mga Setting",
@@ -188,10 +181,10 @@
       "deletePermanently": "Burahin nang Permanente",
       "relatedRecords": "Mga kaugnay na record",
       "relatedEmpty": "Wala pang ibang plugin na may record na naka-link dito.",
-      "recordPart": { "download": "I-download {{title}}", "person": "Tao" },
-      "viewMode": "Mode ng pagtingin sa record",
-      "formView": "Form view",
-      "jsonView": "JSON view",
+      "recordPart": {
+        "download": "I-download {{title}}",
+        "person": "Tao"
+      },
       "unsavedIn": "Mga hindi na-save na pagbabago sa",
       "noUnsaved": "Walang hindi na-save na pagbabago",
       "notSaved": "Hindi na-save: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Nabigong i-load ang pinagmulan ng duplicate",
       "loadFailed": "Nabigong i-load ang entry",
       "slugTaken": "Ginagamit na ng \"{{name}}\" ang slug na ito.",
-      "unsavedChanges": "Mga hindi na-save na pagbabago"
+      "unsavedChanges": "Mga hindi na-save na pagbabago",
+      "editSection": "I-edit",
+      "notFilledIn": "Hindi pa napupunan",
+      "nothingFilledIn": "Wala pang napupunan",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Ipakita bilang JSON",
+      "showForm": "Ipakita bilang form",
+      "recordActions": "Mga aksyon sa rekord",
+      "sectionActions": "Mga aksyon sa seksyon",
+      "breadcrumb": "Breadcrumb",
+      "copyTitle": "Kopyahin",
+      "copied": "Nakopya",
+      "more": "Higit pa",
+      "moreFields": "{{count}} field",
+      "moreOneField": "{{count}} field"
     },
     "notFound": {
       "title": "Hindi Nahanap ang Collection",
@@ -426,7 +434,6 @@
       "add": "Magdagdag ng Menu Item"
     },
     "field": {
-      "enter": "Ilagay ang {{label}}...",
       "notSet": "Hindi nakatakda",
       "auto": "Auto",
       "localeFallback": "Walang laman sa {{locale}} — ipinapakita ng site ang value sa {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Hindi naitala",
-      "auto": "Awtomatikong naitala — hindi mae-edit dito.",
-      "copied": "Nakopya",
-      "copy": "Kopyahin ang JSON",
       "filter": "I-filter ayon sa key…",
       "empty": "Wala pang naitala.",
       "noMatch": "Walang tumutugma sa filter na iyan."
@@ -659,7 +663,11 @@
       "general": "Pangkalahatan",
       "moreIn": "Higit Pa sa {{section}}",
       "thisSection": "Seksyong Ito",
-      "collapse": "I-collapse ang Sidebar"
+      "collapse": "I-collapse ang Sidebar",
+      "expand": "Palawakin ang sidebar",
+      "search": "Maghanap",
+      "searchShortcut": "⌘K",
+      "noMatches": "Walang tumutugma sa “{{query}}” sa menu"
     },
     "workspace": {
       "unavailable": "Hindi available ang workspace",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Buksan",
-      "loadFailed": "Hindi ma-load ang mga numero ng widget na ito. I-reload ang page para subukang muli."
+      "loadFailed": "Hindi ma-load ang mga numero ng widget na ito. I-reload ang page para subukang muli.",
+      "quiet": "Walang naghihintay: {{list}}"
     }
   },
   "notFound": {

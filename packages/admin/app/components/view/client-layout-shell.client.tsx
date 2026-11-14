@@ -1,7 +1,7 @@
-import { SecondarySidebarMode } from '@/app/services/enums/secondary-sidebar-mode.enum';
 import { PagePermissionGate } from '@/components/view/page-permission-gate.client';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { Sidebar } from '@/app/components/view/sidebar.client';
+import { NavGroupPanel } from '@/app/components/view/nav-group-panel.client';
 import { SecondarySidebar } from '@/app/components/view/secondary-sidebar.client';
 import { AdminExtensionLoader } from '@/app/components/view/admin-extension-loader.client';
 import { ClientLayoutHeader } from '@/app/components/view/client-layout-header.client';
@@ -154,47 +154,12 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           isMini={navigationState.isMini}
           onMiniToggle={() => navigationState.setIsMini(!navigationState.isMini)}
           onActiveContextChange={navigationState.setActivePrimaryContextId}
-          activeSecondaryAnchorPath={navigationState.activeSecondaryAnchorPath}
-          hoverPreviewPath={navigationState.hoveredPrimaryPath}
-          previewablePaths={navigationState.secondaryMode === SecondarySidebarMode.DESKTOP && navigationState.hasDesktopPreviewablePaths ? navigationState.previewablePrimaryPaths : []}
-          onHoverPreviewPathChange={navigationState.secondaryMode === SecondarySidebarMode.DESKTOP && navigationState.hasDesktopPreviewablePaths ? navigationState.handleHoverPreviewPathChange : undefined}
-          inlineSecondaryContext={navigationState.secondaryResolved.activeContext}
-          inlineSecondaryItems={navigationState.secondaryResolved.items}
-          inlineSecondarySourceLabel={navigationState.secondarySourceLabel}
-          showInlineSecondary={navigationState.showSecondaryInlineInSidebar}
+          sectionPages={navigationState.secondaryResolved.items}
           activePrimaryPathOverride={String(navigationState.activePrimaryItem?.path || '')}
           activeChildPathOverride={String(navigationState.secondaryResolved?.activeSourcePath || '')}
-          onPreviewRegionEnter={navigationState.handleLeftNavigationMouseEnter}
-          onPreviewRegionLeave={navigationState.handleLeftNavigationMouseLeave}
         />
-        {navigationState.showCollapsedDesktopSecondaryHandle ? (
-          <SecondarySidebar
-            mode={navigationState.secondaryMode}
-            context={navigationState.displayedSecondaryResolved.activeContext}
-            items={navigationState.displayedSecondaryResolved.items}
-            sourceLabel={navigationState.displayedSecondarySourceLabel}
-            isOpen={navigationState.isDesktopSecondaryOpen}
-            hoverOpen={navigationState.isDesktopSecondaryHoverPreview}
-            overlayLeftClass={navigationState.isMini ? 'left-[72px]' : 'left-64'}
-            onOpen={() => navigationState.setDesktopSecondaryOpen(true)}
-            onClose={() => navigationState.setDesktopSecondaryOpen(false)}
-            onPanelMouseEnter={navigationState.handleSecondaryPanelMouseEnter}
-            onPanelMouseLeave={navigationState.handleSecondaryPanelMouseLeave}
-            onItemActivate={navigationState.handleSecondaryItemActivate}
-            parentPrimaryPath={navigationState.displayedSecondaryPrimaryPath}
-          />
-        ) : null}
-        {navigationState.showSecondaryTrigger ? (
-          <SecondarySidebar
-            mode={navigationState.secondaryMode}
-            context={navigationState.secondaryResolved.activeContext}
-            items={navigationState.secondaryResolved.items}
-            sourceLabel={navigationState.secondarySourceLabel}
-            isOpen={navigationState.showSecondaryOverlay}
-            onOpen={() => navigationState.setSecondaryOpen(true)}
-            onClose={() => navigationState.setSecondaryOpen(false)}
-          />
-        ) : null}
+        {/* A sub-menu's pages, beside the menu on a desktop — filled by the menu itself (NavGroupPanel). */}
+        <div id={NavGroupPanel.ROOT_ID} className="fc-nav-second" />
         <main className="relative flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out" onMouseEnter={navigationState.handleMainContentMouseEnter}>
           <ClientLayoutHeader onMenuClick={() => navigationState.setSidebarOpen(true)} />
           {authState.user?.readOnly ? ReadOnlyAccessNotice.render() : null}

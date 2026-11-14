@@ -167,13 +167,6 @@
       "sectionShow": "Einblenden",
       "sectionHide": "Ausblenden",
       "sectionFieldCount": "{{count}} Felder",
-      "fieldLevel": {
-        "label": "Angezeigte Felder",
-        "everyday": "Alltägliche",
-        "occasional": "Gelegentliche",
-        "technical": "Technische",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Vorschau & Permalink",
       "permalinkHint": "Klicken Sie auf den Pfadbestandteil, um den automatisch erzeugten Slug zu überschreiben.",
       "settings": "Einstellungen",
@@ -188,10 +181,10 @@
       "deletePermanently": "Endgültig löschen",
       "relatedRecords": "Verknüpfte Datensätze",
       "relatedEmpty": "Noch kein anderes Plugin hat einen mit diesem verknüpften Datensatz.",
-      "recordPart": { "download": "Herunterladen {{title}}", "person": "Person" },
-      "viewMode": "Ansichtsmodus des Datensatzes",
-      "formView": "Formularansicht",
-      "jsonView": "JSON-Ansicht",
+      "recordPart": {
+        "download": "Herunterladen {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Ungespeicherte Änderungen an",
       "noUnsaved": "Keine ungespeicherten Änderungen",
       "notSaved": "Nicht gespeichert: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Quelle für das Duplikat konnte nicht geladen werden",
       "loadFailed": "Eintrag konnte nicht geladen werden",
       "slugTaken": "Dieser Slug wird bereits von „{{name}}“ verwendet.",
-      "unsavedChanges": "Ungespeicherte Änderungen"
+      "unsavedChanges": "Ungespeicherte Änderungen",
+      "editSection": "Bearbeiten",
+      "notFilledIn": "Nicht ausgefüllt",
+      "nothingFilledIn": "Noch nichts ausgefüllt",
+      "statusSection": "Status",
+      "recordSection": "Datensatz",
+      "showJson": "Als JSON anzeigen",
+      "showForm": "Als Formular anzeigen",
+      "recordActions": "Aktionen für den Datensatz",
+      "sectionActions": "Aktionen für den Abschnitt",
+      "breadcrumb": "Brotkrümelnavigation",
+      "copyTitle": "Kopieren",
+      "copied": "Kopiert",
+      "more": "Mehr",
+      "moreFields": "{{count}} Felder",
+      "moreOneField": "{{count}} Feld"
     },
     "notFound": {
       "title": "Sammlung nicht gefunden",
@@ -426,7 +434,6 @@
       "add": "Menüeintrag hinzufügen"
     },
     "field": {
-      "enter": "{{label}} eingeben...",
       "notSet": "Nicht festgelegt",
       "auto": "Automatisch",
       "localeFallback": "Leer in {{locale}} – die Website zeigt den Wert aus {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nicht erfasst",
-      "auto": "Automatisch erfasst – hier nicht bearbeitbar.",
-      "copied": "Kopiert",
-      "copy": "JSON kopieren",
       "filter": "Nach Schlüssel filtern…",
       "empty": "Noch nichts erfasst.",
       "noMatch": "Keine Treffer für diesen Filter."
@@ -659,7 +663,11 @@
       "general": "Allgemein",
       "moreIn": "Mehr in {{section}}",
       "thisSection": "Dieser Bereich",
-      "collapse": "Seitenleiste einklappen"
+      "collapse": "Seitenleiste einklappen",
+      "expand": "Seitenleiste ausklappen",
+      "search": "Suchen",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nichts im Menü passt zu „{{query}}“"
     },
     "workspace": {
       "unavailable": "Arbeitsbereich nicht verfügbar",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Öffnen",
-      "loadFailed": "Die Werte dieses Widgets konnten nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen."
+      "loadFailed": "Die Werte dieses Widgets konnten nicht geladen werden. Laden Sie die Seite neu, um es erneut zu versuchen.",
+      "quiet": "Nichts offen: {{list}}"
     }
   },
   "notFound": {

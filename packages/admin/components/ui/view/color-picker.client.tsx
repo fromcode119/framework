@@ -98,7 +98,7 @@ export class ColorPicker extends AdminComponent {
           <div className="w-8 h-5 rounded border border-dashed border-slate-300 dark:border-slate-600" />
         )}
         {rawValue
-          ? <span className="font-mono uppercase tracking-tighter flex-1">{rawValue}</span>
+          ? <span className="font-mono tracking-tighter flex-1">{rawValue}</span>
           : <span className="flex-1 text-slate-400">{AdminI18n.t('ui.color.notSet')}</span>}
         <FrameworkIcons.Palette size={14} className="text-slate-400" />
       </div>

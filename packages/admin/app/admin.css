@@ -23,6 +23,65 @@
   --fc-success: #059669;
   --fc-warning: #d97706;
   --fc-danger: #e11d48;
+  --fc-info: #2563eb;
+
+  /* Fields and the edit sheet: how every field reads and how a piece of a record is edited, decided
+   * HERE once. A component never spells these out, so a change of style is one edit in this block (or
+   * one override in an appearance's stylesheet), not a sweep through every screen. They are written in
+   * terms of the palette above, so the dark scheme follows by itself. */
+  --fc-field-text: 12px;
+  --fc-field-weight: 500;
+  --fc-sheet-backdrop: rgb(15 23 42 / 0.4);
+  --fc-sheet-canvas: var(--fc-canvas);
+  --fc-sheet-surface: var(--fc-surface);
+  --fc-sheet-border: var(--fc-border);
+  --fc-sheet-radius: var(--radius);
+  --fc-sheet-gap: 12px;
+  --fc-sheet-pad: 16px;
+  --fc-sheet-title: 15px;
+  --fc-sheet-shadow: 0 -8px 32px rgb(15 23 42 / 0.16);
+  /* What a phone keeps visible above a sheet, so the page it belongs to is still in sight. */
+  --fc-sheet-phone-top: 44px;
+  /* 16px on a phone: below that, iOS Safari zooms the page into a field the moment it is tapped. */
+  --fc-sheet-phone-field-text: 16px;
+  --fc-sheet-phone-field-weight: 400;
+  /* A saved record's card: label column, the rule between rows, the value's size. */
+  --fc-record-label-width: 140px;
+  --fc-record-rule: 1px dashed var(--fc-border);
+  --fc-record-text: 13px;
+  /* A record page: the side column beside its main one, and the header card's title. */
+  --fc-record-side: 352px;
+  --fc-record-title: 20px;
+  /* The menu: one column of sections, the open one on a soft wash, its pages indented beneath it. The
+   * washes are written over the text colour, so they hold in both schemes without a dark rule. */
+  --fc-nav-bg: var(--fc-surface);
+  --fc-nav-border: var(--fc-border);
+  --fc-nav-text: var(--fc-text);
+  --fc-nav-muted: var(--fc-text-muted);
+  --fc-nav-hover: color-mix(in srgb, var(--fc-text) 5%, transparent);
+  --fc-nav-active: color-mix(in srgb, var(--fc-text) 8%, transparent);
+  --fc-nav-size: 13px;
+  --fc-nav-row: 32px;
+  --fc-nav-radius: 8px;
+  --fc-nav-sub-indent: 38px;
+  --fc-record-gap: 14px;
+
+  /* The dashboard's look, in one place. Every widget — the console's own and every plugin's — is drawn
+   * by the shared card, figures and empty-state components, so an appearance or a later restyle changes
+   * these values (or the `.fc-dashboard` rules at the end of this file) and every widget follows. */
+  --fc-dashboard-gap: 12px;
+  --fc-dashboard-head-pad: 8px 16px;
+  --fc-dashboard-head-icon: 24px;
+  --fc-dashboard-body-pad: 12px 16px;
+  --fc-dashboard-quiet-text: 12px;
+  --fc-dashboard-stat-min: 150px;
+  --fc-dashboard-stat-label: 11px;
+  --fc-dashboard-stat-value: 18px;
+  --fc-dashboard-alert-accent: var(--fc-warning);
+  --fc-dashboard-alert-strong: var(--fc-warning-strong);
+  --fc-dashboard-alert-soft: var(--fc-warning-soft);
+  --fc-dashboard-alert-border: var(--fc-warning-soft-border);
+  --fc-dashboard-alert-tile: 32px;
 
   /* Status TINTS: a soft surface, a border, and text that reads on it.
    *
@@ -412,7 +471,7 @@ html.dark {
 .fc-site-form__hint { font-size: 12px; opacity: 0.7; margin: 0; }
 .fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
-.fc-site-form__label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+.fc-site-form__label { font-size: 12px; font-weight: 500; color: var(--fc-text-muted); }
 .fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
 /* A plugin row carries its state beside the toggle, so an unrunnable one explains itself in place. */
 .fc-site-form__plugin { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
@@ -450,7 +509,7 @@ html.dark {
 .fc-sites__paging { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); margin-inline-end: 4px; }
 .fc-sites__card-action { display: flex; justify-content: flex-end; margin-bottom: 4px; }
-.fc-sites__grant-label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 8px; }
+.fc-sites__grant-label { display: block; font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 8px; }
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
 .fc-import-plan { display: flex; flex-direction: column; gap: 14px; }
@@ -485,7 +544,7 @@ html.dark {
    no clue how much was inside, so the decision to open one could not be made before opening it. ── */
 .fc-import-detail { border-top: 1px solid var(--border); padding-top: 12px; }
 .fc-import-detail__head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
-.fc-import-detail__title { margin: 0; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); }
+.fc-import-detail__title { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted-foreground); }
 .fc-import-detail__hint { font-size: 12px; color: var(--muted-foreground); }
 .fc-import-detail__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .fc-import-detail__chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
@@ -562,7 +621,7 @@ html.dark {
 .fc-import-rec__foldline { margin: 0 0 4px; }
 
 /* ── Plugins and theme: the missing ones lead, because only they cost the operator anything. ── */
-.fc-import-inv__group { padding: 10px 14px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fc-import-inv__group { padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .fc-import-inv__group--bad { color: var(--fc-danger-strong); background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); }
 .fc-import-inv__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
 .fc-import-inv__row:last-child { border-bottom: 0; }
@@ -625,10 +684,117 @@ html.dark {
    sub-menu open the sidebar still took a third of a ~700px area and every field shrank to a sliver.
    A container query measures the area itself: the sidebar sits beside the form only when both fit. */
 .fc-edit-columns { flex: 1 1 0%; min-width: 0; container-type: inline-size; }
-.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-bottom: 2rem; }
+.fc-edit-columns__grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--fc-record-gap); padding-bottom: 2rem; }
+/* One column of a record's cards: one gap between every card, the same as between the columns. */
+.fc-edit-column { display: flex; flex-direction: column; gap: var(--fc-record-gap); min-width: 0; }
 @container (min-width: 56rem) {
-  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .fc-edit-columns__grid--sidebar { grid-template-columns: minmax(0, 1fr) var(--fc-record-side); }
+  /* A side column with nothing in it (an invoice: every card is the record's own) keeps no empty third of
+     the page: the record reads as one column at the width of a record's main column. */
+  .fc-edit-columns__grid--sidebar:not(:has(> .fc-edit-sticky > .fc-edit-column > *, > .fc-edit-sticky .fc-edit-top__grid > *)) { grid-template-columns: minmax(0, 1fr); max-width: 48rem; }
 }
+/* One column (a phone, a narrow window): the cards of both columns are laid out as one list, so the side
+   column's first card — who the record is for — follows the record's first card instead of waiting under
+   everything else. The rest keep their own column's order: the main column's, then the side column's. */
+@container (max-width: 55.99rem) {
+  .fc-edit-columns__grid--sidebar > .fc-edit-column,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column { display: contents; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-column > * { order: 3; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-column > :nth-child(-n + 2) { order: 1; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > *,
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > * { order: 4; }
+  .fc-edit-columns__grid--sidebar > .fc-edit-sticky > .fc-edit-column > :first-child { order: 2; }
+  .fc-edit-columns__grid--sidebar .fc-edit-top:not(:has(.fc-edit-top__grid > *)) { display: none; }
+}
+
+/* ── A record page's top: the breadcrumb, then one card naming the record ─────────────────────────────
+ * EditHeader / EditHeaderMenu. */
+.fc-record-crumbs { display: flex; align-items: center; gap: 8px; min-width: 0; margin-bottom: 12px; font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-record-crumbs__back { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; margin-right: 4px; border: 1px solid var(--fc-border); border-radius: var(--radius); background: var(--fc-surface); color: var(--fc-text); }
+.fc-record-crumbs__back:hover { background: var(--fc-surface-muted); }
+.fc-record-crumbs__link { flex: none; color: var(--fc-text-muted); }
+.fc-record-crumbs__link:hover { color: var(--fc-text); text-decoration: underline; }
+.fc-record-crumbs__sep { flex: none; color: var(--fc-text-muted); }
+.fc-record-crumbs__current { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; color: var(--fc-text); }
+.fc-dropdown-footer { padding: 6px; border-top: 1px solid var(--fc-border); }
+.fc-dropdown-footer:not(:has(button)) { display: none; }
+/* The chosen row of a set: a tick at the end, an empty slot of the same width on the rows not chosen. */
+.fc-dropdown-choice { display: inline-flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; margin-inline-start: 8px; color: var(--fc-text); }
+/* A status option leads with the dot of its tone, the same dot as the record's state badge. */
+.fc-state-dot { display: inline-block; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
+.fc-state-dot[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-state-dot[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-state-dot[data-tone="danger"] { --fc-tone: var(--fc-danger); }
+.fc-state-dot[data-tone="info"] { --fc-tone: var(--fc-info); }
+
+/* The admin's tick box: a plain square in the console's ink, no glow; its label reads at body size. */
+.fc-checkbox__box { display: flex; flex: none; align-items: center; justify-content: center; width: 16px; height: 16px; border: 1.5px solid color-mix(in srgb, var(--fc-text-muted) 55%, transparent); border-radius: 4px; background: var(--fc-surface); color: var(--fc-brand-contrast); transition: background-color .15s, border-color .15s; }
+.fc-checkbox__box[data-checked="true"] { border-color: var(--fc-brand); background: var(--fc-brand); }
+.fc-checkbox__box[data-disabled="true"] { opacity: .5; }
+.fc-checkbox__dash { width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
+.fc-checkbox__label { font-size: 13px; color: var(--fc-text); user-select: none; }
+/* Ticking it: the box fills with a small give, then the tick draws itself. The tick mounts only when
+   checked, so the animation plays on every tick and never on load of an unticked box. */
+.fc-checkbox__box[data-checked="true"] { animation: fc-checkbox-pop .22s cubic-bezier(.3, 1.5, .6, 1); }
+.fc-checkbox__box svg path { stroke-dasharray: 23; stroke-dashoffset: 23; animation: fc-checkbox-draw .2s .06s ease-out forwards; }
+.fc-checkbox__dash { animation: fc-checkbox-pop .2s ease-out; }
+@keyframes fc-checkbox-pop { 0% { transform: scale(.82); } 100% { transform: scale(1); } }
+@keyframes fc-checkbox-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .fc-checkbox__box[data-checked="true"], .fc-checkbox__dash { animation: none; }
+  .fc-checkbox__box svg path { animation: none; stroke-dashoffset: 0; }
+}
+.fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
+.fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
+.fc-menu-action:disabled { cursor: progress; }
+.fc-menu-action[data-danger="true"] { color: var(--fc-danger); }
+.fc-menu-action__icon { flex: none; display: inline-flex; color: var(--fc-text-muted); }
+.fc-menu-action[aria-busy="true"] .fc-menu-action__icon svg { animation: fc-menu-action-spin 1s linear infinite; }
+@keyframes fc-menu-action-spin { to { transform: rotate(360deg); } }
+.fc-menu-action__text { min-width: 0; flex: 1; display: grid; }
+.fc-menu-action__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-menu-action__detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; font-weight: 400; color: var(--fc-text-muted); }
+/* A state in a word with a dot in its tone (StateBadge): the header's payment and fulfilment, a card's own state. */
+.fc-state-badge { display: inline-flex; align-items: center; gap: 5px; min-height: 24px; padding: 0 7px; border: 1px solid var(--fc-border); border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-state-badge::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 2px; background: var(--fc-tone, var(--fc-text-muted)); }
+.fc-state-badge[data-tone="success"] { --fc-tone: var(--fc-success); }
+.fc-state-badge[data-tone="warning"] { --fc-tone: var(--fc-warning); }
+.fc-state-badge[data-tone="danger"] { --fc-tone: var(--fc-danger); }
+.fc-state-badge[data-tone="info"] { --fc-tone: var(--fc-info); }
+/* A value with a copy button after it (CopyValue); the button shows on hover and focus, always on touch. */
+.fc-copy-value { display: inline-flex; align-items: center; gap: 4px; min-width: 0; max-width: 100%; }
+.fc-copy-value__text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-copy-value__button { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: var(--radius); color: var(--fc-text-muted); }
+.fc-copy-value__button::before { content: ''; position: absolute; inset: -6px; }
+.fc-copy-value__button:hover { color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; }
+.fc-record-head__main { flex: 1 1 16rem; min-width: 0; display: grid; gap: 2px; }
+/* On a phone the actions stay beside the title, at its top, instead of taking a row of their own. */
+/* On a phone the number and date take the whole line; the states and ⋯ follow on a row of their own. */
+@media (max-width: 639px) { .fc-record-head { align-items: flex-start; gap: 10px; } .fc-record-head__main { flex-basis: 100%; } }
+/* The title keeps room to be read: actions that do not fit beside it (an invoice carries four) move to a
+   row of their own under it, instead of squeezing the number into a column one letter wide. */
+@media (min-width: 640px) { .fc-record-head__main { min-width: min(18rem, 100%); } .fc-record-head__actions { flex: none; max-width: 100%; } }
+.fc-record-head__title-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; min-width: 0; }
+.fc-record-head__title { min-width: 0; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fc-record-title); font-weight: 700; line-height: 1.25; color: var(--fc-text); }
+.fc-record-head__copy,
+.fc-record-head__menu { position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; border-radius: var(--radius); color: var(--fc-text-muted); }
+.fc-record-head__copy { width: 24px; height: 24px; }
+/* A 24px icon gets a 36px hit area, so a thumb finds it beside the title. */
+.fc-record-head__copy::before { content: ''; position: absolute; inset: -6px; }
+.fc-record-head__menu { width: 28px; height: 28px; }
+.fc-record-head__menu::before { content: ''; position: absolute; inset: -6px; }
+.fc-record-head__copy:hover,
+.fc-record-head__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-head__badge { display: inline-flex; align-items: center; gap: 4px; min-height: 22px; padding: 0 8px; border: 1px solid var(--fc-border); border-radius: 9999px; font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface-muted); }
+.fc-record-head__badge--muted { color: var(--fc-text-muted); }
+.fc-record-head__meta { min-width: 0; font-size: var(--fc-record-text); line-height: 1.4; color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-record-head__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.fc-record-head__button { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: var(--fc-record-text); font-weight: 600; color: var(--fc-text); background: var(--fc-surface); }
+.fc-record-head__button:hover { background: var(--fc-surface-muted); }
+@media (max-width: 639px) { .fc-record-head__button-label { display: none; } }
+
 
 /* A section's fields: a `width: 'half'` field sits beside the next only when the card has room for
    two readable controls; narrower, every field takes the row. */
@@ -646,33 +812,37 @@ html.dark {
   .fc-edit-top__grid > *:has(.fc-admin-panel--body), .fc-edit-top__grid > .fc-admin-panel--body { grid-column: 1 / -1; }
 }
 
-/* What other plugins hold about a record, drawn as lines of the section they belong to: a payment under
-   the totals, a shipment under the address. One line each on a wide card; on a narrow one the amount
-   and date drop under the title instead of squeezing it. */
-.fc-record-part { margin-top: 1rem; padding-top: 0.75rem; border-top: 1px solid var(--border); display: grid; container-type: inline-size; gap: 0.75rem; }
-.fc-record-part__heading { font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 0.125rem; }
-.fc-record-part__empty { font-size: 13px; color: var(--muted-foreground); }
-.fc-record-part__row { display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.75rem; row-gap: 0.125rem; min-height: 2.5rem; padding-block: 0.25rem; }
-.fc-record-part__row + .fc-record-part__row { border-top: 1px solid var(--border); }
-.fc-record-part__icon { flex: none; color: var(--muted-foreground); }
-.fc-record-part__main { flex: 1 1 12rem; min-width: 0; display: flex; flex-wrap: wrap; align-items: center; column-gap: 0.5rem; }
-.fc-record-part__title { font-size: 13px; font-weight: 600; color: var(--card-foreground); overflow-wrap: anywhere; text-align: start; }
-.fc-record-part__title--link { min-height: 1.5rem; }
+/* What other plugins hold about a record, drawn as label / value rows of the section they belong to — a
+   payment under the totals, the person at the head of the customer — ruled like the card's own rows and
+   across its full width. On a narrow card the amount and date drop under the title instead of squeezing it. */
+.fc-record-part { display: grid; container-type: inline-size; }
+.fc-record-part__group { display: grid; grid-template-columns: min(var(--fc-record-label-width, 8rem), 32%) minmax(0, 1fr); gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); }
+.fc-record-card__body > .fc-record-part:first-child > .fc-record-part__group:first-child { border-top: 0; }
+.fc-record-part__heading { color: var(--fc-text-muted); line-height: 1.45; }
+.fc-record-part__items { display: grid; min-width: 0; }
+.fc-record-part__empty { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 -16px; padding: 10px 16px; border-top: var(--fc-record-rule); font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-record-card__body > .fc-record-part:first-child > .fc-record-part__empty:first-child { border-top: 0; }
+.fc-record-part__empty-text { min-width: 0; }
+.fc-record-part__row { display: flex; align-items: center; gap: 10px; min-height: 24px; }
+.fc-record-part__row + .fc-record-part__row { margin-top: 6px; padding-top: 6px; border-top: var(--fc-record-rule); }
+.fc-record-part__icon { flex: none; color: var(--fc-text-muted); }
+.fc-record-part__initials { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: var(--fc-surface-muted); color: var(--fc-text-muted); font-size: 10px; font-weight: 600; }
+.fc-record-part__main { flex: 1 1 auto; min-width: 0; display: grid; gap: 2px; }
+.fc-record-part__line { display: flex; flex-wrap: wrap; align-items: center; column-gap: 8px; min-width: 0; }
+.fc-record-part__title { font-size: var(--fc-record-text); font-weight: 500; color: var(--fc-text); overflow-wrap: anywhere; text-align: start; }
+.fc-record-part__title--link { color: var(--fc-accent); }
 .fc-record-part__title--link:hover { text-decoration: underline; }
-.fc-record-part__status { flex: none; border-radius: 9999px; padding: 0.0625rem 0.5rem; font-size: 11px; font-weight: 600; background: var(--muted); color: var(--muted-foreground); }
-.fc-record-part__meta { font-size: 12px; color: var(--muted-foreground); }
-.fc-record-part__trailing { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--card-foreground); }
-.fc-record-part__action { flex: none; width: 1.75rem; height: 1.75rem; display: inline-flex; align-items: center; justify-content: center; border-radius: 0.5rem; color: var(--muted-foreground); }
-.fc-record-part__action:hover { background: var(--muted); color: var(--card-foreground); }
-.fc-record-part__term { display: grid; gap: 0.5rem; }
-.fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.25rem; }
-.fc-record-part__button { display: inline-flex; align-items: center; gap: 0.375rem; min-height: 2rem; padding: 0 0.75rem; border: 1px solid var(--border); border-radius: 0.5rem; font-size: 12px; font-weight: 600; color: var(--card-foreground); background: var(--card); }
-.fc-record-part__button:hover { background: var(--muted); }
-@container (max-width: 30rem) {
-  .fc-record-part__main { flex-basis: calc(100% - 2rem); }
-  .fc-record-part__row > .fc-record-part__meta { margin-inline-start: 1.6875rem; }
-  .fc-record-part__trailing { margin-inline-start: auto; }
-}
+.fc-record-part__status { flex: none; border-radius: 9999px; padding: 1px 8px; font-size: 11px; font-weight: 600; background: var(--fc-surface-muted); color: var(--fc-text-muted); }
+.fc-record-part__meta { font-size: 12px; color: var(--fc-text-muted); }
+.fc-record-part__trailing { flex: none; white-space: nowrap; font-size: var(--fc-record-text); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fc-text); }
+.fc-record-part__action { position: relative; flex: none; width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center; border-radius: 6px; color: var(--fc-text-muted); }
+.fc-record-part__action::before { content: ''; position: absolute; inset: -6px; }
+.fc-record-part__action:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-record-part__actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.fc-record-part__button { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; }
+.fc-record-part__button:hover { background: var(--fc-surface-muted); }
+/* A card that is the part itself (an order's invoices) needs no label repeating its title. */
+.fc-record-part__group--bare { grid-template-columns: minmax(0, 1fr); }
 
 /* A wide card holds three fields to a row: with two, three short values (a name, a phone, an email) ran
    to a second row and left half of it empty. */
@@ -683,7 +853,8 @@ html.dark {
 /* ── A collection list: a table where it fits, a card per record where it does not. ──
    Decided by the LIST's width, not the window's. The sidebar and an open sub-menu leave a 1280px
    window with a list under 700px wide, where a table of six columns overflows and the actions pinned
-   to its right edge cover whatever columns sit under them. */
+   to its right edge cover whatever columns sit under them. Each cell holds one line (see `.fc-dt-*`), so
+   from 48rem the table fits; below that a record is a card. */
 .fc-collection-list { container-type: inline-size; }
 /* A record's card in that list: three lines on a phone, two where the list has the width for it. */
 .fc-list-card__badge--inline { display: none; }
@@ -696,7 +867,7 @@ html.dark {
 }
 .fc-collection-list .fc-list-table,
 .fc-collection-list .fc-list-table-only { display: none; }
-@container (min-width: 960px) {
+@container (min-width: 48rem) {
   .fc-collection-list .fc-list-table { display: block; }
   .fc-collection-list .fc-list-table-only { display: block; }
   .fc-collection-list .fc-list-cards { display: none; }
@@ -710,19 +881,139 @@ tr.fc-drop-after > td, div.fc-drop-after { box-shadow: inset 0 -2px 0 0 rgb(99 1
 /* A group's heading under the pointer: the record joins that group, at its start. */
 tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 241); background: rgb(99 102 241 / 0.08); }
 
-/* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 960px.
+/* A DataTable (every plugin screen's table) makes the same switch by its own width: cards below 48rem.
    `cards={false}` opts a table out — the collection list above draws its own cards. */
 .fc-data-table { container-type: inline-size; }
 .fc-data-table .fc-data-table-rows { display: none; }
-@container (min-width: 960px) {
+@container (min-width: 48rem) {
   .fc-data-table .fc-data-table-rows { display: block; }
   .fc-data-table .fc-data-table-cards { display: none; }
 }
+
+/* ── A table of records ── one quiet frame, a light header row in sentence case, one line per record,
+   the row's controls at its end and the count with the pages at the foot, inside the same frame. */
+.fc-list-frame { border: 1px solid var(--fc-border); border-radius: 12px; background: var(--fc-surface); overflow: hidden; }
+.fc-dt { width: 100%; border-collapse: collapse; text-align: start; }
+.fc-dt-head { background: var(--fc-surface-muted); border-bottom: 1px solid var(--fc-border); }
+/* A long column name wraps onto a second line instead of widening its column past what the values need,
+   so a list fits its page instead of scrolling sideways. */
+.fc-dt-th { height: 40px; padding: 6px 10px; font-size: 12px; font-weight: 500; line-height: 1.25; letter-spacing: 0; text-transform: none; color: var(--fc-text-muted); text-align: start; white-space: normal; }
+.fc-dt-th__inner { display: flex; align-items: flex-end; gap: 4px; }
+.fc-dt-th--sortable { cursor: pointer; }
+.fc-dt-th--sortable:hover { color: var(--fc-text); }
+.fc-dt-th--check, .fc-dt-td--check { width: 16px; padding-inline-end: 4px; }
+.fc-dt-th--actions, .fc-dt-td--actions { width: 1%; text-align: end; }
+.fc-dt-row { border-bottom: 1px solid var(--fc-border); transition: background-color .12s; }
+.fc-dt-row:last-child { border-bottom: 0; }
+.fc-dt-row:hover { background: var(--fc-surface-muted); }
+.fc-dt-row--link { cursor: pointer; }
+.fc-dt-row--selected { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
+.fc-dt-td { height: 48px; padding: 0 10px; vertical-align: middle; white-space: nowrap; }
+.fc-dt-td--actions { padding-inline: 4px 8px; }
+.fc-dt-cell { font-size: 13px; font-weight: 400; color: var(--fc-text); }
+/* The title opens its record; it reads as the row's name, and underlines only to show it is a link. */
+.fc-dt-title-link { color: inherit; font-weight: 500; text-decoration: none; }
+.fc-dt-title-link:hover, .fc-dt-title-link:focus-visible { text-decoration: underline; text-underline-offset: 2px; }
+/* A pinned cell is opaque, so the columns scrolling under it never show through; it follows its row. */
+.fc-dt-pinned { background: var(--fc-surface); }
+.fc-dt-head .fc-dt-pinned { background: var(--fc-surface-muted); }
+.fc-dt-row:hover > .fc-dt-pinned { background: var(--fc-surface-muted); }
+.fc-dt-row--selected > .fc-dt-pinned { background: color-mix(in srgb, var(--fc-brand) 6%, var(--fc-surface)); }
+.fc-dt-pinned-edge { border-inline-end: 1px solid var(--fc-border); }
+.fc-dt-pinned-end { inset-inline-end: 0; position: sticky; border-inline-start: 1px solid var(--fc-border); }
+/* In a table the row's controls stay on its one line; a card lets them wrap. */
+.fc-dt-td--actions .fc-row-actions { flex-wrap: nowrap; }
+.fc-dt-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 8px 12px; border-top: 1px solid var(--fc-border); }
+.fc-dt-foot__count { margin: 0; font-size: 12px; color: var(--fc-text-muted); }
+.fc-dt-pages { display: flex; align-items: center; gap: 4px; }
+.fc-dt-pages__gap { padding-inline: 2px; font-size: 12px; color: var(--fc-text-muted); }
+.fc-dt-page { display: inline-flex; align-items: center; justify-content: center; min-width: 28px; height: 28px; padding: 0 6px; border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--fc-text-muted); background: transparent; }
+.fc-dt-page:hover:not(:disabled) { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-dt-page:disabled { opacity: .4; cursor: default; }
+.fc-dt-page--current { background: var(--fc-surface-muted); color: var(--fc-text); font-weight: 600; box-shadow: inset 0 0 0 1px var(--fc-border); }
 
 /* An edit page's sidebar stays in view beside a long form; its offset is measured — see EditStickyColumn. */
 .fc-edit-sticky { position: sticky; align-self: start; }
 
 /* A menu item's trailing slot (sidebar-nav-item-view): after the label, or on the icon's corner collapsed. */
+/* ── The menu ── one column, no group headings; see `sidebar-nav-groups.tsx`. */
+.fc-nav { background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); }
+.fc-nav__scroll { display: flex; flex-direction: column; padding-block: 8px 12px; }
+.fc-nav-list { display: flex; flex-direction: column; gap: 2px; }
+.fc-nav-brand { display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 0 12px 0 16px; flex: none; }
+.fc-nav-brand--mini { justify-content: center; padding: 0; }
+.fc-nav-brand__mark { width: 28px; height: 28px; flex: none; border-radius: 6px; }
+.fc-nav-brand__name { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 14px; font-weight: 700; color: var(--fc-nav-text); }
+.fc-nav-brand__tools { display: flex; align-items: center; gap: 2px; flex: none; }
+.fc-nav-brand__tool { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); cursor: pointer; }
+.fc-nav-brand__tool::before { content: ''; position: absolute; inset: -4px; }
+.fc-nav-brand__tool:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+.fc-nav-brand__dot { position: absolute; top: 5px; inset-inline-end: 5px; width: 7px; height: 7px; border-radius: 9999px; background: var(--fc-info, #4f46e5); }
+@media (min-width: 1024px) { .fc-nav-brand__tool--narrow { display: none; } }
+.fc-nav__pinned { position: relative; }
+.fc-nav__collapse { display: none; position: absolute; top: 8px; inset-inline-end: 14px; width: 28px; height: 28px; align-items: center; justify-content: center; border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); }
+.fc-nav__collapse::before { content: ''; position: absolute; inset: -4px; }
+.fc-nav__collapse:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+@media (min-width: 1024px) { .fc-nav__collapse { display: inline-flex; } }
+.fc-nav-search { position: relative; flex: none; margin: 0 12px 4px; }
+.fc-nav-search__icon { position: absolute; top: 50%; inset-inline-start: 11px; transform: translateY(-50%); color: var(--fc-nav-muted); pointer-events: none; z-index: 1; }
+.fc-nav-search .fc-nav-search__field { padding-inline: 32px 40px; }
+.fc-nav-search__field::-webkit-search-cancel-button { display: none; }
+.fc-nav-search__kbd { position: absolute; top: 50%; inset-inline-end: 8px; transform: translateY(-50%); padding: 1px 5px; border: 1px solid var(--fc-nav-border); border-radius: 4px; font: 500 11px/1.4 inherit; color: var(--fc-nav-muted); pointer-events: none; }
+.fc-nav-empty { padding: 8px 10px; font-size: 12px; color: var(--fc-nav-muted); }
+.fc-nav__pinned { padding-block: 6px; border-top: 1px solid var(--fc-nav-border); }
+.fc-nav__pinned .fc-nav-foot { margin-top: 0; padding-top: 0; }
+/* Settings sits at the foot of the column, above the account, wherever the list above it ends. */
+.fc-nav-foot { margin-top: auto; padding-top: 16px; display: flex; flex-direction: column; gap: 2px; }
+.fc-nav-section { display: flex; flex-direction: column; }
+.fc-nav-item {
+  position: relative; display: flex; align-items: center; gap: 10px;
+  min-height: var(--fc-nav-row); padding-inline: 10px; border-radius: var(--fc-nav-radius);
+  color: var(--fc-nav-text); font-size: var(--fc-nav-size); font-weight: 500; line-height: 1.2;
+  transition: background-color 120ms ease;
+}
+.fc-nav-item:hover { background: var(--fc-nav-hover); }
+.fc-nav-item--active, .fc-nav-item--active:hover { background: var(--fc-nav-active); font-weight: 600; }
+.fc-nav-item--mini { justify-content: center; width: 40px; height: 40px; padding: 0; }
+.fc-nav-item__icon { display: inline-flex; flex: none; color: var(--fc-nav-muted); }
+.fc-nav-item--active .fc-nav-item__icon { color: var(--fc-nav-text); }
+.fc-nav-item__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fc-nav-sub { display: flex; flex-direction: column; gap: 1px; padding-block: 2px 6px; }
+.fc-nav-sub__item {
+  display: flex; align-items: center; min-height: 28px; padding-inline: var(--fc-nav-sub-indent) 10px;
+  border-radius: var(--fc-nav-radius); color: var(--fc-nav-muted); font-size: var(--fc-nav-size); font-weight: 500;
+}
+.fc-nav-sub__item:hover { background: var(--fc-nav-hover); color: var(--fc-nav-text); }
+.fc-nav-sub__item--active { color: var(--fc-nav-text); font-weight: 600; }
+.fc-nav-sub__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* A sub-menu: one line for a group of pages, its pages one step further in while one of them is open. */
+.fc-nav-sub__group { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-sub__group-pages { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-sub__chevron { margin-inline-start: auto; display: inline-flex; color: var(--fc-nav-muted); }
+.fc-nav-sub__group--open .fc-nav-sub__chevron { transform: rotate(90deg); }
+.fc-nav-sub__group--open > .fc-nav-sub__item--group { color: var(--fc-nav-text); }
+.fc-nav-sub__item--nested { padding-inline-start: calc(var(--fc-nav-sub-indent) + 12px); }
+
+/* The second column: a sub-menu's pages beside the menu. It exists only where the menu is a column of
+   its own (desktop); the phone's menu keeps the pages under the group line (above). */
+.fc-nav-second { display: none; }
+@media (min-width: 1024px) {
+  .fc-nav-sub__group-pages { display: none; }
+  .fc-nav-sub__group--open .fc-nav-sub__chevron { transform: none; }
+  .fc-nav-sub__item--current, .fc-nav-sub__group--preview > .fc-nav-sub__item--group { background: var(--fc-nav-active); color: var(--fc-nav-text); }
+  .fc-nav-second { display: block; position: sticky; top: 0; z-index: 190; flex: none; height: 100vh; }
+  .fc-nav-second:empty { width: 0; }
+}
+.fc-nav-panel {
+  display: flex; flex-direction: column; gap: 4px; width: 220px; height: 100%; padding: 14px 10px;
+  background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); overflow-y: auto;
+}
+/* Looked at, not gone to: over the content, beside the menu, until the pointer leaves it. */
+.fc-nav-panel--preview { position: absolute; inset-block: 0; inset-inline-start: 0; box-shadow: 12px 0 32px -16px rgb(15 23 42 / 0.25); }
+.fc-nav-panel__title { margin: 0 0 6px; padding-inline: 10px; font-size: 12px; font-weight: 600; color: var(--fc-nav-muted); }
+.fc-nav-panel__list { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-panel .fc-nav-sub__item { min-height: var(--fc-nav-row); padding-inline: 10px; }
+.fc-nav-panel .fc-nav-sub__item--active { background: var(--fc-nav-active); }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
 .fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }
@@ -736,3 +1027,399 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 [dir='rtl'] :is(.lucide-arrow-left, .lucide-arrow-right, .lucide-chevron-left, .lucide-chevron-right, .lucide-chevrons-left, .lucide-chevrons-right, .lucide-arrow-left-to-line, .lucide-arrow-right-to-line) {
   scale: -1 1;
 }
+
+
+/* ── Fields ──────────────────────────────────────────────────────────────────────────────────────────
+ * The text of every single-line field (UiFieldUtils puts `fc-field` on each). In the components layer, so
+ * a caller's own utility still wins where one is allowed. */
+@layer components {
+  .fc-field {
+    font-size: var(--fc-field-text);
+    font-weight: var(--fc-field-weight);
+  }
+}
+
+/* ── Edit sheet ──────────────────────────────────────────────────────────────────────────────────────
+ * EditSheet: rises from the bottom edge on a phone; from 640px it is drawn in place, inside the card it
+ * edits — never a dialog over the page. Every value is a `--fc-sheet-*` token in :root. */
+.fc-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  --fc-field-text: var(--fc-sheet-phone-field-text);
+  --fc-field-weight: var(--fc-sheet-phone-field-weight);
+}
+.fc-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--fc-sheet-backdrop);
+}
+.fc-sheet__panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: calc(100dvh - var(--fc-sheet-phone-top));
+  background: var(--fc-sheet-canvas);
+  border-top: 1px solid var(--fc-sheet-border);
+  border-radius: var(--fc-sheet-radius) var(--fc-sheet-radius) 0 0;
+  box-shadow: var(--fc-sheet-shadow);
+  overflow: hidden;
+  color: var(--fc-text);
+}
+.fc-sheet__head {
+  flex: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--fc-sheet-gap);
+  padding: 14px var(--fc-sheet-pad);
+  background: var(--fc-sheet-surface);
+  border-bottom: 1px solid var(--fc-sheet-border);
+}
+.fc-sheet__heading { min-width: 0; }
+.fc-sheet__title {
+  font-size: var(--fc-sheet-title);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--fc-text);
+}
+.fc-sheet__subtitle {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--fc-text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fc-sheet__close {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -6px -8px -6px 0;
+  border-radius: var(--fc-sheet-radius);
+  color: var(--fc-text-muted);
+}
+.fc-sheet__close:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+.fc-sheet__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--fc-sheet-gap);
+  display: flex;
+  flex-direction: column;
+  gap: var(--fc-sheet-gap);
+}
+.fc-sheet__group {
+  padding: var(--fc-sheet-pad);
+  background: var(--fc-sheet-surface);
+  border: 1px solid var(--fc-sheet-border);
+  border-radius: var(--fc-sheet-radius);
+}
+.fc-sheet__error {
+  flex: none;
+  padding: 10px var(--fc-sheet-pad);
+  font-size: 12px;
+  color: var(--fc-danger-strong, var(--fc-danger));
+  background: var(--fc-danger-soft, #fff1f2);
+  border-top: 1px solid var(--fc-danger-soft-border, #fecdd3);
+}
+.fc-sheet__foot {
+  flex: none;
+  display: flex;
+  gap: 8px;
+  padding: 12px var(--fc-sheet-pad) calc(12px + env(safe-area-inset-bottom));
+  background: var(--fc-sheet-surface);
+  border-top: 1px solid var(--fc-sheet-border);
+}
+.fc-sheet__foot > * { flex: 1 1 0; }
+
+/* Only a phone floats the sheet over the page, so only a phone stops the page scrolling under it. */
+@media (max-width: 639.98px) {
+  html:has(.fc-sheet) { overflow: hidden; }
+}
+
+/* From 640px nothing floats: the sheet is drawn in place, inside the card it edits, and the card's own
+ * title stands above it — no backdrop, no second heading, no box inside the box. */
+@media (min-width: 640px) {
+  .fc-sheet {
+    position: static;
+    display: block;
+    z-index: auto;
+    --fc-field-text: 12px;
+    --fc-field-weight: 500;
+  }
+  .fc-sheet__backdrop,
+  .fc-sheet__head { display: none; }
+  .fc-sheet__panel {
+    max-height: none;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
+  }
+  .fc-sheet__body { padding: 12px 0; overflow: visible; }
+  .fc-sheet__group { padding: 0; background: transparent; border: 0; border-radius: 0; }
+  .fc-sheet__error { border: 0; border-radius: var(--fc-sheet-radius); }
+  .fc-sheet__foot {
+    justify-content: flex-end;
+    padding: 12px 0;
+    background: transparent;
+    border-top: var(--fc-record-rule);
+  }
+  .fc-sheet__foot > * { flex: 0 0 auto; }
+  /* The fields replace the values they edit, in the same place — the rows, what a component reads from
+     them (an address) and the components drawn again among them. What else the card holds (a plugin's
+     history, a payment drawn under the totals) stays where it was: editing never takes it away. */
+  .fc-record-card--editing .fc-record-card__rows,
+  .fc-record-card--editing .fc-record-card__read,
+  .fc-record-card--editing .fc-record-card__own,
+  .fc-record-card--editing .fc-record-card__edit,
+  .fc-record-card--editing .fc-record-card__menu { display: none; }
+}
+
+/* While a section is being edited it carries its own Cancel / Save; the page's save bar would offer the
+   same save a second time for the same change, so it steps aside until the section is closed. */
+body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
+
+/* ── A saved record's section card ───────────────────────────────────────────────────────────────────
+ * RecordSectionCard: the values that are set, as label / value rows; Edit opens the sheet. */
+.fc-record-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  border-bottom: var(--fc-record-rule);
+}
+.fc-record-card__title {
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--card-foreground);
+}
+.fc-record-card__title { flex: none; }
+/* What a plugin says beside the title — a count, a state — then the card's ⋯. */
+.fc-record-card__aside {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 8px;
+  font-size: 13px;
+  color: var(--fc-text-muted);
+}
+.fc-record-card__aside:has(.fc-state-badge) { justify-content: flex-end; }
+.fc-record-card__aside:empty { display: none; }
+.fc-record-card__head:has(.fc-record-card__aside:empty) { justify-content: space-between; }
+.fc-record-card__menu {
+  position: relative;
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  margin-right: -6px;
+  border-radius: var(--radius);
+  color: var(--fc-text-muted);
+  cursor: pointer;
+}
+.fc-record-card__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+/* Edit stands in the card's head, where every card puts it, not inside the ⋯. */
+.fc-record-card__edit { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; cursor: pointer; }
+.fc-record-card__edit:hover { background: var(--fc-surface-muted); }
+.fc-record-card__edit + .fc-record-card__menu { margin-left: -4px; }
+.fc-record-card__body:not(:empty) { padding: 4px 16px; }
+.fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
+.fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }
+.fc-record-card__row {
+  display: grid;
+  grid-template-columns: min(var(--fc-record-label-width), 32%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  font-size: var(--fc-record-text);
+  line-height: 1.45;
+}
+.fc-record-card__label { color: var(--fc-text-muted); }
+.fc-record-card__value {
+  min-width: 0;
+  color: var(--fc-text);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.fc-record-card__missing { color: var(--fc-warning); }
+/* A value the runtime recorded (an order's snapshot), under its own name, read as rows like the above. */
+.fc-record-card__rows + .fc-record-card__recorded,
+.fc-record-card__recorded + .fc-record-card__recorded { border-top: var(--fc-record-rule); }
+/* A field that is its own control (an items table) sits under its heading with the card's own spacing. */
+.fc-record-card__own { display: flex; flex-direction: column; gap: 8px; padding: 0 0 12px; }
+.fc-record-card__own:not(:has(> .fc-record-card__subhead)) { padding-top: 12px; }
+.fc-record-card__subhead {
+  padding: 12px 0 2px;
+  font-size: var(--fc-record-text);
+  font-weight: 600;
+  color: var(--fc-text);
+}
+
+/* ── A plugin's panel on a record (AdminPanel): a section card with the plugin's content in its body. */
+.fc-admin-panel__head--alone { border-bottom: 0; }
+.fc-admin-panel__title { display: inline-flex; align-items: center; gap: 6px; }
+.fc-admin-panel__actions { flex: none; justify-content: flex-end; }
+.fc-admin-panel__body { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; }
+.fc-admin-panel__body:empty { display: none; }
+.fc-admin-panel__description { font-size: var(--fc-record-text); line-height: 1.45; color: var(--fc-text-muted); }
+
+/* ── A recorded value: StructuredReadOnlyField ───────────────────────────────────────────────────────
+ * The same label / value rows a saved record's card lists its fields in; a nested group is a heading,
+ * a list is chips, a list of like records is a table headed like every other table of the console. */
+.fc-sro { min-width: 0; }
+.fc-sro__filter { margin-bottom: 8px; }
+.fc-sro__rows > * + * { border-top: var(--fc-record-rule); }
+.fc-sro__row {
+  display: grid;
+  grid-template-columns: min(var(--fc-record-label-width), 32%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  font-size: var(--fc-record-text);
+  line-height: 1.45;
+}
+.fc-sro__label { color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-sro__value { min-width: 0; color: var(--fc-text); overflow-wrap: anywhere; }
+.fc-sro__note { display: block; margin-top: 2px; font-size: 12px; color: var(--fc-warning); }
+.fc-sro__source { padding: 2px 0 8px; font-size: 12px; color: var(--fc-text-muted); }
+.fc-sro__absent { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-sro__section { border-top: var(--fc-record-rule); }
+.fc-sro__rows + .fc-sro__section, .fc-sro__section:first-child { border-top: var(--fc-record-rule); }
+.fc-sro > .fc-sro__section:first-child { border-top: 0; }
+.fc-sro__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 12px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fc-text);
+}
+.fc-sro__count { font-weight: 400; color: var(--fc-text-muted); }
+.fc-sro__section > .fc-sro__rows,
+.fc-sro__section > .fc-sro__section { padding-inline-start: 12px; }
+.fc-sro__section > .fc-sro__chips,
+.fc-sro__section > .fc-sro-table { padding: 6px 0 10px; }
+.fc-sro__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fc-sro > .fc-sro__chips { padding: 10px 0; }
+.fc-sro__chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--fc-border);
+  border-radius: 6px;
+  background: var(--fc-surface);
+  font-size: 12px;
+  color: var(--fc-text);
+  overflow-wrap: anywhere;
+}
+.fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.fc-sro__media { display: inline-flex; align-items: center; gap: 8px; }
+.fc-sro__thumb { width: 48px; height: 48px; flex: none; border: 1px solid var(--fc-border); border-radius: 6px; object-fit: cover; }
+.fc-sro-table { overflow-x: auto; }
+.fc-sro-table table { width: 100%; border-collapse: collapse; }
+.fc-sro-table th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--fc-border);
+  text-align: start;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fc-text-muted);
+  white-space: nowrap;
+}
+.fc-sro-table td {
+  padding: 8px 16px 8px 0;
+  border-bottom: var(--fc-record-rule);
+  vertical-align: top;
+  font-size: var(--fc-record-text);
+  color: var(--fc-text);
+}
+.fc-sro-table th:last-child, .fc-sro-table td:last-child { padding-inline-end: 0; }
+.fc-sro-table tr:last-child td { border-bottom: 0; }
+.fc-record-card__empty {
+  padding: 8px 0;
+  font-size: var(--fc-record-text);
+  color: var(--fc-text-muted);
+}
+
+/* ── Dashboard ───────────────────────────────────────────────────────────────
+   One dense page: every widget is a compact card; figures read as a row of label + value, not a tile
+   each with an icon; a widget with nothing to show steps aside and is named on the "nothing waiting"
+   line (DashboardWidgetFrame / DashboardWidgetBoard). Sizes and colours are the `--fc-dashboard-*`
+   values at the top of this file. Scoped to `.fc-dashboard`, so the same components keep their own look
+   on a plugin's overview page. */
+.fc-dashboard { display: flex; flex-direction: column; gap: var(--fc-dashboard-gap); }
+.fc-dashboard__board { display: flex; flex-direction: column; gap: var(--fc-dashboard-gap); }
+.fc-dashboard__grid { gap: var(--fc-dashboard-gap); }
+/* Packed: 1px rows, each widget spanning its own height plus the gap (DashboardWidgetFrame measures it). */
+.fc-dashboard__grid--packed { grid-auto-rows: 1px; row-gap: 0; }
+.fc-dashboard__widget--quiet { display: none; }
+.fc-dashboard__toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.fc-dashboard__toolbar > :last-child { margin-inline-start: auto; }
+.fc-dashboard__quiet { flex: 1 1 16rem; min-width: 0; margin: 0; font-size: var(--fc-dashboard-quiet-text); line-height: 1.5; color: var(--fc-text-muted); }
+/* Every widget has nothing to show: the board says so in one card instead of leaving an empty page. */
+.fc-dashboard__calm {
+  display: flex; align-items: center; gap: 12px; margin: 0; padding: var(--fc-dashboard-body-pad);
+  border: 1px solid var(--fc-border); border-radius: var(--radius); background: var(--fc-surface);
+  font-size: 13px; color: var(--fc-text-muted);
+}
+.fc-dashboard__calm svg { flex: none; color: var(--fc-success); }
+
+.fc-dashboard .fc-section-card__head { padding: var(--fc-dashboard-head-pad); gap: 12px; }
+.fc-dashboard .fc-section-card__icon { height: var(--fc-dashboard-head-icon); width: var(--fc-dashboard-head-icon); border-radius: 6px; }
+.fc-dashboard .fc-section-card__icon svg { height: 14px; width: 14px; }
+.fc-dashboard .fc-widget-card > .p-4 { padding: var(--fc-dashboard-body-pad); }
+
+.fc-dashboard .fc-stats { grid-template-columns: repeat(auto-fill, minmax(var(--fc-dashboard-stat-min), 1fr)); gap: 12px 16px; }
+.fc-dashboard .fc-stat { padding: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; overflow: visible; }
+.fc-dashboard .fc-stat__head { margin: 0; }
+.fc-dashboard .fc-stat__icon { display: none; }
+.fc-dashboard .fc-stat__head:not(:has(> :not(.fc-stat__icon))) { display: none; }
+.fc-dashboard .fc-stat__label { margin: 0 0 2px; font-size: var(--fc-dashboard-stat-label); line-height: 1.35; }
+.fc-dashboard .fc-stat__value { font-size: var(--fc-dashboard-stat-value); font-variant-numeric: tabular-nums; }
+.fc-dashboard .fc-stat__sub { margin-top: 2px; padding-top: 0; border-top: 0; font-size: var(--fc-dashboard-stat-label); line-height: 1.35; }
+@media (max-width: 639px) {
+  .fc-dashboard .fc-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* The platform update, on one line: an accent tile and edge so it is not mistaken for a plain note.
+   Its colours are the warning tints, which html.dark redefines, so it needs no dark rule of its own. */
+.fc-update-alert {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px;
+  padding: 8px 8px 8px 10px; border-radius: var(--radius);
+  border: 1px solid var(--fc-dashboard-alert-border); border-inline-start: 4px solid var(--fc-dashboard-alert-accent);
+  background: linear-gradient(90deg, var(--fc-dashboard-alert-soft), var(--fc-surface) 70%);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--fc-dashboard-alert-accent) 15%, transparent);
+}
+.fc-update-alert__icon {
+  display: grid; place-items: center; flex: none;
+  width: var(--fc-dashboard-alert-tile); height: var(--fc-dashboard-alert-tile); border-radius: 8px;
+  background: var(--fc-dashboard-alert-accent); color: #fff;
+  box-shadow: 0 4px 10px -4px color-mix(in srgb, var(--fc-dashboard-alert-accent) 70%, transparent);
+}
+.fc-update-alert__text { flex: 1 1 14rem; min-width: 0; margin: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; font-size: 12px; line-height: 1.4; }
+.fc-update-alert__title { font-size: 13px; font-weight: 600; color: var(--fc-text); }
+.fc-update-alert__detail { color: var(--fc-text-muted); }
+.fc-update-alert__version { font-weight: 600; color: var(--fc-dashboard-alert-strong); }
+.fc-update-alert__actions { display: flex; align-items: center; gap: 4px; margin-inline-start: auto; }
+.fc-update-alert__primary.fc-update-alert__primary { background: var(--fc-dashboard-alert-accent); color: #fff; }
+.fc-update-alert__primary.fc-update-alert__primary:hover { background: color-mix(in srgb, var(--fc-dashboard-alert-accent) 85%, #000); }

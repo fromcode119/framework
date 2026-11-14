@@ -64,7 +64,7 @@ export class CollectionListTable extends PureReactor {
   @prop declare onDelete: (id: string) => void;
   /** Archive / Restore one row; absent when the collection is not archivable. */
   @prop declare onArchive?: (id: string, archiving: boolean) => void;
-  @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
+  @prop declare onQuickEditOpen: (row: any, event?: MouseEvent) => void;
   @prop declare onQuickEditSave: () => void;
   @prop declare onQuickEditClose: () => void;
   /** Present when the collection declares `admin.list.groupBy` or `admin.list.order`. */
@@ -179,10 +179,12 @@ export class CollectionListTable extends PureReactor {
     );
   }
 
-  @bound private tableActions(row: any): ReactNode {
+  /** The table's row: its title links to the record, so it carries no edit icon of its own. */
+  @bound private rowActions(row: any): ReactNode {
     return this.actionsFor(row, false);
   }
 
+  /** The card: the edit icon is its link to the record. */
   @bound private cardActions(row: any): ReactNode {
     return this.actionsFor(row, true);
   }
@@ -215,9 +217,7 @@ export class CollectionListTable extends PureReactor {
     return (
       <>
         <Slot name={`admin.collection.${this.slotSlug}.list.top`} props={slotProps} />
-        <div className={`rounded-xl border overflow-hidden shadow-2xl shadow-slate-200/40 dark:shadow-none transition-all duration-300 ${
-          this.theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50 backdrop-blur-sm' : 'bg-white border-white shadow-xl'
-        }`}>
+        <div className="fc-list-frame">
           <div className="fc-list-table">
             <DataTable
               cards={false}
@@ -237,7 +237,7 @@ export class CollectionListTable extends PureReactor {
               selectedIds={this.selectedIds}
               onSelectionChange={this.setSelectedIds}
               expandedRowId={this.quickEditExpandedId}
-              actions={this.tableActions}
+              actions={this.rowActions}
               renderExpandedRow={this.renderQuickEdit}
               sections={sections}
               sectionClassName={this.sectionClass}

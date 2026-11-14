@@ -135,7 +135,7 @@ export class SiteOwnPlugins extends AdminComponent {
     const canUpload = Boolean(quota?.enabled && quota?.isolated);
     return (
       <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${dark ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-        <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')}</h3>
+        <h3 className={`text-[12px] font-medium mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.thisSiteSOwnPlugins2')}</h3>
         {this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p> : null}
         {quota ? <p className="text-xs text-slate-500 mb-4">{this.uploadNote(quota)}</p> : null}
         {canUpload ? (
@@ -143,7 +143,7 @@ export class SiteOwnPlugins extends AdminComponent {
             <input type="file" ref={(element) => { this.fileInput = element; }} onChange={this.onFile} className="hidden" accept=".zip,application/zip" />
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className="text-slate-400" /><p className={`text-sm font-medium ${dark ? 'text-slate-200' : 'text-slate-700'}`}>{AdminI18n.t('plugins.list.uploadAPluginForThis')}</p></div>
-              <button type="button" disabled={this.busy !== null} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.busy === 'upload' ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{AdminI18n.t('plugins.list.uploadForThisSite')}</span></button>
+              <button type="button" disabled={this.busy !== null} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.busy === 'upload' ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{AdminI18n.t('plugins.list.uploadForThisSite')}</span></button>
             </div>
             {this.uploadPercent !== null ? <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('plugins.list.uploadingPercent', { percent: this.uploadPercent })}</p> : null}
           </div>

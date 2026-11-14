@@ -21,7 +21,7 @@ export class DayRangeToggle extends PureReactor {
     return (
       <div className="inline-flex items-center gap-2">
         {label && (
-          <span className="hidden sm:inline text-[11px] font-medium text-slate-400 dark:text-slate-500">
+          <span className="hidden sm:inline text-[12px] font-medium text-slate-400 dark:text-slate-500">
             {label}
           </span>
         )}

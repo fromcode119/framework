@@ -6,6 +6,7 @@ import type { IField } from '@core/interfaces/field.interface';
 import type { ICollectionArchive } from '@core/collections/interfaces/collection-archive.interface';
 import type { ICollectionProtection } from '@core/collections/interfaces/collection-protection.interface';
 import type { ICollectionListView } from '@core/collections/interfaces/collection-list-view.interface';
+import type { ICollectionRecordView } from '@core/collections/interfaces/collection-record-view.interface';
 import type { ICollectionPublicContent } from '@core/collections/interfaces/collection-public-content.interface';
 
 
@@ -142,15 +143,21 @@ export interface ICollection {
        * Where the records other plugins hold are drawn ON this record. Maps a part term a provider
        * declared (`payment`, `delivery`) to the `admin.section` of this collection it belongs in, with
        * the words to show there while no such record exists. A part with no entry here, or whose
-       * section is not on screen, stays in the linked-records list.
+       * section is not on screen, stays in the linked-records list. `menu` opens the part's records from
+       * the card's ⋯ instead of drawing them as rows, for a section whose own row already says what they
+       * are (an order's payment row, and the payment record behind it). `emptyUnless` names fields of
+       * this record that, once filled, already say what the part's records would (a tracking number on
+       * a shipped order): the `empty` words are then not shown, since they would contradict the record.
        */
-      parts?: Record<string, { section: string; empty?: string }>;
+      parts?: Record<string, { section: string; empty?: string; emptyUnless?: string[]; menu?: boolean }>;
     };
     /** The operator cannot change rows here. See `disableCreate`. */
     disableEdit?: boolean;
     defaultColumns?: string[];
     /** How records read in the admin list and which fields can be changed from it. */
     list?: ICollectionListView;
+    /** What a record page's header says besides the title. */
+    record?: ICollectionRecordView;
     group?: string;
     icon?: string;
     hidden?: boolean | ((args: { user: any }) => boolean);

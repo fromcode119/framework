@@ -20,7 +20,7 @@ export class PluginStatsList extends PureReactor {
     const columns = this.columns ?? 3;
     const className = this.className ?? '';
     return (
-      <div className={`grid ${PluginStatsList.gridCols[columns] || PluginStatsList.gridCols[4]} gap-3 ${className}`}>
+      <div className={`fc-stats grid ${PluginStatsList.gridCols[columns] || PluginStatsList.gridCols[4]} gap-3 ${className}`}>
         {this.stats.map((stat, index) => (
           <StatCard key={index} stat={stat} />
         ))}

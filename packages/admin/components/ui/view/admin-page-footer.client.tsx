@@ -27,14 +27,14 @@ export class AdminPageFooter extends PureReactor {
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-2">
               <div className={`h-2 w-2 rounded-full ${accentClasses}`} />
-              <span className="text-[10px] font-bold uppercase tracking-tight text-slate-500 dark:text-slate-400">
+              <span className="text-[12px] font-medium tracking-tight text-slate-500 dark:text-slate-400">
                 {label}
               </span>
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{description}</p>
+            <p className="text-[12px] font-medium text-slate-400 tracking-tight">{description}</p>
           </div>
 
-          <div className="flex items-center gap-4 text-[10px] font-bold uppercase tracking-tight text-slate-400">
+          <div className="flex items-center gap-4 text-[12px] font-medium tracking-tight text-slate-400">
             {links.map((link, index) => (
               <Fragment key={link.href}>
                 {index > 0 && <span className="h-1 w-1 rounded-full bg-slate-200 dark:bg-slate-800" />}

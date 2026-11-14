@@ -167,13 +167,6 @@
       "sectionShow": "Megjelenítés",
       "sectionHide": "Elrejtés",
       "sectionFieldCount": "{{count}} mező",
-      "fieldLevel": {
-        "label": "Megjelenített mezők",
-        "everyday": "Mindennapi",
-        "occasional": "Alkalmi",
-        "technical": "Technikai",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Előnézet és állandó hivatkozás",
       "permalinkHint": "Kattintson az útvonalrészre az automatikusan létrehozott slug felülírásához.",
       "settings": "Beállítások",
@@ -188,10 +181,10 @@
       "deletePermanently": "Végleges törlés",
       "relatedRecords": "Kapcsolódó rekordok",
       "relatedEmpty": "Még egyetlen más bővítmény sem tárol ehhez kapcsolódó rekordot.",
-      "recordPart": { "download": "Letöltés {{title}}", "person": "Személy" },
-      "viewMode": "Rekord nézetmódja",
-      "formView": "Űrlapnézet",
-      "jsonView": "JSON-nézet",
+      "recordPart": {
+        "download": "Letöltés {{title}}",
+        "person": "Személy"
+      },
       "unsavedIn": "Nem mentett módosítások:",
       "noUnsaved": "Nincsenek nem mentett módosítások",
       "notSaved": "Nincs mentve: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Nem sikerült betölteni a másolás forrását",
       "loadFailed": "Nem sikerült betölteni a bejegyzést",
       "slugTaken": "Ezt a slugot már használja: „{{name}}”.",
-      "unsavedChanges": "Nem mentett módosítások"
+      "unsavedChanges": "Nem mentett módosítások",
+      "editSection": "Szerkesztés",
+      "notFilledIn": "Nincs kitöltve",
+      "nothingFilledIn": "Még nincs semmi kitöltve",
+      "statusSection": "Állapot",
+      "recordSection": "Rekord",
+      "showJson": "Megjelenítés JSON-ként",
+      "showForm": "Megjelenítés űrlapként",
+      "recordActions": "Rekordműveletek",
+      "sectionActions": "Szakaszműveletek",
+      "breadcrumb": "Morzsamenü",
+      "copyTitle": "Másolás",
+      "copied": "Másolva",
+      "more": "Továbbiak",
+      "moreFields": "{{count}} mező",
+      "moreOneField": "{{count}} mező"
     },
     "notFound": {
       "title": "A gyűjtemény nem található",
@@ -426,7 +434,6 @@
       "add": "Menüpont hozzáadása"
     },
     "field": {
-      "enter": "{{label}} megadása...",
       "notSet": "Nincs beállítva",
       "auto": "Automatikus",
       "localeFallback": "Üres ({{locale}}) — a webhely a(z) {{fallback}} értéket mutatja",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nincs rögzítve",
-      "auto": "Automatikusan rögzítve – itt nem szerkeszthető.",
-      "copied": "Másolva",
-      "copy": "JSON másolása",
       "filter": "Szűrés kulcs szerint…",
       "empty": "Még nincs rögzítve semmi.",
       "noMatch": "Nincs a szűrőnek megfelelő találat."
@@ -659,7 +663,11 @@
       "general": "Általános",
       "moreIn": "További elemek: {{section}}",
       "thisSection": "Ez a szakasz",
-      "collapse": "Oldalsáv összecsukása"
+      "collapse": "Oldalsáv összecsukása",
+      "expand": "Oldalsáv kibontása",
+      "search": "Keresés",
+      "searchShortcut": "⌘K",
+      "noMatches": "A menüben semmi sem felel meg ennek: „{{query}}”"
     },
     "workspace": {
       "unavailable": "A munkaterület nem érhető el",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Megnyitás",
-      "loadFailed": "A modul adatait nem sikerült betölteni. Az újrapróbáláshoz töltse újra az oldalt."
+      "loadFailed": "A modul adatait nem sikerült betölteni. Az újrapróbáláshoz töltse újra az oldalt.",
+      "quiet": "Nincs teendő: {{list}}"
     }
   },
   "notFound": {

@@ -86,7 +86,7 @@ export class PersonEditPage extends PersonEditPageActions {
         <div className="flex-1 w-full px-6 lg:px-12 py-10">
           <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start">
             <form onSubmit={(e) => this.save(e)} className={`${AdminClass.SURFACE} p-8 space-y-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-              <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
+              <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.identity')}</h3>
               {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
               {notice ? <div className="rounded-xl bg-emerald-50 text-emerald-700 px-4 py-2.5 text-[12px] font-bold dark:bg-emerald-500/10">{notice}</div> : null}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
@@ -115,7 +115,7 @@ export class PersonEditPage extends PersonEditPageActions {
           <PersonFieldsPanel personId={person.id} theme={theme} />
 
           <div className={`mt-6 ${AdminClass.SURFACE} p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
-            <h3 className={`text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>{AdminI18n.t('users.accountManagement')}</h3>
+            <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`}>{AdminI18n.t('users.accountManagement')}</h3>
             <div className="flex flex-wrap items-center gap-3">
               {reassignOpen ? (
                 <>

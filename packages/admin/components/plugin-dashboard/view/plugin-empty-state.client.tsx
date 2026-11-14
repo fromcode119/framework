@@ -19,7 +19,8 @@ export class PluginEmptyState extends PureReactor {
     const className = this.className ?? "";
     return (
     <div
-      className={`flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/70 bg-slate-50/40 py-12 px-6 text-center dark:bg-slate-800/20 dark:border-slate-700/50 ${className}`}
+      data-empty-state
+      className={`fc-empty-state flex flex-col items-center justify-center rounded-xl border border-dashed border-slate-300/70 bg-slate-50/40 py-12 px-6 text-center dark:bg-slate-800/20 dark:border-slate-700/50 ${className}`}
     >
       {/* Icon */}
       {icon && (
@@ -29,13 +30,13 @@ export class PluginEmptyState extends PureReactor {
       )}
 
       {/* Title */}
-      <h3 className="text-base font-semibold text-slate-700 dark:text-slate-300 tracking-tight mb-1">
+      <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 tracking-tight mb-1">
         {title}
       </h3>
 
       {/* Description */}
       {description && (
-        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-md mb-4 leading-relaxed">
+        <p className="text-[13px] text-slate-500 dark:text-slate-400 max-w-md mb-4 leading-relaxed">
           {description}
         </p>
       )}

@@ -38,7 +38,7 @@ export class FieldLockedRow extends PureReactor {
           </div>
         ) : null}
         <div className="flex min-h-10 items-center justify-between gap-2 rounded-[var(--radius)] border border-slate-200 bg-slate-50 px-3 py-1.5 dark:border-slate-700 dark:bg-slate-900/60">
-          <span className={`min-w-0 break-words text-sm leading-snug ${text ? 'font-semibold text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>
+          <span className={`fc-field min-w-0 break-words leading-snug ${text ? 'text-slate-900 dark:text-slate-100' : 'text-slate-400 dark:text-slate-500'}`}>
             {text || AdminI18n.t('ui.field.notSet')}
           </span>
           <FieldLockControl label={this.label} canUnlock={this.canUnlock} onUnlock={this.onUnlock} />

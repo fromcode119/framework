@@ -26,7 +26,7 @@ export class CollectionColumnsMenu extends PureReactor {
           isDark ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'
         }`}
       >
-        <div className="px-2.5 py-2 mb-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
+        <div className="px-2.5 py-2 mb-1 text-[12px] font-medium text-slate-500/80">
           {AdminI18n.t('collection.list.visibleColumns')}
         </div>
         <div className="px-2.5 pb-2 text-[10px] leading-relaxed text-slate-400">
@@ -105,7 +105,7 @@ export class CollectionColumnsMenu extends PureReactor {
           ))}
           {hiddenColumns.length > 0 && (
             <>
-              <div className="px-2.5 py-2 mt-1 text-[10px] font-black uppercase tracking-widest text-slate-500/80">
+              <div className="px-2.5 py-2 mt-1 text-[12px] font-medium text-slate-500/80">
                 {AdminI18n.t('collection.list.hidden')}
               </div>
               {hiddenColumns.map((column: any) => (

@@ -167,13 +167,6 @@
       "sectionShow": "Mostrar",
       "sectionHide": "Ocultar",
       "sectionFieldCount": "{{count}} campos",
-      "fieldLevel": {
-        "label": "Campos mostrados",
-        "everyday": "Do dia a dia",
-        "occasional": "Ocasionais",
-        "technical": "Técnicos",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pré-visualização e ligação permanente",
       "permalinkHint": "Clique no componente do caminho para substituir o slug gerado automaticamente.",
       "settings": "Definições",
@@ -188,10 +181,10 @@
       "deletePermanently": "Eliminar permanentemente",
       "relatedRecords": "Registos relacionados",
       "relatedEmpty": "Nenhum outro plugin tem ainda um registo ligado a este.",
-      "recordPart": { "download": "Transferir {{title}}", "person": "Pessoa" },
-      "viewMode": "Modo de visualização do registo",
-      "formView": "Vista de formulário",
-      "jsonView": "Vista JSON",
+      "recordPart": {
+        "download": "Transferir {{title}}",
+        "person": "Pessoa"
+      },
       "unsavedIn": "Alterações não guardadas em",
       "noUnsaved": "Sem alterações por guardar",
       "notSaved": "Não guardado: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Falha ao carregar a origem do duplicado",
       "loadFailed": "Falha ao carregar a entrada",
       "slugTaken": "Este slug já está a ser usado por \"{{name}}\".",
-      "unsavedChanges": "Alterações não guardadas"
+      "unsavedChanges": "Alterações não guardadas",
+      "editSection": "Editar",
+      "notFilledIn": "Não preenchido",
+      "nothingFilledIn": "Ainda nada preenchido",
+      "statusSection": "Estado",
+      "recordSection": "Registo",
+      "showJson": "Mostrar como JSON",
+      "showForm": "Mostrar como formulário",
+      "recordActions": "Ações do registo",
+      "sectionActions": "Ações da secção",
+      "breadcrumb": "Trilho de navegação",
+      "copyTitle": "Copiar",
+      "copied": "Copiado",
+      "more": "Mais",
+      "moreFields": "{{count}} campos",
+      "moreOneField": "{{count}} campo"
     },
     "notFound": {
       "title": "Coleção não encontrada",
@@ -426,7 +434,6 @@
       "add": "Adicionar item de menu"
     },
     "field": {
-      "enter": "Introduza {{label}}...",
       "notSet": "Não definido",
       "auto": "Automático",
       "localeFallback": "Vazio em {{locale}} — o site mostra o valor de {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Não registado",
-      "auto": "Registado automaticamente — não editável aqui.",
-      "copied": "Copiado",
-      "copy": "Copiar JSON",
       "filter": "Filtrar por chave…",
       "empty": "Ainda não há nada registado.",
       "noMatch": "Nada corresponde a esse filtro."
@@ -659,7 +663,11 @@
       "general": "Geral",
       "moreIn": "Mais em {{section}}",
       "thisSection": "Esta secção",
-      "collapse": "Recolher barra lateral"
+      "collapse": "Recolher barra lateral",
+      "expand": "Expandir barra lateral",
+      "search": "Pesquisar",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nada no menu corresponde a “{{query}}”"
     },
     "workspace": {
       "unavailable": "Espaço de trabalho indisponível",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Abrir",
-      "loadFailed": "Não foi possível carregar os dados deste widget. Recarregue a página para tentar novamente."
+      "loadFailed": "Não foi possível carregar os dados deste widget. Recarregue a página para tentar novamente.",
+      "quiet": "Nada pendente: {{list}}"
     }
   },
   "notFound": {

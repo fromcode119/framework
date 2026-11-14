@@ -35,7 +35,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                 <FrameworkIcons.Clock className="text-amber-600" size={18} />
               </div>
               <div>
-                <h4 className={`text-sm font-bold uppercase tracking-wider leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>{AdminI18n.t('themes.upgradeAvailable')}</h4>
+                <h4 className={`text-sm font-medium leading-tight ${adminTheme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-900'}`}>{AdminI18n.t('themes.upgradeAvailable')}</h4>
                 <p className={`text-[11px] font-semibold mt-1 leading-relaxed ${adminTheme === ThemeMode.DARK ? 'text-amber-500/70' : 'text-amber-700'}`}>
                   {AdminI18n.t('themes.versionBringsImprovements', { version: theme.version })}
                 </p>
@@ -55,12 +55,12 @@ export class ThemeMarketplaceSidebar extends PureReactor {
             </div>
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
-              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.installedRelease')}</div>
+              <div className={`text-[12px] font-medium mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.installedRelease')}</div>
               <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{installedVersion ? `v${installedVersion}` : AdminI18n.t('themes.notInstalled')}</div>
             </div>
 
             <div className="w-full pb-4 mb-4 border-b border-slate-100 dark:border-white/5">
-              <div className={`text-[10px] font-bold uppercase tracking-widest mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.marketplaceRelease')}</div>
+              <div className={`text-[12px] font-medium mb-1 ${adminTheme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('themes.marketplaceRelease')}</div>
               <div className={`text-lg font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>v{theme.version}</div>
             </div>
 
@@ -70,9 +70,9 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                     <FrameworkIcons.User size={14} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{AdminI18n.t('themes.creator')}</span>
+                  <span className="text-[12px] font-medium text-slate-400">{AdminI18n.t('themes.creator')}</span>
                 </div>
-                <span className={`text-[10px] font-bold uppercase tracking-widest ${adminTheme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>{theme.author}</span>
+                <span className={`text-[12px] font-medium ${adminTheme === ThemeMode.DARK ? 'text-indigo-400' : 'text-indigo-600'}`}>{theme.author}</span>
               </div>
 
               <div className="flex justify-between items-center group cursor-default">
@@ -80,14 +80,14 @@ export class ThemeMarketplaceSidebar extends PureReactor {
                   <div className={`h-8 w-8 rounded-lg flex items-center justify-center ${adminTheme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400' : 'bg-slate-50 text-slate-400'}`}>
                     <FrameworkIcons.Layout size={14} />
                   </div>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400">{AdminI18n.t('themes.category')}</span>
+                  <span className="text-[12px] font-medium text-slate-400">{AdminI18n.t('themes.category')}</span>
                 </div>
-                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase tracking-widest rounded-lg">{AdminI18n.t('themes.uiFramework')}</span>
+                <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-[12px] font-medium rounded-lg">{AdminI18n.t('themes.uiFramework')}</span>
               </div>
 
               {theme.authorUrl && (
                 <a href={theme.authorUrl} target="_blank" className="flex justify-between items-center group pt-2">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-indigo-600 transition-colors">{AdminI18n.t('themes.developerPortal')}</span>
+                  <span className="text-[12px] font-medium text-slate-400 group-hover:text-indigo-600 transition-colors">{AdminI18n.t('themes.developerPortal')}</span>
                   <FrameworkIcons.External size={14} className="opacity-40 group-hover:opacity-100 transition-opacity" />
                 </a>
               )}
@@ -96,7 +96,7 @@ export class ThemeMarketplaceSidebar extends PureReactor {
             <button
               disabled={installing || (installedTheme && !hasUpdate)}
               onClick={onInstall}
-              className={`w-full mt-4 h-9 rounded-lg font-bold text-[11px] uppercase tracking-widest shadow-sm transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 ${
+              className={`w-full mt-4 h-9 rounded-lg font-medium text-[12px] shadow-sm transition-all duration-300 flex items-center justify-center gap-2 active:scale-95 ${
                 installedTheme && !hasUpdate
                   ? 'bg-emerald-50 text-emerald-600 cursor-default opacity-80 shadow-none'
                   : hasUpdate

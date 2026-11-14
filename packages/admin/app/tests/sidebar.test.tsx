@@ -65,12 +65,7 @@ vi.mock('@/lib/env', () => ({
 vi.mock('@/lib/admin-services', () => ({
   AdminServices: {
     getInstance: () => ({
-      uiPreference: {
-        readCollapsedSidebarGroups: () => [],
-        writeCollapsedSidebarGroups: () => undefined,
-        readNavExpanded: () => null,
-        writeNavExpanded: () => undefined,
-      },
+      uiPreference: {},
     }),
   },
 }));
@@ -81,6 +76,8 @@ vi.mock('@/app/components/view/secondary-sidebar-panel-body.client', () => ({
 
 describe('Sidebar', () => {
   beforeEach(() => {
+    // An open section brings itself into view; jsdom lays nothing out and has no such method.
+    Element.prototype.scrollIntoView = vi.fn();
     mockUsePathname.mockReturnValue('/settings/security');
     mockUsePlugins.mockReturnValue({
       plugins: [],
@@ -101,6 +98,28 @@ describe('Sidebar', () => {
     expect(screen.getByText('Users')).toBeDefined();
     expect(screen.getByText('Settings')).toBeDefined();
     expect(screen.getAllByText('Settings')).toHaveLength(1);
+  });
+
+  it('lists the upkeep pages under Settings while you are in it, and keeps them out of the main column', () => {
+    mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+
+    const { container } = renderSidebar();
+
+    const main = container.querySelector('.fc-nav-list')?.textContent || '';
+    const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
+    expect(main).toContain('Dashboard');
+    expect(main).not.toContain('Users');
+    expect(foot).toContain('Users');
+    expect(foot).toContain('Activity');
+  });
+
+  it('shows no page of Settings while you are elsewhere', () => {
+    mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePathname.mockReturnValue('/');
+
+    const { container } = renderSidebar();
+
+    expect(container.querySelector('.fc-nav-foot .fc-nav-sub')).toBeNull();
   });
 
   it('keeps users and settings hidden for non-admin users', () => {

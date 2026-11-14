@@ -7,7 +7,9 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { Card } from '@/components/ui/view/card.client';
 import type { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordPart } from '@/components/collection/edit/view/collection-record-part.client';
+import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
 import { FieldRenderer } from '@/components/collection/view/field-renderer.client';
+import { RecordSectionCard } from '@/components/collection/edit/view/record-section-card.client';
 
 export class EditPageMain extends PureReactor {
   @prop declare standardMainFieldSections: Array<{ key: string; title?: string; fields: any[]; collapsed?: boolean }>;
@@ -31,6 +33,14 @@ export class EditPageMain extends PureReactor {
   /** What the collection declared other plugins may add to this record; null when nothing can be asked. */
   @prop declare recordLinks?: CollectionRecordLinksDeclaration | null;
   @prop declare navigate?: (href: string) => void;
+  /** Saves the record; a saved record's sections are edited one sheet at a time and saved from there. */
+  @prop declare handleSubmit?: () => Promise<unknown>;
+  @prop declare saveError?: string;
+  @prop declare clearSaveError?: () => void;
+  @prop declare recordTitle?: string;
+  /** Names each section's slots (`<base>.<section>.head|body|menu`); see RecordSectionCard. */
+  @prop declare sectionSlotBase?: string;
+  @prop declare slotProps?: Record<string, any>;
 
   /** Collapsed sections (`admin.sectionCollapsed`) the operator has opened on this page. */
   @state openSections: Record<string, boolean> = {};
@@ -72,6 +82,26 @@ export class EditPageMain extends PureReactor {
    * replaced a 9px capitalised caption with a rule, which read as a divider rather than a heading.
    */
   private renderSection(section: { key: string; title?: string; fields: any[]; collapsed?: boolean }, prefix = ''): ReactNode {
+    // A saved record is read, and changed a section at a time; a new one is still filled in as one form.
+    if (!this.isNew && this.handleSubmit) {
+      return (
+        <RecordSectionCard
+          key={`${prefix}${section.key}`}
+          section={section}
+          formData={this.formData}
+          renderField={this.renderField}
+          handlePatch={this.handlePatch}
+          handleSubmit={this.handleSubmit}
+          saving={this.saving}
+          saveError={this.saveError}
+          clearSaveError={this.clearSaveError}
+          recordTitle={this.recordTitle}
+          slotBase={this.sectionSlotBase}
+          slotProps={this.slotProps}
+          recordPart={this.recordLinks ? (place: RecordPartPlace) => <CollectionRecordPart links={this.recordLinks!} sectionKey={section.key} navigate={this.navigate} place={place} /> : undefined}
+        />
+      );
+    }
     const collapsible = Boolean(section.title) && section.collapsed === true;
     // A field with an error must be seen, so its section opens by itself.
     const hasError = section.fields.some((field: any) => Boolean(this.fieldErrors?.[field.name]));
@@ -89,7 +119,7 @@ export class EditPageMain extends PureReactor {
             </div>
           </div>
         ) : null}
-        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} /> : null}
+        {open && this.recordLinks ? <CollectionRecordPart links={this.recordLinks} sectionKey={section.key} navigate={this.navigate} place={RecordPartPlace.BODY} /> : null}
       </Card>
     );
   }

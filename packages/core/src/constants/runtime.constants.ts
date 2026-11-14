@@ -63,7 +63,7 @@ export class RuntimeConstants {
 
   static readonly ADMIN_RUNTIME_EXPORT_KEYS = [
     'MediaPicker', 'Button', 'Input', 'TextArea', 'Select', 'TagField', 'Loader', 'Switch', 'NumberStepper',
-    'Card', 'Badge', 'ConfirmDialog', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
+    'Card', 'Badge', 'MenuAction', 'StateBadge', 'CopyValue', 'ConfirmDialog', 'EditSheet', 'PromptDialog', 'DateTimePicker', 'ColorPicker',
     // These are DOMAIN-AGNOSTIC controls only. Money/currency editors were removed rather than listed
     // here: the framework has no business domain, so it cannot know what a valid currency is, and the
     // pair that used to live here proved it by shipping a hardcoded currency list nothing configured.
@@ -72,7 +72,7 @@ export class RuntimeConstants {
     'CodeEditor', 'VisualMenuField', 'Icon', 'ThemeContext', 'ThemeProvider',
     'PluginPageHeader', 'PluginOverviewCard', 'PluginStatsList',
     'PluginChartCard', 'PluginEmptyState', 'PageHeading', 'StatCard', 'DataTable',
-    'AdminServices', 'EditPageSectionNav', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',
+    'AdminServices', 'SectionCard', 'DayRangeToggle', 'DashboardWidgetCard',
     // Everything else `@fromcode119/admin/components` exports. On a public page this module is a stand-in
     // that declares ONLY the names listed here, so a storefront bundle importing a name missing from this
     // list fails to load as a whole ("does not provide an export named 'ColorField'"). A test in the admin

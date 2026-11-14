@@ -149,7 +149,7 @@ export class PersonalDataSettingsPage extends AdminComponent {
 
         {this.datasets && (
           <Card title={AdminI18n.t('settings.personalData.erasureStrategyPerDataset')}>
-            <div className={`hidden md:grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 pb-2 text-[12px] font-semibold uppercase tracking-wide ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+            <div className={`hidden md:grid grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-4 pb-2 text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
               <span>{AdminI18n.t('settings.personalData.dataset')}</span>
               <span>{AdminI18n.t('settings.personalData.platformDefault')}</span>
               <span>{AdminI18n.t('settings.personalData.thisSite')}</span>

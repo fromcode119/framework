@@ -12,6 +12,8 @@ export class ClientLayoutSidebarStateHooks {
   static useState(args: { isAuthPage: boolean; user: any }) {
     const { loadConfig, settings, menuItems, plugins, secondaryPanel } = ContextHooks.usePlugins();
     const [, setTimezoneRenderVersion] = React.useState(0);
+    // The phone menu opens from its button and starts closed on every page: remembered, it reopened over
+    // the next record after any visit that left it open.
     const [isSidebarOpen, setSidebarOpen] = React.useState(false);
     const [isSecondaryOpen, setSecondaryOpen] = React.useState(false);
     const [isDesktopSecondaryOpen, setDesktopSecondaryOpen] = React.useState(() => {
@@ -22,7 +24,6 @@ export class ClientLayoutSidebarStateHooks {
       return true;
     });
     const [viewportWidth, setViewportWidth] = React.useState(0);
-    const [isSidebarInitialized, setIsSidebarInitialized] = React.useState(false);
     const [metadataSecondaryPanel, setMetadataSecondaryPanel] = React.useState(ClientLayoutPanelStateService.createEmptyState());
     const [isMini, setIsMini] = React.useState(() => {
       if (Platform.isBrowser) {
@@ -31,20 +32,6 @@ export class ClientLayoutSidebarStateHooks {
 
       return false;
     });
-
-    React.useEffect(() => {
-      const saved = ClientLayoutSidebarStateHooks.adminServices.uiPreference.readSidebarOpen();
-      if (saved !== null) {
-        setSidebarOpen(saved);
-      }
-      setIsSidebarInitialized(true);
-    }, []);
-
-    React.useEffect(() => {
-      if (isSidebarInitialized) {
-        ClientLayoutSidebarStateHooks.adminServices.uiPreference.writeSidebarOpen(isSidebarOpen);
-      }
-    }, [isSidebarOpen, isSidebarInitialized]);
 
     React.useEffect(() => {
       if (!Platform.isBrowser) {

@@ -167,13 +167,6 @@
       "sectionShow": "Zobrazit",
       "sectionHide": "Skrýt",
       "sectionFieldCount": "Počet polí: {{count}}",
-      "fieldLevel": {
-        "label": "Zobrazená pole",
-        "everyday": "Každodenní",
-        "occasional": "Občasná",
-        "technical": "Technická",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Náhled a trvalý odkaz",
       "permalinkHint": "Kliknutím na část cesty přepíšete automaticky vygenerovaný slug.",
       "settings": "Nastavení",
@@ -188,10 +181,10 @@
       "deletePermanently": "Trvale smazat",
       "relatedRecords": "Související záznamy",
       "relatedEmpty": "Žádný jiný plugin zatím nemá záznam propojený s tímto.",
-      "recordPart": { "download": "Stáhnout {{title}}", "person": "Osoba" },
-      "viewMode": "Režim zobrazení záznamu",
-      "formView": "Formulář",
-      "jsonView": "JSON",
+      "recordPart": {
+        "download": "Stáhnout {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Neuložené změny v",
       "noUnsaved": "Žádné neuložené změny",
       "notSaved": "Neuloženo: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Zdroj kopie se nepodařilo načíst",
       "loadFailed": "Záznam se nepodařilo načíst",
       "slugTaken": "Tento slug již používá „{{name}}“.",
-      "unsavedChanges": "Neuložené změny"
+      "unsavedChanges": "Neuložené změny",
+      "editSection": "Upravit",
+      "notFilledIn": "Nevyplněno",
+      "nothingFilledIn": "Zatím nic nevyplněno",
+      "statusSection": "Stav",
+      "recordSection": "Záznam",
+      "showJson": "Zobrazit jako JSON",
+      "showForm": "Zobrazit jako formulář",
+      "recordActions": "Akce záznamu",
+      "sectionActions": "Akce oddílu",
+      "breadcrumb": "Drobečková navigace",
+      "copyTitle": "Kopírovat",
+      "copied": "Zkopírováno",
+      "more": "Další",
+      "moreFields": "{{count}} polí",
+      "moreOneField": "{{count}} pole"
     },
     "notFound": {
       "title": "Kolekce nenalezena",
@@ -426,7 +434,6 @@
       "add": "Přidat položku menu"
     },
     "field": {
-      "enter": "Zadejte {{label}}...",
       "notSet": "Nenastaveno",
       "auto": "Automaticky",
       "localeFallback": "Prázdné v {{locale}} — web zobrazuje hodnotu z {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nezaznamenáno",
-      "auto": "Zaznamenáno automaticky — zde nelze upravit.",
-      "copied": "Zkopírováno",
-      "copy": "Kopírovat JSON",
       "filter": "Filtrovat podle klíče…",
       "empty": "Zatím nic nezaznamenáno.",
       "noMatch": "Filtru nic neodpovídá."
@@ -659,7 +663,11 @@
       "general": "Obecné",
       "moreIn": "Další v sekci {{section}}",
       "thisSection": "Tato sekce",
-      "collapse": "Sbalit postranní panel"
+      "collapse": "Sbalit postranní panel",
+      "expand": "Rozbalit postranní panel",
+      "search": "Hledat",
+      "searchShortcut": "⌘K",
+      "noMatches": "V nabídce nic neodpovídá „{{query}}“"
     },
     "workspace": {
       "unavailable": "Pracovní prostor není dostupný",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Otevřít",
-      "loadFailed": "Údaje tohoto widgetu se nepodařilo načíst. Zkuste to znovu po obnovení stránky."
+      "loadFailed": "Údaje tohoto widgetu se nepodařilo načíst. Zkuste to znovu po obnovení stránky.",
+      "quiet": "Nic nečeká: {{list}}"
     }
   },
   "notFound": {

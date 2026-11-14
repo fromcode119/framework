@@ -167,13 +167,6 @@
       "sectionShow": "表示",
       "sectionHide": "非表示",
       "sectionFieldCount": "{{count}} 個のフィールド",
-      "fieldLevel": {
-        "label": "表示する項目",
-        "everyday": "日常",
-        "occasional": "ときどき",
-        "technical": "技術",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "プレビューとパーマリンク",
       "permalinkHint": "パス部分をクリックすると、自動生成されたスラッグを上書きできます。",
       "settings": "設定",
@@ -188,10 +181,10 @@
       "deletePermanently": "完全に削除",
       "relatedRecords": "関連レコード",
       "relatedEmpty": "このレコードにリンクされたレコードを持つプラグインはまだありません。",
-      "recordPart": { "download": "ダウンロード {{title}}", "person": "人物" },
-      "viewMode": "レコードの表示モード",
-      "formView": "フォーム表示",
-      "jsonView": "JSON 表示",
+      "recordPart": {
+        "download": "ダウンロード {{title}}",
+        "person": "人物"
+      },
       "unsavedIn": "未保存の変更:",
       "noUnsaved": "未保存の変更はありません",
       "notSaved": "保存されていません: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "複製元を読み込めませんでした",
       "loadFailed": "エントリーを読み込めませんでした",
       "slugTaken": "このスラッグは「{{name}}」で既に使用されています。",
-      "unsavedChanges": "未保存の変更"
+      "unsavedChanges": "未保存の変更",
+      "editSection": "編集",
+      "notFilledIn": "未入力",
+      "nothingFilledIn": "まだ何も入力されていません",
+      "statusSection": "ステータス",
+      "recordSection": "レコード",
+      "showJson": "JSON で表示",
+      "showForm": "フォームで表示",
+      "recordActions": "レコードの操作",
+      "sectionActions": "セクションの操作",
+      "breadcrumb": "パンくずリスト",
+      "copyTitle": "コピー",
+      "copied": "コピーしました",
+      "more": "その他",
+      "moreFields": "{{count}} 件の項目",
+      "moreOneField": "{{count}} 件の項目"
     },
     "notFound": {
       "title": "コレクションが見つかりません",
@@ -426,7 +434,6 @@
       "add": "メニュー項目を追加"
     },
     "field": {
-      "enter": "{{label}}を入力...",
       "notSet": "未設定",
       "auto": "自動",
       "localeFallback": "{{locale}} では空です — サイトには {{fallback}} の値が表示されます",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "記録なし",
-      "auto": "自動的に記録されます。ここでは編集できません。",
-      "copied": "コピーしました",
-      "copy": "JSON をコピー",
       "filter": "キーで絞り込み…",
       "empty": "まだ記録はありません。",
       "noMatch": "条件に一致する項目はありません。"
@@ -659,7 +663,11 @@
       "general": "一般",
       "moreIn": "{{section}} のその他の項目",
       "thisSection": "このセクション",
-      "collapse": "サイドバーを折りたたむ"
+      "collapse": "サイドバーを折りたたむ",
+      "expand": "サイドバーを展開",
+      "search": "検索",
+      "searchShortcut": "⌘K",
+      "noMatches": "メニューに「{{query}}」に一致する項目はありません"
     },
     "workspace": {
       "unavailable": "ワークスペースを利用できません",
@@ -925,7 +933,8 @@
         }
       },
       "open": "開く",
-      "loadFailed": "このウィジェットのデータを読み込めませんでした。ページを再読み込みしてもう一度お試しください。"
+      "loadFailed": "このウィジェットのデータを読み込めませんでした。ページを再読み込みしてもう一度お試しください。",
+      "quiet": "対応待ちなし: {{list}}"
     }
   },
   "notFound": {

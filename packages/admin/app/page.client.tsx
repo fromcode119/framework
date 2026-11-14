@@ -164,7 +164,7 @@ export class AdminPage extends AdminComponent {
         {/* Premium Dashboard Header */}
         <DashboardPageHeader user={user} theme={this.theme} health={this.health} />
 
-        <div className="w-full px-6 lg:px-8 pt-6 space-y-6 pb-10">
+        <div className="fc-dashboard w-full px-4 pt-4 pb-10 sm:px-6 lg:px-8">
           {/* Update Alert */}
           {updateAvailable && (
             <DashboardUpdateAlert

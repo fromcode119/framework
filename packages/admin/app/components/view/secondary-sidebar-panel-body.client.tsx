@@ -36,7 +36,7 @@ export class SecondarySidebarPanelBody extends PureReactor {
       <div className="space-y-4">
         {grouped.map(([group, groupItems]) => (
           <section key={group} className="space-y-1">
-            <h3 className="px-1 text-[10px] font-semibold uppercase tracking-wider text-slate-400">{AdminNavText.group(group)}</h3>
+            <h3 className="px-1 text-[12px] font-medium text-slate-400">{AdminNavText.group(group)}</h3>
             {groupItems.map((item) => {
               const isActive = NavUtils.isPathActive(this.pathname, item.path, allPaths);
               return (

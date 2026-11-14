@@ -170,7 +170,7 @@ export class SetupDatabaseStep extends PureReactor {
                 <span className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   {this.text(`setup.database.drivers.${driver.value}.name`)}
                 </span>
-                <span className="text-[10px] font-bold uppercase tracking-wide text-slate-400">
+                <span className="text-[12px] font-medium text-slate-400">
                   {driver.isAvailable
                     ? this.text(driver.isSingleSiteOnly ? 'setup.database.singleSite' : 'setup.database.multiSite')
                     : this.text('setup.database.unavailable')}
@@ -205,7 +205,7 @@ export class SetupDatabaseStep extends PureReactor {
            * against, not a report of something already done.
            */
           <div className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2.5 dark:border-slate-800 dark:bg-slate-900/50">
-            <p className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+            <p className="mb-2 text-[12px] font-medium text-slate-400">
               {this.text('setup.database.summaryTitle')}
             </p>
             {this.summary}

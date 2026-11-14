@@ -39,9 +39,9 @@ export class RolesListCard extends PureReactor {
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className={`text-sm font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{role.name}</h3>
-                      <code className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
+                      <code className={`text-[12px] font-medium tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
                       {role.scope ? (
-                        <span className={`text-[10px] font-semibold uppercase tracking-tight px-1.5 py-0.5 rounded ${role.scope === 'site' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-500'}`}>{scopeLabel}</span>
+                        <span className={`text-[12px] font-medium tracking-tight px-1.5 py-0.5 rounded ${role.scope === 'site' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-500'}`}>{scopeLabel}</span>
                       ) : null}
                     </div>
                     <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || AdminI18n.t('users.noDescription')}</p>
@@ -59,7 +59,7 @@ export class RolesListCard extends PureReactor {
                       title={isSystem ? undefined : AdminI18n.t('users.platformRoleLockedHint')}
                     >
                       <FrameworkIcons.Lock size={11} strokeWidth={2} />
-                      <span className="font-semibold uppercase tracking-tight text-[10px]">{AdminI18n.t('users.locked')}</span>
+                      <span className="font-medium tracking-tight text-[12px]">{AdminI18n.t('users.locked')}</span>
                     </span>
                   ) : (
                     <div className="flex items-center gap-1.5">

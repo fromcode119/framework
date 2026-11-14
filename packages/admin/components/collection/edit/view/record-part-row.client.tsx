@@ -14,6 +14,8 @@ export class RecordPartRow extends PureReactor {
   @prop declare item: IRecordsHubItem;
   @prop declare onOpen: (item: IRecordsHubItem) => void;
   @prop declare onDownload: (item: IRecordsHubItem) => void;
+  /** A person: their initials stand where a document's icon would. */
+  @prop declare initials?: boolean;
 
   /** Left out when the provider's own trailing label already states it — a planned job's label IS its day. */
   private get date(): string {
@@ -36,16 +38,22 @@ export class RecordPartRow extends PureReactor {
   render(): ReactNode {
     const item = this.item;
     const Icon = FrameworkIcons.getIcon(item.icon || 'FileText');
+    const initials = this.initials
+      ? String(item.title || '').split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part.charAt(0).toUpperCase()).join('')
+      : '';
+    // A person is named and nothing more: how to reach them is the card's own business.
+    const meta = this.initials ? [] : [item.subtitle, this.date].filter(Boolean);
     return (
       <div className="fc-record-part__row">
-        <Icon size={15} className="fc-record-part__icon" />
+        {initials ? <span className="fc-record-part__initials" aria-hidden="true">{initials}</span> : <Icon size={15} className="fc-record-part__icon" />}
         <div className="fc-record-part__main">
-          {this.renderTitle()}
-          {item.status ? <span className="fc-record-part__status">{item.status}</span> : null}
-          {(item.badges || []).map((badge) => <span key={badge} className="fc-record-part__status">{badge}</span>)}
-          {item.subtitle ? <span className="fc-record-part__meta">{item.subtitle}</span> : null}
+          <span className="fc-record-part__line">
+            {this.renderTitle()}
+            {item.status ? <span className="fc-record-part__status">{item.status}</span> : null}
+            {(item.badges || []).map((badge) => <span key={badge} className="fc-record-part__status">{badge}</span>)}
+          </span>
+          {meta.length ? <span className="fc-record-part__meta">{meta.join(' · ')}</span> : null}
         </div>
-        {this.date ? <span className="fc-record-part__meta tabular-nums">{this.date}</span> : null}
         {item.trailing ? <span className="fc-record-part__trailing">{item.trailing}</span> : null}
         {item.downloadUrl ? (
           <button type="button" onClick={this.download} className="fc-record-part__action" aria-label={AdminI18n.t('collection.edit.recordPart.download', { title: item.title })}>

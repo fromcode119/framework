@@ -167,13 +167,6 @@
       "sectionShow": "Tonen",
       "sectionHide": "Verbergen",
       "sectionFieldCount": "{{count}} velden",
-      "fieldLevel": {
-        "label": "Getoonde velden",
-        "everyday": "Dagelijks",
-        "occasional": "Af en toe",
-        "technical": "Technisch",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Voorbeeld & permalink",
       "permalinkHint": "Klik op het padgedeelte om de automatisch gegenereerde slug te overschrijven.",
       "settings": "Instellingen",
@@ -188,10 +181,10 @@
       "deletePermanently": "Definitief verwijderen",
       "relatedRecords": "Gerelateerde records",
       "relatedEmpty": "Nog geen andere plugin heeft een record dat aan dit record is gekoppeld.",
-      "recordPart": { "download": "Downloaden {{title}}", "person": "Persoon" },
-      "viewMode": "Weergavemodus van record",
-      "formView": "Formulierweergave",
-      "jsonView": "JSON-weergave",
+      "recordPart": {
+        "download": "Downloaden {{title}}",
+        "person": "Persoon"
+      },
       "unsavedIn": "Niet-opgeslagen wijzigingen in",
       "noUnsaved": "Geen niet-opgeslagen wijzigingen",
       "notSaved": "Niet opgeslagen: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Laden van duplicaatbron mislukt",
       "loadFailed": "Laden van item mislukt",
       "slugTaken": "Deze slug is al in gebruik door \"{{name}}\".",
-      "unsavedChanges": "Niet-opgeslagen wijzigingen"
+      "unsavedChanges": "Niet-opgeslagen wijzigingen",
+      "editSection": "Bewerken",
+      "notFilledIn": "Niet ingevuld",
+      "nothingFilledIn": "Nog niets ingevuld",
+      "statusSection": "Status",
+      "recordSection": "Record",
+      "showJson": "Toon als JSON",
+      "showForm": "Toon als formulier",
+      "recordActions": "Acties voor dit record",
+      "sectionActions": "Acties voor deze sectie",
+      "breadcrumb": "Kruimelpad",
+      "copyTitle": "Kopiëren",
+      "copied": "Gekopieerd",
+      "more": "Meer",
+      "moreFields": "{{count}} velden",
+      "moreOneField": "{{count}} veld"
     },
     "notFound": {
       "title": "Collectie niet gevonden",
@@ -426,7 +434,6 @@
       "add": "Menu-item toevoegen"
     },
     "field": {
-      "enter": "Voer {{label}} in...",
       "notSet": "Niet ingesteld",
       "auto": "Automatisch",
       "localeFallback": "Leeg in {{locale}} — de site toont de waarde uit {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Niet vastgelegd",
-      "auto": "Automatisch vastgelegd — hier niet te bewerken.",
-      "copied": "Gekopieerd",
-      "copy": "JSON kopiëren",
       "filter": "Filteren op sleutel…",
       "empty": "Nog niets vastgelegd.",
       "noMatch": "Niets komt overeen met dat filter."
@@ -659,7 +663,11 @@
       "general": "Algemeen",
       "moreIn": "Meer in {{section}}",
       "thisSection": "Deze sectie",
-      "collapse": "Zijbalk inklappen"
+      "collapse": "Zijbalk inklappen",
+      "expand": "Zijbalk uitklappen",
+      "search": "Zoeken",
+      "searchShortcut": "⌘K",
+      "noMatches": "Niets in het menu komt overeen met ‘{{query}}’"
     },
     "workspace": {
       "unavailable": "Werkruimte niet beschikbaar",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Openen",
-      "loadFailed": "De cijfers van deze widget konden niet worden geladen. Laad de pagina opnieuw om het nog eens te proberen."
+      "loadFailed": "De cijfers van deze widget konden niet worden geladen. Laad de pagina opnieuw om het nog eens te proberen.",
+      "quiet": "Niets openstaand: {{list}}"
     }
   },
   "notFound": {

@@ -56,7 +56,7 @@ export class MediaAssetInfoDialog extends AdminComponent {
   private renderFact(label: string, value: string): ReactNode {
     return (
       <div key={label} className="grid grid-cols-[110px_1fr] gap-3 py-1.5">
-        <span className="text-[10px] font-semibold uppercase tracking-widest text-slate-500">{label}</span>
+        <span className="text-[12px] font-medium text-slate-500">{label}</span>
         <span className="min-w-0 break-all text-[12px] text-slate-700 dark:text-slate-300">{value}</span>
       </div>
     );

@@ -131,7 +131,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                         <div className={`h-9 w-9 rounded-lg flex items-center justify-center ${theme === ThemeMode.DARK ? 'bg-slate-800 text-indigo-400 ring-1 ring-white/10' : 'bg-indigo-50 text-indigo-600 ring-1 ring-indigo-100'}`}>
                           {t.iconUrl ? <img src={t.iconUrl} className="w-6 h-6 rounded object-contain" alt="" /> : <FrameworkIcons.Palette size={20} />}
                         </div>
-                        <Badge variant={installed ? "success" : "blue"} className="font-semibold tracking-wide px-2 py-1 text-[10px] uppercase rounded-lg">
+                        <Badge variant={installed ? "success" : "blue"} className="font-medium px-2 py-1 text-[12px] rounded-lg">
                           {installed ? (this.siteScope ? AdminI18n.t('themes.inThisSite') : AdminI18n.t('themes.installed')) : AdminI18n.t('themes.premium')}
                         </Badge>
                       </div>
@@ -143,7 +143,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                         <p className={`text-sm leading-relaxed font-medium line-clamp-3 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                           {t.description || AdminI18n.t('themes.aCleanAndModernTheme')}
                         </p>
-                        <div className={`flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+                        <div className={`flex flex-wrap items-center gap-3 text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
                              {installed && installedVersion && (<>
                              <div className="flex items-center gap-1.5">
                                <FrameworkIcons.Check size={12} className="text-emerald-500/80" />
@@ -169,7 +169,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                         {installed && hasUpdate && (
                           <div className={`flex items-center gap-3 p-3 rounded-lg border transition-all ${theme === ThemeMode.DARK ? 'bg-amber-500/10 border-amber-500/20' : 'bg-amber-50 border-amber-100 shadow-sm'}`}>
                               <div className="h-2 w-2 rounded-full bg-amber-500 animate-ping" />
-                              <span className={`text-[11px] font-bold uppercase tracking-wide leading-none ${theme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-700'}`}>{AdminI18n.t('themes.updateAvailableVersion', { version: t.version })}</span>
+                              <span className={`text-[12px] font-medium leading-none ${theme === ThemeMode.DARK ? 'text-amber-400' : 'text-amber-700'}`}>{AdminI18n.t('themes.updateAvailableVersion', { version: t.version })}</span>
                           </div>
                         )}
 
@@ -177,7 +177,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           {installed && !hasUpdate ? (
                             <button
                               onClick={(e) => { e.stopPropagation(); this.router.push(AdminConstants.ROUTES.THEMES.DETAIL(t.slug)); }}
-                              className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] transition-all flex items-center justify-center gap-2 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border text-slate-400 hover:bg-slate-50 hover:text-indigo-600 shadow-sm'}`}
+                              className={`w-full h-9 rounded-lg font-medium text-[12px] transition-all flex items-center justify-center gap-2 ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-400 hover:text-white' : 'bg-white border text-slate-400 hover:bg-slate-50 hover:text-indigo-600 shadow-sm'}`}
                             >
                               <FrameworkIcons.Check size={18} strokeWidth={3} />
                               {AdminI18n.t('themes.manageTheme')}
@@ -185,7 +185,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           ) : hasUpdate ? (
                             <button
                               onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
-                              className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
+                              className={`w-full h-9 rounded-lg font-medium text-[12px] bg-amber-600 text-white hover:bg-amber-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Clock size={18} strokeWidth={3} />
                               {AdminI18n.t('themes.upgradeNow')}
@@ -193,7 +193,7 @@ export class ThemesMarketplacePage extends AdminComponent {
                           ) : (
                             <button
                               onClick={(e) => { e.stopPropagation(); void this.handleInstall(t.slug, t.version); }}
-                              className={`w-full h-9 rounded-lg font-bold uppercase tracking-widest text-[11px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
+                              className={`w-full h-9 rounded-lg font-medium text-[12px] bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2`}
                             >
                               <FrameworkIcons.Download size={18} strokeWidth={3} />
                               {this.siteScope ? AdminI18n.t('themes.addToThisSite') : AdminI18n.t('themes.installNow')}

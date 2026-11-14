@@ -190,7 +190,7 @@ export class MediaShareDialog extends AdminComponent {
     if (!items.length) return null;
 
     const dark = this.theme === ThemeMode.DARK;
-    const labelClass = `block text-[10px] font-semibold uppercase tracking-widest mb-1.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`;
+    const labelClass = `block text-[12px] font-medium mb-1.5 ${dark ? 'text-slate-400' : 'text-slate-500'}`;
     const hintClass = `mt-1 text-[10px] ${dark ? 'text-slate-500' : 'text-slate-400'}`;
     const subtitle = items.length === 1 ? String(items[0].originalName || items[0].filename || '') : AdminI18n.t('media.filesSelected', { length: items.length });
 

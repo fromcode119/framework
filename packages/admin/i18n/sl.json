@@ -167,13 +167,6 @@
       "sectionShow": "Prikaži",
       "sectionHide": "Skrij",
       "sectionFieldCount": "Število polj: {{count}}",
-      "fieldLevel": {
-        "label": "Prikazana polja",
-        "everyday": "Vsakdanja",
-        "occasional": "Občasna",
-        "technical": "Tehnična",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Predogled in stalna povezava",
       "permalinkHint": "Kliknite del poti, da preglasite samodejno ustvarjeni URL-ime (slug).",
       "settings": "Nastavitve",
@@ -188,10 +181,10 @@
       "deletePermanently": "Trajno izbriši",
       "relatedRecords": "Povezani zapisi",
       "relatedEmpty": "Noben drug vtičnik še nima zapisa, povezanega s tem.",
-      "recordPart": { "download": "Prenesi {{title}}", "person": "Oseba" },
-      "viewMode": "Način prikaza zapisa",
-      "formView": "Prikaz obrazca",
-      "jsonView": "Prikaz JSON",
+      "recordPart": {
+        "download": "Prenesi {{title}}",
+        "person": "Oseba"
+      },
       "unsavedIn": "Neshranjene spremembe v",
       "noUnsaved": "Ni neshranjenih sprememb",
       "notSaved": "Ni shranjeno: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Vira za podvajanje ni bilo mogoče naložiti",
       "loadFailed": "Vnosa ni bilo mogoče naložiti",
       "slugTaken": "To URL-ime že uporablja »{{name}}«.",
-      "unsavedChanges": "Neshranjene spremembe"
+      "unsavedChanges": "Neshranjene spremembe",
+      "editSection": "Uredi",
+      "notFilledIn": "Ni izpolnjeno",
+      "nothingFilledIn": "Še nič ni izpolnjeno",
+      "statusSection": "Stanje",
+      "recordSection": "Zapis",
+      "showJson": "Prikaži kot JSON",
+      "showForm": "Prikaži kot obrazec",
+      "recordActions": "Dejanja zapisa",
+      "sectionActions": "Dejanja razdelka",
+      "breadcrumb": "Drobtinice",
+      "copyTitle": "Kopiraj",
+      "copied": "Kopirano",
+      "more": "Več",
+      "moreFields": "{{count}} polj",
+      "moreOneField": "{{count}} polje"
     },
     "notFound": {
       "title": "Zbirke ni mogoče najti",
@@ -426,7 +434,6 @@
       "add": "Dodaj element menija"
     },
     "field": {
-      "enter": "Vnesite {{label}} ...",
       "notSet": "Ni nastavljeno",
       "auto": "Samodejno",
       "localeFallback": "Prazno v {{locale}} — spletno mesto prikaže vrednost {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Ni zabeleženo",
-      "auto": "Zabeleženo samodejno – tukaj ni mogoče urejati.",
-      "copied": "Kopirano",
-      "copy": "Kopiraj JSON",
       "filter": "Filtriraj po ključu …",
       "empty": "Ničesar še ni zabeleženega.",
       "noMatch": "Temu filtru nič ne ustreza."
@@ -659,7 +663,11 @@
       "general": "Splošno",
       "moreIn": "Več v razdelku {{section}}",
       "thisSection": "Ta razdelek",
-      "collapse": "Strni stransko vrstico"
+      "collapse": "Strni stransko vrstico",
+      "expand": "Razširi stransko vrstico",
+      "search": "Iskanje",
+      "searchShortcut": "⌘K",
+      "noMatches": "V meniju se nič ne ujema z »{{query}}«"
     },
     "workspace": {
       "unavailable": "Delovni prostor ni na voljo",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Odpri",
-      "loadFailed": "Podatkov tega gradnika ni bilo mogoče naložiti. Za ponoven poskus znova naložite stran."
+      "loadFailed": "Podatkov tega gradnika ni bilo mogoče naložiti. Za ponoven poskus znova naložite stran.",
+      "quiet": "Nič ne čaka: {{list}}"
     }
   },
   "notFound": {

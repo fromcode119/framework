@@ -33,6 +33,8 @@ export class DashboardWidgetBoard extends AdminComponent {
   @state private dragKey = '';
   @state private overKey = '';
   @state private saveFailed = false;
+  /** Widgets showing only their empty state, by key — named on one line instead of a card each. */
+  @state private quiet: Record<string, boolean> = {};
 
   private mounted = false;
   /** The layout a drag reorders — the one on screen when it started. */
@@ -80,13 +82,17 @@ export class DashboardWidgetBoard extends AdminComponent {
     const byKey = new Map(definitions.map((definition) => [definition.key, definition]));
     const layout = this.layout;
     return (
-      <div className="space-y-4">
-        {this.renderToolbar()}
+      <div className="fc-dashboard__board">
+        {this.renderToolbar(layout, byKey)}
         {this.editing ? <DashboardWidgetPicker available={DashboardLayout.available(definitions, layout)} onAdd={(definition: IDashboardWidgetDefinition) => this.commit(DashboardLayout.add(layout, definition))} /> : null}
-        {this.loaded && layout.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-slate-200 p-8 text-center text-[13px] text-slate-500 dark:border-slate-800">{AdminI18n.t('dashboard.widgets.empty')}</p>
+        {this.loaded && layout.length === 0 ? <p className="fc-dashboard__calm">{AdminI18n.t('dashboard.widgets.empty')}</p> : null}
+        {this.allQuiet(layout) ? (
+          <p className="fc-dashboard__calm">
+            <FrameworkIcons.CheckCircle size={18} aria-hidden />
+            <span>{AdminI18n.t('dashboard.widgets.quiet', { list: this.quietLabels(layout, byKey).join(' · ') })}</span>
+          </p>
         ) : null}
-        <div className="grid grid-flow-row-dense grid-cols-1 items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className={`fc-dashboard__grid grid grid-flow-row-dense grid-cols-1 items-start md:grid-cols-2 lg:grid-cols-3 ${this.editing ? '' : 'fc-dashboard__grid--packed'}`}>
           {this.loaded ? layout.map((entry, index) => this.renderWidget(entry, index, layout, byKey.get(entry.key)!)) : null}
         </div>
       </div>
@@ -107,14 +113,28 @@ export class DashboardWidgetBoard extends AdminComponent {
         onResize={(size: DashboardWidgetSize) => this.commit(DashboardLayout.resize(layout, entry.key, size))}
         onShift={(step: number) => this.commit(DashboardLayout.shift(layout, entry.key, step))}
         dropTarget={this.overKey === entry.key}
+        quiet={Boolean(this.quiet[entry.key])}
+        onQuietChange={(quiet: boolean) => { if (this.mounted && Boolean(this.quiet[entry.key]) !== quiet) this.quiet = { ...this.quiet, [entry.key]: quiet }; }}
         onPointerDown={(event: PointerEvent) => { this.dragLayout = layout; this.drag.start(entry.key, event); }}
       />
     );
   }
 
-  private renderToolbar(): ReactNode {
+  /** Every widget on the board has nothing to show: one calm card says so, instead of a bare line over an empty page. */
+  private allQuiet(layout: IDashboardLayoutEntry[]): boolean {
+    return this.loaded && !this.editing && layout.length > 0 && layout.every((entry) => this.quiet[entry.key]);
+  }
+
+  /** The widgets with nothing to show, in the order they stand — the "nothing waiting" line names them. */
+  private quietLabels(layout: IDashboardLayoutEntry[], byKey: Map<string, IDashboardWidgetDefinition>): string[] {
+    return layout.filter((entry) => this.quiet[entry.key]).map((entry) => byKey.get(entry.key)?.label || '').filter(Boolean);
+  }
+
+  private renderToolbar(layout: IDashboardLayoutEntry[], byKey: Map<string, IDashboardWidgetDefinition>): ReactNode {
+    const quiet = this.editing || this.allQuiet(layout) ? [] : this.quietLabels(layout, byKey);
     return (
-      <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="fc-dashboard__toolbar">
+        {quiet.length ? <p className="fc-dashboard__quiet">{AdminI18n.t('dashboard.widgets.quiet', { list: quiet.join(' · ') })}</p> : null}
         {this.saveFailed ? <span className="me-auto text-[12px] text-rose-600">{AdminI18n.t('dashboard.widgets.saveFailed')}</span> : null}
         {this.editing ? (
           <>

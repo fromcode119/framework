@@ -1,230 +1,198 @@
-import type { MouseEvent, ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode, RefObject } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
-import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
+import { PureReactor, prop, ref, state, Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { NavSectionPages } from '@/lib/nav-section-pages';
+import { NavGroupPanel } from '@/app/components/view/nav-group-panel.client';
 import { NavUtils } from '@/lib/nav-utils';
-import { AdminServices } from '@/lib/admin-services';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
-export class NavItemView extends Reactor {
-  private static readonly adminServices = AdminServices.getInstance();
 
+/**
+ * One section of the console's menu, and — only while you are inside it — the pages under it.
+ *
+ * Nothing opens or closes by hand and nothing is remembered: a section's pages show, indented under
+ * it, exactly while the current page is one of them, and are gone the moment you go elsewhere. The
+ * look is `admin.css` (`fc-nav-*`), never spelled out here.
+ */
+export class NavItemView extends PureReactor {
   @prop declare icon?: ReactNode;
   @prop declare label: string;
   @prop declare href: string;
-  @prop declare persistenceKey?: string;
   @prop declare active?: boolean;
   @prop declare onClick?: () => void;
+  /** The section's own pages (a plugin's menu entries). */
   @prop declare children?: any[];
+  /** More pages of this section (its panel entries), drawn after its own while it is open. */
+  @prop declare subItems?: any[];
   @prop declare isMini?: boolean;
-  @prop declare isGroupHeader?: boolean;
-  @prop declare version?: string;
   /** The plugin that registered this item; only it may fill the item's trailing slot. */
   @prop declare pluginSlug?: string;
-  @prop declare showHoverPreview?: boolean;
-  @prop declare onHoverPreviewStart?: (path: string) => void;
-  @prop declare onHoverPreviewEnd?: () => void;
-  /** Resolved active primary path (honours secondary-panel sourcePaths). When it matches a child,
-   * that child is highlighted instead of the raw best-prefix match. */
+  /** The page the current one belongs to, when a page is reached from a section's page (a record of a list). */
   @prop declare activePathOverride?: string;
   /** Raw pathname from `usePathname()`, supplied by the thin functional shim. */
   @prop declare rawPathname: string | null;
 
-  /**
-   * Seeded from the constructor rather than a field initializer: the initializer would read `@prop`
-   * accessors declared later in the class body (TS2729).
-   */
-  @state expanded = false;
+  @ref declare private sectionRef: RefObject<HTMLDivElement | null>;
 
-  constructor(props: Record<string, unknown>) {
-    super(props);
-    this.expanded = !!(this.active
-      || this.computeIsChildActive(this.children, this.rawPathname, this.activePathOverride));
-  }
-
-  private get pathname(): string {
-    return this.rawPathname || '';
-  }
-
-  private computeChildPaths(children: any[] | undefined): string[] {
-    return (children || []).map((child) => NavUtils.normalizePath(child.path)).filter(Boolean) as string[];
-  }
-
-  private computeStorageKey(persistenceKey: unknown, href: unknown, label: unknown): string {
-    return String(persistenceKey || href || label).trim();
-  }
-
-  private computeActiveChildPath(children: any[] | undefined, rawPathname: string | null, activePathOverride?: string): string {
-    // Prefer the resolved active primary path (which honours secondary-panel sourcePaths) when it
-    // points at one of our children — so a sub-page highlights its true parent rather than the
-    // closest-prefix child. Fall back to plain best-prefix matching otherwise.
-    const childPaths = this.computeChildPaths(children);
-    const pathname = rawPathname || '';
-    const override = NavUtils.normalizePath(activePathOverride);
-    if (override && childPaths.includes(override)) return override;
-    return NavUtils.resolveBestMatchPath(pathname, childPaths) || '';
-  }
-
-  private computeIsChildActive(children: any[] | undefined, rawPathname: string | null, activePathOverride?: string): boolean {
-    return !!this.computeActiveChildPath(children, rawPathname, activePathOverride);
-  }
+  // An open section's pages can fall below the menu's fold (Settings sits at its foot); bring the whole
+  // section into view, moving the menu only as far as needed.
+  /** The sub-menu shown OVER the content while the pointer rests on it (desktop). */
+  @state private previewGroup = '';
+  private previewTimer = 0;
+  private static readonly PREVIEW_EVENT = 'fc-nav-group-preview';
 
   componentDidMount(): void {
-    // Load persistence state ([storageKey] effect).
-    const storageKey = this.computeStorageKey(this.persistenceKey, this.href, this.label);
-    if (storageKey) {
-      const saved = NavItemView.adminServices.uiPreference.readNavExpanded(storageKey);
-      if (saved !== null) {
-        this.expanded = saved;
-      }
-    }
-
-    // Save persistence state ([expanded, storageKey] effect — runs on mount too).
-    if (storageKey) {
-      NavItemView.adminServices.uiPreference.writeNavExpanded(storageKey, this.expanded);
-    }
+    this.revealWhenOpen();
+    // One preview on screen: a group opening its pages closes any other section's.
+    this.listen(window, NavItemView.PREVIEW_EVENT, (event: Event) => {
+      if ((event as CustomEvent).detail !== this) this.closePreviewNow();
+    });
   }
 
-  componentDidUpdate(prevProps: Readonly<Record<string, unknown>>, prevState: Readonly<Record<string, unknown>>): void {
-    const storageKey = this.computeStorageKey(this.persistenceKey, this.href, this.label);
-    const prevStorageKey = this.computeStorageKey(prevProps.persistenceKey, prevProps.href, prevProps.label);
-
-    // Load persistence state — [storageKey] effect re-runs only when storageKey changes.
-    if (storageKey !== prevStorageKey) {
-      if (storageKey) {
-        const saved = NavItemView.adminServices.uiPreference.readNavExpanded(storageKey);
-        if (saved !== null) {
-          this.expanded = saved;
-        }
-      }
-    }
-
-    // Save persistence state — [expanded, storageKey] effect re-runs when either changes.
-    if (this.expanded !== prevState.expanded || storageKey !== prevStorageKey) {
-      if (storageKey) {
-        NavItemView.adminServices.uiPreference.writeNavExpanded(storageKey, this.expanded);
-      }
-    }
-
-    // Auto-expand when a child becomes active — [isChildActive] effect re-runs when it changes.
-    const isChildActive = this.computeIsChildActive(this.children, this.rawPathname, this.activePathOverride);
-    const prevIsChildActive = this.computeIsChildActive(
-      prevProps.children as any[] | undefined,
-      prevProps.rawPathname as string | null,
-      prevProps.activePathOverride as string | undefined,
-    );
-    if (isChildActive !== prevIsChildActive && isChildActive) {
-      this.expanded = true;
-    }
+  componentWillUnmount(): void {
+    window.clearTimeout(this.previewTimer);
   }
 
-  @bound private handleClick(e: MouseEvent): void {
-    const hasChildren = this.children && this.children.length > 0;
-    if (this.isGroupHeader || (hasChildren && !this.expanded)) {
-      if (this.isGroupHeader) {
-        e.preventDefault();
-      }
-      this.expanded = !this.expanded;
+  private openPreview(name: string): void {
+    window.clearTimeout(this.previewTimer);
+    this.previewTimer = window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(NavItemView.PREVIEW_EVENT, { detail: this }));
+      this.previewGroup = name;
+    }, 80);
+  }
+
+  /** Left with a short grace, so the pointer can cross from the group line into its column. */
+  private closePreview = (): void => {
+    window.clearTimeout(this.previewTimer);
+    this.previewTimer = window.setTimeout(() => this.closePreviewNow(), 220);
+  };
+
+  private keepPreview = (): void => {
+    window.clearTimeout(this.previewTimer);
+  };
+
+  private closePreviewNow(): void {
+    window.clearTimeout(this.previewTimer);
+    if (this.previewGroup) this.previewGroup = '';
+  }
+
+  componentDidUpdate(): void {
+    this.revealWhenOpen();
+  }
+
+  /** The page the section was last revealed for, so a re-render never drags back a menu scrolled by hand. */
+  private revealedFor = '';
+
+  private revealWhenOpen(): void {
+    const node = this.sectionRef.current;
+    const page = this.rawPathname || '';
+    if (!Platform.isBrowser || !node || this.isMini || !node.querySelector('.fc-nav-sub')) {
+      this.revealedFor = '';
+      return;
     }
-    this.onClick?.();
+    if (this.revealedFor === page) return;
+    this.revealedFor = page;
+    node.scrollIntoView({ block: 'nearest' });
+  }
+
+  private get pages(): any[] {
+    const seen = new Set<string>();
+    return [...(this.children || []), ...(this.subItems || [])].filter((page) => {
+      const path = NavUtils.normalizePath(page?.path);
+      if (!path || seen.has(path)) return false;
+      seen.add(path);
+      return true;
+    });
+  }
+
+  private activePagePath(pages: any[]): string {
+    const paths = pages.map((page) => NavUtils.normalizePath(page.path)).filter(Boolean) as string[];
+    const override = NavUtils.normalizePath(this.activePathOverride);
+    if (override && paths.includes(override)) return override;
+    return NavUtils.resolveBestMatchPath(this.rawPathname || '', paths) || '';
   }
 
   render(): ReactElement {
-    const {
-      icon, label, href, active, onClick, children, isMini, isGroupHeader, version,
-      showHoverPreview, onHoverPreviewStart, onHoverPreviewEnd, expanded,
-    } = this;
-
-    const hasChildren = children && children.length > 0;
-    const activeChildPath = this.computeActiveChildPath(children, this.rawPathname, this.activePathOverride);
-    const isChildActive = !!activeChildPath;
-    const displayLabel = label;
-
-    // The parent is "highlighted" if it is active AND NO CHILD is active.
-    const isHighlighted = active && !isChildActive;
-    const isPreviewingSecondary = Boolean(showHoverPreview && !isHighlighted && !isChildActive);
+    const { icon, label, href, onClick, isMini } = this;
+    const pages = this.pages;
+    const activePage = this.activePagePath(pages);
+    const open = Boolean(this.active || activePage);
+    const nav = 'fc-nav-item';
+    const state = open ? ` ${nav}--active` : '';
 
     return (
-      <div className="relative flex flex-col">
-        <div
-          className={`flex items-center group relative ${isMini ? 'justify-center w-full' : 'gap-0.5'}`}
-          onMouseEnter={!isMini ? () => onHoverPreviewStart?.(href) : undefined}
-          onMouseLeave={!isMini ? onHoverPreviewEnd : undefined}
+      <div className="fc-nav-section" ref={this.sectionRef}>
+        <AdminLink
+          href={href}
+          onClick={onClick}
+          // Collapsed, the icon is the ONLY thing on screen, so the name lives in the tooltip and in the
+          // accessible name instead.
+          title={isMini ? label : undefined}
+          aria-label={isMini ? label : undefined}
+          aria-current={open && !activePage ? 'page' : undefined}
+          className={`${nav}${isMini ? ` ${nav}--mini` : ''}${state}`}
         >
-          <AdminLink
-            href={isGroupHeader ? '#' : href}
-            onClick={this.handleClick}
-            // Collapsed, the icon is the ONLY thing on screen: an 8px label truncated to "Dashboar.."
-            // named nothing, so the name lives in the tooltip and in the accessible name instead.
-            title={isMini ? displayLabel : undefined}
-            aria-label={isMini ? displayLabel : undefined}
-            className={`relative flex items-center transition-colors duration-150 ${
-              isHighlighted
-                ? 'bg-indigo-600 text-white'
-                : isPreviewingSecondary
-                  ? 'bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-300'
-                : isChildActive
-                  ? 'text-indigo-600 dark:text-indigo-400'
-                  : 'text-slate-500 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/50 dark:hover:text-slate-100'
-            } ${isMini ? 'justify-center w-10 h-10 rounded-lg' : 'flex-1 justify-between px-2.5 py-1.5 rounded-lg'}`}
-          >
-            <div className={`flex items-center justify-center ${isMini ? 'w-full' : 'gap-2.5'}`}>
-              <span className={`${isHighlighted ? 'text-white' : isPreviewingSecondary ? 'text-indigo-500 dark:text-indigo-300' : isChildActive ? 'text-indigo-500' : 'text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors'} flex items-center justify-center shrink-0`}>
-                {icon}
-              </span>
+          <span className={`${nav}__icon`}>{icon}</span>
+          {!isMini ? <span className={`${nav}__label`}>{label}</span> : null}
+          {this.renderTrailing(href, open, !!isMini)}
+        </AdminLink>
 
-              {!isMini && (
-                <div className="flex flex-col">
-                  <span className={`text-[12px] ${isHighlighted || isChildActive ? 'font-semibold' : 'font-medium'} tracking-[-0.01em] whitespace-nowrap`}>
-                    {displayLabel}
-                  </span>
-                  {version && (
-                    <span className={`text-[8px] font-mono mt-px opacity-50 ${isHighlighted ? 'text-white' : 'text-slate-400'}`}>
-                      v{version}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {this.renderTrailing(href, !!isHighlighted, !!isMini)}
-
-            {hasChildren && !isMini && (
-              <FrameworkIcons.Down
-                size={14}
-                className={`shrink-0 transition-transform duration-200 ${expanded ? 'rotate-180' : ''} ${
-                  isHighlighted ? 'text-white/60' : 'text-slate-300 group-hover:text-slate-500 dark:text-slate-600 dark:group-hover:text-slate-400'
-                }`}
-                onClick={(e: MouseEvent) => { e.preventDefault(); e.stopPropagation(); this.expanded = !expanded; }}
-              />
-            )}
-          </AdminLink>
-        </div>
-
-        {hasChildren && expanded && !isMini && (
-          <div className="relative ms-[18px] mt-0.5 mb-1 flex flex-col gap-px border-s border-slate-200/70 ps-2 dark:border-slate-800">
-            {children.map((child) => {
-              const isSubActive = NavUtils.normalizePath(child.path) === activeChildPath;
-              return (
-                <AdminLink
-                  key={child.path}
-                  href={child.path}
-                  onClick={onClick}
-                  className={`relative flex items-center gap-2.5 rounded-lg py-1.5 ps-3 pe-2 text-[12px] transition-colors duration-150 ${
-                    isSubActive
-                      ? 'font-semibold text-indigo-600 dark:text-indigo-400'
-                      : 'font-medium text-slate-400 hover:bg-slate-100/70 hover:text-slate-800 dark:text-slate-500 dark:hover:bg-slate-800/40 dark:hover:text-slate-200'
-                  }`}
-                >
-                  {isSubActive && (
-                    <span className="absolute start-[-9px] top-1/2 h-4 w-[2px] -translate-y-1/2 rounded-full bg-indigo-500" aria-hidden="true" />
-                  )}
-                  <span className="whitespace-nowrap tracking-[-0.01em]">{AdminNavText.menuLabel(child)}</span>
-                  {this.renderTrailing(child.path, isSubActive, false)}
-                </AdminLink>
-              );
-            })}
+        {open && !isMini && pages.length > 0 ? (
+          <div className="fc-nav-sub">
+            {NavSectionPages.arrange(pages).map((entry) => (entry.kind === 'page'
+              ? this.renderPage(entry.page, activePage)
+              : this.renderGroup(entry, activePage)))}
           </div>
-        )}
+        ) : null}
+      </div>
+    );
+  }
+
+  private renderPage(page: any, activePage: string, nested = false): ReactNode {
+    const path = NavUtils.normalizePath(page.path);
+    const current = path === activePage;
+    return (
+      <AdminLink
+        key={path}
+        href={page.path}
+        onClick={this.onClick}
+        aria-current={current ? 'page' : undefined}
+        className={`fc-nav-sub__item${nested ? ' fc-nav-sub__item--nested' : ''}${current ? ' fc-nav-sub__item--active' : ''}`}
+      >
+        <span className="fc-nav-sub__label">{page.sourcePlugin ? AdminNavText.panelLabel(page) : AdminNavText.menuLabel(page)}</span>
+        {this.renderTrailing(page.path, current, false)}
+      </AdminLink>
+    );
+  }
+
+  /**
+   * A sub-menu: one line whose name leads to its first page. On a desktop its pages stand in a second
+   * column beside the menu — kept while one of them is open, shown over the content while the pointer is
+   * on the line. In the phone's menu the same pages sit under the line while one of them is open.
+   */
+  private renderGroup(entry: { name: string; pages: any[] }, activePage: string): ReactNode {
+    const open = NavSectionPages.holds(entry, activePage);
+    const previewing = !open && this.previewGroup === entry.name;
+    const pages = (nested: boolean) => entry.pages.map((page) => this.renderPage(page, activePage, nested));
+    return (
+      <div key={`group:${entry.name}`} className={`fc-nav-sub__group${open ? ' fc-nav-sub__group--open' : ''}${previewing ? ' fc-nav-sub__group--preview' : ''}`}>
+        <AdminLink
+          href={entry.pages[0].path}
+          onClick={() => { this.closePreviewNow(); this.onClick?.(); }}
+          onMouseEnter={() => this.openPreview(entry.name)}
+          onMouseLeave={this.closePreview}
+          aria-expanded={open || previewing}
+          className={`fc-nav-sub__item fc-nav-sub__item--group${open ? ' fc-nav-sub__item--current' : ''}`}
+        >
+          <span className="fc-nav-sub__label">{entry.name}</span>
+          <span className="fc-nav-sub__chevron" aria-hidden="true"><FrameworkIcons.ChevronRight size={14} /></span>
+        </AdminLink>
+        {open ? <div className="fc-nav-sub__group-pages">{pages(true)}</div> : null}
+        {open || previewing ? (
+          <NavGroupPanel title={entry.name} preview={previewing} onPointerEnter={this.keepPreview} onPointerLeave={this.closePreview}>
+            {pages(false)}
+          </NavGroupPanel>
+        ) : null}
       </div>
     );
   }

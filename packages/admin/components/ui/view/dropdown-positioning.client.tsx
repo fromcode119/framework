@@ -28,6 +28,8 @@ export abstract class DropdownPositioning extends Reactor {
    * owns where it opens and what closes it, and `items` is ignored while this is set.
    */
   @prop declare panel?: ReactNode;
+  /** Rows of the caller's own under the items (actions others add to the menu); hidden while it holds nothing. */
+  @prop declare footer?: ReactNode;
   /**
    * Lets the trigger fill its container. The wrapper is `inline-block` by default — right for a
    * button in a toolbar, wrong for the sidebar account card, which shrank to the width of the name

@@ -93,7 +93,7 @@ export class CollectionListCard extends PureReactor {
                 // The label sits ABOVE the value: beside it, a long one ("Lifetime Value (LTV)") left the
                 // title a sliver of the card.
                 <div className="shrink-0 max-w-[45%] flex flex-col items-end text-end leading-tight">
-                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label max-w-full truncate text-[11px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
+                  {layout.valueLabels[layout.trailingField] ? <span className="fc-list-card__label max-w-full truncate text-[12px] font-medium text-slate-400 dark:text-slate-500">{layout.valueLabels[layout.trailingField]}</span> : null}
                   <span className="text-[14px] font-bold text-slate-900 dark:text-white whitespace-nowrap">{this.cell(layout.trailingField)}</span>
                 </div>
               ) : null}

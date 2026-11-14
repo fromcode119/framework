@@ -167,13 +167,6 @@
       "sectionShow": "दिखाएँ",
       "sectionHide": "छिपाएँ",
       "sectionFieldCount": "{{count}} फ़ील्ड",
-      "fieldLevel": {
-        "label": "दिखाए गए फ़ील्ड",
-        "everyday": "रोज़मर्रा",
-        "occasional": "कभी-कभार",
-        "technical": "तकनीकी",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "पूर्वावलोकन और परमालिंक",
       "permalinkHint": "स्वचालित रूप से बने slug को बदलने के लिए पाथ वाले हिस्से पर क्लिक करें।",
       "settings": "सेटिंग्स",
@@ -188,10 +181,10 @@
       "deletePermanently": "स्थायी रूप से हटाएँ",
       "relatedRecords": "संबंधित रिकॉर्ड",
       "relatedEmpty": "अभी तक किसी अन्य प्लगइन में इससे जुड़ा कोई रिकॉर्ड नहीं है।",
-      "recordPart": { "download": "डाउनलोड करें {{title}}", "person": "व्यक्ति" },
-      "viewMode": "रिकॉर्ड व्यू मोड",
-      "formView": "फ़ॉर्म व्यू",
-      "jsonView": "JSON व्यू",
+      "recordPart": {
+        "download": "डाउनलोड करें {{title}}",
+        "person": "व्यक्ति"
+      },
       "unsavedIn": "इनमें असहेजे बदलाव:",
       "noUnsaved": "कोई असहेजा बदलाव नहीं",
       "notSaved": "सहेजा नहीं गया: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "प्रतिलिपि का स्रोत लोड नहीं हो सका",
       "loadFailed": "प्रविष्टि लोड नहीं हो सकी",
       "slugTaken": "यह slug पहले से \"{{name}}\" द्वारा उपयोग में है।",
-      "unsavedChanges": "असहेजे बदलाव"
+      "unsavedChanges": "असहेजे बदलाव",
+      "editSection": "संपादित करें",
+      "notFilledIn": "नहीं भरा गया",
+      "nothingFilledIn": "अभी तक कुछ नहीं भरा गया",
+      "statusSection": "स्थिति",
+      "recordSection": "रिकॉर्ड",
+      "showJson": "JSON के रूप में दिखाएँ",
+      "showForm": "फ़ॉर्म के रूप में दिखाएँ",
+      "recordActions": "रिकॉर्ड की कार्रवाइयाँ",
+      "sectionActions": "अनुभाग की कार्रवाइयाँ",
+      "breadcrumb": "ब्रेडक्रंब",
+      "copyTitle": "कॉपी करें",
+      "copied": "कॉपी हो गया",
+      "more": "और",
+      "moreFields": "{{count}} फ़ील्ड",
+      "moreOneField": "{{count}} फ़ील्ड"
     },
     "notFound": {
       "title": "संग्रह नहीं मिला",
@@ -426,7 +434,6 @@
       "add": "मेनू आइटम जोड़ें"
     },
     "field": {
-      "enter": "{{label}} दर्ज करें...",
       "notSet": "सेट नहीं है",
       "auto": "स्वचालित",
       "localeFallback": "{{locale}} में खाली — साइट {{fallback}} मान दिखाती है",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "दर्ज नहीं है",
-      "auto": "स्वचालित रूप से दर्ज — यहाँ संपादित नहीं किया जा सकता।",
-      "copied": "कॉपी हो गया",
-      "copy": "JSON कॉपी करें",
       "filter": "कुंजी से फ़िल्टर करें…",
       "empty": "अभी तक कुछ दर्ज नहीं है।",
       "noMatch": "इस फ़िल्टर से कुछ मेल नहीं खाता।"
@@ -659,7 +663,11 @@
       "general": "सामान्य",
       "moreIn": "{{section}} में और",
       "thisSection": "यह अनुभाग",
-      "collapse": "साइडबार छोटा करें"
+      "collapse": "साइडबार छोटा करें",
+      "expand": "साइडबार फैलाएँ",
+      "search": "खोजें",
+      "searchShortcut": "⌘K",
+      "noMatches": "मेनू में “{{query}}” से कुछ मेल नहीं खाता"
     },
     "workspace": {
       "unavailable": "वर्कस्पेस उपलब्ध नहीं है",
@@ -925,7 +933,8 @@
         }
       },
       "open": "खोलें",
-      "loadFailed": "इस विजेट के आंकड़े लोड नहीं हो सके। फिर से प्रयास करने के लिए पेज रीलोड करें।"
+      "loadFailed": "इस विजेट के आंकड़े लोड नहीं हो सके। फिर से प्रयास करने के लिए पेज रीलोड करें।",
+      "quiet": "कुछ भी लंबित नहीं: {{list}}"
     }
   },
   "notFound": {

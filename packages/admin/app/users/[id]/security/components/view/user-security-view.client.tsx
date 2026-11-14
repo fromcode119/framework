@@ -40,7 +40,7 @@ export class UserSecurityView extends PureReactor {
         {model.isSelf ? <>
           <DeviceSessionsCard isDark={model.themeMode === ThemeMode.DARK} sessions={model.mySessions} sessionsLoading={model.sessionsLoading} onRevokeOtherSessions={model.revokeOtherSessions} onRevokeSession={model.revokeSession} />
           <UserApiTokensCard createdToken={model.createdToken} isDark={model.themeMode === ThemeMode.DARK} onCreateToken={model.createApiToken} onRevokeToken={model.revokeApiToken} setTokenDays={model.setTokenDays} setTokenName={model.setTokenName} tokenDays={model.tokenDays} tokenName={model.tokenName} tokens={model.myApiTokens} tokensLoading={model.tokensLoading} />
-        </> : <Card title={AdminI18n.t('users.selfServiceSecurityControls')} icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}><div className="text-xs font-bold uppercase tracking-tight text-slate-400">{AdminI18n.t('users.sessionDeviceControlsAndPersonal')}</div></Card>}
+        </> : <Card title={AdminI18n.t('users.selfServiceSecurityControls')} icon={<FrameworkIcons.Key size={18} className="text-indigo-500" />}><div className="text-xs font-medium tracking-tight text-slate-400">{AdminI18n.t('users.sessionDeviceControlsAndPersonal')}</div></Card>}
         {model.canReadLogs ? <AuthActivityCard activity={model.authActivity} activityLoading={model.authActivityLoading} email={String(model.user.email || '')} isDark={model.themeMode === ThemeMode.DARK} /> : null}
       </div>
     </div>

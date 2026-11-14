@@ -1,6 +1,7 @@
 import type { MouseEvent, ReactNode } from 'react';
 import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
 import { FrameworkIcons } from '@fromcode119/react';
+import { AdminClass } from '@/lib/admin-class';
 
 /**
  * The admin's tick box.
@@ -43,24 +44,25 @@ export class Checkbox extends PureReactor {
     this.onChange?.(!this.checked, event);
   }
 
-  private get boxClass(): string {
-    const active = this.checked || this.indeterminate;
-    return `w-4 h-4 rounded border-2 transition-all flex items-center justify-center flex-shrink-0 ${
-      active
-        ? 'bg-indigo-600 border-indigo-600 shadow-lg shadow-indigo-600/20'
-        : 'bg-white border-slate-300 dark:bg-slate-800 dark:border-slate-600'
-    } ${this.disabled ? 'opacity-50' : ''}`;
+  /** The look is `admin.css` (`fc-checkbox`): the console's ink when ticked, no glow. */
+  private renderBox(extra = ''): ReactNode {
+    const active = Boolean(this.checked || this.indeterminate);
+    return (
+      <span className={`${AdminClass.of('checkbox__box')} ${extra}`} data-checked={active ? 'true' : 'false'} data-disabled={this.disabled ? 'true' : 'false'}>
+        {this.mark}
+      </span>
+    );
   }
 
   private get mark(): ReactNode {
-    if (this.checked) return <FrameworkIcons.Check size={10} className="text-white" strokeWidth={3} />;
-    if (this.indeterminate) return <span className="w-2 h-0.5 bg-white rounded" />;
+    if (this.checked) return <FrameworkIcons.Check size={11} strokeWidth={3} />;
+    if (this.indeterminate) return <span className={AdminClass.of('checkbox__dash')} />;
     return null;
   }
 
   render(): ReactNode {
     if (this.presentational) {
-      return <span className={`${this.boxClass} ${this.className || ''}`}>{this.mark}</span>;
+      return this.renderBox(this.className || '');
     }
 
     return (
@@ -78,8 +80,8 @@ export class Checkbox extends PureReactor {
         // dropped about 3px the moment it was clicked. Middle alignment does not look at the baseline.
         className={`inline-flex items-center align-middle gap-2 p-1.5 -m-1.5 ${this.disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${this.className || ''}`}
       >
-        <span className={this.boxClass}>{this.mark}</span>
-        {this.label ? <span className="text-[11px] select-none">{this.label}</span> : null}
+        {this.renderBox()}
+        {this.label ? <span className={AdminClass.of('checkbox__label')}>{this.label}</span> : null}
       </button>
     );
   }

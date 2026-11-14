@@ -68,7 +68,7 @@ export class UsersColumns {
               </>
             )}
             {user.forcePasswordReset ? (
-              <span className="font-bold text-amber-500 text-[10px] tracking-tight uppercase">{AdminI18n.t('users.resetRequired')}</span>
+              <span className="font-medium text-amber-500 text-[12px] tracking-tight">{AdminI18n.t('users.resetRequired')}</span>
             ) : null}
           </div>
         )

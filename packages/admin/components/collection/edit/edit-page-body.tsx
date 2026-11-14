@@ -5,15 +5,15 @@ import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Slot } from '@fromcode119/react';
 import { FrameworkIcons } from '@fromcode119/react';
-import { EditPageSectionNav } from '@/components/collection/edit/view/edit-page-section-nav.client';
 import { EditPageMain } from '@/components/collection/edit/edit-page-main';
 import { CollectionRecordLinksDeclaration } from '@/components/collection/edit/collection-record-links-declaration';
 import { CollectionRecordLinksPanel } from '@/components/collection/edit/collection-record-links-panel.client';
 import { EditStickyColumn } from '@/components/collection/edit/view/edit-sticky-column.client';
 import { EditPageSidebar } from '@/components/collection/edit/edit-page-sidebar';
 import { RecordJsonView } from '@/components/collection/edit/view/record-json-view.client';
-import { EditViewModeRail } from '@/components/collection/edit/view/edit-view-mode-rail.client';
-import { EditFieldDepthSwitch } from '@/components/collection/edit/view/edit-field-depth-switch.client';
+import { RecordInfo } from '@/components/collection/record-info';
+import { SidebarVersions } from '@/components/collection/edit/view/sidebar-versions.client';
+import { CollectionEditRecordMore } from '@/components/collection/edit/view/collection-edit-record-more.client';
 import type { ICollectionEditPageViewModel } from '@/components/collection/edit/interfaces/collection-edit-page-view-model.interface';
 import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
@@ -22,15 +22,18 @@ export class EditPageBody extends PureReactor {
   @prop declare edit: ICollectionEditPageViewModel;
   @prop declare slug: string;
   @prop declare id: string;
-  /** Owned by the page view; switched from the view-mode rail this body renders. */
+  /** Owned by the page view; switched from the header's record menu. */
   @prop declare advancedView: boolean;
-  @prop declare setAdvancedView: (next: boolean) => void;
+  /** Where the record sits — the way back to its list; above both columns. Null on a new record. */
+  @prop declare crumbs: ReactNode;
+  /** The card naming the record; it heads the main column, so the side column starts level with it. */
+  @prop declare head: ReactNode;
 
   render(): ReactNode {
     const { edit, slug, id } = this;
     const {
       status, setStatus, formData, setFormData, isNew, handleSubmit, saving, collection, theme,
-      activeTab, setActiveTab, navSections, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
+      activeTab, setActiveTab, renderSidebar, resolvedSlug, pluginSettings, pluginSettingsSchema, fieldErrors,
       slugWarning, slugManuallyEdited, readOnlyOverrideGranted, handleInputChange, handlePatch,
       handleReadOnlyOverrideRequest, standardMainFieldSections, fullWidthMainFieldSections,
       showPermalink, hasDisablePermalink, hasSidebarFields, sidebarFieldSections, hasBuiltInSidebarContent,
@@ -41,10 +44,53 @@ export class EditPageBody extends PureReactor {
     // A new record can offer none of the correlation keys, so there is no question to ask yet.
     const recordLinks = isNew ? null : CollectionRecordLinksDeclaration.of(collection, formData, String(id));
     const navigate = (href: string) => edit.router?.push(href);
-    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key));
+    const history = !isNew && edit.openedSections.includes(CollectionEditRecordMore.HISTORY);
+    const slotProps = { formData, setFormData, isNew, handleSubmit, saving };
+    const sectionSlotBase = `admin.collection.${slug}.edit.section`;
+    // Side sections are matched by title: that is the name a collection's `recordLinks.parts` gives them.
+    const mainSectionKeys = [...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key))
+      .concat(renderSidebar ? sidebarFieldSections.map((section: any) => String(section.title)) : []);
+    // A part mapped to a section no field names is drawn as a side card of its own, so it is placed too.
+    if (recordLinks && renderSidebar) mainSectionKeys.push(...recordLinks.sectionsWithoutFields(mainSectionKeys).map((section) => section.title));
+
+    const sideBySide = renderSidebar;
+    const sidebar = renderSidebar ? (
+      <EditPageSidebar
+        slug={slug}
+        id={id}
+        isNew={isNew}
+        theme={theme}
+        collection={collection}
+        resolvedSlug={resolvedSlug}
+        formData={formData}
+        setFormData={setFormData}
+        handleSubmit={handleSubmit}
+        saving={saving}
+        pluginSettings={pluginSettings}
+        pluginSettingsSchema={pluginSettingsSchema}
+        fieldErrors={fieldErrors}
+        handleInputChange={handleInputChange}
+        handlePatch={handlePatch}
+        handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
+        readOnlyOverrideGranted={readOnlyOverrideGranted}
+        showPermalink={showPermalink}
+        hasDisablePermalink={hasDisablePermalink}
+        hasSidebarFields={hasSidebarFields}
+        sidebarFieldSections={sidebarFieldSections}
+        hasBuiltInSidebarContent={hasBuiltInSidebarContent}
+        saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+        recordTitle={edit.resolvedTitleValue}
+        clearSaveError={() => setStatus(null)}
+        recordLinks={recordLinks}
+        navigate={navigate}
+        sectionSlotBase={sectionSlotBase}
+        slotProps={slotProps}
+        fieldSectionKeys={[...standardMainFieldSections, ...fullWidthMainFieldSections].map((section: any) => String(section.key)).concat(sidebarFieldSections.map((section: any) => String(section.title)))}
+      />
+    ) : null;
 
     return (
-    <div className="flex-1 w-full px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
+    <div className="flex-1 w-full px-3 sm:px-6 py-4">
       {/*
         A real <form> element, purely so password inputs have a form ancestor: Chrome logs
         "[DOM] Password field is not contained in a form" for every one otherwise, and password
@@ -76,7 +122,7 @@ export class EditPageBody extends PureReactor {
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all ${
+                className={`px-6 py-2.5 rounded-xl text-[12px] font-medium transition-all ${
                   activeTab === tab.name
                     ? (theme === ThemeMode.DARK ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-indigo-600 shadow-sm')
                     : (theme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')
@@ -88,13 +134,11 @@ export class EditPageBody extends PureReactor {
           </div>
         )}
 
-        {/* The view-mode rail sits OUTSIDE the branch so it is in the same place in both modes — the
-            way back from JSON has to be where the way in was. */}
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-start">
-        <EditViewModeRail advancedView={this.advancedView} setAdvancedView={this.setAdvancedView} />
-        <div className="min-w-0 flex-1">
+        {this.crumbs}
+        <div className="min-w-0">
         {this.advancedView ? (
-          <div className="pb-32">
+          <div className="pb-32 space-y-6">
+            {this.head}
             <RecordJsonView
               formData={formData}
               setFormData={setFormData}
@@ -108,16 +152,14 @@ export class EditPageBody extends PureReactor {
           </div>
         ) : (
         <>
-        <EditFieldDepthSwitch depth={edit.fieldDepth} counts={edit.fieldLevelCounts} onChange={edit.setFieldDepth} />
-        <div className="flex items-start gap-3">
-          <EditPageSectionNav sections={navSections} theme={theme} />
           {/* The columns follow the width the form actually has, not the window's: with the menu and a
               plugin's sub-menu open, a 1280px window leaves the form about 700px, and a sidebar taking a
               third of that squeezed every field into a sliver. Below the width a sidebar fits beside the
               form, it moves under it. */}
           <div className="fc-edit-columns">
-          <div className={`fc-edit-columns__grid ${renderSidebar ? 'fc-edit-columns__grid--sidebar' : ''}`}>
-          <div className="min-w-0 space-y-6">
+          <div className={`fc-edit-columns__grid${sideBySide ? ' fc-edit-columns__grid--sidebar' : ''}`}>
+          <div className="fc-edit-column">
+            {this.head}
             <EditPageMain
               standardMainFieldSections={standardMainFieldSections}
               fullWidthMainFieldSections={fullWidthMainFieldSections}
@@ -137,58 +179,51 @@ export class EditPageBody extends PureReactor {
               handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
               recordLinks={recordLinks}
               navigate={navigate}
+              handleSubmit={() => handleSubmit()}
+              saveError={status?.type === NotificationType.ERROR ? status.message : ''}
+              recordTitle={edit.resolvedTitleValue}
+              clearSaveError={() => setStatus(null)}
+              sectionSlotBase={sectionSlotBase}
+              slotProps={slotProps}
             />
             {/* What is linked to this record and has no section of its own on this page. */}
             {recordLinks && (
               <CollectionRecordLinksPanel links={recordLinks} placedTerms={recordLinks.placedTerms(mainSectionKeys)} theme={theme} navigate={navigate} />
             )}
+            {/* When the record was made and changed, and its versions: opened from the record's ⋯ menu like
+                the held-back sections, under the record, which stays whole. */}
+            {history && (
+              <div id={CollectionEditRecordMore.anchorId(CollectionEditRecordMore.HISTORY)} className="space-y-4">
+                <RecordInfo id={id} createdAt={formData.createdAt} updatedAt={formData.updatedAt} />
+                <SidebarVersions
+                  revisions={revisions}
+                  revisionsLoading={revisionsLoading}
+                  activeVersionId={activeVersionId}
+                  setSelectedRevision={setSelectedRevision}
+                  setFormData={setFormData}
+                  setActiveVersionId={setActiveVersionId}
+                  loadMoreRevisions={loadMoreRevisions}
+                  hasMoreRevisions={hasMoreRevisions}
+                  formData={formData}
+                  fields={collection?.fields ?? []}
+                />
+              </div>
+            )}
             {!renderSidebar && <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>}
           </div>
 
-          {renderSidebar && (
+          {sideBySide && (
             <EditStickyColumn>
-            {/* What plugins add to the record sits BESIDE its own fields, and after them on a phone: above
-                the form it stood between the header and the record the operator opened the page to read. */}
+            {sidebar}
+            {/* What plugins add to the record comes after the record's own side cards: above them it pushed
+                the customer and the state off the first screen. */}
             <div className="fc-edit-top"><div className="fc-edit-top__grid"><Slot name={`admin.collection.${slug}.edit.top`} props={{ formData, setFormData, isNew, handleSubmit, saving }} /></div></div>
-            <EditPageSidebar
-              slug={slug}
-              id={id}
-              isNew={isNew}
-              theme={theme}
-              collection={collection}
-              resolvedSlug={resolvedSlug}
-              formData={formData}
-              setFormData={setFormData}
-              handleSubmit={handleSubmit}
-              saving={saving}
-              pluginSettings={pluginSettings}
-              pluginSettingsSchema={pluginSettingsSchema}
-              fieldErrors={fieldErrors}
-              handleInputChange={handleInputChange}
-              handlePatch={handlePatch}
-              handleReadOnlyOverrideRequest={handleReadOnlyOverrideRequest}
-              readOnlyOverrideGranted={readOnlyOverrideGranted}
-              showPermalink={showPermalink}
-              hasDisablePermalink={hasDisablePermalink}
-              hasSidebarFields={hasSidebarFields}
-              sidebarFieldSections={sidebarFieldSections}
-              hasBuiltInSidebarContent={hasBuiltInSidebarContent}
-              revisions={revisions}
-              revisionsLoading={revisionsLoading}
-              activeVersionId={activeVersionId}
-              setSelectedRevision={setSelectedRevision}
-              setActiveVersionId={setActiveVersionId}
-              loadMoreRevisions={loadMoreRevisions}
-              hasMoreRevisions={hasMoreRevisions}
-            />
             </EditStickyColumn>
           )}
           </div>
           </div>
-        </div>
         </>
         )}
-        </div>
         </div>
 
         <Slot name={`admin.collection.${slug}.edit.bottom`} props={{ formData, setFormData, isNew, handleSubmit, saving }} />

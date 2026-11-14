@@ -167,13 +167,6 @@
       "sectionShow": "Taispeáin",
       "sectionHide": "Folaigh",
       "sectionFieldCount": "{{count}} réimse",
-      "fieldLevel": {
-        "label": "Réimsí á dtaispeáint",
-        "everyday": "Laethúil",
-        "occasional": "Ó am go chéile",
-        "technical": "Teicniúil",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Réamhamharc agus Buan-nasc",
       "permalinkHint": "Cliceáil ar chuid den chosán chun an slug a gineadh go huathoibríoch a athrú.",
       "settings": "Socruithe",
@@ -188,10 +181,10 @@
       "deletePermanently": "Scrios go Buan",
       "relatedRecords": "Taifid ghaolmhara",
       "relatedEmpty": "Níl taifead nasctha leis an gceann seo ag aon bhreiseán eile fós.",
-      "recordPart": { "download": "Íoslódáil {{title}}", "person": "Duine" },
-      "viewMode": "Mód amhairc an taifid",
-      "formView": "Amharc foirme",
-      "jsonView": "Amharc JSON",
+      "recordPart": {
+        "download": "Íoslódáil {{title}}",
+        "person": "Duine"
+      },
       "unsavedIn": "Athruithe gan sábháil ar",
       "noUnsaved": "Gan athruithe gan sábháil",
       "notSaved": "Níor sábháladh: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Theip ar lódáil fhoinse an dúblaigh",
       "loadFailed": "Theip ar lódáil na hiontrála",
       "slugTaken": "Tá an slug seo in úsáid cheana ag \"{{name}}\".",
-      "unsavedChanges": "Athruithe gan sábháil"
+      "unsavedChanges": "Athruithe gan sábháil",
+      "editSection": "Cuir in eagar",
+      "notFilledIn": "Gan líonadh",
+      "nothingFilledIn": "Níl aon rud líonta fós",
+      "statusSection": "Stádas",
+      "recordSection": "Taifead",
+      "showJson": "Taispeáin mar JSON",
+      "showForm": "Taispeáin mar fhoirm",
+      "recordActions": "Gníomhartha an taifid",
+      "sectionActions": "Gníomhartha an rannáin",
+      "breadcrumb": "Conair nascleanúna",
+      "copyTitle": "Cóipeáil",
+      "copied": "Cóipeáilte",
+      "more": "Tuilleadh",
+      "moreFields": "{{count}} réimse",
+      "moreOneField": "{{count}} réimse"
     },
     "notFound": {
       "title": "Bailiúchán Gan Aimsiú",
@@ -426,7 +434,6 @@
       "add": "Cuir Mír Roghchláir Leis"
     },
     "field": {
-      "enter": "Cuir isteach {{label}}...",
       "notSet": "Gan socrú",
       "auto": "Uathoibríoch",
       "localeFallback": "Folamh i {{locale}} — taispeánann an suíomh an luach {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Níor taifeadadh",
-      "auto": "Taifeadta go huathoibríoch — ní féidir é a chur in eagar anseo.",
-      "copied": "Cóipeáilte",
-      "copy": "Cóipeáil JSON",
       "filter": "Scag de réir eochrach…",
       "empty": "Níl aon rud taifeadta fós.",
       "noMatch": "Níl aon rud a mheaitseálann an scagaire sin."
@@ -659,7 +663,11 @@
       "general": "Ginearálta",
       "moreIn": "Tuilleadh in {{section}}",
       "thisSection": "An Chuid Seo",
-      "collapse": "Laghdaigh an Barra Taoibh"
+      "collapse": "Laghdaigh an Barra Taoibh",
+      "expand": "Leathnaigh an barra taoibh",
+      "search": "Cuardaigh",
+      "searchShortcut": "⌘K",
+      "noMatches": "Níl aon rud sa roghchlár ag teacht le “{{query}}”"
     },
     "workspace": {
       "unavailable": "Níl an spás oibre ar fáil",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Oscail",
-      "loadFailed": "Níorbh fhéidir figiúirí an ghiuirléid seo a lódáil. Athlódáil an leathanach chun triail eile a bhaint as."
+      "loadFailed": "Níorbh fhéidir figiúirí an ghiuirléid seo a lódáil. Athlódáil an leathanach chun triail eile a bhaint as.",
+      "quiet": "Níl aon rud ag fanacht: {{list}}"
     }
   },
   "notFound": {

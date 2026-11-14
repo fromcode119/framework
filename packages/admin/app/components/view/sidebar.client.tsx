@@ -1,9 +1,10 @@
 import type { ReactElement } from 'react';
-import { Platform, prop, state, watch } from '@fromcode119/react-class-components';
-import { Slot } from '@fromcode119/react';
+import { SidebarNavPart } from '@/app/enums/sidebar-nav-part.enum';
+import { Platform, bound, prop, state } from '@fromcode119/react-class-components';
+import { FrameworkIcons, Slot } from '@fromcode119/react';
+import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminConstants } from '@/lib/constants/admin.constants';
-import { AdminServices } from '@/lib/admin-services';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { PlatformBrandingService } from '@/lib/platform-branding-service';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
@@ -12,30 +13,25 @@ import { SidebarNavGroups } from '@/app/sidebar-nav-groups';
 import { SidebarAccountCard } from '@/app/components/view/sidebar-account-card.client';
 import { SidebarNotifications } from '@/app/components/view/sidebar-notifications.client';
 import { SidebarMiniToggle } from '@/app/sidebar-mini-toggle';
-import { SidebarMobileSecondaryPanel } from '@/app/sidebar-mobile-secondary-panel';
+import { SidebarSearch } from '@/app/sidebar-search.client';
 
 export class Sidebar extends AdminComponent {
-  private static readonly adminServices = AdminServices.getInstance();
   @prop declare isOpen: boolean;
   @prop declare onClose: () => void;
   @prop declare isMini: boolean;
   @prop declare onMiniToggle: () => void;
   @prop declare onActiveContextChange: (contextId: string) => void;
-  @prop declare activeSecondaryAnchorPath: string;
-  @prop declare hoverPreviewPath: string;
-  @prop declare previewablePaths: string[];
-  @prop declare onHoverPreviewPathChange: (path: string) => void;
-  @prop declare inlineSecondaryContext: any;
-  @prop declare inlineSecondaryItems: any[];
-  @prop declare inlineSecondarySourceLabel: string;
-  @prop declare showInlineSecondary: boolean;
+  /** The panel entries of the section you are in, drawn under that section in the menu. */
+  @prop declare sectionPages: any[];
   @prop declare activePrimaryPathOverride: string;
   @prop declare activeChildPathOverride: string;
-  @prop declare onPreviewRegionEnter: () => void;
-  @prop declare onPreviewRegionLeave: () => void;
 
-  @state collapsedGroups: string[] = [];
-  @state isInitialized = false;
+  /** What the menu's search holds. */
+  @state query = '';
+
+  @bound private setQuery(query: string): void {
+    this.query = query;
+  }
 
   /** Previous `document.body.style.overflow` while the mobile scroll lock is engaged. */
   private lockedBodyOverflow: string | null = null;
@@ -43,23 +39,12 @@ export class Sidebar extends AdminComponent {
 
   componentDidMount(): void {
     this.syncBodyScrollLock();
-    const saved = Sidebar.adminServices.uiPreference.readCollapsedSidebarGroups();
-    if (saved.length) {
-      this.collapsedGroups = saved;
-    }
-    this.isInitialized = true;
     this.notifyActiveContext();
   }
 
   componentDidUpdate(prevProps: Record<string, unknown>): void {
     if (prevProps.isOpen !== this.isOpen) this.syncBodyScrollLock();
     this.notifyActiveContext();
-  }
-
-  /** Persist the collapsed groups whenever they change (after the initial localStorage read). */
-  @watch('collapsedGroups') persistCollapsedGroups(): void {
-    if (!this.isInitialized) return;
-    Sidebar.adminServices.uiPreference.writeCollapsedSidebarGroups(this.collapsedGroups);
   }
 
   componentWillUnmount(): void {
@@ -132,11 +117,6 @@ export class Sidebar extends AdminComponent {
     return this.authorizedMenuItems.find((item) => NavUtils.normalizePath(item.path) === path) || null;
   }
 
-  private get footerSettingsIsGroup(): boolean {
-    const item = this.footerSettingsItem;
-    return Boolean(item && 'isGroup' in item && item.isGroup);
-  }
-
   private get groupedMenuItems(): any[] {
     const path = this.footerSettingsPath;
     return this.authorizedMenuItems.filter((item) => NavUtils.normalizePath(item.path) !== path);
@@ -147,70 +127,49 @@ export class Sidebar extends AdminComponent {
   }
 
   render(): ReactElement {
-    const isMini = this.isMini;
-    const isOpen = this.isOpen;
-    const onClose = this.onClose;
-    const pathname = this.pathnameValue;
-    const { groupedMenu, groupLabels } = SidebarMenuService.buildGroupedMenu(this.groupedMenuItems);
-    const sortedGroups = SidebarMenuService.sortGroups(groupedMenu);
+    // Open is the phone's drawer, opened from the menu button: it is always the full menu, whatever the
+    // desktop's collapsed setting is.
+    const isMini = this.isMini && !this.isOpen;
+    const { groupedMenu } = SidebarMenuService.buildGroupedMenu(this.groupedMenuItems);
     const user = this.auth?.user;
-    const showMobileSecondaryPanel = Boolean(this.showInlineSecondary && !isMini && (this.inlineSecondaryItems || []).length > 0);
+    const navProps = {
+      isAdmin: !!user?.roles?.includes('admin'),
+      isMini,
+      pathname: this.pathnameValue,
+      groupedMenu,
+      sectionPages: this.sectionPages,
+      normalizedActivePrimaryPathOverride: this.normalizedActivePrimaryPathOverride,
+      normalizedActiveChildPathOverride: this.normalizedActiveChildPathOverride,
+      footerSettingsItem: this.footerSettingsItem,
+      onClose: this.onClose,
+      query: isMini ? '' : this.query,
+    };
 
     return (
-      <aside className={`fixed inset-y-0 start-0 z-[200] ${isMini ? 'w-14' : showMobileSecondaryPanel ? 'w-full max-w-full' : 'w-64'} transform ${isOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 bg-white border-slate-200 dark:bg-[#020617] dark:border-slate-800 ${showMobileSecondaryPanel ? 'border-e-0' : 'border-e'} flex ${showMobileSecondaryPanel ? 'flex-row lg:flex-col' : 'flex-col'} shadow-2xl lg:shadow-[12px_0_28px_-24px_rgba(15,23,42,0.28)] dark:lg:shadow-[12px_0_28px_-24px_rgba(2,6,23,0.9)] overflow-hidden group/sidebar`} onMouseEnter={this.onPreviewRegionEnter} onMouseLeave={this.onPreviewRegionLeave}>
-        <div className={`min-w-0 ${showMobileSecondaryPanel ? 'w-[45%] max-w-[18rem] min-w-[15rem] border-e border-slate-200 dark:border-slate-800' : 'w-full flex-1 min-h-0'} flex flex-col bg-white dark:bg-[#020617]`}>
-          <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={onClose} />
+      <aside className={`fc-nav fixed inset-y-0 start-0 z-[200] ${isMini ? 'w-14' : 'w-60'} transform ${this.isOpen ? 'translate-x-0' : '-translate-x-full rtl:translate-x-full lg:rtl:translate-x-0'} transition-all duration-300 lg:sticky lg:top-0 lg:h-screen lg:translate-x-0 flex flex-col overflow-hidden`}>
+        <SidebarBrandHeader isMini={isMini} platformName={this.platformName} onClose={this.onClose}
+          notifications={<SidebarNotifications isMini compact />} />
+        {!isMini && <SidebarSearch query={this.query} onQuery={this.setQuery} />}
 
-          <nav className={`flex-1 min-h-0 ${isMini ? 'px-2' : 'px-4'} py-2 overflow-y-auto overscroll-contain scrollbar-hide space-y-1 pb-4`}>
-          <div className="pt-2">
-             {!isMini && <Slot name="admin.layout.sidebar.top" />}
-          </div>
+        <nav className={`fc-nav__scroll flex-1 min-h-0 ${isMini ? 'px-2' : 'px-3'} overflow-y-auto overscroll-contain scrollbar-hide`}>
+          {!isMini && !this.query && <Slot name="admin.layout.sidebar.top" />}
+          <SidebarNavGroups {...navProps} part={SidebarNavPart.MAIN} beforeSettings={!isMini ? <Slot name="admin.layout.sidebar.bottom" /> : null} />
+        </nav>
 
-          <SidebarNavGroups
-            isAdmin={!!user?.roles?.includes('admin')}
-            isMini={isMini}
-            pathname={pathname}
-            sortedGroups={sortedGroups}
-            groupedMenu={groupedMenu}
-            groupLabels={groupLabels}
-            collapsedGroups={this.collapsedGroups}
-            plugins={this.pluginRuntime.plugins}
-            previewablePaths={this.previewablePaths}
-            hoverPreviewPath={this.hoverPreviewPath}
-            activeSecondaryAnchorPath={this.activeSecondaryAnchorPath}
-            normalizedActivePrimaryPathOverride={this.normalizedActivePrimaryPathOverride}
-            normalizedActiveChildPathOverride={this.normalizedActiveChildPathOverride}
-            footerSettingsItem={this.footerSettingsItem}
-            footerSettingsIsGroup={this.footerSettingsIsGroup}
-            onClose={onClose}
-            onHoverPreviewPathChange={this.onHoverPreviewPathChange}
-          />
-
-          <div className="mt-4">
-             {!isMini && <Slot name="admin.layout.sidebar.bottom" />}
-          </div>
-
-          </nav>
-
-          {/* The pinned foot of the sidebar. The collapse toggle used to be `absolute bottom-0` with an
-              opaque background, which silently covered anything else placed down here. */}
-          <div className="mt-auto shrink-0">
-            <SidebarNotifications isMini={isMini} />
-            <SidebarAccountCard isMini={isMini} />
-            <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} />
-          </div>
+        {/* The pinned foot of the sidebar: Settings, the account, and (collapsed) the way back out. */}
+        <div className={`fc-nav__pinned mt-auto shrink-0 ${isMini ? 'px-2' : 'px-3'}`}>
+          <SidebarNavGroups {...navProps} part={SidebarNavPart.FOOT} />
+          {isMini ? null : (
+            <button type="button" onClick={this.onMiniToggle} aria-label={AdminI18n.t('shell.nav.collapse')} title={AdminI18n.t('shell.nav.collapse')} className="fc-nav__collapse">
+              <FrameworkIcons.Left size={16} />
+            </button>
+          )}
         </div>
-
-        {showMobileSecondaryPanel && (
-          <SidebarMobileSecondaryPanel
-            inlineSecondaryContext={this.inlineSecondaryContext}
-            inlineSecondaryItems={this.inlineSecondaryItems}
-            inlineSecondarySourceLabel={this.inlineSecondarySourceLabel}
-            pathname={pathname}
-            onClose={onClose}
-          />
-        )}
-
+        <div className="shrink-0">
+          {isMini ? <SidebarNotifications isMini /> : null}
+          <SidebarAccountCard isMini={isMini} />
+          {isMini ? <SidebarMiniToggle isMini={isMini} onMiniToggle={this.onMiniToggle} /> : null}
+        </div>
       </aside>
     );
   }

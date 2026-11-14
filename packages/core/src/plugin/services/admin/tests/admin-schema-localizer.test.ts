@@ -118,7 +118,16 @@ describe('AdminSchemaLocalizer', () => {
     expect(out[0]).toEqual({ label: 'Dashboard', path: '/', pluginSlug: 'system', group: 'Core' });
     expect(out[1].label).toBe('Магазин');
     expect(out[1].group).toBe('Каталог');
+    expect(out[1].groupKey).toBe('e-commerce-catalog');
     expect(out[1].children.map((child: any) => child.label)).toEqual(['Преглед', 'Продукти', 'Reports']);
+  });
+
+  it('names a collection list in the menu by its collection key, though its path is lower-cased', () => {
+    const words = { ...dictionary, 'shop.admin.collections.deliverySlots.label': 'Часове за доставка' };
+    const out = new AdminSchemaLocalizer((plugin, key) => (words as Record<string, string>)[`${plugin}.${key}`] || '').menu([
+      { label: 'Delivery Slots', path: '/shop/deliveryslots', pluginSlug: 'shop', collectionKey: 'deliverySlots' },
+    ], () => 'Shop');
+    expect(out[0].label).toBe('Часове за доставка');
   });
 
   it('translates a plugin\'s name, description and category for the plugin list', () => {

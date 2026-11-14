@@ -167,13 +167,6 @@
       "sectionShow": "Show",
       "sectionHide": "Hide",
       "sectionFieldCount": "{{count}} fields",
-      "fieldLevel": {
-        "label": "Fields shown",
-        "everyday": "Everyday",
-        "occasional": "Occasional",
-        "technical": "Technical",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Preview & Permalink",
       "permalinkHint": "Click the path component to override the automatically generated slug.",
       "settings": "Settings",
@@ -188,10 +181,10 @@
       "deletePermanently": "Delete Permanently",
       "relatedRecords": "Linked to this",
       "relatedEmpty": "No other plugin holds a record linked to this one yet.",
-      "recordPart": { "download": "Download {{title}}", "person": "Person" },
-      "viewMode": "Record view mode",
-      "formView": "Form view",
-      "jsonView": "JSON view",
+      "recordPart": {
+        "download": "Download {{title}}",
+        "person": "Name"
+      },
       "unsavedIn": "Unsaved changes to",
       "noUnsaved": "No unsaved changes",
       "notSaved": "Not saved: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Failed to load duplicate source",
       "loadFailed": "Failed to load entry",
       "slugTaken": "This slug is already taken by \"{{name}}\".",
-      "unsavedChanges": "Unsaved changes"
+      "unsavedChanges": "Unsaved changes",
+      "editSection": "Edit",
+      "notFilledIn": "Not filled in",
+      "nothingFilledIn": "Nothing filled in yet",
+      "statusSection": "Status",
+      "recordSection": "Record",
+      "showJson": "Show as JSON",
+      "showForm": "Show as form",
+      "recordActions": "Record actions",
+      "sectionActions": "Section actions",
+      "breadcrumb": "Breadcrumb",
+      "copyTitle": "Copy",
+      "copied": "Copied",
+      "more": "More",
+      "moreFields": "{{count}} more fields",
+      "moreOneField": "{{count}} more field"
     },
     "notFound": {
       "title": "Collection Not Found",
@@ -426,7 +434,6 @@
       "add": "Add Menu Item"
     },
     "field": {
-      "enter": "Enter {{label}}...",
       "notSet": "Not set",
       "auto": "Auto",
       "localeFallback": "Empty in {{locale}} — the site shows the {{fallback}} value",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Not recorded",
-      "auto": "Recorded automatically — not editable here.",
-      "copied": "Copied",
-      "copy": "Copy JSON",
       "filter": "Filter by key…",
       "empty": "Nothing recorded yet.",
       "noMatch": "Nothing matches that filter."
@@ -659,7 +663,11 @@
       "general": "General",
       "moreIn": "More In {{section}}",
       "thisSection": "This Section",
-      "collapse": "Collapse Sidebar"
+      "collapse": "Collapse Sidebar",
+      "expand": "Expand Sidebar",
+      "search": "Search",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nothing in the menu matches “{{query}}”"
     },
     "workspace": {
       "unavailable": "Workspace unavailable",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Open",
-      "loadFailed": "This widget's figures could not be loaded. Reload the page to try again."
+      "loadFailed": "This widget's figures could not be loaded. Reload the page to try again.",
+      "quiet": "Nothing waiting: {{list}}"
     }
   },
   "notFound": {

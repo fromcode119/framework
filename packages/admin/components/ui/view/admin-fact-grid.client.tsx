@@ -1,65 +1,42 @@
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
 import type { IAdminFact } from '@/components/ui/interfaces/admin-fact.interface';
 
 /**
- * Values that were RECORDED rather than entered: shown on a recessed surface under a lock bar, each
- * as a small label above its value.
+ * Values that were RECORDED rather than entered, as the label / value rows a saved record's card lists
+ * its own fields in — the console's one way of reading a value, whoever wrote it. The look is
+ * `admin.css` (`fc-sro`, shared with StructuredReadOnlyField).
  *
- * This is the admin's one read-only treatment, and the whole signal is the contrast with an editable
- * field. Editable controls are white boxes you can click into; this is the inverse — grey, with no
- * input affordance anywhere in it and a bar that says so in words. Drop either half and the values
- * stop reading as recorded: rendering them as bordered boxes with labels, which is what the order's
- * customer-details panel did, makes them look like a form nobody filled in.
- *
- * The label sits ABOVE its value because a fixed left column has to be as wide as the longest label
- * on the record, and every short value then sits alone in whatever is left over.
+ * Where the values come from, when the caller says it (`lockLabel`: "Taken from the selected order"),
+ * is one quiet line under them — not a locked banner over them, which made every recorded block read
+ * as a warning.
  *
  * Nothing here invents a value: a fact with no value is the caller's to omit, and `note` is a short
  * line ABOUT the value (a zero weight, a stale reading), never a substitute for one.
  */
 export class AdminFactGrid extends PureReactor {
   @prop declare facts: IAdminFact[];
-  /** States who wrote these values. Without it the surface is just grey — say it, don't imply it. */
-  @prop declare lockLabel: string;
+  /** Where the values come from, in a few words; left out when the field's description already says it. */
+  @prop declare lockLabel?: string;
   @prop declare className?: string;
 
   private renderFact(fact: IAdminFact): ReactNode {
     return (
-      <div key={fact.key} className={`min-w-0 ${fact.wide ? 'col-span-full' : ''}`}>
-        <div className="mb-1 text-[10px] font-bold uppercase tracking-[0.09em] text-slate-400 dark:text-slate-500">
-          {fact.label}
-        </div>
-        <div className={`text-[13px] font-medium leading-snug ${fact.note ? 'text-amber-700 dark:text-amber-400' : 'text-slate-600 dark:text-slate-300'}`}>
+      <div key={fact.key} className="fc-sro__row">
+        <dt className="fc-sro__label">{fact.label}</dt>
+        <dd className="fc-sro__value">
           {fact.value}
-          {fact.note ? (
-            <div className="mt-0.5 text-[10px] font-normal text-amber-700 dark:text-amber-400">{fact.note}</div>
-          ) : null}
-        </div>
+          {fact.note ? <span className="fc-sro__note">{fact.note}</span> : null}
+        </dd>
       </div>
     );
   }
 
   render(): ReactNode {
     return (
-      <div className={this.className ?? ''}>
-        {/* No box of its own: inside a panel it was a frame within a frame, and its lock bar a second
-            heading. Who wrote the values is one quiet line above them. */}
-        <p className="mb-2.5 flex items-center gap-1.5 text-[11px] font-medium leading-relaxed text-slate-400 dark:text-slate-500">
-          <FrameworkIcons.Lock size={11} className="shrink-0" />
-          {this.lockLabel}
-        </p>
-        <div>
-          {/* `minmax(0,1fr)`, never a bare `1fr`: a bare track is `min-width:auto`, so one long
-              unbroken value — an address, a URL — widens its column and pushes the grid past the
-              panel. And `min(170px,100%)`, not a bare 170px: in a container narrower than one
-              column — an edit page's sidebar is ~140px inside its padding — a fixed 170px track ran
-              past the edge and the lock surface clipped every label to "LOW STOCK THRESHOL". */}
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-x-7 gap-y-3.5">
-            {this.facts.map((fact) => this.renderFact(fact))}
-          </div>
-        </div>
+      <div className={`fc-sro${this.className ? ` ${this.className}` : ''}`}>
+        <dl className="fc-sro__rows">{this.facts.map((fact) => this.renderFact(fact))}</dl>
+        {this.lockLabel ? <p className="fc-sro__source">{this.lockLabel}</p> : null}
       </div>
     );
   }

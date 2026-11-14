@@ -21,7 +21,7 @@ export class PendingReleaseList extends PureReactor {
 
     return (
       <div className="mt-4 space-y-3">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400">
+        <p className="text-[12px] font-medium text-slate-400">
           {this.releases.length === 1
             ? AdminI18n.t('settings.updates.releasesSinceOne')
             : AdminI18n.t('settings.updates.releasesSinceMany', { count: this.releases.length })}

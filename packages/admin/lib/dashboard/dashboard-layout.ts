@@ -20,10 +20,22 @@ export class DashboardLayout {
       .map((entry) => ({ key: entry.key, size: DashboardWidgetSize.resolve(entry.size).value }));
   }
 
+  /**
+   * A fresh dashboard, what to act on first: the console's own full-width notices (what needs you), then
+   * the plugins' lists and charts (orders to handle), then the console's other panels (where you left
+   * off), then the full-width rows of figures, which only count. Declaration order holds within each.
+   */
   static defaults(definitions: IDashboardWidgetDefinition[]): IDashboardLayoutEntry[] {
+    const rank = (definition: IDashboardWidgetDefinition): number => {
+      const large = definition.size === DashboardWidgetSize.LARGE;
+      if (definition.key.startsWith('system.')) return large ? 0 : 2;
+      return large ? 3 : 1;
+    };
     return definitions
       .filter((definition) => definition.defaultVisible)
-      .map((definition) => ({ key: definition.key, size: definition.size.value }));
+      .map((definition, index) => ({ definition, index }))
+      .sort((a, b) => rank(a.definition) - rank(b.definition) || a.index - b.index)
+      .map(({ definition }) => ({ key: definition.key, size: definition.size.value }));
   }
 
   /** Widgets the person can still add — everything offered that is not on their dashboard. */

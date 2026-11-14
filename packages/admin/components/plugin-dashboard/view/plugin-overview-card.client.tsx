@@ -36,7 +36,7 @@ export class PluginOverviewCard extends PureReactor {
             </div>
           )}
           {trend && (
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[12px] font-medium ${
               trend.isPositive
                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -48,7 +48,7 @@ export class PluginOverviewCard extends PureReactor {
         </div>
 
         {/* Title */}
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.1em] uppercase mb-1">
+        <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500 mb-1">
           {title}
         </p>
 
@@ -59,14 +59,14 @@ export class PluginOverviewCard extends PureReactor {
 
         {/* Subtitle */}
         {subtitle && (
-          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
+          <p className="text-[12px] text-slate-500 dark:text-slate-400 mt-2 font-medium">
             {subtitle}
           </p>
         )}
 
         {/* Trend Label */}
         {trend?.label && (
-          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 uppercase tracking-wide">
+          <p className="text-[12px] text-slate-400 dark:text-slate-500 mt-1.5">
             {trend.label}
           </p>
         )}

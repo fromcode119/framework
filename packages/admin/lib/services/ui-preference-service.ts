@@ -5,13 +5,9 @@ import { AppEnv } from '@/lib/env';
 
 export class UiPreferenceService extends BaseService {
   private static readonly THEME_KEY = 'theme';
-  private static readonly SIDEBAR_OPEN_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.SIDEBAR_OPEN;
   private static readonly SIDEBAR_MINI_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.SIDEBAR_MINI;
   private static readonly SECONDARY_SIDEBAR_DESKTOP_OPEN_KEY = 'admin.ui.secondary-sidebar.desktop-open';
   private static readonly ADVANCED_MODE_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.ADVANCED_MODE;
-  private static readonly COLLAPSED_GROUPS_KEY = ClientRuntimeConstants.ADMIN_UI.STORAGE_KEYS.COLLAPSED_GROUPS;
-
-  private static readonly EDIT_FIELD_DEPTH_KEY = 'admin.ui.edit.field-depth';
 
   private readonly browserState = new BrowserStateClient();
 
@@ -21,19 +17,6 @@ export class UiPreferenceService extends BaseService {
 
   writeThemePreference(theme: ThemeMode): void {
     this.browserState.writeLocalString(UiPreferenceService.THEME_KEY, String(theme || '').trim());
-  }
-
-  readSidebarOpen(): boolean | null {
-    const value = this.browserState.readLocalString(UiPreferenceService.SIDEBAR_OPEN_KEY);
-    if (!value) {
-      return null;
-    }
-
-    return value === 'true';
-  }
-
-  writeSidebarOpen(isOpen: boolean): void {
-    this.browserState.writeLocalString(UiPreferenceService.SIDEBAR_OPEN_KEY, String(Boolean(isOpen)));
   }
 
   readSidebarMini(): boolean {
@@ -69,46 +52,6 @@ export class UiPreferenceService extends BaseService {
 
   writeAdvancedMode(enabled: boolean): void {
     this.browserState.writeLocalString(UiPreferenceService.ADVANCED_MODE_KEY, String(Boolean(enabled)));
-  }
-
-  /** The depth the edit form opens at for this browser; '' until the operator has chosen one. */
-  readEditFieldDepth(): string {
-    return this.browserState.readLocalString(UiPreferenceService.EDIT_FIELD_DEPTH_KEY);
-  }
-
-  writeEditFieldDepth(depth: string): void {
-    this.browserState.writeLocalString(UiPreferenceService.EDIT_FIELD_DEPTH_KEY, String(depth || '').trim());
-  }
-
-  readCollapsedSidebarGroups(): string[] {
-    return this.browserState.readLocalJson<string[]>(UiPreferenceService.COLLAPSED_GROUPS_KEY, []);
-  }
-
-  writeCollapsedSidebarGroups(groups: string[]): void {
-    this.browserState.writeLocalJson(UiPreferenceService.COLLAPSED_GROUPS_KEY, Array.isArray(groups) ? groups : []);
-  }
-
-  readNavExpanded(persistenceKey: string): boolean | null {
-    const storageKey = this.buildNavExpandedStorageKey(persistenceKey);
-    if (!storageKey) {
-      return null;
-    }
-
-    const value = this.browserState.readLocalString(storageKey);
-    if (!value) {
-      return null;
-    }
-
-    return value === 'true';
-  }
-
-  writeNavExpanded(persistenceKey: string, expanded: boolean): void {
-    const storageKey = this.buildNavExpandedStorageKey(persistenceKey);
-    if (!storageKey) {
-      return;
-    }
-
-    this.browserState.writeLocalString(storageKey, String(Boolean(expanded)));
   }
 
   readCollectionColumns(pluginSlug: string, collectionSlug: string): string[] {
@@ -162,11 +105,6 @@ export class UiPreferenceService extends BaseService {
 
   private buildCollectionListHrefStorageKey(pluginSlug: string, collectionSlug: string): string {
     return `admin.ui.list-href_${String(pluginSlug || '').trim()}_${String(collectionSlug || '').trim()}`;
-  }
-
-  private buildNavExpandedStorageKey(persistenceKey: string): string {
-    const normalizedKey = String(persistenceKey || '').trim();
-    return normalizedKey ? `${ClientRuntimeConstants.ADMIN_UI.STORAGE_PREFIXES.NAV_EXPANDED}${normalizedKey}` : '';
   }
 
   private buildCollectionColumnsStorageKey(pluginSlug: string, collectionSlug: string): string {

@@ -41,7 +41,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-[10px] font-semibold uppercase tracking-tight text-slate-400">
+                <tr className="text-[12px] font-medium tracking-tight text-slate-400">
                   <th className="py-2 pe-4 text-start">{AdminI18n.t('users.permission')}</th>
                   <th className="py-2 text-start">{AdminI18n.t('users.grantedBy')}</th>
                 </tr>
@@ -66,7 +66,7 @@ export class PermissionCatalogGroupCard extends PureReactor {
             <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
               <table className="w-full text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] font-semibold uppercase tracking-tight text-slate-400 dark:bg-slate-900/60">
+                  <tr className="bg-slate-50 text-[12px] font-medium tracking-tight text-slate-400 dark:bg-slate-900/60">
                     <th className="px-3 py-2 text-start">{AdminI18n.t('users.collection')}</th>
                     {RolePermissionSelection.ACTIONS.map((action) => <th key={action} className="px-3 py-2 text-start">{action}</th>)}
                   </tr>

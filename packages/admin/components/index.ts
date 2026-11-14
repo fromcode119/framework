@@ -24,6 +24,9 @@ export * from '@/components/ui/view/admin-panel.client';
 export * from '@/components/ui/view/admin-fact-grid.client';
 export type { IAdminFact } from '@/components/ui/interfaces/admin-fact.interface';
 export * from '@/components/ui/view/badge.client';
+export * from '@/components/ui/view/menu-action.client';
+export * from '@/components/ui/view/state-badge.client';
+export * from '@/components/ui/view/copy-value.client';
 export * from '@/components/ui/view/stat-card.client';
 export * from '@/components/ui/view/data-table.client';
 // `DataTable.columns` is typed `Column<T>[]`, so a caller outside this package could not name the
@@ -32,6 +35,7 @@ export * from '@/components/ui/view/data-table.client';
 export { Column } from '@/components/ui/column';
 export * from '@/components/ui/view/confirm-dialog.client';
 export * from '@/components/ui/view/prompt-dialog.client';
+export * from '@/components/ui/view/edit-sheet.client';
 export * from '@/components/ui/date-time-picker/view/index.client';
 export { DateTimePickerGranularity } from '@/components/ui/date-time-picker/enums/date-time-picker-granularity.enum';
 // `HH:mm` arithmetic, exposed so a plugin comparing or ordering two picked times uses the SAME
@@ -51,7 +55,6 @@ export * from '@/components/view/notification-context.client';
 export * from '@/components/view/notification-context-store.client';
 export * from '@/components/view/use-notification.client';
 export * from '@/components/plugin-dashboard';
-export * from '@/components/collection/edit/view/edit-page-section-nav.client';
 // The full, schema-driven field renderer (relationship, array, date, media, custom admin.component, …).
 // Exposed so appearance shells edit records through the SAME renderer as the default admin instead of a
 // limited hand-rolled control set (which silently drops most fields).

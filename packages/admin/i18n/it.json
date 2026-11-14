@@ -167,13 +167,6 @@
       "sectionShow": "Mostra",
       "sectionHide": "Nascondi",
       "sectionFieldCount": "{{count}} campi",
-      "fieldLevel": {
-        "label": "Campi mostrati",
-        "everyday": "Quotidiani",
-        "occasional": "Occasionali",
-        "technical": "Tecnici",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Anteprima e permalink",
       "permalinkHint": "Fai clic sul componente del percorso per sostituire lo slug generato automaticamente.",
       "settings": "Impostazioni",
@@ -188,10 +181,10 @@
       "deletePermanently": "Elimina definitivamente",
       "relatedRecords": "Record correlati",
       "relatedEmpty": "Nessun altro plugin contiene ancora un record collegato a questo.",
-      "recordPart": { "download": "Scarica {{title}}", "person": "Persona" },
-      "viewMode": "Modalità di visualizzazione del record",
-      "formView": "Vista modulo",
-      "jsonView": "Vista JSON",
+      "recordPart": {
+        "download": "Scarica {{title}}",
+        "person": "Persona"
+      },
       "unsavedIn": "Modifiche non salvate in",
       "noUnsaved": "Nessuna modifica non salvata",
       "notSaved": "Non salvato: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Impossibile caricare l'origine del duplicato",
       "loadFailed": "Impossibile caricare la voce",
       "slugTaken": "Questo slug è già usato da \"{{name}}\".",
-      "unsavedChanges": "Modifiche non salvate"
+      "unsavedChanges": "Modifiche non salvate",
+      "editSection": "Modifica",
+      "notFilledIn": "Non compilato",
+      "nothingFilledIn": "Ancora nulla di compilato",
+      "statusSection": "Stato",
+      "recordSection": "Record",
+      "showJson": "Mostra come JSON",
+      "showForm": "Mostra come modulo",
+      "recordActions": "Azioni sul record",
+      "sectionActions": "Azioni sulla sezione",
+      "breadcrumb": "Percorso",
+      "copyTitle": "Copia",
+      "copied": "Copiato",
+      "more": "Altro",
+      "moreFields": "{{count}} campi",
+      "moreOneField": "{{count}} campo"
     },
     "notFound": {
       "title": "Collezione non trovata",
@@ -426,7 +434,6 @@
       "add": "Aggiungi voce di menu"
     },
     "field": {
-      "enter": "Inserisci {{label}}...",
       "notSet": "Non impostato",
       "auto": "Auto",
       "localeFallback": "Vuoto in {{locale}} — il sito mostra il valore {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Non registrato",
-      "auto": "Registrato automaticamente: non modificabile qui.",
-      "copied": "Copiato",
-      "copy": "Copia JSON",
       "filter": "Filtra per chiave…",
       "empty": "Ancora nessun dato registrato.",
       "noMatch": "Nessun risultato per questo filtro."
@@ -659,7 +663,11 @@
       "general": "Generale",
       "moreIn": "Altro in {{section}}",
       "thisSection": "Questa sezione",
-      "collapse": "Comprimi barra laterale"
+      "collapse": "Comprimi barra laterale",
+      "expand": "Espandi barra laterale",
+      "search": "Cerca",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nessuna voce del menu corrisponde a «{{query}}»"
     },
     "workspace": {
       "unavailable": "Workspace non disponibile",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Apri",
-      "loadFailed": "Impossibile caricare i dati di questo widget. Ricarichi la pagina per riprovare."
+      "loadFailed": "Impossibile caricare i dati di questo widget. Ricarichi la pagina per riprovare.",
+      "quiet": "Niente in sospeso: {{list}}"
     }
   },
   "notFound": {

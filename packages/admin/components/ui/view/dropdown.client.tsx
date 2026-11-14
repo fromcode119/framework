@@ -3,7 +3,7 @@ import { DropdownDirection } from '@/components/ui/enums/dropdown-direction.enum
 import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 import { ref, watch } from '@fromcode119/react-class-components';
-import { RootFramework } from '@fromcode119/react';
+import { FrameworkIcons, RootFramework } from '@fromcode119/react';
 import { DropdownPositioning } from '@/components/ui/view/dropdown-positioning.client';
 
 /**
@@ -54,7 +54,7 @@ export class Dropdown extends DropdownPositioning {
   }
 
   render(): ReactNode {
-    const { trigger, items, header, panel } = this;
+    const { trigger, items, header, panel, footer } = this;
     const { isOpen, coords } = this;
 
     return (
@@ -163,18 +163,13 @@ export class Dropdown extends DropdownPositioning {
                         ) : null}
                       </span>
                       {/*
-                        * A radio, not a dot: these rows are one choice out of a set, and the ring
-                        * says so even on the row that is not chosen.
+                        * The chosen row of a set carries a tick, as a menu does; the others keep an
+                        * empty slot of the same width so the labels stay in one column. A radio ring
+                        * on every row made a menu look like a form.
                         */}
                       {item.selectable ? (
-                        <span
-                          className={`ms-2 flex h-4 w-4 shrink-0 items-center justify-center rounded-full border ${
-                            item.selected
-                              ? 'border-indigo-500 bg-indigo-500'
-                              : 'border-slate-300 dark:border-slate-600'
-                          }`}
-                        >
-                          {item.selected ? <span className="h-1.5 w-1.5 rounded-full bg-white" /> : null}
+                        <span className="fc-dropdown-choice" data-selected={item.selected ? 'true' : 'false'}>
+                          {item.selected ? <FrameworkIcons.Check size={15} /> : null}
                         </span>
                       ) : null}
                     </button>
@@ -185,6 +180,7 @@ export class Dropdown extends DropdownPositioning {
                 </Fragment>
               ))}
             </div>}
+            {footer ? <div className="fc-dropdown-footer">{footer}</div> : null}
           </div>
         </RootFramework>
       )}

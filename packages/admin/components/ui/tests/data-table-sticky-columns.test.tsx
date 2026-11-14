@@ -107,7 +107,7 @@ describe('DataTable — pinned actions', () => {
     const actionsHeader = cells[cells.length - 1];
     expect(actionsHeader.textContent).toContain('Actions');
     expect(actionsHeader.className).toContain('sticky');
-    expect(actionsHeader.className).toContain('right-0');
+    expect(actionsHeader.className).toContain('end-0');
   });
 
   it('pins the actions cell on every row, not just the header', () => {
@@ -129,6 +129,6 @@ describe('DataTable — pinned actions', () => {
     renderTable({ actions, stickyColumnIds: ['total'] });
     const cells = Array.from(document.querySelectorAll('thead th'));
     expect(cells[0].className).toContain('sticky');
-    expect(cells[cells.length - 1].className).toContain('right-0');
+    expect(cells[cells.length - 1].className).toContain('end-0');
   });
 });

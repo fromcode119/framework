@@ -167,13 +167,6 @@
       "sectionShow": "Tampilkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} kolom",
-      "fieldLevel": {
-        "label": "Kolom yang ditampilkan",
-        "everyday": "Sehari-hari",
-        "occasional": "Sesekali",
-        "technical": "Teknis",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pratinjau & Permalink",
       "permalinkHint": "Klik komponen jalur untuk mengganti slug yang dibuat otomatis.",
       "settings": "Pengaturan",
@@ -188,10 +181,10 @@
       "deletePermanently": "Hapus Permanen",
       "relatedRecords": "Rekaman terkait",
       "relatedEmpty": "Belum ada plugin lain yang memiliki rekaman yang tertaut ke rekaman ini.",
-      "recordPart": { "download": "Unduh {{title}}", "person": "Orang" },
-      "viewMode": "Mode tampilan rekaman",
-      "formView": "Tampilan formulir",
-      "jsonView": "Tampilan JSON",
+      "recordPart": {
+        "download": "Unduh {{title}}",
+        "person": "Orang"
+      },
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tidak ada perubahan yang belum disimpan",
       "notSaved": "Tidak tersimpan: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Gagal memuat sumber duplikat",
       "loadFailed": "Gagal memuat entri",
       "slugTaken": "Slug ini sudah digunakan oleh \"{{name}}\".",
-      "unsavedChanges": "Perubahan belum disimpan"
+      "unsavedChanges": "Perubahan belum disimpan",
+      "editSection": "Edit",
+      "notFilledIn": "Belum diisi",
+      "nothingFilledIn": "Belum ada yang diisi",
+      "statusSection": "Status",
+      "recordSection": "Catatan",
+      "showJson": "Tampilkan sebagai JSON",
+      "showForm": "Tampilkan sebagai formulir",
+      "recordActions": "Tindakan catatan",
+      "sectionActions": "Tindakan bagian",
+      "breadcrumb": "Jejak navigasi",
+      "copyTitle": "Salin",
+      "copied": "Disalin",
+      "more": "Lainnya",
+      "moreFields": "{{count}} kolom",
+      "moreOneField": "{{count}} kolom"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemukan",
@@ -426,7 +434,6 @@
       "add": "Tambah Item Menu"
     },
     "field": {
-      "enter": "Masukkan {{label}}...",
       "notSet": "Belum diatur",
       "auto": "Otomatis",
       "localeFallback": "Kosong di {{locale}} — situs menampilkan nilai {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Tidak tercatat",
-      "auto": "Dicatat otomatis — tidak dapat diedit di sini.",
-      "copied": "Disalin",
-      "copy": "Salin JSON",
       "filter": "Filter berdasarkan kunci…",
       "empty": "Belum ada yang tercatat.",
       "noMatch": "Tidak ada yang cocok dengan filter tersebut."
@@ -659,7 +663,11 @@
       "general": "Umum",
       "moreIn": "Lainnya di {{section}}",
       "thisSection": "Bagian Ini",
-      "collapse": "Ciutkan Sidebar"
+      "collapse": "Ciutkan Sidebar",
+      "expand": "Bentangkan bilah sisi",
+      "search": "Cari",
+      "searchShortcut": "⌘K",
+      "noMatches": "Tidak ada di menu yang cocok dengan “{{query}}”"
     },
     "workspace": {
       "unavailable": "Workspace tidak tersedia",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Buka",
-      "loadFailed": "Angka widget ini tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi."
+      "loadFailed": "Angka widget ini tidak dapat dimuat. Muat ulang halaman untuk mencoba lagi.",
+      "quiet": "Tidak ada yang menunggu: {{list}}"
     }
   },
   "notFound": {

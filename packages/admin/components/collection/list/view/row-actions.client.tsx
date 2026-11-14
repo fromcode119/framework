@@ -14,9 +14,9 @@ import { AdminCollectionUtils } from '@/lib/collection-utils';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * A record's actions, each in exactly one place. In the table: open-on-site, duplicate, quick edit and
- * edit as icons, a plugin's own row actions beside them, and archive and delete in the ⋯ menu. On a
- * card, quick edit and edit stay in view and the menu also carries open-on-site and duplicate.
+ * A record's actions, each in exactly one place: a plugin's own row actions ("Payment received") in view,
+ * everything else — quick edit, open on site, duplicate, archive, delete — in the ⋯ menu. In the table the
+ * row and its title open the record, so there is no separate edit icon; a card keeps one, as its only link.
  */
 export class CollectionListRowActions extends PureReactor {
   /** JSX props — the declared @prop fields, so call sites are type-checked without a <Props> generic. */
@@ -33,7 +33,7 @@ export class CollectionListRowActions extends PureReactor {
   @prop declare permalinkStructure?: string;
   @prop declare pluginSettings: Record<string, any>;
   @prop declare quickEditExpandedId: string | null;
-  @prop declare onQuickEditOpen: (row: any, event: MouseEvent) => void;
+  @prop declare onQuickEditOpen: (row: any, event?: MouseEvent) => void;
   @prop declare onDelete: (id: string) => void;
   @prop declare onArchive?: (id: string, archiving: boolean) => void;
   /** Goes to an admin path, as a link would — the menu's items are buttons, not links. */
@@ -65,10 +65,12 @@ export class CollectionListRowActions extends PureReactor {
   private get menuItems(): IDropdownItem[] {
     const items: IDropdownItem[] = [];
     const previewUrl = this.previewUrl;
-    // On a card these two have no icon of their own, so the menu carries them; in the table they are
-    // icons beside edit, and listing them again here showed every action twice.
-    if (this.compact && previewUrl) items.push({ label: AdminI18n.t('collection.list.openOnSite'), icon: <FrameworkIcons.ExternalLink size={15} />, onClick: () => window.open(previewUrl, '_blank', 'noopener') });
-    if (this.compact && this.access.canCreate) items.push({ label: AdminI18n.t('collection.list.duplicate'), icon: <Copy size={15} />, onClick: () => this.onNavigate(this.duplicateHref) });
+    if (this.access.canUpdate && this.quickEditable) {
+      const expanded = this.quickEditExpandedId === this.rowId;
+      items.push({ label: AdminI18n.t(expanded ? 'collection.list.quickEditClose' : 'collection.list.quickEditOpen'), icon: <SlidersHorizontal size={15} />, onClick: () => this.onQuickEditOpen(this.row) });
+    }
+    if (previewUrl) items.push({ label: AdminI18n.t('collection.list.openOnSite'), icon: <FrameworkIcons.ExternalLink size={15} />, onClick: () => window.open(previewUrl, '_blank', 'noopener') });
+    if (this.access.canCreate) items.push({ label: AdminI18n.t('collection.list.duplicate'), icon: <Copy size={15} />, onClick: () => this.onNavigate(this.duplicateHref) });
     if (this.access.canUpdate && this.onArchive) {
       const archived = CollectionArchive.isArchived(this.row);
       items.push({
@@ -87,36 +89,13 @@ export class CollectionListRowActions extends PureReactor {
     event.stopPropagation();
   }
 
-  @bound private openQuickEdit(event: MouseEvent): void {
-    this.onQuickEditOpen(this.row, event);
-  }
-
-  private renderWideOnly(): ReactNode {
-    const previewUrl = this.previewUrl;
-    return (
-      <>
-        {previewUrl ? (
-          <a href={previewUrl} target="_blank" rel="noopener" onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.openOnSite')} aria-label={AdminI18n.t('collection.list.openOnSite')}>
-            <FrameworkIcons.ExternalLink size={16} />
-          </a>
-        ) : null}
-        {this.access.canCreate ? (
-          <AdminLink href={this.duplicateHref} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.duplicate')} aria-label={AdminI18n.t('collection.list.duplicate')}>
-            <Copy size={16} />
-          </AdminLink>
-        ) : null}
-      </>
-    );
-  }
-
   render(): ReactNode {
     const { row, collection, pluginSlug, resolvedSlug, slotSlug, access } = this;
-    const expanded = this.quickEditExpandedId === this.rowId;
     const menuItems = this.menuItems;
     return (
       // Two groups that each stay on one line: on a narrow card the plugin's actions and the built-in
       // icons wrap as wholes, instead of the last icon dropping alone or the row running off the card.
-      <div className={`ms-auto flex items-center justify-end gap-x-0.5 gap-y-1.5 whitespace-nowrap ${this.compact ? 'flex-wrap' : 'flex-nowrap'}`} onClick={this.stop}>
+      <div className={`fc-row-actions ms-auto flex items-center justify-end gap-x-0.5 gap-y-1.5 whitespace-nowrap ${this.compact ? 'flex-wrap' : 'flex-nowrap'}`} onClick={this.stop}>
         {/* A plugin's own row actions — "Payment received" on an order — on a card as in the table: on a
             phone they are the fastest way to act on a record, and leaving them out hid them entirely. */}
         <span className="inline-flex flex-nowrap items-center gap-0.5 empty:hidden">
@@ -124,22 +103,11 @@ export class CollectionListRowActions extends PureReactor {
           <Slot name="admin.collection.list.table.actions" include={access.allowsPluginAction} props={{ row, collection, pluginSlug, resolvedSlug, compact: Boolean(this.compact), refresh: this.onRowChanged }} />
         </span>
         <span className="inline-flex flex-nowrap items-center gap-0.5">
-        {!this.compact ? this.renderWideOnly() : null}
-        {access.canUpdate && this.quickEditable ? (
-          <button
-            type="button"
-            onClick={this.openQuickEdit}
-            aria-expanded={expanded}
-            className={expanded ? 'inline-flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 dark:bg-indigo-500/15 dark:text-indigo-300' : CollectionListRowActions.ICON}
-            title={AdminI18n.t(expanded ? 'collection.list.quickEditClose' : 'collection.list.quickEditOpen')}
-            aria-label={AdminI18n.t(expanded ? 'collection.list.quickEditClose' : 'collection.list.quickEditOpen')}
-          >
-            <SlidersHorizontal size={16} />
-          </button>
+        {this.compact ? (
+          <AdminLink href={`/${pluginSlug}/${this.slug}/${row.id}`} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.edit')} aria-label={AdminI18n.t('collection.list.edit')}>
+            <FrameworkIcons.Edit size={16} />
+          </AdminLink>
         ) : null}
-        <AdminLink href={`/${pluginSlug}/${this.slug}/${row.id}`} onClick={this.stop} className={CollectionListRowActions.ICON} title={AdminI18n.t('collection.list.edit')} aria-label={AdminI18n.t('collection.list.edit')}>
-          <FrameworkIcons.Edit size={16} />
-        </AdminLink>
         {menuItems.length ? (
           <Dropdown
             align={HorizontalAlign.RIGHT}

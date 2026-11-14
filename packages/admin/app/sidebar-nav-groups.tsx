@@ -1,8 +1,7 @@
-import { Fragment } from 'react';
 import type { ReactNode } from 'react';
 
-import { PureReactor, prop, bound } from '@fromcode119/react-class-components';
-import { FrameworkIcons } from '@fromcode119/react';
+import { SidebarNavPart } from '@/app/enums/sidebar-nav-part.enum';
+import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { Icon } from '@/components/view/icon.client';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { NavUtils } from '@/lib/nav-utils';
@@ -10,185 +9,103 @@ import { NavItem } from '@/app/components/view/sidebar-nav-item.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 import { SidebarMenuService } from '@/app/services/sidebar-menu-service';
+
+/**
+ * The console's menu: one column of sections with no group headings, and Settings at its foot.
+ *
+ * A section's pages — its own menu entries and the panel entries of the page you are on — are drawn
+ * indented under it only while you are inside it. The console's upkeep (people, extensions, activity,
+ * the platform's tools) is listed under Settings the same way, so the column above it is the work a
+ * site is run from. Nothing is hidden: every page is one click from the section that holds it.
+ */
 export class SidebarNavGroups extends PureReactor {
   @prop declare isAdmin?: boolean;
   @prop declare isMini?: boolean;
   @prop declare pathname: string;
-  @prop declare sortedGroups: string[];
   @prop declare groupedMenu: Record<string, any[]>;
-  @prop declare groupLabels: Record<string, string>;
-  @prop declare collapsedGroups: string[];
-  @prop declare plugins: any[];
-  @prop declare previewablePaths?: string[];
-  @prop declare hoverPreviewPath?: string;
-  @prop declare activeSecondaryAnchorPath?: string;
+  /** The panel entries of the section you are in; drawn under it. */
+  @prop declare sectionPages?: any[];
   @prop declare normalizedActivePrimaryPathOverride: string;
   @prop declare normalizedActiveChildPathOverride: string;
   @prop declare footerSettingsItem: any;
-  @prop declare footerSettingsIsGroup: boolean;
   @prop declare onClose?: () => void;
-  @prop declare onHoverPreviewPathChange?: (path: string) => void;
+  /** Rendered between the sections and Settings (the `admin.layout.sidebar.bottom` slot). */
+  @prop declare beforeSettings?: ReactNode;
+  /** What the menu's search holds; while it holds anything the menu is the pages whose names match. */
+  @prop declare query?: string;
+  /** The sections (scrolling) or Settings (pinned at the sidebar's foot). */
+  @prop declare part?: SidebarNavPart;
 
-  /** The pages plugins filed under System, drawn in the System section below. */
-  private get systemPluginItems(): any[] {
-    return SidebarMenuService.systemPluginItems(this.groupedMenu, this.footerSettingsItem?.path ?? '');
+  /** Activity is the console's own page for administrators; it is added when the metadata did not list it. */
+  private withActivity(items: any[]): any[] {
+    const activity = NavUtils.normalizePath(AdminConstants.ROUTES.ACTIVITY);
+    if (!this.isAdmin || items.some((item) => NavUtils.normalizePath(item.path) === activity)) return items;
+    return [...items, { label: AdminI18n.t('nav.items.activity'), path: AdminConstants.ROUTES.ACTIVITY, icon: 'Activity', pluginSlug: 'system' }];
   }
 
-  @bound handleHoverPreviewStart(path: string): void {
-    this.onHoverPreviewPathChange?.(path);
+  private isActive(item: any, siblings: any[]): boolean {
+    const override = this.normalizedActivePrimaryPathOverride;
+    if (override) return NavUtils.normalizePath(item.path) === override;
+    return NavUtils.isPathActive(this.pathname, item.path, siblings.map((entry) => entry.path));
   }
 
-  @bound handleHoverPreviewEnd(): void {
-    this.onHoverPreviewPathChange?.('');
+  private renderItem(item: any, siblings: any[], children?: any[]): ReactNode {
+    const active = this.isActive(item, siblings);
+    return (
+      <NavItem
+        key={`${item.pluginSlug || 'system'}-${item.path}`}
+        icon={<Icon name={item.icon || 'Package'} size={18} />}
+        label={AdminNavText.menuLabel(item)}
+        href={item.path}
+        active={active}
+        onClick={this.onClose}
+        children={children ?? item.children}
+        subItems={active ? this.sectionPages : undefined}
+        isMini={this.isMini}
+        pluginSlug={item.pluginSlug}
+        activePathOverride={this.normalizedActiveChildPathOverride || this.normalizedActivePrimaryPathOverride}
+      />
+    );
+  }
+
+  /** Every page the menu reaches, sections and their pages alike, whose name holds the query. */
+  private renderMatches(all: any[], query: string): ReactNode {
+    const needle = query.trim().toLocaleLowerCase();
+    const seen = new Set<string>();
+    const pages = all.flatMap((item) => [item, ...(item.children || []).map((child: any) => ({ ...child, icon: child.icon || item.icon, pluginSlug: child.pluginSlug || item.pluginSlug }))])
+      .filter((item) => {
+        const path = NavUtils.normalizePath(item.path);
+        if (!path || seen.has(path) || !AdminNavText.menuLabel(item).toLocaleLowerCase().includes(needle)) return false;
+        seen.add(path);
+        return true;
+      });
+    if (!pages.length) return <p className="fc-nav-empty">{AdminI18n.t('shell.nav.noMatches', { query: query.trim() })}</p>;
+    return <div className="fc-nav-list">{pages.map((item) => this.renderItem({ ...item, children: [] }, pages, []))}</div>;
   }
 
   render(): ReactNode {
-    const {
-      isAdmin,
-      isMini,
-      pathname,
-      sortedGroups,
-      groupedMenu,
-      groupLabels,
-      collapsedGroups,
-      plugins,
-      previewablePaths,
-      hoverPreviewPath,
-      activeSecondaryAnchorPath,
-      normalizedActivePrimaryPathOverride,
-      normalizedActiveChildPathOverride,
-      footerSettingsItem,
-      footerSettingsIsGroup,
-      onClose,
-    } = this;
+    const settingsItem = this.footerSettingsItem;
+    const { main, settingsArea } = SidebarMenuService.sections(this.groupedMenu, settingsItem?.path ?? '');
+    const upkeep = this.withActivity(settingsArea);
+    const settingsChildren = [...(settingsItem?.children || []), ...upkeep];
 
+    if (this.part === SidebarNavPart.FOOT) {
+      if (this.query?.trim()) return null;
+      return (
+        <div className="fc-nav-foot">
+          {settingsItem
+            ? this.renderItem(settingsItem, [settingsItem], settingsChildren)
+            : upkeep.map((item) => this.renderItem(item, upkeep))}
+        </div>
+      );
+    }
+    if (this.query?.trim()) {
+      return this.renderMatches([...main, ...(settingsItem ? [{ ...settingsItem, children: settingsChildren }] : upkeep)], this.query);
+    }
     return (
       <>
-        {sortedGroups.map((group, groupIdx) => {
-          const items = groupedMenu[group] || [];
-          const displayGroup = AdminNavText.group(groupLabels[group] || NavUtils.getMenuGroupMeta(group).label);
-          const isCollapsed = collapsedGroups.includes(group);
-
-          // If a group has only one item and that item is a group wrapper (dropdown),
-          // we should skip the redundant section header.
-          const isRedundantHeader = !isMini && items.length === 1 && items[0].isGroup && items[0].label.toLowerCase() === group;
-
-          return (
-            <Fragment key={group}>
-              {!isMini && !isRedundantHeader && (
-                <div className={`px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1 ${groupIdx === 0 ? 'mt-2' : 'mt-4'}`}>
-                  {displayGroup}
-                </div>
-              )}
-              {/* A full-width rule, tight against the group it separates: the old one was a 32px
-                  hairline floating in 32px of padding, which read as empty space rather than a break. */}
-              {isMini && groupIdx > 0 && (
-                <div className="my-2 h-px bg-slate-200 dark:bg-slate-800" />
-              )}
-              {(!isCollapsed || isMini) && (
-                items.map((item, idx) => (
-                  <NavItem
-                    key={`${item.pluginSlug || 'system'}-${item.path}-${idx}`}
-                    icon={<Icon name={item.icon || 'Package'} size={18} />}
-                    label={AdminNavText.menuLabel(item)}
-                    href={item.path}
-                    persistenceKey={`${item.pluginSlug || 'system'}:${item.path}`}
-                    active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(item.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, item.path, items.map((entry) => entry.path))}
-                    isAnchoredToSecondary={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                    onClick={onClose}
-                    children={item.children}
-                    isMini={isMini}
-                    isGroupHeader={item.isGroup}
-                    version={plugins.find(p => p.slug === item.pluginSlug)?.version}
-                    pluginSlug={item.pluginSlug}
-                    canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
-                    showHoverPreview={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(item.path))}
-                    preserveActiveAnchor={NavUtils.normalizePath(item.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                    onHoverPreviewStart={this.handleHoverPreviewStart}
-                    onHoverPreviewEnd={this.handleHoverPreviewEnd}
-                    activePathOverride={normalizedActiveChildPathOverride || normalizedActivePrimaryPathOverride}
-                  />
-                ))
-              )}
-            </Fragment>
-          );
-        })}
-
-        {/* If Core group doesn't exist for some reason, ensure basic nav is there — ADMINS ONLY.
-            For scoped-staff users the core group is intentionally absent (Dashboard/Plugins are
-            admin-only), so this fallback must not re-inject those system links for them. */}
-        {isAdmin && !groupedMenu['core'] && (
-          <>
-            {!isMini && (
-              <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1.5 mt-4">
-                {AdminI18n.t('nav.groups.core')}
-              </div>
-            )}
-            {(!collapsedGroups.includes('core-fallback') || isMini) && (
-              <>
-                <NavItem icon={<Icon name="Dashboard" size={18} />} label={AdminI18n.t('nav.items.dashboard')} href={AdminConstants.ROUTES.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.ROOT}`} active={pathname === AdminConstants.ROUTES.ROOT} onClick={onClose} isMini={isMini} />
-                <NavItem icon={<Icon name="Package" size={18} />} label={AdminI18n.t('nav.items.plugins')} href={AdminConstants.ROUTES.PLUGINS.ROOT} persistenceKey={`system:${AdminConstants.ROUTES.PLUGINS.ROOT}`} active={pathname === AdminConstants.ROUTES.PLUGINS.ROOT} onClick={onClose} isMini={isMini} />
-              </>
-            )}
-          </>
-        )}
-
-        {/* System section: Activity is admin-only; Settings only appears if it survived nav
-            authorization (admins); a plugin's pages filed under System follow them. The group is
-            drawn here by hand, not in the list above, so without this a plugin page that chose
-            System (the Migration screen) had no way in from the menu at all. Hide the whole
-            section for scoped users who have none of them. */}
-        {(isAdmin || footerSettingsItem || this.systemPluginItems.length > 0) && (
-        <div className="mt-auto pt-4 space-y-1">
-          {!isMini && (
-            <div className="px-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-slate-400/70 dark:text-slate-500 mb-1">
-              {AdminI18n.t('nav.groups.system')}
-            </div>
-          )}
-          {(!collapsedGroups.includes('system') || isMini) && (
-            <>
-              {isAdmin && (
-                <NavItem icon={<FrameworkIcons.Activity size={18}/>} label={AdminI18n.t('nav.items.activity')} href={AdminConstants.ROUTES.ACTIVITY} persistenceKey={`system:${AdminConstants.ROUTES.ACTIVITY}`} active={pathname.startsWith(AdminConstants.ROUTES.ACTIVITY)} onClick={onClose} isMini={isMini} />
-              )}
-              {footerSettingsItem && (
-                <NavItem
-                  icon={<Icon name={footerSettingsItem.icon || 'Settings'} size={18} />}
-                  label={AdminNavText.menuLabel(footerSettingsItem)}
-                  href={footerSettingsItem.path}
-                  persistenceKey={`${footerSettingsItem.pluginSlug || 'system'}:${footerSettingsItem.path}`}
-                  active={normalizedActivePrimaryPathOverride ? NavUtils.normalizePath(footerSettingsItem.path) === normalizedActivePrimaryPathOverride : NavUtils.isPathActive(pathname, footerSettingsItem.path, [footerSettingsItem.path])}
-                  isAnchoredToSecondary={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                  onClick={onClose}
-                  children={footerSettingsItem.children}
-                  isMini={isMini}
-                  isGroupHeader={footerSettingsIsGroup}
-                  version={plugins.find(p => p.slug === footerSettingsItem.pluginSlug)?.version}
-                  canHoverPreview={(previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
-                  showHoverPreview={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(hoverPreviewPath) && (previewablePaths || []).includes(NavUtils.normalizePath(footerSettingsItem.path))}
-                  preserveActiveAnchor={NavUtils.normalizePath(footerSettingsItem.path) === NavUtils.normalizePath(activeSecondaryAnchorPath)}
-                  onHoverPreviewStart={this.handleHoverPreviewStart}
-                  onHoverPreviewEnd={this.handleHoverPreviewEnd}
-                />
-              )}
-              {this.systemPluginItems.map((item, idx) => (
-                <NavItem
-                  key={`${item.pluginSlug}-${item.path}-${idx}`}
-                  icon={<Icon name={item.icon || 'Package'} size={18} />}
-                  label={AdminNavText.menuLabel(item)}
-                  href={item.path}
-                  persistenceKey={`${item.pluginSlug}:${item.path}`}
-                  active={NavUtils.isPathActive(pathname, item.path, this.systemPluginItems.map((entry) => entry.path))}
-                  onClick={onClose}
-                  children={item.children}
-                  isMini={isMini}
-                  isGroupHeader={item.isGroup}
-                  version={plugins.find(p => p.slug === item.pluginSlug)?.version}
-                />
-              ))}
-            </>
-          )}
-        </div>
-        )}
+        <div className="fc-nav-list">{main.map((item) => this.renderItem(item, main))}</div>
+        {this.beforeSettings}
       </>
     );
   }

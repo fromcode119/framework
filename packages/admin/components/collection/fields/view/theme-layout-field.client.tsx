@@ -125,13 +125,13 @@ export class ThemeLayoutField extends Reactor {
           theme={theme}
           placeholder={AdminI18n.t('ui.layout.auto')}
         />
-        <p className={`text-[10px] font-bold uppercase tracking-widest ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+        <p className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
           {AdminI18n.t('ui.layout.hint')}
         </p>
 
         {selectedLayoutMissing ? (
           <div className="rounded-xl border border-amber-300 bg-amber-50 px-3 py-2.5 dark:border-amber-500/40 dark:bg-amber-500/10">
-            <p className="text-[10px] font-black uppercase tracking-widest text-amber-600 dark:text-amber-400">{AdminI18n.t('ui.layout.missingTitle')}</p>
+            <p className="text-[12px] font-medium text-amber-600 dark:text-amber-400">{AdminI18n.t('ui.layout.missingTitle')}</p>
             <p className="mt-1 text-[11px] font-semibold leading-relaxed text-amber-700 dark:text-amber-300">
               {AdminI18n.t('ui.layout.missingText', { layout: explicitValue, effective: `${effectiveLabel} (${effectiveValue})` })}
             </p>
@@ -141,7 +141,7 @@ export class ThemeLayoutField extends Reactor {
           </div>
         ) : (
           <div className={`rounded-xl border px-3 py-2 ${isDark ? 'border-slate-800 bg-slate-950/40' : 'border-slate-200 bg-slate-50'}`}>
-            <p className={`text-[10px] font-black uppercase tracking-widest ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('ui.layout.renders')}</p>
+            <p className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('ui.layout.renders')}</p>
             <p className={`mt-1 text-xs font-bold ${isDark ? 'text-slate-200' : 'text-slate-700'}`}>{effectiveLabel} ({effectiveValue})</p>
             <p className={`mt-1 text-[11px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
               {AdminI18n.t(isAutoMode ? 'ui.layout.autoMode' : 'ui.layout.explicitMode')}

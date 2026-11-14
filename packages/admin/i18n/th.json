@@ -167,13 +167,6 @@
       "sectionShow": "แสดง",
       "sectionHide": "ซ่อน",
       "sectionFieldCount": "{{count}} ฟิลด์",
-      "fieldLevel": {
-        "label": "ฟิลด์ที่แสดง",
-        "everyday": "ใช้ประจำ",
-        "occasional": "ใช้เป็นครั้งคราว",
-        "technical": "ทางเทคนิค",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "ตัวอย่างและลิงก์ถาวร",
       "permalinkHint": "คลิกส่วนของพาธเพื่อแทนที่ slug ที่สร้างขึ้นโดยอัตโนมัติ",
       "settings": "การตั้งค่า",
@@ -188,10 +181,10 @@
       "deletePermanently": "ลบถาวร",
       "relatedRecords": "รายการที่เกี่ยวข้อง",
       "relatedEmpty": "ยังไม่มีปลั๊กอินอื่นที่มีรายการเชื่อมโยงกับรายการนี้",
-      "recordPart": { "download": "ดาวน์โหลด {{title}}", "person": "บุคคล" },
-      "viewMode": "โหมดมุมมองรายการ",
-      "formView": "มุมมองฟอร์ม",
-      "jsonView": "มุมมอง JSON",
+      "recordPart": {
+        "download": "ดาวน์โหลด {{title}}",
+        "person": "บุคคล"
+      },
       "unsavedIn": "การเปลี่ยนแปลงที่ยังไม่บันทึกใน",
       "noUnsaved": "ไม่มีการเปลี่ยนแปลงที่ยังไม่บันทึก",
       "notSaved": "ยังไม่ได้บันทึก: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "โหลดต้นฉบับสำหรับทำสำเนาไม่สำเร็จ",
       "loadFailed": "โหลดรายการไม่สำเร็จ",
       "slugTaken": "slug นี้ถูกใช้แล้วโดย \"{{name}}\"",
-      "unsavedChanges": "การเปลี่ยนแปลงที่ยังไม่บันทึก"
+      "unsavedChanges": "การเปลี่ยนแปลงที่ยังไม่บันทึก",
+      "editSection": "แก้ไข",
+      "notFilledIn": "ยังไม่ได้กรอก",
+      "nothingFilledIn": "ยังไม่มีการกรอกข้อมูล",
+      "statusSection": "สถานะ",
+      "recordSection": "ระเบียน",
+      "showJson": "แสดงเป็น JSON",
+      "showForm": "แสดงเป็นฟอร์ม",
+      "recordActions": "การดำเนินการกับระเบียน",
+      "sectionActions": "การดำเนินการกับส่วน",
+      "breadcrumb": "เส้นทางนำทาง",
+      "copyTitle": "คัดลอก",
+      "copied": "คัดลอกแล้ว",
+      "more": "เพิ่มเติม",
+      "moreFields": "{{count}} ช่อง",
+      "moreOneField": "{{count}} ช่อง"
     },
     "notFound": {
       "title": "ไม่พบคอลเลกชัน",
@@ -426,7 +434,6 @@
       "add": "เพิ่มรายการเมนู"
     },
     "field": {
-      "enter": "ป้อน {{label}}...",
       "notSet": "ไม่ได้ตั้งค่า",
       "auto": "อัตโนมัติ",
       "localeFallback": "ว่างใน {{locale}} — เว็บไซต์จะแสดงค่าของ {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "ไม่ได้บันทึก",
-      "auto": "บันทึกโดยอัตโนมัติ — แก้ไขที่นี่ไม่ได้",
-      "copied": "คัดลอกแล้ว",
-      "copy": "คัดลอก JSON",
       "filter": "กรองตามคีย์…",
       "empty": "ยังไม่มีข้อมูลที่บันทึก",
       "noMatch": "ไม่มีรายการที่ตรงกับตัวกรอง"
@@ -659,7 +663,11 @@
       "general": "ทั่วไป",
       "moreIn": "เพิ่มเติมใน {{section}}",
       "thisSection": "ส่วนนี้",
-      "collapse": "ยุบแถบด้านข้าง"
+      "collapse": "ยุบแถบด้านข้าง",
+      "expand": "ขยายแถบด้านข้าง",
+      "search": "ค้นหา",
+      "searchShortcut": "⌘K",
+      "noMatches": "ไม่มีรายการในเมนูที่ตรงกับ “{{query}}”"
     },
     "workspace": {
       "unavailable": "พื้นที่ทำงานไม่พร้อมใช้งาน",
@@ -925,7 +933,8 @@
         }
       },
       "open": "เปิด",
-      "loadFailed": "ไม่สามารถโหลดข้อมูลของวิดเจ็ตนี้ได้ โปรดโหลดหน้าใหม่เพื่อลองอีกครั้ง"
+      "loadFailed": "ไม่สามารถโหลดข้อมูลของวิดเจ็ตนี้ได้ โปรดโหลดหน้าใหม่เพื่อลองอีกครั้ง",
+      "quiet": "ไม่มีรายการรอดำเนินการ: {{list}}"
     }
   },
   "notFound": {

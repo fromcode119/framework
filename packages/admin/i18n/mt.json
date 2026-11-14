@@ -167,13 +167,6 @@
       "sectionShow": "Uri",
       "sectionHide": "Aħbi",
       "sectionFieldCount": "{{count}} qasam",
-      "fieldLevel": {
-        "label": "Oqsma murija",
-        "everyday": "Ta’ kuljum",
-        "occasional": "Okkażjonali",
-        "technical": "Tekniċi",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Dehra Minn Qabel u Permalink",
       "permalinkHint": "Ikklikkja fuq il-parti tal-mogħdija biex tissostitwixxi s-slug iġġenerat awtomatikament.",
       "settings": "Settings",
@@ -188,10 +181,10 @@
       "deletePermanently": "Ħassar b'Mod Permanenti",
       "relatedRecords": "Rekords relatati",
       "relatedEmpty": "L-ebda plugin ieħor għadu ma għandu rekord marbut ma' dan.",
-      "recordPart": { "download": "Niżżel {{title}}", "person": "Persuna" },
-      "viewMode": "Mod ta' wiri tar-rekord",
-      "formView": "Dehra tal-formola",
-      "jsonView": "Dehra JSON",
+      "recordPart": {
+        "download": "Niżżel {{title}}",
+        "person": "Persuna"
+      },
       "unsavedIn": "Bidliet mhux issejvjati f'",
       "noUnsaved": "L-ebda bidla mhux issejvjata",
       "notSaved": "Mhux issejvjat: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Is-sors tal-kopja ma setax jittella'",
       "loadFailed": "Ir-rekord ma setax jittella'",
       "slugTaken": "Dan is-slug diġà qed jintuża minn \"{{name}}\".",
-      "unsavedChanges": "Bidliet mhux issejvjati"
+      "unsavedChanges": "Bidliet mhux issejvjati",
+      "editSection": "Editja",
+      "notFilledIn": "Mhux mimli",
+      "nothingFilledIn": "Għadu ma mtela xejn",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Uri bħala JSON",
+      "showForm": "Uri bħala formola",
+      "recordActions": "Azzjonijiet tar-rekord",
+      "sectionActions": "Azzjonijiet tat-taqsima",
+      "breadcrumb": "Mogħdija",
+      "copyTitle": "Ikkopja",
+      "copied": "Ikkopjat",
+      "more": "Aktar",
+      "moreFields": "{{count}} oqsma",
+      "moreOneField": "{{count}} qasam"
     },
     "notFound": {
       "title": "Il-Kollezzjoni Ma Nstabitx",
@@ -426,7 +434,6 @@
       "add": "Żid Element tal-Menu"
     },
     "field": {
-      "enter": "Daħħal {{label}}...",
       "notSet": "Mhux issettjat",
       "auto": "Awtomatiku",
       "localeFallback": "Vojt f'{{locale}} — is-sit juri l-valur ta' {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Mhux irreġistrat",
-      "auto": "Irreġistrat awtomatikament — ma jistax jiġi editjat hawn.",
-      "copied": "Ikkupjat",
-      "copy": "Ikkopja l-JSON",
       "filter": "Iffiltra skont iċ-ċavetta…",
       "empty": "Għad m'hemm xejn irreġistrat.",
       "noMatch": "Xejn ma jaqbel ma' dak il-filtru."
@@ -659,7 +663,11 @@
       "general": "Ġenerali",
       "moreIn": "Aktar f'{{section}}",
       "thisSection": "Din it-Taqsima",
-      "collapse": "Ikkollassa l-Sidebar"
+      "collapse": "Ikkollassa l-Sidebar",
+      "expand": "Espandi l-bar tal-ġenb",
+      "search": "Fittex",
+      "searchShortcut": "⌘K",
+      "noMatches": "Xejn fil-menu ma jaqbel ma’ “{{query}}”"
     },
     "workspace": {
       "unavailable": "L-ispazju tax-xogħol mhux disponibbli",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Iftaħ",
-      "loadFailed": "Iċ-ċifri ta' dan il-widget ma setgħux jitniżżlu. Erġa' tella' l-paġna biex tipprova mill-ġdid."
+      "loadFailed": "Iċ-ċifri ta' dan il-widget ma setgħux jitniżżlu. Erġa' tella' l-paġna biex tipprova mill-ġdid.",
+      "quiet": "Xejn ma qed jistenna: {{list}}"
     }
   },
   "notFound": {

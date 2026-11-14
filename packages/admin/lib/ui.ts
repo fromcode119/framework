@@ -17,11 +17,11 @@ export class UiFieldUtils {
     shadowFocus: 'ring-4 ring-indigo-500/10',
   };
 
-  private static readonly ONE_SIZE_LAYOUT = 'py-2 px-3.5 h-10 text-[12px] leading-none';
+  private static readonly ONE_SIZE_LAYOUT = 'py-2 px-3.5 h-10 leading-none';
   private static readonly ONE_SIZE_CONTAINER = 'min-h-[40px] py-2 px-3.5 leading-none';
 
   static readonly FIELD = {
-    base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} font-semibold ${UiFieldUtils.COMMON.shadow}`,
+    base: `w-full box-border appearance-none ${UiFieldUtils.COMMON.radius} outline-none border ${UiFieldUtils.COMMON.transition} fc-field ${UiFieldUtils.COMMON.shadow}`,
     light: 'bg-white border-slate-200 text-slate-900 caret-slate-900 placeholder:text-slate-400 hover:border-indigo-500 focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/10 autofill:[-webkit-text-fill-color:#0f172a] autofill:shadow-[inset_0_0_0px_1000px_#ffffff]',
     dark: 'dark:bg-slate-950 dark:border-slate-700 dark:text-slate-100 dark:caret-slate-100 dark:placeholder:text-slate-500 dark:hover:border-indigo-500/50 dark:focus:border-indigo-500 dark:focus:ring-0 dark:[color-scheme:dark] dark:autofill:[-webkit-text-fill-color:#f8fafc] dark:autofill:caret-white dark:autofill:shadow-[inset_0_0_0px_1000px_rgb(2,6,23)]',
     /**
@@ -38,7 +38,7 @@ export class UiFieldUtils {
   };
 
   static readonly TEXT = {
-    LABEL: 'text-[11px] font-semibold text-slate-500/80 mb-0.5 ms-0.5 tracking-wide',
+    LABEL: 'text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1',
     ERROR: 'text-[11px] font-bold text-rose-500 mt-1 ms-0.5',
     SUBTEXT: 'text-[11px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed',
     /**

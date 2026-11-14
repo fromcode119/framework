@@ -23,11 +23,11 @@ export class EditRoleSummarySidebar extends PureReactor {
           <div className="space-y-6">
             <div className="bg-indigo-500/5 rounded-2.5xl p-6 border border-indigo-500/10 space-y-4">
                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{AdminI18n.t('users.roleType')}</span>
+                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
                   <Badge variant={BadgeVariant.AMBER}>{type}</Badge>
                </div>
                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{AdminI18n.t('users.selectedScope')}</span>
+                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.selectedScope')}</span>
                   <span className="text-xs font-bold text-slate-600 dark:text-slate-300">
                     {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.actionsSelected', { permissionCount: permissionCount })}
                   </span>
@@ -36,7 +36,7 @@ export class EditRoleSummarySidebar extends PureReactor {
 
             {this.readOnly ? null : <Button
               type="submit"
-              className="w-full h-11 text-[11px] font-bold uppercase tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
+              className="w-full h-11 text-[12px] font-medium tracking-tight rounded-xl shadow-lg shadow-indigo-600/10 text-white"
               isLoading={loading}
             >
               {AdminI18n.t('users.save')}

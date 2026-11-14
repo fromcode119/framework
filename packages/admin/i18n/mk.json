@@ -167,13 +167,6 @@
       "sectionShow": "Прикажи",
       "sectionHide": "Скриј",
       "sectionFieldCount": "{{count}} полиња",
-      "fieldLevel": {
-        "label": "Прикажани полиња",
-        "everyday": "Секојдневни",
-        "occasional": "Повремени",
-        "technical": "Технички",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Преглед и трајна врска",
       "permalinkHint": "Кликнете на делот од патеката за да го замените автоматски генерираниот slug.",
       "settings": "Поставки",
@@ -188,10 +181,10 @@
       "deletePermanently": "Избриши трајно",
       "relatedRecords": "Поврзани записи",
       "relatedEmpty": "Ниеден друг приклучок сè уште нема запис поврзан со овој.",
-      "recordPart": { "download": "Преземи {{title}}", "person": "Лице" },
-      "viewMode": "Режим на приказ на записот",
-      "formView": "Приказ како формулар",
-      "jsonView": "Приказ како JSON",
+      "recordPart": {
+        "download": "Преземи {{title}}",
+        "person": "Лице"
+      },
       "unsavedIn": "Незачувани промени во",
       "noUnsaved": "Нема незачувани промени",
       "notSaved": "Не е зачувано: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Изворот за копирање не може да се вчита",
       "loadFailed": "Записот не може да се вчита",
       "slugTaken": "Овој slug веќе го користи „{{name}}“.",
-      "unsavedChanges": "Незачувани промени"
+      "unsavedChanges": "Незачувани промени",
+      "editSection": "Уреди",
+      "notFilledIn": "Не е пополнето",
+      "nothingFilledIn": "Сè уште ништо не е пополнето",
+      "statusSection": "Статус",
+      "recordSection": "Запис",
+      "showJson": "Прикажи како JSON",
+      "showForm": "Прикажи како формулар",
+      "recordActions": "Дејства со записот",
+      "sectionActions": "Дејства со делот",
+      "breadcrumb": "Патека",
+      "copyTitle": "Копирај",
+      "copied": "Копирано",
+      "more": "Повеќе",
+      "moreFields": "{{count}} полиња",
+      "moreOneField": "{{count}} поле"
     },
     "notFound": {
       "title": "Колекцијата не е пронајдена",
@@ -426,7 +434,6 @@
       "add": "Додај ставка во менито"
     },
     "field": {
-      "enter": "Внесете {{label}}...",
       "notSet": "Не е поставено",
       "auto": "Автоматски",
       "localeFallback": "Празно на {{locale}} — сајтот ја прикажува вредноста на {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Не е запишано",
-      "auto": "Запишано автоматски — не може да се уредува тука.",
-      "copied": "Копирано",
-      "copy": "Копирај JSON",
       "filter": "Филтрирај по клуч…",
       "empty": "Сè уште нема ништо запишано.",
       "noMatch": "Ништо не одговара на тој филтер."
@@ -659,7 +663,11 @@
       "general": "Општо",
       "moreIn": "Повеќе во {{section}}",
       "thisSection": "Овој дел",
-      "collapse": "Собери ја страничната лента"
+      "collapse": "Собери ја страничната лента",
+      "expand": "Прошири ја страничната лента",
+      "search": "Пребарај",
+      "searchShortcut": "⌘K",
+      "noMatches": "Ништо во менито не одговара на „{{query}}“"
     },
     "workspace": {
       "unavailable": "Работниот простор е недостапен",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Отвори",
-      "loadFailed": "Податоците на овој виџет не можеа да се вчитаат. Повторно вчитајте ја страницата за да се обидете пак."
+      "loadFailed": "Податоците на овој виџет не можеа да се вчитаат. Повторно вчитајте ја страницата за да се обидете пак.",
+      "quiet": "Ништо не чека: {{list}}"
     }
   },
   "notFound": {

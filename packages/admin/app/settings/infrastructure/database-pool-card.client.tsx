@@ -62,7 +62,7 @@ export class DatabasePoolCard extends AdminComponent {
             <div className="w-full md:w-40">
               <NumberStepper min={5} max={80} step={5} value={this.max} onChange={this.onMax} disabled={!this.loaded} />
             </div>
-            <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+            <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
               {AdminI18n.t('settings.infrastructure.save')}
             </Button>
           </div>

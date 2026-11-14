@@ -167,13 +167,6 @@
       "sectionShow": "Afișează",
       "sectionHide": "Ascunde",
       "sectionFieldCount": "{{count}} câmpuri",
-      "fieldLevel": {
-        "label": "Câmpuri afișate",
-        "everyday": "De zi cu zi",
-        "occasional": "Ocazionale",
-        "technical": "Tehnice",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Previzualizare și permalink",
       "permalinkHint": "Faceți clic pe componenta căii pentru a înlocui slug-ul generat automat.",
       "settings": "Setări",
@@ -188,10 +181,10 @@
       "deletePermanently": "Șterge definitiv",
       "relatedRecords": "Înregistrări asociate",
       "relatedEmpty": "Niciun alt plugin nu deține încă o înregistrare legată de aceasta.",
-      "recordPart": { "download": "Descarcă {{title}}", "person": "Persoană" },
-      "viewMode": "Mod de vizualizare a înregistrării",
-      "formView": "Vizualizare formular",
-      "jsonView": "Vizualizare JSON",
+      "recordPart": {
+        "download": "Descarcă {{title}}",
+        "person": "Persoană"
+      },
       "unsavedIn": "Modificări nesalvate în",
       "noUnsaved": "Nicio modificare nesalvată",
       "notSaved": "Nesalvat: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Încărcarea sursei duplicatului a eșuat",
       "loadFailed": "Încărcarea intrării a eșuat",
       "slugTaken": "Acest slug este deja folosit de „{{name}}”.",
-      "unsavedChanges": "Modificări nesalvate"
+      "unsavedChanges": "Modificări nesalvate",
+      "editSection": "Editează",
+      "notFilledIn": "Necompletat",
+      "nothingFilledIn": "Nimic completat încă",
+      "statusSection": "Stare",
+      "recordSection": "Înregistrare",
+      "showJson": "Afișează ca JSON",
+      "showForm": "Afișează ca formular",
+      "recordActions": "Acțiuni pentru înregistrare",
+      "sectionActions": "Acțiuni pentru secțiune",
+      "breadcrumb": "Traseu de navigare",
+      "copyTitle": "Copiază",
+      "copied": "Copiat",
+      "more": "Mai mult",
+      "moreFields": "{{count}} câmpuri",
+      "moreOneField": "{{count}} câmp"
     },
     "notFound": {
       "title": "Colecția nu a fost găsită",
@@ -426,7 +434,6 @@
       "add": "Adaugă element de meniu"
     },
     "field": {
-      "enter": "Introduceți {{label}}...",
       "notSet": "Nesetat",
       "auto": "Automat",
       "localeFallback": "Gol în {{locale}} — site-ul afișează valoarea din {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Neînregistrat",
-      "auto": "Înregistrat automat — nu se poate edita aici.",
-      "copied": "Copiat",
-      "copy": "Copiază JSON",
       "filter": "Filtrați după cheie…",
       "empty": "Nimic înregistrat încă.",
       "noMatch": "Nimic nu corespunde acestui filtru."
@@ -659,7 +663,11 @@
       "general": "General",
       "moreIn": "Mai multe în {{section}}",
       "thisSection": "Această secțiune",
-      "collapse": "Restrângeți bara laterală"
+      "collapse": "Restrângeți bara laterală",
+      "expand": "Extinde bara laterală",
+      "search": "Caută",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nimic din meniu nu corespunde cu „{{query}}”"
     },
     "workspace": {
       "unavailable": "Spațiu de lucru indisponibil",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Deschide",
-      "loadFailed": "Datele acestui widget nu au putut fi încărcate. Reîncărcați pagina pentru a încerca din nou."
+      "loadFailed": "Datele acestui widget nu au putut fi încărcate. Reîncărcați pagina pentru a încerca din nou.",
+      "quiet": "Nimic în așteptare: {{list}}"
     }
   },
   "notFound": {

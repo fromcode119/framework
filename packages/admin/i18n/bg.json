@@ -204,13 +204,6 @@
       "sectionShow": "Покажи",
       "sectionHide": "Скрий",
       "sectionFieldCount": "Полета: {{count}}",
-      "fieldLevel": {
-        "label": "Показани полета",
-        "everyday": "Основни",
-        "occasional": "Рядко ползвани",
-        "technical": "Технически",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Преглед и адрес",
       "permalinkHint": "Щракнете върху пътя, за да промените автоматично създадения адрес.",
       "settings": "Настройки",
@@ -225,10 +218,10 @@
       "deletePermanently": "Изтрий окончателно",
       "relatedRecords": "Свързани записи",
       "relatedEmpty": "Още няма записи в други плъгини, свързани с този.",
-      "recordPart": { "download": "Изтегли {{title}}", "person": "Лице" },
-      "viewMode": "Изглед на записа",
-      "formView": "Форма",
-      "jsonView": "JSON",
+      "recordPart": {
+        "download": "Изтегли {{title}}",
+        "person": "Име"
+      },
       "unsavedIn": "Незапазени промени в",
       "noUnsaved": "Няма незапазени промени",
       "notSaved": "Не е запазено: {{reason}}",
@@ -267,7 +260,22 @@
       "duplicateFailed": "Изходният запис за копиране не можа да се зареди.",
       "loadFailed": "Записът не можа да се зареди.",
       "slugTaken": "Този адрес вече се използва от „{{name}}“.",
-      "unsavedChanges": "Незапазени промени"
+      "unsavedChanges": "Незапазени промени",
+      "editSection": "Редактирай",
+      "notFilledIn": "Не е попълнено",
+      "nothingFilledIn": "Още няма попълнено",
+      "statusSection": "Статус",
+      "recordSection": "Запис",
+      "showJson": "Покажи като JSON",
+      "showForm": "Покажи като форма",
+      "recordActions": "Действия със записа",
+      "sectionActions": "Действия с раздела",
+      "breadcrumb": "Път",
+      "copyTitle": "Копирай",
+      "copied": "Копирано",
+      "more": "Още",
+      "moreFields": "още {{count}} полета",
+      "moreOneField": "още {{count}} поле"
     },
     "notFound": {
       "title": "Колекцията не е намерена",
@@ -463,7 +471,6 @@
       "add": "Добави елемент"
     },
     "field": {
-      "enter": "Въведете {{label}}…",
       "notSet": "Не е зададено",
       "auto": "Автоматично",
       "localeFallback": "Празно на {{locale}} — сайтът показва стойността на {{fallback}}",
@@ -559,9 +566,6 @@
     },
     "structured": {
       "notRecorded": "Няма запис",
-      "auto": "Записва се автоматично — не се редактира тук.",
-      "copied": "Копирано",
-      "copy": "Копирай JSON",
       "filter": "Филтър по ключ…",
       "empty": "Още няма записано.",
       "noMatch": "Нищо не съвпада с филтъра."
@@ -696,7 +700,11 @@
       "general": "Общи",
       "moreIn": "Още в {{section}}",
       "thisSection": "този раздел",
-      "collapse": "Свий менюто"
+      "collapse": "Свий менюто",
+      "expand": "Разгъни менюто",
+      "search": "Търсене",
+      "searchShortcut": "⌘K",
+      "noMatches": "Нищо в менюто не съвпада с „{{query}}“"
     },
     "workspace": {
       "unavailable": "Работното пространство е недостъпно",
@@ -962,7 +970,8 @@
         }
       },
       "open": "Отвори",
-      "loadFailed": "Данните на тази джаджа не можаха да се заредят. Презаредете страницата, за да опитате отново."
+      "loadFailed": "Данните на тази джаджа не можаха да се заредят. Презаредете страницата, за да опитате отново.",
+      "quiet": "Нищо чакащо: {{list}}"
     }
   },
   "notFound": {

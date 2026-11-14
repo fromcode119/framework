@@ -23,7 +23,7 @@ export class DashboardFooter extends PureReactor {
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 dark:text-slate-400 uppercase">
+                <span className="text-[12px] font-medium tracking-tight text-slate-500 dark:text-slate-400">
                   {AdminI18n.t('dashboard.infrastructure', { name: this.platformName })}{this.build ? ` // ${this.build}` : ''}
                 </span>
               </div>
@@ -32,7 +32,7 @@ export class DashboardFooter extends PureReactor {
                   plugin-health surface, which reads the health endpoint. */}
             </div>
 
-            <div className="flex items-center gap-4 text-[10px] font-bold tracking-tight text-slate-400 uppercase">
+            <div className="flex items-center gap-4 text-[12px] font-medium tracking-tight text-slate-400">
               <a href={AdminConstants.FRAMEWORK_RESOURCES.GITHUB} target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition-colors">GitHub</a>
             </div>
           </div>

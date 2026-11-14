@@ -8,7 +8,7 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
 /**
  * The table's header row, and the row whose cell widths every pinned offset is measured from.
  *
- * A pinned cell needs an OPAQUE background: the header's own `bg-slate-100/50` is translucent, so a
+ * A pinned cell needs an OPAQUE background: the header's own tint is translucent, so a
  * pinned cell keeping it would show the columns scrolling underneath straight through the text.
  */
 export class DataTableHead<T extends { id: any }> extends PureReactor {
@@ -29,8 +29,9 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
   @prop declare stickyActions?: boolean;
 
   /** Opaque so scrolled columns cannot show through, and a divider so the run reads as pinned. */
-  private static readonly PINNED = 'sticky z-20 bg-slate-100 dark:bg-slate-900';
-  private static readonly PINNED_EDGE = 'border-e border-slate-200 dark:border-slate-700';
+  private static readonly PINNED = 'sticky z-20 fc-dt-pinned';
+  private static readonly PINNED_EDGE = 'fc-dt-pinned-edge';
+  private static readonly PINNED_END = 'sticky end-0 z-20 fc-dt-pinned fc-dt-pinned-end';
 
   private sortIcon(columnId: string): ReactNode {
     if (this.currentSort === columnId) return <FrameworkIcons.Up size={12} />;
@@ -50,10 +51,10 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
 
     return (
       <thead>
-        <tr ref={this.rowRef} className="bg-slate-100/50 border-b border-slate-200/60 dark:bg-slate-900/50 dark:border-slate-800">
+        <tr ref={this.rowRef} className="fc-dt-head">
           {selectable && (
             <th
-              className={`px-3 py-3 w-4 ${stickyCount > 0 ? DataTableHead.PINNED : ''}`}
+              className={`fc-dt-th fc-dt-th--check ${stickyCount > 0 ? DataTableHead.PINNED : ''}`}
               style={stickyCount > 0 ? { insetInlineStart: checkboxOffset ?? 0 } : undefined}
             >
               <Checkbox checked={allSelected} indeterminate={someSelected && !allSelected} onChange={this.handleToggleAll} />
@@ -64,11 +65,11 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
             return (
               <th
                 key={col.id}
-                className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 tracking-wide ${col.sortable ? 'cursor-pointer hover:text-indigo-500 transition-colors' : ''} ${isPinned ? DataTableHead.PINNED : ''} ${isPinned && index === stickyCount - 1 ? DataTableHead.PINNED_EDGE : ''} ${col.className || ''}`}
+                className={`fc-dt-th ${col.sortable ? 'fc-dt-th--sortable' : ''} ${isPinned ? DataTableHead.PINNED : ''} ${isPinned && index === stickyCount - 1 ? DataTableHead.PINNED_EDGE : ''} ${col.className || ''}`}
                 style={isPinned ? { insetInlineStart: columnOffsetAt(index) ?? 0 } : undefined}
                 onClick={() => col.sortable && this.onSort?.(col.id)}
               >
-                <div className="flex items-center gap-2">
+                <div className="fc-dt-th__inner">
                   {col.header}
                   {col.sortable && this.sortIcon(col.id)}
                 </div>
@@ -76,10 +77,9 @@ export class DataTableHead<T extends { id: any }> extends PureReactor {
             );
           })}
           {hasActions && (
-            <th className={`px-3 py-3 text-[11px] font-semibold text-slate-400 dark:text-slate-500 text-end tracking-wide ${
-              this.stickyActions ? 'sticky right-0 z-20 bg-slate-100 dark:bg-slate-900 border-l border-slate-200 dark:border-slate-700' : ''
-            }`}>
-              {AdminI18n.t('ui.table.actions')}
+            // The row's own controls say what they do; a column heading over them would only repeat it.
+            <th className={`fc-dt-th fc-dt-th--actions ${this.stickyActions ? DataTableHead.PINNED_END : ''}`}>
+              <span className="sr-only">{AdminI18n.t('ui.table.actions')}</span>
             </th>
           )}
         </tr>

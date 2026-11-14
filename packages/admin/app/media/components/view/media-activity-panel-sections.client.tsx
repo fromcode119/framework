@@ -94,7 +94,7 @@ export abstract class MediaActivityPanelSections extends MediaActivityPanelActio
           {cells.map(([label, value]) => (
             <div key={label} className="min-w-0">
               <p className="text-[17px] font-semibold tabular-nums leading-none">{value}</p>
-              <p className="mt-1 text-[10px] uppercase tracking-widest opacity-50 truncate">{label}</p>
+              <p className="mt-1 text-[12px] opacity-50 truncate">{label}</p>
             </div>
           ))}
         </div>

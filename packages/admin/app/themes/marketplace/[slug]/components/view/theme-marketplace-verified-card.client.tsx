@@ -16,7 +16,7 @@ export class ThemeMarketplaceVerifiedCard extends PureReactor {
             <FrameworkIcons.Shield size={18} strokeWidth={2.5} />
           </div>
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600">{AdminI18n.t('themes.verified')}</div>
+            <div className="text-[12px] font-medium text-emerald-600">{AdminI18n.t('themes.verified')}</div>
             <div className={`text-xs font-bold ${adminTheme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{AdminI18n.t('themes.officialUiAudit')}</div>
           </div>
         </div>

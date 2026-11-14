@@ -167,13 +167,6 @@
       "sectionShow": "Visa",
       "sectionHide": "Dölj",
       "sectionFieldCount": "{{count}} fält",
-      "fieldLevel": {
-        "label": "Visade fält",
-        "everyday": "Vardagliga",
-        "occasional": "Tillfälliga",
-        "technical": "Tekniska",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Förhandsvisning och permalänk",
       "permalinkHint": "Klicka på sökvägsdelen för att ersätta den automatiskt genererade sluggen.",
       "settings": "Inställningar",
@@ -188,10 +181,10 @@
       "deletePermanently": "Ta bort permanent",
       "relatedRecords": "Relaterade poster",
       "relatedEmpty": "Inget annat tillägg har ännu någon post kopplad till den här.",
-      "recordPart": { "download": "Ladda ned {{title}}", "person": "Person" },
-      "viewMode": "Visningsläge för post",
-      "formView": "Formulärvy",
-      "jsonView": "JSON-vy",
+      "recordPart": {
+        "download": "Ladda ned {{title}}",
+        "person": "Person"
+      },
       "unsavedIn": "Osparade ändringar i",
       "noUnsaved": "Inga osparade ändringar",
       "notSaved": "Inte sparad: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Det gick inte att läsa in källan för kopian",
       "loadFailed": "Det gick inte att läsa in posten",
       "slugTaken": "Den här sluggen används redan av ”{{name}}”.",
-      "unsavedChanges": "Osparade ändringar"
+      "unsavedChanges": "Osparade ändringar",
+      "editSection": "Redigera",
+      "notFilledIn": "Inte ifyllt",
+      "nothingFilledIn": "Inget ifyllt än",
+      "statusSection": "Status",
+      "recordSection": "Post",
+      "showJson": "Visa som JSON",
+      "showForm": "Visa som formulär",
+      "recordActions": "Åtgärder för posten",
+      "sectionActions": "Åtgärder för avsnittet",
+      "breadcrumb": "Länkstig",
+      "copyTitle": "Kopiera",
+      "copied": "Kopierat",
+      "more": "Mer",
+      "moreFields": "{{count}} fält",
+      "moreOneField": "{{count}} fält"
     },
     "notFound": {
       "title": "Samlingen hittades inte",
@@ -426,7 +434,6 @@
       "add": "Lägg till menyobjekt"
     },
     "field": {
-      "enter": "Ange {{label}}...",
       "notSet": "Inte angiven",
       "auto": "Auto",
       "localeFallback": "Tomt för {{locale}} — webbplatsen visar värdet för {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Inte registrerat",
-      "auto": "Registreras automatiskt – kan inte redigeras här.",
-      "copied": "Kopierat",
-      "copy": "Kopiera JSON",
       "filter": "Filtrera efter nyckel…",
       "empty": "Inget har registrerats ännu.",
       "noMatch": "Inget matchar filtret."
@@ -659,7 +663,11 @@
       "general": "Allmänt",
       "moreIn": "Mer i {{section}}",
       "thisSection": "Det här avsnittet",
-      "collapse": "Fäll ihop sidofältet"
+      "collapse": "Fäll ihop sidofältet",
+      "expand": "Expandera sidofältet",
+      "search": "Sök",
+      "searchShortcut": "⌘K",
+      "noMatches": "Inget i menyn matchar ”{{query}}”"
     },
     "workspace": {
       "unavailable": "Arbetsytan är inte tillgänglig",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Öppna",
-      "loadFailed": "Det gick inte att läsa in widgetens siffror. Läs in sidan igen för att försöka på nytt."
+      "loadFailed": "Det gick inte att läsa in widgetens siffror. Läs in sidan igen för att försöka på nytt.",
+      "quiet": "Inget väntar: {{list}}"
     }
   },
   "notFound": {

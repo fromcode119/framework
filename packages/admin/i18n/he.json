@@ -167,13 +167,6 @@
       "sectionShow": "הצג",
       "sectionHide": "הסתר",
       "sectionFieldCount": "{{count}} שדות",
-      "fieldLevel": {
-        "label": "שדות מוצגים",
-        "everyday": "יומיומיים",
-        "occasional": "מדי פעם",
-        "technical": "טכניים",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "תצוגה מקדימה וקישור קבוע",
       "permalinkHint": "לחצו על רכיב הנתיב כדי לעקוף את ה-slug שנוצר אוטומטית.",
       "settings": "הגדרות",
@@ -188,10 +181,10 @@
       "deletePermanently": "מחיקה לצמיתות",
       "relatedRecords": "רשומות קשורות",
       "relatedEmpty": "עדיין אין תוסף אחר שמחזיק רשומה המקושרת לרשומה זו.",
-      "recordPart": { "download": "הורדה {{title}}", "person": "אדם" },
-      "viewMode": "מצב תצוגת רשומה",
-      "formView": "תצוגת טופס",
-      "jsonView": "תצוגת JSON",
+      "recordPart": {
+        "download": "הורדה {{title}}",
+        "person": "אדם"
+      },
       "unsavedIn": "שינויים שלא נשמרו ב-",
       "noUnsaved": "אין שינויים שלא נשמרו",
       "notSaved": "לא נשמר: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "טעינת מקור השכפול נכשלה",
       "loadFailed": "טעינת הרשומה נכשלה",
       "slugTaken": "ה-slug הזה כבר בשימוש על ידי \"{{name}}\".",
-      "unsavedChanges": "שינויים שלא נשמרו"
+      "unsavedChanges": "שינויים שלא נשמרו",
+      "editSection": "עריכה",
+      "notFilledIn": "לא מולא",
+      "nothingFilledIn": "עדיין לא מולא דבר",
+      "statusSection": "סטטוס",
+      "recordSection": "רשומה",
+      "showJson": "הצג כ־JSON",
+      "showForm": "הצג כטופס",
+      "recordActions": "פעולות על הרשומה",
+      "sectionActions": "פעולות על המקטע",
+      "breadcrumb": "נתיב ניווט",
+      "copyTitle": "העתק",
+      "copied": "הועתק",
+      "more": "עוד",
+      "moreFields": "{{count}} שדות",
+      "moreOneField": "שדה {{count}}"
     },
     "notFound": {
       "title": "האוסף לא נמצא",
@@ -426,7 +434,6 @@
       "add": "הוספת פריט תפריט"
     },
     "field": {
-      "enter": "הזינו {{label}}...",
       "notSet": "לא הוגדר",
       "auto": "אוטומטי",
       "localeFallback": "ריק ב-{{locale}} — האתר מציג את הערך של {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "לא נרשם",
-      "auto": "נרשם אוטומטית — לא ניתן לעריכה כאן.",
-      "copied": "הועתק",
-      "copy": "העתקת JSON",
       "filter": "סינון לפי מפתח…",
       "empty": "עדיין לא נרשם דבר.",
       "noMatch": "אין תוצאות התואמות לסינון."
@@ -659,7 +663,11 @@
       "general": "כללי",
       "moreIn": "עוד ב{{section}}",
       "thisSection": "מקטע זה",
-      "collapse": "כיווץ סרגל הצד"
+      "collapse": "כיווץ סרגל הצד",
+      "expand": "הרחבת סרגל הצד",
+      "search": "חיפוש",
+      "searchShortcut": "⌘K",
+      "noMatches": "אין בתפריט התאמה ל„{{query}}”"
     },
     "workspace": {
       "unavailable": "סביבת העבודה אינה זמינה",
@@ -925,7 +933,8 @@
         }
       },
       "open": "פתיחה",
-      "loadFailed": "לא ניתן היה לטעון את הנתונים של יישומון זה. יש לרענן את הדף כדי לנסות שוב."
+      "loadFailed": "לא ניתן היה לטעון את הנתונים של יישומון זה. יש לרענן את הדף כדי לנסות שוב.",
+      "quiet": "אין דבר ממתין: {{list}}"
     }
   },
   "notFound": {

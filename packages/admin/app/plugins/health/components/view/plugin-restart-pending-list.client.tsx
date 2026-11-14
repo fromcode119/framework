@@ -42,7 +42,7 @@ export class PluginRestartPendingList extends PureReactor {
                 {AdminI18n.t('plugins.list.runningVsInstalled', { running: entry.runningVersion || AdminI18n.t('common.unknown'), installed: entry.installedVersion || AdminI18n.t('common.unknown') })}
               </p>
             </div>
-            <button onClick={() => this.onLoadInstalled(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[10px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+            <button onClick={() => this.onLoadInstalled(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
               {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Refresh size={12} />}
               <span>{AdminI18n.t('plugins.list.loadVersion', { version: entry.installedVersion || AdminI18n.t('plugins.list.installedVersion') })}</span>
             </button>

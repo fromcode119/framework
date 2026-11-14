@@ -167,13 +167,6 @@
       "sectionShow": "Rādīt",
       "sectionHide": "Slēpt",
       "sectionFieldCount": "Lauki: {{count}}",
-      "fieldLevel": {
-        "label": "Rādītie lauki",
-        "everyday": "Ikdienas",
-        "occasional": "Reizēm",
-        "technical": "Tehniskie",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Priekšskatījums un pastāvīgā saite",
       "permalinkHint": "Noklikšķiniet uz ceļa daļas, lai aizstātu automātiski ģenerēto URL identifikatoru.",
       "settings": "Iestatījumi",
@@ -188,10 +181,10 @@
       "deletePermanently": "Dzēst neatgriezeniski",
       "relatedRecords": "Saistītie ieraksti",
       "relatedEmpty": "Neviens cits spraudnis vēl neglabā ar šo saistītu ierakstu.",
-      "recordPart": { "download": "Lejupielādēt {{title}}", "person": "Persona" },
-      "viewMode": "Ieraksta skata režīms",
-      "formView": "Veidlapas skats",
-      "jsonView": "JSON skats",
+      "recordPart": {
+        "download": "Lejupielādēt {{title}}",
+        "person": "Persona"
+      },
       "unsavedIn": "Nesaglabātas izmaiņas:",
       "noUnsaved": "Nav nesaglabātu izmaiņu",
       "notSaved": "Nav saglabāts: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Neizdevās ielādēt dublēšanas avotu",
       "loadFailed": "Neizdevās ielādēt ierakstu",
       "slugTaken": "Šo URL identifikatoru jau izmanto “{{name}}”.",
-      "unsavedChanges": "Nesaglabātas izmaiņas"
+      "unsavedChanges": "Nesaglabātas izmaiņas",
+      "editSection": "Rediģēt",
+      "notFilledIn": "Nav aizpildīts",
+      "nothingFilledIn": "Vēl nekas nav aizpildīts",
+      "statusSection": "Statuss",
+      "recordSection": "Ieraksts",
+      "showJson": "Rādīt kā JSON",
+      "showForm": "Rādīt kā veidlapu",
+      "recordActions": "Ieraksta darbības",
+      "sectionActions": "Sadaļas darbības",
+      "breadcrumb": "Navigācijas ceļš",
+      "copyTitle": "Kopēt",
+      "copied": "Nokopēts",
+      "more": "Vairāk",
+      "moreFields": "{{count}} lauki",
+      "moreOneField": "{{count}} lauks"
     },
     "notFound": {
       "title": "Kolekcija nav atrasta",
@@ -426,7 +434,6 @@
       "add": "Pievienot izvēlnes vienumu"
     },
     "field": {
-      "enter": "Ievadiet {{label}}...",
       "notSet": "Nav iestatīts",
       "auto": "Automātiski",
       "localeFallback": "Tukšs valodā {{locale}} — vietne rāda {{fallback}} vērtību",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nav reģistrēts",
-      "auto": "Reģistrēts automātiski — šeit nav rediģējams.",
-      "copied": "Nokopēts",
-      "copy": "Kopēt JSON",
       "filter": "Filtrēt pēc atslēgas…",
       "empty": "Vēl nekas nav reģistrēts.",
       "noMatch": "Filtram nekas neatbilst."
@@ -659,7 +663,11 @@
       "general": "Vispārīgi",
       "moreIn": "Vairāk sadaļā {{section}}",
       "thisSection": "Šī sadaļa",
-      "collapse": "Sakļaut sānjoslu"
+      "collapse": "Sakļaut sānjoslu",
+      "expand": "Izvērst sānjoslu",
+      "search": "Meklēt",
+      "searchShortcut": "⌘K",
+      "noMatches": "Izvēlnē nekas neatbilst “{{query}}”"
     },
     "workspace": {
       "unavailable": "Darbvieta nav pieejama",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Atvērt",
-      "loadFailed": "Šī logrīka datus neizdevās ielādēt. Pārlādējiet lapu, lai mēģinātu vēlreiz."
+      "loadFailed": "Šī logrīka datus neizdevās ielādēt. Pārlādējiet lapu, lai mēģinātu vēlreiz.",
+      "quiet": "Nekas negaida: {{list}}"
     }
   },
   "notFound": {

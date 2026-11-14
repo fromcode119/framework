@@ -167,13 +167,6 @@
       "sectionShow": "Tunjukkan",
       "sectionHide": "Sembunyikan",
       "sectionFieldCount": "{{count}} medan",
-      "fieldLevel": {
-        "label": "Medan dipaparkan",
-        "everyday": "Harian",
-        "occasional": "Sekali-sekala",
-        "technical": "Teknikal",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Pratonton & Pautan Kekal",
       "permalinkHint": "Klik komponen laluan untuk menggantikan slug yang dijana secara automatik.",
       "settings": "Tetapan",
@@ -188,10 +181,10 @@
       "deletePermanently": "Padam Secara Kekal",
       "relatedRecords": "Rekod berkaitan",
       "relatedEmpty": "Belum ada pemalam lain yang memegang rekod yang dipautkan kepada rekod ini.",
-      "recordPart": { "download": "Muat turun {{title}}", "person": "Orang" },
-      "viewMode": "Mod paparan rekod",
-      "formView": "Paparan borang",
-      "jsonView": "Paparan JSON",
+      "recordPart": {
+        "download": "Muat turun {{title}}",
+        "person": "Orang"
+      },
       "unsavedIn": "Perubahan belum disimpan pada",
       "noUnsaved": "Tiada perubahan belum disimpan",
       "notSaved": "Tidak disimpan: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Gagal memuatkan sumber salinan",
       "loadFailed": "Gagal memuatkan entri",
       "slugTaken": "Slug ini sudah digunakan oleh \"{{name}}\".",
-      "unsavedChanges": "Perubahan belum disimpan"
+      "unsavedChanges": "Perubahan belum disimpan",
+      "editSection": "Edit",
+      "notFilledIn": "Belum diisi",
+      "nothingFilledIn": "Belum ada yang diisi",
+      "statusSection": "Status",
+      "recordSection": "Rekod",
+      "showJson": "Papar sebagai JSON",
+      "showForm": "Papar sebagai borang",
+      "recordActions": "Tindakan rekod",
+      "sectionActions": "Tindakan bahagian",
+      "breadcrumb": "Jejak navigasi",
+      "copyTitle": "Salin",
+      "copied": "Disalin",
+      "more": "Lagi",
+      "moreFields": "{{count}} medan",
+      "moreOneField": "{{count}} medan"
     },
     "notFound": {
       "title": "Koleksi Tidak Ditemui",
@@ -426,7 +434,6 @@
       "add": "Tambah Item Menu"
     },
     "field": {
-      "enter": "Masukkan {{label}}...",
       "notSet": "Tidak ditetapkan",
       "auto": "Auto",
       "localeFallback": "Kosong dalam {{locale}} — tapak memaparkan nilai {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Tidak direkodkan",
-      "auto": "Direkodkan secara automatik — tidak boleh diedit di sini.",
-      "copied": "Disalin",
-      "copy": "Salin JSON",
       "filter": "Tapis mengikut kunci…",
       "empty": "Belum ada apa-apa direkodkan.",
       "noMatch": "Tiada yang sepadan dengan penapis itu."
@@ -659,7 +663,11 @@
       "general": "Umum",
       "moreIn": "Lagi dalam {{section}}",
       "thisSection": "Bahagian Ini",
-      "collapse": "Runtuhkan Bar Sisi"
+      "collapse": "Runtuhkan Bar Sisi",
+      "expand": "Kembangkan bar sisi",
+      "search": "Cari",
+      "searchShortcut": "⌘K",
+      "noMatches": "Tiada apa-apa dalam menu sepadan dengan “{{query}}”"
     },
     "workspace": {
       "unavailable": "Ruang kerja tidak tersedia",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Buka",
-      "loadFailed": "Angka widget ini tidak dapat dimuatkan. Muat semula halaman untuk mencuba lagi."
+      "loadFailed": "Angka widget ini tidak dapat dimuatkan. Muat semula halaman untuk mencuba lagi.",
+      "quiet": "Tiada yang menunggu: {{list}}"
     }
   },
   "notFound": {

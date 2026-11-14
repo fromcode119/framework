@@ -4,7 +4,6 @@ import { FrameworkIcons } from '@fromcode119/react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
 import { AdminPathUtils } from '@/lib/admin-path';
 import { AppEnv } from '@/lib/env';
-import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { ConsoleMountContext } from '@/components/view/console-mount-context.client';
 export class SidebarBrandHeader extends PureReactor {
@@ -14,34 +13,25 @@ export class SidebarBrandHeader extends PureReactor {
   @prop declare isMini: boolean | undefined;
   @prop declare platformName: string;
   @prop declare onClose: (() => void) | undefined;
+  /** The bell, beside the name. */
+  @prop declare notifications?: ReactNode;
 
   render(): ReactNode {
     const isMini = this.isMini;
     const platformName = this.platformName;
     const onClose = this.onClose;
     return (
-      <div className={`px-4 py-3.5 flex items-center shrink-0 ${isMini ? 'justify-center' : 'justify-between'}`}>
-        <div className={`flex items-center ${isMini ? 'justify-center px-1' : 'gap-3'}`}>
-          <div className={`flex h-9 w-9 items-center justify-center overflow-hidden ${AdminClass.SURFACE}`}>
-            <img src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_MARK_PATH, this.context)} alt={AdminI18n.t('shell.brand.markAlt', { name: platformName })} className="h-7 w-7 rounded-lg" />
-          </div>
-          {!isMini && (
-            <div className={`flex flex-col`}>
-              <span className="font-bold text-sm tracking-tight text-slate-900 dark:text-white leading-none">
-                {platformName}
-              </span>
-              <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-wider mt-1 leading-none">
-                {AdminI18n.t('shell.brand.by', { company: AppEnv.COMPANY_NAME })}
-              </span>
-            </div>
-          )}
-        </div>
-        <button
-          onClick={onClose}
-          className="lg:hidden p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-        >
-          <FrameworkIcons.Close size={20} />
-        </button>
+      <div className={`fc-nav-brand ${isMini ? 'fc-nav-brand--mini' : ''}`}>
+        <img src={AdminPathUtils.toBrowserPath(AppEnv.BRAND_MARK_PATH, this.context)} alt={AdminI18n.t('shell.brand.markAlt', { name: platformName })} className="fc-nav-brand__mark" />
+        {!isMini && <span className="fc-nav-brand__name">{platformName}</span>}
+        {!isMini && (
+          <span className="fc-nav-brand__tools">
+            {this.notifications}
+            <button type="button" onClick={onClose} aria-label={AdminI18n.t('common.close')} className="fc-nav-brand__tool fc-nav-brand__tool--narrow">
+              <FrameworkIcons.Close size={18} />
+            </button>
+          </span>
+        )}
       </div>
     );
   }

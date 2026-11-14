@@ -19,6 +19,51 @@ export class SidebarMenuService {
     AdminConstants.ROUTES.THEMES.ROOT,
   ];
 
+  /**
+   * Groups whose pages are the console's own upkeep — people, extensions, activity and the platform's
+   * tools — rather than the site's daily work. They are listed under Settings at the foot of the menu,
+   * so the menu above it holds only the sections a shop or a site is run from.
+   */
+  static readonly settingsAreaGroups: string[] = ['management', 'platform', 'system'];
+
+  /**
+   * The menu as it is drawn: one column of sections with no headings, then what belongs under Settings.
+   * The dashboard leads; the framework's other daily screen (media) closes the list; everything plugins
+   * declare sits between, in group order and then by each item's priority.
+   */
+  static sections(groupedMenu: Record<string, any[]>, settingsPath: string): { main: any[]; settingsArea: any[] } {
+    const root = NavUtils.normalizePath(AdminConstants.ROUTES.ROOT);
+    const media = NavUtils.normalizePath(AdminConstants.ROUTES.MEDIA.ROOT);
+    const core = groupedMenu['core'] || [];
+    const at = (path: string) => core.filter((item) => NavUtils.normalizePath(item.path) === path);
+    const plugins = SidebarMenuService.sortGroups(groupedMenu)
+      .filter((group) => group !== 'core' && !SidebarMenuService.settingsAreaGroups.includes(group))
+      .flatMap((group) => SidebarMenuService.byPlugin(groupedMenu[group] || []));
+    const settings = NavUtils.normalizePath(settingsPath);
+    const settingsArea = [
+      ...core.filter((item) => ![root, media].includes(NavUtils.normalizePath(item.path))),
+      ...SidebarMenuService.settingsAreaGroups.flatMap((group) => groupedMenu[group] || []),
+    ].filter((item) => NavUtils.normalizePath(item.path) !== settings);
+    return { main: [...at(root), ...plugins, ...at(media)], settingsArea };
+  }
+
+  /**
+   * A group's items with each plugin's sections kept together, in the order its first one arrives:
+   * two plugins sharing a group otherwise interleave by priority (a shop's Orders, then a carrier's
+   * overview, then the shop's Products). Each plugin's own order is its declared priority.
+   */
+  static byPlugin(items: any[]): any[] {
+    const rank = new Map<string, number>();
+    items.forEach((item) => {
+      const slug = String(item?.pluginSlug || '');
+      if (!rank.has(slug)) rank.set(slug, rank.size);
+    });
+    return items
+      .map((item, index) => ({ item, index }))
+      .sort((a, b) => (rank.get(String(a.item?.pluginSlug || ''))! - rank.get(String(b.item?.pluginSlug || ''))!) || a.index - b.index)
+      .map(({ item }) => item);
+  }
+
   static authorizeMenuItems(menuItems: any[], user: any): any[] {
     // Admins see everything.
     const isAdmin = !!user?.roles?.includes('admin');
@@ -75,7 +120,8 @@ export class SidebarMenuService {
     // a group label carrying internal capitals keeps them in the sidebar header.
     const groupLabels: Record<string, string> = {};
     const groupedMenu = groupedMenuItems.reduce((acc: Record<string, any[]>, item) => {
-      const rawGroup = NavUtils.normalizeGroupKey(item.group);
+      // Filed by the group as DECLARED (`groupKey`), not by its translation, which differs per language.
+      const rawGroup = NavUtils.normalizeGroupKey(item.groupKey || item.group);
       const originalLabel = String(item.group || '').trim();
       const groupKey = SidebarMenuService.resolveGroupKey(item.path, rawGroup);
 
@@ -140,7 +186,7 @@ export class SidebarMenuService {
   }
 
   static resolveActiveGroupKey(activeTopLevelItem: any): string {
-    const normalizedGroup = NavUtils.normalizeGroupKey(activeTopLevelItem?.group);
+    const normalizedGroup = NavUtils.normalizeGroupKey(activeTopLevelItem?.groupKey || activeTopLevelItem?.group);
     const path = String(activeTopLevelItem?.path || '');
     if (SidebarMenuService.coreGroupPaths.includes(path)) return 'core';
     if (SidebarMenuService.managementGroupPaths.includes(path)) return 'management';

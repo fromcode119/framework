@@ -167,13 +167,6 @@
       "sectionShow": "Pokaż",
       "sectionHide": "Ukryj",
       "sectionFieldCount": "Pola: {{count}}",
-      "fieldLevel": {
-        "label": "Wyświetlane pola",
-        "everyday": "Codzienne",
-        "occasional": "Okazjonalne",
-        "technical": "Techniczne",
-        "adds": "{{name}} · +{{count}}"
-      },
       "permalinkCard": "Podgląd i bezpośredni odnośnik",
       "permalinkHint": "Kliknij fragment ścieżki, aby zastąpić automatycznie wygenerowany slug.",
       "settings": "Ustawienia",
@@ -188,10 +181,10 @@
       "deletePermanently": "Usuń trwale",
       "relatedRecords": "Powiązane rekordy",
       "relatedEmpty": "Żadna inna wtyczka nie ma jeszcze rekordu powiązanego z tym.",
-      "recordPart": { "download": "Pobierz {{title}}", "person": "Osoba" },
-      "viewMode": "Tryb widoku rekordu",
-      "formView": "Widok formularza",
-      "jsonView": "Widok JSON",
+      "recordPart": {
+        "download": "Pobierz {{title}}",
+        "person": "Osoba"
+      },
       "unsavedIn": "Niezapisane zmiany w:",
       "noUnsaved": "Brak niezapisanych zmian",
       "notSaved": "Nie zapisano: {{reason}}",
@@ -230,7 +223,22 @@
       "duplicateFailed": "Nie udało się wczytać źródła kopii",
       "loadFailed": "Nie udało się wczytać wpisu",
       "slugTaken": "Ten slug jest już używany przez „{{name}}”.",
-      "unsavedChanges": "Niezapisane zmiany"
+      "unsavedChanges": "Niezapisane zmiany",
+      "editSection": "Edytuj",
+      "notFilledIn": "Nie wypełniono",
+      "nothingFilledIn": "Jeszcze nic nie wypełniono",
+      "statusSection": "Status",
+      "recordSection": "Rekord",
+      "showJson": "Pokaż jako JSON",
+      "showForm": "Pokaż jako formularz",
+      "recordActions": "Działania na rekordzie",
+      "sectionActions": "Działania w sekcji",
+      "breadcrumb": "Ścieżka nawigacji",
+      "copyTitle": "Kopiuj",
+      "copied": "Skopiowano",
+      "more": "Więcej",
+      "moreFields": "{{count}} pól",
+      "moreOneField": "{{count}} pole"
     },
     "notFound": {
       "title": "Nie znaleziono kolekcji",
@@ -426,7 +434,6 @@
       "add": "Dodaj pozycję menu"
     },
     "field": {
-      "enter": "Wpisz: {{label}}...",
       "notSet": "Nie ustawiono",
       "auto": "Automatycznie",
       "localeFallback": "Puste w {{locale}} — strona wyświetla wartość z {{fallback}}",
@@ -522,9 +529,6 @@
     },
     "structured": {
       "notRecorded": "Nie zapisano",
-      "auto": "Zapisywane automatycznie — nie można tu edytować.",
-      "copied": "Skopiowano",
-      "copy": "Kopiuj JSON",
       "filter": "Filtruj według klucza…",
       "empty": "Nic jeszcze nie zapisano.",
       "noMatch": "Nic nie pasuje do tego filtra."
@@ -659,7 +663,11 @@
       "general": "Ogólne",
       "moreIn": "Więcej w sekcji {{section}}",
       "thisSection": "Ta sekcja",
-      "collapse": "Zwiń pasek boczny"
+      "collapse": "Zwiń pasek boczny",
+      "expand": "Rozwiń pasek boczny",
+      "search": "Szukaj",
+      "searchShortcut": "⌘K",
+      "noMatches": "Nic w menu nie pasuje do „{{query}}”"
     },
     "workspace": {
       "unavailable": "Przestrzeń robocza niedostępna",
@@ -925,7 +933,8 @@
         }
       },
       "open": "Otwórz",
-      "loadFailed": "Nie udało się wczytać danych tego widżetu. Odśwież stronę, aby spróbować ponownie."
+      "loadFailed": "Nie udało się wczytać danych tego widżetu. Odśwież stronę, aby spróbować ponownie.",
+      "quiet": "Nic nie czeka: {{list}}"
     }
   },
   "notFound": {
