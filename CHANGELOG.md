@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 the commits between two release tags (`npm run changelog:write`), and the build fails a release whose
 version has no section (`npm run check:changelog`). To say more about a change, say it in the PR title.
 
+## [0.2.580] - 2026-11-14
+
+### Added
+
+- **admin**: minimal record page — header card, ⋯ menu, "Още" sections, cards edited in place; one dense dashboard ([#1420](https://github.com/fromcode119/framework/pull/1420))
+
+### Fixed
+
+- **ci**: release job discards its own manifest edit before landing on the commit ([#1421](https://github.com/fromcode119/framework/pull/1421))
+
 ## [0.2.579] - 2026-11-13
 
 ### Fixed
