@@ -113,6 +113,55 @@ describe('Sidebar', () => {
     expect(foot).toContain('Activity');
   });
 
+  it('lists every upkeep page on its own line, not folded under the column group it came from', () => {
+    mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    const { menuItems } = mockUsePlugins();
+    mockUsePlugins.mockReturnValue({
+      plugins: [],
+      menuItems: [
+        ...menuItems.map((item: any) => (item.path === '/settings'
+          ? { ...item, children: [{ label: 'General', path: '/settings/general' }, { label: 'Security', path: '/settings/security' }] }
+          : item)),
+        { label: 'Jobs', path: '/jobs', pluginSlug: 'system', group: 'Platform', icon: 'Clock' },
+      ],
+    });
+
+    const { container } = renderSidebar();
+
+    expect(container.querySelector('.fc-nav-foot .fc-nav-sub__item--group')).toBeNull();
+    const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
+    expect(foot).toContain('Users');
+    expect(foot).toContain('Jobs');
+    expect(foot).not.toContain('Platform');
+  });
+
+  it('does not fold the pages Settings itself brings under their column groups either', () => {
+    mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
+    mockUsePlugins.mockReturnValue({
+      plugins: [],
+      menuItems: [
+        { label: 'Dashboard', path: '/', pluginSlug: 'system', group: 'Core', icon: 'Dashboard' },
+        {
+          label: 'Settings', path: '/settings', pluginSlug: 'system', group: 'System', icon: 'Settings',
+          children: [
+            { label: 'Plugins', path: '/plugins', group: 'Management' },
+            { label: 'Users', path: '/users', group: 'Platform' },
+            { label: 'Jobs', path: '/jobs', group: 'Platform' },
+            { label: 'Privacy', path: '/privacy', group: 'Платформа' },
+            { label: 'Search', path: '/search', group: 'Платформа' },
+          ],
+        },
+      ],
+    });
+
+    const { container } = renderSidebar();
+
+    expect(container.querySelector('.fc-nav-foot .fc-nav-sub__item--group')).toBeNull();
+    const foot = container.querySelector('.fc-nav-foot')?.textContent || '';
+    expect(foot).toContain('Users');
+    expect(foot).toContain('Privacy');
+  });
+
   it('shows no page of Settings while you are elsewhere', () => {
     mockUseAuth.mockReturnValue({ user: { roles: ['admin'] } });
     mockUsePathname.mockReturnValue('/');
