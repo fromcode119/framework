@@ -716,6 +716,17 @@ html.dark {
 .fc-checkbox__box[data-disabled="true"] { opacity: .5; }
 .fc-checkbox__dash { width: 8px; height: 2px; border-radius: 1px; background: currentColor; }
 .fc-checkbox__label { font-size: 13px; color: var(--fc-text); user-select: none; }
+/* Ticking it: the box fills with a small give, then the tick draws itself. The tick mounts only when
+   checked, so the animation plays on every tick and never on load of an unticked box. */
+.fc-checkbox__box[data-checked="true"] { animation: fc-checkbox-pop .22s cubic-bezier(.3, 1.5, .6, 1); }
+.fc-checkbox__box svg path { stroke-dasharray: 23; stroke-dashoffset: 23; animation: fc-checkbox-draw .2s .06s ease-out forwards; }
+.fc-checkbox__dash { animation: fc-checkbox-pop .2s ease-out; }
+@keyframes fc-checkbox-pop { 0% { transform: scale(.82); } 100% { transform: scale(1); } }
+@keyframes fc-checkbox-draw { to { stroke-dashoffset: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .fc-checkbox__box[data-checked="true"], .fc-checkbox__dash { animation: none; }
+  .fc-checkbox__box svg path { animation: none; stroke-dashoffset: 0; }
+}
 .fc-menu-action { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; text-align: start; color: var(--fc-text); }
 .fc-menu-action:hover:not(:disabled) { background: var(--fc-surface-muted); }
 .fc-menu-action:disabled { cursor: progress; }
