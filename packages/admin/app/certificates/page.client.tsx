@@ -13,6 +13,7 @@ import { CertificateStatusNotices } from '@/app/certificates/components/certific
 import { CertificateUploadDialog } from '@/app/certificates/components/certificate-upload-dialog.client';
 import { CertificatesClient } from '@/lib/certificates/certificates-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 import { CertificateListPoller } from '@/lib/certificates/certificate-list-poller';
 
@@ -137,7 +138,7 @@ export class CertificatesPageClient extends AdminComponent {
     if (this.isLoading) return <Loader />;
 
     return (
-      <div className="fc-certificates">
+      <div className={`fc-certificates ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={this.theme}
           icon={<FrameworkIcons.Lock size={18} strokeWidth={2} />}

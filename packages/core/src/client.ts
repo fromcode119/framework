@@ -256,6 +256,7 @@ export { AcmeDirectory } from '@core/certificates/acme/enums/acme-directory.enum
 // admin needs them to render the first-run screen before any of the server-only code could load.
 export { DatabaseDriverChoice } from '@core/security/enums/database-driver-choice.enum';
 export { SetupPhase } from '@core/tenant/enums/setup-phase.enum';
+export { RoleScope } from '@core/tenant/enums/role-scope.enum';
 export { CertificateSource } from '@core/enums/certificate-source.enum';
 export { CertificateState } from '@core/enums/certificate-state.enum';export { LayoutTargetKind } from '@core/layout/enums/layout-target-kind.enum';
 export { LayoutResolutionSource } from '@core/layout/enums/layout-resolution-source.enum';

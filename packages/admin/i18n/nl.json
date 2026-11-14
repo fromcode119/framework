@@ -3601,6 +3601,11 @@
       "failed": "Je meldingsinstellingen konden niet worden opgeslagen. Probeer het opnieuw.",
       "alertsIntroOther": "Kies welke meldingen deze persoon ontvangt, per e-mail en in de bel van de console. Anderen die deze site beheren blijven ze ontvangen.",
       "emailsIntroOther": "Optionele e-mails naar het adres van deze persoon. Bonnen en e-mails over accountbeveiliging worden altijd verzonden."
+    },
+    "filter": {
+      "all": "Alle",
+      "active": "Actief",
+      "suspended": "Geschorst"
     }
   },
   "scope": {

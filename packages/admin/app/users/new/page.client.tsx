@@ -10,6 +10,7 @@ import { NewUserAccountFields } from '@/app/users/new/components/view/new-user-a
 import { NewUserAccessControls } from '@/app/users/new/components/view/new-user-access-controls.client';
 import type { INewUserFormData } from '@/app/users/new/interfaces/new-user-form-data.interface';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AccountStatus } from '@/app/users/enums/account-status.enum';
 
 export class NewUserPage extends AdminComponent {
   private mounted = false;
@@ -22,7 +23,7 @@ export class NewUserPage extends AdminComponent {
     username: '',
     firstName: '',
     lastName: '',
-    accountStatus: 'active',
+    accountStatus: AccountStatus.ACTIVE.value,
     forcePasswordReset: false,
     password: '',
     confirmPassword: '',

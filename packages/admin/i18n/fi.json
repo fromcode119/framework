@@ -3601,6 +3601,11 @@
       "failed": "Ilmoitusasetuksiasi ei voitu tallentaa. Yritä uudelleen.",
       "alertsIntroOther": "Valitse, mitkä hälytykset tämä henkilö saa sähköpostitse ja konsolin kellossa. Muut tätä sivustoa hallinnoivat saavat ne edelleen.",
       "emailsIntroOther": "Valinnaisia sähköposteja tämän henkilön osoitteeseen. Kuitit ja tilin turvallisuutta koskevat sähköpostit lähetetään aina."
+    },
+    "filter": {
+      "all": "Kaikki",
+      "active": "Aktiiviset",
+      "suspended": "Jäädytetyt"
     }
   },
   "scope": {

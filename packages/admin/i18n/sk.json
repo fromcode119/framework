@@ -3601,6 +3601,11 @@
       "failed": "Nastavenia upozornení sa nepodarilo uložiť. Skúste to znova.",
       "alertsIntroOther": "Vyberte, ktoré upozornenia bude táto osoba dostávať e-mailom a v zvončeku konzoly. Ostatní správcovia tohto webu ich naďalej dostávajú.",
       "emailsIntroOther": "Voliteľné e-maily odosielané na adresu tejto osoby. Potvrdenia a e-maily o zabezpečení účtu sa odosielajú vždy."
+    },
+    "filter": {
+      "all": "Všetci",
+      "active": "Aktívni",
+      "suspended": "Pozastavení"
     }
   },
   "scope": {

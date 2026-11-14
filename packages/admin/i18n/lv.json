@@ -3601,6 +3601,11 @@
       "failed": "Jūsu paziņojumu iestatījumus neizdevās saglabāt. Mēģiniet vēlreiz.",
       "alertsIntroOther": "Izvēlieties, kurus brīdinājumus šī persona saņem e-pastā un konsoles zvaniņā. Pārējie šīs vietnes pārvaldītāji tos turpina saņemt.",
       "emailsIntroOther": "Neobligāti e-pasti, kas tiek sūtīti uz šīs personas adresi. Kvītis un konta drošības e-pasti tiek sūtīti vienmēr."
+    },
+    "filter": {
+      "all": "Visi",
+      "active": "Aktīvie",
+      "suspended": "Apturētie"
     }
   },
   "scope": {

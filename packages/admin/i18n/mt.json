@@ -3601,6 +3601,11 @@
       "failed": "L-issettings tan-notifiki tiegħek ma setgħux jinħażnu. Erġa' pprova.",
       "alertsIntroOther": "Agħżel liema twissijiet jirċievi din il-persuna, bl-email u fil-qanpiena tal-konsol. Oħrajn li jmexxu dan is-sit ikomplu jirċevuhom.",
       "emailsIntroOther": "Emails fakultattivi mibgħuta fl-indirizz ta' din il-persuna. Irċevuti u emails dwar is-sigurtà tal-kont dejjem jintbagħtu."
+    },
+    "filter": {
+      "all": "Kollha",
+      "active": "Attivi",
+      "suspended": "Sospiżi"
     }
   },
   "scope": {

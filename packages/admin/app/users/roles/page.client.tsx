@@ -9,11 +9,11 @@ import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminLink } from '@/components/view/admin-link.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
 import { Loader } from '@/components/ui/view/loader.client';
-import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { RolesListCard } from '@/app/users/roles/components/view/roles-list-card.client';
 import { RolesAuditSidebar } from '@/app/users/roles/components/view/roles-audit-sidebar.client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
 import { PlatformAccess } from '@/lib/tenants/platform-access';
 
 export class RolesPage extends AdminComponent {
@@ -106,10 +106,9 @@ export class RolesPage extends AdminComponent {
     }
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-300">
+      <div className={`w-full flex flex-col animate-in fade-in duration-300 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Shield size={18} strokeWidth={2} />}
           title={AdminI18n.t('users.roles')}
           subtitle={AdminI18n.t('users.manageUserRolesAndSecurity')}
           actions={!this.canCreate ? null :
@@ -121,31 +120,10 @@ export class RolesPage extends AdminComponent {
           }
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6">
-          <div className="space-y-6 pb-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-              <div className="lg:col-span-12 xl:col-span-8 space-y-6">
-                <RolesListCard
-                  roles={roles}
-                  theme={theme}
-                  onRequestDelete={this.requestDelete}
-                />
-              </div>
-
-              <RolesAuditSidebar logs={logs} health={health} loading={loading} theme={theme} />
-            </div>
-          </div>
+        <div className="w-full p-6 space-y-6">
+          <RolesListCard roles={roles} onRequestDelete={this.requestDelete} onNavigate={(href: string) => this.router.push(href)} />
+          <RolesAuditSidebar logs={logs} health={health} loading={loading} theme={theme} />
         </div>
-
-        <AdminPageFooter
-          label={AdminI18n.t('users.rolesManagement')}
-          description={AdminI18n.t('users.manageAndCustomizeSystemAccess')}
-          links={[
-            { label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.LIST },
-            { label: AdminI18n.t('users.permissions'), href: AdminConstants.ROUTES.USERS.PERMISSIONS },
-            { label: AdminI18n.t('users.activityLog'), href: AdminConstants.ROUTES.ACTIVITY },
-          ]}
-        />
 
         <ConfirmDialog
           isOpen={showDeleteConfirm}

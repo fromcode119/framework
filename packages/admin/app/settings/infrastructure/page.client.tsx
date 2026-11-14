@@ -42,7 +42,7 @@ export class InfrastructureSettingsPage extends InfrastructureSettingsPageCards 
     // header naming that one customer. The screen belongs to the platform scope, like Sites and
     // Sources.
     return (
-      <PlatformScopeGate what={AdminI18n.t('settings.infrastructure.infrastructureHealth')}>
+      <PlatformScopeGate page what={AdminI18n.t('settings.infrastructure.infrastructureHealth')}>
         {this.body()}
       </PlatformScopeGate>
     );

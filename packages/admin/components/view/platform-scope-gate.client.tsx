@@ -5,6 +5,8 @@ import { PlatformAccess } from '@/lib/tenants/platform-access';
 import { PlatformSettingLocks } from '@/lib/settings/platform-setting-locks';
 import { TenantScopeClient } from '@/lib/tenants/tenant-scope-client';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { AdminClass } from '@/lib/admin-class';
+import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { NotificationType } from '@/components/enums/notification-type.enum';
 
 /**
@@ -22,13 +24,18 @@ import { NotificationType } from '@/components/enums/notification-type.enum';
  * Renders its children unchanged on a single-tenant deployment: there is no second scope to be in.
  */
 export class PlatformScopeGate extends AdminComponent {
-  declare props: Pick<PlatformScopeGate, 'what' | 'text' | 'children'>;
+  declare props: Pick<PlatformScopeGate, 'what' | 'text' | 'children' | 'page'>;
 
   /** What this screen is, named in the sentence: "Sources lives in Platform scope." */
   @prop declare what: string;
   /** The whole sentence, when the screen says it in its own words instead of naming `what`. */
   @prop declare text?: string;
   @prop declare children: ReactNode;
+  /**
+   * The gate stands for the WHOLE page (a menu entry of its own), so it draws the page's title above
+   * the notice; a gate inside a page that already has its header leaves it out.
+   */
+  @prop declare page?: boolean;
 
   @state private locks = PlatformSettingLocks.none();
   @state private resolved = false;
@@ -57,9 +64,10 @@ export class PlatformScopeGate extends AdminComponent {
     // load in the scope where the screen is perfectly valid, which is the common case.
     if (!this.resolved || !this.locks.isSiteScope()) return this.children;
 
-    // One line: where this console stands when its host fixes it to the site, the sentence, and the
-    // switch when there is a platform to switch to from here.
-    return (
+    // The page keeps its own title, so an operator who landed here sees WHICH screen this is; under
+    // it one line: where this console stands when its host fixes it to the site, the sentence, and
+    // the switch when there is a platform to switch to from here.
+    const notice = (
       <p className="fc-scope-notice">
         {this.hostLocked ? <span className="fc-scope-notice__text">{AdminI18n.t('shell.site.lockedShort')} </span> : null}
         <span className="fc-scope-notice__text">{this.text || AdminI18n.t('ui.scopeGate.text', { what: this.what })}</span>
@@ -67,6 +75,13 @@ export class PlatformScopeGate extends AdminComponent {
           <button type="button" className="fc-scope-notice__go" onClick={this.openPlatformScope}>{AdminI18n.t('ui.scopeGate.open')}</button>
         ) : null}
       </p>
+    );
+    if (!this.page) return notice;
+    return (
+      <div className={`w-full ${AdminClass.of('settings-page')}`}>
+        <CompactPageHeader title={this.what} />
+        {notice}
+      </div>
     );
   }
 }

@@ -27,7 +27,7 @@
 }
 
 /* ── The page column: header and content share one centred width ─────────────────────────────── */
-.fc-settings-page { width: 100%; max-width: var(--fc-settings-page-max); margin-inline: auto; }
+.fc-settings-page { width: 100%; max-width: var(--fc-settings-page-max); margin-inline: 0; }  /* beside the menu, never floating in the middle of a wide screen */
 .fc-settings-page .fc-page-header { position: static; border-bottom: 0; background: none; backdrop-filter: none; }
 .fc-settings-page .fc-page-header__inner { padding: 20px 24px 4px; }
 .fc-settings-page .fc-scope-notice { margin-top: 8px; }
@@ -90,6 +90,9 @@
 .fc-settings-row__control--field { width: var(--fc-settings-control-field); }
 .fc-settings-row__control--narrow { width: var(--fc-settings-control-narrow); }
 .fc-settings-row__control--auto { width: auto; }
+/* A read-only value in a row: what is recorded, not an input. */
+.fc-settings-value { font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); overflow-wrap: anywhere; text-align: end; }
+.fc-settings-value--empty { font-weight: 400; color: var(--fc-text-muted); }
 /* The control fills the room the row gives it; a width or weight a caller set on its input is not
    a second answer to that. */
 .fc-settings-row__control--field > *, .fc-settings-row__control--narrow > * { flex: 1 1 auto; min-width: 0; width: 100%; }
@@ -204,10 +207,16 @@
   border-radius: 8px; background: var(--fc-surface-muted); color: var(--fc-brand);
 }
 .fc-ext-row__icon img { width: 18px; height: 18px; object-fit: contain; }
+/* A person's row carries their initials where a plugin carries its icon. */
+.fc-ext-row__icon--person { border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.02em; }
 .fc-ext-row__text { flex: 1 1 auto; min-width: 0; }
 .fc-ext-row__name { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fc-settings-label); font-weight: 600; color: var(--fc-text); }
 .fc-ext-row__name a { color: inherit; text-decoration: none; }
 .fc-ext-row__name a:hover { color: var(--fc-brand); }
+.fc-ext-row__link { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
+.fc-ext-row__link:hover { color: var(--fc-brand); }
+.fc-ext-row__link { padding: 0; border: 0; background: none; font: inherit; color: inherit; cursor: pointer; text-align: start; }
+.fc-ext-row__link:hover { color: var(--fc-brand); }
 .fc-ext-row__desc { margin: 1px 0 0; font-size: var(--fc-settings-text); color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .fc-ext-row__desc--error { color: var(--fc-danger); font-weight: 500; }
 .fc-ext-row__meta { flex: none; width: var(--fc-settings-meta-width); text-align: end; font-size: 11px; color: var(--fc-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

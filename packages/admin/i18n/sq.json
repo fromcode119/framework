@@ -3601,6 +3601,11 @@
       "failed": "Cilësimet e njoftimeve nuk u ruajtën. Provoni përsëri.",
       "alertsIntroOther": "Zgjidhni cilat alarme i merr ky person, me email dhe në zilen e konsolës. Të tjerët që administrojnë këtë faqe vazhdojnë t'i marrin.",
       "emailsIntroOther": "Email-e opsionale që dërgohen në adresën e këtij personi. Faturat dhe email-et e sigurisë së llogarisë dërgohen gjithmonë."
+    },
+    "filter": {
+      "all": "Të gjithë",
+      "active": "Aktivë",
+      "suspended": "Të pezulluar"
     }
   },
   "scope": {

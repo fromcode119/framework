@@ -1,16 +1,13 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { ThemeMode } from '@fromcode119/core/client';
 import type { ReactElement } from 'react';
 import { AdminApi } from '@/lib/api';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { FrameworkIcons } from '@fromcode119/react';
-import { DataTable } from '@/components/ui/view/data-table.client';
-import { StatCard } from '@/components/ui/view/stat-card.client';
+import { DataTablePagination } from '@/components/ui/view/data-table-pagination.client';
+import { PeopleRow } from '@/app/users/people/components/view/people-row.client';
+import { PeopleListFilter } from '@/app/users/people/enums/people-list-filter.enum';
 import { Loader } from '@/components/ui/view/loader.client';
-import { Button } from '@/components/ui/view/button.client';
 import { CompactPageHeader } from '@/components/ui/view/compact-page-header.client';
 import { ConfirmDialog } from '@/components/ui/view/confirm-dialog.client';
-import { AdminPageFooter } from '@/components/ui/view/admin-page-footer.client';
 import { AdminComponent } from '@/components/view/admin-component.client';
 import { state } from '@fromcode119/react-class-components';
 import type { IPerson } from '@/app/users/people/interfaces/person.interface';
@@ -22,13 +19,14 @@ import { Input } from '@/components/ui/view/input.client';
 export class PeoplePage extends AdminComponent {
   private mounted = false;
 
-  private static readonly PAGE_SIZE = 10;
+  private static readonly PAGE_SIZE = 20;
 
   @state searchQuery = '';
   @state page = 1;
   @state people: IPerson[] = [];
   @state loading = true;
-  @state stats: { total: number; linked: number; unlinked: number } = { total: 0, linked: 0, unlinked: 0 };
+  /** Which of the counted tabs is open. */
+  @state filter: PeopleListFilter = PeopleListFilter.ALL;
   @state grantConfirm: IPerson | null = null;
   @state isGranting = false;
   @state error = '';
@@ -47,9 +45,7 @@ export class PeoplePage extends AdminComponent {
       const response = await AdminApi.get(AdminConstants.ENDPOINTS.SYSTEM.PEOPLE);
       const people: IPerson[] = response.docs || [];
       if (!this.mounted) return;
-      const linked = people.filter((p) => p.userId != null && p.userId !== '').length;
       this.people = people;
-      this.stats = { total: people.length, linked, unlinked: people.length - linked };
     } catch (err) {
       console.error('Failed to fetch people:', err);
     } finally {
@@ -88,49 +84,19 @@ export class PeoplePage extends AdminComponent {
 
   private get filteredPeople(): IPerson[] {
     const q = this.searchQuery.toLowerCase();
+    const inTab = this.people.filter((p) => this.filter.matches(p));
     const base = !q
-      ? this.people
-      : this.people.filter((p) =>
+      ? inTab
+      : inTab.filter((p) =>
           this.displayName(p).toLowerCase().includes(q) || (p.email || '').toLowerCase().includes(q),
         );
-    // Sort by source so the grouped table renders each source's rows contiguously.
+    // Sorted by source, then name, so people from one source sit together.
     return [...base].sort((a, b) => {
       const s = PeoplePage.sourceLabel(a).localeCompare(PeoplePage.sourceLabel(b));
       return s !== 0 ? s : this.displayName(a).localeCompare(this.displayName(b));
     });
   }
 
-  private get columns(): any[] {
-    const theme = this.theme;
-    return [
-      {
-        header: AdminI18n.t('users.person2'), id: 'person',
-        accessor: (p: IPerson) => (
-          <div>
-            <div className={`font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-900'}`}>{this.displayName(p)}</div>
-            <div className="text-[11px] font-bold tracking-tight text-slate-500 flex items-center gap-1 opacity-70">
-              <FrameworkIcons.Mail size={12} /> {p.email || '—'}{p.phone ? ` · ${p.phone}` : ''}
-            </div>
-          </div>
-        ),
-      },
-      {
-        header: AdminI18n.t('users.loginAccount'), id: 'linked',
-        accessor: (p: IPerson) => (p.userId != null && p.userId !== '')
-          ? <span className="font-bold text-emerald-500 text-[11px] tracking-tight flex items-center gap-1"><FrameworkIcons.UserCheck size={14} /> {AdminI18n.t('users.linkedToUser', { id: p.userId })}</span>
-          : <span className="font-bold text-slate-400 text-[11px] tracking-tight">{AdminI18n.t('users.noAccount')}</span>,
-      },
-      {
-        header: AdminI18n.t('users.added'), id: 'createdAt',
-        accessor: (p: IPerson) => (
-          <div className="flex items-center gap-2 font-bold text-[11px] tracking-tight text-slate-500">
-            <FrameworkIcons.Calendar size={14} className="opacity-50" />
-            {p.createdAt ? new Date(p.createdAt).toLocaleDateString() : '—'}
-          </div>
-        ),
-      },
-    ];
-  }
 
   /** People belong to a site: with none to hold them, the screen says so instead (SiteRequiredNotice). */
   render(): ReactElement {
@@ -139,7 +105,7 @@ export class PeoplePage extends AdminComponent {
 
   private renderPeople(): ReactElement {
     const theme = this.theme;
-    const { searchQuery, page, loading, stats, grantConfirm, isGranting, error } = this;
+    const { searchQuery, page, loading, grantConfirm, isGranting, error } = this;
     const limit = PeoplePage.PAGE_SIZE;
     const filtered = this.filteredPeople;
     const totalPages = Math.max(1, Math.ceil(filtered.length / limit));
@@ -155,70 +121,50 @@ export class PeoplePage extends AdminComponent {
     }
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <CompactPageHeader
           theme={theme}
-          icon={<FrameworkIcons.Users size={18} strokeWidth={2} />}
           title={AdminI18n.t('users.people')}
           subtitle={AdminI18n.t('users.everyoneInTheUnifiedIdentity')}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6 space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <StatCard title={AdminI18n.t('users.people')} value={stats.total.toLocaleString()} icon={<FrameworkIcons.Users size={20} />} />
-            <StatCard title={AdminI18n.t('users.withLoginAccount')} value={stats.linked.toLocaleString()} icon={<FrameworkIcons.UserCheck size={20} />} />
-            <StatCard title={AdminI18n.t('users.contactsOnly')} value={stats.unlinked.toLocaleString()} icon={<FrameworkIcons.Mail size={20} />} />
+        <div className="w-full p-6">
+          {error ? <div className={`${AdminClass.of('ext-alert')} ${AdminClass.of('ext-alert--danger')}`} role="alert"><span className={AdminClass.of('ext-alert__text')}>{error}</span></div> : null}
+
+          <div className={AdminClass.of('ext-tabbar')}>
+            <nav className={AdminClass.of('ext-tabs')} aria-label={AdminI18n.t('users.people')}>
+              {PeopleListFilter.all().map((filter) => (
+                <button key={filter.value} type="button" className={AdminClass.of('ext-tabs__tab')}
+                  aria-current={this.filter === filter ? 'page' : undefined}
+                  onClick={() => { this.filter = filter; this.page = 1; }}>
+                  {AdminI18n.t(filter.labelKey)}<span className={AdminClass.of('ext-tabs__count')}>{this.people.filter((p) => filter.matches(p)).length}</span>
+                </button>
+              ))}
+            </nav>
+            <div className={AdminClass.of('ext-toolbar')}>
+              <div className={AdminClass.of('ext-toolbar__search')}>
+                <FrameworkIcons.Search size={16} />
+                <Input
+                  type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
+                  onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
+                  inputClassName="ps-10"
+                />
+              </div>
+            </div>
           </div>
 
-          {error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{error}</div> : null}
-
-          <div className="relative flex-1 group">
-            <div className="absolute start-4 top-1/2 -translate-y-1/2 text-slate-400"><FrameworkIcons.Search size={18} /></div>
-            <Input
-              type="text" placeholder={AdminI18n.t('users.searchPeopleByNameOr')} value={searchQuery}
-              onChange={(e) => { this.searchQuery = e.target.value; this.page = 1; }}
-              inputClassName="ps-11"
-            />
-          </div>
-
-          <div className={`${AdminClass.SURFACE} overflow-hidden ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-slate-200 shadow-sm'}`}>
-            <DataTable
-              columns={this.columns}
-              data={pageItems}
-              loading={false}
-              totalDocs={filtered.length}
-              limit={limit}
-              page={currentPage}
-              onPageChange={(p) => { this.page = p; }}
-              groupBy={(person: IPerson) => PeoplePage.sourceLabel(person)}
-              emptyMessage={AdminI18n.t('users.noPeopleMatchYourQuery')}
-              actions={(person: IPerson) => (
-                <div className="flex items-center justify-end gap-2">
-                  <Button
-                    variant={ButtonVariant.GHOST}
-                    className="h-9 px-3 rounded-xl font-bold tracking-tight text-[11px]"
-                    icon={<FrameworkIcons.Edit size={14} />}
-                    onClick={() => this.router?.push(AdminConstants.ROUTES.PEOPLE.DETAIL(person.id))}
-                  >
-                    {AdminI18n.t('users.edit')}
-                  </Button>
-                  {(person.userId != null && person.userId !== '') ? (
-                    <span className="text-[11px] font-bold text-slate-400 pe-2">{AdminI18n.t('users.linked')}</span>
-                  ) : (
-                    <Button
-                      variant={ButtonVariant.SECONDARY}
-                      className="h-9 px-4 rounded-xl font-bold tracking-tight text-[11px]"
-                      icon={<FrameworkIcons.Plus size={14} />}
-                      onClick={() => { this.grantConfirm = person; }}
-                      disabled={!person.email}
-                    >
-                      {AdminI18n.t('users.createLoginAccount')}
-                    </Button>
-                  )}
-                </div>
-              )}
-            />
-          </div>
+          {pageItems.length === 0 ? (
+            <div className={`${AdminClass.of('ext-list')} ${AdminClass.of('ext-empty')}`}>{AdminI18n.t('users.noPeopleMatchYourQuery')}</div>
+          ) : (
+            <div className={AdminClass.of('ext-list')}>
+              {pageItems.map((person) => (
+                <PeopleRow key={person.id} person={person} name={this.displayName(person)} source={PeoplePage.sourceLabel(person)}
+                  onEdit={() => this.router?.push(AdminConstants.ROUTES.PEOPLE.DETAIL(person.id))}
+                  onGrantLogin={() => { this.grantConfirm = person; }} />
+              ))}
+            </div>
+          )}
+          <DataTablePagination totalDocs={filtered.length} limit={limit} page={currentPage} onPageChange={(p: number) => { this.page = p; }} />
         </div>
 
         <ConfirmDialog
@@ -229,12 +175,6 @@ export class PeoplePage extends AdminComponent {
           title={AdminI18n.t('users.createLoginAccount2')}
           description={AdminI18n.t('users.thisCreatesALoginAccount', { email: grantConfirm?.email })}
           confirmLabel={AdminI18n.t('users.createAccount')}
-        />
-
-        <AdminPageFooter
-          label={AdminI18n.t('users.unifiedIdentity')}
-          description={AdminI18n.t('users.peopleAreTheCanonicalIdentity')}
-          links={[{ label: AdminI18n.t('users.users'), href: AdminConstants.ROUTES.USERS.ROOT }]}
         />
       </div>
     );

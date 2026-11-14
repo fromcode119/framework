@@ -3601,6 +3601,11 @@
       "failed": "Nastavitev obvestil ni bilo mogoče shraniti. Poskusite znova.",
       "alertsIntroOther": "Izberite, katera opozorila prejema ta oseba po e-pošti in v zvončku konzole. Drugi, ki upravljajo to spletno mesto, jih še naprej prejemajo.",
       "emailsIntroOther": "Izbirna e-pošta, poslana na naslov te osebe. Potrdila o plačilu in e-pošta o varnosti računa se pošiljajo vedno."
+    },
+    "filter": {
+      "all": "Vsi",
+      "active": "Aktivni",
+      "suspended": "Začasno onemogočeni"
     }
   },
   "scope": {

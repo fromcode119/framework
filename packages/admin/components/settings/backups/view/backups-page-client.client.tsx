@@ -32,7 +32,7 @@ export class BackupsPageClient extends Bridge<IBackupsPageBridgeValues> {
     // other customer back, on a console headed with that one customer's name. The scope gate is the
     // WHERE half, and it wraps the WHO check rather than replacing it.
     return (
-      <PlatformScopeGate what={AdminI18n.t('settings.components.backups')}>
+      <PlatformScopeGate page what={AdminI18n.t('settings.components.backups')}>
         {canManagePlatform
           ? <BackupsPageClientView theme={theme} controller={controller} />
           : <PlatformOnlyPanel detail={AdminI18n.t('settings.components.aSystemBackupContainsEvery')} />}

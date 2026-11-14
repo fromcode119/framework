@@ -3601,6 +3601,11 @@
       "failed": "No se pudo guardar tu configuración de notificaciones. Inténtalo de nuevo.",
       "alertsIntroOther": "Elige qué alertas recibe esta persona, por correo electrónico y en la campana de la consola. Las demás personas que gestionan este sitio siguen recibiéndolas.",
       "emailsIntroOther": "Correos opcionales enviados a la dirección de esta persona. Los recibos y los correos de seguridad de la cuenta se envían siempre."
+    },
+    "filter": {
+      "all": "Todos",
+      "active": "Activos",
+      "suspended": "Suspendidos"
     }
   },
   "scope": {

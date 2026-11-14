@@ -165,7 +165,7 @@ export class IntegrationsSettingsPageClient extends IntegrationsSettingsPageActi
     }
 
     if (this.platformOnlyType) {
-      return <div className="p-8 lg:p-12"><PlatformScopeGate what={this.platformOnlyType.label}>{null}</PlatformScopeGate></div>;
+      return <PlatformScopeGate page what={this.platformOnlyType.label}>{null}</PlatformScopeGate>;
     }
 
     if (!this.integrations.length) {

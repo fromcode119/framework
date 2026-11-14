@@ -1,82 +1,66 @@
-import { ButtonVariant } from '@/components/ui/enums/button-variant.enum';
-import { FieldSize } from '@/components/ui/enums/field-size.enum';
-import { ThemeMode } from '@fromcode119/core/client';
+import type { ThemeMode } from '@fromcode119/core/client';
+import { RoleScope } from '@fromcode119/core/client';
 import type { ReactNode } from 'react';
 import { PureReactor, prop } from '@fromcode119/react-class-components';
-import { Card } from '@/components/ui/view/card.client';
-import { Button } from '@/components/ui/view/button.client';
 import { FrameworkIcons } from '@fromcode119/react';
+import { Dropdown } from '@/components/ui/view/dropdown.client';
+import { DropdownItemVariant } from '@/components/ui/enums/dropdown-item-variant.enum';
+import { HorizontalAlign } from '@/components/ui/enums/horizontal-align.enum';
 import { AdminConstants } from '@/lib/constants/admin.constants';
 import { AdminLink } from '@/components/view/admin-link.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
+import { RoleType } from '@/app/users/roles/enums/role-type.enum';
 
+/**
+ * The roles, one line each like the users and plugins lists: name with where it is defined, what it
+ * is for, how many people hold it and how many permissions it grants, and its menu. A role this
+ * editor may not change shows a lock instead of a menu, rather than an edit the API refuses.
+ */
 export class RolesListCard extends PureReactor {
   @prop declare roles: any[];
-  @prop declare theme: ThemeMode;
+  /** Accepted for backward-compat and ignored — the look comes from `settings.css`. */
+  @prop declare theme?: ThemeMode;
   @prop declare onRequestDelete: (role: any) => void;
+  @prop declare onNavigate: (href: string) => void;
+
+  private row(role: any): ReactNode {
+    const pill = AdminClass.of('ext-pill');
+    const isSystem = RoleType.resolve(role.type) === RoleType.SYSTEM;
+    const locked = isSystem || role.editable === false;
+    const scope = role.scope ? RoleScope.fromValue(String(role.scope)) : undefined;
+    const users = Number(role.users) || 0;
+    const meta = `${users} ${users === 1 ? AdminI18n.t('users.userWord') : AdminI18n.t('users.usersWord')} · ${AdminI18n.t('users.permsCount', { count: role.permissions?.length || 0 })}`;
+    return (
+      <div key={role.slug} className={AdminClass.of('ext-row')}>
+        <div className={AdminClass.of('ext-row__icon')}><FrameworkIcons.Shield size={16} /></div>
+        <div className={AdminClass.of('ext-row__text')}>
+          <div className={AdminClass.of('ext-row__name')}>
+            {locked ? <span>{role.name}</span> : <AdminLink href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)}>{role.name}</AdminLink>}
+            {scope ? <span className={`${pill}${scope === RoleScope.SITE ? ` ${AdminClass.of('ext-pill--ok')}` : ''}`}>{scope === RoleScope.SITE ? AdminI18n.t('users.roleScopeSite') : AdminI18n.t('users.roleScopePlatform')}</span> : null}
+          </div>
+          <p className={AdminClass.of('ext-row__desc')} title={role.description || undefined}>{role.description || AdminI18n.t('users.noDescription')}</p>
+        </div>
+        <div className={AdminClass.of('ext-row__meta')} title={meta}>{meta}</div>
+        <div className={AdminClass.of('ext-row__actions')}>
+          {locked ? (
+            <span className={AdminClass.of('ext-row__more')} title={isSystem ? AdminI18n.t('users.locked') : AdminI18n.t('users.platformRoleLockedHint')} aria-label={AdminI18n.t('users.locked')}>
+              <FrameworkIcons.Lock size={14} />
+            </span>
+          ) : (
+            <Dropdown align={HorizontalAlign.RIGHT} items={[
+              { label: AdminI18n.t('users.edit'), icon: <FrameworkIcons.Edit size={14} />, onClick: () => this.onNavigate(AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)) },
+              { label: AdminI18n.t('users.deleteRole'), icon: <FrameworkIcons.Trash size={14} />, variant: DropdownItemVariant.DANGER, onClick: () => this.onRequestDelete(role) },
+            ]} trigger={
+              <span aria-label={AdminI18n.t('common.more')} className={AdminClass.of('ext-row__more')}><FrameworkIcons.More size={16} /></span>
+            } />
+          )}
+        </div>
+      </div>
+    );
+  }
 
   render(): ReactNode {
-    const dark = this.theme === ThemeMode.DARK;
-    return (
-      <Card title={AdminI18n.t('users.systemRolesSecurityGroups')}>
-        <div className="space-y-2">
-          {this.roles.map((role) => {
-            const isSystem = role.type === 'system';
-            // A platform role inside a site, or any role this editor may not change here: shown locked,
-            // with where it is defined, rather than offering an edit the API refuses.
-            const locked = isSystem || role.editable === false;
-            const scopeLabel = role.scope === 'site' ? AdminI18n.t('users.roleScopeSite') : AdminI18n.t('users.roleScopePlatform');
-            return (
-              <div key={role.slug} className={`flex items-center justify-between gap-4 p-3.5 rounded-xl border transition-colors ${
-                dark ? 'bg-slate-950/30 border-slate-800 hover:bg-slate-900/50' : 'bg-white border-slate-200 hover:bg-slate-50'
-              }`}>
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className={`h-9 w-9 rounded-lg flex items-center justify-center shrink-0 ${
-                    isSystem ? 'bg-indigo-600 text-white' : (dark ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-400')
-                  }`}>
-                    <FrameworkIcons.Shield size={16} />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <h3 className={`text-sm font-semibold tracking-tight ${dark ? 'text-white' : 'text-slate-900'}`}>{role.name}</h3>
-                      <code className={`text-[12px] font-medium tracking-tight px-1.5 py-0.5 rounded ${dark ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>{role.slug}</code>
-                      {role.scope ? (
-                        <span className={`text-[12px] font-medium tracking-tight px-1.5 py-0.5 rounded ${role.scope === 'site' ? 'bg-emerald-500/10 text-emerald-600' : 'bg-indigo-500/10 text-indigo-500'}`}>{scopeLabel}</span>
-                      ) : null}
-                    </div>
-                    <p className="text-xs font-medium text-slate-500 truncate max-w-xl">{role.description || AdminI18n.t('users.noDescription')}</p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-5 shrink-0">
-                  <div className="hidden md:flex items-center gap-5 text-xs font-medium">
-                    <span className="text-slate-500"><span className={dark ? 'text-slate-200 font-semibold' : 'text-slate-800 font-semibold'}>{role.users || 0}</span> {Number(role.users) === 1 ? AdminI18n.t('users.userWord') : AdminI18n.t('users.usersWord')}</span>
-                    <span className="text-indigo-500 font-semibold">{AdminI18n.t('users.permsCount', { count: role.permissions?.length || 0 })}</span>
-                  </div>
-                  {locked ? (
-                    <span
-                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-indigo-500/10 text-indigo-500"
-                      title={isSystem ? undefined : AdminI18n.t('users.platformRoleLockedHint')}
-                    >
-                      <FrameworkIcons.Lock size={11} strokeWidth={2} />
-                      <span className="font-medium tracking-tight text-[12px]">{AdminI18n.t('users.locked')}</span>
-                    </span>
-                  ) : (
-                    <div className="flex items-center gap-1.5">
-                      <Button as={AdminLink} href={AdminConstants.ROUTES.USERS.ROLE_EDIT(role.slug)} variant={ButtonVariant.GHOST} size={FieldSize.ICON} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-indigo-600">
-                        <FrameworkIcons.Edit size={14} />
-                      </Button>
-                      <Button variant={ButtonVariant.GHOST} size={FieldSize.ICON} onClick={() => this.onRequestDelete(role)} className="h-8 w-8 rounded-lg border border-slate-200 dark:border-slate-800 text-slate-500 hover:text-rose-600">
-                        <FrameworkIcons.Trash size={14} />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </Card>
-    );
+    return <div className={AdminClass.of('ext-list')}>{this.roles.map((role) => this.row(role))}</div>;
   }
 }
