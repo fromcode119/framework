@@ -10,6 +10,7 @@ import { EditUserNotifications } from '@/app/users/[id]/edit/components/view/edi
 import { prop, state } from '@fromcode119/react-class-components';
 import type { IEditUserFormData } from '@/app/users/[id]/edit/interfaces/edit-user-form-data.interface';
 import { SelfAccount } from '@/lib/self-account';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 import { AccountStatus } from '@/app/users/enums/account-status.enum';
 
@@ -124,14 +125,14 @@ export class EditUserPage extends AdminComponent {
 
     if (loading) {
       return (
-        <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="flex-1 flex items-center justify-center py-20">
           <Loader label={AdminI18n.t('users.synchronizingIdentityDetails')} />
         </div>
       );
     }
 
     return (
-      <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+      <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
         <EditUserHeader
           theme={theme}
           userId={id}
@@ -140,7 +141,7 @@ export class EditUserPage extends AdminComponent {
           onSubmit={(e) => this.handleSubmit(e)}
         />
 
-        <div className="flex-1 w-full px-6 lg:px-8 py-6">
+        <div className="w-full p-6">
            <form onSubmit={(e) => this.handleSubmit(e)} className="space-y-6">
               <EditUserFormFields
                 formData={formData}

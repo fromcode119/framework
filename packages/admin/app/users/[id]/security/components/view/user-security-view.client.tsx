@@ -16,6 +16,7 @@ import { SecurityRecommendationsCard } from '@/app/users/[id]/security/component
 import { DeviceSessionsCard } from '@/app/users/[id]/security/components/view/device-sessions-card.client';
 import { UserApiTokensCard } from '@/app/users/[id]/security/components/view/user-api-tokens-card.client';
 import { AuthActivityCard } from '@/app/users/[id]/security/components/view/auth-activity-card.client';
+import { AdminClass } from '@/lib/admin-class';
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 export class UserSecurityView extends PureReactor {
@@ -24,17 +25,17 @@ export class UserSecurityView extends PureReactor {
   render(): ReactNode {
     const model = this.model;
     if (model.loading) {
-    return <div className="flex-1 flex items-center justify-center min-h-screen"><Loader label={AdminI18n.t('users.loadingSecuritySettings')} /></div>;
+    return <div className="flex-1 flex items-center justify-center py-20"><Loader label={AdminI18n.t('users.loadingSecuritySettings')} /></div>;
   }
 
   if (!model.user) {
-    return <div className="flex-1 flex flex-col items-center justify-center min-h-screen space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1><AdminLink href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToUsers')}</Button></AdminLink></div>;
+    return <div className="flex-1 flex flex-col items-center justify-center py-20 space-y-4"><h1 className="text-2xl font-semibold text-slate-400 tracking-tight">{AdminI18n.t('users.userNotFound')}</h1><AdminLink href={AdminConstants.ROUTES.USERS.ROOT}><Button variant={ButtonVariant.GHOST}>{AdminI18n.t('users.returnToUsers')}</Button></AdminLink></div>;
   }
 
   return (
-    <div className="w-full min-h-screen flex flex-col animate-in fade-in duration-500">
+    <div className={`w-full flex flex-col animate-in fade-in duration-500 ${AdminClass.of('settings-page')}`}>
       <UserSecurityHeader backHref={model.routerBackHref} email={model.user.email || ''} isDark={model.themeMode === ThemeMode.DARK} />
-      <div className="flex-1 w-full px-6 lg:px-8 py-12 space-y-8">
+      <div className="w-full p-6 space-y-8">
         <TwoFactorSecurityCard copyRecoveryCodes={model.copyRecoveryCodes} generatedRecoveryCodes={model.generatedRecoveryCodes} handleDisable2FA={model.handleDisable2FA} handleEnable2FA={model.handleEnable2FA} handleRegenerateRecoveryCodes={model.handleRegenerateRecoveryCodes} handleVerify2FA={model.handleVerify2FA} isDark={model.themeMode === ThemeMode.DARK} isEnabling={model.isEnabling} isRegeneratingCodes={model.isRegeneratingCodes} isVerifying={model.isVerifying} qrCode={model.qrCode} recoveryCodesRemaining={model.recoveryCodesRemaining} secret={model.secret} setVerificationCode={model.setVerificationCode} twoFactorEnabled={model.twoFactorEnabled} verificationCode={model.verificationCode} />
         <SecurityRecommendationsCard isAdministrator={UserSecurityPageService.isAdministrator(model.user)} isDark={model.themeMode === ThemeMode.DARK} twoFactorEnabled={model.twoFactorEnabled} />
         {model.isSelf ? <>

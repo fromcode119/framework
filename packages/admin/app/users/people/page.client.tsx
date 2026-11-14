@@ -114,7 +114,7 @@ export class PeoplePage extends AdminComponent {
 
     if (loading) {
       return (
-        <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="flex-1 flex items-center justify-center py-20">
           <Loader label={AdminI18n.t('users.loadingPeople')} />
         </div>
       );

@@ -61,7 +61,7 @@ export class PermissionsPage extends AdminComponent {
     const theme = this.theme;
     if (this.loading) {
       return (
-        <div className="flex-1 flex items-center justify-center min-h-screen">
+        <div className="flex-1 flex items-center justify-center py-20">
           <Loader label={AdminI18n.t('users.loadingPermissions')} />
         </div>
       );
