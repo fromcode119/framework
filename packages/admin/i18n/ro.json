@@ -2967,6 +2967,7 @@
         "updating": "Se actualizează la v{{to}}: {{step}}…",
         "failed": "Actualizarea la v{{to}} nu a pornit: {{error}}",
         "rolledBack": "Actualizarea la v{{to}} a fost anulată, rulează versiunea anterioară: {{error}}",
+        "deployMode": "Aplicații înlocuite prin {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} este marcată ca incompatibilă, așa că nu este instalată automat. Citiți notele, apoi apăsați butonul Instalează.",
         "succeeded": "Actualizat la v{{to}}.",
         "ready": "Serviciul de actualizare rulează și caută versiuni noi în fiecare minut.",

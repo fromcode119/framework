@@ -2967,6 +2967,7 @@
         "updating": "Oppdaterer til v{{to}}: {{step}}…",
         "failed": "Oppdateringen til v{{to}} startet ikke: {{error}}",
         "rolledBack": "Oppdateringen til v{{to}} ble angret, og den forrige versjonen kjører: {{error}}",
+        "deployMode": "Appene ble byttet med {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} er merket som inkompatibel, så den installeres ikke automatisk. Les merknadene, og trykk deretter på Installer-knappen.",
         "succeeded": "Oppdatert til v{{to}}.",
         "ready": "Oppdateringstjenesten kjører og ser etter nye versjoner hvert minutt.",

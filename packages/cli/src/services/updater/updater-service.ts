@@ -126,15 +126,17 @@ export class UpdaterService {
   private async update(from: string, to: string): Promise<void> {
     const startedAt = new Date().toISOString();
     const steps: string[] = [];
+    const plan = () => ({ deployMode: run.plan?.mode ?? '', deployReason: run.plan?.reason ?? '' });
     const report = (step: string) => {
       steps.push(step);
       console.log(`[updater] ${from} -> ${to}: ${step}`);
-      this.last = { ...UpdaterService.status(UpdaterState.UPDATING.value), from, to, startedAt, step, steps: [...steps] };
+      this.last = { ...UpdaterService.status(UpdaterState.UPDATING.value), from, to, startedAt, step, steps: [...steps], ...plan() };
       void this.api.report(this.last);
     };
-    const outcome = await new SelfUpdateRun(this.engine, this.api, this.versionFile, this.directory, this.project, report).run(from, to)
+    const run = new SelfUpdateRun(this.engine, this.api, this.versionFile, this.directory, this.project, report);
+    const outcome = await run.run(from, to)
       .catch((error: Error) => ({ state: UpdaterState.FAILED.value, error: error.message }));
-    this.last = { ...this.last, state: outcome.state, error: outcome.error, finishedAt: new Date().toISOString(), step: '' };
+    this.last = { ...this.last, ...plan(), state: outcome.state, error: outcome.error, finishedAt: new Date().toISOString(), step: '' };
     console.log(`[updater] ${from} -> ${to}: ${outcome.state}${outcome.error ? ` — ${outcome.error}` : ''}`);
     this.failedTarget = outcome.state === UpdaterState.SUCCEEDED.value ? '' : to;
     await this.api.reportUntilStored(this.last);
@@ -155,6 +157,6 @@ export class UpdaterService {
   }
 
   private static status(state: string): IUpdaterStatus {
-    return { state, from: '', to: '', startedAt: '', finishedAt: '', step: '', steps: [], error: '' };
+    return { state, from: '', to: '', startedAt: '', finishedAt: '', step: '', steps: [], error: '', deployMode: '', deployReason: '' };
   }
 }

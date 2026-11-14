@@ -2967,6 +2967,7 @@
         "updating": "Aktualizuje sa na v{{to}}: {{step}}…",
         "failed": "Aktualizácia na v{{to}} sa nespustila: {{error}}",
         "rolledBack": "Aktualizácia na v{{to}} bola vrátená, beží predchádzajúca verzia: {{error}}",
+        "deployMode": "Aplikácie nahradené pomocou {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} je označená ako nekompatibilná, preto sa neinštaluje automaticky. Prečítajte si jej poznámky a potom stlačte tlačidlo Inštalovať.",
         "succeeded": "Aktualizované na v{{to}}.",
         "ready": "Aktualizátor beží a každú minútu kontroluje nové verzie.",

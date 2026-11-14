@@ -2967,6 +2967,7 @@
         "updating": "Mise à jour vers la v{{to}} : {{step}}…",
         "failed": "La mise à jour vers la v{{to}} n'a pas démarré : {{error}}",
         "rolledBack": "La mise à jour vers la v{{to}} a été annulée, la version précédente est en service : {{error}}",
+        "deployMode": "Applications remplacées par {{mode}} : {{reason}}",
         "heldBreaking": "La v{{version}} est marquée comme incompatible : elle n'est donc pas installée automatiquement. Lisez ses notes, puis cliquez sur le bouton Installer.",
         "succeeded": "Mis à jour vers la v{{to}}.",
         "ready": "Le service de mise à jour est actif et recherche de nouvelles versions chaque minute.",

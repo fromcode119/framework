@@ -2967,6 +2967,7 @@
         "updating": "Ažuriranje na v{{to}}: {{step}}…",
         "failed": "Ažuriranje na v{{to}} nije pokrenuto: {{error}}",
         "rolledBack": "Ažuriranje na v{{to}} je poništeno, radi prethodna verzija: {{error}}",
+        "deployMode": "Aplikacije zamijenjene putem {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} je označena kao nekompatibilna, pa se ne instalira automatski. Pročitajte bilješke, zatim pritisnite gumb Instaliraj.",
         "succeeded": "Ažurirano na v{{to}}.",
         "ready": "Usluga za ažuriranje radi i svake minute provjerava nove verzije.",

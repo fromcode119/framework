@@ -2967,6 +2967,7 @@
         "updating": "Po përditësohet në v{{to}}: {{step}}…",
         "failed": "Përditësimi në v{{to}} nuk filloi: {{error}}",
         "rolledBack": "Përditësimi në v{{to}} u anulua dhe po funksionon versioni i mëparshëm: {{error}}",
+        "deployMode": "Aplikacionet u zëvendësuan me {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} është shënuar si ndryshim thelbësor, prandaj nuk instalohet automatikisht. Lexoni shënimet e tij, pastaj shtypni butonin Instalo.",
         "succeeded": "U përditësua në v{{to}}.",
         "ready": "Shërbimi i përditësimit po funksionon dhe kontrollon për versione të reja çdo minutë.",

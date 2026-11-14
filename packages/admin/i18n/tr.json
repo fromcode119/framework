@@ -2967,6 +2967,7 @@
         "updating": "v{{to}} sürümüne güncelleniyor: {{step}}…",
         "failed": "v{{to}} sürümüne güncelleme başlamadı: {{error}}",
         "rolledBack": "v{{to}} sürümüne güncelleme geri alındı, önceki sürüm çalışıyor: {{error}}",
+        "deployMode": "Uygulamalar {{mode}} ile değiştirildi: {{reason}}",
         "heldBreaking": "v{{version}} uyumsuzluk yaratan olarak işaretlendiği için otomatik olarak yüklenmez. Sürüm notlarını okuyun, ardından Yükle düğmesine basın.",
         "succeeded": "v{{to}} sürümüne güncellendi.",
         "ready": "Güncelleyici çalışıyor ve yeni sürümleri her dakika denetliyor.",

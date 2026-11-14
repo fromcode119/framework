@@ -2967,6 +2967,7 @@
         "updating": "Atjaunina uz v{{to}}: {{step}}…",
         "failed": "Atjaunināšana uz v{{to}} netika sākta: {{error}}",
         "rolledBack": "Atjaunināšana uz v{{to}} tika atsaukta, darbojas iepriekšējā versija: {{error}}",
+        "deployMode": "Lietotnes nomainītas ar {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} ir atzīmēta kā nesaderīga, tāpēc tā netiek instalēta automātiski. Izlasiet tās piezīmes un tad nospiediet pogu Instalēt.",
         "succeeded": "Atjaunināts uz v{{to}}.",
         "ready": "Atjauninātājs darbojas un ik minūti pārbauda jaunas versijas.",

@@ -2967,6 +2967,7 @@
         "updating": "Đang cập nhật lên v{{to}}: {{step}}…",
         "failed": "Không thể bắt đầu cập nhật lên v{{to}}: {{error}}",
         "rolledBack": "Bản cập nhật lên v{{to}} đã được hoàn tác, phiên bản trước đang chạy: {{error}}",
+        "deployMode": "Ứng dụng được thay bằng {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} được đánh dấu có thay đổi phá vỡ tương thích, nên không được cài đặt tự động. Hãy đọc ghi chú, sau đó nhấn nút Cài đặt.",
         "succeeded": "Đã cập nhật lên v{{to}}.",
         "ready": "Trình cập nhật đang chạy và kiểm tra phiên bản mới mỗi phút.",

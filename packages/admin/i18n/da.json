@@ -2967,6 +2967,7 @@
         "updating": "Opdaterer til v{{to}}: {{step}}…",
         "failed": "Opdateringen til v{{to}} startede ikke: {{error}}",
         "rolledBack": "Opdateringen til v{{to}} blev fortrudt, og den tidligere version kører: {{error}}",
+        "deployMode": "Apps udskiftet med {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} er markeret som inkompatibel og installeres derfor ikke automatisk. Læs noterne, og tryk derefter på knappen Installer.",
         "succeeded": "Opdateret til v{{to}}.",
         "ready": "Opdateringstjenesten kører og søger efter nye versioner hvert minut.",

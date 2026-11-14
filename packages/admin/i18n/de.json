@@ -2967,6 +2967,7 @@
         "updating": "Aktualisierung auf v{{to}}: {{step}}…",
         "failed": "Das Update auf v{{to}} wurde nicht gestartet: {{error}}",
         "rolledBack": "Das Update auf v{{to}} wurde rückgängig gemacht, die vorherige Version läuft: {{error}}",
+        "deployMode": "Apps ersetzt per {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} ist als inkompatibel markiert und wird daher nicht automatisch installiert. Lesen Sie die Hinweise und klicken Sie dann auf „Installieren“.",
         "succeeded": "Auf v{{to}} aktualisiert.",
         "ready": "Der Updater läuft und sucht jede Minute nach neuen Versionen.",

@@ -94,6 +94,13 @@ export class SelfUpdatePanel extends AdminComponent {
     return { text: AdminI18n.t('settings.updates.selfUpdate.ready'), tone: 'text-slate-500' };
   }
 
+  /** How the last update replaced the apps and why — a restart takes every site down while it runs. */
+  private get deployLine(): string {
+    const status = this.selfUpdate.status;
+    if (!status?.deployMode) return '';
+    return AdminI18n.t('settings.updates.selfUpdate.deployMode', { mode: status.deployMode, reason: status.deployReason ?? '' });
+  }
+
   render(): ReactNode {
     const line = this.statusLine;
     return (
@@ -106,6 +113,7 @@ export class SelfUpdatePanel extends AdminComponent {
           description={AdminI18n.t('settings.updates.selfUpdate.automaticExplained')}
         />
         <p className={`text-[11px] font-medium leading-relaxed ${line.tone}`}>{line.text}</p>
+        {this.deployLine ? <p className="text-[11px] leading-relaxed text-slate-500">{this.deployLine}</p> : null}
       </div>
     );
   }

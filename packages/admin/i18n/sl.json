@@ -2967,6 +2967,7 @@
         "updating": "Posodabljanje na v{{to}}: {{step}} …",
         "failed": "Posodobitev na v{{to}} se ni začela: {{error}}",
         "rolledBack": "Posodobitev na v{{to}} je bila razveljavljena, deluje prejšnja različica: {{error}}",
+        "deployMode": "Aplikacije zamenjane z {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} je označena kot nezdružljiva, zato se ne namesti samodejno. Preberite opombe in nato pritisnite gumb Namesti.",
         "succeeded": "Posodobljeno na v{{to}}.",
         "ready": "Storitev za posodabljanje deluje in vsako minuto preveri nove različice.",

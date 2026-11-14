@@ -2967,6 +2967,7 @@
         "updating": "Aggiornamento alla v{{to}}: {{step}}…",
         "failed": "L'aggiornamento alla v{{to}} non è stato avviato: {{error}}",
         "rolledBack": "L'aggiornamento alla v{{to}} è stato annullato, è in esecuzione la versione precedente: {{error}}",
+        "deployMode": "App sostituite tramite {{mode}}: {{reason}}",
         "heldBreaking": "La v{{version}} è contrassegnata come incompatibile, quindi non viene installata automaticamente. Leggi le note, poi premi il pulsante Installa.",
         "succeeded": "Aggiornato alla v{{to}}.",
         "ready": "Il servizio di aggiornamento è in esecuzione e verifica la presenza di nuove versioni ogni minuto.",

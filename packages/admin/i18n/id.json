@@ -2967,6 +2967,7 @@
         "updating": "Memperbarui ke v{{to}}: {{step}}…",
         "failed": "Pembaruan ke v{{to}} tidak dimulai: {{error}}",
         "rolledBack": "Pembaruan ke v{{to}} dibatalkan, versi sebelumnya sedang berjalan: {{error}}",
+        "deployMode": "Aplikasi diganti dengan {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} ditandai breaking, sehingga tidak dipasang secara otomatis. Baca catatannya, lalu tekan tombol Pasang.",
         "succeeded": "Diperbarui ke v{{to}}.",
         "ready": "Pembaru sedang berjalan dan memeriksa versi baru setiap menit.",

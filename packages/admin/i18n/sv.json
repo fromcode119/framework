@@ -2967,6 +2967,7 @@
         "updating": "Uppdaterar till v{{to}}: {{step}}…",
         "failed": "Uppdateringen till v{{to}} startade inte: {{error}}",
         "rolledBack": "Uppdateringen till v{{to}} återställdes och den tidigare versionen körs: {{error}}",
+        "deployMode": "Apparna ersattes med {{mode}}: {{reason}}",
         "heldBreaking": "v{{version}} är markerad som bakåtinkompatibel och installeras därför inte automatiskt. Läs versionsanteckningarna och tryck sedan på knappen Installera.",
         "succeeded": "Uppdaterad till v{{to}}.",
         "ready": "Uppdateraren körs och söker efter nya versioner varje minut.",

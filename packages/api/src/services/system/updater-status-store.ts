@@ -8,6 +8,7 @@ import { PlatformMetaStore } from '@api/services/system/platform-meta-store';
 export class UpdaterStatusStore {
   /** An updater that has not reported for this long is not running; the screen says so instead of waiting. */
   static readonly SILENT_AFTER_MS = 5 * 60 * 1000;
+  private static readonly MAX_STEPS = 40;
   private static readonly FINISHED = [UpdaterState.SUCCEEDED.value, UpdaterState.FAILED.value, UpdaterState.ROLLED_BACK.value];
 
   private readonly meta: PlatformMetaStore;
@@ -31,6 +32,10 @@ export class UpdaterStatusStore {
       state: text(input.state, 20), from: text(input.from, 40), to: text(input.to, 40),
       step: text(input.step), error: text(input.error, 2000),
       startedAt: text(input.startedAt, 40), finishedAt: text(input.finishedAt, 40),
+      // How the apps were replaced and why. Without it a restart that took every site down for a minute
+      // left nothing behind but "succeeded": the reason lived only in the updater's own log.
+      deployMode: text(input.deployMode, 20), deployReason: text(input.deployReason),
+      steps: (Array.isArray(input.steps) ? input.steps : []).slice(-UpdaterStatusStore.MAX_STEPS).map((step) => text(step)),
       reportedAt: new Date().toISOString(),
     };
     // A restarted updater reports `idle` with no memory of its last update. The OUTCOME is kept — it is
