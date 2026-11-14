@@ -122,7 +122,7 @@ export class EditPageBody extends PureReactor {
               <button
                 key={tab.name}
                 onClick={() => setActiveTab(tab.name)}
-                className={`px-6 py-2.5 rounded-xl text-[10px] font-bold uppercase tracking-wide transition-all ${
+                className={`px-6 py-2.5 rounded-xl text-[12px] font-medium transition-all ${
                   activeTab === tab.name
                     ? (theme === ThemeMode.DARK ? 'bg-indigo-500 text-white shadow-lg shadow-indigo-500/20' : 'bg-white text-indigo-600 shadow-sm')
                     : (theme === ThemeMode.DARK ? 'text-slate-500 hover:text-slate-300' : 'text-slate-400 hover:text-slate-600')

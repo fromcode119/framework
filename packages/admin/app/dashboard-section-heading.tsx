@@ -19,7 +19,7 @@ export class DashboardSectionHeading extends PureReactor {
   render(): ReactNode {
     return (
       <div className="flex items-baseline gap-2 px-0.5">
-        <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-400 dark:text-slate-500">
+        <h2 className="text-[12px] font-medium text-slate-400 dark:text-slate-500">
           {this.label}
         </h2>
         {this.count !== undefined && this.count !== null && this.count !== '' ? (

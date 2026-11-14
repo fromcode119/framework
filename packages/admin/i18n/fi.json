@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Ei tallennettu",
-      "auto": "Tallennetaan automaattisesti – ei muokattavissa tässä.",
-      "copied": "Kopioitu",
-      "copy": "Kopioi JSON",
       "filter": "Suodata avaimen mukaan…",
       "empty": "Mitään ei ole vielä tallennettu.",
       "noMatch": "Suodattimella ei löytynyt mitään."

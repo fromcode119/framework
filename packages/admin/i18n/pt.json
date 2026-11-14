@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Não registado",
-      "auto": "Registado automaticamente — não editável aqui.",
-      "copied": "Copiado",
-      "copy": "Copiar JSON",
       "filter": "Filtrar por chave…",
       "empty": "Ainda não há nada registado.",
       "noMatch": "Nada corresponde a esse filtro."

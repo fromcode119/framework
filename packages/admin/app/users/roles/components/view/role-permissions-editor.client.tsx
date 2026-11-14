@@ -35,7 +35,7 @@ export class RolePermissionsEditor extends PureReactor {
         <Button
           type="button"
           onClick={() => this.onChange(this.selected.filter((name) => !unknown.includes(name)))}
-          className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
+          className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
         >
           {AdminI18n.t('users.remove')}
         </Button>

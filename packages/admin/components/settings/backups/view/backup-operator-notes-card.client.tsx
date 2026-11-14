@@ -21,15 +21,15 @@ export class BackupOperatorNotesCard extends AdminComponent {
 
         <div className="space-y-4 lg:col-span-2">
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.cliBundleCommand')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.cliBundleCommand')}</div>
             <pre className={`mt-3 overflow-x-auto ${AdminClass.SURFACE} px-4 py-3 text-xs ${theme === ThemeMode.DARK ? 'bg-slate-950 text-slate-200' : 'bg-white text-slate-700'}`}>npm run fromcode -- system site-transfer-bundle --label demo-transfer</pre>
           </div>
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.wrapperScript')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.wrapperScript')}</div>
             <pre className={`mt-3 overflow-x-auto ${AdminClass.SURFACE} px-4 py-3 text-xs ${theme === ThemeMode.DARK ? 'bg-slate-950 text-slate-200' : 'bg-white text-slate-700'}`}>npm run bundle:site-transfer -- --label demo-transfer</pre>
           </div>
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.referenceDocumentation')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.referenceDocumentation')}</div>
             <p className="mt-3 text-sm text-slate-500">docs/backup-and-transfer.md</p>
             <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.restoreExecutionAlwaysCreatesA')}</p>
           </div>

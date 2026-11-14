@@ -101,7 +101,7 @@ export class GeoLocationCard extends AdminComponent {
           <div className="flex flex-col gap-2">
             {status?.lastCheckedAt ? <span className="text-xs text-slate-500">{AdminI18n.t('settings.infrastructure.geoLastChecked', { lastCheckedAt: GeoLocationCard.when(status.lastCheckedAt) })}</span> : null}
             {status?.lastError ? <span className="text-xs text-rose-500">{AdminI18n.t('settings.infrastructure.geoLastError', { error: String(status.lastError) })}</span> : null}
-            <Button onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.enabled} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight self-start">
+            <Button onClick={this.updateNow} isLoading={this.busy} disabled={!this.loaded || !this.enabled} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight self-start">
               {AdminI18n.t('settings.infrastructure.geoUpdateNow')}
             </Button>
           </div>

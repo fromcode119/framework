@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Ni zabeleženo",
-      "auto": "Zabeleženo samodejno – tukaj ni mogoče urejati.",
-      "copied": "Kopirano",
-      "copy": "Kopiraj JSON",
       "filter": "Filtriraj po ključu …",
       "empty": "Ničesar še ni zabeleženega.",
       "noMatch": "Temu filtru nič ne ustreza."

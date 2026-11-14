@@ -36,7 +36,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
           <FrameworkIcons.Left size={18} strokeWidth={2.5} />
         </AdminLink>
         <div className="flex-1 min-w-0">
-          <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-semibold uppercase tracking-wide text-[10px] rounded-lg mb-1">
+          <Badge variant={BadgeVariant.BLUE} className="px-2 py-0.5 font-medium text-[12px] rounded-lg mb-1">
             {AdminI18n.t('themes.marketplacePremium')}
           </Badge>
           <div className="flex items-center gap-3">
@@ -48,7 +48,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
                 <Dropdown
                   align="left"
                   trigger={
-                    <div className={`flex items-center gap-2 ps-3 pe-2 py-1.5 rounded-lg text-[11px] font-bold uppercase tracking-wide border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
+                    <div className={`flex items-center gap-2 ps-3 pe-2 py-1.5 rounded-lg text-[12px] font-medium border transition-all cursor-pointer group ${adminTheme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800 text-slate-300 hover:border-indigo-500/50 hover:text-white' : 'bg-slate-50 border-slate-100 text-slate-600 hover:border-indigo-500/30 hover:bg-white hover:shadow-sm'}`}>
                       <span>v{selectedVersion} {selectedVersion === allVersions[0].version ? AdminI18n.t('themes.latest') : ''}</span>
                       <div className={`transition-colors ${adminTheme === ThemeMode.DARK ? 'text-slate-600 group-hover:text-indigo-400' : 'text-slate-400 group-hover:text-indigo-600'}`}>
                         <FrameworkIcons.Down size={14} strokeWidth={3} />
@@ -69,7 +69,7 @@ export class ThemeMarketplaceHeader extends PureReactor {
           <button
             onClick={onInstall}
             disabled={installing || (installedTheme && !hasUpdate)}
-            className={`h-9 px-4 text-xs font-bold uppercase tracking-widest rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 ${
+            className={`h-9 px-4 text-xs font-medium rounded-lg transition-all shadow-sm active:scale-95 flex items-center gap-2 ${
               installedTheme && !hasUpdate
                 ? 'bg-emerald-50 text-emerald-600 shadow-none cursor-default opacity-80'
                 : hasUpdate

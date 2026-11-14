@@ -21,11 +21,11 @@ export class NewRoleSummarySidebar extends PureReactor {
           <div className="space-y-3">
             <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-3.5 border border-slate-100 dark:border-slate-800 space-y-3">
                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">{AdminI18n.t('users.roleType')}</span>
+                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.roleType')}</span>
                   <Badge variant={BadgeVariant.AMBER} className="tracking-tight font-semibold">{AdminI18n.t('users.custom')}</Badge>
                </div>
                <div className="flex items-center justify-between gap-2">
-                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-tight">{AdminI18n.t('users.scope')}</span>
+                  <span className="text-[12px] font-medium text-slate-400 tracking-tight">{AdminI18n.t('users.scope')}</span>
                   <span className="text-xs font-semibold tracking-tight text-slate-600 dark:text-slate-300">
                     {permissionCount === 0 ? AdminI18n.t('users.noPermissions') : AdminI18n.t('users.selectedCount', { count: permissionCount })}
                   </span>

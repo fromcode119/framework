@@ -48,7 +48,7 @@ export class GeneralSettingsPage extends GeneralSettingsPageActions {
           <Button
             onClick={this.openPlatformScope}
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
-            className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
+            className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
           >
             {AdminI18n.t('settings.general.openPlatformScope')}
           </Button>

@@ -115,7 +115,7 @@ export class NewRolePage extends AdminComponent {
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <label className="text-[10px] font-semibold uppercase tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
+                    <label className="text-[12px] font-medium tracking-tight text-slate-400 ps-1">{AdminI18n.t('users.description')}</label>
                     <TextArea
                       placeholder={AdminI18n.t('users.optionalDescriptionOfWhatThis')}
                       value={formData.description}

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nie zapisano",
-      "auto": "Zapisywane automatycznie — nie można tu edytować.",
-      "copied": "Skopiowano",
-      "copy": "Kopiuj JSON",
       "filter": "Filtruj według klucza…",
       "empty": "Nic jeszcze nie zapisano.",
       "noMatch": "Nic nie pasuje do tego filtra."

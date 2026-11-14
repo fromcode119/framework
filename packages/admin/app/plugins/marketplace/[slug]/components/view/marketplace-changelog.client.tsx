@@ -18,7 +18,7 @@ export class MarketplaceChangelog extends PureReactor {
       <div className="space-y-4">
          <div className="flex items-center gap-4">
             <div className={`h-8 w-1.5 rounded-full ${theme === ThemeMode.DARK ? 'bg-indigo-500/40' : 'bg-indigo-600'}`}></div>
-            <h3 className={`text-[11px] font-bold uppercase tracking-widest ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>{AdminI18n.t('plugins.list.technicalChangelog')}</h3>
+            <h3 className={`text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-900/40'}`}>{AdminI18n.t('plugins.list.technicalChangelog')}</h3>
             <div className={`h-px flex-1 ${theme === ThemeMode.DARK ? 'bg-slate-800' : 'bg-slate-200/60'}`}></div>
          </div>
 

@@ -22,7 +22,7 @@ export class EditCollectionNotFound extends PureReactor {
           <FrameworkIcons.Search size={64} className="text-indigo-500 relative z-10" strokeWidth={1} />
         </div>
 
-        <h2 className={`text-4xl font-bold tracking-tighter uppercase mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
+        <h2 className={`text-4xl font-medium tracking-tighter mb-4 ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
           {AdminI18n.t('collection.notFound.title')}
         </h2>
 
@@ -34,7 +34,7 @@ export class EditCollectionNotFound extends PureReactor {
           <Button
             variant={ButtonVariant.GHOST}
             onClick={() => window.history.back()}
-            className="rounded-xl px-8 font-bold uppercase tracking-wide text-[10px] text-slate-400"
+            className="rounded-xl px-8 font-medium text-[12px] text-slate-400"
           >
             {AdminI18n.t('common.goBack')}
           </Button>
@@ -42,7 +42,7 @@ export class EditCollectionNotFound extends PureReactor {
             variant={ButtonVariant.PRIMARY}
             as={AdminLink}
             href="/"
-            className="rounded-xl px-10 py-5 font-bold uppercase tracking-wide text-[10px] shadow-2xl shadow-indigo-500/30"
+            className="rounded-xl px-10 py-5 font-medium text-[12px] shadow-2xl shadow-indigo-500/30"
             icon={<FrameworkIcons.Layout size={18} />}
           >
             {AdminI18n.t('common.toDashboard')}

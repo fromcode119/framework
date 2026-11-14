@@ -160,7 +160,7 @@ export class DataTable<T extends { id: any }> extends PureReactor {
     return (
       <tr key={`heading:${key}`} data-row-id={id} className={`bg-slate-50 dark:bg-slate-900/60 border-y border-slate-200/60 dark:border-slate-800 ${className}`}>
         <td colSpan={totalColumns} className="px-3 py-2">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">{label}</span>
+          <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">{label}</span>
           <span className="ms-2 text-[11px] font-semibold text-slate-400">{count}</span>
         </td>
       </tr>

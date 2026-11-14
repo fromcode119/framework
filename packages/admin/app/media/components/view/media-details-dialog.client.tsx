@@ -77,7 +77,7 @@ export class MediaDetailsDialog extends AdminComponent {
     if (!item) return null;
 
     const mediaUrl = AdminServices.getInstance().media.resolveMediaUrl(item.url);
-    const labelClass = `block text-[10px] font-semibold uppercase tracking-widest mb-1.5 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`;
+    const labelClass = `block text-[12px] font-medium mb-1.5 ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`;
 
     return (
     <RootFramework>

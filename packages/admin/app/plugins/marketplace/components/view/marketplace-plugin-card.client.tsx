@@ -98,7 +98,7 @@ export class MarketplacePluginCard extends PureReactor {
             </p>
           </div>
 
-          <div className={`flex flex-wrap items-center gap-2.5 text-[10px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
+          <div className={`flex flex-wrap items-center gap-2.5 text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>
             {installed ? (
               <div className="flex items-center gap-1.5 flex-shrink-0">
                 <FrameworkIcons.Check size={12} className="text-emerald-500/80" />

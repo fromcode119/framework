@@ -78,7 +78,7 @@ export class PluginTrendChart extends PureReactor {
             })}
           </svg>
           {empty && (
-            <div className="absolute inset-0 flex items-center justify-center text-[11px] font-semibold uppercase tracking-wide text-slate-300 dark:text-slate-600">
+            <div className="absolute inset-0 flex items-center justify-center text-[12px] font-medium text-slate-300 dark:text-slate-600">
               {AdminI18n.t('ui.noDataForThisRange')}
             </div>
           )}
@@ -90,7 +90,7 @@ export class PluginTrendChart extends PureReactor {
               const color = s.color || PluginTrendChart.DEFAULT_COLORS[i % PluginTrendChart.DEFAULT_COLORS.length];
               const peak = s.data.length ? Math.max(...s.data) : 0;
               return (
-                <span key={i} className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wide text-slate-500">
+                <span key={i} className="inline-flex items-center gap-1.5 text-[12px] font-medium text-slate-500">
                   <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: color }} />
                   {s.label}
                   <span className="text-slate-400 normal-case font-medium">{AdminI18n.t('ui.peak', { value: formatValue(peak) })}</span>

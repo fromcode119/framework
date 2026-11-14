@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Niet vastgelegd",
-      "auto": "Automatisch vastgelegd — hier niet te bewerken.",
-      "copied": "Gekopieerd",
-      "copy": "JSON kopiëren",
       "filter": "Filteren op sleutel…",
       "empty": "Nog niets vastgelegd.",
       "noMatch": "Niets komt overeen met dat filter."

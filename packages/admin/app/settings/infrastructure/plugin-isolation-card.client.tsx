@@ -76,7 +76,7 @@ export class PluginIsolationCard extends AdminComponent {
                 <NumberStepper min={limit.min} max={'max' in limit ? limit.max : undefined} step={limit.step} value={this.values[limit.key] ?? ''} onChange={this.onChange(limit.key)} placeholder={AdminI18n.t('settings.infrastructure.defaultValue', { value: limit.fallback })} />
               </div>
               {index === last ? (
-                <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+                <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
                   {AdminI18n.t('settings.infrastructure.save')}
                 </Button>
               ) : null}

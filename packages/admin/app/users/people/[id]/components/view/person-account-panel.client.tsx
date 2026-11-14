@@ -29,7 +29,7 @@ export class PersonAccountPanel extends PureReactor {
     const { person, theme, granting, onGrantLogin } = this;
     const account = person.account;
     const card = `rounded-xl border p-6 ${theme === ThemeMode.DARK ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`;
-    const heading = `text-[11px] font-bold uppercase tracking-wider ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`;
+    const heading = `text-[12px] font-medium ${theme === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'} mb-4`;
 
     if (!account) {
       return (
@@ -57,7 +57,7 @@ export class PersonAccountPanel extends PureReactor {
           {account.username ? <div className="text-[11px] text-slate-400">@{account.username}</div> : null}
         </div>
         <div className="mb-4">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1.5">{AdminI18n.t('users.roles')}</div>
+          <div className="text-[12px] font-medium text-slate-400 mb-1.5">{AdminI18n.t('users.roles')}</div>
           <div className="flex flex-wrap gap-1.5">
             {account.roles.length
               ? account.roles.map((r) => <Badge key={r} variant={this.roleVariant(r)} className="font-bold tracking-tight">{r}</Badge>)

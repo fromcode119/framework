@@ -66,12 +66,12 @@ export class DateTimePickerTimePopover extends PureReactor {
 
             <div className="flex shrink-0 items-end gap-1.5">
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
+                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.hour')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={23} value={parts.hour} onChange={this.changeHours} />
               </div>
               <span className={`pb-2 text-[15px] font-bold ${dark ? 'text-slate-400' : 'text-slate-300'}`}>:</span>
               <div className="flex w-[68px] flex-col gap-0.5">
-                <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
+                <span className="text-[12px] font-medium text-slate-400 text-center">{AdminI18n.t('ui.date.minute')}</span>
                 <NumberStepper size={FieldSize.SM} min={0} max={59} step={minuteStep} value={parts.minute} onChange={this.changeMinutes} />
               </div>
             </div>

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Kaydedilmedi",
-      "auto": "Otomatik olarak kaydedilir — burada düzenlenemez.",
-      "copied": "Kopyalandı",
-      "copy": "JSON'u kopyala",
       "filter": "Anahtara göre filtrele…",
       "empty": "Henüz kayıt yok.",
       "noMatch": "Bu filtreyle eşleşen bir şey yok."

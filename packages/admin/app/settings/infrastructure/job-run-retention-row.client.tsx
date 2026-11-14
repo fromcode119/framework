@@ -61,7 +61,7 @@ export class JobRunRetentionRow extends AdminComponent {
           <div className="w-full md:w-40">
             <NumberStepper min={0} step={1} value={this.days} onChange={this.onChange} placeholder={AdminI18n.t('settings.infrastructure.keepForever')} />
           </div>
-          <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+          <Button onClick={this.save} isLoading={this.saving} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
             {AdminI18n.t('settings.infrastructure.save')}
           </Button>
         </div>

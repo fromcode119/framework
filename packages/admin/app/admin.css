@@ -454,7 +454,7 @@ html.dark {
 .fc-site-form__hint { font-size: 12px; opacity: 0.7; margin: 0; }
 .fc-site-form__inventory { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
 .fc-site-form__block { display: flex; flex-direction: column; gap: 8px; }
-.fc-site-form__label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; opacity: 0.7; }
+.fc-site-form__label { font-size: 12px; font-weight: 500; color: var(--fc-text-muted); }
 .fc-site-form__plugins { display: flex; flex-direction: column; gap: 6px; max-height: 320px; overflow-y: auto; }
 /* A plugin row carries its state beside the toggle, so an unrunnable one explains itself in place. */
 .fc-site-form__plugin { display: flex; align-items: center; gap: 8px; justify-content: space-between; }
@@ -492,7 +492,7 @@ html.dark {
 .fc-sites__paging { display: flex; align-items: center; justify-content: flex-end; gap: 8px; margin-top: 10px; }
 .fc-sites__paging-label { font-size: 11px; color: var(--muted-foreground); margin-inline-end: 4px; }
 .fc-sites__card-action { display: flex; justify-content: flex-end; margin-bottom: 4px; }
-.fc-sites__grant-label { display: block; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted-foreground); margin-bottom: 8px; }
+.fc-sites__grant-label { display: block; font-size: 12px; font-weight: 500; color: var(--muted-foreground); margin-bottom: 8px; }
 .fc-sites__grant-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .fc-sites__grant-row > *:first-child { flex: 1 1 260px; max-width: 360px; }
 .fc-import-plan { display: flex; flex-direction: column; gap: 14px; }
@@ -527,7 +527,7 @@ html.dark {
    no clue how much was inside, so the decision to open one could not be made before opening it. ── */
 .fc-import-detail { border-top: 1px solid var(--border); padding-top: 12px; }
 .fc-import-detail__head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 10px; }
-.fc-import-detail__title { margin: 0; font-size: 10px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); }
+.fc-import-detail__title { margin: 0; font-size: 12px; font-weight: 600; color: var(--muted-foreground); }
 .fc-import-detail__hint { font-size: 12px; color: var(--muted-foreground); }
 .fc-import-detail__chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .fc-import-detail__chip { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); border: 1px solid var(--border); background: var(--card); border-radius: 8px; padding: 7px 11px; cursor: pointer; }
@@ -604,7 +604,7 @@ html.dark {
 .fc-import-rec__foldline { margin: 0 0 4px; }
 
 /* ── Plugins and theme: the missing ones lead, because only they cost the operator anything. ── */
-.fc-import-inv__group { padding: 10px 14px; font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-foreground); background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+.fc-import-inv__group { padding: 10px 14px; font-size: 12px; font-weight: 600; color: var(--muted-foreground); background: var(--muted); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
 .fc-import-inv__group--bad { color: var(--fc-danger-strong); background: var(--fc-danger-soft); border-color: var(--fc-danger-soft-border); }
 .fc-import-inv__row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); font-size: 12.5px; }
 .fc-import-inv__row:last-child { border-bottom: 0; }
@@ -966,10 +966,32 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
 .fc-nav-sub__label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* A sub-menu: one line for a group of pages, its pages one step further in while one of them is open. */
 .fc-nav-sub__group { display: flex; flex-direction: column; gap: 1px; }
-.fc-nav-sub__chevron { margin-inline-start: auto; display: inline-flex; color: var(--fc-nav-muted); transition: transform .15s; }
+.fc-nav-sub__group-pages { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-sub__chevron { margin-inline-start: auto; display: inline-flex; color: var(--fc-nav-muted); }
 .fc-nav-sub__group--open .fc-nav-sub__chevron { transform: rotate(90deg); }
 .fc-nav-sub__group--open > .fc-nav-sub__item--group { color: var(--fc-nav-text); }
 .fc-nav-sub__item--nested { padding-inline-start: calc(var(--fc-nav-sub-indent) + 12px); }
+
+/* The second column: a sub-menu's pages beside the menu. It exists only where the menu is a column of
+   its own (desktop); the phone's menu keeps the pages under the group line (above). */
+.fc-nav-second { display: none; }
+@media (min-width: 1024px) {
+  .fc-nav-sub__group-pages { display: none; }
+  .fc-nav-sub__group--open .fc-nav-sub__chevron { transform: none; }
+  .fc-nav-sub__item--current, .fc-nav-sub__group--preview > .fc-nav-sub__item--group { background: var(--fc-nav-active); color: var(--fc-nav-text); }
+  .fc-nav-second { display: block; position: sticky; top: 0; z-index: 190; flex: none; height: 100vh; }
+  .fc-nav-second:empty { width: 0; }
+}
+.fc-nav-panel {
+  display: flex; flex-direction: column; gap: 4px; width: 220px; height: 100%; padding: 14px 10px;
+  background: var(--fc-nav-bg); border-inline-end: 1px solid var(--fc-nav-border); overflow-y: auto;
+}
+/* Looked at, not gone to: over the content, beside the menu, until the pointer leaves it. */
+.fc-nav-panel--preview { position: absolute; inset-block: 0; inset-inline-start: 0; box-shadow: 12px 0 32px -16px rgb(15 23 42 / 0.25); }
+.fc-nav-panel__title { margin: 0 0 6px; padding-inline: 10px; font-size: 12px; font-weight: 600; color: var(--fc-nav-muted); }
+.fc-nav-panel__list { display: flex; flex-direction: column; gap: 1px; }
+.fc-nav-panel .fc-nav-sub__item { min-height: var(--fc-nav-row); padding-inline: 10px; }
+.fc-nav-panel .fc-nav-sub__item--active { background: var(--fc-nav-active); }
 .fc-nav-item-trailing { margin-inline-start: auto; display: inline-flex; align-items: center; }
 .fc-nav-item-trailing:empty { display: none; }
 .fc-nav-item-trailing--mini { position: absolute; top: -2px; inset-inline-end: -2px; margin-inline-start: 0; }
@@ -1133,10 +1155,12 @@ tr.fc-drop-into > td, div.fc-drop-into { box-shadow: inset 0 0 0 2px rgb(99 102 
   }
   .fc-sheet__foot > * { flex: 0 0 auto; }
   /* The fields replace the values they edit, in the same place — the rows, what a component reads from
-     them (an address) and the records drawn from them (the person an email names). */
+     them (an address) and the components drawn again among them. What else the card holds (a plugin's
+     history, a payment drawn under the totals) stays where it was: editing never takes it away. */
   .fc-record-card--editing .fc-record-card__rows,
   .fc-record-card--editing .fc-record-card__read,
-  .fc-record-card--editing .fc-record-part,
+  .fc-record-card--editing .fc-record-card__own,
+  .fc-record-card--editing .fc-record-card__edit,
   .fc-record-card--editing .fc-record-card__menu { display: none; }
 }
 
@@ -1189,6 +1213,10 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   cursor: pointer;
 }
 .fc-record-card__menu:hover { background: var(--fc-surface-muted); color: var(--fc-text); }
+/* Edit stands in the card's head, where every card puts it, not inside the ⋯. */
+.fc-record-card__edit { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 12px; border: 1px solid var(--fc-border); border-radius: var(--radius); font-size: 12px; font-weight: 600; color: var(--fc-text); background: var(--fc-surface); white-space: nowrap; cursor: pointer; }
+.fc-record-card__edit:hover { background: var(--fc-surface-muted); }
+.fc-record-card__edit + .fc-record-card__menu { margin-left: -4px; }
 .fc-record-card__body:not(:empty) { padding: 4px 16px; }
 .fc-record-card__body > .fc-edit-fields { padding: 12px 0; }
 .fc-record-card__rows > * + * { border-top: var(--fc-record-rule); }
@@ -1211,6 +1239,100 @@ body:has(.fc-record-card--editing) [data-edit-footer] { display: none; }
   overflow: hidden;
 }
 .fc-record-card__missing { color: var(--fc-warning); }
+/* A value the runtime recorded (an order's snapshot), under its own name, read as rows like the above. */
+.fc-record-card__rows + .fc-record-card__recorded,
+.fc-record-card__recorded + .fc-record-card__recorded { border-top: var(--fc-record-rule); }
+/* A field that is its own control (an items table) sits under its heading with the card's own spacing. */
+.fc-record-card__own { display: flex; flex-direction: column; gap: 8px; padding: 0 0 12px; }
+.fc-record-card__own:not(:has(> .fc-record-card__subhead)) { padding-top: 12px; }
+.fc-record-card__subhead {
+  padding: 12px 0 2px;
+  font-size: var(--fc-record-text);
+  font-weight: 600;
+  color: var(--fc-text);
+}
+
+/* ── A plugin's panel on a record (AdminPanel): a section card with the plugin's content in its body. */
+.fc-admin-panel__head--alone { border-bottom: 0; }
+.fc-admin-panel__title { display: inline-flex; align-items: center; gap: 6px; }
+.fc-admin-panel__actions { flex: none; justify-content: flex-end; }
+.fc-admin-panel__body { display: flex; flex-direction: column; gap: 10px; padding: 12px 16px; }
+.fc-admin-panel__body:empty { display: none; }
+.fc-admin-panel__description { font-size: var(--fc-record-text); line-height: 1.45; color: var(--fc-text-muted); }
+
+/* ── A recorded value: StructuredReadOnlyField ───────────────────────────────────────────────────────
+ * The same label / value rows a saved record's card lists its fields in; a nested group is a heading,
+ * a list is chips, a list of like records is a table headed like every other table of the console. */
+.fc-sro { min-width: 0; }
+.fc-sro__filter { margin-bottom: 8px; }
+.fc-sro__rows > * + * { border-top: var(--fc-record-rule); }
+.fc-sro__row {
+  display: grid;
+  grid-template-columns: min(var(--fc-record-label-width), 32%) minmax(0, 1fr);
+  gap: 12px;
+  padding: 10px 0;
+  font-size: var(--fc-record-text);
+  line-height: 1.45;
+}
+.fc-sro__label { color: var(--fc-text-muted); overflow-wrap: anywhere; }
+.fc-sro__value { min-width: 0; color: var(--fc-text); overflow-wrap: anywhere; }
+.fc-sro__note { display: block; margin-top: 2px; font-size: 12px; color: var(--fc-warning); }
+.fc-sro__source { padding: 2px 0 8px; font-size: 12px; color: var(--fc-text-muted); }
+.fc-sro__absent { font-size: var(--fc-record-text); color: var(--fc-text-muted); }
+.fc-sro__section { border-top: var(--fc-record-rule); }
+.fc-sro__rows + .fc-sro__section, .fc-sro__section:first-child { border-top: var(--fc-record-rule); }
+.fc-sro > .fc-sro__section:first-child { border-top: 0; }
+.fc-sro__heading {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 12px 0 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fc-text);
+}
+.fc-sro__count { font-weight: 400; color: var(--fc-text-muted); }
+.fc-sro__section > .fc-sro__rows,
+.fc-sro__section > .fc-sro__section { padding-inline-start: 12px; }
+.fc-sro__section > .fc-sro__chips,
+.fc-sro__section > .fc-sro-table { padding: 6px 0 10px; }
+.fc-sro__chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.fc-sro > .fc-sro__chips { padding: 10px 0; }
+.fc-sro__chip {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  padding: 2px 8px;
+  border: 1px solid var(--fc-border);
+  border-radius: 6px;
+  background: var(--fc-surface);
+  font-size: 12px;
+  color: var(--fc-text);
+  overflow-wrap: anywhere;
+}
+.fc-sro__link { color: var(--fc-brand); text-decoration: underline; text-underline-offset: 2px; overflow-wrap: anywhere; }
+.fc-sro__media { display: inline-flex; align-items: center; gap: 8px; }
+.fc-sro__thumb { width: 48px; height: 48px; flex: none; border: 1px solid var(--fc-border); border-radius: 6px; object-fit: cover; }
+.fc-sro-table { overflow-x: auto; }
+.fc-sro-table table { width: 100%; border-collapse: collapse; }
+.fc-sro-table th {
+  padding: 8px 16px 8px 0;
+  border-bottom: 1px solid var(--fc-border);
+  text-align: start;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--fc-text-muted);
+  white-space: nowrap;
+}
+.fc-sro-table td {
+  padding: 8px 16px 8px 0;
+  border-bottom: var(--fc-record-rule);
+  vertical-align: top;
+  font-size: var(--fc-record-text);
+  color: var(--fc-text);
+}
+.fc-sro-table th:last-child, .fc-sro-table td:last-child { padding-inline-end: 0; }
+.fc-sro-table tr:last-child td { border-bottom: 0; }
 .fc-record-card__empty {
   padding: 8px 0;
   font-size: var(--fc-record-text);

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Inte registrerat",
-      "auto": "Registreras automatiskt – kan inte redigeras här.",
-      "copied": "Kopierat",
-      "copy": "Kopiera JSON",
       "filter": "Filtrera efter nyckel…",
       "empty": "Inget har registrerats ännu.",
       "noMatch": "Inget matchar filtret."

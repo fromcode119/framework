@@ -81,7 +81,7 @@ export class UploadPreviewDialog extends PureReactor {
                 key={section.title}
                 className="rounded-xl border border-slate-200/80 dark:border-slate-800 p-4"
               >
-                <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                <h4 className="text-xs font-medium text-slate-500 dark:text-slate-400">
                   {section.title}
                 </h4>
                 <ul className="mt-2 space-y-1.5">

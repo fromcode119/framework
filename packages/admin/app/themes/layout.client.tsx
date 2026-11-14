@@ -101,7 +101,7 @@ export class ThemesLayout extends AdminComponent {
                       }`}
                     >
                       {React.cloneElement(tab.icon as ReactElement<any>, { size: 16, strokeWidth: 2.5 })}
-                      <span className="uppercase tracking-wide text-[11px]">{tab.label}</span>
+                      <span className=" text-[12px]">{tab.label}</span>
                     </AdminLink>
                   );
                 })}
@@ -125,14 +125,14 @@ export class ThemesLayout extends AdminComponent {
               <div className="flex flex-col gap-1">
                 <div className="flex items-center gap-2">
                   <div className="h-2 w-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)]" />
-                  <span className="text-[10px] font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">
                     {AdminI18n.t('themes.visualArchitectureThemes')}
                   </span>
                 </div>
                 <p className="text-[10px] font-bold text-slate-400">{AdminI18n.t('themes.transformYourPlatformInterfaceWith')}</p>
               </div>
 
-              <div className="flex items-center gap-4 text-[10px] font-semibold uppercase tracking-wide text-slate-400">
+              <div className="flex items-center gap-4 text-[12px] font-medium text-slate-400">
                  {/* "Theme Documentation" pointed at docs.fromcode.com, which does not resolve. */}
                  <AdminLink href={AdminConstants.ROUTES.THEMES.MARKETPLACE} className="hover:text-indigo-500 transition-colors">{AdminI18n.t('themes.marketplaceHealth')}</AdminLink>
               </div>

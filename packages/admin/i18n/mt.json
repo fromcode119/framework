@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Mhux irreġistrat",
-      "auto": "Irreġistrat awtomatikament — ma jistax jiġi editjat hawn.",
-      "copied": "Ikkupjat",
-      "copy": "Ikkopja l-JSON",
       "filter": "Iffiltra skont iċ-ċavetta…",
       "empty": "Għad m'hemm xejn irreġistrat.",
       "noMatch": "Xejn ma jaqbel ma' dak il-filtru."

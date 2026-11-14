@@ -75,7 +75,7 @@ export class DomainAliasesInput extends Reactor {
           onClick={this.addAlias}
           disabled={this.disabled || !draft.trim()}
           icon={<FrameworkIcons.Plus size={13} strokeWidth={3} />}
-          className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
+          className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight flex-shrink-0"
         >
           {AdminI18n.t('settings.general.add')}
         </Button>

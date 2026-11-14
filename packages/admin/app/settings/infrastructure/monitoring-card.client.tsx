@@ -121,7 +121,7 @@ export class MonitoringCard extends AdminComponent {
         <SettingRow theme={this.theme} icon={FrameworkIcons.Activity} title={AdminI18n.t('settings.infrastructure.monitoringOpenIncidents')} stacked description={AdminI18n.t('settings.infrastructure.monitoringHelp')}>
           <div className="space-y-3">
             {this.renderIncidents()}
-            <Button onClick={this.checkNow} isLoading={this.checking} disabled={!this.loaded} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+            <Button onClick={this.checkNow} isLoading={this.checking} disabled={!this.loaded} icon={<FrameworkIcons.Refresh size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
               {AdminI18n.t('settings.infrastructure.monitoringCheckNow')}
             </Button>
           </div>
@@ -141,7 +141,7 @@ export class MonitoringCard extends AdminComponent {
           </SettingRow>
         ))}
         <div className="flex justify-end pt-2">
-          <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight">
+          <Button onClick={this.save} isLoading={this.saving} disabled={!this.loaded} icon={<FrameworkIcons.Save size={13} />} className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight">
             {AdminI18n.t('settings.infrastructure.save')}
           </Button>
         </div>

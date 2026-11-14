@@ -527,9 +527,6 @@
     },
     "structured": {
       "notRecorded": "Not recorded",
-      "auto": "Recorded automatically — not editable here.",
-      "copied": "Copied",
-      "copy": "Copy JSON",
       "filter": "Filter by key…",
       "empty": "Nothing recorded yet.",
       "noMatch": "Nothing matches that filter."

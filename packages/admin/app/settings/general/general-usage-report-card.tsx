@@ -104,7 +104,7 @@ export class GeneralUsageReportCard extends AdminComponent {
               onClick={this.sendNow}
               isLoading={this.isSending}
               icon={<FrameworkIcons.Send size={13} />}
-              className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+              className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
             >
               {AdminI18n.t('settings.general.usageReportSendNow')}
             </Button>

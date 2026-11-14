@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Ikke registrert",
-      "auto": "Registreres automatisk – kan ikke redigeres her.",
-      "copied": "Kopiert",
-      "copy": "Kopier JSON",
       "filter": "Filtrer etter nøkkel …",
       "empty": "Ingenting registrert ennå.",
       "noMatch": "Ingenting samsvarer med filteret."

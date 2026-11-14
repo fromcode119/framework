@@ -17,12 +17,8 @@ describe('RecordSectionCard', () => {
   ];
   const section = { key: 'customer', title: 'Customer', fields };
   const renderField = (field: any) => <input key={field.name} aria-label={`field ${field.name}`} readOnly />;
-  /** "Edit" is the first item of the card's ⋯ menu. */
-  const openEdit = () => {
-    fireEvent.click(screen.getByRole('button', { name: 'Section actions' }));
-    // The menu is drawn invisible until it has measured where it fits, so it is found by its title.
-    fireEvent.click(screen.getByTitle('Edit'));
-  };
+  /** "Edit" stands in the card's head, never inside the ⋯. */
+  const openEdit = () => fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
 
   const mount = (overrides: Record<string, any> = {}) => {
     const props: any = {
@@ -55,7 +51,7 @@ describe('RecordSectionCard', () => {
     openEdit();
     const dialog = screen.getByRole('dialog', { name: 'Customer' });
     expect(dialog).toHaveTextContent('ORD-000002');
-    for (const name of ['fullName', 'phone', 'note', 'email']) expect(screen.getByLabelText(`field ${name}`)).toBeInTheDocument();
+    for (const name of ['fullName', 'phone', 'note', 'email', 'items']) expect(dialog.querySelector(`[aria-label="field ${name}"]`)).not.toBeNull();
     // The fields sit inside the card (in place of its rows from 640px), not in a layer over the page.
     const card = dialog.closest('.fc-record-card');
     expect(card).not.toBeNull();
@@ -90,7 +86,41 @@ describe('RecordSectionCard', () => {
     const locked = [{ name: 'number', type: 'text', label: 'Number', admin: { readOnly: true, readOnlyOverride: 'never' } }];
     render(<RecordSectionCard section={{ key: 'x', title: 'Order', fields: locked }} formData={{ number: '7' }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
     expect(screen.getByText('7')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+    // Nothing offered for the section: no ⋯ either.
     expect(screen.queryByRole('button', { name: 'Section actions' })).toBeNull();
+  });
+
+  it('offers no Edit for fields the runtime writes, locked with no declared way in', () => {
+    const written = [
+      { name: 'createdAt', type: 'datetime', label: 'Created', admin: { readOnly: true } },
+      { name: 'requestKey', type: 'text', label: 'Request key', admin: { readOnly: true } },
+    ];
+    render(<RecordSectionCard section={{ key: 'x', title: 'Record', fields: written }} formData={{ requestKey: 'k-1' }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
+    expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
+  });
+
+  it('keeps every field of the card while editing — locked and recorded ones as they read, nothing swapped', () => {
+    const withRecord = [
+      { name: 'note', type: 'text', label: 'Note' },
+      { name: 'snapshot', type: 'json', label: 'Checkout record', admin: { component: 'StructuredReadOnlyField' } },
+      { name: 'facts', type: 'json', label: 'Facts', admin: { component: 'PluginFacts', readOnly: true } },
+      { name: 'stamp', type: 'text', label: 'Stamp', admin: { readOnly: true } },
+    ];
+    render(<RecordSectionCard section={{ key: 'x', title: 'Record', fields: withRecord }} formData={{ note: 'a', snapshot: { cart: 17 }, facts: { a: 1 } }} renderField={renderField} handlePatch={vi.fn()} handleSubmit={vi.fn()} saving={false} />);
+    expect(screen.getByText('Checkout record')).toBeInTheDocument();
+    expect(screen.getByText('Facts')).toBeInTheDocument();
+    openEdit();
+    const dialog = screen.getByRole('dialog');
+    // The editable field, and the recorded values under their names, in the section's order.
+    expect(dialog.querySelector('[aria-label="field note"]')).not.toBeNull();
+    expect(dialog.querySelector('[aria-label="field snapshot"]')).not.toBeNull();
+    expect(dialog.querySelector('[aria-label="field facts"]')).not.toBeNull();
+    expect(dialog).toHaveTextContent('Checkout record');
+    const names = [...dialog.querySelectorAll('[aria-label^="field "]')].map((node) => node.getAttribute('aria-label'));
+    expect(names).toEqual(['field note', 'field snapshot', 'field facts']);
+    // An empty locked field has nothing to read and nothing to type: the card did not show it either.
+    expect(dialog.querySelector('[aria-label="field stamp"]')).toBeNull();
   });
 });
 

@@ -10,17 +10,15 @@ import type { IStructuredNode } from '@/components/collection/fields/interfaces/
 import { AdminI18n } from '@/lib/i18n/admin-i18n';
 
 /**
- * One level of the value tree: this level's leaves in a grid, then each nested object/array below it
- * as a captioned subsection that recurses.
+ * One level of the value tree: this level's leaves as label / value rows, then each nested object or
+ * array under a heading of its own that recurses.
  *
- * Nesting is a CAPTION AND A RULE, not a collapsed row. Every group used to start as a chevron the
- * operator had to click — an eight-key delivery address hidden behind a disclosure on a page whose
- * whole job is to show what was recorded. A caption costs one line and shows the data.
+ * Nesting is a HEADING, not a collapsed row: an eight-key delivery address hidden behind a disclosure
+ * on a page whose whole job is to show what was recorded is data the operator never sees.
  */
 export class StructuredReadOnlyGroup extends PureReactor {
   @prop declare node: IStructuredNode;
   @prop declare depth: number;
-  @prop declare isDark?: boolean;
   @prop declare filterLower?: string;
   @prop declare keyLabels?: Record<string, string>;
 
@@ -41,65 +39,37 @@ export class StructuredReadOnlyGroup extends PureReactor {
     return node.kind === StructuredNodeKind.SCALAR || node.kind === StructuredNodeKind.EMPTY;
   }
 
-  private renderLeaves(leaves: IStructuredEntry[]): ReactNode {
-    if (!leaves.length) return null;
-    return (
-      // `minmax(0,1fr)`, never a bare `1fr`: a bare track is `min-width:auto`, so one long unbroken
-      // value (a URL, an address) widens its column and pushes the grid past the panel. `min(170px,100%)`
-      // so a container narrower than one column — an edit-page sidebar — gets one full-width column.
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(170px,100%),1fr))] gap-x-7 gap-y-3.5">
-        {leaves.map((entry) => (
-          <StructuredReadOnlyBlock key={entry.key} label={entry.key} node={entry.node} isDark={this.isDark} keyLabels={this.keyLabels} />
-        ))}
-      </div>
-    );
-  }
-
-  private renderCaption(entry: IStructuredEntry): ReactNode {
-    const { isDark } = this;
+  private renderChild(entry: IStructuredEntry): ReactNode {
+    const { depth, filterLower, keyLabels } = this;
     const count = StructuredReadOnlyFieldService.topLevelCount(entry.node);
     return (
-      <div className="mb-2.5 flex items-center gap-2.5">
-        <span className={`whitespace-nowrap text-[10px] font-bold uppercase tracking-[0.09em] ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
-          {StructuredReadOnlyFieldService.keyLabel(entry.key, this.keyLabels)}
-        </span>
-        <span className={`h-px flex-1 ${isDark ? 'bg-slate-800' : 'bg-slate-200'}`} />
-        {count ? <span className={`text-[10px] ${isDark ? 'text-slate-600' : 'text-slate-300'}`}>{count}</span> : null}
-      </div>
-    );
-  }
-
-  private renderChild(entry: IStructuredEntry): ReactNode {
-    const { depth, isDark, filterLower, keyLabels } = this;
-    return (
-      <div key={entry.key} className="mt-5 first:mt-0">
-        {this.renderCaption(entry)}
+      <section key={entry.key} className="fc-sro__section">
+        <h3 className="fc-sro__heading">
+          {StructuredReadOnlyFieldService.keyLabel(entry.key, keyLabels)}
+          {count ? <span className="fc-sro__count">{count}</span> : null}
+        </h3>
         {entry.node.kind === StructuredNodeKind.ARRAY_TABLE
-          ? <StructuredReadOnlyTable node={entry.node} isDark={isDark} keyLabels={keyLabels} />
+          ? <StructuredReadOnlyTable node={entry.node} keyLabels={keyLabels} />
           : StructuredReadOnlyFieldService.isValueList(entry.node)
-            ? <StructuredReadOnlyList node={entry.node} isDark={isDark} />
-            : <StructuredReadOnlyGroup node={entry.node} depth={depth + 1} isDark={isDark} filterLower={filterLower} keyLabels={keyLabels} />}
-      </div>
+            ? <StructuredReadOnlyList node={entry.node} />
+            : <StructuredReadOnlyGroup node={entry.node} depth={depth + 1} filterLower={filterLower} keyLabels={keyLabels} />}
+      </section>
     );
   }
 
   render(): ReactNode {
     const visible = this.visibleEntries;
+    if (!visible.length) return <p className="fc-sro__absent">{AdminI18n.t('ui.structured.noMatch')}</p>;
     const leaves = visible.filter((entry) => StructuredReadOnlyGroup.isLeaf(entry.node));
     const children = visible.filter((entry) => !StructuredReadOnlyGroup.isLeaf(entry.node));
-
-    if (!visible.length) {
-      return <p className={`text-[12px] font-medium ${this.isDark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('ui.structured.noMatch')}</p>;
-    }
-
     return (
       <>
-        {this.renderLeaves(leaves)}
-        {children.length ? (
-          <div className={leaves.length ? 'mt-5' : ''}>
-            {children.map((entry) => this.renderChild(entry))}
-          </div>
+        {leaves.length ? (
+          <dl className="fc-sro__rows">
+            {leaves.map((entry) => <StructuredReadOnlyBlock key={entry.key} label={entry.key} node={entry.node} keyLabels={this.keyLabels} />)}
+          </dl>
         ) : null}
+        {children.map((entry) => this.renderChild(entry))}
       </>
     );
   }

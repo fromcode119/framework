@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nicht erfasst",
-      "auto": "Automatisch erfasst – hier nicht bearbeitbar.",
-      "copied": "Kopiert",
-      "copy": "JSON kopieren",
       "filter": "Nach Schlüssel filtern…",
       "empty": "Noch nichts erfasst.",
       "noMatch": "Keine Treffer für diesen Filter."

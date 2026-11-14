@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nezaznamenané",
-      "auto": "Zaznamenané automaticky — tu sa nedá upraviť.",
-      "copied": "Skopírované",
-      "copy": "Kopírovať JSON",
       "filter": "Filtrovať podľa kľúča…",
       "empty": "Zatiaľ nič nie je zaznamenané.",
       "noMatch": "Filtru nič nezodpovedá."

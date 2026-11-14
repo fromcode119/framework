@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nezaznamenáno",
-      "auto": "Zaznamenáno automaticky — zde nelze upravit.",
-      "copied": "Zkopírováno",
-      "copy": "Kopírovat JSON",
       "filter": "Filtrovat podle klíče…",
       "empty": "Zatím nic nezaznamenáno.",
       "noMatch": "Filtru nic neodpovídá."

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Ikke registreret",
-      "auto": "Registreres automatisk — kan ikke redigeres her.",
-      "copied": "Kopieret",
-      "copy": "Kopiér JSON",
       "filter": "Filtrér efter nøgle…",
       "empty": "Intet registreret endnu.",
       "noMatch": "Intet matcher filteret."

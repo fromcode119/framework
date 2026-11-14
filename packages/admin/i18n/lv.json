@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nav reģistrēts",
-      "auto": "Reģistrēts automātiski — šeit nav rediģējams.",
-      "copied": "Nokopēts",
-      "copy": "Kopēt JSON",
       "filter": "Filtrēt pēc atslēgas…",
       "empty": "Vēl nekas nav reģistrēts.",
       "noMatch": "Filtram nekas neatbilst."

@@ -98,7 +98,7 @@ export class PersonFieldsPanel extends Reactor {
     return (
       <div className={`mt-6 ${AdminClass.SURFACE} p-8 space-y-5 ${dark ? 'bg-slate-900/40 border-slate-800/50' : 'bg-white border-white shadow-xl'}`}>
         <div className="flex items-center justify-between gap-3">
-          <h3 className={`text-[11px] font-bold uppercase tracking-wider ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.fields.title')}</h3>
+          <h3 className={`text-[12px] font-medium ${dark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('users.fields.title')}</h3>
           <AdminLink href={AdminConstants.ROUTES.PEOPLE.FIELDS} className="text-[11px] font-bold text-indigo-600">{AdminI18n.t('users.fields.manage')}</AdminLink>
         </div>
         {this.error ? <div className="rounded-xl bg-rose-50 text-rose-700 px-4 py-2.5 text-[12px] font-bold dark:bg-rose-500/10">{this.error}</div> : null}

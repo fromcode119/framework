@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Non enregistré",
-      "auto": "Enregistré automatiquement — non modifiable ici.",
-      "copied": "Copié",
-      "copy": "Copier le JSON",
       "filter": "Filtrer par clé…",
       "empty": "Rien n’a encore été enregistré.",
       "noMatch": "Aucun résultat pour ce filtre."

@@ -54,7 +54,7 @@ export class SiteRequiredNotice extends AdminComponent {
           <Button
             onClick={() => this.router.push(AdminConstants.ROUTES.SITES.ROOT)}
             icon={<FrameworkIcons.Globe size={13} strokeWidth={2} />}
-            className="h-8 px-3 rounded-lg text-[11px] font-bold uppercase tracking-tight flex-shrink-0"
+            className="h-8 px-3 rounded-lg text-[12px] font-medium tracking-tight flex-shrink-0"
           >
             {AdminI18n.t('ui.view.siteRequired.openSites')}
           </Button>

@@ -51,7 +51,7 @@ export class McpTokensTable extends AdminComponent {
     return (
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
-          <thead className="border-b border-slate-100 dark:border-slate-800 text-start text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <thead className="border-b border-slate-100 dark:border-slate-800 text-start text-xs font-medium text-slate-500">
             <tr>
               <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.label')}</th>
               {this.multiTenant ? <th className="py-3 pe-4">{AdminI18n.t('settings.integrations.site')}</th> : null}

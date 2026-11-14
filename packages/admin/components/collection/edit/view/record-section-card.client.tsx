@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react';
-import { Reactor, prop, state, bound } from '@fromcode119/react-class-components';
+import type { ReactNode, RefObject } from 'react';
+import { Reactor, prop, state, bound, ref } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { RecordPartPlace } from '@/components/collection/edit/enums/record-part-place.enum';
 import { Dropdown } from '@/components/ui/view/dropdown.client';
@@ -24,7 +24,10 @@ import { AdminI18n } from '@/lib/i18n/admin-i18n';
  *
  * What a plugin adds about one section goes INTO it, named by the section as declared (the same in every
  * language): `<slotBase>.<section>.head` beside the title (a state, a count), `.body` under the values
- * (a step to take, a related list) and `.menu` in the card's ⋯ menu, under "Edit".
+ * (a step to take, a related list) and `.menu` in the card's ⋯ menu, beside the Edit button.
+ *
+ * Editing keeps the card what it was: every field it shows stays, in the same order, and only what can
+ * be changed turns into a control. A locked value stays with its lock, a recorded one stays as it reads.
  */
 export class RecordSectionCard extends Reactor {
   @prop declare section: { key: string; title?: string; fields: any[]; slotKey?: string };
@@ -63,7 +66,24 @@ export class RecordSectionCard extends Reactor {
 
   @state open = false;
   @state failed = false;
+  /** Whether anything (a part, a plugin) put an action in the card's ⋯; without one there is no ⋯. */
+  @state hasMenu = false;
+  @ref declare private menuProbe: RefObject<HTMLSpanElement | null>;
+  private menuWatch: MutationObserver | null = null;
   private before: Record<string, any> = {};
+
+  componentDidMount(): void {
+    const probe = this.menuProbe.current;
+    if (!probe) return;
+    const measure = () => { const filled = probe.childElementCount > 0; if (filled !== this.hasMenu) this.hasMenu = filled; };
+    this.menuWatch = new MutationObserver(measure);
+    this.menuWatch.observe(probe, { childList: true, subtree: true });
+    measure();
+  }
+
+  componentWillUnmount(): void {
+    this.menuWatch?.disconnect();
+  }
 
   @bound private openSheet(): void {
     this.before = RecordSectionFields.snapshot(this.section.fields, this.formData);
@@ -107,19 +127,21 @@ export class RecordSectionCard extends Reactor {
   private isBlank(): boolean {
     const fields = this.section.fields;
     return fields.length > 0 && !RecordSectionFields.shownFields(fields, this.formData).length
-      && !fields.some(RecordSectionFields.ownsItsControl) && !fields.some(RecordSectionFields.readsByComponent);
+      && !fields.some(RecordSectionFields.ownsItsControl) && !fields.some(RecordSectionFields.readsByComponent)
+      && !RecordSectionFields.displayFields(fields, this.formData).length;
   }
 
   private renderRows(): ReactNode {
     const shown = RecordSectionFields.shownFields(this.section.fields, this.formData);
     const own = this.section.fields.filter(RecordSectionFields.ownsItsControl);
     const read = this.section.fields.filter(RecordSectionFields.readsByComponent);
+    const display = RecordSectionFields.displayFields(this.section.fields, this.formData);
     const card = AdminClass.of('record-card');
     // A section only parts fill (an order's invoices) says nothing of fields: the part speaks for itself.
     if (!this.section.fields.length) return null;
     // Nothing filled in: said by the body slot's fallback, so a card a plugin fills (a timeline) does not
     // also claim to be empty.
-    if (!shown.length && !own.length && !read.length) return null;
+    if (!shown.length && !own.length && !read.length && !display.length) return null;
     return (
       <>
         {read.map((field) => (
@@ -137,10 +159,32 @@ export class RecordSectionCard extends Reactor {
             ))}
           </dl>
         ) : null}
-        {own.length ? (
-          <div className="fc-edit-fields"><div className="fc-edit-fields__grid">{own.map(this.renderField)}</div></div>
-        ) : null}
+        {/* What the runtime recorded, under a heading of its own name, as rows like the ones above. */}
+        {display.map((field) => this.renderRecorded(field, `${card}__read`))}
+        {/* A field that is its own control (an items table) reads under its name like a recorded value —
+            a heading of the card, not a form label; when it IS what the card is called, the title says it. */}
+        {own.map((field) => {
+          const label = FieldDisplayLabel.of(field);
+          const named = label && label.trim().toLowerCase() !== String(this.section.title || '').trim().toLowerCase();
+          return (
+            <section key={`own-${field.name}`} className={`${card}__own ${card}__recorded`}>
+              {named ? <h3 className={`${card}__subhead`}>{label}</h3> : null}
+              {this.renderField({ ...field, admin: { ...field.admin, hideLabel: true, description: undefined } })}
+            </section>
+          );
+        })}
       </>
+    );
+  }
+
+  /** What the runtime recorded, under a heading of its own name; the same in the card and in the sheet. */
+  private renderRecorded(field: any, extra = ''): ReactNode {
+    const card = AdminClass.of('record-card');
+    return (
+      <section key={`display-${field.name}`} className={`${extra} ${card}__recorded`.trim()}>
+        <h3 className={`${card}__subhead`}>{FieldDisplayLabel.of(field)}</h3>
+        {this.renderField({ ...field, admin: { ...field.admin, hideLabel: true, description: undefined, readOnly: true, readOnlyOverride: 'never' } })}
+      </section>
     );
   }
 
@@ -154,7 +198,13 @@ export class RecordSectionCard extends Reactor {
           <div className={`${card}__head`}>
             <h2 className={`${card}__title`}>{title}</h2>
             <div className={`${card}__aside`}>{this.recordPart?.(RecordPartPlace.HEAD)}{this.slot('head')}</div>
-            {editable ? this.renderMenu() : null}
+            {editable ? (
+              <button type="button" className={`${card}__edit`} onClick={this.openSheet}>
+                <FrameworkIcons.Edit size={14} />
+                {AdminI18n.t('collection.edit.editSection')}
+              </button>
+            ) : null}
+            {this.renderMenu()}
           </div>
         ) : null}
         <div className={`${card}__body`}>
@@ -168,22 +218,29 @@ export class RecordSectionCard extends Reactor {
     );
   }
 
-  /** The card's ⋯: "Edit" first, then what a plugin offers for this section. */
+  /**
+   * The card's ⋯: what a part or a plugin offers for this section (a refund under the payments). Edit is
+   * never in it — it is the button beside it — and with nothing offered there is no ⋯ at all. The offers
+   * are drawn once, out of sight, to learn whether there are any.
+   */
   private renderMenu(): ReactNode {
     const card = AdminClass.of('record-card');
     const label = AdminI18n.t('collection.edit.sectionActions');
-    return (
+    const offers = () => <>{this.recordPart?.(RecordPartPlace.MENU)}{this.slot('menu')}</>;
+    const probe = <span key="probe" ref={this.menuProbe} hidden>{offers()}</span>;
+    if (!this.hasMenu) return probe;
+    return [probe,
       <Dropdown
+        key="menu"
         align={HorizontalAlign.RIGHT}
-        items={[{ label: AdminI18n.t('collection.edit.editSection'), icon: <FrameworkIcons.Edit size={15} />, onClick: this.openSheet }]}
-        footer={<>{this.recordPart?.(RecordPartPlace.MENU)}{this.slot('menu')}</>}
+        items={[]}
+        footer={offers()}
         trigger={
           <span role="button" tabIndex={0} aria-label={label} title={label} className={`${card}__menu`}>
             <FrameworkIcons.More size={18} />
           </span>
         }
-      />
-    );
+      />];
   }
 
   /** On a phone a sheet over the page; on a wider screen the fields in place of the rows they edit. */
@@ -200,7 +257,9 @@ export class RecordSectionCard extends Reactor {
       >
         <div className={AdminClass.of('sheet__group')}>
           <div className="fc-edit-fields"><div className="fc-edit-fields__grid">
-            {RecordSectionFields.sheetFields(this.section.fields).map(this.renderField)}
+            {RecordSectionFields.editDrawn(this.section.fields, this.formData).map((field) => (
+              RecordSectionFields.displaysOnly(field) ? this.renderRecorded(field) : this.renderField(field)
+            ))}
           </div></div>
         </div>
       </EditSheet>

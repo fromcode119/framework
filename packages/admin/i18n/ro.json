@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Neînregistrat",
-      "auto": "Înregistrat automat — nu se poate edita aici.",
-      "copied": "Copiat",
-      "copy": "Copiază JSON",
       "filter": "Filtrați după cheie…",
       "empty": "Nimic înregistrat încă.",
       "noMatch": "Nimic nu corespunde acestui filtru."

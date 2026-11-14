@@ -1,6 +1,7 @@
 import { PagePermissionGate } from '@/components/view/page-permission-gate.client';
 import { PluginLoader } from '@/app/components/view/plugin-loader.client';
 import { Sidebar } from '@/app/components/view/sidebar.client';
+import { NavGroupPanel } from '@/app/components/view/nav-group-panel.client';
 import { SecondarySidebar } from '@/app/components/view/secondary-sidebar.client';
 import { AdminExtensionLoader } from '@/app/components/view/admin-extension-loader.client';
 import { ClientLayoutHeader } from '@/app/components/view/client-layout-header.client';
@@ -157,6 +158,8 @@ export class ClientLayoutShell extends Bridge<IClientLayoutShellValues, IClientL
           activePrimaryPathOverride={String(navigationState.activePrimaryItem?.path || '')}
           activeChildPathOverride={String(navigationState.secondaryResolved?.activeSourcePath || '')}
         />
+        {/* A sub-menu's pages, beside the menu on a desktop — filled by the menu itself (NavGroupPanel). */}
+        <div id={NavGroupPanel.ROOT_ID} className="fc-nav-second" />
         <main className="relative flex min-h-screen min-w-0 flex-1 flex-col transition-all duration-300 ease-in-out" onMouseEnter={navigationState.handleMainContentMouseEnter}>
           <ClientLayoutHeader onMenuClick={() => navigationState.setSidebarOpen(true)} />
           {authState.user?.readOnly ? ReadOnlyAccessNotice.render() : null}

@@ -38,7 +38,7 @@ export class UiFieldUtils {
   };
 
   static readonly TEXT = {
-    LABEL: 'text-[11px] font-semibold text-slate-500/80 mb-0.5 ms-0.5 tracking-wide',
+    LABEL: 'text-[12px] font-medium text-slate-500 dark:text-slate-400 mb-1',
     ERROR: 'text-[11px] font-bold text-rose-500 mt-1 ms-0.5',
     SUBTEXT: 'text-[11px] font-medium text-slate-400 mt-1 ms-0.5 leading-relaxed',
     /**

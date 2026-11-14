@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Neužfiksuota",
-      "auto": "Užfiksuota automatiškai – čia redaguoti negalima.",
-      "copied": "Nukopijuota",
-      "copy": "Kopijuoti JSON",
       "filter": "Filtruoti pagal raktą…",
       "empty": "Kol kas nieko neužfiksuota.",
       "noMatch": "Pagal šį filtrą nieko nerasta."

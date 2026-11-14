@@ -35,7 +35,7 @@ export class DashboardUpdateAlert extends PureReactor {
             <Button
               variant={ButtonVariant.GHOST}
               size={FieldSize.SM}
-              className="text-[11px] font-bold tracking-tight px-6 uppercase"
+              className="text-[12px] font-medium tracking-tight px-6"
               onClick={this.onDismiss}
             >
               {AdminI18n.t('dashboard.update.dismiss')}
@@ -43,7 +43,7 @@ export class DashboardUpdateAlert extends PureReactor {
             <Button
               variant={ButtonVariant.PRIMARY}
               size={FieldSize.SM}
-              className="bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30 uppercase"
+              className="bg-amber-600 hover:bg-amber-700 text-white text-[12px] font-medium tracking-tight px-8 h-11 rounded-xl shadow-lg shadow-amber-600/30"
               onClick={this.onViewDetails}
             >
               {AdminI18n.t('dashboard.update.details')}

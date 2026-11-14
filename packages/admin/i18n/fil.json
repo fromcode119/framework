@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Hindi naitala",
-      "auto": "Awtomatikong naitala — hindi mae-edit dito.",
-      "copied": "Nakopya",
-      "copy": "Kopyahin ang JSON",
       "filter": "I-filter ayon sa key…",
       "empty": "Wala pang naitala.",
       "noMatch": "Walang tumutugma sa filter na iyan."

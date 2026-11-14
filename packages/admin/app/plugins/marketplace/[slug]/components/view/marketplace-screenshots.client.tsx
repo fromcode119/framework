@@ -23,11 +23,11 @@ export class MarketplaceScreenshots extends PureReactor {
     return (
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className={`text-[11px] font-bold uppercase tracking-widest flex items-center gap-3 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
+          <h3 className={`text-[12px] font-medium flex items-center gap-3 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
             <FrameworkIcons.Image size={14} className="text-indigo-500" />
             {AdminI18n.t('plugins.list.screenshots')}
           </h3>
-          <span className={`text-[10px] font-semibold uppercase tracking-wide px-3 py-1 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
+          <span className={`text-[12px] font-medium px-3 py-1 rounded-lg ${theme === ThemeMode.DARK ? 'bg-slate-800 text-slate-500' : 'bg-slate-100 text-slate-400'}`}>
             {AdminI18n.t('plugins.list.imageCount', { count: plugin.screenshots.length })}
           </span>
         </div>

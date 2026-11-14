@@ -55,7 +55,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
             />
             <Button
               variant={ButtonVariant.SECONDARY}
-              className="rounded-xl px-5 uppercase tracking-[0.16em]"
+              className="rounded-xl px-5"
               icon={<FrameworkIcons.Upload size={14} />}
               isLoading={isImporting}
               onClick={this.handleUploadClick}
@@ -64,7 +64,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
               {isImporting ? AdminI18n.t('settings.components.importingBackup') : AdminI18n.t('settings.components.importBackup')}
             </Button>
             <Button
-              className="rounded-xl px-5 uppercase tracking-[0.16em]"
+              className="rounded-xl px-5"
               icon={<FrameworkIcons.Plus size={14} />}
               onClick={() => void onCreate()}
               disabled={!capabilities.canManage || !createSections.length || isCreating || isImporting}
@@ -77,16 +77,16 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
 
       <div className="space-y-6 px-8 py-8">
         <div className="flex flex-wrap gap-3">
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.FULL)}>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.FULL)}>
             {AdminI18n.t('settings.components.fullBackup')}
           </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.CORE_DB)}>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.CORE_DB)}>
             {AdminI18n.t('settings.components.coreDb')}
           </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.PLUGINS_ONLY)}>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.PLUGINS_ONLY)}>
             {AdminI18n.t('settings.components.pluginsOnly')}
           </Button>
-          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl uppercase tracking-[0.16em]" onClick={() => onApplyPreset(BackupPreset.THEMES_ONLY)}>
+          <Button variant={ButtonVariant.SECONDARY} size={FieldSize.SM} className="rounded-xl" onClick={() => onApplyPreset(BackupPreset.THEMES_ONLY)}>
             {AdminI18n.t('settings.components.themesOnly')}
           </Button>
         </div>
@@ -127,7 +127,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
                 this.handleUploadClick();
               }}
               disabled={!capabilities.canManage || isCreating || isImporting}
-              className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
+              className="flex items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-2.5 text-[12px] font-medium text-white transition-all shadow-[0_15px_30px_-5px_rgba(79,70,229,0.3)] hover:scale-[1.02] hover:bg-indigo-700 active:scale-[0.98] disabled:opacity-50"
             >
               {isImporting ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Upload size={16} />}
               <span>{isImporting ? AdminI18n.t('settings.components.importing') : AdminI18n.t('settings.components.chooseBackup')}</span>
@@ -178,12 +178,12 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
                   <div className="flex-1">
                     <div className="flex items-center justify-between gap-4">
                       <h3 className={`text-sm font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{option.label}</h3>
-                      <span className={`rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.18em] ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
+                      <span className={`rounded-full px-2.5 py-1 text-[12px] font-medium ${isSelected ? 'bg-indigo-600 text-white' : theme === ThemeMode.DARK ? 'bg-slate-900 text-slate-500' : 'bg-slate-100 text-slate-500'}`}>
                         {isSelected ? AdminI18n.t('settings.components.included') : AdminI18n.t('settings.components.optional')}
                       </span>
                     </div>
                     <p className="mt-2 text-sm text-slate-500">{option.description}</p>
-                    <p className="mt-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-400">{option.helper}</p>
+                    <p className="mt-2 text-xs font-medium text-slate-400">{option.helper}</p>
                   </div>
                 </div>
               </button>
@@ -194,7 +194,7 @@ export class BackupCreateCard extends BackupCreateCardDropZone {
         <div className={`rounded-lg border px-5 py-4 ${theme === ThemeMode.DARK ? 'border-slate-800 bg-slate-950/40' : 'border-slate-100 bg-slate-50/60'}`}>
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.selectedScope')}</p>
+              <p className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.selectedScope')}</p>
               <p className={`mt-2 text-sm font-semibold ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
                 {BackupSectionOptions.describeSections(createSections)}
               </p>

@@ -98,7 +98,7 @@ export class InstalledThemesView extends PureReactor {
           <input type="file" ref={fileInputRef} onChange={handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" />
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3"><FrameworkIcons.Upload size={18} className={isDropActive ? 'text-indigo-500' : 'text-slate-400'} /><div><p className={`text-sm font-medium ${themeMode === ThemeMode.DARK ? 'text-slate-200' : 'text-slate-700'}`}>{siteScope ? AdminI18n.t('themes.uploadAThemeForThis') : AdminI18n.t('themes.dragAndDropThemeZip')}</p>{siteScope ? <p className={`mt-0.5 text-xs ${themeMode === ThemeMode.DARK ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('themes.onlyThisSiteSeesIt')}{siteQuota ? AdminI18n.t('themes.thisSiteHoldsOfThemes', { themes: siteQuota.themes, maxThemes: siteQuota.maxThemes, round: Math.round(siteQuota.maxBytes / (1024 * 1024)) }) : ''}</p> : null}</div></div>
-            <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? AdminI18n.t('themes.inspecting') : siteScope ? AdminI18n.t('themes.uploadForThisSite') : AdminI18n.t('themes.uploadThemeZipTarGz')}</span></button>
+            <button type="button" onClick={(event) => { event.stopPropagation(); handleUploadClick(); }} disabled={isUploading || isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{isUploading || isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{isInspectingUpload ? AdminI18n.t('themes.inspecting') : siteScope ? AdminI18n.t('themes.uploadForThisSite') : AdminI18n.t('themes.uploadThemeZipTarGz')}</span></button>
           </div>
           {uploadProgressLabel ? (
             <div className="mt-4 space-y-2">
@@ -120,7 +120,7 @@ export class InstalledThemesView extends PureReactor {
         {summaryStats.map((s) => (
           <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
             <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
+            <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
           </div>
         ))}
       </div>

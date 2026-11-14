@@ -98,7 +98,7 @@ export class InstalledPluginsView extends Reactor {
                   <FrameworkIcons.Alert size={18} />
                 </div>
                 <div>
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-500">{AdminI18n.t('plugins.list.pluginFailuresDetected')}</h3>
+                  <h3 className="text-[12px] font-medium text-rose-500">{AdminI18n.t('plugins.list.pluginFailuresDetected')}</h3>
                   <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-rose-100/90' : 'text-rose-700'}`}>
                     {AdminI18n.t(failedPluginsCount === 1 ? 'plugins.list.failedOne' : 'plugins.list.failedMany', { count: failedPluginsCount })}
                   </p>
@@ -113,7 +113,7 @@ export class InstalledPluginsView extends Reactor {
                   <FrameworkIcons.Alert size={18} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
+                  <h3 className="text-[12px] font-medium text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
                   <p className={`mt-1 text-sm font-medium leading-relaxed ${theme === ThemeMode.DARK ? 'text-amber-100/90' : 'text-amber-700'}`}>
                     {AdminI18n.t(this.heldPluginsCount === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: this.heldPluginsCount })}
                   </p>
@@ -121,7 +121,7 @@ export class InstalledPluginsView extends Reactor {
                       Platform scope; inside a site the dialog could only end in a refusal. */}
                   {this.siteScope ? <div className="mt-3"><PlatformScopeGate what={AdminI18n.t('plugins.list.approvingHeldPlugins')}>{null}</PlatformScopeGate></div> : null}
                 </div>
-                {this.siteScope ? null : <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+                {this.siteScope ? null : <button onClick={this.onReapproveAll} disabled={this.isActivating} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                   {this.isActivating ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
                   <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
                 </button>}
@@ -134,7 +134,7 @@ export class InstalledPluginsView extends Reactor {
               <Input type="text" placeholder={AdminI18n.t('plugins.list.searchInstalledPlugins')} value={this.searchQuery} onChange={(event) => this.setSearchQuery(event.target.value)} inputClassName="ps-11" />
             </div>
             {this.canManage ? <input type="file" ref={this.fileInputRef} onChange={this.handleFileChange} className="hidden" accept=".zip,.tar.gz,.tgz,application/zip,application/gzip,application/x-gzip" /> : null}
-            {this.canManage ? <button onClick={this.handleUploadClick} disabled={this.isUploading || this.isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.isUploading || this.isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}</span></button> : null}
+            {this.canManage ? <button onClick={this.handleUploadClick} disabled={this.isUploading || this.isInspectingUpload} className="flex items-center justify-center gap-2 h-9 px-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">{this.isUploading || this.isInspectingUpload ? <FrameworkIcons.Loader className="animate-spin" size={16} /> : <FrameworkIcons.Plus size={16} strokeWidth={2.5} />}<span>{this.isInspectingUpload ? AdminI18n.t('plugins.list.inspecting') : AdminI18n.t('plugins.list.uploadZipTarGz')}</span></button> : null}
           </div>
           {this.siteScope ? <SitePluginOffers /> : null}
           {this.siteScope ? <SiteOwnPlugins /> : null}
@@ -163,7 +163,7 @@ export class InstalledPluginsView extends Reactor {
             {summaryStats.map((s) => (
               <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
                 <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
-                <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
+                <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             ))}
           </div>

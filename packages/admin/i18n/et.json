@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Pole salvestatud",
-      "auto": "Salvestatakse automaatselt — siin ei saa muuta.",
-      "copied": "Kopeeritud",
-      "copy": "Kopeeri JSON",
       "filter": "Filtreeri võtme järgi…",
       "empty": "Midagi pole veel salvestatud.",
       "noMatch": "Filtrile ei vasta midagi."

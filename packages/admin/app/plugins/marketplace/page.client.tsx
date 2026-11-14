@@ -236,7 +236,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
             {summary.map((s) => (
               <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
                 <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
-                <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
+                <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
               </div>
             ))}
             {this.updatingAll ? (
@@ -251,7 +251,7 @@ export class MarketplacePage extends AdminComponent implements IPluginBatchSettl
                 type="button"
                 disabled={!!installing}
                 onClick={() => this.handleUpdateAll(updateCount)}
-                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700"
+                className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-[12px] font-medium text-white transition-all shadow-sm active:scale-[0.97] bg-amber-600 hover:bg-amber-700"
               >
                 {AdminI18n.t('plugins.list.updateAll', { count: updateCount })}
               </button>

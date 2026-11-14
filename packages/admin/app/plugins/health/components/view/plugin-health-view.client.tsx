@@ -66,12 +66,12 @@ export class PluginHealthView extends PureReactor {
           {summaryStats.map((s) => (
             <div key={s.label} className={`flex items-baseline gap-1.5 rounded-lg border px-3 py-1.5 ${isDark ? 'border-white/10 bg-slate-900/40' : 'border-slate-200 bg-white shadow-sm'}`}>
               <span className={`text-sm font-bold tabular-nums ${s.tone}`}>{s.value}</span>
-              <span className={`text-[10px] font-semibold uppercase tracking-wider ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
+              <span className={`text-[12px] font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>{s.label}</span>
             </div>
           ))}
           <div className={`flex items-center gap-1.5 rounded-lg border px-3 py-1.5 ${this.report.ok ? (isDark ? 'border-emerald-500/20 bg-emerald-500/10' : 'border-emerald-200 bg-emerald-50') : (isDark ? 'border-rose-500/20 bg-rose-500/10' : 'border-rose-200 bg-rose-50')}`}>
             {this.report.ok ? <FrameworkIcons.CheckCircle size={13} className="text-emerald-500" /> : <FrameworkIcons.Alert size={13} className="text-rose-500" />}
-            <span className={`text-[10px] font-semibold uppercase tracking-wider ${this.report.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{this.report.ok ? AdminI18n.t('plugins.list.allHealthy') : AdminI18n.t('plugins.list.attentionNeeded')}</span>
+            <span className={`text-[12px] font-medium ${this.report.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'}`}>{this.report.ok ? AdminI18n.t('plugins.list.allHealthy') : AdminI18n.t('plugins.list.attentionNeeded')}</span>
           </div>
         </div>
 
@@ -80,12 +80,12 @@ export class PluginHealthView extends PureReactor {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
               <div className={`self-start rounded-lg p-2 ${isDark ? 'bg-amber-500/10 text-amber-400' : 'bg-white text-amber-500 shadow-sm'}`}><FrameworkIcons.Alert size={18} /></div>
               <div className="min-w-0 flex-1">
-                <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
+                <h3 className="text-[12px] font-medium text-amber-500">{AdminI18n.t('plugins.list.capabilityChangeDetected')}</h3>
                 <p className={`mt-1 text-sm font-medium leading-relaxed ${isDark ? 'text-amber-100/90' : 'text-amber-700'}`}>
                   {AdminI18n.t(counts.held === 1 ? 'plugins.list.heldOne' : 'plugins.list.heldMany', { count: counts.held })}
                 </p>
               </div>
-              <button onClick={this.onReapproveAll} disabled={this.isBusy} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[11px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+              <button onClick={this.onReapproveAll} disabled={this.isBusy} className="self-start shrink-0 flex items-center gap-2 h-9 px-4 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                 {this.isBusy ? <FrameworkIcons.Loader className="animate-spin" size={14} /> : <FrameworkIcons.Shield size={14} />}
                 <span>{AdminI18n.t('plugins.list.reApproveAllHeld')}</span>
               </button>
@@ -95,7 +95,7 @@ export class PluginHealthView extends PureReactor {
 
         {needsAttention ? (
           <div className="space-y-3">
-            <h2 className={`text-[11px] font-semibold uppercase tracking-[0.16em] ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.needsAttention')}</h2>
+            <h2 className={`text-[12px] font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.needsAttention')}</h2>
 
             {this.report.held.length > 0 ? (
               <div className={`${AdminClass.SURFACE} overflow-hidden divide-y ${isDark ? 'border-white/10 divide-white/5 bg-slate-900/30' : 'border-slate-200 divide-slate-100 bg-white shadow-sm'}`}>
@@ -114,7 +114,7 @@ export class PluginHealthView extends PureReactor {
                         </div>
                         <p className={`text-xs leading-snug truncate ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>{AdminI18n.t('plugins.list.heldPendingReApprovalOf')}</p>
                       </div>
-                      <button onClick={() => this.onApproveEnable(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-semibold uppercase tracking-wider text-[10px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
+                      <button onClick={() => this.onApproveEnable(entry.slug)} disabled={this.isBusy} className="shrink-0 flex items-center gap-2 h-8 px-3 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium text-[12px] transition-all active:scale-[0.98] shadow-sm disabled:opacity-50">
                         {this.isBusy && this.busySlug === entry.slug ? <FrameworkIcons.Loader className="animate-spin" size={12} /> : <FrameworkIcons.Shield size={12} />}
                         <span>{AdminI18n.t('plugins.list.approveEnable')}</span>
                       </button>

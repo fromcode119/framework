@@ -63,7 +63,7 @@ export class ThemeSettingsExtensionsPanel extends PureReactor {
                         )}
                       </div>
                       {schema?.integrationType && (
-                        <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[10px] font-semibold uppercase tracking-wide text-indigo-500 hover:text-indigo-600">
+                        <AdminLink href={AdminConstants.ROUTES.SETTINGS.INTEGRATIONS_BY_TYPE(schema.integrationType)} className="text-[12px] font-medium text-indigo-500 hover:text-indigo-600">
                           {AdminI18n.t('themes.openIntegration')}
                         </AdminLink>
                       )}

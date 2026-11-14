@@ -103,12 +103,12 @@ export class PluginDetailView extends AdminComponent {
               </div>
               <div className="min-w-0">
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-500">{AdminI18n.t('plugins.detail.pluginStartupError')}</h3>
+                  <h3 className="text-[12px] font-medium text-rose-500">{AdminI18n.t('plugins.detail.pluginStartupError')}</h3>
                   <button
                     type="button"
                     onClick={() => void this.copyPluginError()}
                     disabled={isCopyingError}
-                    className={`inline-flex items-center gap-2 ${AdminClass.SURFACE} px-3 py-2 text-[10px] font-semibold uppercase tracking-wider transition-all ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-slate-950/40 text-rose-200 hover:bg-slate-900/60 disabled:opacity-60' : 'border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:opacity-60'}`}
+                    className={`inline-flex items-center gap-2 ${AdminClass.SURFACE} px-3 py-2 text-[12px] font-medium transition-all ${theme === ThemeMode.DARK ? 'border-rose-500/20 bg-slate-950/40 text-rose-200 hover:bg-slate-900/60 disabled:opacity-60' : 'border-rose-200 bg-white text-rose-600 hover:bg-rose-50 disabled:opacity-60'}`}
                   >
                     {isCopyingError ? <FrameworkIcons.Loader size={12} className="animate-spin" /> : <FrameworkIcons.Copy size={12} />}
                     <span>{AdminI18n.t('plugins.detail.copyError')}</span>

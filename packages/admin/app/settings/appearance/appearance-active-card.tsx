@@ -64,7 +64,7 @@ export class AppearanceActiveCard extends PureReactor {
                     <span className="flex items-center gap-2">
                       <span className="text-xs text-slate-500">{this.subtitle(it)}</span>
                       {catalog?.updateAvailable && (
-                        <span className="text-[10px] font-bold uppercase tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
+                        <span className="text-[12px] font-medium tracking-tight px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-400">
                           {AdminI18n.t('settings.appearance.updateToVersion', { version: catalog.version })}
                         </span>
                       )}

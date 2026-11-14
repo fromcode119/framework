@@ -20,7 +20,7 @@ export class UserProfileSidebar extends PureReactor {
         <Card title={AdminI18n.t('users.systemMetadata')}>
           <div className="space-y-6">
              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">{AdminI18n.t('users.accountType')}</span>
+                <span className="text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.accountType')}</span>
                 {user.roles && user.roles.includes('admin') ? (
                    <Badge variant={BadgeVariant.PURPLE} className="px-3 font-bold">{AdminI18n.t('users.administrator')}</Badge>
                 ) : (
@@ -28,13 +28,13 @@ export class UserProfileSidebar extends PureReactor {
                 )}
              </div>
              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">{AdminI18n.t('users.accountStatus')}</span>
+                <span className="text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.accountStatus')}</span>
                 <Badge variant={String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? 'danger' : 'success'} className="px-3 font-bold">
                   {String(user.accountStatus || 'active').toLowerCase() === 'suspended' ? AdminI18n.t('users.suspended') : AdminI18n.t('users.active')}
                 </Badge>
              </div>
              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">{AdminI18n.t('users.passwordReset')}</span>
+                <span className="text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.passwordReset')}</span>
                 <span className="text-xs font-bold text-slate-400">
                   {user.forcePasswordReset ? AdminI18n.t('users.requiredOnNextLogin') : AdminI18n.t('users.notRequired')}
                 </span>
@@ -42,13 +42,13 @@ export class UserProfileSidebar extends PureReactor {
              {/* Only when known: the account's own endpoint does not carry the dates, and `new Date(undefined)` printed "Invalid Date". */}
              {user.createdAt ? (
              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">{AdminI18n.t('users.created')}</span>
+                <span className="text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.created')}</span>
                 <span className="text-xs font-bold text-slate-400">{new Date(user.createdAt).toLocaleDateString()}</span>
              </div>
              ) : null}
              {user.createdAt ? (
              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold tracking-tight text-slate-500 uppercase">{AdminI18n.t('users.lastModified')}</span>
+                <span className="text-[12px] font-medium tracking-tight text-slate-500">{AdminI18n.t('users.lastModified')}</span>
                 <span className="text-xs font-bold text-slate-400">{user.updatedAt ? new Date(user.updatedAt).toLocaleDateString() : AdminI18n.t('users.never')}</span>
              </div>
              ) : null}
@@ -58,7 +58,7 @@ export class UserProfileSidebar extends PureReactor {
         {this.selfService ? null : <div className={`p-5 rounded-xl border overflow-hidden relative ${
           theme === ThemeMode.DARK ? 'bg-indigo-500/5 border-indigo-500/20' : 'bg-indigo-50 border-indigo-100'
         }`}>
-           <h4 className="text-[11px] font-bold tracking-tight text-indigo-500 mb-2 uppercase">{AdminI18n.t('users.securityNotice')}</h4>
+           <h4 className="text-[12px] font-medium tracking-tight text-indigo-500 mb-2">{AdminI18n.t('users.securityNotice')}</h4>
            <p className="text-xs font-bold leading-relaxed text-slate-500">
              {AdminI18n.t('users.modifyingUserRolesOrPermissions')}
            </p>

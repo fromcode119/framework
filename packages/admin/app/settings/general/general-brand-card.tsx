@@ -273,10 +273,10 @@ export class GeneralBrandCard extends PureReactor {
           description={AdminI18n.t('settings.general.chooseTheVisualStyleOf')}
         >
           <div className={`flex p-1 ${AdminClass.SURFACE} ${theme === ThemeMode.DARK ? 'bg-slate-900 border border-slate-800 shadow-inner' : 'bg-slate-100/80 border border-slate-100 shadow-inner'}`}>
-            <button onClick={this.selectLight} className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-tight ${AdminClass.SURFACE} transition-all ${theme === ThemeMode.LIGHT ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-300'}`}>
+            <button onClick={this.selectLight} className={`flex items-center gap-2 px-6 py-2 text-[12px] font-medium tracking-tight ${AdminClass.SURFACE} transition-all ${theme === ThemeMode.LIGHT ? 'bg-white text-indigo-600 shadow-md ring-1 ring-slate-200/50' : 'text-slate-500 hover:text-slate-300'}`}>
               <FrameworkIcons.Sun size={14} /> {AdminI18n.t('settings.general.light')}
             </button>
-            <button onClick={this.selectDark} className={`flex items-center gap-2 px-6 py-2 text-[10px] font-bold uppercase tracking-tight rounded-xl transition-all ${theme === ThemeMode.DARK ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-indigo-600'}`}>
+            <button onClick={this.selectDark} className={`flex items-center gap-2 px-6 py-2 text-[12px] font-medium tracking-tight rounded-xl transition-all ${theme === ThemeMode.DARK ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/20' : 'text-slate-500 hover:text-indigo-600'}`}>
               <FrameworkIcons.Moon size={14} /> {AdminI18n.t('settings.general.dark')}
             </button>
           </div>

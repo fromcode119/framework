@@ -61,7 +61,7 @@ export class SecondarySidebarDesktop extends PureReactor {
             <span className="inline-flex h-6 w-6 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600 transition-colors group-hover:bg-indigo-600 group-hover:text-white dark:bg-indigo-500/15 dark:text-indigo-300">
               <FrameworkIcons.Right size={14} />
             </span>
-            <span className="text-[10px] font-bold uppercase tracking-wider [writing-mode:vertical-rl]">{collapsedLabel}</span>
+            <span className="text-[12px] font-medium [writing-mode:vertical-rl]">{collapsedLabel}</span>
           </button>
         </div>
       );

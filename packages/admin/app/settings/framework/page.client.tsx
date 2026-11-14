@@ -81,7 +81,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                       target={item.external ? '_blank' : undefined}
                       rel={item.external ? 'noopener noreferrer' : undefined}
                       variant={ButtonVariant.SECONDARY}
-                      className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                      className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
                     >
                       {AdminI18n.t('settings.framework.open')}
                     </Button>
@@ -101,7 +101,7 @@ export class FrameworkSettingsPage extends AdminComponent {
                   target="_blank"
                   rel="noopener noreferrer"
                   variant={ButtonVariant.OUTLINE}
-                  className="h-10 px-4 rounded-xl text-[11px] font-bold uppercase tracking-tight"
+                  className="h-10 px-4 rounded-xl text-[12px] font-medium tracking-tight"
                 >
                   {item.label}
                 </Button>

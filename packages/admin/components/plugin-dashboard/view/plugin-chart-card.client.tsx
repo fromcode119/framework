@@ -28,7 +28,7 @@ export class PluginChartCard extends PureReactor {
             {title}
           </h3>
           {subtitle && (
-            <p className="text-[10px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider mt-0.5">
+            <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500 mt-0.5">
               {subtitle}
             </p>
           )}

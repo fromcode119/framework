@@ -54,13 +54,13 @@ export class BackupSummaryCard extends AdminComponent {
 
         <div className="grid w-full gap-4 sm:grid-cols-3 lg:max-w-2xl">
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.totalBackups')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.totalBackups')}</div>
             <div className={`mt-3 text-3xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>{totalBackups}</div>
             <p className="mt-2 text-xs text-slate-500">{AdminI18n.t('settings.components.groupedInventoryAcrossManagedBackup')}</p>
           </div>
 
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.indexedSize')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.indexedSize')}</div>
             <div className={`mt-3 text-3xl font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {SystemBackupPageUtils.formatBytes(totalBytes)}
             </div>
@@ -68,7 +68,7 @@ export class BackupSummaryCard extends AdminComponent {
           </div>
 
           <div className={`rounded-lg border p-5 ${theme === ThemeMode.DARK ? 'border-white/5 bg-slate-900/60' : 'border-slate-100 bg-slate-50/80'}`}>
-            <div className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-500">{AdminI18n.t('settings.components.latestSnapshot')}</div>
+            <div className="text-[12px] font-medium text-slate-500">{AdminI18n.t('settings.components.latestSnapshot')}</div>
             <div className={`mt-3 text-sm font-bold tracking-tight ${theme === ThemeMode.DARK ? 'text-white' : 'text-slate-900'}`}>
               {latestBackup ? latestBackup.displayName : AdminI18n.t('settings.components.noSnapshotsYet')}
             </div>

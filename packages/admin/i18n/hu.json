@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nincs rögzítve",
-      "auto": "Automatikusan rögzítve – itt nem szerkeszthető.",
-      "copied": "Másolva",
-      "copy": "JSON másolása",
       "filter": "Szűrés kulcs szerint…",
       "empty": "Még nincs rögzítve semmi.",
       "noMatch": "Nincs a szűrőnek megfelelő találat."

@@ -65,7 +65,7 @@ export class StatCard extends PureReactor {
             </div>
           )}
           {stat.trend && (
-            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider ${
+            <div className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[12px] font-medium ${
               stat.trend.isPositive
                 ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
                 : 'bg-rose-500/10 text-rose-600 dark:text-rose-400'
@@ -75,7 +75,7 @@ export class StatCard extends PureReactor {
             </div>
           )}
         </div>
-        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 tracking-[0.1em] uppercase mb-1">
+        <p className="text-[12px] font-medium text-slate-400 dark:text-slate-500 mb-1">
           {stat.label}
         </p>
         <h4 className="text-xl font-bold text-slate-900 dark:text-white tracking-tight leading-none">

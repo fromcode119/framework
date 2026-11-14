@@ -1,8 +1,9 @@
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import { AdminLink } from '@/components/view/admin-link.client';
-import { PureReactor, prop, ref, Platform } from '@fromcode119/react-class-components';
+import { PureReactor, prop, ref, state, Platform } from '@fromcode119/react-class-components';
 import { FrameworkIcons, Slot } from '@fromcode119/react';
 import { NavSectionPages } from '@/lib/nav-section-pages';
+import { NavGroupPanel } from '@/app/components/view/nav-group-panel.client';
 import { NavUtils } from '@/lib/nav-utils';
 import { AdminNavText } from '@/lib/i18n/admin-nav-text';
 
@@ -35,8 +36,44 @@ export class NavItemView extends PureReactor {
 
   // An open section's pages can fall below the menu's fold (Settings sits at its foot); bring the whole
   // section into view, moving the menu only as far as needed.
+  /** The sub-menu shown OVER the content while the pointer rests on it (desktop). */
+  @state private previewGroup = '';
+  private previewTimer = 0;
+  private static readonly PREVIEW_EVENT = 'fc-nav-group-preview';
+
   componentDidMount(): void {
     this.revealWhenOpen();
+    // One preview on screen: a group opening its pages closes any other section's.
+    this.listen(window, NavItemView.PREVIEW_EVENT, (event: Event) => {
+      if ((event as CustomEvent).detail !== this) this.closePreviewNow();
+    });
+  }
+
+  componentWillUnmount(): void {
+    window.clearTimeout(this.previewTimer);
+  }
+
+  private openPreview(name: string): void {
+    window.clearTimeout(this.previewTimer);
+    this.previewTimer = window.setTimeout(() => {
+      window.dispatchEvent(new CustomEvent(NavItemView.PREVIEW_EVENT, { detail: this }));
+      this.previewGroup = name;
+    }, 80);
+  }
+
+  /** Left with a short grace, so the pointer can cross from the group line into its column. */
+  private closePreview = (): void => {
+    window.clearTimeout(this.previewTimer);
+    this.previewTimer = window.setTimeout(() => this.closePreviewNow(), 220);
+  };
+
+  private keepPreview = (): void => {
+    window.clearTimeout(this.previewTimer);
+  };
+
+  private closePreviewNow(): void {
+    window.clearTimeout(this.previewTimer);
+    if (this.previewGroup) this.previewGroup = '';
   }
 
   componentDidUpdate(): void {
@@ -128,16 +165,34 @@ export class NavItemView extends PureReactor {
     );
   }
 
-  /** A sub-menu: its name leads to its first page, and its pages show under it while one of them is open. */
+  /**
+   * A sub-menu: one line whose name leads to its first page. On a desktop its pages stand in a second
+   * column beside the menu — kept while one of them is open, shown over the content while the pointer is
+   * on the line. In the phone's menu the same pages sit under the line while one of them is open.
+   */
   private renderGroup(entry: { name: string; pages: any[] }, activePage: string): ReactNode {
     const open = NavSectionPages.holds(entry, activePage);
+    const previewing = !open && this.previewGroup === entry.name;
+    const pages = (nested: boolean) => entry.pages.map((page) => this.renderPage(page, activePage, nested));
     return (
-      <div key={`group:${entry.name}`} className={`fc-nav-sub__group${open ? ' fc-nav-sub__group--open' : ''}`}>
-        <AdminLink href={entry.pages[0].path} onClick={this.onClick} aria-expanded={open} className="fc-nav-sub__item fc-nav-sub__item--group">
+      <div key={`group:${entry.name}`} className={`fc-nav-sub__group${open ? ' fc-nav-sub__group--open' : ''}${previewing ? ' fc-nav-sub__group--preview' : ''}`}>
+        <AdminLink
+          href={entry.pages[0].path}
+          onClick={() => { this.closePreviewNow(); this.onClick?.(); }}
+          onMouseEnter={() => this.openPreview(entry.name)}
+          onMouseLeave={this.closePreview}
+          aria-expanded={open || previewing}
+          className={`fc-nav-sub__item fc-nav-sub__item--group${open ? ' fc-nav-sub__item--current' : ''}`}
+        >
           <span className="fc-nav-sub__label">{entry.name}</span>
           <span className="fc-nav-sub__chevron" aria-hidden="true"><FrameworkIcons.ChevronRight size={14} /></span>
         </AdminLink>
-        {open ? entry.pages.map((page) => this.renderPage(page, activePage, true)) : null}
+        {open ? <div className="fc-nav-sub__group-pages">{pages(true)}</div> : null}
+        {open || previewing ? (
+          <NavGroupPanel title={entry.name} preview={previewing} onPointerEnter={this.keepPreview} onPointerLeave={this.closePreview}>
+            {pages(false)}
+          </NavGroupPanel>
+        ) : null}
       </div>
     );
   }

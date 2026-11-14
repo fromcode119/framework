@@ -23,7 +23,7 @@ export class SetupStepper extends PureReactor {
         {SetupStep.ordered.map((step) => (
           <div key={step.value} className="flex-1 space-y-2">
             <div className={`h-[3px] rounded-full transition-colors ${this.barClass(step)}`} />
-            <span className={`block text-[10px] font-bold uppercase tracking-wide ${this.labelClass(step)}`}>
+            <span className={`block text-[12px] font-medium ${this.labelClass(step)}`}>
               {AdminDictionary.translate(this.locale, `setup.steps.${step.value}`)}
             </span>
           </div>

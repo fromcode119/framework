@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Tidak tercatat",
-      "auto": "Dicatat otomatis — tidak dapat diedit di sini.",
-      "copied": "Disalin",
-      "copy": "Salin JSON",
       "filter": "Filter berdasarkan kunci…",
       "empty": "Belum ada yang tercatat.",
       "noMatch": "Tidak ada yang cocok dengan filter tersebut."

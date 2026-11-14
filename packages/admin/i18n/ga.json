@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Níor taifeadadh",
-      "auto": "Taifeadta go huathoibríoch — ní féidir é a chur in eagar anseo.",
-      "copied": "Cóipeáilte",
-      "copy": "Cóipeáil JSON",
       "filter": "Scag de réir eochrach…",
       "empty": "Níl aon rud taifeadta fós.",
       "noMatch": "Níl aon rud a mheaitseálann an scagaire sin."

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Nuk është regjistruar",
-      "auto": "Regjistrohet automatikisht — nuk mund të ndryshohet këtu.",
-      "copied": "U kopjua",
-      "copy": "Kopjo JSON",
       "filter": "Filtro sipas çelësit…",
       "empty": "Ende nuk është regjistruar asgjë.",
       "noMatch": "Asgjë nuk përputhet me këtë filtër."

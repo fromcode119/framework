@@ -107,7 +107,7 @@ export class SidebarVersions extends PureReactor {
           {hasMoreRevisions && !revisionsLoading && (
             <button
               onClick={loadMoreRevisions}
-              className="w-full py-3 text-[10px] font-bold uppercase tracking-wide text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
+              className="w-full py-3 text-[12px] font-medium text-indigo-500 bg-indigo-500/5 hover:bg-indigo-500/10 rounded-xl transition-all mt-2"
             >
               {AdminI18n.t('collection.edit.loadMoreVersions')}
             </button>

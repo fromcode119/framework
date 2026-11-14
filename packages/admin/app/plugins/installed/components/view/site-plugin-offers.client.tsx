@@ -51,7 +51,7 @@ export class SitePluginOffers extends AdminComponent {
     const dark = this.theme === ThemeMode.DARK;
     return (
       <Card className={`border-0 p-4 ${AdminClass.SURFACE} ${dark ? 'bg-slate-900/40' : 'bg-white shadow-sm'}`}>
-        <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.availableToThisSite')}</h3>
+        <h3 className={`text-[12px] font-medium mb-1 ${dark ? 'text-slate-500' : 'text-slate-400'}`}>{AdminI18n.t('plugins.list.availableToThisSite')}</h3>
         <p className="text-xs text-slate-500 mb-4">{AdminI18n.t('plugins.list.pluginsThePlatformOffersTo')}</p>
         {this.loading ? <p className="text-xs text-slate-500">{AdminI18n.t('plugins.list.loading')}</p>
           : this.loadError ? <p className="text-xs text-rose-500">{this.loadError}</p>

@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Tidak direkodkan",
-      "auto": "Direkodkan secara automatik — tidak boleh diedit di sini.",
-      "copied": "Disalin",
-      "copy": "Salin JSON",
       "filter": "Tapis mengikut kunci…",
       "empty": "Belum ada apa-apa direkodkan.",
       "noMatch": "Tiada yang sepadan dengan penapis itu."

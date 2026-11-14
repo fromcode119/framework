@@ -530,9 +530,6 @@
     },
     "structured": {
       "notRecorded": "Chưa ghi nhận",
-      "auto": "Được ghi nhận tự động — không thể chỉnh sửa tại đây.",
-      "copied": "Đã sao chép",
-      "copy": "Sao chép JSON",
       "filter": "Lọc theo khóa…",
       "empty": "Chưa có dữ liệu nào được ghi nhận.",
       "noMatch": "Không có kết quả khớp với bộ lọc."

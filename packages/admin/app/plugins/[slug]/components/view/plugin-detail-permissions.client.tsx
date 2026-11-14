@@ -21,7 +21,7 @@ export class PluginDetailPermissions extends PureReactor {
     const summary = PluginConsentSummary.of(plugin.manifest, plugin.approvedCapabilities || []) as IPluginConsentSummary;
     return (
       <Card className={`border-0 p-5 ${theme === ThemeMode.DARK ? 'bg-slate-900/40' : 'bg-white shadow-xl shadow-slate-200/50'}`}>
-        <h3 className={`text-[11px] font-semibold uppercase tracking-wider mb-5 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
+        <h3 className={`text-[12px] font-medium mb-5 ${theme === ThemeMode.DARK ? 'text-slate-500' : 'text-slate-400'}`}>
           {AdminI18n.t('plugins.detail.securityCapabilities')}
         </h3>
         {summary.entries.length > 0 ? (
@@ -35,7 +35,7 @@ export class PluginDetailPermissions extends PureReactor {
           <div className="py-10 flex flex-col items-center justify-center border-2 border-dashed border-slate-100 dark:border-slate-800 rounded-xl">
             <FrameworkIcons.Shield className="text-slate-200 dark:text-slate-800 mb-3" size={40} />
             <p className="text-slate-500 font-semibold text-sm">{AdminI18n.t('plugins.detail.standardIsolation')}</p>
-            <p className="text-[11px] text-slate-400 mt-0.5 uppercase tracking-wider">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
+            <p className="text-[12px] text-slate-400 mt-0.5">{AdminI18n.t('plugins.detail.minimalSystemPermissions')}</p>
           </div>
         )}
       </Card>

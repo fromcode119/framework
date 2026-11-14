@@ -103,8 +103,8 @@ export class DependencyDialog extends AdminComponent {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-slate-900 dark:text-white uppercase tracking-wider text-[11px]">{issue.slug}</span>
-                    <span className={`text-[8px] px-1.5 py-0.5 rounded-lg font-bold uppercase tracking-tight ${
+                    <span className="font-medium text-slate-900 dark:text-white text-[12px]">{issue.slug}</span>
+                    <span className={`text-[8px] px-1.5 py-0.5 rounded-lg font-medium tracking-tight ${
                       String(issue.type) === DependencyIssueType.MISSING.value ? 'bg-rose-500 text-white' :
                       String(issue.type) === DependencyIssueType.INACTIVE.value ? 'bg-amber-100 text-amber-600 dark:bg-amber-500/10 dark:text-amber-500' :
                       'bg-slate-100 text-slate-600 dark:bg-slate-500/10 dark:text-slate-500'
@@ -126,7 +126,7 @@ export class DependencyDialog extends AdminComponent {
             {!hasIncompatible && (
               <Button
                 variant={ButtonVariant.PRIMARY}
-                className={`w-full py-6 rounded-xl font-bold uppercase tracking-widest text-[11px] shadow-lg ${
+                className={`w-full py-6 rounded-xl font-medium text-[12px] shadow-lg ${
                   hasMissing ? 'bg-rose-500 hover:bg-rose-600 shadow-rose-500/20' : 'shadow-indigo-500/20'
                 }`}
                 onClick={this.confirmResolve}
@@ -142,7 +142,7 @@ export class DependencyDialog extends AdminComponent {
 
             <Button
               variant={ButtonVariant.GHOST}
-              className="w-full py-6 rounded-xl font-bold uppercase tracking-widest text-[11px] border-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+              className="w-full py-6 rounded-xl font-medium text-[12px] border-2 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
               onClick={this.confirmForce}
               disabled={isLoading}
             >
